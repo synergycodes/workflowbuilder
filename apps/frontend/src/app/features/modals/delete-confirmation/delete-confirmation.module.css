@@ -1,0 +1,30 @@
+.content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  color: var(--ax-txt-secondary-default);
+
+  b {
+    font-weight: 700;
+  }
+
+  composes: ax-public-p9 from global;
+  user-select: none;
+}
+
+.checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+
+  & > label {
+    cursor: pointer;
+  }
+}
+
+.buttons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

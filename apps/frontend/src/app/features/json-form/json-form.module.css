@@ -1,0 +1,11 @@
+.json-form-container {
+  > div {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  hr {
+    width: calc(100% + 2rem);
+  }
+}

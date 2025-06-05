@@ -1,0 +1,31 @@
+:root {
+  --wb-connectable-item-horizontal-padding: 0.75rem;
+  --wb-connectable-item-vertical-padding: 0.625rem;
+  --wb-connectable-item-background: var(--ax-ui-bg-tertiary-default);
+  --wb-connectable-item-border-width: 0.0625rem;
+  --wb-connectable-item-border-color: var(--ax-input-stroke-primary-default);
+  --wb-connectable-item-border-radius: 0.375rem;
+}
+
+.connectable-item {
+  composes: ax-public-p11 from global;
+
+  position: relative;
+  display: flex;
+  padding: var(--wb-connectable-item-vertical-padding) var(--wb-connectable-item-horizontal-padding);
+  background-color: var(--wb-connectable-item-background);
+  border: var(--wb-connectable-item-border-width) solid var(--wb-connectable-item-border-color);
+  border-radius: var(--wb-connectable-item-border-radius);
+  justify-content: space-between;
+
+  .handle-container {
+    position: relative;
+
+    &.vertical {
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+    }
+  }
+}

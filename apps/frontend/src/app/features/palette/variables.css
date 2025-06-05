@@ -1,0 +1,4 @@
+:root {
+  --wb-palette-item-outline-color-hover: var(var(--ax-node-stroke-primary-hover));
+  --wb-palette-item-shad-color-hover: rgba(21, 21, 22, 0.1);
+}

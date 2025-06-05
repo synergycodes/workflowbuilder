@@ -1,0 +1,16 @@
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+
+  .text-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+
+    p {
+      margin: 0;
+    }
+  }
+}

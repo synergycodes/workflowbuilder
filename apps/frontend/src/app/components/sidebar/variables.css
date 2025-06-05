@@ -1,0 +1,11 @@
+:root {
+  --wb-sidebar-vertical-padding: 0.75rem;
+  --wb-sidebar-horizontal-padding: 1rem;
+  --wb-sidebar-background: var(--ax-ui-bg-primary-default);
+  --wb-sidebar-text-color: var(--ax-txt-primary-default);
+  --wb-sidebar-border-color: var(--ax-ui-stroke-primary-default);
+  --wb-sidebar-border-radius: 0.75rem;
+  --wb-sidebar-content-gap: 1.25rem;
+
+  --wb-sidebar-expanded-width: 20rem;
+}

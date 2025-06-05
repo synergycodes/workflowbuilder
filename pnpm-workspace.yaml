@@ -1,0 +1,12 @@
+packages:
+  - './apps/*'
+
+catalog:
+  '@phosphor-icons/core': ^2.1.1
+  '@xyflow/react': ^12.3.6
+  'react': ^19.1.0
+  '@types/react': 19.1.8
+  'react-dom': ^19.1.0
+
+useNodeVersion: 22.12.0
+engineStrict: true

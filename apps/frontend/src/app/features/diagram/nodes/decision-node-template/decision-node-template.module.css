@@ -1,0 +1,5 @@
+.decision-node {
+  > div {
+    min-width: max-content;
+  }
+}

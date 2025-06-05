@@ -1,0 +1,36 @@
+:root {
+  --wb-conditions-form-border-color: var(--ax-ui-stroke-primary-default); /* missing token */
+  --wb-conditions-form-border-radius: 0.75rem; /* missing token */
+  --wb-conditions-form-header-color: var(--ax-public-form-label-color);
+
+  --wb-conditions-form-tag-bg-color: var(--ax-chips-neutral-bg);
+}
+
+.container {
+  padding: 0.5rem;
+  border: 1px solid var(--wb-conditions-form-border-color);
+  border-radius: var(--wb-conditions-form-border-radius);
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.375rem;
+  margin-bottom: 0.75rem;
+  font-weight: 600;
+  color: var(--wb-conditions-form-header-color);
+}
+
+.title {
+  line-height: 1;
+}
+
+.tag {
+  composes: ax-public-p10 from global;
+
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.25rem;
+  background-color: var(--wb-conditions-form-tag-bg-color);
+  margin-right: auto;
+}

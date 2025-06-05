@@ -1,0 +1,17 @@
+{
+  "name": "@workflow-builder/tools",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "collect-decision-logs": "tsx ./src/scripts/collect-decision-logs.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "chalk": "^5.4.1",
+    "remeda": "^2.19.2"
+  }
+}

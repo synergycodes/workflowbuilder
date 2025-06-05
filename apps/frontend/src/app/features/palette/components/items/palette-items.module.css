@@ -1,0 +1,19 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  box-sizing: border-box;
+
+  .item {
+    border-radius: 0.75rem;
+    cursor: grab;
+    outline-offset: -1px;
+    outline: 1px solid transparent;
+  }
+
+  .disabled {
+    cursor: default;
+    user-select: none;
+    opacity: 0.5;
+  }
+}

@@ -1,0 +1,78 @@
+.container {
+  background: var(--wb-app-bar-background);
+  border-radius: var(--wb-app-bar-border-radius);
+  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  display: flex;
+  height: auto;
+  padding: 0.75rem 1rem;
+  pointer-events: all;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+
+  .toolbar {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+
+    .logo {
+      color: var(--wb-app-bar-logo-color);
+    }
+
+    .nav-segment {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+  }
+
+  .project-selection {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    .title {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  .controls {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 0.5rem;
+  }
+}
+
+.menu-container {
+  position: relative;
+}
+
+.folder-name {
+  color: var(--wb-app-bar-folder-name-color);
+  composes: ax-public-p9 from global;
+}
+
+.title {
+  color: var(--wb-app-bar-diagram-title-color);
+  composes: ax-public-p9 from global;
+}
+
+.layout-icon-rotate {
+  transform: rotate(90deg);
+}
+
+@media screen and (max-width: 800px) {
+  .container {
+    .project-selection {
+      display: none;
+    }
+  }
+  .title {
+    margin-left: 0.5rem;
+  }
+}

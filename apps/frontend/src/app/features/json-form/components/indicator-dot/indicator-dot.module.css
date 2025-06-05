@@ -1,0 +1,36 @@
+:root {
+  --wb-indicator-dot-size: 0.75rem;
+  --wb-indicator-dot-radius: calc(var(--wb-indicator-dot-size) / 2);
+  --wb-indicator-dot-background-color: var(--ax-colors-orange-400); /* missing token */
+  --wb-indicator-dot-pulse-radius-size: 0.625rem;
+}
+
+.with-indicator-dot {
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    background: var(--wb-indicator-dot-background-color);
+    border-radius: 50%;
+    height: var(--wb-indicator-dot-size);
+    width: var(--wb-indicator-dot-size);
+    animation: pulse 2s infinite;
+    left: calc(-1 * var(--wb-sidebar-horizontal-padding) - var(--wb-indicator-dot-radius));
+    top: calc(50% - var(--wb-indicator-dot-radius));
+  }
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--wb-indicator-dot-background-color);
+  }
+
+  70% {
+    box-shadow: 0 0 0 var(--wb-indicator-dot-pulse-radius-size) transparent;
+  }
+
+  100% {
+    box-shadow: 0 0 0 0 transparent;
+  }
+}

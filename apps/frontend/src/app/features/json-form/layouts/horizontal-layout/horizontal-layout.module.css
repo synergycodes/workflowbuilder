@@ -1,0 +1,10 @@
+.horizontal-layout {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  gap: 0.5rem;
+
+  & > *:last-child {
+    justify-self: end;
+  }
+}

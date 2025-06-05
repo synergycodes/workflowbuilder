@@ -1,0 +1,53 @@
+:root {
+  --wb-branch-card-padding: 0.5rem;
+  --wb-branch-card-border-radius: 0.5rem;
+  --wb-branch-card-border-width: 0.0625rem;
+  --wb-branch-card-border-color: var(--ax-ui-stroke-secondary-default);
+  --wb-branch-card-gap: 0.375rem;
+
+  --wb-branch-card-actions-gap: 0.375rem;
+
+  --wb-branch-card-chip-padding: 0.3125rem 0.375rem;
+  --wb-branch-card-chip-border-radius: 0.25rem;
+  --wb-branch-card-chip-background: var(--ax-ui-stroke-secondary-default);
+  --wb-branch-card-chip-color: var(--ax-chips-acc2-txt);
+  --wb-branch-card-chip-background-no-conditions: var(--ax-chips-acc2-bg);
+  --wb-branch-card-chip-gap: 0.25rem;
+}
+
+.branch-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--wb-branch-card-padding);
+  gap: var(--wb-branch-card-gap);
+  border-radius: var(--wb-branch-card-border-radius);
+  border: var(--wb-branch-card-border-width) solid var(--wb-branch-card-border-color);
+
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    .actions {
+      display: flex;
+      gap: var(--wb-branch-card-actions-gap);
+    }
+  }
+
+  .conditions-chip {
+    display: flex;
+    padding: var(--wb-branch-card-chip-padding);
+    justify-content: center;
+    align-items: center;
+    gap: var(--wb-branch-card-chip-gap);
+    border-radius: var(--wb-branch-card-chip-border-radius);
+    background: var(--wb-branch-card-chip-background);
+
+    &.no-conditions {
+      color: var(--wb-branch-card-chip-color);
+      background: var(--wb-branch-card-chip-background-no-conditions);
+    }
+  }
+}

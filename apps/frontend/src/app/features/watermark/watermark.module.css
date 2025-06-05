@@ -1,0 +1,23 @@
+.watermark {
+  position: absolute;
+  bottom: 1.875rem;
+  right: 1.875rem;
+  height: 3.07vw;
+  min-height: 1.2rem;
+
+  cursor: pointer;
+
+  transition: opacity 0.3s ease;
+  opacity: 0.3;
+  &:hover {
+    opacity: 1;
+  }
+
+  z-index: 5;
+
+  :global(html[data-theme='dark']) & {
+    path {
+      fill: white;
+    }
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "name": "@workflow-builder/types",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint"
+  },
+  "exports": {
+    "./*": "./src/*.ts"
+  },
+  "devDependencies": {
+    "@workflow-builder/icons": "workspace:*",
+    "@phosphor-icons/core": "catalog:",
+    "react": "catalog:",
+    "@types/react": "catalog:",
+    "@xyflow/react": "catalog:"
+  }
+}

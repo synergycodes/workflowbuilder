@@ -1,0 +1,37 @@
+:root {
+  --ax-public-form-label-color: var(--ax-txt-secondary-default);
+  --ax-public-form-label-asterisk-color: var(--ax-txt-error-default);
+}
+
+@layer ui.component {
+  .container {
+    display: flex;
+    gap: 0.25rem;
+    color: var(--ax-public-form-label-color);
+    align-items: center;
+
+    .label {
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: 100%;
+    }
+
+    svg {
+      width: 0.625rem;
+      height: 0.625rem;
+      min-width: 0.625rem;
+
+      color: var(--ax-public-form-label-asterisk-color);
+    }
+  }
+
+  .large {
+    composes: ax-public-p10 from global;
+  }
+
+  .medium,
+  .small {
+    composes: ax-public-p11 from global;
+  }
+}

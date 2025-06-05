@@ -1,0 +1,55 @@
+:root {
+  --wb-loader-background-opacity: 1;
+  --wb-panel-background-color: var(--color-ui-ui--bg--tertiary--default);
+}
+
+.container {
+  display: none;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-color: var(--wb-panel-background-color);
+  z-index: 100;
+
+  &.fade-in {
+    animation: fade-in 0.3s both;
+  }
+
+  &.fade-out {
+    animation: fade-out 0.3s both;
+  }
+
+  .loader {
+    display: flex;
+    align-content: center;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    font-size: 1.25rem;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    display: block;
+    visibility: visible;
+    opacity: 0;
+  }
+
+  to {
+    opacity: var(--wb-loader-background-opacity);
+  }
+}
+
+@keyframes fade-out {
+  from {
+    opacity: var(--wb-loader-background-opacity);
+  }
+
+  to {
+    opacity: 0;
+    visibility: hidden;
+    display: none;
+  }
+}

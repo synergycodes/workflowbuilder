@@ -1,0 +1,49 @@
+{
+  "name": "@workflow-builder/frontend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently 'pnpm typecheck:watch' 'vite'",
+    "build": "vite build",
+    "build:analyze": "ANALYZE=true vite build",
+    "typecheck": "tsc --noEmit",
+    "typecheck:watch": "tsc --noEmit --watch --pretty",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@jsonforms/core": "^3.4.1",
+    "@jsonforms/react": "^3.4.1",
+    "@mui/base": "^5.0.0-beta.62",
+    "@phosphor-icons/react": "^2.1.7",
+    "@synergycodes/axiom": "^1.0.0-beta.19",
+    "@workflow-builder/icons": "workspace:*",
+    "@xyflow/react": "catalog:",
+    "clsx": "^2.1.1",
+    "elkjs": "^0.9.3",
+    "i18next": "^24.2.3",
+    "i18next-browser-languagedetector": "^8.0.5",
+    "immer": "^10.1.1",
+    "notistack": "^3.0.1",
+    "react": "^19.1.0",
+    "react-dom": "catalog:",
+    "react-gtm-module": "^2.0.11",
+    "react-i18next": "^15.4.1",
+    "remeda": "^2.19.2",
+    "web-worker": "^1.5.0",
+    "zustand": "^5.0.1"
+  },
+  "devDependencies": {
+    "@types/react": "catalog:",
+    "@vitejs/plugin-react": "^4.3.4",
+    "@workflow-builder/types": "workspace:*",
+    "eslint-plugin-react": "7.37.2",
+    "eslint-plugin-react-hooks": "5.1.0-rc.1",
+    "vite": "^6.0.7",
+    "vite-bundle-analyzer": "^0.17.1",
+    "vite-plugin-svgr": "^4.3.0",
+    "vitest": "^3.0.4"
+  }
+}

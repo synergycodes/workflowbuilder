@@ -1,0 +1,6 @@
+.accordion-content,
+.accordion-content > div:not([class]) {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

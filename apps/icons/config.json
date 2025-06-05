@@ -1,0 +1,4 @@
+{
+  "sources": ["node_modules/@phosphor-icons/core/assets/regular", "./assets"],
+  "outputDirectory": "./dist"
+}

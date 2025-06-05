@@ -1,0 +1,45 @@
+@layer ui.component {
+  .sidebar {
+    height: min-content;
+    width: auto;
+    position: relative;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: all;
+    border-radius: var(--wb-sidebar-border-radius);
+    background: var(--wb-sidebar-background);
+    color: var(--wb-sidebar-text-color);
+    display: flex;
+    flex-direction: column;
+    padding: var(--wb-sidebar-vertical-padding) 0;
+    gap: var(--wb-sidebar-content-gap);
+    border: 1px solid var(--wb-sidebar-border-color);
+
+    .header,
+    .footer,
+    .content {
+      box-sizing: border-box;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      padding: 0 var(--wb-sidebar-horizontal-padding);
+    }
+
+    .header {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .content {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+    }
+
+    &.expanded {
+      height: 100%;
+      width: var(--wb-sidebar-expanded-width);
+      box-sizing: border-box;
+    }
+  }
+}

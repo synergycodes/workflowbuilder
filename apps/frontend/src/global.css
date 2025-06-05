@@ -1,0 +1,68 @@
+@layer reset, ext-lib, ui;
+
+@import '@synergycodes/axiom/tokens.css';
+
+@layer ui {
+  @layer base, component;
+}
+
+:root {
+  --wb-transition: 0.1s ease-in;
+  --wb-background-color: var(--ax-ui-bg-tertiary-default);
+
+  --wb-scroll-width: 0.375rem;
+  --wb-scroll-radius: 0.625rem;
+  --wb-scroll-thumb-color: var(--ax-scrollbar-bg-default);
+  --wb-scroll-thumb-hover-color: var(--colors-gray-gray-500); /* missing token */
+  --wb-scroll-track-color: transparent;
+}
+
+@layer reset {
+  ::-webkit-scrollbar {
+    width: var(--wb-scroll-width);
+  }
+
+  ::-webkit-scrollbar-track {
+    border-radius: var(--wb-scroll-radius);
+    background: var(--wb-scroll-track-color);
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--wb-scroll-thumb-hover-color);
+  }
+
+  ::-webkit-scrollbar-thumb {
+    border-radius: var(--wb-scroll-radius);
+    background: var(--wb-scroll-thumb-color);
+  }
+
+  input[type='number'],
+  input[type='time'] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+
+  input[type='time']::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+
+  * {
+    font-family: 'Poppins', sans-serif;
+  }
+
+  body {
+    margin: 0;
+    background-color: var(--wb-background-color);
+    overflow: hidden;
+  }
+
+  .react-flow.is-segment-dragged * {
+    cursor: copy;
+  }
+}

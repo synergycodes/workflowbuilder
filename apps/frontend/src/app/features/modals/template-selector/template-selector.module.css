@@ -1,0 +1,38 @@
+:root {
+  --wb-template-title-width: 116px;
+  --wb-template-title-padding: 12px;
+  --wb-template-subtitle-color: var(--ax-colors-gray-500) /* missing token */;
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+
+  .sub-title {
+    text-align: center;
+    color: var(--wb-template-subtitle-color);
+    width: 100%;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+
+    .templates {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap;
+      justify-content: center;
+      max-width: calc((var(--wb-template-title-width) + var(--wb-template-title-padding) * 2) * 3 + 16px);
+    }
+  }
+}

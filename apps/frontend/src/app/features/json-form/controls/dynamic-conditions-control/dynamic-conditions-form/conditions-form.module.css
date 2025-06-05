@@ -1,0 +1,14 @@
+.form {
+  width: 100%;
+}
+
+.controls-container {
+  display: flex;
+  flex-flow: column;
+  gap: 0.375rem;
+}
+
+.add-button {
+  margin-top: 1rem;
+  width: 100%;
+}

@@ -1,0 +1,8 @@
+.container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: var(--ax-token-radius-button-s);
+  outline: 1px dashed var(--ax-ui-stroke-secondary-default);
+  padding: 0.4375rem;
+}

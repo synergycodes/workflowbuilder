@@ -1,0 +1,23 @@
+{
+  "name": "@workflow-builder/icons",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "tsx ./src/generate-icons.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "prepare": "pnpm build"
+  },
+  "devDependencies": {
+    "@phosphor-icons/core": "catalog:",
+    "@svgr/core": "^8.1.0",
+    "@types/react": "catalog:",
+    "react": "catalog:"
+  },
+  "dependencies": {
+    "@types/node": "^22.12.0",
+    "clsx": "^2.1.1"
+  }
+}

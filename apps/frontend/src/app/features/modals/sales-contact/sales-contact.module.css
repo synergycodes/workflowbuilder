@@ -1,0 +1,32 @@
+:root {
+  --wb-sales-contact-color: var(--ax-txt-primary-default);
+  --wb-sales-contact-position-color: var(--ax-txt-secondary-default);
+}
+
+.container {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+
+  .details-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+
+    .details {
+      display: flex;
+      flex-direction: column;
+      color: var(--wb-sales-contact-color);
+
+      .position {
+        color: var(--wb-sales-contact-position-color);
+      }
+    }
+  }
+
+  .buttons {
+    display: flex;
+    gap: 0.625rem;
+  }
+}

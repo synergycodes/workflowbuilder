@@ -1,0 +1,27 @@
+{
+  "compileOnSave": false,
+  "compilerOptions": {
+    "strict": true,
+    "rootDir": ".",
+    "sourceMap": true,
+    "declaration": false,
+    "module": "preserve",
+    "moduleResolution": "bundler",
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "target": "es2015",
+    "lib": ["es2020", "dom", "dom.iterable"],
+    "skipLibCheck": true,
+    "skipDefaultLibCheck": true,
+    "baseUrl": ".",
+    "jsx": "react-jsx",
+    "types": ["node", "../../apps/frontend/global.d.ts"],
+    "paths": {
+      "@/*": ["apps/frontend/src/app/*"],
+      "@/assets/*": ["apps/frontend/src/assets/*"],
+      "@workflow-builder/types/*": ["apps/types/src/*"]
+    }
+  },
+  "exclude": ["node_modules", "tmp"]
+}

@@ -1,0 +1,39 @@
+:root {
+  --wb-conditions-form-inputs-background: var(--ax-ui-bg-secondary-default); /* missing token */
+  --wb-conditions-form-input-background: var(--ax-ui-bg-primary-default); /* missing token */
+  --wb-conditions-form-input-background-destructive: var(--ax-colors-red-400-10); /* missing token */
+}
+
+.container {
+  display: flex;
+  align-items: center;
+  gap: 0.125rem;
+  padding: 0.25rem 0.375rem;
+  border-radius: 0.5rem;
+  background-color: var(--wb-conditions-form-inputs-background);
+
+  &.container-error {
+    background-color: var(--wb-conditions-form-input-background-destructive);
+  }
+}
+
+.inputs-container {
+  display: flex;
+  flex-flow: column;
+  gap: 0.125rem;
+  width: 100%;
+}
+
+.input {
+  background-color: var(--wb-conditions-form-input-background);
+}
+
+.segment-picker-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .segment-picker {
+    width: 150px;
+  }
+}

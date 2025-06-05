@@ -1,0 +1,10 @@
+.group-header {
+  padding: 8px 0;
+}
+
+.group-layout {
+  display: flex;
+  flex-direction: column;
+  padding: 20px 0;
+  gap: 12px;
+}

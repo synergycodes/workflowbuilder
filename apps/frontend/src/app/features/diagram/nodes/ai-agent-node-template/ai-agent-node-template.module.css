@@ -1,0 +1,39 @@
+.header {
+  .icon {
+    background: linear-gradient(158deg, #5360f9 8.25%, #852bec 91.09%), #151516;
+
+    & svg path {
+      stroke: white;
+    }
+  }
+}
+
+.content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+
+  & svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .collapsible-content {
+    padding-bottom: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .selected-model-icon {
+    background-color: var(--ax-txt-primary-default);
+    color: var(--ax-txt-primary-inverse);
+    outline: none;
+  }
+
+  .selected-memory-icon {
+    color: var(--ax-txt-primary-white);
+    background-color: var(--ax-button-gray-bg-default);
+    outline: none;
+  }
+}
