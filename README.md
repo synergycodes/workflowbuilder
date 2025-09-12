@@ -1,3 +1,9 @@
+<img alt="Workflow Builder" src="https://cdn.synergycodes.com/workflow-builder-logo.svg">
+
+Workflow Builder is a frontend-first foundation for creating complex workflow editors. Designed for hassle-free integration with any backend, it delivers everything you need to design workflows faster – from drag-and-drop nodes to customizable layouts.
+
+[![Build](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml/badge.svg)](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml)
+
 # Workflow Builder
 
 ## Table of Contents
