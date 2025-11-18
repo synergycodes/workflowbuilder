@@ -1,4 +1,4 @@
-import { Snackbar } from '@synergycodes/axiom';
+import { Snackbar } from '@synergycodes/overflow-ui';
 import { SnackbarProvider } from 'notistack';
 
 export function SnackbarContainer() {

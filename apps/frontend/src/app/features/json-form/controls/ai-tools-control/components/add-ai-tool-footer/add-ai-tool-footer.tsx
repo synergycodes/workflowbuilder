@@ -1,6 +1,6 @@
 import { FORM_TOOLS_NAME } from '../add-ai-tool-form-content/add-ai-tool-form-content';
 import styles from './add-ai-tool-footer.module.css';
-import { Button } from '@synergycodes/axiom';
+import { Button } from '@synergycodes/overflow-ui';
 
 type Props = {
   onCancelClick: () => void;

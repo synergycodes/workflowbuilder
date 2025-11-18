@@ -1,24 +1,22 @@
 import styles from './ai-tools-control.module.css';
 
 import { PlusCircle, SlidersHorizontal } from '@phosphor-icons/react';
-import { Button } from '@synergycodes/axiom';
+import { Button } from '@synergycodes/overflow-ui';
 import { createControlRenderer } from '../../utils/rendering';
-import { useContext, useCallback } from 'react';
-import { ModalContext } from '@/features/modals/modal-provider';
+import { useCallback } from 'react';
 import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
 import { AiToolsControlProps, AiAgentTool } from '../../types/controls';
 import { toolOptions } from '../../../../data/nodes/ai-agent/select-options';
 import { AddAiToolFormContent } from './components/add-ai-tool-form-content/add-ai-tool-form-content';
 import { AddAiToolFooter } from './components/add-ai-tool-footer/add-ai-tool-footer';
 import { Icon } from '@workflow-builder/icons';
+import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
 
 function hasAnyValue(data: AiAgentTool): boolean {
   return Object.values(data).some((value) => typeof value === 'string' && value.trim() !== '');
 }
 
 function AiToolsControl({ path, handleChange, data }: AiToolsControlProps) {
-  const { openModal, closeModal } = useContext(ModalContext);
-
   const handleSubmit = useCallback(
     (change: AiAgentTool) => {
       if (hasAnyValue(change)) {
@@ -30,7 +28,7 @@ function AiToolsControl({ path, handleChange, data }: AiToolsControlProps) {
       }
       closeModal();
     },
-    [closeModal, data, handleChange, path],
+    [data, handleChange, path],
   );
 
   const openEditorModal = useCallback(
@@ -42,7 +40,7 @@ function AiToolsControl({ path, handleChange, data }: AiToolsControlProps) {
         footer: <AddAiToolFooter onCancelClick={closeModal} />,
       });
     },
-    [closeModal, handleSubmit, openModal],
+    [handleSubmit],
   );
 
   return (

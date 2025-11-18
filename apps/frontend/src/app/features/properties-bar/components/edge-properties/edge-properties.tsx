@@ -1,9 +1,10 @@
 import { WorkflowBuilderEdge } from 'apps/types/src/node-data';
 import useStore from '@/store/store';
-import { Input } from '@synergycodes/axiom';
+import { Input } from '@synergycodes/overflow-ui';
 import styles from './edge-properties.module.css';
 import { useEffect, useState } from 'react';
 import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
+import { OptionalEdgeProperties } from '@/features/plugins-core/components/optional-edge-properties';
 
 type Props = {
   edge: WorkflowBuilderEdge;
@@ -30,9 +31,11 @@ export function EdgeProperties({ edge }: Props) {
 
   return (
     <div className={styles['container']}>
-      <FormControlWithLabel label="Label">
-        <Input value={input || ''} onChange={onChange} disabled={isReadOnlyMode} />
-      </FormControlWithLabel>
+      <OptionalEdgeProperties>
+        <FormControlWithLabel label="Label">
+          <Input value={input || ''} onChange={onChange} disabled={isReadOnlyMode} />
+        </FormControlWithLabel>
+      </OptionalEdgeProperties>
     </div>
   );
 }

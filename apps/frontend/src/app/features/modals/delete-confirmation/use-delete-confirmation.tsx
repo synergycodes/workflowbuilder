@@ -1,10 +1,10 @@
-import { useCallback, useContext } from 'react';
-import { ModalContext } from '../modal-provider';
+import { useCallback } from 'react';
 import { Node, Edge } from '@xyflow/react';
 import { DeleteConfirmation, DeleteConfirmationButtons } from './delete-confirmation';
 import { MinusCircle } from '@phosphor-icons/react';
 import useStore from '@/store/store';
 import { useTranslation } from 'react-i18next';
+import { closeModal, openModal } from '../stores/use-modal-store';
 
 type Props = {
   nodes: Node[];
@@ -14,7 +14,6 @@ type Props = {
 };
 
 export function useDeleteConfirmation() {
-  const { openModal, closeModal } = useContext(ModalContext);
   const shouldSkipShowingConfirmation = useStore((state) => state.shouldSkipShowingConfirmation);
   const setShouldSkipShowDeleteConfirmation = useStore((state) => state.setShouldSkipShowDeleteConfirmation);
   const { t } = useTranslation();
@@ -27,7 +26,7 @@ export function useDeleteConfirmation() {
       onDeleteClick();
       closeModal();
     },
-    [closeModal, setShouldSkipShowDeleteConfirmation],
+    [setShouldSkipShowDeleteConfirmation],
   );
 
   const openDeleteConfirmationModal = useCallback(
@@ -60,7 +59,7 @@ export function useDeleteConfirmation() {
         onModalClosed: onModalClosed,
       });
     },
-    [closeModal, handleDeleteClick, openModal, t, shouldSkipShowingConfirmation],
+    [handleDeleteClick, t, shouldSkipShowingConfirmation],
   );
 
   return { openDeleteConfirmationModal };

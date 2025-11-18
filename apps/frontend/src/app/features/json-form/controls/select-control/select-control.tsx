@@ -1,7 +1,7 @@
 import { SelectControlProps } from '../../types/controls';
 
 import { createControlRenderer } from '../../utils/rendering';
-import { Select, SelectBaseProps } from '@synergycodes/axiom';
+import { Select, SelectBaseProps } from '@synergycodes/overflow-ui';
 import { ControlWrapper } from '../control-wrapper';
 import { PrimitiveFieldSchema } from '@workflow-builder/types/node-schema';
 import { Icon } from '@workflow-builder/icons';

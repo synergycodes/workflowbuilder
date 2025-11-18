@@ -1,5 +1,8 @@
 import { NodeChange, Node } from '@xyflow/react';
-import { addNodeChangedListener, removeNodeChangedListener } from './node-changed-listeners';
+import {
+  addNodeChangedListener,
+  removeNodeChangedListener,
+} from '../features/diagram/listeners/node-changed-listeners';
 
 const FALLBACK_TIMEOUT = 1000;
 

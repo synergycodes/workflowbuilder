@@ -60,10 +60,13 @@
 .title {
   color: var(--wb-app-bar-diagram-title-color);
   composes: ax-public-p9 from global;
-}
+  min-height: 1em;
+  min-width: 1em;
+  cursor: pointer;
 
-.layout-icon-rotate {
-  transform: rotate(90deg);
+  &:empty {
+    border-bottom: 1px dotted currentColor;
+  }
 }
 
 @media screen and (max-width: 800px) {

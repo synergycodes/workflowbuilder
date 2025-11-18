@@ -1,21 +1,12 @@
-import {
-  ForwardedRef,
-  forwardRef,
-  useCallback,
-  useContext,
-  useEffect,
-  useImperativeHandle,
-  useRef,
-  useState,
-} from 'react';
-import { Button } from '@synergycodes/axiom';
+import { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { Button } from '@synergycodes/overflow-ui';
 import { Icon } from '@workflow-builder/icons';
 import { DynamicCondition } from '@/features/json-form/types/controls';
-import { ModalContext } from '@/features/modals/modal-provider';
 import { validateCondition } from '@/features/json-form/utils/conditional-transform';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 import styles from './conditions-form.module.css';
+import { closeModal } from '@/features/modals/stores/use-modal-store';
 
 type ConditionsFormProps = {
   onChange: (value: DynamicCondition[]) => void;
@@ -35,7 +26,6 @@ export interface ConditionsFormHandle {
 
 export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormProps>(
   ({ onChange, value }: ConditionsFormProps, ref: ForwardedRef<ConditionsFormHandle>) => {
-    const { closeModal } = useContext(ModalContext);
     const [shouldShowValidation, setShouldShowValidation] = useState(false);
     const [conditions, setConditions] = useState<Partial<DynamicCondition>[]>(
       value.length > 0 ? value : [emptyCondition],
@@ -78,7 +68,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
       onChange(conditions as DynamicCondition[]);
       closeModal();
-    }, [closeModal, conditions, onChange]);
+    }, [conditions, onChange]);
 
     const lastIndex = conditions.length - 1;
 

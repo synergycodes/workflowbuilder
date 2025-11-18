@@ -1,0 +1,14 @@
+{
+  "plugins": {
+    "help": {
+      "helpSupport": "Pomoc i wsparcie",
+      "header": "Otrzymaj pełny dostęp do produktu",
+      "title": "Skontaktuj się, aby dowiedzieć się więcej",
+      "subtitle": "Uzyskaj szczegółowe informacje o pełnym dostępie.",
+      "tooltipElk": "Odśwież layout",
+      "tooltipUndo": "Cofnij",
+      "tooltipRedo": "Ponów",
+      "tooltipOpen": "Otwórz"
+    }
+  }
+}

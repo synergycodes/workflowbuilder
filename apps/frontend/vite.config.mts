@@ -7,7 +7,14 @@ import { FileReplacement, replaceFiles } from './file-replacement-plugin';
 import { fallbackForMissingPlugin } from './file-fallback-for-missing-plugins';
 import { analyzer } from 'vite-bundle-analyzer';
 
+import {
+  getObfuscationConfig,
+  ObfuscationLevel,
+  viteObfuscatePlugin,
+} from './scripts/vite-obfuscate-plugin/vite-obfuscate-plugin';
+
 export default defineConfig(({ mode }) => {
+  const isProduction = mode === 'production';
   const isAnalyze = process.env.ANALYZE === 'true';
 
   const plugins: PluginOption[] = [];
@@ -16,14 +23,30 @@ export default defineConfig(({ mode }) => {
     plugins.push(analyzer());
   }
 
+  plugins.push(
+    svgr(),
+    react(),
+    replaceFiles([...(fileReplacementsMap[mode as EnvMode] ?? [])]),
+    fallbackForMissingPlugin(),
+  );
+
+  if (isProduction) {
+    plugins.push(
+      viteObfuscatePlugin({
+        include: ['src/**/plugins/**/*.{js,jsx,ts,tsx}'],
+        exclude: [
+          'node_modules/**',
+          '**/*-lazy.tsx', // Obfuscation may destroy imports
+        ],
+        options: getObfuscationConfig(ObfuscationLevel.HEAVY),
+        debugger: !isProduction,
+        apply: isProduction ? 'build' : undefined,
+      }),
+    );
+  }
+
   return {
-    plugins: [
-      ...plugins,
-      svgr(),
-      react(),
-      replaceFiles([...(fileReplacementsMap[mode as EnvMode] ?? [])]),
-      fallbackForMissingPlugin(),
-    ],
+    plugins,
     resolve: {
       alias: {
         '@/assets': path.resolve(import.meta.dirname, './src/assets'),

@@ -1,7 +1,7 @@
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 import i18n from 'i18next';
-import { Snackbar, SnackbarProps } from '@synergycodes/axiom';
-import { DefaultTranslationMap } from '@/i18n/i18next';
+import { Snackbar, SnackbarProps } from '@synergycodes/overflow-ui';
+import { DefaultTranslationMap } from '@/features/i18n/i18next';
 
 const AUTO_HIDE_DURATION_TIME = 3000;
 

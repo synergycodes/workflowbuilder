@@ -1,4 +1,4 @@
-import { Button } from '@synergycodes/axiom';
+import { Button } from '@synergycodes/overflow-ui';
 import { useTranslation } from 'react-i18next';
 
 type Props = {

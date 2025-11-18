@@ -1,5 +1,5 @@
 import { BaseEdge, EdgeProps } from '@xyflow/react';
-import { EdgeState, useEdgeStyle } from '@synergycodes/axiom';
+import { EdgeState, useEdgeStyle } from '@synergycodes/overflow-ui';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { WorkflowBuilderEdge } from '@workflow-builder/types/node-data';
 

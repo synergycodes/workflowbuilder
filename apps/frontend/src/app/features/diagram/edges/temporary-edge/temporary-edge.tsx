@@ -1,5 +1,5 @@
 import { EDGE_CURVE_RADIUS, EDGE_OFFSET } from '../edge.consts';
-import { useEdgeStyle } from '@synergycodes/axiom';
+import { useEdgeStyle } from '@synergycodes/overflow-ui';
 import { BaseEdge, ConnectionLineComponentProps, getSmoothStepPath } from '@xyflow/react';
 
 export function TemporaryEdge({ fromX, fromY, fromPosition, toX, toY, toPosition }: ConnectionLineComponentProps) {

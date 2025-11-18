@@ -20,7 +20,7 @@ export function fallbackForMissingPlugin(): {
           return null;
         } else {
           console.log(`Fallback used for missing plugin ${realPath.replace(import.meta.dirname, '')}`);
-          return path.resolve(import.meta.dirname, 'src/app/features/plugins/utils/missing-plugin.stub.ts');
+          return path.resolve(import.meta.dirname, 'src/app/features/plugins-core/utils/missing-plugin.stub.ts');
         }
       }
       return null;

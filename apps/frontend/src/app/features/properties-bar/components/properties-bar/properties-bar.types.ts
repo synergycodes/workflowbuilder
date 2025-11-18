@@ -26,6 +26,6 @@ export type PropertiesBarProps = PropertiesBarBaseProps & {
   deleteEdgeLabel: string;
   tabs?: PropertiesBarTab[];
   onTabChange: (tab: string) => void;
-  onMenuHeaderClick: () => void;
+  onMenuHeaderClick?: () => void;
   onDeleteClick: () => void;
 };

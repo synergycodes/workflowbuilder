@@ -2,7 +2,7 @@ import clsx from 'clsx';
 import styles from './sidebar.module.css';
 import './variables.css';
 
-import { Separator } from '@synergycodes/axiom';
+import { Separator } from '@synergycodes/overflow-ui';
 
 type SidebarProps = React.HTMLAttributes<HTMLDivElement> & {
   isExpanded: boolean;
@@ -20,8 +20,12 @@ export function Sidebar({ isExpanded, children, className, header, footer, conte
         <>
           <Separator />
           <div className={clsx(styles.content, contentClassName)}>{children}</div>
-          <Separator />
-          <div className={styles.footer}>{footer}</div>
+          {footer && (
+            <>
+              <Separator />
+              <div className={styles.footer}>{footer}</div>
+            </>
+          )}
         </>
       )}
     </div>

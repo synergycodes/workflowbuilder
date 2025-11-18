@@ -8,6 +8,8 @@ import {
 } from '@workflow-builder/types/common';
 import { WorkflowBuilderNode, WorkflowBuilderEdge } from '@workflow-builder/types/node-data';
 import { getEdgeZIndex } from '@/features/diagram/edges/get-edge-z-index';
+import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
 
 export type DiagramState = {
   nodes: WorkflowBuilderNode[];
@@ -19,7 +21,7 @@ export type DiagramState = {
   onConnect: OnConnect;
   onInit: (instance: WorkflowBuilderReactFlowInstance) => void;
   setDocumentName: (name: string) => void;
-  setDiagramModel: (model?: DiagramModel, fitView?: boolean) => void;
+  setDiagramModel: (model?: DiagramModel, options?: { skipIfNotEmpty?: boolean }) => void;
   setToggleReadOnlyMode: (value?: boolean) => void;
   setLayoutDirection: (value: LayoutDirection) => void;
   setConnectionBeingDragged: (nodeId: string | null, handleId: string | null) => void;
@@ -56,20 +58,28 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
         reactFlowInstance: instance,
       });
     },
-    setDiagramModel: async (model?: DiagramModel) => {
-      const nodes = model?.diagram.nodes || [];
+    setDiagramModel: (model?: DiagramModel, options?: { skipIfNotEmpty?: boolean }) => {
+      if (options?.skipIfNotEmpty) {
+        const { documentName, nodes } = get();
+        const isEmpty = !documentName && nodes.length === 0;
+
+        if (!isEmpty) {
+          return;
+        }
+      }
+
+      const nodes = model?.diagram.nodes.map(getNodeWithErrors) || [];
       const edges = model?.diagram.edges || [];
       const documentName = model?.name || 'Untitled';
       const layoutDirection = model?.layoutDirection || 'RIGHT';
 
-      set({
-        nodes,
-        layoutDirection,
-        documentName,
-      });
+      trackFutureChange('setDiagramModel');
 
       set({
-        edges: edges,
+        nodes,
+        edges,
+        layoutDirection,
+        documentName,
       });
     },
     setDocumentName: (name: string) => {

@@ -1,16 +1,16 @@
 import { Handle } from '@xyflow/react';
 import { IconType, LayoutDirection } from '@workflow-builder/types/common';
 import { memo, useMemo } from 'react';
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/axiom';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
 import { Icon } from '@workflow-builder/icons';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 
 import styles from './workflow-node-template.module.css';
-import { withOptionalPlugins } from '@/features/plugins/utils/adapter-components';
+import { withOptionalComponentPlugins } from '@/features/plugins-core/adapters/adapter-components';
 import { NodeData } from '@workflow-builder/types/node-data';
 
-type WorkflowNodeTemplateProps = {
+export type WorkflowNodeTemplateProps = {
   id: string;
   icon: IconType;
   label: string;
@@ -46,21 +46,23 @@ const WorkflowNodeTemplateComponent = memo(
 
     const hasContent = !!children;
 
+    const handlesAlignment = hasContent && layoutDirection === 'RIGHT' ? 'header' : 'center';
+
     return (
       <Collapsible>
         <NodePanel.Root selected={selected} className={styles['content']}>
           <NodePanel.Header>
-            <Status status={isValid === false ? 'invalid' : undefined} />
             <NodeIcon icon={iconElement} />
             <NodeDescription label={label} description={description} />
             {hasContent && <Collapsible.Button />}
           </NodePanel.Header>
-          <NodePanel.Content isVisible={hasContent}>
+          <NodePanel.Content>
+            <Status status={isValid === false ? 'invalid' : undefined} />
             <Collapsible.Content>
               <div className={styles['collapsible']}>{children}</div>
             </Collapsible.Content>
           </NodePanel.Content>
-          <NodePanel.Handles isVisible={showHandles} alignment={hasContent ? 'header' : 'center'}>
+          <NodePanel.Handles isVisible={showHandles} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
           </NodePanel.Handles>
@@ -70,4 +72,4 @@ const WorkflowNodeTemplateComponent = memo(
   },
 );
 
-export const WorkflowNodeTemplate = withOptionalPlugins(WorkflowNodeTemplateComponent, 'WorkflowNodeTemplate');
+export const WorkflowNodeTemplate = withOptionalComponentPlugins(WorkflowNodeTemplateComponent, 'WorkflowNodeTemplate');

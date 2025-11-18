@@ -3,7 +3,7 @@ import * as ReactDOM from 'react-dom/client';
 import TagManager from 'react-gtm-module';
 
 import { App } from './app/app';
-import './app/i18n';
+import './app/features/i18n';
 
 TagManager.initialize({
   gtmId: import.meta.env.GTM_ID,

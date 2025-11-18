@@ -2,3 +2,9 @@
   width: 100vw;
   height: 100vh;
 }
+
+.container {
+  :global(.react-flow__edgelabel-renderer) {
+    z-index: 1001;
+  }
+}

@@ -1,6 +1,6 @@
 @layer reset, ext-lib, ui;
 
-@import '@synergycodes/axiom/tokens.css';
+@import '@synergycodes/overflow-ui/tokens.css';
 
 @layer ui {
   @layer base, component;
@@ -60,6 +60,10 @@
     margin: 0;
     background-color: var(--wb-background-color);
     overflow: hidden;
+  }
+
+  button {
+    cursor: pointer;
   }
 
   .react-flow.is-segment-dragged * {

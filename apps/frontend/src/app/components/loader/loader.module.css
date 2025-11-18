@@ -1,19 +1,15 @@
 :root {
   --wb-loader-background-opacity: 1;
-  --wb-panel-background-color: var(--color-ui-ui--bg--tertiary--default);
+  --wb-panel-background-color: var(--ax-ui-bg-primary-default);
 }
 
 .container {
-  display: none;
   position: absolute;
   width: 100%;
   height: 100%;
   background-color: var(--wb-panel-background-color);
   z-index: 100;
-
-  &.fade-in {
-    animation: fade-in 0.3s both;
-  }
+  animation: fade-in 0.3s both;
 
   &.fade-out {
     animation: fade-out 0.3s both;

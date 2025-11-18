@@ -9,11 +9,12 @@ type Props = {
   innerId: string;
   handleType: HandleType;
   label: string;
+  canHaveBottomHandle?: boolean;
 };
 
-export function ConnectableItem({ label, nodeId, innerId, handleType }: Props) {
+export function ConnectableItem({ label, nodeId, innerId, handleType, canHaveBottomHandle = true }: Props) {
   const layoutDirection = useStore(({ layoutDirection }) => layoutDirection);
-  const isVertical = layoutDirection === 'DOWN';
+  const isVertical = layoutDirection === 'DOWN' && canHaveBottomHandle;
   const position = isVertical ? Position.Bottom : Position.Right;
 
   const handleId = getHandleId({ nodeId, innerId, handleType });

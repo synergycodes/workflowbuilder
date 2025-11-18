@@ -12,7 +12,6 @@
     display: flex;
     flex-direction: column;
     padding: var(--wb-sidebar-vertical-padding) 0;
-    gap: var(--wb-sidebar-content-gap);
     border: 1px solid var(--wb-sidebar-border-color);
 
     .header,
@@ -28,12 +27,23 @@
     .header {
       display: flex;
       gap: 1rem;
+      margin-bottom: var(--wb-sidebar-content-gap);
+
+      &:last-child {
+        margin-bottom: 0;
+      }
     }
 
     .content {
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
+      padding-top: var(--wb-sidebar-content-gap);
+      padding-bottom: var(--wb-sidebar-content-gap);
+    }
+
+    .footer {
+      margin-top: var(--wb-sidebar-content-gap);
     }
 
     &.expanded {

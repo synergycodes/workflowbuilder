@@ -1,4 +1,4 @@
-import { DatePicker, DatePickerProps } from '@synergycodes/axiom';
+import { DatePicker, DatePickerProps } from '@synergycodes/overflow-ui';
 import { DatePickerControlProps } from '../../types/controls';
 import { ControlWrapper } from '../control-wrapper';
 import { createControlRenderer } from '../../utils/rendering';

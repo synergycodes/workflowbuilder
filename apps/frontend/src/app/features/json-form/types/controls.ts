@@ -1,7 +1,7 @@
 import { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
 import { Override } from './utils';
 import { UISchemaControlElement } from './uischema';
-import { InputProps, TextAreaProps } from '@synergycodes/axiom';
+import { InputProps, TextAreaProps } from '@synergycodes/overflow-ui';
 import { FieldSchema } from 'apps/types/src/node-schema';
 import { UISchemaRule } from './rules';
 import { ComparisonOperator, LogicalOperator } from '../utils/conditional-transform';

@@ -1,0 +1,70 @@
+:root {
+  --wb-syntax-highlighter-color: var(--ax-colors-gray-600);
+  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-acc5-700);
+  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-blue-500);
+  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--ax-colors-blue-500);
+}
+
+html[data-theme='light'] {
+  --wb-syntax-highlighter-color: var(--ax-colors-gray-600);
+  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-acc5-700);
+  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-acc1-600);
+  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--ax-txt-secondary-default);
+}
+
+html[data-theme='dark'] {
+  --wb-syntax-highlighter-color: var(--ax-colors-gray-200);
+  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-orange-300);
+  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-acc1-400);
+  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--ax-colors-blue-500);
+}
+
+/* It shows a tooltip indicating that editing is blocked when disabled */
+:global(.ace_tooltip) {
+  display: none !important;
+}
+
+.container {
+  padding: var(--ax-public-input-padding-medium);
+  padding-right: 0;
+  border-radius: var(--ax-public-input-border-radius-medium);
+  border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+  /* border-bottom: 1px solid var(--ax-public-textarea-root-border-color); */
+  /* transition: all var(--ax-public-transition); */
+
+  * {
+    font-family: monospace !important;
+  }
+
+  :global(.ace_editor) {
+    padding: var(--ax-public-input-padding-medium);
+    color: var(--wb-syntax-highlighter-color) !important;
+    background-color: transparent;
+  }
+
+  :global(.ace_variable) {
+    color: var(--wb-syntax-highlighter-color-variable-key) !important;
+  }
+
+  :global(.ace_string),
+  :global(.ace_constant),
+  :global(.ace_numeric) {
+    color: var(--wb-syntax-highlighter-color-variable-value) !important;
+  }
+
+  :global(.ace_cursor) {
+    color: var(--wb-syntax-highlighter-color-cursor) !important;
+  }
+
+  :global(.ace_marker-layer .ace_bracket) {
+    background-color: var(--wb-syntax-highlighter-background-color-highlight) !important;
+  }
+
+  /* Dotted line ruler */
+  :global(.ace_indent-guide) {
+    background: none !important;
+  }
+}

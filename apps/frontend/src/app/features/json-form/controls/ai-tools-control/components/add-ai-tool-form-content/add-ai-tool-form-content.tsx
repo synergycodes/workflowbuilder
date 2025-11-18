@@ -3,7 +3,7 @@ import styles from './add-ai-tool-form-content.module.css';
 import { useCallback, useState } from 'react';
 import { AiAgentTool } from '../../../../types/controls';
 import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
-import { Input, Select, TextArea } from '@synergycodes/axiom';
+import { Input, Select, TextArea } from '@synergycodes/overflow-ui';
 import { toolOptions } from '../../../../../../data/nodes/ai-agent/select-options';
 import { Icon } from '@workflow-builder/icons';
 

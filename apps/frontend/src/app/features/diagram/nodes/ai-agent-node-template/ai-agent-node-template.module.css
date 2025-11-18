@@ -1,11 +1,13 @@
-.header {
-  .icon {
-    background: linear-gradient(158deg, #5360f9 8.25%, #852bec 91.09%), #151516;
+.icon {
+  background: linear-gradient(158deg, #5360f9 8.25%, #852bec 91.09%), #151516;
 
-    & svg path {
-      stroke: white;
-    }
+  & svg path {
+    stroke: white;
   }
+}
+
+.root {
+  --ax-public-node-gap: 0;
 }
 
 .content {
@@ -13,7 +15,7 @@
   flex-direction: column;
   overflow: hidden;
 
-  & svg {
+  & div svg {
     width: 18px;
     height: 18px;
   }

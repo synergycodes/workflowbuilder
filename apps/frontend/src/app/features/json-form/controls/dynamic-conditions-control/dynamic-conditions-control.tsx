@@ -1,19 +1,18 @@
 import clsx from 'clsx';
-import { useCallback, useContext, useMemo, useRef } from 'react';
-import { NavButton, TextArea } from '@synergycodes/axiom';
+import { useCallback, useMemo, useRef } from 'react';
+import { NavButton, TextArea } from '@synergycodes/overflow-ui';
 import { useTranslation } from 'react-i18next';
 import { DynamicCondition, DynamicConditionsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
-import { ModalContext } from '@/features/modals/modal-provider';
 import { ConditionsForm, ConditionsFormHandle } from './dynamic-conditions-form/conditions-form';
 import { Icon } from '@workflow-builder/icons';
 import styles from './dynamic-conditions-control.module.css';
 import { conditionsToDependencies } from '../../utils/conditional-transform';
 import { ConditionModalFooter } from './dynamic-condition-modal-footer/condition-modal-footer';
+import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
 
 function DynamicConditionsControl(props: DynamicConditionsControlProps) {
-  const { openModal, closeModal } = useContext(ModalContext);
   const { data = [], handleChange, path, enabled } = props;
   const formRef = useRef<ConditionsFormHandle>(null);
 
@@ -40,7 +39,7 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
       title: t('title'),
       footer: <ConditionModalFooter closeModal={closeModal} handleConfirm={handleConfirm} />,
     });
-  }, [data, onChange, openModal, closeModal, formRef, handleConfirm, t]);
+  }, [data, onChange, formRef, handleConfirm, t]);
 
   return (
     <div className={styles['container']}>

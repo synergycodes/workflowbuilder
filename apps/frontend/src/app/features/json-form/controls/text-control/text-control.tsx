@@ -1,4 +1,4 @@
-import { Input } from '@synergycodes/axiom';
+import { Input } from '@synergycodes/overflow-ui';
 import { ControlWrapper } from '../control-wrapper';
 import { TextControlProps } from '../../types/controls';
 

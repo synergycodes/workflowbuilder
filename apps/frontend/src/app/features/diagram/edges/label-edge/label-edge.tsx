@@ -70,7 +70,7 @@ export function LabelEdge({
           sourcePosition={sourcePosition}
           targetPosition={targetPosition}
         />
-        {content && <EdgeLabel {...labelProps} labelX={labelX} labelY={selfConnectingLabelY} />}
+        <EdgeLabel {...labelProps} labelX={labelX} labelY={selfConnectingLabelY} />
       </>
     );
   }
@@ -78,7 +78,7 @@ export function LabelEdge({
   return (
     <>
       <BaseEdge id={id} path={edgePath} style={style} />
-      {content && <EdgeLabel {...labelProps} labelX={labelX} labelY={labelY} />}
+      <EdgeLabel {...labelProps} labelX={labelX} labelY={labelY} />
     </>
   );
 }

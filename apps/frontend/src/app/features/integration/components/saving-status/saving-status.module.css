@@ -1,0 +1,65 @@
+:root {
+  --wb-saving-status--in-progress-color: var(--ax-colors-acc1-500); /* missing token */
+  --wb-saving-status--saved-color: var(--ax-input-stroke-primary-success); /* missing token */
+  --wb-saving-status--not-saved-color: var(--ax-input-stroke-primary-error); /* missing token */
+}
+
+.status {
+  position: absolute;
+  top: 0;
+  right: -0.25rem;
+  z-index: 1;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+    background-color: var(--wb-app-bar-background);
+    border-radius: 50%;
+  }
+
+  pointer-events: none;
+}
+
+.status--saving {
+  svg {
+    animation: spin infinite linear 1.3s;
+    color: var(--wb-saving-status--in-progress-color);
+  }
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.status--saved {
+  svg {
+    color: var(--wb-saving-status--saved-color);
+    animation: fade-out 0.5s both;
+    animation-delay: 0.8s;
+  }
+}
+
+.status--not-saved {
+  svg {
+    color: var(--wb-saving-status--not-saved-color);
+    animation: fade-out 0.5s both;
+    animation-delay: 0.8s;
+  }
+}
+
+@keyframes fade-out {
+  0% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  100% {
+    opacity: 0;
+    transform: translateY(-50%);
+  }
+}

@@ -4,18 +4,9 @@ import pluginTypescript from 'typescript-eslint';
 import pluginUnicorn from 'eslint-plugin-unicorn';
 import eslintConfigPrettier from 'eslint-config-prettier';
 
-const restrictedSyntaxOptions = [
-  {
-    selector:
-      "VariableDeclaration[kind='const'] > VariableDeclarator[id.typeAnnotation=undefined] > ArrowFunctionExpression",
-    message: 'const function declarations are only allowed if a type is specified. Use function declarations instead.',
-  },
-];
-
 /** @type {import('eslint').Linter.RulesRecord} */
 const rules = {
   'func-style': ['error', 'declaration', { allowArrowFunctions: true }],
-  'no-restricted-syntax': ['error', ...restrictedSyntaxOptions],
   'unicorn/filename-case': ['error', { case: 'kebabCase' }],
   'unicorn/no-null': 'off', // Disabled for now, but worth considering - https://github.com/sindresorhus/meta/discussions/7
   'unicorn/no-array-callback-reference': 'off',

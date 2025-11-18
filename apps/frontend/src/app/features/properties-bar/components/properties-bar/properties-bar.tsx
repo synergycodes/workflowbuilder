@@ -1,7 +1,7 @@
 import styles from './properties-bar.module.css';
 
-import { SegmentPicker, Button } from '@synergycodes/axiom';
-import { withOptionalPlugins } from '../../../plugins/utils/adapter-components';
+import { SegmentPicker, Button } from '@synergycodes/overflow-ui';
+import { withOptionalComponentPlugins } from '@/features/plugins-core/adapters/adapter-components';
 import { EdgeProperties } from '../edge-properties/edge-properties';
 import { PropertiesBarHeader } from '../header/properties-bar-header';
 import { NodeProperties } from '../node-properties/node-properties';
@@ -91,4 +91,4 @@ function PropertiesBarComponent({
   );
 }
 
-export const PropertiesBar = withOptionalPlugins(PropertiesBarComponent, 'PropertiesBar');
+export const PropertiesBar = withOptionalComponentPlugins(PropertiesBarComponent, 'PropertiesBar');

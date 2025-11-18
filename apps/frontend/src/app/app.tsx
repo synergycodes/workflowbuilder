@@ -1,25 +1,24 @@
+import '../global.css';
 import styles from './app.module.css';
-import { AppBarContainer } from './features/app-bar/app-bar-container';
-import { AppLoaderContainer } from './features/app-loader/app-loader-container';
+// Plugins entry point
+import '@/features/plugins-core/index';
+import { PropsWithChildren } from 'react';
+import { setAutoFreeze } from 'immer';
+import { OptionalHooks } from './features/plugins-core/components/optional-hooks';
+import { AppBarContainerLazy } from './features/app-bar/app-bar-container-lazy';
+import { PropertiesBarContainerLazy } from './features/properties-bar/properties-bar-container-lazy';
+import { AppLoaderContainer } from './features/integration/components/app-loader/app-loader-container';
 import { DiagramContainer as Diagram } from './features/diagram/diagram';
-import { PaletteContainer } from './features/palette/palette-container';
-import { PropertiesBarContainer } from './features/properties-bar/properties-bar-container';
+import { PaletteContainerLazy } from './features/palette/palette-container-lazy';
 import { ReactFlowProvider } from '@xyflow/react';
-import { ZoomProvider } from './providers/zoom-provider';
-import { UndoRedoProvider } from './providers/undo-redo-provider';
-import { MousePositionProvider } from './providers/mouse-position-provider';
 import { DiagramWrapper } from './features/diagram/diagram-wrapper';
 import { SnackbarContainer } from './features/snackbar/snackbar-container';
-import { ModalProvider } from './features/modals/modal-provider';
-import { useDetectLanguageChange } from './i18n/use-detect-language-change';
-import { setAutoFreeze } from 'immer';
+import { useDetectLanguageChange } from './features/i18n/use-detect-language-change';
 
-import './i18n/index';
+import './features/i18n/index';
+import { withIntegration } from './features/integration/components/with-integration';
 
-// Plugins entry point
-import '@/features/plugins/index';
-
-export function App() {
+function AppComponent(_props: PropsWithChildren) {
   useDetectLanguageChange();
 
   // Disable immer's automatic object freezing because ReactFlow mutates objects under the hood
@@ -28,35 +27,32 @@ export function App() {
 
   return (
     <ReactFlowProvider>
-      <ZoomProvider>
-        <UndoRedoProvider>
-          <MousePositionProvider>
-            <ModalProvider>
-              <div className={styles['container']}>
-                <div className={styles['header']}>
-                  <AppBarContainer />
-                </div>
-
-                <div className={styles['content']}>
-                  <div className={styles['panel']}>
-                    <PaletteContainer />
-                  </div>
-                  <div className={styles['panel']}>
-                    <div className={styles['right-panel']}>
-                      <PropertiesBarContainer />
-                    </div>
-                  </div>
-                </div>
-                <DiagramWrapper>
-                  <Diagram />
-                </DiagramWrapper>
-                <SnackbarContainer />
-                <AppLoaderContainer />
-              </div>
-            </ModalProvider>
-          </MousePositionProvider>
-        </UndoRedoProvider>
-      </ZoomProvider>
+      <div className={styles['container']}>
+        <div className={styles['header']}>
+          <AppBarContainerLazy />
+        </div>
+        <div className={styles['content']}>
+          <div className={styles['panel']}>
+            <PaletteContainerLazy />
+          </div>
+          <div className={styles['panel']}>
+            <div className={styles['right-panel']}>
+              <PropertiesBarContainerLazy />
+            </div>
+          </div>
+        </div>
+        <DiagramWrapper>
+          <Diagram />
+        </DiagramWrapper>
+        <SnackbarContainer />
+        <AppLoaderContainer />
+        <OptionalHooks />
+      </div>
     </ReactFlowProvider>
   );
 }
+
+type AppProps = React.ComponentProps<typeof AppComponent>;
+
+// Check app/features/integration/README.md for more information
+export const App = withIntegration<AppProps>(AppComponent);

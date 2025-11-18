@@ -58,6 +58,13 @@ export type PrimitiveFieldSchema = (StringFieldSchema | NumberFieldSchema | Bool
 
 export type FieldSchema = PrimitiveFieldSchema | ArrayFieldSchema | ObjectFieldSchema | DateFieldSchema;
 
+export type FlatError = {
+  keyword: string;
+  instancePath: string;
+  schemaPath: string;
+  message?: string;
+};
+
 export type BaseNodeProperties = {
   label?: string;
   description?: string;

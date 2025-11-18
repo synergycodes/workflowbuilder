@@ -4,8 +4,9 @@ import { JsonFormsReactProps } from '@jsonforms/react';
 import { JSONForm } from '@/features/json-form/json-form';
 import { JsonFormsProps } from '@jsonforms/core';
 import { isDeepEqual } from 'remeda';
-import { memo, useContext } from 'react';
-import { UndoRedoContext } from '@/providers/undo-redo-provider';
+import { memo } from 'react';
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { flatErrors } from '@/utils/validation/flat-errors';
 
 type Props = {
   node: WorkflowBuilderNode;
@@ -15,8 +16,6 @@ export const NodeProperties = memo(({ node }: Props) => {
   const getNodeDefinition = useStore((state) => state.getNodeDefinition);
   const setNodeProperties = useStore((state) => state.setNodeProperties);
   const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
-
-  const { takeSnapshot } = useContext(UndoRedoContext);
 
   const { data, id } = node;
   const { properties, type } = data;
@@ -29,12 +28,11 @@ export const NodeProperties = memo(({ node }: Props) => {
   const { schema, uischema } = nodeDefinition;
 
   const onChange: JsonFormsReactProps['onChange'] = ({ data, errors }) => {
-    /// TODO: Use `errors` to update the validation status of the entire form
-    console.log(errors, 'errors');
+    const flattenErrors = flatErrors(errors);
 
-    if (!isDeepEqual(data, properties)) {
-      takeSnapshot();
-      setNodeProperties(id, data);
+    if (!isDeepEqual({ ...data, errors: flattenErrors }, properties)) {
+      trackFutureChange('dataUpdate');
+      setNodeProperties(id, { ...data, errors: flattenErrors });
     }
   };
 

@@ -1,16 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import styles from './branch-card.module.css';
 import clsx from 'clsx';
-import { NavButton } from '@synergycodes/axiom';
+import { NavButton } from '@synergycodes/overflow-ui';
 import { SlidersHorizontal, Trash } from '@phosphor-icons/react';
-import { useCallback, useContext, useRef } from 'react';
+import { useCallback, useRef } from 'react';
 import {
   ConditionsForm,
   ConditionsFormHandle,
 } from '../../dynamic-conditions-control/dynamic-conditions-form/conditions-form';
 import { DecisionBranch } from '@/features/json-form/types/controls';
-import { ModalContext } from '@/features/modals/modal-provider';
 import { ConditionModalFooter } from '../../dynamic-conditions-control/dynamic-condition-modal-footer/condition-modal-footer';
+import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
 
 type Props = {
   branch: DecisionBranch;
@@ -19,7 +19,6 @@ type Props = {
 };
 
 export function BranchCard({ branch, onUpdate, onRemove }: Props) {
-  const { openModal, closeModal } = useContext(ModalContext);
   const formRef = useRef<ConditionsFormHandle>(null);
   const { t } = useTranslation();
   const { conditions, index } = branch;
@@ -45,7 +44,7 @@ export function BranchCard({ branch, onUpdate, onRemove }: Props) {
         footer: <ConditionModalFooter closeModal={closeModal} handleConfirm={handleConfirm} />,
       });
     },
-    [openModal, t, closeModal, handleConfirm, onUpdate, index],
+    [t, handleConfirm, onUpdate, index],
   );
 
   const onClickEdit = useCallback(() => openEditorModal(branch), [branch, openEditorModal]);

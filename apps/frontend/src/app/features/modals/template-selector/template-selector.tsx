@@ -1,17 +1,27 @@
 import { Tile } from './components/tile';
-import { DiagramModel, TemplateModel } from '@workflow-builder/types/common';
+import { DiagramModel } from '@workflow-builder/types/common';
 import clsx from 'clsx';
-import { Trans } from 'react-i18next';
+import { Trans, useTranslation } from 'react-i18next';
 import styles from './template-selector.module.css';
-import { useTranslation } from 'react-i18next';
+import useStore from '@/store/store';
+import { templates } from '@/data/templates';
+import { useCallback } from 'react';
+import { closeModal } from '../stores/use-modal-store';
+import { useFitView } from '@/hooks/use-fit-view';
 
-type TemplateSelectorProps = {
-  data: TemplateModel[];
-  selectTemplate: (model?: DiagramModel) => void;
-};
-
-export function TemplateSelector({ data, selectTemplate }: TemplateSelectorProps) {
+export function TemplateSelector() {
   const { t } = useTranslation();
+  const setDiagramModel = useStore((store) => store.setDiagramModel);
+  const fitView = useFitView();
+
+  const selectTemplate = useCallback(
+    (model?: DiagramModel) => {
+      setDiagramModel(model);
+      fitView();
+      closeModal();
+    },
+    [setDiagramModel, fitView],
+  );
 
   return (
     <div className={styles['container']}>
@@ -22,7 +32,7 @@ export function TemplateSelector({ data, selectTemplate }: TemplateSelectorProps
       </section>
       <section className={styles['content']}>
         <div className={styles['templates']}>
-          {data.map(({ icon, id, name, value }) => (
+          {templates.map(({ icon, id, name, value }) => (
             <Tile
               icon={icon}
               key={id}
