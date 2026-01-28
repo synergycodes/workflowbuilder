@@ -28,14 +28,16 @@ If you want to see how the plugin logic works in a smaller example, we have prep
 
 1. Create your plugin directory, for example: `plugins/example`.
 2. Add your `<ExampleComponent />` to `plugins/example/components/example-component.tsx`.
-3. In `plugins/example/plugin-component` import dependencies and add:
+3. In `plugins/example/plugin-exports` import dependencies and add:
+
 ```ts
 registerComponentDecorator('OptionalFooterContent', {
   content: ExampleComponent,
   place: 'after',
 });
 ```
-4. Import your plugin to `apps/frontend/src/app/features/plugins-core/components.ts` with line `import '@/features/example/plugin-components';`
+
+4. Import your plugin to `apps/frontend/src/app/features/plugins-core/index.ts` with line `import '@/plugins/example/plugin-exports';`
 5. Refresh the page.
 
 Your component should now be displayed in the left sidebar (palette) footer.
@@ -43,6 +45,10 @@ Your component should now be displayed in the left sidebar (palette) footer.
 ### How to remove plugin?
 
 Simply remove the folder of your plugin and restart the application. It will still work with empty stubs instead of registration.
+
+#### How to remove "Fallback used for missing plugin..."?
+
+Go to `apps/frontend/src/app/features/plugins-core/index.ts` and remove the import there.
 
 ### How do I change the position of a plugin?
 
@@ -52,11 +58,11 @@ You have place and priority. Set place: 'before' to add your component before th
 registerComponentDecorator('OptionalFooterContent', {
   content: ExampleComponent,
   place: 'after',
-  priority: 1
+  priority: 1,
 });
 ```
 
-### How to modify properties with an optional plugin? 
+### How to modify properties with an optional plugin?
 
 With the modifyProps property, you can change the properties passed to the plugin. For example, below we added a new label type dottedEdge to the diagram.
 
@@ -73,3 +79,59 @@ registerComponentDecorator<DiagramContainerProps>('DiagramContainer', {
   }),
 });
 ```
+
+### How to check if a plugin was added?
+
+Set the `name` property for the injected content:
+
+```tsx
+registerComponentDecorator('OptionalAppBarControls', {
+  content: TreeButton,
+  place: 'before',
+  name: 'TreeButton',
+});
+```
+
+Use the `name` property:
+
+```ts
+const wasTreePluginAdded = hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton');
+```
+
+### How to add a plugin conditionally?
+
+In your `plugin-exports.ts` file, you can add an if statement.
+
+```tsx
+if (SHOULD_ADD_TREE_BUTTON === true) {
+  registerComponentDecorator('OptionalAppBarControls', {
+    content: TreeButton,
+    place: 'before',
+  });
+}
+```
+
+### How to add a plugin conditionally if another plugin was added earlier?
+
+Set `name` property.
+
+```tsx
+registerComponentDecorator('OptionalAppBarControls', {
+  content: TreeButton,
+  place: 'before',
+  name: 'TreeButton',
+});
+```
+
+Use `name` property.
+
+```tsx
+if (hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton')) {
+  registerComponentDecorator('OptionalAppBarControls', {
+    content: SecondTreeButton,
+    place: 'before',
+  });
+}
+```
+
+The order in which plugins are imported in @features/plugins-core/index is important.

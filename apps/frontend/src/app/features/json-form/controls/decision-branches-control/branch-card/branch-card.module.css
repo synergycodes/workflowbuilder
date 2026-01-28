@@ -44,6 +44,7 @@
     gap: var(--wb-branch-card-chip-gap);
     border-radius: var(--wb-branch-card-chip-border-radius);
     background: var(--wb-branch-card-chip-background);
+    border: none;
 
     &.no-conditions {
       color: var(--wb-branch-card-chip-color);

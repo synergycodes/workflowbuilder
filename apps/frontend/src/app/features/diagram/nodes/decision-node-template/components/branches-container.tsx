@@ -1,11 +1,15 @@
+import clsx from 'clsx';
+import { useTranslation } from 'react-i18next';
+
+import { LayoutDirection } from '@workflow-builder/types/common';
+
+import styles from './branches-container.module.css';
+
 import { DecisionBranch } from '@/features/json-form/types/controls';
+
 import { ConnectableItem } from '../../components/connectable-item/connectable-item';
 import { NodeSection } from '../../components/node-section/node-section';
 import { PlaceholderButton } from '../../components/placeholder-button/placeholder-button';
-import { useTranslation } from 'react-i18next';
-import { LayoutDirection } from '@workflow-builder/types/common';
-import styles from './branches-container.module.css';
-import clsx from 'clsx';
 
 type Props = {
   nodeId: string;
@@ -23,10 +27,10 @@ export function BranchesContainer({ nodeId, decisionBranches, layoutDirection }:
   return (
     <NodeSection label={t('branches')}>
       <div className={clsx(styles['branches-container'], { [styles['vertical']]: isListVertical })}>
-        {decisionBranches.map(({ index }) => (
+        {decisionBranches.map(({ index, label }) => (
           <ConnectableItem
             key={index}
-            label={t('branch', { index })}
+            label={label || t('branch', { index })}
             nodeId={nodeId}
             innerId={index.toString()}
             handleType="source"

@@ -1,13 +1,16 @@
+import { Button, SegmentPicker } from '@synergycodes/overflow-ui';
+
 import styles from './properties-bar.module.css';
 
-import { SegmentPicker, Button } from '@synergycodes/overflow-ui';
+import { Sidebar } from '@/components/sidebar/sidebar';
+
 import { withOptionalComponentPlugins } from '@/features/plugins-core/adapters/adapter-components';
+
 import { EdgeProperties } from '../edge-properties/edge-properties';
 import { PropertiesBarHeader } from '../header/properties-bar-header';
 import { NodeProperties } from '../node-properties/node-properties';
-import { Sidebar } from '@/components/sidebar/sidebar';
-import { renderComponent } from './render-component';
 import { PropertiesBarItem, PropertiesBarProps } from './properties-bar.types';
+import { renderComponent } from './render-component';
 
 /**
  * PropertiesBarComponent - A configurable sidebar component for displaying and editing

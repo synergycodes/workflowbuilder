@@ -1,7 +1,7 @@
 import clsx from 'clsx';
-import styles from './icon-placeholder.module.css';
-
 import { PropsWithChildren } from 'react';
+
+import styles from './icon-placeholder.module.css';
 
 type Props = {
   className?: string;

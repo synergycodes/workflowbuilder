@@ -1,6 +1,8 @@
-import useStore from '@/store/store';
-import { useRef, DragEvent } from 'react';
+import { DragEvent, useRef } from 'react';
+
 import { dataFormat } from '@/utils/consts';
+
+import useStore from '@/store/store';
 
 export function usePaletteDragAndDrop(canDrag: boolean) {
   const setDraggedItem = useStore((state) => state.setDraggedItem);

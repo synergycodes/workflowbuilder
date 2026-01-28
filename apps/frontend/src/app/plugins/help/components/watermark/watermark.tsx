@@ -1,5 +1,6 @@
-import WatermarkImage from '../../assets/watermark.svg?react';
 import styles from './watermark.module.css';
+
+import WatermarkImage from '../../assets/watermark.svg?react';
 
 export function Watermark() {
   return (

@@ -1,5 +1,5 @@
-import { EdgeLabelRenderer } from '@xyflow/react';
 import { EdgeLabel as Label } from '@synergycodes/overflow-ui';
+import { EdgeLabelRenderer } from '@xyflow/react';
 import { CSSProperties } from 'react';
 
 type EdgeLabelProps = {

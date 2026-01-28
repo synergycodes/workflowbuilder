@@ -1,10 +1,11 @@
 import { Accordion } from '@synergycodes/overflow-ui';
-import { AccordionLayoutElement, LayoutProps } from '../../types/layouts';
-import { LayoutWrapper } from '../layout-wrapper';
-import { createLayoutRenderer } from '../../utils/rendering';
-import { renderElements } from '../render-elements';
 
 import styles from './accordion-layout.module.css';
+
+import { AccordionLayoutElement, LayoutProps } from '../../types/layouts';
+import { createLayoutRenderer } from '../../utils/rendering';
+import { LayoutWrapper } from '../layout-wrapper';
+import { renderElements } from '../render-elements';
 
 function AccordionLayout(props: LayoutProps<AccordionLayoutElement>) {
   const { uischema } = props;

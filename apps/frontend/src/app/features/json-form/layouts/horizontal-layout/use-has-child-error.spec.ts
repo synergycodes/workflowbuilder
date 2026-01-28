@@ -1,7 +1,8 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { useHasChildError } from './use-has-child-error';
 import { useJsonForms } from '@jsonforms/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
+import { useHasChildError } from './use-has-child-error';
 
 vi.mock('@jsonforms/react', () => ({
   useJsonForms: vi.fn(),

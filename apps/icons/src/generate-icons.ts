@@ -1,9 +1,10 @@
 import { execSync } from 'node:child_process';
 import { readdirSync } from 'node:fs';
-import { createIconEntry } from './create-icon-entry';
-import { outputDirectory, sources } from '../config.json';
 import { mkdirSync, rmSync } from 'node:fs';
 import path from 'node:path';
+
+import { outputDirectory, sources } from '../config.json';
+import { createIconEntry } from './create-icon-entry';
 
 generateIcons();
 

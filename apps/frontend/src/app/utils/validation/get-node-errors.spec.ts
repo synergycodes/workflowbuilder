@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+
 import { getNodeErrors } from './get-node-errors';
 import { mockNodeDelay } from './get-node-errors.mock';
 

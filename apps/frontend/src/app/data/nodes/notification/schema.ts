@@ -1,6 +1,7 @@
-import { sharedProperties } from '../shared/shared-properties';
-import { statusOptions } from '../shared/general-information';
 import { NodeSchema } from '@workflow-builder/types/node-schema';
+
+import { statusOptions } from '../shared/general-information';
+import { sharedProperties } from '../shared/shared-properties';
 
 export const notificationTypeOptions = {
   email: { label: 'Email', value: 'email', icon: 'EnvelopeSimple' },

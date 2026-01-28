@@ -1,8 +1,9 @@
 import styles from './vertical-layout.module.css';
-import { LayoutWrapper } from '../layout-wrapper';
-import { renderElements } from '../render-elements';
+
 import { LayoutProps, VerticalLayoutElement } from '../../types/layouts';
 import { createLayoutRenderer } from '../../utils/rendering';
+import { LayoutWrapper } from '../layout-wrapper';
+import { renderElements } from '../render-elements';
 
 function VerticalLayout(props: LayoutProps<VerticalLayoutElement>) {
   return (

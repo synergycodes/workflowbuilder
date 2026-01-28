@@ -1,0 +1,12 @@
+.item {
+  border-radius: 0.75rem;
+  cursor: grab;
+  outline-offset: -1px;
+  outline: 1px solid transparent;
+}
+
+.disabled {
+  cursor: default;
+  user-select: none;
+  opacity: 0.5;
+}

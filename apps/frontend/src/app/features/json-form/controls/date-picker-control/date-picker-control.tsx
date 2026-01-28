@@ -1,7 +1,8 @@
 import { DatePicker, DatePickerProps } from '@synergycodes/overflow-ui';
+
 import { DatePickerControlProps } from '../../types/controls';
-import { ControlWrapper } from '../control-wrapper';
 import { createControlRenderer } from '../../utils/rendering';
+import { ControlWrapper } from '../control-wrapper';
 
 function DatePickerControl(props: DatePickerControlProps) {
   const { data, handleChange, path, enabled } = props;

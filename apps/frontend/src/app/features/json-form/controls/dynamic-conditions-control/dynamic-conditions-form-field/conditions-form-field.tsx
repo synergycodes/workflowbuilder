@@ -1,22 +1,25 @@
+import { Input, NavButton, SegmentPicker, Select } from '@synergycodes/overflow-ui';
 import clsx from 'clsx';
-import { useTranslation } from 'react-i18next';
-import { Input, Select, NavButton, SegmentPicker } from '@synergycodes/overflow-ui';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+
 import { Icon } from '@workflow-builder/icons';
+
 import styles from './conditions-form-field.module.css';
-import { comparisonsOperators, validateCondition } from '@/features/json-form/utils/conditional-transform';
+
 import { DynamicCondition } from '@/features/json-form/types/controls';
+import { comparisonsOperators, validateCondition } from '@/features/json-form/utils/conditional-transform';
 
 type ConditionsFormFieldProps = {
   condition: Partial<DynamicCondition>;
   onRemove: () => void;
   onChange: (condition: DynamicCondition) => void;
-  isLast?: boolean;
+  shouldShowOperator?: boolean;
   shouldShowValidation?: boolean;
 };
 
 export function ConditionsFormField(props: ConditionsFormFieldProps) {
-  const { condition, onChange, onRemove, isLast, shouldShowValidation } = props;
+  const { condition, onChange, onRemove, shouldShowOperator = false, shouldShowValidation } = props;
 
   const { t } = useTranslation();
 
@@ -41,6 +44,19 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
 
   return (
     <>
+      {shouldShowOperator && (
+        <div className={styles['segment-picker-container']}>
+          <SegmentPicker
+            className={styles['segment-picker']}
+            size="xx-small"
+            value={condition.logicalOperator || 'AND'}
+            onChange={(_, value) => handleChange('logicalOperator', value)}
+          >
+            <SegmentPicker.Item value="AND">{t('conditions.compare.all')}</SegmentPicker.Item>
+            <SegmentPicker.Item value="OR">{t('conditions.compare.one')}</SegmentPicker.Item>
+          </SegmentPicker>
+        </div>
+      )}
       <div
         className={clsx(styles['container'], {
           [styles['container-error']]: shouldShowValidation && (!condition.x || !condition.y),
@@ -77,19 +93,6 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
           <Icon name="X" />
         </NavButton>
       </div>
-      {!isLast && (
-        <div className={styles['segment-picker-container']}>
-          <SegmentPicker
-            className={styles['segment-picker']}
-            size="xx-small"
-            value={condition.logicalOperator || 'AND'}
-            onChange={(_, value) => handleChange('logicalOperator', value)}
-          >
-            <SegmentPicker.Item value="AND">{t('conditions.compare.and')}</SegmentPicker.Item>
-            <SegmentPicker.Item value="OR">{t('conditions.compare.or')}</SegmentPicker.Item>
-          </SegmentPicker>
-        </div>
-      )}
     </>
   );
 }

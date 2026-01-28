@@ -1,5 +1,6 @@
-import { NodeData, WorkflowBuilderNode } from '@workflow-builder/types/node-data';
 import { NodeAddChange, XYPosition } from '@xyflow/react';
+
+import { NodeData, WorkflowBuilderNode } from '@workflow-builder/types/node-data';
 import { NodeType } from '@workflow-builder/types/node-types';
 
 export function getNodeAddChange(

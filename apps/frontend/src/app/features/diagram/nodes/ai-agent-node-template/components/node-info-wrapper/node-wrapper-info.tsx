@@ -1,5 +1,6 @@
-import styles from './node-wrapper-info.module.css';
 import { PropsWithChildren } from 'react';
+
+import styles from './node-wrapper-info.module.css';
 
 export function NodeInfoWrapper({ label, children }: PropsWithChildren<{ label: string }>) {
   return (

@@ -1,7 +1,7 @@
+import { FooterVariant, Modal } from '@synergycodes/overflow-ui';
+import { ComponentProps } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
-import { ComponentProps } from 'react';
-import { FooterVariant, Modal } from '@synergycodes/overflow-ui';
 
 type ModalProps = {
   content: ComponentProps<typeof Modal>['children'];

@@ -1,7 +1,8 @@
-import { CSSProperties, memo } from 'react';
 import { clsx } from 'clsx';
-import styles from './loader.module.css';
+import { CSSProperties, memo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import styles from './loader.module.css';
 
 type LoaderType = {
   isLoading?: boolean;

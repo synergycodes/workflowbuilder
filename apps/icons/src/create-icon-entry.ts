@@ -1,4 +1,5 @@
 import { writeFileSync } from 'node:fs';
+
 import { outputDirectory } from '../config.json';
 
 const REACT_IMPORT_CODE = "import React from 'react';";

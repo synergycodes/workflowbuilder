@@ -1,9 +1,13 @@
-import { simpleFlow } from './templates/simple-flow';
-import { userRegistration } from './templates/user-registration';
+import { TemplateModel } from '@workflow-builder/types/common';
+
+import { snapToGridIfNeeded } from '@/utils/position-utils';
+
+import { withOptionalFunctionPlugins } from '@/features/plugins-core/adapters/adapter-functions';
+
 import { blackFriday } from './templates/black-friday';
 import { callFlow } from './templates/call-flow';
-import { TemplateModel } from '@workflow-builder/types/common';
-import { snapToGridIfNeeded } from '@/utils/position-utils';
+import { simpleFlow } from './templates/simple-flow';
+import { userRegistration } from './templates/user-registration';
 
 function snapTemplateToGrid(template: TemplateModel) {
   return {
@@ -21,4 +25,10 @@ function snapTemplateToGrid(template: TemplateModel) {
   };
 }
 
-export const templates: TemplateModel[] = [simpleFlow, userRegistration, blackFriday, callFlow].map(snapTemplateToGrid);
+function getTemplatesFunction(): TemplateModel[] {
+  return [simpleFlow, userRegistration, blackFriday, callFlow];
+}
+
+const getTemplates = withOptionalFunctionPlugins(getTemplatesFunction, 'getTemplates');
+
+export const templates: TemplateModel[] = getTemplates().map(snapTemplateToGrid);

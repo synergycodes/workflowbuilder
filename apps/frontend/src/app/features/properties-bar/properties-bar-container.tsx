@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { useRemoveElements } from '@/hooks/use-remove-elements';
 import { useTranslation } from 'react-i18next';
+
 import { useSingleSelectedElement } from '@/features/properties-bar/use-single-selected-element';
+
+import { useRemoveElements } from '@/hooks/use-remove-elements';
+
 import { PropertiesBar } from './components/properties-bar/properties-bar';
 
 export function PropertiesBarContainer() {

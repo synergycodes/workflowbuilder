@@ -1,14 +1,17 @@
+import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
+import { Node, NodeProps, Position } from '@xyflow/react';
+import { memo, useMemo } from 'react';
+
+import { NodeData } from '@workflow-builder/types/node-data';
+
+import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+
 import useStore from '@/store/store';
 
-import { NodeProps, Position, Node } from '@xyflow/react';
-import { NodeData } from '@workflow-builder/types/node-data';
-import { memo, useMemo } from 'react';
-import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
-import { AiAgentNodeTemplate } from './ai-agent-node-template/ai-agent-node-template';
 import { AiAgentNodeSchema } from '../../../data/nodes/ai-agent/schema';
-import { NodeDataProperties } from '../../json-form/types/default-properties';
 import { chatModelOptions, memoryOptions } from '../../../data/nodes/ai-agent/select-options';
-import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+import { NodeDataProperties } from '../../json-form/types/default-properties';
+import { AiAgentNodeTemplate } from './ai-agent-node-template/ai-agent-node-template';
 
 type Props = NodeProps<Node<NodeData<NodeDataProperties<AiAgentNodeSchema>>>>;
 

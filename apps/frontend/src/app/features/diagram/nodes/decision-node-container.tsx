@@ -1,15 +1,19 @@
+import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
+import { Node, NodeProps } from '@xyflow/react';
+import { memo } from 'react';
+
+import { NodeData } from '@workflow-builder/types/node-data';
+
+import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+
 import useStore from '@/store/store';
 
-import { memo } from 'react';
-import { NodeProps, Node } from '@xyflow/react';
-import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
-import { DecisionNodeTemplate } from './decision-node-template/decision-node-template';
-import { DecisionNodeSchema } from '../../../data/nodes/decision/schema';
-import { NodeDataProperties } from '@/features/json-form/types/default-properties';
-import { NodeData } from '@workflow-builder/types/node-data';
 import { DecisionBranch } from '@/features/json-form/types/controls';
+import { NodeDataProperties } from '@/features/json-form/types/default-properties';
+
+import { DecisionNodeSchema } from '../../../data/nodes/decision/schema';
 import { getHandlePosition } from '../handles/get-handle-position';
-import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+import { DecisionNodeTemplate } from './decision-node-template/decision-node-template';
 
 type Props = NodeProps<Node<NodeData<NodeDataProperties<DecisionNodeSchema>>>>;
 

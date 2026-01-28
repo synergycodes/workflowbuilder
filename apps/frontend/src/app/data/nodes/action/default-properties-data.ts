@@ -1,4 +1,5 @@
 import { NodeDataProperties } from '@/features/json-form/types/default-properties';
+
 import { ActionNodeSchema } from './schema';
 
 export const defaultPropertiesData: NodeDataProperties<ActionNodeSchema> = {

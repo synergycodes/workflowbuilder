@@ -1,4 +1,5 @@
 import { ItemOption } from '@workflow-builder/types/node-schema';
+
 export const toolOptions = {
   gmail: { label: 'Gmail', value: 'gmail', icon: 'GoogleLogo' },
   excel: { label: 'Excel', value: 'excel', icon: 'MicrosoftExcelLogo' },

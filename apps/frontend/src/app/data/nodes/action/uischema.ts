@@ -1,22 +1,24 @@
 import { PaletteItem } from '@workflow-builder/types/common';
-import {
-  actionTypeOptions,
-  priorityOptions,
-  dataSourceOptions,
-  objectTypeOptions,
-  httpMethodOptions,
-  expectedResponseOptions,
-  storeResponseOptions,
-  assignOptions,
-  scriptOptions,
-  templateOptions,
-  outputFormatOptions,
-  saveLocationOptions,
-  ActionNodeSchema,
-} from './schema';
-import { generalInformation } from '../shared/general-information';
+
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
+
+import { generalInformation } from '../shared/general-information';
+import {
+  ActionNodeSchema,
+  actionTypeOptions,
+  assignOptions,
+  dataSourceOptions,
+  expectedResponseOptions,
+  httpMethodOptions,
+  objectTypeOptions,
+  outputFormatOptions,
+  priorityOptions,
+  saveLocationOptions,
+  scriptOptions,
+  storeResponseOptions,
+  templateOptions,
+} from './schema';
 
 const scope = getScope<ActionNodeSchema>;
 

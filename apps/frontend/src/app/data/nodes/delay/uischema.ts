@@ -1,8 +1,10 @@
-import { UISchema } from '@/features/json-form/types/uischema';
-import { generalInformation } from '../shared/general-information';
 import { PaletteItem } from '@workflow-builder/types/common';
-import { DelayNodeSchema } from './schema';
+
+import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
+
+import { generalInformation } from '../shared/general-information';
+import { DelayNodeSchema } from './schema';
 import { delayTypeOptions } from './select-options';
 
 const scope = getScope<DelayNodeSchema>;

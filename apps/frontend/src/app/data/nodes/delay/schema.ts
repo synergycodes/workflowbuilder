@@ -1,8 +1,9 @@
-import { sharedProperties } from '../shared/shared-properties';
-import { statusOptions } from '../shared/general-information';
 import { NodeSchema } from '@workflow-builder/types/node-schema';
-import { delayTypeOptions, timeUnitsOptions, maxWaitTimeOptions } from './select-options';
+
+import { statusOptions } from '../shared/general-information';
+import { sharedProperties } from '../shared/shared-properties';
 import { conditionalValidation } from './conditional-validation';
+import { delayTypeOptions, maxWaitTimeOptions, timeUnitsOptions } from './select-options';
 
 export const schema = {
   required: ['label', 'description', 'type', 'status'],

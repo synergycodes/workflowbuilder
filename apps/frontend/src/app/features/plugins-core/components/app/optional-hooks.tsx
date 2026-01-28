@@ -1,4 +1,4 @@
-import { withOptionalComponentPlugins } from '../adapters/adapter-components';
+import { withOptionalComponentPlugins } from '../../adapters/adapter-components';
 
 function OptionalHooksComponent() {
   return null;

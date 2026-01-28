@@ -1,11 +1,14 @@
+import { SnackbarType } from '@synergycodes/overflow-ui';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import { IntegrationDataFormat } from '../types';
-import { setStoreDataFromIntegration } from '@/store/slices/diagram-slice/actions';
 import { showSnackbar } from '@/utils/show-snackbar';
-import { SnackbarType } from '@synergycodes/overflow-ui';
+
+import { setStoreDataFromIntegration } from '@/store/slices/diagram-slice/actions';
+
 import { openTemplateSelectorModal } from '@/features/modals/template-selector/open-template-selector-modal';
+
+import { IntegrationDataFormat } from '../types';
 
 type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
 

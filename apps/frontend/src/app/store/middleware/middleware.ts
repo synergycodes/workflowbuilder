@@ -1,4 +1,4 @@
-import { SetDiagramState, GetDiagramState, WorkflowEditorState } from '@/store/store';
+import { GetDiagramState, SetDiagramState, WorkflowEditorState } from '@/store/store';
 
 /**
  * @param state - current state of the store, this property should not be modified.

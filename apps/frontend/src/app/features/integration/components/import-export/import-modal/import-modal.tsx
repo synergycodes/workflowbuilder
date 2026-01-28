@@ -1,18 +1,20 @@
+import { Button, SnackbarType } from '@synergycodes/overflow-ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, SnackbarType } from '@synergycodes/overflow-ui';
 
 import { Icon } from '@workflow-builder/icons';
+
+import styles from '../import-export-modal.module.css';
+
 import { showSnackbar } from '@/utils/show-snackbar';
 
 import { setStoreDataFromIntegration } from '@/store/slices/diagram-slice/actions';
-import { SyntaxHighlighterLazy } from '@/features/syntax-highlighter/components/syntax-highlighter-lazy';
 
-import styles from '../import-export-modal.module.css';
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
 import { IntegrationDataError, validateIntegrationData } from '@/features/integration/utils/validate-integration-data';
 import { closeModal } from '@/features/modals/stores/use-modal-store';
-import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { SyntaxHighlighterLazy } from '@/features/syntax-highlighter/components/syntax-highlighter-lazy';
 
 export function ImportModal() {
   const [jsonToParse, setJsonToParse] = useState('{}');

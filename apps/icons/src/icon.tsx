@@ -1,7 +1,9 @@
 import clsx from 'clsx';
 import { Suspense } from 'react';
-import { type WBIcon, iconMap } from '../dist';
+
 import styles from './icon.module.css';
+
+import { type WBIcon, iconMap } from '../dist';
 
 type IconProps = {
   name: WBIcon;

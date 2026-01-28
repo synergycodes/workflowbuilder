@@ -1,5 +1,6 @@
 import { PropsWithChildren } from 'react';
-import { withOptionalComponentPlugins } from '../adapters/adapter-components';
+
+import { withOptionalComponentPlugins } from '../../adapters/adapter-components';
 
 function OptionalWrapper({ children }: PropsWithChildren) {
   return children;

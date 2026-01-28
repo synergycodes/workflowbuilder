@@ -1,22 +1,25 @@
+import { ReactFlowProvider } from '@xyflow/react';
+import { setAutoFreeze } from 'immer';
+import { PropsWithChildren } from 'react';
+
 import '../global.css';
 import styles from './app.module.css';
+
 // Plugins entry point
 import '@/features/plugins-core/index';
-import { PropsWithChildren } from 'react';
-import { setAutoFreeze } from 'immer';
-import { OptionalHooks } from './features/plugins-core/components/optional-hooks';
-import { AppBarContainerLazy } from './features/app-bar/app-bar-container-lazy';
-import { PropertiesBarContainerLazy } from './features/properties-bar/properties-bar-container-lazy';
-import { AppLoaderContainer } from './features/integration/components/app-loader/app-loader-container';
-import { DiagramContainer as Diagram } from './features/diagram/diagram';
-import { PaletteContainerLazy } from './features/palette/palette-container-lazy';
-import { ReactFlowProvider } from '@xyflow/react';
-import { DiagramWrapper } from './features/diagram/diagram-wrapper';
-import { SnackbarContainer } from './features/snackbar/snackbar-container';
-import { useDetectLanguageChange } from './features/i18n/use-detect-language-change';
 
+import { AppBarContainerLazy } from './features/app-bar/app-bar-container-lazy';
+import { DiagramContainer as Diagram } from './features/diagram/diagram';
+import { DiagramWrapper } from './features/diagram/diagram-wrapper';
 import './features/i18n/index';
+import { useDetectLanguageChange } from './features/i18n/use-detect-language-change';
+import { AppLoaderContainer } from './features/integration/components/app-loader/app-loader-container';
 import { withIntegration } from './features/integration/components/with-integration';
+import { PaletteContainerLazy } from './features/palette/palette-container-lazy';
+import { OptionalAppChildren } from './features/plugins-core/components/app/optional-app-children';
+import { OptionalHooks } from './features/plugins-core/components/app/optional-hooks';
+import { PropertiesBarContainerLazy } from './features/properties-bar/properties-bar-container-lazy';
+import { SnackbarContainer } from './features/snackbar/snackbar-container';
 
 function AppComponent(_props: PropsWithChildren) {
   useDetectLanguageChange();
@@ -47,6 +50,7 @@ function AppComponent(_props: PropsWithChildren) {
         <SnackbarContainer />
         <AppLoaderContainer />
         <OptionalHooks />
+        <OptionalAppChildren />
       </div>
     </ReactFlowProvider>
   );

@@ -1,6 +1,8 @@
 import { PropsWithChildren, forwardRef } from 'react';
 import { createPortal } from 'react-dom';
+
 import styles from './dragged-item.module.css';
+
 import { isChrome, isFirefox, isOpera, isSafari } from '@/utils/browser';
 
 type DraggedItemProps = {

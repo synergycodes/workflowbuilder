@@ -1,4 +1,5 @@
-import React, { memo, useMemo, ReactNode } from 'react';
+import React, { ReactNode, memo, useMemo } from 'react';
+
 import { sortByPriority } from './utils/sort-by-priority';
 
 type ModifyProps<P> = (props: P) => P;
@@ -76,7 +77,7 @@ export function withOptionalComponentPlugins<TProps extends object>(
       const place = plugin.place || 'before';
 
       if (place === 'before') {
-        resultBefore.push(<plugin.content key={index} />);
+        resultBefore.push(<plugin.content key={index} props={modifiedProps} />);
       }
 
       if (place === 'wrapper') {
@@ -88,7 +89,7 @@ export function withOptionalComponentPlugins<TProps extends object>(
       }
 
       if (place === 'after') {
-        resultAfter.push(<plugin.content key={index} />);
+        resultAfter.push(<plugin.content key={index} props={modifiedProps} />);
       }
     }
 

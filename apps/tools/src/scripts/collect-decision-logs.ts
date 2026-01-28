@@ -1,6 +1,7 @@
-import { readdir, readFile, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import { cwd } from 'node:process';
+
 import { runScript } from '../tool-utils/create-script';
 
 const ROOT_PATH = path.join(cwd(), '../../');

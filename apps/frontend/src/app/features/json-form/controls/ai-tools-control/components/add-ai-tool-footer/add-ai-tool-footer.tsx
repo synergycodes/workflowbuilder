@@ -1,6 +1,8 @@
-import { FORM_TOOLS_NAME } from '../add-ai-tool-form-content/add-ai-tool-form-content';
-import styles from './add-ai-tool-footer.module.css';
 import { Button } from '@synergycodes/overflow-ui';
+
+import styles from './add-ai-tool-footer.module.css';
+
+import { FORM_TOOLS_NAME } from '../add-ai-tool-form-content/add-ai-tool-form-content';
 
 type Props = {
   onCancelClick: () => void;

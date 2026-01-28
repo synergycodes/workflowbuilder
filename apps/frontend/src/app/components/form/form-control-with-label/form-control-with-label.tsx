@@ -1,8 +1,10 @@
-import styles from './form-control-with-label.module.css';
-import clsx from 'clsx';
-import { Label } from '../label/label';
-import { PropsWithChildren } from 'react';
 import { ItemSize } from '@synergycodes/overflow-ui';
+import clsx from 'clsx';
+import { PropsWithChildren } from 'react';
+
+import styles from './form-control-with-label.module.css';
+
+import { Label } from '../label/label';
 
 type Props = {
   label: string;

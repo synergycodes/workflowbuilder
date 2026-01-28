@@ -1,16 +1,20 @@
-import styles from './ai-tools-control.module.css';
-
 import { PlusCircle, SlidersHorizontal } from '@phosphor-icons/react';
 import { Button } from '@synergycodes/overflow-ui';
-import { createControlRenderer } from '../../utils/rendering';
 import { useCallback } from 'react';
-import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
-import { AiToolsControlProps, AiAgentTool } from '../../types/controls';
-import { toolOptions } from '../../../../data/nodes/ai-agent/select-options';
-import { AddAiToolFormContent } from './components/add-ai-tool-form-content/add-ai-tool-form-content';
-import { AddAiToolFooter } from './components/add-ai-tool-footer/add-ai-tool-footer';
+
 import { Icon } from '@workflow-builder/icons';
+
+import styles from './ai-tools-control.module.css';
+
+import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
+
 import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
+
+import { toolOptions } from '../../../../data/nodes/ai-agent/select-options';
+import { AiAgentTool, AiToolsControlProps } from '../../types/controls';
+import { createControlRenderer } from '../../utils/rendering';
+import { AddAiToolFooter } from './components/add-ai-tool-footer/add-ai-tool-footer';
+import { AddAiToolFormContent } from './components/add-ai-tool-form-content/add-ai-tool-form-content';
 
 function hasAnyValue(data: AiAgentTool): boolean {
   return Object.values(data).some((value) => typeof value === 'string' && value.trim() !== '');

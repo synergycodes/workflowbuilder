@@ -1,7 +1,8 @@
-import type { Layout, LayoutProps as JSONFormsLayoutProps } from '@jsonforms/core';
-import type { Override } from './utils';
-import type { UISchemaElement } from './uischema';
+import type { LayoutProps as JSONFormsLayoutProps, Layout } from '@jsonforms/core';
+
 import { UISchemaRule } from './rules';
+import type { UISchemaElement } from './uischema';
+import type { Override } from './utils';
 
 export type AccordionLayoutElement = Override<
   BaseLayoutElement,

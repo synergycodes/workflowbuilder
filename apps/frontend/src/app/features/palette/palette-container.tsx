@@ -1,15 +1,19 @@
+import { useEffect } from 'react';
+
 import styles from './palette-container.module.css';
 import './variables.css';
-import { useEffect } from 'react';
+
 import useStore from '@/store/store';
+
 import { Sidebar } from '@/components/sidebar/sidebar';
+
+import { openTemplateSelectorModal } from '../modals/template-selector/open-template-selector-modal';
 import { DraggedItem } from './components/dragged-item/dragged-item';
-import { NodePreviewContainer } from './node-preview-container';
-import { PaletteHeader } from './components/header/palette-header';
 import { PaletteFooter } from './components/footer/palette-footer';
+import { PaletteHeader } from './components/header/palette-header';
 import { PaletteItems } from './components/items/palette-items';
 import { usePaletteDragAndDrop } from './hooks/use-palette-drag-and-drop';
-import { openTemplateSelectorModal } from '../modals/template-selector/open-template-selector-modal';
+import { NodePreviewContainer } from './node-preview-container';
 
 export function PaletteContainer() {
   const toggleSidebar = useStore((state) => state.toggleSidebar);

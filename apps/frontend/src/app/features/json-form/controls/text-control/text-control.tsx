@@ -1,9 +1,9 @@
 import { Input } from '@synergycodes/overflow-ui';
-import { ControlWrapper } from '../control-wrapper';
-import { TextControlProps } from '../../types/controls';
-
-import { createControlRenderer } from '../../utils/rendering';
 import { useEffect, useState } from 'react';
+
+import { TextControlProps } from '../../types/controls';
+import { createControlRenderer } from '../../utils/rendering';
+import { ControlWrapper } from '../control-wrapper';
 
 function TextControl(props: TextControlProps) {
   const { schema, uischema, enabled, data, required, errors, path, handleChange } = props;

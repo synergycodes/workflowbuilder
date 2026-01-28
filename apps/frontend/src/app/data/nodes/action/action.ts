@@ -1,4 +1,5 @@
 import { PaletteItem } from '@workflow-builder/types/common';
+
 import { defaultPropertiesData } from './default-properties-data';
 import { ActionNodeSchema, schema } from './schema';
 import { uischema } from './uischema';

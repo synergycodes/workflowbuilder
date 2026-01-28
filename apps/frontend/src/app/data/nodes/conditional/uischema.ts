@@ -1,5 +1,6 @@
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
+
 import { ConditionalNodeSchema } from './schema';
 
 const scope = getScope<ConditionalNodeSchema>;

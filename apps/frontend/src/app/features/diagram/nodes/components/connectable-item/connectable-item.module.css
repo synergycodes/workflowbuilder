@@ -12,11 +12,18 @@
 
   position: relative;
   display: flex;
+  max-width: calc(var(--ax-public-node-width) - (6 * var(--ax-public-node-padding)));
   padding: var(--wb-connectable-item-vertical-padding) var(--wb-connectable-item-horizontal-padding);
   background-color: var(--wb-connectable-item-background);
   border: var(--wb-connectable-item-border-width) solid var(--wb-connectable-item-border-color);
   border-radius: var(--wb-connectable-item-border-radius);
   justify-content: space-between;
+
+  .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 
   .handle-container {
     position: relative;
@@ -28,4 +35,8 @@
       transform: translateX(-50%);
     }
   }
+}
+
+.connectable-item--right {
+  gap: var(--wb-connectable-item-horizontal-padding);
 }

@@ -1,5 +1,6 @@
-import { useCallback, useState } from 'react';
 import { useOnSelectionChange, useStoreApi } from '@xyflow/react';
+import { useCallback, useState } from 'react';
+
 import { WorkflowBuilderOnSelectionChangeParams } from '@workflow-builder/types/common';
 
 export type CommandHandler = {

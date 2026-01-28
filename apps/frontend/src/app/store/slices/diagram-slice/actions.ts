@@ -1,9 +1,12 @@
 // About actions: apps/frontend/src/app/store/README.md
-import { IntegrationDataFormat } from '@/features/integration/types';
-import useStore from '@/store/store';
-import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
 import { LayoutDirection } from '@workflow-builder/types/common';
 import { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflow-builder/types/node-data';
+
+import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
+
+import useStore from '@/store/store';
+
+import { IntegrationDataFormat } from '@/features/integration/types';
 
 export function getStoreNodes() {
   return useStore.getState().nodes;

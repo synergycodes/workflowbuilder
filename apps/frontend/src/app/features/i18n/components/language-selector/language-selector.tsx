@@ -1,9 +1,11 @@
-import styles from './language-selector.module.css';
+import { CaretDown } from '@phosphor-icons/react';
+import { Menu, MenuItemProps, NavButton } from '@synergycodes/overflow-ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CaretDown } from '@phosphor-icons/react';
-import { MenuItemProps, Menu, NavButton } from '@synergycodes/overflow-ui';
+
 import { Icon } from '@workflow-builder/icons';
+
+import styles from './language-selector.module.css';
 
 type Language = {
   code: string;

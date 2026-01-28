@@ -1,4 +1,5 @@
 import { HandleType } from '@xyflow/react';
+
 import { HandleId } from './types';
 
 export function getHandleId({ handleType, nodeId, innerId }: GetHandleIdOptions): HandleId {

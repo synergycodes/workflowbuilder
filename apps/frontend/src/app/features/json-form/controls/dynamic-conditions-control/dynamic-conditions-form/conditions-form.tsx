@@ -1,12 +1,15 @@
-import { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 import { Button } from '@synergycodes/overflow-ui';
+import { ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
 import { Icon } from '@workflow-builder/icons';
-import { DynamicCondition } from '@/features/json-form/types/controls';
-import { validateCondition } from '@/features/json-form/utils/conditional-transform';
-import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 import styles from './conditions-form.module.css';
+
+import { DynamicCondition } from '@/features/json-form/types/controls';
+import { validateCondition } from '@/features/json-form/utils/conditional-transform';
 import { closeModal } from '@/features/modals/stores/use-modal-store';
+
+import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 type ConditionsFormProps = {
   onChange: (value: DynamicCondition[]) => void;
@@ -85,7 +88,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
               condition={condition}
               onChange={updateCondition(index)}
               onRemove={() => removeCondition(index)}
-              isLast={index === lastIndex}
+              shouldShowOperator={index === 0 && lastIndex !== 0}
               shouldShowValidation={shouldShowValidation}
             />
           ))}

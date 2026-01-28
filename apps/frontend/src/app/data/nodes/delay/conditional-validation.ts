@@ -1,5 +1,6 @@
 /* eslint-disable unicorn/no-thenable */
 import { IfThenElseSchema } from '@workflow-builder/types/node-validation-schema';
+
 import { delayTypeOptions } from './select-options';
 
 export const conditionalValidation = {

@@ -1,6 +1,7 @@
-import { sharedProperties } from '../shared/shared-properties';
-import { statusOptions } from '../shared/general-information';
 import { NodeSchema } from '@workflow-builder/types/node-schema';
+
+import { statusOptions } from '../shared/general-information';
+import { sharedProperties } from '../shared/shared-properties';
 
 export const actionTypeOptions = {
   email: { label: 'Send Email', value: 'sendEmail', icon: 'EnvelopeSimple' },
@@ -77,6 +78,8 @@ export const saveLocationOptions = [
 ];
 
 export const schema = {
+  // Without it default-properties-data doesn't type correctly
+  // type: 'object',
   properties: {
     ...sharedProperties,
     type: {

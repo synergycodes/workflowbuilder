@@ -1,7 +1,9 @@
-import styles from './palette-header.module.css';
 import { NavButton } from '@synergycodes/overflow-ui';
-import { Icon } from '@workflow-builder/icons';
 import { useTranslation } from 'react-i18next';
+
+import { Icon } from '@workflow-builder/icons';
+
+import styles from './palette-header.module.css';
 
 type PaletteHeaderProps = {
   onClick: () => void;

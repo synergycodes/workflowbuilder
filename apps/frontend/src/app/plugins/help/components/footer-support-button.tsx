@@ -1,5 +1,6 @@
-import { useTranslation } from 'react-i18next';
 import { Button } from '@synergycodes/overflow-ui';
+import { useTranslation } from 'react-i18next';
+
 import { openHelpModal } from '../functions/open-help-modal';
 
 export function FooterSupportButton() {

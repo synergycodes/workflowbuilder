@@ -1,13 +1,17 @@
-import { useShallow } from 'zustand/shallow';
+import { XYPosition, useStoreApi } from '@xyflow/react';
 import { DragEvent, useCallback } from 'react';
-import { useStoreApi, XYPosition } from '@xyflow/react';
-import useStore from '@/store/store';
+import { useShallow } from 'zustand/shallow';
+
 import { DraggingItem } from '@workflow-builder/types/common';
-import { getNodeAddChange } from '@/utils/get-node-add-change';
+
 import { dataFormat } from '@/utils/consts';
-import { useTranslateIfPossible } from './use-translate-if-possible';
-import { NodeType } from '../../../../types/src/node-types';
+import { getNodeAddChange } from '@/utils/get-node-add-change';
+
+import useStore from '@/store/store';
+
 import { BaseNodeProperties } from '../../../../types/src/node-schema';
+import { NodeType } from '../../../../types/src/node-types';
+import { useTranslateIfPossible } from './use-translate-if-possible';
 
 export function usePaletteDrop() {
   const resetSelectedElements = useStoreApi().getState().resetSelectedElements;

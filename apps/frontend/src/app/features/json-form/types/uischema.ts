@@ -1,20 +1,20 @@
+import {
+  AiToolsControlElement,
+  DatePickerControlElement,
+  DecisionBranchesControlElement,
+  DynamicConditionsControlElement,
+  SelectControlElement,
+  SwitchControlElement,
+  TextAreaControlElement,
+  TextControlElement,
+} from './controls';
+import { LabelElement } from './label';
 import type {
   AccordionLayoutElement,
   GroupLayoutElement,
   HorizontalLayoutElement,
   VerticalLayoutElement,
 } from './layouts';
-import {
-  DatePickerControlElement,
-  SelectControlElement,
-  SwitchControlElement,
-  TextAreaControlElement,
-  DynamicConditionsControlElement,
-  TextControlElement,
-  AiToolsControlElement,
-  DecisionBranchesControlElement,
-} from './controls';
-import { LabelElement } from './label';
 
 export type UISchemaControlElement<T extends string = string> = (
   | TextControlElement

@@ -3,9 +3,9 @@ import './variables.css';
 
 import { noop } from '@/utils/noop';
 
-import { Toolbar } from './components/toolbar/toolbar';
-import { ProjectSelection } from './components/project-selection/project-selection';
 import { Controls } from './components/controls/controls';
+import { ProjectSelection } from './components/project-selection/project-selection';
+import { Toolbar } from './components/toolbar/toolbar';
 
 export function AppBarContainer() {
   return (

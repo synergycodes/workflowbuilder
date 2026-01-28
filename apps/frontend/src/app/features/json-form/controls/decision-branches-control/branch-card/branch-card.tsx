@@ -1,53 +1,60 @@
-import { useTranslation } from 'react-i18next';
-import styles from './branch-card.module.css';
-import clsx from 'clsx';
-import { NavButton } from '@synergycodes/overflow-ui';
 import { SlidersHorizontal, Trash } from '@phosphor-icons/react';
+import { Input, NavButton } from '@synergycodes/overflow-ui';
+import clsx from 'clsx';
 import { useCallback, useRef } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import styles from './branch-card.module.css';
+
+import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
+
+import { DecisionBranch } from '@/features/json-form/types/controls';
+import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
+
+import { ConditionModalFooter } from '../../dynamic-conditions-control/dynamic-condition-modal-footer/condition-modal-footer';
 import {
   ConditionsForm,
   ConditionsFormHandle,
 } from '../../dynamic-conditions-control/dynamic-conditions-form/conditions-form';
-import { DecisionBranch } from '@/features/json-form/types/controls';
-import { ConditionModalFooter } from '../../dynamic-conditions-control/dynamic-condition-modal-footer/condition-modal-footer';
-import { closeModal, openModal } from '@/features/modals/stores/use-modal-store';
 
 type Props = {
   branch: DecisionBranch;
   onUpdate: (branch: DecisionBranch) => void;
   onRemove: (index: number) => void;
+  enabled?: boolean;
 };
 
-export function BranchCard({ branch, onUpdate, onRemove }: Props) {
+export function BranchCard({ branch, onUpdate, onRemove, enabled = true }: Props) {
   const formRef = useRef<ConditionsFormHandle>(null);
   const { t } = useTranslation();
-  const { conditions, index } = branch;
+  const { label, conditions, index } = branch;
   const conditionCount = conditions.length;
-  const conditionText = getConditionText();
-  const hasNoConditions = conditionCount === 0;
 
   const handleConfirm = useCallback(() => {
     formRef.current?.handleConfirm();
   }, []);
 
-  const openEditorModal = useCallback(
-    ({ conditions }: DecisionBranch) => {
-      openModal({
-        content: (
-          <ConditionsForm
-            ref={formRef}
-            onChange={(updatedConditions) => onUpdate({ index, conditions: updatedConditions })}
-            value={conditions}
-          />
-        ),
-        title: t('conditions.title'),
-        footer: <ConditionModalFooter closeModal={closeModal} handleConfirm={handleConfirm} />,
-      });
+  const onClickEdit = useCallback(() => {
+    openModal({
+      content: (
+        <ConditionsForm
+          ref={formRef}
+          onChange={(updatedConditions) => onUpdate({ label, index, conditions: updatedConditions })}
+          value={conditions}
+        />
+      ),
+      title: t('conditions.title'),
+      footer: <ConditionModalFooter closeModal={closeModal} handleConfirm={handleConfirm} />,
+    });
+  }, [conditions, t, handleConfirm, onUpdate, label, index]);
+
+  const onLabelChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      onUpdate({ label: event.target.value, index, conditions });
     },
-    [t, handleConfirm, onUpdate, index],
+    [onUpdate, index, conditions],
   );
 
-  const onClickEdit = useCallback(() => openEditorModal(branch), [branch, openEditorModal]);
   const onClickRemove = useCallback(() => onRemove(branch.index), [onRemove, branch]);
 
   return (
@@ -63,19 +70,24 @@ export function BranchCard({ branch, onUpdate, onRemove }: Props) {
           </NavButton>
         </div>
       </div>
-      <div className={clsx(styles['conditions-chip'], { [styles['no-conditions']]: hasNoConditions }, 'ax-public-p11')}>
-        {conditionText}
+      <div>
+        <FormControlWithLabel label={t('decisionBranches.label')}>
+          <Input
+            value={label}
+            placeholder={t('decisionBranches.branch', { index })}
+            onChange={onLabelChange}
+            disabled={!enabled}
+          />
+        </FormControlWithLabel>
       </div>
+      <button
+        className={clsx(styles['conditions-chip'], 'ax-public-p11', {
+          [styles['no-conditions']]: conditionCount === 0,
+        })}
+        onClick={onClickEdit}
+      >
+        {t('conditions.totalNumber', { count: conditionCount })}
+      </button>
     </div>
   );
-
-  function getConditionText() {
-    if (conditionCount === 1) {
-      return t('decisionBranches.singleCondition');
-    } else if (conditionCount > 1) {
-      return t('decisionBranches.manyConditions', { count: conditionCount });
-    } else {
-      return t('decisionBranches.noConditions');
-    }
-  }
 }

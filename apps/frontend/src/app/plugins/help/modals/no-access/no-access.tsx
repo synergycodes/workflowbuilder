@@ -1,6 +1,7 @@
 import clsx from 'clsx';
-import styles from './no-access.module.css';
 import { useTranslation } from 'react-i18next';
+
+import styles from './no-access.module.css';
 
 export function NoAccess() {
   const { t } = useTranslation();

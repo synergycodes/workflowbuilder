@@ -1,12 +1,15 @@
 import { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
-import { Override } from './utils';
-import { UISchemaControlElement } from './uischema';
 import { InputProps, TextAreaProps } from '@synergycodes/overflow-ui';
-import { FieldSchema } from 'apps/types/src/node-schema';
-import { UISchemaRule } from './rules';
-import { ComparisonOperator, LogicalOperator } from '../utils/conditional-transform';
+
+import { FieldSchema } from '@workflow-builder/types/node-schema';
+
 import { NodeDataProperties } from '@/features/json-form/types/default-properties';
+
 import { AiAgentNodeSchema } from '../../../data/nodes/ai-agent/schema';
+import { ComparisonOperator, LogicalOperator } from '../utils/conditional-transform';
+import { UISchemaRule } from './rules';
+import { UISchemaControlElement } from './uischema';
+import { Override } from './utils';
 
 type ControlProps<D, T extends UISchemaControlElement> = Override<
   BaseControlProps,
@@ -51,6 +54,7 @@ export type DynamicCondition = {
 
 export type DecisionBranch = {
   index: number;
+  label: string;
   conditions: DynamicCondition[];
 };
 

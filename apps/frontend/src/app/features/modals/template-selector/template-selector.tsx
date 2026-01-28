@@ -1,13 +1,18 @@
-import { Tile } from './components/tile';
-import { DiagramModel } from '@workflow-builder/types/common';
 import clsx from 'clsx';
-import { Trans, useTranslation } from 'react-i18next';
-import styles from './template-selector.module.css';
-import useStore from '@/store/store';
-import { templates } from '@/data/templates';
 import { useCallback } from 'react';
-import { closeModal } from '../stores/use-modal-store';
+import { Trans, useTranslation } from 'react-i18next';
+
+import { DiagramModel } from '@workflow-builder/types/common';
+
+import styles from './template-selector.module.css';
+
+import useStore from '@/store/store';
+
+import { templates } from '@/data/templates';
 import { useFitView } from '@/hooks/use-fit-view';
+
+import { closeModal } from '../stores/use-modal-store';
+import { Tile } from './components/tile';
 
 export function TemplateSelector() {
   const { t } = useTranslation();

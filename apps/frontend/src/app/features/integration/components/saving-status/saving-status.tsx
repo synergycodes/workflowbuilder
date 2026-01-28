@@ -1,6 +1,10 @@
+import { Spinner } from '@phosphor-icons/react';
 import clsx from 'clsx';
+
 import { Icon } from '@workflow-builder/icons';
+
 import styles from './saving-status.module.css';
+
 import { useIntegrationStore } from '../../stores/use-integration-store';
 
 export function SavingStatus() {
@@ -11,7 +15,7 @@ export function SavingStatus() {
   if (savingStatus === 'saving') {
     return (
       <span className={clsx(styles['status'], styles['status--saving'])}>
-        <Icon name="Spinner" />
+        <Spinner />
       </span>
     );
   }

@@ -1,8 +1,10 @@
+import { PaletteItem } from '@workflow-builder/types/common';
+
 import { UISchema } from '@/features/json-form/types/uischema';
+import { getScope } from '@/features/json-form/utils/get-scope';
+
 import { generalInformation } from '../shared/general-information';
 import { NotificationNodeSchema, notificationTypeOptions, priorityOptions } from './schema';
-import { PaletteItem } from '@workflow-builder/types/common';
-import { getScope } from '@/features/json-form/utils/get-scope';
 
 const scope = getScope<NotificationNodeSchema>;
 

@@ -1,21 +1,23 @@
 import { useCallback } from 'react';
-import { DecisionBranchesControlProps, DecisionBranch } from '../../types/controls';
 import { useTranslation } from 'react-i18next';
+
 import { PlaceholderButton } from '@/features/diagram/nodes/components/placeholder-button/placeholder-button';
+
+import { DecisionBranch, DecisionBranchesControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { BranchCard } from './branch-card/branch-card';
 
 function DecisionBranchesControl(props: DecisionBranchesControlProps) {
-  const { data = [], handleChange, path } = props;
+  const { data = [], handleChange, path, enabled } = props;
 
   const decisionBranches = data as DecisionBranch[];
 
   const { t } = useTranslation();
 
   const onUpdateBranch = useCallback(
-    ({ conditions, index }: DecisionBranch) => {
+    ({ conditions, label, index }: DecisionBranch) => {
       const updatedBranches = decisionBranches.map((branch) =>
-        index === branch.index ? { ...branch, conditions } : branch,
+        index === branch.index ? { ...branch, label, conditions } : branch,
       );
       handleChange(path, updatedBranches);
     },
@@ -39,7 +41,13 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
   return (
     <div>
       {decisionBranches.map((branch) => (
-        <BranchCard key={branch.index} branch={branch} onUpdate={onUpdateBranch} onRemove={onRemoveBranch} />
+        <BranchCard
+          key={branch.index}
+          branch={branch}
+          onUpdate={onUpdateBranch}
+          onRemove={onRemoveBranch}
+          enabled={enabled}
+        />
       ))}
       <PlaceholderButton onClick={onAddBranch} label={t('decisionBranches.addBranch')} />
     </div>

@@ -12,7 +12,7 @@ type DecoratorOptionsBefore = {
   callback: CallbackBefore;
 } & SharedDecoratorOptions;
 
-type CallbackAfter = (params: { params: unknown[]; returnValue: unknown }) => void | { replacedReturn: unknown };
+export type CallbackAfter = (params: { params: unknown[]; returnValue: unknown }) => void | { replacedReturn: unknown };
 
 type DecoratorOptionsAfter = {
   place: 'after';

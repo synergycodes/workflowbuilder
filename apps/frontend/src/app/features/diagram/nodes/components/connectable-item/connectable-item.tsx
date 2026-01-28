@@ -1,8 +1,11 @@
 import { Handle, HandleType, Position } from '@xyflow/react';
-import styles from './connectable-item.module.css';
 import clsx from 'clsx';
-import { getHandleId } from '@/features/diagram/handles/get-handle-id';
+
+import styles from './connectable-item.module.css';
+
 import useStore from '@/store/store';
+
+import { getHandleId } from '@/features/diagram/handles/get-handle-id';
 
 type Props = {
   nodeId: string;
@@ -20,8 +23,12 @@ export function ConnectableItem({ label, nodeId, innerId, handleType, canHaveBot
   const handleId = getHandleId({ nodeId, innerId, handleType });
 
   return (
-    <div className={styles['connectable-item']}>
-      {label}
+    <div
+      className={clsx(styles['connectable-item'], {
+        [styles['connectable-item--right']]: layoutDirection === 'RIGHT',
+      })}
+    >
+      <div className={styles['label']}>{label}</div>
       <div className={clsx(styles['handle-container'], { [styles['vertical']]: isVertical })}>
         <Handle id={handleId} position={position} type="source" />
       </div>

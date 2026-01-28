@@ -1,11 +1,13 @@
 import { NavButton } from '@synergycodes/overflow-ui';
-import { Icon } from '@workflow-builder/icons';
-import { useTranslation } from 'react-i18next';
 import { useContext } from 'react';
-import { IntegrationContext } from '../integration-variants/context/integration-context-wrapper';
-import { SavingStatus } from '../saving-status/saving-status';
+import { useTranslation } from 'react-i18next';
+
+import { Icon } from '@workflow-builder/icons';
+
 import { useAutoSave } from '../../hooks/use-auto-save';
 import { useAutoSaveOnClose } from '../../hooks/use-auto-save-on-close';
+import { IntegrationContext } from '../integration-variants/context/integration-context-wrapper';
+import { SavingStatus } from '../saving-status/saving-status';
 
 export function SaveButton() {
   const { t } = useTranslation();

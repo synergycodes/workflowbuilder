@@ -1,5 +1,6 @@
-import { createPortal } from 'react-dom';
 import { Modal } from '@synergycodes/overflow-ui';
+import { createPortal } from 'react-dom';
+
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
 export function ModalProvider() {

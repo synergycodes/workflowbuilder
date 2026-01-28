@@ -1,7 +1,8 @@
-import type { IconType } from './common';
 import type { Edge, Node } from '@xyflow/react';
-import type { UISchema } from '../../frontend/src/app/features/json-form/types/uischema';
+
 import type { NodeDataProperties } from '../../frontend/src/app/features/json-form/types/default-properties';
+import type { UISchema } from '../../frontend/src/app/features/json-form/types/uischema';
+import type { IconType } from './common';
 import type { BaseNodeProperties, NodeSchema } from './node-schema';
 import { NodeType } from './node-types';
 

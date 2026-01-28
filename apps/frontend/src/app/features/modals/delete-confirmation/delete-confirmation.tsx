@@ -1,8 +1,9 @@
-import { Node, Edge } from '@xyflow/react';
-import styles from './delete-confirmation.module.css';
-import { Trans, useTranslation } from 'react-i18next';
-import { Checkbox, Button } from '@synergycodes/overflow-ui';
+import { Button, Checkbox } from '@synergycodes/overflow-ui';
+import { Edge, Node } from '@xyflow/react';
 import { useState } from 'react';
+import { Trans, useTranslation } from 'react-i18next';
+
+import styles from './delete-confirmation.module.css';
 
 type DeleteConfirmationProps = {
   nodes: Node[];

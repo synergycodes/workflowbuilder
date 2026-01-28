@@ -1,5 +1,7 @@
-import { showSnackbar } from '@/utils/show-snackbar';
 import { SnackbarType } from '@synergycodes/overflow-ui';
+
+import { showSnackbar } from '@/utils/show-snackbar';
+
 import { OnSaveParams } from '../types';
 
 export function showSnackbarSaveSuccessIfNeeded(savingParams?: OnSaveParams) {

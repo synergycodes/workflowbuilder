@@ -1,16 +1,18 @@
+import { Button, SnackbarType } from '@synergycodes/overflow-ui';
 import { useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Button, SnackbarType } from '@synergycodes/overflow-ui';
 
-import { showSnackbar } from '@/utils/show-snackbar';
 import { Icon } from '@workflow-builder/icons';
 
-import { getStoreDataForIntegration } from '@/store/slices/diagram-slice/actions';
-import { SyntaxHighlighterLazy } from '@/features/syntax-highlighter/components/syntax-highlighter-lazy';
+import styles from '../import-export-modal.module.css';
+
 import { copy } from '@/utils/copy';
 import { noop } from '@/utils/noop';
+import { showSnackbar } from '@/utils/show-snackbar';
 
-import styles from '../import-export-modal.module.css';
+import { getStoreDataForIntegration } from '@/store/slices/diagram-slice/actions';
+
+import { SyntaxHighlighterLazy } from '@/features/syntax-highlighter/components/syntax-highlighter-lazy';
 
 export function ExportModal() {
   const { t } = useTranslation();

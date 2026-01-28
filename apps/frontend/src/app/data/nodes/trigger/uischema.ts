@@ -1,17 +1,19 @@
-import { UISchema } from '@/features/json-form/types/uischema';
-import { generalInformation } from '../shared/general-information';
 import { PaletteItem } from '@workflow-builder/types/common';
-import {
-  triggerTypeOptions,
-  frequencyOptions,
-  allDayFrequencyOptions,
-  retryIntervalOptions,
-  maxRetriesOptions,
-  timeoutOptions,
-  eventTypeOptions,
-  TriggerNodeSchema,
-} from './schema';
+
+import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
+
+import { generalInformation } from '../shared/general-information';
+import {
+  TriggerNodeSchema,
+  allDayFrequencyOptions,
+  eventTypeOptions,
+  frequencyOptions,
+  maxRetriesOptions,
+  retryIntervalOptions,
+  timeoutOptions,
+  triggerTypeOptions,
+} from './schema';
 
 const scope = getScope<TriggerNodeSchema>;
 

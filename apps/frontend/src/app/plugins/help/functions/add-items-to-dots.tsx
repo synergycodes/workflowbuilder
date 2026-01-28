@@ -1,6 +1,8 @@
-import i18n from 'i18next';
 import { MenuItemProps } from '@synergycodes/overflow-ui';
+import i18n from 'i18next';
+
 import { Icon } from '@workflow-builder/icons';
+
 import { openNoAccessModal } from './open-no-access-modal';
 
 export function addItemsToDots({ returnValue }: { returnValue: unknown }) {

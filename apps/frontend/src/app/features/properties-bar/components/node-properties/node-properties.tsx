@@ -1,12 +1,16 @@
-import { WorkflowBuilderNode } from 'apps/types/src/node-data';
-import useStore from '@/store/store';
-import { JsonFormsReactProps } from '@jsonforms/react';
-import { JSONForm } from '@/features/json-form/json-form';
 import { JsonFormsProps } from '@jsonforms/core';
-import { isDeepEqual } from 'remeda';
+import { JsonFormsReactProps } from '@jsonforms/react';
 import { memo } from 'react';
-import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { isDeepEqual } from 'remeda';
+
+import { WorkflowBuilderNode } from '@workflow-builder/types/node-data';
+
 import { flatErrors } from '@/utils/validation/flat-errors';
+
+import useStore from '@/store/store';
+
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { JSONForm } from '@/features/json-form/json-form';
 
 type Props = {
   node: WorkflowBuilderNode;

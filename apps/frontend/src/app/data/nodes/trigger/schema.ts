@@ -1,6 +1,7 @@
-import { sharedProperties } from '../shared/shared-properties';
-import { statusOptions } from '../shared/general-information';
 import { NodeSchema, Option } from '@workflow-builder/types/node-schema';
+
+import { statusOptions } from '../shared/general-information';
+import { sharedProperties } from '../shared/shared-properties';
 
 export const eventTypeOptions = [
   { label: 'Form Submission', value: 'formSubmission' },

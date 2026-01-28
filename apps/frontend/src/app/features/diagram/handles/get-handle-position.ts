@@ -1,5 +1,6 @@
-import { LayoutDirection } from '@workflow-builder/types/common';
 import { HandleType, Position } from '@xyflow/react';
+
+import { LayoutDirection } from '@workflow-builder/types/common';
 
 export function getHandlePosition({ handleType, direction }: GetHandlePositionOptions) {
   return HANDLE_POSITION_MAP[`${handleType}-${direction}`];

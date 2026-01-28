@@ -1,12 +1,15 @@
-import styles from '../../app-bar.module.css';
-import { useTranslation } from 'react-i18next';
-import { NavButton, Menu, MenuItemProps } from '@synergycodes/overflow-ui';
 import { DotsThreeVertical } from '@phosphor-icons/react';
+import { Menu, MenuItemProps, NavButton } from '@synergycodes/overflow-ui';
 import { useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+
+import styles from '../../app-bar.module.css';
+
+import { OptionalAppBarControls } from '@/features/plugins-core/components/app/optional-app-bar-controls';
+
 import { getControlsDotsItems } from '../../functions/get-controls-dots-items';
-import { OptionalAppBarControls } from '@/features/plugins-core/components/optional-app-bar-controls';
-import { ToggleReadyOnlyMode } from '../toggle-read-only-mode/toggle-read-only-mode';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
+import { ToggleReadyOnlyMode } from '../toggle-read-only-mode/toggle-read-only-mode';
 
 export function Controls() {
   const { t } = useTranslation();

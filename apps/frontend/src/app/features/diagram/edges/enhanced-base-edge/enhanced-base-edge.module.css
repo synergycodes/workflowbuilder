@@ -1,0 +1,14 @@
+:root {
+  --wb-edge-clickable-border-width: 2;
+}
+
+.clickable-transparent-border {
+  stroke-width: var(--wb-edge-clickable-border-width) !important;
+  /* 
+    We use !important here because this border sits behind the real one,
+    and we have rules for SVG paths that may be styled globally with svg:hover path.
+    
+    It’s just easier to use !important. Feel free to set your own behavior for this border.
+  */
+  stroke: transparent !important;
+}

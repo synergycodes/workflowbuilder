@@ -28,6 +28,7 @@ export default {
         'src/app/features/plugins-core/utils/missing-plugin.stub.ts',
         'src/app/utils/ensure-bounds.ts',
         'src/app/utils/node-changed-listeners.ts',
+        'src/app/store/slices/diagram-slice/actions.ts',
         'src/app/features/props-passing/hooks/use-call-on-edge-change.ts',
         'src/app/features/props-passing/hooks/use-call-on-node-change.ts',
         'src/app/features/props-passing/utils/get-diagram-model-from-input.ts',

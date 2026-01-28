@@ -1,7 +1,7 @@
-import { type Plugin } from 'vite';
-import JSObfuscator, { type ObfuscatorOptions } from 'javascript-obfuscator';
 import anymatch, { type Matcher } from 'anymatch';
+import JSObfuscator, { type ObfuscatorOptions } from 'javascript-obfuscator';
 import path from 'node:path';
+import { type Plugin } from 'vite';
 
 const defaultIncludeMatcher = [/\.(jsx?|tsx?|cjs|mjs)$/];
 const defaultExcludeMatcher = [/node_modules/];

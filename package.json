@@ -1,6 +1,6 @@
 {
   "name": "workflow-builder",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "private": true,
   "scripts": {
     "dev": "pnpm --filter frontend dev",
@@ -18,6 +18,7 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
+    "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@types/node": "^22.12.0",
     "@types/react-dom": "^19.1.0",
     "@types/react-gtm-module": "^2.0.4",

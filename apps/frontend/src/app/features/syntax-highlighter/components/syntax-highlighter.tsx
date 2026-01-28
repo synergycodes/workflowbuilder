@@ -1,11 +1,10 @@
+// sort-imports-ignore
 import clsx from 'clsx';
-
-import AceEditor from 'react-ace';
-
 // https://securingsincity.github.io/react-ace/
-
-import 'ace-builds/src-noconflict/mode-json';
+import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/ext-language_tools';
+import 'ace-builds/src-noconflict/mode-json';
+import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-github_light_default';
 
 import styles from './syntax-highlighter.module.css';
@@ -14,17 +13,18 @@ export type SyntaxHighlighterProps = {
   value: string;
   onChange?: (value?: string) => void;
   isDisabled?: boolean;
+  mode?: string;
 };
 
 export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
-  const { value, onChange, isDisabled } = props;
+  const { value, onChange, mode = 'json', isDisabled } = props;
 
   return (
     <div className={clsx(styles['container'])}>
       <AceEditor
         name="field"
         value={value}
-        mode="json"
+        mode={mode}
         theme="github_light_default"
         onChange={onChange}
         fontSize={12}

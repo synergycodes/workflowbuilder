@@ -2,17 +2,20 @@ import {
   hasRegisteredComponentDecorator,
   registerComponentDecorator,
 } from '@/features/plugins-core/adapters/adapter-components';
+import { registerFunctionDecorator } from '@/features/plugins-core/adapters/adapter-functions';
+import { registerPluginTranslation } from '@/features/plugins-core/adapters/adapter-i18n';
 
-import { DiagramContainer } from '@/features/diagram/diagram';
 import { ProjectSelection } from '@/features/app-bar/components/project-selection/project-selection';
+import { DiagramContainer } from '@/features/diagram/diagram';
 import { PropertiesBar } from '@/features/properties-bar/components/properties-bar/properties-bar';
 
-import { Watermark } from './components/watermark/watermark';
-import { openNoAccessModal } from './functions/open-no-access-modal';
-import { FooterSupportButton } from './components/footer-support-button';
 import { getAppBarButton } from './components/app-bar/get-app-bar-button';
-import { registerFunctionDecorator } from '@/features/plugins-core/adapters/adapter-functions';
+import { FooterSupportButton } from './components/footer-support-button';
+import { Watermark } from './components/watermark/watermark';
 import { addItemsToDots } from './functions/add-items-to-dots';
+import { openNoAccessModal } from './functions/open-no-access-modal';
+import * as translationEN from './locales/en/translation.json';
+import * as translationPL from './locales/pl/translation.json';
 
 registerComponentDecorator('OptionalFooterContent', {
   content: FooterSupportButton,
@@ -77,3 +80,12 @@ if (hasRegisteredComponentDecorator('OptionalAppBarControls', 'ElkLayout') === f
     place: 'before',
   });
 }
+
+registerPluginTranslation({
+  en: {
+    translation: translationEN,
+  },
+  pl: {
+    translation: translationPL,
+  },
+});

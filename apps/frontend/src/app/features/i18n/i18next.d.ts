@@ -1,4 +1,5 @@
 import 'i18next';
+
 import { defaultNS } from '.';
 import { en } from './locales/en';
 

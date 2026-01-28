@@ -1,9 +1,11 @@
-import styles from './horizontal-layout.module.css';
-import { LayoutWrapper } from '../layout-wrapper';
-import { HorizontalLayoutElement, LayoutProps } from '../../types/layouts';
-import { renderElements } from '../render-elements';
-import { createLayoutRenderer } from '../../utils/rendering';
 import { CSSProperties, useMemo } from 'react';
+
+import styles from './horizontal-layout.module.css';
+
+import { HorizontalLayoutElement, LayoutProps } from '../../types/layouts';
+import { createLayoutRenderer } from '../../utils/rendering';
+import { LayoutWrapper } from '../layout-wrapper';
+import { renderElements } from '../render-elements';
 import { useHasChildError } from './use-has-child-error';
 
 function HorizontalLayout(props: LayoutProps<HorizontalLayoutElement>) {

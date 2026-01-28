@@ -1,7 +1,8 @@
-import styles from './properties-bar-header.module.css';
-
 import { NavButton } from '@synergycodes/overflow-ui';
+
 import { Icon } from '@workflow-builder/icons';
+
+import styles from './properties-bar-header.module.css';
 
 type Props = {
   header: string;

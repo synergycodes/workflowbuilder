@@ -1,8 +1,9 @@
 import clsx from 'clsx';
 
-import styles from './tile.module.css';
 import { Icon } from '@workflow-builder/icons';
 import { IconType } from '@workflow-builder/types/common';
+
+import styles from './tile.module.css';
 
 type TileProps = {
   icon: IconType;

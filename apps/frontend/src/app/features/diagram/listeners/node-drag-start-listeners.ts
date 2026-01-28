@@ -1,4 +1,4 @@
-import { OnNodeDrag, Node } from '@xyflow/react';
+import { Node, OnNodeDrag } from '@xyflow/react';
 
 const nodeDragStartListeners = new Set<OnNodeDrag>();
 

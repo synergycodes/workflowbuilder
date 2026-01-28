@@ -1,12 +1,13 @@
 import { useCallback } from 'react';
 
-import { IntegrationWrapper } from './wrapper/integration-wrapper';
+import { Prettify } from '@/utils/typescript';
 
 import { getStoreDataForIntegration } from '@/store/slices/diagram-slice/actions';
 
 import { OnSave, OnSaveExternal } from '@/features/integration/types';
+
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../../utils/show-snackbar';
-import { Prettify } from '@/utils/typescript';
+import { IntegrationWrapper } from './wrapper/integration-wrapper';
 
 type Props = Omit<React.ComponentProps<typeof IntegrationWrapper>, 'onSave'> & { onDataSave: OnSaveExternal };
 

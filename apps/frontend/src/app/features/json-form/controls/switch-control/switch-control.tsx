@@ -1,4 +1,5 @@
 import { Switch } from '@synergycodes/overflow-ui';
+
 import { SwitchControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';

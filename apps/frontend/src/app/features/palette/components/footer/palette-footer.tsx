@@ -1,7 +1,9 @@
-import styles from './palette-footer.module.css';
-import { useTranslation } from 'react-i18next';
 import { Button } from '@synergycodes/overflow-ui';
-import { OptionalFooterContent } from '@/features/plugins-core/components/optional-footer-content';
+import { useTranslation } from 'react-i18next';
+
+import styles from './palette-footer.module.css';
+
+import { OptionalFooterContent } from '@/features/plugins-core/components/app/optional-footer-content';
 
 type Props = {
   onTemplateClick: () => void;

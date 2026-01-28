@@ -1,6 +1,7 @@
-import { Button } from '@synergycodes/overflow-ui';
-import styles from './placeholder-button.module.css';
 import { PlusCircle } from '@phosphor-icons/react';
+import { Button } from '@synergycodes/overflow-ui';
+
+import styles from './placeholder-button.module.css';
 
 type Props = {
   label: string;

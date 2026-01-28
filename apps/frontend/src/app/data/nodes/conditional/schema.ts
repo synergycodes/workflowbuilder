@@ -1,4 +1,5 @@
 import { NodeSchema } from '@workflow-builder/types/node-schema';
+
 import { sharedProperties } from '../shared/shared-properties';
 
 export const schema = {

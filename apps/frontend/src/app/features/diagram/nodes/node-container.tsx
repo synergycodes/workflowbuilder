@@ -1,12 +1,15 @@
+import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
+import { NodeProps } from '@xyflow/react';
+import { memo } from 'react';
+
+import { WorkflowBuilderNode } from '@workflow-builder/types/node-data';
+
+import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+
 import useStore from '@/store/store';
 
-import { memo } from 'react';
-import { NodeProps } from '@xyflow/react';
-import { WorkflowBuilderNode } from '@workflow-builder/types/node-data';
-import { WorkflowNodeTemplate } from './workflow-node-template/workflow-node-template';
-import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
 import { getHandlePosition } from '../handles/get-handle-position';
-import { getIsValidFromProperties } from '@/utils/validation/get-is-valid-from-properties';
+import { WorkflowNodeTemplate } from './workflow-node-template/workflow-node-template';
 
 type Props = NodeProps<WorkflowBuilderNode>;
 

@@ -1,15 +1,20 @@
+import { NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
+import { Handle, Position } from '@xyflow/react';
+import { memo, useMemo } from 'react';
+
+import { Icon } from '@workflow-builder/icons';
 import { IconType } from '@workflow-builder/types/common';
 import { LayoutDirection } from '@workflow-builder/types/common';
-import { memo, useMemo } from 'react';
-import { NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
-import { Icon } from '@workflow-builder/icons';
-import { BranchesContainer } from './components/branches-container';
-import { DecisionBranch } from '@/features/json-form/types/controls';
 
 import styles from './decision-node-template.module.css';
-import { Handle, Position } from '@xyflow/react';
+
+import { OptionalNodeContent } from '@/features/plugins-core/components/diagram/optional-node-content';
+
+import { DecisionBranch } from '@/features/json-form/types/controls';
+
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { BranchesContainer } from './components/branches-container';
 
 type Props = {
   id: string;
@@ -53,9 +58,15 @@ export const DecisionNodeTemplate = memo(
           <NodeIcon icon={iconElement} />
           <NodeDescription label={label} description={description} />
         </NodePanel.Header>
-        <NodePanel.Content>
-          <Status status={isValid === false ? 'invalid' : undefined} />
-          <BranchesContainer layoutDirection={layoutDirection} nodeId={id} decisionBranches={decisionBranches ?? []} />
+        <NodePanel.Content isVisible={isCanvasNode}>
+          <OptionalNodeContent nodeId={id}>
+            <Status status={isValid === false ? 'invalid' : undefined} />
+            <BranchesContainer
+              layoutDirection={layoutDirection}
+              nodeId={id}
+              decisionBranches={decisionBranches ?? []}
+            />
+          </OptionalNodeContent>
         </NodePanel.Content>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />

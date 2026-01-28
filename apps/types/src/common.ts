@@ -1,9 +1,11 @@
 import { ReactFlowInstance, ReactFlowJsonObject, Viewport } from '@xyflow/react';
-import { NodeType } from './node-types';
-import { NodeDefinition, WorkflowBuilderEdge, WorkflowBuilderNode } from './node-data';
 import { ReactNode } from 'react';
-import { NodeSchema } from './node-schema';
+
 import { WBIcon } from '@workflow-builder/icons';
+
+import { NodeDefinition, WorkflowBuilderEdge, WorkflowBuilderNode } from './node-data';
+import { NodeSchema } from './node-schema';
+import { NodeType } from './node-types';
 
 export const layoutDirections = ['DOWN', 'RIGHT'] as const;
 
@@ -14,6 +16,14 @@ export type IconType = WBIcon;
 export type ItemType = NodeType;
 
 export type PaletteItem<T extends NodeSchema = NodeSchema> = NodeDefinition<T>;
+
+export type PaletteGroup = {
+  label: string;
+  groupItems: PaletteItem[];
+  isOpen?: boolean;
+};
+
+export type PaletteItemOrGroup = PaletteItem | PaletteGroup;
 
 export enum StatusType {
   Idle = 'idle',

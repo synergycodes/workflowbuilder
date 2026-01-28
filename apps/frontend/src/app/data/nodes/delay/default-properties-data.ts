@@ -1,4 +1,5 @@
 import { NodeDataProperties } from '@/features/json-form/types/default-properties';
+
 import { DelayNodeSchema } from './schema';
 
 export const defaultPropertiesData: NodeDataProperties<DelayNodeSchema> = {

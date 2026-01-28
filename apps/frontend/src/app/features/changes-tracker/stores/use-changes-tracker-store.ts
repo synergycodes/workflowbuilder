@@ -1,6 +1,7 @@
-import { withOptionalFunctionPlugins } from '@/features/plugins-core/adapters/adapter-functions';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
+
+import { withOptionalFunctionPlugins } from '@/features/plugins-core/adapters/adapter-functions';
 
 const initTimestamp = Date.now();
 

@@ -1,6 +1,7 @@
 import { NodeSchema } from '@workflow-builder/types/node-schema';
-import { sharedProperties } from '../shared/shared-properties';
+
 import { statusOptions } from '../shared/general-information';
+import { sharedProperties } from '../shared/shared-properties';
 import { chatModelOptions, memoryOptions } from './select-options';
 
 export const schema = {

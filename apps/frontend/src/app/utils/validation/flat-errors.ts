@@ -1,5 +1,6 @@
-import { FlatError } from '@workflow-builder/types/node-schema';
 import { ErrorObject } from 'ajv';
+
+import { FlatError } from '@workflow-builder/types/node-schema';
 
 export function flatErrors(
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

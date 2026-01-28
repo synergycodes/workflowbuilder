@@ -1,15 +1,19 @@
-import { Connection, OnConnect, addEdge, Node } from '@xyflow/react';
-import { GetDiagramState, SetDiagramState } from '@/store/store';
+import { Connection, Node, OnConnect, addEdge } from '@xyflow/react';
+
 import {
   ConnectionBeingDragged,
   DiagramModel,
   LayoutDirection,
   WorkflowBuilderReactFlowInstance,
 } from '@workflow-builder/types/common';
-import { WorkflowBuilderNode, WorkflowBuilderEdge } from '@workflow-builder/types/node-data';
-import { getEdgeZIndex } from '@/features/diagram/edges/get-edge-z-index';
+import { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflow-builder/types/node-data';
+
 import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
+
+import { GetDiagramState, SetDiagramState } from '@/store/store';
+
 import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { getEdgeZIndex } from '@/features/diagram/edges/get-edge-z-index';
 
 export type DiagramState = {
   nodes: WorkflowBuilderNode[];

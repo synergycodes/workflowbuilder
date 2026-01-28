@@ -1,10 +1,15 @@
-import { WorkflowBuilderEdge } from 'apps/types/src/node-data';
-import useStore from '@/store/store';
 import { Input } from '@synergycodes/overflow-ui';
-import styles from './edge-properties.module.css';
 import { useEffect, useState } from 'react';
+
+import { WorkflowBuilderEdge } from '@workflow-builder/types/node-data';
+
+import styles from './edge-properties.module.css';
+
+import useStore from '@/store/store';
+
 import { FormControlWithLabel } from '@/components/form/form-control-with-label/form-control-with-label';
-import { OptionalEdgeProperties } from '@/features/plugins-core/components/optional-edge-properties';
+
+import { OptionalEdgeProperties } from '@/features/plugins-core/components/app/optional-edge-properties';
 
 type Props = {
   edge: WorkflowBuilderEdge;

@@ -1,10 +1,11 @@
 import i18n from 'i18next';
-import { initReactI18next } from 'react-i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
-import { en } from './locales/en';
-import { pl } from './locales/pl';
+import { initReactI18next } from 'react-i18next';
 
 import { withOptionalComponentPluginsTranslation } from '@/features/plugins-core/adapters/adapter-i18n';
+
+import { en } from './locales/en';
+import { pl } from './locales/pl';
 
 const defaultNS = 'translation';
 

@@ -1,6 +1,7 @@
-import { useJsonForms } from '@jsonforms/react';
-import { UISchemaElement } from '../../types/uischema';
 import { Scopable, Scoped, toDataPath } from '@jsonforms/core';
+import { useJsonForms } from '@jsonforms/react';
+
+import { UISchemaElement } from '../../types/uischema';
 
 export function useHasChildError(childElements?: UISchemaElement[]) {
   const { core } = useJsonForms();

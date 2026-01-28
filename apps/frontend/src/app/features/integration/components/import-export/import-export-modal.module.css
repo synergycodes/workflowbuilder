@@ -22,7 +22,6 @@
   background: var(--wb-import-error-background-color);
   border: var(--wb-import-error-border);
   border-radius: var(--wb-import-error-border-radius);
-  /* padding: var(--ax-public-snackbar-padding) */
 }
 
 .actions {

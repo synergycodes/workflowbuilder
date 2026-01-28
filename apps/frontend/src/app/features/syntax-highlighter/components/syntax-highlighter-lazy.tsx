@@ -1,5 +1,5 @@
-import React, { Suspense } from 'react';
 import { TextArea } from '@synergycodes/overflow-ui';
+import React, { Suspense } from 'react';
 
 import type { SyntaxHighlighterProps } from './syntax-highlighter';
 
@@ -10,7 +10,7 @@ const SyntaxHighlighter = React.lazy(() =>
 type SyntaxHighlighterLazyProps = SyntaxHighlighterProps;
 
 export function SyntaxHighlighterLazy(props: SyntaxHighlighterLazyProps) {
-  const { value, onChange, isDisabled } = props;
+  const { value, onChange, mode, isDisabled } = props;
 
   return (
     <Suspense
@@ -25,6 +25,7 @@ export function SyntaxHighlighterLazy(props: SyntaxHighlighterLazyProps) {
     >
       <SyntaxHighlighter
         value={value}
+        mode={mode}
         onChange={(value) => (onChange ? onChange(value || '') : undefined)}
         isDisabled={isDisabled}
       />

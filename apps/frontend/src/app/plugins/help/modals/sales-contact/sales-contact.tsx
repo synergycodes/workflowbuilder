@@ -1,8 +1,10 @@
-import styles from './sales-contact.module.css';
-import imageUrl from '../../assets/maciej-teska-workflow.jpg';
+import { LinkedinLogo, PaperPlaneRight } from '@phosphor-icons/react';
 import { Avatar, Button } from '@synergycodes/overflow-ui';
 import clsx from 'clsx';
-import { LinkedinLogo, PaperPlaneRight } from '@phosphor-icons/react';
+
+import styles from './sales-contact.module.css';
+
+import imageUrl from '../../assets/maciej-teska-workflow.jpg';
 
 const salesDetails = {
   name: 'Maciej Teska',

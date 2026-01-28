@@ -1,6 +1,7 @@
+import { NodeSchema } from '@workflow-builder/types/node-schema';
+
 import { statusOptions } from '../shared/general-information';
 import { sharedProperties } from '../shared/shared-properties';
-import { NodeSchema } from '@workflow-builder/types/node-schema';
 
 const conditions = {
   type: 'array',
@@ -20,6 +21,8 @@ const decisionBranches = {
   items: {
     type: 'object',
     properties: {
+      index: { type: 'number' },
+      label: { type: 'string' },
       conditions,
     },
   },

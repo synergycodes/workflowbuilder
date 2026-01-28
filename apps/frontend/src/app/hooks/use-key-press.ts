@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from 'react';
 import { KeyCode } from '@xyflow/react';
+import { useCallback, useEffect, useState } from 'react';
 
 type Options = {
   withControlOrMeta?: boolean;
@@ -72,9 +72,14 @@ function isReactFlowDiagramTarget(target: EventTarget | null) {
     return false;
   }
   const targetElement = target as Element;
-  return (
-    targetElement.tagName === 'BODY' ||
-    targetElement.classList.contains('react-flow__edge') ||
-    targetElement.classList.contains('react-flow__node')
-  );
+
+  const isTarget = [
+    targetElement.tagName === 'BODY',
+    targetElement.classList.contains('react-flow__edge'),
+    targetElement.classList.contains('react-flow__node'),
+    // It is created when someone selects a rectangle with Shift and drags.
+    targetElement.classList.contains('react-flow__nodesselection-rect'),
+  ].some(Boolean);
+
+  return isTarget;
 }

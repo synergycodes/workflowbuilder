@@ -1,36 +1,44 @@
-import { DragEventHandler, useCallback, useEffect, useMemo } from 'react';
-import useStore from '@/store/store';
-import { diagramStateSelector } from './selectors';
-import styles from './diagram.module.css';
-import { DragEvent } from 'react';
-import { getNodeTypesObject } from './get-node-types-object';
 import {
-  ReactFlow,
   Background,
+  EdgeTypes,
   FitViewOptions,
   NodeChange,
+  OnBeforeDelete,
   OnConnect,
   OnNodeDrag,
-  OnBeforeDelete,
-  EdgeTypes,
-  SelectionMode,
   OnSelectionChangeParams,
+  ReactFlow,
+  SelectionMode,
 } from '@xyflow/react';
-import '@xyflow/react/dist/style.css';
+import { DragEventHandler, useCallback, useEffect, useMemo } from 'react';
+import { DragEvent } from 'react';
+
 import { WorkflowBuilderOnSelectionChangeParams } from '@workflow-builder/types/common';
 import { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflow-builder/types/node-data';
-import { LabelEdge } from './edges/label-edge/label-edge';
-import { usePaletteDrop } from '@/hooks/use-palette-drop';
+
+import styles from './diagram.module.css';
+import '@xyflow/react/dist/style.css';
+
+import useStore from '@/store/store';
+
+import { withOptionalComponentPlugins } from '@/features/plugins-core/adapters/adapter-components';
+
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+import { SNAP_GRID, SNAP_IS_ACTIVE } from '@/features/diagram/diagram.const';
 import {
   callNodeChangedListeners,
   destroyNodeChangedListeners,
 } from '@/features/diagram/listeners/node-changed-listeners';
-import { callNodeDragStartListeners, destroyNodeDragStartListeners } from './listeners/node-drag-start-listeners';
-import { SNAP_GRID, SNAP_IS_ACTIVE } from '@/features/diagram/diagram.const';
-import { withOptionalComponentPlugins } from '@/features/plugins-core/adapters/adapter-components';
-import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
 import { useDeleteConfirmation } from '@/features/modals/delete-confirmation/use-delete-confirmation';
-import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+
+import { usePaletteDrop } from '@/hooks/use-palette-drop';
+
+import { deleteKeyCode } from './const';
+import { LabelEdge } from './edges/label-edge/label-edge';
+import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
+import { useNodeTypes } from './hooks/use-node-types';
+import { callNodeDragStartListeners, destroyNodeDragStartListeners } from './listeners/node-drag-start-listeners';
+import { diagramStateSelector } from './selectors';
 
 function DiagramContainerComponent({ edgeTypes = {} }: { edgeTypes?: EdgeTypes }) {
   const {
@@ -49,7 +57,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: { edgeTypes?: EdgeTypes }
   const { openDeleteConfirmationModal } = useDeleteConfirmation();
 
   const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
-  const nodeTypes = useMemo(getNodeTypesObject, []);
+  const nodeTypes = useNodeTypes();
 
   const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
@@ -179,6 +187,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: { edgeTypes?: EdgeTypes }
         selectionOnDrag
         panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
+        deleteKeyCode={deleteKeyCode}
       >
         <Background />
       </ReactFlow>

@@ -1,9 +1,10 @@
+import { PlusCircle } from '@phosphor-icons/react';
+import { PropsWithChildren } from 'react';
+
 import styles from './tool-info.module.css';
 
-import { PropsWithChildren } from 'react';
-import { NodeInfoWrapper } from '../node-info-wrapper/node-wrapper-info';
 import { IconPlaceholder } from '../icon-placeholder/icon-placeholder';
-import { PlusCircle } from '@phosphor-icons/react';
+import { NodeInfoWrapper } from '../node-info-wrapper/node-wrapper-info';
 
 export function ToolInfo({ children }: PropsWithChildren) {
   return (

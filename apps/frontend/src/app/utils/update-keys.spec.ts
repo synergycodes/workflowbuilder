@@ -1,4 +1,5 @@
 import { vi } from 'vitest';
+
 import { updateKeys } from './update-keys';
 
 describe('updateKeys', () => {
