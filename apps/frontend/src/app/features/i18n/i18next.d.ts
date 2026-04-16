@@ -1,4 +1,5 @@
 import 'i18next';
+import { TFunction } from 'i18next';
 
 import { defaultNS } from '.';
 import { en } from './locales/en';
@@ -36,3 +37,6 @@ type DeepReplace<T, LeafValue> = T extends object
         [K in keyof T]: DeepReplace<T[K], LeafValue>;
       }
   : LeafValue;
+
+export type TranslationKey = Parameters<TFunction>[0] & string;
+export type TranslationParams = Parameters<TFunction>[2];

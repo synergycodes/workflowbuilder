@@ -7,7 +7,7 @@ import { withOptionalComponentPluginsTranslation } from '@/features/plugins-core
 import { en } from './locales/en';
 import { pl } from './locales/pl';
 
-const defaultNS = 'translation';
+export const defaultNS = 'translation';
 
 const resources = {
   en: {

@@ -1,3 +1,4 @@
+import { registerDecorator } from './utils/register-decorator';
 import { sortByPriority } from './utils/sort-by-priority';
 
 type CallbackBefore = (params: { params: unknown[] }) => void | { replacedParams: unknown[] };
@@ -24,14 +25,9 @@ type CallbackDecoratorOptions = DecoratorOptionsBefore | DecoratorOptionsAfter;
 const pluginRegistryCallbacks = new Map<string, CallbackDecoratorOptions[]>();
 
 export function registerFunctionDecorator(functionName: string, plugin: CallbackDecoratorOptions) {
-  if (!pluginRegistryCallbacks.has(functionName)) {
-    pluginRegistryCallbacks.set(functionName, []);
-  }
+  const resolvedName = plugin.name ?? plugin.callback.name;
 
-  pluginRegistryCallbacks.get(functionName)!.push({
-    ...plugin,
-    name: plugin.name ?? plugin.callback.name,
-  });
+  registerDecorator(pluginRegistryCallbacks, functionName, { ...plugin, name: resolvedName });
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

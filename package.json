@@ -1,27 +1,28 @@
 {
   "name": "workflow-builder",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "private": true,
   "scripts": {
     "dev": "pnpm --filter frontend dev",
+    "dev:local": "LOCAL_OVERFLOW_UI=true pnpm --filter frontend dev",
     "build": "pnpm -r build",
     "preview-build": "pnpm --filter frontend preview-build",
     "typecheck": "pnpm -r typecheck",
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
     "build:frontend": "pnpm --filter frontend build",
-    "format": "prettier --write --log-level silent \"**/*.+(css|ts|tsx|json)\"",
+    "format": "prettier --write --log-level silent \"**/*.+(css|ts|tsx|json|md|mdx|astro)\"",
     "test": "pnpm --filter frontend test",
     "check": "pnpm lint && pnpm typecheck && pnpm format",
     "pre-commit": "lint-staged",
-    "pre-push": "pnpm format"
+    "pre-push": "pnpm format",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",
     "@trivago/prettier-plugin-sort-imports": "^6.0.0",
     "@types/node": "^22.12.0",
     "@types/react-dom": "^19.1.0",
-    "@types/react-gtm-module": "^2.0.4",
     "concurrently": "^9.1.2",
     "eslint": "^9.18.0",
     "eslint-config-prettier": "^9.1.0",
@@ -32,6 +33,7 @@
     "knip": "^5.56.0",
     "lint-staged": "^16.0.0",
     "prettier": "^3.3.3",
+    "prettier-plugin-astro": "^0.14.1",
     "tsx": "^4.19.3",
     "typescript": "~5.6.3",
     "typescript-eslint": "^8.22.0"

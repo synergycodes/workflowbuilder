@@ -1,0 +1,12 @@
+:root {
+  --ax-public-form-rich-text-color: var(--ax-txt-secondary-default);
+}
+
+.container {
+  composes: ax-public-p11 from global;
+  color: var(--ax-public-form-rich-text-color);
+
+  a {
+    color: inherit;
+  }
+}

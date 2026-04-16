@@ -10,11 +10,11 @@ export const toolOptions = {
 } as Record<string, ItemOption>;
 
 export const chatModelOptions = {
-  gpt: { label: 'GPT-4', value: 'gpt40', icon: 'OpenAiLogo' },
-  gemini: { label: 'Gemini 2.5 Pro', value: 'gemini2.5pro', icon: 'GeminiLogo' },
-  claude: { label: 'Claude 3.7 Sonet', value: 'claude3.7sonet', icon: 'ClaudeLogo' },
+  gpt: { label: 'GPT-5.4', value: 'gpt5.4', icon: 'OpenAiLogo' },
+  gemini: { label: 'Gemini 3.1 Pro', value: 'gemini3.1pro', icon: 'GeminiLogo' },
+  claude: { label: 'Claude Sonnet 4.6', value: 'claudeSonnet4.6', icon: 'ClaudeLogo' },
 } as Record<string, ItemOption>;
 
 export const memoryOptions = {
-  system: { label: 'Windows System Memory', value: 'system', icon: 'Database' },
+  system: { label: 'Window-based Memory', value: 'system', icon: 'Database' },
 } as Record<string, ItemOption>;

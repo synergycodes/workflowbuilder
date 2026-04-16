@@ -1,5 +1,5 @@
 :root {
-  --wb-template-title-width: 116px;
+  --wb-template-title-width: 140px;
   --wb-template-title-padding: 12px;
   --wb-template-subtitle-color: var(--ax-colors-gray-500) /* missing token */;
 }
@@ -32,7 +32,7 @@
       gap: 6px;
       flex-wrap: wrap;
       justify-content: center;
-      max-width: calc((var(--wb-template-title-width) + var(--wb-template-title-padding) * 2) * 3 + 16px);
+      max-width: calc(var(--wb-template-title-width) * 3 + 16px);
     }
   }
 }

@@ -12,4 +12,11 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
+  outputSchema: {
+    properties: {
+      eventType: { type: 'string', label: 'Event Type', description: 'The type of event that started the workflow' },
+      timestamp: { type: 'string', label: 'Timestamp', description: 'ISO 8601 date-time when the trigger fired' },
+      payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
+    },
+  },
 };

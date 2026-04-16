@@ -65,7 +65,7 @@ export function ImportModal() {
       {(errors.length > 0 || warnings.length > 0) && (
         <div className={clsx('ax-public-p10', styles['error'])}>
           {[...errors, ...warnings].map(({ message, messageParams }) => (
-            <div key={message}>{t(message, messageParams)}</div>
+            <div key={message}>{t(message, messageParams) as string}</div>
           ))}
         </div>
       )}

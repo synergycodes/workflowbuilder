@@ -1,6 +1,7 @@
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
+import { globalControls } from '../shared/general-information';
 import { DecisionNodeSchema } from './schema';
 
 const scope = getScope<DecisionNodeSchema>;
@@ -9,6 +10,7 @@ const generalInformation: UISchema = {
   type: 'Accordion',
   label: 'General Settings',
   elements: [
+    ...globalControls,
     {
       type: 'Text',
       scope: scope('properties.label'),

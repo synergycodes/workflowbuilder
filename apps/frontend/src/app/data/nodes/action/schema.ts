@@ -78,8 +78,7 @@ export const saveLocationOptions = [
 ];
 
 export const schema = {
-  // Without it default-properties-data doesn't type correctly
-  // type: 'object',
+  type: 'object',
   properties: {
     ...sharedProperties,
     type: {

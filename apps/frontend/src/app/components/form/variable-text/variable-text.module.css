@@ -1,0 +1,236 @@
+:root {
+  --wb-color-violet-400-20: rgba(148, 131, 255, 0.2);
+  --wb-variable-text-mention-bg: var(--wb-color-violet-400-20);
+  --wb-variable-text-suggestion-bg: var(--ax-ui-bg-primary-default);
+  --wb-variable-text-suggestion-hover: var(--ax-ui-bg-secondary-default);
+  --wb-variable-text-suggestion-border: var(--ax-ui-stroke-primary-default);
+  --wb-variable-text-suggestion-bg-error: var(--ax-ui-bg-primary-default);
+  --wb-txt-ghost-primary-default: #6b3bff;
+  --wb-variable-backdrop: color-mix(in srgb, var(--ax-public-modal-backdrop-background), transparent 50%);
+}
+
+.control {
+  position: relative;
+  border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+  border-radius: var(--ax-public-input-border-radius-medium);
+  color: var(--ax-public-input-root-color);
+  transition: all var(--ax-public-transition);
+
+  &.control--error {
+    background-color: var(--ax-public-input-root-background-color-error);
+    border-color: var(--ax-public-input-root-border-color-error);
+    color: var(--ax-public-input-root-color-error);
+
+    .mention {
+      border: 1px solid color-mix(in srgb, var(--ax-public-input-root-border-color-error), transparent 50%);
+      background-color: transparent;
+    }
+  }
+}
+
+.control:focus-within {
+  border-color: var(--ax-public-input-root-border-color-focus);
+}
+
+.input {
+  position: relative;
+  z-index: 1;
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: var(--ax-public-input-padding-medium);
+  border: none;
+  background: transparent;
+  color: unset;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 140%;
+  outline: none;
+  resize: none;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
+}
+
+.input::placeholder {
+  color: unset;
+  opacity: 0.5;
+}
+
+/*
+ * The highlighter sits behind the input (position:absolute applied by the library inline).
+ * ALL text must be transparent — user reads text from the input layer above.
+ * Only mention backgrounds are visible through the transparent input background.
+ *
+ * The library uses Tailwind utility classes (text-transparent, etc.) internally
+ * which have no effect without Tailwind — we must set them manually.
+ */
+.highlighter {
+  padding: var(--ax-public-input-padding-medium);
+  border: none;
+  background: transparent;
+  color: transparent;
+  font: inherit;
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 140%;
+  box-sizing: border-box;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.mention {
+  text-align: center;
+  border-radius: 4px;
+  padding: 2px 2px;
+  margin-left: -2px;
+  margin-top: -1px;
+  background-color: var(--wb-variable-text-mention-bg);
+  color: transparent;
+  /* If broken to multiple lines it will keep rounded corners */
+  box-decoration-break: clone;
+}
+
+.suggestions {
+  position: fixed;
+  /* !import beats top added in lib with styles={} */
+  top: 50% !important;
+  left: 50% !important;
+  bottom: auto !important;
+  right: auto !important;
+  width: 600px !important;
+  transform: translate(-50%, -50%);
+  z-index: 300;
+  max-width: calc(100vw - 2rem);
+  max-height: calc(100dvh - 2rem);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--wb-variable-text-suggestion-border);
+  border-radius: var(--ax-public-input-border-radius-medium);
+  background: var(--wb-variable-text-suggestion-bg);
+  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+}
+
+.suggestionsContainer {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 0.5rem 0 0;
+}
+
+body:has(.suggestionsContainer)::before {
+  content: '';
+  position: fixed;
+  width: 100vw;
+  height: 100dvh;
+  background-color: var(--wb-variable-backdrop);
+  z-index: 200;
+}
+
+.suggestionsHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.25rem 0.5rem 0.25rem 0.75rem;
+}
+
+.suggestionsTitle {
+  composes: ax-public-h10 from global;
+}
+
+.suggestionsClose {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.25rem;
+  height: 1.25rem;
+  padding: 0;
+  border: none;
+  border-radius: 0.25rem;
+  background: transparent;
+  color: var(--ax-txt-tertiary-default);
+  cursor: pointer;
+}
+
+.suggestionsList {
+  list-style: none;
+  margin: 0;
+  padding: 0 0 0.5rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.groupHeader {
+  composes: ax-public-h10 from global;
+  display: flex;
+  display: flex;
+  align-items: center;
+  gap: var(--wb-token-spacing-spacing-4, 4px);
+  flex: 1 0 0;
+  padding: 6px;
+}
+
+.iconWrapper {
+  display: flex;
+  padding: var(--wb-token-spacing-button-s-v-pad-2, 7px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--wb-token-spacing-button-s-gap, 8px);
+
+  svg {
+    fill: var(--wb-txt-ghost-primary-default);
+  }
+}
+
+.groupHeader:not(:first-child) {
+  margin-top: 0.25rem;
+  padding-top: 0.5rem;
+}
+
+.suggestionItem {
+  padding: 6px;
+  border-radius: 0;
+  cursor: pointer;
+}
+
+.suggestionItemFocused {
+  background: var(--wb-variable-text-suggestion-hover);
+}
+
+.suggestionContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.0625rem;
+  padding: 6px;
+}
+
+.suggestionLabel {
+  color: var(--ax-txt-primary-default);
+  composes: ax-public-h10 from global;
+}
+
+.suggestionDescription {
+  composes: ax-public-p11 from global;
+  color: var(--ax-txt-primary-default);
+}
+
+.singleLine .input,
+.singleLine .highlighter {
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+.multiLine .input {
+  min-height: 5rem;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  resize: vertical;
+}
+
+.multiLine .highlighter {
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}

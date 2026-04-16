@@ -3,24 +3,43 @@ import clsx from 'clsx';
 
 import styles from './connectable-item.module.css';
 
+import { ExclusiveUnion } from '@/utils/typescript';
+
 import useStore from '@/store/store';
 
 import { getHandleId } from '@/features/diagram/handles/get-handle-id';
 
-type Props = {
-  nodeId: string;
-  innerId: string;
-  handleType: HandleType;
+type SharedProps = {
   label: string;
   canHaveBottomHandle?: boolean;
 };
 
-export function ConnectableItem({ label, nodeId, innerId, handleType, canHaveBottomHandle = true }: Props) {
+type PropsForHandleId = {
+  handleId: string;
+} & SharedProps;
+
+type PropsForHandleConfig = {
+  nodeId: string;
+  innerId: string;
+  handleType: HandleType;
+} & SharedProps;
+
+type Props = ExclusiveUnion<PropsForHandleId, PropsForHandleConfig>;
+
+export function ConnectableItem(props: Props) {
+  const { label, canHaveBottomHandle = true } = props;
   const layoutDirection = useStore(({ layoutDirection }) => layoutDirection);
   const isVertical = layoutDirection === 'DOWN' && canHaveBottomHandle;
   const position = isVertical ? Position.Bottom : Position.Right;
 
-  const handleId = getHandleId({ nodeId, innerId, handleType });
+  const handleId =
+    'handleId' in props
+      ? props.handleId
+      : getHandleId({
+          nodeId: props.nodeId,
+          innerId: props.innerId,
+          handleType: props.handleType,
+        });
 
   return (
     <div

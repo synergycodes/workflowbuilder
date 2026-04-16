@@ -20,7 +20,6 @@ Customizing Workflow Builder for specific needs may involve adding a lot of node
 ## Consequences
 
 - **Pros**
-
   - **JSON-based form generation** - allows use to store all node properties in a JSON configuration - thanks to it all relevant info can be stored on backend which makes managing available nodes in a palette and customizing their properties much easier.
   - JSONForms is **framework-agnostic** so our implementation can be reused in other projects
   - Implementation of nodes and customizations of properties will be **simple, unified and hopefully much faster**

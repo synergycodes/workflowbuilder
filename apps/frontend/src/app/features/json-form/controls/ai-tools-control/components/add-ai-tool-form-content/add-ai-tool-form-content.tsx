@@ -20,6 +20,7 @@ export const FORM_TOOLS_NAME = 'ai-tools-form';
 export function AddAiToolFormContent({ onSubmit, data }: ContentProps) {
   const [formData, setFormData] = useState<AiAgentTool>(() => ({
     id: data?.id ?? '',
+    sourceHandle: data?.sourceHandle ?? '',
     tool: data?.tool ?? '',
     description: data?.description ?? '',
     apiKey: data?.apiKey ?? '',

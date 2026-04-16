@@ -16,7 +16,7 @@ export function useAutoSaveOnClose() {
       onSave({ isAutoSave: true });
     };
 
-    window.removeEventListener('beforeunload', onSaveRef.current);
+    window.addEventListener('beforeunload', onSaveRef.current);
 
     return () => {
       if (onSaveRef.current) {

@@ -8,6 +8,8 @@ import styles from './template-selector.module.css';
 
 import useStore from '@/store/store';
 
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+
 import { templates } from '@/data/templates';
 import { useFitView } from '@/hooks/use-fit-view';
 
@@ -43,7 +45,10 @@ export function TemplateSelector() {
               key={id}
               title={name}
               subTitle={`${value.diagram.nodes.length} nodes`}
-              onClick={() => selectTemplate(value)}
+              onClick={() => {
+                trackFutureChange('selectTemplate', { templateName: name });
+                selectTemplate(value);
+              }}
             />
           ))}
           <Tile icon="CornersOut" title={t('templateSelector.emptyCanvas')} outlined={true} onClick={selectTemplate} />

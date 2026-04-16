@@ -2,7 +2,7 @@ import { NodeDataProperties } from '@/features/json-form/types/default-propertie
 
 import { TriggerNodeSchema } from './schema';
 
-export const defaultPropertiesData: NodeDataProperties<TriggerNodeSchema> = {
+export const defaultPropertiesData: Required<NodeDataProperties<TriggerNodeSchema>> = {
   label: 'node.trigger.label',
   description: 'node.trigger.description',
   status: 'active',

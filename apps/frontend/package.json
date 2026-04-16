@@ -16,14 +16,15 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@microsoft/clarity": "^1.0.0",
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "^1.0.0-beta.22",
+    "@synergycodes/overflow-ui": "1.0.0-beta.26",
     "@workflow-builder/icons": "workspace:*",
     "@xyflow/react": "catalog:",
     "ace-builds": "^1.43.4",
-    "ajv": "^8.0.0",
+    "ajv": "catalog:",
     "clsx": "^2.1.1",
     "elkjs": "^0.9.3",
     "html-to-image": "1.11.11",
@@ -36,8 +37,8 @@
     "react": "^19.1.0",
     "react-ace": "^14.0.1",
     "react-dom": "catalog:",
-    "react-gtm-module": "^2.0.11",
     "react-i18next": "^15.4.1",
+    "react-mentions-ts": "^5.4.7",
     "remeda": "^2.19.2",
     "web-worker": "^1.5.0",
     "zustand": "^5.0.1"

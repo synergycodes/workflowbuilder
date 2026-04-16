@@ -7,6 +7,9 @@ import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
 import useStore from '@/store/store';
 
 import { IntegrationDataFormat } from '@/features/integration/types';
+import { selectSingleSelectedElement } from '@/features/properties-bar/use-single-selected-element';
+
+import { skipDynamicValuesInEdges, skipDynamicValuesInNodes } from './utils/dynamic-values';
 
 export function getStoreNodes() {
   return useStore.getState().nodes;
@@ -36,13 +39,20 @@ export function setStoreLayoutDirection(layoutDirection: LayoutDirection) {
   return useStore.setState({ layoutDirection });
 }
 
-export function getStoreDataForIntegration(): IntegrationDataFormat {
+type GetStoreDataParams = {
+  shouldSkipDynamicValues?: boolean;
+};
+
+export function getStoreDataForIntegration({
+  shouldSkipDynamicValues = true,
+}: GetStoreDataParams = {}): IntegrationDataFormat {
   const state = useStore.getState();
 
   return {
     name: state.documentName || '',
-    nodes: state.nodes,
-    edges: state.edges,
+    // It removes selected, dynamic points from avoid nodes etc.
+    nodes: shouldSkipDynamicValues ? skipDynamicValuesInNodes(state.nodes) : state.nodes,
+    edges: shouldSkipDynamicValues ? skipDynamicValuesInEdges(state.edges) : state.edges,
     layoutDirection: state.layoutDirection,
   };
 }
@@ -50,8 +60,14 @@ export function getStoreDataForIntegration(): IntegrationDataFormat {
 export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFormat>) {
   useStore.setState((state) => ({
     documentName: loadData.name ?? state.documentName,
-    nodes: loadData.nodes ?? state.nodes.map(getNodeWithErrors),
+    nodes: (loadData.nodes ?? state.nodes).map(getNodeWithErrors),
     edges: loadData.edges ?? state.edges,
     layoutDirection: loadData.layoutDirection ?? state.layoutDirection,
   }));
+}
+
+export function getStoreSingleSelected() {
+  const state = useStore.getState();
+
+  return selectSingleSelectedElement(state);
 }

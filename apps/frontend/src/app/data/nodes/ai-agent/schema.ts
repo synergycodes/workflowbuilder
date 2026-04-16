@@ -26,6 +26,9 @@ export const schema = {
           id: {
             type: 'string',
           },
+          sourceHandle: {
+            type: 'string',
+          },
           tool: {
             type: 'string',
           },

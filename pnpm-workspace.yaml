@@ -3,10 +3,11 @@ packages:
 
 catalog:
   '@phosphor-icons/core': ^2.1.1
-  '@xyflow/react': ^12.3.6
+  '@xyflow/react': 12.10.0
   'react': ^19.1.0
   '@types/react': 19.1.8
   'react-dom': ^19.1.0
+  'ajv': ^8.0.0
 
 useNodeVersion: 22.12.0
 engineStrict: true

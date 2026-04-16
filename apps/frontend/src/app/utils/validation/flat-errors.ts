@@ -11,6 +11,7 @@ export function flatErrors(
         keyword: error.keyword,
         instancePath: error.instancePath,
         schemaPath: error.schemaPath,
+        schema: error.schema as string[],
         message: error.message,
       }))
     : [];

@@ -1,19 +1,23 @@
-import { PlusCircle } from '@phosphor-icons/react';
 import { PropsWithChildren } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import styles from './tool-info.module.css';
 
-import { IconPlaceholder } from '../icon-placeholder/icon-placeholder';
+import { PlaceholderButton } from '../../../components/placeholder-button/placeholder-button';
 import { NodeInfoWrapper } from '../node-info-wrapper/node-wrapper-info';
 
-export function ToolInfo({ children }: PropsWithChildren) {
+type Props = PropsWithChildren<{
+  onAddTool?: () => void;
+}>;
+
+export function ToolInfo({ children, onAddTool }: Props) {
+  const { t } = useTranslation(undefined, { keyPrefix: 'aiTools' });
+
   return (
-    <NodeInfoWrapper label={'AI Agent Tools'}>
-      <div className={styles['tools-container']}>{children}</div>
-      <div className={styles['icon-container']}>
-        <IconPlaceholder className={styles['icon-placeholder-long']}>
-          <PlusCircle size={16} /> Add Tool
-        </IconPlaceholder>
+    <NodeInfoWrapper label={t('title')}>
+      <div className={styles['tools-container']}>
+        {children}
+        <PlaceholderButton label={t('addTool')} onClick={onAddTool} />
       </div>
     </NodeInfoWrapper>
   );

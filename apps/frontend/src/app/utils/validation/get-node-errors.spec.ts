@@ -10,7 +10,7 @@ describe('getNodeErrors', () => {
     expect(errors).toEqual([]);
   });
 
-  it('should return an array with a title error for a node without a title', () => {
+  it('should return an array with a title error for a node without a description', () => {
     const { description: _, ...properties } = mockNodeDelay.data.properties;
     const errors = getNodeErrors({
       ...mockNodeDelay,

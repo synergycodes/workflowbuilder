@@ -3,6 +3,7 @@ import type { Edge, Node } from '@xyflow/react';
 import type { NodeDataProperties } from '../../frontend/src/app/features/json-form/types/default-properties';
 import type { UISchema } from '../../frontend/src/app/features/json-form/types/uischema';
 import type { IconType } from './common';
+import type { NodeOutputSchema } from './node-output-schema';
 import type { BaseNodeProperties, NodeSchema } from './node-schema';
 import { NodeType } from './node-types';
 
@@ -15,7 +16,9 @@ export type NodeDefinition<T extends NodeSchema> = {
   defaultPropertiesData: NodeDataProperties<T>;
   /** describes how the form looks like and to which fields data properties should be mapped */
   uischema?: UISchema;
-} & Required<BaseNodeProperties> &
+  /** describes the output properties this node produces, used by the variable picker */
+  outputSchema?: NodeOutputSchema;
+} & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
   Pick<NodeData, 'type' | 'icon' | 'templateType'>;
 
 export type NodeData<T = BaseNodeProperties & Record<string, unknown>> = {

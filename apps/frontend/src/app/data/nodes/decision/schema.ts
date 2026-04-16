@@ -21,7 +21,8 @@ const decisionBranches = {
   items: {
     type: 'object',
     properties: {
-      index: { type: 'number' },
+      id: { type: 'string' },
+      sourceHandle: { type: 'string' },
       label: { type: 'string' },
       conditions,
     },

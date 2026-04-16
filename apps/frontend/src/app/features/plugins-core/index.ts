@@ -6,6 +6,8 @@ import '@/features/modals/plugin-exports';
 
 // The plugin used to manage switching between other plugins that usually don't work together
 import '@/plugins/__demo/plugin-exports';
+import '@/plugins/analytics/plugin-exports';
+import '@/plugins/validation/plugin-exports';
 import '@/plugins/avoid-nodes-edges/plugin-exports';
 import '@/plugins/copy-paste/plugin-exports';
 import '@/plugins/download-pdf/plugin-exports';

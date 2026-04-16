@@ -45,4 +45,9 @@
   .diagram-container {
     position: absolute;
   }
+
+  .viewport-bounds {
+    flex: 1;
+    visibility: hidden;
+  }
 }

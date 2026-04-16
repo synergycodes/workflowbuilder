@@ -33,8 +33,8 @@ runScript(SCRIPT_NAME, async function () {
     logList.push(`- _${date}_: [${title}](./${rootRelativePath})`);
   }
 
-  const title = '# Decision Logs\n';
-  const logContent = [title, ...logList].join('\n');
+  const title = '# Decision Logs';
+  const logContent = [title, '', ...logList, ''].join('\n');
 
   await writeFile(OUTPUT_FILE, logContent);
 });

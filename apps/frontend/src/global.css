@@ -69,4 +69,12 @@
   .react-flow.is-segment-dragged * {
     cursor: copy;
   }
+
+  .workflow-builder-root {
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+  }
 }

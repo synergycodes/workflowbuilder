@@ -14,6 +14,7 @@
     "@phosphor-icons/core": "catalog:",
     "react": "catalog:",
     "@types/react": "catalog:",
-    "@xyflow/react": "catalog:"
+    "@xyflow/react": "catalog:",
+    "ajv": "catalog:"
   }
 }

@@ -1,3 +1,5 @@
+import { ErrorObject } from 'ajv';
+
 import { FlatError } from '@workflow-builder/types/node-schema';
 
 export function getIsValidFromProperties(properties: unknown): boolean | undefined {
@@ -6,6 +8,7 @@ export function getIsValidFromProperties(properties: unknown): boolean | undefin
   }
 
   const errors = (properties as { errors: FlatError[] })?.errors || [];
+  const customErrors = (properties as { customErrors: ErrorObject[] })?.customErrors || [];
 
-  return errors.length === 0;
+  return errors.length === 0 && customErrors.length === 0;
 }

@@ -12,4 +12,14 @@ export const conditional: PaletteItem<ConditionalNodeSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
+  outputSchema: {
+    properties: {
+      result: { type: 'boolean', label: 'Result', description: 'Whether the condition evaluated to true or false' },
+      matchedCondition: {
+        type: 'string',
+        label: 'Matched Condition',
+        description: 'The condition expression that matched',
+      },
+    },
+  },
 };

@@ -1,6 +1,7 @@
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
+import { globalControls } from '../shared/general-information';
 import { AiAgentNodeSchema } from './schema';
 
 const scope = getScope<AiAgentNodeSchema>;
@@ -8,6 +9,7 @@ const scope = getScope<AiAgentNodeSchema>;
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    ...globalControls,
     {
       type: 'Accordion',
       label: 'General Information',

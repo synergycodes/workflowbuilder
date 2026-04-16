@@ -9,6 +9,8 @@ import { getNodeAddChange } from '@/utils/get-node-add-change';
 
 import useStore from '@/store/store';
 
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
+
 import { BaseNodeProperties } from '../../../../types/src/node-schema';
 import { NodeType } from '../../../../types/src/node-types';
 import { useTranslateIfPossible } from './use-translate-if-possible';
@@ -46,6 +48,7 @@ export function usePaletteDrop() {
       };
 
       const newNodeId = crypto.randomUUID();
+      trackFutureChange('addNode', { nodeType: type });
       resetSelectedElements();
       onNodesChange(getNodeAddChange(templateType, position, data, newNodeId));
     },

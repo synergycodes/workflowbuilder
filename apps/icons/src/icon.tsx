@@ -61,6 +61,12 @@ export function Icon({ name, size = 'medium', color = 'currentColor', ...propert
     ...properties,
   } as IconProps;
 
+  if (!Icon) {
+    console.error(`Missing icon: ${name}`);
+
+    return <IconFallback size={size} />;
+  }
+
   return (
     <Suspense fallback={<IconFallback size={size} />}>
       <Icon

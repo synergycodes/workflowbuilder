@@ -53,7 +53,8 @@ export type DynamicCondition = {
 };
 
 export type DecisionBranch = {
-  index: number;
+  id: string;
+  sourceHandle: string;
   label: string;
   conditions: DynamicCondition[];
 };
@@ -109,4 +110,31 @@ export type AiToolsControlElement = Override<
 >;
 export type AiToolsControlProps = ControlProps<AiAgentTool[], AiToolsControlElement>;
 
+export type VariableTextControlElement = Override<
+  BaseControlElement,
+  {
+    type: 'VariableText';
+  } & Pick<InputProps, 'placeholder'>
+>;
+export type VariableTextControlProps = ControlProps<string, VariableTextControlElement>;
+
+export type VariableTextAreaControlElement = Override<
+  BaseControlElement,
+  {
+    type: 'VariableTextArea';
+  } & Pick<TextAreaProps, 'placeholder' | 'minRows'>
+>;
+export type VariableTextAreaControlProps = ControlProps<string, VariableTextAreaControlElement>;
+
 type BaseControlElement = Override<ControlElement, { rule?: UISchemaRule }>;
+
+export type MessageOnErrorControlElement = Override<
+  BaseControlElement,
+  {
+    type: 'MessageOnError';
+    // The text is optional; the message can be gathered from the error
+    text?: string;
+    variant?: 'info' | 'warning' | 'error';
+  }
+>;
+export type MessageOnErrorProps = ControlProps<string, MessageOnErrorControlElement>;

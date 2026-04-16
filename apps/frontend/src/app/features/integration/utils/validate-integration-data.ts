@@ -7,11 +7,13 @@ import { getIsValidLayoutDirections } from '@/utils/validation/get-is-valid-layo
 import { getNodeDefinition } from '@/utils/validation/get-node-definition';
 import { getNodeWithErrors } from '@/utils/validation/get-node-errors';
 
+import { TranslationKey, TranslationParams } from '@/features/i18n/i18next';
+
 import { IntegrationDataFormat } from '../types';
 
 export type IntegrationDataError = {
-  message: string;
-  messageParams?: object;
+  message: TranslationKey;
+  messageParams?: TranslationParams;
 };
 
 type IntegrationDataValidationWithErrors = {
@@ -89,7 +91,7 @@ export function validateIntegrationData(input?: object | string): IntegrationDat
     if (unknownNodes.length > 0) {
       errors.push({
         message: 'validation.error.nodesWithoutDefinition',
-        messageParams: { nodesIds: unknownNodes.map((node) => node?.id || '?').join(', ') },
+        messageParams: { nodesIds: unknownNodes.map((node) => node?.id || '?').join(', ') } as TranslationParams,
       });
     }
 

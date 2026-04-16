@@ -75,7 +75,6 @@ function DiagramContainerComponent({ edgeTypes = {} }: { edgeTypes?: EdgeTypes }
 
   const onDrop: DragEventHandler = useCallback(
     (event) => {
-      trackFutureChange('addNode');
       onDropFromPalette(event);
     },
     [onDropFromPalette],

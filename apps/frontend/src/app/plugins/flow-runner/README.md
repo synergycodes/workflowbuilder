@@ -4,6 +4,10 @@ Example implementation of a JSON parser that returns a callable flow function `r
 
 This parses the output exported from **WorkflowBuilder** (a list of nodes and edges in JSON) and can be implemented independently elsewhere. You can use WorkflowBuilder to create a diagram, save that diagram as JSON, and then convert that JSON into a runnable function somewhere else - for example, on a Node server responsible for execution.
 
+## 🔴 Live demo
+
+Go to https://app.workflowbuilder.io/ and pick a template — Ticket Pricing or Pension Simulation (you can select a template from the palette). You can also build your own flows using the nodes in the groups in palette.
+
 ## Good to know
 
 Step = Node
@@ -24,6 +28,16 @@ Step = Node
 
 ### Important types
 
-**CommonStepValue** is passed between steps. t is passed between steps. The flow runner assumes that each step works with the same response and can modify it.
+**CommonStepValue** is passed between steps. The flow runner assumes that each step works with the same response and can modify it.
+
+For demo purposes, this step currently looks like this:
+
+```
+export type CommonStepValue = {
+  amount: number;
+  currency: string;
+  age: number;
+};
+```
 
 **CallableAction** defines what is passed to and returned from the node callback function. These functions receive values from previous steps, values from the node (properties in the sidebar), and metadata about IDs and outgoing edges in the flow (they can choose which edges should be executed).

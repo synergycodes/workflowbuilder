@@ -12,31 +12,23 @@ import { NodeSection } from '../../components/node-section/node-section';
 import { PlaceholderButton } from '../../components/placeholder-button/placeholder-button';
 
 type Props = {
-  nodeId: string;
   decisionBranches: DecisionBranch[];
   layoutDirection?: LayoutDirection;
+  onAddBranch?: () => void;
 };
 
-export function BranchesContainer({ nodeId, decisionBranches, layoutDirection }: Props) {
+export function BranchesContainer({ decisionBranches, layoutDirection, onAddBranch }: Props) {
   const { t } = useTranslation(undefined, { keyPrefix: 'decisionBranches' });
   // Branches should be displayed vertically when layout direction is horizontal (sic!)
   const isListVertical = layoutDirection === 'RIGHT';
 
-  const branchesCount = decisionBranches.length;
-
   return (
     <NodeSection label={t('branches')}>
       <div className={clsx(styles['branches-container'], { [styles['vertical']]: isListVertical })}>
-        {decisionBranches.map(({ index, label }) => (
-          <ConnectableItem
-            key={index}
-            label={label || t('branch', { index })}
-            nodeId={nodeId}
-            innerId={index.toString()}
-            handleType="source"
-          />
+        {decisionBranches.map(({ id, sourceHandle, label }, index) => (
+          <ConnectableItem key={id} label={label || t('branch', { index: index + 1 })} handleId={sourceHandle} />
         ))}
-        {branchesCount === 0 && <PlaceholderButton label={t('addBranch')} />}
+        <PlaceholderButton label={t('addBranch')} onClick={onAddBranch} />
       </div>
     </NodeSection>
   );

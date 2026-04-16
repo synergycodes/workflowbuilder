@@ -1,11 +1,14 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getStoreSingleSelected } from '@/store/slices/diagram-slice/actions';
+
 import { PlaceholderButton } from '@/features/diagram/nodes/components/placeholder-button/placeholder-button';
 
 import { DecisionBranch, DecisionBranchesControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { BranchCard } from './branch-card/branch-card';
+import { createDecisionBranch } from './create-decision-branch';
 
 function DecisionBranchesControl(props: DecisionBranchesControlProps) {
   const { data = [], handleChange, path, enabled } = props;
@@ -15,34 +18,35 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
   const { t } = useTranslation();
 
   const onUpdateBranch = useCallback(
-    ({ conditions, label, index }: DecisionBranch) => {
+    (id: string, partialBranch: Partial<DecisionBranch>) => {
       const updatedBranches = decisionBranches.map((branch) =>
-        index === branch.index ? { ...branch, label, conditions } : branch,
+        id === branch.id ? { ...branch, ...partialBranch } : branch,
       );
       handleChange(path, updatedBranches);
     },
     [decisionBranches, handleChange, path],
   );
 
-  function onRemoveBranch(index: number) {
-    const updatedBranches = decisionBranches.filter((branch) => branch.index !== index);
+  function onRemoveBranch(id: string) {
+    const updatedBranches: DecisionBranch[] = decisionBranches.filter((branch) => branch.id !== id);
     handleChange(path, updatedBranches);
   }
 
   function onAddBranch() {
-    handleChange(path, [...decisionBranches, { conditions: [], index: getNewIndex() }]);
-  }
+    const nodeId = getStoreSingleSelected()?.node?.id;
+    if (!nodeId) {
+      return;
+    }
 
-  function getNewIndex() {
-    const maxIndex = Math.max(0, ...decisionBranches.map((branch) => branch.index ?? 0));
-    return maxIndex + 1;
+    handleChange(path, [...decisionBranches, createDecisionBranch(nodeId)]);
   }
 
   return (
     <div>
-      {decisionBranches.map((branch) => (
+      {decisionBranches.map((branch, index) => (
         <BranchCard
-          key={branch.index}
+          key={branch.id}
+          index={index}
           branch={branch}
           onUpdate={onUpdateBranch}
           onRemove={onRemoveBranch}

@@ -13,6 +13,7 @@ import { NodeDataProperties } from '@/features/json-form/types/default-propertie
 
 import { DecisionNodeSchema } from '../../../data/nodes/decision/schema';
 import { getHandlePosition } from '../handles/get-handle-position';
+import { addBranchToNode } from './decision-node-template/add-branch-action';
 import { DecisionNodeTemplate } from './decision-node-template/decision-node-template';
 
 type Props = NodeProps<Node<NodeData<NodeDataProperties<DecisionNodeSchema>>>>;
@@ -38,6 +39,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
         icon={icon}
         decisionBranches={decisionBranches as DecisionBranch[]}
         isValid={isValid}
+        onAddBranch={() => addBranchToNode(id)}
       />
     </NodeAsPortWrapper>
   );

@@ -3,7 +3,7 @@ import { PaletteItem } from '@workflow-builder/types/common';
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
-import { generalInformation } from '../shared/general-information';
+import { generalInformation, globalControls } from '../shared/general-information';
 import { NotificationNodeSchema, notificationTypeOptions, priorityOptions } from './schema';
 
 const scope = getScope<NotificationNodeSchema>;
@@ -32,16 +32,16 @@ const sendEmailProperties: PaletteItem<NotificationNodeSchema>['uischema'] = {
       placeholder: 'manager@example.com',
     },
     {
-      type: 'Text',
+      type: 'VariableText',
       scope: scope('properties.sendEmail.properties.subject'),
       label: 'Subject',
-      placeholder: 'Type your subject here...',
+      placeholder: 'Type your subject here... Use {{ to insert variables',
     },
     {
-      type: 'TextArea',
+      type: 'VariableTextArea',
       scope: scope('properties.sendEmail.properties.body'),
       label: 'Email Body',
-      placeholder: 'Type your message here...',
+      placeholder: 'Type your message here... Use {{ to insert variables',
       minRows: 5,
     },
     {
@@ -86,6 +86,7 @@ const sendEmailProperties: PaletteItem<NotificationNodeSchema>['uischema'] = {
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    ...globalControls,
     {
       label: 'Select Notification Type',
       type: 'Select',

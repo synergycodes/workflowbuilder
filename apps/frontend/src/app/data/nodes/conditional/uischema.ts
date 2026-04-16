@@ -1,6 +1,7 @@
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
+import { globalControls } from '../shared/general-information';
 import { ConditionalNodeSchema } from './schema';
 
 const scope = getScope<ConditionalNodeSchema>;
@@ -8,6 +9,7 @@ const scope = getScope<ConditionalNodeSchema>;
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    ...globalControls,
     {
       label: 'Label',
       type: 'Text',

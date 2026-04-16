@@ -39,6 +39,10 @@ export const en = {
       label: 'Trigger',
       description: 'Initiate workflows',
     },
+    aiAgent: {
+      label: 'AI Agent',
+      description: 'Delegate tasks',
+    },
   },
   propertiesBar: {
     label: 'Properties',
@@ -58,6 +62,12 @@ export const en = {
     selectedPlural: 'selected',
     deleteSelection: 'Delete Selection?',
     dontShowMeThisAgain: 'Don’t show me this again',
+  },
+  aiTools: {
+    title: 'AI Agent Tools',
+    addTool: 'Add Tool',
+    addToolSlot: 'Add Tool Slot',
+    modalTitle: 'Add Tools',
   },
   decisionBranches: {
     branch: 'Branch #{{index}}',
@@ -112,6 +122,8 @@ export const en = {
     pickTheProject: 'Pick the project',
     openPalette: 'Open palette',
     closePalette: 'Close palette',
+    openPropertiesBar: 'Open properties bar',
+    closePropertiesBar: 'Close properties bar',
     importDiagram: 'Import File',
     save: 'Save',
     changeLanguage: 'Change Language',

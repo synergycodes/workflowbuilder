@@ -19,15 +19,16 @@ import {
 
 type Props = {
   branch: DecisionBranch;
-  onUpdate: (branch: DecisionBranch) => void;
-  onRemove: (index: number) => void;
+  index: number;
+  onUpdate: (id: string, branch: Partial<DecisionBranch>) => void;
+  onRemove: (id: string) => void;
   enabled?: boolean;
 };
 
-export function BranchCard({ branch, onUpdate, onRemove, enabled = true }: Props) {
+export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }: Props) {
   const formRef = useRef<ConditionsFormHandle>(null);
   const { t } = useTranslation();
-  const { label, conditions, index } = branch;
+  const { label, conditions, id } = branch;
   const conditionCount = conditions.length;
 
   const handleConfirm = useCallback(() => {
@@ -39,28 +40,28 @@ export function BranchCard({ branch, onUpdate, onRemove, enabled = true }: Props
       content: (
         <ConditionsForm
           ref={formRef}
-          onChange={(updatedConditions) => onUpdate({ label, index, conditions: updatedConditions })}
+          onChange={(updatedConditions) => onUpdate(id, { conditions: updatedConditions })}
           value={conditions}
         />
       ),
       title: t('conditions.title'),
       footer: <ConditionModalFooter closeModal={closeModal} handleConfirm={handleConfirm} />,
     });
-  }, [conditions, t, handleConfirm, onUpdate, label, index]);
+  }, [conditions, t, handleConfirm, onUpdate, id]);
 
   const onLabelChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
-      onUpdate({ label: event.target.value, index, conditions });
+      onUpdate(id, { label: event.target.value });
     },
-    [onUpdate, index, conditions],
+    [onUpdate, id],
   );
 
-  const onClickRemove = useCallback(() => onRemove(branch.index), [onRemove, branch]);
+  const onClickRemove = useCallback(() => onRemove(branch.id), [onRemove, branch]);
 
   return (
     <div className={styles['branch-card']}>
       <div className={styles['header']}>
-        <h1 className="ax-public-h10">{t('decisionBranches.branch', { index })}</h1>
+        <h1 className="ax-public-h10">{t('decisionBranches.branch', { index: index + 1 })}</h1>
         <div className={styles['actions']}>
           <NavButton onClick={onClickEdit}>
             <SlidersHorizontal weight="bold" />
@@ -74,7 +75,7 @@ export function BranchCard({ branch, onUpdate, onRemove, enabled = true }: Props
         <FormControlWithLabel label={t('decisionBranches.label')}>
           <Input
             value={label}
-            placeholder={t('decisionBranches.branch', { index })}
+            placeholder={t('decisionBranches.branch', { index: index + 1 })}
             onChange={onLabelChange}
             disabled={!enabled}
           />

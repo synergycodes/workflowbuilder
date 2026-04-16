@@ -12,4 +12,10 @@ export const delay: PaletteItem<DelayNodeSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
+  outputSchema: {
+    properties: {
+      resumedAt: { type: 'string', label: 'Resumed At', description: 'ISO 8601 date-time when the delay ended' },
+      delayDuration: { type: 'number', label: 'Delay Duration', description: 'Actual wait time in milliseconds' },
+    },
+  },
 };

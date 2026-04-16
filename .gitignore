@@ -40,3 +40,14 @@ Thumbs.db
 .nx/
 
 **/.env.local
+
+# pnpm local store (created in container environments)
+.pnpm-store/
+
+# Local Claude task files
+CLAUDE.local.md
+
+# Claude Code worktrees
+.worktrees/
+
+.playwright-mcp/

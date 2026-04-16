@@ -66,11 +66,13 @@ if (hasRegisteredComponentDecorator('OptionalAppBarTools', 'UndoRedo') === false
   registerComponentDecorator('OptionalAppBarTools', {
     content: getAppBarButton('ArrowUUpLeft', 'plugins.help.tooltipUndo'),
     place: 'after',
+    name: 'OptionalAppBarToolsArrowUUpLeft',
   });
 
   registerComponentDecorator('OptionalAppBarTools', {
     content: getAppBarButton('ArrowUUpRight', 'plugins.help.tooltipRedo'),
     place: 'after',
+    name: 'OptionalAppBarToolsArrowUUpRight',
   });
 }
 

@@ -3,7 +3,7 @@ import { PaletteItem } from '@workflow-builder/types/common';
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
-import { generalInformation } from '../shared/general-information';
+import { generalInformation, globalControls } from '../shared/general-information';
 import {
   ActionNodeSchema,
   actionTypeOptions,
@@ -373,6 +373,7 @@ const createNewDocumentProperties: ActionNodeUISchema = {
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    ...globalControls,
     {
       label: 'Select Action Type',
       type: 'Select',

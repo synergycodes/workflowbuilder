@@ -11,6 +11,7 @@ import useStore from '@/store/store';
 import { AiAgentNodeSchema } from '../../../data/nodes/ai-agent/schema';
 import { chatModelOptions, memoryOptions } from '../../../data/nodes/ai-agent/select-options';
 import { NodeDataProperties } from '../../json-form/types/default-properties';
+import { openAddToolModalForNode } from './ai-agent-node-template/add-tool-action';
 import { AiAgentNodeTemplate } from './ai-agent-node-template/ai-agent-node-template';
 
 type Props = NodeProps<Node<NodeData<NodeDataProperties<AiAgentNodeSchema>>>>;
@@ -55,6 +56,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
         selectedTools={data.properties.tools}
         layoutDirection={layoutDirection}
         isValid={isValid}
+        onAddTool={() => openAddToolModalForNode(id)}
       />
     </NodeAsPortWrapper>
   );

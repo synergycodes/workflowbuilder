@@ -1,0 +1,41 @@
+:root {
+  --wb-message-control-error-color: var(--ax-public-snackbar-title-color);
+  --wb-message-control-error-background-color: var(--ax-public-snackbar-error-background);
+  --wb-message-control-spacing: var(--ax-primitive-even-8);
+  --wb-message-control-border-radius: var(--ax-primitive-even-8);
+  --wb-message-control-padding: var(--ax-primitive-even-8) var(--ax-primitive-even-16);
+}
+
+.container {
+  display: flex;
+  gap: var(--wb-message-control-spacing);
+  border-radius: var(--wb-message-control-border-radius);
+  padding: var(--wb-message-control-padding);
+  color: var(--color);
+  background: var(--background-color);
+
+  svg {
+    flex-shrink: 0;
+  }
+}
+
+.container--neutral {
+  --color: var(--wb-colors-gray-800);
+  --background-color: var(--wb-ui-bg-secondary-default);
+}
+
+.container--warning {
+  --color: var(--wb-chips-acc5-txt);
+  --background-color: var(--wb-chips-acc5-bg);
+}
+
+.container--error {
+  --color: var(--wb-message-control-error-color);
+  --background-color: var(--wb-message-control-error-background-color);
+}
+
+.content {
+  composes: ax-public-p11 from global;
+
+  padding-top: 1px;
+}

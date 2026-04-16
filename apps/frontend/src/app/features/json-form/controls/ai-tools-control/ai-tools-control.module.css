@@ -1,3 +1,13 @@
 .selected-tool-button {
   justify-content: flex-start;
 }
+
+.tool-row {
+  display: flex;
+  gap: 4px;
+  width: 100%;
+
+  > :first-of-type {
+    flex: 1;
+  }
+}

@@ -12,6 +12,7 @@ Execution, orchestration, and business logic remain fully under your control.
 ## What Workflow Builder is NOT
 
 Workflow Builder does **not**:
+
 - execute workflows
 - provide scheduling or orchestration
 - include backend logic or integrations
@@ -34,6 +35,7 @@ The SDK outputs workflow definitions (JSON) that are meant to be executed by **y
 ## Typical use cases
 
 Workflow Builder is commonly used to:
+
 - embed workflow editors into B2B SaaS products
 - build visual rule engines and configuration tools
 - design AI agent and automation workflow platforms
@@ -75,27 +77,32 @@ To document technical choices and provide an overview of reasoning behind them, 
 ## License
 
 Community Edition:
+
 - Open source
 - Apache 2.0 license
 - Frontend-only workflow editor SDK
 
 Enterprise Edition:
+
 - Commercial license
 - Long-term support
 - Advanced features and professional services
-  
+
 ## Contributing
+
 Workflow Builder is open-source and we welcome contributions. Whether you're fixing bugs, proposing features, improving docs, or spreading the word - we'd love to have you as part of the community.
 
 ## Professional consulting & enterprise support
+
 Workflow Builder is a frontend-only SDK. For enterprise companies that need end-to-end implementations, we also offer professional consulting services.
 Our team can help with:
+
 - backend execution engines
 - custom integrations
 - enterprise-grade customization and scaling
 - accelerating time-to-market with proven architecture patterns
-The team behind Workflow Builder has 15+ years of experience building enterprise-class diagramming and automation tools.
-Learn more about Enterprise Edition and consulting: 👉 https://workflowbuilder.io
+  The team behind Workflow Builder has 15+ years of experience building enterprise-class diagramming and automation tools.
+  Learn more about Enterprise Edition and consulting: 👉 https://workflowbuilder.io
 
 ## <a name="links">Links</a>
 

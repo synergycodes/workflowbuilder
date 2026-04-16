@@ -6,9 +6,9 @@ It may be omitted in some places, but its main goal is to give you an easy place
 
 ## What changes tracker is perfect for?
 
-  - Adding social trackers such as GTM, Facebook Pixel etc.
-  - Adding auto-save feature
-  - Adding undo/redo functionality to the app
+- Adding social trackers such as GTM, Facebook Pixel etc.
+- Adding auto-save feature
+- Adding undo/redo functionality to the app
 
 ## Why do we use `trackFutureChange()` and not `trackChange()`
 
@@ -19,6 +19,7 @@ In our case, we use `trackFutureChange()` because it allows us to react before s
 ## Example
 
 Somewhere in the app:
+
 ```js
 trackFutureChange('duplicate');
 duplicate(nodes);
@@ -27,6 +28,7 @@ duplicate(nodes);
 ### How to inject callback before the event?
 
 With a plugin (check plugins documentation):
+
 ```js
 registerFunctionDecorator('trackFutureChange', {
   callback: ({ params }) => console.log(params[1]), // "duplicate"
@@ -36,19 +38,21 @@ registerFunctionDecorator('trackFutureChange', {
 ### How to react after the event?
 
 In a React hook:
+
 ```js
-const lastChangeTimestamp = useChangesTrackerStore(store => store.lastChangeTimestamp);
+const lastChangeTimestamp = useChangesTrackerStore((store) => store.lastChangeTimestamp);
 
 useEffect(() => {
   const timeSinceLastSaveInSeconds = (lastChangeTimestamp - lastSaveTimestamp) / 1000;
 
   if (timeSinceLastSaveInSeconds > 5 * 60) {
     save();
-  } 
-}, [lastChangeTimestamp])
+  }
+}, [lastChangeTimestamp]);
 ```
 
 With zustand store subscriber:
+
 ```js
 useChangesTrackerStore.subscribe((state) => state.lastChangeTimestamp, saveIfNeededCallback);
 ```

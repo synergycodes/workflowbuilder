@@ -1,4 +1,5 @@
 import { Button, SegmentPicker } from '@synergycodes/overflow-ui';
+import { useState } from 'react';
 
 import styles from './properties-bar.module.css';
 
@@ -32,8 +33,10 @@ function PropertiesBarComponent({
   onTabChange,
   tabs = [],
 }: PropertiesBarProps) {
+  const [isPropertiesBarOpen, setIsPropertiesBarOpen] = useState(true);
+
   const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
-  const isExpanded = !!selection;
+  const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
 
   const segmentPicker = {
@@ -66,6 +69,10 @@ function PropertiesBarComponent({
     ...tabs.flatMap((tab) => tab.components),
   ];
 
+  function onToggleExpand() {
+    setIsPropertiesBarOpen(!isPropertiesBarOpen);
+  }
+
   return (
     <Sidebar
       isExpanded={isExpanded}
@@ -73,7 +80,9 @@ function PropertiesBarComponent({
       header={
         <>
           <PropertiesBarHeader
-            isExpanded={isExpanded}
+            hasSelection={!!selection}
+            isExpendable={isPropertiesBarOpen}
+            onTogglePropertiesBar={onToggleExpand}
             header={headerLabel}
             name={name ?? ''}
             onDotsClick={onMenuHeaderClick}

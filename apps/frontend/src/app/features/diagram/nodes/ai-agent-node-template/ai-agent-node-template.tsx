@@ -31,6 +31,7 @@ type Props = {
   selectedTools?: NodeDataProperties<AiAgentNodeSchema>['tools'] | undefined;
   isValid?: boolean;
   layoutDirection?: LayoutDirection;
+  onAddTool?: () => void;
 };
 
 export const AiAgentNodeTemplate = memo(
@@ -46,6 +47,7 @@ export const AiAgentNodeTemplate = memo(
     selectedTools,
     isValid,
     layoutDirection = 'RIGHT',
+    onAddTool,
   }: Props) => {
     const isCanvasNode = showHandles;
     const handleTargetId = getHandleId({ nodeId: id, handleType: 'target' });
@@ -84,17 +86,14 @@ export const AiAgentNodeTemplate = memo(
                 />
               </div>
             </Collapsible.Content>
-            <ToolInfo>
-              {selectedTools?.map((_, index) => (
-                <ConnectableItem
-                  key={index}
-                  label={`Tool #${index + 1}`}
-                  handleType="source"
-                  innerId={index.toString()}
-                  nodeId={id}
-                  canHaveBottomHandle={false}
-                />
-              ))}
+            <ToolInfo onAddTool={onAddTool}>
+              {selectedTools?.map((tool, index) => {
+                const handleId = tool.sourceHandle;
+
+                const label = tool.tool ?? `Tool #${index + 1}`;
+
+                return <ConnectableItem key={tool.id} label={label} handleId={handleId} canHaveBottomHandle={false} />;
+              })}
             </ToolInfo>
           </NodePanel.Content>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>

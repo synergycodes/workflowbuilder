@@ -41,6 +41,10 @@ export const pl = {
       label: 'Wyzwalaj',
       description: 'Inicjuj przepływy pracy',
     },
+    aiAgent: {
+      label: 'Agent AI',
+      description: 'Deleguj zadania',
+    },
   },
   propertiesBar: {
     label: 'Właściwości',
@@ -84,6 +88,8 @@ export const pl = {
     pickTheProject: 'Wybierz projekt',
     openPalette: 'Otwórz paletę',
     closePalette: 'Zamknij paletę',
+    openPropertiesBar: 'Otwórz panel właściwości',
+    closePropertiesBar: 'Zamknij panel właściwości',
     importDiagram: 'Importuj plik',
     save: 'Zapisz',
     changeLanguage: 'Zmień język',
@@ -100,6 +106,12 @@ export const pl = {
     aiConnectionError: 'Błąd połączenia z serwerem AI',
     wrongDiagramFormat: 'Nieprawidłowy format diagramu',
     contentCopied: 'Treść skopiowana do schowka',
+  },
+  aiTools: {
+    title: 'Narzędzia agenta AI',
+    addTool: 'Dodaj narzędzie',
+    addToolSlot: 'Dodaj slot narzędzia',
+    modalTitle: 'Dodaj narzędzia',
   },
   decisionBranches: {
     branch: 'Rozgałęzienie #{{index}}',

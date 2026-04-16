@@ -10,7 +10,7 @@
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
     "experimentalDecorators": true,
-    "target": "es2015",
+    "target": "es2018",
     "lib": ["es2020", "dom", "dom.iterable"],
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,

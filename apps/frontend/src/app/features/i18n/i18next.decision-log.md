@@ -27,7 +27,6 @@ As the Workflow Builder application grows and expands to international markets, 
 ## Consequences
 
 - **Pros**
-
   - **Wide adoption** - i18next is one of the most popular i18n solutions with a large community
   - **Type-safe translations** - Provides type safety and better developer experience
   - **Performance optimized** - Translations are bundled with the application, reducing client-side loading

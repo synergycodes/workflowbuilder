@@ -11,7 +11,6 @@ ReactFlow provides an `onSelectionChange` callback that returns selected nodes a
 ## Decision
 
 1. **Selection Storage Strategy**
-
    - Selection is stored in a **Zustand store** as two separate ID lists:
      - `selectedNodesIds`
      - `selectedEdgesIds`
@@ -19,7 +18,6 @@ ReactFlow provides an `onSelectionChange` callback that returns selected nodes a
    - This approach ensures consistent behavior across all selection types (single, multi, box-selection), and maintains one-way data flow from the canvas to the store.
 
 2. **Handling Outdated Data from ReactFlow**
-
    - ReactFlow's `onSelectionChange` provides outdated object references when node/edge data is updated.
    - To work around this, a **custom hook** `useSingleSelectedElement` was introduced:
      - It computes the selected node or edge using the current state and selection IDs.
@@ -27,7 +25,6 @@ ReactFlow provides an `onSelectionChange` callback that returns selected nodes a
      - The hook includes a **custom comparison function** to minimize unnecessary re-renders for performance.
 
 3. **Rejected Alternatives**
-
    - `zustand-middleware-computed-state`: This helper (or similar) allowed computing derived state (e.g., selected elements) but **lacked support for custom comparison functions**, making it inefficient for large diagrams. Also it adds unnecessary complexity to the store.
    - Custom middleware in Zustand: Though technically possible to handle selection updates via middleware, it was rejected due to its **implicit nature** and lack of alignment with standard React paradigms.
 

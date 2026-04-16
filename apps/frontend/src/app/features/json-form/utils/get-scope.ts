@@ -21,7 +21,7 @@ type PropertyPath<T> = T extends object
             K
           : T[K] extends object
             ? // If property is an object, allow deeper paths
-              K | `${K}.${PropertyPath<T[K]>}`
+                K | `${K}.${PropertyPath<T[K]>}`
             : // Otherwise it's a terminal path
               K
         : never;

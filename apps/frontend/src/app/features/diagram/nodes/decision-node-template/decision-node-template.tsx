@@ -27,6 +27,7 @@ type Props = {
   showHandles?: boolean;
   isValid?: boolean;
   decisionBranches?: DecisionBranch[];
+  onAddBranch?: () => void;
 };
 
 export const DecisionNodeTemplate = memo(
@@ -40,6 +41,7 @@ export const DecisionNodeTemplate = memo(
     isValid,
     decisionBranches,
     layoutDirection = 'RIGHT',
+    onAddBranch,
   }: Props) => {
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
@@ -63,8 +65,8 @@ export const DecisionNodeTemplate = memo(
             <Status status={isValid === false ? 'invalid' : undefined} />
             <BranchesContainer
               layoutDirection={layoutDirection}
-              nodeId={id}
               decisionBranches={decisionBranches ?? []}
+              onAddBranch={onAddBranch}
             />
           </OptionalNodeContent>
         </NodePanel.Content>

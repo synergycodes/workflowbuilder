@@ -22,6 +22,7 @@ export function ModalProvider() {
           title={modal.title || ''}
           footer={modal.footer}
           footerVariant={modal.footerVariant}
+          className="workflow-builder-root"
         >
           {modal.content}
         </Modal>,

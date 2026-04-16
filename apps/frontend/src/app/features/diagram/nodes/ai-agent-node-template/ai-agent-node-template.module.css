@@ -15,11 +15,6 @@
   flex-direction: column;
   overflow: hidden;
 
-  & div svg {
-    width: 18px;
-    height: 18px;
-  }
-
   .collapsible-content {
     padding-bottom: 0.5rem;
     display: flex;

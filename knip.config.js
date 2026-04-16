@@ -8,7 +8,7 @@
 
   Some exports may throw errors during setup because the configuration below is prepared
   for the full version of the Workflow Builder.
-  
+
   But knip is a very useful tool, so after resolving these issues, it will be useful for you.
 */
 
@@ -16,10 +16,10 @@
  * @type {import('knip').KnipConfig}
  */
 export default {
+  ignore: ['.claude/**'],
   workspaces: {
     '.': {
       ignoreUnresolved: ['../../apps/frontend/global.d.ts'],
-      ignoreDependencies: ['husky'],
     },
     'apps/frontend': {
       entry: 'src/main.tsx',
@@ -44,6 +44,11 @@ export default {
     'apps/types': {
       project: '**/*.ts',
       ignoreDependencies: ['@phosphor-icons/core'],
+    },
+    'apps/docs': {
+      entry: ['astro.config.mjs', 'lint-staged.config.mjs', 'src/components/**/*.astro'],
+      project: ['**/*.{mjs,ts,astro}'],
+      ignoreDependencies: ['@iconify-json/ph'],
     },
   },
 };

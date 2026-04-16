@@ -9,17 +9,24 @@ import { datePickerControlRenderer } from './controls/date-picker-control/date-p
 import { decisionBranchesControlRenderer } from './controls/decision-branches-control/decision-branches-control';
 import { dynamicConditionsControlRenderer } from './controls/dynamic-conditions-control/dynamic-conditions-control';
 import { labelRenderer } from './controls/label-control/label-control';
+import { messageOnErrorControlRenderer } from './controls/message-on-error-control/message-on-error-control';
+import { richTextRenderer } from './controls/rich-text-control/rich-text-control';
 import { selectControlRenderer } from './controls/select-control/select-control';
 import { switchControlRenderer } from './controls/switch-control/switch-control';
 import { textAreaControlRenderer } from './controls/text-area-control/text-area-control';
 import { textControlRenderer } from './controls/text-control/text-control';
+import { variableTextAreaControlRenderer } from './controls/variable-text-area-control/variable-text-area-control';
+import { variableTextControlRenderer } from './controls/variable-text-control/variable-text-control';
 import { accordionLayoutRenderer } from './layouts/accordion-layout/accordion-layout';
 import { groupLayoutRenderer } from './layouts/group-layout/group-layout';
 import { horizontalLayoutRenderer } from './layouts/horizontal-layout/horizontal-layout';
 import { verticalLayoutRenderer } from './layouts/vertical-layout/vertical-layout';
 import { unknownRenderer } from './utils/unknown-renderer';
 
-type Props = Pick<ComponentProps<typeof JsonForms>, 'onChange' | 'data' | 'uischema' | 'schema'> & {
+type Props = Pick<
+  ComponentProps<typeof JsonForms>,
+  'onChange' | 'data' | 'uischema' | 'schema' | 'additionalErrors'
+> & {
   readonly?: boolean;
 };
 
@@ -41,10 +48,14 @@ const renderers: JsonFormsRendererRegistryEntry[] = [
   horizontalLayoutRenderer,
   switchControlRenderer,
   labelRenderer,
+  richTextRenderer,
   selectControlRenderer,
   datePickerControlRenderer,
   textAreaControlRenderer,
   dynamicConditionsControlRenderer,
   aiToolsControlRenderer,
   decisionBranchesControlRenderer,
+  variableTextControlRenderer,
+  variableTextAreaControlRenderer,
+  messageOnErrorControlRenderer,
 ];

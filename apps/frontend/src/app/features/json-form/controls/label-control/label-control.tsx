@@ -3,7 +3,7 @@ import { withJsonFormsLabelProps } from '@jsonforms/react';
 
 import { Label } from '@/components/form/label/label';
 
-import { LabelElement } from '../../types/label';
+import { LabelElement } from '../../types/labels';
 import { createTester } from '../../utils/rendering';
 
 function LabelRendererComponent({ uischema }: LabelProps) {

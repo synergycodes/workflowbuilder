@@ -1,4 +1,5 @@
 import { ReactFlowProvider } from '@xyflow/react';
+import clsx from 'clsx';
 import { setAutoFreeze } from 'immer';
 import { PropsWithChildren } from 'react';
 
@@ -30,7 +31,7 @@ function AppComponent(_props: PropsWithChildren) {
 
   return (
     <ReactFlowProvider>
-      <div className={styles['container']}>
+      <div className={clsx(styles['container'], 'workflow-builder-root')}>
         <div className={styles['header']}>
           <AppBarContainerLazy />
         </div>
@@ -38,6 +39,7 @@ function AppComponent(_props: PropsWithChildren) {
           <div className={styles['panel']}>
             <PaletteContainerLazy />
           </div>
+          <div id="viewport-bounds" className={styles['viewport-bounds']} />
           <div className={styles['panel']}>
             <div className={styles['right-panel']}>
               <PropertiesBarContainerLazy />

@@ -3,7 +3,7 @@ import { PaletteItem } from '@workflow-builder/types/common';
 import { UISchema } from '@/features/json-form/types/uischema';
 import { getScope } from '@/features/json-form/utils/get-scope';
 
-import { generalInformation } from '../shared/general-information';
+import { generalInformation, globalControls } from '../shared/general-information';
 import {
   TriggerNodeSchema,
   allDayFrequencyOptions,
@@ -194,6 +194,7 @@ const eventBasedTriggerProperties: PaletteItem<TriggerNodeSchema>['uischema'] = 
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    ...globalControls,
     {
       label: 'Trigger Type',
       type: 'Select',

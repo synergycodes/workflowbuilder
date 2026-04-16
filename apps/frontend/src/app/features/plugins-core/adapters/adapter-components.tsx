@@ -1,5 +1,6 @@
 import React, { ReactNode, memo, useMemo } from 'react';
 
+import { registerDecorator } from './utils/register-decorator';
 import { sortByPriority } from './utils/sort-by-priority';
 
 type ModifyProps<P> = (props: P) => P;
@@ -26,14 +27,9 @@ const pluginRegistryComponents = new Map<
 >();
 
 export function registerComponentDecorator<P>(componentName: string, plugin: ComponentDecoratorOptions<P>) {
-  if (!pluginRegistryComponents.has(componentName)) {
-    pluginRegistryComponents.set(componentName, []);
-  }
+  const resolvedName = plugin.name ?? ((plugin as DecoratorWithContent)?.content as { name: string })?.name;
 
-  pluginRegistryComponents.get(componentName)!.push({
-    ...plugin,
-    name: plugin.name ?? ((plugin as DecoratorWithContent)?.content as { name: string })?.name,
-  });
+  registerDecorator(pluginRegistryComponents, componentName, { ...plugin, name: resolvedName });
 }
 
 export function hasRegisteredComponentDecorator(componentName: string, pluginName: string) {

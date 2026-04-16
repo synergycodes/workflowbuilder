@@ -1,3 +1,5 @@
+import { ErrorObject } from 'ajv';
+
 import { IconType } from './common';
 import {
   IfThenElseSchema,
@@ -62,12 +64,16 @@ export type FlatError = {
   keyword: string;
   instancePath: string;
   schemaPath: string;
+  schema?: string[];
   message?: string;
 };
 
 export type BaseNodeProperties = {
   label?: string;
   description?: string;
+  errors?: FlatError[] | undefined;
+  // Not JSON schema errors, but errors generated externally based on edges or other factors.
+  customErrors?: ErrorObject[] | undefined;
 };
 
 export type BaseNodePropertiesSchema = {

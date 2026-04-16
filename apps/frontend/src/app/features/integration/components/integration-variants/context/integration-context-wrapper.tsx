@@ -1,5 +1,6 @@
 import { PropsWithChildren, createContext, useCallback, useMemo } from 'react';
 
+import { trackFutureChange } from '@/features/changes-tracker/stores/use-changes-tracker-store';
 import { getStoreSavingStatus, setStoreSavingStatus } from '@/features/integration/stores/use-integration-store';
 import { OnSave } from '@/features/integration/types';
 
@@ -39,6 +40,10 @@ export function IntegrationContextWrapper({ onSave, children }: Props) {
 
       if (didSaveStatus === 'success') {
         setStoreSavingStatus('saved');
+
+        if (!savingParams?.isAutoSave) {
+          trackFutureChange('manualSave');
+        }
       } else {
         // It doesn't show errors for autosaving, but you can make it do so if you wish.
         setStoreSavingStatus(savingParams?.isAutoSave ? 'waiting' : 'notSaved');

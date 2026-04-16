@@ -24,7 +24,7 @@ const config = {
   importOrderSeparation: true,
   // add // sort-imports-ignore in front to exclude item from sorting
   importOrderSortSpecifiers: true,
-  plugins: ['@trivago/prettier-plugin-sort-imports'],
+  plugins: ['@trivago/prettier-plugin-sort-imports', 'prettier-plugin-astro'],
 };
 
 export default config;
