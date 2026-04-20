@@ -47,12 +47,6 @@ Workflow Builder is commonly used to:
 
 Monorepo of [Workflow Builder](https://www.workflowbuilder.io/) - a frontend-first SDK and foundation for building workflow-driven applications.
 
-## <a name="about-this-repo">About this Repo</a>
-
-This repository contains the community edition of Workflow Builder, maintained by [Synergy Codes](https://synergycodes.com/). The commercial edition is built on the same codebase and adds premium plugins.
-
-We develop everything in a private monorepo and publish releases here through  an automated pipeline, which is why commit history and collaborator activity  may look limited. There's a full engineering team behind this, with 15+ years  of diagramming experience and 100+ shipped projects. Questions, issues, and  feedback are very welcome here.
-
 ## <a name="getting-started">Getting Started</a>
 
 ### <a name="prerequisites">Prerequisites</a>
