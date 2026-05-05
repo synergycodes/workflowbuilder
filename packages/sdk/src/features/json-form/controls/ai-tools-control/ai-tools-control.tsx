@@ -32,7 +32,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
 
         const updated = isExisting
           ? dataArray.map((item) => (item.id === change.id ? { ...item, ...change, id: item.id } : item))
-          : [...dataArray, createAiTool(nodeId, change)];
+          : [...dataArray, createAiTool(change)];
 
         handleChange(path, updated);
       }

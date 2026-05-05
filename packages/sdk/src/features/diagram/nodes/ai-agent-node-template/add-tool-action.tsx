@@ -16,7 +16,7 @@ export function openAddToolModalForNode(nodeId: string) {
 
       useStore.getState().setNodeProperties(nodeId, {
         ...properties,
-        tools: [...existingTools, createAiTool(nodeId, change)],
+        tools: [...existingTools, createAiTool(change)],
       });
     }
     closeModal();

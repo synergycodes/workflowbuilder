@@ -34,7 +34,6 @@ export function ConnectableItem(props: Props) {
     'handleId' in props
       ? props.handleId
       : getHandleId({
-          nodeId: props.nodeId,
           innerId: props.innerId,
           handleType: props.handleType,
         });

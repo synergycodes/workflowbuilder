@@ -11,7 +11,6 @@ export function getHandleId({ handleType, innerId }: GetHandleIdOptions): Handle
 }
 
 type GetHandleIdOptions = {
-  nodeId?: string;
   handleType: HandleType;
   innerId?: string;
 };
