@@ -41,7 +41,7 @@ const StartNodeTemplateComponent = memo(
   }: StartNodeTemplateProps) => {
     const isCanvasNode = showHandles;
 
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 

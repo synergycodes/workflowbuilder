@@ -5,9 +5,9 @@ import { isDeepEqual } from 'remeda';
 
 import { StatusType } from '../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
-import { getStoreEdges, setStoreEdges } from '../../../../store/slices/diagram-slice/actions';
+import { getStoreEdges, getStoreSingleSelected, setStoreEdges } from '../../../../store/slices/diagram-slice/actions';
 import { useStore } from '../../../../store/store';
-import { filterOutEdgesBySourceHandles } from '../../../../utils/edges/filter-out-edges-by-source-handles';
+import { removeEdgesMatchingPattern } from '../../../../utils/edges/remove-edges-matching-pattern';
 import { flatErrors } from '../../../../utils/validation/flat-errors';
 import { trackFutureChange } from '../../../changes-tracker/stores/use-changes-tracker-store';
 import { JSONForm } from '../../../json-form/json-form';
@@ -20,11 +20,20 @@ import { JSONForm } from '../../../json-form/json-form';
 function removeEdgesForDeletedHandles(oldProperties: unknown, newProperties: unknown) {
   const oldHandles = new Set(collectSourceHandles(oldProperties));
   const newHandles = new Set(collectSourceHandles(newProperties));
+  console.log(oldHandles);
   const removedHandles = [...oldHandles].filter((h) => !newHandles.has(h));
 
-  if (removedHandles.length > 0) {
+  const nodeId = getStoreSingleSelected()?.node?.id;
+
+  if (removedHandles.length > 0 && nodeId) {
     const edges = getStoreEdges();
-    const updatedEdges = filterOutEdgesBySourceHandles(edges, removedHandles);
+    const updatedEdges = removeEdgesMatchingPattern(
+      edges,
+      removedHandles.map((element) => ({
+        source: nodeId,
+        sourceHandle: element,
+      })),
+    );
     setStoreEdges(updatedEdges);
   }
 }
