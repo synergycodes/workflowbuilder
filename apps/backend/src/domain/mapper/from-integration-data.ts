@@ -49,6 +49,18 @@ function mapEdge(edge: FrontendEdge): WorkflowEdgeDefinition {
     id: edge.id,
     sourceNodeId: edge.source,
     targetNodeId: edge.target,
-    sourceHandle: edge.sourceHandle ?? undefined,
+    sourceHandle: stripLegacyHandlePrefix(edge.sourceHandle) ?? undefined,
   };
+}
+
+// Legacy handle IDs were `${nodeId}:source` (optionally `:inner:${innerId}`).
+// New format drops the nodeId prefix. Migrate at the boundary so older
+// snapshots and any in-flight legacy clients stay compatible.
+const LEGACY_HANDLE_RE = /^.+?:(source|target)(:inner:.+)?$/;
+
+function stripLegacyHandlePrefix(handle: string | null | undefined): string | null | undefined {
+  if (!handle) return handle;
+  const match = LEGACY_HANDLE_RE.exec(handle);
+  if (!match) return handle;
+  return match[2] ? `${match[1]}${match[2]}` : match[1];
 }
