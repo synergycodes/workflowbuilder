@@ -6,7 +6,6 @@ import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice
 import type { IntegrationDataFormat } from '../../../types/integration';
 import { showSnackbar } from '../../../utils/show-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
-import { migrateLegacyHandleIds } from '../utils/migrate-legacy-handle-ids';
 
 type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
 
@@ -29,7 +28,7 @@ export const useIntegrationStore = create<IntegrationStore>()(
 export function loadData(loadData: Partial<IntegrationDataFormat>) {
   const hasAnyData = Object.values(loadData).some(Boolean);
   if (hasAnyData) {
-    setStoreDataFromIntegration(migrateLegacyHandleIds(loadData));
+    setStoreDataFromIntegration(loadData);
 
     showSnackbar({
       title: 'restoreDiagramSuccess',

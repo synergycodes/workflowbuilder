@@ -34,8 +34,6 @@ function removeEdgesForDeletedHandles(oldProperties: unknown, newProperties: unk
         sourceHandle: element,
       })),
     );
-    console.log(edges);
-    console.log(updatedEdges);
     setStoreEdges(updatedEdges);
   }
 }
