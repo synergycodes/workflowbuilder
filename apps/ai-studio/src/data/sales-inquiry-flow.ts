@@ -271,6 +271,7 @@ If there are issues, output: "⚠️ NEEDS REVISION" followed by specific correc
       {
         source: 'decision-1',
         sourceHandle: 'source:inner:pricing',
+        zIndex: 1001,
         target: 'pricing-1',
         targetHandle: 'target',
         type: 'labelEdge',
@@ -280,6 +281,7 @@ If there are issues, output: "⚠️ NEEDS REVISION" followed by specific correc
       {
         source: 'decision-1',
         sourceHandle: 'source:inner:technical',
+        zIndex: 1001,
         target: 'technical-1',
         targetHandle: 'target',
         type: 'labelEdge',
@@ -289,6 +291,7 @@ If there are issues, output: "⚠️ NEEDS REVISION" followed by specific correc
       {
         source: 'decision-1',
         sourceHandle: 'source:inner:general',
+        zIndex: 1001,
         target: 'general-1',
         targetHandle: 'target',
         type: 'labelEdge',
