@@ -1,7 +1,7 @@
 # AI Studio — Execution Backend
 
 > ⚠️ **Reference implementation — local development only.**
-> No authentication, no authorization, no tenant isolation. The HTTP server and the docker-compose services bind to `127.0.0.1` by default. Do not expose to the internet or shared networks without first implementing real authn/authz.
+> Default authentication is `AllowAllAuthPort` (permits every caller, every action — see `src/auth/`). No tenant isolation. The HTTP server and the docker-compose services bind to `127.0.0.1` by default. Do not expose to the internet or shared networks without first plugging in a real `AuthPort` — see [`auth-port.decision-log.md`](./auth-port.decision-log.md) for the seam, default, and a JWT adapter sketch.
 
 > **Note:** setup is in [root README "Path B. Run the full stack demo"](../../README.md#path-b-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
 
