@@ -163,8 +163,8 @@ export function createExecutionsRoutes(authorize: Authorize): Hono<{ Variables: 
       .set({ status: 'cancelling', updatedAt: new Date() })
       .where(eq(executions.id, executionId));
 
-  logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
-  await getWorkflowEngine().cancel(execution.id);
+    logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
+    await getWorkflowEngine().cancel(execution.id);
 
     return c.json({ id: execution.id, status: 'cancelling' });
   });
