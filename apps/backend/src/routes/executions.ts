@@ -3,14 +3,15 @@ import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 
 import { database } from '../db/client';
-import { executionEvents, executions } from '../db/schema';
+import { executions } from '../db/schema';
 import { getWorkflowEngine } from '../engine';
+import { drainEventsSince } from '../events/drain-events';
 import { subscribe } from '../events/execution-event-bus';
+import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events-after';
 import { logger as backendLogger } from '../logger';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
-const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
 export const executionsRoutes = new Hono();
@@ -46,13 +47,9 @@ executionsRoutes.get('/:id/stream', async (c) => {
   }
 
   return streamSSE(c, async (stream) => {
-    // Send catch-up snapshot so clients that connected late get full history
-    const existingEvents = await database
-      .select()
-      .from(executionEvents)
-      .where(eq(executionEvents.executionId, executionId))
-      .orderBy(executionEvents.sequence);
-
+    // Catch-up snapshot. Reuses the same incremental query (afterSequence=0)
+    // that powers live drains — one query shape across the route, not two.
+    const existingEvents = await fetchEventsAfter(executionId, 0);
     let lastSequence = existingEvents.length > 0 ? Number(existingEvents.at(-1)!.sequence) : 0;
 
     await stream.writeSSE({
@@ -70,31 +67,37 @@ executionsRoutes.get('/:id/stream', async (c) => {
     }
 
     let done = false;
+    // Serialize drains: the NOTIFY dispatcher fires subscribers without
+    // awaiting them, so two notifies arriving in quick succession would
+    // otherwise start parallel drains that both read with the stale cursor
+    // and write each row twice. `pendingNotify` coalesces any burst into one
+    // follow-up pass after the in-flight drain settles.
+    let draining = false;
+    let pendingNotify = false;
+
+    const writeEvent = async (event: ExecutionEventRow) => {
+      await stream.writeSSE({ data: JSON.stringify(formatEvent(event)) });
+    };
 
     const unsubscribe = await subscribe(executionId, async () => {
       if (done) return;
-
-      const newEvents = await database
-        .select()
-        .from(executionEvents)
-        .where(eq(executionEvents.executionId, executionId))
-        .orderBy(executionEvents.sequence);
-
-      const unsent = newEvents.filter((event) => Number(event.sequence) > lastSequence);
-
-      for (const event of unsent) {
-        try {
-          await stream.writeSSE({ data: JSON.stringify(formatEvent(event)) });
-          lastSequence = Number(event.sequence);
-        } catch {
-          done = true;
-          return;
-        }
+      if (draining) {
+        pendingNotify = true;
+        return;
       }
-
-      const lastType = unsent.at(-1)?.type;
-      if (lastType && TERMINAL_EVENT_TYPES.has(lastType)) {
-        done = true;
+      draining = true;
+      try {
+        do {
+          pendingNotify = false;
+          const result = await drainEventsSince(executionId, lastSequence, fetchEventsAfter, writeEvent);
+          lastSequence = result.lastSequence;
+          if (result.reachedTerminal || result.writeFailed) {
+            done = true;
+            return;
+          }
+        } while (pendingNotify && !done);
+      } finally {
+        draining = false;
       }
     });
 
@@ -159,7 +162,7 @@ executionsRoutes.delete('/:id', async (c) => {
   return c.json({ id: execution.id, status: 'cancelling' });
 });
 
-function formatEvent(event: typeof executionEvents.$inferSelect) {
+function formatEvent(event: ExecutionEventRow) {
   return {
     executionId: event.executionId,
     sequence: event.sequence,
