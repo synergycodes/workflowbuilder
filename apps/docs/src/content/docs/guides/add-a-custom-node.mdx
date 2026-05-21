@@ -1,0 +1,316 @@
+---
+title: Add a custom node
+description: End-to-end recipe — define a node's schema, UI schema, defaults, register it with the palette, and (optionally) plug a custom renderer in.
+sidebar:
+  order: 1
+---
+
+import YoutubeEmbed from '../../../components/youtube-embed.astro';
+import FilePathsDisclaimer from '../../../partials/_file-paths-disclaimer.mdx';
+
+Custom nodes let you extend Workflow Builder with node types that match your specific domain and business logic. This guide walks through the full lifecycle of a node — schema, UI, defaults, registration — using a `Webhook` node as a worked example.
+
+<YoutubeEmbed videoId="v0Oy4VIAMok" title="How to Add a New Custom Node to Workflow Builder" />
+
+<FilePathsDisclaimer />
+
+## Anatomy
+
+A node is a [`PaletteItem`](/api/types/paletteitem/) made of four pieces. File organisation is a suggestion — collapse them into one file if you prefer.
+
+| Piece                   | Defined in                   | Purpose                                            |
+| ----------------------- | ---------------------------- | -------------------------------------------------- |
+| `schema`                | `schema.ts`                  | Shape and validation of the node's properties.     |
+| `uischema`              | `uischema.ts`                | How those properties render in the property panel. |
+| `defaultPropertiesData` | `default-properties-data.ts` | Initial values applied when the node is dropped.   |
+| Top-level fields        | `<node-name>.ts`             | `type`, `label`, `description`, `icon`.            |
+
+## 1. JSON Schema — `webhook/schema.ts`
+
+```ts
+import type { NodeSchema } from '@workflowbuilder/sdk';
+
+export const schema = {
+  properties: {
+    label: { type: 'string' },
+    description: { type: 'string' },
+    url: { type: 'string', format: 'uri' },
+    method: {
+      type: 'string',
+      options: [
+        { label: 'GET', value: 'GET' },
+        { label: 'POST', value: 'POST' },
+        { label: 'PUT', value: 'PUT' },
+        { label: 'DELETE', value: 'DELETE' },
+      ],
+    },
+    accentColor: { type: 'string' },
+    retryOnFailure: { type: 'boolean' },
+  },
+  required: ['url', 'method'],
+} satisfies NodeSchema;
+
+export type WebhookNodeSchema = typeof schema;
+```
+
+## 2. UI Schema — `webhook/uischema.ts`
+
+```ts
+import type { UISchema } from '@workflowbuilder/sdk';
+
+export const uischema: UISchema = {
+  type: 'VerticalLayout',
+  elements: [
+    { type: 'Text', scope: '#/properties/label' },
+    { type: 'TextArea', scope: '#/properties/description', minRows: 2 },
+    { type: 'Text', scope: '#/properties/url', placeholder: 'https://...' },
+    { type: 'Select', scope: '#/properties/method' },
+
+    // Custom control — matches the tester we register below.
+    // `UISchema` is a closed union of built-in element types, so custom
+    // elements need a cast at declaration. Runtime is fully type-safe — your
+    // renderer still receives the exact props you declared.
+    { type: 'ColorPicker', scope: '#/properties/accentColor' } as unknown as UISchema,
+
+    { type: 'Switch', scope: '#/properties/retryOnFailure' },
+  ],
+};
+```
+
+Each element's `type` is one of the SDK's built-in control or layout types. For the full list of types and their props, see [Form controls](/node-schemas/form-controls/) and [Form layouts](/node-schemas/form-layouts/). Custom renderer types like `ColorPicker` you register yourself — see [Custom JsonForms control](/guides/custom-jsonforms-control/).
+
+## 3. Defaults — `webhook/default-properties-data.ts`
+
+```ts
+export const defaultPropertiesData = {
+  label: 'Webhook',
+  description: '',
+  url: '',
+  method: 'POST',
+  accentColor: '#3366ff',
+  retryOnFailure: true,
+};
+```
+
+## 4. Palette item — `webhook/webhook.ts`
+
+```ts
+import type { PaletteItem } from '@workflowbuilder/sdk';
+
+import { defaultPropertiesData } from './default-properties-data';
+import { type WebhookNodeSchema, schema } from './schema';
+import { uischema } from './uischema';
+
+export const webhookNode: PaletteItem<WebhookNodeSchema> = {
+  type: 'webhook',
+  label: 'Webhook',
+  description: 'Send data to an external HTTP endpoint',
+  icon: 'Globe', // see the WBIcon name union for valid icon names
+  defaultPropertiesData,
+  schema,
+  uischema,
+};
+```
+
+## 5. Register the node
+
+Pass your node array to the `nodeTypes` prop on `<WorkflowBuilder.Root>`:
+
+```tsx
+import { WorkflowBuilder } from '@workflowbuilder/sdk';
+
+import '@workflowbuilder/sdk/style.css';
+
+import { webhookNode } from './webhook/webhook';
+
+export function App() {
+  return (
+    <WorkflowBuilder.Root
+      name="my-flow"
+      nodeTypes={[webhookNode]}
+      initialNodes={[]}
+      initialEdges={[]}
+      integration={{
+        strategy: 'props',
+        onDataSave: async (data) => {
+          console.log('save:', data);
+          return 'success';
+        },
+      }}
+    />
+  );
+}
+```
+
+Inside the monorepo, the demo composes its palette in [`apps/demo/src/app/data/palette.ts`](https://github.com/synergycodes/workflowbuilder/blob/master/apps/demo/src/app/data/palette.ts) and passes the resulting array into `<WorkflowBuilder.Root nodeTypes={...} />` from [`apps/demo/src/app/app.tsx`](https://github.com/synergycodes/workflowbuilder/blob/master/apps/demo/src/app/app.tsx).
+
+## 6. (Optional) Custom renderer
+
+To render a property with a custom React component, split the renderer into two files (the component as `.tsx`, the registry entry as `.ts`) so every JSX-bearing file exports only components — Vite's React Fast Refresh requires it.
+
+`renderers/color-picker.tsx`:
+
+```tsx
+import { withJsonFormsControlProps } from '@jsonforms/react';
+
+type Props = {
+  data: string;
+  handleChange: (path: string, value: string) => void;
+  path: string;
+  label?: string;
+};
+
+function ColorPickerControl({ data, handleChange, path, label }: Props) {
+  return (
+    <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+      {label && <span>{label}</span>}
+      <input type="color" value={data ?? '#000000'} onChange={(e) => handleChange(path, e.target.value)} />
+    </label>
+  );
+}
+
+export const ColorPicker = withJsonFormsControlProps(ColorPickerControl);
+```
+
+`renderers/color-picker-renderer.ts`:
+
+```ts
+import { type JsonFormsRendererRegistryEntry, rankWith, uiTypeIs } from '@jsonforms/core';
+
+import { ColorPicker } from './color-picker';
+
+export const colorPickerRenderer: JsonFormsRendererRegistryEntry = {
+  tester: rankWith(5, uiTypeIs('ColorPicker')),
+  renderer: ColorPicker,
+};
+```
+
+Wire it through the `jsonForm` prop on `<WorkflowBuilder.Root>`:
+
+```tsx
+<WorkflowBuilder.Root
+  nodeTypes={[webhookNode]}
+  jsonForm={{ renderers: [colorPickerRenderer] }}
+  integration={{ strategy: 'props', onDataSave }}
+/>
+```
+
+The full reference for renderer/cell/translation registration lives at [Custom JsonForms control](/guides/custom-jsonforms-control/).
+
+## 7. (Optional) Custom node template
+
+The built-in renderer gives every node a header and one input + one output handle. When you need a different handle layout or a different shape, register a custom template under [`nodeTemplates`](/api/types/nodetemplatesmap/) keyed by the palette `type` string. No plugin needed.
+
+`my-node-template.tsx`:
+
+```tsx
+import { NodeDescription, NodeIcon, NodePanel } from '@synergycodes/overflow-ui';
+import { Icon, getHandleId } from '@workflowbuilder/sdk';
+import type { WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import { Handle, Position } from '@xyflow/react';
+import { memo, useMemo } from 'react';
+
+export const MyNodeTemplate = memo(
+  ({ id, icon, label, description, selected = false, showHandles = true }: WorkflowNodeTemplateProps) => {
+    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+
+    const handleTargetTopId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'top' });
+    const handleTargetLeftId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'left' });
+    const handleSourceBottomId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'bottom' });
+    const handleSourceRightId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'right' });
+
+    return (
+      <NodePanel.Root selected={selected}>
+        <NodePanel.Header>
+          <NodeIcon icon={iconElement} />
+          <NodeDescription label={label} description={description} />
+        </NodePanel.Header>
+        <NodePanel.Handles isVisible={showHandles}>
+          <Handle id={handleTargetTopId} type="target" position={Position.Top} />
+          <Handle id={handleTargetLeftId} type="target" position={Position.Left} />
+          <Handle id={handleSourceBottomId} type="source" position={Position.Bottom} />
+          <Handle id={handleSourceRightId} type="source" position={Position.Right} />
+        </NodePanel.Handles>
+      </NodePanel.Root>
+    );
+  },
+);
+```
+
+The example composes the node from `@synergycodes/overflow-ui` primitives (`NodePanel.Root`, `NodePanel.Header`, `NodePanel.Handles`) — the same building blocks Workflow Builder uses for its own node renderers, so the result matches the editor's visual language out of the box.
+
+The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/). Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
+
+Wire it through the `nodeTemplates` prop on `<WorkflowBuilder.Root>`:
+
+```tsx
+<WorkflowBuilder.Root
+  nodeTypes={[webhookNode]}
+  nodeTemplates={{ webhook: MyNodeTemplate }}
+  integration={{ strategy: 'props', onDataSave }}
+/>
+```
+
+The key must match the palette item's `type`. Keys that collide with built-in template names (`'node'`, `'start-node'`, `'ai-node'`, `'decision-node'`) override the built-in renderer for that node category. Declare `nodeTemplates` at module level — recreating the map on every render busts ReactFlow's internal memoisation and remounts every node on the canvas.
+
+The same template renders both the canvas node and the static palette thumbnail / drag-ghost. In preview mode `data`, `selected`, and `layoutDirection` are `undefined` — read them with optional chaining and fall back to defaults.
+
+One thing the custom template path does **not** include: `NodeAsPortWrapper` (drag-to-create connections by dropping onto the node body). If you need that, register a custom node container through a plugin instead — see [Build a plugin](/guides/build-a-plugin/).
+
+## Conditional fields
+
+Show or hide fields based on other field values via `rule`:
+
+```ts
+{
+  type: 'Text',
+  scope: '#/properties/url',
+  rule: {
+    effect: 'SHOW',
+    condition: {
+      scope: '#/properties/method',
+      schema: { enum: ['POST', 'PUT'] },
+    },
+  },
+}
+```
+
+This renders the `url` field only when `method` is `'POST'` or `'PUT'`.
+
+## Validation
+
+JSON Schema validation runs automatically. Use `required`, `minLength`, `pattern`, `format`, etc. in `schema.ts` — the editor surfaces validation failures on the affected node and in the property panel.
+
+## Grouping nodes in the palette
+
+Pass a mix of items and groups to `nodeTypes`:
+
+```ts
+nodeTypes: [
+  { group: 'Integrations', items: [webhookNode, emailNode, slackNode] },
+  { group: 'Logic', items: [conditionalNode, delayNode] },
+];
+```
+
+The palette renders one collapsible section per group.
+
+## What's happening under the hood
+
+1. `<WorkflowBuilder.Root>` receives your props and registers the custom renderer in the JsonForms extension registry plus the `nodeTypes` array in the palette registry.
+2. When a `Webhook` node is dropped on the canvas, `defaultPropertiesData` populates its initial state.
+3. When the node is selected, the property panel renders `uischema` with JsonForms. Your custom renderer's tester matches `{ type: 'ColorPicker' }` and wins over the built-in fallback.
+4. Edits flow through `handleChange` into the diagram model; `onDataSave` is called when the persistence strategy decides to save.
+
+## See also
+
+- [Node schemas](/node-schemas/) — overview of both halves of a node's schema
+- [Data schema](/node-schemas/data-schema/) — the JSON-Schema half: types, validation, options
+- [Form overview](/node-schemas/form-overview/) — the UI layer
+- [Form controls](/node-schemas/form-controls/) — every built-in control type with its props and an example
+- [Form layouts](/node-schemas/form-layouts/) — `VerticalLayout`, `HorizontalLayout`, `Group`, `Accordion`
+- [Custom JsonForms control](/guides/custom-jsonforms-control/) — full registry / cell / translation reference
+- [Node library](/overview/features/node-library/) — what the palette does for users
+- [Properties sidebar](/overview/features/properties-sidebar/) — schema-driven forms in the property panel
+- [Built-in Nodes](/nodes/) — example node types shipped with the demo
+
+Stuck modeling a node for your domain? [Contact us](https://www.workflowbuilder.io/contact).

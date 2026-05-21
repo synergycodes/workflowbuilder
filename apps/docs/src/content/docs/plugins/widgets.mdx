@@ -1,0 +1,39 @@
+---
+title: Widgets
+description: Extend node cards with additional tabs and inline content visible directly on the canvas.
+sidebar:
+  badge: Enterprise
+  order: 6
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+Each node can have multiple widgets that users can enable, disable, and reorder. Widgets are visible directly on the canvas without opening the properties panel.
+
+import widgetsWebm from '@/assets/widgets.webm';
+
+<video autoplay loop muted playsinline>
+  <source src={widgetsWebm} type="video/webm" />
+</video>
+
+## Widget types
+
+The plugin ships with two built-in widget types:
+
+| Type    | Description                                        |
+| ------- | -------------------------------------------------- |
+| `text`  | Structured text blocks with a title and paragraphs |
+| `other` | Generic content placeholder                        |
+
+## Use cases
+
+- Add documentation notes directly on a node, visible at a glance without opening properties.
+- Display computed or dynamic content inline on the canvas (extend with a custom widget type).
+- Let non-technical users annotate workflow steps with rich text descriptions.
+
+## See also
+
+- [Properties sidebar](/overview/features/properties-sidebar/) - schema-driven forms in the properties panel
+- [Node library](/overview/features/node-library/) - browse, search, and drag nodes from the palette

@@ -1,0 +1,39 @@
+---
+title: Node Library
+description: The node palette - browse, search, and drag nodes onto the canvas.
+sidebar:
+  order: 2
+---
+
+import nodeLibraryWebm from '@/assets/node-library.webm';
+
+The node library (palette) is the left sidebar panel that lists all available node types. Users drag nodes from here onto the canvas to build their workflow.
+
+<video autoplay loop muted playsinline>
+  <source src={nodeLibraryWebm} type="video/webm" />
+</video>
+
+## Views
+
+The palette supports two display modes:
+
+| View          | Description                                      |
+| ------------- | ------------------------------------------------ |
+| **Flat list** | All node types shown as a single scrollable list |
+| **Grouped**   | Nodes organized into logical categories          |
+
+## Drag and drop
+
+Dragging a node from the palette onto the canvas creates a new instance of that node type at the drop position. The node is initialized with its default property values defined in `default-properties-data.ts`.
+
+The palette is read-only. Users cannot add, remove, or reorder entries. The available node types are defined in the codebase. See [Add a Custom Node Type](/guides/add-a-custom-node/) for how to extend the list.
+
+## Templates
+
+Below the node list, the palette also surfaces pre-built workflow templates. Selecting a template replaces the current canvas with the template diagram, giving users a starting point for common workflow patterns.
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Built-in Nodes](/nodes/) - all built-in node types
+- [Widgets plugin](/plugins/widgets/) - extend node cards with extra tabs and inline content

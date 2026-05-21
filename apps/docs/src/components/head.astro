@@ -1,0 +1,78 @@
+---
+import type { StarlightRouteData } from '@astrojs/starlight/route-data';
+import { ClientRouter } from 'astro:transitions';
+
+const { head } = Astro.locals.starlightRoute as StarlightRouteData;
+---
+
+<ClientRouter />
+{head.map(({ tag: Tag, attrs, content }) => <Tag {...attrs} set:html={content} />)}
+
+<style is:global>
+  .no-transitions,
+  .no-transitions * {
+    transition: none;
+  }
+</style>
+
+<script>
+  // Starlight has built-in sidebar persistence (SidebarPersister.astro), but it
+  // relies on visibilitychange/pageHide events which don't fire during
+  // client-side navigations triggered by ClientRouter (View Transitions).
+  // This script bridges the gap using Astro's swap lifecycle events.
+
+  const SIDEBAR_ID = 'starlight__sidebar';
+  const SCROLL_KEY = 'sl-sidebar-scroll';
+  const DETAILS_KEY = 'sl-sidebar-details';
+
+  // Save sidebar state before the page DOM is swapped out.
+  document.addEventListener('astro:before-swap', () => {
+    const sidebar = document.querySelector(`#${SIDEBAR_ID}`);
+    if (!sidebar) return;
+
+    sessionStorage.setItem(SCROLL_KEY, String(sidebar.scrollTop));
+
+    const detailsState = [...sidebar.querySelectorAll('details')].map((detail) => detail.open);
+    sessionStorage.setItem(DETAILS_KEY, JSON.stringify(detailsState));
+  });
+
+  // Restore sidebar state after the new page DOM is in place.
+  // Details are restored before scroll so the sidebar height is correct
+  // when setting scrollTop.
+  document.addEventListener('astro:after-swap', () => {
+    const sidebar = document.querySelector(`#${SIDEBAR_ID}`);
+    if (!sidebar) return;
+
+    const savedDetails = sessionStorage.getItem(DETAILS_KEY);
+    if (savedDetails) {
+      // Suppress chevron rotation animations during restore.
+      sidebar.classList.add('no-transitions');
+
+      const detailsState: boolean[] = JSON.parse(savedDetails);
+      const details = sidebar.querySelectorAll('details');
+      for (const [index, detail] of details.entries()) {
+        if (typeof detailsState[index] === 'boolean') {
+          detail.open = detailsState[index];
+        }
+      }
+      sessionStorage.removeItem(DETAILS_KEY);
+
+      requestAnimationFrame(() => sidebar.classList.remove('no-transitions'));
+    }
+
+    const scroll = sessionStorage.getItem(SCROLL_KEY);
+    if (scroll) {
+      sidebar.scrollTop = Number.parseInt(scroll);
+      sessionStorage.removeItem(SCROLL_KEY);
+    }
+  });
+
+  // Autoplay videos don't restart after View Transitions DOM swap.
+  // Re-trigger load + play for any autoplay video on the new page.
+  document.addEventListener('astro:after-swap', () => {
+    for (const video of document.querySelectorAll('video[autoplay]')) {
+      video.load();
+      video.play();
+    }
+  });
+</script>

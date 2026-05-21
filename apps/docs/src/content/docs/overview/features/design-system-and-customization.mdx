@@ -1,0 +1,72 @@
+---
+title: Design System & Customization
+description: Workflow Builder's design system - tokens, themes, and how to customize the UI.
+sidebar:
+  order: 4
+---
+
+import YoutubeEmbed from '../../../../components/youtube-embed.astro';
+
+Workflow Builder includes a fully developed design system based on [Atomic Design](https://bradfrost.com/blog/post/atomic-web-design/) methodology. It uses design tokens (CSS variables) so the entire visual appearance can be changed by adjusting a small set of values.
+
+## Atomic Design structure
+
+| Level         | Examples                                |
+| ------------- | --------------------------------------- |
+| **Atoms**     | Buttons, inputs, icons, badges          |
+| **Molecules** | Form fields with labels, node cards     |
+| **Organisms** | Properties panel, node palette, toolbar |
+| **Templates** | Full editor layout                      |
+
+## Design tokens
+
+The UI is powered by CSS custom properties (tokens) for colors, typography, spacing, and elevation. Changing a token propagates through the entire interface.
+
+Example token categories:
+
+- **UI backgrounds:** `--ax-ui-bg-primary-default`, `--ax-ui-bg-secondary-default`, `--ax-ui-bg-tertiary-default`
+- **Text:** `--ax-txt-primary-default`, `--ax-txt-secondary-default`, `--ax-txt-tertiary-default`
+- **Node:** `--ax-node-bg-primary-default`, `--ax-node-stroke-primary-default`, `--ax-node-icon-primary-default`
+- **Buttons:** `--ax-button-primary-bg-default`, `--ax-button-gray-bg-default`
+- **Spacing:** `--ax-token-spacing-spacing-4`, `--ax-token-spacing-spacing-8`, ..., `--ax-token-spacing-spacing-32`
+- **Border radius:** `--ax-token-radius-element-4`, `--ax-token-radius-element-8`, ..., `--ax-token-radius-element-24`
+- **Shadows:** `--ax-token-shadow-shadow-xs-*`, `--ax-token-shadow-shadow-s-*`, ..., `--ax-token-shadow-shadow-xl-*`
+
+Theming is done by overriding CSS custom properties. Create a CSS file with your overrides and import it after the default theme:
+
+```css
+:root {
+  --ax-ui-bg-primary-default: #1a1a2e;
+  --ax-txt-primary-default: #e0e0e0;
+  --ax-button-primary-bg-default: #4a90d9;
+}
+```
+
+Both light and dark mode tokens are defined separately, so you can customize each theme independently.
+
+## Light and dark mode
+
+Workflow Builder supports both light and dark modes out of the box, controlled by the `prefers-color-scheme` media query or a toggle.
+
+## Headless components
+
+Workflow Builder ships with a complete default theme, but the underlying components are built with [Overflow UI](https://www.overflow.dev/ui-components/authored/quickstart), a headless (unstyled) React component library. This means you can replace the default styles entirely without fighting against built-in component styles. The visual layer is fully separate from the functional layer.
+
+## White-label support
+
+The design system is set up for white-labeling. Replace logo, colors, typography, and any visual asset to match your product's brand.
+
+## Video walkthrough
+
+For a visual overview of the design system, watch the walkthrough below.
+
+<YoutubeEmbed videoId="q2IiQh2uDEA" title="Workflow Builder Design System Walkthrough" />
+
+## See also
+
+- [Workflow Builder as a React component](/get-started/quick-start/wb-as-react-component/) - embed Workflow Builder into an existing React app
+
+## References
+
+- [Overflow UI](https://www.overflow.dev/ui-components/authored/quickstart) - the headless React component library underneath the default theme
+- [Atomic Design methodology](https://bradfrost.com/blog/post/atomic-web-design/) - the structural model behind the design system

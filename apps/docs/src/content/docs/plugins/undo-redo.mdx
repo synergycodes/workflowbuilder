@@ -1,0 +1,48 @@
+---
+title: Undo / Redo
+description: Local session history for the diagram. Undo and redo node-related actions using keyboard shortcuts or toolbar buttons.
+sidebar:
+  badge: Enterprise
+  order: 1
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+import undoRedoWebm from '@/assets/undo-redo.webm';
+
+import OverflowCard from '@/components/overflow-card.astro';
+
+Users can step backwards and forwards through their editing actions without losing work.
+
+<video autoplay loop muted playsinline>
+  <source src={undoRedoWebm} type="video/webm" />
+</video>
+
+## What it tracks
+
+The history tracks node-related actions:
+
+- Adding or removing nodes
+- Moving nodes on the canvas
+- Connecting or disconnecting nodes
+- Editing node properties
+
+Edge-only changes (moving edge labels) may not be included in the history depending on configuration.
+
+## Keyboard shortcuts
+
+| Action | Windows / Linux | macOS         |
+| ------ | --------------- | ------------- |
+| Undo   | `Ctrl+Z`        | `Cmd+Z`       |
+| Redo   | `Ctrl+Shift+Z`  | `Cmd+Shift+Z` |
+
+Toolbar buttons for undo and redo are also available in the app bar.
+
+<OverflowCard docsUrl="https://www.overflow.dev/premium?path=/docs/interaction-undo-redo-documentation--docs" />
+
+## See also
+
+- [Diagram state management](/overview/features/diagram-state-management/) - canvas state, undo/redo, and auto-save
+- [Copy & Paste](/plugins/copy-paste/) - cut, copy, and paste nodes and edges

@@ -1,0 +1,204 @@
+---
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { marked } from 'marked';
+
+type Props = {
+  /** Path to the markdown file, relative to the docs app root (e.g. `src/content/docs/guides/_guide.md`) */
+  src: string;
+  plan?: string;
+  feature?: string;
+  locked?: boolean;
+  previewLines?: number;
+};
+
+const CONTACT_URL = 'https://www.workflowbuilder.io';
+
+const globallyLocked = import.meta.env.PUBLIC_LOCKED_CONTENT !== 'false';
+const { src, plan = 'Enterprise', feature, locked = globallyLocked, previewLines = 12 } = Astro.props;
+
+const ctaLabel = `Get ${plan} Access`;
+const heading = feature ? `${feature} requires the ${plan} license.` : `This section requires the ${plan} license.`;
+
+const documentationRoot = fileURLToPath(new URL('../..', import.meta.url));
+const absolutePath = path.resolve(documentationRoot, src);
+
+let raw: string;
+try {
+  raw = readFileSync(absolutePath, 'utf8');
+} catch {
+  throw new Error(`LockedSection: file not found: "${src}" (resolved to: ${absolutePath})`);
+}
+
+const withoutFrontmatter = raw.replace(/^---[\s\S]*?---\s*\n/, '');
+const stripScriptTags = (html: string) => html.replaceAll(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+
+const renderedHtml = stripScriptTags(
+  locked
+    ? await marked.parse(withoutFrontmatter.split('\n').slice(0, previewLines).join('\n'))
+    : await marked.parse(withoutFrontmatter),
+);
+---
+
+{
+  locked ? (
+    <div class="locked-section not-content" role="region" aria-label={`Locked: ${feature ?? plan} content`}>
+      <div class="preview-wrapper">
+        <div class="content-preview" aria-hidden="true" set:html={renderedHtml} />
+        <div class="preview-fade" aria-hidden="true" />
+      </div>
+      <div class="lock-card">
+        <div class="lock-icon" aria-hidden="true">
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+            <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+          </svg>
+        </div>
+        <span class="plan-badge">{plan}</span>
+        <p class="lock-heading">{heading}</p>
+        <a href={CONTACT_URL} class="cta-link" target="_blank" rel="noopener noreferrer">
+          {ctaLabel}
+          <svg
+            class="arrow-icon"
+            viewBox="0 0 16 16"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M3 8h10M9 4l4 4-4 4" />
+          </svg>
+        </a>
+      </div>
+    </div>
+  ) : (
+    <div class="not-content unlocked-content" set:html={renderedHtml} />
+  )
+}
+
+<style>
+  .locked-section {
+    position: relative;
+    margin-block: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid var(--sl-color-gray-5);
+    overflow: hidden;
+    background-color: var(--sl-color-bg);
+  }
+
+  .preview-wrapper {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .content-preview {
+    max-block-size: 16rem;
+    overflow: hidden;
+    padding-block-start: 1.5rem;
+    padding-inline: 1.5rem;
+    filter: blur(5px);
+    opacity: 0.7;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  .preview-fade {
+    position: absolute;
+    inset-block-end: 0;
+    inset-inline: 0;
+    block-size: 10rem;
+    background: linear-gradient(to bottom, transparent, var(--sl-color-bg));
+    pointer-events: none;
+  }
+
+  .lock-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    padding-block: 2rem;
+    padding-inline: 2rem;
+    gap: 0.75rem;
+    border-block-start: 1px solid var(--sl-color-gray-5);
+  }
+
+  .lock-icon {
+    inline-size: 2.5rem;
+    block-size: 2.5rem;
+    color: var(--sl-color-accent);
+    margin-block-end: 0.25rem;
+  }
+
+  .lock-icon svg {
+    inline-size: 100%;
+    block-size: 100%;
+  }
+
+  .plan-badge {
+    display: inline-block;
+    padding-block: 0.2rem;
+    padding-inline: 0.75rem;
+    border-radius: 2rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background-color: color-mix(in srgb, var(--sl-color-accent) 15%, transparent);
+    color: var(--sl-color-accent);
+    border: 1px solid color-mix(in srgb, var(--sl-color-accent) 30%, transparent);
+  }
+
+  .lock-heading {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+    color: var(--sl-color-text);
+    max-inline-size: 36ch;
+    line-height: 1.5;
+  }
+
+  .cta-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-block-start: 0.5rem;
+    padding-block: 0.55rem;
+    padding-inline: 1.25rem;
+    border-radius: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-decoration: none;
+    color: var(--sl-color-bg);
+    background-color: var(--sl-color-accent);
+    transition: opacity 0.15s ease;
+  }
+
+  .cta-link:hover {
+    opacity: 0.88;
+  }
+
+  .cta-link:focus-visible {
+    outline: 2px solid var(--sl-color-accent);
+    outline-offset: 3px;
+  }
+
+  .arrow-icon {
+    inline-size: 1rem;
+    block-size: 1rem;
+    flex-shrink: 0;
+  }
+
+  .unlocked-content {
+    margin-block: 1.5rem;
+  }
+</style>

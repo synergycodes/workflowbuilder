@@ -1,0 +1,68 @@
+---
+title: Notification
+description: Sends a notification to a user or system through email, SMS, push, webhook, or Slack.
+sidebar:
+  order: 6
+---
+
+import NodeDocumentation from '@/components/node-documentation.astro';
+
+<NodeDocumentation node="notification">
+
+The Notification node dispatches a notification through a configured channel. It is similar to the Action node but specialized for messaging - your backend interprets the notification type and delivers it through the appropriate service.
+
+## When to use
+
+Use a Notification node when your workflow needs to inform a person or system about something that happened. While you could model notifications as Action nodes, having a dedicated node type makes workflows easier to read and makes the intent immediately clear on the canvas.
+
+Common examples:
+
+- **Transactional messages** - send order confirmations, shipping updates, or password reset emails
+- **Alerts and escalations** - notify on-call engineers via Slack when a health check fails, send SMS alerts for critical incidents
+- **Approval requests** - push a notification to a manager asking them to review and approve a request
+- **Webhook callbacks** - POST a payload to an external system when a workflow step completes
+- **Multi-channel notifications** - send the same message via email and push notification for redundancy
+
+## Notification types
+
+Select the notification type from the **Notification Type** dropdown. Each type configures a different delivery channel.
+
+| Type              | Icon             | Description                                |
+| ----------------- | ---------------- | ------------------------------------------ |
+| Email             | EnvelopeSimple   | Send an email message                      |
+| SMS               | ChatTeardropDots | Send a text message                        |
+| Push Notification | Bell             | Send a mobile or browser push notification |
+| Webhook           | WebhooksLogo     | POST a payload to an external URL          |
+| Slack Message     | SlackLogo        | Send a message to a Slack channel          |
+
+### Email properties
+
+When **Email** is selected, the following fields are available:
+
+| Property         | Type     | Description                             |
+| ---------------- | -------- | --------------------------------------- |
+| Address          | Text     | Recipient email address                 |
+| Copy             | Text     | CC recipients                           |
+| Subject          | Text     | Email subject line                      |
+| Body             | Text     | Email body content                      |
+| Priority         | Dropdown | Normal / Low / High                     |
+| Retries          | Number   | Number of retry attempts on failure     |
+| Retry on Failure | Boolean  | Whether to automatically retry on error |
+
+## Properties
+
+All notification types share the following fields:
+
+| Property    | Type     | Description                             |
+| ----------- | -------- | --------------------------------------- |
+| Label       | Text     | Display name shown on the node card     |
+| Description | Text     | Short description of the node's purpose |
+| Status      | Dropdown | Active / Draft / Disabled               |
+
+</NodeDocumentation>
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Flow Runner plugin](/plugins/flow-runner/) - turn a diagram into an executable flow function
+- [Trigger node](/nodes/trigger/) - start a flow in response to an event or schedule

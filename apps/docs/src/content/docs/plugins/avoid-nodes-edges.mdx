@@ -1,0 +1,36 @@
+---
+title: Avoid Nodes & Edges
+description: Orthogonal edge routing that automatically routes edges around nodes using Web Workers and WASM.
+sidebar:
+  badge: Enterprise
+  order: 2
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+import OverflowCard from '@/components/overflow-card.astro';
+
+Edges never overlap nodes. The plugin recalculates routes in real time as nodes are moved or resized, using the **libavoid** C++ routing library compiled to WebAssembly and running in a Web Worker for smooth performance.
+
+Edge-to-node and edge-to-edge spacing is configurable.
+
+import avoidNodesWebm from '@/assets/avoid-nodes.webm';
+
+<video autoplay loop muted playsinline>
+  <source src={avoidNodesWebm} type="video/webm" />
+</video>
+
+## Use cases
+
+- Diagrams with many crossing edges, where the router automatically finds clean, non-overlapping paths.
+- Real-time collaborative editing where nodes move frequently and edges need to re-route on the fly.
+- Dense workflows where manual edge routing would be impractical.
+
+<OverflowCard docsUrl="https://www.overflow.dev/premium?path=/docs/edges-and-ports-avoid-nodes-edges-documentation--docs" />
+
+## See also
+
+- [Reshapable edges](/plugins/reshapable-edges/) - manually reshape orthogonal edges on the canvas
+- [Auto Layout (ELK)](/plugins/elk-layout/) - automatic node arrangement with the ELK engine

@@ -1,0 +1,116 @@
+---
+title: Action
+description: Executes a task such as sending an email, creating a database record, or calling an external service.
+sidebar:
+  order: 2
+---
+
+import NodeDocumentation from '@/components/node-documentation.astro';
+
+<NodeDocumentation node="action">
+
+The Action node represents a concrete operation your backend executes. It is the most common node type in any workflow - every step that "does something" is modeled as an Action.
+
+## When to use
+
+Use Action nodes wherever your workflow needs to perform work: sending an email to a customer, updating a record in your CRM, calling a third-party API, running a script, or generating a document. Most workflows consist primarily of Trigger nodes, Action nodes, and branching logic between them.
+
+Action nodes are intentionally generic. The **Action Type** dropdown determines what kind of operation the node represents, and each type reveals its own configuration fields in the properties panel. Your backend interprets the selected type and properties to execute the actual operation.
+
+## Action types
+
+Select the action type from the **Action Type** dropdown. Each type reveals a different set of configuration fields.
+
+### Send Email
+
+Sends an email message.
+
+| Property         | Type     | Description                             |
+| ---------------- | -------- | --------------------------------------- |
+| Address          | Text     | Recipient email address                 |
+| Copy             | Text     | CC recipients                           |
+| Subject          | Text     | Email subject line                      |
+| Body             | Text     | Email body content                      |
+| Priority         | Dropdown | Normal / Low / High                     |
+| Retries          | Number   | Number of retry attempts on failure     |
+| Retry on Failure | Boolean  | Whether to automatically retry on error |
+
+### Update Record
+
+Updates an existing record in a data source.
+
+| Property              | Type     | Description                                   |
+| --------------------- | -------- | --------------------------------------------- |
+| Data Source           | Dropdown | CRM System / Hubspot                          |
+| Object Type           | Dropdown | Order / Lead                                  |
+| Record ID             | Text     | Identifier of the record to update            |
+| Fields to Update      | Text     | Field mapping expression                      |
+| Condition for Updates | Text     | Condition that must be met before updating    |
+| Include Data          | Boolean  | Whether to include full record data in output |
+
+### Make API Call
+
+Calls an external HTTP endpoint.
+
+| Property         | Type     | Description                             |
+| ---------------- | -------- | --------------------------------------- |
+| API URL          | Text     | Endpoint URL                            |
+| HTTP Method      | Dropdown | GET / POST / PUT / DELETE               |
+| Headers          | Text     | Request headers                         |
+| Body             | Text     | Request body                            |
+| Response Format  | Dropdown | JSON / XML / Plain Text                 |
+| Store Response   | Dropdown | Variable name to store the response in  |
+| Retry on Failure | Boolean  | Whether to automatically retry on error |
+
+### Create Record
+
+Creates a new record in a data source.
+
+| Property           | Type     | Description                                     |
+| ------------------ | -------- | ----------------------------------------------- |
+| Data Source        | Dropdown | CRM System / Hubspot                            |
+| Object Type        | Dropdown | Order / Lead                                    |
+| Fields to Populate | Text     | Field mapping expression                        |
+| Assign             | Dropdown | Team or user to assign the record to            |
+| Include Record     | Boolean  | Whether to include the created record in output |
+
+### Execute Script
+
+Runs a script in the specified language.
+
+| Property        | Type     | Description                                    |
+| --------------- | -------- | ---------------------------------------------- |
+| Script Language | Dropdown | JavaScript / Python                            |
+| Script Editor   | Text     | The script source code                         |
+| Script Storing  | Text     | Variable name to store the script result in    |
+| Pass Workflow   | Boolean  | Whether to pass workflow context to the script |
+
+### Create New Document
+
+Generates a document from a template.
+
+| Property           | Type     | Description                                 |
+| ------------------ | -------- | ------------------------------------------- |
+| Template           | Dropdown | Invoice Template / Contract Template        |
+| Fields to Populate | Text     | Data mapping for template variables         |
+| Output Format      | Dropdown | PDF / DOCX                                  |
+| Save Location      | Dropdown | Google Drive / Internal Storage             |
+| Send Document      | Boolean  | Whether to send the document after creation |
+
+## Shared properties
+
+All action types share the following fields:
+
+| Property    | Type     | Description                             |
+| ----------- | -------- | --------------------------------------- |
+| Label       | Text     | Display name shown on the node card     |
+| Description | Text     | Short description of the node's purpose |
+| Status      | Dropdown | Active / Draft / Disabled               |
+
+</NodeDocumentation>
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Flow Runner plugin](/plugins/flow-runner/) - turn a diagram into an executable flow function
+- [AI Agent node](/nodes/ai-agent/) - delegate a step to an AI model or agent

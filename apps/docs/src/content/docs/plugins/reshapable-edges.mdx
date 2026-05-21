@@ -1,0 +1,38 @@
+---
+title: Reshapable Edges
+description: Manually reshape orthogonal edges using drag handles on the canvas.
+sidebar:
+  badge: Enterprise
+  order: 5
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+import OverflowCard from '@/components/overflow-card.astro';
+
+Select an edge to reveal interactive drag handles, then drag them to create custom routes. A **Reset Reshaping** button in the edge properties panel reverts any modified edge back to its default path.
+
+import reshapableEdgesWebm from '@/assets/reshapable-edges.webm';
+
+<video autoplay loop muted playsinline>
+  <source src={reshapableEdgesWebm} type="video/webm" />
+</video>
+
+## Configuration
+
+To change the handle colour, override `--wb-edge-reshape-handler-color` in your CSS.
+
+## Use cases
+
+- Fine-tune edge routing when automatic layout doesn't produce the desired result.
+- Create cleaner diagrams by manually separating edges that overlap.
+- Adjust a single edge path without affecting the rest of the layout.
+
+<OverflowCard docsUrl="https://www.overflow.dev/premium?path=/docs/edges-and-ports-reshaping-orthogonal-edges--code-docs" />
+
+## See also
+
+- [Avoid Nodes & Edges](/plugins/avoid-nodes-edges/) - orthogonal edge routing that avoids nodes
+- [Auto Layout (ELK)](/plugins/elk-layout/) - automatic node arrangement with the ELK engine

@@ -1,0 +1,76 @@
+---
+import { Image } from 'astro:assets';
+import { Aside, Tabs } from '@astrojs/starlight/components';
+import SchemaTab from './schema-tab.astro';
+import { GITHUB_REPO_BASE } from '../config';
+
+type Props = { node: string };
+
+type ImageModule = { default: import('astro').ImageMetadata };
+type SchemaModule = { schema: Record<string, unknown> };
+type UiSchemaModule = { uischema: Record<string, unknown> };
+
+const imageModules = import.meta.glob<ImageModule>('@/assets/*.png', { eager: true });
+const schemaModules = import.meta.glob<SchemaModule>('@wb/nodes/*/schema.ts', { eager: true });
+const uischemaModules = import.meta.glob<UiSchemaModule>('@wb/nodes/*/uischema.ts', { eager: true });
+
+const { node } = Astro.props;
+
+const imageKey = Object.keys(imageModules).find((key) => key.endsWith(`/${node}.png`));
+const schemaKey = Object.keys(schemaModules).find((key) => key.endsWith(`/${node}/schema.ts`));
+const uischemaKey = Object.keys(uischemaModules).find((key) => key.endsWith(`/${node}/uischema.ts`));
+
+const heroImage = imageKey ? imageModules[imageKey].default : null;
+const schema = schemaKey ? schemaModules[schemaKey].schema : null;
+const uischema = uischemaKey ? uischemaModules[uischemaKey].uischema : null;
+
+if (!heroImage && !schema && !uischema) {
+  throw new Error(
+    `NodeDocumentation: no assets found for node "${node}". ` +
+      'Check that the node name matches an existing directory in @wb/nodes and that the PNG screenshot exists in @/assets.',
+  );
+}
+
+const displayName = node.replaceAll('-', ' ').replaceAll(/\b\w/g, (char: string) => char.toUpperCase());
+
+const schemaUrl = `${GITHUB_REPO_BASE}/${node}/schema.ts`;
+const uischemaUrl = `${GITHUB_REPO_BASE}/${node}/uischema.ts`;
+---
+
+{heroImage && <Image src={heroImage} alt={`${displayName} node on the canvas`} class="hero-image" />}
+
+<slot />
+
+{
+  (schema || uischema) && (
+    <div class="node-schemas">
+      <h2 id="schemas">Schemas</h2>
+      <Tabs>
+        {uischema && <SchemaTab label="UI Schema" code={JSON.stringify(uischema, null, 2)} sourceUrl={uischemaUrl} />}
+        {schema && <SchemaTab label="Data Schema" code={JSON.stringify(schema, null, 2)} sourceUrl={schemaUrl} />}
+      </Tabs>
+    </div>
+  )
+}
+
+<Aside type="note" title="Customizable">
+  This node type ships ready to use with the configuration shown above. Every property, icon, and UI element is
+  schema-driven - you can adapt it to your domain or use it as a starting point for a
+  <a href="/docs/guides/add-a-custom-node/">custom node type</a>.
+</Aside>
+
+<style>
+  .hero-image {
+    margin: 0 auto;
+    display: block;
+  }
+
+  .node-schemas :global(.expressive-code pre) {
+    max-height: 32rem;
+    overflow-y: auto;
+  }
+
+  .node-schemas :global(.expressive-code .copy button) {
+    display: none;
+  }
+</style>

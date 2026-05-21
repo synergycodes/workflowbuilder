@@ -1,0 +1,188 @@
+---
+title: Standalone
+description: Clone Workflow Builder and run the reference editor locally. UI-only demo or the full AI Studio stack with backend execution.
+sidebar:
+  order: 1
+---
+
+import { Image } from 'astro:assets';
+
+import wbOverviewImg from '@/assets/wb-overview.webp';
+
+import packageJson from '../../../../../../../package.json';
+
+Run Workflow Builder locally from the monorepo. Two paths depending on what you want to evaluate.
+
+Don't want to clone yet? [Open the live demo](https://app.workflowbuilder.io) to try it in your browser first.
+
+## Pick a path
+
+| Goal                                                   | Path                                | Setup time | Docker |
+| ------------------------------------------------------ | ----------------------------------- | ---------- | ------ |
+| See the editor running in your browser                 | [Demo](#demo)                       | ~2 min     | no     |
+| Run the full reference stack (editor + execution + AI) | [Full Stack Demo](#full-stack-demo) | ~10 min    | yes    |
+
+To embed the SDK in your own React app instead, see [React Component](/get-started/quick-start/wb-as-react-component/).
+
+## Requirements
+
+- [Node.js](https://nodejs.org/) <code>{packageJson.engines.node}</code>
+- [pnpm](https://pnpm.io/) <code>{packageJson.engines.pnpm}</code>
+- Docker Desktop. Only required for the AI Studio path.
+
+Works the same on macOS, Linux, and Windows.
+
+## Preflight
+
+After cloning, run this once. It verifies Node, pnpm, Docker, port availability, and required `.env` files.
+
+```bash
+git clone https://github.com/synergycodes/workflowbuilder.git
+cd workflowbuilder
+pnpm install
+pnpm preflight
+```
+
+Expected output:
+
+```
+Workflow Builder preflight
+
+✅ node                        22.12.0
+✅ pnpm                        10.9.0
+✅ docker                      running
+✅ port_3001                   free (backend)
+✅ port_4200                   free (demo)
+✅ port_4201                   free (ai-studio)
+✅ port_5432                   free (postgres)
+✅ port_5433                   free (temporal-db)
+✅ port_7233                   free (temporal)
+✅ port_8233                   free (temporal-ui)
+⚠️  apps/backend/.env           missing — copy from apps/backend/.env.example
+⚠️  apps/execution-worker/.env  missing — copy from apps/execution-worker/.env.example
+
+Ready to go. Pick a path below.
+```
+
+The two `.env` warnings are expected on a fresh clone. They are only required for the Full Stack Demo path and get created by `pnpm setup:env` in step 1 of that path. After that they switch to `✅ present`.
+
+Fix any red (`❌`) items before continuing. `pnpm preflight --json` returns the same report in structured form for tooling.
+
+## Demo
+
+UI only. No backend, no Docker. The fastest way to see the editor in action.
+
+```bash
+pnpm dev:demo
+```
+
+Expected output:
+
+```
+[1]   VITE vX.Y.Z  ready in NNN ms
+[1]
+[1]   ➜  Local:   http://localhost:4200/
+[0] Found 0 errors. Watching for file changes.
+```
+
+Open [http://localhost:4200](http://localhost:4200). The editor loads with the default plugin set and a starter template.
+
+<Image src={wbOverviewImg} alt="Workflow Builder canvas, node palette, and properties panel" />
+
+## Full Stack Demo
+
+Full reference product: editor, Hono backend, Temporal worker, Postgres. The frontend on port 4201 is the **AI Studio** reference product (`apps/ai-studio`). Demonstrates end-to-end workflow execution.
+
+### 1. Create `.env` files
+
+First time only. Copies the `.env.example` templates into place; existing `.env` files are left untouched.
+
+```bash
+pnpm setup:env
+```
+
+### 2. Start infrastructure
+
+```bash
+pnpm infra:up
+```
+
+Expected output (first run):
+
+```
+ Network backend_default            Created
+ Volume "backend_temporal-db-data"  Created
+ Volume "backend_app-db-data"       Created
+ Container backend-app-db-1         Started
+ Container backend-temporal-db-1    Started
+ Container backend-temporal-1       Started
+ Container backend-temporal-ui-1    Started
+```
+
+Verify: open [http://localhost:8233](http://localhost:8233) (Temporal UI). The `default` namespace appears.
+
+### 3. Run migrations
+
+First time, or after pulling schema changes.
+
+```bash
+pnpm -F backend db:migrate
+```
+
+Expected output:
+
+```
+> drizzle-kit migrate
+
+Using 'postgres' driver for database querying
+[✓] migrations applied successfully!
+```
+
+### 4. Start the stack
+
+```bash
+pnpm dev:ai-studio
+```
+
+Expected output (three interleaved streams):
+
+```
+Temporal ready
+[backend]    Backend running on http://127.0.0.1:3001
+[worker]     Execution worker started on task queue: workflow-execution
+[ai-studio]    VITE vX.Y.Z  ready in NNN ms
+[ai-studio]    ➜  Local:   http://127.0.0.1:4201/
+```
+
+Open [http://localhost:4201](http://localhost:4201). Pick the "Sales Inquiry" template, click Play. The Temporal UI at [http://localhost:8233](http://localhost:8233) shows the running execution.
+
+To stop: `Ctrl+C`, then `pnpm infra:down`.
+
+### Connect a real LLM (optional)
+
+AI Studio works with stub responses out of the box. To use a real model, add to both `apps/backend/.env` and `apps/execution-worker/.env`:
+
+```env
+OPENROUTER_API_KEY=sk-or-v1-...
+AI_MODEL=anthropic/claude-3.5-haiku
+```
+
+If the key is missing, the worker fails to start with `OPENROUTER_API_KEY is required`. If the model id is wrong, the first AI node fails at runtime and the error surfaces in the UI log panel.
+
+## Troubleshooting
+
+| Symptom                                                                 | Cause                                                                 | Fix                                                                               |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                        | `pnpm preflight` shows the conflict. Stop the other process or change the port.   |
+| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                    | `pnpm -F backend db:migrate`                                                      |
+| Worker exits with `OPENROUTER_API_KEY is required`                      | Real LLM env var missing                                              | Set it in `apps/execution-worker/.env`. Optional unless you want a real LLM call. |
+| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal | Fix the errors or ignore them temporarily.                                        |
+| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                            | `rm -rf node_modules/.vite` and rerun.                                            |
+
+## See also
+
+- [React Component](/get-started/quick-start/wb-as-react-component/). Embed the SDK in your own React app.
+- [Node library](/overview/features/node-library/). Browse, search, and drag nodes from the palette.
+- [Add Custom Node Type](/guides/add-a-custom-node/). Register a new node type with custom properties.
+- [via callback persistence](/get-started/persistence/callback/). Pass diagram data and save callbacks as React props.
+- [FAQ](/faq/). Installation, licensing, and compatibility questions.

@@ -1,0 +1,28 @@
+---
+title: Built-in Nodes Overview
+description: Production-ready node types that ship with Workflow Builder, covering triggers, actions, branching, delays, notifications, and AI agents.
+sidebar:
+  order: 0
+---
+
+Workflow Builder ships with several production-ready node types that cover the most common workflow patterns. Each node comes with a full configuration UI, validation, and JSON serialization - ready to use as-is in your application.
+
+| Node                            | Purpose                                                                    |
+| ------------------------------- | -------------------------------------------------------------------------- |
+| [Trigger](./trigger/)           | Starts a workflow in response to an event, schedule, or condition          |
+| [Action](./action/)             | Executes a task such as sending email, calling an API, or running a script |
+| [Conditional](./conditional/)   | Splits the workflow into two branches based on a true/false condition      |
+| [Decision](./decision/)         | Routes the workflow to one of several named branches                       |
+| [Delay](./delay/)               | Pauses the workflow for a fixed, dynamic, or conditional duration          |
+| [Notification](./notification/) | Sends a notification through email, SMS, push, webhook, or Slack           |
+| [AI Agent](./ai-agent/)         | Delegates a step to an AI model with tool access                           |
+
+## Fully customizable
+
+Every built-in node is defined by a JSON Schema (what properties exist) and a UI Schema (how they render in the properties panel). You can modify the built-in nodes to fit your domain - rename fields, add new options, change icons - or create entirely new node types from scratch.
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Node library](/overview/features/node-library/) - browse, search, and drag nodes from the palette
+- [Properties sidebar](/overview/features/properties-sidebar/) - schema-driven forms in the properties panel

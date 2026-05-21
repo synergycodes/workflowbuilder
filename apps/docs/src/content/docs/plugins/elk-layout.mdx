@@ -1,0 +1,43 @@
+---
+title: Auto Layout
+description: Automatic node and edge arrangement powered by the ELK layout engine.
+sidebar:
+  badge: Enterprise
+  order: 3
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+import OverflowCard from '@/components/overflow-card.astro';
+
+The plugin adds two toolbar buttons: **Auto Layout** to trigger a full recalculation, and **Direction Toggle** to switch between left-to-right and top-to-bottom arrangements. Layout also recalculates automatically when nodes are resized.
+
+import autolayoutWebm from '@/assets/autolayout.webm';
+
+<video autoplay loop muted playsinline>
+  <source src={autolayoutWebm} type="video/webm" />
+</video>
+
+## Toolbar controls
+
+| Button           | What it does                                                       |
+| ---------------- | ------------------------------------------------------------------ |
+| Auto Layout      | Recalculates positions for every node and edge                     |
+| Direction Toggle | Switches between `RIGHT` (horizontal) and `DOWN` (vertical) layout |
+
+The selected direction persists across page refreshes.
+
+## Use cases
+
+- Automatically arrange a messy diagram after importing data or adding many nodes.
+- Toggle between horizontal and vertical orientations to find the best layout for a given workflow.
+- Keep the layout tidy after bulk node additions. Hit Auto Layout instead of manually dragging every node.
+
+<OverflowCard docsUrl="https://www.overflow.dev/premium?path=/docs/interaction-elk-layout--code-docs" />
+
+## See also
+
+- [Reshapable edges](/plugins/reshapable-edges/) - manually reshape orthogonal edges on the canvas
+- [Avoid Nodes & Edges](/plugins/avoid-nodes-edges/) - orthogonal edge routing that avoids nodes
