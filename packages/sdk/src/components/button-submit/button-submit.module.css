@@ -1,0 +1,38 @@
+:root {
+  --spinner-color: var(--ax-txt-primary-white);
+}
+
+.container {
+  position: relative;
+}
+
+.container--success {
+  --spinner-color: var(--ax-txt-primary-white);
+}
+
+.container--ghost-destructive {
+  --spinner-color: var(--ax-public-button-ghost-destructive-color);
+}
+
+.container--pending button {
+  color: transparent;
+  pointer-events: none;
+}
+
+.icon--spinner {
+  position: absolute;
+  color: var(--spinner-color);
+  top: 50%;
+  left: 50%;
+  animation: spin infinite linear 1.6s;
+}
+
+@keyframes spin {
+  from {
+    transform: translate(-50%, -50%) rotate(0deg);
+  }
+
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}

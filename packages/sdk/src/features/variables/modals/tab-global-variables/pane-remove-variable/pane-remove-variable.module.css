@@ -1,0 +1,45 @@
+:root {
+  --wb-settings-remove-bg: var(--ax-public-modal-header-background);
+}
+
+.description {
+  margin-top: var(--wb-token-spacing-spacing-16);
+  margin-bottom: var(--wb-token-spacing-spacing-20, 20px);
+}
+
+.list {
+  display: flex;
+  flex-flow: column;
+  gap: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--wb-settings-remove-bg);
+  background: var(--wb-settings-remove-bg);
+  color: var(--wb-txt-secondary-default);
+  margin: 0;
+  padding: var(--wb-token-spacing-spacing-12, 12px) var(--wb-token-spacing-spacing-16, 16px)
+    var(--wb-token-spacing-spacing-12, 12px) 16px;
+
+  li {
+    margin: 0;
+    padding: 0;
+    margin-left: var(--wb-token-spacing-spacing-16, 16px);
+  }
+}
+
+.content {
+  display: flex;
+  flex-flow: column;
+  gap: 0.5rem;
+  overflow: auto;
+  height: 100%;
+}
+
+.buttons {
+  margin-top: auto;
+  display: flex;
+  padding-top: var(--wb-token-spacing-spacing-16, 16px);
+
+  > :last-child {
+    margin-left: auto;
+  }
+}

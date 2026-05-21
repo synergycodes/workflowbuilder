@@ -1,38 +1,216 @@
-<img alt="Workflow Builder" src="https://cdn.synergycodes.com/workflow-builder-logo-solid.svg" width="201" height="40">
+<div align="center">
 
-## What is Workflow Builder?
+<a href="https://www.workflowbuilder.io/"><img alt="Workflow Builder" src="https://cdn.synergycodes.com/workflow-builder-logo-solid.svg" width="201" height="40"></a>
 
-Workflow Builder is an open-source, frontend-only SDK for building and embedding visual workflow editors into your application.
+[Live Demo](https://app.workflowbuilder.io/) &nbsp;|&nbsp; [Documentation](https://www.workflowbuilder.io/docs/overview/) &nbsp;|&nbsp; [Website](https://www.workflowbuilder.io/)
 
-It provides a ready-made workflow editor UI - including canvas, nodes, edges, layout and configuration panels - so you don’t have to build workflow UX from scratch.
+**Frontend SDK for embedding production-ready workflow editors.**
 
-Workflow Builder focuses exclusively on the **frontend editor layer**.  
-Execution, orchestration, and business logic remain fully under your control.
+Workflow Builder is an open-source SDK that gives you a ready-made workflow editor UI - canvas, nodes, edges, layout, and configuration panels - so you don't have to build workflow UX from scratch. It focuses exclusively on the frontend editor layer; execution, orchestration, and business logic stay fully under your control. The SDK outputs workflow definitions as JSON that your own backend executes.
 
-## What Workflow Builder is NOT
+---
 
-Workflow Builder does **not**:
+[![Build](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml/badge.svg)](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml)
+[![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
+[![Discord](https://img.shields.io/badge/chat-Discord-5865F2.svg)](https://discord.com/invite/FDMjRuarFb)
 
-- execute workflows
-- provide scheduling or orchestration
-- include backend logic or integrations
-- act as an iPaaS or automation platform
+![Workflow Builder demo](docs/assets/workflow-builder-demo.gif)
 
-The SDK outputs workflow definitions (JSON) that are meant to be executed by **your own backend**.
+[Try it live ->](https://app.workflowbuilder.io/)
 
-## Key features
+Used in production by teams including [Vercom](https://www.workflowbuilder.io/case-study/vercom), [Athena Intelligence](https://www.workflowbuilder.io/case-study/athena-intelligence), [Plura AI](https://www.workflowbuilder.io/case-study/plura-ai), and others.
 
-- Visual workflow editor (nodes, edges, layout, validation)
+</div>
+
+## Get started
+
+Three onboarding paths. Pick one based on what you want to evaluate.
+
+| Goal                                                   | Path                                                          | Setup time | Docker |
+| ------------------------------------------------------ | ------------------------------------------------------------- | ---------- | ------ |
+| See the editor running in your browser                 | [A. Try the demo](#path-a-try-the-demo)                       | ~2 min     | no     |
+| Run the full reference stack (editor + execution + AI) | [B. Run the full stack demo](#path-b-run-the-full-stack-demo) | ~10 min    | yes    |
+| Use the SDK inside your own React app                  | [C. Embed the SDK](#path-c-embed-the-sdk)                     | see docs   | no     |
+
+Want to skip the clone entirely? [Try the live demo](https://app.workflowbuilder.io) first.
+
+### Requirements
+
+- Node `22.12.0` and pnpm `10.9.0`. Both pinned in `package.json`. Use `nvm`, `fnm`, or `corepack` to match.
+- Docker Desktop. Only required for Path B.
+
+Works the same on macOS, Linux, and Windows. No platform-specific steps.
+
+### Preflight check
+
+Run this once after cloning. It verifies Node, pnpm, Docker, port availability, and required `.env` files.
+
+```bash
+pnpm install
+pnpm preflight
+```
+
+Expected output:
+
+```
+Workflow Builder preflight
+
+✅ node                        22.12.0
+✅ pnpm                        10.9.0
+✅ docker                      running
+✅ port_3001                   free (backend)
+✅ port_4200                   free (demo)
+✅ port_4201                   free (ai-studio)
+✅ port_5432                   free (postgres)
+✅ port_5433                   free (temporal-db)
+✅ port_7233                   free (temporal)
+✅ port_8233                   free (temporal-ui)
+⚠️  apps/backend/.env           missing — copy from apps/backend/.env.example
+⚠️  apps/execution-worker/.env  missing — copy from apps/execution-worker/.env.example
+
+Ready to go. Pick a path in README.md "Get started".
+```
+
+The two `.env` warnings are expected on a fresh clone. They are only required for Path B and get created by `pnpm setup:env` in step 1 of that path. After that they switch to `✅ present`.
+
+Fix any red (`❌`) items before continuing. The script also has a `--json` mode for tooling: `pnpm preflight --json`.
+
+### Path A. Try the demo
+
+UI only. No backend, no Docker. The fastest way to see the editor in action.
+
+```bash
+pnpm dev:demo
+```
+
+Expected output:
+
+```
+[1]   VITE vX.Y.Z  ready in NNN ms
+[1]
+[1]   ➜  Local:   http://localhost:4200/
+[0] Found 0 errors. Watching for file changes.
+```
+
+Open `http://localhost:4200`. The editor loads with the default plugin set and a starter template. That's it.
+
+### Path B. Run the full stack demo
+
+Full reference product: editor, Hono backend, Temporal worker, Postgres. The frontend on port 4201 is the **AI Studio** reference product (`apps/ai-studio`). Demonstrates end-to-end workflow execution.
+
+**1. Create `.env` files.** First time only. Copies the `.env.example` templates into place; existing `.env` files are left untouched.
+
+```bash
+pnpm setup:env
+```
+
+**2. Start infrastructure.**
+
+```bash
+pnpm infra:up
+```
+
+Expected output (first run):
+
+```
+ Network backend_default            Created
+ Volume "backend_temporal-db-data"  Created
+ Volume "backend_app-db-data"       Created
+ Container backend-app-db-1         Started
+ Container backend-temporal-db-1    Started
+ Container backend-temporal-1       Started
+ Container backend-temporal-ui-1    Started
+```
+
+Verify: open `http://localhost:8233` (Temporal UI). The `default` namespace appears.
+
+**3. Run migrations.** First time, or after pulling schema changes.
+
+```bash
+pnpm -F backend db:migrate
+```
+
+Expected output:
+
+```
+> drizzle-kit migrate
+
+Using 'postgres' driver for database querying
+[✓] migrations applied successfully!
+```
+
+**4. Start the stack.**
+
+```bash
+pnpm dev:ai-studio
+```
+
+Expected output (three interleaved streams):
+
+```
+Temporal ready
+[backend]    Backend running on http://127.0.0.1:3001
+[worker]     Execution worker started on task queue: workflow-execution
+[ai-studio]    VITE vX.Y.Z  ready in NNN ms
+[ai-studio]    ➜  Local:   http://127.0.0.1:4201/
+```
+
+Open `http://localhost:4201`. Pick the "Sales Inquiry" template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
+
+To stop: `Ctrl+C`, then `pnpm infra:down`.
+
+#### Connect a real LLM (optional)
+
+AI Studio works with stub responses out of the box. To use a real model, add to both `apps/backend/.env` and `apps/execution-worker/.env`:
+
+```env
+OPENROUTER_API_KEY=sk-or-v1-...
+AI_MODEL=anthropic/claude-3.5-haiku
+```
+
+If the key is missing the worker fails to start with `OPENROUTER_API_KEY is required`. If the model id is wrong the first AI node fails at runtime and the error surfaces in the UI log panel.
+
+### Path C. Embed the SDK
+
+To build your own React app on top of `@workflowbuilder/sdk`, follow the [React Component guide on the docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/). It covers installation, peer deduplication (for local-path builds until npm publish), usage, persistence strategies, theming, and the full API reference.
+
+### Troubleshooting
+
+| Symptom                                                                 | Cause                                                                 | Fix                                                                              |
+| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                        | `pnpm preflight` shows the conflict. Stop the other process or change the port   |
+| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                    | `pnpm -F backend db:migrate`                                                     |
+| Worker exits with `OPENROUTER_API_KEY is required`                      | Real LLM env var missing                                              | Set it in `apps/execution-worker/.env`. Optional unless you want a real LLM call |
+| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal | Fix the errors or ignore them temporarily                                        |
+| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                            | `rm -rf node_modules/.vite` and rerun                                            |
+
+For the full command reference, see the table in [`CLAUDE.md`](./CLAUDE.md) or the documentation site.
+
+## Key Features
+
+- **Plugin-first architecture** - optional features can be added or removed without breaking the app
+- **Schema-driven properties panels** - configure node inputs declaratively
+- **JSON-serializable workflows** - plug into any backend; execution stays yours
+- **Design System Kit** - theming and white-label support out of the box
 - Configurable and extensible node system
-- Schema-driven properties panels
-- Workflow serialization to JSON
-- Plugin-first architecture
-- Back-end agnostic
-- Designed for embedding into SaaS products
-- Theming and white-label support
-- Design System Kit
+- Visual workflow editor (nodes, edges, layout, validation)
 
-## Typical use cases
+## Plugins
+
+Workflow Builder uses a plugin-first architecture. Plugins are optional features that can be added or removed without breaking the app. For details on how the plugin system works, see the [plugins guide](./apps/demo/src/app/plugins/README.md).
+
+| Plugin                                                                       | Description                                                                      |
+| ---------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [Avoid Nodes Edges](./apps/demo/src/app/plugins/avoid-nodes-edges/README.md) | Orthogonal edge routing using Web Workers and WASM                               |
+| [Copy Paste](./apps/demo/src/app/plugins/copy-paste/README.md)               | Cut, copy, and paste operations for nodes and edges                              |
+| [Download PDF](./apps/demo/src/app/plugins/download-pdf/README.md)           | Export diagrams to PDF                                                           |
+| [ELK Layout](./apps/demo/src/app/plugins/elk-layout/README.md)               | Automatic node and edge arrangement using the ELK layout engine                  |
+| [Flow Runner](./apps/demo/src/app/plugins/flow-runner/README.md)             | Example JSON parser that converts workflow diagrams into callable flow functions |
+| [Reshapable Edges](./apps/demo/src/app/plugins/reshapable-edges/README.md)   | Manual reshaping of orthogonal edges using drag handles                          |
+| [Undo Redo](./apps/demo/src/app/plugins/undo-redo/README.md)                 | Local session history for undo/redo operations                                   |
+| [Widgets](./apps/demo/src/app/plugins/widgets/README.md)                     | Optional node widgets displayed directly on the diagram                          |
+
+## Typical Use Cases
 
 Workflow Builder is commonly used to:
 
@@ -41,70 +219,56 @@ Workflow Builder is commonly used to:
 - design AI agent and automation workflow platforms
 - serve as a foundation for workflow-driven products and standalone apps
 
-[![Build](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml/badge.svg)](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml)
-
-## <a name="about-the-project">About The Project</a>
+## Repository Structure
 
 Monorepo of [Workflow Builder](https://www.workflowbuilder.io/) - a frontend-first SDK and foundation for building workflow-driven applications.
 
-## <a name="getting-started">Getting Started</a>
+Using `pnpm workspaces`, Workflow Builder is split into runnable apps under `apps/` and reusable libraries under `packages/`:
 
-### <a name="prerequisites">Prerequisites</a>
+- [`packages/sdk`](./packages/sdk/README.md) - `@workflowbuilder/sdk`, the embeddable React library (public API, types, build)
+- [`packages/types`](./packages/types) - `@workflow-builder/types`, shared TypeScript types used by the SDK and the bundled backend/worker
+- [`packages/execution-core`](./packages/execution-core/README.md) - Pure domain layer (ports, graph runner, node executors) shared by the bundled backend and worker
+- [`apps/demo`](./apps/demo/README.md) - Reference SPA that consumes the SDK with the full plugin set (also the source of truth for example node types, templates, and plugins)
+- [`apps/docs`](./apps/docs/README.md) - Documentation site
+- [`apps/icons`](./apps/icons/README.md) - Lazy-loadable, extensible icons consumed by the SDK
 
-You'll need `node` and `pnpm` with proper versions set in the root `package.json` and `.npmrc` file.
+The repo also ships an example AI workflow execution backend used by the **AI Studio plugin**. This is not part of the frontend SDK — it is a reference implementation showing one way to pair the editor with an execution engine:
 
-### <a name="installation">Installation</a>
+- [`backend`](./apps/backend/README.md) - Hono HTTP server, workflow CRUD, SSE streaming; hexagonal — depends on `WorkflowEnginePort`
+- [`execution-worker`](./apps/execution-worker/README.md) - Temporal worker executing workflow activities
 
-1. Clone the repo
-2. Install packages from the root directory
-   `pnpm i`
-3. To start the app, run
-   `pnpm dev`
+Technical choices are documented in `*.decision-log.md` files that live alongside the code they relate to. See the [decision logs list](./DECISION-LOGS.md).
 
-### <a name="technical-overview">Technical Overview</a>
+## ⚠️ Reference Backend — Local Development Only
 
-Using `pnpm workspaces` Workflow Builder is split into packages placed in `apps/` directory:
+The bundled execution backend (`apps/backend`, `apps/execution-worker`) is a **reference implementation** of the AI Studio plugin's execution layer. It has **no authentication, no authorization, no user/tenant isolation, and no CORS restrictions**. By default it binds only to `127.0.0.1` and the docker-compose stack does the same — nothing in the reference setup is reachable from the local network.
 
-- [`frontend`](./apps/frontend/README.md) - React app containing the core functionality of Workflow Builder
-- [`frontend-e2e`](./apps/frontend-e2e/README.md) - E2E tests for the frontend
-- [`types`](./apps/types/README.md) - Shared Typescript definitions for the project
-- [`icons`](./apps/icons/README.md) - Lazy-loadable, extensible icons
+**Do not expose this backend to the internet, a shared LAN, or any environment with untrusted users without first adding proper authn/authz.** Anyone who can reach the port can read, modify, and execute every workflow.
 
-## <a name="decision-logs">Decision Logs</a>
+For production deployments, see [Workflow Builder Enterprise](https://www.workflowbuilder.io/) or build your own backend against `WorkflowEnginePort`.
 
-To document technical choices and provide an overview of reasoning behind them, the repo contains `*.decision-log.md` files that live along the code and packages their related to. See [decision logs list](./DECISION-LOGS.md)
+## Community Edition
+
+This repository contains the community edition of Workflow Builder, maintained by [Synergy Codes](https://synergycodes.com/). The commercial edition is built on the same codebase and adds premium plugins.
+
+We develop everything in a private monorepo and publish releases here through an automated pipeline, which is why commit history and collaborator activity may look limited. There's a full engineering team behind this — questions, issues, and feedback are very welcome here.
 
 ## License
 
-Community Edition:
+Workflow Builder is available in two editions:
 
-- Open source
-- Apache 2.0 license
-- Frontend-only workflow editor SDK
+- **Community Edition** - Open source, Apache 2.0 licensed, this repository
+- **Enterprise Edition** - Commercial license with long-term support, advanced features, and professional services. Learn more at [workflowbuilder.io](https://www.workflowbuilder.io/)
 
-Enterprise Edition:
-
-- Commercial license
-- Long-term support
-- Advanced features and professional services
-
-## Contributing
-
-Workflow Builder is open-source and we welcome contributions. Whether you're fixing bugs, proposing features, improving docs, or spreading the word - we'd love to have you as part of the community.
-
-## Professional consulting & enterprise support
+## Professional Consulting & Enterprise Support
 
 Workflow Builder is a frontend-only SDK. For enterprise companies that need end-to-end implementations, we also offer professional consulting services.
-Our team can help with:
+
+Our team has delivered **170+ custom workflow tools** across industries and brings **15+ years** of experience building enterprise-class diagramming and automation tools. We can help with:
 
 - backend execution engines
 - custom integrations
 - enterprise-grade customization and scaling
 - accelerating time-to-market with proven architecture patterns
-  The team behind Workflow Builder has 15+ years of experience building enterprise-class diagramming and automation tools.
-  Learn more about Enterprise Edition and consulting: 👉 https://workflowbuilder.io
 
-## <a name="links">Links</a>
-
-- [Product website](https://www.workflowbuilder.io/)
-- [Try interactive sample demo](https://app.workflowbuilder.io/)
+Learn more about Enterprise Edition and consulting at [workflowbuilder.io](https://www.workflowbuilder.io/).

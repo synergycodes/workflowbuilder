@@ -1,0 +1,105 @@
+/* Library CSS bundle
+   ORDER MATTERS — @layer declaration and @imports must come before any rule */
+
+/* 1. Layer order declaration — empty @layer is allowed before @import */
+@layer reset, ext-lib, ui;
+
+/* 2. Web fonts — Poppins is bundled locally (via @fontsource/poppins) instead
+      of fetched from Google's CDN at runtime. Reasons: strict CSPs block the
+      external request, the IP leak before consent breaks GDPR-controlled
+      flows, and air-gapped deployments have no outbound internet at all.
+      Latin + latin-ext subsets only (covers English + Polish, the SDK's
+      shipping locales). Override `--wb-font-family` to use a different face. */
+@import '@fontsource/poppins/latin-300.css';
+@import '@fontsource/poppins/latin-400.css';
+@import '@fontsource/poppins/latin-500.css';
+@import '@fontsource/poppins/latin-600.css';
+@import '@fontsource/poppins/latin-700.css';
+@import '@fontsource/poppins/latin-ext-300.css';
+@import '@fontsource/poppins/latin-ext-400.css';
+@import '@fontsource/poppins/latin-ext-500.css';
+@import '@fontsource/poppins/latin-ext-600.css';
+@import '@fontsource/poppins/latin-ext-700.css';
+
+/* 3. Design tokens */
+@import '@synergycodes/overflow-ui/tokens.css';
+
+/* 4. External component CSS */
+@import '@xyflow/react/dist/style.css';
+@import 'overflow-ui-css';
+
+/* 5. Sub-layer order inside `ui` — must come AFTER @imports (has a body, so
+      the spec classifies it as a statement that closes the @import prelude). */
+@layer ui {
+  @layer base, component;
+}
+
+:root {
+  --wb-transition: 0.1s ease-in;
+  --wb-background-color: var(--ax-ui-bg-tertiary-default);
+  --wb-scroll-width: 0.375rem;
+  --wb-scroll-radius: 0.625rem;
+  --wb-scroll-thumb-color: var(--ax-scrollbar-bg-default);
+  --wb-scroll-thumb-hover-color: var(--colors-gray-gray-500);
+  --wb-scroll-track-color: transparent;
+  --wb-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* 5. App global styles (reset, scrollbars, fonts, body) */
+@layer reset {
+  ::-webkit-scrollbar {
+    width: var(--wb-scroll-width);
+  }
+  ::-webkit-scrollbar-track {
+    border-radius: var(--wb-scroll-radius);
+    background: var(--wb-scroll-track-color);
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--wb-scroll-thumb-hover-color);
+  }
+  ::-webkit-scrollbar-thumb {
+    border-radius: var(--wb-scroll-radius);
+    background: var(--wb-scroll-thumb-color);
+  }
+  input[type='number'],
+  input[type='time'] {
+    -webkit-appearance: textfield;
+    -moz-appearance: textfield;
+    appearance: textfield;
+  }
+  input[type='number']::-webkit-inner-spin-button,
+  input[type='number']::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+  }
+  input[type='time']::-webkit-calendar-picker-indicator {
+    display: none;
+  }
+  * {
+    font-family: var(--wb-font-family);
+  }
+  body {
+    margin: 0;
+    background-color: var(--wb-background-color);
+    overflow: hidden;
+  }
+  button {
+    cursor: pointer;
+  }
+  .react-flow.is-segment-dragged * {
+    cursor: copy;
+  }
+  .workflow-builder-root {
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+    }
+  }
+}
+
+/* Shows date picker over modal */
+body:has(.base-Modal-root) {
+  .mantine-Popover-dropdown {
+    z-index: 1001 !important;
+  }
+}

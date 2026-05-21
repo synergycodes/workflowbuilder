@@ -49,9 +49,8 @@ export function Icon({ name, size = 'medium', color = 'currentColor', ...propert
   const computedSize = iconSizeMap[size];
 
   const svgProps: Partial<IconProps> = {
-    width: computedSize,
-    height: computedSize,
     fill: color,
+    style: { width: computedSize, height: computedSize, ...properties.style },
   };
 
   const Icon = iconMap[name];
@@ -59,6 +58,7 @@ export function Icon({ name, size = 'medium', color = 'currentColor', ...propert
   const iconProps = {
     ...svgProps,
     ...properties,
+    style: svgProps.style,
   } as IconProps;
 
   if (!Icon) {
@@ -85,7 +85,7 @@ export function Icon({ name, size = 'medium', color = 'currentColor', ...propert
 function IconFallback({ size = 'medium' }: Pick<IconProps, 'size'>) {
   const computedSize = iconSizeMap[size];
 
-  return <svg width={computedSize} height={computedSize} />;
+  return <svg style={{ width: computedSize, height: computedSize }} />;
 }
 
 type Size = 'extra-large' | 'large' | 'medium' | 'small';

@@ -1,0 +1,17 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  gap: 1rem;
+  color: var(--ax-txt-secondary-default);
+}
+
+.buttons {
+  margin-top: auto;
+  display: flex;
+
+  > :last-child {
+    margin-left: auto;
+  }
+}

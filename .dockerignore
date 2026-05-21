@@ -1,0 +1,19 @@
+# hidden directories
+.git
+.vscode
+.idea
+
+# external dependencies
+node_modules
+
+# docker files
+docker-compose*.yml
+**/Dockerfile*
+
+# not needed files
+README.md
+tools/
+!tools/deployment/nginx
+.gitignore
+.env
+coverage/

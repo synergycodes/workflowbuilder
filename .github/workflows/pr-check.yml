@@ -1,0 +1,77 @@
+name: PR Check
+
+# Runs on every PR to give reviewers fast feedback on whether the change
+# is safe to merge. Focus on @workflowbuilder/sdk (what we publish to
+# npm) + global format consistency. Other workspaces (apps/docs, demo,
+# ai-studio, …) are not checked here — they're internal and have their
+# own broken-state tolerances (e.g. starlight virtual-module type errors).
+
+on:
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    name: Format check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier --check
+        run: pnpm exec prettier --check "**/*.+(css|ts|tsx|json|md|mdx|astro)" --log-level=warn
+
+  sdk:
+    name: SDK lint + typecheck + test + build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/sdk lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/sdk typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/sdk test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/sdk build:lib

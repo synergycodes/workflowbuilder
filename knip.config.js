@@ -18,35 +18,41 @@
 export default {
   ignore: ['.claude/**'],
   workspaces: {
-    '.': {
-      ignoreUnresolved: ['../../apps/frontend/global.d.ts'],
-    },
-    'apps/frontend': {
-      entry: 'src/main.tsx',
+    'apps/demo': {
+      entry: ['src/main.tsx'],
       project: ['src/**/*.{ts,tsx}', '!src/app/plugins/**/libs/**/*.{ts,tsx}'],
-      ignore: [
-        'src/app/features/plugins-core/utils/missing-plugin.stub.ts',
-        'src/app/utils/ensure-bounds.ts',
-        'src/app/utils/node-changed-listeners.ts',
-        'src/app/store/slices/diagram-slice/actions.ts',
-        'src/app/features/props-passing/hooks/use-call-on-edge-change.ts',
-        'src/app/features/props-passing/hooks/use-call-on-node-change.ts',
-        'src/app/features/props-passing/utils/get-diagram-model-from-input.ts',
-        'src/app/features/props-passing/utils/get-diagram-model-from-store.ts',
-      ],
       ignoreDependencies: ['anymatch', 'javascript-obfuscator', 'html-to-image', 'jspdf', 'libavoid-js', 'web-worker'],
     },
     'apps/icons': {
-      entry: 'index.ts',
+      entry: ['index.ts', 'src/generate-icons.ts'],
       project: '**/*.{ts,tsx}',
       ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
     },
-    'apps/types': {
+    'apps/tools': {
+      entry: ['src/scripts/*.ts'],
+      project: 'src/**/*.ts',
+    },
+    'packages/types': {
       project: '**/*.ts',
-      ignoreDependencies: ['@phosphor-icons/core'],
+    },
+    'packages/sdk': {
+      entry: ['src/index.ts', 'src/**/*.{ts,tsx}', 'vite.config.mts'],
+      project: ['src/**/*.{ts,tsx}', 'vite.config.mts'],
+      // @fontsource/poppins is consumed via @import statements in src/index.css.
+      // Knip only walks JS/TS, so it can't see the CSS reference.
+      ignoreDependencies: ['@fontsource/poppins'],
+    },
+    'apps/backend': {
+      entry: ['src/server.ts', 'drizzle.config.ts'],
+    },
+    'packages/execution-core': {
+      entry: ['src/index.ts'],
+    },
+    'apps/execution-worker': {
+      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows/run-workflow.ts'],
     },
     'apps/docs': {
-      entry: ['astro.config.mjs', 'lint-staged.config.mjs', 'src/components/**/*.astro'],
+      entry: ['astro.config.mjs', 'src/components/**/*.astro'],
       project: ['**/*.{mjs,ts,astro}'],
       ignoreDependencies: ['@iconify-json/ph'],
     },

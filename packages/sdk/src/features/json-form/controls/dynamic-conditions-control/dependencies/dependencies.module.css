@@ -1,0 +1,9 @@
+.button {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+}
+
+.list {
+  pointer-events: none;
+}

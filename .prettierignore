@@ -1,0 +1,7 @@
+# Add files here to ignore them from prettier formatting
+/dist
+/coverage
+.claude/
+apps/icons/src/utils/icons.gen.ts
+# Astro auto-generated content collections + types (gitignored, regenerated on build/dev)
+**/.astro/

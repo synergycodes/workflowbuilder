@@ -1,0 +1,28 @@
+{
+  "name": "@workflow-builder/execution-worker",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env ./src/engines/temporal/worker.ts",
+    "start": "tsx --env-file=.env ./src/engines/temporal/worker.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "vitest run --passWithNoTests",
+    "test:watch": "vitest --passWithNoTests"
+  },
+  "dependencies": {
+    "@openrouter/ai-sdk-provider": "^2.5.0",
+    "@temporalio/worker": "^1.11.0",
+    "@temporalio/workflow": "^1.11.0",
+    "@workflow-builder/execution-core": "workspace:*",
+    "ai": "^6.0.0",
+    "dotenv": "^17.4.2",
+    "postgres": "^3.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "vitest": "^3.0.4"
+  }
+}

@@ -1,0 +1,31 @@
+.container {
+  position: fixed;
+  top: 94px;
+  left: 50%;
+  opacity: 0;
+  transform: translateX(-50%) translateY(-200px);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  z-index: 1;
+  transition-property: transform opacity;
+}
+
+.container--visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0px);
+}
+
+.panel {
+  background: var(--wb-app-bar-background);
+  border-radius: var(--wb-app-bar-border-radius);
+  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  align-items: center;
+  justify-content: space-between;
+  transition:
+    transform 0.3s ease-in-out,
+    opacity 0.3s ease-in-out;
+}

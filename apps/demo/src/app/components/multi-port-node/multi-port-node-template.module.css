@@ -1,0 +1,28 @@
+.wrapper {
+  position: relative;
+}
+
+.status-bar {
+  position: absolute;
+  top: 1px;
+  left: 0;
+  right: 0;
+  height: 4px;
+  border-top-left-radius: 20px 10px;
+  border-top-right-radius: 20px 10px;
+  transition: background-color 150ms ease-out;
+  pointer-events: none;
+  margin: 0 4px;
+}
+
+.status-active {
+  background-color: #2563eb;
+}
+
+.status-draft {
+  background-color: #9ca3af;
+}
+
+.status-disabled {
+  background-color: #ef4444;
+}

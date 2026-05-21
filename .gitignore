@@ -5,6 +5,15 @@ dist
 tmp
 /out-tsc
 
+# pnpm pack / npm pack artefacts (local tarballs for smoke tests + publish dry-runs)
+*.tgz
+
+# Emitted declarations from `pnpm --filter @workflow-builder/icons build`
+# (prepare hook). Root + src/ locations are outside `dist/` so need explicit
+# patterns. `global.d.ts` is a source file — don't ignore.
+apps/icons/index.d.ts
+apps/icons/src/*.d.ts
+
 # dependencies
 node_modules
 
@@ -39,15 +48,26 @@ Thumbs.db
 
 .nx/
 
+**/.env
 **/.env.local
 
 # pnpm local store (created in container environments)
 .pnpm-store/
 
-# Local Claude task files
+# Claude Code - private per-user files
 CLAUDE.local.md
+.claude/settings.local.json
+.claude/worktrees/
 
 # Claude Code worktrees
 .worktrees/
 
 .playwright-mcp/
+
+# TypeDoc-generated API reference under apps/docs (built from packages/sdk's
+# barrel by `starlight-typedoc` at `astro build` / `astro dev`). Output is
+# regenerated on every build, never hand-edited — keep it out of git.
+# The hand-written landing page lives in apps/docs/src/landing-pages/api-index.md
+# and is copied into this dir by a tiny Astro integration after typedoc
+# generation (see astro.config.mjs).
+apps/docs/src/content/docs/api/

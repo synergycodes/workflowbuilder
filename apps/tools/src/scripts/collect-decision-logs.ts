@@ -28,7 +28,12 @@ runScript(SCRIPT_NAME, async function () {
       throw new Error(`Missing metadata in ${originalPath}`);
     }
 
-    const rootRelativePath = path.relative(ROOT_PATH, originalPath);
+    // POSIX-style separators so the committed file is identical regardless
+    // of the host OS. `path.relative` returns OS-native separators
+    // (backslashes on Windows), which would create needless diffs between
+    // Windows-developer commits and the Linux CI runner — and trigger the
+    // verifier to flag the file as drifted on every cross-platform commit.
+    const rootRelativePath = path.relative(ROOT_PATH, originalPath).split(path.sep).join('/');
 
     logList.push(`- _${date}_: [${title}](./${rootRelativePath})`);
   }
@@ -80,14 +85,17 @@ function extractKeyword(content: string, keyword: string): string | undefined {
 }
 
 function parseDate(dateString: string): Date {
-  const parts = dateString.split('.');
-  if (parts.length !== 3) {
+  // Tolerate trailing metadata after the canonical DD.MM.YYYY (e.g. a
+  // parenthetical revision note like "30.04.2026 (revised 04.05.2026 …)") —
+  // sort by the leading date, ignore the rest.
+  const match = dateString.match(/^(\d{1,2})\.(\d{1,2})\.(\d{4})/);
+  if (!match) {
     throw new Error(`Invalid date format: ${dateString}`);
   }
 
-  const day = Number.parseInt(parts[0], 10);
-  const month = Number.parseInt(parts[1], 10) - 1;
-  const year = Number.parseInt(parts[2], 10);
+  const day = Number.parseInt(match[1], 10);
+  const month = Number.parseInt(match[2], 10) - 1;
+  const year = Number.parseInt(match[3], 10);
 
   return new Date(year, month, day);
 }

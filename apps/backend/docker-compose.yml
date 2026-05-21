@@ -1,0 +1,48 @@
+services:
+  app-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: workflow_builder
+      POSTGRES_USER: wb
+      POSTGRES_PASSWORD: wb
+    ports:
+      - '127.0.0.1:5432:5432'
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+
+  temporal-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+    ports:
+      - '127.0.0.1:5433:5432'
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+
+  temporal:
+    image: temporalio/auto-setup:latest
+    depends_on:
+      - temporal-db
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: temporal
+      POSTGRES_SEEDS: temporal-db
+    ports:
+      - '127.0.0.1:7233:7233'
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - '127.0.0.1:8233:8080'
+
+volumes:
+  app-db-data:
+  temporal-db-data:

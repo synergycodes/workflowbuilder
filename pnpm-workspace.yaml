@@ -1,12 +1,16 @@
 packages:
   - './apps/*'
+  - './packages/*'
 
 catalog:
   '@phosphor-icons/core': ^2.1.1
   '@xyflow/react': 12.10.0
-  'react': ^19.1.0
+  # Exact-pinned (no caret): React 19 hard-requires react and react-dom to be
+  # the SAME version — a mismatch throws React error #527. A caret let `react`
+  # drift to a newer 19.x than `react-dom` and broke the app. Bump both together.
+  'react': 19.1.0
   '@types/react': 19.1.8
-  'react-dom': ^19.1.0
+  'react-dom': 19.1.0
   'ajv': ^8.0.0
 
 useNodeVersion: 22.12.0

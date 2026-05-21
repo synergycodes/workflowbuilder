@@ -1,0 +1,17 @@
+.container {
+  height: 100%;
+  display: flex;
+  flex-flow: column;
+}
+
+.content {
+  height: 100%;
+
+  > form {
+    height: 100%;
+
+    > :last-child {
+      margin-top: auto;
+    }
+  }
+}

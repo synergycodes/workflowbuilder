@@ -1,0 +1,83 @@
+import { useCallback, useEffect, useState } from 'react';
+
+import { getStoreDataForIntegration } from '../../../../store/slices/diagram-slice/actions';
+import type { IntegrationDataFormatOptional, OnSave } from '../../../../types/integration';
+import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../../utils/show-snackbar';
+import { IntegrationWrapper } from './wrapper/integration-wrapper';
+
+export function withIntegrationThroughApi<WProps extends object>(WrappedComponent: React.ComponentType<WProps>) {
+  function WithIntegrationComponent(props: React.ComponentProps<typeof WrappedComponent>) {
+    const handleSave: OnSave = useCallback(async (savingParams) => {
+      const data = getStoreDataForIntegration();
+
+      try {
+        /*
+          You can replace this fetch call with your own implementation.
+        */
+        const response = await fetch(location.origin + '/fake-api', {
+          body: JSON.stringify(data),
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        });
+
+        const didSaved = response.ok;
+
+        if (didSaved) {
+          showSnackbarSaveSuccessIfNeeded(savingParams);
+
+          return 'success';
+        }
+      } catch {
+        //
+      }
+
+      showSnackbarSaveErrorIfNeeded(savingParams);
+
+      return 'error';
+    }, []);
+
+    const [{ name, globalVariables, layoutDirection, nodes, edges }, setData] = useState<IntegrationDataFormatOptional>(
+      {},
+    );
+
+    useEffect(() => {
+      (async () => {
+        try {
+          /*
+            You can replace this fetch call with your own implementation.
+          */
+          const response = await fetch(location.origin + '/fake-api');
+
+          if (!response.ok) {
+            return;
+          }
+
+          const data = (await response.json()) as unknown as IntegrationDataFormatOptional | undefined;
+
+          if (data) {
+            setData(data);
+          }
+        } catch {
+          //
+        }
+      })();
+    }, []);
+
+    return (
+      <IntegrationWrapper
+        name={name}
+        globalVariables={globalVariables}
+        layoutDirection={layoutDirection}
+        nodes={nodes}
+        edges={edges}
+        onSave={handleSave}
+      >
+        <WrappedComponent {...props} />
+      </IntegrationWrapper>
+    );
+  }
+
+  return WithIntegrationComponent;
+}

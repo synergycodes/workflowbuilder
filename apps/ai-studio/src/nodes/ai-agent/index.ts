@@ -1,0 +1,16 @@
+import { NodeType, type PaletteItem } from '@workflowbuilder/sdk';
+
+import { defaultPropertiesData } from './default-properties-data';
+import { type AiAgentSchema, schema } from './schema';
+import { uischema } from './uischema';
+
+export const aiAgentPaletteItem: PaletteItem<AiAgentSchema> = {
+  label: 'AI Agent',
+  description: 'Run an LLM prompt',
+  type: 'ai-studio/ai-agent',
+  icon: 'AiAgent',
+  templateType: NodeType.Node,
+  defaultPropertiesData,
+  schema,
+  uischema,
+};

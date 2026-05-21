@@ -1,0 +1,24 @@
+{
+  "name": "@workflow-builder/execution-core",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": "./src/index.ts",
+    "./workflow": "./src/workflow.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "dependencies": {
+    "@workflow-builder/types": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "vitest": "^3.0.4"
+  }
+}

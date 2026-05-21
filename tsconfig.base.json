@@ -16,11 +16,9 @@
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
     "jsx": "react-jsx",
-    "types": ["node", "../../apps/frontend/global.d.ts"],
+    "types": ["node"],
     "paths": {
-      "@/*": ["apps/frontend/src/app/*"],
-      "@/assets/*": ["apps/frontend/src/assets/*"],
-      "@workflow-builder/types/*": ["apps/types/src/*"]
+      "@workflowbuilder/sdk": ["packages/sdk/src/index.ts"]
     }
   },
   "exclude": ["node_modules", "tmp"]

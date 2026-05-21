@@ -1,0 +1,110 @@
+name: Release SDK
+
+# Triggers on tags `vX.Y.Z` matching the version in packages/sdk/package.json.
+# Maintainer pushes the tag after merging the version-bump PR (which ran
+# `pnpm changeset version`). See packages/sdk/RELEASE.md.
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
+
+permissions:
+  contents: write # create GitHub Release
+  id-token: write # npm provenance
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: "https://registry.npmjs.org"
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Defensive layer — if any of these fail, we'd rather find out
+      # before npm than on consumers. Matches ng-diagram's publish-npm
+      # flow which runs lint/format/typecheck/test before npm publish.
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/sdk lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/sdk typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/sdk test
+
+      - name: Build SDK
+        run: pnpm --filter @workflowbuilder/sdk build:lib
+
+      - name: Verify version matches tag
+        # Tag refs/tags/vX.Y.Z must match packages/sdk/package.json version.
+        # Catches push of wrong tag (typo, pushed before version-bump PR merged).
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            echo "Did you forget to merge the version-bump PR before pushing the tag?"
+            exit 1
+          fi
+          echo "Publishing @workflowbuilder/sdk@$PKG_VERSION"
+
+      - name: Check if version already published
+        # Idempotency — re-pushing a tag (e.g. after fixing a workflow bug)
+        # should not re-publish. Matches ng-diagram's check.
+        id: check-version
+        run: |
+          PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
+          if npm view "@workflowbuilder/sdk@$PKG_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@workflowbuilder/sdk@$PKG_VERSION already on npm — skipping publish step."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: steps.check-version.outputs.already_published == 'false'
+        run: pnpm --filter @workflowbuilder/sdk publish --no-git-checks --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        # Pulls the section for the current version out of CHANGELOG.md
+        # so the GitHub Release body matches what consumers see on npm.
+        run: |
+          VERSION=$(node -p "require('./packages/sdk/package.json').version")
+          NOTES=$(awk "/^## ${VERSION}\$/{flag=1;next}/^## /{flag=0}flag" packages/sdk/CHANGELOG.md)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: "@workflowbuilder/sdk ${{ github.ref_name }}"
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false

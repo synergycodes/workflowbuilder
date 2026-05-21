@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Workflow Builder — Backend Execution & Interactive Demo Strategy</title>
+  <style>
+    :root {
+      --primary: #1a1a2e;
+      --accent: #4361ee;
+      --accent-light: #e8edff;
+      --success: #10b981;
+      --warn: #f59e0b;
+      --text: #1f2937;
+      --text-secondary: #6b7280;
+      --border: #e5e7eb;
+      --bg: #ffffff;
+      --bg-section: #f9fafb;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      color: var(--text);
+      line-height: 1.7;
+      max-width: 920px;
+      margin: 0 auto;
+      padding: 3rem 2rem;
+      background: var(--bg);
+    }
+    h1 { font-size: 2rem; font-weight: 700; color: var(--primary); margin-bottom: 0.5rem; letter-spacing: -0.02em; }
+    .subtitle { font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 3rem; border-bottom: 2px solid var(--border); padding-bottom: 1.5rem; }
+    .meta { display: flex; gap: 2rem; font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 1rem; }
+    h2 { font-size: 1.4rem; font-weight: 600; color: var(--primary); margin: 2.5rem 0 1rem; padding-top: 1.5rem; border-top: 1px solid var(--border); }
+    h2:first-of-type { border-top: none; padding-top: 0; }
+    h3 { font-size: 1.1rem; font-weight: 600; color: var(--text); margin: 1.5rem 0 0.5rem; }
+    p { margin-bottom: 1rem; }
+    .highlight-box { background: var(--accent-light); border-left: 4px solid var(--accent); padding: 1rem 1.25rem; border-radius: 0 8px 8px 0; margin: 1.5rem 0; }
+    .highlight-box p { margin-bottom: 0; }
+    .use-case { background: var(--bg-section); border: 1px solid var(--border); border-radius: 12px; padding: 1.5rem; margin: 1.5rem 0; }
+    .use-case-header { display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.75rem; }
+    .use-case-number { background: var(--accent); color: white; width: 2rem; height: 2rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.9rem; flex-shrink: 0; }
+    .use-case-title { font-size: 1.15rem; font-weight: 600; }
+    .use-case-subtitle { color: var(--text-secondary); font-size: 0.9rem; font-style: italic; margin-bottom: 0.75rem; }
+    .tag { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.15rem 0.5rem; border-radius: 4px; margin-right: 0.35rem; background: var(--accent-light); color: var(--accent); }
+    .tag.green { background: #d1fae5; color: #065f46; }
+    .tag.amber { background: #fef3c7; color: #92400e; }
+    .tag.red { background: #fee2e2; color: #991b1b; }
+    .pipeline { font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 0.8rem; color: var(--text-secondary); background: white; border: 1px solid var(--border); border-radius: 8px; padding: 0.75rem 1rem; margin: 0.75rem 0; overflow-x: auto; white-space: nowrap; }
+    table { width: 100%; border-collapse: collapse; margin: 1.5rem 0; font-size: 0.9rem; }
+    th { text-align: left; padding: 0.75rem; background: var(--bg-section); border-bottom: 2px solid var(--border); font-weight: 600; color: var(--primary); }
+    td { padding: 0.75rem; border-bottom: 1px solid var(--border); vertical-align: top; }
+    .phase-badge { display: inline-block; font-size: 0.75rem; font-weight: 600; padding: 0.2rem 0.6rem; border-radius: 6px; }
+    .phase-1 { background: #d1fae5; color: #065f46; }
+    .phase-2 { background: #dbeafe; color: #1e40af; }
+    .arch-diagram { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; background: var(--primary); color: #e5e7eb; padding: 1.5rem; border-radius: 12px; margin: 1.5rem 0; overflow-x: auto; line-height: 1.5; }
+    ul { padding-left: 1.5rem; margin-bottom: 1rem; }
+    li { margin-bottom: 0.35rem; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; margin: 1.5rem 0; }
+    .col-box { background: var(--bg-section); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+    .col-box h3 { margin-top: 0; }
+    .market-row { display: flex; gap: 0.5rem; align-items: baseline; margin-bottom: 0.5rem; }
+    .market-rank { font-weight: 700; color: var(--accent); min-width: 1.5rem; }
+    .footer { margin-top: 3rem; padding-top: 1.5rem; border-top: 2px solid var(--border); font-size: 0.85rem; color: var(--text-secondary); }
+    @media print { body { padding: 1rem; } .use-case, .col-box { break-inside: avoid; } }
+    @media (max-width: 700px) { .two-col { grid-template-columns: 1fr; } }
+  </style>
+</head>
+<body>
+
+<h1>Workflow Builder — Interactive Demo Strategy</h1>
+<p class="subtitle">Wykorzystanie backend execution layer do prezentacji wartości produktu dla klientów mid-market i enterprise</p>
+
+<div class="meta">
+  <span><strong>Data:</strong> Kwiecień 2026</span>
+  <span><strong>Status:</strong> POC zrealizowany, planowanie kolejnych etapów</span>
+  <span><strong>Segment docelowy:</strong> Mid-market / Enterprise B2B SaaS</span>
+</div>
+
+<!-- ============================================ -->
+
+<h2>Kontekst biznesowy</h2>
+
+<p>Workflow Builder to <strong>frontend SDK do budowania edytorów workflow</strong> — embeddowalny komponent, nie platforma SaaS. Klient dostaje kod źródłowy, osadza go w swoim produkcie, a backend execution pozostaje po jego stronie. Licencja Enterprise to jednorazowy koszt €6&nbsp;990.</p>
+
+<p>Przy tym modelu cenowym naturalnymi klientami są <strong>firmy mid-market i enterprise</strong> budujące produkty B2B SaaS, które potrzebują edytora workflow jako feature swojego produktu — nie startupy szukające taniego MVP.</p>
+
+<div class="highlight-box">
+  <p><strong>Zrealizowano POC</strong> referencyjnej implementacji backendu: Temporal (orkiestracja), Hono (API), PostgreSQL (persistence), OpenRouter (LLM). Frontend plugin AI Studio integruje się przez SSE streaming — użytkownik klika Play i obserwuje real-time execution z podświetleniem krawędzi, statusami nodów i panelem wyników.</p>
+</div>
+
+<p>Celem jest wykorzystanie tego backendu do materiałów, które <strong>przekonają decydentów</strong> (CTO, VP Engineering, Product Leads) że WB przyspieszy ich time-to-market o miesiące w porównaniu do budowania edytora in-house.</p>
+
+<!-- ============================================ -->
+
+<h2>Kto jest naszym klientem?</h2>
+
+<p>Firmy, które <strong>budują produkty z konfigurowalnymi workflow</strong> dla swoich użytkowników końcowych. Nie firmy które <em>używają</em> workflow (to klienci Zapier/Make), ale firmy które <em>osadzają edytor workflow w swoim produkcie</em>.</p>
+
+<h3>5 najsilniejszych segmentów rynku</h3>
+
+<div class="market-row"><span class="market-rank">1.</span><strong>AI / LLM Orchestration Platforms</strong> — najszybciej rosnący segment. Firmy budujące platformy AI agent (à la Flowise, Dify, LangGraph Studio) potrzebują wizualnego edytora do komponowania łańcuchów promptów, RAG pipeline'ów, narzędzi. Dziś większość hakuje React Flow od zera.</div>
+
+<div class="market-row"><span class="market-rank">2.</span><strong>FinTech / InsurTech</strong> — systemy loan origination, underwriting, KYC/AML. Każdy klient (bank, ubezpieczyciel) ma inne reguły decyzyjne. Edytor workflow to feature produktu, nie dodatek. Budżety duże, potrzeba pilna.</div>
+
+<div class="market-row"><span class="market-rank">3.</span><strong>Customer Experience / Contact Center SaaS</strong> — platformy CCaaS budujące edytory call flow, chatbot routing, journey orchestration. WB ma już template "Call flow" który trafia w ten rynek.</div>
+
+<div class="market-row"><span class="market-rank">4.</span><strong>Healthcare / Clinical Operations</strong> — systemy EHR, care coordination, clinical trial management. Workflow kliniczne są silnie zróżnicowane per instytucja i regulowane — nie da się ich hardcodeować.</div>
+
+<div class="market-row"><span class="market-rank">5.</span><strong>DevOps / Platform Engineering</strong> — CI/CD, incident response, infrastructure provisioning. Organizacje budujące wewnętrzne platformy potrzebują wizualnych runbook builderów zamiast YAML-owych konfiguracji.</div>
+
+<!-- ============================================ -->
+
+<h2>3 scenariusze demo dopasowane do rynku</h2>
+
+<p>Każdy template celuje w inny segment i demonstruje inne możliwości SDK. Razem pokrywają: AI orchestration, decision branching, parallel execution, context passing, real-time monitoring.</p>
+
+<div class="use-case">
+  <div class="use-case-header">
+    <div class="use-case-number">1</div>
+    <span class="use-case-title">AI Agent Orchestration Pipeline</span>
+  </div>
+  <p class="use-case-subtitle">Zapytanie użytkownika → klasyfikacja intencji → warunkowy routing do RAG / cache → human review gate → odpowiedź</p>
+  <p>Workflow modeluje typowy pipeline AI agent platformy: zapytanie trafia do klasyfikatora, na podstawie złożoności jest routowane do ścieżki z retrieval-augmented generation (RAG) lub bezpośredniej odpowiedzi z cache. Złożone zapytania przechodzą przez bramkę human-in-the-loop.</p>
+  <div class="pipeline">Trigger (query) → AI Classify Intent → Decision (complexity) → ∥ RAG Path | Direct Response ∥ → Human Review Gate → Deliver Response</div>
+  <p>
+    <span class="tag">AI orchestration</span>
+    <span class="tag">conditional routing</span>
+    <span class="tag green">najgorętszy segment</span>
+  </p>
+  <p><strong>Segment:</strong> AI / LLM Orchestration Platforms</p>
+  <p><strong>Dlaczego to działa:</strong> Każda firma budująca produkt AI w 2026 rozpozna ten pattern. Pokazuje że WB to nie toy — obsługuje klasyfikację, branching, parallel paths, human-in-the-loop. Demo mówi: „Twoi użytkownicy mogą konfigurować takie pipeline'y wizualnie w Twoim produkcie."</p>
+</div>
+
+<div class="use-case">
+  <div class="use-case-header">
+    <div class="use-case-number">2</div>
+    <span class="use-case-title">Loan Application Decisioning</span>
+  </div>
+  <p class="use-case-subtitle">Wniosek kredytowy → weryfikacja równoległa → AI risk scoring → decyzja → compliance review</p>
+  <p>Symulacja pipeline'u loan origination: wniosek triggeruje równoległe sprawdzenia (credit score, KYC, fraud check), AI agent ocenia ryzyko, Decision node routuje do auto-approval, manual review lub rejection. Ścieżka manual review ma delay (SLA timer) i eskalację.</p>
+  <div class="pipeline">Trigger (application) → ∥ Credit Check | KYC | Fraud Scan ∥ → AI Risk Score → Decision (tier) → Auto-Approve / Manual Review / Reject</div>
+  <p>
+    <span class="tag">parallel verification</span>
+    <span class="tag">decision branching</span>
+    <span class="tag amber">FinTech / InsurTech</span>
+  </p>
+  <p><strong>Segment:</strong> FinTech / InsurTech — systemy loan origination, underwriting, compliance</p>
+  <p><strong>Dlaczego to działa:</strong> Firmy budujące platformy kredytowe wydają miesiące na własne edytory reguł decyzyjnych. Ten template mówi: „Zamiast budować od zera — weź WB, dodaj swoje typy nodów, i masz production-ready feature za ułamek czasu." Fan-out weryfikacji + AI scoring + multi-way decision to pattern który FinTech natychmiast rozpoznaje.</p>
+</div>
+
+<div class="use-case">
+  <div class="use-case-header">
+    <div class="use-case-number">3</div>
+    <span class="use-case-title">Customer Support Escalation</span>
+  </div>
+  <p class="use-case-subtitle">Ticket → AI klasyfikacja + sentiment → routing priorytetowy → SLA timer → eskalacja</p>
+  <p>Incoming ticket jest klasyfikowany przez AI agenta (priorytet + sentiment), routowany do odpowiedniego zespołu przez Decision node. Ścieżka krytyczna ma timer SLA i automatyczną eskalację gdy czas mija. Łączy AI z deterministycznym rule-based routingiem.</p>
+  <div class="pipeline">Trigger (ticket) → AI Classify (priority + sentiment) → Decision (tier) → ∥ L1 Auto-Response | L2 Agent Queue | L3 Escalation ∥ → SLA Check → Close / Escalate</div>
+  <p>
+    <span class="tag">AI + rules hybrid</span>
+    <span class="tag">SLA timers</span>
+    <span class="tag red">CX / Contact Center</span>
+  </p>
+  <p><strong>Segment:</strong> Customer Experience / Contact Center SaaS</p>
+  <p><strong>Dlaczego to działa:</strong> Platformy CX (Zendesk, Intercom, Freshdesk competitors) potrzebują konfigurowalnego routingu jako core feature. Ten template trafia w ogromny, ugruntowany rynek z realnymi budżetami. Połączenie AI klasyfikacji z rule-based decision nodes pokazuje że WB nie jest „albo AI albo reguły" — obsługuje oba podejścia w jednym workflow.</p>
+</div>
+
+<!-- ============================================ -->
+
+<h2>Dwa poziomy realizacji</h2>
+
+<div class="two-col">
+  <div class="col-box">
+    <h3><span class="phase-badge phase-1">Poziom 1</span> — Przyszły tydzień</h3>
+    <p><strong>Cel:</strong> Gotowy materiał demo do pokazania klientom i na spotkania sales.</p>
+    <ul>
+      <li>3 nowe template'y z dobrymi system promptami</li>
+      <li>Dopracowanie UI: markery na nodach, detail panel, execution log</li>
+      <li>Nagranie screencastu z każdego template'u (2-3 min per template)</li>
+      <li>Możliwość uruchomienia demo lokalnie przez sales/BD (<code>pnpm dev:full</code>)</li>
+      <li>Zaktualizowany Sales Inquiry template z wiedzą produktową WB</li>
+    </ul>
+    <p><strong>Output:</strong> 3 nagrane demo + gotowe środowisko lokalne do live demo na callach.</p>
+  </div>
+
+  <div class="col-box">
+    <h3><span class="phase-badge phase-2">Poziom 2</span> — Custom branded app</h3>
+    <p><strong>Cel:</strong> Udowodnić klientom że WB da się głęboko dostosować — od kolorów po custom node types.</p>
+    <ul>
+      <li>Osobna apka (np. <code>demo.workflowbuilder.io</code>) z <strong>custom brandingiem</strong> — inny kolor, logo, dark mode, nazewnictwo</li>
+      <li>Custom node types specyficzne per vertical (np. „Credit Check", „AI Agent", „SLA Timer")</li>
+      <li>Backend na Azure z Cloudflare Turnstile (zero friction, zero login)</li>
+      <li>Template picker: odwiedzający wybiera branżę (AI Platform / FinTech / CX) → widzi dedykowany template</li>
+      <li>Opcjonalny email capture po zakończeniu execution („Chcesz takie workflow w swoim produkcie?")</li>
+    </ul>
+    <p><strong>Output:</strong> Publiczna apka, która wygląda jak <em>inny produkt</em> zbudowany na WB — proof że SDK jest naprawdę white-label.</p>
+  </div>
+</div>
+
+<!-- ============================================ -->
+
+<h2>Architektura (Poziom 2)</h2>
+
+<div class="arch-diagram"><pre>
+  demo.workflowbuilder.io         demo-api.workflowbuilder.io
+  ┌─────────────────────┐         ┌──────────────────────────┐
+  │  Custom branded SPA  │───────▶│  Hono API (port 3001)    │
+  │  + WB SDK (themed)   │  HTTPS │  + Temporal Server       │
+  │  + Template picker   │◀───────│  + Execution Worker      │
+  │  + SSE execution     │   SSE  │  + PostgreSQL             │
+  └─────────────────────┘         └──────────────────────────┘
+         │                               │
+   Cloudflare Turnstile           OpenRouter (LLM)
+   (invisible CAPTCHA)            Claude Haiku / Sonnet
+   + rate limit 5/IP/h
+</pre></div>
+
+<h3>Ochrona przed nadużyciami — bez logowania</h3>
+<p>Zamiast OAuth (które odpycha potencjalnych klientów), zastosowane zostanie podejście dwuwarstwowe:</p>
+<ul>
+  <li><strong>Cloudflare Turnstile</strong> — niewidoczna weryfikacja (zero friction), token weryfikowany server-side przed każdym uruchomieniem workflow</li>
+  <li><strong>Rate limiting</strong> — max 5 uruchomień na IP na godzinę, wystarczające do eksploracji trzech template'ów</li>
+</ul>
+
+<!-- ============================================ -->
+
+<h2>Plan realizacji</h2>
+
+<table>
+  <tr>
+    <th>Etap</th>
+    <th>Zakres</th>
+    <th>Effort</th>
+    <th>Zależności</th>
+  </tr>
+  <tr>
+    <td><span class="phase-badge phase-1">1a</span></td>
+    <td><strong>Nowe template'y</strong><br>3 template'y (AI Pipeline, Loan Decisioning, Support Escalation) z system promptami, testy e2e</td>
+    <td>2-3 dni</td>
+    <td>Brak — POC gotowy</td>
+  </tr>
+  <tr>
+    <td><span class="phase-badge phase-1">1b</span></td>
+    <td><strong>Screencasts</strong><br>Nagranie 2-3 min video per template, opis use case'u, upload na Vimeo/YouTube</td>
+    <td>1 dzień</td>
+    <td>Etap 1a</td>
+  </tr>
+  <tr>
+    <td><span class="phase-badge phase-2">2a</span></td>
+    <td><strong>Custom branded app</strong><br>Osobna apka z custom theme (kolory, logo, node types), template picker</td>
+    <td>5-7 dni</td>
+    <td>Etap 1a</td>
+  </tr>
+  <tr>
+    <td><span class="phase-badge phase-2">2b</span></td>
+    <td><strong>Hosting + ochrona</strong><br>Azure Container App, Turnstile, rate limiting, CORS, custom domain</td>
+    <td>3-5 dni</td>
+    <td>Azure subscription, domena</td>
+  </tr>
+  <tr>
+    <td><span class="phase-badge phase-2">2c</span></td>
+    <td><strong>Integracja ze stroną</strong><br>Sekcja „Try It Live" na workflowbuilder.io, link do branded demo, lead capture</td>
+    <td>2-3 dni</td>
+    <td>Etap 2a + 2b</td>
+  </tr>
+</table>
+
+<!-- ============================================ -->
+
+<h2>Dlaczego custom app, a nie embed na stronie?</h2>
+
+<p>Kluczowa obiekcja klienta to: <em>„Czy to naprawdę da się dostosować do naszego produktu?"</em></p>
+
+<p>Jeśli demo wygląda jak domyślny Workflow Builder — klient widzi SDK. Jeśli demo wygląda jak <strong>kompletnie inny produkt</strong> zbudowany na WB — klient widzi potencjał.</p>
+
+<p>Custom branded app odpowiada na tę obiekcję zanim klient ją sformułuje. Pokazuje:</p>
+<ul>
+  <li>Custom theme (kolory, typografia, dark mode) — WB jest naprawdę white-label</li>
+  <li>Custom node types (nie generyczne „AI Agent" ale „Credit Scoring Engine") — SDK jest rozszerzalny</li>
+  <li>Działający backend — WB to nie mockup, to real execution</li>
+  <li>Branżowy kontekst — template'y mówią językiem klienta</li>
+</ul>
+
+<!-- ============================================ -->
+
+<h2>Oczekiwany wpływ</h2>
+
+<ul>
+  <li><strong>Skrócenie cyklu sprzedaży</strong> — zamiast „umówmy się na demo za tydzień", sales wysyła link do branded app. Klient widzi wartość w 60 sekund.</li>
+  <li><strong>Odpowiedź na główną obiekcję</strong> — „czy da się dostosować?" → „zobacz, już jest dostosowane pod 3 branże".</li>
+  <li><strong>Pozycjonowanie vs konkurencja</strong> — n8n/Make/Zapier oferują playgrounds swoich platform. WB jako jedyny pokazuje playground <em>embeddowalnego SDK</em> — „tak będzie wyglądać <u>Twój</u> produkt".</li>
+  <li><strong>Lead qualification</strong> — który template klient otwiera mówi salesowi w jakiej branży działa i jaki problem rozwiązuje, zanim klient powie słowo.</li>
+  <li><strong>SEO / content</strong> — 3 use case pages z interaktywnym demo rankują pod frazy branżowe („workflow editor for fintech", „AI agent builder SDK").</li>
+</ul>
+
+<!-- ============================================ -->
+
+<h2>Obecny stan POC</h2>
+
+<p>Backend execution layer jest w pełni funkcjonalny na branchu <code>feature/WB-37-workflow-execution</code>:</p>
+<ul>
+  <li>Temporal workflow orchestration z parallel node execution</li>
+  <li>AI agent nodes z context passing (output noda → input następnego)</li>
+  <li>SSE real-time streaming eventów do frontendu</li>
+  <li>Visual feedback: node highlighting, edge highlighting, status markers, execution log, node detail panel</li>
+  <li>Plugin architecture — cały AI Studio to plugin, zero zmian w core WB</li>
+  <li>Input prompt na trigger nodzie (np. wklejenie maila klienta)</li>
+  <li>2 działające template'y: Sales Inquiry Pipeline, AI Content Review</li>
+  <li>Zod validation, body size limits, event bus z cleanup, retry handling</li>
+  <li>Jedna komenda: <code>pnpm dev:full</code> (Docker + backend + worker + frontend)</li>
+</ul>
+
+<div class="footer">
+  <p>Dokument przygotowany w ramach planowania roadmapy Workflow Builder. Ostatnia aktualizacja: kwiecień 2026.</p>
+</div>
+
+</body>
+</html>

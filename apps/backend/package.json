@@ -1,0 +1,34 @@
+{
+  "name": "@workflow-builder/backend",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "tsx watch --env-file=.env ./src/server.ts",
+    "start": "tsx --env-file=.env ./src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "drizzle-kit migrate",
+    "db:studio": "drizzle-kit studio"
+  },
+  "dependencies": {
+    "@hono/node-server": "^1.14.0",
+    "@temporalio/client": "^1.11.0",
+    "@workflow-builder/execution-core": "workspace:*",
+    "@workflow-builder/types": "workspace:*",
+    "dotenv": "^17.4.2",
+    "drizzle-orm": "^0.44.0",
+    "hono": "^4.7.0",
+    "postgres": "^3.4.5",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "drizzle-kit": "^0.31.0",
+    "vitest": "^3.0.4"
+  }
+}

@@ -1,0 +1,11 @@
+.container {
+  position: relative;
+}
+
+.adornment {
+  position: absolute;
+  top: 50%;
+  right: var(--ax-token-spacing-input-m-h-pad);
+  transform: translateY(-50%);
+  z-index: 1;
+}

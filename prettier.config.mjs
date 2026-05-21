@@ -18,6 +18,7 @@ const config = {
     '^@/features/(.*)$',
     '^@/plugins/(.*)$',
     '^@/(.*)$',
+    '^(\\.\\.?/)+features/plugins-core(.*)$',
     '^[../]',
     '^[./]',
   ],

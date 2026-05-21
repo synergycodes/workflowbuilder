@@ -1,0 +1,55 @@
+.row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.25rem;
+  height: 2.5rem;
+}
+
+.date-picker,
+.container--select {
+  border-radius: var(--ax-public-input-border-radius-medium);
+
+  > div > button {
+    min-height: 2.5rem;
+    text-align: left;
+  }
+}
+
+.date-with-reset-container {
+  position: relative;
+}
+
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.reset-button {
+  position: absolute;
+  top: var(--ax-token-spacing-input-m-v-pad);
+  right: var(--ax-token-spacing-input-m-h-pad);
+  cursor: pointer;
+}
+
+.container--select {
+  position: relative;
+
+  > select {
+    min-height: 41px;
+  }
+}
+
+.adornment--select {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--ax-token-spacing-input-m-h-pad) + 1rem + var(--ax-token-spacing-input-m-h-pad));
+  transform: translateY(-50%);
+  z-index: 1;
+}
+
+.adornment--date {
+  position: absolute;
+  top: 50%;
+  right: calc(var(--ax-token-spacing-input-m-h-pad));
+  transform: translateY(-50%);
+  z-index: 1;
+}

@@ -1,0 +1,50 @@
+[class*='_modal_']:has(.container) {
+  width: 780px !important;
+}
+
+.container {
+  --modal-padding-x: var(--ax-token-spacing-modal-l-header-pad);
+  --modal-padding-y: var(--ax-token-spacing-modal-l-header-pad);
+
+  width: 100%;
+  display: flex;
+  flex-flow: column;
+  gap: 2rem;
+  color: var(--ax-txt-secondary-default);
+
+  @media (width > 800px) {
+    flex-flow: row;
+    height: 500px;
+    gap: var(--wb-primitive-4rule-48, 48px);
+  }
+}
+
+.navigation {
+  width: 100%;
+
+  @media (width > 800px) {
+    width: 200px;
+  }
+}
+
+.tabs {
+  @media (width > 800px) {
+    /* We wan't list to be scrollable to the bottom */
+    &:has([data-no-b-pd]) {
+      padding-bottom: 0;
+      margin-bottom: calc(-1 * var(--modal-padding-y));
+    }
+  }
+
+  width: 100%;
+  animation: fadeIn 0.4s ease-in forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
