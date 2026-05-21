@@ -93,6 +93,27 @@ Globals and secrets available at the start of each run. **Manual entry only - no
 
 The set of available variables depends on how your workflow runner is configured.
 
+## Missing values
+
+A plain reference is **strict**: if the resolver cannot find the path in the execution context, the workflow run fails with `Unresolved template reference: {{…}}`. That is deliberate - a typo in a prompt template should be caught on the first run, not silently substituted with an empty string and shipped to the LLM.
+
+For paths that may genuinely be absent some of the time (an optional trigger field, a node output that only exists on one branch of a decision), two opt-in modifiers let you declare a fallback:
+
+| Form                                    | When path is missing |
+| --------------------------------------- | -------------------- |
+| `{{nodes.x.response}}`                  | throws (strict)      |
+| `{{nodes.x.response?}}`                 | resolves to `''`     |
+| `{{nodes.x.response \| default:'tbd'}}` | resolves to `'tbd'`  |
+
+```
+Hello, {{trigger.customer.name?}}!
+Status: {{nodes.classify-1.label | default:'unclassified'}}
+```
+
+A modifier fires **only when the resolved value is strictly `undefined`** - i.e. the namespace, the node, or one of the dot-path segments does not exist on the live execution context. `null`, `''`, and `0` are real values: a node that emits `{ count: 0 }` resolves `{{nodes.x.count?}}` to `'0'`, not to the fallback. Pick the modifier deliberately when the _absence_ of a value is what you want to handle.
+
+The `default:'…'` syntax requires single quotes, and the value cannot contain a single quote. Use `?` if you need an empty fallback.
+
 ## Examples
 
 ### Example 1: Pass an AI Agent's response into the next AI Agent

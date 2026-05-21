@@ -47,6 +47,7 @@ The audit therefore focuses on `graph-runner.ts` + `errors.ts`. Activities and a
 | Iteration over `Object.keys`/`values`    | No              | ✅ Safe — runner uses `Map` for stateful collections; `nodeOutputs` is an object but never iterated for control flow (only `{ ...nodeOutputs }` for context cloning, which preserves order).                                                                               |
 | Module-level initialization side effects | No              | ✅ Safe — `graph-runner.ts` exports only function declarations; no top-level statements that read environment or instantiate stateful objects.                                                                                                                             |
 | `errors.ts` `NodeExecutionError`         | Yes             | ✅ Safe — constructor only calls `super(message, { cause })` and sets `this.name`. No `Date.now()` in the message, no UUID minting, no env reads.                                                                                                                          |
+| `Error.cause` chain traversal            | Yes             | ✅ Safe — `flattenErrorChain` walks the chain to surface the deepest message. Walk is bounded by `MAX_CAUSE_DEPTH = 16`, so a cyclic chain produced by a buggy adapter (`a.cause = b; b.cause = a`) cannot spin the workflow. Bound is part of the contract — see rule 8.  |
 
 ## How activities preserve determinism for the runner
 
@@ -71,6 +72,7 @@ Code added inside `runGraph` or any file reachable from `./workflow.ts` must obe
 5. **No `Array.prototype.sort` with a non-deterministic comparator.** If sorting is unavoidable, key by input data.
 6. **No `Set` for control flow.** Insertion order is fine in the spec, but a future regression that adds non-deterministic `add()` order would break replay silently. Stay with `Map<id, value>` and explicit ordering.
 7. **No top-level side effects in new modules.** Module init runs at workflow start; reading `process.env` or constructing dated objects at import time poisons replay.
+8. **No unbounded traversal.** Any walk over user-supplied or adapter-supplied data (e.g. `Error.cause`, future error metadata) must carry a hard depth cap. An infinite loop in sandbox code hangs the workflow indefinitely AND wedges every subsequent replay — there is no "the run will fail and restart" recovery path.
 
 Wiring a logger into `runGraph` is the most likely way a future change would break replay. A typical console adapter calls `new Date().toISOString()` per log line, which poisons history reproduction. If a logger ever needs to ship from the runner, it must be passed in as a sandbox-safe port whose impl writes through an activity (so the timestamp is recorded outside the sandbox), not directly to console.
 
