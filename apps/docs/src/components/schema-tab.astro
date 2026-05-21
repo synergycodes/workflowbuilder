@@ -1,0 +1,114 @@
+---
+import { Code, TabItem } from '@astrojs/starlight/components';
+import { Icon } from 'astro-icon/components';
+
+type Props = {
+  label: string;
+  code: string;
+  sourceUrl: string;
+};
+
+const { label, code, sourceUrl } = Astro.props;
+---
+
+<TabItem label={label}>
+  <div class="schema-tab">
+    <Code code={code} lang="json" />
+    <div class="schema-tab-actions">
+      <copy-button>
+        <button class="schema-tab-button" title="Copy to clipboard" aria-label="Copy to clipboard">
+          <Icon name="ph:copy" class="copy-icon" />
+          <Icon name="ph:check" class="check-icon" />
+        </button>
+      </copy-button>
+      <a
+        href={sourceUrl}
+        class="schema-tab-button"
+        title="View source on GitHub"
+        aria-label="View source on GitHub"
+        target="_blank"
+        rel="noopener noreferrer"
+      >
+        <Icon name="ph:github-logo" />
+      </a>
+    </div>
+  </div>
+</TabItem>
+
+<script>
+  class CopyButton extends HTMLElement {
+    constructor() {
+      super();
+      const button = this.querySelector('button')!;
+      button.addEventListener('click', async () => {
+        const codeBlock = this.closest('.schema-tab')?.querySelector('pre code');
+        try {
+          await navigator.clipboard.writeText(codeBlock?.textContent ?? '');
+          button.classList.add('copied');
+          setTimeout(() => button.classList.remove('copied'), 1500);
+        } catch {
+          // Clipboard write failed (insecure context or page not focused)
+        }
+      });
+    }
+  }
+
+  customElements.define('copy-button', CopyButton);
+</script>
+
+<style>
+  .schema-tab {
+    position: relative;
+  }
+
+  .schema-tab-actions {
+    position: absolute;
+    inset-block-start: 0;
+    inset-inline-end: 0.5rem;
+    display: flex;
+    gap: 0.25rem;
+  }
+
+  .schema-tab-button {
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 2rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    color: var(--sl-color-gray-3);
+    background: var(--sl-color-gray-6);
+    transition:
+      color 0.15s,
+      background 0.15s;
+
+    &:hover {
+      color: var(--sl-color-white);
+      background: var(--sl-color-gray-5);
+    }
+  }
+
+  .schema-tab-button :global(.copy-icon),
+  .schema-tab-button :global(.check-icon) {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    margin: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  .schema-tab-button :global(.check-icon) {
+    opacity: 0;
+  }
+
+  .schema-tab-button.copied :global(.copy-icon) {
+    opacity: 0;
+  }
+
+  .schema-tab-button.copied :global(.check-icon) {
+    opacity: 1;
+    color: var(--sl-color-green);
+  }
+</style>

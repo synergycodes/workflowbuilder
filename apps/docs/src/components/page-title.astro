@@ -1,0 +1,132 @@
+---
+import type { StarlightRouteData } from '@astrojs/starlight/route-data';
+
+type SidebarEntry = StarlightRouteData['sidebar'][number];
+
+type BreadcrumbItem = {
+  label: string;
+  href: string | undefined;
+  isCurrent: boolean;
+};
+
+function findFirstLink(entries: SidebarEntry[]): string | undefined {
+  for (const entry of entries) {
+    if (entry.type === 'link') return entry.href;
+    if (entry.type === 'group') {
+      const found = findFirstLink(entry.entries);
+      if (found) return found;
+    }
+  }
+  return undefined;
+}
+
+function buildBreadcrumbs(sidebar: SidebarEntry[]): BreadcrumbItem[] {
+  for (const entry of sidebar) {
+    if (entry.type === 'link' && entry.isCurrent) {
+      return [{ label: entry.label, href: entry.href, isCurrent: true }];
+    }
+
+    if (entry.type === 'group') {
+      const child = buildBreadcrumbs(entry.entries);
+      if (child.length > 0) {
+        return [{ label: entry.label, href: findFirstLink(entry.entries), isCurrent: false }, ...child];
+      }
+    }
+  }
+
+  return [];
+}
+
+const { sidebar, entry } = Astro.locals.starlightRoute as StarlightRouteData;
+const breadcrumbs = buildBreadcrumbs(sidebar);
+---
+
+{
+  breadcrumbs.length > 1 && (
+    <nav aria-label="Breadcrumb">
+      <ol class="breadcrumbs">
+        {breadcrumbs.map((crumb, index) => (
+          <li>
+            {index > 0 && (
+              <span class="separator" aria-hidden="true">
+                &gt;
+              </span>
+            )}
+            {crumb.isCurrent ? (
+              <span aria-current="page">{crumb.label}</span>
+            ) : crumb.href ? (
+              <a href={crumb.href}>{crumb.label}</a>
+            ) : (
+              <span>{crumb.label}</span>
+            )}
+          </li>
+        ))}
+      </ol>
+    </nav>
+  )
+}
+
+<h1 id="_top">{entry.data.title}</h1>
+
+{entry.data.description && <p class="page-description">{entry.data.description}</p>}
+
+<style>
+  @layer starlight.core {
+    h1 {
+      margin-top: 1rem;
+      font-size: var(--sl-text-h1);
+      line-height: var(--sl-line-height-headings);
+      font-weight: 700;
+      color: var(--sl-color-white);
+    }
+
+    .page-description {
+      margin-top: 0.75rem;
+      font-size: var(--sl-text-body);
+      line-height: var(--sl-line-height);
+      color: var(--sl-color-gray-2);
+    }
+
+    .breadcrumbs {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 0.5rem;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      font-size: 0.875rem;
+    }
+
+    .breadcrumbs li {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .breadcrumbs span:not([aria-current], .separator) {
+      color: var(--sl-color-gray-2);
+      font-weight: 300;
+    }
+
+    .breadcrumbs a {
+      color: var(--sl-color-gray-2);
+      font-weight: 300;
+      text-decoration: none;
+    }
+
+    .breadcrumbs a:hover {
+      color: var(--sl-color-white);
+    }
+
+    .breadcrumbs [aria-current='page'] {
+      color: var(--sl-color-accent-high);
+      font-weight: 500;
+    }
+
+    .separator {
+      color: var(--sl-color-gray-3);
+      font-weight: 300;
+    }
+  }
+</style>

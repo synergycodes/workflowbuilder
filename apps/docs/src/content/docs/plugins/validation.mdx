@@ -1,0 +1,31 @@
+---
+title: Validation
+description: Additional logic for working with JSON forms, adding diagram-based validation for detecting broken references and missing edges.
+sidebar:
+  badge: Enterprise
+  order: 6
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+import OverflowCard from '@/components/overflow-card.astro';
+
+This plugin adds diagram-based validation on top of `@jsonforms` validation using `additionalErrors` property (<a href="https://jsonforms.io/docs/validation#external-validation-errors" target="_blank" rel="nofollow">more</a>).
+
+It detects structural errors in the diagram - for example, when a node references a variable computed in a previous node but the connection to that node has been removed, or when required edges are missing.
+
+Because it builds on `@jsonforms`, diagram errors behave like standard form validation errors (such as empty required fields), giving a consistent validation experience across forms and the canvas.
+
+## Use cases
+
+- Detect when a node uses variables from a previous node but is no longer connected to it.
+- Flag missing required edges between nodes.
+- Surface diagram-level errors alongside form-level validation in a unified way.
+
+## See also
+
+- [Properties sidebar](/overview/features/properties-sidebar/) - schema-driven forms in the properties panel
+- [Conditional node](/nodes/conditional/) - branching node that uses validation to verify references
+- [Decision node](/nodes/decision/) - branching node with multi-way routing

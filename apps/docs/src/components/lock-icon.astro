@@ -1,0 +1,16 @@
+---
+import lockSvgRaw from '../assets/lock-bold.svg?raw';
+
+const lockSvg = lockSvgRaw.replace('<svg', '<svg width="14" height="14" fill="currentColor" aria-hidden="true"');
+---
+
+<span class="lock-icon">
+  <Fragment set:html={lockSvg} />
+</span>
+
+<style>
+  .lock-icon {
+    display: inline-flex;
+    min-width: 14px;
+  }
+</style>

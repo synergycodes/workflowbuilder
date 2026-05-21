@@ -1,0 +1,219 @@
+---
+const YOUTUBE_VIDEO_ID_PATTERN = /^[a-zA-Z0-9_-]{11}$/;
+
+type Props = {
+  videoId: string;
+  title: string;
+  description: string;
+};
+
+const { videoId, title, description } = Astro.props;
+
+if (!YOUTUBE_VIDEO_ID_PATTERN.test(videoId)) {
+  throw new Error(`Invalid YouTube video ID: "${videoId}"`);
+}
+
+const thumbnailUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+const embedUrl = `https://www.youtube-nocookie.com/embed/${videoId}?autoplay=1`;
+---
+
+<div class="video-card-wrapper not-content">
+  <button type="button" class="video-card not-content" data-embed-url={embedUrl} data-video-title={title}>
+    <div class="thumbnail">
+      <img src={thumbnailUrl} alt={title} loading="lazy" width="480" height="360" />
+      <div class="play-icon" aria-hidden="true">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 48" width="68" height="48">
+          <path
+            d="M66.52 7.74c-.78-2.93-2.49-5.41-5.42-6.19C55.79.13 34 0 34 0S12.21.13 6.9 1.55c-2.93.78-4.63 3.26-5.42 6.19C.06 13.05 0 24 0 24s.06 10.95 1.48 16.26c.78 2.93 2.49 5.41 5.42 6.19C12.21 47.87 34 48 34 48s21.79-.13 27.1-1.55c2.93-.78 4.63-3.26 5.42-6.19C67.94 34.95 68 24 68 24s-.06-10.95-1.48-16.26z"
+            fill="rgba(0,0,0,.75)"></path>
+          <path d="M45 24L27 14v20" fill="#fff"></path>
+        </svg>
+      </div>
+    </div>
+    <div class="content">
+      <h3 class="title">{title}</h3>
+      <p class="description">{description}</p>
+    </div>
+  </button>
+
+  <dialog class="video-dialog">
+    <button type="button" class="close-button" aria-label="Close video">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="24" height="24" fill="currentColor">
+        <path
+          d="M13.41 12l4.3-4.29a1 1 0 1 0-1.42-1.42L12 10.59l-4.29-4.3a1 1 0 0 0-1.42 1.42l4.3 4.29-4.3 4.29a1 1 0 0 0 0 1.42 1 1 0 0 0 1.42 0l4.29-4.3 4.29 4.3a1 1 0 0 0 1.42 0 1 1 0 0 0 0-1.42z"
+        ></path>
+      </svg>
+    </button>
+    <div class="video-wrapper">
+      <iframe
+        title={title}
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+        sandbox="allow-scripts allow-same-origin allow-presentation allow-popups"
+        referrerpolicy="strict-origin-when-cross-origin"
+        allowfullscreen></iframe>
+    </div>
+  </dialog>
+</div>
+
+<script>
+  function setupVideoCards() {
+    for (const card of document.querySelectorAll<HTMLButtonElement>('.video-card')) {
+      const wrapper = card.parentElement;
+      const dialog = wrapper?.querySelector('dialog') as HTMLDialogElement | null;
+      if (!dialog) continue;
+
+      const iframe = dialog.querySelector('iframe');
+      const closeButton = dialog.querySelector('.close-button');
+      const embedUrl = card.dataset.embedUrl;
+
+      card.addEventListener('click', () => {
+        if (iframe && embedUrl) {
+          iframe.src = embedUrl;
+        }
+        dialog.showModal();
+      });
+
+      closeButton?.addEventListener('click', () => {
+        dialog.close();
+      });
+
+      dialog.addEventListener('click', (event) => {
+        if (event.target === dialog) {
+          dialog.close();
+        }
+      });
+
+      dialog.addEventListener('close', () => {
+        if (iframe) {
+          iframe.src = '';
+        }
+      });
+    }
+  }
+
+  document.addEventListener('astro:page-load', setupVideoCards);
+</script>
+
+<style>
+  .video-card-wrapper {
+    display: flex;
+  }
+
+  .video-card {
+    display: flex;
+    flex-direction: column;
+    inline-size: 100%;
+    block-size: 100%;
+    text-align: start;
+    text-decoration: none;
+    color: inherit;
+    background: none;
+    border: 1px solid var(--sl-color-gray-5);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: border-color 0.2s;
+    cursor: pointer;
+    padding: 0;
+    font: inherit;
+  }
+
+  .video-card:hover {
+    border-color: var(--sl-color-accent);
+  }
+
+  .thumbnail {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    background: var(--sl-color-gray-6);
+  }
+
+  .thumbnail img {
+    inline-size: 100%;
+    block-size: 100%;
+    object-fit: cover;
+  }
+
+  .play-icon {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .video-card:hover .play-icon {
+    opacity: 1;
+  }
+
+  .content {
+    flex: 1;
+    padding-block: 0.75rem;
+    padding-inline: 1rem;
+  }
+
+  .title {
+    font-size: var(--sl-text-base);
+    font-weight: 600;
+    margin: 0;
+    line-height: 1.4;
+  }
+
+  .description {
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-2);
+    margin-block-start: 0.25rem;
+    line-height: 1.5;
+  }
+
+  .video-dialog {
+    inline-size: min(90vw, 960px);
+    max-inline-size: none;
+    margin: auto;
+    padding: 0;
+    border: none;
+    border-radius: 0.5rem;
+    background: transparent;
+    overflow: visible;
+  }
+
+  .video-dialog::backdrop {
+    background: rgba(0, 0, 0, 0.8);
+  }
+
+  .close-button {
+    position: absolute;
+    inset-block-start: -2.5rem;
+    inset-inline-end: 0;
+    background: none;
+    border: none;
+    color: white;
+    cursor: pointer;
+    padding: 0.25rem;
+    opacity: 0.8;
+    transition: opacity 0.2s;
+  }
+
+  .close-button:hover {
+    opacity: 1;
+  }
+
+  .video-wrapper {
+    position: relative;
+    aspect-ratio: 16 / 9;
+    inline-size: 100%;
+    border-radius: 0.5rem;
+    overflow: hidden;
+    background: black;
+  }
+
+  .video-wrapper iframe {
+    position: absolute;
+    inset: 0;
+    inline-size: 100%;
+    block-size: 100%;
+    border: 0;
+  }
+</style>

@@ -1,0 +1,109 @@
+---
+title: Trigger
+description: Starts a workflow in response to an event, a schedule, a condition, or a system signal.
+sidebar:
+  order: 1
+---
+
+import NodeDocumentation from '@/components/node-documentation.astro';
+
+<NodeDocumentation node="trigger">
+
+The Trigger node is the entry point of every workflow. It defines when and how a workflow starts. Every workflow must begin with exactly one Trigger node, placed at the start of the diagram.
+
+## When to use
+
+Use a Trigger node to define the starting condition for any workflow. The trigger type determines what kicks off the execution.
+
+Common examples:
+
+- **Scheduled jobs** - run a report every morning, send a digest email every Friday, or archive records at the end of each month
+- **Incoming events** - start a workflow when a form is submitted, a record changes, or an API call is received
+- **Data conditions** - begin processing when a value crosses a threshold (e.g., "inventory below 10 units")
+- **System signals** - react to internal platform events like a deployment completing or a health check failing
+
+## Trigger types
+
+Select the trigger type from the **Trigger Type** dropdown. Each type reveals its own set of configuration fields.
+
+### Time-based Trigger
+
+Starts the workflow on a schedule.
+
+| Property  | Type        | Description                                                                                      |
+| --------- | ----------- | ------------------------------------------------------------------------------------------------ |
+| All Day   | Boolean     | Whether the trigger fires for the full day                                                       |
+| Starts    | Date + Time | When the schedule begins                                                                         |
+| Ends      | Date + Time | When the schedule ends                                                                           |
+| Frequency | Dropdown    | None / Daily / Weekly / Monthly / Yearly / Custom. When All Day is off, Hourly is also available |
+
+### Event-based Trigger
+
+Starts the workflow when an external event occurs.
+
+| Property   | Type     | Options                                                  |
+| ---------- | -------- | -------------------------------------------------------- |
+| Event Type | Dropdown | Form Submission / Record Change / API Call / User Action |
+
+### Conditional Trigger
+
+Starts the workflow when a data condition is met.
+
+| Property | Type     | Description                     |
+| -------- | -------- | ------------------------------- |
+| Rule     | Dropdown | Comparison operator (see below) |
+| Value    | Text     | Value to compare against        |
+
+Available rules:
+
+| Rule                        | Description                          |
+| --------------------------- | ------------------------------------ |
+| Is Equal To                 | Exact match                          |
+| Is Not Equal To             | Does not match                       |
+| Is Greater Than             | Numeric greater-than                 |
+| Is Greater Than or Equal To | Numeric greater-than or equal        |
+| Is Less Than                | Numeric less-than                    |
+| Is Less Than or Equal To    | Numeric less-than or equal           |
+| Contains                    | Value includes the substring         |
+| Does Not Contain            | Value excludes the substring         |
+| Matches Regex               | Value matches the regular expression |
+| Does Not Match Regex        | Value does not match the expression  |
+| Formula is True             | Expression evaluates to true         |
+| Formula is False            | Expression evaluates to false        |
+
+### System Trigger
+
+Starts the workflow in response to an internal system event.
+
+| Property     | Type | Description                    |
+| ------------ | ---- | ------------------------------ |
+| System Value | Text | Identifier of the system event |
+
+## Properties
+
+All trigger types share the following fields:
+
+| Property    | Type     | Description                                  |
+| ----------- | -------- | -------------------------------------------- |
+| Label       | Text     | Display name shown on the node card          |
+| Description | Text     | Short description of the node's purpose      |
+| Status      | Dropdown | Active / Inactive / Draft (or as configured) |
+
+## Retry settings
+
+Configure how the system handles trigger failures:
+
+| Property       | Options                                    | Description                                 |
+| -------------- | ------------------------------------------ | ------------------------------------------- |
+| Retry Interval | Every 15 min / Every 20 min / Every 30 min | How long to wait before retrying            |
+| Max Retries    | 5 / 10 / 15                                | Maximum number of retry attempts            |
+| Timeout        | 30 min / 60 min / 90 min                   | How long before a trigger attempt times out |
+
+</NodeDocumentation>
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Flow Runner plugin](/plugins/flow-runner/) - turn a diagram into an executable flow function
+- [Notification node](/nodes/notification/) - send a notification via email, SMS, push, webhook, or Slack
+- [Delay node](/nodes/delay/) - pause a flow for a specified duration before continuing

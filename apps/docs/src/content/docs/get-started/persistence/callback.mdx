@@ -1,0 +1,94 @@
+---
+title: via callback
+description: Pass initial diagram data and a save callback directly into Workflow Builder via WorkflowBuilder.Root.
+---
+
+The `props` strategy is the most direct way to connect Workflow Builder to your application. You supply a save callback and the initial diagram data on the same `<WorkflowBuilder.Root>` mount.
+
+## How it works
+
+Pass `integration: { strategy: 'props', onDataSave }` along with `name` / `initialNodes` / `initialEdges` to `<WorkflowBuilder.Root>`:
+
+```tsx
+import { WorkflowBuilder } from '@workflowbuilder/sdk';
+
+import '@workflowbuilder/sdk/style.css';
+
+export function App() {
+  return (
+    <WorkflowBuilder.Root
+      name="My Workflow"
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      integration={{
+        strategy: 'props',
+        onDataSave: async (data, savingParams) => {
+          const response = await fetch('/api/workflows', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data),
+          });
+
+          return response.ok ? 'success' : 'error';
+        },
+      }}
+    />
+  );
+}
+```
+
+### `savingParams`
+
+The second argument passed to `onDataSave` has the following type:
+
+```typescript
+type OnSaveParams = { isAutoSave?: boolean };
+```
+
+`savingParams.isAutoSave` is `true` when the save was triggered automatically (for example, before the user leaves the page). In that case, success and error notifications are suppressed. When `false` or `undefined`, the save was triggered by the user clicking Save and a snackbar is shown.
+
+## Data format
+
+The `data` object passed to `onDataSave` has the following shape:
+
+```typescript
+type IntegrationDataFormat = {
+  name: string;
+  layoutDirection: 'DOWN' | 'RIGHT';
+  nodes: WorkflowBuilderNode[];
+  edges: WorkflowBuilderEdge[];
+};
+```
+
+This is the same format used by the other integration strategies and accepted back as initial props.
+
+## Save result
+
+`onDataSave` must return a promise resolving to one of:
+
+| Value              | Meaning                                                                            |
+| ------------------ | ---------------------------------------------------------------------------------- |
+| `'success'`        | Save succeeded.                                                                    |
+| `'error'`          | Save failed (at the snackbar layer indistinguishable from `'success'` — see note). |
+| `'alreadyStarted'` | A save was already in flight; the new request was coalesced.                       |
+
+### Snackbar feedback
+
+The runtime treats **any non-empty resolved value** as "the save attempt finished, show the success snackbar". So `'success'`, `'error'`, and `'alreadyStarted'` all currently surface the success-style snackbar. If you need an error snackbar specifically, **throw** from `onDataSave` — throwing surfaces the error snackbar instead. Resolving to `undefined` / empty string surfaces neither.
+
+## When to use this strategy
+
+Use the `props` strategy when:
+
+- Your diagram data lives in your parent component or state manager
+- You want full control over when and how saving happens
+- You need to validate or transform the data before persisting it
+
+## See also
+
+- [localStorage](/get-started/persistence/localstorage/) — alternative: zero-config persistence with no backend required
+- [REST API](/get-started/persistence/rest-api/) — alternative: server-managed persistence via a REST API
+- [Configuring the editor](/guides/configuring-the-editor/) — full reference for `<WorkflowBuilder.Root>` props
+- [Workflow Builder as a React component](/get-started/quick-start/wb-as-react-component/) — embed Workflow Builder into an existing React app
+
+Need help embedding Workflow Builder into your stack? [Contact us](https://www.workflowbuilder.io/contact) and we'll walk you through it.

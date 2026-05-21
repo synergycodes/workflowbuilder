@@ -1,0 +1,24 @@
+---
+import StarlightSearch from '@astrojs/starlight/components/Search.astro';
+---
+
+<div transition:persist="site-search" style="display: contents;">
+  <StarlightSearch {...Astro.props} />
+</div>
+
+<script>
+  let searchDialogGuarded = false;
+
+  function guardSearchDialog() {
+    if (searchDialogGuarded) return;
+    searchDialogGuarded = true;
+    const originalShowModal = HTMLDialogElement.prototype.showModal;
+    HTMLDialogElement.prototype.showModal = function () {
+      if (!this.isConnected) return;
+      return originalShowModal.call(this);
+    };
+  }
+
+  document.addEventListener('astro:page-load', guardSearchDialog);
+  guardSearchDialog();
+</script>

@@ -1,0 +1,78 @@
+:root {
+  --sl-text-h1: 2rem;
+  --sl-text-h2: 1.5rem;
+  --docs-column-pad-top: 2.5rem;
+}
+
+:root[data-theme='dark'] {
+  --sl-color-accent-low: hsl(268, 54%, 13%);
+  --sl-color-accent: hsl(268, 70%, 50%);
+  --sl-color-accent-high: hsl(268, 85%, 75%);
+  --sl-color-bg-inline-code: #3b3b3b;
+}
+
+@media (min-width: 50rem) {
+  :root {
+    --sl-content-pad-x: 3.75rem;
+  }
+}
+
+.sl-markdown-content :is(h1) + :not(h1, h2, h3, h4, h5, h6) {
+  margin-block-start: 0.75rem;
+}
+
+.sl-markdown-content :not(h1, h2, h3, h4, h5, h6) + h2 {
+  margin-block-start: 2.5rem;
+}
+
+.sl-markdown-content :is(h2) + :not(h1, h2, h3, h4, h5, h6) {
+  margin-block-start: 1.25rem;
+}
+
+#starlight__sidebar summary .large {
+  font-weight: 500;
+}
+
+#starlight__sidebar .top-level > li > details > summary .large {
+  font-size: var(--sl-text-lg);
+}
+
+#starlight__sidebar a {
+  font-weight: 400;
+}
+
+#starlight__sidebar [aria-current='page'],
+#starlight__sidebar [aria-current='page']:hover,
+#starlight__sidebar [aria-current='page']:focus {
+  font-weight: 600;
+  color: var(--sl-color-black);
+  background-color: var(--sl-color-accent-high);
+}
+
+#starlight__sidebar .sidebar-content {
+  padding-block-start: 0;
+}
+
+#starlight__sidebar .top-level {
+  padding-block-start: var(--docs-column-pad-top);
+}
+
+#starlight__sidebar .top-level > li:first-child > details > summary {
+  padding-block-start: 0;
+}
+
+#starlight__sidebar .top-level > li:first-child > details > summary .large {
+  line-height: var(--sl-line-height-headings);
+}
+
+main > .content-panel:first-of-type {
+  padding-block-start: var(--docs-column-pad-top);
+}
+
+.right-sidebar-panel {
+  padding-block-start: var(--docs-column-pad-top);
+}
+
+#starlight__sidebar .top-level > li + li {
+  margin-block-start: 1rem;
+}

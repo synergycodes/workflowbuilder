@@ -1,0 +1,166 @@
+---
+title: Use Variable Picker
+description: Insert references to data from earlier workflow steps into a downstream node's configuration using the variable picker.
+sidebar:
+  order: 4
+---
+
+The variable picker is a properties-panel control that lets you insert references to data from earlier workflow steps without hard-coding the value. Instead of a literal value, you point at an upstream node's output (or the workflow's trigger payload), and the real value is filled in when the workflow runs.
+
+## Where it works
+
+The picker is wired up on these built-in fields:
+
+| Node                         | Field                 | Picker |
+| ---------------------------- | --------------------- | ------ |
+| [AI Agent](/nodes/ai-agent/) | System prompt         | Yes    |
+| [Decision](/nodes/decision/) | Condition `X` and `Y` | Yes    |
+
+## Using the picker
+
+1. Focus a supported field in the properties panel.
+2. Type `{{`. A suggestions panel opens, grouped by upstream node, with each property's label and description.
+3. Pick a suggestion. The field shows a chip labeled `{{ <Node Label> · <Property> }}` (for example `{{ Classify · Response }}`). Continue typing around the chip to mix references with literal text. Press `Esc` or click outside to dismiss the panel.
+
+The chip is the editor view; the diagram stores the raw form `{{nodes.<nodeId>.<property>}}`.
+
+Suggestions come only from **ancestor** nodes - nodes reachable by following edges backward from the selected node. Each suggestion is built from the ancestor's `outputSchema`, so a node only appears in the picker if it declares one.
+
+## Syntax
+
+A reference uses the form:
+
+```
+{{namespace.path}}
+```
+
+Paths use dot notation and can drill into nested keys of any object the upstream node emits:
+
+```
+{{nodes.ai-agent-1.response}}
+{{nodes.trigger-1.payload.customer.email}}
+```
+
+A field can mix references with literal text:
+
+```
+Summarize the following request from {{nodes.trigger-1.payload.customer.name}}:
+
+{{nodes.classify-1.response}}
+```
+
+The path syntax does not support array indexing, filters, or transforms - only nested key access on objects.
+
+## Namespaces
+
+The SDK only stores these references as text on the diagram. Actual values are filled in later, when the workflow runs.
+
+### `nodes.<nodeId>.<path>`
+
+Output of an ancestor node, keyed by the node's `id`. **Surfaced in the picker.** The available properties for each ancestor come from that node's `outputSchema`.
+
+For example, an AI Agent node emits `response`, `tokensUsed`, and `model`, so a downstream field can reference any of:
+
+```
+{{nodes.<ai-agent-id>.response}}
+{{nodes.<ai-agent-id>.tokensUsed}}
+{{nodes.<ai-agent-id>.model}}
+```
+
+### `trigger.<path>`
+
+The raw payload that started the current workflow run - exactly as it was received. **Manual entry only - not surfaced in the picker today.** Type the reference yourself:
+
+```
+{{trigger.orderId}}
+{{trigger.customer.email}}
+```
+
+Typing `{{` opens the suggestions panel, which only lists ancestor-node properties - keep typing past it to enter a `trigger.*` reference as plain text.
+
+:::note
+`trigger.<path>` and `nodes.<triggerNodeId>.<path>` are **not** the same thing. `trigger.<path>` is the unprocessed input that started the run; `nodes.<triggerNodeId>.<path>` is whatever the trigger node _emitted_ - which may transform or repackage the original payload.
+:::
+
+### `variables.<path>`
+
+Globals and secrets available at the start of each run. **Manual entry only - not surfaced in the picker today.** Type the reference yourself:
+
+```
+{{variables.apiBaseUrl}}
+{{variables.tenantId}}
+```
+
+The set of available variables depends on how your workflow runner is configured.
+
+## Examples
+
+### Example 1: Pass an AI Agent's response into the next AI Agent
+
+1. Drop two AI Agent nodes onto the canvas and connect them: `Classify -> Respond`.
+2. Configure `Classify` with a prompt that produces a category, e.g. _"Classify the following request as one of: refund, support, sales."_
+3. Open `Respond`. Focus the **System prompt** field and type `{{`.
+4. From the picker, choose **Classify · Response**. The field renders a chip labeled `{{ Classify · Response }}`; the diagram stores it as `{{nodes.<classify-id>.response}}`.
+5. Type the rest of the prompt around the chip. The editor view looks like this:
+
+```
+You are responding to a request that has been classified as: {{ Classify · Response }}.
+
+Answer in two sentences, in the tone appropriate for that category.
+```
+
+### Example 2: Branch on a value in the trigger payload
+
+1. Drop a Decision node downstream of your trigger.
+2. Add a branch labeled **High priority**, with one condition.
+3. In the condition's **X** field, type the reference manually (the picker does not surface `trigger.<path>` today):
+
+```
+{{trigger.priority}}
+```
+
+4. Set the comparison operator to `is equal`.
+5. Set the **Y** field to the literal `high`.
+
+## Add the picker to a custom node
+
+### Make a field accept references
+
+In the node's UI schema, use `VariableText` (single-line) or `VariableTextArea` (multi-line) instead of `Text` / `TextArea`:
+
+```typescript
+{
+  type: 'VariableTextArea',
+  scope: scope('properties.systemPrompt'),
+  placeholder: 'Use {{ to insert variables',
+  minRows: 5,
+}
+```
+
+The control behaves like the matching plain control, except `{{` opens the suggestions panel.
+
+### Expose the node's outputs to downstream pickers
+
+Add an `outputSchema` to the node's `PaletteItem`. Each entry describes one output property the node will emit:
+
+```typescript
+import type { PaletteItem } from '@workflowbuilder/sdk';
+
+export const myNode: PaletteItem = {
+  // ...label, type, schema, defaults, uischema
+  outputSchema: {
+    properties: {
+      response: { type: 'string', label: 'Response', description: 'The text returned by the model' },
+      tokensUsed: { type: 'number', label: 'Tokens Used' },
+    },
+  },
+};
+```
+
+Without an `outputSchema`, the node never appears as a group in any downstream picker.
+
+## See also
+
+- [Add a custom node](/guides/add-a-custom-node/) - register a new node type that participates in the picker
+- [AI Agent node](/nodes/ai-agent/) - uses the picker on the system prompt
+- [Decision node](/nodes/decision/) - uses the picker on condition operands

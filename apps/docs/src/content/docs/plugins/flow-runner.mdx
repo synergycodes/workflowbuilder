@@ -1,0 +1,31 @@
+---
+title: Flow Runner
+description: Reference implementation of a JSON parser that turns a Workflow Builder diagram into an executable flow function.
+sidebar:
+  badge: Enterprise
+  order: 7
+---
+
+import EnterpriseNote from '@/components/enterprise-note.astro';
+
+<EnterpriseNote />
+
+The plugin includes play / pause / stop controls in the app bar, a visual debugger that highlights active and completed nodes, and a set of demo palette items (start, decision, display value, calculators) so you can [try it immediately](https://app.workflowbuilder.io).
+
+import flowRunnerWebm from '@/assets/flow-runner.webm';
+
+<video autoplay loop muted playsinline>
+  <source src={flowRunnerWebm} type="video/webm" />
+</video>
+
+## Use cases
+
+- Prototype backend logic visually. Build a decision tree in the editor, then run it to verify behaviour.
+- Demonstrate Workflow Builder to prospects with a live, runnable flow. [Request a guided demo](https://www.workflowbuilder.io/contact) to see it end-to-end.
+- Use as a starting point for a production execution engine by replacing the demo callable logic with real integrations.
+
+## See also
+
+- [Architecture](/overview/architecture/) - tech stack, monorepo layout, plugin system, data model
+- [Built-in Nodes](/nodes/) - all built-in node types
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties

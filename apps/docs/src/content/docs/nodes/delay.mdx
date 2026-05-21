@@ -1,0 +1,80 @@
+---
+title: Delay
+description: Pauses the workflow for a specified duration before continuing to the next step.
+sidebar:
+  order: 5
+---
+
+import NodeDocumentation from '@/components/node-documentation.astro';
+
+<NodeDocumentation node="delay">
+
+The Delay node pauses workflow execution for a configured amount of time before proceeding to the next connected node. The pause duration can be fixed, computed dynamically, or based on a condition.
+
+## When to use
+
+Use a Delay node whenever your workflow needs to wait before continuing. Delays are essential for building workflows that operate on real-world timelines rather than executing everything instantly.
+
+Common examples:
+
+- **Follow-up sequences** - wait 24 hours after a customer signs up before sending a welcome email, then wait 3 days before sending a feature highlight
+- **Rate limiting** - pause between API calls to respect third-party rate limits
+- **Cool-down periods** - enforce a waiting period between retries or repeated actions (e.g., wait 15 minutes before retrying a failed payment)
+- **SLA timers** - wait until a deadline, then escalate if the task is still unresolved
+- **Batch processing** - collect events over a time window, then process them together
+
+## Delay types
+
+Select the delay type from the **Delay Type** dropdown. Each type reveals different configuration fields.
+
+### Fixed Delay
+
+Pauses for a specific amount of time.
+
+| Property     | Type     | Description            |
+| ------------ | -------- | ---------------------- |
+| Delay Amount | Number   | How long to wait       |
+| Time Units   | Dropdown | None / Minutes / Hours |
+
+### Dynamic Delay
+
+Computes the delay duration from an expression at runtime.
+
+| Property      | Type     | Description                                                                 |
+| ------------- | -------- | --------------------------------------------------------------------------- |
+| Expression    | Text     | Expression that evaluates to a duration (e.g., `order.processing_time * 2`) |
+| Max Wait Time | Dropdown | 2 hours / 4 hours / 8 hours / 12 hours / 24 hours                           |
+
+### Conditional Delay
+
+Waits until a condition is met or a maximum wait time is reached.
+
+| Property      | Type     | Description                                       |
+| ------------- | -------- | ------------------------------------------------- |
+| Max Wait Time | Dropdown | 2 hours / 4 hours / 8 hours / 12 hours / 24 hours |
+
+### Until Specific Date/Time
+
+Pauses until a specific date and time.
+
+| Property      | Type     | Description                                       |
+| ------------- | -------- | ------------------------------------------------- |
+| Max Wait Time | Dropdown | 2 hours / 4 hours / 8 hours / 12 hours / 24 hours |
+
+## Properties
+
+All delay types share the following fields:
+
+| Property    | Type     | Description                             |
+| ----------- | -------- | --------------------------------------- |
+| Label       | Text     | Display name shown on the node card     |
+| Description | Text     | Short description of the node's purpose |
+| Status      | Dropdown | Active / Draft / Disabled               |
+
+</NodeDocumentation>
+
+## See also
+
+- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
+- [Flow Runner plugin](/plugins/flow-runner/) - turn a diagram into an executable flow function
+- [Trigger node](/nodes/trigger/) - start a flow in response to an event or schedule

@@ -1,0 +1,24 @@
+---
+import logoNavRaw from '../assets/workflow-builder-logo-nav.svg?raw';
+
+const { siteTitleHref } = Astro.locals.starlightRoute;
+---
+
+<a href={siteTitleHref} class="site-title" aria-label="Workflow Builder">
+  <Fragment set:html={logoNavRaw} />
+</a>
+
+<style>
+  @layer starlight.core {
+    .site-title {
+      display: flex;
+      text-decoration: none;
+      color: var(--sl-color-white);
+    }
+
+    .site-title :global(svg) {
+      height: calc(var(--sl-nav-height) - 2 * var(--sl-nav-pad-y));
+      width: auto;
+    }
+  }
+</style>

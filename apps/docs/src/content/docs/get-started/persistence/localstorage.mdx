@@ -1,0 +1,70 @@
+---
+title: localStorage
+description: Persist diagram state automatically to the browser's localStorage. No backend required.
+---
+
+The `localStorage` strategy saves and loads the diagram from `localStorage` automatically. No backend or server is needed. This is the **default** strategy — pass no `integration` config at all and you get it.
+
+## How it works
+
+```tsx
+import { WorkflowBuilder } from '@workflowbuilder/sdk';
+
+import '@workflowbuilder/sdk/style.css';
+
+export function App() {
+  return (
+    <WorkflowBuilder.Root
+      name="My Workflow"
+      integration={{ strategy: 'localStorage' }} // default — can be omitted
+    />
+  );
+}
+```
+
+That's it. Workflow Builder will:
+
+1. On mount — read the diagram from `localStorage` and load it into the editor.
+2. On save — serialise the current diagram to JSON and write it to `localStorage`.
+
+## Storage key
+
+The data is stored under a fixed key:
+
+```
+workflowBuilderDiagram
+```
+
+The value is the JSON-serialised `IntegrationDataFormat` object. The key is **not** derived from the `name` prop — every `localStorage`-backed instance reads and writes the same slot.
+
+## Seeding the first visit
+
+On first visit, when no data exists in `localStorage`, the editor falls back to whatever `initialNodes` / `initialEdges` you pass on `<WorkflowBuilder.Root>`. If neither is set, the canvas starts empty. Once the user saves, `localStorage` becomes the source of truth and the props are ignored on subsequent visits — `initialNodes` / `initialEdges` are safe to leave in the JSX as a stable seed.
+
+## Auto-save on close
+
+Workflow Builder hooks into the browser's `beforeunload` event and triggers a save when the user closes or navigates away from the page. This ensures the diagram is not lost between sessions.
+
+## Limitations
+
+- Data is per-browser and per-origin — it is not shared across devices.
+- `localStorage` has a ~5 MB limit; very large diagrams may hit this.
+- Not suitable for multi-user or collaborative scenarios.
+- The storage key is hardcoded — only one `localStorage`-backed workflow can be persisted per origin.
+
+## When to use this strategy
+
+Use the `localStorage` strategy when:
+
+- You want a zero-config setup with no backend.
+- The diagram is for a single user on a single device.
+- You are prototyping or demoing Workflow Builder.
+
+## See also
+
+- [REST API](/get-started/persistence/rest-api/) — alternative: persistent, shareable storage via a backend
+- [via callback](/get-started/persistence/callback/) — alternative: full control over loading and saving from your app
+- [Configuring the editor](/guides/configuring-the-editor/) — full reference for `<WorkflowBuilder.Root>` props
+- [Diagram state management](/overview/features/diagram-state-management/) — canvas state, undo/redo, and auto-save
+
+Have a more complex persistence setup in mind? [Contact us](https://www.workflowbuilder.io/contact) and we'll help you pick the right strategy.

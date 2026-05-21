@@ -1,0 +1,99 @@
+---
+title: REST API
+description: Load and save diagrams from your backend REST API.
+---
+
+The `api` strategy connects Workflow Builder to your backend. It fetches the initial diagram from a `load` endpoint on mount and POSTs the updated diagram to a `save` endpoint when the user saves.
+
+## How it works
+
+Pass `integration: { strategy: 'api', endpoints }` to `<WorkflowBuilder.Root>` with the load and save URLs:
+
+```tsx
+import { WorkflowBuilder } from '@workflowbuilder/sdk';
+
+import '@workflowbuilder/sdk/style.css';
+
+export function App() {
+  return (
+    <WorkflowBuilder.Root
+      name="My Workflow"
+      integration={{
+        strategy: 'api',
+        endpoints: {
+          load: '/api/workflow/load',
+          save: '/api/workflow/save',
+        },
+      }}
+    />
+  );
+}
+```
+
+The runtime handles two operations:
+
+| Event            | Action                                               |
+| ---------------- | ---------------------------------------------------- |
+| Component mounts | `GET endpoints.load` — loads the initial diagram     |
+| User saves       | `POST endpoints.save` — persists the current diagram |
+
+The initial diagram is fetched from `endpoints.load`. `initialNodes` / `initialEdges` on `<WorkflowBuilder.Root>` are used as the first frame (before the fetch resolves) and as a fallback when the load endpoint fails — non-2xx responses and network errors leave the editor showing whatever you passed in. Pass them if you want a meaningful skeleton instead of an empty canvas during load.
+
+## Authenticating requests
+
+The built-in `api` strategy issues plain `fetch()` calls with no auth headers. If your backend needs auth, use the [`props` strategy](/get-started/persistence/callback/) instead and call `fetch` yourself in `onDataSave` — there you can attach `Authorization` headers, custom error handling, or any other request shape you need:
+
+```tsx
+<WorkflowBuilder.Root
+  integration={{
+    strategy: 'props',
+    onDataSave: async (data) => {
+      const response = await fetch('/api/workflow/save', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+      return response.ok ? 'success' : 'error';
+    },
+  }}
+/>
+```
+
+## Data format
+
+Both the GET response body and the POST request body use the same shape:
+
+```typescript
+type IntegrationDataFormat = {
+  name: string;
+  layoutDirection: 'DOWN' | 'RIGHT';
+  nodes: WorkflowBuilderNode[];
+  edges: WorkflowBuilderEdge[];
+};
+```
+
+## Snackbar feedback
+
+Workflow Builder automatically shows a success or error notification after each save attempt based on whether the response was `ok`.
+
+## When to use this strategy
+
+Use the `api` strategy when:
+
+- You need diagrams persisted in a database.
+- Multiple users access the same diagram.
+- You want server-side validation or versioning.
+- The save endpoint needs no extra request shaping (auth, custom payload) — otherwise reach for [`props`](/get-started/persistence/callback/).
+
+## See also
+
+- [Save diagrams to database](/guides/save-diagrams-to-database/) — a simple database save example using this strategy
+- [via callback](/get-started/persistence/callback/) — alternative: full control over the request shape (auth, payload transforms)
+- [localStorage](/get-started/persistence/localstorage/) — alternative: zero-config persistence in the browser
+- [Configuring the editor](/guides/configuring-the-editor/) — full reference for `<WorkflowBuilder.Root>` props
+- [Diagram state management](/overview/features/diagram-state-management/) — canvas state, undo/redo, and auto-save
+
+Need help wiring this up to your existing API or auth layer? [Contact us](https://www.workflowbuilder.io/contact) and we'll help you out.
