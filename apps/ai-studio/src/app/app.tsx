@@ -15,7 +15,7 @@ export function App() {
     <WorkflowBuilder.Root
       name="ai-studio"
       nodeTypes={aiStudioNodeTypes}
-      templates={aiStudioTemplates}
+      diagramTemplates={aiStudioTemplates}
       plugins={[aiStudioFeaturesPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />

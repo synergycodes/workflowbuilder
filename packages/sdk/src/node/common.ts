@@ -117,7 +117,7 @@ export type ConnectionBeingDragged = {
 /**
  * One entry in the editor's template selector — pairs a {@link DiagramModel}
  * with display metadata (id, name, icon). Pass an array of these to
- * `<WorkflowBuilder.Root templates={...} />` to populate the selector.
+ * `<WorkflowBuilder.Root diagramTemplates={...} />` to populate the selector.
  *
  * @category Types
  */
