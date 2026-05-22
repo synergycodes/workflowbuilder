@@ -25,13 +25,14 @@ release  ───────────────●───────�
 
 1. **npm organization access.** Get added as a maintainer on the `workflowbuilder` npm organization (or create it the first time at <https://www.npmjs.com/settings/workflowbuilder>). The org name has no hyphen, matching the scope `@workflowbuilder/sdk`.
 
-2. **`NPM_TOKEN` secret on GitHub.** Generate a Granular Access Token at <https://www.npmjs.com/settings/{your-user}/tokens> with permissions:
-   - **Packages and scopes:** `@workflowbuilder/*` → read and write
-   - **Expiration:** rotate yearly (set a calendar reminder)
+2. **Configure the npm Trusted Publisher.** Authentication is OIDC. No `NPM_TOKEN` is used or stored. On <https://www.npmjs.com/package/@workflowbuilder/sdk/access> (or for a not-yet-published package: org settings → "Packages" → "Add trusted publisher"), add:
+   - Publisher: **GitHub Actions**
+   - Organization or user: `synergycodes`
+   - Repository: `workflowbuilder`
+   - Workflow filename: `release-sdk.yml`
+   - Environment name: _(leave empty)_
 
-   Add it to the repo: <https://github.com/synergycodes/workflowbuilder/settings/secrets/actions/new>
-   - Name: `NPM_TOKEN`
-   - Secret: paste the token
+   The workflow already has `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a `v*` tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit on <https://www.npmjs.com/package/@workflowbuilder/sdk>.
 
 3. **Create the `release` branch** (first time only):
 
@@ -200,18 +201,21 @@ A published version cannot be overwritten on npm. Options when something went wr
 
 ## Troubleshooting CI failures
 
-| Symptom                                                               | Cause                                                                | Fix                                                                               |
-| --------------------------------------------------------------------- | -------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
-| `npm error code E401` in publish step                                 | `NPM_TOKEN` expired or revoked                                       | Rotate token on npmjs.com, update GitHub secret, re-run workflow from Actions tab |
-| `Tag version (X.Y.Z) does not match package.json version (Y.Y.Y)`     | Pushed tag before merging the release PR, or tagged the wrong commit | Delete tag (see Rollback), merge release PR first, re-tag                         |
-| `404 Not Found - PUT https://registry.npmjs.org/@workflowbuilder/sdk` | npm org doesn't exist or you're not a maintainer                     | Create the `workflowbuilder` org or get added as maintainer                       |
-| Build fails: workspace dep resolution                                 | Probably stale `pnpm-lock.yaml` after rename                         | Run `pnpm install` locally, commit lockfile, re-tag                               |
-| Lint / typecheck / test step fails                                    | Code that landed on release doesn't pass checks                      | Fix on main via PR, redo the release PR, re-tag at the new HEAD                   |
-| Workflow says "already on npm — skipping publish"                     | Re-pushed tag after successful publish                               | Expected — no-op. CI still creates the GitHub Release.                            |
+| Symptom                                                               | Cause                                                                                                             | Fix                                                                                                                                                        |
+| --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `npm error code E401` / `OIDC token exchange failed` in publish step  | Trusted publisher not configured, or workflow filename / repo / org in the npm config doesn't match this workflow | On npmjs.com, verify the trusted publisher entry points at `synergycodes/workflowbuilder` with workflow filename `release-sdk.yml` and no environment name |
+| `id-token` permission errors                                          | Job/workflow lost `id-token: write` (e.g. someone edited the workflow)                                            | Restore `permissions: id-token: write` at the workflow level                                                                                               |
+| `Tag version (X.Y.Z) does not match package.json version (Y.Y.Y)`     | Pushed tag before merging the release PR, or tagged the wrong commit                                              | Delete tag (see Rollback), merge release PR first, re-tag                                                                                                  |
+| `404 Not Found - PUT https://registry.npmjs.org/@workflowbuilder/sdk` | npm org doesn't exist or you're not a maintainer                                                                  | Create the `workflowbuilder` org or get added as maintainer                                                                                                |
+| Build fails: workspace dep resolution                                 | Probably stale `pnpm-lock.yaml` after rename                                                                      | Run `pnpm install` locally, commit lockfile, re-tag                                                                                                        |
+| Lint / typecheck / test step fails                                    | Code that landed on release doesn't pass checks                                                                   | Fix on main via PR, redo the release PR, re-tag at the new HEAD                                                                                            |
+| Workflow says "already on npm — skipping publish"                     | Re-pushed tag after successful publish                                                                            | Expected. No-op. CI still creates the GitHub Release.                                                                                                      |
 
 ## Why these decisions
 
-- **`pnpm publish`, never `npm publish`** — `npm` does not resolve pnpm's `catalog:` protocol, would publish a broken `package.json`. The `--no-git-checks` flag skips the "clean working tree" check (CI runs in detached HEAD on a tag — git considers that unclean).
+- **`pnpm publish`, never `npm publish`** — `npm` does not resolve pnpm's `catalog:` protocol, would publish a broken `package.json`. The `--no-git-checks` flag skips the "clean working tree" check (CI runs in detached HEAD on a tag — git considers that unclean). pnpm 10.17+ supports OIDC trusted publishing, which is why the root `packageManager` is pinned to that floor.
+
+- **OIDC Trusted Publisher, never a long-lived `NPM_TOKEN`** — the workflow exchanges a per-run GitHub OIDC token for a short-lived npm credential. Nothing to rotate, nothing to leak from CI logs. The trust is bound to the exact `synergycodes/workflowbuilder` repository plus this workflow file path; a fork can't publish, a different workflow in the same repo can't publish. `--provenance` attaches the signed build attestation so consumers see "published from this commit, by this workflow run" on the npm page.
 
 - **Tag format `vX.Y.Z`** — adopted from ng-diagram convention used elsewhere in the Synergy Codes org. Shorter, idiomatic for single-package monorepos, plays well with GitHub UI / `gh release` / external tooling that defaults to `v*` regex.
 

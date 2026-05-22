@@ -150,7 +150,7 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
 1. Open PR `release/vX.Y.Z` → `release`. In the branch, run `pnpm changeset version` — bumps `packages/sdk/package.json`, regenerates `packages/sdk/CHANGELOG.md`, deletes consumed `.changeset/*.md`.
 2. Review the diff, merge the PR into `release`.
 3. Tag the merge commit on `release`: `git tag vX.Y.Z && git push origin vX.Y.Z`.
-4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish` + creates a GitHub Release.
+4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
 
 Tag format follows the ng-diagram convention (single-package monorepo, `v*` regex). If we ever publish a second package we'll migrate to scoped (`@workflowbuilder/sdk@X.Y.Z`) — ~1h of work, see `packages/sdk/RELEASE.md` § "Why these decisions".
