@@ -100,7 +100,7 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * Diagram templates available in the template selector.
    * **Must be a stable reference** (same rationale as `nodeTypes`).
    */
-  templates?: TemplateModel[];
+  diagramTemplates?: TemplateModel[];
   /** Plugin initializers invoked synchronously, in order, on first mount. */
   plugins?: WorkflowBuilderPlugin[];
   /** Custom JsonForms renderers / cells / translations. */

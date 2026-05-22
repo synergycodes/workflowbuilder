@@ -26,7 +26,7 @@ export function App() {
       nodeTemplates={{
         'multi-port': MultiPortNodeTemplate,
       }}
-      templates={demoTemplates}
+      diagramTemplates={demoTemplates}
       plugins={[
         demoPlugin,
         analyticsPlugin,
