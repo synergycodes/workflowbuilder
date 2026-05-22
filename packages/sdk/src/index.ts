@@ -54,6 +54,7 @@ export type {
   WorkflowBuilderPlugin,
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
+  WorkflowBuilderNodeTemplates,
 } from './workflow-builder-root';
 
 // =============================================================================

@@ -1,10 +1,28 @@
 # @workflowbuilder/sdk
 
-React SDK for [Workflow Builder](https://www.workflowbuilder.io/) — embed a visual, flow-based workflow editor in your app.
+React SDK for [Workflow Builder](https://www.workflowbuilder.io/). Embed a visual, flow-based workflow editor in your app.
+
+[![npm version](https://img.shields.io/npm/v/@workflowbuilder/sdk.svg)](https://www.npmjs.com/package/@workflowbuilder/sdk)
+[![license](https://img.shields.io/npm/l/@workflowbuilder/sdk.svg)](./LICENSE)
 
 - **Docs:** <https://www.workflowbuilder.io/docs/overview/>
 - **Live demo:** <https://app.workflowbuilder.io/>
 - **Source:** <https://github.com/synergycodes/workflowbuilder>
+- **Changelog:** [CHANGELOG.md](./CHANGELOG.md)
+
+## What you get
+
+An embeddable React SDK that ships a complete workflow editor. One compound component (`<WorkflowBuilder.Root>`) is the embed point. Behind it: a plugin architecture, three persistence strategies, a JsonForms-driven schema layer, i18n, theming tokens, and a diagram-template system. You bring node types and a save strategy. The SDK handles canvas, palette, connections, properties, and persistence.
+
+Typical fit:
+
+- Visual editors for AI agent workflows (LLM chains, tool calls, decision branches)
+- Drag-and-drop node-based programming UIs
+- ETL or data-pipeline designers
+- BPMN-style process editors
+- Any flow editor where you want JsonForms-driven node properties plus a swappable persistence layer
+
+Battle-tested in production by teams shipping AI workflow products.
 
 ## Install
 
@@ -17,11 +35,9 @@ npm install @workflowbuilder/sdk \
   immer zustand
 ```
 
-The SDK ships its dependencies bundled in `dist/`, but the React + xyflow + JsonForms + i18n + state libraries above are `peerDependencies` — your app and the SDK must share a single copy of each. See [Peer dependencies](#peer-dependencies) below.
+The SDK ships its non-peer dependencies bundled in `dist/`. React, xyflow, JsonForms, i18next, immer, and zustand are declared as `peerDependencies` so your app and the SDK share a single copy of each. See [Peer dependencies](#peer-dependencies) below.
 
-## Usage
-
-Mount `<WorkflowBuilder.Root>` at the top of the editor subtree. With no children it renders the default layout (top bar, palette, canvas, properties panel). Pass children to compose a custom layout.
+## Quick start
 
 ```tsx
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
@@ -29,11 +45,17 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 import '@workflowbuilder/sdk/style.css';
 
 export function App() {
-  return <WorkflowBuilder.Root nodeTypes={myNodeTypes} />;
+  return <WorkflowBuilder.Root name="my-workflow" />;
 }
 ```
 
-Custom layout — mount subcomponents directly:
+The editor renders with the default layout (top bar, palette, canvas, properties panel) and persists state to `localStorage` automatically (the default `integration` strategy). The palette is empty until you pass `nodeTypes` — see [`<Root>` props](#workflowbuilderroot-props), the [Add a custom node type guide](https://www.workflowbuilder.io/docs/guides/add-a-custom-node/), and the [node schemas reference](https://www.workflowbuilder.io/docs/node-schemas/) for how to design the data and UI schemas.
+
+Copy-paste-ready node implementations live in the source repo at [`apps/demo/src/app/data/nodes/`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes). Each folder is a self-contained node type with 4 files (`<name>.ts`, `default-properties-data.ts`, `schema.ts`, `uischema.ts`). Available examples: `trigger`, `action`, `decision`, `conditional`, `delay`, `notification`, `multi-port`, `ai-agent` — each documented on the [built-in nodes reference](https://www.workflowbuilder.io/docs/nodes/). Drop the folder into your app, import the node definition, and pass it to `nodeTypes`.
+
+## Compose a custom layout
+
+Pass subcomponents as children to skip the default layout and place each part where you want it:
 
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
@@ -52,13 +74,99 @@ Custom layout — mount subcomponents directly:
 </WorkflowBuilder.Root>
 ```
 
-Each subcomponent is also available as a named export (`WorkflowBuilderTopBar`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
+To add custom overlays alongside the default layout, mount it explicitly:
 
-Full walkthrough: [`apps/docs/.../wb-as-react-component`](../../apps/docs/src/content/docs/get-started/quick-start/wb-as-react-component.mdx).
+```tsx
+<WorkflowBuilder.Root nodeTypes={myNodeTypes}>
+  <WorkflowBuilder.DefaultLayout />
+  <MyToastBanner />
+</WorkflowBuilder.Root>
+```
 
-## Single-instance constraint
+Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
-Mount one `<WorkflowBuilder.Root>` per page. Plugin / JsonForms / i18n registries and the `useStore.{getState,setState,subscribe}` facade all share a module-level singleton, so two Roots on the same page would silently clash. If you need multiple "workflows" on one page, render them sequentially (mount → save → unmount → mount next).
+## `<WorkflowBuilder.Root>` props
+
+| Prop               | Type                            | Description                                                                                                                                                                    |
+| ------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `nodeTypes`        | `PaletteItemOrGroup[]`          | Node type definitions. Appear in the palette and drive validation. **Must be a stable reference** — declare at module scope or memoize.                                        |
+| `nodeTemplates`    | `WorkflowBuilderNodeTemplates`  | Per-node-type custom renderers. Map of `data.type` → React component, overriding the default node renderer for that type. **Stable reference required** (same as `nodeTypes`). |
+| `diagramTemplates` | `TemplateModel[]`               | Diagram templates available in the template selector. **Stable reference required** (same as `nodeTypes`).                                                                     |
+| `plugins`          | `WorkflowBuilderPlugin[]`       | Functions registering decorators. Synchronous, executed once.                                                                                                                  |
+| `jsonForm`         | `WorkflowBuilderJsonFormConfig` | Custom JsonForms renderers, cells, translations.                                                                                                                               |
+| `integration`      | `WorkflowBuilderIntegration`    | Data source / sink. Defaults to `localStorage`.                                                                                                                                |
+| `name`             | `string`                        | Workflow name shown in the header.                                                                                                                                             |
+| `layoutDirection`  | `'DOWN' \| 'RIGHT'`             | Initial flow direction.                                                                                                                                                        |
+| `initialNodes`     | `WorkflowBuilderNode[]`         | Starting diagram nodes.                                                                                                                                                        |
+| `initialEdges`     | `WorkflowBuilderEdge[]`         | Starting diagram edges.                                                                                                                                                        |
+
+Full reference (every public type, hook, and helper): <https://www.workflowbuilder.io/docs/api/core/workflowbuilder/>.
+
+## Persistence
+
+Pick one of three strategies via the `integration` prop.
+
+| Strategy       | Source / sink                                               | When to use                  |
+| -------------- | ----------------------------------------------------------- | ---------------------------- |
+| `localStorage` | Browser `localStorage`                                      | Prototyping, quick starts    |
+| `api`          | `GET` / `POST` to user-provided endpoints                   | Backend-managed persistence  |
+| `props`        | `onDataSave` callback + `initialNodes`/`initialEdges` props | Host-app-managed persistence |
+
+```tsx
+<WorkflowBuilder.Root
+  integration={{
+    strategy: 'api',
+    endpoints: { load: '/api/load', save: '/api/save' },
+  }}
+/>
+```
+
+Full guide: [Persistence strategies on the docs site](https://www.workflowbuilder.io/docs/get-started/persistence/callback/).
+
+## Plugins
+
+The SDK exposes three extension points. Pass plugin functions to the `plugins` prop:
+
+- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppBarControls`, `OptionalAppBarTools`, `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalFooterContent`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`).
+- **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call.
+- **Translations** (`registerPluginTranslation`). Extend i18next keys with plugin-specific strings.
+
+```tsx
+import { WorkflowBuilder, type WorkflowBuilderPlugin, registerComponentDecorator } from '@workflowbuilder/sdk';
+
+import { MyToolbarButton } from './my-toolbar-button';
+
+const myPlugin: WorkflowBuilderPlugin = () => {
+  registerComponentDecorator('OptionalAppBarControls', {
+    content: MyToolbarButton,
+    name: 'MyPlugin',
+  });
+};
+
+export function App() {
+  return <WorkflowBuilder.Root plugins={[myPlugin]} />;
+}
+```
+
+Plugins are synchronous. If you need async work (config fetch, WASM load, feature flag lookup), await it outside the SDK and construct the plugin around the resolved value before passing it to `<Root>`.
+
+Full guide: [Build a plugin](https://www.workflowbuilder.io/docs/guides/build-a-plugin/).
+
+## Theming
+
+The editor exposes a small set of CSS custom properties for top-level styling. Override them on `:root` or scope to your app shell:
+
+```css
+:root {
+  --wb-background-color: #fafafa;
+  --wb-font-family: 'Inter', system-ui, sans-serif;
+  --wb-transition: 0.15s ease-in;
+}
+```
+
+Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-thumb-hover-color`, `--wb-scroll-track-color`).
+
+Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@synergycodes/overflow-ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
 ## CSS — global resets
 
@@ -94,6 +202,22 @@ specificity hacks or `!important` needed. Two things to be aware of:
 If you don't want the body resets at all, import the SDK before your own global
 stylesheet so your rules land in the unlayered cascade above `@layer reset`.
 
+## Single-instance constraint
+
+Mount one `<WorkflowBuilder.Root>` per page. Plugin / JsonForms / i18n registries and the `useStore.{getState,setState,subscribe}` facade all share a module-level singleton, so two Roots on the same page would silently clash. If you need multiple "workflows" on one page, render them sequentially (mount → save → unmount → mount next).
+
+## TypeScript
+
+`dist/index.d.ts` ships with all required types inlined: icon names (`WBIcon`), domain types (`WorkflowBuilderNode`, `WorkflowBuilderEdge`, `NodeData`, `DiagramModel`, `PaletteItemOrGroup`, `TemplateModel`, …), plugin contracts, and integration types. No extra `@types/*` package needed.
+
+Full API reference: <https://www.workflowbuilder.io/docs/api/core/workflowbuilder/>.
+
+## Browser and runtime
+
+- **Client-side only.** The SDK holds module-level singletons (zustand store identity, i18next instance, immer's frozen-object cache) and uses `i18next-browser-languagedetector`. Mount inside `'use client'` boundaries on Next.js, or behind a client-only wrapper (`dynamic(() => import('./Editor'), { ssr: false })`) on other SSR frameworks.
+- **Modern browsers.** Last two versions of Chrome, Firefox, Safari, Edge.
+- **React 18 or 19.**
+
 ## Peer dependencies
 
 Install alongside the SDK (ranges declared in `peerDependencies`):
@@ -108,6 +232,12 @@ Install alongside the SDK (ranges declared in `peerDependencies`):
 These are declared as `peerDependencies` so the consumer app and the SDK share a single
 copy of each — required for singletons (zustand store identity, i18next instance,
 immer's frozen-object cache).
+
+## Support
+
+Built and maintained by [Synergy Codes](https://synergycodes.com/) - the engineers behind the SDK shipping workflow tools for 15 years across 20+ industries. Available for integration, customization, UX, back-end logic, and end-to-end delivery.
+
+[Talk to the team →](https://workflowbuilder.io/consulting/)
 
 ## License
 
