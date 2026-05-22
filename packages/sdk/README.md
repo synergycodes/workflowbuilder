@@ -12,7 +12,7 @@ React SDK for [Workflow Builder](https://www.workflowbuilder.io/). Embed a visua
 
 ## What you get
 
-A production-ready React component for designing node-based workflows. The editor handles canvas, palette, node connections, JsonForms-driven properties, validation, and persistence. You bring node types, optional templates, and a save strategy.
+An embeddable React SDK that ships a complete workflow editor. One compound component (`<WorkflowBuilder.Root>`) is the embed point. Behind it: a plugin architecture, three persistence strategies, a JsonForms-driven schema layer, i18n, theming tokens, and a diagram-template system. You bring node types and a save strategy. The SDK handles canvas, palette, connections, properties, and persistence.
 
 Typical fit:
 
