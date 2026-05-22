@@ -200,6 +200,11 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
 
     const snapshotParsed = z.safeParse(workflowSnapshotSchema, snapshotJson);
     if (!snapshotParsed.success) {
+      logger.warn('snapshot invalid', {
+        workflowId,
+        sourceVersion: body.sourceVersion,
+        error: { issues: formatValidationDetails(snapshotParsed.error) },
+      });
       return c.json(
         {
           code: 'invalid_snapshot',
@@ -220,6 +225,12 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
         triggerPayloadJson: body.triggerPayload ?? null,
       })
       .returning();
+
+    logger.info('execute requested', {
+      workflowId,
+      executionId: execution.id,
+      sourceVersion: body.sourceVersion,
+    });
 
     const definition = mapToExecutionModel(workflowId, snapshotParsed.data);
 
