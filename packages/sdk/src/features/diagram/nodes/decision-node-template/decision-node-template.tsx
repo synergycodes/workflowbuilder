@@ -1,5 +1,5 @@
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
-import { Handle, Position } from '@xyflow/react';
+import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
 import { Icon } from '@workflow-builder/icons';
@@ -47,6 +47,7 @@ export const DecisionNodeTemplate = memo(
     const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
 
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
+    const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
     const isCanvasNode = showHandles;
 
@@ -70,7 +71,7 @@ export const DecisionNodeTemplate = memo(
         </NodePanel.Content>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
-          <Handle id={handleSourceId} position={Position.Right} type="source" />
+          <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
         </NodePanel.Handles>
       </NodePanel.Root>
     );
