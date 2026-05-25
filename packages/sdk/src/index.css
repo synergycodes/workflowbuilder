@@ -97,6 +97,28 @@
   }
 }
 
+.workflow-builder-root
+  .react-flow__handle:is(
+    .react-flow__handle-right,
+    .react-flow__handle-left,
+    .react-flow__handle-top,
+    .react-flow__handle-bottom
+  ):is(.source, .target).nodrag {
+  box-sizing: content-box;
+  width: var(--ax-public-node-port-size);
+  height: var(--ax-public-node-port-size);
+  background: var(--ax-public-node-port-background-color);
+  border: var(--ax-public-node-port-border-size) solid var(--ax-public-node-port-border-color);
+
+  &:hover,
+  &.connectingfrom {
+    background-color: var(--ax-public-node-port-background-color-hover);
+    border-color: var(--ax-public-node-port-border-color-hover);
+    width: var(--ax-public-node-port-size-hover);
+    height: var(--ax-public-node-port-size-hover);
+  }
+}
+
 /* Shows date picker over modal */
 body:has(.base-Modal-root) {
   .mantine-Popover-dropdown {
