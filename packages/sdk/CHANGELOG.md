@@ -4,7 +4,7 @@ All notable changes to `@workflowbuilder/sdk` are documented in this file. The f
 
 ## [Unreleased]
 
-## [2.0.0] - TBD
+## [2.0.0] - 2026-05-22
 
 First public npm release. The major bump continues the Workflow Builder version line (1.0 / 1.1 / 1.2 shipped as a monorepo bundled with the app); the redistribution as a standalone React SDK package is the breaking change that justifies 2.0.
 
@@ -20,5 +20,4 @@ First public npm release. The major bump continues the Workflow Builder version 
 
 - Distribution model: editor is now consumed via `npm install @workflowbuilder/sdk` instead of cloning the monorepo. Consumers no longer need monorepo tooling, tsconfig paths, or workspace symlinks.
 
-[Unreleased]: https://github.com/synergycodes/workflowbuilder/compare/sdk-v2.0.0...HEAD
-[2.0.0]: https://github.com/synergycodes/workflowbuilder/releases/tag/sdk-v2.0.0
+[2.0.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.0
