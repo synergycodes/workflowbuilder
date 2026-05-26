@@ -97,25 +97,52 @@
   }
 }
 
-.workflow-builder-root
-  .react-flow__handle:is(
-    .react-flow__handle-right,
-    .react-flow__handle-left,
-    .react-flow__handle-top,
-    .react-flow__handle-bottom
-  ):is(.source, .target).nodrag {
-  box-sizing: content-box;
-  width: var(--ax-public-node-port-size);
-  height: var(--ax-public-node-port-size);
-  background: var(--ax-public-node-port-background-color);
-  border: var(--ax-public-node-port-border-size) solid var(--ax-public-node-port-border-color);
+@layer ui.component {
+  /* Match overflow-ui's `._handle-wrapper .react-flow__handle` styling for any
+     React Flow `<Handle>` rendered outside `NodePanel.Handles` (decision-node
+     branches, AI-agent tool ports via `ConnectableItem`, custom node templates),
+     AND force `content-box` on header-anchored ports inside `NodePanel.Handles`
+     so they don't collapse to ~5px visual.
+     `content-box` mirrors overflow-ui so the border adds to the visual size
+     defined by `--ax-public-node-port-size`. The `::before` pseudo provides the
+     same expanded hit area overflow-ui ships, so click targets match. Lives in
+     `@layer ui.component` so unlayered consumer overrides — e.g. ai-studio's
+     `error-handle` CSS module — win the cascade on properties like `border`
+     without a specificity arms race. The `!important` on `box-sizing` is the
+     one exception: overflow-ui ships `._handle-wrapper ._header
+     .react-flow__handle.react-flow__handle-{right,left}` unlayered at (0,4,0)
+     specificity, injected via the `@synergycodes/overflow-ui` JS side-effect
+     CSS import. Without `!important`, that rule forces `border-box` on header
+     ports and shrinks them. Only `box-sizing` is marked `!important`; consumer
+     overrides on size/border still win normally. */
+  .workflow-builder-root .react-flow__handle.nodrag {
+    box-sizing: content-box !important;
+    width: var(--ax-public-node-port-size);
+    height: var(--ax-public-node-port-size);
+    background: var(--ax-public-node-port-background-color);
+    border: var(--ax-public-node-port-border-size) solid var(--ax-public-node-port-border-color);
+    transition-property: background-color, border-color, width, height;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.1s;
 
-  &:hover,
-  &.connectingfrom {
-    background-color: var(--ax-public-node-port-background-color-hover);
-    border-color: var(--ax-public-node-port-border-color-hover);
-    width: var(--ax-public-node-port-size-hover);
-    height: var(--ax-public-node-port-size-hover);
+    &::before {
+      content: '';
+      position: absolute;
+      width: var(--ax-public-node-port-boundary-size);
+      height: var(--ax-public-node-port-boundary-size);
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      border-radius: 50%;
+    }
+
+    &:hover,
+    &.connectingfrom {
+      background-color: var(--ax-public-node-port-background-color-hover);
+      border-color: var(--ax-public-node-port-border-color-hover);
+      width: var(--ax-public-node-port-size-hover);
+      height: var(--ax-public-node-port-size-hover);
+    }
   }
 }
 
