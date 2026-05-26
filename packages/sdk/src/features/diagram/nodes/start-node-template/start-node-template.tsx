@@ -12,6 +12,7 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 
 type StartNodeTemplateProps = {
   id: string;
@@ -49,7 +50,7 @@ const StartNodeTemplateComponent = memo(
 
     const hasContent = !!children;
 
-    const handlesAlignment = hasContent && layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <Collapsible>

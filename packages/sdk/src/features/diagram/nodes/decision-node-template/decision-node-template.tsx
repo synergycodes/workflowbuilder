@@ -12,6 +12,7 @@ import type { DecisionBranch } from '../../../json-form/types/controls';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 import { BranchesContainer } from './components/branches-container';
 
 type Props = {
@@ -51,7 +52,7 @@ export const DecisionNodeTemplate = memo(
 
     const isCanvasNode = showHandles;
 
-    const handlesAlignment = layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <NodePanel.Root selected={selected} className={styles['decision-node']}>

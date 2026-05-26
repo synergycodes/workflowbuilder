@@ -13,6 +13,7 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 
 /**
  * Props for the editor's default workflow-node template. A custom node
@@ -75,7 +76,7 @@ const WorkflowNodeTemplateComponent = memo(
 
     const hasContent = !!children;
 
-    const handlesAlignment = hasContent && layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <Collapsible>
