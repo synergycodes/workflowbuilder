@@ -74,8 +74,6 @@ const WorkflowNodeTemplateComponent = memo(
 
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const hasContent = !!children;
-
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
@@ -84,7 +82,7 @@ const WorkflowNodeTemplateComponent = memo(
           <NodePanel.Header>
             <NodeIcon icon={iconElement} />
             <NodeDescription label={label} description={description} />
-            {hasContent && <Collapsible.Button />}
+            {!!children && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
             <OptionalNodeContent nodeId={id}>

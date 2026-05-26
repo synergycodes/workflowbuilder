@@ -103,29 +103,3 @@ body:has(.base-Modal-root) {
     z-index: 1001 !important;
   }
 }
-
-/* WB-192: Pin the main node handles to the NodeIcon's vertical center so
-   multi-line descriptions don't shift port positions and edges between
-   adjacent nodes stay horizontal. Without this, overflow-ui's NodePanel
-   anchors handles via React Flow's default `top: 50%` of the header
-   wrapper — which grows with subtitle wrap, sliding handles by a few
-   pixels and crooking the edge.
-
-   Scoped to header-aligned handles only: `[class*='_handle-wrapper_']` is
-   overflow-ui's outer NodePanel wrapper, and `[class*='_header_']` is the
-   alignment class applied to header-wrapper when `<NodePanel.Handles
-   alignment="header">` (it does NOT match `_header-wrapper_` or
-   `_header-container_` — underscore boundary). This excludes per-row
-   handles rendered inside Content (decision branches' source ports,
-   ai-agent tool ports) — those already align to their own row.
-
-   `--ax-public-node-icon-padding` + `--ax-public-node-icon-border-size`
-   come from overflow-ui tokens; `0.75rem` is half of `<Icon size="large" />`
-   (1.5rem) used by every built-in template. Unlayered so it beats React
-   Flow's unlayered `top: 50%` default via the cascade. */
-.workflow-builder-root
-  [class*='_handle-wrapper_']
-  [class*='_header_']
-  :is(.react-flow__handle-left, .react-flow__handle-right) {
-  top: calc(var(--ax-public-node-icon-padding) + var(--ax-public-node-icon-border-size) + 0.75rem);
-}

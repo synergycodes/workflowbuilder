@@ -1,13 +1,23 @@
+import type { NodePanel } from '@synergycodes/overflow-ui';
+import type { ComponentProps } from 'react';
+
 import type { LayoutDirection } from '../../../node/common';
 
-export type HandlesAlignment = 'header' | 'center';
+// Source-of-truth: overflow-ui's `<NodePanel.Handles>` prop, so adding a new
+// alignment in overflow-ui surfaces here as a type error instead of silently
+// drifting.
+type HandlesAlignment = NonNullable<ComponentProps<typeof NodePanel.Handles>['alignment']>;
 
-// Where the handles sit vertically on a node. For horizontal flow ('RIGHT')
-// every built-in template aligns handles to the header section so edges
-// connect at the same Y regardless of how tall the node grows; for vertical
-// flow ('DOWN') we center them on the node body. Keep all node templates
-// routed through this helper so new node types inherit aligned handles
-// instead of re-deriving the rule and drifting (see WB-192).
+// Unifies how built-in node templates choose the `alignment` prop they pass to
+// `<NodePanel.Handles>`, so the formula has one place to evolve instead of
+// being re-derived per template.
+//
+// This helper alone does NOT make ports align across nodes. The visual
+// stability of the resulting port Y depends on a companion global CSS rule in
+// `packages/sdk/src/index.css` (search WB-192): the formula picks 'header' for
+// horizontal flow, then the CSS pin anchors the port to the NodeIcon's
+// vertical center so multi-line descriptions don't shift it. Both layers must
+// stay in sync; removing either reintroduces the bug.
 export function getHandlesAlignment({ layoutDirection }: { layoutDirection: LayoutDirection }): HandlesAlignment {
   return layoutDirection === 'RIGHT' ? 'header' : 'center';
 }
