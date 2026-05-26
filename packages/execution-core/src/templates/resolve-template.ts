@@ -30,40 +30,39 @@ import type { ExecutionContext } from '../execution-context';
 const OUTER_TEMPLATE_REGEX = /\{\{\s*\w+\.(?:[^}]|\}(?!\}))*\}\}/g;
 
 // Anatomy of the inner parse regex (anchored to the whole token):
-//   ^\{\{              opening delimiter
-//   \s*                tolerate whitespace inside the braces
-//   (\w+)              [1] namespace — nodes | trigger | variables | global
+//   ^\{\{                  opening delimiter
+//   \s*                    tolerate whitespace inside the braces
+//   (?<namespace>\w+)      nodes | trigger | variables | global
 //   \.
-//   ([^?|}\s]+?)       [2] dot-path — anything but the suffix-introducing chars
+//   (?<path>[\w.-]+?)      dot-path: word chars, '.', '-' (kebab slugs).
+//                          Anything outside this class is a typo and falls
+//                          through to the 'Malformed template reference'
+//                          branch rather than silently passing as an
+//                          unresolvable key.
 //   \s*
-//   (?:                non-capturing group for the optional modifier
-//     (\?)             [3] '?'  safe-navigation marker, OR
+//   (?:                    optional modifier
+//     (?<safe>\?)          '?' safe-navigation marker, OR
 //     |
-//     \|\s*default\s*:\s*'([^']*)'   [4] default value (single-quoted, no nested ')
+//     \|\s*default\s*:\s*'(?<default>[^']*)'   single-quoted default (no nested ')
 //   )?
 //   \s*
-//   \}\}$              closing delimiter
-const PARSE_REGEX = /^\{\{\s*(\w+)\.([^?|}\s]+?)\s*(?:(\?)|\|\s*default\s*:\s*'([^']*)')?\s*\}\}$/;
+//   \}\}$                  closing delimiter
+const PARSE_REGEX =
+  /^\{\{\s*(?<namespace>\w+)\.(?<path>[\w.-]+?)\s*(?:(?<safe>\?)|\|\s*default\s*:\s*'(?<default>[^']*)')?\s*\}\}$/;
 
 export function resolveTemplate(template: string, context: ExecutionContext): string {
   return template.replaceAll(OUTER_TEMPLATE_REGEX, (match) => {
-    const parsed = PARSE_REGEX.exec(match);
-    if (!parsed) {
+    const groups = PARSE_REGEX.exec(match)?.groups;
+    if (!groups) {
       throw new Error(`Malformed template reference: ${match}`);
     }
-    const [, namespace, path, safeMarker, defaultValue] = parsed as unknown as [
-      string,
-      string,
-      string,
-      string | undefined,
-      string | undefined,
-    ];
+    const { namespace, path, safe, default: defaultValue } = groups;
 
-    const source = resolveNamespace(namespace, context, match);
-    const value = getNestedValue(source, path);
+    const source = resolveNamespace(namespace!, context, match);
+    const value = getNestedValue(source, path!);
 
     if (value === undefined) {
-      if (safeMarker === '?') return '';
+      if (safe === '?') return '';
       if (defaultValue !== undefined) return defaultValue;
       throw new Error(`Unresolved template reference: ${match}`);
     }

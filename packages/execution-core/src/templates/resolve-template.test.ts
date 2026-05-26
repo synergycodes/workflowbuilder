@@ -225,4 +225,16 @@ describe('resolveTemplate — malformed templates throw loudly', () => {
       'Malformed template reference: {{nodes.foo?bar}}',
     );
   });
+
+  it('non-identifier chars in the dot-path throw Malformed, not Unresolved', () => {
+    // The picker only emits paths shaped like `\w[-\w]*(\.\w[-\w]*)*`. Anything
+    // else (`:`, `,`, `[`, `]`, array indexing, sigils) is a typo, not a
+    // legitimately-missing reference. Surfacing it as Malformed tells the
+    // operator the *syntax* is wrong, not that data is absent - different
+    // mental model, different fix.
+    expect(() => resolveTemplate('{{nodes.foo:bar}}', makeContext())).toThrow(/Malformed template reference/);
+    expect(() => resolveTemplate('{{nodes.foo,bar}}', makeContext())).toThrow(/Malformed template reference/);
+    expect(() => resolveTemplate('{{nodes.foo[0]}}', makeContext())).toThrow(/Malformed template reference/);
+    expect(() => resolveTemplate('{{nodes.foo*bar}}', makeContext())).toThrow(/Malformed template reference/);
+  });
 });
