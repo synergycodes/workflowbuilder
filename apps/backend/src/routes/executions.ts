@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 
-import type { AuthVariables, Authorize } from '../auth';
+import type { AssertAuthorized, AuthVariables } from '../auth';
 import { database } from '../db/client';
 import { executionEvents, executions } from '../db/schema';
 import { getWorkflowEngine } from '../engine';
@@ -14,14 +14,13 @@ const logger = backendLogger.child({ component: 'executions-route' });
 const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
-export function createExecutionsRoutes(authorize: Authorize): Hono<{ Variables: AuthVariables }> {
+export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<{ Variables: AuthVariables }> {
   const routes = new Hono<{ Variables: AuthVariables }>();
 
   routes.get('/:id', async (c) => {
     const executionId = c.req.param('id');
 
-    const denied = await authorize(c, 'executions:read', { kind: 'execution', executionId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'executions:read', { kind: 'execution', executionId });
 
     const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
 
@@ -41,11 +40,14 @@ export function createExecutionsRoutes(authorize: Authorize): Hono<{ Variables: 
     });
   });
 
+  // EventSource cannot send custom request headers - JWT bearer adapters that
+  // rely on `Authorization` will not work for this endpoint out of the box.
+  // See `auth-port.decision-log.md` section "SSE / EventSource auth caveats"
+  // for the supported fallbacks (query-param token, cookie session).
   routes.get('/:id/stream', async (c) => {
     const executionId = c.req.param('id');
 
-    const denied = await authorize(c, 'executions:stream', { kind: 'execution', executionId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'executions:stream', { kind: 'execution', executionId });
 
     const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
 
@@ -145,8 +147,7 @@ export function createExecutionsRoutes(authorize: Authorize): Hono<{ Variables: 
   routes.delete('/:id', async (c) => {
     const executionId = c.req.param('id');
 
-    const denied = await authorize(c, 'executions:cancel', { kind: 'execution', executionId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'executions:cancel', { kind: 'execution', executionId });
 
     const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
 

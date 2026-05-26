@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import type { AuthVariables, Authorize } from '../auth';
+import type { AssertAuthorized, AuthVariables } from '../auth';
 import { database } from '../db/client';
 import { executions, workflows } from '../db/schema';
 import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
@@ -34,12 +34,11 @@ function formatValidationDetails(error: z.ZodError) {
   }));
 }
 
-export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: AuthVariables }> {
+export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<{ Variables: AuthVariables }> {
   const routes = new Hono<{ Variables: AuthVariables }>();
 
   routes.post('/', async (c) => {
-    const denied = await authorize(c, 'workflows:create', { kind: 'workflows' });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:create', { kind: 'workflows' });
 
     const parsed = z.safeParse(createWorkflowSchema, await c.req.json());
     if (!parsed.success) {
@@ -66,8 +65,7 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
   });
 
   routes.get('/', async (c) => {
-    const denied = await authorize(c, 'workflows:list', { kind: 'workflows' });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:list', { kind: 'workflows' });
 
     const rows = await database
       .select({
@@ -95,8 +93,7 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
   routes.get('/:id', async (c) => {
     const workflowId = c.req.param('id');
 
-    const denied = await authorize(c, 'workflows:read', { kind: 'workflow', workflowId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:read', { kind: 'workflow', workflowId });
 
     const [workflow] = await database.select().from(workflows).where(eq(workflows.id, workflowId));
 
@@ -110,8 +107,7 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
   routes.patch('/:id/draft', async (c) => {
     const workflowId = c.req.param('id');
 
-    const denied = await authorize(c, 'workflows:update', { kind: 'workflow', workflowId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:update', { kind: 'workflow', workflowId });
 
     const parsed = z.safeParse(updateDraftSchema, await c.req.json());
     if (!parsed.success) {
@@ -145,8 +141,7 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
   routes.post('/:id/publish', async (c) => {
     const workflowId = c.req.param('id');
 
-    const denied = await authorize(c, 'workflows:publish', { kind: 'workflow', workflowId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:publish', { kind: 'workflow', workflowId });
 
     const [existing] = await database.select().from(workflows).where(eq(workflows.id, workflowId));
 
@@ -170,8 +165,7 @@ export function createWorkflowsRoutes(authorize: Authorize): Hono<{ Variables: A
   routes.post('/:id/execute', async (c) => {
     const workflowId = c.req.param('id');
 
-    const denied = await authorize(c, 'workflows:execute', { kind: 'workflow', workflowId });
-    if (denied) return denied;
+    await assertAuthorized(c, 'workflows:execute', { kind: 'workflow', workflowId });
 
     const parsed = z.safeParse(executeSchema, await c.req.json());
     if (!parsed.success) {

@@ -1,34 +1,34 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-// Import via the barrel — same path a third-party adapter author would use,
+// Import via the barrel - same path a third-party adapter author would use,
 // and the test thus pins that the public surface re-exports both the impl
 // and the interface in one place.
 import { AllowAllAuthPort, type AuthPort } from '.';
 
 describe('AllowAllAuthPort', () => {
   let warnSpy: ReturnType<typeof vi.spyOn>;
-  const originalNodeEnv = process.env['NODE_ENV'];
-  const originalAllowInsecure = process.env['WB_ALLOW_INSECURE'];
+  const originalAuthPort = process.env['WB_AUTH_PORT'];
 
   beforeEach(() => {
     warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    // Tests below assume non-production unless they opt in.
-    delete process.env['NODE_ENV'];
-    delete process.env['WB_ALLOW_INSECURE'];
+    // Default-secure: most tests assume the opt-in is absent and the
+    // constructor refuses to boot. Tests that exercise the happy path set
+    // the env var themselves.
+    delete process.env['WB_AUTH_PORT'];
   });
 
   afterEach(() => {
     vi.restoreAllMocks();
-    if (originalNodeEnv === undefined) delete process.env['NODE_ENV'];
-    else process.env['NODE_ENV'] = originalNodeEnv;
-    if (originalAllowInsecure === undefined) delete process.env['WB_ALLOW_INSECURE'];
-    else process.env['WB_ALLOW_INSECURE'] = originalAllowInsecure;
+    if (originalAuthPort === undefined) delete process.env['WB_AUTH_PORT'];
+    else process.env['WB_AUTH_PORT'] = originalAuthPort;
   });
 
   describe('contract', () => {
-    it('identify returns null — caller is anonymous, matches port design note', async () => {
-      // Typed as the interface so the test exercises the contract callers see —
-      // the impl class narrows its method signatures to zero-args internally.
+    beforeEach(() => {
+      process.env['WB_AUTH_PORT'] = 'allow-all';
+    });
+
+    it('identify returns null: caller is anonymous, matches port design note', async () => {
       const port: AuthPort = new AllowAllAuthPort();
       const request = new Request('http://localhost/whatever');
 
@@ -48,39 +48,44 @@ describe('AllowAllAuthPort', () => {
     });
   });
 
-  describe('constructor safeties', () => {
-    it('emits the warning banner so operators see the permissive default at boot', () => {
-      new AllowAllAuthPort();
-
-      // Banner is multi-line: top bar + 4 message lines + bottom bar = 6 calls.
-      expect(warnSpy).toHaveBeenCalledTimes(6);
-      const lines = warnSpy.mock.calls.map((call) => call[0]);
-      expect(lines.some((line) => typeof line === 'string' && line.includes('AllowAllAuthPort'))).toBe(true);
-      expect(lines.some((line) => typeof line === 'string' && line.includes('auth-port.decision-log.md'))).toBe(true);
-    });
-
-    it('refuses to boot under NODE_ENV=production without WB_ALLOW_INSECURE', () => {
-      process.env['NODE_ENV'] = 'production';
-
-      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot.*NODE_ENV=production/);
-      // Warning is suppressed when the guard fires — the throw is the signal.
+  describe('opt-in', () => {
+    it('refuses to boot without WB_AUTH_PORT=allow-all', () => {
+      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot.*explicit opt-in/);
       expect(warnSpy).not.toHaveBeenCalled();
     });
 
-    it('boots under NODE_ENV=production when WB_ALLOW_INSECURE=1 opts in deliberately', () => {
-      process.env['NODE_ENV'] = 'production';
-      process.env['WB_ALLOW_INSECURE'] = '1';
+    it('values other than "allow-all" do not opt in', () => {
+      process.env['WB_AUTH_PORT'] = 'true';
+      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot/);
 
-      expect(() => new AllowAllAuthPort()).not.toThrow();
-      // Operator opted in — warning still fires so the choice is loud in logs.
-      expect(warnSpy).toHaveBeenCalled();
+      process.env['WB_AUTH_PORT'] = '1';
+      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot/);
+
+      process.env['WB_AUTH_PORT'] = '';
+      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot/);
     });
 
-    it('WB_ALLOW_INSECURE values other than "1" do not opt in', () => {
-      process.env['NODE_ENV'] = 'production';
-      process.env['WB_ALLOW_INSECURE'] = 'true';
+    it('error message points the operator at the decision log', () => {
+      expect(() => new AllowAllAuthPort()).toThrow(/auth-port\.decision-log\.md/);
+    });
+  });
 
-      expect(() => new AllowAllAuthPort()).toThrow(/Refusing to boot/);
+  describe('warning banner', () => {
+    beforeEach(() => {
+      process.env['WB_AUTH_PORT'] = 'allow-all';
+    });
+
+    it('emits the warning banner so operators see the permissive default at boot', () => {
+      new AllowAllAuthPort();
+
+      // Not asserting on the exact line count: the banner is purely cosmetic
+      // and tightening that pin breaks the test on harmless edits. Assert on
+      // the load-bearing content instead - the name of the port and the
+      // pointer to the decision log.
+      expect(warnSpy).toHaveBeenCalled();
+      const lines = warnSpy.mock.calls.map((call) => call[0]);
+      expect(lines.some((line) => typeof line === 'string' && line.includes('AllowAllAuthPort'))).toBe(true);
+      expect(lines.some((line) => typeof line === 'string' && line.includes('auth-port.decision-log.md'))).toBe(true);
     });
   });
 });
