@@ -5,9 +5,9 @@ import { isDeepEqual } from 'remeda';
 
 import { StatusType } from '../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
-import { getStoreEdges, getStoreSingleSelected, setStoreEdges } from '../../../../store/slices/diagram-slice/actions';
+import { getStoreEdges, setStoreEdges } from '../../../../store/slices/diagram-slice/actions';
 import { useStore } from '../../../../store/store';
-import { removeEdgesMatchingPattern } from '../../../../utils/edges/remove-edges-matching-pattern';
+import { filterOutEdgesBySourceHandles } from '../../../../utils/edges/filter-out-edges-by-source-handles';
 import { flatErrors } from '../../../../utils/validation/flat-errors';
 import { trackFutureChange } from '../../../changes-tracker/stores/use-changes-tracker-store';
 import { JSONForm } from '../../../json-form/json-form';
@@ -17,25 +17,18 @@ import { JSONForm } from '../../../json-form/json-form';
  * clean up any edges that were connected to those handles.
  * This is done here centrally so it counts as a single undo step together with the data update.
  */
-function removeEdgesForDeletedHandles(oldProperties: unknown, newProperties: unknown) {
+function removeEdgesForDeletedHandles(nodeId: string, oldProperties: unknown, newProperties: unknown) {
   const oldHandles = new Set(collectSourceHandles(oldProperties));
   const newHandles = new Set(collectSourceHandles(newProperties));
-  console.log(oldHandles);
   const removedHandles = [...oldHandles].filter((h) => !newHandles.has(h));
 
-  const nodeId = getStoreSingleSelected()?.node?.id;
-
-  if (removedHandles.length > 0 && nodeId) {
-    const edges = getStoreEdges();
-    const updatedEdges = removeEdgesMatchingPattern(
-      edges,
-      removedHandles.map((element) => ({
-        source: nodeId,
-        sourceHandle: element,
-      })),
-    );
-    setStoreEdges(updatedEdges);
+  if (removedHandles.length === 0) {
+    return;
   }
+
+  const edges = getStoreEdges();
+  const updatedEdges = filterOutEdgesBySourceHandles(edges, nodeId, removedHandles);
+  setStoreEdges(updatedEdges);
 }
 
 function collectSourceHandles(object: unknown): string[] {
@@ -89,7 +82,7 @@ export const NodeProperties = memo(({ node }: Props) => {
       trackFutureChange('dataUpdate');
       setNodeProperties(id, { ...data, errors: flattenErrors });
 
-      removeEdgesForDeletedHandles(properties, data);
+      removeEdgesForDeletedHandles(id, properties, data);
     }
   };
 

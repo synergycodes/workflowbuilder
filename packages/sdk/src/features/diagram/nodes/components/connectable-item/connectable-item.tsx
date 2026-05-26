@@ -1,42 +1,20 @@
-import { Handle, type HandleType, Position } from '@xyflow/react';
+import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
 
 import styles from './connectable-item.module.css';
 
 import { useStore } from '../../../../../store/store';
-import type { ExclusiveUnion } from '../../../../../utils/typescript';
-import { getHandleId } from '../../../handles/get-handle-id';
 
-type SharedProps = {
+type Props = {
+  handleId: string;
   label: string;
   canHaveBottomHandle?: boolean;
 };
 
-type PropsForHandleId = {
-  handleId: string;
-} & SharedProps;
-
-type PropsForHandleConfig = {
-  nodeId: string;
-  innerId: string;
-  handleType: HandleType;
-} & SharedProps;
-
-type Props = ExclusiveUnion<PropsForHandleId, PropsForHandleConfig>;
-
-export function ConnectableItem(props: Props) {
-  const { label, canHaveBottomHandle = true } = props;
+export function ConnectableItem({ handleId, label, canHaveBottomHandle = true }: Props) {
   const layoutDirection = useStore(({ layoutDirection }) => layoutDirection);
   const isVertical = layoutDirection === 'DOWN' && canHaveBottomHandle;
   const position = isVertical ? Position.Bottom : Position.Right;
-
-  const handleId =
-    'handleId' in props
-      ? props.handleId
-      : getHandleId({
-          innerId: props.innerId,
-          handleType: props.handleType,
-        });
 
   return (
     <div
