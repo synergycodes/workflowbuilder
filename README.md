@@ -22,6 +22,14 @@ Used in production by teams including [Vercom](https://www.workflowbuilder.io/ca
 
 </div>
 
+> 🎉 **Workflow Builder 2.0 is here.**
+>
+> A best-in-class SDK for embedding workflow editors, now paired with a dedicated reference backend and a fully modular plugin surface. Building products on top of a workflow editor has never been easier.
+>
+> Starting with 2.0, this repository is the home of Workflow Builder. Previously we worked in a private monorepo and only partially mirrored changes here. From now on, every commit lands here directly.
+>
+> See the [CHANGELOG](./CHANGELOG.md) for everything that's changed since the last release.
+
 ## Get started
 
 Three onboarding paths. Pick one based on what you want to evaluate.
@@ -247,12 +255,6 @@ The bundled execution backend (`apps/backend`, `apps/execution-worker`) is a **r
 
 For production deployments, see [Workflow Builder Enterprise](https://www.workflowbuilder.io/) or build your own backend against `WorkflowEnginePort`.
 
-## Community Edition
-
-This repository contains the community edition of Workflow Builder, maintained by [Synergy Codes](https://synergycodes.com/). The commercial edition is built on the same codebase and adds premium plugins.
-
-We develop everything in a private monorepo and publish releases here through an automated pipeline, which is why commit history and collaborator activity may look limited. There's a full engineering team behind this — questions, issues, and feedback are very welcome here.
-
 ## License
 
 Workflow Builder is available in two editions:
@@ -260,15 +262,15 @@ Workflow Builder is available in two editions:
 - **Community Edition** - Open source, Apache 2.0 licensed, this repository
 - **Enterprise Edition** - Commercial license with long-term support, advanced features, and professional services. Learn more at [workflowbuilder.io](https://www.workflowbuilder.io/)
 
-## Professional Consulting & Enterprise Support
+## Support
 
-Workflow Builder is a frontend-only SDK. For enterprise companies that need end-to-end implementations, we also offer professional consulting services.
+For companies that need end-to-end implementations or any other support, we offer professional consulting services.
 
-Our team has delivered **170+ custom workflow tools** across industries and brings **15+ years** of experience building enterprise-class diagramming and automation tools. We can help with:
+Our team has delivered **170+ custom workflow tools** across 20+ industries and brings **15+ years** of experience building enterprise-class diagramming and automation tools. We can help with:
 
 - backend execution engines
 - custom integrations
 - enterprise-grade customization and scaling
 - accelerating time-to-market with proven architecture patterns
 
-Learn more about Enterprise Edition and consulting at [workflowbuilder.io](https://www.workflowbuilder.io/).
+[Talk to the team →](https://workflowbuilder.io/consulting/)
