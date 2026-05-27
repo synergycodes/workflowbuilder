@@ -4,7 +4,7 @@ import type {
   WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
 
-import { NodeExecutionError } from './errors';
+import { extractDeepestError } from './errors';
 import type { ExecutionContext } from './execution-context';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
@@ -190,8 +190,7 @@ async function runNode<TNode extends BaseNode>(
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
   } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    const code = error instanceof NodeExecutionError ? error.code : undefined;
+    const { message, code } = extractDeepestError(error);
     const errorPayload = code === undefined ? { message } : { message, code };
     await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
     return { node, message, code, failed: true };

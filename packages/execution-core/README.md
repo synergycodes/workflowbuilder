@@ -133,6 +133,22 @@ const node: MyNode = {
 
 If a node with `'route'` policy fails but has no outgoing edge tagged `'error'`, the run completes cleanly — the failure is recorded as `node_failed` and nothing else fires. That makes `'route'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
 
+## Template references
+
+`resolveTemplate(template, context)` (in `src/templates/`) interpolates `{{namespace.path}}` references against the live `ExecutionContext`. Three forms are supported - **strict by default**, with two opt-in modifiers for missing values:
+
+| Form                                    | Behavior when the path resolves to `undefined` |
+| --------------------------------------- | ---------------------------------------------- |
+| `{{nodes.x.response}}`                  | throws `Unresolved template reference`         |
+| `{{nodes.x.response?}}`                 | substitutes `''`                               |
+| `{{nodes.x.response \| default:'tbd'}}` | substitutes the literal default                |
+
+A modifier triggers **only when the resolved value is strictly `undefined`** - the namespace, node, or one of the dot-path segments does not exist on the live context. `null`, `''`, and `0` count as real values and pass through unchanged. The default literal is single-quoted and cannot contain a single quote; use `?` when you need an empty fallback.
+
+The strict default is deliberate: a typo in a prompt template should fail the run, not silently leak a broken token into an LLM. The opt-in modifiers exist for fields where the absence of a value is a legitimate runtime state (an optional trigger field, an output that only exists on one branch of a decision).
+
+Authors typing references in the workflow builder UI: see the [variable picker guide](https://www.workflowbuilder.io/docs/guides/use-variable-picker/).
+
 ## Adding a new workflow engine
 
 1. Implement `WorkflowEnginePort<TNode>` (`submit`, `cancel`).
