@@ -43,8 +43,8 @@ export const DecisionNodeTemplate = memo(
   }: Props) => {
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const handleTargetId = getHandleId({ nodeId: id, handleType: 'target' });
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleTargetId = getHandleId({ handleType: 'target' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
 

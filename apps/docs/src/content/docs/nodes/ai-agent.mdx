@@ -69,7 +69,7 @@ Controls whether the agent retains context across invocations within the same wo
 
 A free-text field for the system prompt that defines the agent's behavior, persona, and constraints. This is passed directly to the model at runtime.
 
-This field supports referencing data from earlier nodes — see [Use Variable Picker](/guides/use-variable-picker/).
+This field supports referencing data from earlier nodes — see [Use Variable Picker](/guides/use-variable-picker/). A plain `{{…}}` reference fails the run if the path is missing; use `{{x.y?}}` or `{{x.y | default:'…'}}` for fields that may legitimately be absent — see [Missing values](/guides/use-variable-picker/#missing-values).
 
 ## Properties
 

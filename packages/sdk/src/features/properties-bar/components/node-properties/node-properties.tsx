@@ -5,6 +5,7 @@ import { isDeepEqual } from 'remeda';
 
 import { StatusType } from '../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
+import type { BaseNodeProperties } from '../../../../node/node-schema';
 import { getStoreEdges, setStoreEdges } from '../../../../store/slices/diagram-slice/actions';
 import { useStore } from '../../../../store/store';
 import { filterOutEdgesBySourceHandles } from '../../../../utils/edges/filter-out-edges-by-source-handles';
@@ -17,16 +18,18 @@ import { JSONForm } from '../../../json-form/json-form';
  * clean up any edges that were connected to those handles.
  * This is done here centrally so it counts as a single undo step together with the data update.
  */
-function removeEdgesForDeletedHandles(oldProperties: unknown, newProperties: unknown) {
+function removeEdgesForDeletedHandles(nodeId: string, oldProperties: unknown, newProperties: unknown) {
   const oldHandles = new Set(collectSourceHandles(oldProperties));
   const newHandles = new Set(collectSourceHandles(newProperties));
   const removedHandles = [...oldHandles].filter((h) => !newHandles.has(h));
 
-  if (removedHandles.length > 0) {
-    const edges = getStoreEdges();
-    const updatedEdges = filterOutEdgesBySourceHandles(edges, removedHandles);
-    setStoreEdges(updatedEdges);
+  if (removedHandles.length === 0) {
+    return;
   }
+
+  const edges = getStoreEdges();
+  const updatedEdges = filterOutEdgesBySourceHandles(edges, nodeId, removedHandles);
+  setStoreEdges(updatedEdges);
 }
 
 function collectSourceHandles(object: unknown): string[] {
@@ -74,14 +77,20 @@ export const NodeProperties = memo(({ node }: Props) => {
 
   const { schema, uischema } = nodeDefinition;
   const onChange: JsonFormsReactProps['onChange'] = ({ data, errors }) => {
-    const flattenErrors = flatErrors(errors);
-
-    if (!isDeepEqual({ ...data, errors: flattenErrors }, properties)) {
-      trackFutureChange('dataUpdate');
-      setNodeProperties(id, { ...data, errors: flattenErrors });
-
-      removeEdgesForDeletedHandles(properties, data);
+    // JsonForms also fires onChange when its `data` prop changes externally
+    // (e.g. after undo) — not only on user edits. Ignore the derived `errors`
+    // field when checking for a real edit; otherwise we'd push a phantom
+    // snapshot that breaks undo/redo.
+    const { errors: _newErrors, ...dataWithoutErrors } = (data ?? {}) as BaseNodeProperties;
+    const { errors: _previousErrors, ...propertiesWithoutErrors } = properties;
+    if (isDeepEqual(dataWithoutErrors, propertiesWithoutErrors)) {
+      return;
     }
+
+    const flattenErrors = flatErrors(errors);
+    trackFutureChange('dataUpdate');
+    setNodeProperties(id, { ...data, errors: flattenErrors });
+    removeEdgesForDeletedHandles(id, properties, data);
   };
 
   return (

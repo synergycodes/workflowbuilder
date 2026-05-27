@@ -43,7 +43,7 @@ Each condition within a branch follows the same structure as the [Conditional no
 | Y                   | Text     | Right-hand value of the comparison              |
 | Logical Operator    | Dropdown | AND / OR - how to chain with the next condition |
 
-X and Y support referencing data from earlier nodes and the trigger payload — see [Use Variable Picker](/guides/use-variable-picker/).
+X and Y support referencing data from earlier nodes and the trigger payload — see [Use Variable Picker](/guides/use-variable-picker/). A plain `{{…}}` reference fails the run if the path is missing; use `{{x.y?}}` or `{{x.y | default:'…'}}` for branches that need to fire on an absent value — see [Missing values](/guides/use-variable-picker/#missing-values).
 
 ## Properties
 

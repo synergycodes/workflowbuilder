@@ -371,6 +371,106 @@ describe('runGraph — topological scheduling', () => {
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({ error: { message: 'boom' } });
   });
+
+  it('wrapped error (Error.cause chain) — surfaces the root cause, not the wrapper', async () => {
+    // Pin: the Temporal adapter (and any other middleware that wraps activity
+    // throws) presents the runner with an outer Error whose `.message` is a
+    // generic wrapper ("Activity task failed") and the actual reason in
+    // `.cause`. Returning the wrapper message hides every real failure
+    // ("Malformed template reference: …", LLM rate-limited, DB timeout)
+    // behind the same opaque string. The runner must walk the chain.
+    const wrapped = new Error('Activity task failed', {
+      cause: new Error('Malformed template reference: {{nodes.foo?bar}}'),
+    });
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode(node) {
+        if (node.id === 'B') throw wrapped;
+        return { output: `out-${node.id}` };
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
+    expect(nodeFailed?.payload).toEqual({
+      error: { message: 'Malformed template reference: {{nodes.foo?bar}}' },
+    });
+    expect(events.statuses.at(-1)?.errorMessage).toBe('Malformed template reference: {{nodes.foo?bar}}');
+  });
+
+  it('deeply nested Error.cause chain — walks to the deepest cause', async () => {
+    // Two levels of wrapping (e.g. Temporal ActivityFailure → ApplicationFailure
+    // → original Error). Walk should not stop at the first hop.
+    const inner = new Error('rate limit exceeded');
+    const middle = new Error('LLM call failed', { cause: inner });
+    const outer = new Error('Activity task failed', { cause: middle });
+
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode() {
+        throw outer;
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed');
+    expect(nodeFailed?.payload).toEqual({ error: { message: 'rate limit exceeded' } });
+  });
+
+  it('cyclic Error.cause chain — terminates instead of hanging', async () => {
+    // The chain walker must not trust adapter code to produce acyclic causes.
+    // A middleware that re-throws with `cause: originalError` while the
+    // original already references the wrapper produces a cycle, and an
+    // unbounded `while (current.cause) current = current.cause` would spin
+    // forever — fatal inside the Temporal sandbox, where it would also
+    // hang every replay. A bounded walk (depth cap) keeps the runner
+    // responsive even under buggy adapter wiring.
+    const outer = new Error('Activity task failed') as Error & { cause?: unknown };
+    const inner = new Error('inner cause') as Error & { cause?: unknown };
+    outer.cause = inner;
+    inner.cause = outer;
+
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode() {
+        throw outer;
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed');
+    expect(nodeFailed).toBeDefined();
+    // The exact message after a cycle is implementation-defined (whichever
+    // node we were on when the cap tripped). What matters: the run terminates
+    // and emits `node_failed` with one of the two messages in the cycle.
+    const message = (nodeFailed?.payload as { error: { message: string } }).error.message;
+    expect(['Activity task failed', 'inner cause']).toContain(message);
+  }, 2000);
+
+  it('NodeExecutionError code survives wrapping in a generic Error', async () => {
+    // If the original throw was a structured NodeExecutionError but a wrapper
+    // re-throws as plain Error with `cause`, the code should still surface so
+    // downstream consumers can branch on it.
+    const original = new NodeExecutionError('rate_limited', 'slow down, partner');
+    const wrapped = new Error('Activity task failed', { cause: original });
+
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode() {
+        throw wrapped;
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed');
+    expect(nodeFailed?.payload).toEqual({
+      error: { message: 'slow down, partner', code: 'rate_limited' },
+    });
+  });
 });
 
 // `runGraph` is re-exported from `./workflow`, which is the sandbox-safe entry

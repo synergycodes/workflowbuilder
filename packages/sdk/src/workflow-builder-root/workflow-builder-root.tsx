@@ -47,7 +47,7 @@ import type {
 export function WorkflowBuilderRoot({
   nodeTypes,
   nodeTemplates,
-  templates,
+  diagramTemplates,
   plugins,
   jsonForm,
   integration,
@@ -110,7 +110,7 @@ export function WorkflowBuilderRoot({
   //     literal in the parent's render) → identity flap every render.
   //     Today all consumers pass stable top-level arrays.
   setCustomPaletteNodes(nodeTypes ?? null);
-  setCustomTemplates(templates ?? null);
+  setCustomTemplates(diagramTemplates ?? null);
   setCustomNodeTemplates(nodeTemplates ?? null);
 
   const { strategy, endpoints, onDataSave } = resolveIntegration(integration);

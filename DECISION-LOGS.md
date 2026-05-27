@@ -15,3 +15,4 @@
 - _05.05.2026_: [Extract AI Studio from `apps/demo` into its own `apps/ai-studio` app](./apps/ai-studio/ai-studio-extraction.decision-log.md)
 - _05.05.2026_: [Workspace layout — relocate libraries to `packages/`](./packages/sdk/workspace-layout.decision-log.md)
 - _06.05.2026_: [Make execution-core generic over the consumer's node union](./packages/execution-core/generic-execution-core.decision-log.md)
+- _15.05.2026_: [AuthPort seam for backend authn/authz](./apps/backend/auth-port.decision-log.md)
