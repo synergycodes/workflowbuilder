@@ -4,14 +4,16 @@ import { streamSSE } from 'hono/streaming';
 
 import type { AssertAuthorized, AuthVariables } from '../auth';
 import { database } from '../db/client';
-import { executionEvents, executions } from '../db/schema';
+import { executions } from '../db/schema';
 import { getWorkflowEngine } from '../engine';
+import { drainEventsSince } from '../events/drain-events';
 import { subscribe } from '../events/execution-event-bus';
+import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events-after';
+import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
-const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
 export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<{ Variables: AuthVariables }> {
@@ -56,14 +58,10 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     }
 
     return streamSSE(c, async (stream) => {
-      // Send catch-up snapshot so clients that connected late get full history
-      const existingEvents = await database
-        .select()
-        .from(executionEvents)
-        .where(eq(executionEvents.executionId, executionId))
-        .orderBy(executionEvents.sequence);
-
-      let lastSequence = existingEvents.length > 0 ? Number(existingEvents.at(-1)!.sequence) : 0;
+      // Catch-up snapshot. Reuses the same incremental query (afterSequence=0)
+      // that powers live drains — one query shape across the route, not two.
+      const existingEvents = await fetchEventsAfter(executionId, 0);
+      const lastSequence = existingEvents.length > 0 ? Number(existingEvents.at(-1)!.sequence) : 0;
 
       await stream.writeSSE({
         data: JSON.stringify({
@@ -79,38 +77,33 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
         return;
       }
 
-      let done = false;
+      const writeEvent = async (event: ExecutionEventRow) => {
+        await stream.writeSSE({ data: JSON.stringify(formatEvent(event)) });
+      };
 
-      const unsubscribe = await subscribe(executionId, async () => {
-        if (done) return;
-
-        const newEvents = await database
-          .select()
-          .from(executionEvents)
-          .where(eq(executionEvents.executionId, executionId))
-          .orderBy(executionEvents.sequence);
-
-        const unsent = newEvents.filter((event) => Number(event.sequence) > lastSequence);
-
-        for (const event of unsent) {
-          try {
-            await stream.writeSSE({ data: JSON.stringify(formatEvent(event)) });
-            lastSequence = Number(event.sequence);
-          } catch {
-            done = true;
-            return;
-          }
+      const drainer = createSerializedDrainer(lastSequence, async (cursor) => {
+        const result = await drainEventsSince(executionId, cursor, fetchEventsAfter, writeEvent);
+        if (result.writeFailed) {
+          logger.debug('SSE write failed, ending stream (client likely disconnected)', { executionId });
         }
-
-        const lastType = unsent.at(-1)?.type;
-        if (lastType && TERMINAL_EVENT_TYPES.has(lastType)) {
-          done = true;
-        }
+        return result;
       });
+
+      const unsubscribe = await subscribe(executionId, () => {
+        void drainer.notify();
+      });
+
+      // Catch-up drain. An event inserted between the snapshot read above and
+      // this subscribe fires its NOTIFY before any listener exists, so the
+      // signal is lost. Without this pass a terminal event landing in that
+      // window would never reach the client and the stream would hang in
+      // "running" forever. Draining from the snapshot cursor replays anything
+      // missed; a live execution with nothing new simply no-ops.
+      void drainer.notify();
 
       // Heartbeat keepalive — prevents proxies from closing idle SSE connections
       const heartbeat = setInterval(async () => {
-        if (done) {
+        if (drainer.done) {
           clearInterval(heartbeat);
           return;
         }
@@ -118,23 +111,23 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
           await stream.writeSSE({ data: '', event: 'heartbeat' });
         } catch {
           clearInterval(heartbeat);
-          done = true;
+          drainer.stop();
         }
       }, 15_000);
 
       const cleanup = () => {
-        done = true;
+        drainer.stop();
         unsubscribe();
         clearInterval(heartbeat);
       };
 
       stream.onAbort(cleanup);
 
-      // Hold connection open until done
+      // Hold connection open until the drainer is done
       await new Promise<void>((resolve) => {
         stream.onAbort(() => resolve());
         const check = setInterval(() => {
-          if (done) {
+          if (drainer.done) {
             clearInterval(check);
             cleanup();
             resolve();
@@ -173,7 +166,7 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
   return routes;
 }
 
-function formatEvent(event: typeof executionEvents.$inferSelect) {
+function formatEvent(event: ExecutionEventRow) {
   return {
     executionId: event.executionId,
     sequence: event.sequence,
