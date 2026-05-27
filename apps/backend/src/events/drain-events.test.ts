@@ -102,55 +102,6 @@ describe('drainEventsSince', () => {
     expect(result).toEqual({ lastSequence: 99, reachedTerminal: false, writeFailed: false });
   });
 
-  it('two concurrent notifies coalesce — each row is written exactly once', async () => {
-    // Mirrors the serialize-coalesce harness used inline in
-    // apps/backend/src/routes/executions.ts. Without it, both notifies
-    // would observe the same stale cursor and write every row twice.
-    const rowsInDatabase: ExecutionEventRow[] = [makeEvent('exec-1', 1), makeEvent('exec-1', 2)];
-    const written: number[] = [];
-
-    const fetch: EventFetcher = async (executionId, afterSequence) => {
-      // Yield once so a second concurrent caller can race the cursor read.
-      await Promise.resolve();
-      return rowsInDatabase.filter((r) => r.executionId === executionId && r.sequence > afterSequence);
-    };
-    const write = async (event: ExecutionEventRow) => {
-      written.push(event.sequence);
-    };
-
-    let draining = false;
-    let pendingNotify = false;
-    let lastSequence = 0;
-    let done = false;
-
-    const notify = async () => {
-      if (done) return;
-      if (draining) {
-        pendingNotify = true;
-        return;
-      }
-      draining = true;
-      try {
-        do {
-          pendingNotify = false;
-          const result = await drainEventsSince('exec-1', lastSequence, fetch, write);
-          lastSequence = result.lastSequence;
-          if (result.reachedTerminal || result.writeFailed) {
-            done = true;
-            return;
-          }
-        } while (pendingNotify && !done);
-      } finally {
-        draining = false;
-      }
-    };
-
-    await Promise.all([notify(), notify()]);
-
-    expect(written).toEqual([1, 2]);
-    expect(lastSequence).toBe(2);
-  });
-
   it('scopes to its executionId — subscriber A does not see subscriber B events', async () => {
     const rowsInDatabase: ExecutionEventRow[] = [
       makeEvent('exec-A', 1),

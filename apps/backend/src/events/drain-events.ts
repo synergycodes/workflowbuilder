@@ -5,9 +5,13 @@ type EventWriter = (event: ExecutionEventRow) => Promise<void>;
 
 const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
 
-type DrainResult = {
+export type DrainResult = {
   lastSequence: number;
   reachedTerminal: boolean;
+  // The write callback threw. For the SSE route this is the client
+  // disconnecting mid-stream, not data corruption; callers decide how to
+  // interpret it. Either way the drain stops with the cursor pinned at the
+  // last successful write.
   writeFailed: boolean;
 };
 
