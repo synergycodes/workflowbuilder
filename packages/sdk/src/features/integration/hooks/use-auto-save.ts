@@ -12,50 +12,31 @@ const AUTO_SAVE_DELAY_IN_MS = 400;
 
 export function useAutoSave() {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const lastChangeName = useChangesTrackerStore((store) => store.lastChangeName);
+  const lastChangeTimestamp = useChangesTrackerStore((store) => store.lastChangeTimestamp);
+  const lastSaveAttemptTimestamp = useIntegrationStore((state) => state.lastSaveAttemptTimestamp);
+
   const { onSave } = useContext(IntegrationContext);
-  const onSaveRef = useRef(onSave);
-  onSaveRef.current = onSave;
 
   useEffect(() => {
-    function cancelPendingAutoSave() {
-      if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current);
-        timeoutRef.current = null;
-      }
+    // For example nodeDragStart
+    const shouldSkipAutoSave = SKIP_AUTO_SAVE_CHECK_FOR_EVENTS.includes(lastChangeName);
+
+    if (shouldSkipAutoSave) {
+      return;
     }
 
-    // Subscribe imperatively rather than with a reactive selector so the host
-    // (the Save button) does not re-render on every tracked change. During a
-    // node drag `trackFutureChange('nodeDragChange')` fires once per frame; a
-    // reactive subscription re-rendered the button on every tick (WB-221).
-    const unsubscribeChanges = useChangesTrackerStore.subscribe((state) => {
-      // For example nodeDragStart / nodeDragChange.
-      if (SKIP_AUTO_SAVE_CHECK_FOR_EVENTS.includes(state.lastChangeName)) {
-        return;
-      }
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
 
-      cancelPendingAutoSave();
+    const differenceInSeconds = (lastChangeTimestamp - lastSaveAttemptTimestamp) / 1000;
 
-      const { lastSaveAttemptTimestamp } = useIntegrationStore.getState();
-      const differenceInSeconds = (state.lastChangeTimestamp - lastSaveAttemptTimestamp) / 1000;
+    const isDifferenceLongEnough = AUTO_SAVE_IF_CHANGED_OVER_X_SECONDS_AGO < differenceInSeconds;
 
-      if (AUTO_SAVE_IF_CHANGED_OVER_X_SECONDS_AGO < differenceInSeconds) {
-        timeoutRef.current = setTimeout(() => onSaveRef.current({ isAutoSave: true }), AUTO_SAVE_DELAY_IN_MS);
-      }
-    });
-
-    // A save (manual or auto) bumps lastSaveAttemptTimestamp; drop any pending
-    // autosave so we don't fire a redundant one right after it.
-    const unsubscribeSave = useIntegrationStore.subscribe((state, previousState) => {
-      if (state.lastSaveAttemptTimestamp !== previousState.lastSaveAttemptTimestamp) {
-        cancelPendingAutoSave();
-      }
-    });
-
-    return () => {
-      unsubscribeChanges();
-      unsubscribeSave();
-      cancelPendingAutoSave();
-    };
-  }, []);
+    if (isDifferenceLongEnough) {
+      timeoutRef.current = setTimeout(() => onSave({ isAutoSave: true }), AUTO_SAVE_DELAY_IN_MS);
+    }
+  }, [lastChangeName, lastChangeTimestamp, lastSaveAttemptTimestamp, onSave]);
 }

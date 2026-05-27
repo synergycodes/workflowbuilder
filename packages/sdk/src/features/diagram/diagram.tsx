@@ -32,11 +32,6 @@ import { callNodeChangedListeners } from './listeners/node-changed-listeners';
 import { callNodeDragStartListeners } from './listeners/node-drag-start-listeners';
 import { diagramStateSelector } from './selectors';
 
-// Pan with middle (1) and right (2) mouse buttons. Module-level so the array
-// keeps a stable reference across renders — an inline literal would hand
-// ReactFlow a new prop identity on every drag-tick re-render.
-const PAN_ON_DRAG = [1, 2];
-
 /**
  * Props accepted by {@link DiagramContainer}. Use this when typing a
  * `registerComponentDecorator<DiagramContainerProps>('DiagramContainer', …)`
@@ -162,6 +157,8 @@ function DiagramContainerComponent({ edgeTypes }: DiagramContainerProps) {
     [isReadOnlyMode, openDeleteConfirmationModal],
   );
 
+  const panOnDrag = [1, 2];
+
   return (
     <div className={styles['container']}>
       <ReactFlow<WorkflowBuilderNode, WorkflowBuilderEdge>
@@ -193,7 +190,7 @@ function DiagramContainerComponent({ edgeTypes }: DiagramContainerProps) {
         snapToGrid={SNAP_IS_ACTIVE}
         snapGrid={SNAP_GRID}
         selectionOnDrag
-        panOnDrag={PAN_ON_DRAG}
+        panOnDrag={panOnDrag}
         selectionMode={SelectionMode.Partial}
         deleteKeyCode={deleteKeyCode}
       >
