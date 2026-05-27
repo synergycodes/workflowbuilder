@@ -27,7 +27,7 @@ const getHandleIdForCopyPaste: GetHandleId = (params) => {
 };
 
 function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
-  const mousePosition = useFlowMousePosition();
+  const getFlowMousePosition = useFlowMousePosition();
 
   const { setNodes, setEdges } = useReactFlow();
 
@@ -57,9 +57,9 @@ function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
 
     if (text) {
       trackFutureChange('paste');
-      paste({ mousePosition: mousePosition.flow });
+      paste({ mousePosition: getFlowMousePosition().flow });
     }
-  }, [mousePosition.flow, paste]);
+  }, [getFlowMousePosition, paste]);
 
   useCopyPasteKeyboardHandler({
     handleCut,

@@ -1,5 +1,5 @@
 import { useReactFlow, useViewport } from '@xyflow/react';
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useLayoutEffect, useRef } from 'react';
 
 import { type FlowMousePosition, type Position } from '../types';
 
@@ -87,78 +87,52 @@ type UseFlowMousePositionOptions = {
   enabled?: boolean;
 };
 
-export function useFlowMousePosition({ selector = '.react-flow', enabled = true }: UseFlowMousePositionOptions = {}) {
-  const viewport = useViewport();
+const DEFAULT_FLOW_MOUSE_POSITION: FlowMousePosition = {
+  screen: { x: 0, y: 0 },
+  diagram: { x: 0, y: 0 },
+  flow: { x: 0, y: 0 },
+  isInsideFlow: false,
+  zoom: 1,
+  pan: { x: 0, y: 0 },
+};
 
-  const { getMousePositionFromEvent, flowContainerRef } = useGetFlowMousePosition({ selector });
+export type GetFlowMousePosition = () => FlowMousePosition;
 
-  const isMounted = useRef<boolean>(false);
-  const [mousePosition, setMousePosition] = useState<FlowMousePosition>({
-    screen: { x: 0, y: 0 },
-    diagram: { x: 0, y: 0 },
-    flow: { x: 0, y: 0 },
-    isInsideFlow: false,
-    zoom: 1,
-    pan: { x: 0, y: 0 },
-  });
+export function useFlowMousePosition({
+  selector = '.react-flow',
+  enabled = true,
+}: UseFlowMousePositionOptions = {}): GetFlowMousePosition {
+  const { getMousePositionFromEvent } = useGetFlowMousePosition({ selector });
 
-  const handleMouseMove = useCallback(
-    (event: MouseEvent) => {
-      setMousePosition(getMousePositionFromEvent(event));
-    },
-    [getMousePositionFromEvent],
-  );
-
-  const handleMouseLeave = useCallback(() => {
-    setMousePosition((previous) => ({
-      ...previous,
-      isInsideFlow: false,
-    }));
-  }, []);
-
-  const handleMouseEnter = useCallback(() => {
-    setMousePosition((previous) => ({
-      ...previous,
-      isInsideFlow: true,
-    }));
-  }, []);
+  // Track the pointer in a ref, not React state. Copy/paste only needs the
+  // cursor position at paste time, so writing state on every mousemove would
+  // re-render the host (CopyPasteProvider) on every frame of a drag for
+  // nothing (WB-221).
+  const lastPointerRef = useRef<{ clientX: number; clientY: number } | null>(null);
 
   useLayoutEffect(() => {
-    if (!enabled) return;
-
-    if (flowContainerRef.current) {
-      globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
-
-      flowContainerRef.current.addEventListener('mouseenter', handleMouseEnter);
-      flowContainerRef.current.addEventListener('mouseleave', handleMouseLeave);
+    if (!enabled) {
+      return;
     }
+
+    const handleMouseMove = (event: MouseEvent) => {
+      lastPointerRef.current = { clientX: event.clientX, clientY: event.clientY };
+    };
+
+    globalThis.addEventListener('mousemove', handleMouseMove, { passive: true });
 
     return () => {
-      isMounted.current = true;
       globalThis.removeEventListener('mousemove', handleMouseMove);
-
-      if (flowContainerRef.current) {
-        flowContainerRef.current.removeEventListener('mouseenter', handleMouseEnter);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-        flowContainerRef.current.removeEventListener('mouseleave', handleMouseLeave);
-      }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [handleMouseMove, handleMouseEnter, handleMouseLeave, selector, enabled]);
+  }, [enabled]);
 
-  useEffect(() => {
-    if (!enabled) return;
-
-    if (isMounted.current && mousePosition.isInsideFlow) {
-      // Force a position update when viewport changes
-      const event = new MouseEvent('mousemove', {
-        clientX: mousePosition.screen.x,
-        clientY: mousePosition.screen.y,
-      });
-
-      handleMouseMove(event);
+  // Resolve on demand so a paste always uses the current viewport, without a
+  // per-mousemove re-render.
+  return useCallback(() => {
+    if (!lastPointerRef.current) {
+      return DEFAULT_FLOW_MOUSE_POSITION;
     }
-  }, [viewport, handleMouseMove, mousePosition.screen.x, mousePosition.screen.y, mousePosition.isInsideFlow, enabled]);
 
-  return mousePosition;
+    return getMousePositionFromEvent(lastPointerRef.current);
+  }, [getMousePositionFromEvent]);
 }
