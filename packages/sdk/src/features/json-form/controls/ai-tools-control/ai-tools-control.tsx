@@ -8,7 +8,6 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './ai-tools-control.module.css';
 
 import { FormControlWithLabel } from '../../../../components/form/form-control-with-label/form-control-with-label';
-import { getStoreSingleSelected } from '../../../../store/slices/diagram-slice/actions';
 import { closeModal } from '../../../modals/stores/use-modal-store';
 import type { AiAgentTool, AiToolsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -22,17 +21,12 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
   const handleSubmit = useCallback(
     (change: AiAgentTool) => {
       if (hasAnyValue(change)) {
-        const nodeId = getStoreSingleSelected()?.node?.id;
-        if (!nodeId) {
-          return;
-        }
-
         const dataArray = data ?? [];
         const isExisting = dataArray.some((item) => item.id === change.id);
 
         const updated = isExisting
           ? dataArray.map((item) => (item.id === change.id ? { ...item, ...change, id: item.id } : item))
-          : [...dataArray, createAiTool(nodeId, change)];
+          : [...dataArray, createAiTool(change)];
 
         handleChange(path, updated);
       }

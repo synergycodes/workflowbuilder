@@ -12,6 +12,6 @@ export function addBranchToNode(nodeId: string) {
 
   useStore.getState().setNodeProperties(nodeId, {
     ...properties,
-    decisionBranches: [...existingBranches, createDecisionBranch(nodeId)],
+    decisionBranches: [...existingBranches, createDecisionBranch()],
   });
 }

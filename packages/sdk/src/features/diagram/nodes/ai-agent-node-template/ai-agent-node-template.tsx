@@ -34,7 +34,6 @@ type Props = {
 
 export const AiAgentNodeTemplate = memo(
   ({
-    id,
     icon,
     label,
     description,
@@ -48,8 +47,8 @@ export const AiAgentNodeTemplate = memo(
     onAddTool,
   }: Props) => {
     const isCanvasNode = showHandles;
-    const handleTargetId = getHandleId({ nodeId: id, handleType: 'target' });
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleTargetId = getHandleId({ handleType: 'target' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });

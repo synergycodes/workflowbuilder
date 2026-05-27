@@ -20,7 +20,6 @@ const statusClass: Record<string, string> = {
 export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
   memo(
     ({
-      id,
       icon,
       label,
       description,
@@ -33,10 +32,10 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
       const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
       const barClassName = clsx(styles['status-bar'], statusClass[status] ?? styles['status-draft']);
 
-      const handleTargetTopId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'top' });
-      const handleTargetLeftId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'left' });
-      const handleSourceBottomId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'bottom' });
-      const handleSourceRightId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'right' });
+      const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
+      const handleTargetLeftId = getHandleId({ handleType: 'target', innerId: 'left' });
+      const handleSourceBottomId = getHandleId({ handleType: 'source', innerId: 'bottom' });
+      const handleSourceRightId = getHandleId({ handleType: 'source', innerId: 'right' });
 
       return (
         <div className={styles['wrapper']}>
