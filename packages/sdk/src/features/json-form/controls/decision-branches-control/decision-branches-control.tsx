@@ -1,7 +1,6 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { getStoreSingleSelected } from '../../../../store/slices/diagram-slice/actions';
 import { PlaceholderButton } from '../../../diagram/nodes/components/placeholder-button/placeholder-button';
 import type { DecisionBranch, DecisionBranchesControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -35,13 +34,7 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
     if (isDisabled) {
       return;
     }
-
-    const nodeId = getStoreSingleSelected()?.node?.id;
-    if (!nodeId) {
-      return;
-    }
-
-    handleChange(path, [...decisionBranches, createDecisionBranch(nodeId)]);
+    handleChange(path, [...decisionBranches, createDecisionBranch()]);
   }
 
   return (

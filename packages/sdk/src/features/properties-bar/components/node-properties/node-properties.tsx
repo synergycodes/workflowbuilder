@@ -18,16 +18,18 @@ import { JSONForm } from '../../../json-form/json-form';
  * clean up any edges that were connected to those handles.
  * This is done here centrally so it counts as a single undo step together with the data update.
  */
-function removeEdgesForDeletedHandles(oldProperties: unknown, newProperties: unknown) {
+function removeEdgesForDeletedHandles(nodeId: string, oldProperties: unknown, newProperties: unknown) {
   const oldHandles = new Set(collectSourceHandles(oldProperties));
   const newHandles = new Set(collectSourceHandles(newProperties));
   const removedHandles = [...oldHandles].filter((h) => !newHandles.has(h));
 
-  if (removedHandles.length > 0) {
-    const edges = getStoreEdges();
-    const updatedEdges = filterOutEdgesBySourceHandles(edges, removedHandles);
-    setStoreEdges(updatedEdges);
+  if (removedHandles.length === 0) {
+    return;
   }
+
+  const edges = getStoreEdges();
+  const updatedEdges = filterOutEdgesBySourceHandles(edges, nodeId, removedHandles);
+  setStoreEdges(updatedEdges);
 }
 
 function collectSourceHandles(object: unknown): string[] {
@@ -88,7 +90,7 @@ export const NodeProperties = memo(({ node }: Props) => {
     const flattenErrors = flatErrors(errors);
     trackFutureChange('dataUpdate');
     setNodeProperties(id, { ...data, errors: flattenErrors });
-    removeEdgesForDeletedHandles(properties, data);
+    removeEdgesForDeletedHandles(id, properties, data);
   };
 
   return (
