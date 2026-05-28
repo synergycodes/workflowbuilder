@@ -1,21 +1,17 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useSyncExternalStore } from 'react';
 
-const THEME_KEY = 'wb-theme';
-type Theme = 'dark' | 'light';
+import {  getTheme, setTheme, subscribeTheme } from './theme';
 
 export function useTheme() {
-  const [theme, setTheme] = useState<Theme>(() => {
-    return (localStorage.getItem(THEME_KEY) || 'light') as Theme;
-  });
-
-  useEffect(() => {
-    document.documentElement.dataset.theme = theme;
-    localStorage.setItem(THEME_KEY, theme);
-  }, [theme]);
+  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
 
   const toggleTheme = useCallback(() => {
-    setTheme((previous) => (previous === 'light' ? 'dark' : 'light'));
+    setTheme(getTheme() === 'light' ? 'dark' : 'light');
   }, []);
 
   return { theme, toggleTheme };
 }
+
+
+
+export {type Theme} from './theme';
