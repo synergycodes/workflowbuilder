@@ -7,6 +7,7 @@
     "preflight": "node tools/preflight.mjs",
     "setup:env": "node tools/setup-env.mjs",
     "dev:demo": "pnpm --filter @workflow-builder/demo dev",
+    "dev:no-app-bar": "pnpm --filter @workflow-builder/no-app-bar dev",
     "dev:ai-studio": "pnpm preflight && pnpm infra:up && pnpm infra:wait && concurrently --kill-others-on-fail -n backend,worker,ai-studio -c blue,magenta,green \"pnpm dev:backend\" \"pnpm dev:worker\" \"pnpm --filter @workflow-builder/ai-studio dev\"",
     "dev:backend": "pnpm --filter backend dev",
     "dev:worker": "pnpm --filter execution-worker dev",

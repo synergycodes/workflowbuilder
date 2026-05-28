@@ -1,0 +1,38 @@
+html,
+body,
+#root {
+  height: 100%;
+  margin: 0;
+  font-family: 'Poppins', system-ui, sans-serif;
+}
+
+.shell {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 16rem 1fr 22rem;
+  min-height: 0;
+}
+
+.body > * {
+  min-height: 0;
+  overflow: hidden;
+}
+
+.palette {
+  border-right: 1px solid var(--wb-app-bar-border-color, #e5e7eb);
+}
+
+.canvas {
+  position: relative;
+}
+
+.properties {
+  border-left: 1px solid var(--wb-app-bar-border-color, #e5e7eb);
+}
