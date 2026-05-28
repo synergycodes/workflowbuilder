@@ -140,6 +140,8 @@ export { defineNodeTemplate } from './utils/define-node-template';
 export { useEffectChange } from './hooks/use-effect-change';
 export { useFitView } from './hooks/use-fit-view';
 export { useKeyPress } from './hooks/use-key-press';
+export { useWorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
+export type { WorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
 export { useLabelEdgeHover } from './features/diagram/edges/label-edge/use-label-edge-hover';
 export { useSingleSelectedElement } from './features/properties-bar/use-single-selected-element';
 export { useChangesTrackerStore, trackFutureChange } from './features/changes-tracker/stores/use-changes-tracker-store';
