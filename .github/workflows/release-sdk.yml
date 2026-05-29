@@ -26,10 +26,14 @@ jobs:
           fetch-depth: 0 # full history so changesets can read CHANGELOG context
 
       - name: Set up Node.js
+        # No `registry-url:` here on purpose. setup-node's registry-url writes
+        # an .npmrc with `_authToken=${NODE_AUTH_TOKEN}` and exports
+        # NODE_AUTH_TOKEN as the literal sentinel `XXXXX-XXXXX-XXXXX-XXXXX`.
+        # pnpm then sends that sentinel as a bearer token and skips OIDC
+        # entirely, so the publish PUT comes back as 404.
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          registry-url: "https://registry.npmjs.org"
 
       - name: Enable Corepack
         run: npm i -g corepack@latest
