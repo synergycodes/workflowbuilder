@@ -29,11 +29,13 @@ jobs:
         # No `registry-url:` here on purpose. setup-node's registry-url writes
         # an .npmrc with `_authToken=${NODE_AUTH_TOKEN}` and exports
         # NODE_AUTH_TOKEN as the literal sentinel `XXXXX-XXXXX-XXXXX-XXXXX`.
-        # pnpm then sends that sentinel as a bearer token and skips OIDC
-        # entirely, so the publish PUT comes back as 404.
+        # npm/pnpm then send that sentinel as a bearer token and skip OIDC
+        # entirely, so the publish PUT comes back as 404. Node 24 ships npm
+        # 11.x which performs the Trusted Publisher OIDC exchange natively
+        # when no token is configured.
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Enable Corepack
         run: npm i -g corepack@latest
@@ -89,6 +91,10 @@ jobs:
         # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
         # Requires the package to have GitHub Actions trusted publishing
         # configured on npmjs.com pointing at this workflow file.
+        # Uses `pnpm publish` (never plain `npm publish`) so that pnpm-only
+        # protocols in packages/sdk/package.json — `catalog:` for shared
+        # versions, `workspace:*` for sibling packages — are resolved into
+        # real version specifiers before the tarball is produced.
         if: steps.check-version.outputs.already_published == 'false'
         run: pnpm --filter @workflowbuilder/sdk publish --no-git-checks --access public --provenance
 
