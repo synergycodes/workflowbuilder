@@ -1,5 +1,5 @@
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
-import { Handle, Position } from '@xyflow/react';
+import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
 import { Icon } from '@workflow-builder/icons';
@@ -12,6 +12,7 @@ import type { DecisionBranch } from '../../../json-form/types/controls';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 import { BranchesContainer } from './components/branches-container';
 
 type Props = {
@@ -43,14 +44,15 @@ export const DecisionNodeTemplate = memo(
   }: Props) => {
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const handleTargetId = getHandleId({ nodeId: id, handleType: 'target' });
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleTargetId = getHandleId({ handleType: 'target' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
+    const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
     const isCanvasNode = showHandles;
 
-    const handlesAlignment = layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <NodePanel.Root selected={selected} className={styles['decision-node']}>
@@ -70,7 +72,7 @@ export const DecisionNodeTemplate = memo(
         </NodePanel.Content>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
-          <Handle id={handleSourceId} position={Position.Right} type="source" />
+          <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
         </NodePanel.Handles>
       </NodePanel.Root>
     );

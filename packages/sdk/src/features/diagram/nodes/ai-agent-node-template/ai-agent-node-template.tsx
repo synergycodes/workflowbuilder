@@ -12,6 +12,7 @@ import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 import { ConnectableItem } from '../components/connectable-item/connectable-item';
 import { SettingInfo } from './components/setting-info/setting-info';
 import { ToolInfo } from './components/tool-info/tool-info';
@@ -34,7 +35,6 @@ type Props = {
 
 export const AiAgentNodeTemplate = memo(
   ({
-    id,
     icon,
     label,
     description,
@@ -48,15 +48,15 @@ export const AiAgentNodeTemplate = memo(
     onAddTool,
   }: Props) => {
     const isCanvasNode = showHandles;
-    const handleTargetId = getHandleId({ nodeId: id, handleType: 'target' });
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleTargetId = getHandleId({ handleType: 'target' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const handlesAlignment = layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <Collapsible>

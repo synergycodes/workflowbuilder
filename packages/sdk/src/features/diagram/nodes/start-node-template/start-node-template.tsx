@@ -12,6 +12,7 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
+import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 
 type StartNodeTemplateProps = {
   id: string;
@@ -41,15 +42,13 @@ const StartNodeTemplateComponent = memo(
   }: StartNodeTemplateProps) => {
     const isCanvasNode = showHandles;
 
-    const handleSourceId = getHandleId({ nodeId: id, handleType: 'source' });
+    const handleSourceId = getHandleId({ handleType: 'source' });
 
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const hasContent = !!children;
-
-    const handlesAlignment = hasContent && layoutDirection === 'RIGHT' ? 'header' : 'center';
+    const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
       <Collapsible>
@@ -57,7 +56,7 @@ const StartNodeTemplateComponent = memo(
           <NodePanel.Header>
             <NodeIcon icon={iconElement} />
             <NodeDescription label={label} description={description} />
-            {hasContent && <Collapsible.Button />}
+            {!!children && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
             <OptionalNodeContent nodeId={id}>
