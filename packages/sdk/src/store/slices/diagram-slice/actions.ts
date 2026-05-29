@@ -1,4 +1,8 @@
 // About actions: apps/demo/src/app/store/README.md
+import {
+  migrateLegacyHandleIdsOnEdges,
+  migrateLegacyHandleIdsOnNodes,
+} from '../../../features/diagram/handles/migrate-legacy-handle-id';
 import { selectSingleSelectedElement } from '../../../features/properties-bar/use-single-selected-element';
 import type { VariableDefinition } from '../../../features/variables/types';
 import type { LayoutDirection } from '../../../node/common';
@@ -106,8 +110,8 @@ export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFor
   useStore.setState((state) => ({
     documentName: loadData.name ?? state.documentName,
     globalVariables: loadData.globalVariables || state.globalVariables,
-    nodes: (loadData.nodes ?? state.nodes).map(getNodeWithErrors),
-    edges: loadData.edges ?? state.edges,
+    nodes: (loadData.nodes ? migrateLegacyHandleIdsOnNodes(loadData.nodes) : state.nodes).map(getNodeWithErrors),
+    edges: loadData.edges ? migrateLegacyHandleIdsOnEdges(loadData.edges) : state.edges,
     layoutDirection: loadData.layoutDirection ?? state.layoutDirection,
   }));
 }
