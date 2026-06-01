@@ -49,7 +49,7 @@ export function Toolbar() {
         <button type="button" onClick={actions.toggleDarkMode}>
           Theme
         </button>
-        <button type="button" onClick={actions.toggleLayoutDirection}>
+        <button type="button" onClick={() => actions.toggleLayoutDirection({ flipPositions: true, fitView: true })}>
           Flip layout
         </button>
       </div>

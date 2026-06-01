@@ -23,7 +23,7 @@ function MyToolbar() {
       <button onClick={actions.openSettings}>Settings</button>
       <button onClick={actions.toggleReadOnly}>Toggle read-only</button>
       <button onClick={actions.toggleDarkMode}>Toggle theme</button>
-      <button onClick={actions.toggleLayoutDirection}>Flip layout</button>
+      <button onClick={() => actions.toggleLayoutDirection({ flipPositions: true, fitView: true })}>Flip layout</button>
     </header>
   );
 }
@@ -48,18 +48,27 @@ export function App() {
 
 ## Action reference
 
-| Action                  | Signature                                | What it does                                                                                                                |
-| ----------------------- | ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
-| `save`                  | `() => Promise<DidSaveStatus>`           | Triggers a manual save through the active [`integration` strategy](/guides/configuring-the-editor/#integration-strategies). |
-| `openSettings`          | `() => void`                             | Opens the built-in workflow settings modal (general settings, global variables).                                            |
-| `openImport`            | `() => void`                             | Opens the import-diagram modal.                                                                                             |
-| `openExport`            | `() => void`                             | Opens the export-diagram modal.                                                                                             |
-| `toggleReadOnly`        | `() => void`                             | Flips read-only mode.                                                                                                       |
-| `setReadOnly`           | `(value: boolean) => void`               | Sets read-only mode explicitly.                                                                                             |
-| `toggleDarkMode`        | `() => void`                             | Flips the editor theme between `'light'` and `'dark'`.                                                                      |
-| `setTheme`              | `(theme: 'light' \| 'dark') => void`     | Sets the editor theme explicitly.                                                                                           |
-| `setLayoutDirection`    | `(direction: 'RIGHT' \| 'DOWN') => void` | Sets the diagram layout direction.                                                                                          |
-| `toggleLayoutDirection` | `() => void`                             | Flips `'RIGHT'` ↔ `'DOWN'`.                                                                                                 |
+| Action                  | Signature                                                               | What it does                                                                                                                |
+| ----------------------- | ----------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `save`                  | `() => Promise<DidSaveStatus>`                                          | Triggers a manual save through the active [`integration` strategy](/guides/configuring-the-editor/#integration-strategies). |
+| `openSettings`          | `() => void`                                                            | Opens the built-in workflow settings modal (general settings, global variables).                                            |
+| `openImport`            | `() => void`                                                            | Opens the import-diagram modal.                                                                                             |
+| `openExport`            | `() => void`                                                            | Opens the export-diagram modal.                                                                                             |
+| `toggleReadOnly`        | `() => void`                                                            | Flips read-only mode.                                                                                                       |
+| `setReadOnly`           | `(value: boolean) => void`                                              | Sets read-only mode explicitly.                                                                                             |
+| `toggleDarkMode`        | `() => void`                                                            | Flips the editor theme between `'light'` and `'dark'`.                                                                      |
+| `setTheme`              | `(theme: 'light' \| 'dark') => void`                                    | Sets the editor theme explicitly.                                                                                           |
+| `setLayoutDirection`    | `(direction: 'RIGHT' \| 'DOWN', options?: LayoutChangeOptions) => void` | Sets the diagram layout direction.                                                                                          |
+| `toggleLayoutDirection` | `(options?: LayoutChangeOptions) => void`                               | Flips `'RIGHT'` ↔ `'DOWN'`.                                                                                                 |
+
+Both layout actions accept an optional `LayoutChangeOptions`:
+
+| Field           | Type      | Default | What it does                                                                                                   |
+| --------------- | --------- | ------- | -------------------------------------------------------------------------------------------------------------- |
+| `flipPositions` | `boolean` | `false` | Also reflow node positions (swaps each node's `x`/`y`) so the diagram visually re-lays-out along the new axis. |
+| `fitView`       | `boolean` | `false` | Animate the view to fit all nodes after the change.                                                            |
+
+Without `flipPositions`, a direction change only re-orients handles and re-routes edges — node coordinates stay put.
 
 ## Renaming the workflow
 

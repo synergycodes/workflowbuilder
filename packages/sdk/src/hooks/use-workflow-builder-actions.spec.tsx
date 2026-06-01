@@ -55,7 +55,7 @@ describe('useWorkflowBuilderActions', () => {
     vi.clearAllMocks();
     localStorage.clear();
     delete document.documentElement.dataset.theme;
-    useStore.setState({ isReadOnlyMode: false, layoutDirection: 'RIGHT' });
+    useStore.setState({ isReadOnlyMode: false, layoutDirection: 'RIGHT', nodes: [], reactFlowInstance: undefined });
   });
 
   afterEach(() => {
@@ -171,6 +171,57 @@ describe('useWorkflowBuilderActions', () => {
 
       actions.current!.toggleLayoutDirection();
       expect(useStore.getState().layoutDirection).toBe('RIGHT');
+    });
+
+    it('leaves node positions untouched by default', () => {
+      useStore.setState({ nodes: [{ id: 'n1', position: { x: 10, y: 20 } }] as never });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.toggleLayoutDirection();
+
+      expect(useStore.getState().nodes[0].position).toEqual({ x: 10, y: 20 });
+    });
+
+    it('swaps every node x/y when flipPositions is set', () => {
+      useStore.setState({
+        nodes: [
+          { id: 'n1', position: { x: 10, y: 20 } },
+          { id: 'n2', position: { x: 30, y: 40 } },
+        ] as never,
+      });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.toggleLayoutDirection({ flipPositions: true });
+
+      expect(useStore.getState().nodes.map((n) => n.position)).toEqual([
+        { x: 20, y: 10 },
+        { x: 40, y: 30 },
+      ]);
+    });
+
+    it('setLayoutDirection swaps positions when flipPositions is set', () => {
+      useStore.setState({ nodes: [{ id: 'n1', position: { x: 1, y: 2 } }] as never });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.setLayoutDirection('DOWN', { flipPositions: true });
+
+      expect(useStore.getState().layoutDirection).toBe('DOWN');
+      expect(useStore.getState().nodes[0].position).toEqual({ x: 2, y: 1 });
+    });
+
+    it('fits the view when fitView is set', () => {
+      const fitView = vi.fn();
+      useStore.setState({ reactFlowInstance: { getZoom: () => 1, fitView } as never });
+      const rafSpy = vi.spyOn(globalThis, 'requestAnimationFrame').mockImplementation((callback) => {
+        callback(0);
+        return 0;
+      });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.toggleLayoutDirection({ fitView: true });
+
+      expect(fitView).toHaveBeenCalledTimes(1);
+      rafSpy.mockRestore();
     });
   });
 

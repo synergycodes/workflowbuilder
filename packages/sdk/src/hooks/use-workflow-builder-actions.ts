@@ -8,6 +8,24 @@ import type { LayoutDirection } from '../node/common';
 import { useStore } from '../store/store';
 import type { DidSaveStatus } from '../types/integration';
 import { type Theme, getTheme, setTheme } from './theme';
+import { useFitView } from './use-fit-view';
+
+/**
+ * Optional behavior for a layout-direction change.
+ *
+ * @category Hooks
+ */
+export type LayoutChangeOptions = {
+  /**
+   * Also reflow node positions by swapping each node's `x`/`y`, so the
+   * diagram visually re-lays-out along the new direction. Defaults to
+   * `false` — the direction change alone only re-orients handles and
+   * re-routes edges, leaving node coordinates untouched.
+   */
+  flipPositions?: boolean;
+  /** Animate the view to fit all nodes after the change. Defaults to `false`. */
+  fitView?: boolean;
+};
 
 /**
  * Imperative action surface for every command the built-in app bar
@@ -36,10 +54,18 @@ export type WorkflowBuilderActions = {
   toggleDarkMode: () => void;
   /** Set the editor theme explicitly. */
   setTheme: (theme: Theme) => void;
-  /** Set the diagram layout direction (`'RIGHT'` ↔ `'DOWN'`). */
-  setLayoutDirection: (direction: LayoutDirection) => void;
-  /** Flip the diagram layout direction. */
-  toggleLayoutDirection: () => void;
+  /**
+   * Set the diagram layout direction (`'RIGHT'` ↔ `'DOWN'`). Pass
+   * `options.flipPositions` to also reflow node coordinates and/or
+   * `options.fitView` to re-fit the view afterwards.
+   */
+  setLayoutDirection: (direction: LayoutDirection, options?: LayoutChangeOptions) => void;
+  /**
+   * Flip the diagram layout direction. Pass `options.flipPositions` to also
+   * reflow node coordinates and/or `options.fitView` to re-fit the view
+   * afterwards.
+   */
+  toggleLayoutDirection: (options?: LayoutChangeOptions) => void;
 };
 
 /**
@@ -69,9 +95,29 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
   const { onSave } = useContext(IntegrationContext);
   const setToggleReadOnlyMode = useStore((s) => s.setToggleReadOnlyMode);
   const setStoreLayoutDirection = useStore((s) => s.setLayoutDirection);
+  const fitView = useFitView();
 
-  return useMemo<WorkflowBuilderActions>(
-    () => ({
+  return useMemo<WorkflowBuilderActions>(() => {
+    // Apply a direction change plus its optional side effects. Position
+    // flipping is a naive x/y swap — enough to read as a real layout reflow
+    // for orthogonal directions; positions are written directly (no schema
+    // re-validation, since coordinates can't affect node errors).
+    const applyLayoutChange = (
+      direction: LayoutDirection,
+      { flipPositions, fitView: doFitView }: LayoutChangeOptions = {},
+    ) => {
+      setStoreLayoutDirection(direction);
+
+      if (flipPositions) {
+        useStore.setState((state) => ({
+          nodes: state.nodes.map((node) => ({ ...node, position: { x: node.position.y, y: node.position.x } })),
+        }));
+      }
+
+      if (doFitView) fitView();
+    };
+
+    return {
       save: () => onSave({ isAutoSave: false }),
 
       openSettings: openModalWorkflowSettings,
@@ -84,10 +130,9 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
       toggleDarkMode: () => setTheme(getTheme() === 'light' ? 'dark' : 'light'),
       setTheme: (theme) => setTheme(theme),
 
-      setLayoutDirection: (direction) => setStoreLayoutDirection(direction),
-      toggleLayoutDirection: () =>
-        setStoreLayoutDirection(useStore.getState().layoutDirection === 'RIGHT' ? 'DOWN' : 'RIGHT'),
-    }),
-    [onSave, setToggleReadOnlyMode, setStoreLayoutDirection],
-  );
+      setLayoutDirection: (direction, options) => applyLayoutChange(direction, options),
+      toggleLayoutDirection: (options) =>
+        applyLayoutChange(useStore.getState().layoutDirection === 'RIGHT' ? 'DOWN' : 'RIGHT', options),
+    };
+  }, [onSave, setToggleReadOnlyMode, setStoreLayoutDirection, fitView]);
 }
