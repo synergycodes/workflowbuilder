@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef } from 'react';
 
 import { registerPluginTranslation } from '../features/plugins-core/adapters/adapter-i18n';
 
+import { setCustomEdgeTemplates } from '../data/edge-templates';
 import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setCustomTemplates } from '../data/templates';
@@ -47,6 +48,7 @@ import type {
 export function WorkflowBuilderRoot({
   nodeTypes,
   nodeTemplates,
+  edgeTemplates,
   diagramTemplates,
   plugins,
   jsonForm,
@@ -112,6 +114,7 @@ export function WorkflowBuilderRoot({
   setCustomPaletteNodes(nodeTypes ?? null);
   setCustomTemplates(diagramTemplates ?? null);
   setCustomNodeTemplates(nodeTemplates ?? null);
+  setCustomEdgeTemplates(edgeTemplates ?? null);
 
   const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
 
