@@ -1,6 +1,6 @@
 import { useCallback, useSyncExternalStore } from 'react';
 
-import {  getTheme, setTheme, subscribeTheme } from './theme';
+import { getTheme, setTheme, subscribeTheme } from './theme';
 
 export function useTheme() {
   const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
@@ -12,6 +12,4 @@ export function useTheme() {
   return { theme, toggleTheme };
 }
 
-
-
-export {type Theme} from './theme';
+export { type Theme } from './theme';

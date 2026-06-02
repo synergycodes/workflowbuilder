@@ -30,3 +30,17 @@ export function subscribeTheme(listener: Listener): () => void {
     listeners.delete(listener);
   };
 }
+
+/**
+ * Reflect the persisted theme on the DOM. Idempotent. Run once on import so a
+ * saved non-default theme paints correctly on first load, without waiting for
+ * a `setTheme` toggle. Previously this lived in `useTheme`'s mount effect, so
+ * it only ran when the app-bar's theme toggle was mounted; centralizing it
+ * here keeps it correct for custom layouts that omit the bar.
+ */
+export function initTheme(): void {
+  applyToDom(getTheme());
+}
+
+// Client-only SDK: apply the persisted theme as soon as this module loads.
+initTheme();

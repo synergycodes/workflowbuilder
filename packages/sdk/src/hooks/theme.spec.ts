@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTheme, setTheme, subscribeTheme } from './theme';
+import { getTheme, initTheme, setTheme, subscribeTheme } from './theme';
 
 describe('theme module', () => {
   beforeEach(() => {
@@ -49,6 +49,15 @@ describe('theme module', () => {
 
     expect(listener).not.toHaveBeenCalled();
     unsubscribe();
+  });
+
+  it('initTheme applies the persisted theme to the DOM without a toggle', () => {
+    localStorage.setItem('wb-theme', 'dark');
+    delete document.documentElement.dataset.theme;
+
+    initTheme();
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('unsubscribe removes the listener', () => {
