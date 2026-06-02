@@ -299,7 +299,9 @@ const defaultDiagram: DiagramModel = {
         target: 'da47caa9-c695-47bb-be52-b30bb8a6be6d',
         targetHandle: 'target',
         zIndex: 0,
-        type: 'labelEdge',
+        // Custom edge type registered via `edgeTemplates` in app.tsx — renders
+        // the demo's DashedEdge instead of the built-in labelEdge.
+        type: 'dashed',
         id: 'xy-edge__440ccd46-0f50-4e35-ae74-64fee988a4f6440ccd46-0f50-4e35-ae74-64fee988a4f6:source-da47caa9-c695-47bb-be52-b30bb8a6be6dda47caa9-c695-47bb-be52-b30bb8a6be6d:target',
       },
       {

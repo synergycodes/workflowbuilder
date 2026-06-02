@@ -2,6 +2,7 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 import '@workflowbuilder/sdk/style.css';
 
+import { DashedEdge } from './components/dashed-edge/dashed-edge';
 import { MultiPortNodeTemplate } from './components/multi-port-node/multi-port-node-template';
 import { demoPaletteItems } from './data/palette';
 import { demoTemplates } from './data/templates';
@@ -25,6 +26,9 @@ export function App() {
       nodeTypes={demoPaletteItems}
       nodeTemplates={{
         'multi-port': MultiPortNodeTemplate,
+      }}
+      edgeTemplates={{
+        dashed: DashedEdge,
       }}
       diagramTemplates={demoTemplates}
       plugins={[
