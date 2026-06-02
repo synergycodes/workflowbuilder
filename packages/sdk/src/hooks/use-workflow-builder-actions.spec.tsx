@@ -199,14 +199,25 @@ describe('useWorkflowBuilderActions', () => {
       ]);
     });
 
-    it('setLayoutDirection swaps positions when flipPositions is set', () => {
+    it('setLayoutDirection is idempotent and never moves nodes', () => {
       useStore.setState({ nodes: [{ id: 'n1', position: { x: 1, y: 2 } }] as never });
       const { actions } = renderHook(useWorkflowBuilderActions);
 
-      actions.current!.setLayoutDirection('DOWN', { flipPositions: true });
+      actions.current!.setLayoutDirection('DOWN');
+      actions.current!.setLayoutDirection('DOWN');
 
       expect(useStore.getState().layoutDirection).toBe('DOWN');
-      expect(useStore.getState().nodes[0].position).toEqual({ x: 2, y: 1 });
+      expect(useStore.getState().nodes[0].position).toEqual({ x: 1, y: 2 });
+    });
+
+    it('flipPositions is relative: toggling twice restores original positions', () => {
+      useStore.setState({ nodes: [{ id: 'n1', position: { x: 10, y: 20 } }] as never });
+      const { actions } = renderHook(useWorkflowBuilderActions);
+
+      actions.current!.toggleLayoutDirection({ flipPositions: true });
+      actions.current!.toggleLayoutDirection({ flipPositions: true });
+
+      expect(useStore.getState().nodes[0].position).toEqual({ x: 10, y: 20 });
     });
 
     it('fits the view when fitView is set', () => {
