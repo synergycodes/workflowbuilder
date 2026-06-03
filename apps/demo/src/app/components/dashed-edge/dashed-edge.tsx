@@ -11,6 +11,10 @@ import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
  * exported `EnhancedBaseEdge` for a wide hit target. Selection and hover are
  * delegated to the SDK's `useLabelEdgeHover` so this edge highlights exactly
  * like the built-in one — it just keeps a dashed stroke on top.
+ *
+ * To diverge from the built-in selection look, add a `selected` branch to the
+ * `style` below, or restyle every edge globally via the `--ax-public-edge-color-select`
+ * CSS variable. See the SDK README, "Custom edges and selection".
  */
 export function DashedEdge({
   id,

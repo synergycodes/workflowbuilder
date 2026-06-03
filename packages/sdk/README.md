@@ -101,6 +101,10 @@ Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`,
 | `initialNodes`     | `WorkflowBuilderNode[]`         | Starting diagram nodes.                                                                                                                                                                                                                        |
 | `initialEdges`     | `WorkflowBuilderEdge[]`         | Starting diagram edges.                                                                                                                                                                                                                        |
 
+### Custom edges and selection
+
+A custom edge is a plain component that receives ReactFlow `EdgeProps`, so you own how it looks in every state. To match the built-in selection / hover look, call the exported `useLabelEdgeHover({ id, isSelected })` hook and spread its `style` onto your path; add `strokeDasharray`, width, or your own `selected` branch on top. To restyle selection without touching code, redefine the CSS variable the built-in edges read: `--ax-public-edge-color-select` (globally, for every edge). Note the resolved `style` is inline, so a per-edge CSS class will not override it; use the CSS variable or merge into the `style` object instead.
+
 Full reference (every public type, hook, and helper): <https://www.workflowbuilder.io/docs/api/core/workflowbuilder/>.
 
 ## Persistence
