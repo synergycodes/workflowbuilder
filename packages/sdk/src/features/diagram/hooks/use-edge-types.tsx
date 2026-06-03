@@ -13,8 +13,7 @@ const BUILT_IN_KEYS: ReadonlySet<string> = new Set<string>(['labelEdge']);
  * (the built-in edges do too), so there are no computed props to inject and the
  * consumer's component drops straight into the map.
  *
- * An edge whose `type` matches no key falls back to ReactFlow's default edge,
- * same as nodes fall back to their built-in renderers.
+ * An edge whose `type` matches no key falls back to ReactFlow's default edge.
  */
 export function useEdgeTypes(): EdgeTypes {
   // Read outside useMemo so the dep stays referentially stable across renders.

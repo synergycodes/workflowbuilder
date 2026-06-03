@@ -103,7 +103,14 @@ Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`,
 
 ### Custom edges and selection
 
-A custom edge is a plain component that receives ReactFlow `EdgeProps`, so you own how it looks in every state. To match the built-in selection / hover look, call the exported `useLabelEdgeHover({ id, isSelected })` hook and spread its `style` onto your path; add `strokeDasharray`, width, or your own `selected` branch on top. To restyle selection without touching code, redefine the CSS variable the built-in edges read: `--ax-public-edge-color-select` (globally, for every edge). Note the resolved `style` is inline, so a per-edge CSS class will not override it; use the CSS variable or merge into the `style` object instead.
+A custom edge is a plain component that receives ReactFlow `EdgeProps`, so you own how it looks in every state, including selection. The recommended way to customize selection is in the component itself: branch on the `selected` prop and set your own `style`. To also get the built-in hover feel for free, call the exported `useLabelEdgeHover({ id, isSelected })` hook, spread its `style` onto your path, then layer your own keys (`strokeDasharray`, width, a `selected` branch) on top.
+
+```tsx
+const { style } = useLabelEdgeHover({ id, isSelected: selected });
+return <EnhancedBaseEdge id={id} path={path} style={{ ...style, ...(selected && { stroke: '#e11d48' }) }} />;
+```
+
+Because that resolved `style` is applied inline, a per-edge CSS class will not override it; restyle in the `style` object instead. There is also a global escape hatch: the edges read the `--ax-public-edge-color-select` CSS variable for the selected stroke, so redefining it recolors selection for every edge at once. That token comes from the bundled `@synergycodes/overflow-ui` design system rather than this SDK, so treat it as a convenience that may change across dependency bumps; the per-component `style` route above is the stable contract.
 
 Full reference (every public type, hook, and helper): <https://www.workflowbuilder.io/docs/api/core/workflowbuilder/>.
 

@@ -40,7 +40,12 @@ import { diagramStateSelector } from './selectors';
  * @category Components
  */
 export type DiagramContainerProps = {
-  /** Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`. */
+  /**
+   * Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`
+   * and any Root-level `edgeTemplates`. Merged last, so a key here intentionally
+   * overrides those (this is the direct-mount escape hatch, hence no collision
+   * warning); prefer `<WorkflowBuilder.Root edgeTemplates>` for app-wide edges.
+   */
   edgeTypes?: EdgeTypes;
 };
 
