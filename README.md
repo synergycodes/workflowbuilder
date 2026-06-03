@@ -4,9 +4,10 @@
 
 [Live Demo](https://app.workflowbuilder.io/) &nbsp;|&nbsp; [Documentation](https://www.workflowbuilder.io/docs/overview/) &nbsp;|&nbsp; [Website](https://www.workflowbuilder.io/)
 
-**Frontend SDK for embedding production-ready workflow editors.**
+*Workflow Builder*
+**Apache 2.0 React SDK for embedding visual workflow editors.**
 
-Workflow Builder is an open-source SDK that gives you a ready-made workflow editor UI - canvas, nodes, edges, layout, and configuration panels - so you don't have to build workflow UX from scratch. It focuses exclusively on the frontend editor layer; execution, orchestration, and business logic stay fully under your control. The SDK outputs workflow definitions as JSON that your own backend executes.
+Drag-and-drop workflow builder UI with a reference back-end and an execution engine swappable by design, proven with Temporal. Back-end agnostic. Built on React Flow and Temporal. Reference stack for AI workflows and automations in digital products. 
 
 ---
 
@@ -266,7 +267,7 @@ Workflow Builder is available in two editions:
 
 For companies that need end-to-end implementations or any other support, we offer professional consulting services.
 
-Our team has delivered **170+ custom workflow tools** across 20+ industries and brings **15+ years** of experience building enterprise-class diagramming and automation tools. We can help with:
+Our team has delivered **200+ custom workflow tools** across 20+ industries and brings **15+ years** of experience building enterprise-class diagramming and automation tools. We can help with:
 
 - backend execution engines
 - custom integrations
