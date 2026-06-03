@@ -9,6 +9,7 @@ import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
 import { workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { getWorkflowEngine } from '../engine';
 import { logger as backendLogger } from '../logger';
+import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
 
@@ -34,8 +35,10 @@ function formatValidationDetails(error: z.ZodError) {
   }));
 }
 
-export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<{ Variables: AuthVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables }>();
+export function createWorkflowsRoutes(
+  assertAuthorized: AssertAuthorized,
+): Hono<{ Variables: AuthVariables & TenantVariables }> {
+  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
 
   routes.post('/', async (c) => {
     await assertAuthorized(c, 'workflows:create', { kind: 'workflows' });
@@ -209,6 +212,17 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
       );
     }
 
+    // Propagate tenant identity from the HTTP boundary onto the execution row.
+    // The worker reads it back via subquery for event tagging (see worker
+    // database.ts), so it never has to know tenancy exists. Null in
+    // single-tenant mode (the reference default).
+    //
+    // We deliberately do NOT stuff tenantId into the engine `variables` bag:
+    // no reference node executor reads it, so shipping it would be dead
+    // transport. Consumers whose executors need tenant at runtime add it to
+    // `variables` themselves - see seam 2 in tenant-context-port.decision-log.md.
+    const tenantId = c.var.tenant?.tenantId ?? null;
+
     const [execution] = await database
       .insert(executions)
       .values({
@@ -217,6 +231,7 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
         workflowSnapshotJson: snapshotJson,
         status: 'pending',
         triggerPayloadJson: body.triggerPayload ?? null,
+        tenantId,
       })
       .returning();
 

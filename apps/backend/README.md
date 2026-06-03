@@ -2,6 +2,8 @@
 
 > ⚠️ **Reference implementation, local development only.**
 > No real authentication. The bundled `AllowAllAuthPort` permits every caller and every action (see `src/auth/`), and the constructor refuses to start without the explicit `WB_AUTH_PORT=allow-all` opt-in so a forgotten env var fails loudly. No tenant isolation. The HTTP server and the docker-compose services bind to `127.0.0.1` by default. Do not expose to the internet or shared networks without first plugging in a real `AuthPort`, see [`auth-port.decision-log.md`](./auth-port.decision-log.md) for the seam, default, and a JWT adapter sketch.
+>
+> Seams for consumers to plug in: [`AuthPort`](./auth-port.decision-log.md) for authn/authz, [`TenantContextPort`](./tenant-context-port.decision-log.md) for multi-tenant identity propagation.
 
 > **Note:** setup is in [root README "Path B. Run the full stack demo"](../../README.md#path-b-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
 

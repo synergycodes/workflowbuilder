@@ -10,6 +10,7 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from '../auth';
+import { type TenantContext, type TenantVariables, createTenantMiddleware } from '../tenant';
 import { createWorkflowsRoutes } from './workflows';
 
 // ---- module mocks -----------------------------------------------------------
@@ -92,6 +93,31 @@ function denyAll(): AuthPort {
     identify: vi.fn(async () => null),
     authorize: vi.fn(async () => false),
   };
+}
+
+// buildApp plus the tenant middleware, so the execute route can read
+// `c.var.tenant`. `tenant` is what the configured TenantContextPort resolves
+// to (null = single-tenant reference default).
+function buildAppWithTenant(port: AuthPort, tenant: TenantContext | null) {
+  const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+  app.use('*', createAuthMiddleware(port));
+  app.use('*', createTenantMiddleware({ resolve: vi.fn(async () => tenant) }));
+  app.route('/api/workflows', createWorkflowsRoutes(makeAssertAuthorized(port)));
+  return app;
+}
+
+// Capture what the execute route passes to `database.insert(...).values(...)`.
+// The chainable proxy used elsewhere discards call arguments, so the row-stamp
+// assertion needs a mock that records the values object.
+function captureExecuteInsert(): { values?: Record<string, unknown> } {
+  const captured: { values?: Record<string, unknown> } = {};
+  databaseMock.insert.mockImplementation(() => ({
+    values: (v: Record<string, unknown>) => {
+      captured.values = v;
+      return { returning: () => chainResolving([{ id: 'e-1', status: 'pending' }]) };
+    },
+  }));
+  return captured;
 }
 
 const fakeWorkflow = {
@@ -201,5 +227,44 @@ describe('createWorkflowsRoutes - deny short-circuits before any DB access', () 
     expect(databaseMock.update).not.toHaveBeenCalled();
     expect(engineMock.submit).not.toHaveBeenCalled();
     expect(engineMock.cancel).not.toHaveBeenCalled();
+  });
+});
+
+// ---- tenant propagation on execute -----------------------------------------
+//
+// The resolved tenant is stamped onto the executions row (the worker's event
+// subquery reads it back from there). It is deliberately NOT placed in the
+// engine `variables` bag: no reference executor reads it, so `variables` stays
+// empty regardless of whether a tenant was resolved.
+
+function executeRequest(app: ReturnType<typeof buildAppWithTenant>) {
+  return app.request('/api/workflows/w-1/execute', {
+    method: 'POST',
+    body: JSON.stringify({ sourceVersion: 'draft' }),
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
+  it('stamps the resolved tenantId onto the execution row, not into variables', async () => {
+    const app = buildAppWithTenant(allowAll(vi.fn(async () => true)), { tenantId: 'acme' });
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+    const insert = captureExecuteInsert();
+
+    await executeRequest(app);
+
+    expect(insert.values?.tenantId).toBe('acme');
+    expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
+  });
+
+  it('writes null tenantId in single-tenant mode', async () => {
+    const app = buildAppWithTenant(allowAll(vi.fn(async () => true)), null);
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+    const insert = captureExecuteInsert();
+
+    await executeRequest(app);
+
+    expect(insert.values?.tenantId).toBeNull();
+    expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
   });
 });

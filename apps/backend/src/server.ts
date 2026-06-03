@@ -16,6 +16,7 @@ import { env } from './env';
 import { logger } from './logger';
 import { createExecutionsRoutes } from './routes/executions';
 import { createWorkflowsRoutes } from './routes/workflows';
+import { NoopTenantContextPort, type TenantContextPort, type TenantVariables, createTenantMiddleware } from './tenant';
 
 // Permissive default for local development. The constructor itself emits a
 // loud startup warning and refuses to boot unless `WB_AUTH_PORT=allow-all` is
@@ -25,7 +26,12 @@ const authPort: AuthPort = new AllowAllAuthPort();
 
 const assertAuthorized = makeAssertAuthorized(authPort);
 
-const app = new Hono<{ Variables: AuthVariables }>();
+// Default single-tenant: every request lands with `c.var.tenant === null`.
+// Multi-tenant consumers swap in their own implementation (subdomain, JWT
+// claim, header, …) — see `apps/backend/tenant-context-port.decision-log.md`.
+const tenantPort: TenantContextPort = new NoopTenantContextPort();
+
+const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
 
 app.use('/*', cors());
 // Reject request bodies larger than 1 MB to prevent memory exhaustion
@@ -46,11 +52,13 @@ app.onError((error, c) => {
   return c.json({ code: 'internal_error', message: 'Internal server error' }, 500);
 });
 
-// Health check is intentionally registered before the auth middleware so it
-// stays accessible to monitoring tools that don't carry credentials.
+// Health check is intentionally registered before the auth and tenant
+// middleware so it stays accessible to monitoring tools that don't carry
+// credentials or tenant headers.
 app.get('/api/health', (c) => c.json({ status: 'ok' }));
 
 app.use('/api/*', createAuthMiddleware(authPort));
+app.use('/api/*', createTenantMiddleware(tenantPort));
 
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));

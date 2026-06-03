@@ -37,8 +37,13 @@ export function createAuthMiddleware(authPort: AuthPort): MiddlewareHandler<{ Va
  * // proceed - if we got here, the caller is authorized
  * ```
  */
-export type AssertAuthorized = (
-  c: Context<{ Variables: AuthVariables }>,
+// Generic over the context's `Variables` (constrained to extend AuthVariables)
+// so a route can compose auth with other per-request seams, e.g. run under
+// `AuthVariables & TenantVariables`. Hono's `Context.set` is invariant in
+// `Variables`, so a fixed `Context<{ Variables: AuthVariables }>` parameter
+// would reject any widened context. Do not narrow this back to a concrete type.
+export type AssertAuthorized = <V extends AuthVariables>(
+  c: Context<{ Variables: V }>,
   action: AuthAction,
   resource: AuthResource,
 ) => Promise<void>;
