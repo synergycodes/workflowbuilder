@@ -2,6 +2,10 @@ import { type Connection, type Node, type OnConnect, addEdge } from '@xyflow/rea
 
 import { trackFutureChange } from '../../features/changes-tracker/stores/use-changes-tracker-store';
 import { getEdgeZIndex } from '../../features/diagram/edges/get-edge-z-index';
+import {
+  migrateLegacyHandleIdsOnEdges,
+  migrateLegacyHandleIdsOnNodes,
+} from '../../features/diagram/handles/migrate-legacy-handle-id';
 import type { VariablesIndex } from '../../features/variables/types';
 import {
   type ConnectionBeingDragged,
@@ -72,8 +76,8 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
         }
       }
 
-      const nodes = model?.diagram.nodes.map(getNodeWithErrors) || [];
-      const edges = model?.diagram.edges || [];
+      const nodes = migrateLegacyHandleIdsOnNodes(model?.diagram.nodes.map(getNodeWithErrors) || []);
+      const edges = migrateLegacyHandleIdsOnEdges(model?.diagram.edges || []);
       const documentName = model?.name || 'Untitled';
       const layoutDirection = model?.layoutDirection || 'RIGHT';
 

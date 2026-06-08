@@ -1,6 +1,6 @@
 {
   "name": "@workflowbuilder/sdk",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "description": "React SDK for Workflow Builder — embed a visual, flow-based workflow editor in your app.",
   "keywords": [
     "workflow",
@@ -79,7 +79,7 @@
     "@cfworker/json-schema": "4.1.1",
     "@fontsource/poppins": "^5.2.7",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "1.0.0-beta.26",
+    "@synergycodes/overflow-ui": "1.0.0-beta.27",
     "ace-builds": "^1.43.4",
     "ajv": "catalog:",
     "clsx": "^2.1.1",

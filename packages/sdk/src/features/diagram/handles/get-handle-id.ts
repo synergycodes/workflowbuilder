@@ -26,4 +26,11 @@ export function getHandleId({ handleType, innerId }: GetHandleIdOptions): Handle
 type GetHandleIdOptions = {
   handleType: HandleType;
   innerId?: string;
+  /**
+   * @deprecated Handle IDs are scoped to the owning node by xyflow, so
+   * `nodeId` is no longer part of the returned string. Accepted to keep
+   * 2.0.0 call sites compiling and ignored at runtime. Will be removed in
+   * the next major (3.0).
+   */
+  nodeId?: string;
 };

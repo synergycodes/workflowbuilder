@@ -22,4 +22,9 @@ describe('getHandleId', () => {
     expect(id.startsWith('source')).toBe(true);
     expect(id).not.toContain('node-');
   });
+
+  it('accepts the deprecated 2.0.0 `nodeId` arg and ignores it at runtime', () => {
+    expect(getHandleId({ nodeId: 'node-1', handleType: 'source' })).toBe('source');
+    expect(getHandleId({ nodeId: 'node-1', handleType: 'target', innerId: 'tool-7' })).toBe('target:inner:tool-7');
+  });
 });
