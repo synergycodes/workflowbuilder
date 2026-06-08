@@ -31,10 +31,10 @@ export type LayoutChangeOptions = {
 };
 
 /**
- * Imperative action surface for every command the built-in app bar
- * exposes — `save`, modal openers, read-only / theme / layout-direction
- * toggles. Use this when omitting `<WorkflowBuilder.TopBar />` from a
- * custom layout so your own UI can trigger the same actions.
+ * Imperative action surface for a custom layout that omits
+ * `<WorkflowBuilder.TopBar />`. Mirrors every command the built-in app bar
+ * exposes (`save`, modal openers, read-only and theme toggles) and adds
+ * programmatic layout-direction control, which the bar itself does not offer.
  *
  * Stable across renders while the active integration and the mounted
  * React Flow instance are stable (layout actions close over the fit-view
@@ -74,9 +74,9 @@ export type WorkflowBuilderActions = {
 };
 
 /**
- * Returns a stable object of action callbacks mirroring every command
- * the built-in `<WorkflowBuilder.TopBar />` offers. Use it from a custom
- * header / toolbar when omitting the bar.
+ * Returns a stable object of action callbacks: every command the built-in
+ * `<WorkflowBuilder.TopBar />` offers, plus programmatic layout-direction
+ * control. Use it from a custom header / toolbar when omitting the bar.
  *
  * Must be called from a descendant of `<WorkflowBuilder.Root>`; `save`
  * reads the active integration via React context.

@@ -5,7 +5,7 @@ sidebar:
   order: 6
 ---
 
-`<WorkflowBuilder.TopBar />` ships save, import / export, settings, read-only, theme, and layout-direction controls. When you build a custom layout and omit the top bar, those actions are still reachable via the `useWorkflowBuilderActions()` hook — call it from any descendant of `<WorkflowBuilder.Root>` and wire the returned callbacks to your own buttons.
+`<WorkflowBuilder.TopBar />` ships save, import / export, settings, read-only, and theme controls. When you build a custom layout and omit the top bar, those actions are still reachable via the `useWorkflowBuilderActions()` hook. Call it from any descendant of `<WorkflowBuilder.Root>` and wire the returned callbacks to your own buttons. The same hook also exposes programmatic layout-direction control, which the bar itself does not surface.
 
 ## Quick example
 

@@ -22,6 +22,14 @@ describe('theme module', () => {
     expect(getTheme()).toBe('dark');
   });
 
+  it('falls back to "light" for an empty or unrecognized stored value', () => {
+    localStorage.setItem('wb-theme', '');
+    expect(getTheme()).toBe('light');
+
+    localStorage.setItem('wb-theme', 'Dark');
+    expect(getTheme()).toBe('light');
+  });
+
   it('setTheme updates localStorage and the document attribute', () => {
     setTheme('dark');
 
