@@ -139,11 +139,11 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     [onSelectionChange],
   );
 
-  // `useEdgeTypes` resolves the built-in default plus any Root-level
-  // `edgeTemplates`. The local `edgeTypes` prop (direct DiagramContainer mount)
-  // is merged last so an explicit per-mount override still wins.
-  const resolvedEdgeTypes = useEdgeTypes();
-  const diagramEdgeTypes = useMemo(() => ({ ...resolvedEdgeTypes, ...edgeTypes }), [resolvedEdgeTypes, edgeTypes]);
+  // Built-in edge renderers (`labelEdge`) plus any app-wide `edgeTemplates`
+  // passed to `<WorkflowBuilder.Root>`. The local `edgeTypes` prop (direct
+  // DiagramContainer mount) is merged last so a per-mount override still wins.
+  const baseEdgeTypes = useEdgeTypes();
+  const diagramEdgeTypes = useMemo(() => ({ ...baseEdgeTypes, ...edgeTypes }), [baseEdgeTypes, edgeTypes]);
 
   const onBeforeDelete: OnBeforeDelete<WorkflowBuilderNode, WorkflowBuilderEdge> = useCallback(
     async ({ nodes, edges }) => {
