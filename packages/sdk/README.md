@@ -85,6 +85,8 @@ To add custom overlays alongside the default layout, mount it explicitly:
 
 Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
+If you omit `<WorkflowBuilder.TopBar />`, use [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/#custom-layout-without-the-app-bar) to trigger save / import / export / settings / read-only / theme / layout-direction from your own controls.
+
 ## `<WorkflowBuilder.Root>` props
 
 | Prop               | Type                            | Description                                                                                                                                                                    |

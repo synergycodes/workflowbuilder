@@ -62,6 +62,8 @@ function makeNode(id: string): WorkflowBuilderNode {
 // still-mounted subscriber outside `act(...)`.
 beforeEach(() => {
   resetWorkflowStore();
+  localStorage.clear();
+  delete document.documentElement.dataset.theme;
 });
 
 describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
@@ -127,6 +129,21 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     expect(plugin).toHaveBeenCalledTimes(2);
 
     second.unmount();
+  });
+
+  it('paints the persisted theme on the DOM at mount, even without an app bar', () => {
+    // The theme paint moved off `theme.ts` module level (which crashed SSR
+    // imports) into a Root mount effect. A saved non-default theme must still
+    // reach `document` on first render, with no app-bar toggle mounted.
+    localStorage.setItem('wb-theme', 'dark');
+
+    render(
+      <StrictMode>
+        <WorkflowBuilderRoot />
+      </StrictMode>,
+    );
+
+    expect(document.documentElement.dataset.theme).toBe('dark');
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

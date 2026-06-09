@@ -59,6 +59,8 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
    Skip the changeset only for changes that do not affect the published `dist/` (e.g. internal tests, lint config, comments).
 
+   **Keep the body short — it ships verbatim as a release note.** One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (see `remove-nodeid-from-handles.md`).
+
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
 
    ```bash

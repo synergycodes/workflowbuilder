@@ -9,8 +9,9 @@ import {
   type OnSelectionChangeParams,
   ReactFlow,
   SelectionMode,
+  useUpdateNodeInternals,
 } from '@xyflow/react';
-import { type DragEventHandler, useCallback, useMemo } from 'react';
+import { type DragEventHandler, useCallback, useEffect, useMemo } from 'react';
 import type { DragEvent } from 'react';
 
 import styles from './diagram.module.css';
@@ -19,6 +20,7 @@ import '@xyflow/react/dist/style.css';
 import { usePaletteDrop } from '../../hooks/use-palette-drop';
 import type { WorkflowBuilderOnSelectionChangeParams } from '../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../node/node-data';
+import { getStoreNodes } from '../../store/slices/diagram-slice/actions';
 import { useStore } from '../../store/store';
 import { trackFutureChange } from '../changes-tracker/stores/use-changes-tracker-store';
 import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-confirmation';
@@ -69,6 +71,18 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
 
   const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
   const nodeTypes = useNodeTypes();
+
+  // React Flow caches each handle's measured bounds in `nodeInternals`. When
+  // `layoutDirection` flips, existing nodes re-render their `<Handle>` with a
+  // new `position` prop, but the cache stays stale and edges keep routing to
+  // the old port spots. Ask React Flow to remeasure every mounted node when
+  // the direction changes.
+  const layoutDirection = useStore((store) => store.layoutDirection);
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    const ids = getStoreNodes().map((node) => node.id);
+    if (ids.length > 0) updateNodeInternals(ids);
+  }, [layoutDirection, updateNodeInternals]);
 
   const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();

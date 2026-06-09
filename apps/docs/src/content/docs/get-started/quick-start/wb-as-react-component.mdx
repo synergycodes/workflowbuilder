@@ -147,6 +147,35 @@ To add custom overlays alongside the default layout, mount it explicitly:
 </WorkflowBuilder.Root>
 ```
 
+### Custom layout without the app bar
+
+`<WorkflowBuilder.TopBar />` ships the save, import / export, settings, read-only, and theme controls. When you omit it from a custom layout, reach the same commands through the `useWorkflowBuilderActions()` hook. Call it from any descendant of `<WorkflowBuilder.Root>` and wire the returned callbacks to your own buttons:
+
+```tsx
+import { useWorkflowBuilderActions } from '@workflowbuilder/sdk';
+
+function MyToolbar() {
+  const actions = useWorkflowBuilderActions();
+
+  return (
+    <header>
+      <button onClick={actions.save}>Save</button>
+      <button onClick={actions.openImport}>Import</button>
+      <button onClick={actions.openExport}>Export</button>
+      <button onClick={actions.openSettings}>Settings</button>
+      <button onClick={actions.toggleReadOnly}>Read-only</button>
+      <button onClick={actions.toggleDarkMode}>Theme</button>
+    </header>
+  );
+}
+```
+
+The hook returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
+
+- It must be called from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) via context, so calling the hook outside Root resolves `save()` to `'error'` and logs a warning.
+- The hook also exposes layout-direction control the bar does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
+- The top bar also shows and edits the document name. Render your own with `useStore`: read `s.documentName` and write through `s.setDocumentName`.
+
 ## Integration strategies
 
 | Strategy       | Source / sink                                               | When to use                  |

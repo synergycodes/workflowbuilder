@@ -8,6 +8,7 @@ import { setCustomPaletteNodes } from '../data/palette';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { initTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
@@ -91,6 +92,16 @@ export function WorkflowBuilderRoot({
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
+  }, []);
+
+  // Paint the persisted theme on the DOM once, client-side. Lives here (not at
+  // `theme.ts` module level) so a server-side import of the SDK never touches
+  // `document` / `localStorage`. `useLayoutEffect` runs before first paint, so
+  // a saved non-default theme shows without a flash; it never runs on the
+  // server. Idempotent, so a second Root mount (or strict-mode double-invoke)
+  // is a harmless no-op.
+  useLayoutEffect(() => {
+    initTheme();
   }, []);
 
   // Runtime config — write the latest prop values into module-level holders
