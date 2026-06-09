@@ -20,6 +20,7 @@ import '@xyflow/react/dist/style.css';
 import { usePaletteDrop } from '../../hooks/use-palette-drop';
 import type { WorkflowBuilderOnSelectionChangeParams } from '../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../node/node-data';
+import { getStoreNodes } from '../../store/slices/diagram-slice/actions';
 import { useStore } from '../../store/store';
 import { trackFutureChange } from '../changes-tracker/stores/use-changes-tracker-store';
 import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-confirmation';
@@ -79,7 +80,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
   const layoutDirection = useStore((store) => store.layoutDirection);
   const updateNodeInternals = useUpdateNodeInternals();
   useEffect(() => {
-    const ids = useStore.getState().nodes.map((node) => node.id);
+    const ids = getStoreNodes().map((node) => node.id);
     if (ids.length > 0) updateNodeInternals(ids);
   }, [layoutDirection, updateNodeInternals]);
 
