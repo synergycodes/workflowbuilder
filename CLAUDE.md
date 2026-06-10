@@ -42,6 +42,8 @@ Long-running processes already emit stable log lines that scripts and agents can
 
 ```
 tools/              - Root dev scripts: preflight, setup:env, infra wait
+deploy/
+  ai-studio/        - Production deployment: Dockerfile (runtime/migrate/web), compose, nginx, README
 apps/
   demo/             - Reference app consuming the SDK (React + Vite, port 4200)
   ai-studio/        - Reference AI workflow product (React + Vite, port 4201)

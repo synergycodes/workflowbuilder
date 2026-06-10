@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/server.ts",
     "start": "tsx --env-file=.env ./src/server.ts",
+    "start:prod": "tsx ./src/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -24,6 +25,7 @@
     "drizzle-orm": "^0.44.0",
     "hono": "^4.7.0",
     "postgres": "^3.4.5",
+    "tsx": "^4.19.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {
