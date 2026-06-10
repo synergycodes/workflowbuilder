@@ -82,17 +82,24 @@ describe('executeDecision', () => {
     }
   });
 
-  it('treats a branch with no conditions as non-matching (so callers must throw or use explicit operators)', () => {
-    // Empty conditions array — branchMatches returns false, so this is NOT
-    // a default. If someone wants a default, they need a branch whose
-    // conditions evaluate to true (e.g. isEqual 'x' 'x').
+  it('treats a branch with no conditions as the catch-all', () => {
+    // The contract the no_branch_matched error instructs authors to use, and
+    // what the reference Sales Inquiry template relies on for its 'General'
+    // branch. First-match order applies: a catch-all placed after conditional
+    // branches only fires when none of them matched.
     const node = decisionNode([
       {
-        sourceHandle: 'empty',
+        sourceHandle: 'no',
+        conditions: [{ x: 'a', y: 'b', comparisonOperator: 'isEqual' }],
+      },
+      {
+        sourceHandle: 'fallback',
         conditions: [],
       },
     ]);
 
-    expect(() => executeDecision(node, context())).toThrowError(NodeExecutionError);
+    const result = executeDecision(node, context());
+
+    expect(result.nextPort).toBe('fallback');
   });
 });
