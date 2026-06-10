@@ -3,6 +3,10 @@
 Self-contained, portable deployment of the AI Studio stack (WB-229). Runs on
 any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
+> Deploying onto the company Swarm cluster instead? See
+> [`tools/deployment/`](../../tools/deployment/README.md) — same images,
+> Traefik/ACR/Ansible orchestration aligned with the workflow-builder repo.
+
 ## What runs
 
 | Service       | Image                          | Role                                            | Exposed                  |

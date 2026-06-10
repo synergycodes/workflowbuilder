@@ -1,0 +1,241 @@
+---
+# Deploys the AI Studio execution stack to the Docker Swarm cluster,
+# following the workflow-builder repo's deploy-application playbook. The
+# images are the same three targets the local compose builds
+# (deploy/ai-studio/Dockerfile); only the orchestration differs.
+#
+# Differences from the workflow-builder playbook, all forced by AI Studio
+# being stateful:
+#   - Postgres x2 + Temporal services with named volumes, pinned to the node
+#     labeled `ai-studio-data=true` (Swarm volumes are node-local).
+#   - Migrations run as a one-shot container after stack deploy — Swarm
+#     ignores compose depends_on conditions, so ordering lives here.
+#   - The `internal` network is attachable so the migrate container can join.
+#   - Services get short DNS aliases (backend, app-db, temporal, ...) so the
+#     same images and env defaults work under compose and Swarm.
+#   - Gatekeeper is optional (AUTH_ENABLED=true): the WB-229 public demo is
+#     deliberately login-free; internal stage/dev instances can enable it.
+
+- hosts: master
+
+  vars:
+    deployment_environment: "{{ lookup('env', 'BITBUCKET_DEPLOYMENT_ENVIRONMENT') or lookup('env', 'DEPLOY_ENV') or 'dev' }}"
+    tag_prefix: "{{ lookup('env', 'TAG_PREFIX') }}"
+    bb_commit: "{{ lookup('env', 'BITBUCKET_COMMIT') or lookup('pipe', 'git rev-parse HEAD') }}"
+    app_name: ai-studio
+    registry: "{{ lookup('env', 'REGISTRY') or 'synergycodes.azurecr.io' }}"
+    deployment_url: "{{ lookup('env', 'DEPLOYMENT_URL') }}"
+    image_tag: '{{ tag_prefix }}{{ bb_commit }}'
+    stack_name: '{{ app_name }}--{{ deployment_environment }}'
+    auth_enabled: "{{ (lookup('env', 'AUTH_ENABLED') or 'false') | bool }}"
+    openrouter_api_key: "{{ lookup('env', 'OPENROUTER_API_KEY') }}"
+    ai_model: "{{ lookup('env', 'AI_MODEL') or 'mistralai/mistral-small-3.2-24b-instruct' }}"
+    app_db_password: "{{ lookup('env', 'APP_DB_PASSWORD') or 'wb' }}"
+    temporal_db_password: "{{ lookup('env', 'TEMPORAL_DB_PASSWORD') or 'temporal' }}"
+    database_url: 'postgresql://wb:{{ app_db_password }}@app-db:5432/workflow_builder'
+
+  tasks:
+    - name: Check required configuration
+      assert:
+        that:
+          - deployment_url | length > 0
+          - openrouter_api_key | length > 0
+        fail_msg: 'DEPLOYMENT_URL and OPENROUTER_API_KEY must be set'
+
+    - name: Create directory for service data
+      file:
+        path: '/mnt/docker-swarm-storage/stacks/{{ stack_name }}'
+        state: directory
+
+    - name: Create stack definition
+      copy:
+        dest: '/mnt/docker-swarm-storage/stacks/{{ stack_name }}/{{ app_name }}.stack.yml'
+        content: |
+          services:
+          {% if auth_enabled %}
+            ai-studio-gatekeeper--{{ deployment_environment }}:
+              image: '{{ registry }}/gatekeeper:2.1.1'
+              environment:
+                PROXY_LISTEN: :4200
+                PROXY_UPSTREAM_URL: http://web
+                PROXY_DISCOVERY_URL: "{{ lookup('env', 'AUTH_DISCOVERY_URL') }}"
+                PROXY_CLIENT_ID: "{{ lookup('env', 'AUTH_CLIENT_ID') }}"
+                PROXY_CLIENT_SECRET: "{{ lookup('env', 'AUTH_SECRET') }}"
+                PROXY_ENCRYPTION_KEY: "{{ lookup('env', 'AUTH_COOKIE_SECRET') }}"
+                PROXY_REDIRECTION_URL: 'https://{{ deployment_url }}'
+              command:
+                - '-enable-default-deny=false'
+                - "-resources=uri=/*|roles={{ lookup('env', 'AUTH_ROLE') }}"
+              networks:
+                traefik-host-external:
+                internal:
+                  aliases: [gatekeeper]
+              deploy:
+                placement:
+                  constraints:
+                    - node.role==worker
+                labels:
+                  - 'traefik.enable=true'
+                  - 'traefik.docker.network=traefik-host-external'
+                  - 'traefik.http.routers.{{ stack_name }}-http.rule=Host(`{{ deployment_url }}`) && PathPrefix(`/`)'
+                  - 'traefik.http.routers.{{ stack_name }}-http.entrypoints=http'
+                  - 'traefik.http.routers.{{ stack_name }}-http.middlewares=https-redirect'
+                  - 'traefik.http.routers.{{ stack_name }}-https.rule=Host(`{{ deployment_url }}`) && PathPrefix(`/`)'
+                  - 'traefik.http.routers.{{ stack_name }}-https.entrypoints=https'
+                  - 'traefik.http.routers.{{ stack_name }}-https.tls=true'
+                  - 'traefik.http.routers.{{ stack_name }}-https.tls.certresolver=le'
+                  - 'traefik.http.services.{{ stack_name }}.loadbalancer.server.port=4200'
+          {% endif %}
+
+            ai-studio-web--{{ deployment_environment }}:
+              image: '{{ registry }}/{{ app_name }}:web-{{ image_tag }}'
+              networks:
+          {% if not auth_enabled %}
+                traefik-host-external:
+          {% endif %}
+                internal:
+                  aliases: [web]
+              deploy:
+                placement:
+                  constraints:
+                    - node.role==worker
+          {% if not auth_enabled %}
+                labels:
+                  - 'traefik.enable=true'
+                  - 'traefik.docker.network=traefik-host-external'
+                  - 'traefik.http.routers.{{ stack_name }}-http.rule=Host(`{{ deployment_url }}`) && PathPrefix(`/`)'
+                  - 'traefik.http.routers.{{ stack_name }}-http.entrypoints=http'
+                  - 'traefik.http.routers.{{ stack_name }}-http.middlewares=https-redirect'
+                  - 'traefik.http.routers.{{ stack_name }}-https.rule=Host(`{{ deployment_url }}`) && PathPrefix(`/`)'
+                  - 'traefik.http.routers.{{ stack_name }}-https.entrypoints=https'
+                  - 'traefik.http.routers.{{ stack_name }}-https.tls=true'
+                  - 'traefik.http.routers.{{ stack_name }}-https.tls.certresolver=le'
+                  - 'traefik.http.services.{{ stack_name }}.loadbalancer.server.port=80'
+          {% endif %}
+
+            ai-studio-backend--{{ deployment_environment }}:
+              image: '{{ registry }}/{{ app_name }}:runtime-{{ image_tag }}'
+              command: ['pnpm', '--filter', 'backend', 'start:prod']
+              environment:
+                HOST: 0.0.0.0
+                PORT: 3001
+                DATABASE_URL: '{{ database_url }}'
+                TEMPORAL_ADDRESS: temporal:7233
+                WB_AUTH_PORT: allow-all
+                TRUST_PROXY: 'true'
+                RATE_LIMIT_EXECUTE_PER_MINUTE: "{{ lookup('env', 'RATE_LIMIT_EXECUTE_PER_MINUTE') or '10' }}"
+                RATE_LIMIT_EXECUTE_PER_DAY: "{{ lookup('env', 'RATE_LIMIT_EXECUTE_PER_DAY') or '50' }}"
+              networks:
+                internal:
+                  # the web image's nginx proxies to http://backend:3001
+                  aliases: [backend]
+              deploy:
+                placement:
+                  constraints:
+                    - node.role==worker
+
+            ai-studio-worker--{{ deployment_environment }}:
+              image: '{{ registry }}/{{ app_name }}:runtime-{{ image_tag }}'
+              command: ['pnpm', '--filter', 'execution-worker', 'start:prod']
+              environment:
+                DATABASE_URL: '{{ database_url }}'
+                TEMPORAL_ADDRESS: temporal:7233
+                OPENROUTER_API_KEY: '{{ openrouter_api_key }}'
+                AI_MODEL: '{{ ai_model }}'
+              networks:
+                internal:
+              deploy:
+                placement:
+                  constraints:
+                    - node.role==worker
+
+            ai-studio-app-db--{{ deployment_environment }}:
+              image: 'postgres:16'
+              environment:
+                POSTGRES_DB: workflow_builder
+                POSTGRES_USER: wb
+                POSTGRES_PASSWORD: '{{ app_db_password }}'
+              volumes:
+                - app-db-data:/var/lib/postgresql/data
+              networks:
+                internal:
+                  aliases: [app-db]
+              deploy:
+                placement:
+                  constraints:
+                    - node.labels.ai-studio-data==true
+
+            ai-studio-temporal-db--{{ deployment_environment }}:
+              image: 'postgres:16'
+              environment:
+                POSTGRES_DB: temporal
+                POSTGRES_USER: temporal
+                POSTGRES_PASSWORD: '{{ temporal_db_password }}'
+              volumes:
+                - temporal-db-data:/var/lib/postgresql/data
+              networks:
+                internal:
+                  aliases: [temporal-db]
+              deploy:
+                placement:
+                  constraints:
+                    - node.labels.ai-studio-data==true
+
+            ai-studio-temporal--{{ deployment_environment }}:
+              image: 'temporalio/auto-setup:1.29.6.1'
+              environment:
+                DB: postgres12
+                DB_PORT: 5432
+                POSTGRES_USER: temporal
+                POSTGRES_PWD: '{{ temporal_db_password }}'
+                POSTGRES_SEEDS: temporal-db
+              networks:
+                internal:
+                  aliases: [temporal]
+              deploy:
+                placement:
+                  constraints:
+                    - node.role==worker
+
+          volumes:
+            app-db-data:
+            temporal-db-data:
+
+          networks:
+            internal:
+              # attachable so the one-shot migrate container below can join
+              attachable: true
+            traefik-host-external:
+              external: true
+
+    - name: Ensure Azure CLI is setup
+      shell: /var/az-autologin.sh
+
+    - name: Ensure jsondiff is installed (required by community.docker.docker_stack)
+      ansible.builtin.pip:
+        name: jsondiff
+
+    - name: Deploy stack
+      community.docker.docker_stack:
+        state: present
+        name: '{{ stack_name }}'
+        resolve_image: 'always'
+        prune: true
+        with_registry_auth: yes
+        compose:
+          - '/mnt/docker-swarm-storage/stacks/{{ stack_name }}/{{ app_name }}.stack.yml'
+
+    # Swarm has no depends_on / one-shot service semantics: run Drizzle
+    # migrations as a plain container on the stack's attachable overlay
+    # network. Retries cover app-db still starting up on first deploy.
+    - name: Run database migrations
+      command: >
+        docker run --rm
+        --network {{ stack_name }}_internal
+        -e DATABASE_URL={{ database_url }}
+        {{ registry }}/{{ app_name }}:migrate-{{ image_tag }}
+        pnpm --filter backend db:migrate
+      register: migrate_result
+      retries: 10
+      delay: 6
+      until: migrate_result.rc == 0

@@ -42,6 +42,7 @@ Long-running processes already emit stable log lines that scripts and agents can
 
 ```
 tools/              - Root dev scripts: preflight, setup:env, infra wait
+  deployment/       - Swarm/Ansible deploy path mirroring the workflow-builder repo (ACR, Traefik)
 deploy/
   ai-studio/        - Production deployment: Dockerfile (runtime/migrate/web), compose, nginx, README
 apps/
