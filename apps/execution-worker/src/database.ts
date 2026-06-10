@@ -8,7 +8,7 @@ const sql = postgres(env.DATABASE_URL);
 export const database = {
   async emitExecutionEvent(executionId: string, type: string, payload?: unknown, nodeId?: string) {
     await sql`
-      INSERT INTO execution_events (id, execution_id, sequence, timestamp, type, node_id, path_id, payload_json, created_at)
+      INSERT INTO execution_events (id, execution_id, sequence, timestamp, type, node_id, path_id, payload_json, tenant_id, created_at)
       VALUES (
         gen_random_uuid(),
         ${executionId},
@@ -18,6 +18,7 @@ export const database = {
         ${nodeId ?? null},
         ${null},
         ${payload ? JSON.stringify(payload) : null}::jsonb,
+        (SELECT tenant_id FROM executions WHERE id = ${executionId}),
         now()
       )
     `;
