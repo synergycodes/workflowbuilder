@@ -14,6 +14,7 @@ import {
 } from './auth';
 import { env } from './env';
 import { logger } from './logger';
+import { createRateLimitMiddleware } from './middleware/rate-limit';
 import { createExecutionsRoutes } from './routes/executions';
 import { createWorkflowsRoutes } from './routes/workflows';
 import { NoopTenantContextPort, type TenantContextPort, type TenantVariables, createTenantMiddleware } from './tenant';
@@ -59,6 +60,22 @@ app.get('/api/health', (c) => c.json({ status: 'ok' }));
 
 app.use('/api/*', createAuthMiddleware(authPort));
 app.use('/api/*', createTenantMiddleware(tenantPort));
+
+if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0) {
+  app.use(
+    '/api/workflows/:id/execute',
+    createRateLimitMiddleware({
+      perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
+      perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
+      trustProxy: env.TRUST_PROXY,
+    }),
+  );
+  logger.info('execute rate limit enabled', {
+    perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
+    perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
+    trustProxy: env.TRUST_PROXY,
+  });
+}
 
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
