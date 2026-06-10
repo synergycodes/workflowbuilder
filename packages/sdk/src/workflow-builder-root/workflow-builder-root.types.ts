@@ -25,7 +25,7 @@ export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<Workflow
  * Per-edge-type custom renderer registry. Keys are `edge.type` values; values
  * are React components that take ReactFlow's {@link EdgeProps} (typed for
  * {@link WorkflowBuilderEdge}) and replace the default edge renderer for
- * matching edges. The mirror of {@link WorkflowBuilderNodeTemplates} for edges.
+ * matching edges.
  *
  * Unlike node templates, edge templates need no adapter: the built-in edges
  * already take `EdgeProps` directly, so a consumer component drops straight
@@ -112,9 +112,18 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   nodeTemplates?: WorkflowBuilderNodeTemplates;
   /**
-   * Per-edge-type custom renderers — map of `edge.type` → React component.
+   * Per-edge-type custom renderers. Map of `edge.type` to a React component.
    * Overrides the built-in `'labelEdge'` for the matching edge type; edges
    * whose type isn't registered fall back to the default edge.
+   *
+   * Each component is authored exactly like a ReactFlow custom edge (it takes
+   * `EdgeProps` directly). The only SDK-specific step is registering it here
+   * instead of via ReactFlow's `edgeTypes`. See ReactFlow's "Custom Edges"
+   * guide: https://reactflow.dev/learn/customization/custom-edges. To match the
+   * built-in selection and hover look, reuse the exported `useLabelEdgeHover`
+   * and `EnhancedBaseEdge`, or restyle selection globally via the
+   * `--ax-public-edge-color-select` CSS variable. A custom edge does not inherit
+   * the built-in self-connecting loop or label rendering.
    *
    * **Must be a stable reference** (same rationale as `nodeTemplates`).
    */
