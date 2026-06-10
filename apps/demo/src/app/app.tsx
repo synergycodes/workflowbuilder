@@ -1,7 +1,9 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
+import type { WorkflowBuilderEdgeTemplates, WorkflowBuilderNodeTemplates } from '@workflowbuilder/sdk';
 
 import '@workflowbuilder/sdk/style.css';
 
+import { DashedEdge } from './components/dashed-edge/dashed-edge';
 import { MultiPortNodeTemplate } from './components/multi-port-node/multi-port-node-template';
 import { demoPaletteItems } from './data/palette';
 import { demoTemplates } from './data/templates';
@@ -18,14 +20,23 @@ import { plugin as undoRedoPlugin } from './plugins/undo-redo/plugin-exports';
 import { plugin as validationPlugin } from './plugins/validation/plugin-exports';
 import { plugin as widgetsPlugin } from './plugins/widgets/plugin-exports';
 
+// Declared at module scope so the references stay stable across renders, as
+// `<WorkflowBuilder.Root>` requires for nodeTemplates / edgeTemplates.
+const nodeTemplates = {
+  'multi-port': MultiPortNodeTemplate,
+} satisfies WorkflowBuilderNodeTemplates;
+
+const edgeTemplates = {
+  dashed: DashedEdge,
+} satisfies WorkflowBuilderEdgeTemplates;
+
 export function App() {
   return (
     <WorkflowBuilder.Root
       name="demo"
       nodeTypes={demoPaletteItems}
-      nodeTemplates={{
-        'multi-port': MultiPortNodeTemplate,
-      }}
+      nodeTemplates={nodeTemplates}
+      edgeTemplates={edgeTemplates}
       diagramTemplates={demoTemplates}
       plugins={[
         demoPlugin,

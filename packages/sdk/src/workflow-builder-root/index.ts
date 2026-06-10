@@ -1,5 +1,6 @@
 export { WorkflowBuilderRoot } from './workflow-builder-root';
 export type {
+  WorkflowBuilderEdgeTemplates,
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderNodeTemplates,

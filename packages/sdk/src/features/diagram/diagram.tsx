@@ -27,8 +27,8 @@ import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-
 import { withOptionalComponentPlugins } from '../plugins-core/adapters/adapter-components';
 import { deleteKeyCode } from './const';
 import { SNAP_GRID, SNAP_IS_ACTIVE } from './diagram.const';
-import { LabelEdge } from './edges/label-edge/label-edge';
 import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
+import { useEdgeTypes } from './hooks/use-edge-types';
 import { useNodeTypes } from './hooks/use-node-types';
 import { callNodeChangedListeners } from './listeners/node-changed-listeners';
 import { callNodeDragStartListeners } from './listeners/node-drag-start-listeners';
@@ -42,7 +42,12 @@ import { diagramStateSelector } from './selectors';
  * @category Components
  */
 export type DiagramContainerProps = {
-  /** Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`. */
+  /**
+   * Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`
+   * and any Root-level `edgeTemplates`. Merged last, so a key here intentionally
+   * overrides those (this is the direct-mount escape hatch, hence no collision
+   * warning); prefer `<WorkflowBuilder.Root edgeTemplates>` for app-wide edges.
+   */
   edgeTypes?: EdgeTypes;
 };
 
@@ -148,7 +153,11 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     [onSelectionChange],
   );
 
-  const diagramEdgeTypes = useMemo(() => ({ labelEdge: LabelEdge, ...edgeTypes }), [edgeTypes]);
+  // Built-in edge renderers (`labelEdge`) plus any app-wide `edgeTemplates`
+  // passed to `<WorkflowBuilder.Root>`. The local `edgeTypes` prop (direct
+  // DiagramContainer mount) is merged last so a per-mount override still wins.
+  const baseEdgeTypes = useEdgeTypes();
+  const diagramEdgeTypes = useMemo(() => ({ ...baseEdgeTypes, ...edgeTypes }), [baseEdgeTypes, edgeTypes]);
 
   const onBeforeDelete: OnBeforeDelete<WorkflowBuilderNode, WorkflowBuilderEdge> = useCallback(
     async ({ nodes, edges }) => {
