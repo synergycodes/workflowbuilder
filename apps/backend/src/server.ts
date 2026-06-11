@@ -12,6 +12,7 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from './auth';
+import { runMigrations } from './db/migrate';
 import { env } from './env';
 import { logger } from './logger';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
@@ -79,6 +80,12 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
 
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
+
+// Apply pending migrations before accepting traffic. A failure (e.g. the
+// database still starting) exits the process — the container restart policy
+// retries until it converges, so deployments need no separate migration step.
+await runMigrations();
+logger.info('database migrations applied');
 
 serve({ fetch: app.fetch, port: env.PORT, hostname: env.HOST }, () => {
   logger.info('backend listening', { url: `http://${env.HOST}:${env.PORT}` });
