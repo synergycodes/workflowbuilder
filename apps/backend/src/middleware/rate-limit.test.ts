@@ -6,12 +6,6 @@ import { type RateLimitOptions, createRateLimitMiddleware } from './rate-limit';
 const MINUTE_MS = 60_000;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
-/**
- * Build a Hono app mirroring the production wiring in `server.ts`: the
- * limiter guards a single execute-shaped route. Tests drive the clock through
- * the injectable `now` and identify callers via X-Forwarded-For (trustProxy),
- * since `app.request()` has no underlying socket.
- */
 function makeApp(overrides: Partial<RateLimitOptions> = {}) {
   let timestamp = 0;
   const app = new Hono();

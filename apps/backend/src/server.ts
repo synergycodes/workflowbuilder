@@ -81,9 +81,7 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
 
-// Apply pending migrations before accepting traffic. A failure (e.g. the
-// database still starting) exits the process — the container restart policy
-// retries until it converges, so deployments need no separate migration step.
+// a failure (DB still starting) exits the process; the container restart policy retries
 await runMigrations();
 logger.info('database migrations applied');
 

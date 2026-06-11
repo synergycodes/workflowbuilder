@@ -1,11 +1,6 @@
-# AI Studio execution stack — production-shaped compose (WB-229 lean MVP).
-#
-#   cp .env.example .env   # set OPENROUTER_API_KEY
-#   docker compose up -d --build
-#
-# Only the `web` service publishes a port. Postgres, Temporal and the
-# backend stay on the internal network. Temporal UI is opt-in via the
-# `debug` profile and binds to loopback only.
+# AI Studio production stack (WB-229). Usage: cp .env.example .env, set
+# OPENROUTER_API_KEY, then `docker compose up -d --build`. Only `web`
+# publishes a port.
 
 name: ai-studio
 
@@ -45,10 +40,8 @@ services:
       retries: 12
     restart: unless-stopped
 
-  # auto-setup is Temporal's dev-grade single-binary image. Accepted for the
-  # demo (WB-229); a sustained-load deployment should move to Temporal Cloud
-  # or a properly operated self-hosted cluster — the apps only consume
-  # TEMPORAL_ADDRESS and don't care which.
+  # auto-setup is dev-grade; sustained load should move to Temporal Cloud
+  # or an operated cluster — the apps only consume TEMPORAL_ADDRESS
   temporal:
     image: temporalio/auto-setup:1.29.6.1
     depends_on:
@@ -73,8 +66,7 @@ services:
       - '127.0.0.1:8233:8080'
     restart: unless-stopped
 
-  # Applies Drizzle migrations at boot, before accepting traffic. A failure
-  # (e.g. Postgres still starting) exits the process and `restart` retries.
+  # applies migrations at boot; on failure exits and `restart` retries
   backend:
     image: ai-studio-runtime
     build: *runtime-build
@@ -84,11 +76,9 @@ services:
       PORT: 3001
       DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
       TEMPORAL_ADDRESS: temporal:7233
-      # Reference deployment has no user accounts; the explicit opt-in keeps
-      # a forgotten env var from silently exposing an unauthenticated API.
+      # explicit opt-in — a forgotten env var fails loudly instead of exposing the API
       WB_AUTH_PORT: allow-all
-      # Backend is only reachable through the web service's nginx, which
-      # sets X-Forwarded-For — safe to trust for per-IP rate limiting.
+      # only nginx can reach the backend, so X-Forwarded-For is trustworthy
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
       RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
@@ -111,8 +101,7 @@ services:
       start_period: 15s
     restart: unless-stopped
 
-  # Crash-loops until Temporal answers on 7233 (auto-setup has no usable
-  # healthcheck); `restart: unless-stopped` converges it.
+  # crash-loops until Temporal answers (no usable healthcheck); restart converges it
   worker:
     image: ai-studio-runtime
     build: *runtime-build
@@ -125,7 +114,7 @@ services:
     depends_on:
       app-db:
         condition: service_healthy
-      # healthy = migrations applied — the worker writes to the same schema
+      # backend healthy = migrations applied
       backend:
         condition: service_healthy
       temporal:
@@ -139,7 +128,7 @@ services:
       dockerfile: deploy/ai-studio/Dockerfile
       target: web
       args:
-        # Empty -> SPA calls /api on its own origin, proxied by this nginx.
+        # empty -> SPA calls /api on its own origin via this nginx
         VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}
     ports:
       - '${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80'

@@ -28,10 +28,7 @@ export function executeDecision(node: DecisionNode, context: ExecutionContext): 
 }
 
 function branchMatches(conditions: DecisionBranchCondition[], context: ExecutionContext): boolean {
-  // A branch with no conditions is the explicit catch-all — the contract the
-  // error above instructs authors to use, and what the reference Sales
-  // Inquiry template ships ('General' branch). First-match order still
-  // applies, so a catch-all only fires when placed after conditional branches.
+  // no conditions = the explicit catch-all the no_branch_matched error instructs authors to add
   if (conditions.length === 0) return true;
 
   let result = evaluateCondition(conditions[0]!, context);

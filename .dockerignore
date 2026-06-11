@@ -24,8 +24,7 @@ tools/
 !tools/deployment/nginx
 .gitignore
 
-# env files hold secrets (e.g. OPENROUTER_API_KEY) and must never enter the
-# build context — runtime config is injected via docker-compose `environment`
+# env files hold secrets — never in a build context
 **/.env
 **/.env.*
 !**/.env.example

@@ -2,17 +2,12 @@ import { getConnInfo } from '@hono/node-server/conninfo';
 import type { Context, MiddlewareHandler } from 'hono';
 
 export type RateLimitOptions = {
-  /** Max requests per IP per minute. 0 disables the minute window. */
+  // 0 disables a window
   perMinute: number;
-  /** Max requests per IP per day. 0 disables the day window. */
   perDay: number;
-  /**
-   * Read the client IP from X-Forwarded-For. Only enable when the backend is
-   * reachable exclusively through a proxy that sets the header (the deploy
-   * nginx does) — a directly-reachable backend would let clients spoof it.
-   */
+  // only safe when the backend is reachable exclusively through a proxy that
+  // sets X-Forwarded-For — a directly reachable backend lets clients spoof it
   trustProxy: boolean;
-  /** Injectable clock for tests. */
   now?: () => number;
 };
 
@@ -41,7 +36,7 @@ function clientIp(c: Context, trustProxy: boolean): string {
   try {
     return getConnInfo(c).remote.address ?? 'unknown';
   } catch {
-    // No underlying socket (e.g. app.request() in tests)
+    // no underlying socket (app.request() in tests)
     return 'unknown';
   }
 }
@@ -60,14 +55,8 @@ function hitWindow(state: WindowState, limit: number, durationMs: number, now: n
   return null;
 }
 
-/**
- * Fixed-window, in-memory, per-IP rate limiter for the execute route.
- *
- * Deliberately process-local (WB-229 lean MVP runs a single backend
- * replica): counters reset on restart and are not shared across replicas.
- * The OpenRouter account Guardrail is the independent hard spend cap; this
- * gate only stops a single IP from burning the daily budget.
- */
+// In-memory fixed windows: counters reset on restart and are not shared
+// across replicas — fine for the single-replica demo deployment.
 export function createRateLimitMiddleware(options: RateLimitOptions): MiddlewareHandler {
   const { perMinute, perDay, trustProxy } = options;
   const now = options.now ?? Date.now;

@@ -1,63 +1,40 @@
 # syntax=docker/dockerfile:1
 
-# AI Studio execution stack — single Dockerfile, multiple targets:
+# Targets: runtime (backend + worker, command chosen per compose service),
+# web (nginx, SPA + /api proxy). Build context must be the repo root —
+# workspace packages are linked via pnpm `workspace:*`.
 #
-#   runtime  -> backend + execution-worker (command chosen per compose service)
-#   web      -> nginx serving the AI Studio SPA + reverse proxy to the backend
-#
-# Database migrations run inside the backend at boot (drizzle-orm's
-# programmatic migrator over apps/backend/drizzle/), so there is no separate
-# migration image or deploy step.
-#
-# Build context must be the repo root (workspace packages are linked via
-# pnpm `workspace:*`), e.g.:
-#
-#   docker build -f deploy/ai-studio/Dockerfile --target runtime .
-#
-# Node is pinned to the exact engines.node version because the workspace sets
-# engineStrict=true. pnpm is installed via npm, not corepack — the corepack
-# bundled with this Node release fails to load pnpm 10
-# (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING) and ships stale signature keys.
-# Keep the version in sync with `packageManager` in the root package.json.
+# Exact Node pin: engineStrict rejects any other version. pnpm via npm, not
+# corepack — this Node's corepack cannot load pnpm 10
+# (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING). Keep in sync with `packageManager`.
 FROM node:22.12.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm \
     PATH="/pnpm:$PATH" \
-    # root `prepare` script runs husky, which needs the .git dir that is
-    # deliberately excluded from the build context
+    # husky needs the .git dir that the build context excludes
     HUSKY=0 \
     npm_config_store_dir=/pnpm/store \
     CI=true
 RUN npm install -g pnpm@10.17.0
 WORKDIR /app
 
-# Download every dependency from the lockfile alone, then bring in the
-# source. Any source change invalidates only the layers below the COPY —
-# the package store survives in the cache mount, so reinstalls are cheap.
 FROM base AS source
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
 COPY . .
 
-# Production deps for backend + worker and their workspace dependencies
-# (execution-core, types). Both apps run TS directly through tsx — the
-# Temporal worker additionally requires its workflow TS source on disk at
-# runtime (the workflow sandbox bundles it from source), so there is no
-# build step to get wrong.
+# tsx runs TS directly — required anyway for the worker, whose workflow
+# sandbox bundles from TS source on disk at runtime.
+# --prefer-offline (not --offline): offline mode leaks into lifecycle
+# scripts and breaks the icons build, which shells out to npx.
 FROM source AS runtime
-# root `prepare` runs husky, a devDependency that a --prod install doesn't
-# have — drop the script inside the image (root scripts are unused at runtime)
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    # `prepare` runs husky, absent from a --prod install
     npm pkg delete scripts.prepare && \
     pnpm install --frozen-lockfile --prefer-offline --prod \
     --filter backend... --filter execution-worker...
-# command supplied by docker-compose:
-#   backend: pnpm --filter backend start:prod
-#   worker:  pnpm --filter execution-worker start:prod
 
-# The SPA build imports the SDK from source (vite alias), so this needs the
-# full frontend dependency tree. VITE_BACKEND_URL is baked in at build time;
-# the default (empty) makes the app call /api on its own origin, which the
-# web target's nginx proxies to the backend.
+# VITE_BACKEND_URL is baked at build time; empty = same-origin /api,
+# proxied by the web target's nginx.
 FROM source AS frontend-build
 ARG VITE_BACKEND_URL=
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \

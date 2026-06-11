@@ -42,8 +42,7 @@ const activities = {
   },
 };
 
-// Without an explicit connection the worker silently dials 127.0.0.1:7233,
-// ignoring TEMPORAL_ADDRESS — correct in local dev, wrong everywhere else.
+// without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS });
 
 const worker = await Worker.create({

@@ -1,19 +1,9 @@
 ---
-# Deploys the AI Studio execution stack to the Docker Swarm cluster,
-# following the workflow-builder repo's deploy-application playbook. The
-# images are the same two targets the local compose builds
-# (deploy/ai-studio/Dockerfile); only the orchestration differs. Database
-# migrations run inside the backend at boot, so there is no migration step
-# here — the backend restarts until Postgres answers, then migrates itself.
-#
-# Differences from the workflow-builder playbook, all forced by AI Studio
-# being stateful:
-#   - Postgres x2 + Temporal services with named volumes, pinned to the node
-#     labeled `ai-studio-data=true` (Swarm volumes are node-local).
-#   - Services get short DNS aliases (backend, app-db, temporal, ...) so the
-#     same images and env defaults work under compose and Swarm.
-#   - Gatekeeper is optional (AUTH_ENABLED=true): the WB-229 public demo is
-#     deliberately login-free; internal stage/dev instances can enable it.
+# AI Studio on the Swarm cluster, following the workflow-builder repo's
+# deploy-application playbook with the same images as deploy/ai-studio.
+# No migration step: the backend migrates itself at boot. DB/Temporal
+# volumes are pinned via node.labels.ai-studio-data (Swarm volumes are
+# node-local); gatekeeper is optional (AUTH_ENABLED).
 
 - hosts: master
 
