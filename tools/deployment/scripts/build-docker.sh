@@ -1,6 +1,6 @@
 #!/bin/sh
 # Build + push the AI Studio images to ACR, mirroring the workflow-builder
-# repo's tools/deployment/scripts/build-docker.sh. All three images come from
+# repo's tools/deployment/scripts/build-docker.sh. Both images come from
 # the same multi-target Dockerfile in deploy/ai-studio/ — this script only
 # adds registry tagging; the images are identical to the local-compose ones.
 #
@@ -15,7 +15,7 @@ COMMIT="${BITBUCKET_COMMIT:-$(git rev-parse HEAD)}"
 ENVIRONMENT="${BITBUCKET_DEPLOYMENT_ENVIRONMENT:-${DEPLOY_ENV:-}}"
 export IMAGE_TAG="${TAG_PREFIX:-}$COMMIT"
 
-for TARGET in runtime migrate web; do
+for TARGET in runtime web; do
   TAG="$REGISTRY/$APP_NAME:$TARGET-$IMAGE_TAG"
   docker build \
     -f ./deploy/ai-studio/Dockerfile \
@@ -30,7 +30,7 @@ if echo "$ALLOWED_ENVIRONMENTS" | grep -w "$ENVIRONMENT" > /dev/null; then
   # setup-az.sh exists in the deployment CI image; logging in by other means
   # (az acr login / docker login) is fine when running elsewhere
   [ -f /var/setup-az.sh ] && . /var/setup-az.sh
-  for TARGET in runtime migrate web; do
+  for TARGET in runtime web; do
     docker push "$REGISTRY/$APP_NAME:$TARGET-$IMAGE_TAG"
   done
 else

@@ -3,8 +3,11 @@
 # AI Studio execution stack — single Dockerfile, multiple targets:
 #
 #   runtime  -> backend + execution-worker (command chosen per compose service)
-#   migrate  -> one-shot Drizzle migration runner (needs backend devDependencies)
 #   web      -> nginx serving the AI Studio SPA + reverse proxy to the backend
+#
+# Database migrations run inside the backend at boot (drizzle-orm's
+# programmatic migrator over apps/backend/drizzle/), so there is no separate
+# migration image or deploy step.
 #
 # Build context must be the repo root (workspace packages are linked via
 # pnpm `workspace:*`), e.g.:
@@ -50,13 +53,6 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 # command supplied by docker-compose:
 #   backend: pnpm --filter backend start:prod
 #   worker:  pnpm --filter execution-worker start:prod
-
-# Migrations need drizzle-kit, a backend devDependency — hence a separate
-# target with a dev install. Runs as a one-shot service before the backend.
-FROM source AS migrate
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --prefer-offline --filter backend...
-CMD ["pnpm", "--filter", "backend", "db:migrate"]
 
 # The SPA build imports the SDK from source (vite alias), so this needs the
 # full frontend dependency tree. VITE_BACKEND_URL is baked in at build time;

@@ -36,12 +36,12 @@ a static frontend:
 
 1. Database/Temporal services with named volumes pinned to a labeled node
    (`node.labels.ai-studio-data==true`) — Swarm volumes are node-local.
-2. Migrations as a post-deploy one-shot `docker run` with retries — Swarm
-   ignores compose `depends_on` conditions, so the ordering that compose
-   expressed declaratively lives in the playbook.
-3. An `attachable` internal network plus short DNS aliases (`backend`,
-   `app-db`, `temporal`) so the unmodified web image's nginx upstream and
-   the compose env defaults resolve identically under Swarm.
+2. No migration step (revised 11.06.2026) — the backend applies Drizzle
+   migrations at boot and restarts until Postgres answers, which sidesteps
+   Swarm's lack of `depends_on` ordering entirely.
+3. Short DNS aliases (`backend`, `app-db`, `temporal`) so the unmodified
+   web image's nginx upstream and the compose env defaults resolve
+   identically under Swarm.
 4. Gatekeeper made conditional (`AUTH_ENABLED`, default off) — the public
    demo is login-free by design; internal stage/dev instances can keep SSO.
 
@@ -78,6 +78,12 @@ a static frontend:
     verified on the real cluster.
   - Secrets land in a stack file on the Swarm master's disk (inherited
     trade-off from the existing flow).
+
+## Revisions
+
+- **11.06.2026** — playbook migration task and the `attachable` network
+  removed; the backend migrates itself at boot. Image set is down to
+  `runtime` + `web`.
 
 ## Status
 

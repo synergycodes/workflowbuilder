@@ -32,7 +32,7 @@ Everything lives in `deploy/ai-studio/`: one multi-target Dockerfile, a
 production `docker-compose.yml`, the nginx config, `.env.example`, and a
 DevOps-facing README.
 
-1. **One Dockerfile, three targets** (`runtime`, `migrate`, `web`), built
+1. **One Dockerfile, two targets** (`runtime`, `web`), built
    with the repo root as context (pnpm `workspace:*` links require it). A
    shared `source` stage does `pnpm fetch` against a BuildKit cache mount, so
    per-target installs are store-hits.
@@ -44,11 +44,13 @@ DevOps-facing README.
    entirely — there is no bundling step to get wrong.
 3. **One shared `runtime` image for backend and worker**; the compose
    `command` picks the entrypoint. One image to build, push, and version.
-4. **Migrations as a one-shot compose service** (`migrate` target, carries
-   drizzle-kit as a backend devDependency). `depends_on:
-service_completed_successfully` gates the backend, so `docker compose up`
-   is a complete first boot. Same answer works as a k8s Job / ACA job if a
-   customer reshapes the topology.
+4. **Migrations on backend boot** (revised 11.06.2026 — originally a
+   one-shot `migrate` compose service). The backend applies pending Drizzle
+   migrations via drizzle-orm's programmatic migrator before accepting
+   traffic; on failure it exits and the restart policy retries until
+   Postgres answers. One less image, no orchestrator-specific ordering —
+   the same behavior on compose, Swarm, or anything else. Single-replica
+   assumption: concurrent backends would race the migrator.
 5. **nginx is the only public surface.** It serves the SPA and proxies
    `/api` to the backend on the internal network; the SSE stream route gets
    `proxy_buffering off` + long read timeout. The backend container is
@@ -134,6 +136,12 @@ Found and fixed during end-to-end verification: the worker ignored
     load (the apps only consume `TEMPORAL_ADDRESS`).
   - pnpm version is pinned in two places (root `packageManager` +
     Dockerfile).
+
+## Revisions
+
+- **11.06.2026** — `migrate` target and service removed; the backend now
+  migrates itself at boot (Jan's simplification request during WB-229
+  review). Dockerfile is down to two targets (`runtime`, `web`).
 
 ## Status
 

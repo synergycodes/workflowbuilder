@@ -1,16 +1,15 @@
 ---
 # Deploys the AI Studio execution stack to the Docker Swarm cluster,
 # following the workflow-builder repo's deploy-application playbook. The
-# images are the same three targets the local compose builds
-# (deploy/ai-studio/Dockerfile); only the orchestration differs.
+# images are the same two targets the local compose builds
+# (deploy/ai-studio/Dockerfile); only the orchestration differs. Database
+# migrations run inside the backend at boot, so there is no migration step
+# here — the backend restarts until Postgres answers, then migrates itself.
 #
 # Differences from the workflow-builder playbook, all forced by AI Studio
 # being stateful:
 #   - Postgres x2 + Temporal services with named volumes, pinned to the node
 #     labeled `ai-studio-data=true` (Swarm volumes are node-local).
-#   - Migrations run as a one-shot container after stack deploy — Swarm
-#     ignores compose depends_on conditions, so ordering lives here.
-#   - The `internal` network is attachable so the migrate container can join.
 #   - Services get short DNS aliases (backend, app-db, temporal, ...) so the
 #     same images and env defaults work under compose and Swarm.
 #   - Gatekeeper is optional (AUTH_ENABLED=true): the WB-229 public demo is
@@ -203,8 +202,6 @@
 
           networks:
             internal:
-              # attachable so the one-shot migrate container below can join
-              attachable: true
             traefik-host-external:
               external: true
 
@@ -224,18 +221,3 @@
         with_registry_auth: yes
         compose:
           - '/mnt/docker-swarm-storage/stacks/{{ stack_name }}/{{ app_name }}.stack.yml'
-
-    # Swarm has no depends_on / one-shot service semantics: run Drizzle
-    # migrations as a plain container on the stack's attachable overlay
-    # network. Retries cover app-db still starting up on first deploy.
-    - name: Run database migrations
-      command: >
-        docker run --rm
-        --network {{ stack_name }}_internal
-        -e DATABASE_URL={{ database_url }}
-        {{ registry }}/{{ app_name }}:migrate-{{ image_tag }}
-        pnpm --filter backend db:migrate
-      register: migrate_result
-      retries: 10
-      delay: 6
-      until: migrate_result.rc == 0

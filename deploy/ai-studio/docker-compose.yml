@@ -73,19 +73,8 @@ services:
       - '127.0.0.1:8233:8080'
     restart: unless-stopped
 
-  migrate:
-    image: ai-studio-migrate
-    build:
-      context: ../..
-      dockerfile: deploy/ai-studio/Dockerfile
-      target: migrate
-    environment:
-      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
-    depends_on:
-      app-db:
-        condition: service_healthy
-    restart: 'no'
-
+  # Applies Drizzle migrations at boot, before accepting traffic. A failure
+  # (e.g. Postgres still starting) exits the process and `restart` retries.
   backend:
     image: ai-studio-runtime
     build: *runtime-build
@@ -106,8 +95,6 @@ services:
     depends_on:
       app-db:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
       temporal:
         condition: service_started
     healthcheck:
@@ -138,8 +125,9 @@ services:
     depends_on:
       app-db:
         condition: service_healthy
-      migrate:
-        condition: service_completed_successfully
+      # healthy = migrations applied — the worker writes to the same schema
+      backend:
+        condition: service_healthy
       temporal:
         condition: service_started
     restart: unless-stopped

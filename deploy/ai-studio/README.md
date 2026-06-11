@@ -14,15 +14,16 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 | `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend   | `${WEB_PORT}` (only one) |
 | `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                    | internal                 |
 | `worker`      | `ai-studio-runtime`            | Temporal worker, makes the OpenRouter LLM calls | internal                 |
-| `migrate`     | `ai-studio-migrate`            | One-shot Drizzle migrations, then exits         | internal                 |
 | `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                 | internal                 |
 | `app-db`      | `postgres:16`                  | Workflow snapshots + execution events           | internal                 |
 | `temporal-db` | `postgres:16`                  | Temporal's own state store                      | internal                 |
 | `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                  | `127.0.0.1:8233`         |
 
-All images build from one Dockerfile (`deploy/ai-studio/Dockerfile`) with the
+Both images build from one Dockerfile (`deploy/ai-studio/Dockerfile`) with the
 repo root as context. Backend and worker share a single image and differ only
-in the compose `command`.
+in the compose `command`. Database migrations are applied by the backend at
+boot (drizzle-orm's programmatic migrator) — there is no separate migration
+service or step.
 
 ## Quick start
 
@@ -32,9 +33,9 @@ cp .env.example .env        # set OPENROUTER_API_KEY
 docker compose up -d --build
 ```
 
-First boot: migrations run automatically (`migrate` exits 0, then the backend
-starts). The worker crash-loops for ~30s until Temporal finishes auto-setup —
-that's expected, `restart: unless-stopped` converges it.
+First boot: the backend applies migrations and only then starts serving (its
+healthcheck gates the worker). The worker crash-loops for ~30s until Temporal
+finishes auto-setup — that's expected, `restart: unless-stopped` converges it.
 
 Verify:
 
@@ -89,7 +90,7 @@ Swapping the LLM is a one-liner: change `AI_MODEL` to any
 ```bash
 docker compose logs -f backend worker        # tail the apps
 docker compose --profile debug up -d         # Temporal UI on 127.0.0.1:8233
-docker compose up -d --build                 # deploy a new version (re-runs migrations)
+docker compose up -d --build                 # deploy a new version (backend re-applies migrations at boot)
 docker compose down                          # stop (volumes survive)
 docker exec ai-studio-app-db-1 pg_dump -U wb workflow_builder > backup.sql
 ```

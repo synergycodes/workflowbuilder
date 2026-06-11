@@ -5,7 +5,7 @@ the same layout, scripts, and Ansible flow as the `workflow-builder` repo's
 `tools/deployment/` — so DevOps operates one familiar shape.
 
 This is an **orchestration overlay, not a second deployment**: it consumes
-the exact same three images (`runtime`, `migrate`, `web`) built from
+the exact same two images (`runtime`, `web`) built from
 [`deploy/ai-studio/Dockerfile`](../../deploy/ai-studio/Dockerfile). The
 compose file in `deploy/ai-studio/` remains the portable, customer-facing
 artifact and the local full-stack runner; this directory adds the
@@ -17,7 +17,7 @@ tools/deployment/
 │   ├── build-docker.sh    # build all 3 targets, tag for ACR, push (CI-gated)
 │   └── deploy.sh          # run the Ansible playbook (CI image or workstation)
 └── ansible/deploy-application/
-    └── main.yml           # writes the Swarm stack file on the master + deploys + migrates
+    └── main.yml           # writes the Swarm stack file on the master + deploys
 ```
 
 ## Usage
@@ -52,13 +52,12 @@ make them runnable from a workstation or GitHub Actions.
 
 ## What differs from the workflow-builder playbook (and why)
 
-| Deviation                                                                                         | Reason                                                                                                                               |
-| ------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| Postgres ×2 + Temporal services with named volumes, pinned via `node.labels.ai-studio-data==true` | AI Studio is stateful; Swarm volumes are node-local. **One-time setup:** `docker node update --label-add ai-studio-data=true <node>` |
-| Migrations run post-deploy as a one-shot `docker run` on the stack network (with retries)         | Swarm ignores compose `depends_on` conditions                                                                                        |
-| `internal` network is `attachable: true`                                                          | Lets the migrate container join the overlay                                                                                          |
-| Services carry short DNS aliases (`backend`, `app-db`, `temporal`, …)                             | The web image's nginx proxies to `http://backend:3001`; aliases keep the images and env defaults identical between compose and Swarm |
-| Gatekeeper is conditional (`AUTH_ENABLED`)                                                        | The WB-229 public demo is deliberately login-free; internal instances can keep SSO                                                   |
+| Deviation                                                                                              | Reason                                                                                                                               |
+| ------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------ |
+| Postgres ×2 + Temporal services with named volumes, pinned via `node.labels.ai-studio-data==true`      | AI Studio is stateful; Swarm volumes are node-local. **One-time setup:** `docker node update --label-add ai-studio-data=true <node>` |
+| No migration step — the backend applies Drizzle migrations at boot and restarts until Postgres answers | Swarm ignores compose `depends_on` conditions, so ordering must not rely on them                                                     |
+| Services carry short DNS aliases (`backend`, `app-db`, `temporal`, …)                                  | The web image's nginx proxies to `http://backend:3001`; aliases keep the images and env defaults identical between compose and Swarm |
+| Gatekeeper is conditional (`AUTH_ENABLED`)                                                             | The WB-229 public demo is deliberately login-free; internal instances can keep SSO                                                   |
 
 SSE note: Traefik streams responses by default, so the live execution stream
 works without special ingress config; the 15 s backend heartbeat keeps the
