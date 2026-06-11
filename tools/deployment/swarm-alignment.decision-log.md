@@ -6,7 +6,7 @@
 
 ## Context
 
-The compose-based deployment in `deploy/ai-studio/` (see its decision log)
+The compose-based deployment in `deploy/ai-studio/`
 targets a single Docker host and ships TLS as a bring-your-own concern. The
 company's actual Azure footprint, found in the `workflow-builder` repo's
 `tools/deployment/`, is different: a self-managed Docker Swarm cluster with

@@ -82,20 +82,17 @@ describe('executeDecision', () => {
     }
   });
 
-  it('treats a branch with no conditions as the catch-all', () => {
+  it('treats a branch with no conditions as non-matching (so callers must throw or use explicit operators)', () => {
+    // Empty conditions array — branchMatches returns false, so this is NOT
+    // a default. If someone wants a default, they need a branch whose
+    // conditions evaluate to true (e.g. isEqual 'x' 'x').
     const node = decisionNode([
       {
-        sourceHandle: 'no',
-        conditions: [{ x: 'a', y: 'b', comparisonOperator: 'isEqual' }],
-      },
-      {
-        sourceHandle: 'fallback',
+        sourceHandle: 'empty',
         conditions: [],
       },
     ]);
 
-    const result = executeDecision(node, context());
-
-    expect(result.nextPort).toBe('fallback');
+    expect(() => executeDecision(node, context())).toThrowError(NodeExecutionError);
   });
 });
