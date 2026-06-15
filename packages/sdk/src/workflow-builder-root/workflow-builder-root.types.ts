@@ -1,4 +1,4 @@
-import type { EdgeProps } from '@xyflow/react';
+import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren } from 'react';
 
 import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
@@ -91,6 +91,101 @@ export type WorkflowBuilderJsonFormConfig = {
 };
 
 /**
+ * Arguments passed to a {@link WorkflowBuilderIsValidConnection} callback. The
+ * SDK resolves the source and target nodes from the connection's node ids, so a
+ * rule can branch on `data.type` / `data.properties` without touching the store.
+ *
+ * @category Core
+ */
+export type IsValidConnectionParams = {
+  /** Raw ReactFlow connection candidate — source / target node ids + handle ids. */
+  connection: Connection;
+  /** The node the connection is dragged from (resolved from `connection.source`). */
+  sourceNode: WorkflowBuilderNode;
+  /** The node the connection is dragged to (resolved from `connection.target`). */
+  targetNode: WorkflowBuilderNode;
+};
+
+/**
+ * Decides whether a connection between two nodes is allowed. Runs live while
+ * the user drags a connection: return `false` to block the drop. No edge is
+ * created and there is no flicker, because the connection is rejected before it
+ * ever enters the graph.
+ *
+ * Fail-open: if either endpoint can't be resolved to a node in the store, the
+ * connection is allowed and this callback is not invoked, so a strict
+ * deny-by-default rule still can't block a drop whose nodes are unknown.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderIsValidConnection = (params: IsValidConnectionParams) => boolean;
+
+/**
+ * ReactFlow props the SDK manages itself and spreads last in `diagram.tsx`, so
+ * they always win at runtime. Omitted from {@link WorkflowBuilderReactFlowProps}.
+ * Edit this union when the SDK starts or stops managing a prop.
+ */
+type SdkManagedReactFlowKey =
+  | 'nodes'
+  | 'edges'
+  | 'defaultNodes'
+  | 'defaultEdges'
+  | 'nodeTypes'
+  | 'edgeTypes'
+  | 'onConnect'
+  | 'onConnectStart'
+  | 'onConnectEnd'
+  | 'onNodesChange'
+  | 'onEdgesChange'
+  | 'onSelectionChange'
+  | 'onInit'
+  | 'onBeforeDelete'
+  | 'onNodeDragStart'
+  | 'onNodeDragStop'
+  | 'onEdgeMouseEnter'
+  | 'onEdgeMouseLeave'
+  | 'onDragOver'
+  | 'onDrop'
+  | 'connectionLineComponent'
+  | 'nodesConnectable'
+  | 'nodesDraggable'
+  | 'isValidConnection';
+
+/**
+ * ReactFlow props the SDK reserves but does not set: governed elsewhere, so a
+ * `reactFlowProps` override would silently fight that system. `colorMode` is
+ * owned by the SDK theming layer (design tokens / `initTheme`), so it is omitted
+ * here rather than left to conflict with the active theme.
+ */
+type SdkReservedReactFlowKey = 'colorMode';
+
+/** Every ReactFlow key the escape hatch must not expose. */
+type SdkOwnedReactFlowKey = SdkManagedReactFlowKey | SdkReservedReactFlowKey;
+
+/**
+ * Identity type that compiles only when `A` is assignable to `B`. Used below so
+ * an owned key that is no longer a real ReactFlow prop fails the build (`Omit`
+ * does not validate its keys).
+ */
+type AssertAssignable<A extends B, B> = A;
+
+/**
+ * Escape hatch for the underlying ReactFlow canvas: forwards any ReactFlow prop
+ * except the ones the SDK owns ({@link SdkOwnedReactFlowKey}), which are omitted
+ * here and always win at runtime, so the editor cannot be broken from the
+ * outside. Theme via the SDK design tokens rather than ReactFlow's `colorMode`
+ * (omitted here for that reason).
+ *
+ * **Must be a stable reference** — declare at module level or memoize.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderReactFlowProps = Omit<
+  ReactFlowProps<WorkflowBuilderNode, WorkflowBuilderEdge>,
+  AssertAssignable<SdkOwnedReactFlowKey, keyof ReactFlowProps<WorkflowBuilderNode, WorkflowBuilderEdge>>
+>;
+
+/**
  * Props accepted by `<WorkflowBuilder.Root>`.
  *
  * @category Core
@@ -147,4 +242,23 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   initialNodes?: WorkflowBuilderNode[];
   /** Initial edges rendered on first mount. */
   initialEdges?: WorkflowBuilderEdge[];
+  /**
+   * Validate connections as the user draws them. Receives the candidate
+   * `connection` plus the resolved `sourceNode` / `targetNode`; return `false`
+   * to reject it. An invalid drop creates no edge and does not flicker.
+   *
+   * **Must be a stable reference** (declare at module level or memoize).
+   *
+   * @example
+   * ```ts
+   * const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targetNode }) =>
+   *   !(sourceNode.data.type === 'start' && targetNode.data.type === 'start');
+   * ```
+   */
+  isValidConnection?: WorkflowBuilderIsValidConnection;
+  /**
+   * Advanced. Forwards extra props to the underlying ReactFlow canvas. See
+   * {@link WorkflowBuilderReactFlowProps} for what is allowed.
+   */
+  reactFlowProps?: WorkflowBuilderReactFlowProps;
 }>;

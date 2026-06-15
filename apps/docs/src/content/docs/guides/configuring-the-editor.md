@@ -17,18 +17,20 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 All props optional unless marked.
 
-| Prop               | Type                                                                 | Default                        | Description                                                            |
-| ------------------ | -------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------- |
-| `integration`      | [`WorkflowBuilderIntegration`](#integration-strategies)              | `{ strategy: 'localStorage' }` | How the builder loads and persists diagram data.                       |
-| `nodeTypes`        | [`PaletteItemOrGroup[]`](#node-types)                                | `[]`                           | Node type definitions rendered in the palette and used for validation. |
-| `diagramTemplates` | `TemplateModel[]`                                                    | `[]`                           | Diagram templates available in the template selector.                  |
-| `jsonForm`         | [`WorkflowBuilderJsonFormConfig`](/guides/custom-jsonforms-control/) | —                              | Custom JSONForms renderers, cells, and translations.                   |
-| `plugins`          | [`WorkflowBuilderPlugin[]`](/guides/build-a-plugin/)                 | —                              | Plugin initializer functions. Each called once on first mount.         |
-| `name`             | `string`                                                             | —                              | Workflow name displayed in the header.                                 |
-| `layoutDirection`  | `'DOWN' \| 'RIGHT'`                                                  | `'DOWN'`                       | Flow direction of the diagram.                                         |
-| `initialNodes`     | `WorkflowBuilderNode[]`                                              | `[]`                           | Initial diagram nodes (used by the `props` integration strategy).      |
-| `initialEdges`     | `WorkflowBuilderEdge[]`                                              | `[]`                           | Initial diagram edges (used by the `props` integration strategy).      |
-| `children`         | `ReactNode`                                                          | `<DefaultLayout />`            | Custom layout. Omit children for the default floating-overlay layout.  |
+| Prop                | Type                                                                 | Default                        | Description                                                            |
+| ------------------- | -------------------------------------------------------------------- | ------------------------------ | ---------------------------------------------------------------------- |
+| `integration`       | [`WorkflowBuilderIntegration`](#integration-strategies)              | `{ strategy: 'localStorage' }` | How the builder loads and persists diagram data.                       |
+| `nodeTypes`         | [`PaletteItemOrGroup[]`](#node-types)                                | `[]`                           | Node type definitions rendered in the palette and used for validation. |
+| `diagramTemplates`  | `TemplateModel[]`                                                    | `[]`                           | Diagram templates available in the template selector.                  |
+| `jsonForm`          | [`WorkflowBuilderJsonFormConfig`](/guides/custom-jsonforms-control/) | —                              | Custom JSONForms renderers, cells, and translations.                   |
+| `plugins`           | [`WorkflowBuilderPlugin[]`](/guides/build-a-plugin/)                 | —                              | Plugin initializer functions. Each called once on first mount.         |
+| `name`              | `string`                                                             | —                              | Workflow name displayed in the header.                                 |
+| `layoutDirection`   | `'DOWN' \| 'RIGHT'`                                                  | `'DOWN'`                       | Flow direction of the diagram.                                         |
+| `initialNodes`      | `WorkflowBuilderNode[]`                                              | `[]`                           | Initial diagram nodes (used by the `props` integration strategy).      |
+| `initialEdges`      | `WorkflowBuilderEdge[]`                                              | `[]`                           | Initial diagram edges (used by the `props` integration strategy).      |
+| `isValidConnection` | [`WorkflowBuilderIsValidConnection`](#connection-validation)         | —                              | Validate connections as the user draws them.                           |
+| `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](#advanced-reactflow-props)         | —                              | Escape hatch for the underlying ReactFlow canvas.                      |
+| `children`          | `ReactNode`                                                          | `<DefaultLayout />`            | Custom layout. Omit children for the default floating-overlay layout.  |
 
 ## Compound subcomponents
 
@@ -166,6 +168,43 @@ type DidSaveStatus = 'success' | 'error' | 'alreadyStarted';
 ```
 
 Today the runtime treats every non-empty resolution of `onDataSave` as "the save finished", surfacing the success-style snackbar — `'success'`, `'error'`, and `'alreadyStarted'` all behave the same way at the UI level. Throw from `onDataSave` instead of resolving to `'error'` if you need an error snackbar.
+
+## Connection validation
+
+`isValidConnection` decides whether a connection between two nodes is allowed. It runs live while the user drags a connection: return `false` to reject it. No edge is created and there is no flicker.
+
+The callback receives the resolved `sourceNode` and `targetNode` (plus the raw `connection`), so a rule can branch on `data.type` / `data.properties` without reaching into the store. Declare it at module scope (or memoize) so the reference stays stable.
+
+```tsx
+import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
+
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targetNode }) =>
+  !(sourceNode.data.type === 'start' && targetNode.data.type === 'start');
+
+<WorkflowBuilder.Root isValidConnection={isValidConnection} />;
+```
+
+This validates interactive drags only. Programmatic edge writes (templates, paste, `setStoreEdges`) are not gated, the same as in ReactFlow.
+
+The SDK ships no colour for the in-drag handle state. To add a visual cue, style ReactFlow's handle classes yourself: during a drag it adds `connectingto` to the hovered handle, plus `valid` when `isValidConnection` allows the connection (`.react-flow__handle.connectingto` for an invalid target, `.react-flow__handle.connectingto.valid` for an allowed one).
+
+## Advanced: ReactFlow props
+
+`reactFlowProps` forwards extra props straight to the underlying ReactFlow canvas, for capabilities the SDK does not surface as first-class props: zoom limits, key codes, viewport bounds, edge reconnection, observability handlers (`onNodeClick`, `onPaneClick`, …), performance flags, and so on.
+
+```tsx
+import { WorkflowBuilder, type WorkflowBuilderReactFlowProps } from '@workflowbuilder/sdk';
+
+const reactFlowProps = {
+  maxZoom: 1.5,
+  zoomOnDoubleClick: false,
+  onNodeClick: (_, node) => console.log(node.id),
+} satisfies WorkflowBuilderReactFlowProps;
+
+<WorkflowBuilder.Root reactFlowProps={reactFlowProps} />;
+```
+
+Props the SDK owns (graph data, the connection / selection / change handlers, node and edge type maps, the connection line, plus `colorMode`) are omitted from `WorkflowBuilderReactFlowProps`, so they can't be set here and this can never break the editor. To **observe** SDK-owned events use the listener APIs (`addNodeChangedListener`, `addNodeDragStartListener`) instead. To change colours use the design tokens, not `colorMode`. Passing arbitrary ReactFlow props couples your app to ReactFlow's version.
 
 ## Minimal example
 
