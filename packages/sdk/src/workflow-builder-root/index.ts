@@ -1,9 +1,9 @@
 export { WorkflowBuilderRoot } from './workflow-builder-root';
 export type {
-  IsValidConnectionParams,
   WorkflowBuilderEdgeTemplates,
   WorkflowBuilderIntegration,
   WorkflowBuilderIsValidConnection,
+  WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderPlugin,

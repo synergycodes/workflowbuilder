@@ -57,7 +57,7 @@ export type {
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderEdgeTemplates,
   WorkflowBuilderIsValidConnection,
-  IsValidConnectionParams,
+  WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderReactFlowProps,
 } from './workflow-builder-root';
 

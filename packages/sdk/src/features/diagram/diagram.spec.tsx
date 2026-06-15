@@ -16,7 +16,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { setIsValidConnection, setReactFlowProps } from '../../data/react-flow-config';
 import type { WorkflowBuilderNode } from '../../node/node-data';
 import { resetWorkflowStore, useStore } from '../../store/store';
-import type { WorkflowBuilderReactFlowProps } from '../../workflow-builder-root/workflow-builder-root.types';
+import type {
+  SdkManagedReactFlowKey,
+  WorkflowBuilderReactFlowProps,
+} from '../../workflow-builder-root/workflow-builder-root.types';
 import { DiagramContainer } from './diagram';
 
 const { updateNodeInternals } = vi.hoisted(() => ({ updateNodeInternals: vi.fn() }));
@@ -41,6 +44,11 @@ vi.mock('../modals/delete-confirmation/use-delete-confirmation', () => ({
 function makeNode(id: string): WorkflowBuilderNode {
   return { id, position: { x: 0, y: 0 }, type: 'action', data: { type: 'action', icon: 'Plus', properties: {} } };
 }
+
+// Unique reference smuggled in via `reactFlowProps` under every SDK-owned key.
+// The SDK must overwrite each one, so this reference must never survive to
+// ReactFlow.
+const OWNED_SENTINEL = { __sentinel: true };
 
 /** Props the (mocked) `ReactFlow` received on the latest render. */
 function capturedFlowProps() {
@@ -99,8 +107,49 @@ describe('DiagramContainer — reactFlowProps precedence', () => {
     const props = capturedFlowProps();
 
     // No Root-level `isValidConnection` set, so the owned slot resolves to
-    // `undefined` (ReactFlow default) — the consumer's smuggled callback never wins.
+    // `undefined` (ReactFlow default). The consumer's smuggled callback never wins.
     expect(props.isValidConnection).toBeUndefined();
     expect(consumerIsValid).not.toHaveBeenCalled();
+  });
+
+  it('sets every SDK-managed prop as an owned attribute below the spreads', () => {
+    // Exhaustive over `SdkManagedReactFlowKey`: adding a key to that union forces
+    // a new entry here (the `Record` literal stops compiling otherwise), and this
+    // test then proves `diagram.tsx` actually sets it after the consumer spread.
+    // A managed key missing from the owned JSX block, or moved above the spread,
+    // lets the sentinel survive and fails here. Covers every key, not just the
+    // representative handful asserted above.
+    const sentinels: Record<SdkManagedReactFlowKey, unknown> = {
+      nodes: OWNED_SENTINEL,
+      edges: OWNED_SENTINEL,
+      nodeTypes: OWNED_SENTINEL,
+      edgeTypes: OWNED_SENTINEL,
+      onConnect: OWNED_SENTINEL,
+      onConnectStart: OWNED_SENTINEL,
+      onConnectEnd: OWNED_SENTINEL,
+      onNodesChange: OWNED_SENTINEL,
+      onEdgesChange: OWNED_SENTINEL,
+      onSelectionChange: OWNED_SENTINEL,
+      onInit: OWNED_SENTINEL,
+      onBeforeDelete: OWNED_SENTINEL,
+      onNodeDragStart: OWNED_SENTINEL,
+      onNodeDragStop: OWNED_SENTINEL,
+      onEdgeMouseEnter: OWNED_SENTINEL,
+      onEdgeMouseLeave: OWNED_SENTINEL,
+      onDragOver: OWNED_SENTINEL,
+      onDrop: OWNED_SENTINEL,
+      connectionLineComponent: OWNED_SENTINEL,
+      nodesConnectable: OWNED_SENTINEL,
+      nodesDraggable: OWNED_SENTINEL,
+      isValidConnection: OWNED_SENTINEL,
+    };
+
+    setReactFlowProps(sentinels as unknown as WorkflowBuilderReactFlowProps);
+    render(<DiagramContainer />);
+    const props = capturedFlowProps();
+
+    for (const key of Object.keys(sentinels)) {
+      expect(props[key], `${key} must be set by the SDK, not by reactFlowProps`).not.toBe(OWNED_SENTINEL);
+    }
   });
 });

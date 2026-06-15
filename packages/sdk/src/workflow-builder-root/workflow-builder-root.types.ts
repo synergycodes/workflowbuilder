@@ -97,8 +97,8 @@ export type WorkflowBuilderJsonFormConfig = {
  *
  * @category Core
  */
-export type IsValidConnectionParams = {
-  /** Raw ReactFlow connection candidate — source / target node ids + handle ids. */
+export type WorkflowBuilderIsValidConnectionParams = {
+  /** Raw ReactFlow connection candidate: source / target node ids + handle ids. */
   connection: Connection;
   /** The node the connection is dragged from (resolved from `connection.source`). */
   sourceNode: WorkflowBuilderNode;
@@ -118,18 +118,20 @@ export type IsValidConnectionParams = {
  *
  * @category Core
  */
-export type WorkflowBuilderIsValidConnection = (params: IsValidConnectionParams) => boolean;
+export type WorkflowBuilderIsValidConnection = (params: WorkflowBuilderIsValidConnectionParams) => boolean;
 
 /**
- * ReactFlow props the SDK manages itself and spreads last in `diagram.tsx`, so
- * they always win at runtime. Omitted from {@link WorkflowBuilderReactFlowProps}.
- * Edit this union when the SDK starts or stops managing a prop.
+ * ReactFlow props the SDK sets itself, as explicit JSX attributes spread last in
+ * `diagram.tsx`, so they always win at runtime over `reactFlowProps`. Omitted
+ * from {@link WorkflowBuilderReactFlowProps}. Every key here must appear in that
+ * owned-attribute block; the `diagram.spec` precedence test enforces it. Edit
+ * this union when the SDK starts or stops setting a prop.
+ *
+ * Exported for that test only; not re-exported from the public entry point.
  */
-type SdkManagedReactFlowKey =
+export type SdkManagedReactFlowKey =
   | 'nodes'
   | 'edges'
-  | 'defaultNodes'
-  | 'defaultEdges'
   | 'nodeTypes'
   | 'edgeTypes'
   | 'onConnect'
@@ -152,12 +154,14 @@ type SdkManagedReactFlowKey =
   | 'isValidConnection';
 
 /**
- * ReactFlow props the SDK reserves but does not set: governed elsewhere, so a
- * `reactFlowProps` override would silently fight that system. `colorMode` is
- * owned by the SDK theming layer (design tokens / `initTheme`), so it is omitted
- * here rather than left to conflict with the active theme.
+ * ReactFlow props the SDK reserves but does not set: allowing them would silently
+ * fight a system that owns the same concern. `defaultNodes` / `defaultEdges` are
+ * the uncontrolled-mode counterparts of the controlled `nodes` / `edges` the SDK
+ * drives, so they would desync the store. `colorMode` is owned by the SDK theming
+ * layer (design tokens / `initTheme`), so it is omitted rather than left to
+ * conflict with the active theme. None of these are spread in `diagram.tsx`.
  */
-type SdkReservedReactFlowKey = 'colorMode';
+type SdkReservedReactFlowKey = 'defaultNodes' | 'defaultEdges' | 'colorMode';
 
 /** Every ReactFlow key the escape hatch must not expose. */
 type SdkOwnedReactFlowKey = SdkManagedReactFlowKey | SdkReservedReactFlowKey;
@@ -176,7 +180,9 @@ type AssertAssignable<A extends B, B> = A;
  * outside. Theme via the SDK design tokens rather than ReactFlow's `colorMode`
  * (omitted here for that reason).
  *
- * **Must be a stable reference** — declare at module level or memoize.
+ * A stable reference is preferred but not required: this value is only spread
+ * onto the canvas, never used as a hook dependency, so an inline object does not
+ * trigger remounts the way an unstable `nodeTypes` / `edgeTemplates` would.
  *
  * @category Core
  */
@@ -258,7 +264,8 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   isValidConnection?: WorkflowBuilderIsValidConnection;
   /**
    * Advanced. Forwards extra props to the underlying ReactFlow canvas. See
-   * {@link WorkflowBuilderReactFlowProps} for what is allowed.
+   * {@link WorkflowBuilderReactFlowProps} for what is allowed. A stable
+   * reference is preferred but not required (it is only spread onto the canvas).
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
 }>;

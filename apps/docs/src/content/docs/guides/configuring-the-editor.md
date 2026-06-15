@@ -186,8 +186,6 @@ const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targe
 
 This validates interactive drags only. Programmatic edge writes (templates, paste, `setStoreEdges`) are not gated, the same as in ReactFlow.
 
-The SDK ships no colour for the in-drag handle state. To add a visual cue, style ReactFlow's handle classes yourself: during a drag it adds `connectingto` to the hovered handle, plus `valid` when `isValidConnection` allows the connection (`.react-flow__handle.connectingto` for an invalid target, `.react-flow__handle.connectingto.valid` for an allowed one).
-
 ## Advanced: ReactFlow props
 
 `reactFlowProps` forwards extra props straight to the underlying ReactFlow canvas, for capabilities the SDK does not surface as first-class props: zoom limits, key codes, viewport bounds, edge reconnection, observability handlers (`onNodeClick`, `onPaneClick`, …), performance flags, and so on.

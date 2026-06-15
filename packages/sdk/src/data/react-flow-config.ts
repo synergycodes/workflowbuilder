@@ -22,7 +22,7 @@ export function getIsValidConnection(): WorkflowBuilderIsValidConnection | null 
 }
 
 export function setReactFlowProps(props: WorkflowBuilderReactFlowProps | null): void {
-  // Falls back to the same frozen object so `useReactFlowProps()` keeps a stable
+  // Falls back to the same frozen object so `getReactFlowProps()` keeps a stable
   // reference when unset.
   reactFlowProps = props ?? EMPTY_PROPS;
 }

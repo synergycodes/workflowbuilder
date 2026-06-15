@@ -21,6 +21,12 @@ import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import {
+  getIsValidConnection,
+  getReactFlowProps,
+  setIsValidConnection,
+  setReactFlowProps,
+} from '../data/react-flow-config';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -62,6 +68,8 @@ function makeNode(id: string): WorkflowBuilderNode {
 // still-mounted subscriber outside `act(...)`.
 beforeEach(() => {
   resetWorkflowStore();
+  setIsValidConnection(null);
+  setReactFlowProps(null);
   localStorage.clear();
   delete document.documentElement.dataset.theme;
 });
@@ -176,5 +184,38 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     // for the Probe is the upper bound. Anything beyond that signals a
     // subscription loop.
     expect(renderCount - initialRenders).toBeLessThanOrEqual(2);
+  });
+});
+
+describe('WorkflowBuilderRoot — react-flow config wiring', () => {
+  it('writes isValidConnection and reactFlowProps into the holders during render', () => {
+    const isValidConnection = vi.fn(() => true);
+    const reactFlowProps = { maxZoom: 3 };
+
+    render(
+      <StrictMode>
+        <WorkflowBuilderRoot isValidConnection={isValidConnection} reactFlowProps={reactFlowProps} />
+      </StrictMode>,
+    );
+
+    expect(getIsValidConnection()).toBe(isValidConnection);
+    expect(getReactFlowProps()).toBe(reactFlowProps);
+  });
+
+  it('resets the holders to their defaults when the props are omitted', () => {
+    // Seed stale config as if a previous Root had set it, then mount a Root
+    // without the props: the render-body writes must clear the holders so a
+    // remount never inherits the old config.
+    setIsValidConnection(vi.fn(() => false));
+    setReactFlowProps({ maxZoom: 9 });
+
+    render(
+      <StrictMode>
+        <WorkflowBuilderRoot />
+      </StrictMode>,
+    );
+
+    expect(getIsValidConnection()).toBeNull();
+    expect(getReactFlowProps()).toEqual({});
   });
 });
