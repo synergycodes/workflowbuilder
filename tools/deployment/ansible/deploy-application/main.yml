@@ -114,11 +114,20 @@
                 TRUST_PROXY: 'true'
                 RATE_LIMIT_EXECUTE_PER_MINUTE: "{{ lookup('env', 'RATE_LIMIT_EXECUTE_PER_MINUTE') or '10' }}"
                 RATE_LIMIT_EXECUTE_PER_DAY: "{{ lookup('env', 'RATE_LIMIT_EXECUTE_PER_DAY') or '50' }}"
+              healthcheck:
+                test: ['CMD', 'node', '-e', "fetch('http://127.0.0.1:3001/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+                interval: 10s
+                timeout: 5s
+                retries: 6
+                start_period: 15s
               networks:
                 internal:
-                  # the web image's nginx proxies to http://backend:3001
                   aliases: [backend]
               deploy:
+                restart_policy:
+                  condition: any
+                  delay: 5s
+                  max_attempts: 10
                 placement:
                   constraints:
                     - node.role==worker
@@ -134,6 +143,10 @@
               networks:
                 internal:
               deploy:
+                restart_policy:
+                  condition: any
+                  delay: 5s
+                  max_attempts: 20
                 placement:
                   constraints:
                     - node.role==worker
@@ -150,6 +163,9 @@
                 internal:
                   aliases: [app-db]
               deploy:
+                restart_policy:
+                  condition: any
+                  delay: 5s
                 placement:
                   constraints:
                     - node.labels.ai-studio-data==true
@@ -166,6 +182,9 @@
                 internal:
                   aliases: [temporal-db]
               deploy:
+                restart_policy:
+                  condition: any
+                  delay: 5s
                 placement:
                   constraints:
                     - node.labels.ai-studio-data==true
@@ -182,6 +201,10 @@
                 internal:
                   aliases: [temporal]
               deploy:
+                restart_policy:
+                  condition: any
+                  delay: 5s
+                  max_attempts: 20
                 placement:
                   constraints:
                     - node.role==worker
@@ -192,6 +215,7 @@
 
           networks:
             internal:
+              driver: overlay
             traefik-host-external:
               external: true
 
