@@ -203,9 +203,8 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
   });
 
   it('resets the holders to their defaults when the props are omitted', () => {
-    // Seed stale config as if a previous Root had set it, then mount a Root
-    // without the props: the render-body writes must clear the holders so a
-    // remount never inherits the old config.
+    // Stale config from a previous Root must be cleared when a Root mounts
+    // without the props, so a remount never inherits it.
     setIsValidConnection(vi.fn(() => false));
     setReactFlowProps({ maxZoom: 9 });
 

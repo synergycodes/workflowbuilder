@@ -3,10 +3,9 @@ import type {
   WorkflowBuilderReactFlowProps,
 } from '../workflow-builder-root/workflow-builder-root.types';
 
-// Holders for the React Flow config that flows from `<WorkflowBuilder.Root>` to
-// `<WorkflowBuilder.Canvas>` (same pattern as `data/edge-templates.ts`). Not in
-// the store: this is render config, not diagram state, so it must survive
-// `resetWorkflowStore()`.
+// React Flow config passed to `<WorkflowBuilder.Root>`, read by the canvas. Kept
+// out of the store so it survives `resetWorkflowStore()` (same pattern as
+// `data/edge-templates.ts`).
 
 const EMPTY_PROPS: Readonly<WorkflowBuilderReactFlowProps> = Object.freeze({});
 
@@ -22,8 +21,7 @@ export function getIsValidConnection(): WorkflowBuilderIsValidConnection | null 
 }
 
 export function setReactFlowProps(props: WorkflowBuilderReactFlowProps | null): void {
-  // Falls back to the same frozen object so `getReactFlowProps()` keeps a stable
-  // reference when unset.
+  // Reuse the frozen object so the reference stays stable when unset.
   reactFlowProps = props ?? EMPTY_PROPS;
 }
 

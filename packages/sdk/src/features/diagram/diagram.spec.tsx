@@ -1,14 +1,7 @@
-// Pins the prop-precedence contract that `reactFlowProps` is sold on
-// (README "Advanced: ReactFlow props"): the consumer escape hatch can override
-// SDK *defaults*, but never the props the SDK *owns*. The guarantee lives in
-// the spread order in `diagram.tsx` (`{...defaults} {...consumer} {...owned}`),
-// so this test renders the canvas with a `ReactFlow` capture stub and inspects
-// the props it actually receives. A reorder of those spreads, or an owned prop
-// leaking into the consumer set, fails here.
-//
-// The node/edge type maps, palette drop, delete modal and temporary edge are
-// stubbed: they pull the overflow-ui + xyflow rendering stack (CSS side
-// effects) and are irrelevant to the spread contract.
+// Pins the `reactFlowProps` precedence contract: a consumer can override SDK
+// *defaults* but never the props the SDK *owns* (spread order in `diagram.tsx`).
+// Renders with a `ReactFlow` capture stub and inspects the props it receives.
+// The rendering-stack deps below are stubbed (CSS side effects, irrelevant here).
 import { render } from '@testing-library/react';
 import { ReactFlow } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -25,8 +18,7 @@ import { DiagramContainer } from './diagram';
 const { updateNodeInternals } = vi.hoisted(() => ({ updateNodeInternals: vi.fn() }));
 
 vi.mock('@xyflow/react', () => ({
-  // Capture stub: the test only inspects the props ReactFlow receives, so it
-  // renders nothing.
+  // Capture stub: only the received props matter, so it renders nothing.
   ReactFlow: vi.fn(() => null),
   Background: () => null,
   SelectionMode: { Partial: 'partial' },
@@ -45,9 +37,8 @@ function makeNode(id: string): WorkflowBuilderNode {
   return { id, position: { x: 0, y: 0 }, type: 'action', data: { type: 'action', icon: 'Plus', properties: {} } };
 }
 
-// Unique reference smuggled in via `reactFlowProps` under every SDK-owned key.
-// The SDK must overwrite each one, so this reference must never survive to
-// ReactFlow.
+// Smuggled in via `reactFlowProps` under every SDK-owned key. The SDK must
+// overwrite each one, so this reference must never reach ReactFlow.
 const OWNED_SENTINEL = { __sentinel: true };
 
 /** Props the (mocked) `ReactFlow` received on the latest render. */
@@ -80,8 +71,8 @@ describe('DiagramContainer — reactFlowProps precedence', () => {
   it('never lets reactFlowProps override SDK-owned props', () => {
     useStore.setState({ nodes: [makeNode('real')] });
     const consumerOnConnect = vi.fn();
-    // Cast: these keys are omitted from the public type, so only a JS / `as`
-    // consumer could reach them. The runtime spread order must still win.
+    // Cast past the public type (a JS consumer could reach these); the spread
+    // order must still win.
     setReactFlowProps({
       nodes: [makeNode('hijack-a'), makeNode('hijack-b')],
       nodesConnectable: false,
@@ -93,8 +84,7 @@ describe('DiagramContainer — reactFlowProps precedence', () => {
 
     expect(props.nodes).toHaveLength(1);
     expect(props.nodes[0].id).toBe('real');
-    // Store is editable on a fresh reset, so the SDK value wins over the
-    // consumer's `false`.
+    // Editable store on fresh reset, so the SDK's `true` wins over `false`.
     expect(props.nodesConnectable).toBe(true);
     expect(props.onConnect).not.toBe(consumerOnConnect);
   });
@@ -106,19 +96,15 @@ describe('DiagramContainer — reactFlowProps precedence', () => {
     render(<DiagramContainer />);
     const props = capturedFlowProps();
 
-    // No Root-level `isValidConnection` set, so the owned slot resolves to
-    // `undefined` (ReactFlow default). The consumer's smuggled callback never wins.
+    // No Root-level callback, so the owned slot is `undefined`; the smuggled one never wins.
     expect(props.isValidConnection).toBeUndefined();
     expect(consumerIsValid).not.toHaveBeenCalled();
   });
 
   it('sets every SDK-managed prop as an owned attribute below the spreads', () => {
-    // Exhaustive over `SdkManagedReactFlowKey`: adding a key to that union forces
-    // a new entry here (the `Record` literal stops compiling otherwise), and this
-    // test then proves `diagram.tsx` actually sets it after the consumer spread.
-    // A managed key missing from the owned JSX block, or moved above the spread,
-    // lets the sentinel survive and fails here. Covers every key, not just the
-    // representative handful asserted above.
+    // Exhaustive over `SdkManagedReactFlowKey`: a new key forces an entry here
+    // (the `Record` won't compile otherwise), proving `diagram.tsx` sets it after
+    // the consumer spread. A managed key above the spread lets the sentinel survive.
     const sentinels: Record<SdkManagedReactFlowKey, unknown> = {
       nodes: OWNED_SENTINEL,
       edges: OWNED_SENTINEL,

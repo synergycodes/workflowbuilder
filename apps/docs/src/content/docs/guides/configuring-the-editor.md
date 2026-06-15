@@ -171,9 +171,7 @@ Today the runtime treats every non-empty resolution of `onDataSave` as "the save
 
 ## Connection validation
 
-`isValidConnection` decides whether a connection between two nodes is allowed. It runs live while the user drags a connection: return `false` to reject it. No edge is created and there is no flicker.
-
-The callback receives the resolved `sourceNode` and `targetNode` (plus the raw `connection`), so a rule can branch on `data.type` / `data.properties` without reaching into the store. Declare it at module scope (or memoize) so the reference stays stable.
+`isValidConnection` decides whether a dragged connection is allowed. Return `false` to reject it: no edge is created, no flicker. It receives the resolved `sourceNode` / `targetNode` (plus the raw `connection`), so a rule can branch on node `data` without reaching into the store. Declare it at module scope (or memoize) to keep the reference stable.
 
 ```tsx
 import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
@@ -184,11 +182,11 @@ const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targe
 <WorkflowBuilder.Root isValidConnection={isValidConnection} />;
 ```
 
-This validates interactive drags only. Programmatic edge writes (templates, paste, `setStoreEdges`) are not gated, the same as in ReactFlow.
+Validates interactive drags only, not programmatic edge writes (templates, paste, `setStoreEdges`). Fail-open: if an endpoint can't be resolved to a node, the connection is allowed.
 
 ## Advanced: ReactFlow props
 
-`reactFlowProps` forwards extra props straight to the underlying ReactFlow canvas, for capabilities the SDK does not surface as first-class props: zoom limits, key codes, viewport bounds, edge reconnection, observability handlers (`onNodeClick`, `onPaneClick`, …), performance flags, and so on.
+`reactFlowProps` forwards extra props to the underlying ReactFlow canvas for things the SDK doesn't expose directly (zoom limits, key codes, `onNodeClick`, performance flags, …).
 
 ```tsx
 import { WorkflowBuilder, type WorkflowBuilderReactFlowProps } from '@workflowbuilder/sdk';
@@ -202,7 +200,7 @@ const reactFlowProps = {
 <WorkflowBuilder.Root reactFlowProps={reactFlowProps} />;
 ```
 
-Props the SDK owns (graph data, the connection / selection / change handlers, node and edge type maps, the connection line, plus `colorMode`) are omitted from `WorkflowBuilderReactFlowProps`, so they can't be set here and this can never break the editor. To **observe** SDK-owned events use the listener APIs (`addNodeChangedListener`, `addNodeDragStartListener`) instead. To change colours use the design tokens, not `colorMode`. Passing arbitrary ReactFlow props couples your app to ReactFlow's version.
+Props the SDK owns (graph data, the connection / selection / change handlers, type maps, `colorMode`, …) can't be set here. To observe SDK events use the listener APIs (`addNodeChangedListener`, …); to theme use the design tokens. Treat `reactFlowProps` as static config: runtime value changes may not apply immediately.
 
 ## Minimal example
 

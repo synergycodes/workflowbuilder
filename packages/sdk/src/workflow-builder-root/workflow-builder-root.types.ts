@@ -91,43 +91,34 @@ export type WorkflowBuilderJsonFormConfig = {
 };
 
 /**
- * Arguments passed to a {@link WorkflowBuilderIsValidConnection} callback. The
- * SDK resolves the source and target nodes from the connection's node ids, so a
- * rule can branch on `data.type` / `data.properties` without touching the store.
+ * Arguments for {@link WorkflowBuilderIsValidConnection}. Source / target nodes
+ * are resolved from the connection's ids, so a rule can branch on node `data`.
  *
  * @category Core
  */
 export type WorkflowBuilderIsValidConnectionParams = {
-  /** Raw ReactFlow connection candidate: source / target node ids + handle ids. */
+  /** The connection candidate (handle ids normalized to `null`). */
   connection: Connection;
-  /** The node the connection is dragged from (resolved from `connection.source`). */
+  /** Node the connection is dragged from. */
   sourceNode: WorkflowBuilderNode;
-  /** The node the connection is dragged to (resolved from `connection.target`). */
+  /** Node the connection is dragged to. */
   targetNode: WorkflowBuilderNode;
 };
 
 /**
- * Decides whether a connection between two nodes is allowed. Runs live while
- * the user drags a connection: return `false` to block the drop. No edge is
- * created and there is no flicker, because the connection is rejected before it
- * ever enters the graph.
- *
- * Fail-open: if either endpoint can't be resolved to a node in the store, the
- * connection is allowed and this callback is not invoked, so a strict
- * deny-by-default rule still can't block a drop whose nodes are unknown.
+ * Decides whether a dragged connection is allowed. Return `false` to block the
+ * drop (no edge created, no flicker). Fail-open: if an endpoint can't be
+ * resolved to a node, the connection is allowed and this is not invoked.
  *
  * @category Core
  */
 export type WorkflowBuilderIsValidConnection = (params: WorkflowBuilderIsValidConnectionParams) => boolean;
 
 /**
- * ReactFlow props the SDK sets itself, as explicit JSX attributes spread last in
- * `diagram.tsx`, so they always win at runtime over `reactFlowProps`. Omitted
- * from {@link WorkflowBuilderReactFlowProps}. Every key here must appear in that
- * owned-attribute block; the `diagram.spec` precedence test enforces it. Edit
- * this union when the SDK starts or stops setting a prop.
- *
- * Exported for that test only; not re-exported from the public entry point.
+ * ReactFlow props the SDK sets itself (spread last in `diagram.tsx`, so they win
+ * over `reactFlowProps`) and omits from {@link WorkflowBuilderReactFlowProps}.
+ * The `diagram.spec` precedence test enforces each one stays owned. Internal:
+ * exported for that test only.
  */
 export type SdkManagedReactFlowKey =
   | 'nodes'
@@ -154,35 +145,26 @@ export type SdkManagedReactFlowKey =
   | 'isValidConnection';
 
 /**
- * ReactFlow props the SDK reserves but does not set: allowing them would silently
- * fight a system that owns the same concern. `defaultNodes` / `defaultEdges` are
- * the uncontrolled-mode counterparts of the controlled `nodes` / `edges` the SDK
- * drives, so they would desync the store. `colorMode` is owned by the SDK theming
- * layer (design tokens / `initTheme`), so it is omitted rather than left to
- * conflict with the active theme. None of these are spread in `diagram.tsx`.
+ * ReactFlow props omitted from {@link WorkflowBuilderReactFlowProps} but not
+ * re-set in `diagram.tsx`. `default*` are no-ops under the SDK's controlled
+ * `nodes` / `edges`; `colorMode` would clash with the SDK theme. Type-level guard
+ * only (a JS / `as`-cast consumer can still smuggle them; worst case is cosmetic).
  */
 type SdkReservedReactFlowKey = 'defaultNodes' | 'defaultEdges' | 'colorMode';
 
 /** Every ReactFlow key the escape hatch must not expose. */
 type SdkOwnedReactFlowKey = SdkManagedReactFlowKey | SdkReservedReactFlowKey;
 
-/**
- * Identity type that compiles only when `A` is assignable to `B`. Used below so
- * an owned key that is no longer a real ReactFlow prop fails the build (`Omit`
- * does not validate its keys).
- */
+/** Compiles only when `A extends B`. Fails the build if an owned key stops being a real ReactFlow prop (`Omit` doesn't validate keys). */
 type AssertAssignable<A extends B, B> = A;
 
 /**
  * Escape hatch for the underlying ReactFlow canvas: forwards any ReactFlow prop
- * except the ones the SDK owns ({@link SdkOwnedReactFlowKey}), which are omitted
- * here and always win at runtime, so the editor cannot be broken from the
- * outside. Theme via the SDK design tokens rather than ReactFlow's `colorMode`
- * (omitted here for that reason).
+ * except the ones the SDK owns ({@link SdkOwnedReactFlowKey}). Theme via the SDK
+ * design tokens, not `colorMode`.
  *
- * A stable reference is preferred but not required: this value is only spread
- * onto the canvas, never used as a hook dependency, so an inline object does not
- * trigger remounts the way an unstable `nodeTypes` / `edgeTemplates` would.
+ * Treat as static config: the canvas reads it out-of-band, so changing a value
+ * at runtime may not apply until the canvas re-renders.
  *
  * @category Core
  */
@@ -249,11 +231,8 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   /** Initial edges rendered on first mount. */
   initialEdges?: WorkflowBuilderEdge[];
   /**
-   * Validate connections as the user draws them. Receives the candidate
-   * `connection` plus the resolved `sourceNode` / `targetNode`; return `false`
-   * to reject it. An invalid drop creates no edge and does not flicker.
-   *
-   * **Must be a stable reference** (declare at module level or memoize).
+   * Validate connections as the user draws them. Return `false` to reject the
+   * drop. **Must be a stable reference.**
    *
    * @example
    * ```ts
@@ -263,9 +242,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   isValidConnection?: WorkflowBuilderIsValidConnection;
   /**
-   * Advanced. Forwards extra props to the underlying ReactFlow canvas. See
-   * {@link WorkflowBuilderReactFlowProps} for what is allowed. A stable
-   * reference is preferred but not required (it is only spread onto the canvas).
+   * Advanced escape hatch: forwards extra props to the ReactFlow canvas (see
+   * {@link WorkflowBuilderReactFlowProps}). Treat as static config; runtime value
+   * changes may not apply immediately.
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
 }>;

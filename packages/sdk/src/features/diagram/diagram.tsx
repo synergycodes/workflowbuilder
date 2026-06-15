@@ -36,10 +36,8 @@ import { callNodeChangedListeners } from './listeners/node-changed-listeners';
 import { callNodeDragStartListeners } from './listeners/node-drag-start-listeners';
 import { diagramStateSelector } from './selectors';
 
-/**
- * ReactFlow tuning the SDK applies by default. Spread before `reactFlowProps` so
- * a consumer can override any of it. Module level for a stable reference.
- */
+// SDK default ReactFlow tuning. Spread before `reactFlowProps` so a consumer can
+// override any of it. Module level for a stable reference.
 const SDK_DEFAULT_FLOW_PROPS = {
   fitView: true,
   fitViewOptions: { maxZoom: 1 },
@@ -96,9 +94,8 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
   const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
   const nodeTypes = useNodeTypes();
   const isValidConnection = useIsValidConnection();
-  // Plain read, not a hook: the holder is written by `<WorkflowBuilder.Root>`
-  // during its render (an ancestor), so the value is current by the time this
-  // child renders, and the reference is stable (frozen empty object when unset).
+  // Plain read: the ancestor `<WorkflowBuilder.Root>` writes the holder during
+  // its render, so the value is current here (stable, frozen empty when unset).
   const consumerReactFlowProps = getReactFlowProps();
 
   // React Flow caches each handle's measured bounds in `nodeInternals`. When
@@ -207,8 +204,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
       <ReactFlow<WorkflowBuilderNode, WorkflowBuilderEdge>
         {...SDK_DEFAULT_FLOW_PROPS}
         {...consumerReactFlowProps}
-        // SDK-owned props, spread last so they always win over `reactFlowProps`.
-        // Keep them below the spreads.
+        // SDK-owned props: spread last so they always win over `reactFlowProps`.
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}

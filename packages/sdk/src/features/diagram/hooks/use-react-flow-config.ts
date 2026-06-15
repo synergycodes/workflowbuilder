@@ -6,10 +6,9 @@ import type { WorkflowBuilderEdge } from '../../../node/node-data';
 import { getStoreNodes } from '../../../store/slices/diagram-slice/actions';
 
 /**
- * Adapts the consumer's enriched `isValidConnection` to ReactFlow's native
- * signature, resolving the candidate's node ids against the live store. Returns
- * `undefined` when no callback is set (ReactFlow keeps its default), and allows
- * the connection when a node cannot be resolved.
+ * Adapts the consumer's `isValidConnection` to ReactFlow's signature, resolving
+ * node ids against the store. Returns `undefined` when unset (ReactFlow default);
+ * allows the connection when a node can't be resolved.
  */
 export function useIsValidConnection(): IsValidConnection<WorkflowBuilderEdge> | undefined {
   // Read outside the callback so the dep stays stable across renders.
