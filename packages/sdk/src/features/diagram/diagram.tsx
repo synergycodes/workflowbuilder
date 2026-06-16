@@ -1,7 +1,6 @@
 import {
   Background,
   type EdgeTypes,
-  type FitViewOptions,
   type NodeChange,
   type OnBeforeDelete,
   type OnConnect,
@@ -9,28 +8,48 @@ import {
   type OnSelectionChangeParams,
   ReactFlow,
   SelectionMode,
+  useUpdateNodeInternals,
 } from '@xyflow/react';
-import { type DragEventHandler, useCallback, useMemo } from 'react';
+import { type DragEventHandler, useCallback, useEffect, useMemo } from 'react';
 import type { DragEvent } from 'react';
 
 import styles from './diagram.module.css';
 import '@xyflow/react/dist/style.css';
 
+import { getReactFlowProps } from '../../data/react-flow-config';
 import { usePaletteDrop } from '../../hooks/use-palette-drop';
 import type { WorkflowBuilderOnSelectionChangeParams } from '../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../node/node-data';
+import { getStoreNodes } from '../../store/slices/diagram-slice/actions';
 import { useStore } from '../../store/store';
+import type { WorkflowBuilderReactFlowProps } from '../../workflow-builder-root/workflow-builder-root.types';
 import { trackFutureChange } from '../changes-tracker/stores/use-changes-tracker-store';
 import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-confirmation';
 import { withOptionalComponentPlugins } from '../plugins-core/adapters/adapter-components';
 import { deleteKeyCode } from './const';
 import { SNAP_GRID, SNAP_IS_ACTIVE } from './diagram.const';
-import { LabelEdge } from './edges/label-edge/label-edge';
 import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
+import { useEdgeTypes } from './hooks/use-edge-types';
 import { useNodeTypes } from './hooks/use-node-types';
+import { useIsValidConnection } from './hooks/use-react-flow-config';
 import { callNodeChangedListeners } from './listeners/node-changed-listeners';
 import { callNodeDragStartListeners } from './listeners/node-drag-start-listeners';
 import { diagramStateSelector } from './selectors';
+
+// SDK default ReactFlow tuning. Spread before `reactFlowProps` so a consumer can
+// override any of it. Module level for a stable reference.
+const SDK_DEFAULT_FLOW_PROPS = {
+  fitView: true,
+  fitViewOptions: { maxZoom: 1 },
+  panOnScroll: true,
+  minZoom: 0.1,
+  snapToGrid: SNAP_IS_ACTIVE,
+  snapGrid: SNAP_GRID,
+  selectionOnDrag: true,
+  selectionMode: SelectionMode.Partial,
+  deleteKeyCode,
+  panOnDrag: [1, 2],
+} satisfies WorkflowBuilderReactFlowProps;
 
 /**
  * Props accepted by {@link DiagramContainer}. Use this when typing a
@@ -40,7 +59,12 @@ import { diagramStateSelector } from './selectors';
  * @category Components
  */
 export type DiagramContainerProps = {
-  /** Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`. */
+  /**
+   * Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`
+   * and any Root-level `edgeTemplates`. Merged last, so a key here intentionally
+   * overrides those (this is the direct-mount escape hatch, hence no collision
+   * warning); prefer `<WorkflowBuilder.Root edgeTemplates>` for app-wide edges.
+   */
   edgeTypes?: EdgeTypes;
 };
 
@@ -69,6 +93,22 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
 
   const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
   const nodeTypes = useNodeTypes();
+  const isValidConnection = useIsValidConnection();
+  // Plain read: the ancestor `<WorkflowBuilder.Root>` writes the holder during
+  // its render, so the value is current here (stable, frozen empty when unset).
+  const consumerReactFlowProps = getReactFlowProps();
+
+  // React Flow caches each handle's measured bounds in `nodeInternals`. When
+  // `layoutDirection` flips, existing nodes re-render their `<Handle>` with a
+  // new `position` prop, but the cache stays stale and edges keep routing to
+  // the old port spots. Ask React Flow to remeasure every mounted node when
+  // the direction changes.
+  const layoutDirection = useStore((store) => store.layoutDirection);
+  const updateNodeInternals = useUpdateNodeInternals();
+  useEffect(() => {
+    const ids = getStoreNodes().map((node) => node.id);
+    if (ids.length > 0) updateNodeInternals(ids);
+  }, [layoutDirection, updateNodeInternals]);
 
   const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
@@ -76,8 +116,6 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
   }, []);
 
   const { onDropFromPalette } = usePaletteDrop();
-
-  const fitViewOptions: FitViewOptions = useMemo(() => ({ maxZoom: 1 }), []);
 
   const onNodeDragStart: OnNodeDrag = useCallback((event, node, nodes) => {
     trackFutureChange('nodeDragStart');
@@ -134,7 +172,11 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     [onSelectionChange],
   );
 
-  const diagramEdgeTypes = useMemo(() => ({ labelEdge: LabelEdge, ...edgeTypes }), [edgeTypes]);
+  // Built-in edge renderers (`labelEdge`) plus any app-wide `edgeTemplates`
+  // passed to `<WorkflowBuilder.Root>`. The local `edgeTypes` prop (direct
+  // DiagramContainer mount) is merged last so a per-mount override still wins.
+  const baseEdgeTypes = useEdgeTypes();
+  const diagramEdgeTypes = useMemo(() => ({ ...baseEdgeTypes, ...edgeTypes }), [baseEdgeTypes, edgeTypes]);
 
   const onBeforeDelete: OnBeforeDelete<WorkflowBuilderNode, WorkflowBuilderEdge> = useCallback(
     async ({ nodes, edges }) => {
@@ -157,42 +199,34 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     [isReadOnlyMode, openDeleteConfirmationModal],
   );
 
-  const panOnDrag = [1, 2];
-
   return (
     <div className={styles['container']}>
       <ReactFlow<WorkflowBuilderNode, WorkflowBuilderEdge>
-        edges={edges}
-        edgeTypes={diagramEdgeTypes}
-        fitView
-        fitViewOptions={fitViewOptions}
-        onDragOver={onDragOver}
-        onInit={onInit}
-        onDrop={onDrop}
-        connectionLineComponent={TemporaryEdge}
-        panOnScroll
+        {...SDK_DEFAULT_FLOW_PROPS}
+        {...consumerReactFlowProps}
+        // SDK-owned props: spread last so they always win over `reactFlowProps`.
         nodes={nodes}
-        nodesConnectable={!isReadOnlyMode}
-        nodesDraggable={!isReadOnlyMode}
+        edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={diagramEdgeTypes}
+        onInit={onInit}
         onConnect={onConnect}
-        onEdgesChange={onEdgesChange}
         onConnectStart={onConnectStart}
         onConnectEnd={onConnectEnd}
+        onEdgesChange={onEdgesChange}
+        onNodesChange={handleOnNodesChange}
+        onSelectionChange={handleOnSelectionChange}
         onEdgeMouseEnter={onEdgeMouseEnter}
         onEdgeMouseLeave={onEdgeMouseLeave}
-        onNodesChange={handleOnNodesChange}
         onNodeDragStart={onNodeDragStart}
         onNodeDragStop={onNodeDragStop}
         onBeforeDelete={onBeforeDelete}
-        onSelectionChange={handleOnSelectionChange}
-        minZoom={0.1}
-        snapToGrid={SNAP_IS_ACTIVE}
-        snapGrid={SNAP_GRID}
-        selectionOnDrag
-        panOnDrag={panOnDrag}
-        selectionMode={SelectionMode.Partial}
-        deleteKeyCode={deleteKeyCode}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        connectionLineComponent={TemporaryEdge}
+        nodesConnectable={!isReadOnlyMode}
+        nodesDraggable={!isReadOnlyMode}
+        isValidConnection={isValidConnection}
       >
         <Background />
       </ReactFlow>

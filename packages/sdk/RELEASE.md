@@ -59,6 +59,8 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
    Skip the changeset only for changes that do not affect the published `dist/` (e.g. internal tests, lint config, comments).
 
+   **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (see `remove-nodeid-from-handles.md`).
+
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
 
    ```bash
@@ -92,11 +94,61 @@ This:
 
 - Reads every `.changeset/*.md`, computes the highest bump per package.
 - Bumps `packages/sdk/package.json` version (so `2.0.0 → 2.1.0` if any minor changeset, `2.0.0 → 2.0.1` if only patches, `2.0.0 → 3.0.0` if any major).
-- Regenerates `packages/sdk/CHANGELOG.md` with one section per consumed changeset.
+- Regenerates `packages/sdk/CHANGELOG.md` with one section per consumed changeset, in raw Changesets format. Reformat it into Keep a Changelog style before committing (see "Reformat the generated CHANGELOG section" below).
 - Deletes the consumed `.changeset/*.md` files.
 - Touches `pnpm-lock.yaml` if needed.
 
 Pick the `vX.Y.Z` for the branch name from the new version in `packages/sdk/package.json`.
+
+#### Reformat the generated CHANGELOG section
+
+`pnpm changeset version` writes the new release in raw Changesets format: a bare `## X.Y.Z` heading, `### Minor Changes` / `### Patch Changes` groupings, and each bullet prefixed with a commit hash and its Conventional-Commit type (`5dddbff: feat: ...`). The committed CHANGELOG uses [Keep a Changelog](https://keepachangelog.com/) instead, matching every prior release. Rewrite the generated block before committing:
+
+- **Heading.** Use `## [X.Y.Z] - YYYY-MM-DD` with the release date, not the bare `## X.Y.Z`.
+- **Sections.** Replace `### Minor Changes` / `### Patch Changes` with `### Added`, `### Changed`, `### Fixed`, `### Removed`. Categorize by intent, not by semver bump. A new API goes under Added, a behavior change or rename under Changed, a bug fix under Fixed, a deletion under Removed.
+- **Bullets.** Drop the leading commit hash and the `feat:` / `fix:` prefix. Write plain prose. Lead an Added bullet with the public symbol it introduces. Start a Fixed or Changed bullet with a capitalized verb.
+- **Link reference.** Add `[X.Y.Z]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/X.Y.Z` to the reference list at the bottom of the file, newest first.
+
+Keep the `# Changelog` H1 as the only thing above the newest version heading. Do not add a preamble paragraph or an `## [Unreleased]` placeholder there. Changesets always inserts the next release immediately after the H1, so anything between the H1 and the first `## ` heading gets pushed into that release's section and leaks into its GitHub Release notes.
+
+Example. The generated block:
+
+```md
+## 2.1.0
+
+### Minor Changes
+
+- fa207df: feat: add `edgeTemplates` prop on `<WorkflowBuilder.Root>` for custom edge renderers.
+
+### Patch Changes
+
+- 3b9f8fd: fix: re-measure node internals when `layoutDirection` changes.
+```
+
+becomes:
+
+```md
+## [2.1.0] - 2026-06-16
+
+### Added
+
+- `edgeTemplates` prop on `<WorkflowBuilder.Root>` for custom edge renderers.
+
+### Fixed
+
+- Re-measure node internals when `layoutDirection` changes.
+```
+
+After reformatting, confirm the release-notes extraction is clean. The extractor in `.github/workflows/release-sdk.yml` matches both the bracketed heading and a bare `## X.Y.Z`, so run it locally to see exactly what the GitHub Release body will contain:
+
+```bash
+VERSION=$(node -p "require('./packages/sdk/package.json').version")
+awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/sdk/CHANGELOG.md
+```
+
+It should print the `### Added` / `### Fixed` bullets for this version and nothing else.
+
+Then commit the version bump, reformatted CHANGELOG, and changeset deletions together:
 
 ```bash
 git add -A
@@ -111,7 +163,7 @@ Open a PR `release/vX.Y.Z → release`.
 In the PR diff you should see:
 
 - `packages/sdk/package.json`: version bump
-- `packages/sdk/CHANGELOG.md`: new section with all entries
+- `packages/sdk/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions
 - `pnpm-lock.yaml`: small workspace dep update (only if internal `workspace:*` packages bumped — currently they don't because everything is in `ignore`)
 

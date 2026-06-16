@@ -16,7 +16,7 @@ By default, Workflow Builder is a standalone app. You can build the application 
 
 Workflow Builder can function as a component within an existing React application. This allows you to integrate its functionality directly into your app rather than hosting it separately.
 
-How to embed Workflow Builder in an existing React codebase: see the [React component quick-start](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/), which covers installation, peer deduplication (local-path build until npm publish), usage, and configuration.
+How to embed Workflow Builder in an existing React codebase: see the [React component quick-start](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/), which covers installation from npm, usage, and configuration.
 
 You can also build your application as an npm package and then simply consume it in your application.
 

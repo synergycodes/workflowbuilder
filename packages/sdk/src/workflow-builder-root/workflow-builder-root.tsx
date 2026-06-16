@@ -3,11 +3,14 @@ import { useLayoutEffect, useRef } from 'react';
 
 import { registerPluginTranslation } from '../features/plugins-core/adapters/adapter-i18n';
 
+import { setCustomEdgeTemplates } from '../data/edge-templates';
 import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
+import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { initTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
@@ -47,6 +50,7 @@ import type {
 export function WorkflowBuilderRoot({
   nodeTypes,
   nodeTemplates,
+  edgeTemplates,
   diagramTemplates,
   plugins,
   jsonForm,
@@ -55,6 +59,8 @@ export function WorkflowBuilderRoot({
   layoutDirection,
   initialNodes,
   initialEdges,
+  isValidConnection,
+  reactFlowProps,
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -93,6 +99,16 @@ export function WorkflowBuilderRoot({
     resetWorkflowStore();
   }, []);
 
+  // Paint the persisted theme on the DOM once, client-side. Lives here (not at
+  // `theme.ts` module level) so a server-side import of the SDK never touches
+  // `document` / `localStorage`. `useLayoutEffect` runs before first paint, so
+  // a saved non-default theme shows without a flash; it never runs on the
+  // server. Idempotent, so a second Root mount (or strict-mode double-invoke)
+  // is a harmless no-op.
+  useLayoutEffect(() => {
+    initTheme();
+  }, []);
+
   // Runtime config — write the latest prop values into module-level holders
   // synchronously in render, NOT in `useEffect`. Children read the holders
   // during their own first render (e.g. the palette resolver), so an effect
@@ -112,6 +128,9 @@ export function WorkflowBuilderRoot({
   setCustomPaletteNodes(nodeTypes ?? null);
   setCustomTemplates(diagramTemplates ?? null);
   setCustomNodeTemplates(nodeTemplates ?? null);
+  setCustomEdgeTemplates(edgeTemplates ?? null);
+  setIsValidConnection(isValidConnection ?? null);
+  setReactFlowProps(reactFlowProps ?? null);
 
   const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
 

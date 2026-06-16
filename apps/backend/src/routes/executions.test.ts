@@ -10,6 +10,7 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from '../auth';
+import { type TenantContext, type TenantVariables, createTenantMiddleware } from '../tenant';
 import { createExecutionsRoutes } from './executions';
 
 // ---- module mocks -----------------------------------------------------------
@@ -86,6 +87,17 @@ function denyAll(): AuthPort {
     identify: vi.fn(async () => null),
     authorize: vi.fn(async () => false),
   };
+}
+
+// Same wiring as buildApp, plus the tenant middleware so the route's tenant
+// cross-check has a `c.var.tenant` to read. `tenant` is what the configured
+// TenantContextPort resolves to (null = single-tenant reference default).
+function buildAppWithTenant(port: AuthPort, tenant: TenantContext | null) {
+  const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+  app.use('*', createAuthMiddleware(port));
+  app.use('*', createTenantMiddleware({ resolve: vi.fn(async () => tenant) }));
+  app.route('/api/executions', createExecutionsRoutes(makeAssertAuthorized(port)));
+  return app;
 }
 
 // Terminal status so the SSE handler returns after the snapshot and the test
@@ -186,5 +198,66 @@ describe('createExecutionsRoutes - deny short-circuits before DB or engine work'
     expect(engineMock.submit).not.toHaveBeenCalled();
     expect(engineMock.cancel).not.toHaveBeenCalled();
     expect(subscribeMock).not.toHaveBeenCalled();
+  });
+});
+
+// ---- tenant cross-check on the SSE stream ----------------------------------
+//
+// The stream is the one execution-row endpoint that enforces tenant isolation
+// directly, as defence-in-depth for EventSource's weaker auth (it cannot send
+// an Authorization header). Resource-level scoping of GET/:id and DELETE/:id
+// is the AuthPort's job - see tenant-context-port.decision-log.md. The check
+// is a no-op when either side is null, which keeps the single-tenant reference
+// (NoopTenantContextPort resolves null) behaving exactly as before.
+
+const tenantedExecution = { ...terminalExecution, tenantId: 'acme' };
+
+const allowStream = () => allowAll(vi.fn(async () => true));
+
+function programStream(execution: unknown) {
+  // 1st select: the executions row. 2nd: the events catch-up query.
+  databaseMock.select.mockReturnValueOnce(chainResolving([execution]));
+  databaseMock.select.mockReturnValue(chainResolving([]));
+}
+
+describe('createExecutionsRoutes - stream tenant cross-check', () => {
+  it('404 (not 403) when caller tenant differs - no cross-tenant existence leak', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: 'other' });
+    programStream(tenantedExecution);
+
+    const response = await app.request('/api/executions/e-1/stream');
+
+    // Byte-identical to the not-found branch: a foreign execution must be
+    // indistinguishable from one that does not exist, or the id is enumerable.
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
+    expect(subscribeMock).not.toHaveBeenCalled();
+  });
+
+  it('streams when caller tenant matches the execution tenant', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
+    programStream(tenantedExecution);
+
+    const response = await app.request('/api/executions/e-1/stream');
+
+    expect(response.status).toBe(200);
+  });
+
+  it('no-op when caller has no tenant - single-tenant default - even if the execution is tenanted', async () => {
+    const app = buildAppWithTenant(allowStream(), null);
+    programStream(tenantedExecution);
+
+    const response = await app.request('/api/executions/e-1/stream');
+
+    expect(response.status).toBe(200);
+  });
+
+  it('no-op when the execution has no tenant even if the caller is tenanted', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
+    programStream(terminalExecution); // terminalExecution carries no tenantId
+
+    const response = await app.request('/api/executions/e-1/stream');
+
+    expect(response.status).toBe(200);
   });
 });

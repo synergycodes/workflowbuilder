@@ -15,13 +15,9 @@ import { TabItem, Tabs } from '@astrojs/starlight/components';
 
 ## Known limitations
 
-- **One instance per page (required).** Multi-instance is not supported.
-  Plugin / JsonForms / i18n registries are module-level singletons shared
-  across mounts, and the imperative `useStore.{getState,setState,subscribe}`
-  facade resolves through a module-level "current" pointer — two
-  `<WorkflowBuilder.Root>` on the same page would silently fight over both.
-  If you need multiple "workflows" on one page, render them sequentially
-  (mount → save → unmount → mount next).
+:::caution
+Mount only one `<WorkflowBuilder.Root>` per page. Multi-instance is not supported. See [Side effects & limitations](/get-started/side-effects/) for the details and how to swap workflows on one page.
+:::
 
 ## Installation
 
@@ -57,36 +53,14 @@ xyflow, JsonForms, i18next, immer and zustand are kept external because
 they expose singletons (store identity, i18next instance, frozen-object
 caches) — your app and the SDK must share a single copy of each.
 
-### Installing from a local checkout (contributors)
-
-If you're developing against an unpublished build of the SDK, run
-`pnpm build:lib` from the monorepo root to produce
-`packages/sdk/dist/`, then install the local path in your consumer:
-
-```bash
-npm install /path/to/workflow-builder/packages/sdk react react-dom @xyflow/react
-```
-
-Local-path installs can resolve React from the library's own
-`node_modules`, breaking hook calls. Deduplicate it in your bundler — for
-Vite:
-
-```ts
-// vite.config.ts
-export default defineConfig({
-  resolve: { dedupe: ['react', 'react-dom', '@xyflow/react'] },
-});
-```
-
-Published-to-npm installs don't need this.
-
 ## Usage
 
 The SDK exposes a single compound component, `WorkflowBuilder`. Mount
 `<WorkflowBuilder.Root>` at the top of your editor subtree; with no
 children it renders the default layout (top bar, palette, canvas,
-properties panel). Compose with the named subcomponents when you need a
-custom layout.
+properties panel).
+
+`<WorkflowBuilder.Root>` takes a small set of optional props. See [Configuring the editor](/guides/configuring-the-editor/) for the full props reference and for composing a custom layout, or the auto-generated [API reference](/api/core/workflowbuilderroot/).
 
 ### Hello world
 
@@ -117,173 +91,17 @@ function App() {
 }
 ```
 
-### Custom layout
-
-Pass children to skip the default layout and compose your own:
-
-```tsx
-<WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <header>
-    <WorkflowBuilder.TopBar />
-  </header>
-  <aside>
-    <WorkflowBuilder.Palette />
-  </aside>
-  <main>
-    <WorkflowBuilder.Canvas />
-  </main>
-  <aside>
-    <WorkflowBuilder.PropertiesPanel />
-  </aside>
-</WorkflowBuilder.Root>
-```
-
-To add custom overlays alongside the default layout, mount it explicitly:
-
-```tsx
-<WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <WorkflowBuilder.DefaultLayout />
-  <MyToastBanner />
-</WorkflowBuilder.Root>
-```
-
-## Integration strategies
-
-| Strategy       | Source / sink                                               | When to use                  |
-| -------------- | ----------------------------------------------------------- | ---------------------------- |
-| `localStorage` | Browser `localStorage`                                      | Prototyping, quick starts    |
-| `api`          | `GET`/`POST` to user-provided endpoints                     | Backend-managed persistence  |
-| `props`        | `onDataSave` callback + `initialNodes`/`initialEdges` props | Host-app-managed persistence |
-
-```tsx
-<WorkflowBuilder.Root integration={{ strategy: 'api', endpoints: { load: '/api/load', save: '/api/save' } }} />
-```
-
-## Props reference
-
-| Prop               | Type                            | Description                                                                                                               |
-| ------------------ | ------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| `nodeTypes`        | `PaletteItemOrGroup[]`          | Node type definitions. Appear in the palette and drive validation.                                                        |
-| `nodeTemplates`    | `WorkflowBuilderNodeTemplates`  | Per-node-type custom renderers. Map of `data.type` → React component, overriding the default node renderer for that type. |
-| `diagramTemplates` | `TemplateModel[]`               | Diagram templates available in the template selector.                                                                     |
-| `plugins`          | `WorkflowBuilderPlugin[]`       | Functions registering decorators. Synchronous, executed once.                                                             |
-| `jsonForm`         | `WorkflowBuilderJsonFormConfig` | Custom JsonForms renderers, cells, translations.                                                                          |
-| `integration`      | `WorkflowBuilderIntegration`    | Data source / sink. Defaults to `localStorage`.                                                                           |
-| `name`             | `string`                        | Workflow name shown in the header.                                                                                        |
-| `layoutDirection`  | `'DOWN' \| 'RIGHT'`             | Initial flow direction.                                                                                                   |
-| `initialNodes`     | `WorkflowBuilderNode[]`         | Starting diagram nodes.                                                                                                   |
-| `initialEdges`     | `WorkflowBuilderEdge[]`         | Starting diagram edges.                                                                                                   |
-
-## Extending JsonForms
-
-Node properties are rendered with [JsonForms](https://jsonforms.io).
-Register custom renderers and cells via the `jsonForm` prop. Custom
-renderers are tried **before** built-ins so your tester can override
-matches on a tie.
-
-```tsx
-import { rankWith, uiTypeIs } from '@jsonforms/core';
-import { withJsonFormsControlProps } from '@jsonforms/react';
-import { WorkflowBuilder } from '@workflowbuilder/sdk';
-
-import '@workflowbuilder/sdk/style.css';
-
-function ColorPicker({
-  data,
-  handleChange,
-  path,
-}: {
-  data: string;
-  handleChange: (path: string, value: string) => void;
-  path: string;
-}) {
-  return <input type="color" value={data ?? '#000000'} onChange={(e) => handleChange(path, e.target.value)} />;
-}
-
-function App() {
-  return (
-    <WorkflowBuilder.Root
-      jsonForm={{
-        renderers: [
-          {
-            tester: rankWith(5, uiTypeIs('ColorPicker')),
-            renderer: withJsonFormsControlProps(ColorPicker),
-          },
-        ],
-      }}
-    />
-  );
-}
-```
-
-## Writing a plugin
-
-Plugins are functions that register decorators. Pass them to the `plugins` prop:
-
-```tsx
-import { WorkflowBuilder, type WorkflowBuilderPlugin, registerComponentDecorator } from '@workflowbuilder/sdk';
-
-import { MyCustomButton } from './my-custom-button';
-
-const myPlugin: WorkflowBuilderPlugin = () => {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: MyCustomButton,
-    name: 'MyPlugin',
-  });
-};
-
-function App() {
-  return <WorkflowBuilder.Root plugins={[myPlugin]} />;
-}
-```
-
-Plugins are synchronous. If a plugin needs async work (config fetch,
-WASM load, feature flag lookup), the consumer awaits it outside the
-SDK and constructs the plugin around the resolved value before passing
-it to `<WorkflowBuilder.Root>`.
-
-Available slots: `OptionalAppBarControls`, `OptionalAppBarTools`,
-`OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalFooterContent`,
-`OptionalHooks` (invisible provider slot), `OptionalNodeContent`
-(receives `nodeId` prop).
-
-Decorator options:
-
-```ts
-registerComponentDecorator('SlotName', {
-  content: MyComponent, // React component to render
-  place: 'before', // 'before' | 'after' | 'wrapper'
-  modifyProps: (p) => p, // modify the host component's props
-  priority: 0, // higher = rendered first
-  name: 'UniquePluginName', // prevents duplicate registration
-});
-```
-
-You can also intercept functions and register translations:
-
-```ts
-import { registerFunctionDecorator, registerPluginTranslation } from '@workflowbuilder/sdk';
-
-registerFunctionDecorator('trackFutureChange', {
-  place: 'before',
-  callback: ({ params }) => {
-    /* inspect */
-  },
-});
-
-registerPluginTranslation({
-  en: { translation: { plugins: { myPlugin: { label: 'My Plugin' } } } },
-});
-```
-
 ## TypeScript
 
 All public types are exported from `@workflowbuilder/sdk`. The full
 [API Reference](/api/) is generated by TypeDoc directly from the SDK
 source on every docs build, so it never drifts.
 
-## See also
+## Next steps
 
-- [via callback persistence](/get-started/persistence/callback/) - pass diagram data and save callbacks as React props
-- [Add Custom Node Type](/guides/add-a-custom-node/) - register a new node type with custom properties
-- [Design system and customization](/overview/features/design-system-and-customization/) - tokens, themes, and UI customization
+- [Configuring the editor](/guides/configuring-the-editor/) - props reference, custom layouts, integration strategies, connection validation
+- Persistence: [localStorage](/get-started/persistence/localstorage/), [REST API](/get-started/persistence/rest-api/), [via callback](/get-started/persistence/callback/) - load and save diagram data
+- [Add a custom node type](/guides/add-a-custom-node/) - register a new node with its own properties
+- [Build a plugin](/guides/build-a-plugin/) - toolbar buttons, decorators, function hooks, translations
+- [Custom JsonForms control](/guides/custom-jsonforms-control/) - render node properties with your own components
+- [Theming](/get-started/theming/) - design tokens, light / dark, customization

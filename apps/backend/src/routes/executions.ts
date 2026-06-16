@@ -11,13 +11,16 @@ import { subscribe } from '../events/execution-event-bus';
 import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events-after';
 import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
+import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
 const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
 
-export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<{ Variables: AuthVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables }>();
+export function createExecutionsRoutes(
+  assertAuthorized: AssertAuthorized,
+): Hono<{ Variables: AuthVariables & TenantVariables }> {
+  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
 
   routes.get('/:id', async (c) => {
     const executionId = c.req.param('id');
@@ -54,6 +57,31 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
 
     if (!execution) {
+      return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
+    }
+
+    // Tenant cross-check, scoped to the stream on purpose. This is NOT the
+    // general per-resource tenant guard - resource-level scoping of GET/:id
+    // and DELETE/:id is the AuthPort's job (it receives { kind: 'execution',
+    // executionId } and a real adapter checks ownership). The stream gets an
+    // extra, independent check because EventSource cannot send an
+    // Authorization header, so its auth falls back to weaker query-param /
+    // cookie schemes (see the comment above this handler). The tenant resolved
+    // by TenantContextPort - which can come from a subdomain or cookie - is a
+    // second line of defence on exactly that weak path.
+    //
+    // No-op when either side is null: a tenant-less caller (single-tenant
+    // reference, NoopTenantContextPort) or an untenanted execution row passes
+    // through unchanged. Untenanted rows are therefore globally visible at the
+    // app layer; Postgres RLS (decision-log seam 5) is the systematic backstop
+    // for deployments that need rows to be invisible across tenants by default.
+    //
+    // On mismatch we return 404, byte-identical to the not-found branch above,
+    // not 403. A distinct "belongs to another tenant" response would confirm
+    // the id exists in some other tenant, letting a caller enumerate foreign
+    // executions. Indistinguishable-from-absent is the only safe answer here.
+    const tenant = c.var.tenant;
+    if (tenant && execution.tenantId && execution.tenantId !== tenant.tenantId) {
       return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
     }
 

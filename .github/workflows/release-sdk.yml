@@ -104,7 +104,9 @@ jobs:
         # so the GitHub Release body matches what consumers see on npm.
         run: |
           VERSION=$(node -p "require('./packages/sdk/package.json').version")
-          NOTES=$(awk "/^## ${VERSION}\$/{flag=1;next}/^## /{flag=0}flag" packages/sdk/CHANGELOG.md)
+          # Matches either a bracketed Keep-a-Changelog heading
+          # (`## [X.Y.Z] - 2026-06-16`) or a bare Changesets heading (`## X.Y.Z`).
+          NOTES=$(awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/sdk/CHANGELOG.md)
           {
             echo "notes<<EOF"
             echo "$NOTES"

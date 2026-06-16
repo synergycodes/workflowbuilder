@@ -1,8 +1,17 @@
 # Changelog
 
-All notable changes to `@workflowbuilder/sdk` are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+## [2.1.0] - 2026-06-16
 
-## [Unreleased]
+### Added
+
+- `isValidConnection` and `reactFlowProps` props on `<WorkflowBuilder.Root>`. `isValidConnection` validates connections as the user draws them; `reactFlowProps` forwards extra props to the ReactFlow canvas.
+- `useWorkflowBuilderActions()` hook for custom layouts that omit `<WorkflowBuilder.TopBar />`, exposing the imperative save / import / export / settings / read-only / theme / layout-direction actions. Also exports the `WorkflowBuilderActions`, `LayoutChangeOptions`, and `Theme` types. See [Custom toolbar without the app bar](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-app-bar).
+- `edgeTemplates` prop on `<WorkflowBuilder.Root>` for custom edge renderers. Pass a `{ [edgeType]: Component }` map of components taking ReactFlow's `EdgeProps`; edges whose `type` matches a key render with your component, and unregistered types fall back to the built-in `labelEdge`. Also exports the `WorkflowBuilderEdgeTemplates` type.
+
+### Fixed
+
+- Re-measure node internals when `layoutDirection` changes, so edges re-route to the new handle positions instead of the stale ones React Flow had cached.
+- Theme now lives in a shared store applied to the DOM on `<WorkflowBuilder.Root>` mount, so a persisted theme paints on first load even without the app bar and multiple consumers stay in sync. Reads of `document` / `localStorage` are guarded, so importing the SDK server-side no longer throws.
 
 ## [2.0.1] - 2026-05-29
 
@@ -29,5 +38,6 @@ First public npm release. The major bump continues the Workflow Builder version 
 
 - Distribution model: editor is now consumed via `npm install @workflowbuilder/sdk` instead of cloning the monorepo. Consumers no longer need monorepo tooling, tsconfig paths, or workspace symlinks.
 
+[2.1.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.1.0
 [2.0.1]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.1
 [2.0.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.0

@@ -1,3 +1,4 @@
+import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren } from 'react';
 
 import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
@@ -19,6 +20,20 @@ import type { OnSaveExternal } from '../types/integration';
  * @category Components
  */
 export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<WorkflowNodeTemplateProps>>;
+
+/**
+ * Per-edge-type custom renderer registry. Keys are `edge.type` values; values
+ * are React components that take ReactFlow's {@link EdgeProps} (typed for
+ * {@link WorkflowBuilderEdge}) and replace the default edge renderer for
+ * matching edges.
+ *
+ * Unlike node templates, edge templates need no adapter: the built-in edges
+ * already take `EdgeProps` directly, so a consumer component drops straight
+ * into ReactFlow's edge-type map with no wrapping.
+ *
+ * @category Components
+ */
+export type WorkflowBuilderEdgeTemplates = Record<string, ComponentType<EdgeProps<WorkflowBuilderEdge>>>;
 
 /**
  * Plugin initializer — a synchronous function invoked exactly once on the
@@ -76,6 +91,89 @@ export type WorkflowBuilderJsonFormConfig = {
 };
 
 /**
+ * Arguments for {@link WorkflowBuilderIsValidConnection}. Source / target nodes
+ * are resolved from the connection's ids, so a rule can branch on node `data`.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderIsValidConnectionParams = {
+  /** The connection candidate (handle ids normalized to `null`). */
+  connection: Connection;
+  /** Node the connection is dragged from. */
+  sourceNode: WorkflowBuilderNode;
+  /** Node the connection is dragged to. */
+  targetNode: WorkflowBuilderNode;
+};
+
+/**
+ * Decides whether a dragged connection is allowed. Return `false` to block the
+ * drop (no edge created, no flicker). Fail-open: if an endpoint can't be
+ * resolved to a node, the connection is allowed and this is not invoked.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderIsValidConnection = (params: WorkflowBuilderIsValidConnectionParams) => boolean;
+
+/**
+ * ReactFlow props the SDK sets itself (spread last in `diagram.tsx`, so they win
+ * over `reactFlowProps`) and omits from {@link WorkflowBuilderReactFlowProps}.
+ * The `diagram.spec` precedence test enforces each one stays owned. Internal:
+ * exported for that test only.
+ */
+export type SdkManagedReactFlowKey =
+  | 'nodes'
+  | 'edges'
+  | 'nodeTypes'
+  | 'edgeTypes'
+  | 'onConnect'
+  | 'onConnectStart'
+  | 'onConnectEnd'
+  | 'onNodesChange'
+  | 'onEdgesChange'
+  | 'onSelectionChange'
+  | 'onInit'
+  | 'onBeforeDelete'
+  | 'onNodeDragStart'
+  | 'onNodeDragStop'
+  | 'onEdgeMouseEnter'
+  | 'onEdgeMouseLeave'
+  | 'onDragOver'
+  | 'onDrop'
+  | 'connectionLineComponent'
+  | 'nodesConnectable'
+  | 'nodesDraggable'
+  | 'isValidConnection';
+
+/**
+ * ReactFlow props omitted from {@link WorkflowBuilderReactFlowProps} but not
+ * re-set in `diagram.tsx`. `default*` are no-ops under the SDK's controlled
+ * `nodes` / `edges`; `colorMode` would clash with the SDK theme. Type-level guard
+ * only (a JS / `as`-cast consumer can still smuggle them; worst case is cosmetic).
+ */
+type SdkReservedReactFlowKey = 'defaultNodes' | 'defaultEdges' | 'colorMode';
+
+/** Every ReactFlow key the escape hatch must not expose. */
+type SdkOwnedReactFlowKey = SdkManagedReactFlowKey | SdkReservedReactFlowKey;
+
+/** Compiles only when `A extends B`. Fails the build if an owned key stops being a real ReactFlow prop (`Omit` doesn't validate keys). */
+type AssertAssignable<A extends B, B> = A;
+
+/**
+ * Escape hatch for the underlying ReactFlow canvas: forwards any ReactFlow prop
+ * except the ones the SDK owns ({@link SdkOwnedReactFlowKey}). Theme via the SDK
+ * design tokens, not `colorMode`.
+ *
+ * Treat as static config: the canvas reads it out-of-band, so changing a value
+ * at runtime may not apply until the canvas re-renders.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderReactFlowProps = Omit<
+  ReactFlowProps<WorkflowBuilderNode, WorkflowBuilderEdge>,
+  AssertAssignable<SdkOwnedReactFlowKey, keyof ReactFlowProps<WorkflowBuilderNode, WorkflowBuilderEdge>>
+>;
+
+/**
  * Props accepted by `<WorkflowBuilder.Root>`.
  *
  * @category Core
@@ -97,6 +195,23 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   nodeTemplates?: WorkflowBuilderNodeTemplates;
   /**
+   * Per-edge-type custom renderers. Map of `edge.type` to a React component.
+   * Overrides the built-in `'labelEdge'` for the matching edge type; edges
+   * whose type isn't registered fall back to the default edge.
+   *
+   * Each component is authored exactly like a ReactFlow custom edge (it takes
+   * `EdgeProps` directly). The only SDK-specific step is registering it here
+   * instead of via ReactFlow's `edgeTypes`. See ReactFlow's "Custom Edges"
+   * guide: https://reactflow.dev/learn/customization/custom-edges. To match the
+   * built-in selection and hover look, reuse the exported `useLabelEdgeHover`
+   * and `EnhancedBaseEdge`, or restyle selection globally via the
+   * `--ax-public-edge-color-select` CSS variable. A custom edge does not inherit
+   * the built-in self-connecting loop or label rendering.
+   *
+   * **Must be a stable reference** (same rationale as `nodeTemplates`).
+   */
+  edgeTemplates?: WorkflowBuilderEdgeTemplates;
+  /**
    * Diagram templates available in the template selector.
    * **Must be a stable reference** (same rationale as `nodeTypes`).
    */
@@ -115,4 +230,21 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   initialNodes?: WorkflowBuilderNode[];
   /** Initial edges rendered on first mount. */
   initialEdges?: WorkflowBuilderEdge[];
+  /**
+   * Validate connections as the user draws them. Return `false` to reject the
+   * drop. **Must be a stable reference.**
+   *
+   * @example
+   * ```ts
+   * const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targetNode }) =>
+   *   !(sourceNode.data.type === 'start' && targetNode.data.type === 'start');
+   * ```
+   */
+  isValidConnection?: WorkflowBuilderIsValidConnection;
+  /**
+   * Advanced escape hatch: forwards extra props to the ReactFlow canvas (see
+   * {@link WorkflowBuilderReactFlowProps}). Treat as static config; runtime value
+   * changes may not apply immediately.
+   */
+  reactFlowProps?: WorkflowBuilderReactFlowProps;
 }>;

@@ -14,6 +14,7 @@ function makeEvent(executionId: string, sequence: number, type = 'node_completed
     nodeId: null,
     pathId: null,
     payloadJson: null,
+    tenantId: null,
     createdAt: stamp,
   };
 }
