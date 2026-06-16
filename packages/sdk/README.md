@@ -85,9 +85,18 @@ To add custom overlays alongside the default layout, mount it explicitly:
 
 Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
-If you omit `<WorkflowBuilder.TopBar />`, use [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/#custom-layout-without-the-app-bar) to trigger save / import / export / settings / read-only / theme / layout-direction from your own controls.
+If you omit `<WorkflowBuilder.TopBar />`, use [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-app-bar) to trigger save / import / export / settings / read-only / theme / layout-direction from your own controls.
 
 ## `<WorkflowBuilder.Root>` props
+
+<!--
+  Maintainer note: these props are documented on three surfaces. The type in
+  packages/sdk/src/workflow-builder-root/workflow-builder-root.types.ts is the
+  source of truth (the API reference is generated from its JSDoc). This table and
+  apps/docs/src/content/docs/guides/configuring-the-editor.md mirror it by hand.
+  When you add / rename / remove a prop, update all three. Descriptions may differ
+  per surface; the set of prop names must match.
+-->
 
 | Prop                | Type                               | Description                                                                                                                                                                                                                                    |
 | ------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -104,8 +113,9 @@ If you omit `<WorkflowBuilder.TopBar />`, use [`useWorkflowBuilderActions()`](ht
 | `initialEdges`      | `WorkflowBuilderEdge[]`            | Starting diagram edges.                                                                                                                                                                                                                        |
 | `isValidConnection` | `WorkflowBuilderIsValidConnection` | Validate connections as the user draws them. See [Connection validation](#connection-validation). **Stable reference required.**                                                                                                               |
 | `reactFlowProps`    | `WorkflowBuilderReactFlowProps`    | Advanced escape hatch for the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props). Treat as static config (runtime value changes may not apply immediately).                                               |
+| `children`          | `ReactNode`                        | Custom layout. Omit for the default floating-overlay layout (top bar, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                             |
 
-Full reference (every public type, hook, and helper): <https://www.workflowbuilder.io/docs/api/core/workflowbuilder/>.
+Exact prop types come from the auto-generated [`WorkflowBuilderRootProps`](https://www.workflowbuilder.io/docs/api/core/workflowbuilderrootprops/) reference. For how and when to reach for each prop, see [Configuring the editor](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/).
 
 ## Persistence
 

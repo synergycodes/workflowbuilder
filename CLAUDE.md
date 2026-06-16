@@ -145,6 +145,8 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
    ```
 4. Open PR to `main`. The changeset file is part of the PR diff — reviewer sees the declared bump alongside the change.
 
+**`<WorkflowBuilder.Root>` props live on three surfaces.** The type in `packages/sdk/src/workflow-builder-root/workflow-builder-root.types.ts` is the source of truth; the `/api/core/workflowbuilderrootprops/` reference is generated from its JSDoc and never drifts. Two hand-written tables mirror it: `packages/sdk/README.md` (npm landing) and `apps/docs/src/content/docs/guides/configuring-the-editor.md` (docs guide). When you add, rename, or remove a prop, update both tables in the same change. Descriptions may differ per surface (the README leans on gotchas, the guide on how / when); the set of prop names must match.
+
 **Release moment** (maintainer, not Claude):
 
 1. Open PR `release/vX.Y.Z` → `release`. In the branch, run `pnpm changeset version` — bumps `packages/sdk/package.json`, regenerates `packages/sdk/CHANGELOG.md`, deletes consumed `.changeset/*.md`.
