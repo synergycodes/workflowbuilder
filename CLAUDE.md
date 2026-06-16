@@ -149,7 +149,7 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
 
 **Release moment** (maintainer, not Claude):
 
-1. Open PR `release/vX.Y.Z` → `release`. In the branch, run `pnpm changeset version` — bumps `packages/sdk/package.json`, regenerates `packages/sdk/CHANGELOG.md`, deletes consumed `.changeset/*.md`.
+1. Open PR `release/vX.Y.Z` → `release`. In the branch, run `pnpm changeset version` — bumps `packages/sdk/package.json`, regenerates `packages/sdk/CHANGELOG.md` (then reformat it into Keep a Changelog style before committing, see [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes consumed `.changeset/*.md`.
 2. Review the diff, merge the PR into `release`.
 3. Tag the merge commit on `release`: `git tag vX.Y.Z && git push origin vX.Y.Z`.
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
