@@ -2,7 +2,7 @@
 
 <a href="https://www.workflowbuilder.io/"><img alt="Workflow Builder" src="https://cdn.synergycodes.com/workflow-builder-logo-solid.svg" width="201" height="40"></a>
 
-[Live Demo](https://app.workflowbuilder.io/) &nbsp;|&nbsp; [Documentation](https://www.workflowbuilder.io/docs/overview/) &nbsp;|&nbsp; [Website](https://www.workflowbuilder.io/)
+[Live Demo](https://app.workflowbuilder.io/) &nbsp;|&nbsp; [Documentation](https://www.workflowbuilder.io/docs/overview/) &nbsp;|&nbsp; [npm](https://www.npmjs.com/package/@workflowbuilder/sdk) &nbsp;|&nbsp; [Website](https://www.workflowbuilder.io/)
 
 **Workflow Builder**
 
@@ -38,16 +38,47 @@ Three onboarding paths. Pick one based on what you want to evaluate.
 
 | Goal                                                   | Path                                                          | Setup time | Docker |
 | ------------------------------------------------------ | ------------------------------------------------------------- | ---------- | ------ |
-| See the editor running in your browser                 | [A. Try the demo](#path-a-try-the-demo)                       | ~2 min     | no     |
-| Run the full reference stack (editor + execution + AI) | [B. Run the full stack demo](#path-b-run-the-full-stack-demo) | ~10 min    | yes    |
-| Use the SDK inside your own React app                  | [C. Embed the SDK](#path-c-embed-the-sdk)                     | see docs   | no     |
+| Use the SDK inside your own React app                  | [A. Embed the SDK](#path-a-embed-the-sdk)                     | ~1 min     | no     |
+| See the editor running in your browser                 | [B. Try the demo](#path-b-try-the-demo)                       | ~2 min     | no     |
+| Run the full reference stack (editor + execution + AI) | [C. Run the full stack demo](#path-c-run-the-full-stack-demo) | ~10 min    | yes    |
 
-Want to skip the clone entirely? [Try the live demo](https://app.workflowbuilder.io) first.
+Don't want to install or clone anything yet? [Try the live demo](https://app.workflowbuilder.io) in your browser first.
+
+### Path A. Embed the SDK
+
+Use Workflow Builder inside your own React app. No clone, no Docker. Install the SDK and its peer dependencies from npm:
+
+```bash
+npm install @workflowbuilder/sdk \
+  react react-dom \
+  @xyflow/react \
+  @jsonforms/core @jsonforms/react \
+  i18next react-i18next i18next-browser-languagedetector \
+  immer zustand
+```
+
+Render the editor:
+
+```tsx
+import { WorkflowBuilder } from '@workflowbuilder/sdk';
+
+import '@workflowbuilder/sdk/style.css';
+
+export function App() {
+  return <WorkflowBuilder.Root name="my-workflow" />;
+}
+```
+
+It mounts the default layout (top bar, palette, canvas, properties panel) and persists to `localStorage` out of the box. The palette is empty until you pass `nodeTypes`.
+
+Full guide (props, persistence strategies, theming, plugins, and the API reference): [React Component on the docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
+
+The two paths below run this repository locally (demo and full stack). They share the requirements and preflight check that follow. Path A needs neither.
 
 ### Requirements
 
 - Node `22.12.0` and pnpm `10.9.0`. Both pinned in `package.json`. Use `nvm`, `fnm`, or `corepack` to match.
-- Docker Desktop. Only required for Path B.
+- Docker Desktop. Only required for Path C.
 
 Works the same on macOS, Linux, and Windows. No platform-specific steps.
 
@@ -81,11 +112,11 @@ Workflow Builder preflight
 Ready to go. Pick a path in README.md "Get started".
 ```
 
-The two `.env` warnings are expected on a fresh clone. They are only required for Path B and get created by `pnpm setup:env` in step 1 of that path. After that they switch to `✅ present`.
+The two `.env` warnings are expected on a fresh clone. They are only required for Path C and get created by `pnpm setup:env` in step 1 of that path. After that they switch to `✅ present`.
 
 Fix any red (`❌`) items before continuing. The script also has a `--json` mode for tooling: `pnpm preflight --json`.
 
-### Path A. Try the demo
+### Path B. Try the demo
 
 UI only. No backend, no Docker. The fastest way to see the editor in action.
 
@@ -104,7 +135,7 @@ Expected output:
 
 Open `http://localhost:4200`. The editor loads with the default plugin set and a starter template. That's it.
 
-### Path B. Run the full stack demo
+### Path C. Run the full stack demo
 
 Full reference product: editor, Hono backend, Temporal worker, Postgres. The frontend on port 4201 is the **AI Studio** reference product (`apps/ai-studio`). Demonstrates end-to-end workflow execution.
 
@@ -179,10 +210,6 @@ AI_MODEL=anthropic/claude-3.5-haiku
 ```
 
 If the key is missing the worker fails to start with `OPENROUTER_API_KEY is required`. If the model id is wrong the first AI node fails at runtime and the error surfaces in the UI log panel.
-
-### Path C. Embed the SDK
-
-To build your own React app on top of `@workflowbuilder/sdk`, follow the [React Component guide on the docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/). It covers installation, peer deduplication (for local-path builds until npm publish), usage, persistence strategies, theming, and the full API reference.
 
 ### Troubleshooting
 

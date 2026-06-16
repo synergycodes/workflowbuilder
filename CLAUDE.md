@@ -4,25 +4,25 @@ Visual workflow editor SDK (React) with a reference backend and Temporal-based e
 
 ## Quick Reference
 
-Three onboarding paths (A, B local-run; C docs-only). README "Get started" is the canonical guide for A and B. Path C ("Embed the SDK") lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/) and has no local-stack commands.
+Three onboarding paths (A installs from npm; B, C run the repo locally). README "Get started" covers all three. Path A ("Embed the SDK") installs `@workflowbuilder/sdk` from npm; the README has install + a minimal snippet, and the full guide lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
 
 | Command                      | Path | What it does                                                                |
 | ---------------------------- | ---- | --------------------------------------------------------------------------- |
-| `pnpm preflight`             | both | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents |
-| `pnpm dev` / `pnpm dev:demo` | A    | Demo (UI only, port 4200). No backend, no Docker                            |
-| `pnpm infra:up`              | B    | Start Postgres + Temporal in Docker. Required before backend/worker         |
-| `pnpm -F backend db:migrate` | B    | Apply Drizzle migrations. First run, or after schema changes                |
-| `pnpm dev:ai-studio`         | B    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)     |
-| `pnpm dev:backend`           | B    | Backend only (debug). Needs infra up                                        |
-| `pnpm dev:worker`            | B    | Execution worker only (debug). Needs infra up                               |
-| `pnpm infra:down`            | B    | Stop the Docker stack                                                       |
+| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents |
+| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                            |
+| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker         |
+| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations. First run, or after schema changes                |
+| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)     |
+| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                        |
+| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                               |
+| `pnpm infra:down`            | C    | Stop the Docker stack                                                       |
 | `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                               |
 | `pnpm build:lib`             | -    | Build the SDK package (`packages/sdk`)                                      |
 | `pnpm build`                 | -    | Build the demo app                                                          |
 | `pnpm test`                  | -    | Run tests in `packages/sdk` and `packages/execution-core`                   |
 | `pnpm check`                 | -    | Lint + typecheck + format + knip                                            |
 
-Path A is UI-only and does not need Docker. Path B requires `pnpm infra:up` before backend/worker can start, and `db:migrate` on the first run.
+Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start, and `db:migrate` on the first run.
 
 ### Agent signals
 
@@ -123,7 +123,7 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 | `/wb.create-plugin <name>`         | Scaffold a new SDK plugin — asks for target app (default `demo`)                                                                      |
 | `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                |
 | `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                   |
-| `/wb.run-locally`                  | Bring up the stack — Path A (`pnpm dev:demo`) or Path B (infra + backend + worker + AI Studio frontend)                               |
+| `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                               |
 | `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                     |
 | `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                           |
 | `/wb.changeset <bump> "<summary>"` | Add a changeset for SDK changes (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**` |

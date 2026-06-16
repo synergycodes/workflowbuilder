@@ -4,7 +4,7 @@ Reference frontend for the Workflow Builder AI Studio product. Consumes `@workfl
 
 > ⚠️ Local development only. Depends on the reference backend, which has no auth/authz. See [apps/backend/README.md](../backend/README.md).
 
-> **Note:** setup is in [root README "Path B. Run the full stack demo"](../../README.md#path-b-run-the-full-stack-demo).
+> **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo).
 
 ## What this is
 
