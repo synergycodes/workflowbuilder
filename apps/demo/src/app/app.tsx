@@ -1,5 +1,10 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
-import type { WorkflowBuilderEdgeTemplates, WorkflowBuilderNodeTemplates } from '@workflowbuilder/sdk';
+import type {
+  WorkflowBuilderEdgeTemplates,
+  WorkflowBuilderIsValidConnection,
+  WorkflowBuilderNodeTemplates,
+  WorkflowBuilderReactFlowProps,
+} from '@workflowbuilder/sdk';
 
 import '@workflowbuilder/sdk/style.css';
 
@@ -30,6 +35,14 @@ const edgeTemplates = {
   dashed: DashedEdge,
 } satisfies WorkflowBuilderEdgeTemplates;
 
+// A trigger is a workflow entry point, so it can never be a connection target.
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => targetNode.data.type !== 'trigger';
+
+// Advanced escape hatch: forward extra ReactFlow props (SDK-owned props can't be set here).
+const reactFlowProps = {
+  zoomOnDoubleClick: false,
+} satisfies WorkflowBuilderReactFlowProps;
+
 export function App() {
   return (
     <WorkflowBuilder.Root
@@ -38,6 +51,8 @@ export function App() {
       nodeTemplates={nodeTemplates}
       edgeTemplates={edgeTemplates}
       diagramTemplates={demoTemplates}
+      isValidConnection={isValidConnection}
+      reactFlowProps={reactFlowProps}
       plugins={[
         demoPlugin,
         analyticsPlugin,

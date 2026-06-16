@@ -6,6 +6,7 @@ import { registerPluginTranslation } from '../features/plugins-core/adapters/ada
 import { setCustomEdgeTemplates } from '../data/edge-templates';
 import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
+import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
@@ -58,6 +59,8 @@ export function WorkflowBuilderRoot({
   layoutDirection,
   initialNodes,
   initialEdges,
+  isValidConnection,
+  reactFlowProps,
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -126,6 +129,8 @@ export function WorkflowBuilderRoot({
   setCustomTemplates(diagramTemplates ?? null);
   setCustomNodeTemplates(nodeTemplates ?? null);
   setCustomEdgeTemplates(edgeTemplates ?? null);
+  setIsValidConnection(isValidConnection ?? null);
+  setReactFlowProps(reactFlowProps ?? null);
 
   const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
 
