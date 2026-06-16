@@ -5,7 +5,7 @@
 >
 > Seams for consumers to plug in: [`AuthPort`](./auth-port.decision-log.md) for authn/authz, [`TenantContextPort`](./tenant-context-port.decision-log.md) for multi-tenant identity propagation (wiring guide: [`multi-tenancy.md`](./multi-tenancy.md)).
 
-> **Note:** setup is in [root README "Path B. Run the full stack demo"](../../README.md#path-b-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
+> **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
 
 Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows defined on the canvas via Temporal + OpenRouter.
 
