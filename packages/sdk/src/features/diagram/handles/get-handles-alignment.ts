@@ -3,9 +3,9 @@ import type { ComponentProps } from 'react';
 
 import type { LayoutDirection } from '../../../node/common';
 
-// Source-of-truth: overflow-ui's `<NodePanel.Handles>` prop, so adding a new
-// alignment in overflow-ui surfaces here as a type error instead of silently
-// drifting.
+// Source-of-truth: `@workflowbuilder/ui`'s `<NodePanel.Handles>` prop, so adding
+// a new alignment in the UI library surfaces here as a type error instead of
+// silently drifting.
 type HandlesAlignment = NonNullable<ComponentProps<typeof NodePanel.Handles>['alignment']>;
 
 // Unifies how built-in node templates choose the `alignment` prop they pass to
