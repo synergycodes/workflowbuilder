@@ -1,0 +1,25 @@
+:root {
+  --ax-public-node-title-color: var(--ax-txt-primary-default);
+  --ax-public-node-title-subtitle: var(--ax-txt-secondary-default);
+}
+
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  width: 100%;
+
+  .title {
+    color: var(--ax-public-node-title-color);
+    text-overflow: ellipsis;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+  }
+
+  .subtitle {
+    color: var(--ax-public-node-title-subtitle);
+  }
+}

@@ -1,0 +1,68 @@
+:root {
+  --ax-public-list-item-background-color: var(--ax-dropdown-bg-secondary-default);
+  --ax-public-list-item-background-color-selected: var(--ax-dropdown-bg-secondary-active);
+  --ax-public-list-item-color-selected: var(--ax-txt-primary-white);
+  --ax-public-list-item-color: var(--ax-txt-primary-default);
+
+  --ax-public-list-item-background-color-focus: var(--ax-dropdown-bg-secondary-default);
+  --ax-public-list-item-outline-color-focus: var(--ax-ui-stroke-primary-focus);
+  --ax-public-list-item-outline-size: 0.0625rem;
+
+  --ax-public-list-item-color-destructive: var(--ax-txt-error-default);
+  --ax-public-list-item-background-color-destructive: var(--ax-dropdown-bg-destructive-default);
+  --ax-public-list-item-background-color-hover-destructive: var(--ax-dropdown-bg-destructive-hover);
+  --ax-public-list-border-radius: var(--ax-token-radius-dropdown-item-s);
+}
+
+@layer ui.component {
+  .list-item {
+    display: flex;
+    align-items: center;
+    border-radius: var(--ax-public-list-border-radius);
+    width: max-content;
+    min-width: 100%;
+    cursor: pointer;
+    color: var(--ax-public-list-item-color);
+
+    /* Base UI items expose state as data attributes (data-selected,
+       data-disabled, data-highlighted) — not the MUI-era base--* classes. */
+    &:hover:not([data-disabled]) {
+      background-color: var(--ax-public-list-item-background-color);
+    }
+
+    &:focus-visible,
+    &[data-highlighted] {
+      outline: var(--ax-public-list-item-outline-size) solid var(--ax-public-list-item-outline-color-focus);
+      background-color: var(--ax-public-list-item-background-color-focus);
+    }
+
+    /* After the highlight rule: a selected item keeps its selected colors
+       while highlighted — the outline alone marks the keyboard cursor. */
+    &[data-selected] {
+      background-color: var(--ax-public-list-item-background-color-selected);
+      color: var(--ax-public-list-item-color-selected);
+    }
+
+    &[data-disabled] {
+      color: var(--ax-public-input-color-disabled);
+      cursor: auto;
+    }
+
+    &.destructive {
+      color: var(--ax-public-list-item-color-destructive);
+      background-color: var(--ax-public-list-item-background-color-destructive);
+
+      &:hover,
+      &:focus-visible,
+      &[data-highlighted] {
+        background-color: var(--ax-public-list-item-background-color-hover-destructive);
+      }
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      min-width: 1rem;
+    }
+  }
+}

@@ -1,0 +1,180 @@
+:root {
+  --ax-public-button-border-size: 0.0625rem;
+
+  --ax-public-button-primary-background: var(--ax-button-primary-bg-default);
+  --ax-public-button-primary-background-hover: var(--ax-button-primary-bg-hover);
+  --ax-public-button-primary-background-active: var(--ax-button-primary-bg-active);
+  --ax-public-button-primary-background-focus: var(--ax-button-primary-bg-focus);
+
+  --ax-public-button-secondary-border-color: var(--ax-ui-stroke-secondary-default);
+  --ax-public-button-secondary-color: var(--ax-txt-primary-default);
+  --ax-public-button-secondary-border-color-hover: var(--ax-ui-stroke-primary-focus);
+  --ax-public-button-secondary-color-active: var(--ax-txt-secondary-default);
+  --ax-public-button-secondary-border-color-active: var(--ax-ui-stroke-primary-focus);
+  --ax-public-button-secondary-border-color-focus: var(--ax-ui-stroke-primary-focus);
+  --ax-public-button-secondary-border-color-disabled: var(--ax-ui-stroke-secondary-default);
+  --ax-public-button-secondary-color-disabled: var(--ax-txt-quaternary-default);
+
+  --ax-public-button-ghost-destructive-background-color: var(--ax-button-ghost-destructive-bg-default);
+  --ax-public-button-ghost-destructive-border-color: var(--ax-button-ghost-destructive-stroke-default);
+  --ax-public-button-ghost-destructive-color: var(--ax-txt-destuctive-default);
+  --ax-public-button-ghost-destructive-background-color-hover: var(--ax-button-ghost-destructive-bg-hover);
+  --ax-public-button-ghost-destructive-background-color-active: var(--ax-button-ghost-destructive-bg-active);
+  --ax-public-button-ghost-destructive-background-color-focus: var(--ax-button-ghost-destructive-bg-focus);
+  --ax-public-button-ghost-destructive-background-color-disabled: var(--ax-button-ghost-destructive-bg-disabled);
+  --ax-public-button-ghost-destructive-color-disabled: var(--ax-txt-destructive-disabled);
+
+  --ax-public-button-gray-background: var(--ax-button-gray-bg-default);
+  --ax-public-button-gray-background-hover: var(--ax-button-gray-bg-hover);
+  --ax-public-button-gray-background-active: var(--ax-button-gray-bg-active);
+  --ax-public-button-gray-background-focus: var(--ax-button-gray-bg-focus);
+
+  --ax-public-button-error-background: var(--ax-button-red-bg-default);
+  --ax-public-button-error-background-hover: var(--ax-button-red-bg-hover);
+  --ax-public-button-error-background-active: var(--ax-button-red-bg-active);
+  --ax-public-button-error-background-focus: var(--ax-button-red-bg-focus);
+
+  --ax-public-button-success-background: var(--ax-button-green-bg-default);
+  --ax-public-button-success-background-hover: var(--ax-button-green-bg-hover);
+  --ax-public-button-success-background-active: var(--ax-button-green-bg-active);
+  --ax-public-button-success-background-focus: var(--ax-button-green-bg-focus);
+
+  --ax-public-button-warning-background: var(--ax-button-orange-bg-default);
+  --ax-public-button-warning-background-hover: var(--ax-button-orange-bg-hover);
+  --ax-public-button-warning-background-active: var(--ax-button-orange-bg-active);
+  --ax-public-button-warning-background-focus: var(--ax-button-orange-bg-focus);
+}
+
+@layer ui.component {
+  button {
+    &:not(:disabled) {
+      &.primary {
+        background-color: var(--ax-public-button-primary-background);
+
+        &:hover {
+          background-color: var(--ax-public-button-primary-background-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-primary-background-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-primary-background-focus);
+        }
+      }
+
+      &.secondary {
+        border: var(--ax-public-button-border-size) solid var(--ax-public-button-secondary-border-color);
+        background-color: transparent;
+        color: var(--ax-public-button-secondary-color);
+
+        &:hover {
+          border-color: var(--ax-public-button-secondary-border-color-hover);
+        }
+
+        &:active {
+          border-color: var(--ax-public-button-secondary-border-color-active);
+          color: var(--ax-public-button-secondary-color-active);
+        }
+
+        &:focus-visible {
+          border-color: var(--ax-public-button-secondary-border-color-focus);
+        }
+
+        &:disabled {
+          border-color: var(--ax-public-button-secondary-border-color-disabled);
+          color: var(--ax-public-button-secondary-color-disabled);
+        }
+      }
+
+      &.ghost-destructive {
+        border: var(--ax-public-button-border-size) solid var(--ax-public-button-ghost-destructive-border-color);
+        background-color: var(--ax-public-button-ghost-destructive-background-color);
+        color: var(--ax-public-button-ghost-destructive-color);
+
+        &:hover {
+          background-color: var(--ax-public-button-ghost-destructive-background-color-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-ghost-destructive-background-color-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-ghost-destructive-background-color-focus);
+          border-width: 2px;
+        }
+
+        &:disabled {
+          background-color: var(--ax-public-button-ghost-destructive-background-color-disabled);
+          color: var(--ax-public-button-ghost-destructive-color-disabled);
+        }
+      }
+
+      &.gray {
+        background-color: var(--ax-public-button-gray-background);
+
+        &:hover {
+          background-color: var(--ax-public-button-gray-background-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-gray-background-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-gray-background-focus);
+        }
+      }
+
+      &.error {
+        background-color: var(--ax-public-button-error-background);
+
+        &:hover {
+          background-color: var(--ax-public-button-error-background-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-error-background-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-error-background-focus);
+        }
+      }
+
+      &.success {
+        background-color: var(--ax-public-button-success-background);
+
+        &:hover {
+          background-color: var(--ax-public-button-success-background-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-success-background-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-success-background-focus);
+        }
+      }
+
+      &.warning {
+        background-color: var(--ax-public-button-warning-background);
+
+        &:hover {
+          background-color: var(--ax-public-button-warning-background-hover);
+        }
+
+        &:active {
+          background-color: var(--ax-public-button-warning-background-active);
+        }
+
+        &:focus-visible {
+          background-color: var(--ax-public-button-warning-background-focus);
+        }
+      }
+    }
+  }
+}

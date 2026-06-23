@@ -1,0 +1,37 @@
+@layer ui.component {
+  .container {
+    background: transparent;
+    border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+    color: var(--ax-public-input-root-color);
+    cursor: pointer;
+    width: 100%;
+
+    &[aria-expanded='true'] {
+      border-color: var(--ax-public-input-root-border-color-focus);
+    }
+
+    &.container--error {
+      background-color: var(--ax-public-input-root-background-color-error);
+      border-color: var(--ax-public-input-root-border-color-error);
+      color: var(--ax-public-input-root-color-error);
+    }
+
+    &.container--placeholder {
+      opacity: 0.5;
+    }
+  }
+
+  .trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar {
+    background: var(--ax-public-date-picker-dropdown-background);
+    border: 0.0625rem solid var(--ax-public-date-picker-dropdown-border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--ax-public-date-picker-dropdown-box-shadow);
+    color: var(--ax-public-date-picker-color);
+  }
+}

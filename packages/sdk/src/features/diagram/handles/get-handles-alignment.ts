@@ -1,4 +1,4 @@
-import type { NodePanel } from '@synergycodes/overflow-ui';
+import type { NodePanel } from '@workflowbuilder/ui';
 import type { ComponentProps } from 'react';
 
 import type { LayoutDirection } from '../../../node/common';

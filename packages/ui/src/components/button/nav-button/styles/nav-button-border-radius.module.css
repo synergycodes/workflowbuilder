@@ -1,0 +1,16 @@
+:root {
+  --ax-public-button-border-radius-xx-small: var(--ax-token-radius-button-xxs);
+  --ax-public-button-border-radius-xxx-small: var(--ax-token-radius-button-xxxs);
+}
+
+@layer ui.component {
+  :not(.circle) {
+    &.xx-small {
+      border-radius: var(--ax-public-button-border-radius-xx-small);
+    }
+
+    &.xxx-small {
+      border-radius: var(--ax-public-button-border-radius-xxx-small);
+    }
+  }
+}

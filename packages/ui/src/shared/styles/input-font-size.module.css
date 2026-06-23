@@ -1,0 +1,10 @@
+@layer ui.component {
+  .large {
+    composes: ax-public-p9 from global;
+  }
+
+  .medium,
+  .small {
+    composes: ax-public-p10 from global;
+  }
+}

@@ -1,0 +1,39 @@
+:root {
+  --ax-public-segment-picker-border-radius-extra-large: var(--ax-token-radius-seg-picker-xl);
+  --ax-public-segment-picker-border-radius-large: var(--ax-token-radius-seg-picker-l);
+  --ax-public-segment-picker-border-radius-medium: var(--ax-token-radius-seg-picker-m);
+  --ax-public-segment-picker-border-radius-small: var(--ax-token-radius-seg-picker-s);
+  --ax-public-segment-picker-border-radius-extra-small: var(--ax-token-radius-seg-picker-xs);
+  --ax-public-segment-picker-border-radius-xx-small: var(--ax-token-radius-seg-picker-xxs);
+  --ax-public-segment-picker-border-radius-xxx-small: var(--ax-token-radius-seg-picker-xxxs);
+}
+
+@layer ui.component {
+  .extra-large {
+    border-radius: var(--ax-public-segment-picker-border-radius-extra-large);
+  }
+
+  .large {
+    border-radius: var(--ax-public-segment-picker-border-radius-large);
+  }
+
+  .medium {
+    border-radius: var(--ax-public-segment-picker-border-radius-medium);
+  }
+
+  .small {
+    border-radius: var(--ax-public-segment-picker-border-radius-small);
+  }
+
+  .extra-small {
+    border-radius: var(--ax-public-segment-picker-border-radius-extra-small);
+  }
+
+  .xx-small {
+    border-radius: var(--ax-public-segment-picker-border-radius-xx-small);
+  }
+
+  .xxx-small {
+    border-radius: var(--ax-public-segment-picker-border-radius-xxx-small);
+  }
+}
