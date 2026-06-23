@@ -50,7 +50,7 @@ Workflow Builder supports both light and dark modes out of the box, controlled b
 
 ## Headless components
 
-Workflow Builder ships with a complete default theme, but the underlying components are built with [Overflow UI](https://www.overflow.dev/ui-components/authored/quickstart), a headless (unstyled) React component library. This means you can replace the default styles entirely without fighting against built-in component styles. The visual layer is fully separate from the functional layer.
+Workflow Builder ships with a complete default theme, but the underlying components come from [`@workflowbuilder/ui`](/ui-library/overview/), our component library built on the headless [Base UI](https://base-ui.com/) primitives. The styled layer is fully tokenized and isolated in cascade layers, so you can retheme or replace it through the `--ax-*` design tokens without fighting against built-in component styles. The visual layer is fully separate from the functional layer.
 
 ## White-label support
 
@@ -68,5 +68,5 @@ For a visual overview of the design system, watch the walkthrough below.
 
 ## References
 
-- [Overflow UI](https://www.overflow.dev/ui-components/authored/quickstart) - the headless React component library underneath the default theme
+- [`@workflowbuilder/ui`](/ui-library/overview/) - the component library behind the default theme, built on [Base UI](https://base-ui.com/)
 - [Atomic Design methodology](https://bradfrost.com/blog/post/atomic-web-design/) - the structural model behind the design system
