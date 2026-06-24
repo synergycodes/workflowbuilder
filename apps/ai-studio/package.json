@@ -13,11 +13,12 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "1.0.0-beta.27",
     "@workflow-builder/types": "workspace:*",
+    "@workflowbuilder/ui": "workspace:*",
     "@xyflow/react": "catalog:",
     "clsx": "^2.1.1",
     "immer": "^10.1.1",

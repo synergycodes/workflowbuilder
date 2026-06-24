@@ -1,5 +1,5 @@
 import { MoonStars, Sun } from '@phosphor-icons/react';
-import { IconSwitch } from '@synergycodes/overflow-ui';
+import { IconSwitch } from '@workflowbuilder/ui';
 
 import { useTheme } from '../../../../hooks/use-theme';
 

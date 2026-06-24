@@ -215,7 +215,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 
 Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-thumb-hover-color`, `--wb-scroll-track-color`).
 
-Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@synergycodes/overflow-ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
+Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@workflowbuilder/ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
 ## CSS — global resets
 

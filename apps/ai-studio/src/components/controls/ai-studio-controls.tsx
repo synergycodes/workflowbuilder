@@ -1,5 +1,5 @@
-import { NavButton } from '@synergycodes/overflow-ui';
 import { Icon, getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
+import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback } from 'react';
 

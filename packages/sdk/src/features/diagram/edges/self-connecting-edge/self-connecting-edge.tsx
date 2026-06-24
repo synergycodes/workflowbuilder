@@ -1,4 +1,4 @@
-import { type EdgeState, useEdgeStyle } from '@synergycodes/overflow-ui';
+import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
 import type { EdgeProps } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';

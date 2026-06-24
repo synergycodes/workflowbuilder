@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 

@@ -16,11 +16,12 @@
     "test:watch": "vitest"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@microsoft/clarity": "^1.0.0",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "1.0.0-beta.27",
+    "@workflowbuilder/ui": "workspace:*",
     "@xyflow/react": "catalog:",
     "ajv": "catalog:",
     "clsx": "^2.1.1",

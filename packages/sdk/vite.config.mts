@@ -58,11 +58,6 @@ export default defineConfig(({ command }) => ({
     alias: {
       '@/assets': path.resolve(import.meta.dirname, 'src/assets'),
       '@': path.resolve(import.meta.dirname, 'src'),
-      // overflow-ui doesn't export ./dist/index.css in its package.json exports field
-      'overflow-ui-css': path.resolve(
-        import.meta.dirname,
-        'node_modules/@synergycodes/overflow-ui/dist/index.css',
-      ),
     },
   },
   // Inline `process.env.NODE_ENV` at SDK build time. The SDK bundles deps

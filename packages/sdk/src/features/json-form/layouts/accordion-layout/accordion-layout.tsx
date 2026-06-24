@@ -1,4 +1,4 @@
-import { Accordion } from '@synergycodes/overflow-ui';
+import { Accordion } from '@workflowbuilder/ui';
 
 import styles from './accordion-layout.module.css';
 
