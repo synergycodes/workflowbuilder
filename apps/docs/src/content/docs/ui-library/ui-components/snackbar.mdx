@@ -1,0 +1,96 @@
+---
+title: Snackbar
+description: A brief inline message about an app process.
+---
+
+import { SnackbarExample } from '../../../../components/ui-examples/snackbar';
+
+A `Snackbar` displays a brief message about an app process. It comes in several
+variants - success, error, warning, info and default - and can show a secondary
+subtitle, an action button, and a close button.
+
+<SnackbarExample client:visible />
+
+## Usage
+
+```tsx
+import { Snackbar } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Snackbar variant="success" title="Saved" subtitle="Your changes were saved." close onClose={() => {}} />;
+}
+```
+
+## Props
+
+| Prop            | Type                                                       | Default | Description                                 |
+| --------------- | ---------------------------------------------------------- | ------- | ------------------------------------------- |
+| `variant`       | `'success' \| 'error' \| 'warning' \| 'info' \| 'default'` | -       | Visual style variant of the snackbar.       |
+| `title`         | `string`                                                   | -       | Main message displayed in the snackbar.     |
+| `subtitle`      | `string`                                                   | -       | Optional secondary message below the title. |
+| `buttonLabel`   | `string`                                                   | -       | Label for the action button.                |
+| `onButtonClick` | `() => void`                                               | -       | Called when the action button is clicked.   |
+| `close`         | `boolean`                                                  | `false` | Whether to show the close button.           |
+| `onClose`       | `() => void`                                               | -       | Called when the snackbar is closed.         |
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the snackbar.
+
+### Layout
+
+| Variable                             | Description                            |
+| ------------------------------------ | -------------------------------------- |
+| `--ax-public-snackbar-width`         | Content width.                         |
+| `--ax-public-snackbar-padding`       | Inner padding.                         |
+| `--ax-public-snackbar-content-gap`   | Gap between icon, message and actions. |
+| `--ax-public-snackbar-border-size`   | Border width.                          |
+| `--ax-public-snackbar-border-radius` | Corner radius.                         |
+
+### Text
+
+| Variable                                | Description              |
+| --------------------------------------- | ------------------------ |
+| `--ax-public-snackbar-title-color`      | Title text color.        |
+| `--ax-public-snackbar-subtitle-color`   | Subtitle text color.     |
+| `--ax-public-snackbar-close-icon-color` | Close button icon color. |
+
+### Default variant
+
+| Variable                                  | Description        |
+| ----------------------------------------- | ------------------ |
+| `--ax-public-snackbar-default-background` | Background color.  |
+| `--ax-public-snackbar-default-border`     | Border color.      |
+| `--ax-public-snackbar-default-icon-color` | Status icon color. |
+
+### Success variant
+
+| Variable                                  | Description        |
+| ----------------------------------------- | ------------------ |
+| `--ax-public-snackbar-success-background` | Background color.  |
+| `--ax-public-snackbar-success-border`     | Border color.      |
+| `--ax-public-snackbar-success-icon-color` | Status icon color. |
+
+### Error variant
+
+| Variable                                | Description        |
+| --------------------------------------- | ------------------ |
+| `--ax-public-snackbar-error-background` | Background color.  |
+| `--ax-public-snackbar-error-border`     | Border color.      |
+| `--ax-public-snackbar-error-icon-color` | Status icon color. |
+
+### Warning variant
+
+| Variable                                  | Description        |
+| ----------------------------------------- | ------------------ |
+| `--ax-public-snackbar-warning-background` | Background color.  |
+| `--ax-public-snackbar-warning-border`     | Border color.      |
+| `--ax-public-snackbar-warning-icon-color` | Status icon color. |
+
+### Info variant
+
+| Variable                               | Description        |
+| -------------------------------------- | ------------------ |
+| `--ax-public-snackbar-info-background` | Background color.  |
+| `--ax-public-snackbar-info-border`     | Border color.      |
+| `--ax-public-snackbar-info-icon-color` | Status icon color. |
