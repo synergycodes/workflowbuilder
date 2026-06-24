@@ -12,7 +12,7 @@ import { MenuItemProps } from './types';
 
 export type { OffsetOptions, Placement } from './placement';
 
-type MenuProps = {
+export type MenuProps = {
   /**
    * Array of menu items to be rendered in the menu.
    * Each item can be either a regular menu item or a separator.

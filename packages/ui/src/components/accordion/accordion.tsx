@@ -31,6 +31,7 @@ export type AccordionProps = React.HTMLAttributes<HTMLDivElement> &
 
     /**
      * Initial open state
+     * @default true
      */
     defaultOpen?: boolean;
   };

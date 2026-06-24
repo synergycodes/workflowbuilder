@@ -10,35 +10,40 @@ import { Item, SegmentPickerItemProps } from './item/segment-picker-item';
 import { SegmentPickerContext } from './utils/context';
 import { getValidShape } from './utils/get-valid-shape';
 
-type SegmentPickerPropsBase = {
+export type SegmentPickerPropsBase = {
   children: ReactElement<SegmentPickerItemProps, typeof Item>[];
+  /**
+   * Size variant of the SegmentPicker and its items.
+   * @default 'medium'
+   */
   size?: Size;
   /**
    * Controls the shape of the SegmentPicker and its items.
    * (default) - Items stretch to fill the container equally.
    * 'circle' - Items fit tightly around their content to maintain a circular shape.
    * Only supported when items contain icons only.
+   * @default ''
    */
   shape?: Shape;
   className?: string;
   onChange?: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
 };
 
-type ControlledSegmentPickerProps = {
+export type ControlledSegmentPickerProps = {
   /** The currently selected value (controlled mode). */
   value: string;
   /** Must not be used in controlled mode. */
   defaultValue?: never;
 } & SegmentPickerPropsBase;
 
-type UncontrolledSegmentPickerProps = {
+export type UncontrolledSegmentPickerProps = {
   /** The initial selected value (uncontrolled mode). */
   defaultValue: string;
   /** Must not be used in uncontrolled mode. */
   value?: never;
 } & SegmentPickerPropsBase;
 
-type SegmentPickerProps = ControlledSegmentPickerProps | UncontrolledSegmentPickerProps;
+export type SegmentPickerProps = ControlledSegmentPickerProps | UncontrolledSegmentPickerProps;
 
 type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & React.RefAttributes<HTMLDivElement>> & {
   Item: typeof Item;

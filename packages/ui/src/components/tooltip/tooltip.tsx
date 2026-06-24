@@ -27,7 +27,7 @@ export type TooltipOptions = {
   onOpenChange?: (open: boolean) => void;
 };
 
-type Props = {
+export type TooltipProps = {
   /**
    * Tooltip reference element.
    */
@@ -39,7 +39,7 @@ const HOVER_FOCUS_REASONS = new Set<string>(['trigger-hover', 'trigger-focus', '
 /**
  * Tooltips display informative text when users hover over, focus on, or tap an element.
  */
-export function Tooltip({ children, initialOpen, placement = 'bottom', open, onOpenChange }: Props) {
+export function Tooltip({ children, initialOpen, placement = 'bottom', open, onOpenChange }: TooltipProps) {
   const isControlled = open !== undefined;
   const placementValue = useMemo(() => placementToSideAlign(placement), [placement]);
 
