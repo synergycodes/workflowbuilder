@@ -3,6 +3,8 @@ title: DatePicker
 description: A calendar popover for selecting a single date, a range, or multiple dates.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { DatePickerExample } from '../../../../components/ui-examples/date-picker';
 
 A `DatePicker` lets users pick a date from a calendar popover. It supports single
@@ -31,56 +33,8 @@ function Example() {
 
 ## Props
 
-| Prop              | Type                                                      | Default        | Description                                |
-| ----------------- | --------------------------------------------------------- | -------------- | ------------------------------------------ |
-| `value`           | `Date \| [Date, Date] \| Date[] \| string`                | -              | Controlled selected value.                 |
-| `defaultValue`    | `Date \| [Date, Date] \| Date[] \| string`                | -              | Initial value when uncontrolled.           |
-| `onChange`        | `(value: Date \| [Date, Date] \| Date[] \| null) => void` | -              | Called when the selection changes.         |
-| `type`            | `'default' \| 'range' \| 'multiple'`                      | `'default'`    | Single date, a range, or multiple dates.   |
-| `valueFormat`     | `string`                                                  | `'DD/MM/YYYY'` | `date-fns` token used to render the value. |
-| `placeholder`     | `string`                                                  | `'dd/mm/yyyy'` | Text shown when no date is selected.       |
-| `inputSize`       | `'small' \| 'medium' \| 'large'`                          | `'medium'`     | Size of the trigger input.                 |
-| `minDate`         | `Date`                                                    | -              | Earliest selectable date (inclusive).      |
-| `maxDate`         | `Date`                                                    | -              | Latest selectable date (inclusive).        |
-| `error`           | `boolean`                                                 | `false`        | Renders the trigger in an error state.     |
-| `disabled`        | `boolean`                                                 | -              | Disables the trigger and prevents opening. |
-| `readOnly`        | `boolean`                                                 | -              | Shows the value but prevents opening.      |
-| `id`              | `string`                                                  | -              | `id` applied to the trigger button.        |
-| `className`       | `string`                                                  | -              | Class applied to the trigger button.       |
-| `aria-label`      | `string`                                                  | -              | Accessible name for the trigger button.    |
-| `aria-labelledby` | `string`                                                  | -              | `aria-labelledby` for the trigger button.  |
+<PropsTable slug="date-picker" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the date picker.
-
-### Size
-
-| Variable                                 | Description                     |
-| ---------------------------------------- | ------------------------------- |
-| `--ax-public-input-padding-large`        | Trigger padding (large).        |
-| `--ax-public-input-padding-medium`       | Trigger padding (medium).       |
-| `--ax-public-input-padding-small`        | Trigger padding (small).        |
-| `--ax-public-input-border-radius-large`  | Trigger corner radius (large).  |
-| `--ax-public-input-border-radius-medium` | Trigger corner radius (medium). |
-| `--ax-public-input-border-radius-small`  | Trigger corner radius (small).  |
-| `--ax-public-input-root-border-size`     | Border width of the trigger.    |
-
-### Color
-
-| Variable                                                 | Description                          |
-| -------------------------------------------------------- | ------------------------------------ |
-| `--ax-public-input-root-color`                           | Trigger text color.                  |
-| `--ax-public-input-root-border-color`                    | Trigger border color.                |
-| `--ax-public-input-root-border-color-focus`              | Trigger border color when open.      |
-| `--ax-public-input-root-background-color-error`          | Trigger background in error state.   |
-| `--ax-public-input-root-border-color-error`              | Trigger border color in error state. |
-| `--ax-public-input-root-color-error`                     | Trigger text color in error state.   |
-| `--ax-public-date-picker-color`                          | Calendar text color.                 |
-| `--ax-public-date-picker-dropdown-background`            | Calendar popover background.         |
-| `--ax-public-date-picker-dropdown-border-color`          | Calendar popover border color.       |
-| `--ax-public-date-picker-dropdown-box-shadow`            | Calendar popover shadow.             |
-| `--ax-public-date-picker-header-background`              | Calendar header background.          |
-| `--ax-public-date-picker-date-header-color`              | Weekday header text color.           |
-| `--ax-public-date-picker-date-outside-color`             | Color of days outside the month.     |
-| `--ax-public-date-picker-date-selected-background-color` | Background of the selected day.      |
+<CssVariablesTable slug="date-picker" />

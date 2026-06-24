@@ -1,0 +1,84 @@
+---
+title: Design tokens
+description: How @workflowbuilder/ui turns Figma design tokens into the --ax-* CSS custom properties that style every component.
+---
+
+Every `@workflowbuilder/ui` component is styled with CSS custom properties
+(`--ax-*`) rather than hard-coded values. Those properties are generated from a
+single design-token source, so the visual language stays consistent and is
+retunable without touching component code.
+
+## The pipeline
+
+Tokens live in the private `@workflowbuilder/ui-tokens` package (`packages/tokens`)
+and are compiled to CSS with [Style Dictionary](https://styledictionary.com/):
+
+```
+tokens.json            # Figma export: the design-token source of truth
+   │  (style-dictionary, packages/tokens/src)
+   ▼
+primitives-mode-1.css  # raw scales (colors, etc.) on :root
+numerals-mode-1.css    # numeric scales (spacing, radius, …) on :root
+tokens-light.css       # semantic tokens, scoped to html[data-theme='light']
+tokens-dark.css        # semantic tokens, scoped to html[data-theme='dark']
+   │
+   ▼
+tokens.css             # the four above, bundled - this is what you import
+```
+
+`tokens.json` is exported from Figma and contains four token sets:
+**Primitives/Mode 1**, **Numerals/Mode 1**, **Tokens/Light**, and **Tokens/Dark**.
+Style Dictionary flattens each into kebab-cased CSS variables:
+
+- **Primitives / Numerals** become `--ax-colors-*`, `--ax-primitive-*`, etc. on
+  `:root` - the raw palette and scales.
+- **Tokens/Light** and **Tokens/Dark** become the _semantic_ layer
+  (`--ax-ui-bg-*`, `--ax-txt-*`, `--ax-button-*`, …), each scoped to
+  `html[data-theme='light']` / `html[data-theme='dark']` so a single attribute
+  switch reskins everything.
+
+Components reference the semantic tokens, which in turn reference the primitives.
+
+## Using the tokens
+
+Import the bundled stylesheet once and set a theme on `<html>`:
+
+```ts
+import '@workflowbuilder/ui/tokens.css';
+```
+
+```html
+<html data-theme="light">
+  <!-- or "dark" -->
+</html>
+```
+
+## Customizing
+
+There are three override levels, from broadest to most local:
+
+1. **Primitives** (`--ax-colors-*`, `--ax-primitive-*`) - retune the palette/scales globally.
+2. **Semantic tokens** (`--ax-ui-*`, `--ax-txt-*`, `--ax-button-*`, …) - re-map meaning (e.g. make "primary" green).
+3. **Component variables** (`--ax-public-*`) - tweak a single component; see each component's CSS variables table.
+
+For the enterprise path you replace `tokens.json` with one generated from your
+own Figma design kit and rebuild; the `--ax-*` surface stays the same.
+
+## Regenerating
+
+The CSS is rebuilt from `tokens.json` whenever the package is built - on
+`pnpm install` (via the package's `prepare` script) and as part of
+`pnpm build:ui` / `pnpm build:lib`. To rebuild explicitly:
+
+```sh
+pnpm --filter @workflowbuilder/ui-tokens build
+```
+
+## A note on "missing token" gaps
+
+A handful of component variables in the source reference a design token that the
+current `tokens.json` export does not yet provide; these are flagged with a
+`/* missing token */` comment and fall back to a literal value. They are still
+valid override points (the `--ax-public-*` variable works), but the underlying
+design token they would normally read from is absent from the export. You will
+see such variables in some components' CSS variables tables.

@@ -170,6 +170,7 @@ export default defineConfig({
           label: 'UI Library',
           items: [
             { label: 'Overview', link: '/ui-library/overview/' },
+            { label: 'Design tokens', link: '/ui-library/design-tokens/' },
             { label: 'UI Components', autogenerate: { directory: 'ui-library/ui-components' } },
             { label: 'Diagram Components', autogenerate: { directory: 'ui-library/diagram-components' } },
           ],

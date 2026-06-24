@@ -3,6 +3,8 @@ title: TextArea
 description: A multi-line text field that grows to fit its content.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { TextAreaExample } from '../../../../components/ui-examples/text-area';
 
 A `TextArea` is a multi-line text field for longer, free-form input. It
@@ -24,47 +26,8 @@ function Example() {
 
 ## Props
 
-| Prop           | Type                                                      | Default    | Description                                 |
-| -------------- | --------------------------------------------------------- | ---------- | ------------------------------------------- |
-| `value`        | `string`                                                  | -          | Controlled value of the textarea.           |
-| `defaultValue` | `string`                                                  | -          | Initial value when uncontrolled.            |
-| `placeholder`  | `string`                                                  | -          | Placeholder text.                           |
-| `size`         | `'small' \| 'medium' \| 'large'`                          | `'medium'` | Size of the textarea.                       |
-| `minRows`      | `number`                                                  | -          | Minimum number of rows it can shrink to.    |
-| `maxRows`      | `number`                                                  | -          | Maximum number of rows it can expand to.    |
-| `disabled`     | `boolean`                                                 | -          | Disables interaction.                       |
-| `error`        | `boolean`                                                 | -          | Renders the textarea in an error state.     |
-| `onChange`     | `(event: React.ChangeEvent<HTMLTextAreaElement>) => void` | -          | Called when the value changes.              |
-| `onClick`      | `(event: React.MouseEvent<HTMLTextAreaElement>) => void`  | -          | Called when the textarea is clicked.        |
-| `onBlur`       | `(event?: React.FocusEvent) => void`                      | -          | Called when the textarea loses focus.       |
-| `spellCheck`   | `boolean`                                                 | -          | Enables or disables browser spell checking. |
-| `className`    | `string`                                                  | -          | Class applied to the textarea container.    |
+<PropsTable slug="text-area" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the textarea.
-
-### Size
-
-| Variable                                 | Description                    |
-| ---------------------------------------- | ------------------------------ |
-| `--ax-public-input-padding-large`        | Padding (large).               |
-| `--ax-public-input-padding-medium`       | Padding (medium).              |
-| `--ax-public-input-padding-small`        | Padding (small).               |
-| `--ax-public-input-border-radius-large`  | Corner radius (large).         |
-| `--ax-public-input-border-radius-medium` | Corner radius (medium).        |
-| `--ax-public-input-border-radius-small`  | Corner radius (small).         |
-| `--ax-public-textarea-root-border-size`  | Border width of the container. |
-
-### Color
-
-| Variable                                           | Description                            |
-| -------------------------------------------------- | -------------------------------------- |
-| `--ax-public-textarea-root-color`                  | Text color.                            |
-| `--ax-public-textarea-root-border-color`           | Border color.                          |
-| `--ax-public-textarea-root-border-color-focus`     | Border color on focus.                 |
-| `--ax-public-textarea-color-disabled`              | Text color of the field when disabled. |
-| `--ax-public-textarea-root-color-disabled`         | Container text color when disabled.    |
-| `--ax-public-textarea-root-background-color-error` | Background when in error state.        |
-| `--ax-public-textarea-root-border-color-error`     | Border color when in error state.      |
-| `--ax-public-textarea-root-color-error`            | Text color when in error state.        |
+<CssVariablesTable slug="text-area" />

@@ -3,6 +3,8 @@ title: Tooltip
 description: Informative text shown when users hover, focus, or tap an element.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { TooltipExample } from '../../../../components/ui-examples/tooltip';
 
 Tooltips display informative text when users hover over, focus on, or tap an
@@ -31,50 +33,8 @@ function Example() {
 
 ## Props
 
-### `Tooltip`
-
-| Prop           | Type                      | Default    | Description                                        |
-| -------------- | ------------------------- | ---------- | -------------------------------------------------- |
-| `children`     | `ReactNode`               | -          | The trigger and content elements.                  |
-| `placement`    | `TooltipPlacement`        | `'bottom'` | Tooltip placement (e.g. `'top'`, `'bottom-end'`).  |
-| `initialOpen`  | `boolean`                 | -          | Whether the tooltip is open initially.             |
-| `open`         | `boolean`                 | -          | Controls the open state.                           |
-| `onOpenChange` | `(open: boolean) => void` | -          | Called when the tooltip requests to open or close. |
-
-### `TooltipTrigger`
-
-| Prop       | Type        | Default | Description                                                |
-| ---------- | ----------- | ------- | ---------------------------------------------------------- |
-| `children` | `ReactNode` | -       | The element that toggles the tooltip.                      |
-| `asChild`  | `boolean`   | `false` | Render the child element as the anchor instead of a `div`. |
-
-The component also forwards the remaining native `HTMLElement` props.
-
-### `TooltipContent`
-
-| Prop          | Type                  | Default     | Description                                   |
-| ------------- | --------------------- | ----------- | --------------------------------------------- |
-| `children`    | `ReactNode`           | -           | Tooltip content. When empty, nothing renders. |
-| `tooltipType` | `'default' \| 'blue'` | `'default'` | Color variant of the tooltip.                 |
-
-The component also forwards the remaining native `div` props.
+<PropsTable slug="tooltip" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the tooltip.
-
-### Size
-
-| Variable                          | Description    |
-| --------------------------------- | -------------- |
-| `--ax-public-tooltip-padding`     | Inner padding. |
-| `--ax-public-tooltip-radius-size` | Corner radius. |
-
-### Color
-
-| Variable                                 | Description                   |
-| ---------------------------------------- | ----------------------------- |
-| `--ax-public-tooltip-default-background` | Background (default variant). |
-| `--ax-public-tooltip-text-color`         | Text color (default variant). |
-| `--ax-public-tooltip-blue-background`    | Background (blue variant).    |
-| `--ax-public-tooltip-blue-text-color`    | Text color (blue variant).    |
+<CssVariablesTable slug="tooltip" />

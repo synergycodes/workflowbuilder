@@ -3,6 +3,8 @@ title: Select
 description: A dropdown for choosing a single option from a list.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { SelectExample } from '../../../../components/ui-examples/select';
 
 A `Select` lets users choose a single option from a dropdown list. Items are
@@ -32,49 +34,8 @@ function Example() {
 
 ## Props
 
-| Prop           | Type                                                                                | Default    | Description                                    |
-| -------------- | ----------------------------------------------------------------------------------- | ---------- | ---------------------------------------------- |
-| `items`        | `SelectItem[]`                                                                      | -          | Items to display in the dropdown.              |
-| `value`        | `string \| number \| null`                                                          | -          | The controlled value of the select.            |
-| `defaultValue` | `string \| number \| null`                                                          | -          | Default value when uncontrolled.               |
-| `onChange`     | `(event: SyntheticEvent \| Event \| null, value: string \| number \| null) => void` | -          | Called when the value changes.                 |
-| `placeholder`  | `string`                                                                            | -          | Placeholder text when nothing is chosen.       |
-| `size`         | `'small' \| 'medium' \| 'large'`                                                    | `'medium'` | Size of the select trigger.                    |
-| `error`        | `boolean`                                                                           | `false`    | Renders the select in an error state.          |
-| `disabled`     | `boolean`                                                                           | -          | Disables interaction.                          |
-| `name`         | `string`                                                                            | -          | Identifies the field when a form is submitted. |
-| `required`     | `boolean`                                                                           | -          | Whether a value is required before submit.     |
-| `className`    | `string`                                                                            | -          | Class applied to the select trigger.           |
+<PropsTable slug="select" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the select.
-
-### Size
-
-| Variable                                 | Description                     |
-| ---------------------------------------- | ------------------------------- |
-| `--ax-public-input-padding-large`        | Trigger padding (large).        |
-| `--ax-public-input-padding-medium`       | Trigger padding (medium).       |
-| `--ax-public-input-padding-small`        | Trigger padding (small).        |
-| `--ax-public-input-border-radius-large`  | Trigger corner radius (large).  |
-| `--ax-public-input-border-radius-medium` | Trigger corner radius (medium). |
-| `--ax-public-input-border-radius-small`  | Trigger corner radius (small).  |
-| `--ax-public-select-border-size`         | Border width of the trigger.    |
-
-### Color
-
-| Variable                                           | Description                             |
-| -------------------------------------------------- | --------------------------------------- |
-| `--ax-public-select-button-color`                  | Trigger text color.                     |
-| `--ax-public-select-button-border-color`           | Trigger border color.                   |
-| `--ax-public-select-button-border-color-focus`     | Trigger border color when open/focused. |
-| `--ax-public-select-button-color-disabled`         | Trigger color when disabled.            |
-| `--ax-public-select-button-background-color-error` | Trigger background in error state.      |
-| `--ax-public-select-button-border-color-error`     | Trigger border color in error state.    |
-| `--ax-public-select-button-color-error`            | Trigger text color in error state.      |
-| `--ax-public-list-box-background-color`            | Dropdown background.                    |
-| `--ax-public-list-box-border-radius`               | Dropdown corner radius.                 |
-| `--ax-public-list-box-box-shadow`                  | Dropdown shadow.                        |
-| `--ax-public-list-box-padding`                     | Dropdown padding.                       |
-| `--ax-public-list-box-gap`                         | Gap between dropdown items.             |
+<CssVariablesTable slug="select" />

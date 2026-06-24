@@ -1,0 +1,43 @@
+---
+// Renders a component's CSS custom properties from the generated ui-api.json
+// (extracted from the component stylesheets - never hand-maintained).
+import data from '../../generated/ui-api.json';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const entry = (data as Record<string, { cssVariables: CssVar[] }>)[slug];
+const cssVariables = entry?.cssVariables ?? [];
+
+interface CssVar {
+  name: string;
+  comment: string;
+}
+---
+
+{
+  cssVariables.length === 0 ? (
+    <p>This component does not expose its own CSS variables.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>Variable</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+        {cssVariables.map((cssVar) => (
+          <tr>
+            <td>
+              <code>{cssVar.name}</code>
+            </td>
+            <td>{cssVar.comment}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}

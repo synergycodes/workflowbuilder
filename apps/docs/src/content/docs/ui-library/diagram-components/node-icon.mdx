@@ -3,6 +3,9 @@ title: NodeIcon
 description: Icon block inside a node.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+
 `NodeIcon` renders an icon inside a styled container for use within a node. It
 takes any `ReactNode` as its `icon` - typically an icon component - and wraps it
 in the library's icon container styling. It is usually placed in a
@@ -28,20 +31,8 @@ function NodeHeader({ icon, label, description }) {
 
 ## Props
 
-| Prop        | Type        | Default | Description                        |
-| ----------- | ----------- | ------- | ---------------------------------- |
-| `icon`      | `ReactNode` | -       | The icon element to render.        |
-| `className` | `string`    | -       | Additional class on the container. |
+<PropsTable slug="node-icon" />
 
 ## CSS variables
 
-Override these `--ax-public-*` custom properties to retune the icon block.
-
-| Variable                                           | Description                     |
-| -------------------------------------------------- | ------------------------------- |
-| `--ax-public-node-icon-color`                      | Icon color.                     |
-| `--ax-public-node-icon-padding`                    | Inner padding of the container. |
-| `--ax-public-node-icon-border-size`                | Container border width.         |
-| `--ax-public-node-icon-border-radius`              | Container corner radius.        |
-| `--ax-public-node-icon-container-background-color` | Container background color.     |
-| `--ax-public-node-icon-container-border-color`     | Container border color.         |
+<CssVariablesTable slug="node-icon" />

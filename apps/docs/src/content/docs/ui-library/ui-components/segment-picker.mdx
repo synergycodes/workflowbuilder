@@ -3,6 +3,8 @@ title: SegmentPicker
 description: A segmented control for selecting a single option from a small set.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { SegmentPickerExample } from '../../../../components/ui-examples/segment-picker';
 
 A `SegmentPicker` is a segmented control that lets users select a single option
@@ -30,46 +32,8 @@ function Example() {
 
 ## Props
 
-| Prop           | Type                                                                                            | Default    | Description                                                                               |
-| -------------- | ----------------------------------------------------------------------------------------------- | ---------- | ----------------------------------------------------------------------------------------- |
-| `children`     | `ReactElement<SegmentPickerItemProps>[]`                                                        | -          | One `SegmentPicker.Item` per option.                                                      |
-| `value`        | `string`                                                                                        | -          | The currently selected value (controlled mode). Mutually exclusive with `defaultValue`.   |
-| `defaultValue` | `string`                                                                                        | -          | The initial selected value (uncontrolled mode). Mutually exclusive with `value`.          |
-| `size`         | `'xxx-small' \| 'xx-small' \| 'extra-small' \| 'small' \| 'medium' \| 'large' \| 'extra-large'` | `'medium'` | Size of the control (drives the border radius).                                           |
-| `shape`        | `Shape`                                                                                         | -          | Shape of the control and its items. `'circle'` fits items tightly (icon-only items only). |
-| `onChange`     | `(event: MouseEventHandler<HTMLButtonElement>, value: string) => void`                          | -          | Called with the click event and the newly selected value.                                 |
-| `className`    | `string`                                                                                        | -          | Class applied to the picker container.                                                    |
-
-### SegmentPicker.Item props
-
-| Prop       | Type        | Default | Description                                           |
-| ---------- | ----------- | ------- | ----------------------------------------------------- |
-| `value`    | `string`    | -       | The value this item represents.                       |
-| `children` | `ReactNode` | -       | Item content: label only, icon only, or icon + label. |
-
-`SegmentPicker.Item` also forwards the shared button props and receives its size and shape from the parent context.
+<PropsTable slug="segment-picker" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the segment picker.
-
-### Size
-
-| Variable                                               | Description                         |
-| ------------------------------------------------------ | ----------------------------------- |
-| `--ax-public-segment-picker-gap`                       | Gap between items.                  |
-| `--ax-public-segment-picker-padding`                   | Inner padding of the container.     |
-| `--ax-public-segment-picker-circle-border-radius`      | Corner radius when shape is circle. |
-| `--ax-public-segment-picker-border-radius-extra-large` | Corner radius (extra-large).        |
-| `--ax-public-segment-picker-border-radius-large`       | Corner radius (large).              |
-| `--ax-public-segment-picker-border-radius-medium`      | Corner radius (medium).             |
-| `--ax-public-segment-picker-border-radius-small`       | Corner radius (small).              |
-| `--ax-public-segment-picker-border-radius-extra-small` | Corner radius (extra-small).        |
-| `--ax-public-segment-picker-border-radius-xx-small`    | Corner radius (xx-small).           |
-| `--ax-public-segment-picker-border-radius-xxx-small`   | Corner radius (xxx-small).          |
-
-### Color
-
-| Variable                                      | Description                  |
-| --------------------------------------------- | ---------------------------- |
-| `--ax-public-segment-picker-background-color` | Background of the container. |
+<CssVariablesTable slug="segment-picker" />

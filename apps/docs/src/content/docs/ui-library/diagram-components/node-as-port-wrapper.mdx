@@ -3,6 +3,9 @@ title: NodeAsPortWrapper
 description: Turns a whole node into a connection drop target while a link is being dragged.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+
 `NodeAsPortWrapper` wraps a node so that, while a connection is being dragged,
 the entire node acts as a connection port (drop target) rather than requiring the
 user to aim at a small handle. When the wrapped node is hovered during a
@@ -39,8 +42,8 @@ function NodeContainer({ id, data, selected }: NodeProps) {
 
 `NodeAsPortWrapper` also accepts `children` (the node to wrap).
 
-| Prop                 | Type                                     | Default          | Description                                                                  |
-| -------------------- | ---------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
-| `isConnecting`       | `boolean`                                | -                | Whether a connection is currently being dragged on the canvas.               |
-| `targetPortPosition` | `'left' \| 'top' \| 'right' \| 'bottom'` | -                | Side the incoming connection should attach to; positions the target overlay. |
-| `offset`             | `{ x?: number; y?: number }`             | `{ x: 0, y: 0 }` | Pixel offset applied to the target overlay's position.                       |
+<PropsTable slug="node-as-port-wrapper" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-as-port-wrapper" />

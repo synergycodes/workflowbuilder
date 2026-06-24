@@ -3,6 +3,8 @@ title: Accordion
 description: An interactive section that toggles the visibility of its content.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { AccordionExample } from '../../../../components/ui-examples/accordion';
 
 An `Accordion` lets users toggle the visibility of content. The content section
@@ -28,20 +30,8 @@ function Example() {
 
 ## Props
 
-| Prop           | Type                        | Default | Description                             |
-| -------------- | --------------------------- | ------- | --------------------------------------- |
-| `label`        | `string`                    | -       | Text displayed in the header.           |
-| `children`     | `ReactNode`                 | -       | Contents of the collapsible section.    |
-| `isOpen`       | `boolean`                   | -       | Controlled open state (true if open).   |
-| `onToggleOpen` | `(isOpen: boolean) => void` | -       | Called when the open state changes.     |
-| `defaultOpen`  | `boolean`                   | `true`  | Initial open state.                     |
-| `className`    | `string`                    | -       | Class applied to the accordion wrapper. |
-
-The component also forwards the remaining `HTMLDivElement` attributes, plus the
-optional `icon` from `WithIcon`.
+<PropsTable slug="accordion" />
 
 ## CSS variables
 
-`Accordion` has no public CSS variables of its own. It composes
-[`Separator`](/ui-library/ui-components/separator/) and an internal collapsible,
-so retune those tokens to adjust its appearance.
+<CssVariablesTable slug="accordion" />
