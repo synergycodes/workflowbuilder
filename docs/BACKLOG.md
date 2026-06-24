@@ -42,9 +42,10 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - ✅ add recharts; `chart-renderer.tsx` lazy in `getRenderer`; card wraps body in Suspense + `forceChart` chip.
    - ✅ commit `feat(ai-studio): chart renderer (recharts) for visualize`
 
-7. [ ] **Diagram renderer (mermaid, lazy, SVG)** + try/catch fallback
-   - Accept: mermaid fence/keyword → rendered SVG diagram; lazy; bad syntax → graceful fallback. smoke.
-   - [ ] add mermaid; commit `feat(ai-studio): mermaid diagram renderer for visualize`
+7. ✅ **Diagram renderer (mermaid, lazy, SVG)** + try/catch fallback
+   - Accept: mermaid source → SVG via mermaid.render; React.lazy (mermaid only loads for diagrams); bad syntax → falls back to raw text. ✓ tc+lint green. (diagram smoke at item 10.)
+   - ✅ add mermaid; `diagram-renderer.tsx` (securityLevel strict, neutral theme) lazy in getRenderer.
+   - ✅ commit `feat(ai-studio): mermaid diagram renderer for visualize`
 
 8. [ ] **Export** (PNG download + copy image + copy source + SVG for vector)
    - Accept: header actions export the card; native SVG fast-path for chart/diagram; html-to-image for DOM; Firefox copy→download fallback.

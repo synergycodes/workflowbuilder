@@ -8,6 +8,10 @@ import type { VisualizeRenderer } from '../../utils/detect-format';
 
 // Lazy so recharts (~140KB) only loads when a chart is actually rendered.
 const ChartRenderer = lazy(() => import('./chart-renderer').then((module) => ({ default: module.ChartRenderer })));
+// Lazy so mermaid (~150KB) only loads when a diagram is actually rendered.
+const DiagramRenderer = lazy(() =>
+  import('./diagram-renderer').then((module) => ({ default: module.DiagramRenderer })),
+);
 
 export type RendererProps = {
   text: string;
@@ -190,7 +194,7 @@ export function getRenderer(renderer: VisualizeRenderer): ComponentType<Renderer
       return ChartRenderer;
     }
     case 'diagram': {
-      return TextRenderer;
+      return DiagramRenderer;
     }
     default: {
       return MarkdownRenderer;
