@@ -1,0 +1,21 @@
+:root {
+  --ax-public-node-icon-border-size: 0.0625rem;
+  --ax-public-node-icon-border-radius: var(--ax-token-radius-node-head-icon);
+  --ax-public-node-icon-padding: var(--ax-token-spacing-node-head-icon);
+
+  --ax-public-node-icon-color: var(--ax-node-icon-primary-default);
+  --ax-public-node-icon-container-border-color: var(--ax-node-stroke-primary-default);
+  --ax-public-node-icon-container-background-color: var(--ax-node-bg-secondary-default);
+}
+
+.container {
+  display: flex;
+  padding: var(--ax-public-node-icon-padding);
+  justify-content: center;
+  align-items: center;
+  color: var(--ax-public-node-icon-color);
+
+  border-radius: var(--ax-public-node-icon-border-radius);
+  border: var(--ax-public-node-icon-border-size) solid var(--ax-public-node-icon-container-border-color);
+  background: var(--ax-public-node-icon-container-background-color);
+}

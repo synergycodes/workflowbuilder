@@ -1,0 +1,39 @@
+:root {
+  --ax-public-radio-size-medium: 1.25rem /* missing token */;
+  --ax-public-radio-size-small: 1.125rem /* missing token */;
+  --ax-public-radio-size-extra-small: 1rem /* missing token */;
+
+  --ax-public-radio-dot-size-medium: 0.625rem /* missing token */;
+  --ax-public-radio-dot-size-small: 0.5rem /* missing token */;
+  --ax-public-radio-dot-size-extra-small: 0.5rem /* missing token */;
+}
+
+.medium {
+  width: var(--ax-public-radio-size-medium);
+  height: var(--ax-public-radio-size-medium);
+
+  &::after {
+    width: var(--ax-public-radio-dot-size-medium);
+    height: var(--ax-public-radio-dot-size-medium);
+  }
+}
+
+.small {
+  width: var(--ax-public-radio-size-small);
+  height: var(--ax-public-radio-size-small);
+
+  &::after {
+    width: var(--ax-public-radio-dot-size-small);
+    height: var(--ax-public-radio-dot-size-small);
+  }
+}
+
+.extra-small {
+  width: var(--ax-public-radio-size-extra-small);
+  height: var(--ax-public-radio-size-extra-small);
+
+  &::after {
+    width: var(--ax-public-radio-dot-size-extra-small);
+    height: var(--ax-public-radio-dot-size-extra-small);
+  }
+}

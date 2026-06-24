@@ -1,0 +1,78 @@
+@import './switch-size.module.css';
+
+:root {
+  --ax-public-switch-outline-color: var(--ax-ui-stroke-secondary-default);
+  --ax-public-switch-disabled-background-color: var(--ax-ui-bg-tertiary-default);
+  --ax-public-switch-disabled-border-color: var(--ax-ui-stroke-secondary-default);
+  --ax-public-track-no-selected-color: var(--ax-ui-bg-primary-default);
+  --ax-public-track-selected-color: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-thumb-no-selected-color: var(--ax-nav-button-icon-primary-default);
+  --ax-public-thumb-disabled-color: var(--ax-nav-button-icon-primary-disabled);
+  --ax-public-thumb-selected-color: var(--ax-colors-gray-100,); /* missing token */
+
+  --ax-public-switch-focus-border-color: var(--ax-txt-primary-default);
+  --ax-public-switch-border-size: 0.0625rem;
+}
+
+@layer ui.base {
+  .container {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    cursor: pointer;
+    border-radius: 100px;
+    border: var(--ax-public-switch-border-size) solid var(--ax-public-switch-outline-color);
+
+    &:not(:hover) {
+      transition: background-color var(--ax-public-transition);
+    }
+
+    .thumb {
+      position: absolute;
+      border-radius: 100px;
+      background-color: var(--ax-public-thumb-no-selected-color);
+      transition: transform var(--ax-public-transition);
+    }
+
+    .track {
+      position: absolute;
+      width: 100%;
+      height: 100%;
+      border-radius: 100px;
+    }
+
+    .thumb-contents {
+      display: contents;
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--ax-public-switch-focus-border-color);
+    }
+
+    &[data-checked] {
+      .thumb {
+        background-color: var(--ax-public-thumb-selected-color);
+      }
+
+      .track {
+        background-color: var(--ax-public-track-selected-color);
+      }
+    }
+
+    &[data-disabled] {
+      cursor: auto;
+      border-color: var(--ax-public-switch-disabled-border-color);
+
+      .track {
+        background-color: var(--ax-public-switch-disabled-background-color);
+      }
+
+      .thumb {
+        background-color: var(--ax-public-thumb-disabled-color);
+      }
+    }
+  }
+}

@@ -1,0 +1,58 @@
+:root {
+  --ax-public-button-loader-dot-size: 0.3125rem;
+  --ax-public-button-loader-dot-border-radius: 0.3125rem;
+  --ax-public-button-loader-dot-color: var(--ax-txt-primary-white);
+  --ax-public-button-loader-animation-duration: 0.75s;
+}
+
+@layer ui.component {
+  .disable-events {
+    pointer-events: none;
+  }
+
+  .hide-label {
+    opacity: 0;
+  }
+
+  .dot-flashing,
+  .dot-flashing::before,
+  .dot-flashing::after {
+    position: absolute;
+    width: var(--ax-public-button-loader-dot-size);
+    height: var(--ax-public-button-loader-dot-size);
+    border-radius: var(--ax-public-button-loader-dot-border-radius);
+    background-color: var(--ax-public-button-loader-dot-color);
+    color: var(--ax-public-button-loader-dot-color);
+    animation: dot-flashing var(--ax-public-button-loader-animation-duration) infinite linear alternate;
+  }
+
+  .dot-flashing {
+    animation-delay: calc(var(--ax-public-button-loader-animation-duration) / 2);
+  }
+
+  .dot-flashing::before,
+  .dot-flashing::after {
+    content: '';
+    display: inline-block;
+    top: 0;
+  }
+
+  .dot-flashing::before {
+    left: calc(-1 * var(--ax-public-button-loader-dot-size) * 2);
+    animation-delay: 0s;
+  }
+
+  .dot-flashing::after {
+    left: calc(var(--ax-public-button-loader-dot-size) * 2);
+    animation-delay: var(--ax-public-button-loader-animation-duration);
+  }
+
+  @keyframes dot-flashing {
+    0% {
+      opacity: 1;
+    }
+    100% {
+      opacity: 0.2;
+    }
+  }
+}

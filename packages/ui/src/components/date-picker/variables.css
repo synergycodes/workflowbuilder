@@ -1,0 +1,11 @@
+:root {
+  --ax-public-date-picker-dropdown-background: var(--ax-ui-bg-primary-default);
+  --ax-public-date-picker-dropdown-border-color: var(--ax-ui-stroke-primary-default);
+  --ax-public-date-picker-dropdown-box-shadow: 0px 4px 20px rgba(0, 0, 0, 0.16);
+
+  --ax-public-date-picker-color: var(--ax-txt-secondary-default);
+  --ax-public-date-picker-header-background: var(--ax-ui-bg-secondary-default);
+  --ax-public-date-picker-date-header-color: var(--ax-txt-tertiary-default);
+  --ax-public-date-picker-date-outside-color: var(--ax-txt-quaternary-default);
+  --ax-public-date-picker-date-selected-background-color: var(--ax-ui-bg-tertiary-selected);
+}

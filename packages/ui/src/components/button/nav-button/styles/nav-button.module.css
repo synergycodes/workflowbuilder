@@ -1,0 +1,37 @@
+:root {
+  --ax-public-button-nav-background-color: var(--ax-nav-button-bg-primary-hover);
+  --ax-public-button-nav-color: var(--ax-nav-button-icon-primary-default);
+  --ax-public-button-nav-color-active: var(--ax-nav-button-icon-primary-pressed);
+  --ax-public-button-nav-color-disabled: var(--ax-nav-button-icon-primary-disabled);
+}
+
+@layer ui.component {
+  .nav-button {
+    background-color: transparent;
+    color: var(--ax-public-button-nav-color);
+
+    &:hover {
+      background-color: var(--ax-public-button-nav-background-color);
+    }
+
+    &:active {
+      color: var(--ax-public-button-nav-color-active);
+      background-color: var(--ax-public-button-nav-background-color);
+    }
+
+    &:focus-visible {
+      background-color: var(--ax-public-button-nav-background-color);
+    }
+
+    &:disabled {
+      color: var(--ax-public-button-nav-color-disabled);
+      background-color: transparent;
+    }
+
+    &.selected {
+      pointer-events: none;
+      background-color: var(--ax-button-primary-bg-default);
+      color: var(--ax-nav-button-icon-primary-active);
+    }
+  }
+}

@@ -1,0 +1,92 @@
+:root {
+  --ax-public-icon-switch-width: 4.125rem;
+  --ax-public-icon-switch-height: 2.125rem;
+  --ax-public-icon-switch-thumb-size: 1.75rem;
+  --ax-public-icon-switch-thumb-offset: 0.1875rem;
+  --ax-public-icon-switch-translate: 2rem;
+  --ax-public-icon-switch-padding: 0.5rem;
+  --ax-public-icon-switch-icon-size: 1rem;
+
+  --ax-public-icon-switch-track-bg: var(--ax-ui-bg-tertiary-default);
+  --ax-public-icon-switch-thumb-bg-primary: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-icon-switch-icon-color: var(--ax-txt-tertiary-default);
+  --ax-public-icon-switch-icon-selected-color: var(--ax-txt-primary-white);
+  --ax-public-icon-switch-thumb-bg-secondary: var(--ax-ui-bg-primary-default);
+}
+
+@layer ui.component {
+  .container {
+    width: var(--ax-public-icon-switch-width);
+    height: var(--ax-public-icon-switch-height);
+    position: relative;
+    border: none;
+  }
+
+  .track {
+    position: absolute;
+    inset: 0;
+    border-radius: calc(var(--ax-public-icon-switch-height) / 2);
+    background-color: var(--ax-public-icon-switch-track-bg);
+    transition: background-color 0.1s ease-in-out;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 var(--ax-public-icon-switch-padding);
+    color: var(--ax-public-icon-switch-icon-color);
+  }
+
+  .track > div {
+    width: var(--ax-public-icon-switch-icon-size);
+    height: var(--ax-public-icon-switch-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .thumb {
+    position: absolute;
+    top: var(--ax-public-icon-switch-thumb-offset);
+    left: var(--ax-public-icon-switch-thumb-offset);
+    width: var(--ax-public-icon-switch-thumb-size);
+    height: var(--ax-public-icon-switch-thumb-size);
+    border-radius: 50%;
+    background-color: var(--ax-public-icon-switch-thumb-bg);
+    transition: transform 0.1s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.primary {
+      background-color: var(--ax-public-icon-switch-thumb-bg-primary);
+      color: var(--ax-public-icon-switch-icon-selected-color);
+    }
+
+    &.secondary {
+      background-color: var(--ax-public-icon-switch-thumb-bg-secondary);
+      color: var(--ax-public-icon-switch-thumb-bg-primary);
+    }
+  }
+
+  .icon {
+    width: var(--ax-public-icon-switch-icon-size);
+    height: var(--ax-public-icon-switch-icon-size);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .thumb .icon {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  .thumb .icon.icon-right {
+    transform: translate(-50%, -50%) rotate(90deg);
+  }
+
+  .container[data-checked] .thumb {
+    transform: translateX(var(--ax-public-icon-switch-translate));
+  }
+}

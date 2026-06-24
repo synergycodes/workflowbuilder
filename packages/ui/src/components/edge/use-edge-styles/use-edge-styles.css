@@ -1,0 +1,8 @@
+:root {
+  --ax-public-edge-color-disabled: var(--ax-edge-primary-disabled);
+  --ax-public-edge-color-select: var(--ax-edge-primary-active);
+  --ax-public-edge-color-hover: var(--ax-edge-primary-hover);
+  --ax-public-edge-color: var(--ax-edge-primary-default);
+  --ax-public-edge-stroke-width-select: 3;
+  --ax-public-edge-stroke-width: 2;
+}

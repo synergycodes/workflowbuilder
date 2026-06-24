@@ -1,0 +1,99 @@
+:root {
+  --ax-public-edge-label-medium-label-padding: var(--ax-token-spacing-label-m-v-pad-1)
+    var(--ax-token-spacing-label-m-h-pad-1);
+  --ax-public-edge-label-small-label-padding: var(--ax-token-spacing-label-s-v-pad-1)
+    var(--ax-token-spacing-label-s-h-pad-1);
+  --ax-public-edge-label-extra-small-label-padding: var(--ax-token-spacing-label-xs-v-pad-1)
+    var(--ax-token-spacing-label-xs-h-pad-1);
+
+  --ax-public-edge-label-medium-icon-padding: var(--ax-token-spacing-label-m-v-pad-2);
+  --ax-public-edge-label-small-icon-padding: var(--ax-token-spacing-label-s-v-pad-2);
+  --ax-public-edge-label-extra-small-icon-padding: var(--ax-token-spacing-label-xs-v-pad-2);
+
+  --ax-public-edge-label-medium-content-padding: var(--ax-token-spacing-label-m-v-pad-2)
+    var(--ax-token-spacing-label-m-h-pad-2);
+  --ax-public-edge-label-small-content-padding: var(--ax-token-spacing-label-s-v-pad-2)
+    var(--ax-token-spacing-label-s-h-pad-2);
+  --ax-public-edge-label-extra-small-content-padding: var(--ax-token-spacing-label-xs-v-pad-2)
+    var(--ax-token-spacing-label-xs-h-pad-2);
+
+  --ax-public-edge-label-medium-border-radius: var(--ax-token-radius-label-m);
+  --ax-public-edge-label-small-border-radius: var(--ax-token-radius-label-s);
+  --ax-public-edge-label-extra-small-border-radius: var(--ax-token-radius-label-xs);
+
+  --ax-public-edge-label-medium-icon-size: 1.125rem;
+  --ax-public-edge-label-small-icon-size: 1rem;
+  --ax-public-edge-label-extra-small-icon-size: 0.875rem;
+}
+
+.medium {
+  border-radius: var(--ax-public-edge-label-medium-border-radius);
+  composes: ax-public-edge-label-medium from global;
+
+  svg {
+    width: var(--ax-public-edge-label-medium-icon-size);
+    height: var(--ax-public-edge-label-medium-icon-size);
+  }
+}
+
+.small {
+  border-radius: var(--ax-public-edge-label-small-border-radius);
+  composes: ax-public-edge-label-small from global;
+
+  svg {
+    width: var(--ax-public-edge-label-small-icon-size);
+    height: var(--ax-public-edge-label-small-icon-size);
+  }
+}
+
+.extra-small {
+  border-radius: var(--ax-public-edge-label-extra-small-border-radius);
+  composes: ax-public-edge-label-extra-small from global;
+
+  svg {
+    width: var(--ax-public-edge-label-extra-small-icon-size);
+    height: var(--ax-public-edge-label-extra-small-icon-size);
+  }
+}
+
+.text {
+  &.medium {
+    padding: var(--ax-public-edge-label-medium-label-padding);
+  }
+
+  &.small {
+    padding: var(--ax-public-edge-label-small-label-padding);
+  }
+
+  &.extra-small {
+    padding: var(--ax-public-edge-label-extra-small-label-padding);
+  }
+}
+
+.icon {
+  &.medium {
+    padding: var(--ax-public-edge-label-medium-icon-padding);
+  }
+
+  &.small {
+    padding: var(--ax-public-edge-label-small-icon-padding);
+  }
+
+  &.extra-small {
+    padding: var(--ax-public-edge-label-extra-small-icon-padding);
+  }
+}
+
+.compound {
+  &.medium {
+    padding: var(--ax-public-edge-label-medium-content-padding);
+  }
+
+  &.small {
+    padding: var(--ax-public-edge-label-small-content-padding);
+  }
+
+  &.extra-small {
+    padding: var(--ax-public-edge-label-extra-small-content-padding);
+  }
+}

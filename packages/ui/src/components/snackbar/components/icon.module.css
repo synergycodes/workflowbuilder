@@ -1,0 +1,31 @@
+.container {
+  display: flex;
+  padding-top: 0.125rem;
+
+  &.center {
+    align-self: center;
+    padding-top: 0;
+  }
+
+  .status {
+    width: 1.375rem;
+    height: 1.375rem;
+    color: var(--ax-public-snackbar-default-icon-color);
+
+    &.success {
+      color: var(--ax-public-snackbar-success-icon-color);
+    }
+
+    &.error {
+      color: var(--ax-public-snackbar-error-icon-color);
+    }
+
+    &.warning {
+      color: var(--ax-public-snackbar-warning-icon-color);
+    }
+
+    &.info {
+      color: var(--ax-public-snackbar-info-icon-color);
+    }
+  }
+}

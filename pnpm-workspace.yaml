@@ -3,7 +3,12 @@ packages:
   - './packages/*'
 
 catalog:
+  # Pinned to the version the component library was validated against. Base UI
+  # changed Dialog/Popup transition behaviour after 1.4.x (1.6 broke the modal
+  # backdrop fade), so bump only after re-checking modal/menu/tooltip transitions.
+  '@base-ui/react': 1.4.1
   '@phosphor-icons/core': ^2.1.1
+  '@phosphor-icons/react': ^2.1.7
   '@xyflow/react': 12.10.0
   # Exact-pinned (no caret): React 19 hard-requires react and react-dom to be
   # the SAME version — a mismatch throws React error #527. A caret let `react`

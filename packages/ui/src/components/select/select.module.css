@@ -1,0 +1,11 @@
+@layer ui.component {
+  .container {
+    display: grid;
+    position: relative;
+    width: 100%;
+  }
+
+  .popup {
+    width: var(--anchor-width);
+  }
+}

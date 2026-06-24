@@ -1,0 +1,15 @@
+:root {
+  --ax-public-button-gap-xx-small: var(--ax-token-spacing-button-xxs-v-pad-2) var(--ax-token-spacing-button-xxs-h-pad-2);
+  --ax-public-button-gap-xxx-small: var(--ax-token-spacing-button-xxxs-v-pad-2)
+    var(--ax-token-spacing-button-xxxs-h-pad-2);
+}
+
+@layer ui.component {
+  .xx-small {
+    gap: var(--ax-public-button-gap-xx-small);
+  }
+
+  .xxx-small {
+    gap: var(--ax-public-button-gap-xxx-small);
+  }
+}

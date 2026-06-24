@@ -1,0 +1,49 @@
+:root {
+  --ax-public-list-box-background-color: var(--ax-dropdown-bg-primary-default);
+  --ax-public-list-box-border-radius: var(--ax-token-radius-dropdown-wrap-s);
+  --ax-public-list-box-box-shadow: var(--ax-token-shadow-shadow-s-x) var(--ax-token-shadow-shadow-s-y)
+    var(--ax-token-shadow-shadow-s-blur) var(--ax-token-shadow-shadow-s-spread) var(--ax-shadow);
+  --ax-public-list-box-padding: var(--ax-token-spacing-dropdown-wrap-s-v-pad)
+    var(--ax-token-spacing-dropdown-wrap-s-h-pad);
+  --ax-public-list-box-gap: var(--ax-token-spacing-dropdown-wrap-s-gap);
+}
+
+@layer ui.component {
+  /* Applied to the Base UI Positioner — keep it free of visuals and
+     animation: Base UI sets data-starting-style/data-ending-style on the
+     Popup element only, so transition rules here would never fire. */
+  .popup {
+    margin-top: 0.25rem;
+    z-index: 10000;
+  }
+
+  /* Applied to the Base UI Popup, which carries the transition state
+     attributes (same pattern as Tooltip.Popup and Dialog.Popup). */
+  .list-box {
+    display: flex;
+    padding: var(--ax-public-list-box-padding);
+    flex-direction: column;
+    align-items: center;
+    gap: var(--ax-public-list-box-gap);
+    max-height: 200px;
+    overflow-y: auto;
+    overflow-x: hidden;
+
+    margin: 0;
+
+    border-radius: var(--ax-public-list-box-border-radius);
+    background: var(--ax-public-list-box-background-color);
+    box-shadow: var(--ax-public-list-box-box-shadow);
+
+    transition:
+      opacity 150ms ease-out,
+      transform 150ms ease-out;
+    transform-origin: top;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: scaleY(0.96);
+    }
+  }
+}
