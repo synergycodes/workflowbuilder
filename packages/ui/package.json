@@ -1,0 +1,94 @@
+{
+  "name": "@workflowbuilder/ui",
+  "type": "module",
+  "version": "1.0.0-beta.28",
+  "description": "A React library for creating node-based UIs and diagram-driven applications. Perfect for React Flow users, providing ready-to-use node templates and components that work seamlessly with React Flow's ecosystem.",
+  "keywords": [
+    "react",
+    "ui",
+    "diagram",
+    "node-based",
+    "components",
+    "typescript",
+    "react flow",
+    "flow",
+    "node-templates",
+    "diagram-components"
+  ],
+  "author": "Synergy Codes",
+  "license": "MIT",
+  "homepage": "https://github.com/synergycodes/workflowbuilder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synergycodes/workflowbuilder.git",
+    "directory": "packages/ui"
+  },
+  "bugs": {
+    "url": "https://github.com/synergycodes/workflowbuilder/issues"
+  },
+  "scripts": {
+    "build": "vite build && pnpm check:built-css",
+    "dev": "vite build --watch",
+    "prepare": "pnpm build",
+    "check:built-css": "tsx ./scripts/check-built-css.ts",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit --pretty",
+    "build:stats": "BUNDLE_STATS=1 vite build"
+  },
+  "module": "./dist/index.js",
+  "files": [
+    "dist",
+    "README.md",
+    "CHANGELOG.md",
+    "css-layers.md"
+  ],
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./*": {
+      "types": "./dist/components/*/index.d.ts",
+      "import": "./dist/*.js"
+    },
+    "./index.css": "./dist/index.css",
+    "./styles.css": "./dist/styles.css",
+    "./tokens.css": "./dist/tokens.css"
+  },
+  "dependencies": {
+    "@phosphor-icons/react": "catalog:",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
+    "react-day-picker": "^9.14.0",
+    "react-textarea-autosize": "^8.5.6"
+  },
+  "devDependencies": {
+    "@base-ui/react": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "^19.1.0",
+    "@workflowbuilder/ui-tokens": "workspace:*",
+    "eslint-plugin-react": "^7.37.4",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "postcss": "^8.5.3",
+    "react": "catalog:",
+    "react-dom": "catalog:",
+    "rollup-plugin-visualizer": "^7.0.1",
+    "tsx": "^4.19.3",
+    "typescript": "~5.6.3",
+    "vite": "^6.2.2",
+    "vite-plugin-dts": "^4.5.3",
+    "vite-plugin-lib-inject-css": "^2.2.1",
+    "vite-plugin-static-copy": "^2.3.1"
+  },
+  "peerDependencies": {
+    "@base-ui/react": "^1.4.0",
+    "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
+    "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
+  },
+  "sideEffects": [
+    "**/*.css"
+  ]
+}

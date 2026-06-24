@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "paths": {
+      "@ui/*": ["./src/*"]
+    }
+  },
+  "include": ["src", "types.d.ts"],
+  "exclude": ["node_modules", "dist"]
+}

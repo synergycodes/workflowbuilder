@@ -1,0 +1,25 @@
+:root {
+  --ax-public-segment-picker-gap: var(--ax-token-spacing-seg-picker-gap);
+  --ax-public-segment-picker-padding: var(--ax-token-spacing-seg-picker-pad);
+  --ax-public-segment-picker-background-color: var(--ax-ui-bg-tertiary-default);
+  --ax-public-segment-picker-circle-border-radius: var(--ax-token-radius-button-round);
+}
+
+@layer ui.component {
+  .container {
+    display: flex;
+    gap: var(--ax-public-segment-picker-gap);
+    padding: var(--ax-public-segment-picker-padding);
+
+    background-color: var(--ax-public-segment-picker-background-color);
+
+    &.circle {
+      border-radius: var(--ax-public-segment-picker-circle-border-radius);
+      width: fit-content;
+    }
+
+    &:not(.circle) {
+      width: 100%;
+    }
+  }
+}

@@ -1,0 +1,56 @@
+:root {
+  --ax-public-select-border-size: 0.0625rem;
+  --ax-public-select-button-color: var(--ax-txt-primary-default);
+  --ax-public-select-button-border-color: var(--ax-input-stroke-primary-default);
+  --ax-public-select-button-border-color-focus: var(--ax-input-stroke-primary-focus);
+  --ax-public-select-button-color-disabled: var(--ax-input-stroke-primary-default);
+
+  --ax-public-select-button-background-color-error: var(--ax-input-bg-primary-error);
+  --ax-public-select-button-border-color-error: var(--ax-input-stroke-primary-error);
+  --ax-public-select-button-color-error: var(--ax-txt-error-default);
+}
+
+@layer ui.component {
+  .container {
+    display: flex;
+    width: 100%;
+    min-width: 100px;
+    align-items: center;
+    background-color: transparent;
+    cursor: pointer;
+
+    color: var(--ax-public-select-button-color);
+
+    border: var(--ax-public-select-border-size) solid var(--ax-public-select-button-border-color);
+
+    &:not(:hover) {
+      transition: all var(--ax-public-transition);
+    }
+
+    &[data-popup-open] {
+      border-color: var(--ax-public-select-button-border-color-focus);
+    }
+
+    &.container--error {
+      background-color: var(--ax-public-select-button-background-color-error);
+      border-color: var(--ax-public-select-button-border-color-error);
+      color: var(--ax-public-select-button-color-error);
+    }
+
+    &:focus-visible {
+      border-color: var(--ax-public-select-button-border-color-focus);
+      outline: none;
+    }
+
+    &:disabled {
+      color: var(--ax-public-select-button-color-disabled);
+      cursor: auto;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      min-width: 1rem;
+    }
+  }
+}

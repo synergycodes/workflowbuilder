@@ -6,21 +6,21 @@ Visual workflow editor SDK (React) with a reference backend and Temporal-based e
 
 Three onboarding paths (A installs from npm; B, C run the repo locally). README "Get started" covers all three. Path A ("Embed the SDK") installs `@workflowbuilder/sdk` from npm; the README has install + a minimal snippet, and the full guide lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
 
-| Command                      | Path | What it does                                                                |
-| ---------------------------- | ---- | --------------------------------------------------------------------------- |
-| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents |
-| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                            |
-| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker         |
-| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations. First run, or after schema changes                |
-| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)     |
-| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                        |
-| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                               |
-| `pnpm infra:down`            | C    | Stop the Docker stack                                                       |
-| `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                               |
-| `pnpm build:lib`             | -    | Build the SDK package (`packages/sdk`)                                      |
-| `pnpm build`                 | -    | Build the demo app                                                          |
-| `pnpm test`                  | -    | Run tests in `packages/sdk` and `packages/execution-core`                   |
-| `pnpm check`                 | -    | Lint + typecheck + format + knip                                            |
+| Command                      | Path | What it does                                                                            |
+| ---------------------------- | ---- | --------------------------------------------------------------------------------------- |
+| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents             |
+| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                                        |
+| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker                     |
+| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations. First run, or after schema changes                            |
+| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)                 |
+| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                                    |
+| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                                           |
+| `pnpm infra:down`            | C    | Stop the Docker stack                                                                   |
+| `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                           |
+| `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two) |
+| `pnpm build`                 | -    | Build the demo app                                                                      |
+| `pnpm test`                  | -    | Run tests in `packages/sdk` and `packages/execution-core`                               |
+| `pnpm check`                 | -    | Lint + typecheck + format + knip                                                        |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start, and `db:migrate` on the first run.
 
@@ -52,6 +52,8 @@ apps/
   tools/            - @workflow-builder/tools workspace (decision-log collector, lint-staged config)
 packages/
   sdk/              - @workflowbuilder/sdk public package (WorkflowBuilder compound component, plugin API, components)
+  ui/               - @workflowbuilder/ui published component library (Base UI), consumed by sdk/demo/ai-studio
+  tokens/           - @workflowbuilder/ui-tokens private design-token build (style-dictionary), feeds packages/ui
   execution-core/   - Pure topological graph runner + node executor registry
   types/            - Shared TypeScript types
 ```
@@ -62,20 +64,22 @@ Where to put a new script: root `tools/` for pure-Node bootstrap (runs before an
 
 Each workspace has its own context. Read the relevant file before extending a workspace.
 
-| Workspace                 | Authoritative docs                  |
-| ------------------------- | ----------------------------------- |
-| `packages/sdk`            | `packages/sdk/README.md`            |
-| `packages/execution-core` | `packages/execution-core/README.md` |
-| `apps/demo`               | `apps/demo/CLAUDE.md`               |
-| `apps/ai-studio`          | `apps/ai-studio/README.md`          |
-| `apps/backend`            | `apps/backend/README.md`            |
-| `apps/execution-worker`   | `apps/execution-worker/README.md`   |
+| Workspace                 | Authoritative docs                                      |
+| ------------------------- | ------------------------------------------------------- |
+| `packages/sdk`            | `packages/sdk/README.md`                                |
+| `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
+| `packages/execution-core` | `packages/execution-core/README.md`                     |
+| `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
+| `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
+| `apps/backend`            | `apps/backend/README.md`                                |
+| `apps/execution-worker`   | `apps/execution-worker/README.md`                       |
 
 ## Types & Aliases
 
 Shared types: `packages/types/` (imported as `@workflow-builder/types/*`).
 Icons: `apps/icons/` (imported as `@workflow-builder/icons`).
 SDK: `packages/sdk/` (imported as `@workflowbuilder/sdk`).
+UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuilder/ui/styles.css`, `/index.css`, `/tokens.css`).
 
 ## Local Infrastructure
 
@@ -130,7 +134,7 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ### Releasing `@workflowbuilder/sdk`
 
-The SDK is the only npm-published workspace; everything else under `apps/` and `packages/` is private (and listed under `ignore` in `.changeset/config.json`).
+Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private (`@workflowbuilder/ui-tokens` is private too) and listed under `ignore` in `.changeset/config.json`. Because there are now two publishable packages, the release tag scheme below (single-package `v*`) still needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) before publishing `@workflowbuilder/ui` from this repo - see § "Tag format" and `packages/sdk/RELEASE.md`.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
@@ -155,7 +159,7 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
 
-Tag format follows the ng-diagram convention (single-package monorepo, `v*` regex). If we ever publish a second package we'll migrate to scoped (`@workflowbuilder/sdk@X.Y.Z`) — ~1h of work, see `packages/sdk/RELEASE.md` § "Why these decisions".
+Tag format currently follows the ng-diagram convention (single-package monorepo, `v*` regex). A second publishable package (`@workflowbuilder/ui`) now exists, so this needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) — ~1h of work, see `packages/sdk/RELEASE.md` § "Why these decisions".
 
 Canonical procedure with edge cases and rollback: [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md).
 
