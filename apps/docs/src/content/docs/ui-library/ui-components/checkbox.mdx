@@ -1,0 +1,67 @@
+---
+title: Checkbox
+description: A control that supports checked, unchecked, and indeterminate states.
+---
+
+import { CheckboxExample } from '../../../../components/ui-examples/checkbox';
+
+A `Checkbox` is a customizable control that supports three states: checked,
+unchecked, and indeterminate. It can be used in forms or as a standalone control.
+
+<CheckboxExample client:visible />
+
+## Usage
+
+```tsx
+import { Checkbox } from '@workflowbuilder/ui';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} />;
+}
+```
+
+## Props
+
+| Prop            | Type                                                   | Default    | Description                                        |
+| --------------- | ------------------------------------------------------ | ---------- | -------------------------------------------------- |
+| `size`          | `'medium' \| 'small' \| 'extra-small'`                 | `'medium'` | Size of the checkbox.                              |
+| `checked`       | `boolean`                                              | -          | Whether the checkbox is checked.                   |
+| `indeterminate` | `boolean`                                              | -          | Whether the checkbox is in an indeterminate state. |
+| `onChange`      | `(event: React.ChangeEvent<HTMLInputElement>) => void` | -          | Called when the checked state changes.             |
+| `className`     | `string`                                               | -          | Class applied to the checkbox input.               |
+
+The component also forwards the remaining native `<input>` props (except `size`).
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the checkbox.
+
+### Size
+
+| Variable                                         | Description                  |
+| ------------------------------------------------ | ---------------------------- |
+| `--ax-public-checkbox-size-medium`               | Box size (medium).           |
+| `--ax-public-checkbox-size-small`                | Box size (small).            |
+| `--ax-public-checkbox-size-extra-small`          | Box size (extra-small).      |
+| `--ax-public-checkbox-icon-size-medium`          | Icon size (medium).          |
+| `--ax-public-checkbox-icon-size-small`           | Icon size (small).           |
+| `--ax-public-checkbox-icon-size-extra-small`     | Icon size (extra-small).     |
+| `--ax-public-checkbox-border-radius-medium`      | Corner radius (medium).      |
+| `--ax-public-checkbox-border-radius-small`       | Corner radius (small).       |
+| `--ax-public-checkbox-border-radius-extra-small` | Corner radius (extra-small). |
+| `--ax-public-checkbox-border-width`              | Border width of the box.     |
+
+### Color
+
+| Variable                                     | Description                  |
+| -------------------------------------------- | ---------------------------- |
+| `--ax-public-checkbox-border-color`          | Border color when unchecked. |
+| `--ax-public-checkbox-bg`                    | Background when unchecked.   |
+| `--ax-public-checkbox-icon-color`            | Icon color.                  |
+| `--ax-public-checkbox-checked-bg`            | Background when checked.     |
+| `--ax-public-checkbox-focus-border-color`    | Border color on focus.       |
+| `--ax-public-checkbox-focus-border-shadow`   | Focus ring color.            |
+| `--ax-public-checkbox-disabled-bg`           | Background when disabled.    |
+| `--ax-public-checkbox-disabled-border-color` | Border color when disabled.  |
+| `--ax-public-checkbox-disabled-icon-color`   | Icon color when disabled.    |
