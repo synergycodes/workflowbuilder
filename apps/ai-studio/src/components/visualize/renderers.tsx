@@ -1,10 +1,13 @@
-import { type ReactNode, useState } from 'react';
+import { type ComponentType, lazy, useState } from 'react';
 import Markdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import styles from './renderers.module.css';
 
 import type { VisualizeRenderer } from '../../utils/detect-format';
+
+// Lazy so recharts (~140KB) only loads when a chart is actually rendered.
+const ChartRenderer = lazy(() => import('./chart-renderer').then((module) => ({ default: module.ChartRenderer })));
 
 export type RendererProps = {
   text: string;
@@ -167,9 +170,9 @@ export function StatCardsRenderer({ text, data }: RendererProps) {
   );
 }
 
-// Resolve a renderer to its component. `chart` and `diagram` fall back to
-// table/text here; later steps register their real (lazy) renderers.
-export function getRenderer(renderer: VisualizeRenderer): (props: RendererProps) => ReactNode {
+// Resolve a renderer to its component. `chart` is lazy (recharts); `diagram`
+// falls back to text until its real renderer is registered.
+export function getRenderer(renderer: VisualizeRenderer): ComponentType<RendererProps> {
   switch (renderer) {
     case 'text': {
       return TextRenderer;
@@ -177,12 +180,14 @@ export function getRenderer(renderer: VisualizeRenderer): (props: RendererProps)
     case 'json': {
       return JsonRenderer;
     }
-    case 'table':
-    case 'chart': {
+    case 'table': {
       return TableRenderer;
     }
     case 'stat-cards': {
       return StatCardsRenderer;
+    }
+    case 'chart': {
+      return ChartRenderer;
     }
     case 'diagram': {
       return TextRenderer;
