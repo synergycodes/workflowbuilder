@@ -116,6 +116,9 @@ importers:
       clsx:
         specifier: ^2.1.1
         version: 2.1.1
+      html-to-image:
+        specifier: 1.11.11
+        version: 1.11.11
       immer:
         specifier: ^10.1.1
         version: 10.1.1

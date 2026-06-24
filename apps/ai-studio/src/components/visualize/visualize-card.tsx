@@ -1,11 +1,12 @@
-import { Eye } from '@phosphor-icons/react';
+import { ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import { type ReactNode, Suspense, useState } from 'react';
+import { type ReactNode, Suspense, useRef, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
 import { useExecutionStore } from '../../stores/use-execution-store';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
+import { copyImage, copySource, downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
 import { RENDERER_LABELS, getRenderer } from './renderers';
 
@@ -42,10 +43,12 @@ function EmptyState({ running }: { running: boolean }) {
 // Rendered on-canvas inside every node via the OptionalNodeContent decorator,
 // but only paints for visualize nodes. Always shows a fixed-size card (with an
 // empty-state placeholder before a run); once the upstream output arrives it
-// picks a renderer (the node's `mode` or auto-detected) and reveals it.
+// picks a renderer (the node's `mode` or auto-detected), reveals it, and offers
+// export actions.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
+  const contentRef = useRef<HTMLDivElement>(null);
 
   // Node vocabulary and edges are static during a run, so snapshot reads are fine.
   const node = getStoreNodes().find((entry) => entry.id === nodeId);
@@ -79,17 +82,24 @@ export function VisualizeCard({ props }: Props) {
     badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
     showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
     body = (
-      <Suspense
-        fallback={
-          <div className={styles['empty']}>
-            <p className={styles['empty-text']}>Loading…</p>
+      <>
+        {showChartChip && (
+          <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
+            Try as chart
+          </button>
+        )}
+        <Suspense
+          fallback={
+            <div className={styles['empty']}>
+              <p className={styles['empty-text']}>Loading…</p>
+            </div>
+          }
+        >
+          <div ref={contentRef} className={styles['revealed']}>
+            <Renderer text={text} data={data} />
           </div>
-        }
-      >
-        <div className={styles['revealed']}>
-          <Renderer text={text} data={data} />
-        </div>
-      </Suspense>
+        </Suspense>
+      </>
     );
   } else {
     body = <EmptyState running={selfStatus === 'running'} />;
@@ -100,12 +110,35 @@ export function VisualizeCard({ props }: Props) {
       <div className={styles['header']}>
         <Eye className={styles['header-icon']} weight="fill" />
         <span className={styles['header-title']}>Visualize</span>
-        {showChartChip && (
-          <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
-            Try as chart
-          </button>
-        )}
         {badge && <span className={styles['badge']}>{badge}</span>}
+        {hasOutput && (
+          <div className={styles['actions']}>
+            <button
+              type="button"
+              className={styles['action']}
+              title="Copy image"
+              onClick={() => contentRef.current && void copyImage(contentRef.current)}
+            >
+              <Copy />
+            </button>
+            <button
+              type="button"
+              className={styles['action']}
+              title="Download PNG"
+              onClick={() => contentRef.current && void downloadPng(contentRef.current)}
+            >
+              <DownloadSimple />
+            </button>
+            <button
+              type="button"
+              className={styles['action']}
+              title="Copy source text"
+              onClick={() => void copySource(text)}
+            >
+              <ClipboardText />
+            </button>
+          </div>
+        )}
       </div>
       <div className={styles['body']}>{body}</div>
     </div>
