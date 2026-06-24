@@ -1,13 +1,13 @@
 import { Status } from '@workflowbuilder/ui';
 
-import frame from './example-frame.module.css';
+import { ComponentPreview } from './component-preview';
 
 export function StatusExample() {
   return (
-    <div className={frame.frame}>
-      <span className={frame.inline}>
+    <ComponentPreview>
+      <span style={{ display: 'inline-flex', alignItems: 'center', gap: '0.5rem' }}>
         <Status status="invalid" /> Invalid field
       </span>
-    </div>
+    </ComponentPreview>
   );
 }

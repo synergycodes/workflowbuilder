@@ -1,6 +1,6 @@
 import { Avatar } from '@workflowbuilder/ui';
 
-import frame from './example-frame.module.css';
+import { ComponentPreview } from './component-preview';
 
 const AVATAR =
   'data:image/svg+xml;utf8,' +
@@ -10,23 +10,8 @@ const AVATAR =
 
 export function AvatarExample() {
   return (
-    <div className={frame.frame}>
-      <label className={frame.field}>
-        <span className={frame.fieldLabel}>Extra large</span>
-        <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="extra-large" />
-      </label>
-      <label className={frame.field}>
-        <span className={frame.fieldLabel}>Large</span>
-        <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="large" />
-      </label>
-      <label className={frame.field}>
-        <span className={frame.fieldLabel}>Medium</span>
-        <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="medium" />
-      </label>
-      <label className={frame.field}>
-        <span className={frame.fieldLabel}>Small</span>
-        <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="small" />
-      </label>
-    </div>
+    <ComponentPreview>
+      <Avatar username="Ada Lovelace" imageUrl={AVATAR} size="large" />
+    </ComponentPreview>
   );
 }
