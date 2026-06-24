@@ -174,8 +174,8 @@ export function StatCardsRenderer({ text, data }: RendererProps) {
   );
 }
 
-// Resolve a renderer to its component. `chart` is lazy (recharts); `diagram`
-// falls back to text until its real renderer is registered.
+// Resolve a renderer to its component. `chart` (recharts) and `diagram` (mermaid)
+// are lazy and load only when actually used.
 export function getRenderer(renderer: VisualizeRenderer): ComponentType<RendererProps> {
   switch (renderer) {
     case 'text': {
