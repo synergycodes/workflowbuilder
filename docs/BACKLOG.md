@@ -37,9 +37,10 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - Accept: visualize node shows card always (min-height 8.5rem) with placeholder before run; fills on completed; reveal anim moved to content. ✓ tc+lint green. ✓ MILESTONE SMOKE PASS (fresh browser): node "Visualize", card badge "Auto › Markdown", QA reply rendered as markdown (bold + numbered list).
    - ✅ commit `feat(ai-studio): always-on visualize card with empty state`
 
-6. [ ] **Chart renderer (recharts, lazy)** + chart-spec envelope + "try as chart" chip
-   - Accept: array `{label,value}`/`{x,y}` or `{type,data}` → chart; lazy-loaded; chip suggests chart on chartable data. smoke.
-   - [ ] add recharts; commit `feat(ai-studio): chart renderer (recharts) for visualize`
+6. ✅ **Chart renderer (recharts, lazy)** + chart-spec envelope + "try as chart" chip
+   - Accept: array `{label,value}`/`{x,y}` or `{type,data}` → bar/line/area/pie; React.lazy (recharts only loads for charts); chip on card suggests chart when data is chartable. ✓ tc+lint green. (chart smoke at item 10.)
+   - ✅ add recharts; `chart-renderer.tsx` lazy in `getRenderer`; card wraps body in Suspense + `forceChart` chip.
+   - ✅ commit `feat(ai-studio): chart renderer (recharts) for visualize`
 
 7. [ ] **Diagram renderer (mermaid, lazy, SVG)** + try/catch fallback
    - Accept: mermaid fence/keyword → rendered SVG diagram; lazy; bad syntax → graceful fallback. smoke.

@@ -1,6 +1,6 @@
 import { Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import type { ReactNode } from 'react';
+import { type ReactNode, Suspense, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
@@ -45,6 +45,7 @@ function EmptyState({ running }: { running: boolean }) {
 // picks a renderer (the node's `mode` or auto-detected) and reveals it.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
+  const [forceChart, setForceChart] = useState(false);
 
   // Node vocabulary and edges are static during a run, so snapshot reads are fine.
   const node = getStoreNodes().find((entry) => entry.id === nodeId);
@@ -63,19 +64,32 @@ export function VisualizeCard({ props }: Props) {
 
   let body: ReactNode;
   let badge: string | null = null;
+  let showChartChip = false;
 
   if (hasOutput) {
     const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
     const mode: VisualizeMode = modeRaw && VALID_MODES.has(modeRaw) ? (modeRaw as VisualizeMode) : 'auto';
     const detection = detectFormat(text);
-    const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
+    let activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
+    if (forceChart && mode === 'auto') {
+      activeRenderer = 'chart';
+    }
     const data = mode === 'auto' ? detection.data : undefined;
     const Renderer = getRenderer(activeRenderer);
     badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
+    showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
     body = (
-      <div className={styles['revealed']}>
-        <Renderer text={text} data={data} />
-      </div>
+      <Suspense
+        fallback={
+          <div className={styles['empty']}>
+            <p className={styles['empty-text']}>Loading…</p>
+          </div>
+        }
+      >
+        <div className={styles['revealed']}>
+          <Renderer text={text} data={data} />
+        </div>
+      </Suspense>
     );
   } else {
     body = <EmptyState running={selfStatus === 'running'} />;
@@ -86,6 +100,11 @@ export function VisualizeCard({ props }: Props) {
       <div className={styles['header']}>
         <Eye className={styles['header-icon']} weight="fill" />
         <span className={styles['header-title']}>Visualize</span>
+        {showChartChip && (
+          <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
+            Try as chart
+          </button>
+        )}
         {badge && <span className={styles['badge']}>{badge}</span>}
       </div>
       <div className={styles['body']}>{body}</div>

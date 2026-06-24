@@ -196,3 +196,9 @@
   font-size: 0.72rem;
   color: var(--ax-txt-tertiary-default, #6f7480);
 }
+
+/* Chart */
+.chart {
+  width: 100%;
+  height: 14rem;
+}
