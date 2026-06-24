@@ -52,9 +52,10 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - ✅ add html-to-image; `utils/export-visualization.ts`; card header Copy image / Download PNG / Copy source buttons (ref on content).
    - ✅ commit `feat(ai-studio): export visualize output (png/svg/copy)`
 
-9. [ ] **Expand fullscreen modal** (same renderer full-size + export)
-   - Accept: Expand button opens overlay rendering the viz full-size with export actions. smoke.
-   - [ ] commit `feat(ai-studio): expand visualize to fullscreen modal`
+9. ✅ **Expand fullscreen modal** (same renderer full-size + export incl. SVG)
+   - Accept: Expand button opens an overlay (via createPortal to body, escaping the RF transform) rendering the same renderer large with export actions (PNG/SVG/copy image/copy source). ✓ tc+lint green. (modal smoke at item 10.)
+   - ✅ `visualize-modal.tsx` (+css) via createPortal; card Expand (ArrowsOut) button + `expanded` state; activeRenderer/data hoisted.
+   - ✅ commit `feat(ai-studio): expand visualize to fullscreen modal`
 
 10. [ ] **Final verify + comprehensive smoke**
     - Accept: typecheck+lint (ai-studio+worker) green; smoke: flagship Run → markdown auto; inputs JSON/CSV/mermaid/{label,value} → correct renderer; override; expand; export; empty-state pre-run. Update backlog final. Summary.

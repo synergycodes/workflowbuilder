@@ -1,4 +1,4 @@
-import { ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
+import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
 import { type ReactNode, Suspense, useRef, useState } from 'react';
 
@@ -9,6 +9,7 @@ import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format'
 import { copyImage, copySource, downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
 import { RENDERER_LABELS, getRenderer } from './renderers';
+import { VisualizeModal } from './visualize-modal';
 
 type Props = {
   props?: {
@@ -44,10 +45,11 @@ function EmptyState({ running }: { running: boolean }) {
 // but only paints for visualize nodes. Always shows a fixed-size card (with an
 // empty-state placeholder before a run); once the upstream output arrives it
 // picks a renderer (the node's `mode` or auto-detected), reveals it, and offers
-// export actions.
+// export + expand actions.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
+  const [expanded, setExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Node vocabulary and edges are static during a run, so snapshot reads are fine.
@@ -66,18 +68,20 @@ export function VisualizeCard({ props }: Props) {
   const hasOutput = selfStatus === 'completed' && text.length > 0;
 
   let body: ReactNode;
-  let badge: string | null = null;
+  let badge = '';
   let showChartChip = false;
+  let activeRenderer: VisualizeRenderer | null = null;
+  let data: unknown;
 
   if (hasOutput) {
     const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
     const mode: VisualizeMode = modeRaw && VALID_MODES.has(modeRaw) ? (modeRaw as VisualizeMode) : 'auto';
     const detection = detectFormat(text);
-    let activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
+    activeRenderer = mode === 'auto' ? detection.renderer : mode;
     if (forceChart && mode === 'auto') {
       activeRenderer = 'chart';
     }
-    const data = mode === 'auto' ? detection.data : undefined;
+    data = mode === 'auto' ? detection.data : undefined;
     const Renderer = getRenderer(activeRenderer);
     badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
     showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
@@ -105,6 +109,8 @@ export function VisualizeCard({ props }: Props) {
     body = <EmptyState running={selfStatus === 'running'} />;
   }
 
+  const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
+
   return (
     <div className={styles['card']}>
       <div className={styles['header']}>
@@ -113,6 +119,9 @@ export function VisualizeCard({ props }: Props) {
         {badge && <span className={styles['badge']}>{badge}</span>}
         {hasOutput && (
           <div className={styles['actions']}>
+            <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
+              <ArrowsOut />
+            </button>
             <button
               type="button"
               className={styles['action']}
@@ -141,6 +150,16 @@ export function VisualizeCard({ props }: Props) {
         )}
       </div>
       <div className={styles['body']}>{body}</div>
+      {expanded && activeRenderer && (
+        <VisualizeModal
+          renderer={activeRenderer}
+          text={text}
+          data={data}
+          badge={badge}
+          isVector={isVector}
+          onClose={() => setExpanded(false)}
+        />
+      )}
     </div>
   );
 }
