@@ -17,10 +17,11 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - ✅ rewire flagship `preview-1` → `visualize-1`; node-types.ts; plugin.ts; card `components/visualize/visualize-card`
    - ✅ commit `refactor(ai-studio): rename markdown-preview node to visualize`
 
-2. [ ] **Format detection util** (`detectFormat`) + vitest tests
-   - Accept: `detectFormat(text) -> { format, shape? }` per choices.md rules; unit tests pass.
-   - [ ] util + tests; typecheck+lint+test
-   - [ ] commit `feat(ai-studio): detect output format for visualize`
+2. ✅ **Format detection util** (`detectFormat`) + vitest tests
+   - Accept: `detectFormat(text) -> { renderer, data?, chartable? }` per choices.md rules; unit tests pass. ✓ 11 tests green.
+   - ✅ util `utils/detect-format.ts` + `detect-format.test.ts`; typecheck+lint+test green
+   - Note: `auto` fallback = `markdown` (renders prose fine); `text` (<pre>) is override-only. CSV hardened (all-line consistent col count + short headers).
+   - ✅ commit `feat(ai-studio): detect output format for visualize`
 
 3. [ ] **`mode` param** (auto + override enum) in schema/uischema/default-properties
    - Accept: schema enum `auto|markdown|text|json|table|stat-cards|chart|diagram`, default `auto`; Select in uischema.
