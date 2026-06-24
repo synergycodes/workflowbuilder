@@ -47,9 +47,10 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - ✅ add mermaid; `diagram-renderer.tsx` (securityLevel strict, neutral theme) lazy in getRenderer.
    - ✅ commit `feat(ai-studio): mermaid diagram renderer for visualize`
 
-8. [ ] **Export** (PNG download + copy image + copy source + SVG for vector)
-   - Accept: header actions export the card; native SVG fast-path for chart/diagram; html-to-image for DOM; Firefox copy→download fallback.
-   - [ ] add html-to-image; commit `feat(ai-studio): export visualize output (png/svg/copy)`
+8. ✅ **Export** (PNG download + copy image + copy source; SVG in util)
+   - Accept: header actions export the card content; html-to-image PNG; copy-image with Firefox→download fallback; copy source text. ✓ tc+lint green. SVG download (native serialize fast-path) lives in util `downloadSvg`, surfaced in the expand modal (item 9).
+   - ✅ add html-to-image; `utils/export-visualization.ts`; card header Copy image / Download PNG / Copy source buttons (ref on content).
+   - ✅ commit `feat(ai-studio): export visualize output (png/svg/copy)`
 
 9. [ ] **Expand fullscreen modal** (same renderer full-size + export)
    - Accept: Expand button opens overlay rendering the viz full-size with export actions. smoke.

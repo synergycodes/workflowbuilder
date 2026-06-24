@@ -75,6 +75,36 @@
   background: var(--ax-ui-bg-secondary-default, #f5f5f7);
 }
 
+.actions {
+  display: flex;
+  gap: 0.1rem;
+  margin-left: 0.4rem;
+  flex-shrink: 0;
+}
+
+.action {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.5rem;
+  height: 1.5rem;
+  border: none;
+  border-radius: 0.3rem;
+  background: transparent;
+  color: var(--ax-txt-tertiary-default, #6f7480);
+  cursor: pointer;
+}
+
+.action svg {
+  width: 0.95rem;
+  height: 0.95rem;
+}
+
+.action:hover {
+  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
+  color: var(--ax-txt-primary-default, #151516);
+}
+
 .body {
   flex: 1;
   display: flex;
