@@ -1,15 +1,8 @@
 ---
-// Renders a component's props table from the generated ui-api.json (extracted
-// from `@workflowbuilder/ui` source with TypeDoc - never hand-maintained).
+// Renders a component's props as a card list (name + optional "required" chip +
+// Type / Default + description), generated from `@workflowbuilder/ui` source via
+// TypeDoc. Mirrors the Overflow UI docs - required props first, no `?` marker.
 import data from '../../generated/ui-api.json';
-
-interface Props {
-  slug: string;
-}
-
-const { slug } = Astro.props;
-const entry = (data as Record<string, { props: PropRow[] }>)[slug];
-const props = entry?.props ?? [];
 
 interface PropRow {
   name: string;
@@ -18,36 +11,94 @@ interface PropRow {
   default: string | null;
   description: string;
 }
+
+const { slug } = Astro.props as { slug: string };
+const entry = (data as Record<string, { props: PropRow[] }>)[slug];
+const props = [...(entry?.props ?? [])].sort(
+  (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
+);
 ---
 
 {
   props.length === 0 ? (
     <p>This component has no configurable props.</p>
   ) : (
-    <table>
-      <thead>
-        <tr>
-          <th>Prop</th>
-          <th>Type</th>
-          <th>Default</th>
-          <th>Description</th>
-        </tr>
-      </thead>
-      <tbody>
-        {props.map((prop) => (
-          <tr>
-            <td>
-              <code>{prop.name}</code>
-              {!prop.required && <span title="optional"> ?</span>}
-            </td>
-            <td>
-              <code>{prop.type}</code>
-            </td>
-            <td>{prop.default ? <code>{prop.default}</code> : '-'}</td>
-            <td>{prop.description.replace(/\n/g, ' ')}</td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
+    <dl class="props">
+      {props.map((prop) => (
+        <div class="prop">
+          <div class="prop-head">
+            <code class="prop-name">{prop.name}</code>
+            {prop.required && <span class="chip">required</span>}
+          </div>
+          <div class="meta">
+            <span class="meta-label">Type</span>
+            <code>{prop.type}</code>
+          </div>
+          {prop.default && (
+            <div class="meta">
+              <span class="meta-label">Default</span>
+              <code>{prop.default}</code>
+            </div>
+          )}
+          {prop.description && <p class="prop-desc">{prop.description.replace(/\n/g, ' ')}</p>}
+        </div>
+      ))}
+    </dl>
   )
 }
+
+<style>
+  .props {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-top: 1rem;
+  }
+  .prop {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .prop-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .prop-name {
+    font-size: 1rem;
+    font-weight: 600;
+    background: none;
+    padding: 0;
+  }
+  .chip {
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: var(--sl-color-accent-low);
+    color: var(--sl-color-accent-high);
+  }
+  .meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .meta-label {
+    min-width: 3.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: 0.8125rem;
+  }
+  .meta code {
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prop-desc {
+    margin: 0.35rem 0 0;
+    color: var(--sl-color-gray-2);
+  }
+</style>

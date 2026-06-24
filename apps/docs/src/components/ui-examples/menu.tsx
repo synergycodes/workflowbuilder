@@ -1,10 +1,10 @@
 import { Button, Menu } from '@workflowbuilder/ui';
 
-import frame from './example-frame.module.css';
+import { ComponentPreview } from './component-preview';
 
 export function MenuExample() {
   return (
-    <div className={frame.frame}>
+    <ComponentPreview>
       <Menu
         items={[
           { label: 'Edit', onClick: () => {} },
@@ -15,6 +15,6 @@ export function MenuExample() {
       >
         <Button variant="secondary">Open menu</Button>
       </Menu>
-    </div>
+    </ComponentPreview>
   );
 }

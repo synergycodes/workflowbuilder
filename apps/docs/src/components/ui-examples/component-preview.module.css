@@ -1,0 +1,34 @@
+.stage {
+  position: relative;
+  width: 100%;
+  max-width: 50rem;
+  aspect-ratio: 2 / 1;
+  margin-top: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  background-color: var(--sl-color-bg);
+  /* dot grid */
+  background-image: radial-gradient(circle at center, var(--sl-color-gray-5) 1.5px, transparent 1.5px);
+  background-size: 1.5rem 1.5rem;
+}
+
+/* A soft radial of the page background behind the component so it reads cleanly
+   over the dot grid (mirrors the reference preview spotlight). */
+.spotlight {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6rem 10rem;
+  margin: -6rem -10rem;
+  background: radial-gradient(closest-side, var(--sl-color-bg) 45%, transparent 100%);
+}
+
+.host {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

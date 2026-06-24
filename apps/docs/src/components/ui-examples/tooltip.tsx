@@ -1,22 +1,16 @@
 import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@workflowbuilder/ui';
 
-import frame from './example-frame.module.css';
+import { ComponentPreview } from './component-preview';
 
 export function TooltipExample() {
   return (
-    <div className={frame.frame}>
+    <ComponentPreview>
       <Tooltip placement="top">
         <TooltipTrigger asChild>
-          <Button variant="secondary">Hover for tooltip</Button>
+          <Button variant="secondary">Hover me</Button>
         </TooltipTrigger>
-        <TooltipContent tooltipType="default">Default tooltip</TooltipContent>
+        <TooltipContent tooltipType="default">Tooltip</TooltipContent>
       </Tooltip>
-      <Tooltip placement="top">
-        <TooltipTrigger asChild>
-          <Button variant="secondary">Hover for blue</Button>
-        </TooltipTrigger>
-        <TooltipContent tooltipType="blue">Blue tooltip</TooltipContent>
-      </Tooltip>
-    </div>
+    </ComponentPreview>
   );
 }

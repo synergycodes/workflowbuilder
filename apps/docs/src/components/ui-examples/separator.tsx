@@ -1,15 +1,15 @@
 import { Separator } from '@workflowbuilder/ui';
 
-import frame from './example-frame.module.css';
+import { ComponentPreview } from './component-preview';
 
 export function SeparatorExample() {
   return (
-    <div className={frame.frame}>
-      <div className={frame.stack}>
+    <ComponentPreview>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem', minWidth: '12rem' }}>
         <span>Above</span>
         <Separator />
         <span>Below</span>
       </div>
-    </div>
+    </ComponentPreview>
   );
 }
