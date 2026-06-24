@@ -5,12 +5,15 @@ description: Textual title and subtitle block inside a node.
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeDescriptionExample } from '../../../../components/ui-examples/node-description';
 
 `NodeDescription` renders a node's textual content - a `label` shown as the title
 and an optional `description` shown as the subtitle. It uses the library's
 typography classes so the text matches the rest of the editor, and is typically
 placed in a [`NodePanel.Header`](/ui-library/diagram-components/node-panel/)
 alongside a [`NodeIcon`](/ui-library/diagram-components/node-icon/).
+
+<NodeDescriptionExample client:visible />
 
 ## Usage
 
