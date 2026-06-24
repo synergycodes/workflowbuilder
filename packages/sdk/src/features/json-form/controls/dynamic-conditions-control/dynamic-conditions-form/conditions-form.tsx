@@ -1,4 +1,4 @@
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
 
 import { Icon } from '@workflow-builder/icons';

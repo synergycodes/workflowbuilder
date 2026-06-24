@@ -1,23 +1,36 @@
-# overflow-ui
+# UI library (`@workflowbuilder/ui`)
 
-Overflow-ui is an open-to-the-public UI library developed by Synergy Codes:
+The UI component library lives in this monorepo at `packages/ui`, published as
+`@workflowbuilder/ui`. It is built on [Base UI](https://base-ui.com/) and
+provides the components and design tokens the SDK and reference apps render
+with. Its design tokens are generated from `packages/tokens`
+(`@workflowbuilder/ui-tokens`).
 
-https://www.npmjs.com/package/@synergycodes/overflow-ui
+## How is it consumed?
 
-https://github.com/synergycodes/overflow-ui
+`packages/sdk`, `apps/demo`, and `apps/ai-studio` depend on it via
+`workspace:*` and import it as `@workflowbuilder/ui`. Consumers resolve the
+built `dist/` through the package `exports` (the SDK's `src/index.css` pulls in
+`@workflowbuilder/ui/tokens.css` and `@workflowbuilder/ui/index.css`).
 
-## How can I work locally on both `workflow-builder` and `overflow-ui`?
+## Working on it locally
 
-Both repositories must be cloned next to each other in the same parent directory:
+`dist/` is git-ignored and rebuilt from source. The `prepare` lifecycle script
+of `packages/ui` and `packages/tokens` builds both on `pnpm install`, in
+dependency order (tokens first, then ui), so a fresh install is enough for the
+apps to resolve the library.
 
-```
-some-directory/
-  overflow-ui/
-  workflow-builder/
-```
+When iterating on the library itself, rebuild after each change:
 
-1. Build the dist files in the overflow-ui tokens package: `pnpm tokens prepare`.
-2. Build the `overflow-ui` dist: `pnpm ui build`.
-3. In this repository, start the frontend with: `pnpm dev:local`
+- `pnpm --filter @workflowbuilder/ui build` - one-shot build (tokens must be
+  built first; `pnpm build:ui` does both in order).
+- `pnpm --filter @workflowbuilder/ui dev` - rebuild on change (`vite build --watch`).
 
-The `dev:local` script sets a `LOCAL_OVERFLOW_UI=true` flag that makes Vite resolve `@synergycodes/overflow-ui` directly from the local `../overflow-ui/packages/ui/dist/` instead of from npm. No manual changes to `package.json` or CSS imports are needed.
+`pnpm build:lib` builds the full publishable chain (tokens -> ui -> sdk).
+
+## CSS layers
+
+The library emits all styles into two ordered cascade layers
+(`@layer ui.base, ui.component;`). See [`packages/ui/css-layers.md`](../packages/ui/css-layers.md)
+for the contract and why `styles.css` (or `index.css`) must establish the order
+before any component rule.

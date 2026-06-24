@@ -1,5 +1,5 @@
 import { Spinner } from '@phosphor-icons/react';
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './button-submit.module.css';

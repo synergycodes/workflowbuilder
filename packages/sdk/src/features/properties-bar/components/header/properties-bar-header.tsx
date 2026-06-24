@@ -1,4 +1,4 @@
-import { NavButton } from '@synergycodes/overflow-ui';
+import { NavButton } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';

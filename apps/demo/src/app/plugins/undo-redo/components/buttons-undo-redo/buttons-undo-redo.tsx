@@ -1,5 +1,5 @@
-import { NavButton } from '@synergycodes/overflow-ui';
 import { Icon, useStore } from '@workflowbuilder/sdk';
+import { NavButton } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import { redo, undo, useUndoRedoStore } from '../../stores/use-undo-redo-store';

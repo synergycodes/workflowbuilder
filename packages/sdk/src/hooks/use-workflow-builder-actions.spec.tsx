@@ -23,7 +23,7 @@ vi.mock('../features/variables/modals/modal-settings', () => ({
 }));
 
 // Short-circuit the use-integration-store chain that drags in
-// @synergycodes/overflow-ui (CSS side-effect that vitest's jsdom env can't load).
+// @workflowbuilder/ui (CSS side-effect that vitest's jsdom env can't load).
 vi.mock('@/features/integration/stores/use-integration-store', () => ({
   getStoreSavingStatus: vi.fn(),
   setStoreSavingStatus: vi.fn(),

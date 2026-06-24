@@ -22,11 +22,11 @@
 @import '@fontsource/poppins/latin-ext-700.css';
 
 /* 3. Design tokens */
-@import '@synergycodes/overflow-ui/tokens.css';
+@import '@workflowbuilder/ui/tokens.css';
 
 /* 4. External component CSS */
 @import '@xyflow/react/dist/style.css';
-@import 'overflow-ui-css';
+@import '@workflowbuilder/ui/index.css';
 
 /* 5. Sub-layer order inside `ui` — must come AFTER @imports (has a body, so
       the spec classifies it as a statement that closes the @import prelude). */
