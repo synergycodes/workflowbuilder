@@ -6,7 +6,7 @@ import styles from './edge-label.module.css';
 
 import { EdgeLabelSize, EdgeState } from '../types';
 
-type EdgeProps = {
+export type EdgeLabelProps = {
   size?: EdgeLabelSize;
   isHovered?: boolean;
   /**
@@ -41,7 +41,7 @@ type EdgeLabelType = 'text' | 'icon' | 'compound';
  * outside of a diagram context, keep in mind that it may require additional wrapper elements or layout adjustments,
  * as its absolute positioning removes it from the normal document flow.
  */
-export const EdgeLabel = forwardRef<HTMLDivElement, PropsWithChildren<EdgeProps & HTMLAttributes<HTMLDivElement>>>(
+export const EdgeLabel = forwardRef<HTMLDivElement, PropsWithChildren<EdgeLabelProps & HTMLAttributes<HTMLDivElement>>>(
   ({ children, size = 'medium', isHovered, state = 'default', type = 'text', className, ...rest }, ref) => {
     return (
       <div

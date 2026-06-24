@@ -5,8 +5,11 @@ import { InputHTMLAttributes } from 'react';
 import radioButtonSizeStyles from './radio-size.module.css';
 import radioButtonStyles from './radio.module.css';
 
-type Props = {
-  /** The size of the radio button */
+export type RadioProps = {
+  /**
+   * The size of the radio button
+   * @default 'medium'
+   */
   size?: SelectorSize;
   /** Whether the radio button is checked */
   checked?: boolean;
@@ -21,7 +24,7 @@ type Props = {
 /**
  * A radio button component that allows users to select a single option from a group.
  */
-export function Radio({ size = 'medium', className, checked, name, value, onChange, ...props }: Props) {
+export function Radio({ size = 'medium', className, checked, name, value, onChange, ...props }: RadioProps) {
   function handleChange(event: React.ChangeEvent<HTMLInputElement>) {
     onChange?.(event);
   }
