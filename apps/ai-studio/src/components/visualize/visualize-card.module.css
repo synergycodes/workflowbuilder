@@ -1,46 +1,21 @@
-.card,
-.pending {
+.card {
   position: absolute;
   top: calc(100% + 2.75rem);
   left: 50%;
   margin-left: -10.625rem;
   width: 21.25rem;
-  font-family: var(--wb-font-family);
-  box-sizing: border-box;
-}
-
-.pending {
-  display: flex;
-  gap: 0.4rem;
-  justify-content: center;
-  padding: 0.75rem;
-}
-
-.dot {
-  width: 0.5rem;
-  height: 0.5rem;
-  border-radius: 50%;
-  background: var(--ax-colors-acc1-500, #1096e7);
-  animation: md-pulse 1s ease-in-out infinite;
-}
-
-.dot:nth-child(2) {
-  animation-delay: 0.15s;
-}
-
-.dot:nth-child(3) {
-  animation-delay: 0.3s;
-}
-
-.card {
+  min-height: 8.5rem;
   max-height: 27.5rem;
+  display: flex;
+  flex-direction: column;
   overflow-y: auto;
+  font-family: var(--wb-font-family);
   background: var(--ax-ui-bg-primary-default, #ffffff);
   border: 0.0625rem solid var(--ax-ui-stroke-primary-default, #edeff3);
   border-radius: 0.75rem;
   box-shadow: 0 0.75rem 2rem rgba(0, 0, 0, 0.18);
   color: var(--ax-txt-primary-default, #151516);
-  animation: md-reveal 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+  box-sizing: border-box;
 
   &,
   * {
@@ -85,7 +60,62 @@
 }
 
 .body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
   padding: 0.6rem 0.95rem 1rem;
+}
+
+.revealed {
+  animation: md-reveal 420ms cubic-bezier(0.2, 0.7, 0.2, 1) both;
+}
+
+.empty {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: center;
+  padding: 0.5rem;
+}
+
+.empty-icon {
+  width: 1.85rem;
+  height: 1.85rem;
+  color: var(--ax-txt-tertiary-default, #6f7480);
+  opacity: 0.55;
+}
+
+.empty-text {
+  margin: 0;
+  max-width: 14rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+  color: var(--ax-txt-tertiary-default, #6f7480);
+}
+
+.dots {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: center;
+}
+
+.dot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+  background: var(--ax-colors-acc1-500, #1096e7);
+  animation: md-pulse 1s ease-in-out infinite;
+}
+
+.dot:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.dot:nth-child(3) {
+  animation-delay: 0.3s;
 }
 
 @keyframes md-reveal {
@@ -114,7 +144,7 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .card {
+  .revealed {
     animation: none;
   }
 
