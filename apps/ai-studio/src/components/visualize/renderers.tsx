@@ -1,0 +1,194 @@
+import { type ReactNode, useState } from 'react';
+import Markdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
+
+import styles from './renderers.module.css';
+
+import type { VisualizeRenderer } from '../../utils/detect-format';
+
+export type RendererProps = {
+  text: string;
+  // Pre-parsed payload from detectFormat (auto mode); renderers parse `text` themselves otherwise.
+  data?: unknown;
+};
+
+export const RENDERER_LABELS: Record<VisualizeRenderer, string> = {
+  markdown: 'Markdown',
+  text: 'Text',
+  json: 'JSON',
+  table: 'Table',
+  'stat-cards': 'Stat cards',
+  chart: 'Chart',
+  diagram: 'Diagram',
+};
+
+function parseOr(text: string, data: unknown): unknown {
+  if (data !== undefined) {
+    return data;
+  }
+  try {
+    return JSON.parse(text);
+  } catch {
+    return undefined;
+  }
+}
+
+function formatCell(value: unknown): string {
+  if (value === null || value === undefined) {
+    return '';
+  }
+  if (typeof value === 'object') {
+    return JSON.stringify(value);
+  }
+  return String(value);
+}
+
+function humanize(key: string): string {
+  return key
+    .replaceAll(/[_-]+/g, ' ')
+    .replaceAll(/([a-z])([A-Z])/g, '$1 $2')
+    .replace(/^./, (c) => c.toUpperCase());
+}
+
+export function MarkdownRenderer({ text }: RendererProps) {
+  return (
+    <div className={styles['markdown']}>
+      <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+    </div>
+  );
+}
+
+export function TextRenderer({ text }: RendererProps) {
+  return <pre className={styles['text']}>{text}</pre>;
+}
+
+function JsonValue({ name, value, depth }: { name?: string; value: unknown; depth: number }) {
+  const [open, setOpen] = useState(depth < 2);
+  const isExpandable = typeof value === 'object' && value !== null;
+
+  if (!isExpandable) {
+    const scalarClass =
+      value === null ? 'json-null' : (`json-${typeof value}` as 'json-string' | 'json-number' | 'json-boolean');
+    const display = typeof value === 'string' ? `"${value}"` : String(value);
+    return (
+      <div className={styles['json-row']}>
+        <span className={styles['json-toggle']} />
+        {name !== undefined && <span className={styles['json-key']}>{name}:</span>}
+        <span className={styles[scalarClass]}>{display}</span>
+      </div>
+    );
+  }
+
+  const entries: [string, unknown][] = Array.isArray(value)
+    ? value.map((item, index) => [String(index), item])
+    : Object.entries(value as Record<string, unknown>);
+  const bracket = Array.isArray(value) ? `[${entries.length}]` : `{${entries.length}}`;
+
+  return (
+    <div>
+      <div className={`${styles['json-row']} ${styles['json-row--expandable']}`} onClick={() => setOpen((o) => !o)}>
+        <span className={styles['json-toggle']}>{open ? '▾' : '▸'}</span>
+        {name !== undefined && <span className={styles['json-key']}>{name}:</span>}
+        <span className={styles['json-bracket']}>{bracket}</span>
+      </div>
+      {open && (
+        <div className={styles['json-children']}>
+          {entries.map(([key, child]) => (
+            <JsonValue key={key} name={Array.isArray(value) ? undefined : key} value={child} depth={depth + 1} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+export function JsonRenderer({ text, data }: RendererProps) {
+  const value = parseOr(text, data);
+  if (value === undefined) {
+    return <pre className={styles['text']}>{text}</pre>;
+  }
+  return (
+    <div className={styles['json']}>
+      <JsonValue value={value} depth={0} />
+    </div>
+  );
+}
+
+export function TableRenderer({ text, data }: RendererProps) {
+  const rows = parseOr(text, data);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return <pre className={styles['text']}>{text}</pre>;
+  }
+
+  const objectRows = rows.every((row) => row !== null && typeof row === 'object' && !Array.isArray(row));
+  const headers = objectRows
+    ? [...new Set(rows.flatMap((row) => Object.keys(row as Record<string, unknown>)))]
+    : ['value'];
+
+  return (
+    <table className={styles['table']}>
+      <thead>
+        <tr>
+          {headers.map((header) => (
+            <th key={header}>{header}</th>
+          ))}
+        </tr>
+      </thead>
+      <tbody>
+        {rows.map((row, rowIndex) => (
+          <tr key={rowIndex}>
+            {objectRows ? (
+              headers.map((header) => <td key={header}>{formatCell((row as Record<string, unknown>)[header])}</td>)
+            ) : (
+              <td>{formatCell(row)}</td>
+            )}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+
+export function StatCardsRenderer({ text, data }: RendererProps) {
+  const value = parseOr(text, data);
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return <pre className={styles['text']}>{text}</pre>;
+  }
+  const entries = Object.entries(value as Record<string, unknown>);
+  return (
+    <div className={styles['stats']}>
+      {entries.map(([key, entryValue]) => (
+        <div key={key} className={styles['stat-card']}>
+          <div className={styles['stat-value']}>{formatCell(entryValue)}</div>
+          <div className={styles['stat-label']}>{humanize(key)}</div>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Resolve a renderer to its component. `chart` and `diagram` fall back to
+// table/text here; later steps register their real (lazy) renderers.
+export function getRenderer(renderer: VisualizeRenderer): (props: RendererProps) => ReactNode {
+  switch (renderer) {
+    case 'text': {
+      return TextRenderer;
+    }
+    case 'json': {
+      return JsonRenderer;
+    }
+    case 'table':
+    case 'chart': {
+      return TableRenderer;
+    }
+    case 'stat-cards': {
+      return StatCardsRenderer;
+    }
+    case 'diagram': {
+      return TextRenderer;
+    }
+    default: {
+      return MarkdownRenderer;
+    }
+  }
+}

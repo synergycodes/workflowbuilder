@@ -27,9 +27,11 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - Accept: schema enum `auto|markdown|text|json|table|stat-cards|chart|diagram`, default `auto`; Select "Render as" in uischema. ✓ tc+lint green. `VISUALIZE_MODES`/`VisualizeMode` exported from schema.
    - ✅ commit `feat(ai-studio): add mode param to visualize node`
 
-4. [ ] **Light renderers + registry** (text, json-tree, table, stat-cards; markdown exists) + card uses detectFormat/mode + "Auto › X" badge + override
-   - Accept: each renderer renders; auto picks per detection; override forces; badge shows; no heavy deps. smoke.
-   - [ ] commit `feat(ai-studio): json/table/text/stat-card renderers for visualize`
+4. ✅ **Light renderers + registry** (text, json-tree, table, stat-cards; markdown) + card uses detectFormat/mode + "Auto › X" badge
+   - Accept: each renderer renders; auto picks per detection; override via properties-panel mode; badge shows; no heavy deps. tc+lint+unit green. (browser smoke batched after item 5.)
+   - ✅ `renderers.tsx` (Markdown/Text/Json-tree/Table/StatCards + getRenderer + RENDERER_LABELS) + `renderers.module.css`; card rewritten to detectFormat/mode + badge. chart->table, diagram->text interim (real in items 6/7).
+   - Note: override applies via properties panel Select; card reads mode from node data (reactive on node re-render). No on-card dropdown (deviation).
+   - ✅ commit `feat(ai-studio): json/table/text/stat-card renderers for visualize`
 
 5. [ ] **Always-on card + empty-state + predefined size**
    - Accept: visualize node shows card always (~360×260) with placeholder before run; fills on completed; reveal anim kept. smoke.
