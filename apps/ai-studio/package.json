@@ -23,6 +23,8 @@
     "immer": "^10.1.1",
     "react": "^19.1.0",
     "react-dom": "catalog:",
+    "react-markdown": "^10.1.0",
+    "remark-gfm": "^4.0.1",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

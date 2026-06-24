@@ -27,6 +27,10 @@ type DecisionNodeConfig = {
   decisionBranches: DecisionBranch[];
 };
 
+// Display-only node: it renders an upstream output on the canvas. Has no
+// runtime config - the UI reads the upstream node's output directly.
+type VisualizeNodeConfig = Record<string, never>;
+
 export type TriggerNode = {
   id: string;
   type: 'ai-studio/trigger';
@@ -45,4 +49,10 @@ export type DecisionNode = {
   config: DecisionNodeConfig;
 };
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode;
+export type VisualizeNode = {
+  id: string;
+  type: 'ai-studio/visualize';
+  config: VisualizeNodeConfig;
+};
+
+export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode;
