@@ -23,9 +23,9 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - Note: `auto` fallback = `markdown` (renders prose fine); `text` (<pre>) is override-only. CSV hardened (all-line consistent col count + short headers).
    - ✅ commit `feat(ai-studio): detect output format for visualize`
 
-3. [ ] **`mode` param** (auto + override enum) in schema/uischema/default-properties
-   - Accept: schema enum `auto|markdown|text|json|table|stat-cards|chart|diagram`, default `auto`; Select in uischema.
-   - [ ] commit `feat(ai-studio): add mode param to visualize node`
+3. ✅ **`mode` param** (auto + override enum) in schema/uischema/default-properties
+   - Accept: schema enum `auto|markdown|text|json|table|stat-cards|chart|diagram`, default `auto`; Select "Render as" in uischema. ✓ tc+lint green. `VISUALIZE_MODES`/`VisualizeMode` exported from schema.
+   - ✅ commit `feat(ai-studio): add mode param to visualize node`
 
 4. [ ] **Light renderers + registry** (text, json-tree, table, stat-cards; markdown exists) + card uses detectFormat/mode + "Auto › X" badge + override
    - Accept: each renderer renders; auto picks per detection; override forces; badge shows; no heavy deps. smoke.
