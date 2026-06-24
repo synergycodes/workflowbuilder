@@ -1,0 +1,145 @@
+---
+title: Edge
+description: Edge label rendering and edge styling for the diagram canvas.
+---
+
+The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
+label primitive designed to sit on an edge, while the `useEdgeStyle` hook
+computes the stroke styles for the edge path itself. Both follow the styling
+conventions prepared for edges, so a custom edge type matches the built-in ones.
+
+`EdgeLabel` provides a unified label design for text, icons, or compound content.
+Its state (hover, selection, disabled) is managed externally and reflected
+through props. It extends a standard `HTMLDivElement` and, by default, uses
+`position: absolute` so it can be placed at the `labelX` / `labelY` coordinates
+that React Flow provides. Used outside a diagram context it may need extra
+wrapper elements or layout adjustments because absolute positioning removes it
+from normal document flow.
+
+`useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
+`transition`) that you apply directly to the SVG path element representing an
+edge. The package also exports the `EdgeState` and `EdgeLabelSize` types and the
+`EDGE_LABEL_SIZES` constant.
+
+## Usage
+
+`EdgeLabel` is rendered through xyflow's `<EdgeLabelRenderer>` and positioned with
+a transform, while `useEdgeStyle` feeds the edge path. The example mirrors the
+SDK's default labeled edge.
+
+```tsx
+import { EdgeLabel, type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import { useState } from 'react';
+
+function LabeledEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+  selected,
+}: EdgeProps) {
+  const [hovered, setHovered] = useState(false);
+  const state: EdgeState = selected ? 'selected' : 'default';
+
+  const pathStyle = useEdgeStyle({ state, isHovered: hovered });
+
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  return (
+    <>
+      <BaseEdge id={id} path={edgePath} style={pathStyle} />
+      {data?.label && (
+        <EdgeLabelRenderer>
+          <EdgeLabel
+            isHovered={hovered}
+            state={state}
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+          >
+            {data.label}
+          </EdgeLabel>
+        </EdgeLabelRenderer>
+      )}
+    </>
+  );
+}
+```
+
+## EdgeLabel props
+
+`EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
+`style`, `onMouseEnter`, `data-*`).
+
+| Prop        | Type                                                   | Default     | Description                                                                 |
+| ----------- | ------------------------------------------------------ | ----------- | --------------------------------------------------------------------------- |
+| `children`  | `ReactNode`                                            | -           | Label content (text, icon, or compound).                                    |
+| `size`      | `'extra-small' \| 'small' \| 'medium'`                 | `'medium'`  | Label size.                                                                 |
+| `type`      | `'text' \| 'icon' \| 'compound'`                       | `'text'`    | Layout style based on content: plain text, a single icon, or mixed content. |
+| `state`     | `'default' \| 'selected' \| 'disabled' \| 'temporary'` | `'default'` | Visual state of the edge label.                                             |
+| `isHovered` | `boolean`                                              | -           | Applies the hover styling.                                                  |
+| `className` | `string`                                               | -           | Additional class on the container.                                          |
+
+## useEdgeStyle
+
+A hook that maps an edge's `state` and hover flag to the CSS properties for its
+SVG path.
+
+| Parameter   | Type                                                   | Default     | Description                         |
+| ----------- | ------------------------------------------------------ | ----------- | ----------------------------------- |
+| `state`     | `'default' \| 'selected' \| 'disabled' \| 'temporary'` | `'default'` | Visual state of the edge.           |
+| `isHovered` | `boolean`                                              | `false`     | Applies hover color over the state. |
+
+Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
+`style`.
+
+## CSS variables
+
+Override these `--ax-public-*` custom properties to retune edges.
+
+### Edge path
+
+| Variable                               | Description                             |
+| -------------------------------------- | --------------------------------------- |
+| `--ax-public-edge-color`               | Stroke color (default).                 |
+| `--ax-public-edge-color-hover`         | Stroke color on hover.                  |
+| `--ax-public-edge-color-select`        | Stroke color when selected / temporary. |
+| `--ax-public-edge-color-disabled`      | Stroke color when disabled.             |
+| `--ax-public-edge-stroke-width`        | Stroke width (default).                 |
+| `--ax-public-edge-stroke-width-select` | Stroke width when selected.             |
+
+### Edge label
+
+| Variable                                       | Description                       |
+| ---------------------------------------------- | --------------------------------- |
+| `--ax-public-edge-label-color`                 | Label text color.                 |
+| `--ax-public-edge-label-color-disabled`        | Label text color when disabled.   |
+| `--ax-public-edge-background-color`            | Label background color.           |
+| `--ax-public-edge-label-gap`                   | Gap between label items.          |
+| `--ax-public-edge-label-border-style`          | Label border style.               |
+| `--ax-public-edge-label-border-size`           | Label border width.               |
+| `--ax-public-edge-label-border-size-selected`  | Label border width when selected. |
+| `--ax-public-edge-label-border-color`          | Label border color.               |
+| `--ax-public-edge-label-border-color-hover`    | Label border color on hover.      |
+| `--ax-public-edge-label-border-color-selected` | Label border color when selected. |
+| `--ax-public-edge-label-border-color-disabled` | Label border color when disabled. |
+| `--ax-public-transition`                       | Transition used by the label.     |
+
+Each size variant (`extra-small`, `small`, `medium`) also exposes
+`--ax-public-edge-label-<size>-border-radius`,
+`--ax-public-edge-label-<size>-content-padding`,
+`--ax-public-edge-label-<size>-label-padding`,
+`--ax-public-edge-label-<size>-icon-padding`, and
+`--ax-public-edge-label-<size>-icon-size`.

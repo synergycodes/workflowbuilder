@@ -1,0 +1,42 @@
+---
+title: NodeDescription
+description: Textual title and subtitle block inside a node.
+---
+
+`NodeDescription` renders a node's textual content - a `label` shown as the title
+and an optional `description` shown as the subtitle. It uses the library's
+typography classes so the text matches the rest of the editor, and is typically
+placed in a [`NodePanel.Header`](/ui-library/diagram-components/node-panel/)
+alongside a [`NodeIcon`](/ui-library/diagram-components/node-icon/).
+
+## Usage
+
+```tsx
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
+
+function NodeHeader({ icon, label, description }) {
+  return (
+    <NodePanel.Header>
+      <NodeIcon icon={icon} />
+      <NodeDescription label={label} description={description} />
+    </NodePanel.Header>
+  );
+}
+```
+
+## Props
+
+| Prop          | Type     | Default | Description                        |
+| ------------- | -------- | ------- | ---------------------------------- |
+| `label`       | `string` | -       | Title text (required).             |
+| `description` | `string` | -       | Subtitle text below the title.     |
+| `className`   | `string` | -       | Additional class on the container. |
+
+## CSS variables
+
+Override these `--ax-public-*` custom properties to retune the text colors.
+
+| Variable                          | Description          |
+| --------------------------------- | -------------------- |
+| `--ax-public-node-title-color`    | Title text color.    |
+| `--ax-public-node-title-subtitle` | Subtitle text color. |

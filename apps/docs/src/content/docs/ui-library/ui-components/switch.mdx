@@ -1,0 +1,67 @@
+---
+title: Switch
+description: A toggle between two states, such as on and off.
+---
+
+import { SwitchExample } from '../../../../components/ui-examples/switch';
+
+A `Switch` lets users toggle between two states, such as on and off. It is
+typically used for settings or preferences and gives immediate visual feedback.
+
+<SwitchExample client:visible />
+
+## Usage
+
+```tsx
+import { Switch } from '@workflowbuilder/ui';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <Switch checked={checked} onChange={(next) => setChecked(next)} />;
+}
+```
+
+## Props
+
+| Prop            | Type                                       | Default    | Description                            |
+| --------------- | ------------------------------------------ | ---------- | -------------------------------------- |
+| `checked`       | `boolean`                                  | -          | Whether the switch is on.              |
+| `onChange`      | `(checked: boolean, event: Event) => void` | -          | Called when the state changes.         |
+| `size`          | `'extra-small' \| 'small' \| 'medium'`     | `'medium'` | Size of the switch.                    |
+| `disabled`      | `boolean`                                  | `false`    | Disables interaction.                  |
+| `thumbChildren` | `ReactNode`                                | -          | Custom content for the thumb.          |
+| `trackChildren` | `ReactNode`                                | -          | Custom content for the track.          |
+| `className`     | `string`                                   | -          | Class applied to the switch container. |
+
+The component also forwards the remaining Base UI `Switch.Root` props.
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the switch.
+
+### Size
+
+| Variable                                  | Description                 |
+| ----------------------------------------- | --------------------------- |
+| `--ax-public-switch-width-medium`         | Track width (medium).       |
+| `--ax-public-switch-width-small`          | Track width (small).        |
+| `--ax-public-switch-width-extra-small`    | Track width (extra-small).  |
+| `--ax-public-switch-height-medium`        | Track height (medium).      |
+| `--ax-public-switch-height-small`         | Track height (small).       |
+| `--ax-public-switch-height-extra-small`   | Track height (extra-small). |
+| `--ax-public-switch-thumb-padding-medium` | Thumb inset (medium).       |
+| `--ax-public-switch-border-size`          | Border width of the track.  |
+
+### Color
+
+| Variable                                       | Description                  |
+| ---------------------------------------------- | ---------------------------- |
+| `--ax-public-track-selected-color`             | Track background when on.    |
+| `--ax-public-track-no-selected-color`          | Track background when off.   |
+| `--ax-public-thumb-selected-color`             | Thumb color when on.         |
+| `--ax-public-thumb-no-selected-color`          | Thumb color when off.        |
+| `--ax-public-switch-outline-color`             | Track border color.          |
+| `--ax-public-switch-focus-border-color`        | Track border color on focus. |
+| `--ax-public-switch-disabled-background-color` | Background when disabled.    |
+| `--ax-public-switch-disabled-border-color`     | Border color when disabled.  |
+| `--ax-public-thumb-disabled-color`             | Thumb color when disabled.   |

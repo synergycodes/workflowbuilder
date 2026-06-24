@@ -1,0 +1,101 @@
+---
+title: Menu
+description: A dropdown list of actions anchored to a trigger element.
+---
+
+import { MenuExample } from '../../../../components/ui-examples/menu';
+
+A `Menu` renders a dropdown list of actions anchored to a trigger element. Each
+entry is a regular item or a separator, and items can be marked as destructive
+for actions such as delete.
+
+<MenuExample client:visible />
+
+## Usage
+
+```tsx
+import { Button, Menu } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Menu
+      items={[
+        { label: 'Edit', onClick: () => {} },
+        { label: 'Duplicate', onClick: () => {} },
+        { type: 'separator' },
+        { label: 'Delete', destructive: true, onClick: () => {} },
+      ]}
+    >
+      <Button variant="secondary">Open menu</Button>
+    </Menu>
+  );
+}
+```
+
+## Props
+
+### `Menu`
+
+| Prop           | Type                                                  | Default        | Description                                                                               |
+| -------------- | ----------------------------------------------------- | -------------- | ----------------------------------------------------------------------------------------- |
+| `items`        | `MenuItemProps[]`                                     | -              | Items to render. Each is a regular item or a separator.                                   |
+| `children`     | `ReactElement`                                        | -              | Trigger element that opens the menu when clicked.                                         |
+| `size`         | `'small' \| 'medium' \| 'large'`                      | `'medium'`     | Size variant applied to the menu items.                                                   |
+| `placement`    | `Placement`                                           | `'bottom-end'` | Preferred placement relative to the trigger (e.g. `'top'`, `'bottom-end'`).               |
+| `offset`       | `number \| { mainAxis?; crossAxis?; alignmentAxis? }` | -              | Distance between the popup and the trigger element.                                       |
+| `open`         | `boolean`                                             | -              | Controls open state. When omitted, the menu manages its own state via the trigger.        |
+| `onOpenChange` | `(open: boolean, event?: Event) => void`              | -              | Called when the menu requests to open or close, with the next state and the native event. |
+
+### `MenuItemProps`
+
+| Prop          | Type                             | Default    | Description                                      |
+| ------------- | -------------------------------- | ---------- | ------------------------------------------------ |
+| `label`       | `string`                         | -          | Text shown for the item.                         |
+| `icon`        | `ReactNode`                      | -          | Optional icon rendered before the label.         |
+| `type`        | `'item' \| 'separator'`          | `'item'`   | Render a regular item or a separator divider.    |
+| `disabled`    | `boolean`                        | -          | Disables interaction with the item.              |
+| `destructive` | `boolean`                        | -          | Styles the item as a destructive action.         |
+| `onClick`     | `() => void`                     | -          | Called when the item is selected.                |
+| `size`        | `'small' \| 'medium' \| 'large'` | `'medium'` | Size variant (inherited from the parent `Menu`). |
+
+## CSS variables
+
+The menu reuses the shared list-box and list-item custom properties. Override
+these `--ax-*` properties to retune the menu.
+
+### List box (popup)
+
+| Variable                                | Description                 |
+| --------------------------------------- | --------------------------- |
+| `--ax-public-list-box-background-color` | Popup background color.     |
+| `--ax-public-list-box-border-radius`    | Popup corner radius.        |
+| `--ax-public-list-box-box-shadow`       | Popup drop shadow.          |
+| `--ax-public-list-box-padding`          | Inner padding of the popup. |
+| `--ax-public-list-box-gap`              | Gap between items.          |
+
+### List item
+
+| Variable                                                   | Description                                |
+| ---------------------------------------------------------- | ------------------------------------------ |
+| `--ax-public-list-item-color`                              | Item text color.                           |
+| `--ax-public-list-item-background-color`                   | Item background color.                     |
+| `--ax-public-list-item-background-color-selected`          | Background when selected.                  |
+| `--ax-public-list-item-color-selected`                     | Text color when selected.                  |
+| `--ax-public-list-item-background-color-focus`             | Background when focused.                   |
+| `--ax-public-list-item-outline-color-focus`                | Outline color when focused.                |
+| `--ax-public-list-item-outline-size`                       | Outline width when focused.                |
+| `--ax-public-list-item-color-destructive`                  | Text color for destructive items.          |
+| `--ax-public-list-item-background-color-destructive`       | Background for destructive items.          |
+| `--ax-public-list-item-background-color-hover-destructive` | Background for destructive items on hover. |
+| `--ax-public-list-border-radius`                           | Item corner radius.                        |
+
+### Size
+
+| Variable                               | Description              |
+| -------------------------------------- | ------------------------ |
+| `--ax-public-list-item-padding-small`  | Item padding (small).    |
+| `--ax-public-list-item-padding-medium` | Item padding (medium).   |
+| `--ax-public-list-item-padding-large`  | Item padding (large).    |
+| `--ax-public-list-item-gap-small`      | Icon/label gap (small).  |
+| `--ax-public-list-item-gap-medium`     | Icon/label gap (medium). |
+| `--ax-public-list-item-gap-large`      | Icon/label gap (large).  |

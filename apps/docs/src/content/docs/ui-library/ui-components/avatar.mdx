@@ -1,0 +1,40 @@
+---
+title: Avatar
+description: Displays a user avatar at various sizes.
+---
+
+import { AvatarExample } from '../../../../components/ui-examples/avatar';
+
+An `Avatar` displays a user image inside a circular container at one of several
+sizes. Provide a `username` for accessible alt text and an optional `imageUrl`
+for the picture.
+
+<AvatarExample client:visible />
+
+## Usage
+
+```tsx
+import { Avatar } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Avatar username="Ada Lovelace" imageUrl="/ada.png" size="large" />;
+}
+```
+
+## Props
+
+| Prop       | Type                                              | Default         | Description                                     |
+| ---------- | ------------------------------------------------- | --------------- | ----------------------------------------------- |
+| `username` | `string`                                          | -               | Used as the image `alt` text for accessibility. |
+| `imageUrl` | `string`                                          | -               | Image URL.                                      |
+| `size`     | `'extra-large' \| 'large' \| 'medium' \| 'small'` | `'extra-large'` | Size of the circular container.                 |
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the avatar.
+
+| Variable                              | Description                     |
+| ------------------------------------- | ------------------------------- |
+| `--ax-public-avatar-background-color` | Background color of the circle. |
+| `--ax-public-avatar-border-color`     | Border color of the circle.     |
+| `--ax-public-avatar-border-size`      | Border width of the circle.     |

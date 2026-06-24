@@ -1,0 +1,47 @@
+---
+title: Separator
+description: A horizontal line that divides content.
+---
+
+import { SeparatorExample } from '../../../../components/ui-examples/separator';
+
+A `Separator` is a visual element that creates a horizontal line to divide
+content into distinct sections.
+
+<SeparatorExample client:visible />
+
+## Usage
+
+```tsx
+import { Separator } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <div>
+      <span>Above</span>
+      <Separator />
+      <span>Below</span>
+    </div>
+  );
+}
+```
+
+## Props
+
+The `Separator` component takes no props.
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the separator.
+
+### Size
+
+| Variable                                      | Description            |
+| --------------------------------------------- | ---------------------- |
+| `--ax-public-list-item-separator-border-size` | Thickness of the line. |
+
+### Color
+
+| Variable                                           | Description        |
+| -------------------------------------------------- | ------------------ |
+| `--ax-public-list-item-separator-background-color` | Color of the line. |

@@ -1,0 +1,48 @@
+---
+title: Status
+description: A small visual indicator for a validation status.
+---
+
+import { StatusExample } from '../../../../components/ui-examples/status';
+
+A `Status` displays a small visual indicator based on a validation status. When
+the status is `invalid` it renders a circular badge with an exclamation mark;
+otherwise it renders nothing.
+
+<StatusExample client:visible />
+
+## Usage
+
+```tsx
+import { Status } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Status status="invalid" />;
+}
+```
+
+## Props
+
+| Prop        | Type        | Default | Description                                                |
+| ----------- | ----------- | ------- | ---------------------------------------------------------- |
+| `status`    | `'invalid'` | -       | Validation status to display. When unset, nothing renders. |
+| `className` | `string`    | -       | Custom class applied to the badge.                         |
+
+## CSS variables
+
+Override these `--ax-*` custom properties to retune the status badge.
+
+### Size
+
+| Variable                       | Description                               |
+| ------------------------------ | ----------------------------------------- |
+| `--ax-public-status-size`      | Badge diameter.                           |
+| `--ax-public-status-icon-size` | Icon size inside the badge.               |
+| `--ax-public-status-right`     | Offset from the right edge of the anchor. |
+
+### Color
+
+| Variable                                      | Description                             |
+| --------------------------------------------- | --------------------------------------- |
+| `--ax-public-status-invalid-color`            | Icon color for the invalid state.       |
+| `--ax-public-status-invalid-background-color` | Badge background for the invalid state. |

@@ -1,0 +1,47 @@
+---
+title: Accordion
+description: An interactive section that toggles the visibility of its content.
+---
+
+import { AccordionExample } from '../../../../components/ui-examples/accordion';
+
+An `Accordion` lets users toggle the visibility of content. The content section
+can be expanded to reveal details and collapsed to hide them, keeping
+information organized and saving space. It is commonly used in FAQs, settings
+panels, and documentation to present layered content efficiently.
+
+<AccordionExample client:visible />
+
+## Usage
+
+```tsx
+import { Accordion } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Accordion label="What is @workflowbuilder/ui?" defaultOpen>
+      Our component library, built on Base UI.
+    </Accordion>
+  );
+}
+```
+
+## Props
+
+| Prop           | Type                        | Default | Description                             |
+| -------------- | --------------------------- | ------- | --------------------------------------- |
+| `label`        | `string`                    | -       | Text displayed in the header.           |
+| `children`     | `ReactNode`                 | -       | Contents of the collapsible section.    |
+| `isOpen`       | `boolean`                   | -       | Controlled open state (true if open).   |
+| `onToggleOpen` | `(isOpen: boolean) => void` | -       | Called when the open state changes.     |
+| `defaultOpen`  | `boolean`                   | `true`  | Initial open state.                     |
+| `className`    | `string`                    | -       | Class applied to the accordion wrapper. |
+
+The component also forwards the remaining `HTMLDivElement` attributes, plus the
+optional `icon` from `WithIcon`.
+
+## CSS variables
+
+`Accordion` has no public CSS variables of its own. It composes
+[`Separator`](/ui-library/ui-components/separator/) and an internal collapsible,
+so retune those tokens to adjust its appearance.

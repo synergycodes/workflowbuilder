@@ -1,34 +1,13 @@
-.showcase {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  margin-top: 1rem;
-}
-
-.section {
-  display: flex;
-  flex-direction: column;
-  gap: 0.85rem;
-}
-
-.title {
-  margin: 0;
-  font-size: 0.75rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: var(--sl-color-gray-3);
-}
-
-.card {
+.frame {
   display: flex;
   flex-wrap: wrap;
   gap: 1rem 1.5rem;
   align-items: center;
-  padding: 1.25rem;
+  padding: 1.5rem;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 0.5rem;
   background: var(--sl-color-black);
+  margin-top: 1rem;
 }
 
 .stack {
@@ -48,4 +27,10 @@
 .fieldLabel {
   font-size: 0.8125rem;
   color: var(--sl-color-gray-2);
+}
+
+.inline {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
 }

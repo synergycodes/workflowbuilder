@@ -1,0 +1,46 @@
+---
+title: NodeAsPortWrapper
+description: Turns a whole node into a connection drop target while a link is being dragged.
+---
+
+`NodeAsPortWrapper` wraps a node so that, while a connection is being dragged,
+the entire node acts as a connection port (drop target) rather than requiring the
+user to aim at a small handle. When the wrapped node is hovered during a
+connection drag, it highlights itself as the connection target and exposes the
+sizing / positioning CSS variables an overlay needs to align with the node.
+
+It only applies its target styling when both `isConnecting` is `true` and the
+node is being hovered, so it stays inert during normal interaction. Pass the
+position the incoming connection should attach to via `targetPortPosition`, and
+nudge the overlay with the optional `offset`.
+
+## Usage
+
+In the SDK, the node container wraps its template in `NodeAsPortWrapper`, driven
+by whether a connection is currently being dragged in the store.
+
+```tsx
+import { NodeAsPortWrapper } from '@workflowbuilder/ui';
+import type { NodeProps } from '@xyflow/react';
+
+function NodeContainer({ id, data, selected }: NodeProps) {
+  const isConnecting = useStore((store) => !!store.connectionBeingDragged);
+  const targetPortPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
+
+  return (
+    <NodeAsPortWrapper isConnecting={isConnecting} targetPortPosition={targetPortPosition}>
+      <WorkflowNodeTemplate id={id} data={data} selected={selected} /* ... */ />
+    </NodeAsPortWrapper>
+  );
+}
+```
+
+## Props
+
+`NodeAsPortWrapper` also accepts `children` (the node to wrap).
+
+| Prop                 | Type                                     | Default          | Description                                                                  |
+| -------------------- | ---------------------------------------- | ---------------- | ---------------------------------------------------------------------------- |
+| `isConnecting`       | `boolean`                                | -                | Whether a connection is currently being dragged on the canvas.               |
+| `targetPortPosition` | `'left' \| 'top' \| 'right' \| 'bottom'` | -                | Side the incoming connection should attach to; positions the target overlay. |
+| `offset`             | `{ x?: number; y?: number }`             | `{ x: 0, y: 0 }` | Pixel offset applied to the target overlay's position.                       |
