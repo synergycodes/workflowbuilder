@@ -1,0 +1,53 @@
+---
+// Renders a component's props table from the generated ui-api.json (extracted
+// from `@workflowbuilder/ui` source with TypeDoc - never hand-maintained).
+import data from '../../generated/ui-api.json';
+
+interface Props {
+  slug: string;
+}
+
+const { slug } = Astro.props;
+const entry = (data as Record<string, { props: PropRow[] }>)[slug];
+const props = entry?.props ?? [];
+
+interface PropRow {
+  name: string;
+  type: string;
+  required: boolean;
+  default: string | null;
+  description: string;
+}
+---
+
+{
+  props.length === 0 ? (
+    <p>This component has no configurable props.</p>
+  ) : (
+    <table>
+      <thead>
+        <tr>
+          <th>Prop</th>
+          <th>Type</th>
+          <th>Default</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+        {props.map((prop) => (
+          <tr>
+            <td>
+              <code>{prop.name}</code>
+              {!prop.required && <span title="optional"> ?</span>}
+            </td>
+            <td>
+              <code>{prop.type}</code>
+            </td>
+            <td>{prop.default ? <code>{prop.default}</code> : '-'}</td>
+            <td>{prop.description.replace(/\n/g, ' ')}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  )
+}

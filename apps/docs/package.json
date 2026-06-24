@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm clean:typedoc && astro dev",
-    "build": "pnpm clean:typedoc && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs",
+    "dev": "pnpm clean:typedoc && pnpm generate:ui-api && astro dev",
+    "build": "pnpm clean:typedoc && pnpm generate:ui-api && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs",
+    "generate:ui-api": "node scripts/generate-ui-api.mjs",
     "clean:typedoc": "node -e \"import('node:fs').then(fs => fs.rmSync('src/content/docs/api', { recursive: true, force: true }))\"",
     "preview": "astro preview",
     "typecheck": "astro check",

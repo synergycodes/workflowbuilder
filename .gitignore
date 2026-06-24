@@ -71,3 +71,8 @@ CLAUDE.local.md
 # and is copied into this dir by a tiny Astro integration after typedoc
 # generation (see astro.config.mjs).
 apps/docs/src/content/docs/api/
+
+# UI Library props + CSS-variable data, generated from @workflowbuilder/ui by
+# apps/docs/scripts/generate-ui-api.mjs (TypeDoc + CSS extraction) on every
+# docs build / dev. Source of truth is the library, so keep it out of git.
+apps/docs/src/generated/

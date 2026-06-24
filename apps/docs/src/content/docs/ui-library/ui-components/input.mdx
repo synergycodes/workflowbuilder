@@ -3,6 +3,8 @@ title: Input
 description: A single-line text field with optional adornments and an error state.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { InputExample } from '../../../../components/ui-examples/input';
 
 An `Input` is a single-line text field for collecting short, free-form text. It
@@ -23,44 +25,8 @@ function Example() {
 
 ## Props
 
-| Prop             | Type                             | Default    | Description                                  |
-| ---------------- | -------------------------------- | ---------- | -------------------------------------------- |
-| `size`           | `'small' \| 'medium' \| 'large'` | `'medium'` | Size of the input field.                     |
-| `startAdornment` | `ReactNode`                      | -          | Element displayed at the start of the field. |
-| `endAdornment`   | `ReactNode`                      | -          | Element displayed at the end of the field.   |
-| `error`          | `boolean`                        | `false`    | Renders the input in an error state.         |
-| `className`      | `string`                         | -          | Class applied to the input container.        |
-
-The component also forwards the remaining native `<input>` props (except `size`).
+<PropsTable slug="input" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the input.
-
-### Size
-
-| Variable                                 | Description                      |
-| ---------------------------------------- | -------------------------------- |
-| `--ax-public-input-padding-large`        | Padding (large).                 |
-| `--ax-public-input-padding-medium`       | Padding (medium).                |
-| `--ax-public-input-padding-small`        | Padding (small).                 |
-| `--ax-public-input-border-radius-large`  | Corner radius (large).           |
-| `--ax-public-input-border-radius-medium` | Corner radius (medium).          |
-| `--ax-public-input-border-radius-small`  | Corner radius (small).           |
-| `--ax-public-input-gap-large`            | Gap between adornments (large).  |
-| `--ax-public-input-gap-medium`           | Gap between adornments (medium). |
-| `--ax-public-input-gap-small`            | Gap between adornments (small).  |
-| `--ax-public-input-root-border-size`     | Border width of the container.   |
-
-### Color
-
-| Variable                                        | Description                            |
-| ----------------------------------------------- | -------------------------------------- |
-| `--ax-public-input-root-color`                  | Text color.                            |
-| `--ax-public-input-root-border-color`           | Border color.                          |
-| `--ax-public-input-root-border-color-focus`     | Border color on focus.                 |
-| `--ax-public-input-color-disabled`              | Text color of the field when disabled. |
-| `--ax-public-input-root-color-disabled`         | Container text color when disabled.    |
-| `--ax-public-input-root-background-color-error` | Background when in error state.        |
-| `--ax-public-input-root-border-color-error`     | Border color when in error state.      |
-| `--ax-public-input-root-color-error`            | Text color when in error state.        |
+<CssVariablesTable slug="input" />

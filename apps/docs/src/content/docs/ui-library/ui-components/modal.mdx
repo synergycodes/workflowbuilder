@@ -3,6 +3,8 @@ title: Modal
 description: A dialog that appears on top of the main content.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { ModalExample } from '../../../../components/ui-examples/modal';
 
 A `Modal` is a dialog that appears on top of the main content. It has a header
@@ -43,61 +45,8 @@ function Example() {
 
 ## Props
 
-| Prop            | Type                          | Default        | Description                                    |
-| --------------- | ----------------------------- | -------------- | ---------------------------------------------- |
-| `title`         | `string`                      | -              | Title displayed in the modal header.           |
-| `subtitle`      | `string`                      | -              | Optional subtitle displayed below the title.   |
-| `children`      | `ReactNode`                   | -              | Content displayed in the modal body.           |
-| `footer`        | `ReactNode`                   | -              | Content displayed in the modal footer.         |
-| `icon`          | `ReactNode`                   | -              | Optional icon displayed in the header.         |
-| `size`          | `'regular' \| 'large'`        | `'regular'`    | Size variant of the modal.                     |
-| `footerVariant` | `'integrated' \| 'separated'` | `'integrated'` | Footer styling - flush or divided by a border. |
-| `open`          | `boolean`                     | -              | Controls the visibility of the modal.          |
-| `onClose`       | `() => void`                  | -              | Called when the modal is closed.               |
-| `className`     | `string`                      | -              | Class applied to the modal content body.       |
-
-The component also forwards the remaining native `div` attributes.
+<PropsTable slug="modal" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the modal.
-
-### Size
-
-| Variable                                     | Description                    |
-| -------------------------------------------- | ------------------------------ |
-| `--ax-public-modal-width`                    | Modal width (regular).         |
-| `--ax-public-modal-large-width`              | Modal width (large).           |
-| `--ax-public-modal-padding`                  | Header padding (regular).      |
-| `--ax-public-modal-large-padding`            | Header padding (large).        |
-| `--ax-public-modal-border-radius`            | Corner radius.                 |
-| `--ax-public-modal-content-padding`          | Body padding.                  |
-| `--ax-public-modal-footer-padding`           | Footer padding.                |
-| `--ax-public-modal-icon-padding`             | Header icon padding (regular). |
-| `--ax-public-modal-large-icon-padding`       | Header icon padding (large).   |
-| `--ax-public-modal-icon-border-radius`       | Header icon radius (regular).  |
-| `--ax-public-modal-icon-border-radius-large` | Header icon radius (large).    |
-| `--ax-public-modal-gap`                      | Header gap (regular).          |
-| `--ax-public-modal-gap-large`                | Header gap (large).            |
-| `--ax-public-modal-content-gap`              | Gap between body items.        |
-| `--ax-public-modal-description-size`         | Subtitle font size.            |
-| `--ax-public-modal-description-line-height`  | Subtitle line height.          |
-| `--ax-public-modal-large-title-size`         | Title font size (large).       |
-| `--ax-public-modal-large-title-line-height`  | Title line height (large).     |
-| `--ax-public-modal-box-shadow`               | Modal drop shadow.             |
-
-### Color
-
-| Variable                                | Description                      |
-| --------------------------------------- | -------------------------------- |
-| `--ax-public-modal-background`          | Modal background.                |
-| `--ax-public-modal-backdrop-background` | Backdrop background.             |
-| `--ax-public-modal-header-background`   | Header background.               |
-| `--ax-public-modal-header-border-color` | Header bottom border color.      |
-| `--ax-public-modal-title-color`         | Title text color.                |
-| `--ax-public-modal-description-color`   | Subtitle text color.             |
-| `--ax-public-modal-content-background`  | Body background.                 |
-| `--ax-public-modal-footer-border-color` | Footer border color (separated). |
-| `--ax-public-modal-icon-background`     | Header icon background.          |
-| `--ax-public-modal-icon-color`          | Header icon color.               |
-| `--ax-public-modal-close-button-color`  | Close button icon color.         |
+<CssVariablesTable slug="modal" />

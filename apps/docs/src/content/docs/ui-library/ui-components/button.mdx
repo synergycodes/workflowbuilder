@@ -3,6 +3,8 @@ title: Button
 description: A flexible, type-safe action button with variants and sizes.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { ButtonExample } from '../../../../components/ui-examples/button';
 
 `Button` is a flexible, type-safe component that automatically selects the
@@ -25,108 +27,8 @@ function Example() {
 
 ## Props
 
-These props apply to the label button shown above. Icon and icon-label variants
-accept the same base props plus their own icon props.
-
-| Prop          | Type                                                                                             | Default     | Description                  |
-| ------------- | ------------------------------------------------------------------------------------------------ | ----------- | ---------------------------- |
-| `children`    | `string`                                                                                         | -           | Button label.                |
-| `variant`     | `'primary' \| 'secondary' \| 'gray' \| 'error' \| 'warning' \| 'success' \| 'ghost-destructive'` | `'primary'` | Visual style of the button.  |
-| `size`        | `'extra-small' \| 'small' \| 'medium' \| 'large' \| 'extra-large'`                               | `'medium'`  | Size of the button.          |
-| `isLoading`   | `boolean`                                                                                        | `false`     | Shows a loading indicator.   |
-| `tooltip`     | `string`                                                                                         | -           | Tooltip text.                |
-| `tooltipType` | `TooltipVariant`                                                                                 | -           | Tooltip style variant.       |
-| `disabled`    | `boolean`                                                                                        | `false`     | Disables interaction.        |
-| `className`   | `string`                                                                                         | -           | Class applied to the button. |
-
-The component also forwards the remaining native `button` element attributes.
+<PropsTable slug="button" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the button.
-
-### Size
-
-| Variable                                            | Description                               |
-| --------------------------------------------------- | ----------------------------------------- |
-| `--ax-public-button-border-radius-extra-large`      | Corner radius (extra-large).              |
-| `--ax-public-button-border-radius-large`            | Corner radius (large).                    |
-| `--ax-public-button-border-radius-medium`           | Corner radius (medium).                   |
-| `--ax-public-button-border-radius-small`            | Corner radius (small).                    |
-| `--ax-public-button-border-radius-extra-small`      | Corner radius (extra-small).              |
-| `--ax-public-button-border-radius-circle`           | Corner radius for circular buttons.       |
-| `--ax-public-button-border-size`                    | Border width of the button.               |
-| `--ax-public-button-gap-extra-large`                | Gap between icon and label (extra-large). |
-| `--ax-public-button-gap-large`                      | Gap between icon and label (large).       |
-| `--ax-public-button-gap-medium`                     | Gap between icon and label (medium).      |
-| `--ax-public-button-gap-small`                      | Gap between icon and label (small).       |
-| `--ax-public-button-gap-extra-small`                | Gap between icon and label (extra-small). |
-| `--ax-public-label-button-padding-extra-large`      | Label button padding (extra-large).       |
-| `--ax-public-label-button-padding-large`            | Label button padding (large).             |
-| `--ax-public-label-button-padding-medium`           | Label button padding (medium).            |
-| `--ax-public-label-button-padding-small`            | Label button padding (small).             |
-| `--ax-public-label-button-padding-extra-small`      | Label button padding (extra-small).       |
-| `--ax-public-icon-padding-extra-large`              | Icon button padding (extra-large).        |
-| `--ax-public-icon-padding-large`                    | Icon button padding (large).              |
-| `--ax-public-icon-padding-medium`                   | Icon button padding (medium).             |
-| `--ax-public-icon-padding-small`                    | Icon button padding (small).              |
-| `--ax-public-icon-padding-extra-small`              | Icon button padding (extra-small).        |
-| `--ax-public-icon-label-button-padding-extra-large` | Icon-label button padding (extra-large).  |
-| `--ax-public-icon-label-button-padding-large`       | Icon-label button padding (large).        |
-| `--ax-public-icon-label-button-padding-medium`      | Icon-label button padding (medium).       |
-| `--ax-public-icon-label-button-padding-small`       | Icon-label button padding (small).        |
-| `--ax-public-icon-label-button-padding-extra-small` | Icon-label button padding (extra-small).  |
-| `--ax-public-icon-size-extra-large`                 | Icon size (extra-large).                  |
-| `--ax-public-icon-size-large`                       | Icon size (large).                        |
-| `--ax-public-icon-size-medium`                      | Icon size (medium).                       |
-| `--ax-public-icon-size-small`                       | Icon size (small).                        |
-| `--ax-public-icon-size-extra-small`                 | Icon size (extra-small).                  |
-
-### Color
-
-| Variable                                                         | Description                                 |
-| ---------------------------------------------------------------- | ------------------------------------------- |
-| `--ax-public-button-color`                                       | Button text/icon color.                     |
-| `--ax-public-button-inner-border-color`                          | Inner border color.                         |
-| `--ax-public-button-background-color-disabled`                   | Background when disabled.                   |
-| `--ax-public-button-focus-visible-box-shadow-color`              | Focus ring color.                           |
-| `--ax-public-button-primary-background`                          | Primary background.                         |
-| `--ax-public-button-primary-background-hover`                    | Primary background on hover.                |
-| `--ax-public-button-primary-background-focus`                    | Primary background on focus.                |
-| `--ax-public-button-primary-background-active`                   | Primary background when active.             |
-| `--ax-public-button-secondary-color`                             | Secondary text color.                       |
-| `--ax-public-button-secondary-color-active`                      | Secondary text color when active.           |
-| `--ax-public-button-secondary-color-disabled`                    | Secondary text color when disabled.         |
-| `--ax-public-button-secondary-border-color`                      | Secondary border color.                     |
-| `--ax-public-button-secondary-border-color-hover`                | Secondary border color on hover.            |
-| `--ax-public-button-secondary-border-color-focus`                | Secondary border color on focus.            |
-| `--ax-public-button-secondary-border-color-active`               | Secondary border color when active.         |
-| `--ax-public-button-secondary-border-color-disabled`             | Secondary border color when disabled.       |
-| `--ax-public-button-gray-background`                             | Gray background.                            |
-| `--ax-public-button-gray-background-hover`                       | Gray background on hover.                   |
-| `--ax-public-button-gray-background-focus`                       | Gray background on focus.                   |
-| `--ax-public-button-gray-background-active`                      | Gray background when active.                |
-| `--ax-public-button-success-background`                          | Success background.                         |
-| `--ax-public-button-success-background-hover`                    | Success background on hover.                |
-| `--ax-public-button-success-background-focus`                    | Success background on focus.                |
-| `--ax-public-button-success-background-active`                   | Success background when active.             |
-| `--ax-public-button-warning-background`                          | Warning background.                         |
-| `--ax-public-button-warning-background-hover`                    | Warning background on hover.                |
-| `--ax-public-button-warning-background-focus`                    | Warning background on focus.                |
-| `--ax-public-button-warning-background-active`                   | Warning background when active.             |
-| `--ax-public-button-error-background`                            | Error background.                           |
-| `--ax-public-button-error-background-hover`                      | Error background on hover.                  |
-| `--ax-public-button-error-background-focus`                      | Error background on focus.                  |
-| `--ax-public-button-error-background-active`                     | Error background when active.               |
-| `--ax-public-button-ghost-destructive-color`                     | Ghost destructive text color.               |
-| `--ax-public-button-ghost-destructive-color-disabled`            | Ghost destructive text color when disabled. |
-| `--ax-public-button-ghost-destructive-border-color`              | Ghost destructive border color.             |
-| `--ax-public-button-ghost-destructive-background-color`          | Ghost destructive background.               |
-| `--ax-public-button-ghost-destructive-background-color-hover`    | Ghost destructive background on hover.      |
-| `--ax-public-button-ghost-destructive-background-color-focus`    | Ghost destructive background on focus.      |
-| `--ax-public-button-ghost-destructive-background-color-active`   | Ghost destructive background when active.   |
-| `--ax-public-button-ghost-destructive-background-color-disabled` | Ghost destructive background when disabled. |
-| `--ax-public-button-loader-dot-color`                            | Loading indicator dot color.                |
-| `--ax-public-button-loader-dot-size`                             | Loading indicator dot size.                 |
-| `--ax-public-button-loader-dot-border-radius`                    | Loading indicator dot radius.               |
-| `--ax-public-button-loader-animation-duration`                   | Loading indicator animation duration.       |
+<CssVariablesTable slug="button" />

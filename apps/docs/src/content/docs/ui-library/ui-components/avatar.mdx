@@ -3,6 +3,8 @@ title: Avatar
 description: Displays a user avatar at various sizes.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { AvatarExample } from '../../../../components/ui-examples/avatar';
 
 An `Avatar` displays a user image inside a circular container at one of several
@@ -23,18 +25,8 @@ function Example() {
 
 ## Props
 
-| Prop       | Type                                              | Default         | Description                                     |
-| ---------- | ------------------------------------------------- | --------------- | ----------------------------------------------- |
-| `username` | `string`                                          | -               | Used as the image `alt` text for accessibility. |
-| `imageUrl` | `string`                                          | -               | Image URL.                                      |
-| `size`     | `'extra-large' \| 'large' \| 'medium' \| 'small'` | `'extra-large'` | Size of the circular container.                 |
+<PropsTable slug="avatar" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the avatar.
-
-| Variable                              | Description                     |
-| ------------------------------------- | ------------------------------- |
-| `--ax-public-avatar-background-color` | Background color of the circle. |
-| `--ax-public-avatar-border-color`     | Border color of the circle.     |
-| `--ax-public-avatar-border-size`      | Border width of the circle.     |
+<CssVariablesTable slug="avatar" />
