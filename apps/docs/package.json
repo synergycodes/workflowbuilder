@@ -19,6 +19,7 @@
     "@astrojs/starlight": "^0.37.6",
     "@base-ui/react": "catalog:",
     "@iconify-json/ph": "^1.2.2",
+    "@phosphor-icons/react": "catalog:",
     "@workflowbuilder/sdk": "workspace:*",
     "@workflowbuilder/ui": "workspace:*",
     "@yeskunall/astro-umami": "^0.0.7",

@@ -5,12 +5,15 @@ description: Icon block inside a node.
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeIconExample } from '../../../../components/ui-examples/node-icon';
 
 `NodeIcon` renders an icon inside a styled container for use within a node. It
 takes any `ReactNode` as its `icon` - typically an icon component - and wraps it
 in the library's icon container styling. It is usually placed in a
 [`NodePanel.Header`](/ui-library/diagram-components/node-panel/) next to a
 [`NodeDescription`](/ui-library/diagram-components/node-description/).
+
+<NodeIconExample client:visible />
 
 ## Usage
 

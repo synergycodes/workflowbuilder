@@ -3,6 +3,8 @@ title: NodePanel
 description: Node container with Root, Header, Content, and Handles slots.
 ---
 
+import { NodePanelExample } from '../../../../components/ui-examples/node-panel';
+
 `NodePanel` is the structural container Workflow Builder uses to render a node on
 the canvas. It is a compound component: `NodePanel.Root` orchestrates the layout
 and accepts up to one of each optional slot — `NodePanel.Header`,
@@ -22,6 +24,8 @@ It composes naturally with the companion building blocks `NodeIcon`,
 `NodeDescription`, and the
 [`NodeAsPortWrapper`](/ui-library/diagram-components/node-as-port-wrapper/) that
 turns the whole node into a drop target.
+
+<NodePanelExample client:visible />
 
 ## Usage
 

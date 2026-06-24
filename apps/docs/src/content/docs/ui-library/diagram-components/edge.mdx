@@ -5,11 +5,14 @@ description: Edge label rendering and edge styling for the diagram canvas.
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
+import { EdgeExample } from '../../../../components/ui-examples/edge';
 
 The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
 label primitive designed to sit on an edge, while the `useEdgeStyle` hook
 computes the stroke styles for the edge path itself. Both follow the styling
 conventions prepared for edges, so a custom edge type matches the built-in ones.
+
+<EdgeExample client:visible />
 
 `EdgeLabel` provides a unified label design for text, icons, or compound content.
 Its state (hover, selection, disabled) is managed externally and reflected
