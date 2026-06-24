@@ -1,5 +1,5 @@
-import { type MenuItemProps } from '@synergycodes/overflow-ui';
 import { Icon } from '@workflowbuilder/sdk';
+import { type MenuItemProps } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 
 import { openNoAccessModal } from './open-no-access-modal';

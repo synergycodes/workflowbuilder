@@ -1,4 +1,4 @@
-import { Button, Checkbox } from '@synergycodes/overflow-ui';
+import { Button, Checkbox } from '@workflowbuilder/ui';
 import type { Edge, Node } from '@xyflow/react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';

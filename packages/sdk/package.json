@@ -76,10 +76,11 @@
     "zustand": "^5.0.0"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "@cfworker/json-schema": "4.1.1",
     "@fontsource/poppins": "^5.2.7",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "1.0.0-beta.27",
+    "@workflowbuilder/ui": "workspace:*",
     "ace-builds": "^1.43.4",
     "ajv": "catalog:",
     "clsx": "^2.1.1",

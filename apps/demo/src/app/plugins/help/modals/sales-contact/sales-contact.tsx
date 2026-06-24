@@ -1,5 +1,5 @@
 import { LinkedinLogo, PaperPlaneRight } from '@phosphor-icons/react';
-import { Avatar, Button } from '@synergycodes/overflow-ui';
+import { Avatar, Button } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './sales-contact.module.css';
