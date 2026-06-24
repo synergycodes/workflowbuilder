@@ -33,9 +33,9 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
    - Note: override applies via properties panel Select; card reads mode from node data (reactive on node re-render). No on-card dropdown (deviation).
    - ✅ commit `feat(ai-studio): json/table/text/stat-card renderers for visualize`
 
-5. [ ] **Always-on card + empty-state + predefined size**
-   - Accept: visualize node shows card always (~360×260) with placeholder before run; fills on completed; reveal anim kept. smoke.
-   - [ ] commit `feat(ai-studio): always-on visualize card with empty state`
+5. ✅ **Always-on card + empty-state + predefined size**
+   - Accept: visualize node shows card always (min-height 8.5rem) with placeholder before run; fills on completed; reveal anim moved to content. ✓ tc+lint green. ✓ MILESTONE SMOKE PASS (fresh browser): node "Visualize", card badge "Auto › Markdown", QA reply rendered as markdown (bold + numbered list).
+   - ✅ commit `feat(ai-studio): always-on visualize card with empty state`
 
 6. [ ] **Chart renderer (recharts, lazy)** + chart-spec envelope + "try as chart" chip
    - Accept: array `{label,value}`/`{x,y}` or `{type,data}` → chart; lazy-loaded; chip suggests chart on chartable data. smoke.
@@ -65,3 +65,5 @@ Verify per item = `pnpm --filter @workflow-builder/ai-studio typecheck && lint` 
 
 - markdown-preview was never committed; evolving it directly into `visualize` (no standalone markdown-preview commit). Per choices.md decision 1.
 - Stop-hook NOT installed: auto-mode classifier denied writing `.claude/hooks` + `.claude/settings.local.json` (self-modification of agent config). Relying on durable BACKLOG.md + continuous in-session execution instead (skill's primary mechanism). Walk-away guarantee is soft (no hard hook).
+- agent-browser HTTP-caches dev modules: after code changes it served a stale pre-edit `support-triage-flow.ts` (showed old "Markdown Preview" node) even after vite restart + localStorage clear. Fix: `agent-browser close --all` before a smoke when code changed (fresh context = empty cache). Use this before the final smoke (item 10).
+- Renderer override is via the properties-panel mode Select (no on-card dropdown); card reads mode from node data.

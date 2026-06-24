@@ -1,5 +1,6 @@
 import { Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
+import type { ReactNode } from 'react';
 
 import styles from './visualize-card.module.css';
 
@@ -17,10 +18,31 @@ type Props = {
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram']);
 
+function EmptyState({ running }: { running: boolean }) {
+  if (running) {
+    return (
+      <div className={styles['empty']}>
+        <div className={styles['dots']}>
+          <span className={styles['dot']} />
+          <span className={styles['dot']} />
+          <span className={styles['dot']} />
+        </div>
+        <p className={styles['empty-text']}>Generating visualization…</p>
+      </div>
+    );
+  }
+  return (
+    <div className={styles['empty']}>
+      <Eye className={styles['empty-icon']} weight="duotone" />
+      <p className={styles['empty-text']}>The visualization appears here after you run the workflow.</p>
+    </div>
+  );
+}
+
 // Rendered on-canvas inside every node via the OptionalNodeContent decorator,
-// but only paints for visualize nodes. Reads the upstream node's output (via the
-// incoming edge), picks a renderer (the node's `mode`, or auto-detected), and
-// renders it in a framed card that reveals with an animation once the node finishes.
+// but only paints for visualize nodes. Always shows a fixed-size card (with an
+// empty-state placeholder before a run); once the upstream output arrives it
+// picks a renderer (the node's `mode` or auto-detected) and reveals it.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
 
@@ -32,42 +54,41 @@ export function VisualizeCard({ props }: Props) {
   const selfStatus = useExecutionStore((state) => state.nodeStates[nodeId]?.status);
   const sourceOutput = useExecutionStore((state) => (sourceId ? state.nodeStates[sourceId]?.output : undefined));
 
-  if (!isVisualizeNode || (selfStatus !== 'running' && selfStatus !== 'completed')) {
+  if (!isVisualizeNode) {
     return null;
   }
 
   const text = extractOutputText(sourceOutput);
-  const isReady = selfStatus === 'completed' && text.length > 0;
+  const hasOutput = selfStatus === 'completed' && text.length > 0;
 
-  if (!isReady) {
-    return (
-      <div className={styles['pending']}>
-        <span className={styles['dot']} />
-        <span className={styles['dot']} />
-        <span className={styles['dot']} />
+  let body: ReactNode;
+  let badge: string | null = null;
+
+  if (hasOutput) {
+    const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
+    const mode: VisualizeMode = modeRaw && VALID_MODES.has(modeRaw) ? (modeRaw as VisualizeMode) : 'auto';
+    const detection = detectFormat(text);
+    const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
+    const data = mode === 'auto' ? detection.data : undefined;
+    const Renderer = getRenderer(activeRenderer);
+    badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
+    body = (
+      <div className={styles['revealed']}>
+        <Renderer text={text} data={data} />
       </div>
     );
+  } else {
+    body = <EmptyState running={selfStatus === 'running'} />;
   }
-
-  const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
-  const mode: VisualizeMode = modeRaw && VALID_MODES.has(modeRaw) ? (modeRaw as VisualizeMode) : 'auto';
-
-  const detection = detectFormat(text);
-  const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
-  const data = mode === 'auto' ? detection.data : undefined;
-  const Renderer = getRenderer(activeRenderer);
-  const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
 
   return (
     <div className={styles['card']}>
       <div className={styles['header']}>
         <Eye className={styles['header-icon']} weight="fill" />
         <span className={styles['header-title']}>Visualize</span>
-        <span className={styles['badge']}>{badge}</span>
+        {badge && <span className={styles['badge']}>{badge}</span>}
       </div>
-      <div className={styles['body']}>
-        <Renderer text={text} data={data} />
-      </div>
+      <div className={styles['body']}>{body}</div>
     </div>
   );
 }
