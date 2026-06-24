@@ -1,5 +1,5 @@
 import type { TemplateModel } from '@workflowbuilder/sdk';
 
-import { salesInquiryFlow } from './sales-inquiry-flow';
+import { supportTriageFlow } from './support-triage-flow';
 
-export const aiStudioTemplates: TemplateModel[] = [salesInquiryFlow];
+export const aiStudioTemplates: TemplateModel[] = [supportTriageFlow];
