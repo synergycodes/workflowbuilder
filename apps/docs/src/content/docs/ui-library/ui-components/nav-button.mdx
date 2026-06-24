@@ -3,6 +3,8 @@ title: Nav Button
 description: A compact, type-safe navigation button with a selected state.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { NavButtonExample } from '../../../../components/ui-examples/nav-button';
 
 `NavButton` is a compact, type-safe navigation button. Like `Button`, it
@@ -24,29 +26,8 @@ function Example() {
 
 ## Props
 
-These props apply to the label nav button shown above. Icon and icon-label
-variants accept the same base props plus their own icon props.
-
-| Prop          | Type                                                                                            | Default    | Description                  |
-| ------------- | ----------------------------------------------------------------------------------------------- | ---------- | ---------------------------- |
-| `children`    | `string`                                                                                        | -          | Button label.                |
-| `isSelected`  | `boolean`                                                                                       | `false`    | Marks the button as active.  |
-| `size`        | `'xxx-small' \| 'xx-small' \| 'extra-small' \| 'small' \| 'medium' \| 'large' \| 'extra-large'` | `'medium'` | Size of the button.          |
-| `tooltip`     | `string`                                                                                        | -          | Tooltip text.                |
-| `tooltipType` | `TooltipVariant`                                                                                | -          | Tooltip style variant.       |
-| `disabled`    | `boolean`                                                                                       | `false`    | Disables interaction.        |
-| `className`   | `string`                                                                                        | -          | Class applied to the button. |
-
-The component also forwards the remaining native `button` element attributes.
+<PropsTable slug="nav-button" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the nav button.
-
-| Variable                                  | Description                           |
-| ----------------------------------------- | ------------------------------------- |
-| `--ax-public-button-nav-background-color` | Background color when selected.       |
-| `--ax-public-button-nav-color`            | Text/icon color.                      |
-| `--ax-public-button-nav-color-hover`      | Text/icon color on hover.             |
-| `--ax-public-button-nav-color-active`     | Text/icon color when active/selected. |
-| `--ax-public-button-nav-color-disabled`   | Text/icon color when disabled.        |
+<CssVariablesTable slug="nav-button" />

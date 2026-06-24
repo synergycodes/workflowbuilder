@@ -3,6 +3,9 @@ title: Edge
 description: Edge label rendering and edge styling for the diagram canvas.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+
 The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
 label primitive designed to sit on an edge, while the `useEdgeStyle` hook
 computes the stroke styles for the edge path itself. Both follow the styling
@@ -83,14 +86,7 @@ function LabeledEdge({
 `EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
 `style`, `onMouseEnter`, `data-*`).
 
-| Prop        | Type                                                   | Default     | Description                                                                 |
-| ----------- | ------------------------------------------------------ | ----------- | --------------------------------------------------------------------------- |
-| `children`  | `ReactNode`                                            | -           | Label content (text, icon, or compound).                                    |
-| `size`      | `'extra-small' \| 'small' \| 'medium'`                 | `'medium'`  | Label size.                                                                 |
-| `type`      | `'text' \| 'icon' \| 'compound'`                       | `'text'`    | Layout style based on content: plain text, a single icon, or mixed content. |
-| `state`     | `'default' \| 'selected' \| 'disabled' \| 'temporary'` | `'default'` | Visual state of the edge label.                                             |
-| `isHovered` | `boolean`                                              | -           | Applies the hover styling.                                                  |
-| `className` | `string`                                               | -           | Additional class on the container.                                          |
+<PropsTable slug="edge" />
 
 ## useEdgeStyle
 
@@ -107,39 +103,4 @@ Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
 
 ## CSS variables
 
-Override these `--ax-public-*` custom properties to retune edges.
-
-### Edge path
-
-| Variable                               | Description                             |
-| -------------------------------------- | --------------------------------------- |
-| `--ax-public-edge-color`               | Stroke color (default).                 |
-| `--ax-public-edge-color-hover`         | Stroke color on hover.                  |
-| `--ax-public-edge-color-select`        | Stroke color when selected / temporary. |
-| `--ax-public-edge-color-disabled`      | Stroke color when disabled.             |
-| `--ax-public-edge-stroke-width`        | Stroke width (default).                 |
-| `--ax-public-edge-stroke-width-select` | Stroke width when selected.             |
-
-### Edge label
-
-| Variable                                       | Description                       |
-| ---------------------------------------------- | --------------------------------- |
-| `--ax-public-edge-label-color`                 | Label text color.                 |
-| `--ax-public-edge-label-color-disabled`        | Label text color when disabled.   |
-| `--ax-public-edge-background-color`            | Label background color.           |
-| `--ax-public-edge-label-gap`                   | Gap between label items.          |
-| `--ax-public-edge-label-border-style`          | Label border style.               |
-| `--ax-public-edge-label-border-size`           | Label border width.               |
-| `--ax-public-edge-label-border-size-selected`  | Label border width when selected. |
-| `--ax-public-edge-label-border-color`          | Label border color.               |
-| `--ax-public-edge-label-border-color-hover`    | Label border color on hover.      |
-| `--ax-public-edge-label-border-color-selected` | Label border color when selected. |
-| `--ax-public-edge-label-border-color-disabled` | Label border color when disabled. |
-| `--ax-public-transition`                       | Transition used by the label.     |
-
-Each size variant (`extra-small`, `small`, `medium`) also exposes
-`--ax-public-edge-label-<size>-border-radius`,
-`--ax-public-edge-label-<size>-content-padding`,
-`--ax-public-edge-label-<size>-label-padding`,
-`--ax-public-edge-label-<size>-icon-padding`, and
-`--ax-public-edge-label-<size>-icon-size`.
+<CssVariablesTable slug="edge" />

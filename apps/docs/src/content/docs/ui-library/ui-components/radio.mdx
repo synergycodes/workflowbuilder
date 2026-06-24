@@ -3,6 +3,8 @@ title: Radio
 description: A control for selecting a single option from a group.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
 import { RadioExample } from '../../../../components/ui-examples/radio';
 
 A `Radio` button lets users select a single option from a group. Radios that
@@ -23,42 +25,8 @@ function Example() {
 
 ## Props
 
-| Prop        | Type                                                   | Default    | Description                                 |
-| ----------- | ------------------------------------------------------ | ---------- | ------------------------------------------- |
-| `name`      | `string`                                               | -          | The name of the radio button group.         |
-| `value`     | `string \| number`                                     | -          | The value of the radio button.              |
-| `checked`   | `boolean`                                              | -          | Whether the radio button is checked.        |
-| `size`      | `'medium' \| 'small' \| 'extra-small'`                 | `'medium'` | Size of the radio button.                   |
-| `onChange`  | `(event: React.ChangeEvent<HTMLInputElement>) => void` | -          | Called when the radio button state changes. |
-| `className` | `string`                                               | -          | Class applied to the radio input.           |
-
-The component also forwards the remaining native `<input>` props (except `size`, `type`, `value`, and `name`).
+<PropsTable slug="radio" />
 
 ## CSS variables
 
-Override these `--ax-*` custom properties to retune the radio button.
-
-### Size
-
-| Variable                                 | Description                   |
-| ---------------------------------------- | ----------------------------- |
-| `--ax-public-radio-size-medium`          | Control size (medium).        |
-| `--ax-public-radio-size-small`           | Control size (small).         |
-| `--ax-public-radio-size-extra-small`     | Control size (extra-small).   |
-| `--ax-public-radio-dot-size-medium`      | Inner dot size (medium).      |
-| `--ax-public-radio-dot-size-small`       | Inner dot size (small).       |
-| `--ax-public-radio-dot-size-extra-small` | Inner dot size (extra-small). |
-| `--ax-public-radio-border-radius`        | Corner radius of the control. |
-
-### Color
-
-| Variable                                  | Description                    |
-| ----------------------------------------- | ------------------------------ |
-| `--ax-public-radio-border-color`          | Border color when unchecked.   |
-| `--ax-public-radio-bg`                    | Background when unchecked.     |
-| `--ax-public-radio-checked-bg`            | Background when checked.       |
-| `--ax-public-radio-dot-color`             | Inner dot color.               |
-| `--ax-public-radio-focus-border-color`    | Focus ring color.              |
-| `--ax-public-radio-disabled-border-color` | Border color when disabled.    |
-| `--ax-public-radio-disabled-bg`           | Background when disabled.      |
-| `--ax-public-radio-disabled-dot-color`    | Inner dot color when disabled. |
+<CssVariablesTable slug="radio" />
