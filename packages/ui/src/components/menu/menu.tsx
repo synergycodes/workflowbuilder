@@ -22,7 +22,7 @@ type OffsetAxes = {
 
 export type OffsetOptions = number | OffsetAxes;
 
-type MenuProps = {
+export type MenuProps = {
   /**
    * Array of menu items to be rendered in the menu.
    * Each item can be either a regular menu item or a separator.
