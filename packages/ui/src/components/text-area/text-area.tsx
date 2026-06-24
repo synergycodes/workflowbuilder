@@ -23,6 +23,7 @@ export type TextAreaProps = {
   placeholder?: string;
   /**
    * Size of the textarea
+   * @default 'medium'
    */
   size?: ItemSize;
   /**
