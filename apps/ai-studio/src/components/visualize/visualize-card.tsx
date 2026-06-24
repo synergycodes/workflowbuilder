@@ -1,6 +1,6 @@
 import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import { type ReactNode, Suspense, useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
@@ -41,11 +41,11 @@ function EmptyState({ running }: { running: boolean }) {
   );
 }
 
-// Rendered on-canvas inside every node via the OptionalNodeContent decorator,
-// but only paints for visualize nodes. Always shows a fixed-size card (with an
-// empty-state placeholder before a run); once the upstream output arrives it
-// picks a renderer (the node's `mode` or auto-detected), reveals it, and offers
-// export + expand actions.
+// Injected into the node body via the OptionalNodeContent decorator, so the
+// visualization renders as part of the node itself (the node grows to contain
+// it) rather than as a detached panel. Only paints for visualize nodes. Reads
+// the upstream node's output (via the incoming edge), picks a renderer (the
+// node's `mode` or auto-detected), reveals it, and offers export + expand.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
@@ -67,11 +67,11 @@ export function VisualizeCard({ props }: Props) {
   const text = extractOutputText(sourceOutput);
   const hasOutput = selfStatus === 'completed' && text.length > 0;
 
-  let body: ReactNode;
   let badge = '';
   let showChartChip = false;
   let activeRenderer: VisualizeRenderer | null = null;
   let data: unknown;
+  let Renderer: ReturnType<typeof getRenderer> | null = null;
 
   if (hasOutput) {
     const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
@@ -82,74 +82,65 @@ export function VisualizeCard({ props }: Props) {
       activeRenderer = 'chart';
     }
     data = mode === 'auto' ? detection.data : undefined;
-    const Renderer = getRenderer(activeRenderer);
+    Renderer = getRenderer(activeRenderer);
     badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
     showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
-    body = (
-      <>
-        {showChartChip && (
-          <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
-            Try as chart
-          </button>
-        )}
-        <Suspense
-          fallback={
-            <div className={styles['empty']}>
-              <p className={styles['empty-text']}>Loading…</p>
-            </div>
-          }
-        >
-          <div ref={contentRef} className={styles['revealed']}>
-            <Renderer text={text} data={data} />
-          </div>
-        </Suspense>
-      </>
-    );
-  } else {
-    body = <EmptyState running={selfStatus === 'running'} />;
   }
 
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
 
   return (
-    <div className={styles['card']}>
-      <div className={styles['header']}>
-        <Eye className={styles['header-icon']} weight="fill" />
-        <span className={styles['header-title']}>Visualize</span>
-        {badge && <span className={styles['badge']}>{badge}</span>}
-        {hasOutput && (
-          <div className={styles['actions']}>
-            <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
-              <ArrowsOut />
-            </button>
-            <button
-              type="button"
-              className={styles['action']}
-              title="Copy image"
-              onClick={() => contentRef.current && void copyImage(contentRef.current)}
-            >
-              <Copy />
-            </button>
-            <button
-              type="button"
-              className={styles['action']}
-              title="Download PNG"
-              onClick={() => contentRef.current && void downloadPng(contentRef.current)}
-            >
-              <DownloadSimple />
-            </button>
-            <button
-              type="button"
-              className={styles['action']}
-              title="Copy source text"
-              onClick={() => void copySource(text)}
-            >
-              <ClipboardText />
-            </button>
+    <div className={styles['integrated']}>
+      {hasOutput && Renderer ? (
+        <>
+          <div className={styles['toolbar']}>
+            <span className={styles['badge']}>{badge}</span>
+            <div className={styles['actions']}>
+              <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
+                <ArrowsOut />
+              </button>
+              <button
+                type="button"
+                className={styles['action']}
+                title="Copy image"
+                onClick={() => contentRef.current && void copyImage(contentRef.current)}
+              >
+                <Copy />
+              </button>
+              <button
+                type="button"
+                className={styles['action']}
+                title="Download PNG"
+                onClick={() => contentRef.current && void downloadPng(contentRef.current)}
+              >
+                <DownloadSimple />
+              </button>
+              <button
+                type="button"
+                className={styles['action']}
+                title="Copy source text"
+                onClick={() => void copySource(text)}
+              >
+                <ClipboardText />
+              </button>
+            </div>
           </div>
-        )}
-      </div>
-      <div className={styles['body']}>{body}</div>
+          {showChartChip && (
+            <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
+              Try as chart
+            </button>
+          )}
+          <div className={styles['body']}>
+            <Suspense fallback={<p className={styles['empty-text']}>Loading…</p>}>
+              <div ref={contentRef} className={styles['revealed']}>
+                <Renderer text={text} data={data} />
+              </div>
+            </Suspense>
+          </div>
+        </>
+      ) : (
+        <EmptyState running={selfStatus === 'running'} />
+      )}
       {expanded && activeRenderer && (
         <VisualizeModal
           renderer={activeRenderer}
