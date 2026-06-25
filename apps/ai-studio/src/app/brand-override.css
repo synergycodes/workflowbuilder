@@ -1,0 +1,9 @@
+/* TEMPORARY override. The SDK app bar renders the Workflow Builder logo as a
+   CSS-module `logo` <svg> inside `toolbar`, and exposes no prop to replace it or
+   make it a link. We hide it here and render our own linked CDN logo (see
+   BrandLogo). The prefix selectors survive the per-build module-hash suffix
+   (e.g. `_logo_2tbzr_18`). Remove this and the BrandLogo overlay once the SDK
+   exposes a logo / logoHref prop on <WorkflowBuilder.Root>. */
+[class^='_toolbar_'] [class^='_logo_'] {
+  display: none;
+}
