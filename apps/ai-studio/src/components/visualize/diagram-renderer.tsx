@@ -15,7 +15,10 @@ let counter = 0;
 // never calls render, so mermaid does not inject its giant "Syntax error"
 // graphic into the document.
 export function DiagramRenderer({ text, data }: RendererProps) {
-  const source = typeof data === 'string' ? data : text;
+  const raw = typeof data === 'string' ? data : text;
+  // If the diagram is embedded in a larger response, render just the fenced block.
+  const fence = /```mermaid\s*\n([\s\S]*?)```/.exec(raw);
+  const source = fence ? fence[1].trim() : raw;
   const [svg, setSvg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 

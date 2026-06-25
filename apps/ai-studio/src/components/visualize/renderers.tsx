@@ -1,10 +1,10 @@
 import { type ComponentType, lazy, useState } from 'react';
-import Markdown from 'react-markdown';
+import Markdown, { type Components } from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 
 import styles from './renderers.module.css';
 
-import type { VisualizeRenderer } from '../../utils/detect-format';
+import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
 
 // Lazy so recharts (~140KB) only loads when a chart is actually rendered.
 const ChartRenderer = lazy(() => import('./chart-renderer').then((module) => ({ default: module.ChartRenderer })));
@@ -57,10 +57,40 @@ function humanize(key: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
+// Render fenced code blocks richly: a ```mermaid block becomes a real diagram,
+// a ```json block is detected and rendered (chart/table/json/...), so a mixed
+// markdown response with an embedded diagram/data block renders it inline rather
+// than as raw code. `pre` is unwrapped so these block renderers own their wrapper.
+const markdownComponents: Components = {
+  pre: ({ children }) => <>{children}</>,
+  code({ className, children }) {
+    const language = /language-(\w+)/.exec(className ?? '')?.[1];
+    const value = String(children).replace(/\n$/, '');
+    if (language === 'mermaid') {
+      return <DiagramRenderer text={value} />;
+    }
+    if (language === 'json') {
+      const detected = detectFormat(value);
+      const Renderer = getRenderer(detected.renderer);
+      return <Renderer text={value} data={detected.data} />;
+    }
+    if (language) {
+      return (
+        <pre>
+          <code className={className}>{children}</code>
+        </pre>
+      );
+    }
+    return <code className={className}>{children}</code>;
+  },
+};
+
 export function MarkdownRenderer({ text }: RendererProps) {
   return (
     <div className={styles['markdown']}>
-      <Markdown remarkPlugins={[remarkGfm]}>{text}</Markdown>
+      <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+        {text}
+      </Markdown>
     </div>
   );
 }
