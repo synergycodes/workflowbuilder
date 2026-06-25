@@ -103,6 +103,59 @@ Keep it under 200 words. Professional but human.`,
         measured: { width: 258, height: 123 },
         dragging: false,
       },
+      {
+        id: 'pack-1',
+        type: 'node',
+        position: { x: 840, y: 320 },
+        data: {
+          segments: [],
+          properties: {
+            label: 'Content Pack',
+            description: 'Collects every channel into one document.',
+            systemPrompt: `You receive a source brief and three repurposed drafts from previous steps: an
+X/Twitter thread, a LinkedIn post, and an Instagram caption. Identify each draft
+by its content and assemble them into a single content pack as markdown, one
+section per channel, in exactly this shape:
+
+## X / Twitter
+[the thread]
+
+## LinkedIn
+[the post]
+
+## Instagram
+[the caption]
+
+Keep each draft's wording as-is - do not rewrite it. Just organize and label.`,
+            errors: [],
+            errorPolicy: 'fail',
+          },
+          type: 'ai-studio/ai-agent',
+          icon: 'AiAgent',
+        },
+        selected: false,
+        measured: { width: 258, height: 123 },
+        dragging: false,
+      },
+      {
+        id: 'visualize-1',
+        type: 'node',
+        position: { x: 1260, y: 320 },
+        data: {
+          segments: [],
+          properties: {
+            label: 'Visualize',
+            description: 'Renders the content pack (auto-detects the format).',
+            errors: [],
+            errorPolicy: 'fail',
+          },
+          type: 'ai-studio/visualize',
+          icon: 'Eye',
+        },
+        selected: false,
+        measured: { width: 258, height: 123 },
+        dragging: false,
+      },
     ],
     edges: [
       {
@@ -132,8 +185,44 @@ Keep it under 200 words. Professional but human.`,
         id: 'edge-trigger-instagram',
         data: {},
       },
+      {
+        source: 'twitter-1',
+        sourceHandle: 'source',
+        target: 'pack-1',
+        targetHandle: 'target',
+        type: 'labelEdge',
+        id: 'edge-twitter-pack',
+        data: {},
+      },
+      {
+        source: 'linkedin-1',
+        sourceHandle: 'source',
+        target: 'pack-1',
+        targetHandle: 'target',
+        type: 'labelEdge',
+        id: 'edge-linkedin-pack',
+        data: {},
+      },
+      {
+        source: 'instagram-1',
+        sourceHandle: 'source',
+        target: 'pack-1',
+        targetHandle: 'target',
+        type: 'labelEdge',
+        id: 'edge-instagram-pack',
+        data: {},
+      },
+      {
+        source: 'pack-1',
+        sourceHandle: 'source',
+        target: 'visualize-1',
+        targetHandle: 'target',
+        type: 'labelEdge',
+        id: 'edge-pack-visualize',
+        data: {},
+      },
     ],
-    viewport: { x: 120, y: 60, zoom: 0.6 },
+    viewport: { x: 120, y: 80, zoom: 0.5 },
   },
   layoutDirection: 'RIGHT',
 };
