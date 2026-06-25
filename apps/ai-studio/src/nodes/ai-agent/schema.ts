@@ -9,6 +9,9 @@ export const schema = {
     systemPrompt: {
       type: 'string',
     },
+    webSearch: {
+      type: 'boolean',
+    },
   },
 } satisfies NodeSchema;
 

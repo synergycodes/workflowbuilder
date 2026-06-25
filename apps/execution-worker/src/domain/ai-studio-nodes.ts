@@ -7,6 +7,7 @@ type TriggerNodeConfig = Record<string, never>;
 
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
+  webSearch?: boolean; // when true (and TAVILY_API_KEY is set), expose the web-search tool
 };
 
 export type DecisionBranchCondition = {

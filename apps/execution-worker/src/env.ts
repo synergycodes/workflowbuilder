@@ -20,4 +20,7 @@ export const env = {
   // Cheap, fast default for the public demo. Quality-per-cost is what matters
   // here, not frontier capability — the canvas is the product, not the model.
   AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
+  // Optional. Enables the AI Agent's web-search tool. Without it, agents with
+  // "Web search" toggled on still run — they just answer without the tool.
+  TAVILY_API_KEY: process.env['TAVILY_API_KEY'],
 };

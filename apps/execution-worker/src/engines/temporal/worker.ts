@@ -25,7 +25,8 @@ const aiAgentLogger = logger.child({ component: 'ai-agent' });
 const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
   'ai-studio/trigger': executeTrigger,
   'ai-studio/decision': executeDecision,
-  'ai-studio/ai-agent': (node, context) => executeAiAgent(node, context, { model, logger: aiAgentLogger }),
+  'ai-studio/ai-agent': (node, context) =>
+    executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
   'ai-studio/visualize': executeVisualize,
 };
 
