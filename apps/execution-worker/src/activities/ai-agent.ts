@@ -1,12 +1,19 @@
-import { generateText } from 'ai';
+import { generateText, stepCountIs } from 'ai';
 
 import { type ExecutionContext, type LoggerPort, resolveTemplate } from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
+import { createWebSearchTool } from '../tools/web-search';
+
+// Cap on the agentic tool loop: enough for a search → synthesize round-trip
+// (and a retry), bounded so a misbehaving model can't run up cost.
+const MAX_TOOL_STEPS = 4;
 
 type AiAgentDeps = {
   model: Parameters<typeof generateText>[0]['model'];
   logger?: LoggerPort;
+  // Optional. When present and the node opts in, the agent gets a web-search tool.
+  tavilyApiKey?: string;
 };
 
 export async function executeAiAgent(node: AiAgentNode, context: ExecutionContext, deps: AiAgentDeps) {
@@ -36,11 +43,19 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     userPrompt = `Here is the context from previous steps:\n\n${parts.join('\n\n')}`;
   }
 
+  // Expose the web-search tool only when the node opted in AND a key is set.
+  // Without it the agent still runs — it just answers without searching.
+  const webSearchEnabled = node.config.webSearch === true && Boolean(deps.tavilyApiKey);
+  const tools = webSearchEnabled ? { webSearch: createWebSearchTool(deps.tavilyApiKey!) } : undefined;
+
   try {
     const result = await generateText({
       model: deps.model,
       system: resolvedPrompt,
       prompt: userPrompt,
+      // The AI SDK runs the tool call/execute/continue loop internally up to
+      // this many steps; no effect when `tools` is undefined.
+      ...(tools ? { tools, stopWhen: stepCountIs(MAX_TOOL_STEPS) } : {}),
     });
 
     return { output: { response: result.text } };
