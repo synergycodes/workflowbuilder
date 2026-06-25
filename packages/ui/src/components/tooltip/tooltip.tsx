@@ -1,16 +1,14 @@
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import { ReactNode, createContext, useContext, useMemo } from 'react';
 
+import { type PlacementContextValue, type TooltipPlacement, placementToSideAlign } from './placement';
 import { TooltipContent } from './tooltip-content';
 import { TooltipTrigger } from './tooltip-trigger';
 
 export const TOOLTIP_OPEN_DELAY = 500;
 export const TOOLTIP_CLOSE_DELAY = 0;
 
-type Side = 'top' | 'right' | 'bottom' | 'left';
-type Align = 'start' | 'end';
-
-export type TooltipPlacement = Side | `${Side}-${Align}`;
+export type { TooltipPlacement } from './placement';
 
 export type TooltipOptions = {
   /**
@@ -31,11 +29,6 @@ export type TooltipOptions = {
   onOpenChange?: (open: boolean) => void;
 };
 
-type PlacementContextValue = {
-  side: Side;
-  align: 'start' | 'center' | 'end';
-};
-
 const TooltipPlacementContext = createContext<PlacementContextValue>({
   side: 'bottom',
   align: 'center',
@@ -43,14 +36,6 @@ const TooltipPlacementContext = createContext<PlacementContextValue>({
 
 export function useTooltipPlacement(): PlacementContextValue {
   return useContext(TooltipPlacementContext);
-}
-
-function placementToSideAlign(placement: TooltipPlacement): PlacementContextValue {
-  const [side, align] = placement.split('-') as [
-    PlacementContextValue['side'],
-    PlacementContextValue['align'] | undefined,
-  ];
-  return { side, align: align ?? 'center' };
 }
 
 type Props = {
