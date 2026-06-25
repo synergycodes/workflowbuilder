@@ -80,16 +80,44 @@ mark it "unassigned". Do not invent items that were not discussed.`,
           segments: [],
           properties: {
             label: 'Format Recap',
-            description: 'Produces a clean recap email.',
-            systemPrompt: `Produce a clean recap email:
-- A one-paragraph summary of the meeting
-- An "Action Items" section as a bulleted list with the owner in bold
-Keep it tight and skimmable. Sign as "Meeting Bot".`,
+            description: 'Produces a clean recap with an action-items table.',
+            systemPrompt: `Produce a clean meeting recap as markdown, in exactly this shape:
+
+## Recap
+[one short paragraph summarizing the meeting and its decisions]
+
+## Action Items
+
+| Owner | Task | Due |
+| --- | --- | --- |
+| [owner] | [task] | [due date or "-"] |
+
+One row per action item. Keep it tight and skimmable. Sign off with a final
+line "_Meeting Bot_".`,
             errors: [],
             errorPolicy: 'fail',
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
+        },
+        selected: false,
+        measured: { width: 258, height: 123 },
+        dragging: false,
+      },
+      {
+        id: 'visualize-1',
+        type: 'node',
+        position: { x: 1440, y: 300 },
+        data: {
+          segments: [],
+          properties: {
+            label: 'Visualize',
+            description: 'Renders the recap (auto-detects the format).',
+            errors: [],
+            errorPolicy: 'fail',
+          },
+          type: 'ai-studio/visualize',
+          icon: 'Eye',
         },
         selected: false,
         measured: { width: 258, height: 123 },
@@ -124,8 +152,17 @@ Keep it tight and skimmable. Sign as "Meeting Bot".`,
         id: 'edge-actions-recap',
         data: {},
       },
+      {
+        source: 'recap-1',
+        sourceHandle: 'source',
+        target: 'visualize-1',
+        targetHandle: 'target',
+        type: 'labelEdge',
+        id: 'edge-recap-visualize',
+        data: {},
+      },
     ],
-    viewport: { x: 100, y: 100, zoom: 0.6 },
+    viewport: { x: 80, y: 90, zoom: 0.55 },
   },
   layoutDirection: 'RIGHT',
 };
