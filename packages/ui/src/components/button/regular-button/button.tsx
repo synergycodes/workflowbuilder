@@ -60,6 +60,12 @@ const ButtonComponent = forwardRef<HTMLButtonElement, LabelButtonProps | IconBut
       return <IconLabelButton {...buttonProps}>{props.children}</IconLabelButton>;
     }
 
+    // The overloads only accept string / icon / icon + label children, so this is
+    // unreachable for type-checked callers. It only fires for dynamic or `as any`
+    // children that TS can't catch - fail loudly instead of silently rendering nothing.
+    console.error(
+      'Button: `children` did not match a supported variant (label, icon, or icon + label). Rendering nothing.',
+    );
     return null;
   },
 );

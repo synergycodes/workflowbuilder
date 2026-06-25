@@ -77,7 +77,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
         <Dialog.Portal>
           <Dialog.Backdrop className={styles['backdrop']} />
           <Dialog.Popup className={styles['modal-base']}>
-            <div className={clsx(styles['modal'], styles[size])} ref={ref} {...rest}>
+            <div className={clsx(styles['modal'], styles[size], className)} ref={ref} {...rest}>
               <div className={styles['header']}>
                 <div className={styles['title-wrapper']}>
                   {icon && <div className={styles['icon']}>{icon}</div>}
@@ -99,7 +99,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                 )}
               </div>
 
-              {children && <div className={clsx(styles['content'], className)}>{children}</div>}
+              {children && <div className={styles['content']}>{children}</div>}
 
               {footer && <div className={clsx(styles['footer'], styles[footerVariant])}>{footer}</div>}
             </div>
