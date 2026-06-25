@@ -80,7 +80,7 @@ function hasRichText(value: string): boolean {
   );
 }
 
-export function RichText({ value }: { value: string }) {
+function RichText({ value }: { value: string }) {
   if (!hasRichText(value)) {
     return <>{value}</>;
   }
@@ -119,7 +119,7 @@ const markdownComponents: Components = {
   },
 };
 
-export function MarkdownRenderer({ text }: RendererProps) {
+function MarkdownRenderer({ text }: RendererProps) {
   return (
     <div className={styles['markdown']}>
       <Markdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
@@ -129,7 +129,7 @@ export function MarkdownRenderer({ text }: RendererProps) {
   );
 }
 
-export function TextRenderer({ text }: RendererProps) {
+function TextRenderer({ text }: RendererProps) {
   return <pre className={styles['text']}>{text}</pre>;
 }
 
@@ -173,7 +173,7 @@ function JsonValue({ name, value, depth }: { name?: string; value: unknown; dept
   );
 }
 
-export function JsonRenderer({ text, data }: RendererProps) {
+function JsonRenderer({ text, data }: RendererProps) {
   const value = parseOr(text, data);
   if (value === undefined) {
     return <pre className={styles['text']}>{text}</pre>;
@@ -185,7 +185,7 @@ export function JsonRenderer({ text, data }: RendererProps) {
   );
 }
 
-export function TableRenderer({ text, data }: RendererProps) {
+function TableRenderer({ text, data }: RendererProps) {
   const rows = parseOr(text, data);
   if (!Array.isArray(rows) || rows.length === 0) {
     return <pre className={styles['text']}>{text}</pre>;
@@ -226,7 +226,7 @@ export function TableRenderer({ text, data }: RendererProps) {
   );
 }
 
-export function StatCardsRenderer({ text, data }: RendererProps) {
+function StatCardsRenderer({ text, data }: RendererProps) {
   const value = parseOr(text, data);
   if (value === null || typeof value !== 'object' || Array.isArray(value)) {
     return <pre className={styles['text']}>{text}</pre>;

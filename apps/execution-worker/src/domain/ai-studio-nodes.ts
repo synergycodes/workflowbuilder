@@ -49,7 +49,7 @@ export type DecisionNode = {
   config: DecisionNodeConfig;
 };
 
-export type VisualizeNode = {
+type VisualizeNode = {
   id: string;
   type: 'ai-studio/visualize';
   config: VisualizeNodeConfig;

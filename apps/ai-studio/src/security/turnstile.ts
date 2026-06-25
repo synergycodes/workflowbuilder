@@ -46,11 +46,6 @@ async function waitForApi(): Promise<TurnstileApi> {
   return api;
 }
 
-/** True when a site key is configured; otherwise the demo runs unprotected. */
-export function isTurnstileEnabled(): boolean {
-  return Boolean(TURNSTILE_SITE_KEY);
-}
-
 /**
  * Returns a fresh Turnstile token, or undefined when no site key is configured
  * (local dev). Uses one invisible widget, re-executed per run, since a token is
