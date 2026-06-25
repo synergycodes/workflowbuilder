@@ -435,9 +435,6 @@ importers:
 
   packages/sdk:
     dependencies:
-      '@base-ui/react':
-        specifier: 'catalog:'
-        version: 1.4.1(@date-fns/tz@1.5.0)(@types/react@19.1.8)(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@cfworker/json-schema':
         specifier: 4.1.1
         version: 4.1.1
@@ -447,9 +444,6 @@ importers:
       '@phosphor-icons/react':
         specifier: ^2.1.7
         version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      '@workflowbuilder/ui':
-        specifier: workspace:*
-        version: link:../ui
       '@xyflow/react':
         specifier: ^12.0.0
         version: 12.10.0(@types/react@19.1.8)(immer@10.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -484,6 +478,9 @@ importers:
         specifier: ^2.19.2
         version: 2.20.0
     devDependencies:
+      '@base-ui/react':
+        specifier: 'catalog:'
+        version: 1.4.1(@date-fns/tz@1.5.0)(@types/react@19.1.8)(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@jsonforms/core':
         specifier: ^3.4.1
         version: 3.5.1
@@ -505,6 +502,9 @@ importers:
       '@workflow-builder/types':
         specifier: workspace:*
         version: link:../types
+      '@workflowbuilder/ui':
+        specifier: workspace:*
+        version: link:../ui
       eslint-plugin-react:
         specifier: 7.37.2
         version: 7.37.2(eslint@9.19.0(jiti@2.6.1))
