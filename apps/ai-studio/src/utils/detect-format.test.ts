@@ -13,9 +13,21 @@ describe('detectFormat', () => {
     expect(detectFormat('# Title\n\nSome **bold** text.').renderer).toBe('markdown');
   });
 
-  it('detects a mermaid diagram from the leading keyword', () => {
+  it('detects a mermaid diagram from a clear declaration', () => {
     expect(detectFormat('flowchart TD\n  A --> B').renderer).toBe('diagram');
     expect(detectFormat('sequenceDiagram\n  A->>B: hi').renderer).toBe('diagram');
+  });
+
+  it('detects a fenced mermaid block and strips the fence', () => {
+    const result = detectFormat('```mermaid\nflowchart TD\n  A --> B\n```');
+    expect(result.renderer).toBe('diagram');
+    expect(result.data).toBe('flowchart TD\n  A --> B');
+  });
+
+  it('does not mis-detect prose starting with graph/pie/timeline as a diagram', () => {
+    expect(detectFormat('graph shows the revenue went up this quarter.').renderer).toBe('markdown');
+    expect(detectFormat('pie of the market share by region, roughly even.').renderer).toBe('markdown');
+    expect(detectFormat('timeline of the rollout is aggressive but doable.').renderer).toBe('markdown');
   });
 
   it('detects a flat scalar object as stat-cards', () => {

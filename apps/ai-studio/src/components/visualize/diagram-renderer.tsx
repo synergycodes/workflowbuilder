@@ -9,8 +9,11 @@ mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutra
 
 let counter = 0;
 
-// Renders a mermaid source string to SVG in the browser. On a syntax error it
-// falls back to showing the raw source as text rather than breaking the card.
+// Renders a mermaid source string to SVG in the browser. It validates with
+// mermaid.parse({ suppressErrors: true }) BEFORE rendering: invalid input (e.g.
+// the node is forced to Diagram on non-diagram text) falls back to raw text and
+// never calls render, so mermaid does not inject its giant "Syntax error"
+// graphic into the document.
 export function DiagramRenderer({ text, data }: RendererProps) {
   const source = typeof data === 'string' ? data : text;
   const [svg, setSvg] = useState<string | null>(null);
@@ -21,25 +24,40 @@ export function DiagramRenderer({ text, data }: RendererProps) {
     counter += 1;
     setSvg(null);
     setFailed(false);
-    mermaid.render(`viz-mermaid-${counter}`, source).then(
-      (result) => {
-        if (!cancelled) {
-          setSvg(result.svg);
+
+    const run = async () => {
+      try {
+        const isValid = await mermaid.parse(source, { suppressErrors: true });
+        if (!isValid) {
+          if (!cancelled) {
+            setFailed(true);
+          }
+          return;
         }
-      },
-      () => {
+        const { svg: rendered } = await mermaid.render(`viz-mermaid-${counter}`, source);
+        if (!cancelled) {
+          setSvg(rendered);
+        }
+      } catch {
         if (!cancelled) {
           setFailed(true);
         }
-      },
-    );
+      }
+    };
+    void run();
+
     return () => {
       cancelled = true;
     };
   }, [source]);
 
   if (failed) {
-    return <pre className={styles['text']}>{text}</pre>;
+    return (
+      <div>
+        <p className={styles['fallback-note']}>Not a valid Mermaid diagram — showing the raw text.</p>
+        <pre className={styles['text']}>{text}</pre>
+      </div>
+    );
   }
   if (svg === null) {
     return <p className={styles['empty-text']}>Rendering diagram…</p>;

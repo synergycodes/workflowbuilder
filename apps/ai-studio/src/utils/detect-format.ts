@@ -14,8 +14,13 @@ export type DetectResult = {
   chartable?: boolean;
 };
 
-const MERMAID_RE =
-  /^(flowchart|graph|sequenceDiagram|classDiagram|stateDiagram(-v2)?|erDiagram|gantt|pie|journey|gitGraph|mindmap|timeline|quadrantChart|requirementDiagram)\b/;
+// A fenced ```mermaid block, or a first line that is unambiguously a mermaid
+// declaration. Deliberately strict: flowchart/graph need a direction, and
+// prose-like bare words ("pie", "graph", "timeline", "journey") are NOT matched,
+// so plain prose starting with such a word is not mis-detected as a diagram.
+const MERMAID_FENCE = /^```mermaid\s*\n?([\s\S]*?)```$/;
+const MERMAID_FIRST_LINE =
+  /^(?:sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|gitGraph|mindmap|quadrantChart|requirementDiagram)\b|^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\b/;
 
 const LABEL_KEYS = new Set(['label', 'name', 'category', 'x', 'key', 'date', 'month', 'day']);
 const VALUE_KEYS = new Set(['value', 'count', 'y', 'amount', 'total', 'qty', 'quantity', 'score']);
@@ -119,9 +124,13 @@ export function detectFormat(input: string): DetectResult {
     return { renderer: 'text' };
   }
 
-  // 1. Mermaid diagram (cheap keyword pre-filter on the first non-empty line).
+  // 1. Mermaid diagram: a fenced ```mermaid block, or a clearly-declared first line.
+  const fence = MERMAID_FENCE.exec(text);
+  if (fence) {
+    return { renderer: 'diagram', data: fence[1].trim() };
+  }
   const firstLine = text.split(/\r?\n/)[0].trim();
-  if (MERMAID_RE.test(firstLine)) {
+  if (MERMAID_FIRST_LINE.test(firstLine)) {
     return { renderer: 'diagram', data: text };
   }
 
