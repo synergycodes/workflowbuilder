@@ -44,20 +44,27 @@
   color: var(--ax-txt-primary-default, #151516);
 }
 
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
 .icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 2.75rem;
-  height: 2.75rem;
-  margin-bottom: 1rem;
-  border-radius: 0.75rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
   background: var(--ax-ui-bg-secondary-default, #f5f5f7);
   color: var(--ax-colors-acc1-500, #1096e7);
 }
 
 .title {
-  margin: 0 0 0.75rem;
+  margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
   color: var(--ax-txt-primary-default, #151516);
