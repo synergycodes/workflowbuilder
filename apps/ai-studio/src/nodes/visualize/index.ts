@@ -6,7 +6,7 @@ import { uischema } from './uischema';
 
 export const visualizePaletteItem: PaletteItem<VisualizeSchema> = {
   label: 'Visualize',
-  description: 'Render an upstream output (markdown, JSON, table, chart, diagram...)',
+  description: 'Render the result visually',
   type: 'ai-studio/visualize',
   icon: 'Eye',
   templateType: NodeType.Node,

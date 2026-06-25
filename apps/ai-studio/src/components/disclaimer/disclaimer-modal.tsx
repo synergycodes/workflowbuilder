@@ -42,13 +42,14 @@ export function DisclaimerModal() {
           <X size={18} weight="bold" />
         </button>
 
-        <div className={styles['icon']}>
-          <Info size={24} weight="fill" />
+        <div className={styles['heading']}>
+          <div className={styles['icon']}>
+            <Info size={22} weight="fill" />
+          </div>
+          <h2 className={styles['title']} id="disclaimer-title">
+            Welcome to AI Studio
+          </h2>
         </div>
-
-        <h2 className={styles['title']} id="disclaimer-title">
-          Welcome to AI Studio
-        </h2>
 
         <div className={styles['body']}>
           <p>
