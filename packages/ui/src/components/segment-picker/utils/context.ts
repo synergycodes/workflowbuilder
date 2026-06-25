@@ -1,10 +1,10 @@
 import { Shape } from '@ui/components/button/types';
 import { Size } from '@ui/shared/types/size';
-import { MouseEventHandler, createContext } from 'react';
+import { MouseEvent, createContext } from 'react';
 
 type SegmentPickerContextType = {
   selectedValue: string | undefined;
-  onSelect: (event: MouseEventHandler<HTMLButtonElement>, value: string) => void;
+  onSelect: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
   size?: Size;
   shape?: Shape;
 };

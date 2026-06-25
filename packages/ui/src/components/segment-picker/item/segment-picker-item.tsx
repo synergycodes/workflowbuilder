@@ -8,7 +8,7 @@ import { NavIconButtonProps } from '@ui/components/button/nav-button/nav-icon-bu
 import { NavIconLabelButtonProps } from '@ui/components/button/nav-button/nav-icon-label-button/nav-icon-label-button';
 import { NavLabelButtonProps } from '@ui/components/button/nav-button/nav-label-button/nav-label-button';
 import clsx from 'clsx';
-import { MouseEventHandler, useContext } from 'react';
+import { MouseEvent, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
@@ -45,7 +45,7 @@ export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps
   const props = {
     className: clsx(itemShapeStyles['item'], itemShapeStyles[shape || '']),
     isSelected: selectedValue === value,
-    onClick: (event: MouseEventHandler<HTMLButtonElement>) => onSelect(event, value),
+    onClick: (event: MouseEvent<HTMLButtonElement>) => onSelect(event, value),
     shape,
     children,
     ...other,

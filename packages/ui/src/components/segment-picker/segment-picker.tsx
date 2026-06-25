@@ -1,7 +1,7 @@
 import { Shape } from '@ui/components/button/types';
 import { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
-import { ForwardRefExoticComponent, MouseEventHandler, ReactElement, forwardRef, useState } from 'react';
+import { ForwardRefExoticComponent, MouseEvent, ReactElement, forwardRef, useState } from 'react';
 
 import borderRadiusStyles from './border-radius-size.module.css';
 import styles from './segment-picker.module.css';
@@ -21,7 +21,7 @@ type SegmentPickerPropsBase = {
    */
   shape?: Shape;
   className?: string;
-  onChange?: (event: MouseEventHandler<HTMLButtonElement>, value: string) => void;
+  onChange?: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
 };
 
 type ControlledSegmentPickerProps = {
@@ -52,7 +52,7 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
 
     const selectedValue = isControlled ? value : internalValue;
 
-    const handleSelect = (event: React.MouseEventHandler<HTMLButtonElement>, newValue: string) => {
+    const handleSelect = (event: MouseEvent<HTMLButtonElement>, newValue: string) => {
       if (!isControlled) {
         setInternalValue(newValue);
       }
