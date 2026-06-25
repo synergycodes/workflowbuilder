@@ -15,7 +15,7 @@ export type IconButtonProps = {
 } & BaseRegularButtonProps;
 
 export const IconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
-  ({ size = 'medium', shape = '', children, ...props }, ref) => (
+  ({ size = 'medium', shape = 'default', children, ...props }, ref) => (
     <BaseButton
       ref={ref}
       styles={clsx(iconPaddingStyles[size], iconSizeStyles[size], borderRadiusStyles[shape])}

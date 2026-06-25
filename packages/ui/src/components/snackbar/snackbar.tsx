@@ -41,7 +41,9 @@ export type SnackbarProps = {
 
 /**
  * A Snackbar component that displays brief messages about app processes.
- * The snackbar appears at the bottom of the screen and automatically disappears after a few seconds.
+ * Purely presentational: it does not position or auto-dismiss itself - placement
+ * and lifetime (e.g. an auto-hide timer) are the consumer's responsibility, and
+ * dismissal is driven through `close` / `onClose`.
  */
 export const Snackbar = forwardRef<HTMLDivElement, SnackbarProps>(
   ({ variant, title, subtitle, buttonLabel, onButtonClick, close = false, onClose }, ref) => (

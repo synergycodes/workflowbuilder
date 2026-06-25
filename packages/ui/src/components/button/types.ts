@@ -1,6 +1,6 @@
 import { TooltipVariant } from '../tooltip/types';
 
-export type Shape = '' | 'circle';
+export type Shape = 'default' | 'circle';
 
 export type IconNode = React.ReactElement;
 

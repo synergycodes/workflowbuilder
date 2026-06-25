@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props';
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import { ReactElement, cloneElement, forwardRef, isValidElement } from 'react';
 
-import { useTooltipDelay } from './tooltip';
+import { TOOLTIP_CLOSE_DELAY, TOOLTIP_OPEN_DELAY } from './tooltip';
 
 /**
  * Tooltips trigger is the the element that toggles the tooltip
@@ -16,13 +16,11 @@ export const TooltipTrigger = forwardRef<
     asChild?: boolean;
   }
 >(function TooltipTrigger({ children, asChild = false, ...props }, propertyRef) {
-  const { delay, closeDelay } = useTooltipDelay();
-
   return (
     <BaseTooltip.Trigger
       ref={propertyRef as React.Ref<HTMLButtonElement>}
-      delay={delay}
-      closeDelay={closeDelay}
+      delay={TOOLTIP_OPEN_DELAY}
+      closeDelay={TOOLTIP_CLOSE_DELAY}
       // Keep parity with the previous Floating UI behaviour: clicking the
       // trigger should not dismiss the tooltip while hover is still active.
       closeOnClick={false}

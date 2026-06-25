@@ -20,7 +20,7 @@ export type NavIconButtonProps = {
 } & NavBaseButtonProps;
 
 export const NavIconButton = forwardRef<HTMLButtonElement, NavIconButtonProps>(
-  ({ size = 'medium', shape = '', children, transparent, ...props }, ref) => (
+  ({ size = 'medium', shape = 'default', children, transparent, ...props }, ref) => (
     <BaseButton
       ref={ref}
       styles={clsx(

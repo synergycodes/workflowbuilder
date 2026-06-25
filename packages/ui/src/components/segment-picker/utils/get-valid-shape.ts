@@ -15,7 +15,7 @@ export function getValidShape(shape: Shape, items: ReactElement<SegmentPickerIte
     console.error(
       '[SegmentPicker] The "circle" shape can only be used when all SegmentPicker.Item components contain icon-only children.',
     );
-    return '';
+    return 'default';
   }
 
   return shape;

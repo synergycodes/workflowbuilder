@@ -4,8 +4,8 @@ import { ReactNode, createContext, useContext, useMemo } from 'react';
 import { TooltipContent } from './tooltip-content';
 import { TooltipTrigger } from './tooltip-trigger';
 
-const TOOLTIP_OPEN_DELAY = 500;
-const TOOLTIP_CLOSE_DELAY = 0;
+export const TOOLTIP_OPEN_DELAY = 500;
+export const TOOLTIP_CLOSE_DELAY = 0;
 
 type Side = 'top' | 'right' | 'bottom' | 'left';
 type Align = 'start' | 'end';
@@ -85,29 +85,9 @@ export function Tooltip({ children, initialOpen, placement = 'bottom', open, onO
             : undefined
         }
       >
-        <TooltipDelayApplier>{children}</TooltipDelayApplier>
+        {children}
       </BaseTooltip.Root>
     </TooltipPlacementContext.Provider>
-  );
-}
-
-const TooltipDelayContext = createContext<{
-  delay: number;
-  closeDelay: number;
-}>({
-  delay: TOOLTIP_OPEN_DELAY,
-  closeDelay: TOOLTIP_CLOSE_DELAY,
-});
-
-export function useTooltipDelay() {
-  return useContext(TooltipDelayContext);
-}
-
-function TooltipDelayApplier({ children }: { children: ReactNode }) {
-  return (
-    <TooltipDelayContext.Provider value={{ delay: TOOLTIP_OPEN_DELAY, closeDelay: TOOLTIP_CLOSE_DELAY }}>
-      {children}
-    </TooltipDelayContext.Provider>
   );
 }
 
