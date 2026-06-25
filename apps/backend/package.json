@@ -18,9 +18,11 @@
   },
   "dependencies": {
     "@hono/node-server": "^1.14.0",
+    "@openrouter/ai-sdk-provider": "^2.8.0",
     "@temporalio/client": "^1.11.0",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
+    "ai": "^6.0.168",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.0",
     "hono": "^4.7.0",

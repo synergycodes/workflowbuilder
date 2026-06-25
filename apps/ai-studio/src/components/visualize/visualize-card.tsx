@@ -1,10 +1,11 @@
-import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
+import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye, Sparkle } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import { Suspense, useRef, useState } from 'react';
+import { Suspense, useEffect, useRef, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
 import { useExecutionStore } from '../../stores/use-execution-store';
+import { adaptVisualization } from '../../utils/adapt-visualization';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
 import { copyImage, copySource, downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
@@ -19,6 +20,8 @@ type Props = {
 
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram']);
+// Formats the LLM "AI adapt" button can convert into (markdown/text need no LLM).
+const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
 function EmptyState({ running }: { running: boolean }) {
   if (running) {
@@ -43,13 +46,14 @@ function EmptyState({ running }: { running: boolean }) {
 
 // Injected into the node body via the OptionalNodeContent decorator, so the
 // visualization renders as part of the node itself (the node grows to contain
-// it) rather than as a detached panel. Only paints for visualize nodes. Reads
-// the upstream node's output (via the incoming edge), picks a renderer (the
-// node's `mode` or auto-detected), reveals it, and offers export + expand.
+// it). Reads the upstream node's output, picks a renderer (the node's `mode` or
+// auto-detected), reveals it, and offers export, expand, and LLM "adapt".
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
   const [expanded, setExpanded] = useState(false);
+  const [adaptedText, setAdaptedText] = useState<string | null>(null);
+  const [adapting, setAdapting] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Node vocabulary and edges are static during a run, so snapshot reads are fine.
@@ -60,12 +64,20 @@ export function VisualizeCard({ props }: Props) {
   const selfStatus = useExecutionStore((state) => state.nodeStates[nodeId]?.status);
   const sourceOutput = useExecutionStore((state) => (sourceId ? state.nodeStates[sourceId]?.output : undefined));
 
+  const text = extractOutputText(sourceOutput);
+
+  // A fresh upstream output clears any prior adaptation / chart override.
+  useEffect(() => {
+    setAdaptedText(null);
+    setForceChart(false);
+  }, [text]);
+
   if (!isVisualizeNode) {
     return null;
   }
 
-  const text = extractOutputText(sourceOutput);
   const hasOutput = selfStatus === 'completed' && text.length > 0;
+  const renderText = adaptedText ?? text;
 
   let badge = '';
   let showChartChip = false;
@@ -81,13 +93,29 @@ export function VisualizeCard({ props }: Props) {
     if (forceChart && mode === 'auto') {
       activeRenderer = 'chart';
     }
-    data = mode === 'auto' ? detection.data : undefined;
+    // Adapted output is freshly generated, so re-parse it rather than reuse the
+    // detected payload from the original text.
+    data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
     Renderer = getRenderer(activeRenderer);
     badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
     showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
   }
 
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
+  const canAdapt = activeRenderer !== null && ADAPTABLE.has(activeRenderer);
+
+  const handleAdapt = () => {
+    if (!activeRenderer) {
+      return;
+    }
+    setAdapting(true);
+    adaptVisualization(text, activeRenderer)
+      .then((output) => setAdaptedText(output))
+      .catch(() => {
+        // keep the original content on failure
+      })
+      .finally(() => setAdapting(false));
+  };
 
   return (
     <div className={styles['integrated']}>
@@ -96,6 +124,17 @@ export function VisualizeCard({ props }: Props) {
           <div className={styles['toolbar']}>
             <span className={styles['badge']}>{badge}</span>
             <div className={styles['actions']}>
+              {canAdapt && (
+                <button
+                  type="button"
+                  className={styles['action']}
+                  title="AI: adapt to this format"
+                  onClick={handleAdapt}
+                  disabled={adapting}
+                >
+                  <Sparkle weight={adaptedText ? 'fill' : 'regular'} />
+                </button>
+              )}
               <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
                 <ArrowsOut />
               </button>
@@ -119,7 +158,7 @@ export function VisualizeCard({ props }: Props) {
                 type="button"
                 className={styles['action']}
                 title="Copy source text"
-                onClick={() => void copySource(text)}
+                onClick={() => void copySource(renderText)}
               >
                 <ClipboardText />
               </button>
@@ -131,11 +170,22 @@ export function VisualizeCard({ props }: Props) {
             </button>
           )}
           <div className={styles['body']}>
-            <Suspense fallback={<p className={styles['empty-text']}>Loading…</p>}>
-              <div ref={contentRef} className={styles['revealed']}>
-                <Renderer text={text} data={data} />
+            {adapting ? (
+              <div className={styles['empty']}>
+                <div className={styles['dots']}>
+                  <span className={styles['dot']} />
+                  <span className={styles['dot']} />
+                  <span className={styles['dot']} />
+                </div>
+                <p className={styles['empty-text']}>Adapting with AI…</p>
               </div>
-            </Suspense>
+            ) : (
+              <Suspense fallback={<p className={styles['empty-text']}>Loading…</p>}>
+                <div ref={contentRef} className={styles['revealed']}>
+                  <Renderer text={renderText} data={data} />
+                </div>
+              </Suspense>
+            )}
           </div>
         </>
       ) : (
@@ -144,7 +194,7 @@ export function VisualizeCard({ props }: Props) {
       {expanded && activeRenderer && (
         <VisualizeModal
           renderer={activeRenderer}
-          text={text}
+          text={renderText}
           data={data}
           badge={badge}
           isVector={isVector}
