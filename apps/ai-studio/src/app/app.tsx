@@ -1,7 +1,9 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
+import './brand-override.css';
 import '@workflowbuilder/sdk/style.css';
 
+import { BrandLogo } from '../components/brand/brand-logo';
 import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
@@ -29,6 +31,7 @@ export function App() {
       plugins={[aiStudioFeaturesPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />
+      <BrandLogo />
       <AiStudioControls />
       <ExecutionLogPanel />
       <ExecutionNodeDetail />
