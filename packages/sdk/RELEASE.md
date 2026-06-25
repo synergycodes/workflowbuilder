@@ -2,7 +2,16 @@
 
 Maintainer-only procedure. Consumer docs live in [`README.md`](./README.md). High-level overview in monorepo root [`CLAUDE.md`](../../CLAUDE.md) → "Releasing `@workflowbuilder/sdk`".
 
-The flow is **A+ (Changesets + commitlint + release branch + tag-triggered CI publish)** — mirrors [synergycodes/ng-diagram](https://github.com/synergycodes/ng-diagram) (single-package release flow with `v*` tags, defensive pre-publish checks, npm-view idempotency) plus Changesets for automated version/CHANGELOG management.
+The flow is **A+ (Changesets + commitlint + release branch + tag-triggered CI publish)** — adapted from [synergycodes/ng-diagram](https://github.com/synergycodes/ng-diagram) (defensive pre-publish checks, npm-view idempotency) plus Changesets for automated version/CHANGELOG management.
+
+This repo publishes **two** packages: `@workflowbuilder/sdk` and `@workflowbuilder/ui`. Each has its own **scoped** release tag and its own workflow:
+
+| Package                | Tag format                   | Workflow                            |
+| ---------------------- | ---------------------------- | ----------------------------------- |
+| `@workflowbuilder/sdk` | `@workflowbuilder/sdk@X.Y.Z` | `.github/workflows/release-sdk.yml` |
+| `@workflowbuilder/ui`  | `@workflowbuilder/ui@X.Y.Z`  | `.github/workflows/release-ui.yml`  |
+
+The steps below describe the SDK; the UI release is identical with the UI tag/workflow/package path substituted. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the two packages don't collide.)
 
 ## Mental model
 
@@ -15,8 +24,8 @@ main   ─────●───●───●───●─────●�
 release  ───────────────●─────────── ...
                          │
                          └ Each commit on `release` = one published version.
-                           Tag `vX.Y.Z` lives on that commit.
-                           Tag push → GitHub Action publishes to npm.
+                           Tag `@workflowbuilder/<pkg>@X.Y.Z` lives on that commit.
+                           Tag push → GitHub Action publishes that package to npm.
 ```
 
 `main` is "what we're building"; `release` is "what's currently on npm". The tag is the single source of truth for "this exact commit became version X.Y.Z".
@@ -25,14 +34,14 @@ release  ───────────────●───────�
 
 1. **npm organization access.** Get added as a maintainer on the `workflowbuilder` npm organization (or create it the first time at <https://www.npmjs.com/settings/workflowbuilder>). The org name has no hyphen, matching the scope `@workflowbuilder/sdk`.
 
-2. **Configure the npm Trusted Publisher.** Authentication is OIDC. No `NPM_TOKEN` is used or stored. On <https://www.npmjs.com/package/@workflowbuilder/sdk/access> (or for a not-yet-published package: org settings → "Packages" → "Add trusted publisher"), add:
+2. **Configure the npm Trusted Publisher (once per package).** Authentication is OIDC. No `NPM_TOKEN` is used or stored. Each package needs its own trusted publisher pointing at its own workflow file. On the package's `…/access` page (or for a not-yet-published package: org settings → "Packages" → "Add trusted publisher"), add:
    - Publisher: **GitHub Actions**
    - Organization or user: `synergycodes`
    - Repository: `workflowbuilder`
-   - Workflow filename: `release-sdk.yml`
+   - Workflow filename: `release-sdk.yml` for `@workflowbuilder/sdk`, `release-ui.yml` for `@workflowbuilder/ui`
    - Environment name: _(leave empty)_
 
-   The workflow already has `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a `v*` tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit on <https://www.npmjs.com/package/@workflowbuilder/sdk>.
+   The workflows already have `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a scoped tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit.
 
 3. **Create the `release` branch** (first time only):
 
@@ -165,7 +174,7 @@ In the PR diff you should see:
 - `packages/sdk/package.json`: version bump
 - `packages/sdk/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions
-- `pnpm-lock.yaml`: small workspace dep update (only if internal `workspace:*` packages bumped — currently they don't because everything is in `ignore`)
+- `pnpm-lock.yaml`: small workspace dep update if a tracked package was bumped. The non-publishable internal packages are in `ignore` in `.changeset/config.json`, but `@workflowbuilder/sdk` and `@workflowbuilder/ui` are tracked - bumping `@workflowbuilder/ui` updates consumers that depend on it via `workspace:*`
 
 Local smoke before approving:
 
@@ -193,8 +202,9 @@ After the merge lands on `release`:
 
 ```bash
 git checkout release && git pull
-git tag vX.Y.Z       # matches the published version exactly
-git push origin vX.Y.Z
+git tag @workflowbuilder/sdk@X.Y.Z   # scoped; matches packages/sdk/package.json exactly
+git push origin @workflowbuilder/sdk@X.Y.Z
+# For the UI package: git tag @workflowbuilder/ui@X.Y.Z && git push origin @workflowbuilder/ui@X.Y.Z
 ```
 
 ### 5. CI publishes automatically
@@ -240,8 +250,8 @@ A published version cannot be overwritten on npm. Options when something went wr
 - **Tag is on the wrong commit but version is not yet on npm** (CI failed mid-publish, or you killed the workflow before publish step ran): delete and re-tag:
 
   ```bash
-  git tag -d vX.Y.Z
-  git push origin :refs/tags/vX.Y.Z
+  git tag -d @workflowbuilder/sdk@X.Y.Z
+  git push origin :refs/tags/@workflowbuilder/sdk@X.Y.Z
   # … fix the underlying issue, then re-tag at the correct commit and push again
   ```
 
@@ -269,9 +279,7 @@ A published version cannot be overwritten on npm. Options when something went wr
 
 - **OIDC Trusted Publisher, never a long-lived `NPM_TOKEN`** — the workflow exchanges a per-run GitHub OIDC token for a short-lived npm credential. Nothing to rotate, nothing to leak from CI logs. The trust is bound to the exact `synergycodes/workflowbuilder` repository plus this workflow file path; a fork can't publish, a different workflow in the same repo can't publish. `--provenance` attaches the signed build attestation so consumers see "published from this commit, by this workflow run" on the npm page.
 
-- **Tag format `vX.Y.Z`** — adopted from ng-diagram convention used elsewhere in the Synergy Codes org. Shorter, idiomatic for single-package monorepos, plays well with GitHub UI / `gh release` / external tooling that defaults to `v*` regex.
-
-  **If we ever publish a second package** (e.g. `@workflowbuilder/types`), we'll migrate the tag format to scoped (`@workflowbuilder/sdk@X.Y.Z`) so the two packages can be released independently without tag collisions. Migration is ~1h of work: update the workflow trigger pattern, the version-verify step, and this file's "Tag the merge commit" section. Historical `v*` tags stay untouched in git history — the migration is forward-only, no rewriting. Until then, `v*` keeps the daily flow short.
+- **Scoped tag format `@workflowbuilder/<pkg>@X.Y.Z`** — the repo now publishes two packages (`@workflowbuilder/sdk` and `@workflowbuilder/ui`), so each release tag is scoped to its package. This lets the two be released independently without tag collisions, and lets each workflow trigger on its own tag pattern. The earlier single-package `v*` scheme (an ng-diagram convention for single-package monorepos) was retired when `@workflowbuilder/ui` became publishable. Historical `v*` tags stay untouched in git history — the change is forward-only.
 
 - **Dedicated `release` branch** — `main` is "what we're building", `release` is "what's currently on npm". Each commit on `release` corresponds to one published version. Why this over main-only:
   - "What's published" is visible as a branch in the UI (no `git tag --list` scanning).

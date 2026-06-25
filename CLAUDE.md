@@ -134,7 +134,7 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ### Releasing `@workflowbuilder/sdk`
 
-Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Because there are now two publishable packages, the release tag scheme below (single-package `v*`) still needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) before publishing `@workflowbuilder/ui` from this repo - see § "Tag format" and `packages/sdk/RELEASE.md`.
+Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Both publish via scoped release tags (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`), each with its own workflow (`release-sdk.yml`, `release-ui.yml`) - see `packages/sdk/RELEASE.md`.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
@@ -159,7 +159,7 @@ Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/u
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
 
-Tag format currently follows the ng-diagram convention (single-package monorepo, `v*` regex). A second publishable package (`@workflowbuilder/ui`) now exists, so this needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) — ~1h of work, see `packages/sdk/RELEASE.md` § "Why these decisions".
+Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/sdk/RELEASE.md` § "Why these decisions".
 
 Canonical procedure with edge cases and rollback: [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md).
 
