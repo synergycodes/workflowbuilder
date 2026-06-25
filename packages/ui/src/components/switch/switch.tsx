@@ -15,10 +15,6 @@ export type BaseSwitchProps = {
    */
   size?: SelectorSize;
   /**
-   * Custom styles to apply to the switch
-   */
-  styles?: string;
-  /**
    * Custom content for the thumb of the switch
    */
   thumbChildren?: React.ReactNode;
@@ -51,7 +47,6 @@ export type BaseSwitchProps = {
 export function Switch({
   size = 'medium',
   className,
-  styles,
   thumbChildren,
   trackChildren,
   onChange,
@@ -64,7 +59,7 @@ export function Switch({
   return (
     <SwitchBase.Root
       onCheckedChange={handleCheckedChange}
-      className={clsx(switchStyles['container'], switchStyles[size], styles, className)}
+      className={clsx(switchStyles['container'], switchStyles[size], className)}
       nativeButton={false}
       render={<span />}
       {...props}

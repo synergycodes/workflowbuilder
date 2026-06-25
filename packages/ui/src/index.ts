@@ -1,5 +1,3 @@
-// [TODO] Improvement: Should we automate it?
-// Using glob library could help us generate this entrypoint and imports
 import './styles/globals.css';
 import './styles/layers.css';
 import './styles/typography.css';

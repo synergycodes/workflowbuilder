@@ -1,12 +1,14 @@
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
-import { libInjectCss } from 'vite-plugin-lib-inject-css';
-import { viteStaticCopy } from 'vite-plugin-static-copy';
-import dts from 'vite-plugin-dts';
 import { visualizer } from 'rollup-plugin-visualizer';
-import { boxSizingPlugin } from './postcss-box-sizing.mts';
+import { defineConfig } from 'vite';
+import dts from 'vite-plugin-dts';
+import { viteStaticCopy } from 'vite-plugin-static-copy';
+
+import { libInjectCss } from 'vite-plugin-lib-inject-css';
+
 import { combineCssBundle } from './combine-css-bundle.mts';
+import { boxSizingPlugin } from './postcss-box-sizing.mts';
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -38,10 +40,10 @@ const externalModules = new Set(['react', 'react-dom', 'react/jsx-runtime']);
 
 function getEntries(): Record<string, string> {
   const entries: Record<string, string> = {
-    index: path.resolve(rootDirectory,'src/index.ts'),
+    index: path.resolve(rootDirectory, 'src/index.ts'),
   };
   for (const name of componentEntries) {
-    entries[name] = path.resolve(rootDirectory,`src/components/${name}/index.ts`);
+    entries[name] = path.resolve(rootDirectory, `src/components/${name}/index.ts`);
   }
   return entries;
 }
@@ -82,7 +84,7 @@ export default defineConfig({
   build: {
     lib: {
       entry: getEntries(),
-      name: 'Overflow UI',
+      name: '@workflowbuilder/ui',
       formats: ['es'],
     },
     rollupOptions: {
@@ -111,7 +113,7 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@ui': path.resolve(rootDirectory,'./src'),
+      '@ui': path.resolve(rootDirectory, './src'),
     },
   },
   plugins: [

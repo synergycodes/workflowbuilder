@@ -45,7 +45,7 @@ type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & Rea
 };
 
 export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
-  ({ children, value, defaultValue, size = 'medium', shape = '', className, onChange }, ref) => {
+  ({ children, value, defaultValue, size = 'medium', shape = 'default', className, onChange }, ref) => {
     const validShape = getValidShape(shape, children);
     const isControlled = value !== undefined;
     const [internalValue, setInternalValue] = useState<string | undefined>(defaultValue);

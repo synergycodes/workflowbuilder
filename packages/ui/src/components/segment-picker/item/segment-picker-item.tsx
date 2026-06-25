@@ -43,7 +43,7 @@ export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps
   const { selectedValue, onSelect, shape, ...other } = context;
 
   const props = {
-    className: clsx(itemShapeStyles['item'], itemShapeStyles[shape || '']),
+    className: clsx(itemShapeStyles['item'], itemShapeStyles[shape ?? 'default']),
     isSelected: selectedValue === value,
     onClick: (event: MouseEvent<HTMLButtonElement>) => onSelect(event, value),
     shape,

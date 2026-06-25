@@ -5,9 +5,10 @@ import { Theme } from './types';
 
 const { primitives, themes } = config;
 
-const codeChunks: string[] = [];
-
 export async function generateCSSBundle() {
+  // Local to the call so repeated invocations in one process don't accumulate.
+  const codeChunks: string[] = [];
+
   for (const primitive of primitives) {
     codeChunks.push(createPrimitiveImport(primitive));
   }

@@ -16,7 +16,7 @@ export function combineCssBundle(rootDirectory: string): Plugin {
   const stylesDirectory = path.resolve(rootDirectory, 'src/styles');
 
   return {
-    name: 'overflow-ui:combine-css-bundle',
+    name: 'wb-ui:combine-css-bundle',
     apply: 'build',
     closeBundle() {
       writeCombinedStylesheet(distributionDirectory, stylesDirectory);
@@ -33,6 +33,9 @@ function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory:
   const assetsDirectory = path.resolve(distributionDirectory, 'assets');
   if (!fs.existsSync(assetsDirectory)) return;
 
+  // Alphabetical order. Within one cascade layer file order only decides ties
+  // between equal-specificity rules; components don't share selectors, so this
+  // is safe. Replace .sort() with an explicit order if that ever changes.
   const styles = fs
     .readdirSync(assetsDirectory)
     .filter((file) => file.endsWith('.css'))

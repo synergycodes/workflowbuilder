@@ -35,9 +35,11 @@ type Props = {
  * - Header only, Content only, Handles only
  * - Any combination of Header, Content, and Handles (but max 1 each)
  *
- * **Invalid Cases (Throws a Runtime Warning):**
- * - More than one instance of `NodePanel.Header`, `<NodePanel.Content`, or `NodePanel.Handles`
- * - Passing an unknown child element
+ * **Invalid Cases (logged via `console.error`, not thrown):**
+ * Validation is count-based: it compares the number of children against the
+ * recognized slots, so any extra child - whether an unknown element or a
+ * duplicate Header / Content / Handles - trips the same "Unknown children
+ * detected" error. The panel still renders the slots it found.
  */
 
 const Header = memo(function Header({ children, className }: PropsWithChildren<{ className?: string }>) {
