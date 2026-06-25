@@ -2,18 +2,17 @@
   "name": "@workflowbuilder/ui",
   "type": "module",
   "version": "1.0.0-beta.28",
-  "description": "A React library for creating node-based UIs and diagram-driven applications. Perfect for React Flow users, providing ready-to-use node templates and components that work seamlessly with React Flow's ecosystem.",
+  "description": "Workflow Builder's component library: accessible, themeable React UI primitives (button, input, select, modal, menu, date picker, switch, tooltip, and more) built on Base UI, plus diagram building blocks for node/edge UIs.",
   "keywords": [
     "react",
     "ui",
-    "diagram",
-    "node-based",
     "components",
+    "component-library",
+    "base-ui",
+    "design-system",
+    "accessible",
     "typescript",
-    "react flow",
-    "flow",
-    "node-templates",
-    "diagram-components"
+    "workflow-builder"
   ],
   "author": "Synergy Codes",
   "license": "MIT",
@@ -60,21 +59,21 @@
     "./tokens.css": "./dist/tokens.css"
   },
   "dependencies": {
-    "@phosphor-icons/react": "catalog:",
-    "clsx": "^2.1.1",
-    "date-fns": "^4.1.0",
-    "react-day-picker": "^9.14.0",
     "react-textarea-autosize": "^8.5.6"
   },
   "devDependencies": {
     "@base-ui/react": "catalog:",
+    "@phosphor-icons/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "^19.1.0",
     "@workflowbuilder/ui-tokens": "workspace:*",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.3",
     "react": "catalog:",
+    "react-day-picker": "^9.14.0",
     "react-dom": "catalog:",
     "rollup-plugin-visualizer": "^7.0.1",
     "tsx": "^4.19.3",
@@ -86,7 +85,7 @@
     "vitest": "^3.0.4"
   },
   "peerDependencies": {
-    "@base-ui/react": "^1.4.0",
+    "@base-ui/react": "~1.4.0",
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },

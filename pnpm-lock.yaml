@@ -555,18 +555,6 @@ importers:
 
   packages/ui:
     dependencies:
-      '@phosphor-icons/react':
-        specifier: 'catalog:'
-        version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
-      clsx:
-        specifier: ^2.1.1
-        version: 2.1.1
-      date-fns:
-        specifier: ^4.1.0
-        version: 4.1.0
-      react-day-picker:
-        specifier: ^9.14.0
-        version: 9.14.0(react@19.1.0)
       react-textarea-autosize:
         specifier: ^8.5.6
         version: 8.5.9(@types/react@19.1.8)(react@19.1.0)
@@ -574,6 +562,9 @@ importers:
       '@base-ui/react':
         specifier: 'catalog:'
         version: 1.4.1(@date-fns/tz@1.5.0)(@types/react@19.1.8)(date-fns@4.1.0)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+      '@phosphor-icons/react':
+        specifier: 'catalog:'
+        version: 2.1.7(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       '@types/react':
         specifier: 'catalog:'
         version: 19.1.8
@@ -583,6 +574,12 @@ importers:
       '@workflowbuilder/ui-tokens':
         specifier: workspace:*
         version: link:../tokens
+      clsx:
+        specifier: ^2.1.1
+        version: 2.1.1
+      date-fns:
+        specifier: ^4.1.0
+        version: 4.1.0
       eslint-plugin-react:
         specifier: ^7.37.4
         version: 7.37.5(eslint@9.19.0(jiti@2.6.1))
@@ -595,6 +592,9 @@ importers:
       react:
         specifier: 'catalog:'
         version: 19.1.0
+      react-day-picker:
+        specifier: ^9.14.0
+        version: 9.14.0(react@19.1.0)
       react-dom:
         specifier: 'catalog:'
         version: 19.1.0(react@19.1.0)

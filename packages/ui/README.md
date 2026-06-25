@@ -1,6 +1,6 @@
 # @workflowbuilder/ui
 
-A React library for creating node-based user interfaces and diagram-driven apps. Built to work seamlessly with React Flow, it provides a collection of ready-to-use components and templates that simplify the development of visual editors, workflows, and interactive diagrams.
+Workflow Builder's component library: accessible, themeable React UI primitives - button, input, select, modal, menu, date picker, switch, tooltip, and more - built on [Base UI](https://base-ui.com), plus diagram building blocks (node and edge parts) for visual editors.
 
 Developed and maintained by **[Synergy Codes](https://www.synergycodes.com/)**.
 
@@ -8,7 +8,7 @@ Developed and maintained by **[Synergy Codes](https://www.synergycodes.com/)**.
 
 ### 📦 Installation
 
-Use one of the commands below to add **Overflow UI** to your project:
+Use one of the commands below to add **`@workflowbuilder/ui`** to your project:
 
 ```bash
 npm install @workflowbuilder/ui
@@ -21,6 +21,13 @@ pnpm add @workflowbuilder/ui
 ```bash
 yarn add @workflowbuilder/ui
 ```
+
+> **Peer dependencies.** Install `@base-ui/react` (range `~1.4.0`) alongside
+> `react` / `react-dom`. `@base-ui/react` is pinned to the `1.4.x` line because
+> later versions regressed dialog/menu/tooltip transitions. Everything else the
+> components use (date-fns, react-day-picker, clsx, Phosphor icons) is bundled
+> into the package; only `react-textarea-autosize` is pulled in as a regular
+> dependency.
 
 ### 🎨 Import styles
 
@@ -62,7 +69,7 @@ import { Input } from '@workflowbuilder/ui';
 
 ## Overview
 
-Forget cobbling together UI kits with diagram libraries. Overflow UI provides a unified set of designed, ready-to-use components: buttons, inputs, accordions, node templates, and more — all built to work seamlessly together.
+Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` provides a unified set of designed, ready-to-use components: buttons, inputs, accordions, node templates, and more — all built to work seamlessly together.
 
 ## Features
 
@@ -74,7 +81,7 @@ Forget cobbling together UI kits with diagram libraries. Overflow UI provides a 
 
 ## Customization
 
-Each Overflow UI component uses CSS variables that are derived from primitive values.
+Each `@workflowbuilder/ui` component uses CSS variables that are derived from primitive values.
 
 You can override them:
 
@@ -92,9 +99,9 @@ or a derived value used by the selected component:
 }
 ```
 
-### Overflow UI css layers
+### `@workflowbuilder/ui` css layers
 
-Overflow UI uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to separate its styles from yours. By default, CSS styles outside of any layer take precedence over what Overflow UI defines, so your styles will always win the specificity war. You can customize Overflow UI components with simple `input {}`.
+`@workflowbuilder/ui` uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to separate its styles from yours. By default, CSS styles outside of any layer take precedence over what `@workflowbuilder/ui` defines, so your styles will always win the specificity war. You can customize `@workflowbuilder/ui` components with simple `input {}`.
 
 ```css
 @layer ui.component {
@@ -104,7 +111,7 @@ Overflow UI uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@
 }
 ```
 
-Default Overflow UI order:
+Default `@workflowbuilder/ui` order:
 
 ```css
 @layer ui.base, ui.component;
@@ -112,34 +119,39 @@ Default Overflow UI order:
 
 # 🛠️ Development
 
-To develop and test components, follow these steps in monorepo root:
+Run these from the monorepo root.
 
-1. Install dependencies:
+Install dependencies:
 
 ```bash
 pnpm i
 ```
 
-2. Build UI:
+Build the library (runs the built-CSS guard afterwards):
 
 ```bash
-pnpm ui build
+pnpm --filter @workflowbuilder/ui build
 ```
 
-3. Run preview page:
+Rebuild on change while developing:
 
 ```bash
-pnpm ui preview
+pnpm --filter @workflowbuilder/ui dev
 ```
 
-Now visit `localhost:3000` to see every change in components reflected in the preview page.
-Edit `ui/preview-page/preview-page.tsx` to display desired components.
+Run the unit tests:
+
+```bash
+pnpm --filter @workflowbuilder/ui test
+```
+
+To see components rendered live, start the documentation site with `pnpm dev:docs` and open its UI Library gallery.
 
 ### 📣 Important Note on Underlying Technology
 
-> **Overflow UI is built on top of [Base UI](https://base-ui.com), a headless component library that focuses on accessibility and logic, while leaving the styling up to us.**
+> **`@workflowbuilder/ui` is built on top of [Base UI](https://base-ui.com), a headless component library that focuses on accessibility and logic, while leaving the styling up to us.**
 >
-> Thanks to Base UI, Overflow UI provides components that are **accessible by default** and **fully customizable** through our design tokens.
+> Thanks to Base UI, `@workflowbuilder/ui` provides components that are **accessible by default** and **fully customizable** through our design tokens.
 >
 > Earlier `1.0.0` betas were built on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/). From `1.0.0-beta.28` the library is built on Base UI; see [CHANGELOG.md](./CHANGELOG.md) for the full list of changes.
 

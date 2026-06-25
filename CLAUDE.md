@@ -134,7 +134,7 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ### Releasing `@workflowbuilder/sdk`
 
-Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private (`@workflowbuilder/ui-tokens` is private too) and listed under `ignore` in `.changeset/config.json`. Because there are now two publishable packages, the release tag scheme below (single-package `v*`) still needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) before publishing `@workflowbuilder/ui` from this repo - see § "Tag format" and `packages/sdk/RELEASE.md`.
+Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Because there are now two publishable packages, the release tag scheme below (single-package `v*`) still needs migrating to scoped tags (`@workflowbuilder/sdk@X.Y.Z`) before publishing `@workflowbuilder/ui` from this repo - see § "Tag format" and `packages/sdk/RELEASE.md`.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
