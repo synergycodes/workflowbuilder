@@ -6,7 +6,7 @@
 
 export type VisualizeRenderer = 'markdown' | 'text' | 'json' | 'table' | 'stat-cards' | 'chart' | 'diagram';
 
-export type DetectResult = {
+type DetectResult = {
   renderer: VisualizeRenderer;
   // Parsed payload for structured formats (json/table/chart), so renderers do not re-parse.
   data?: unknown;
