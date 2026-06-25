@@ -20,6 +20,11 @@ export const uischema: UISchema = {
       label: 'Render as',
     },
     {
+      type: 'Switch',
+      scope: scope('properties.aiAdapt'),
+      label: 'AI: adapt output to this format',
+    },
+    {
       type: 'Select',
       scope: scope('properties.errorPolicy'),
       label: 'Error Policy',

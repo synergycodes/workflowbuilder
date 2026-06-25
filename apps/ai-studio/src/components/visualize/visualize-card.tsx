@@ -20,7 +20,7 @@ type Props = {
 
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram']);
-// Formats the LLM "AI adapt" button can convert into (markdown/text need no LLM).
+// Formats the LLM "AI adapt" can convert into (markdown/text need no conversion).
 const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
 function EmptyState({ running }: { running: boolean }) {
@@ -45,9 +45,9 @@ function EmptyState({ running }: { running: boolean }) {
 }
 
 // Injected into the node body via the OptionalNodeContent decorator, so the
-// visualization renders as part of the node itself (the node grows to contain
-// it). Reads the upstream node's output, picks a renderer (the node's `mode` or
-// auto-detected), reveals it, and offers export, expand, and LLM "adapt".
+// visualization renders as part of the node itself. Reads the upstream node's
+// output, picks a renderer (the node's `mode` or auto-detected), reveals it, and
+// offers export, expand, and LLM "adapt" (manual button or the node's aiAdapt toggle).
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
@@ -65,6 +65,27 @@ export function VisualizeCard({ props }: Props) {
   const sourceOutput = useExecutionStore((state) => (sourceId ? state.nodeStates[sourceId]?.output : undefined));
 
   const text = extractOutputText(sourceOutput);
+  const hasOutput = selfStatus === 'completed' && text.length > 0;
+
+  const properties = node?.data.properties as { mode?: string; aiAdapt?: boolean } | undefined;
+  const mode: VisualizeMode =
+    properties?.mode && VALID_MODES.has(properties.mode) ? (properties.mode as VisualizeMode) : 'auto';
+  const aiAdapt = Boolean(properties?.aiAdapt);
+  const detection = detectFormat(text);
+  let activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
+  if (forceChart && mode === 'auto') {
+    activeRenderer = 'chart';
+  }
+
+  const runAdapt = (format: VisualizeRenderer) => {
+    setAdapting(true);
+    adaptVisualization(text, format)
+      .then((output) => setAdaptedText(output))
+      .catch(() => {
+        // keep the original content on failure
+      })
+      .finally(() => setAdapting(false));
+  };
 
   // A fresh upstream output clears any prior adaptation / chart override.
   useEffect(() => {
@@ -72,50 +93,24 @@ export function VisualizeCard({ props }: Props) {
     setForceChart(false);
   }, [text]);
 
+  // When the node's aiAdapt toggle is on, auto-convert the output to the format.
+  useEffect(() => {
+    if (hasOutput && aiAdapt && ADAPTABLE.has(activeRenderer) && adaptedText === null && !adapting) {
+      runAdapt(activeRenderer);
+    }
+  }, [hasOutput, aiAdapt, activeRenderer, text, adaptedText]);
+
   if (!isVisualizeNode) {
     return null;
   }
 
-  const hasOutput = selfStatus === 'completed' && text.length > 0;
   const renderText = adaptedText ?? text;
-
-  let badge = '';
-  let showChartChip = false;
-  let activeRenderer: VisualizeRenderer | null = null;
-  let data: unknown;
-  let Renderer: ReturnType<typeof getRenderer> | null = null;
-
-  if (hasOutput) {
-    const modeRaw = (node?.data.properties as { mode?: string } | undefined)?.mode;
-    const mode: VisualizeMode = modeRaw && VALID_MODES.has(modeRaw) ? (modeRaw as VisualizeMode) : 'auto';
-    const detection = detectFormat(text);
-    activeRenderer = mode === 'auto' ? detection.renderer : mode;
-    if (forceChart && mode === 'auto') {
-      activeRenderer = 'chart';
-    }
-    // Adapted output is freshly generated, so re-parse it rather than reuse the
-    // detected payload from the original text.
-    data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
-    Renderer = getRenderer(activeRenderer);
-    badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
-    showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
-  }
-
+  const data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
+  const Renderer = hasOutput ? getRenderer(activeRenderer) : null;
+  const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
+  const showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
-  const canAdapt = activeRenderer !== null && ADAPTABLE.has(activeRenderer);
-
-  const handleAdapt = () => {
-    if (!activeRenderer) {
-      return;
-    }
-    setAdapting(true);
-    adaptVisualization(text, activeRenderer)
-      .then((output) => setAdaptedText(output))
-      .catch(() => {
-        // keep the original content on failure
-      })
-      .finally(() => setAdapting(false));
-  };
+  const showAdaptButton = ADAPTABLE.has(activeRenderer) && !aiAdapt;
 
   return (
     <div className={styles['integrated']}>
@@ -124,12 +119,12 @@ export function VisualizeCard({ props }: Props) {
           <div className={styles['toolbar']}>
             <span className={styles['badge']}>{badge}</span>
             <div className={styles['actions']}>
-              {canAdapt && (
+              {showAdaptButton && (
                 <button
                   type="button"
                   className={styles['action']}
                   title="AI: adapt to this format"
-                  onClick={handleAdapt}
+                  onClick={() => runAdapt(activeRenderer)}
                   disabled={adapting}
                 >
                   <Sparkle weight={adaptedText ? 'fill' : 'regular'} />
@@ -191,7 +186,7 @@ export function VisualizeCard({ props }: Props) {
       ) : (
         <EmptyState running={selfStatus === 'running'} />
       )}
-      {expanded && activeRenderer && (
+      {expanded && (
         <VisualizeModal
           renderer={activeRenderer}
           text={renderText}

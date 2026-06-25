@@ -25,6 +25,9 @@ export const schema = {
       type: 'string',
       options: VISUALIZE_MODES.map((value) => ({ label: MODE_LABELS[value], value })),
     },
+    aiAdapt: {
+      type: 'boolean',
+    },
   },
 } satisfies NodeSchema;
 
