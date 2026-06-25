@@ -2,25 +2,15 @@ import { Menu as MenuBase } from '@base-ui/react/menu';
 import { Separator } from '@ui/components/separator/separator';
 import { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
-import { type ComponentProps, ReactElement, memo } from 'react';
+import { ReactElement, memo } from 'react';
 
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
 
 import { MenuItem } from './menu-item';
+import { type OffsetOptions, type Placement, offsetToBaseUI, placementToSideAlign } from './placement';
 import { MenuItemProps } from './types';
 
-type Side = 'top' | 'bottom' | 'left' | 'right';
-type Align = 'start' | 'end';
-
-export type Placement = Side | `${Side}-${Align}`;
-
-type OffsetAxes = {
-  mainAxis?: number;
-  crossAxis?: number;
-  alignmentAxis?: number | null;
-};
-
-export type OffsetOptions = number | OffsetAxes;
+export type { OffsetOptions, Placement } from './placement';
 
 type MenuProps = {
   /**
@@ -66,30 +56,6 @@ type MenuProps = {
    */
   children?: ReactElement;
 };
-
-type PositionerProps = ComponentProps<typeof MenuBase.Positioner>;
-type PositionerSide = NonNullable<PositionerProps['side']>;
-type PositionerAlign = NonNullable<PositionerProps['align']>;
-
-function placementToSideAlign(placement: Placement): {
-  side: PositionerSide;
-  align: PositionerAlign;
-} {
-  const [side, alignRaw] = placement.split('-') as [PositionerSide, PositionerAlign | undefined];
-  return { side, align: alignRaw ?? 'center' };
-}
-
-function offsetToBaseUI(
-  offset: OffsetOptions | undefined,
-  align: PositionerAlign,
-): { sideOffset?: number; alignOffset?: number } {
-  if (offset == null) return {};
-  if (typeof offset === 'number') return { sideOffset: offset };
-  const { mainAxis, crossAxis, alignmentAxis } = offset;
-  const physicalCross = crossAxis ?? 0;
-  const alignOffset = alignmentAxis ?? (align === 'end' ? -physicalCross : physicalCross);
-  return { sideOffset: mainAxis ?? 0, alignOffset };
-}
 
 export const Menu = memo(
   ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {

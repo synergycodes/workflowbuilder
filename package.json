@@ -27,7 +27,7 @@
     "lint:fix": "pnpm -r lint:fix",
     "format": "prettier --write --log-level silent \"**/*.+(css|ts|tsx|json|md|mdx|astro)\"",
     "typecheck": "pnpm -r typecheck",
-    "test": "pnpm --filter @workflowbuilder/sdk test && pnpm --filter @workflow-builder/execution-core test",
+    "test": "pnpm --filter @workflowbuilder/sdk test && pnpm --filter @workflow-builder/execution-core test && pnpm --filter @workflowbuilder/ui test && pnpm --filter @workflowbuilder/ui-tokens test",
     "check": "pnpm lint && pnpm typecheck && pnpm format",
     "pre-commit": "lint-staged",
     "pre-push": "pnpm format",

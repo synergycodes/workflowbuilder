@@ -120,7 +120,7 @@ export default defineConfig({
     libInjectCss(),
     // Per-entry .d.ts; rollupTypes is intentionally off (incompatible with this
     // multi-entry setup, see vite-plugin-dts docs).
-    dts({ entryRoot: 'src' }),
+    dts({ entryRoot: 'src', exclude: ['src/**/*.spec.{ts,tsx}'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),
     ...(process.env.BUNDLE_STATS ? bundleStatsPlugins() : []),
