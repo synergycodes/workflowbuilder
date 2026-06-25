@@ -36,8 +36,17 @@ function parseOr(text: string, data: unknown): unknown {
   try {
     return JSON.parse(text);
   } catch {
-    return undefined;
+    // not raw JSON — try a fenced ```json block (LLM output often wraps it)
   }
+  const fence = /```(?:json)?\s*\n?([\s\S]*?)```/.exec(text);
+  if (fence) {
+    try {
+      return JSON.parse(fence[1].trim());
+    } catch {
+      // fenced content is not JSON either
+    }
+  }
+  return undefined;
 }
 
 function formatCell(value: unknown): string {
