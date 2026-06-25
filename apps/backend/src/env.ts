@@ -23,4 +23,8 @@ export const env = {
   // without Turnstile, so the public demo budget has a backstop out of the box.
   EXECUTE_RATE_LIMIT: Number(envOr('EXECUTE_RATE_LIMIT', '10')),
   EXECUTE_RATE_WINDOW_MS: Number(envOr('EXECUTE_RATE_WINDOW_MS', '60000')),
+  // OpenRouter for the Visualize "AI adapt" endpoint. Null = adapt disabled
+  // (the endpoint returns 501). The worker keeps its own key for execution.
+  OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
+  AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
 };

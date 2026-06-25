@@ -17,6 +17,7 @@ import { env } from './env';
 import { logger } from './logger';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
 import { createExecutionsRoutes } from './routes/executions';
+import { createVisualizeRoutes } from './routes/visualize';
 import { createWorkflowsRoutes } from './routes/workflows';
 import { NoopTenantContextPort, type TenantContextPort, type TenantVariables, createTenantMiddleware } from './tenant';
 
@@ -80,6 +81,7 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
 
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
+app.route('/api/visualize', createVisualizeRoutes(assertAuthorized));
 
 // a failure (DB still starting) exits the process; the container restart policy retries
 await runMigrations();
