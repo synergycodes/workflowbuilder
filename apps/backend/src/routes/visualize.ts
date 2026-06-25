@@ -16,20 +16,28 @@ const adaptSchema = z.object({
   format: z.enum(['diagram', 'chart', 'table', 'json', 'stat-cards', 'markdown', 'text']),
 });
 
-// One conversion instruction per target format. Each asks for ONLY the payload
-// (no code fences, no prose) so the renderer gets clean input.
+// Reshape an automation step's output into a specific visualization format. Each
+// prompt asks for ONLY the payload (no fences, no prose) and reshapes the data to
+// fit the format using only facts present in the content.
 const FORMAT_PROMPTS: Record<z.infer<typeof adaptSchema>['format'], string> = {
-  diagram:
-    'Turn the content into a single valid Mermaid diagram (use a flowchart unless another diagram type clearly fits better). Output ONLY the Mermaid source — no code fences, no explanation.',
-  chart:
-    'Turn the content into chart data: a JSON array of {"label": string, "value": number} objects, or {"type": "bar"|"line"|"pie", "data": [...]}. Output ONLY JSON — no code fences, no explanation.',
-  table:
-    'Turn the content into a JSON array of flat row objects that share the same keys. Output ONLY JSON — no code fences, no explanation.',
-  json: 'Turn the content into a single JSON value (object or array) that captures its structure. Output ONLY JSON — no code fences, no explanation.',
-  'stat-cards':
-    'Extract the key metrics from the content as a flat JSON object mapping a short label to a scalar value. Output ONLY JSON — no code fences, no explanation.',
-  markdown: 'Reformat the content as clean, well-structured Markdown. Output ONLY the Markdown.',
-  text: 'Return the content as readable plain text. Output ONLY the text.',
+  diagram: `You reshape content into a Mermaid diagram so it can be rendered as one. Choose the diagram type that best represents the content: a flowchart (\`flowchart TD\`) for processes/steps/dependencies, a \`sequenceDiagram\` for interactions over time.
+Rules:
+- Output ONLY the raw Mermaid source. No code fences, no commentary.
+- Begin with a valid declaration and direction, e.g. \`flowchart TD\`.
+- Keep node labels short. Wrap every label that contains a space or punctuation in double quotes, e.g. \`A["Fix export bug"]\`. Never put parentheses, semicolons, colons, or unescaped quotes inside a label.
+- Aim for 4-12 nodes; connect them to show the real relationships.
+- Use only facts from the content. Do not invent steps.`,
+  chart: `You reshape content into chart data so it can be rendered as a chart. Find a categorical dimension and a numeric measure in the content.
+Rules:
+- Output ONLY JSON. No code fences, no commentary.
+- Shape: a JSON array like [{"label":"Q1","value":42}], OR {"type":"bar"|"line"|"pie"|"area","data":[{"label":...,"value":...}]}.
+- "value" must be a number. Aggregate or count where the content implies it (e.g. number of items per category).
+- Produce 2-12 data points. Use real numbers from the content; if there are none, count occurrences. If the content has nothing quantifiable, output [].`,
+  table: `You reshape content into a table. Output ONLY a JSON array of flat row objects that ALL share the same keys (the columns). Use concise column names, flatten nested values to short strings, and include one object per row. No code fences, no commentary. Use only facts from the content.`,
+  json: `Output ONLY a single JSON value (object or array) that faithfully captures the structure of the content. No code fences, no commentary.`,
+  'stat-cards': `Extract the key metrics / KPIs from the content as a flat JSON object mapping a short human label to a scalar value (string, number, or boolean), e.g. {"Open tickets":14,"Owner":"Sam"}. Use 2-8 entries, the most important first. Output ONLY JSON, no code fences, no commentary.`,
+  markdown: `Reformat the content as clean, well-structured Markdown (headings, lists, bold where it helps). Keep all the information. Output ONLY the Markdown.`,
+  text: `Return the content as clean, readable plain text. Output ONLY the text.`,
 };
 
 export function createVisualizeRoutes(
@@ -62,9 +70,11 @@ export function createVisualizeRoutes(
       const result = await generateText({
         model: openrouter.chat(env.AI_MODEL),
         system: FORMAT_PROMPTS[format],
-        prompt: content,
+        // Low temperature for stable, well-formed structured output.
+        temperature: 0.2,
+        prompt: `Content to convert:\n\n${content}`,
       });
-      return c.json({ output: result.text });
+      return c.json({ output: result.text.trim() });
     } catch (error) {
       logger.error('adapt failed', { error: error instanceof Error ? error.message : String(error) });
       return c.json({ code: 'adapt_failed', message: 'Could not adapt the content.' }, 502);
