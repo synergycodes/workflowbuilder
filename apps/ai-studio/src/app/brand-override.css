@@ -1,9 +1,14 @@
-/* TEMPORARY override. The SDK app bar renders the Workflow Builder logo as a
-   CSS-module `logo` <svg> inside `toolbar`, and exposes no prop to replace it or
-   make it a link. We hide it here and render our own linked CDN logo (see
-   BrandLogo). The prefix selectors survive the per-build module-hash suffix
-   (e.g. `_logo_2tbzr_18`). Remove this and the BrandLogo overlay once the SDK
-   exposes a logo / logoHref prop on <WorkflowBuilder.Root>. */
+/* TEMPORARY override. The SDK app bar (`Toolbar`) renders the Workflow Builder
+   logo as an SVG with CSS-module class `logo`, followed by a `nav-segment`
+   holding the Save button, in a flex row (gap 2rem). The SDK exposes no prop to
+   replace the logo or make it a link, so we hide its pixels here and render our
+   own linked CDN logo (see BrandLogo). We keep the logo's box in the flex flow
+   (`visibility`, NOT `display: none`) and reserve a width matching the overlay,
+   so the Save button keeps its place instead of sliding left underneath the
+   overlay. The prefix selectors survive the per-build module-hash suffix (e.g.
+   `_logo_2tbzr_18`). Remove this and the BrandLogo overlay once the SDK exposes
+   a logo / logoHref prop on <WorkflowBuilder.Root>. */
 [class^='_toolbar_'] [class^='_logo_'] {
-  display: none;
+  visibility: hidden;
+  width: 6rem; /* >= the BrandLogo overlay width (~5.8rem) so the Save button clears it */
 }
