@@ -79,6 +79,34 @@
   color: var(--ax-txt-secondary-default, #4d5059);
 }
 
+/* Inline markdown inside table cells / stat-card values */
+.rich p {
+  margin: 0;
+}
+
+.rich ul,
+.rich ol {
+  margin: 0.2em 0;
+  padding-left: 1.1em;
+}
+
+.rich code {
+  font-family: 'IBM Plex Mono', ui-monospace, monospace;
+  font-size: 0.85em;
+  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
+  padding: 0.05em 0.3em;
+  border-radius: 0.2rem;
+}
+
+.rich a {
+  color: var(--ax-colors-acc1-500, #1096e7);
+  text-decoration: underline;
+}
+
+.rich strong {
+  font-weight: 600;
+}
+
 .text {
   margin: 0;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;

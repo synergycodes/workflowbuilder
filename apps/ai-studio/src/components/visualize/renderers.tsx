@@ -66,6 +66,31 @@ function humanize(key: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
+// Cell / value strings from an LLM often carry markdown (bold, lists, links,
+// code). Render those as markdown; leave plain strings untouched so values like
+// "user_id" or "a_b" are not mangled. Raw HTML is intentionally NOT rendered
+// (escaped) to avoid XSS from untrusted model output.
+function hasRichText(value: string): boolean {
+  return (
+    value.includes('\n') ||
+    /\*\*|__|~~/.test(value) ||
+    /`[^`]+`/.test(value) ||
+    /\[[^\]]+\]\([^)]+\)/.test(value) ||
+    /^\s*(?:#{1,6}\s|[-*+]\s|>\s|\d+\.\s)/m.test(value)
+  );
+}
+
+export function RichText({ value }: { value: string }) {
+  if (!hasRichText(value)) {
+    return <>{value}</>;
+  }
+  return (
+    <div className={styles['rich']}>
+      <Markdown remarkPlugins={[remarkGfm]}>{value}</Markdown>
+    </div>
+  );
+}
+
 // Render fenced code blocks richly: a ```mermaid block becomes a real diagram,
 // a ```json block is detected and rendered (chart/table/json/...), so a mixed
 // markdown response with an embedded diagram/data block renders it inline rather
@@ -184,9 +209,15 @@ export function TableRenderer({ text, data }: RendererProps) {
         {rows.map((row, rowIndex) => (
           <tr key={rowIndex}>
             {objectRows ? (
-              headers.map((header) => <td key={header}>{formatCell((row as Record<string, unknown>)[header])}</td>)
+              headers.map((header) => (
+                <td key={header}>
+                  <RichText value={formatCell((row as Record<string, unknown>)[header])} />
+                </td>
+              ))
             ) : (
-              <td>{formatCell(row)}</td>
+              <td>
+                <RichText value={formatCell(row)} />
+              </td>
             )}
           </tr>
         ))}
@@ -205,7 +236,9 @@ export function StatCardsRenderer({ text, data }: RendererProps) {
     <div className={styles['stats']}>
       {entries.map(([key, entryValue]) => (
         <div key={key} className={styles['stat-card']}>
-          <div className={styles['stat-value']}>{formatCell(entryValue)}</div>
+          <div className={styles['stat-value']}>
+            <RichText value={formatCell(entryValue)} />
+          </div>
           <div className={styles['stat-label']}>{humanize(key)}</div>
         </div>
       ))}
