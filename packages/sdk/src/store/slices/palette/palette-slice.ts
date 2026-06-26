@@ -7,6 +7,7 @@ import {
   StatusType,
 } from '../../../node/common';
 import type { GetDiagramState, SetDiagramState } from '../../store';
+import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
 
 export type PaletteState = {
   isSidebarExpanded: boolean;
@@ -40,6 +41,9 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
         data: getPaletteData(),
         fetchDataStatus: StatusType.Success,
       });
+
+      // Set a timeout to postpone to next event loop iteration
+      setTimeout(() => refreshNodesErrorsIfNeeded(), 1);
     },
     getNodeDefinition: (nodeType) => {
       const { data } = get();
