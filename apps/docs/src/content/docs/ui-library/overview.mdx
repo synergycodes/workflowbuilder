@@ -15,11 +15,13 @@ page with a live example, props, and CSS variables.
 
 ## Install
 
-`@base-ui/react` is a peer dependency, so install it alongside the library:
-
 ```sh
-npm install @workflowbuilder/ui @base-ui/react
+npm install @workflowbuilder/ui
 ```
+
+`react` and `react-dom` are the only peer dependencies - provide your own.
+Everything else the components need, including `@base-ui/react` (pinned to the
+validated `1.4.x` line), is a regular dependency and installs automatically.
 
 ## Styles
 
