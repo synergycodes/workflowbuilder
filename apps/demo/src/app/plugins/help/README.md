@@ -1,6 +1,6 @@
 # Help
 
-Removal of this plugin will result in an application without the "_Unlock Full Product Access_" popup and watermark in the corner.
+Removal of this plugin will result in an application without the watermark in the corner.
 
 ## Plugins in Workflow Builder
 

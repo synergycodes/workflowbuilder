@@ -10,7 +10,7 @@ export function openTemplateSelectorModal() {
   openModal({
     content: <TemplateSelector />,
     icon: <Icon name="Cube" />,
-    title: i18n.t('plugins.help.header'),
+    title: i18n.t('templateSelector.title'),
     onModalClosed: () => useStore.getState().setDiagramModel(undefined, { skipIfNotEmpty: true }),
   });
 }
