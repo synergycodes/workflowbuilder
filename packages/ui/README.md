@@ -22,12 +22,13 @@ pnpm add @workflowbuilder/ui
 yarn add @workflowbuilder/ui
 ```
 
-> **Peer dependencies.** Install `@base-ui/react` (range `~1.4.0`) alongside
-> `react` / `react-dom`. `@base-ui/react` is pinned to the `1.4.x` line because
-> later versions regressed dialog/menu/tooltip transitions. Everything else the
-> components use (date-fns, react-day-picker, clsx, Phosphor icons) is bundled
-> into the package; only `react-textarea-autosize` is pulled in as a regular
-> dependency.
+> **Peers &amp; dependencies.** The only peer dependencies are `react` and
+> `react-dom` (bring your own). `@base-ui/react` is a regular dependency pinned
+> to the `1.4.x` line (later versions regressed dialog/menu/tooltip transitions),
+> so it installs automatically — no need to add it yourself. The heavier
+> component dependencies (date-fns, react-day-picker, clsx, Phosphor icons) are
+> bundled into the package; `react-textarea-autosize` and `@base-ui/react` are
+> the only ones resolved from your `node_modules`.
 
 ### 🎨 Import styles
 

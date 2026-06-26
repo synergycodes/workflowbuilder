@@ -59,10 +59,10 @@
     "./tokens.css": "./dist/tokens.css"
   },
   "dependencies": {
+    "@base-ui/react": "catalog:",
     "react-textarea-autosize": "^8.5.6"
   },
   "devDependencies": {
-    "@base-ui/react": "catalog:",
     "@phosphor-icons/react": "catalog:",
     "@types/react": "catalog:",
     "@types/react-dom": "^19.1.0",
@@ -85,7 +85,6 @@
     "vitest": "^3.0.4"
   },
   "peerDependencies": {
-    "@base-ui/react": "~1.4.0",
     "react": "^17.0.0 || ^18.0.0 || ^19.0.0",
     "react-dom": "^17.0.0 || ^18.0.0 || ^19.0.0"
   },
