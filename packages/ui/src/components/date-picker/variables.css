@@ -6,6 +6,7 @@
   --ax-public-date-picker-color: var(--ax-txt-secondary-default);
   --ax-public-date-picker-header-background: var(--ax-ui-bg-secondary-default);
   --ax-public-date-picker-date-header-color: var(--ax-txt-tertiary-default);
+  --ax-public-date-picker-nav-color: var(--ax-txt-secondary-default);
   --ax-public-date-picker-date-outside-color: var(--ax-txt-quaternary-default);
   --ax-public-date-picker-date-hover-background-color: var(--ax-ui-bg-secondary-default);
   --ax-public-date-picker-date-selected-background-color: var(--ax-ui-bg-tertiary-selected);
