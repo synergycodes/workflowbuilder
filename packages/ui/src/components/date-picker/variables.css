@@ -7,5 +7,8 @@
   --ax-public-date-picker-header-background: var(--ax-ui-bg-secondary-default);
   --ax-public-date-picker-date-header-color: var(--ax-txt-tertiary-default);
   --ax-public-date-picker-date-outside-color: var(--ax-txt-quaternary-default);
+  --ax-public-date-picker-date-hover-background-color: var(--ax-ui-bg-secondary-default);
   --ax-public-date-picker-date-selected-background-color: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-date-picker-date-selected-color: var(--ax-txt-primary-default);
+  --ax-public-date-picker-date-today-color: var(--ax-ui-stroke-primary-highlight);
 }
