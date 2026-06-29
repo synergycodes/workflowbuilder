@@ -19,7 +19,10 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
  * @category Components
  */
 export type ProjectSelectionProps = {
-  /** Optional handler wired into the kebab menu's "Duplicate to drafts" item. */
+  /**
+   * Optional handler for the kebab menu's "Duplicate to Drafts" item. The item
+   * is rendered only when this is provided — omit it and the item is absent.
+   */
   onDuplicateClick?: () => void;
 };
 
@@ -46,11 +49,17 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
         icon: <Icon name="Gear" />,
         onClick: openModalWorkflowSettings,
       },
-      {
-        label: t('header.projectSelection.duplicateToDrafts'),
-        icon: <Icon name="Cards" />,
-        onClick: onDuplicateClick,
-      },
+      // Rendered only when the host wires a handler; without one it would be a
+      // dead no-op item, so we leave it out entirely.
+      ...(onDuplicateClick
+        ? [
+            {
+              label: t('header.projectSelection.duplicateToDrafts'),
+              icon: <Icon name="Cards" />,
+              onClick: onDuplicateClick,
+            },
+          ]
+        : []),
     ],
     [onDuplicateClick, t],
   );

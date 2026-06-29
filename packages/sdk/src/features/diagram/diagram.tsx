@@ -3,7 +3,6 @@ import {
   type EdgeTypes,
   type NodeChange,
   type OnBeforeDelete,
-  type OnConnect,
   type OnNodeDrag,
   type OnSelectionChangeParams,
   ReactFlow,
@@ -31,6 +30,7 @@ import { SNAP_GRID, SNAP_IS_ACTIVE } from './diagram.const';
 import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
 import { useEdgeTypes } from './hooks/use-edge-types';
 import { useNodeTypes } from './hooks/use-node-types';
+import { useConnect } from './hooks/use-on-connect';
 import { useIsValidConnection } from './hooks/use-react-flow-config';
 import { callNodeChangedListeners } from './listeners/node-changed-listeners';
 import { callNodeDragStartListeners } from './listeners/node-drag-start-listeners';
@@ -84,14 +84,12 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     onEdgesChange,
     onEdgeMouseEnter,
     onEdgeMouseLeave,
-    onConnect: onConnectAction,
     onInit,
     onSelectionChange,
   } = useStore(diagramStateSelector);
 
   const { openDeleteConfirmationModal } = useDeleteConfirmation();
 
-  const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
   const nodeTypes = useNodeTypes();
   const isValidConnection = useIsValidConnection();
   // Plain read: the ancestor `<WorkflowBuilder.Root>` writes the holder during
@@ -129,28 +127,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
     [onDropFromPalette],
   );
 
-  const onConnect: OnConnect = useCallback(
-    (connection) => {
-      trackFutureChange('addEdge');
-      onConnectAction(connection);
-    },
-    [onConnectAction],
-  );
-
-  const onConnectStart = useCallback(
-    (
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      _: any,
-      { nodeId, handleId }: { nodeId: string | null; handleId: string | null },
-    ) => {
-      setConnectionBeingDragged(nodeId, handleId);
-    },
-    [setConnectionBeingDragged],
-  );
-
-  const onConnectEnd = useCallback(() => {
-    setConnectionBeingDragged(null, null);
-  }, [setConnectionBeingDragged]);
+  const { onConnect, onConnectStart, onConnectEnd } = useConnect();
 
   const onNodeDragStop = useCallback(() => {
     return trackFutureChange('nodeDragStop');
@@ -181,6 +158,10 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
   const onBeforeDelete: OnBeforeDelete<WorkflowBuilderNode, WorkflowBuilderEdge> = useCallback(
     async ({ nodes, edges }) => {
       if (isReadOnlyMode) {
+        return false;
+      }
+
+      if (nodes.length === 0 && edges.length === 0) {
         return false;
       }
 

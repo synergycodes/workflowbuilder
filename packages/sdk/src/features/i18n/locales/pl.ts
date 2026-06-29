@@ -145,6 +145,7 @@ export const pl = {
     wrongDiagramFormat: 'Nieprawidłowy format diagramu',
     contentCopied: 'Treść skopiowana do schowka',
     variablesListIsEmpty: 'Lista dostępnych zmiennych jest pusta.',
+    cantEditReadOnlyMode: 'Edycja jest zablokowana w trybie tylko do odczytu.',
   },
   aiTools: {
     title: 'Narzędzia agenta AI',

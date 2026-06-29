@@ -4,6 +4,7 @@ import {
   getStoreSelection,
   resetStoreSelection,
   trackFutureChange,
+  useStore,
 } from '@workflowbuilder/sdk';
 import { useReactFlow } from '@xyflow/react';
 import { type ReactNode, useCallback } from 'react';
@@ -27,6 +28,7 @@ const getHandleIdForCopyPaste: GetHandleId = (params) => {
 };
 
 function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
+  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
   const mousePosition = useFlowMousePosition();
 
   const { setNodes, setEdges } = useReactFlow();
@@ -44,22 +46,30 @@ function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
   });
 
   const handleCut = useCallback(() => {
+    if (isReadOnlyMode) {
+      return;
+    }
+
     const selection = getStoreSelection();
 
     if (selection) {
       trackFutureChange('cut');
       cut();
     }
-  }, [cut]);
+  }, [cut, isReadOnlyMode]);
 
   const handlePaste = useCallback(async () => {
+    if (isReadOnlyMode) {
+      return;
+    }
+
     const text = await navigator.clipboard.readText();
 
     if (text) {
       trackFutureChange('paste');
       paste({ mousePosition: mousePosition.flow });
     }
-  }, [mousePosition.flow, paste]);
+  }, [isReadOnlyMode, mousePosition.flow, paste]);
 
   useCopyPasteKeyboardHandler({
     handleCut,
