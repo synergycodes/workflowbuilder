@@ -161,6 +161,10 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
         return false;
       }
 
+      if (nodes.length === 0 && edges.length === 0) {
+        return false;
+      }
+
       return new Promise((resolve) => {
         openDeleteConfirmationModal({
           nodes,
