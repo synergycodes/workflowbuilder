@@ -1,5 +1,5 @@
 ---
-'@workflowbuilder/sdk': minor
+'@workflowbuilder/sdk': patch
 ---
 
-fix: creating edges is blocked in read-only mode.
+Block edge creation in read-only mode.
