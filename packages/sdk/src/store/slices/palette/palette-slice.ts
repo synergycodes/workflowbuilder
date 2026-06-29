@@ -42,8 +42,13 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
         fetchDataStatus: StatusType.Success,
       });
 
-      // Set a timeout to postpone to next event loop iteration
-      setTimeout(() => refreshNodesErrorsIfNeeded(), 1);
+      // Defer to the next macrotask: a concurrent node load (its own store
+      // update) may still be pending, and nodes that arrived before the palette
+      // were validated against an empty definition set, so their errors were
+      // dropped. Re-validating after the queue drains repairs them (WB-340).
+      // A macrotask (not `queueMicrotask`) is deliberate — we must yield past
+      // those pending state updates, not just the current microtask queue.
+      setTimeout(() => refreshNodesErrorsIfNeeded(), 0);
     },
     getNodeDefinition: (nodeType) => {
       const { data } = get();
