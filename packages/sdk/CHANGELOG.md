@@ -1,5 +1,23 @@
 # Changelog
 
+## [2.2.0] - 2026-06-29
+
+### Added
+
+- Keyboard zoom in the editor: `Ctrl/Cmd` with `+`/`=` zooms in and `Ctrl/Cmd` with `-` zooms out while the canvas is focused.
+
+### Changed
+
+- Render the app bar's "Duplicate to Drafts" menu item only when an `onDuplicateClick` handler is provided, removing the default no-op button.
+
+### Fixed
+
+- Stop the delete confirmation modal from opening when Delete or Backspace is pressed with nothing selected.
+- Surface validation errors when nodes load before the palette. A race between node and palette loading previously dropped newly applicable errors (for example, for fields not evaluated earlier), so the node showed only a "!" indicator until selected.
+- Block edge creation in read-only mode.
+- Block cut and paste in the diagram in read-only mode; copying is still allowed.
+- Use the SDK's own `templateSelector.title` string for the template selector modal title instead of an unrelated plugin translation key.
+
 ## [2.1.0] - 2026-06-16
 
 ### Added
@@ -38,6 +56,7 @@ First public npm release. The major bump continues the Workflow Builder version 
 
 - Distribution model: editor is now consumed via `npm install @workflowbuilder/sdk` instead of cloning the monorepo. Consumers no longer need monorepo tooling, tsconfig paths, or workspace symlinks.
 
+[2.2.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.2.0
 [2.1.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.1.0
 [2.0.1]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.1
 [2.0.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.0
