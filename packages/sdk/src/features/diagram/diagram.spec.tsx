@@ -27,6 +27,9 @@ vi.mock('@xyflow/react', () => ({
 
 vi.mock('./hooks/use-node-types', () => ({ useNodeTypes: () => ({}) }));
 vi.mock('./hooks/use-edge-types', () => ({ useEdgeTypes: () => ({}) }));
+vi.mock('./hooks/use-on-connect', () => ({
+  useConnect: () => ({ onConnect: vi.fn(), onConnectStart: vi.fn(), onConnectEnd: vi.fn() }),
+}));
 vi.mock('./edges/temporary-edge/temporary-edge', () => ({ TemporaryEdge: () => null }));
 vi.mock('../../hooks/use-palette-drop', () => ({ usePaletteDrop: () => ({ onDropFromPalette: vi.fn() }) }));
 vi.mock('../modals/delete-confirmation/use-delete-confirmation', () => ({
