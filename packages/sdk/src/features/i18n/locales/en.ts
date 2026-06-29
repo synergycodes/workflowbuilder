@@ -181,6 +181,7 @@ export const en = {
     wrongDiagramFormat: 'Wrong diagram format',
     contentCopied: 'Content copied to clipboard',
     variablesListIsEmpty: 'The list of available variables is empty.',
+    cantEditReadOnlyMode: 'Editing is blocked in read-only mode.',
   },
   workflowsSettings: {
     modalTitle: 'Settings',
