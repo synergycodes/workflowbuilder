@@ -7,6 +7,7 @@ import {
   StatusType,
 } from '../../../node/common';
 import type { GetDiagramState, SetDiagramState } from '../../store';
+import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
 
 export type PaletteState = {
   isSidebarExpanded: boolean;
@@ -40,6 +41,14 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
         data: getPaletteData(),
         fetchDataStatus: StatusType.Success,
       });
+
+      // Defer to the next macrotask: a concurrent node load (its own store
+      // update) may still be pending, and nodes that arrived before the palette
+      // were validated against an empty definition set, so their errors were
+      // dropped. Re-validating after the queue drains repairs them (WB-340).
+      // A macrotask (not `queueMicrotask`) is deliberate — we must yield past
+      // those pending state updates, not just the current microtask queue.
+      setTimeout(() => refreshNodesErrorsIfNeeded(), 0);
     },
     getNodeDefinition: (nodeType) => {
       const { data } = get();

@@ -1,4 +1,6 @@
 // About actions: apps/demo/src/app/store/README.md
+import { isDeepEqual } from 'remeda';
+
 import {
   migrateLegacyHandleIdsOnEdges,
   migrateLegacyHandleIdsOnNodes,
@@ -8,7 +10,7 @@ import type { VariableDefinition } from '../../../features/variables/types';
 import type { LayoutDirection } from '../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../node/node-data';
 import type { IntegrationDataFormat } from '../../../types/integration';
-import { getNodeWithErrors } from '../../../utils/validation/get-node-errors';
+import { getNodeWithErrors, getNodesWithErrors } from '../../../utils/validation/get-node-errors';
 import { useStore } from '../../store';
 import { skipDynamicValuesInEdges, skipDynamicValuesInNodes } from './utils/dynamic-values';
 
@@ -120,6 +122,27 @@ export function getStoreSingleSelected() {
   const state = useStore.getState();
 
   return selectSingleSelectedElement(state);
+}
+
+/**
+ * Revalidates all nodes in the store and updates their JSON schema validation errors if needed.
+ *
+ * Compares current nodes with revalidated ones and only updates state when errors change,
+ * avoiding unnecessary re-renders.
+ *
+ * @category Store
+ */
+export function refreshNodesErrorsIfNeeded() {
+  const stateNodes = useStore.getState().nodes;
+  const stateNodesWithRefreshedErrors = getNodesWithErrors(stateNodes);
+
+  if (isDeepEqual(stateNodes, stateNodesWithRefreshedErrors)) {
+    return;
+  }
+
+  useStore.setState({
+    nodes: stateNodesWithRefreshedErrors,
+  });
 }
 
 export function saveVariableDefinition(definition: VariableDefinition) {
