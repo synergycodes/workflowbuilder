@@ -154,7 +154,7 @@ To see components rendered live, start the documentation site with `pnpm dev:doc
 >
 > Thanks to Base UI, `@workflowbuilder/ui` provides components that are **accessible by default** and **fully customizable** through our design tokens.
 >
-> Earlier `1.0.0` betas were built on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/). From `1.0.0-beta.28` the library is built on Base UI; see [CHANGELOG.md](./CHANGELOG.md) for the full list of changes.
+> The library was previously published as `@synergycodes/overflow-ui` on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/) stack. `2.0.0` is the first release rebuilt on Base UI under the `@workflowbuilder/ui` name; see [CHANGELOG.md](./CHANGELOG.md).
 
 ## Showcase
 

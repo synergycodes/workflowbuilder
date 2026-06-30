@@ -1,7 +1,7 @@
 {
   "name": "@workflowbuilder/ui",
   "type": "module",
-  "version": "1.0.0-beta.28",
+  "version": "2.0.0",
   "description": "Workflow Builder's component library: accessible, themeable React UI primitives (button, input, select, modal, menu, date picker, switch, tooltip, and more) built on Base UI, plus diagram building blocks for node/edge UIs.",
   "keywords": [
     "react",
