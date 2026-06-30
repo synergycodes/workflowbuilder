@@ -1,0 +1,33 @@
+---
+title: TextArea
+description: A multi-line text field that grows to fit its content.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { TextAreaExample } from '../../../../components/ui-examples/text-area';
+
+A `TextArea` is a multi-line text field for longer, free-form input. It
+auto-resizes to fit its content and supports row limits, an error state, and the
+standard input sizes.
+
+<TextAreaExample client:visible />
+
+## Usage
+
+```tsx
+import { TextArea } from '@workflowbuilder/ui';
+
+function Example() {
+  const [value, setValue] = useState('');
+  return <TextArea placeholder="Multi-line input" value={value} onChange={(event) => setValue(event.target.value)} />;
+}
+```
+
+## Props
+
+<PropsTable slug="text-area" />
+
+## CSS variables
+
+<CssVariablesTable slug="text-area" />

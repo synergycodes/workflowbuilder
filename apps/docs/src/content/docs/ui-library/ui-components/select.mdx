@@ -1,0 +1,41 @@
+---
+title: Select
+description: A dropdown for choosing a single option from a list.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { SelectExample } from '../../../../components/ui-examples/select';
+
+A `Select` lets users choose a single option from a dropdown list. Items are
+passed as an array of `{ value, label }` objects, and separators can be mixed in
+to group related options.
+
+<SelectExample client:visible />
+
+## Usage
+
+```tsx
+import { Select, type SelectItem } from '@workflowbuilder/ui';
+
+const ITEMS: SelectItem[] = [
+  { value: 'opus', label: 'Claude Opus' },
+  { value: 'sonnet', label: 'Claude Sonnet' },
+  { value: 'haiku', label: 'Claude Haiku' },
+];
+
+function Example() {
+  const [model, setModel] = useState<string | number | null>('opus');
+  return (
+    <Select items={ITEMS} value={model} placeholder="Choose a model" onChange={(_event, next) => setModel(next)} />
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="select" />
+
+## CSS variables
+
+<CssVariablesTable slug="select" />

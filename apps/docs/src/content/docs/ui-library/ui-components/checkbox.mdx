@@ -1,0 +1,32 @@
+---
+title: Checkbox
+description: A control that supports checked, unchecked, and indeterminate states.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { CheckboxExample } from '../../../../components/ui-examples/checkbox';
+
+A `Checkbox` is a customizable control that supports three states: checked,
+unchecked, and indeterminate. It can be used in forms or as a standalone control.
+
+<CheckboxExample client:visible />
+
+## Usage
+
+```tsx
+import { Checkbox } from '@workflowbuilder/ui';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <Checkbox checked={checked} onChange={(event) => setChecked(event.target.checked)} />;
+}
+```
+
+## Props
+
+<PropsTable slug="checkbox" />
+
+## CSS variables
+
+<CssVariablesTable slug="checkbox" />

@@ -1,0 +1,111 @@
+---
+title: NodePanel
+description: Node container with Root, Header, Content, and Handles slots.
+---
+
+import { NodePanelExample } from '../../../../components/ui-examples/node-panel';
+
+`NodePanel` is the structural container Workflow Builder uses to render a node on
+the canvas. It is a compound component: `NodePanel.Root` orchestrates the layout
+and accepts up to one of each optional slot — `NodePanel.Header`,
+`NodePanel.Content`, and `NodePanel.Handles`. Any other child triggers a runtime
+warning, and each slot may appear at most once.
+
+- `NodePanel.Root` - outer wrapper. Takes a `selected` boolean that drives the
+  selected border / shadow, and arranges the header, handles, and content.
+- `NodePanel.Header` - the node's header row, typically holding a
+  [`NodeIcon`](/ui-library/diagram-components/node-icon/) and a
+  [`NodeDescription`](/ui-library/diagram-components/node-description/).
+- `NodePanel.Content` - the node's main body. Can be toggled with `isVisible`.
+- `NodePanel.Handles` - container for React Flow connection `Handle`s. Supports
+  `isVisible` and an `alignment` of `'center'` or `'header'`.
+
+It composes naturally with the companion building blocks `NodeIcon`,
+`NodeDescription`, and the
+[`NodeAsPortWrapper`](/ui-library/diagram-components/node-as-port-wrapper/) that
+turns the whole node into a drop target.
+
+<NodePanelExample client:visible />
+
+## Usage
+
+`NodePanel` is composed inside a React Flow node template. The example below
+mirrors the SDK's default workflow node: an icon and description in the header,
+collapsible content in the body, and source / target handles.
+
+```tsx
+import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Handle, Position } from '@xyflow/react';
+
+function WorkflowNode({ id, icon, label, description, selected, isValid, showHandles = true, children }) {
+  return (
+    <Collapsible>
+      <NodePanel.Root selected={selected}>
+        <NodePanel.Header>
+          <NodeIcon icon={icon} />
+          <NodeDescription label={label} description={description} />
+          {!!children && <Collapsible.Button />}
+        </NodePanel.Header>
+
+        <NodePanel.Content isVisible={showHandles}>
+          <Status status={isValid === false ? 'invalid' : undefined} />
+          <Collapsible.Content>{children}</Collapsible.Content>
+        </NodePanel.Content>
+
+        <NodePanel.Handles isVisible={showHandles} alignment="center">
+          <Handle id={`${id}-target`} type="target" position={Position.Left} />
+          <Handle id={`${id}-source`} type="source" position={Position.Right} />
+        </NodePanel.Handles>
+      </NodePanel.Root>
+    </Collapsible>
+  );
+}
+```
+
+## Parts
+
+| Part                | Props                                                                                                 | Description                                                                       |
+| ------------------- | ----------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------- |
+| `NodePanel.Root`    | `selected: boolean`, `className?`, `children?`                                                        | Outer wrapper. Lays out header + handles, then content; applies selected styling. |
+| `NodePanel.Header`  | `className?`, `children?`                                                                             | Header row. At most one per `Root`.                                               |
+| `NodePanel.Content` | `isVisible?` (default `true`), `className?`, `children?`                                              | Main body. Renders nothing when `isVisible` is `false`. At most one per `Root`.   |
+| `NodePanel.Handles` | `isVisible?` (default `true`), `alignment?` (`'center' \| 'header'`, default `'center'`), `children?` | Container for connection handles. At most one per `Root`.                         |
+
+## CSS variables
+
+Override these `--ax-public-*` custom properties to retune the node panel.
+
+### Layout
+
+| Variable                         | Description               |
+| -------------------------------- | ------------------------- |
+| `--ax-public-node-width`         | Node width.               |
+| `--ax-public-node-height`        | Node height.              |
+| `--ax-public-node-padding`       | Inner padding.            |
+| `--ax-public-node-gap`           | Gap between header items. |
+| `--ax-public-node-border-size`   | Border width.             |
+| `--ax-public-node-border-radius` | Corner radius.            |
+
+### Color & state
+
+| Variable                                  | Description                 |
+| ----------------------------------------- | --------------------------- |
+| `--ax-public-node-background-color`       | Background color.           |
+| `--ax-public-node-hover-background-color` | Background color on hover.  |
+| `--ax-public-node-border-color`           | Border color.               |
+| `--ax-public-node-border-hover-color`     | Border color on hover.      |
+| `--ax-public-node-border-color-selected`  | Border color when selected. |
+| `--ax-public-node-box-shadow-selected`    | Box shadow when selected.   |
+
+### Ports
+
+| Variable                                       | Description                     |
+| ---------------------------------------------- | ------------------------------- |
+| `--ax-public-node-port-size`                   | Connection port size.           |
+| `--ax-public-node-port-size-hover`             | Port size on hover.             |
+| `--ax-public-node-port-boundary-size`          | Port hit-area boundary size.    |
+| `--ax-public-node-port-border-size`            | Port border width.              |
+| `--ax-public-node-port-background-color`       | Port background color.          |
+| `--ax-public-node-port-background-color-hover` | Port background color on hover. |
+| `--ax-public-node-port-border-color`           | Port border color.              |
+| `--ax-public-node-port-border-color-hover`     | Port border color on hover.     |

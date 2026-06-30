@@ -1,0 +1,32 @@
+---
+title: Switch
+description: A toggle between two states, such as on and off.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { SwitchExample } from '../../../../components/ui-examples/switch';
+
+A `Switch` lets users toggle between two states, such as on and off. It is
+typically used for settings or preferences and gives immediate visual feedback.
+
+<SwitchExample client:visible />
+
+## Usage
+
+```tsx
+import { Switch } from '@workflowbuilder/ui';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <Switch checked={checked} onChange={(next) => setChecked(next)} />;
+}
+```
+
+## Props
+
+<PropsTable slug="switch" />
+
+## CSS variables
+
+<CssVariablesTable slug="switch" />

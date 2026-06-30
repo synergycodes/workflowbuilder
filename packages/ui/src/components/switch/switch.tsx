@@ -12,6 +12,7 @@ type SwitchRootProps = Omit<
 export type BaseSwitchProps = {
   /**
    * Size of the switch component
+   * @default 'medium'
    */
   size?: SelectorSize;
   /**

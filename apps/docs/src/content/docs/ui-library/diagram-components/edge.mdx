@@ -1,0 +1,109 @@
+---
+title: Edge
+description: Edge label rendering and edge styling for the diagram canvas.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { EdgeExample } from '../../../../components/ui-examples/edge';
+
+The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
+label primitive designed to sit on an edge, while the `useEdgeStyle` hook
+computes the stroke styles for the edge path itself. Both follow the styling
+conventions prepared for edges, so a custom edge type matches the built-in ones.
+
+<EdgeExample client:visible />
+
+`EdgeLabel` provides a unified label design for text, icons, or compound content.
+Its state (hover, selection, disabled) is managed externally and reflected
+through props. It extends a standard `HTMLDivElement` and, by default, uses
+`position: absolute` so it can be placed at the `labelX` / `labelY` coordinates
+that React Flow provides. Used outside a diagram context it may need extra
+wrapper elements or layout adjustments because absolute positioning removes it
+from normal document flow.
+
+`useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
+`transition`) that you apply directly to the SVG path element representing an
+edge. The package also exports the `EdgeState` and `EdgeLabelSize` types and the
+`EDGE_LABEL_SIZES` constant.
+
+## Usage
+
+`EdgeLabel` is rendered through xyflow's `<EdgeLabelRenderer>` and positioned with
+a transform, while `useEdgeStyle` feeds the edge path. The example mirrors the
+SDK's default labeled edge.
+
+```tsx
+import { EdgeLabel, type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, EdgeLabelRenderer, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import { useState } from 'react';
+
+function LabeledEdge({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+  data,
+  selected,
+}: EdgeProps) {
+  const [hovered, setHovered] = useState(false);
+  const state: EdgeState = selected ? 'selected' : 'default';
+
+  const pathStyle = useEdgeStyle({ state, isHovered: hovered });
+
+  const [edgePath, labelX, labelY] = getSmoothStepPath({
+    sourceX,
+    sourceY,
+    sourcePosition,
+    targetX,
+    targetY,
+    targetPosition,
+  });
+
+  return (
+    <>
+      <BaseEdge id={id} path={edgePath} style={pathStyle} />
+      {data?.label && (
+        <EdgeLabelRenderer>
+          <EdgeLabel
+            isHovered={hovered}
+            state={state}
+            style={{ transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)` }}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+          >
+            {data.label}
+          </EdgeLabel>
+        </EdgeLabelRenderer>
+      )}
+    </>
+  );
+}
+```
+
+## EdgeLabel props
+
+`EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
+`style`, `onMouseEnter`, `data-*`).
+
+<PropsTable slug="edge" />
+
+## useEdgeStyle
+
+A hook that maps an edge's `state` and hover flag to the CSS properties for its
+SVG path.
+
+| Parameter   | Type                                                   | Default     | Description                         |
+| ----------- | ------------------------------------------------------ | ----------- | ----------------------------------- |
+| `state`     | `'default' \| 'selected' \| 'disabled' \| 'temporary'` | `'default'` | Visual state of the edge.           |
+| `isHovered` | `boolean`                                              | `false`     | Applies hover color over the state. |
+
+Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
+`style`.
+
+## CSS variables
+
+<CssVariablesTable slug="edge" />

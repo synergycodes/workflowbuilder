@@ -1,0 +1,63 @@
+---
+title: UI Library
+description: the component library behind Workflow Builder
+---
+
+Workflow Builder's editor is rendered with **`@workflowbuilder/ui`**, the component
+library that lives in this monorepo (`packages/ui`) and is published to npm. It is
+built on the headless [Base UI](https://base-ui.com/) primitives and adds a styled,
+themeable layer on top - the same building blocks the SDK uses for its own nodes,
+panels, and controls.
+
+Browse the [UI Components](/ui-library/ui-components/) and
+[Diagram Components](/ui-library/diagram-components/) - each component has its own
+page with a live example, props, and CSS variables.
+
+## Install
+
+```sh
+npm install @workflowbuilder/ui
+```
+
+`react` and `react-dom` are the only peer dependencies - provide your own.
+Everything else the components need, including `@base-ui/react` (pinned to the
+validated `1.4.x` line), is a regular dependency and installs automatically.
+
+## Styles
+
+The library ships its CSS as separate entry points. Import the global stylesheet
+**first** so the cascade-layer order is established before any component rule, then
+the design tokens:
+
+```ts
+// Layer order (`@layer ui.base, ui.component`), reset, and typography classes.
+import '@workflowbuilder/ui/styles.css';
+// Design tokens (the `--ax-*` custom properties).
+import '@workflowbuilder/ui/tokens.css';
+```
+
+Importing a component from the package root injects that component's CSS
+automatically, so the imports above are all the global setup you need:
+
+```tsx
+import { Button } from '@workflowbuilder/ui';
+```
+
+Need only one component's styles without the others? Import the per-component
+subpath and add `styles.css` once for the layer order:
+
+```tsx
+import { DatePicker } from '@workflowbuilder/ui/date-picker';
+```
+
+## Theming
+
+Design tokens are keyed on `html[data-theme]`, so set it to `light` or `dark` to
+switch themes (this is also how these docs theme the live examples):
+
+```html
+<html data-theme="light"></html>
+```
+
+Override any `--ax-*` token to retune colors, spacing, or radii without touching
+component markup.

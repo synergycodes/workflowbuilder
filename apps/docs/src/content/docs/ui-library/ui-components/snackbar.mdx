@@ -1,0 +1,32 @@
+---
+title: Snackbar
+description: A brief inline message about an app process.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { SnackbarExample } from '../../../../components/ui-examples/snackbar';
+
+A `Snackbar` displays a brief message about an app process. It comes in several
+variants - success, error, warning, info and default - and can show a secondary
+subtitle, an action button, and a close button.
+
+<SnackbarExample client:visible />
+
+## Usage
+
+```tsx
+import { Snackbar } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Snackbar variant="success" title="Saved" subtitle="Your changes were saved." close onClose={() => {}} />;
+}
+```
+
+## Props
+
+<PropsTable slug="snackbar" />
+
+## CSS variables
+
+<CssVariablesTable slug="snackbar" />

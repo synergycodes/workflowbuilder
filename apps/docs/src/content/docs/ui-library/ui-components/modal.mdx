@@ -1,0 +1,52 @@
+---
+title: Modal
+description: A dialog that appears on top of the main content.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { ModalExample } from '../../../../components/ui-examples/modal';
+
+A `Modal` is a dialog that appears on top of the main content. It has a header
+with a title, optional subtitle and icon, a body, and an optional footer, and
+fades in and out via the Base UI transition lifecycle.
+
+<ModalExample client:visible />
+
+## Usage
+
+```tsx
+import { Button, Modal } from '@workflowbuilder/ui';
+
+function Example() {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <Button variant="primary" onClick={() => setOpen(true)}>
+        Open modal
+      </Button>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        title="Example modal"
+        subtitle="Rendered live from @workflowbuilder/ui"
+        footer={
+          <Button variant="primary" onClick={() => setOpen(false)}>
+            Got it
+          </Button>
+        }
+      >
+        Modal body content.
+      </Modal>
+    </>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="modal" />
+
+## CSS variables
+
+<CssVariablesTable slug="modal" />

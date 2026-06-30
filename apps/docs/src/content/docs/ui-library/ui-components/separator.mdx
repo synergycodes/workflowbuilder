@@ -1,0 +1,37 @@
+---
+title: Separator
+description: A horizontal line that divides content.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { SeparatorExample } from '../../../../components/ui-examples/separator';
+
+A `Separator` is a visual element that creates a horizontal line to divide
+content into distinct sections.
+
+<SeparatorExample client:visible />
+
+## Usage
+
+```tsx
+import { Separator } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <div>
+      <span>Above</span>
+      <Separator />
+      <span>Below</span>
+    </div>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="separator" />
+
+## CSS variables
+
+<CssVariablesTable slug="separator" />

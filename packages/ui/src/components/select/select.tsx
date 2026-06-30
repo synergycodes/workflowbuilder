@@ -24,6 +24,7 @@ export type SelectBaseProps = {
   className?: string;
   /**
    * Size of the select input
+   * @default 'medium'
    */
   size?: ItemSize;
   /**
@@ -36,6 +37,7 @@ export type SelectBaseProps = {
   items: SelectItem[];
   /**
    * Whether the select has an error
+   * @default false
    */
   error?: boolean;
   /**

@@ -1,0 +1,76 @@
+---
+// Renders a component's CSS custom properties (from the component stylesheets,
+// generated into ui-api.json) as a list grouped into Size / Color, mirroring the
+// Overflow UI docs.
+import data from '../../generated/ui-api.json';
+
+interface CssVar {
+  name: string;
+  comment: string;
+}
+
+const { slug } = Astro.props as { slug: string };
+const entry = (data as Record<string, { cssVariables: CssVar[] }>)[slug];
+const cssVariables = entry?.cssVariables ?? [];
+
+const isColor = (name: string) => /color|background|bg|shadow|stroke|fill/.test(name);
+const groups = [
+  { label: 'Color', vars: cssVariables.filter((v) => isColor(v.name)) },
+  { label: 'Size', vars: cssVariables.filter((v) => !isColor(v.name)) },
+].filter((group) => group.vars.length > 0);
+---
+
+{
+  cssVariables.length === 0 ? (
+    <p>This component does not expose its own CSS variables.</p>
+  ) : (
+    <div class="cssvars">
+      {groups.map((group) => (
+        <section class="group">
+          <h3 class="group-label">{group.label}</h3>
+          {group.vars.map((cssVar) => (
+            <div class="var">
+              <code>{cssVar.name}</code>
+              {cssVar.comment && <span class="note">{cssVar.comment}</span>}
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .cssvars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .group-label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sl-color-gray-3);
+  }
+  .var {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .var code {
+    font-size: 0.8125rem;
+  }
+  .note {
+    color: var(--sl-color-gray-3);
+    font-size: 0.8125rem;
+  }
+</style>

@@ -4,8 +4,9 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "pnpm clean:typedoc && astro dev",
-    "build": "pnpm clean:typedoc && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs",
+    "dev": "pnpm clean:typedoc && pnpm generate:ui-api && astro dev",
+    "build": "pnpm clean:typedoc && pnpm generate:ui-api && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs",
+    "generate:ui-api": "node scripts/generate-ui-api.mjs",
     "clean:typedoc": "node -e \"import('node:fs').then(fs => fs.rmSync('src/content/docs/api', { recursive: true, force: true }))\"",
     "preview": "astro preview",
     "typecheck": "astro check",
@@ -14,18 +15,26 @@
     "lint:fix": "eslint . --fix"
   },
   "dependencies": {
+    "@astrojs/react": "^4.4.0",
     "@astrojs/starlight": "^0.37.6",
+    "@base-ui/react": "catalog:",
     "@iconify-json/ph": "^1.2.2",
+    "@phosphor-icons/react": "catalog:",
     "@workflowbuilder/sdk": "workspace:*",
+    "@workflowbuilder/ui": "workspace:*",
     "@yeskunall/astro-umami": "^0.0.7",
     "astro": "^5.18.0",
     "astro-icon": "^1.1.5",
     "marked": "^15.0.0",
+    "react": "catalog:",
+    "react-dom": "catalog:",
     "rehype-external-links": "^3.0.0",
     "starlight-image-zoom": "^0.13.2"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.6",
+    "@types/react": "catalog:",
+    "@types/react-dom": "^19.1.0",
     "eslint-plugin-astro": "^1.3.1",
     "starlight-typedoc": "^0.21.3",
     "typedoc": "^0.28.9",

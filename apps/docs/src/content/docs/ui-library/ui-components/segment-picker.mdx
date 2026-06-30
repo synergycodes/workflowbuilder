@@ -1,0 +1,39 @@
+---
+title: SegmentPicker
+description: A segmented control for selecting a single option from a small set.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { SegmentPickerExample } from '../../../../components/ui-examples/segment-picker';
+
+A `SegmentPicker` is a segmented control that lets users select a single option
+from a small, fixed set. Each option is declared with a `SegmentPicker.Item`,
+and it can run in controlled (`value`) or uncontrolled (`defaultValue`) mode.
+
+<SegmentPickerExample client:visible />
+
+## Usage
+
+```tsx
+import { SegmentPicker } from '@workflowbuilder/ui';
+
+function Example() {
+  const [view, setView] = useState('list');
+  return (
+    <SegmentPicker value={view} onChange={(_event, next) => setView(next)}>
+      <SegmentPicker.Item value="list">List</SegmentPicker.Item>
+      <SegmentPicker.Item value="grid">Grid</SegmentPicker.Item>
+      <SegmentPicker.Item value="board">Board</SegmentPicker.Item>
+    </SegmentPicker>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="segment-picker" />
+
+## CSS variables
+
+<CssVariablesTable slug="segment-picker" />

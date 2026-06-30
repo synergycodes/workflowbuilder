@@ -1,0 +1,40 @@
+---
+title: DatePicker
+description: A calendar popover for selecting a single date, a range, or multiple dates.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { DatePickerExample } from '../../../../components/ui-examples/date-picker';
+
+A `DatePicker` lets users pick a date from a calendar popover. It supports single
+dates (the default), date ranges, and multiple-date selection, and renders the
+selected value using `date-fns` format tokens.
+
+<DatePickerExample client:visible />
+
+## Usage
+
+```tsx
+import { DatePicker } from '@workflowbuilder/ui';
+
+function Example() {
+  const [date, setDate] = useState<Date | null>(null);
+  return (
+    <DatePicker
+      value={date ?? undefined}
+      placeholder="dd/mm/yyyy"
+      valueFormat="dd-MM-yyyy"
+      onChange={(next) => setDate((next as Date | null) ?? null)}
+    />
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="date-picker" />
+
+## CSS variables
+
+<CssVariablesTable slug="date-picker" />

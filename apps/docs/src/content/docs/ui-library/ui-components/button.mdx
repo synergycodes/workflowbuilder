@@ -1,0 +1,34 @@
+---
+title: Button
+description: A flexible, type-safe action button with variants and sizes.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { ButtonExample } from '../../../../components/ui-examples/button';
+
+`Button` is a flexible, type-safe component that automatically selects the
+correct type (label, icon, or icon + label) based on the structure of its
+`children`. A single string renders a label button, a single React element
+renders an icon button, and a string combined with icons renders an icon-label
+button.
+
+<ButtonExample client:visible />
+
+## Usage
+
+```tsx
+import { Button } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Button variant="primary">Submit</Button>;
+}
+```
+
+## Props
+
+<PropsTable slug="button" />
+
+## CSS variables
+
+<CssVariablesTable slug="button" />

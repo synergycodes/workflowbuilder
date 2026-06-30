@@ -1,0 +1,32 @@
+---
+title: Input
+description: A single-line text field with optional adornments and an error state.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { InputExample } from '../../../../components/ui-examples/input';
+
+An `Input` is a single-line text field for collecting short, free-form text. It
+supports start and end adornments, an error state, and the standard input sizes.
+
+<InputExample client:visible />
+
+## Usage
+
+```tsx
+import { Input } from '@workflowbuilder/ui';
+
+function Example() {
+  const [value, setValue] = useState('');
+  return <Input placeholder="Type something" value={value} onChange={(event) => setValue(event.target.value)} />;
+}
+```
+
+## Props
+
+<PropsTable slug="input" />
+
+## CSS variables
+
+<CssVariablesTable slug="input" />
