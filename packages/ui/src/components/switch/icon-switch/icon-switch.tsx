@@ -35,10 +35,12 @@ export function IconSwitch({
       }
       thumbChildren={
         <div className={clsx(styles['thumb'], styles[variant])}>
-          <div className={clsx(styles['icon'], styles['icon-selected'])}>
-            {!checked && icon}
-            {checked && IconChecked}
-          </div>
+          {/* Render both icons and let CSS swap them off the switch's
+              `data-checked` state, so the thumb icon tracks the real state in
+              uncontrolled mode too (reading the `checked` prop only works when
+              the switch is controlled). */}
+          <div className={clsx(styles['icon'], styles['icon-unchecked'])}>{icon}</div>
+          <div className={clsx(styles['icon'], styles['icon-checked'])}>{IconChecked}</div>
         </div>
       }
       {...props}
