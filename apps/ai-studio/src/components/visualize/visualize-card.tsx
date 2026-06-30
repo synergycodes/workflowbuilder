@@ -1,4 +1,4 @@
-import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye, Sparkle } from '@phosphor-icons/react';
+import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
@@ -47,7 +47,8 @@ function EmptyState({ running }: { running: boolean }) {
 // Injected into the node body via the OptionalNodeContent decorator, so the
 // visualization renders as part of the node itself. Reads the upstream node's
 // output, picks a renderer (the node's `mode` or auto-detected), reveals it, and
-// offers export, expand, and LLM "adapt" (manual button or the node's aiAdapt toggle).
+// offers export and expand. Structured formats (chart/diagram/table/json/
+// stat-cards) are always LLM-adapted to fit the format — there is no toggle.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
@@ -67,10 +68,9 @@ export function VisualizeCard({ props }: Props) {
   const text = extractOutputText(sourceOutput);
   const hasOutput = selfStatus === 'completed' && text.length > 0;
 
-  const properties = node?.data.properties as { mode?: string; aiAdapt?: boolean } | undefined;
+  const properties = node?.data.properties as { mode?: string } | undefined;
   const mode: VisualizeMode =
     properties?.mode && VALID_MODES.has(properties.mode) ? (properties.mode as VisualizeMode) : 'auto';
-  const aiAdapt = Boolean(properties?.aiAdapt);
   const detection = detectFormat(text);
   let activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
   if (forceChart && mode === 'auto') {
@@ -93,12 +93,12 @@ export function VisualizeCard({ props }: Props) {
     setForceChart(false);
   }, [text]);
 
-  // When the node's aiAdapt toggle is on, auto-convert the output to the format.
+  // Always auto-convert the output to fit a chosen structured format (no toggle).
   useEffect(() => {
-    if (hasOutput && aiAdapt && ADAPTABLE.has(activeRenderer) && adaptedText === null && !adapting) {
+    if (hasOutput && ADAPTABLE.has(activeRenderer) && adaptedText === null && !adapting) {
       runAdapt(activeRenderer);
     }
-  }, [hasOutput, aiAdapt, activeRenderer, text, adaptedText]);
+  }, [hasOutput, activeRenderer, text, adaptedText]);
 
   if (!isVisualizeNode) {
     return null;
@@ -110,7 +110,6 @@ export function VisualizeCard({ props }: Props) {
   const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
   const showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
-  const showAdaptButton = ADAPTABLE.has(activeRenderer) && !aiAdapt;
 
   return (
     <div className={styles['integrated']}>
@@ -119,17 +118,6 @@ export function VisualizeCard({ props }: Props) {
           <div className={styles['toolbar']}>
             <span className={styles['badge']}>{badge}</span>
             <div className={styles['actions']}>
-              {showAdaptButton && (
-                <button
-                  type="button"
-                  className={styles['action']}
-                  title="AI: adapt to this format"
-                  onClick={() => runAdapt(activeRenderer)}
-                  disabled={adapting}
-                >
-                  <Sparkle weight={adaptedText ? 'fill' : 'regular'} />
-                </button>
-              )}
               <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
                 <ArrowsOut />
               </button>
