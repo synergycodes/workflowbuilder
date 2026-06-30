@@ -1,4 +1,4 @@
-import type { FooterVariant, Modal } from '@synergycodes/overflow-ui';
+import type { FooterVariant, Modal } from '@workflowbuilder/ui';
 import type { ComponentProps } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';

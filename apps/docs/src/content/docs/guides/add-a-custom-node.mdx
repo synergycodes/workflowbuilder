@@ -204,9 +204,9 @@ The built-in renderer gives every node a header and one input + one output handl
 `my-node-template.tsx`:
 
 ```tsx
-import { NodeDescription, NodeIcon, NodePanel } from '@synergycodes/overflow-ui';
 import { Icon, getHandleId } from '@workflowbuilder/sdk';
 import type { WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
@@ -237,7 +237,7 @@ export const MyNodeTemplate = memo(
 );
 ```
 
-The example composes the node from `@synergycodes/overflow-ui` primitives (`NodePanel.Root`, `NodePanel.Header`, `NodePanel.Handles`) — the same building blocks Workflow Builder uses for its own node renderers, so the result matches the editor's visual language out of the box.
+The example composes the node from `@workflowbuilder/ui` primitives (`NodePanel.Root`, `NodePanel.Header`, `NodePanel.Handles`) — the same building blocks Workflow Builder uses for its own node renderers, so the result matches the editor's visual language out of the box.
 
 The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/). Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
 

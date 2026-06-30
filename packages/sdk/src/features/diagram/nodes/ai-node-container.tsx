@@ -1,4 +1,4 @@
-import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
+import { NodeAsPortWrapper } from '@workflowbuilder/ui';
 import { type Node, type NodeProps, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 

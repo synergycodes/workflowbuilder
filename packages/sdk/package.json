@@ -79,7 +79,6 @@
     "@cfworker/json-schema": "4.1.1",
     "@fontsource/poppins": "^5.2.7",
     "@phosphor-icons/react": "^2.1.7",
-    "@synergycodes/overflow-ui": "1.0.0-beta.27",
     "ace-builds": "^1.43.4",
     "ajv": "catalog:",
     "clsx": "^2.1.1",
@@ -90,6 +89,7 @@
     "remeda": "^2.19.2"
   },
   "devDependencies": {
+    "@base-ui/react": "catalog:",
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@testing-library/react": "^16.3.0",
@@ -97,6 +97,7 @@
     "@vitejs/plugin-react": "^4.3.4",
     "@workflow-builder/icons": "workspace:*",
     "@workflow-builder/types": "workspace:*",
+    "@workflowbuilder/ui": "workspace:*",
     "eslint-plugin-react": "7.37.2",
     "eslint-plugin-react-hooks": "5.1.0-rc.1",
     "eslint-plugin-tsdoc": "^0.4.0",

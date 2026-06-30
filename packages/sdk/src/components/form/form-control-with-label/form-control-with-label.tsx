@@ -1,4 +1,4 @@
-import type { ItemSize } from '@synergycodes/overflow-ui';
+import type { ItemSize } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import type { PropsWithChildren } from 'react';
 

@@ -1,6 +1,6 @@
-import { NavButton } from '@synergycodes/overflow-ui';
 import { Icon } from '@workflowbuilder/sdk';
 import type { TranslationKey, WBIcon } from '@workflowbuilder/sdk';
+import { NavButton } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 
 import { openNoAccessModal } from '../../functions/open-no-access-modal';
