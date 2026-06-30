@@ -1,0 +1,21 @@
+{
+  "name": "@workflowbuilder/ui-tokens",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsx src/index.ts",
+    "prepare": "tsx src/index.ts",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@tokens-studio/sd-transforms": "^1.2.12",
+    "remeda": "^2.21.2",
+    "style-dictionary": "^4.3.3",
+    "tsx": "^4.19.3",
+    "vitest": "^3.0.4"
+  }
+}

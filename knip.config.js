@@ -56,5 +56,16 @@ export default {
       project: ['**/*.{mjs,ts,astro}'],
       ignoreDependencies: ['@iconify-json/ph'],
     },
+    'packages/ui': {
+      entry: ['src/index.ts', 'vite.config.mts', 'scripts/check-built-css.ts'],
+      project: ['src/**/*.{ts,tsx}', '*.mts', 'scripts/**/*.ts'],
+      // Built tokens are copied by relative path (../tokens/dist) in vite.config,
+      // so the workspace dep is real even though it is never imported by name.
+      ignoreDependencies: ['@workflowbuilder/ui-tokens'],
+    },
+    'packages/tokens': {
+      entry: ['src/index.ts'],
+      project: ['src/**/*.ts', 'config.ts'],
+    },
   },
 };

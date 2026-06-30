@@ -1,13 +1,15 @@
 name: Release SDK
 
-# Triggers on tags `vX.Y.Z` matching the version in packages/sdk/package.json.
-# Maintainer pushes the tag after merging the version-bump PR (which ran
-# `pnpm changeset version`). See packages/sdk/RELEASE.md.
+# Triggers on scoped tags `@workflowbuilder/sdk@X.Y.Z` matching the version in
+# packages/sdk/package.json. Scoped tags let this repo publish more than one
+# package (see release-ui.yml for @workflowbuilder/ui). Maintainer pushes the
+# tag after merging the version-bump PR (which ran `pnpm changeset version`).
+# See packages/sdk/RELEASE.md.
 
 on:
   push:
     tags:
-      - "v*"
+      - "@workflowbuilder/sdk@*"
   workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
 
 permissions:
@@ -60,10 +62,12 @@ jobs:
         run: pnpm --filter @workflowbuilder/sdk build:lib
 
       - name: Verify version matches tag
-        # Tag refs/tags/vX.Y.Z must match packages/sdk/package.json version.
-        # Catches push of wrong tag (typo, pushed before version-bump PR merged).
+        # Tag `@workflowbuilder/sdk@X.Y.Z` must match packages/sdk/package.json
+        # version. ${GITHUB_REF_NAME##*@} strips everything up to the last `@`,
+        # leaving X.Y.Z. Catches push of wrong tag (typo, pushed before the
+        # version-bump PR merged).
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME##*@}"
           PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."

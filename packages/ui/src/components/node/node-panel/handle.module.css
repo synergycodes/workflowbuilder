@@ -1,0 +1,96 @@
+:root {
+  --ax-public-node-port-boundary-size: 3.125rem;
+  --ax-public-node-port-size: 0.25rem;
+  --ax-public-node-port-size-hover: 0.75rem;
+  --ax-public-node-port-border-size: 0.125rem;
+
+  --ax-public-node-port-background-color: var(--ax-node-port-fill-default);
+  --ax-public-node-port-border-color: var(--ax-node-port-stroke-default);
+
+  --ax-public-node-port-background-color-hover: var(--ax-node-port-fill-active);
+  --ax-public-node-port-border-color-hover: var(--ax-node-port-stroke-active);
+}
+
+.handle-wrapper {
+  & .header {
+    position: relative;
+
+    :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
+      top: calc(var(--ax-public-node-icon-padding) + var(--ax-public-node-icon-border-size) + 0.75rem);
+    }
+    :global(.react-flow__handle.react-flow__handle-right) {
+      box-sizing: content-box;
+      right: calc(-1 * (var(--ax-public-node-padding) + var(--ax-public-node-border-size)));
+    }
+
+    :global(.react-flow__handle.react-flow__handle-left) {
+      box-sizing: content-box;
+      left: calc(-1 * (var(--ax-public-node-padding) + var(--ax-public-node-border-size)));
+    }
+  }
+
+  :global(.react-flow__handle.react-flow__handle-top) {
+    box-sizing: content-box;
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  :global(.react-flow__handle.react-flow__handle-bottom) {
+    box-sizing: content-box;
+    bottom: 0;
+    transform: translate(-50%, 50%);
+  }
+
+  :global(.react-flow__handle) {
+    box-sizing: content-box;
+    width: var(--ax-public-node-port-size);
+    height: var(--ax-public-node-port-size);
+
+    background: var(--ax-public-node-port-background-color);
+    border: var(--ax-public-node-port-border-size) solid var(--ax-public-node-port-border-color);
+
+    transition-property: background-color, border-color, width, height;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.1s;
+  }
+
+  :global(.react-flow__handle::before) {
+    content: '';
+
+    position: absolute;
+    width: var(--ax-public-node-port-boundary-size);
+    height: var(--ax-public-node-port-boundary-size);
+
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+
+    border-radius: 50%;
+  }
+
+  :global(.connectingfrom) {
+    background: var(--ax-public-node-port-background-color-hover);
+    border-color: var(--ax-public-node-port-border-color-hover);
+
+    width: var(--ax-public-node-port-size-hover);
+    height: var(--ax-public-node-port-size-hover);
+  }
+
+  :global(.react-flow__handle) {
+    &:hover {
+      background-color: var(--ax-public-node-port-background-color-hover);
+      border-color: var(--ax-public-node-port-border-color-hover);
+
+      width: var(--ax-public-node-port-size-hover);
+      height: var(--ax-public-node-port-size-hover);
+    }
+  }
+
+  &:hover :global(.react-flow__handle.connectionindicator) {
+    background-color: var(--ax-public-node-port-background-color-hover);
+    border-color: var(--ax-public-node-port-border-color-hover);
+
+    width: var(--ax-public-node-port-size-hover);
+    height: var(--ax-public-node-port-size-hover);
+  }
+}

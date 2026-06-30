@@ -1,0 +1,76 @@
+@layer ui.component {
+  .container {
+    background: transparent;
+    border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+    color: var(--ax-public-input-root-color);
+    cursor: pointer;
+    width: 100%;
+
+    &[aria-expanded='true'] {
+      border-color: var(--ax-public-input-root-border-color-focus);
+    }
+
+    &.container--error {
+      background-color: var(--ax-public-input-root-background-color-error);
+      border-color: var(--ax-public-input-root-border-color-error);
+      color: var(--ax-public-input-root-color-error);
+    }
+
+    &.container--placeholder {
+      opacity: 0.5;
+    }
+  }
+
+  .trigger-label {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .calendar {
+    background: var(--ax-public-date-picker-dropdown-background);
+    border: 0.0625rem solid var(--ax-public-date-picker-dropdown-border-color);
+    border-radius: 0.5rem;
+    box-shadow: var(--ax-public-date-picker-dropdown-box-shadow);
+    color: var(--ax-public-date-picker-color);
+  }
+}
+
+/*
+ * react-day-picker theming. These rules are intentionally UNLAYERED and scoped
+ * under `.calendar` so they win over react-day-picker's own unlayered
+ * style.css by specificity, regardless of the order the two stylesheets load
+ * (the docs bundle concatenates component CSS alphabetically, so import order
+ * is not reliable). `.calendar` is the Popover popup that wraps the calendar.
+ */
+.calendar :global(.rdp-root) {
+  --rdp-day_button-border-radius: 0.375rem;
+  /* drop the default accent ring on selected days - we fill instead */
+  --rdp-selected-border: none;
+  --rdp-today-color: var(--ax-public-date-picker-date-today-color);
+  /* react-day-picker's default accent is a raw blue; retheme it (range
+     endpoints, focus rings) to our token instead. */
+  --rdp-accent-color: var(--ax-public-date-picker-date-today-color);
+}
+
+.calendar :global(.rdp-day_button) {
+  transition: background-color 0.12s ease;
+}
+
+/* month-nav chevrons: react-day-picker paints them with --rdp-accent-color;
+   render them as a neutral nav control so both arrows match each other and the
+   rest of the calendar. */
+.calendar :global(.rdp-chevron) {
+  fill: var(--ax-public-date-picker-nav-color);
+}
+
+/* react-day-picker ships no hover state of its own */
+.calendar :global(.rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover) {
+  background-color: var(--ax-public-date-picker-date-hover-background-color);
+}
+
+/* selected day: filled background instead of just an accent ring */
+.calendar :global(.rdp-selected .rdp-day_button) {
+  background-color: var(--ax-public-date-picker-date-selected-background-color);
+  color: var(--ax-public-date-picker-date-selected-color);
+}

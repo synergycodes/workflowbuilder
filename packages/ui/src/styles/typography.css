@@ -1,0 +1,167 @@
+/* Heading and paragraph styles */
+
+.ax-public-h1,
+.ax-public-h2,
+.ax-public-h3,
+.ax-public-h4,
+.ax-public-h5,
+.ax-public-h6,
+.ax-public-h7,
+.ax-public-h8,
+.ax-public-h9,
+.ax-public-h10,
+.ax-public-h11,
+.ax-public-h12 {
+  font-weight: 600;
+}
+
+.ax-public-p1,
+.ax-public-p2,
+.ax-public-p3,
+.ax-public-p4,
+.ax-public-p5,
+.ax-public-p6,
+.ax-public-p7,
+.ax-public-p8,
+.ax-public-p9,
+.ax-public-p10,
+.ax-public-p11,
+.ax-public-p12 {
+  font-weight: 400;
+}
+
+.ax-public-h1,
+.ax-public-h2,
+.ax-public-h3,
+.ax-public-p1,
+.ax-public-p2,
+.ax-public-p3 {
+  line-height: 120%;
+}
+
+.ax-public-h4,
+.ax-public-h5,
+.ax-public-h6,
+.ax-public-p4,
+.ax-public-p5,
+.ax-public-p6 {
+  line-height: 130%;
+}
+
+.ax-public-h7,
+.ax-public-h8,
+.ax-public-h9,
+.ax-public-h10,
+.ax-public-h11,
+.ax-public-h12,
+.ax-public-p7,
+.ax-public-p8,
+.ax-public-p9,
+.ax-public-p10,
+.ax-public-p11,
+.ax-public-p12 {
+  line-height: 140%;
+}
+
+.ax-public-h1,
+.ax-public-p1 {
+  font-size: 2.25rem;
+}
+
+.ax-public-h2,
+.ax-public-p2 {
+  font-size: 2rem;
+}
+
+.ax-public-h3,
+.ax-public-p3 {
+  font-size: 1.75rem;
+}
+
+.ax-public-h4,
+.ax-public-p4 {
+  font-size: 1.5rem;
+}
+
+.ax-public-h5,
+.ax-public-p5 {
+  font-size: 1.25rem;
+}
+
+.ax-public-h6,
+.ax-public-p6 {
+  font-size: 1.125rem;
+}
+
+.ax-public-h7,
+.ax-public-p7 {
+  font-size: 1rem;
+}
+
+.ax-public-h8,
+.ax-public-p8 {
+  font-size: 0.9375rem;
+}
+
+.ax-public-h9,
+.ax-public-p9 {
+  font-size: 0.875rem;
+}
+
+.ax-public-h10,
+.ax-public-p10 {
+  font-size: 0.75rem;
+}
+
+.ax-public-h11,
+.ax-public-p11 {
+  font-size: 0.625rem;
+}
+
+.ax-public-h12,
+.ax-public-p12 {
+  font-size: 0.5rem;
+}
+
+/* Navigation and Links */
+
+.ax-public-button-large,
+.ax-public-button-medium,
+.ax-public-button-small,
+.ax-public-button-extra-small {
+  font-weight: 600;
+  line-height: 100%;
+}
+
+.ax-public-button-large {
+  font-size: 1rem;
+}
+
+.ax-public-button-medium {
+  font-size: 0.875rem;
+}
+
+.ax-public-button-small {
+  font-size: 0.75rem;
+}
+
+.ax-public-button-extra-small {
+  font-size: 0.625rem;
+}
+
+/* Edge Label */
+
+.ax-public-edge-label-medium {
+  font-size: 0.75rem;
+  line-height: 100%;
+}
+
+.ax-public-edge-label-small {
+  font-size: 0.75rem;
+  line-height: 100%;
+}
+
+.ax-public-edge-label-extra-small {
+  font-size: 0.625rem;
+  line-height: 100%;
+}

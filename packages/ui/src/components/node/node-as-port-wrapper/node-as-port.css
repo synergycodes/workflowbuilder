@@ -1,0 +1,8 @@
+.is-connection-target .react-flow__handle.target::before {
+  content: '';
+  position: absolute;
+  width: var(--ax-node-as-port-width);
+  height: var(--ax-node-as-port-height);
+  transform: var(--ax-node-as-port-position);
+  border-radius: 0;
+}
