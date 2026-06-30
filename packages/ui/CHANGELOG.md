@@ -17,11 +17,12 @@ upgrading.
 
 - Removed `@mui/material`, `@mui/base`, `@mantine/core`, `@mantine/dates`,
   `@emotion/*`, and `@floating-ui/react`.
-- `@base-ui/react` (`^1.4.0`) is now a **peer dependency** - consumers must
-  install it alongside this package.
+- `react` / `react-dom` are the only **peer dependencies**. `@base-ui/react`
+  (pinned to the validated `1.4.x` line) and `react-textarea-autosize` are
+  regular dependencies that install automatically.
 - `DatePicker` is rebuilt on `react-day-picker` + `date-fns`; `TextArea` on
-  `react-textarea-autosize`. `date-fns`, `react-day-picker`, and `clsx` are
-  bundled into the package output.
+  `react-textarea-autosize`. `date-fns`, `react-day-picker`, `clsx`, and the
+  Phosphor icons are bundled into the package output.
 
 #### Packaging
 
@@ -50,7 +51,12 @@ upgrading.
 - **Switch**: `onChange` is `(checked: boolean, event: Event)`. The second
   argument is the native DOM event (previously typed as a React
   `ChangeEvent<HTMLInputElement>`, which never matched the value passed at
-  runtime).
+  runtime). The redundant `styles` prop was removed - use `className`.
+- **SegmentPicker**: `onChange` is `(event: React.MouseEvent<HTMLButtonElement>, value: string)`.
+- **Shape** (the `shape` prop on `Button` and `SegmentPicker`): the type is now
+  `'default' | 'circle'` (was `'' | 'circle'`) - pass `'default'` instead of `''`.
+- **Modal**: `className` and any forwarded HTML attributes now apply to the same
+  root element (previously split across the outer and content elements).
 - Transitions moved to the popup element, where Base UI sets
   `data-starting-style` / `data-ending-style`.
 
@@ -60,3 +66,15 @@ upgrading.
   order, reset, typography) for per-component / subpath consumers.
 - `Input` gains a typed `error` prop wired to the error state.
 - `Snackbar` exposes proper `role="status"` / `aria-live` semantics.
+
+### Fixed
+
+- **DatePicker**: the calendar now ships `react-day-picker`'s stylesheet (it
+  rendered unstyled before); selection, today, and day-hover states are themed
+  to the design tokens, and the month-nav chevrons use a neutral color.
+- **Accordion**: `onToggleOpen` no longer fires twice when the chevron is
+  clicked.
+- **IconSwitch**: the thumb icon now swaps in uncontrolled mode (it was stuck
+  on the unchecked icon).
+- **Button**: children that match no variant log a clear error instead of
+  silently rendering nothing.
