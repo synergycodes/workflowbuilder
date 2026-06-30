@@ -89,4 +89,18 @@
   .container[data-checked] .thumb {
     transform: translateX(var(--ax-public-icon-switch-translate));
   }
+
+  /* Swap the thumb icon off the switch state (works controlled + uncontrolled).
+     Both icons are absolutely centered in the thumb; only one is shown. */
+  .thumb .icon-checked {
+    display: none;
+  }
+
+  .container[data-checked] .thumb .icon-unchecked {
+    display: none;
+  }
+
+  .container[data-checked] .thumb .icon-checked {
+    display: flex;
+  }
 }

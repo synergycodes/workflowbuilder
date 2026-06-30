@@ -55,14 +55,18 @@ export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
     }
 
     return (
-      <Collapsible defaultExpanded={defaultOpen} isExpanded={isExpanded} onToggle={onExpandCollapse}>
+      // The whole header is the click target (onClick below) and the arrow
+      // button bubbles into it. Collapsible is display-only here (controlled via
+      // `isExpanded`), so it must NOT also fire onToggle - otherwise clicking
+      // the arrow would run onExpandCollapse twice (button toggle + header bubble).
+      <Collapsible defaultExpanded={defaultOpen} isExpanded={isExpanded}>
         <div ref={ref} className={clsx(styles['accordion'], className)} {...props}>
           <div
             className={clsx(styles['header'], {
               [styles['expanded']]: isExpanded,
             })}
             onClick={onExpandCollapse}
-            aria-expanded={isOpen}
+            aria-expanded={isExpanded}
           >
             <span className="ax-public-h10">{label}</span>
             <Collapsible.Button />
