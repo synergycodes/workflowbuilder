@@ -1,4 +1,4 @@
-import { errorPolicyProperty, sharedProperties } from '@workflowbuilder/sdk';
+import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
 // `auto` lets the node detect the format; the rest force a specific renderer.
@@ -20,7 +20,6 @@ export const schema = {
   type: 'object',
   properties: {
     ...sharedProperties,
-    ...errorPolicyProperty,
     mode: {
       type: 'string',
       options: VISUALIZE_MODES.map((value) => ({ label: MODE_LABELS[value], value })),
