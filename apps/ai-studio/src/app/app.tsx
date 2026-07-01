@@ -1,6 +1,7 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 import './brand-override.css';
+import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
 
 import { BrandLogo } from '../components/brand/brand-logo';
