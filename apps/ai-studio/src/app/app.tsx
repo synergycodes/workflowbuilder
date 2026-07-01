@@ -14,6 +14,7 @@ import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
+import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 
 // Non-empty initialNodes/Edges make the SDK skip the welcome picker; a returning visitor's saved diagram still wins.
 const flagship = supportTriageFlow.value;
@@ -27,7 +28,7 @@ export function App() {
       initialEdges={flagship.diagram.edges}
       nodeTypes={aiStudioNodeTypes}
       diagramTemplates={aiStudioTemplates}
-      plugins={[aiStudioFeaturesPlugin]}
+      plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />
       <BrandLogo />
