@@ -1,0 +1,13 @@
+:root {
+  --wb-branches-container-gap: 0.5rem;
+}
+
+/* Branches carry their own output ports; the decision node's outer one is unused here. */
+.react-flow__node-decision-node .react-flow__handle[data-handleid='source'] {
+  display: none;
+}
+
+[class^='_json-form-container_'] textarea {
+  font-family: ui-monospace, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  max-height: 18rem;
+}
