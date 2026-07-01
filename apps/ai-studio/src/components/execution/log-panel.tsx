@@ -1,10 +1,11 @@
+import { useSingleSelectedElement } from '@workflowbuilder/sdk';
 import { useEffect, useRef, useState } from 'react';
 
 import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
 
 import styles from './log-panel.module.css';
 
-import { useExecutionStore } from '../../stores/use-execution-store';
+import { selectNode, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 
 function formatTime(iso: string) {
@@ -66,21 +67,21 @@ export function ExecutionLogPanel() {
   const events = useExecutionStore((s) => s.events);
   const status = useExecutionStore((s) => s.status);
   const selectedNodeId = useExecutionStore((s) => s.selectedNodeId);
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useExecutionStore((s) => s.logCollapsed);
+  const canvasSelectedId = useSingleSelectedElement()?.node?.id;
 
   const bodyRef = useRef<HTMLDivElement>(null);
+
+  // Selecting a node on the canvas highlights its log entry, without opening the log.
+  useEffect(() => {
+    if (canvasSelectedId) selectNode(canvasSelectedId);
+  }, [canvasSelectedId]);
 
   useEffect(() => {
     if (!collapsed && bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
   }, [events.length, collapsed]);
-
-  // Reveal the log when a node is selected. Keyed on selectedNodeId only, so a
-  // manual collapse (which doesn't change it) can't be reopened by this effect.
-  useEffect(() => {
-    if (selectedNodeId) setCollapsed(false);
-  }, [selectedNodeId]);
 
   useEffect(() => {
     if (!selectedNodeId || collapsed) return;
@@ -91,7 +92,7 @@ export function ExecutionLogPanel() {
 
   return (
     <div className={`${styles['panel']} ${collapsed ? styles['panel--collapsed'] : ''}`}>
-      <div className={styles['header']} onClick={() => setCollapsed((v) => !v)}>
+      <div className={styles['header']} onClick={toggleLog}>
         <span className={styles['title']}>Execution Log</span>
         <span className={`${styles['status']} ${styles[`status--${status}`]}`}>{status}</span>
         <span className={styles['toggle']}>{collapsed ? '▲' : '▼'}</span>
