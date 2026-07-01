@@ -26,10 +26,5 @@ export const uischema: UISchema = {
       scope: scope('properties.webSearch'),
       label: 'Web search (let the agent look things up)',
     },
-    {
-      type: 'Select',
-      scope: scope('properties.errorPolicy'),
-      label: 'Error Policy',
-    },
   ],
 };

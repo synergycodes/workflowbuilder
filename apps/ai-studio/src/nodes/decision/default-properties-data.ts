@@ -6,5 +6,4 @@ export const defaultPropertiesData: NodeDataProperties<DecisionSchema> = {
   label: 'Decision',
   description: '',
   decisionBranches: [],
-  errorPolicy: 'fail',
 };

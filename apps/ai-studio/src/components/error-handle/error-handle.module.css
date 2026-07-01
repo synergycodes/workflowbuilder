@@ -1,3 +1,0 @@
-:global(.react-flow__handle).error-handle {
-  border: 2px solid var(--ai-studio-status-color--failed);
-}

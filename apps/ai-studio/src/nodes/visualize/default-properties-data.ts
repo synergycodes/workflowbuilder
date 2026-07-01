@@ -6,5 +6,4 @@ export const defaultPropertiesData: NodeDataProperties<VisualizeSchema> = {
   label: 'Visualize',
   description: '',
   mode: 'auto',
-  errorPolicy: 'fail',
 };

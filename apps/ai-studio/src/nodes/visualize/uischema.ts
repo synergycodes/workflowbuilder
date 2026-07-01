@@ -19,10 +19,5 @@ export const uischema: UISchema = {
       scope: scope('properties.mode'),
       label: 'Render as',
     },
-    {
-      type: 'Select',
-      scope: scope('properties.errorPolicy'),
-      label: 'Error Policy',
-    },
   ],
 };
