@@ -16,6 +16,17 @@
   </head>
   <body>
     <div id="root"></div>
+    <!-- English-first demo: pin EN before the module (and the SDK i18n it loads)
+         boots, unless the visitor made a clean en/pl choice via the selector.
+         A classic script runs before deferred module scripts, so this beats the
+         SDK's navigator-based auto-detect. See the SDK selector fix for the
+         regional-locale root cause. -->
+    <script>
+      try {
+        var lng = localStorage.getItem('i18nextLng');
+        if (lng !== 'en' && lng !== 'pl') localStorage.setItem('i18nextLng', 'en');
+      } catch (e) {}
+    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
