@@ -13,9 +13,7 @@ export const aiAgentPaletteItem: PaletteItem<AiAgentSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
-  // Declares the executor's output so `{{ nodes.<id>.response }}` references
-  // (e.g. in decision conditions) resolve to a real mention suggestion instead
-  // of rendering as an unresolved "missing mention" pill.
+  // Lets `{{ nodes.<id>.response }}` references resolve to a real mention instead of a "missing mention" pill.
   outputSchema: {
     type: 'default',
     properties: {

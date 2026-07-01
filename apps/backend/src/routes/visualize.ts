@@ -16,9 +16,6 @@ const adaptSchema = z.object({
   format: z.enum(['diagram', 'chart', 'table', 'json', 'stat-cards', 'markdown', 'text']),
 });
 
-// Reshape an automation step's output into a specific visualization format. Each
-// prompt asks for ONLY the payload (no fences, no prose) and reshapes the data to
-// fit the format using only facts present in the content.
 const FORMAT_PROMPTS: Record<z.infer<typeof adaptSchema>['format'], string> = {
   diagram: `You reshape content into a Mermaid diagram so it can be rendered as one. Choose the diagram type that best represents the content: a flowchart (\`flowchart TD\`) for processes/steps/dependencies, a \`sequenceDiagram\` for interactions over time.
 Rules:
@@ -45,8 +42,6 @@ export function createVisualizeRoutes(
 ): Hono<{ Variables: AuthVariables & TenantVariables }> {
   const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
 
-  // Convert an arbitrary upstream output into a specific render format via an LLM.
-  // Same abuse gate as workflow execution (per-IP rate limit + optional Turnstile).
   routes.post('/adapt', async (c) => {
     await assertAuthorized(c, 'workflows:execute', { kind: 'workflows' });
 
@@ -70,7 +65,7 @@ export function createVisualizeRoutes(
       const result = await generateText({
         model: openrouter.chat(env.AI_MODEL),
         system: FORMAT_PROMPTS[format],
-        // Low temperature for stable, well-formed structured output.
+        // Low temperature for stable structured output.
         temperature: 0.2,
         prompt: `Content to convert:\n\n${content}`,
       });

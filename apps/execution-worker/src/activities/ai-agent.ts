@@ -5,14 +5,12 @@ import { type ExecutionContext, type LoggerPort, resolveTemplate } from '@workfl
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { createWebSearchTool } from '../tools/web-search';
 
-// Cap on the agentic tool loop: enough for a search → synthesize round-trip
-// (and a retry), bounded so a misbehaving model can't run up cost.
+// Bounds the agentic tool loop so a misbehaving model can't run up cost.
 const MAX_TOOL_STEPS = 4;
 
 type AiAgentDeps = {
   model: Parameters<typeof generateText>[0]['model'];
   logger?: LoggerPort;
-  // Optional. When present and the node opts in, the agent gets a web-search tool.
   tavilyApiKey?: string;
 };
 
@@ -43,8 +41,6 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     userPrompt = `Here is the context from previous steps:\n\n${parts.join('\n\n')}`;
   }
 
-  // Expose the web-search tool only when the node opted in AND a key is set.
-  // Without it the agent still runs — it just answers without searching.
   const webSearchEnabled = node.config.webSearch === true && Boolean(deps.tavilyApiKey);
   const tools = webSearchEnabled ? { webSearch: createWebSearchTool(deps.tavilyApiKey!) } : undefined;
 
@@ -53,16 +49,13 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
       model: deps.model,
       system: resolvedPrompt,
       prompt: userPrompt,
-      // The AI SDK runs the tool call/execute/continue loop internally up to
-      // this many steps; no effect when `tools` is undefined.
+      // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
       ...(tools ? { tools, stopWhen: stepCountIs(MAX_TOOL_STEPS) } : {}),
     });
 
     return { output: { response: result.text } };
   } catch (error) {
-    // Mirror the `node_failed` event payload shape (`{ error: { message, code? } }`)
-    // so operators correlating a log line with the SSE event by executionId see
-    // the same structure on both sides.
+    // Mirror the `node_failed` SSE payload shape so a log line and the event line up by executionId.
     const message = error instanceof Error ? error.message : String(error);
     deps.logger?.error('llm call failed', {
       workflowId: context.workflowId,

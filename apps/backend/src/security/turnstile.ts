@@ -5,16 +5,11 @@ const logger = backendLogger.child({ component: 'turnstile' });
 
 const SITEVERIFY_URL = 'https://challenges.cloudflare.com/turnstile/v0/siteverify';
 
-/** True when a Turnstile secret is configured; otherwise verification is skipped. */
 export function isTurnstileEnabled(): boolean {
   return Boolean(env.TURNSTILE_SECRET_KEY);
 }
 
-/**
- * Verify a Cloudflare Turnstile token server-side. Returns true when disabled
- * (no secret configured). Fails closed on a verifier/network error, since this
- * gates a public, paid LLM run.
- */
+// Returns true when disabled (no secret); fails closed on a verifier/network error, since this gates a paid LLM run.
 export async function verifyTurnstileToken(token: string, remoteIp?: string): Promise<boolean> {
   const secret = env.TURNSTILE_SECRET_KEY;
   if (!secret) {

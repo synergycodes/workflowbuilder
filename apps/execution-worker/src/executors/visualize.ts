@@ -1,6 +1,4 @@
-// Visualize executor — display-only node. The on-canvas card renders the
-// upstream node's output in the UI; the executor only has to complete so the
-// node lights up and the reveal animation fires. It needs no inputs.
+// Display-only node: the executor just has to complete so the on-canvas card reveals.
 export function executeVisualize() {
   return { output: { visualized: true } };
 }

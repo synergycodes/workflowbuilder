@@ -9,17 +9,12 @@ function triggerDownload(href: string, filename: string): void {
   link.click();
 }
 
-/** Render a DOM subtree to a PNG and download it. */
 export async function downloadPng(element: HTMLElement, filename = 'visualization.png'): Promise<void> {
   const dataUrl = await toPng(element, PNG_OPTIONS);
   triggerDownload(dataUrl, filename);
 }
 
-/**
- * Copy a DOM subtree to the clipboard as a PNG. Returns true if it reached the
- * clipboard, false if it fell back to a download (e.g. Firefox, which cannot
- * write image blobs to the clipboard).
- */
+// Returns false when it falls back to a download (e.g. Firefox can't write image blobs to the clipboard).
 export async function copyImage(element: HTMLElement): Promise<boolean> {
   const blob = await toBlob(element, PNG_OPTIONS);
   if (!blob) {
@@ -31,14 +26,13 @@ export async function copyImage(element: HTMLElement): Promise<boolean> {
       await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
       return true;
     } catch {
-      // fall through to download
+      // fall back to download
     }
   }
   triggerDownload(URL.createObjectURL(blob), 'visualization.png');
   return false;
 }
 
-/** Download a DOM subtree as SVG (serializes an inner <svg> when present). */
 export async function downloadSvg(element: HTMLElement, filename = 'visualization.svg'): Promise<void> {
   const svg = element.querySelector('svg');
   if (svg) {
@@ -51,7 +45,6 @@ export async function downloadSvg(element: HTMLElement, filename = 'visualizatio
   triggerDownload(dataUrl, filename);
 }
 
-/** Copy the raw source text to the clipboard. */
 export async function copySource(text: string): Promise<boolean> {
   try {
     await navigator.clipboard.writeText(text);

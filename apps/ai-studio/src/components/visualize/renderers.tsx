@@ -6,16 +6,13 @@ import styles from './renderers.module.css';
 
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
 
-// Lazy so recharts (~140KB) only loads when a chart is actually rendered.
 const ChartRenderer = lazy(() => import('./chart-renderer').then((module) => ({ default: module.ChartRenderer })));
-// Lazy so mermaid (~150KB) only loads when a diagram is actually rendered.
 const DiagramRenderer = lazy(() =>
   import('./diagram-renderer').then((module) => ({ default: module.DiagramRenderer })),
 );
 
 export type RendererProps = {
   text: string;
-  // Pre-parsed payload from detectFormat (auto mode); renderers parse `text` themselves otherwise.
   data?: unknown;
 };
 
@@ -36,14 +33,14 @@ function parseOr(text: string, data: unknown): unknown {
   try {
     return JSON.parse(text);
   } catch {
-    // not raw JSON — try a fenced ```json block (LLM output often wraps it)
+    // not JSON
   }
   const fence = /```(?:json)?\s*\n?([\s\S]*?)```/.exec(text);
   if (fence) {
     try {
       return JSON.parse(fence[1].trim());
     } catch {
-      // fenced content is not JSON either
+      // not JSON
     }
   }
   return undefined;
@@ -66,10 +63,6 @@ function humanize(key: string): string {
     .replace(/^./, (c) => c.toUpperCase());
 }
 
-// Cell / value strings from an LLM often carry markdown (bold, lists, links,
-// code). Render those as markdown; leave plain strings untouched so values like
-// "user_id" or "a_b" are not mangled. Raw HTML is intentionally NOT rendered
-// (escaped) to avoid XSS from untrusted model output.
 function hasRichText(value: string): boolean {
   return (
     value.includes('\n') ||
@@ -80,6 +73,7 @@ function hasRichText(value: string): boolean {
   );
 }
 
+// Untrusted model output: render markdown but never raw HTML (Markdown escapes it).
 function RichText({ value }: { value: string }) {
   if (!hasRichText(value)) {
     return <>{value}</>;
@@ -91,10 +85,7 @@ function RichText({ value }: { value: string }) {
   );
 }
 
-// Render fenced code blocks richly: a ```mermaid block becomes a real diagram,
-// a ```json block is detected and rendered (chart/table/json/...), so a mixed
-// markdown response with an embedded diagram/data block renders it inline rather
-// than as raw code. `pre` is unwrapped so these block renderers own their wrapper.
+// Unwrap <pre> so embedded ```mermaid / ```json blocks render as real components.
 const markdownComponents: Components = {
   pre: ({ children }) => <>{children}</>,
   code({ className, children }) {
@@ -246,8 +237,6 @@ function StatCardsRenderer({ text, data }: RendererProps) {
   );
 }
 
-// Resolve a renderer to its component. `chart` (recharts) and `diagram` (mermaid)
-// are lazy and load only when actually used.
 export function getRenderer(renderer: VisualizeRenderer): ComponentType<RendererProps> {
   switch (renderer) {
     case 'text': {

@@ -7,7 +7,7 @@ type TriggerNodeConfig = Record<string, never>;
 
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
-  webSearch?: boolean; // when true (and TAVILY_API_KEY is set), expose the web-search tool
+  webSearch?: boolean; // needs TAVILY_API_KEY to take effect
 };
 
 export type DecisionBranchCondition = {
@@ -28,8 +28,7 @@ type DecisionNodeConfig = {
   decisionBranches: DecisionBranch[];
 };
 
-// Display-only node: it renders an upstream output on the canvas. Has no
-// runtime config - the UI reads the upstream node's output directly.
+// Display-only node; the UI reads the upstream output directly, so no runtime config.
 type VisualizeNodeConfig = Record<string, never>;
 
 export type TriggerNode = {

@@ -9,14 +9,9 @@ mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutra
 
 let counter = 0;
 
-// Renders a mermaid source string to SVG in the browser. It validates with
-// mermaid.parse({ suppressErrors: true }) BEFORE rendering: invalid input (e.g.
-// the node is forced to Diagram on non-diagram text) falls back to raw text and
-// never calls render, so mermaid does not inject its giant "Syntax error"
-// graphic into the document.
+// Validate before render: invalid input falls back to raw text so mermaid never injects its "Syntax error" graphic.
 export function DiagramRenderer({ text, data }: RendererProps) {
   const raw = typeof data === 'string' ? data : text;
-  // If the diagram is embedded in a larger response, render just the fenced block.
   const fence = /```mermaid\s*\n([\s\S]*?)```/.exec(raw);
   const source = fence ? fence[1].trim() : raw;
   const [svg, setSvg] = useState<string | null>(null);

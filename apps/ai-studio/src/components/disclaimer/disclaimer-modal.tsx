@@ -24,7 +24,7 @@ export function DisclaimerModal() {
     try {
       localStorage.setItem(STORAGE_KEY, 'true');
     } catch {
-      // A locked-down or private session is fine — just close for this visit.
+      // storage unavailable
     }
     setOpen(false);
   }

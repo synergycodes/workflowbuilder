@@ -27,22 +27,18 @@ const GRID = '#edeff3';
 
 type Row = Record<string, unknown>;
 
-// Accepts either an explicit chart spec ({ type, data: [...] }) or a bare array
-// of rows ({label, value} / {x, y} / object rows), and infers the category and
-// numeric value columns.
-// Parse raw JSON, or a ```json fenced block embedded in a larger response.
 function tryParseJson(text: string): unknown {
   try {
     return JSON.parse(text);
   } catch {
-    // not raw JSON — try a fenced block
+    // not raw JSON
   }
   const fence = /```(?:json)?\s*\n([\s\S]*?)```/.exec(text);
   if (fence) {
     try {
       return JSON.parse(fence[1].trim());
     } catch {
-      // fenced content is not JSON either
+      // not JSON
     }
   }
   return undefined;

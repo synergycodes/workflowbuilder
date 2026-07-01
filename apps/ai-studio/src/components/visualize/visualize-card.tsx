@@ -20,7 +20,6 @@ type Props = {
 
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram']);
-// Formats the LLM "AI adapt" can convert into (markdown/text need no conversion).
 const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
 function EmptyState({ running }: { running: boolean }) {
@@ -44,11 +43,6 @@ function EmptyState({ running }: { running: boolean }) {
   );
 }
 
-// Injected into the node body via the OptionalNodeContent decorator, so the
-// visualization renders as part of the node itself. Reads the upstream node's
-// output, picks a renderer (the node's `mode` or auto-detected), reveals it, and
-// offers export and expand. Structured formats (chart/diagram/table/json/
-// stat-cards) are always LLM-adapted to fit the format — there is no toggle.
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const [forceChart, setForceChart] = useState(false);
@@ -57,7 +51,7 @@ export function VisualizeCard({ props }: Props) {
   const [adapting, setAdapting] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
-  // Node vocabulary and edges are static during a run, so snapshot reads are fine.
+  // Nodes/edges are static during a run, so snapshot reads are fine.
   const node = getStoreNodes().find((entry) => entry.id === nodeId);
   const isVisualizeNode = node?.data.type === 'ai-studio/visualize';
   const sourceId = getStoreEdges().find((edge) => edge.target === nodeId)?.source;
@@ -82,18 +76,16 @@ export function VisualizeCard({ props }: Props) {
     adaptVisualization(text, format)
       .then((output) => setAdaptedText(output))
       .catch(() => {
-        // keep the original content on failure
+        // keep original content
       })
       .finally(() => setAdapting(false));
   };
 
-  // A fresh upstream output clears any prior adaptation / chart override.
   useEffect(() => {
     setAdaptedText(null);
     setForceChart(false);
   }, [text]);
 
-  // Always auto-convert the output to fit a chosen structured format (no toggle).
   useEffect(() => {
     if (hasOutput && ADAPTABLE.has(activeRenderer) && adaptedText === null && !adapting) {
       runAdapt(activeRenderer);
