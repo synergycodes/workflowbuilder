@@ -11,11 +11,12 @@ function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-function EventRow({ event }: { event: ExecutionEvent }) {
+function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNodeId: string | null }) {
   const [expanded, setExpanded] = useState(false);
 
   const nodeId = (event as { nodeId?: string | null }).nodeId;
   const isNode = typeof nodeId === 'string' && nodeId.length > 0;
+  const highlighted = isNode && nodeId === selectedNodeId;
   const label = event.type.replaceAll('_', ' ');
 
   let detail: string | undefined;
@@ -42,7 +43,10 @@ function EventRow({ event }: { event: ExecutionEvent }) {
   const truncated = detail && detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
 
   return (
-    <div className={`${styles['event']} ${styles[`event--${event.type.split('_')[0]}`] ?? ''}`}>
+    <div
+      data-node-id={isNode ? nodeId : undefined}
+      className={`${styles['event']} ${styles[`event--${event.type.split('_')[0]}`] ?? ''} ${highlighted ? styles['event--highlighted'] : ''}`}
+    >
       <div className={styles['event-header']} onClick={() => hasDetail && setExpanded((v) => !v)}>
         <span className={`${styles['badge']} ${styles[`badge--${event.type}`]}`}>{label}</span>
         {isNode && <span className={styles['node-id']}>{(event as { nodeId: string }).nodeId.slice(0, 8)}</span>}
@@ -61,6 +65,7 @@ function EventRow({ event }: { event: ExecutionEvent }) {
 export function ExecutionLogPanel() {
   const events = useExecutionStore((s) => s.events);
   const status = useExecutionStore((s) => s.status);
+  const selectedNodeId = useExecutionStore((s) => s.selectedNodeId);
   const [collapsed, setCollapsed] = useState(false);
 
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -70,6 +75,17 @@ export function ExecutionLogPanel() {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
   }, [events.length, collapsed]);
+
+  // Reveal the log when a node is selected. Keyed on selectedNodeId only, so a
+  // manual collapse (which doesn't change it) can't be reopened by this effect.
+  useEffect(() => {
+    if (selectedNodeId) setCollapsed(false);
+  }, [selectedNodeId]);
+
+  useEffect(() => {
+    if (!selectedNodeId || collapsed) return;
+    bodyRef.current?.querySelector(`[data-node-id="${selectedNodeId}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [selectedNodeId, collapsed]);
 
   if (events.length === 0 && status === 'idle') return null;
 
@@ -83,7 +99,7 @@ export function ExecutionLogPanel() {
       {!collapsed && (
         <div ref={bodyRef} className={styles['body']}>
           {events.map((event) => (
-            <EventRow key={`${event.executionId}-${event.sequence}`} event={event} />
+            <EventRow key={`${event.executionId}-${event.sequence}`} event={event} selectedNodeId={selectedNodeId} />
           ))}
         </div>
       )}

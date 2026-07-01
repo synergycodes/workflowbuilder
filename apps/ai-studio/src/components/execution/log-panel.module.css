@@ -1,8 +1,10 @@
 .panel {
   position: fixed;
   bottom: 1.5rem;
-  right: 1.5rem;
-  width: 26rem;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30rem;
+  max-width: calc(100vw - 3rem);
   max-height: 60vh;
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
@@ -157,4 +159,9 @@
 
 .status--cancelled {
   opacity: 0.5;
+}
+
+.event--highlighted {
+  background: color-mix(in srgb, var(--ax-colors-acc1-500, #1096e7), transparent 88%);
+  box-shadow: inset 0.1875rem 0 0 var(--ax-colors-acc1-500, #1096e7);
 }
