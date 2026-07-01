@@ -9,7 +9,6 @@ import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
-import { ExecutionNodeDetail } from '../components/execution/node-detail';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
@@ -34,7 +33,6 @@ export function App() {
       <BrandLogo />
       <AiStudioControls />
       <ExecutionLogPanel />
-      <ExecutionNodeDetail />
       <ExecutionHighlighting />
       <DisclaimerModal />
     </WorkflowBuilder.Root>
