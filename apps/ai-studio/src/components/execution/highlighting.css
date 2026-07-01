@@ -13,9 +13,9 @@ html[data-theme='dark'] {
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
-  --ai-studio-node-shadow-color--active: color-mix(in srgb, var(--ai-studio-edge-color--active), transparent 60%);
-  --ai-studio-node-shadow-color--completed: color-mix(in srgb, var(--ai-studio-edge-color--active), transparent 10%);
-  --ai-studio-node-shadow-color--failed: color-mix(in srgb, var(--ax-colors-red-400), transparent 50%);
+  --ai-studio-node-shadow-color--active: var(--ai-studio-edge-color--active);
+  --ai-studio-node-shadow-color--completed: var(--ai-studio-edge-color--active);
+  --ai-studio-node-shadow-color--failed: var(--ax-colors-red-400);
 
   --ai-studio-node-shadow--active: var(--ax-token-shadow-focus-node-active-x) var(--ax-token-shadow-focus-node-active-y)
     var(--ax-token-shadow-focus-node-active-blur) var(--ax-token-shadow-focus-node-active-spread)
