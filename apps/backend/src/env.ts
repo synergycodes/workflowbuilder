@@ -16,15 +16,12 @@ export const env = {
   RATE_LIMIT_EXECUTE_PER_MINUTE: Number(envOr('RATE_LIMIT_EXECUTE_PER_MINUTE', '0')),
   RATE_LIMIT_EXECUTE_PER_DAY: Number(envOr('RATE_LIMIT_EXECUTE_PER_DAY', '0')),
   TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
-  // Cloudflare Turnstile secret. Null = verification disabled (local dev runs
-  // unprotected). When set, workflow execution requires a valid Turnstile token.
+  // Null = Turnstile verification disabled (local dev runs unprotected).
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
-  // Per-IP execution rate limit: at most LIMIT runs per WINDOW_MS. Applies even
-  // without Turnstile, so the public demo budget has a backstop out of the box.
+  // Per-IP backstop that applies even without Turnstile: at most LIMIT runs per WINDOW_MS.
   EXECUTE_RATE_LIMIT: Number(envOr('EXECUTE_RATE_LIMIT', '10')),
   EXECUTE_RATE_WINDOW_MS: Number(envOr('EXECUTE_RATE_WINDOW_MS', '60000')),
-  // OpenRouter for the Visualize "AI adapt" endpoint. Null = adapt disabled
-  // (the endpoint returns 501). The worker keeps its own key for execution.
+  // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
   OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
   AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
 };

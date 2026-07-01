@@ -27,8 +27,6 @@ export function useBackendExecution() {
 
       const { id: workflowId } = (await wfResponse.json()) as { id: string };
 
-      // Bot-verification token for the public demo. Undefined when Turnstile is
-      // not configured (local dev) — the backend then skips verification too.
       const turnstileToken = await getTurnstileToken();
 
       const execResponse = await fetch(`${BACKEND_URL}/api/workflows/${workflowId}/execute`, {

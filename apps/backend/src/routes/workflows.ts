@@ -171,8 +171,7 @@ export function createWorkflowsRoutes(
 
     await assertAuthorized(c, 'workflows:execute', { kind: 'workflow', workflowId });
 
-    // Public-demo abuse control (per-IP rate limit + optional Turnstile). This
-    // is the only endpoint that spends real LLM budget, so it is the gate.
+    // The one endpoint that spends real LLM budget, so it carries the abuse gate.
     const blocked = await guardExecution(c);
     if (blocked) {
       return blocked;

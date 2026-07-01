@@ -1,7 +1,6 @@
 import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
-// `auto` lets the node detect the format; the rest force a specific renderer.
 const VISUALIZE_MODES = ['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram'] as const;
 type VisualizeMode = (typeof VISUALIZE_MODES)[number];
 

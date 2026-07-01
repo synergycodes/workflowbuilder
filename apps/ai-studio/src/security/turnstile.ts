@@ -46,11 +46,7 @@ async function waitForApi(): Promise<TurnstileApi> {
   return api;
 }
 
-/**
- * Returns a fresh Turnstile token, or undefined when no site key is configured
- * (local dev). Uses one invisible widget, re-executed per run, since a token is
- * single-use and short-lived.
- */
+// Returns undefined when no site key is configured (local dev). One invisible widget re-executed per run, since tokens are single-use.
 export async function getTurnstileToken(): Promise<string | undefined> {
   const siteKey = TURNSTILE_SITE_KEY;
   if (!siteKey) {

@@ -1,21 +1,11 @@
 import { jsonSchema, tool } from 'ai';
 
-// Tavily is a search API built for LLM agents: it returns a short synthesized
-// answer plus clean snippets, so we feed the model far fewer tokens than raw
-// SERP JSON would. `search_depth: 'basic'` is the cheapest tier (1 credit).
 const TAVILY_ENDPOINT = 'https://api.tavily.com/search';
 const MAX_RESULTS = 5;
 
 type TavilyResult = { title: string; url: string; content: string };
 type TavilyResponse = { answer?: string; results?: TavilyResult[] };
 
-/**
- * Web-search tool for the AI Agent node, backed by Tavily. The agent decides
- * when to call it; the AI SDK runs the call/execute/continue loop internally
- * (no graph cycles, so it stays compatible with the DAG runner). Search errors
- * are returned to the model as a soft error rather than thrown, so a flaky
- * lookup degrades the answer instead of failing the whole node.
- */
 export function createWebSearchTool(apiKey: string) {
   return tool({
     description:

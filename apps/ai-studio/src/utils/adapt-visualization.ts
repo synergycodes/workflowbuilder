@@ -1,9 +1,6 @@
 import { BACKEND_URL } from '../config';
 import { getTurnstileToken } from '../security/turnstile';
 
-// Ask the backend to convert an arbitrary upstream output into a specific render
-// format via an LLM. Attaches a Turnstile token when configured (same gate as
-// workflow execution). Returns the converted payload (clean mermaid / JSON / ...).
 export async function adaptVisualization(content: string, format: string): Promise<string> {
   const token = await getTurnstileToken();
   const response = await fetch(`${BACKEND_URL}/api/visualize/adapt`, {

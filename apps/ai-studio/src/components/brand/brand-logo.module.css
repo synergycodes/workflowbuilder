@@ -1,5 +1,3 @@
-/* Overlays the app bar's logo slot (the SDK logo sits at ~33px / 37px, 55x22).
-   Fixed so it stays put over the fixed app bar. */
 .logo {
   position: fixed;
   top: 2.45rem;
@@ -15,9 +13,7 @@
   width: auto;
 }
 
-/* Theme-swapped logo: the SDK sets `data-theme` on <html>. Show the dark-text
-   logo by default (light theme) and the white-text logo when the dark theme is
-   active, so neither variant carries a baked-in background. */
+/* The SDK sets data-theme on <html>. */
 .light {
   display: block;
 }

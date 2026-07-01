@@ -16,11 +16,7 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- English-first demo: pin EN before the module (and the SDK i18n it loads)
-         boots, unless the visitor made a clean en/pl choice via the selector.
-         A classic script runs before deferred module scripts, so this beats the
-         SDK's navigator-based auto-detect. See the SDK selector fix for the
-         regional-locale root cause. -->
+    <!-- Pin EN before the SDK module boots (classic script runs before deferred module scripts), unless the visitor already chose en/pl. -->
     <script>
       try {
         var lng = localStorage.getItem('i18nextLng');

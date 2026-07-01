@@ -17,8 +17,7 @@ type Props = {
   onClose: () => void;
 };
 
-// Full-size view of a visualization. Rendered through a portal to document.body
-// so its fixed overlay escapes the transformed React Flow viewport.
+// Portaled to document.body so the fixed overlay escapes the transformed React Flow viewport.
 export function VisualizeModal({ renderer, text, data, badge, isVector, onClose }: Props) {
   const contentRef = useRef<HTMLDivElement>(null);
   const Renderer = getRenderer(renderer);

@@ -1,6 +1,3 @@
-/* Rendered in-flow inside the node body, so the node grows to contain it. The
-   node's own panel provides the border/background; this only adds a divider
-   from the node header and lays out the toolbar + content. */
 .integrated {
   width: 100%;
   margin-top: 0.4rem;

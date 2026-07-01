@@ -1,23 +1,12 @@
-// Heuristic format detection for the Visualize node's `auto` mode. Maps a raw
-// output string to the renderer that fits it best. Conservative by design: only
-// picks `chart`/`diagram` on an unambiguous signal, and falls back to `markdown`
-// (react-markdown renders plain prose fine too) rather than raw `text`. `text`
-// (<pre>) is reachable via explicit override only.
-
 export type VisualizeRenderer = 'markdown' | 'text' | 'json' | 'table' | 'stat-cards' | 'chart' | 'diagram';
 
 type DetectResult = {
   renderer: VisualizeRenderer;
-  // Parsed payload for structured formats (json/table/chart), so renderers do not re-parse.
   data?: unknown;
-  // True when the data could also be charted (drives the "try as chart" suggestion).
   chartable?: boolean;
 };
 
-// A fenced ```mermaid block, or a first line that is unambiguously a mermaid
-// declaration. Deliberately strict: flowchart/graph need a direction, and
-// prose-like bare words ("pie", "graph", "timeline", "journey") are NOT matched,
-// so plain prose starting with such a word is not mis-detected as a diagram.
+// Strict on purpose: flowchart/graph require a direction so prose isn't mis-detected as a diagram.
 const MERMAID_FENCE = /^```mermaid\s*\n?([\s\S]*?)```$/;
 const MERMAID_FIRST_LINE =
   /^(?:sequenceDiagram|classDiagram|stateDiagram(?:-v2)?|erDiagram|gantt|gitGraph|mindmap|quadrantChart|requirementDiagram)\b|^(?:flowchart|graph)\s+(?:TB|TD|BT|RL|LR)\b/;
@@ -59,7 +48,6 @@ function hasNumericColumn(rows: Record<string, unknown>[]): boolean {
 }
 
 function detectJson(parsed: unknown): DetectResult | null {
-  // Explicit chart spec envelope: { type: 'bar'|'line'|..., data: [...] }
   if (
     isPlainObject(parsed) &&
     typeof parsed['type'] === 'string' &&
@@ -89,7 +77,7 @@ function detectJson(parsed: unknown): DetectResult | null {
       : { renderer: 'json', data: parsed };
   }
 
-  return null; // scalar JSON (number/string/bool) is not "structured"
+  return null;
 }
 
 function parseCsv(text: string): Record<string, string>[] | null {
@@ -99,12 +87,10 @@ function parseCsv(text: string): Record<string, string>[] | null {
   }
   const delimiter = lines[0].includes('\t') ? '\t' : ',';
   const counts = lines.map((line) => line.split(delimiter).length);
-  // Strong guard against prose: every line must have the same column count (>= 2).
   if (counts[0] < 2 || !counts.every((c) => c === counts[0])) {
     return null;
   }
   const headers = lines[0].split(delimiter).map((h) => h.trim());
-  // Headers should look like headers, not sentences.
   if (headers.some((h) => h.length === 0 || h.length > 30)) {
     return null;
   }
@@ -124,7 +110,6 @@ export function detectFormat(input: string): DetectResult {
     return { renderer: 'text' };
   }
 
-  // 1. Mermaid diagram: a fenced ```mermaid block, or a clearly-declared first line.
   const fence = MERMAID_FENCE.exec(text);
   if (fence) {
     return { renderer: 'diagram', data: fence[1].trim() };
@@ -134,7 +119,6 @@ export function detectFormat(input: string): DetectResult {
     return { renderer: 'diagram', data: text };
   }
 
-  // 2. JSON (gate on { or [ so bare scalars do not register as JSON).
   if (text.startsWith('{') || text.startsWith('[')) {
     try {
       const result = detectJson(JSON.parse(text));
@@ -142,16 +126,14 @@ export function detectFormat(input: string): DetectResult {
         return result;
       }
     } catch {
-      // not valid JSON — fall through
+      // not JSON
     }
   }
 
-  // 3. CSV / TSV.
   const csv = parseCsv(text);
   if (csv) {
     return { renderer: 'table', data: csv };
   }
 
-  // 4. Fallback: markdown (handles both real markdown and plain prose well).
   return { renderer: 'markdown' };
 }

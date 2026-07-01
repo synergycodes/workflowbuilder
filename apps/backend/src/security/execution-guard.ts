@@ -5,8 +5,7 @@ import { isTurnstileEnabled, verifyTurnstileToken } from './turnstile';
 
 type Bucket = { count: number; resetAt: number };
 
-// In-memory per-IP fixed-window counter. Fine for a single-instance demo; a
-// multi-instance deployment would back this with a shared store (e.g. Redis).
+// In-memory per-IP counter, fine for a single-instance demo; multi-instance would need a shared store.
 const buckets = new Map<string, Bucket>();
 const MAX_TRACKED_IPS = 10_000;
 
@@ -23,8 +22,7 @@ function clientIp(c: Context): string {
 function checkRateLimit(ip: string): { allowed: boolean; retryAfterSec: number } {
   const now = Date.now();
 
-  // Cheap memory bound: a single window never holds enough distinct demo IPs
-  // for clearing to lose useful state.
+  // Cheap memory bound; a single window never holds enough distinct demo IPs for clearing to matter.
   if (buckets.size > MAX_TRACKED_IPS) {
     buckets.clear();
   }
@@ -42,12 +40,7 @@ function checkRateLimit(ip: string): { allowed: boolean; retryAfterSec: number }
   return { allowed: true, retryAfterSec: 0 };
 }
 
-/**
- * Abuse control for the single workflow-execution choke point: a per-IP rate
- * limit plus an optional Cloudflare Turnstile check. Returns a Response to
- * short-circuit the request, or null when the run may proceed. Both controls
- * are no-ops when unconfigured, so local dev runs without any keys.
- */
+// Per-IP rate limit + optional Turnstile. Returns a Response to short-circuit, or null to proceed; both no-op when unconfigured.
 export async function guardExecution(c: Context): Promise<Response | null> {
   const ip = clientIp(c);
 
