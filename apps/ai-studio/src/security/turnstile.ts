@@ -47,7 +47,20 @@ async function waitForApi(): Promise<TurnstileApi> {
 }
 
 // Returns undefined when no site key is configured (local dev). One invisible widget re-executed per run, since tokens are single-use.
-export async function getTurnstileToken(): Promise<string | undefined> {
+export function getTurnstileToken(): Promise<string | undefined> {
+  // Serialized: the single widget and resolve/reject slots can't handle overlapping requests.
+  const next = queue
+    .catch(() => {
+      // a failed predecessor must not poison the queue
+    })
+    .then(requestToken);
+  queue = next;
+  return next;
+}
+
+let queue: Promise<unknown> = Promise.resolve();
+
+async function requestToken(): Promise<string | undefined> {
   const siteKey = TURNSTILE_SITE_KEY;
   if (!siteKey) {
     return undefined;

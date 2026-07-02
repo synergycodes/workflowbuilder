@@ -20,7 +20,6 @@ weekly, or monthly cadence - no more manual exports before the Monday standup.
 It works with every chart type, respects your team's access permissions, and
 takes about 30 seconds to set up. Early users tell us it has quietly removed one
 of the most tedious parts of their week.`,
-            errors: [],
           },
           type: 'ai-studio/trigger',
           icon: 'Lightning',
@@ -43,7 +42,6 @@ of the most tedious parts of their week.`,
 - One idea per post, punchy and concrete
 - End with a clear call to action
 Number each post (1/, 2/, ...).`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -67,7 +65,6 @@ Number each post (1/, 2/, ...).`,
 - 2-3 concrete takeaways
 - A closing question to drive comments
 Keep it under 200 words. Professional but human.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -90,7 +87,6 @@ Keep it under 200 words. Professional but human.`,
 - A few relevant emojis (not too many)
 - A short call to action
 - 5 relevant hashtags on the last line`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -123,7 +119,6 @@ section per channel, in exactly this shape:
 [the caption]
 
 Keep each draft's wording as-is - do not rewrite it. Just organize and label.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -141,7 +136,6 @@ Keep each draft's wording as-is - do not rewrite it. Just organize and label.`,
           properties: {
             label: 'Visualize',
             description: 'Renders the content pack (auto-detects the format).',
-            errors: [],
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

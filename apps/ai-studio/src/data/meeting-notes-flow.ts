@@ -19,7 +19,6 @@ const diagram: DiagramModel = {
 [10:05] Dana: I'll prep the announcement email and the changelog - ready for review by the 12th.
 [10:06] Priya: Great. And we still need pricing sign-off from finance before we announce.
 [10:07] Sam: I'll ping finance today.`,
-            errors: [],
           },
           type: 'ai-studio/trigger',
           icon: 'Lightning',
@@ -39,7 +38,6 @@ const diagram: DiagramModel = {
             description: 'Condenses the discussion and decisions.',
             systemPrompt: `Summarize the meeting transcript in 3-4 sentences: what was discussed and what
 was decided. Neutral, factual tone.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -60,7 +58,6 @@ was decided. Neutral, factual tone.`,
             systemPrompt: `From the meeting transcript, extract every action item as a list. For each item
 give: owner, task, and due date if one was mentioned. If the owner is unclear,
 mark it "unassigned". Do not invent items that were not discussed.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -91,7 +88,6 @@ mark it "unassigned". Do not invent items that were not discussed.`,
 
 One row per action item. Keep it tight and skimmable. Sign off with a final
 line "_Meeting Bot_".`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -109,7 +105,6 @@ line "_Meeting Bot_".`,
           properties: {
             label: 'Visualize',
             description: 'Renders the recap (auto-detects the format).',
-            errors: [],
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

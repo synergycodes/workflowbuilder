@@ -1,13 +1,16 @@
+/* Interim overrides - each has a pending SDK fix; delete the rule when it ships:
+   1. branches gap: SDK default bump (0.25rem -> 0.5rem)
+   2. outer decision port: hidden in the node template when branches exist
+   3. textarea height: `maxRows` passthrough on the TextArea uischema control */
 :root {
   --wb-branches-container-gap: 0.5rem;
 }
 
-/* Branches carry their own output ports; the decision node's outer one is unused here. */
 .react-flow__node-decision-node .react-flow__handle[data-handleid='source'] {
   display: none;
 }
 
 [class^='_json-form-container_'] textarea {
-  font-family: ui-monospace, 'Cascadia Code', 'Roboto Mono', Menlo, Consolas, monospace;
+  font-family: ui-monospace, monospace;
   max-height: 18rem;
 }

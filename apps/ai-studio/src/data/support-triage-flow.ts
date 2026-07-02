@@ -28,7 +28,6 @@ I have a board meeting on Thursday and I genuinely need that export working. Thi
 Thanks,
 Marcus
 Head of Ops, Brightwave`,
-            errors: [],
           },
           type: 'ai-studio/trigger',
           icon: 'Lightning',
@@ -60,7 +59,6 @@ Return exactly this format:
 **Also mentioned:** [any secondary issues, or "none"]
 
 Use the exact lowercase keyword on the Type line - it drives downstream routing.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -112,7 +110,6 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
                 conditions: [],
               },
             ],
-            errors: [],
           },
           type: 'ai-studio/decision',
           icon: 'ArrowsSplit',
@@ -138,7 +135,6 @@ You handle billing issues. Draft a reply to the customer:
 - If they also reported a non-billing problem, tell them you've looped in the right team and they'll hear back separately
 - End with a clear next step
 - Keep it under 160 words. Sign as "Lumen Support".`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -164,7 +160,6 @@ You triage product bugs. Draft a reply to the customer:
 - Ask for the details engineering will need: browser, time it last worked, a screenshot
 - Set honest expectations - it has been escalated, not "fixed by Thursday"
 - Keep it under 160 words. Sign as "Lumen Support".`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -189,7 +184,6 @@ You answer how-to and general questions. Draft a friendly reply:
 - Give a concrete, step-by-step answer if you can, or ask one clarifying question if you can't
 - Point to the relevant Help Center section
 - Keep it under 140 words. Sign as "Lumen Support".`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -217,7 +211,6 @@ Review the drafted reply from the previous step before it is sent. Check:
 
 If it is good, output "✅ APPROVED" followed by the final reply text.
 If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -235,7 +228,6 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           properties: {
             label: 'Visualize',
             description: 'Visualizes the approved reply (auto-detects the format).',
-            errors: [],
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',
