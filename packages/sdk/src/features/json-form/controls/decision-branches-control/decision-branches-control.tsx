@@ -1,6 +1,8 @@
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import styles from './decision-branches-control.module.css';
+
 import { PlaceholderButton } from '../../../diagram/nodes/components/placeholder-button/placeholder-button';
 import type { DecisionBranch, DecisionBranchesControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -38,7 +40,7 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
   }
 
   return (
-    <div>
+    <div className={styles['branches']}>
       {decisionBranches.map((branch, index) => (
         <BranchCard
           key={branch.id}
