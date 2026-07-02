@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-The decision node no longer renders its node-level output port when branches exist - each branch carries its own source handle, so the outer one was a redundant, disconnected port. Branchless decision nodes keep the node-level port. Note: a saved diagram that connected an edge to a branched decision node's outer `source` handle loses that connection point.
+The decision node no longer renders a node-level output port - branches are its only outputs. Execution routes exclusively through branch handles (an edge from the bare `source` could never fire), so the port only invited dead connections. Note: a saved diagram with an edge from a decision node's bare `source` handle loses that connection point.

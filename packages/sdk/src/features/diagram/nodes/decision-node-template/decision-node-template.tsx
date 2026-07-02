@@ -45,10 +45,7 @@ export const DecisionNodeTemplate = memo(
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
     const handleTargetId = getHandleId({ handleType: 'target' });
-    const handleSourceId = getHandleId({ handleType: 'source' });
-
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
-    const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
     const isCanvasNode = showHandles;
 
@@ -72,10 +69,6 @@ export const DecisionNodeTemplate = memo(
         </NodePanel.Content>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
-          {/* Branches carry their own source handles; the node-level one only exists while there are none. */}
-          {(decisionBranches ?? []).length === 0 && (
-            <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
-          )}
         </NodePanel.Handles>
       </NodePanel.Root>
     );
