@@ -1,8 +1,6 @@
 name: Deploy AI Studio
 
 on:
-  push:
-    branches: ["WB-229-swarm-alignment"]
   workflow_dispatch:
     inputs:
       image_tag:
@@ -86,17 +84,18 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
-      - name: Install Azure SSH extension
-        run: az extension add --name ssh --yes
-
       - name: Refresh docker compose on Azure VM
         run: |
-          az ssh vm \
+          OUTPUT=$(az vm run-command invoke \
             --name ${{ vars.AI_STUDIO_VM_NAME }} \
             --resource-group ${{ vars.AI_STUDIO_VM_RG }} \
-            --command "
+            --command-id RunShellScript \
+            --scripts '
               set -e
               az acr login --name synergycodes
-              docker compose -f ${{ secrets.VM_DEPLOY_DIR }}/docker-compose.yml pull
-              docker compose -f ${{ secrets.VM_DEPLOY_DIR }}/docker-compose.yml up -d --no-build --force-recreate
-            "
+              docker compose -f /app/ai-studio/docker-compose.yml pull
+              docker compose -f /app/ai-studio/docker-compose.yml up -d --no-build --force-recreate
+              echo DEPLOY_SCRIPT_SUCCEEDED
+            ')
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q DEPLOY_SCRIPT_SUCCEEDED
