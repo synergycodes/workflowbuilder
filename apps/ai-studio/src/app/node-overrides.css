@@ -1,11 +1,12 @@
-/* Interim overrides - each has a pending SDK fix; delete the rule when it ships:
-   1. branches gap: SDK default bump (0.25rem -> 0.5rem)
-   2. outer decision port: hidden in the node template when branches exist
-   3. textarea height: `maxRows` passthrough on the TextArea uischema control */
+/* App styling: the SDK's 0.25rem branch gap shrinks to ~2px at the demo's
+   zoom-to-fit scale, reading as no spacing at all. */
 :root {
   --wb-branches-container-gap: 0.5rem;
 }
 
+/* Interim - pending SDK fixes (PR #60); delete when they ship:
+   1. outer decision port: hidden in the node template when branches exist
+   2. textarea height: `maxRows` passthrough on the TextArea uischema control */
 .react-flow__node-decision-node .react-flow__handle[data-handleid='source'] {
   display: none;
 }
