@@ -5,7 +5,7 @@ import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/
 
 import styles from './log-panel.module.css';
 
-import { selectNode, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
+import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 
 function formatTime(iso: string) {
@@ -66,16 +66,12 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 export function ExecutionLogPanel() {
   const events = useExecutionStore((s) => s.events);
   const status = useExecutionStore((s) => s.status);
-  const selectedNodeId = useExecutionStore((s) => s.selectedNodeId);
   const collapsed = useExecutionStore((s) => s.logCollapsed);
-  const canvasSelectedId = useSingleSelectedElement()?.node?.id;
+  // Clicking a node (incl. its flag marker) selects it on the canvas; the
+  // highlight derives from that selection, so it clears on deselect.
+  const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
 
   const bodyRef = useRef<HTMLDivElement>(null);
-
-  // Selecting a node on the canvas highlights its log entry, without opening the log.
-  useEffect(() => {
-    if (canvasSelectedId) selectNode(canvasSelectedId);
-  }, [canvasSelectedId]);
 
   useEffect(() => {
     if (!collapsed && bodyRef.current) {
