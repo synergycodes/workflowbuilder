@@ -7,7 +7,7 @@ import { ControlWrapper } from '../control-wrapper';
 
 function TextAreaControl(props: TextAreaControlProps) {
   const { data, handleChange, path, enabled, uischema } = props;
-  const { placeholder, minRows, disabled } = uischema;
+  const { placeholder, minRows, maxRows, disabled } = uischema;
   const isDisabled = !enabled || disabled === true;
 
   const [inputValue, setInputValue] = useState<string>(data);
@@ -30,6 +30,7 @@ function TextAreaControl(props: TextAreaControlProps) {
         disabled={isDisabled}
         value={inputValue}
         minRows={minRows}
+        maxRows={maxRows}
         placeholder={placeholder}
         onChange={onChange}
         onBlur={onBlur}
