@@ -3,7 +3,7 @@ import { Icon } from '@workflowbuilder/sdk';
 
 import styles from './node-markers.module.css';
 
-import { selectNode, setLogCollapsed, useExecutionStore } from '../../stores/use-execution-store';
+import { setLogCollapsed, useExecutionStore } from '../../stores/use-execution-store';
 
 type Props = {
   props?: {
@@ -19,15 +19,11 @@ export function ExecutionNodeMarkers({ props }: Props) {
 
   const isClickable = nodeState.status === 'completed' || nodeState.status === 'failed';
 
-  const openInLog = () => {
-    selectNode(nodeId);
-    setLogCollapsed(false);
-  };
-
+  // The click also selects the node on the canvas, which drives the log highlight.
   return (
     <div
       className={`${styles['container']} ${isClickable ? styles['container--clickable'] : ''}`}
-      onClick={isClickable ? openInLog : undefined}
+      onClick={isClickable ? () => setLogCollapsed(false) : undefined}
     >
       {nodeState.status === 'running' && (
         <span className={`${styles['icon']} ${styles['icon--running']}`}>
