@@ -1,21 +1,37 @@
-import { useKeyPress } from '@workflowbuilder/sdk';
 import { useEffect } from 'react';
 
 import { redo, undo } from '../stores/use-undo-redo-store';
 
+function isTextTarget(target: EventTarget | null): boolean {
+  return (
+    target instanceof HTMLInputElement ||
+    target instanceof HTMLTextAreaElement ||
+    (target instanceof HTMLElement && target.isContentEditable)
+  );
+}
+
 export const useUndoRedoKeyboardHandler = () => {
-  const z = useKeyPress('z', { withControlOrMeta: true, skipTarget: true });
-  const y = useKeyPress('y', { withControlOrMeta: true, skipTarget: true });
-
   useEffect(() => {
-    if (z) {
-      undo();
+    function onKeyDown(event: KeyboardEvent) {
+      // `event.repeat` guards held-key OS auto-repeat; text fields keep their native undo.
+      if (!(event.ctrlKey || event.metaKey) || event.repeat || isTextTarget(event.target)) {
+        return;
+      }
+      const key = event.key.toLowerCase();
+      if (key === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) {
+          redo();
+        } else {
+          undo();
+        }
+      } else if (key === 'y') {
+        event.preventDefault();
+        redo();
+      }
     }
-  }, [z]);
 
-  useEffect(() => {
-    if (y) {
-      redo();
-    }
-  }, [y]);
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
 };
