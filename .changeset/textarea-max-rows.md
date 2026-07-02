@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-The `TextArea` uischema control now accepts `maxRows` (alongside `minRows`), capping how far the field auto-grows.
+The `TextArea` uischema control accepts `maxRows`, capping how far the field auto-grows.

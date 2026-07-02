@@ -140,7 +140,7 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
 **Daily SDK change:**
 
 1. Edit `packages/sdk/**`, run tests/typecheck locally.
-2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments).
+2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments). Keep it to 1-2 plain sentences: the consumer-visible change plus any migration note - changesets become the public CHANGELOG, so no rationale, investigation history, or noise (that belongs in the commit message and PR).
 3. Commit code + changeset together with a Conventional Commits message:
    ```
    git add packages/sdk/... .changeset/<slug>.md
