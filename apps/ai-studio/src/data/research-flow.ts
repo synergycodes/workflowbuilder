@@ -14,7 +14,6 @@ const diagram: DiagramModel = {
             label: 'Research Topic',
             description: 'The question to research on the web.',
             inputPrompt: `Give me a briefing on the current market for AI-powered customer support tools: the main products, any notable recent launches or updates, and what users commonly praise or complain about.`,
-            errors: [],
           },
           type: 'ai-studio/trigger',
           icon: 'Lightning',
@@ -47,7 +46,6 @@ Then write a concise brief in Markdown, in exactly this shape:
 
 Only state things you found via search. If a claim isn't supported by a result, leave it out.`,
             webSearch: true,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -65,7 +63,6 @@ Only state things you found via search. If a claim isn't supported by a result, 
           properties: {
             label: 'Visualize',
             description: 'Renders the research brief (auto-detects the format).',
-            errors: [],
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

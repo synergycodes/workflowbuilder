@@ -15,7 +15,6 @@ const diagram: DiagramModel = {
             description: 'A decision to stress-test from both sides.',
             inputPrompt:
               'Should our 12-person startup build a native mobile app now, or keep doubling down on the web app first?',
-            errors: [],
           },
           type: 'ai-studio/trigger',
           icon: 'Lightning',
@@ -36,7 +35,6 @@ const diagram: DiagramModel = {
             systemPrompt: `You are an optimistic strategist. Argue the strongest possible case FOR the
 proposal in the question. Give 3-4 crisp bullet points - upside, opportunity,
 why now. Be persuasive but honest, no hype.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -57,7 +55,6 @@ why now. Be persuasive but honest, no hype.`,
             systemPrompt: `You are a rigorous skeptic and devil's advocate. Argue the strongest possible
 case AGAINST the proposal in the question. Give 3-4 crisp bullet points - risks,
 hidden costs, what could go wrong. Surface the objections others gloss over.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -89,7 +86,6 @@ in exactly this shape:
 **Reasoning:** [2-3 sentences: why this verdict, and the first concrete step.]
 
 Be decisive.`,
-            errors: [],
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -107,7 +103,6 @@ Be decisive.`,
           properties: {
             label: 'Visualize',
             description: 'Renders the verdict (auto-detects the format).',
-            errors: [],
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

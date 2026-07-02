@@ -1,5 +1,5 @@
 import mermaid from 'mermaid';
-import { useEffect, useState } from 'react';
+import { useEffect, useId, useState } from 'react';
 
 import styles from './renderers.module.css';
 
@@ -7,19 +7,17 @@ import type { RendererProps } from './renderers';
 
 mermaid.initialize({ startOnLoad: false, securityLevel: 'strict', theme: 'neutral' });
 
-let counter = 0;
-
 // Validate before render: invalid input falls back to raw text so mermaid never injects its "Syntax error" graphic.
 export function DiagramRenderer({ text, data }: RendererProps) {
   const raw = typeof data === 'string' ? data : text;
   const fence = /```mermaid\s*\n([\s\S]*?)```/.exec(raw);
   const source = fence ? fence[1].trim() : raw;
+  const renderId = useId().replaceAll(':', '');
   const [svg, setSvg] = useState<string | null>(null);
   const [failed, setFailed] = useState(false);
 
   useEffect(() => {
     let cancelled = false;
-    counter += 1;
     setSvg(null);
     setFailed(false);
 
@@ -32,7 +30,7 @@ export function DiagramRenderer({ text, data }: RendererProps) {
           }
           return;
         }
-        const { svg: rendered } = await mermaid.render(`viz-mermaid-${counter}`, source);
+        const { svg: rendered } = await mermaid.render(`viz-mermaid-${renderId}`, source);
         if (!cancelled) {
           setSvg(rendered);
         }
