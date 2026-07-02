@@ -1,0 +1,6 @@
+/* TEMPORARY: hides the SDK app-bar logo so BrandLogo can overlay it; remove once the SDK exposes a logo/logoHref prop.
+   `visibility` (not `display: none`) keeps the box in flow so the Save button holds its place. Prefix selectors survive the per-build module-hash suffix. */
+[class^='_toolbar_'] [class^='_logo_'] {
+  visibility: hidden;
+  width: 6rem; /* >= BrandLogo overlay width (~5.8rem) so the Save button clears it */
+}

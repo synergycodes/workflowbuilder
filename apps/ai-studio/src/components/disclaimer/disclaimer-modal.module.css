@@ -1,0 +1,111 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(8, 10, 14, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  padding: 2rem;
+  font-family: var(--wb-font-family);
+  background: var(--ax-ui-bg-primary-default, #ffffff);
+  border: 0.0625rem solid var(--ax-ui-stroke-primary-default, #edeff3);
+  border-radius: var(--wb-app-bar-border-radius, 0.75rem);
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.25);
+  color: var(--ax-txt-primary-default, #151516);
+}
+
+.close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--ax-txt-tertiary-default, #6f7480);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
+  color: var(--ax-txt-primary-default, #151516);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
+  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
+  color: var(--ax-colors-acc1-500, #1096e7);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--ax-txt-primary-default, #151516);
+}
+
+.body {
+  margin: 0 0 1.5rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--ax-txt-secondary-default, #4d5059);
+}
+
+.body p {
+  margin: 0 0 0.7rem;
+}
+
+.body p:last-child {
+  margin-bottom: 0;
+}
+
+.body strong {
+  color: var(--ax-txt-primary-default, #151516);
+  font-weight: 600;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  background: var(--ax-colors-acc1-500, #1096e7);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cta:hover {
+  background: var(--ax-colors-acc1-600, #0477c5);
+}

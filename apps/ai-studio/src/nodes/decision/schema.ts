@@ -1,4 +1,4 @@
-import { errorPolicyProperty, sharedProperties } from '@workflowbuilder/sdk';
+import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
 const conditions = {
@@ -31,7 +31,6 @@ export const schema = {
   type: 'object',
   properties: {
     ...sharedProperties,
-    ...errorPolicyProperty,
     decisionBranches,
   },
 } satisfies NodeSchema;

@@ -2,6 +2,7 @@ import { useCallback, useRef } from 'react';
 
 import { connectExecutionStream } from '../adapters/execution-stream-adapter';
 import { BACKEND_URL } from '../config';
+import { getTurnstileToken } from '../security/turnstile';
 import { resetExecution, setExecutionStarted, useExecutionStore } from '../stores/use-execution-store';
 
 export function useBackendExecution() {
@@ -26,9 +27,14 @@ export function useBackendExecution() {
 
       const { id: workflowId } = (await wfResponse.json()) as { id: string };
 
+      const turnstileToken = await getTurnstileToken();
+
       const execResponse = await fetch(`${BACKEND_URL}/api/workflows/${workflowId}/execute`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          ...(turnstileToken ? { 'cf-turnstile-token': turnstileToken } : {}),
+        },
         body: JSON.stringify({ sourceVersion: 'draft', triggerPayload }),
       });
 

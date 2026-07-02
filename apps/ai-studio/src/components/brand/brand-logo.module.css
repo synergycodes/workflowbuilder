@@ -1,0 +1,31 @@
+.logo {
+  position: fixed;
+  top: 2.45rem;
+  left: 2.05rem;
+  z-index: 100;
+  display: inline-flex;
+  align-items: center;
+  height: 1.15rem;
+}
+
+.image {
+  height: 100%;
+  width: auto;
+}
+
+/* The SDK sets data-theme on <html>. */
+.light {
+  display: block;
+}
+
+.dark {
+  display: none;
+}
+
+:global([data-theme='dark']) .light {
+  display: none;
+}
+
+:global([data-theme='dark']) .dark {
+  display: block;
+}

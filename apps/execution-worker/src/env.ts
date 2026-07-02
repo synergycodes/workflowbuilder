@@ -17,5 +17,8 @@ export const env = {
   DATABASE_URL: envOr('DATABASE_URL', 'postgresql://wb:wb@127.0.0.1:5432/workflow_builder'),
   TEMPORAL_ADDRESS: envOr('TEMPORAL_ADDRESS', '127.0.0.1:7233'),
   OPENROUTER_API_KEY: requireEnv('OPENROUTER_API_KEY'),
-  AI_MODEL: envOr('AI_MODEL', 'anthropic/claude-3.5-haiku'),
+  // Cheap, fast default for the public demo; quality-per-cost over frontier capability.
+  AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
+  // Optional. Enables the AI Agent's web-search tool; agents run without it when unset.
+  TAVILY_API_KEY: process.env['TAVILY_API_KEY'],
 };

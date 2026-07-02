@@ -1,21 +1,23 @@
+import { useSingleSelectedElement } from '@workflowbuilder/sdk';
 import { useEffect, useRef, useState } from 'react';
 
 import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
 
 import styles from './log-panel.module.css';
 
-import { useExecutionStore } from '../../stores/use-execution-store';
+import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 
 function formatTime(iso: string) {
   return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
-function EventRow({ event }: { event: ExecutionEvent }) {
+function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNodeId: string | null }) {
   const [expanded, setExpanded] = useState(false);
 
   const nodeId = (event as { nodeId?: string | null }).nodeId;
   const isNode = typeof nodeId === 'string' && nodeId.length > 0;
+  const highlighted = isNode && nodeId === selectedNodeId;
   const label = event.type.replaceAll('_', ' ');
 
   let detail: string | undefined;
@@ -42,7 +44,10 @@ function EventRow({ event }: { event: ExecutionEvent }) {
   const truncated = detail && detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
 
   return (
-    <div className={`${styles['event']} ${styles[`event--${event.type.split('_')[0]}`] ?? ''}`}>
+    <div
+      data-node-id={isNode ? nodeId : undefined}
+      className={`${styles['event']} ${styles[`event--${event.type.split('_')[0]}`] ?? ''} ${highlighted ? styles['event--highlighted'] : ''}`}
+    >
       <div className={styles['event-header']} onClick={() => hasDetail && setExpanded((v) => !v)}>
         <span className={`${styles['badge']} ${styles[`badge--${event.type}`]}`}>{label}</span>
         {isNode && <span className={styles['node-id']}>{(event as { nodeId: string }).nodeId.slice(0, 8)}</span>}
@@ -61,7 +66,10 @@ function EventRow({ event }: { event: ExecutionEvent }) {
 export function ExecutionLogPanel() {
   const events = useExecutionStore((s) => s.events);
   const status = useExecutionStore((s) => s.status);
-  const [collapsed, setCollapsed] = useState(false);
+  const collapsed = useExecutionStore((s) => s.logCollapsed);
+  // Clicking a node (incl. its flag marker) selects it on the canvas; the
+  // highlight derives from that selection, so it clears on deselect.
+  const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
 
   const bodyRef = useRef<HTMLDivElement>(null);
 
@@ -71,11 +79,16 @@ export function ExecutionLogPanel() {
     }
   }, [events.length, collapsed]);
 
+  useEffect(() => {
+    if (!selectedNodeId || collapsed) return;
+    bodyRef.current?.querySelector(`[data-node-id="${selectedNodeId}"]`)?.scrollIntoView({ block: 'nearest' });
+  }, [selectedNodeId, collapsed]);
+
   if (events.length === 0 && status === 'idle') return null;
 
   return (
     <div className={`${styles['panel']} ${collapsed ? styles['panel--collapsed'] : ''}`}>
-      <div className={styles['header']} onClick={() => setCollapsed((v) => !v)}>
+      <div className={styles['header']} onClick={toggleLog}>
         <span className={styles['title']}>Execution Log</span>
         <span className={`${styles['status']} ${styles[`status--${status}`]}`}>{status}</span>
         <span className={styles['toggle']}>{collapsed ? '▲' : '▼'}</span>
@@ -83,7 +96,7 @@ export function ExecutionLogPanel() {
       {!collapsed && (
         <div ref={bodyRef} className={styles['body']}>
           {events.map((event) => (
-            <EventRow key={`${event.executionId}-${event.sequence}`} event={event} />
+            <EventRow key={`${event.executionId}-${event.sequence}`} event={event} selectedNodeId={selectedNodeId} />
           ))}
         </div>
       )}

@@ -21,10 +21,5 @@ export const uischema: UISchema = {
       placeholder: 'Paste the input data here (e.g. email content)...',
       minRows: 5,
     },
-    {
-      type: 'Select',
-      scope: scope('properties.errorPolicy'),
-      label: 'Error Policy',
-    },
   ],
 };

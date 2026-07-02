@@ -10,6 +10,7 @@ import type { AiStudioNode } from '../../domain/ai-studio-nodes';
 import { env } from '../../env';
 import { executeDecision } from '../../executors/decision';
 import { executeTrigger } from '../../executors/trigger';
+import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
 
 const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
@@ -24,7 +25,9 @@ const aiAgentLogger = logger.child({ component: 'ai-agent' });
 const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
   'ai-studio/trigger': executeTrigger,
   'ai-studio/decision': executeDecision,
-  'ai-studio/ai-agent': (node, context) => executeAiAgent(node, context, { model, logger: aiAgentLogger }),
+  'ai-studio/ai-agent': (node, context) =>
+    executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
+  'ai-studio/visualize': executeVisualize,
 };
 
 const activities = {
