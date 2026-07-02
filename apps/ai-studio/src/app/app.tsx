@@ -15,7 +15,6 @@ import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 
-// Non-empty initialNodes/Edges make the SDK skip the welcome picker; a returning visitor's saved diagram still wins.
 const flagship = supportTriageFlow.value;
 
 export function App() {
