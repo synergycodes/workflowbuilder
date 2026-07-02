@@ -4,6 +4,7 @@ import { Suspense, useEffect, useRef, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
+import { VISUALIZE_MODES } from '../../nodes/visualize/schema';
 import { useExecutionStore } from '../../stores/use-execution-store';
 import { adaptVisualization } from '../../utils/adapt-visualization';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
@@ -19,7 +20,7 @@ type Props = {
 };
 
 type VisualizeMode = VisualizeRenderer | 'auto';
-const VALID_MODES = new Set<string>(['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram']);
+const VALID_MODES = new Set<string>(VISUALIZE_MODES);
 const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
 function EmptyState({ running }: { running: boolean }) {
@@ -45,7 +46,6 @@ function EmptyState({ running }: { running: boolean }) {
 
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
-  const [forceChart, setForceChart] = useState(false);
   const [expanded, setExpanded] = useState(false);
   const [adaptedText, setAdaptedText] = useState<string | null>(null);
   const [adapting, setAdapting] = useState(false);
@@ -66,30 +66,29 @@ export function VisualizeCard({ props }: Props) {
   const mode: VisualizeMode =
     properties?.mode && VALID_MODES.has(properties.mode) ? (properties.mode as VisualizeMode) : 'auto';
   const detection = detectFormat(text);
-  let activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
-  if (forceChart && mode === 'auto') {
-    activeRenderer = 'chart';
-  }
-
-  const runAdapt = (format: VisualizeRenderer) => {
-    setAdapting(true);
-    adaptVisualization(text, format)
-      .then((output) => setAdaptedText(output))
-      .catch(() => {
-        // keep original content
-      })
-      .finally(() => setAdapting(false));
-  };
+  const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
 
   useEffect(() => {
     setAdaptedText(null);
-    setForceChart(false);
   }, [text]);
 
   useEffect(() => {
-    if (hasOutput && ADAPTABLE.has(activeRenderer) && adaptedText === null && !adapting) {
-      runAdapt(activeRenderer);
-    }
+    if (!hasOutput || !ADAPTABLE.has(activeRenderer) || adaptedText !== null) return;
+    let cancelled = false;
+    setAdapting(true);
+    adaptVisualization(text, activeRenderer)
+      .then((output) => {
+        if (!cancelled) setAdaptedText(output);
+      })
+      .catch(() => {
+        // keep original content
+      })
+      .finally(() => {
+        if (!cancelled) setAdapting(false);
+      });
+    return () => {
+      cancelled = true;
+    };
   }, [hasOutput, activeRenderer, text, adaptedText]);
 
   if (!isVisualizeNode) {
@@ -100,7 +99,6 @@ export function VisualizeCard({ props }: Props) {
   const data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
   const Renderer = hasOutput ? getRenderer(activeRenderer) : null;
   const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
-  const showChartChip = mode === 'auto' && Boolean(detection.chartable) && activeRenderer !== 'chart';
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
 
   return (
@@ -139,11 +137,6 @@ export function VisualizeCard({ props }: Props) {
               </button>
             </div>
           </div>
-          {showChartChip && (
-            <button className={styles['chip']} onClick={() => setForceChart(true)} type="button">
-              Try as chart
-            </button>
-          )}
           <div className={styles['body']}>
             {adapting ? (
               <div className={styles['empty']}>

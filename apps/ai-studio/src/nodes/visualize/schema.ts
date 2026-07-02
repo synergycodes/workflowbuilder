@@ -1,7 +1,7 @@
 import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
-const VISUALIZE_MODES = ['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram'] as const;
+export const VISUALIZE_MODES = ['auto', 'markdown', 'text', 'json', 'table', 'stat-cards', 'chart', 'diagram'] as const;
 type VisualizeMode = (typeof VISUALIZE_MODES)[number];
 
 const MODE_LABELS: Record<VisualizeMode, string> = {

@@ -3,7 +3,6 @@ export type VisualizeRenderer = 'markdown' | 'text' | 'json' | 'table' | 'stat-c
 type DetectResult = {
   renderer: VisualizeRenderer;
   data?: unknown;
-  chartable?: boolean;
 };
 
 // Strict on purpose: flowchart/graph require a direction so prose isn't mis-detected as a diagram.
@@ -40,13 +39,6 @@ function looksLikeChartArray(array: unknown[]): boolean {
   });
 }
 
-function hasNumericColumn(rows: Record<string, unknown>[]): boolean {
-  if (rows.length === 0) {
-    return false;
-  }
-  return Object.keys(rows[0]).some((key) => rows.every((row) => typeof row[key] === 'number'));
-}
-
 function detectJson(parsed: unknown): DetectResult | null {
   if (
     isPlainObject(parsed) &&
@@ -59,16 +51,12 @@ function detectJson(parsed: unknown): DetectResult | null {
 
   if (Array.isArray(parsed)) {
     if (looksLikeChartArray(parsed)) {
-      return { renderer: 'chart', data: parsed, chartable: true };
+      return { renderer: 'chart', data: parsed };
     }
     if (parsed.length > 0 && parsed.every(isPlainObject)) {
-      return { renderer: 'table', data: parsed, chartable: hasNumericColumn(parsed as Record<string, unknown>[]) };
+      return { renderer: 'table', data: parsed };
     }
-    return {
-      renderer: 'table',
-      data: parsed,
-      chartable: parsed.length > 0 && parsed.every((v) => typeof v === 'number'),
-    };
+    return { renderer: 'table', data: parsed };
   }
 
   if (isPlainObject(parsed)) {
