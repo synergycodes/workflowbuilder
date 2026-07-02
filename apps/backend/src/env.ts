@@ -18,9 +18,6 @@ export const env = {
   TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
   // Null = Turnstile verification disabled (local dev runs unprotected).
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
-  // Per-IP backstop that applies even without Turnstile: at most LIMIT runs per WINDOW_MS.
-  EXECUTE_RATE_LIMIT: Number(envOr('EXECUTE_RATE_LIMIT', '10')),
-  EXECUTE_RATE_WINDOW_MS: Number(envOr('EXECUTE_RATE_WINDOW_MS', '60000')),
   // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
   OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
   AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
