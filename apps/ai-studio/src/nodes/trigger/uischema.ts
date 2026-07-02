@@ -20,6 +20,7 @@ export const uischema: UISchema = {
       label: 'Input',
       placeholder: 'Paste the input data here (e.g. email content)...',
       minRows: 5,
+      maxRows: 14,
     },
   ],
 };

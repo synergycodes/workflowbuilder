@@ -20,6 +20,7 @@ export const uischema: UISchema = {
       label: 'System Prompt',
       placeholder: 'Describe what the AI should do...',
       minRows: 5,
+      maxRows: 14,
     },
     {
       type: 'Switch',

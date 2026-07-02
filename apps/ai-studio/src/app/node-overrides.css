@@ -4,14 +4,6 @@
   --wb-branches-container-gap: 0.5rem;
 }
 
-/* Interim - pending SDK fixes (PR #60); delete when they ship:
-   1. outer decision port: hidden in the node template when branches exist
-   2. textarea height: `maxRows` passthrough on the TextArea uischema control */
-.react-flow__node-decision-node .react-flow__handle[data-handleid='source'] {
-  display: none;
-}
-
 [class^='_json-form-container_'] textarea {
   font-family: ui-monospace, monospace;
-  max-height: 18rem;
 }
