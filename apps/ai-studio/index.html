@@ -16,13 +16,6 @@
   </head>
   <body>
     <div id="root"></div>
-    <!-- Pin EN before the SDK module boots (classic script runs before deferred module scripts), unless the visitor already chose en/pl. -->
-    <script>
-      try {
-        var lng = localStorage.getItem('i18nextLng');
-        if (lng !== 'en' && lng !== 'pl') localStorage.setItem('i18nextLng', 'en');
-      } catch (e) {}
-    </script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
