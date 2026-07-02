@@ -64,14 +64,14 @@ app.use('/api/*', createAuthMiddleware(authPort));
 app.use('/api/*', createTenantMiddleware(tenantPort));
 
 if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0) {
-  app.use(
-    '/api/workflows/:id/execute',
-    createRateLimitMiddleware({
-      perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
-      perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
-      trustProxy: env.TRUST_PROXY,
-    }),
-  );
+  // Shared instance: workflow runs and Visualize "AI adapt" draw from one LLM-call budget.
+  const executeRateLimit = createRateLimitMiddleware({
+    perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
+    perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
+    trustProxy: env.TRUST_PROXY,
+  });
+  app.use('/api/workflows/:id/execute', executeRateLimit);
+  app.use('/api/visualize/adapt', executeRateLimit);
   logger.info('execute rate limit enabled', {
     perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
     perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
