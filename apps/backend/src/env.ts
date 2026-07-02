@@ -12,4 +12,8 @@ export const env = {
   HOST: envOr('HOST', '127.0.0.1'),
   DATABASE_URL: envOr('DATABASE_URL', 'postgresql://wb:wb@127.0.0.1:5432/workflow_builder'),
   TEMPORAL_ADDRESS: envOr('TEMPORAL_ADDRESS', '127.0.0.1:7233'),
+  // 0 disables (dev default); the deploy compose sets both
+  RATE_LIMIT_EXECUTE_PER_MINUTE: Number(envOr('RATE_LIMIT_EXECUTE_PER_MINUTE', '0')),
+  RATE_LIMIT_EXECUTE_PER_DAY: Number(envOr('RATE_LIMIT_EXECUTE_PER_DAY', '0')),
+  TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
 };

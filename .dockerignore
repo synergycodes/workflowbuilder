@@ -2,18 +2,29 @@
 .git
 .vscode
 .idea
+.claude
 
 # external dependencies
 node_modules
+**/node_modules
 
 # docker files
 docker-compose*.yml
 **/Dockerfile*
+
+# build artifacts
+dist/
+**/dist
+coverage/
+**/coverage
 
 # not needed files
 README.md
 tools/
 !tools/deployment/nginx
 .gitignore
-.env
-coverage/
+
+# env files hold secrets — never in a build context
+**/.env
+**/.env.*
+!**/.env.example

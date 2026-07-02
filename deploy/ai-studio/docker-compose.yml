@@ -1,0 +1,141 @@
+# AI Studio production stack (WB-229). Usage: cp .env.example .env, set
+# OPENROUTER_API_KEY, then `docker compose up -d --build`. Only `web`
+# publishes a port.
+
+name: ai-studio
+
+x-runtime-build: &runtime-build
+  context: ../..
+  dockerfile: deploy/ai-studio/Dockerfile
+  target: runtime
+
+services:
+  app-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: workflow_builder
+      POSTGRES_USER: wb
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-wb}
+    volumes:
+      - app-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'wb', '-d', 'workflow_builder']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  temporal-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'temporal', '-d', 'temporal']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  # auto-setup is dev-grade; sustained load should move to Temporal Cloud
+  # or an operated cluster — the apps only consume TEMPORAL_ADDRESS
+  temporal:
+    image: temporalio/auto-setup:1.29.6.1
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
+      POSTGRES_SEEDS: temporal-db
+    restart: unless-stopped
+
+  temporal-ui:
+    image: temporalio/ui:2.51.0
+    profiles: [debug]
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - '127.0.0.1:8233:8080'
+    restart: unless-stopped
+
+  # applies migrations at boot; on failure exits and `restart` retries
+  backend:
+    image: ai-studio-runtime
+    build: *runtime-build
+    command: ['pnpm', '--filter', 'backend', 'start:prod']
+    environment:
+      HOST: 0.0.0.0
+      PORT: 3001
+      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
+      TEMPORAL_ADDRESS: temporal:7233
+      # explicit opt-in — a forgotten env var fails loudly instead of exposing the API
+      WB_AUTH_PORT: allow-all
+      # only nginx can reach the backend, so X-Forwarded-For is trustworthy
+      TRUST_PROXY: 'true'
+      RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
+      RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
+    depends_on:
+      app-db:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    healthcheck:
+      test:
+        [
+          'CMD',
+          'node',
+          '-e',
+          "fetch('http://127.0.0.1:3001/api/health').then((r) => process.exit(r.ok ? 0 : 1)).catch(() => process.exit(1))",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 15s
+    restart: unless-stopped
+
+  # crash-loops until Temporal answers (no usable healthcheck); restart converges it
+  worker:
+    image: ai-studio-runtime
+    build: *runtime-build
+    command: ['pnpm', '--filter', 'execution-worker', 'start:prod']
+    environment:
+      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
+      TEMPORAL_ADDRESS: temporal:7233
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in deploy/ai-studio/.env}
+      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+    depends_on:
+      app-db:
+        condition: service_healthy
+      # backend healthy = migrations applied
+      backend:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+    restart: unless-stopped
+
+  web:
+    image: ai-studio-web
+    build:
+      context: ../..
+      dockerfile: deploy/ai-studio/Dockerfile
+      target: web
+      args:
+        # empty -> SPA calls /api on its own origin via this nginx
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL:-}
+    ports:
+      - '${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80'
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  app-db-data:
+  temporal-db-data:

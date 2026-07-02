@@ -1,0 +1,102 @@
+name: Deploy AI Studio
+
+on:
+  push:
+    branches: ["WB-229-swarm-alignment"]
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag (defaults to short SHA)'
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  REGISTRY: synergycodes.azurecr.io
+  APP: wb-ai-studio
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.value }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          TAG="${{ inputs.image_tag || github.sha }}"
+          echo "value=${TAG::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name synergycodes
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/ai-studio/Dockerfile
+          target: runtime
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.APP }}:${{ steps.tag.outputs.value }}-runtime
+            ${{ env.REGISTRY }}/${{ env.APP }}:latest-runtime
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP }}:latest-runtime
+          cache-to: type=inline
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/ai-studio/Dockerfile
+          target: web
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.APP }}:${{ steps.tag.outputs.value }}-web
+            ${{ env.REGISTRY }}/${{ env.APP }}:latest-web
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP }}:latest-web
+          cache-to: type=inline
+          build-args: |
+            VITE_BACKEND_URL=
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Install Azure SSH extension
+        run: az extension add --name ssh --yes
+
+      - name: Refresh docker compose on Azure VM
+        run: |
+          az ssh vm \
+            --name ${{ vars.AI_STUDIO_VM_NAME }} \
+            --resource-group ${{ vars.AI_STUDIO_VM_RG }} \
+            --command "
+              set -e
+              az acr login --name synergycodes
+              docker compose -f ${{ secrets.VM_DEPLOY_DIR }}/docker-compose.yml pull
+              docker compose -f ${{ secrets.VM_DEPLOY_DIR }}/docker-compose.yml up -d --no-build --force-recreate
+            "
