@@ -1,5 +1,5 @@
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
-import type { ComponentType, PropsWithChildren } from 'react';
+import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
 import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
 import type {
@@ -174,6 +174,14 @@ export type WorkflowBuilderReactFlowProps = Omit<
 >;
 
 /**
+ * App-bar logo accepted by `<WorkflowBuilder.Root>`: an image URL, per-theme
+ * image URLs, or a custom element.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
+
+/**
  * Props accepted by `<WorkflowBuilder.Root>`.
  *
  * @category Core
@@ -224,6 +232,13 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   integration?: WorkflowBuilderIntegration;
   /** Workflow name displayed in the app bar and persisted with the diagram. */
   name?: string;
+  /**
+   * Replaces the built-in Workflow Builder logo in the app bar: an image URL,
+   * `{ light, dark }` per-theme image URLs, or a custom element rendered as-is.
+   */
+  logo?: WorkflowBuilderLogo;
+  /** Wraps the app-bar logo (built-in or custom) in a link opened in a new tab. */
+  logoHref?: string;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
   /** Initial nodes rendered on first mount. */
