@@ -1,9 +1,3 @@
-/* App styling: the SDK's 0.25rem branch gap shrinks to ~2px at the demo's
-   zoom-to-fit scale, reading as no spacing at all. */
-:root {
-  --wb-branches-container-gap: 0.5rem;
-}
-
 [class^='_json-form-container_'] textarea {
   font-family: ui-monospace, monospace;
 }
