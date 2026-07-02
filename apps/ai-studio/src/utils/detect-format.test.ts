@@ -43,7 +43,6 @@ describe('detectFormat', () => {
   it('detects an array of objects as a table', () => {
     const result = detectFormat('[{"id": 1, "city": "NY"}, {"id": 2, "city": "LA"}]');
     expect(result.renderer).toBe('table');
-    expect(result.chartable).toBe(true); // id is a numeric column
   });
 
   it('detects a {label,value} array as a chart', () => {

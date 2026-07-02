@@ -64,23 +64,6 @@
   color: var(--ax-txt-primary-default, #151516);
 }
 
-.chip {
-  margin-bottom: 0.4rem;
-  font-family: var(--wb-font-family);
-  font-size: 0.66rem;
-  padding: 0.15rem 0.5rem;
-  border: 0.0625rem solid var(--ax-colors-acc1-500, #1096e7);
-  border-radius: 0.3rem;
-  background: transparent;
-  color: var(--ax-colors-acc1-600, #0477c5);
-  cursor: pointer;
-  white-space: nowrap;
-}
-
-.chip:hover {
-  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
-}
-
 .body {
   max-height: 20rem;
   overflow-y: auto;
