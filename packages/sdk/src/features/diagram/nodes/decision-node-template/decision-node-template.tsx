@@ -72,7 +72,10 @@ export const DecisionNodeTemplate = memo(
         </NodePanel.Content>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
-          <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
+          {/* Branches carry their own source handles; the node-level one only exists while there are none. */}
+          {(decisionBranches ?? []).length === 0 && (
+            <Handle id={handleSourceId} position={handleSourcePosition} type="source" />
+          )}
         </NodePanel.Handles>
       </NodePanel.Root>
     );
