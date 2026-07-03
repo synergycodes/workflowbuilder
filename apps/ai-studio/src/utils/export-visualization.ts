@@ -44,12 +44,3 @@ export async function downloadSvg(element: HTMLElement, filename = 'visualizatio
   const dataUrl = await toSvg(element);
   triggerDownload(dataUrl, filename);
 }
-
-export async function copySource(text: string): Promise<boolean> {
-  try {
-    await navigator.clipboard.writeText(text);
-    return true;
-  } catch {
-    return false;
-  }
-}
