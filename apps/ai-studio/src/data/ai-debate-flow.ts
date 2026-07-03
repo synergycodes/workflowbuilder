@@ -103,6 +103,7 @@ Be decisive.`,
           properties: {
             label: 'Visualize',
             description: 'Renders the verdict (auto-detects the format).',
+            mode: 'auto',
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

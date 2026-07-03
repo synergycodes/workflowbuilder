@@ -136,6 +136,7 @@ Keep each draft's wording as-is - do not rewrite it. Just organize and label.`,
           properties: {
             label: 'Visualize',
             description: 'Renders the content pack (auto-detects the format).',
+            mode: 'auto',
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',
