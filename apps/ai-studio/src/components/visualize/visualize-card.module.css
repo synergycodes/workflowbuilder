@@ -64,6 +64,12 @@
   color: var(--ax-txt-primary-default, #151516);
 }
 
+.action:disabled {
+  opacity: 0.4;
+  cursor: default;
+  pointer-events: none;
+}
+
 .body {
   max-height: 20rem;
   overflow-y: auto;
