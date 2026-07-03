@@ -1,10 +1,10 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
-import './brand-override.css';
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
 
-import { BrandLogo } from '../components/brand/brand-logo';
+import logoDark from '../assets/workflow-builder-logo-white.svg';
+import logoLight from '../assets/workflow-builder-logo.svg';
 import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
@@ -21,6 +21,8 @@ export function App() {
   return (
     <WorkflowBuilder.Root
       name={flagship.name}
+      logo={{ light: logoLight, dark: logoDark }}
+      logoHref="https://workflowbuilder.io"
       layoutDirection={flagship.layoutDirection}
       initialNodes={flagship.diagram.nodes}
       initialEdges={flagship.diagram.edges}
@@ -29,7 +31,6 @@ export function App() {
       plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />
-      <BrandLogo />
       <AiStudioControls />
       <ExecutionLogPanel />
       <ExecutionHighlighting />
