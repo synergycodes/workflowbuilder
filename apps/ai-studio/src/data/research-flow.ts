@@ -63,6 +63,7 @@ Only state things you found via search. If a claim isn't supported by a result, 
           properties: {
             label: 'Visualize',
             description: 'Renders the research brief (auto-detects the format).',
+            mode: 'auto',
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

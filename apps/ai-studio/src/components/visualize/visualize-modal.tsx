@@ -1,11 +1,12 @@
-import { ClipboardText, Copy, DownloadSimple, FileSvg, X } from '@phosphor-icons/react';
+import { DownloadSimple, FileSvg, X } from '@phosphor-icons/react';
 import { Suspense, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import styles from './visualize-modal.module.css';
 
 import type { VisualizeRenderer } from '../../utils/detect-format';
-import { copyImage, copySource, downloadPng, downloadSvg } from '../../utils/export-visualization';
+import { downloadPng, downloadSvg } from '../../utils/export-visualization';
+import { CopyResultButton } from './copy-result-button';
 import { getRenderer } from './renderers';
 
 type Props = {
@@ -29,14 +30,7 @@ export function VisualizeModal({ renderer, text, data, badge, isVector, onClose 
           <span className={styles['title']}>Visualize</span>
           <span className={styles['badge']}>{badge}</span>
           <div className={styles['actions']}>
-            <button
-              type="button"
-              className={styles['action']}
-              title="Copy image"
-              onClick={() => contentRef.current && void copyImage(contentRef.current)}
-            >
-              <Copy />
-            </button>
+            <CopyResultButton className={styles['action']} getTarget={() => contentRef.current} text={text} />
             <button
               type="button"
               className={styles['action']}
@@ -55,14 +49,6 @@ export function VisualizeModal({ renderer, text, data, badge, isVector, onClose 
                 <FileSvg />
               </button>
             )}
-            <button
-              type="button"
-              className={styles['action']}
-              title="Copy source text"
-              onClick={() => void copySource(text)}
-            >
-              <ClipboardText />
-            </button>
             <button type="button" className={styles['action']} title="Close" onClick={onClose}>
               <X weight="bold" />
             </button>

@@ -228,6 +228,7 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           properties: {
             label: 'Visualize',
             description: 'Visualizes the approved reply (auto-detects the format).',
+            mode: 'auto',
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',

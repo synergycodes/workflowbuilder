@@ -1,4 +1,4 @@
-import { ArrowsOut, ClipboardText, Copy, DownloadSimple, Eye } from '@phosphor-icons/react';
+import { ArrowsOut, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
 import { Suspense, useEffect, useRef, useState } from 'react';
 
@@ -8,8 +8,9 @@ import { VISUALIZE_MODES } from '../../nodes/visualize/schema';
 import { useExecutionStore } from '../../stores/use-execution-store';
 import { adaptVisualization } from '../../utils/adapt-visualization';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
-import { copyImage, copySource, downloadPng } from '../../utils/export-visualization';
+import { downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
+import { CopyResultButton } from './copy-result-button';
 import { RENDERER_LABELS, getRenderer } from './renderers';
 import { VisualizeModal } from './visualize-modal';
 
@@ -111,29 +112,20 @@ export function VisualizeCard({ props }: Props) {
               <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
                 <ArrowsOut />
               </button>
-              <button
-                type="button"
+              <CopyResultButton
                 className={styles['action']}
-                title="Copy image"
-                onClick={() => contentRef.current && void copyImage(contentRef.current)}
-              >
-                <Copy />
-              </button>
+                getTarget={() => contentRef.current}
+                text={renderText}
+                disabled={adapting}
+              />
               <button
                 type="button"
                 className={styles['action']}
                 title="Download PNG"
+                disabled={adapting}
                 onClick={() => contentRef.current && void downloadPng(contentRef.current)}
               >
                 <DownloadSimple />
-              </button>
-              <button
-                type="button"
-                className={styles['action']}
-                title="Copy source text"
-                onClick={() => void copySource(renderText)}
-              >
-                <ClipboardText />
               </button>
             </div>
           </div>
