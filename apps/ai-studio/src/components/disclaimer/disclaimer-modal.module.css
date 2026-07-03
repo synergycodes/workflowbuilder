@@ -109,3 +109,25 @@
 .cta:hover {
   background: var(--ax-colors-acc1-600, #0477c5);
 }
+
+.reopen {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 2.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  border-radius: 50%;
+  background: var(--wb-app-bar-background);
+  color: var(--ax-txt-secondary-default, #4d5059);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.reopen:hover {
+  color: var(--ax-colors-acc1-500, #1096e7);
+}

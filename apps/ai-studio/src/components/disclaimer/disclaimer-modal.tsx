@@ -16,10 +16,6 @@ function hasAcknowledged(): boolean {
 export function DisclaimerModal() {
   const [open, setOpen] = useState(() => !hasAcknowledged());
 
-  if (!open) {
-    return null;
-  }
-
   function dismiss() {
     try {
       localStorage.setItem(STORAGE_KEY, 'true');
@@ -27,6 +23,14 @@ export function DisclaimerModal() {
       // storage unavailable
     }
     setOpen(false);
+  }
+
+  if (!open) {
+    return (
+      <button className={styles['reopen']} onClick={() => setOpen(true)} aria-label="About this demo">
+        <Info size={20} weight="bold" />
+      </button>
+    );
   }
 
   return (
