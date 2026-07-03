@@ -105,6 +105,7 @@ line "_Meeting Bot_".`,
           properties: {
             label: 'Visualize',
             description: 'Renders the recap (auto-detects the format).',
+            mode: 'auto',
           },
           type: 'ai-studio/visualize',
           icon: 'Eye',
