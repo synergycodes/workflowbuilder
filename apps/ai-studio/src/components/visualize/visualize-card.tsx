@@ -10,7 +10,7 @@ import { adaptVisualization } from '../../utils/adapt-visualization';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
 import { downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
-import { CopyImageButton } from './copy-image-button';
+import { CopyResultButton } from './copy-result-button';
 import { RENDERER_LABELS, getRenderer } from './renderers';
 import { VisualizeModal } from './visualize-modal';
 
@@ -112,7 +112,12 @@ export function VisualizeCard({ props }: Props) {
               <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
                 <ArrowsOut />
               </button>
-              <CopyImageButton className={styles['action']} getTarget={() => contentRef.current} disabled={adapting} />
+              <CopyResultButton
+                className={styles['action']}
+                getTarget={() => contentRef.current}
+                text={renderText}
+                disabled={adapting}
+              />
               <button
                 type="button"
                 className={styles['action']}
