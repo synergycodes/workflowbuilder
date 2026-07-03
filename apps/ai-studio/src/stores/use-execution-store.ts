@@ -21,7 +21,7 @@ type ExecutionStore = {
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
-  selectedNodeId: string | null;
+  logCollapsed: boolean;
 };
 
 const emptyStore: ExecutionStore = {
@@ -30,7 +30,7 @@ const emptyStore: ExecutionStore = {
   streamUrl: undefined,
   nodeStates: {},
   events: [],
-  selectedNodeId: null,
+  logCollapsed: false,
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
@@ -102,8 +102,12 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
   }
 }
 
-export function selectNode(nodeId: string | null) {
-  useExecutionStore.setState({ selectedNodeId: nodeId });
+export function setLogCollapsed(logCollapsed: boolean) {
+  useExecutionStore.setState({ logCollapsed });
+}
+
+export function toggleLog() {
+  useExecutionStore.setState((state) => ({ logCollapsed: !state.logCollapsed }));
 }
 
 function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefined {

@@ -17,6 +17,7 @@ import { env } from './env';
 import { logger } from './logger';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
 import { createExecutionsRoutes } from './routes/executions';
+import { createVisualizeRoutes } from './routes/visualize';
 import { createWorkflowsRoutes } from './routes/workflows';
 import { NoopTenantContextPort, type TenantContextPort, type TenantVariables, createTenantMiddleware } from './tenant';
 
@@ -63,14 +64,14 @@ app.use('/api/*', createAuthMiddleware(authPort));
 app.use('/api/*', createTenantMiddleware(tenantPort));
 
 if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0) {
-  app.use(
-    '/api/workflows/:id/execute',
-    createRateLimitMiddleware({
-      perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
-      perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
-      trustProxy: env.TRUST_PROXY,
-    }),
-  );
+  // Shared instance: workflow runs and Visualize "AI adapt" draw from one LLM-call budget.
+  const executeRateLimit = createRateLimitMiddleware({
+    perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
+    perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
+    trustProxy: env.TRUST_PROXY,
+  });
+  app.use('/api/workflows/:id/execute', executeRateLimit);
+  app.use('/api/visualize/adapt', executeRateLimit);
   logger.info('execute rate limit enabled', {
     perMinute: env.RATE_LIMIT_EXECUTE_PER_MINUTE,
     perDay: env.RATE_LIMIT_EXECUTE_PER_DAY,
@@ -80,6 +81,7 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
 
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
+app.route('/api/visualize', createVisualizeRoutes(assertAuthorized));
 
 // a failure (DB still starting) exits the process; the container restart policy retries
 await runMigrations();

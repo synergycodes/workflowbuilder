@@ -9,6 +9,7 @@ import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
 import { workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { getWorkflowEngine } from '../engine';
 import { logger as backendLogger } from '../logger';
+import { guardExecution } from '../security/execution-guard';
 import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
@@ -169,6 +170,12 @@ export function createWorkflowsRoutes(
     const workflowId = c.req.param('id');
 
     await assertAuthorized(c, 'workflows:execute', { kind: 'workflow', workflowId });
+
+    // The one endpoint that spends real LLM budget, so it carries the abuse gate.
+    const blocked = await guardExecution(c);
+    if (blocked) {
+      return blocked;
+    }
 
     const parsed = z.safeParse(executeSchema, await c.req.json());
     if (!parsed.success) {

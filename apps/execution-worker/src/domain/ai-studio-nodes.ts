@@ -7,6 +7,7 @@ type TriggerNodeConfig = Record<string, never>;
 
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
+  webSearch?: boolean; // needs TAVILY_API_KEY to take effect
 };
 
 export type DecisionBranchCondition = {
@@ -27,6 +28,9 @@ type DecisionNodeConfig = {
   decisionBranches: DecisionBranch[];
 };
 
+// Display-only node; the UI reads the upstream output directly, so no runtime config.
+type VisualizeNodeConfig = Record<string, never>;
+
 export type TriggerNode = {
   id: string;
   type: 'ai-studio/trigger';
@@ -45,4 +49,10 @@ export type DecisionNode = {
   config: DecisionNodeConfig;
 };
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode;
+type VisualizeNode = {
+  id: string;
+  type: 'ai-studio/visualize';
+  config: VisualizeNodeConfig;
+};
+
+export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode;

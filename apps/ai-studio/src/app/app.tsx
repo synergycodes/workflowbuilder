@@ -1,28 +1,40 @@
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
+import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
 
+import logoDark from '../assets/workflow-builder-logo-white.svg';
+import logoLight from '../assets/workflow-builder-logo.svg';
 import { AiStudioControls } from '../components/controls/ai-studio-controls';
+import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
-import { ExecutionNodeDetail } from '../components/execution/node-detail';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
+import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
+import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
+
+const flagship = supportTriageFlow.value;
 
 export function App() {
   return (
     <WorkflowBuilder.Root
-      name="ai-studio"
+      name={flagship.name}
+      logo={{ light: logoLight, dark: logoDark }}
+      logoHref="https://workflowbuilder.io"
+      layoutDirection={flagship.layoutDirection}
+      initialNodes={flagship.diagram.nodes}
+      initialEdges={flagship.diagram.edges}
       nodeTypes={aiStudioNodeTypes}
       diagramTemplates={aiStudioTemplates}
-      plugins={[aiStudioFeaturesPlugin]}
+      plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />
       <AiStudioControls />
       <ExecutionLogPanel />
-      <ExecutionNodeDetail />
       <ExecutionHighlighting />
+      <DisclaimerModal />
     </WorkflowBuilder.Root>
   );
 }
