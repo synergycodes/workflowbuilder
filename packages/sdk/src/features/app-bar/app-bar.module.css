@@ -19,6 +19,12 @@
       color: var(--wb-app-bar-logo-color);
     }
 
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      color: inherit;
+    }
+
     .nav-segment {
       display: flex;
       align-items: center;
@@ -78,4 +84,22 @@
   .title {
     margin-left: 0.5rem;
   }
+}
+
+.logo-image {
+  display: block;
+  max-height: 1.5rem;
+  width: auto;
+}
+
+.logo-image--dark {
+  display: none;
+}
+
+html[data-theme='dark'] .logo-image--light {
+  display: none;
+}
+
+html[data-theme='dark'] .logo-image--dark {
+  display: block;
 }
