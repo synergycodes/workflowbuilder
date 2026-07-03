@@ -6,7 +6,7 @@ import styles from './visualize-modal.module.css';
 
 import type { VisualizeRenderer } from '../../utils/detect-format';
 import { downloadPng, downloadSvg } from '../../utils/export-visualization';
-import { CopyImageButton } from './copy-image-button';
+import { CopyResultButton } from './copy-result-button';
 import { getRenderer } from './renderers';
 
 type Props = {
@@ -30,7 +30,7 @@ export function VisualizeModal({ renderer, text, data, badge, isVector, onClose 
           <span className={styles['title']}>Visualize</span>
           <span className={styles['badge']}>{badge}</span>
           <div className={styles['actions']}>
-            <CopyImageButton className={styles['action']} getTarget={() => contentRef.current} />
+            <CopyResultButton className={styles['action']} getTarget={() => contentRef.current} text={text} />
             <button
               type="button"
               className={styles['action']}

@@ -14,8 +14,10 @@ export async function downloadPng(element: HTMLElement, filename = 'visualizatio
   triggerDownload(dataUrl, filename);
 }
 
+// Writes both formats in one clipboard entry: pasting yields the image where
+// images are accepted and the plain text of the result in text-only fields.
 // Returns false when it falls back to a download (e.g. Firefox can't write image blobs to the clipboard).
-export async function copyImage(element: HTMLElement): Promise<boolean> {
+export async function copyResult(element: HTMLElement, text: string): Promise<boolean> {
   const blob = await toBlob(element, PNG_OPTIONS);
   if (!blob) {
     return false;
@@ -23,7 +25,12 @@ export async function copyImage(element: HTMLElement): Promise<boolean> {
   const canCopyImage = typeof ClipboardItem !== 'undefined' && Boolean(navigator.clipboard?.write);
   if (canCopyImage) {
     try {
-      await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]);
+      await navigator.clipboard.write([
+        new ClipboardItem({
+          'image/png': blob,
+          'text/plain': new Blob([text], { type: 'text/plain' }),
+        }),
+      ]);
       return true;
     } catch {
       // fall back to download

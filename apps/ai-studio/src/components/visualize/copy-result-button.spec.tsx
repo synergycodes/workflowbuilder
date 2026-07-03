@@ -2,11 +2,11 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { copyImage } from '../../utils/export-visualization';
-import { CopyImageButton } from './copy-image-button';
+import { copyResult } from '../../utils/export-visualization';
+import { CopyResultButton } from './copy-result-button';
 
 vi.mock('../../utils/export-visualization', () => ({
-  copyImage: vi.fn(),
+  copyResult: vi.fn(),
 }));
 
 declare global {
@@ -21,7 +21,7 @@ async function click(button: HTMLButtonElement) {
   });
 }
 
-describe('CopyImageButton', () => {
+describe('CopyResultButton', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
   const target = document.createElement('div');
@@ -37,43 +37,43 @@ describe('CopyImageButton', () => {
     act(() => root.unmount());
     container.remove();
     vi.useRealTimers();
-    vi.mocked(copyImage).mockReset();
+    vi.mocked(copyResult).mockReset();
   });
 
   function render(getTarget: () => HTMLElement | null = () => target) {
     act(() => {
-      root.render(<CopyImageButton className="action" getTarget={getTarget} />);
+      root.render(<CopyResultButton className="action" getTarget={getTarget} text="raw result" />);
     });
     return container.querySelector('button')!;
   }
 
   it('shows Copied feedback and reverts after the timeout', async () => {
-    vi.mocked(copyImage).mockResolvedValue(true);
+    vi.mocked(copyResult).mockResolvedValue(true);
     const button = render();
-    expect(button.title).toBe('Copy image');
+    expect(button.title).toBe('Copy result');
 
     await click(button);
-    expect(copyImage).toHaveBeenCalledWith(target);
+    expect(copyResult).toHaveBeenCalledWith(target, 'raw result');
     expect(button.title).toBe('Copied');
 
     act(() => {
       vi.advanceTimersByTime(1500);
     });
-    expect(button.title).toBe('Copy image');
+    expect(button.title).toBe('Copy result');
   });
 
   it('shows no feedback when the copy fell back to a download', async () => {
-    vi.mocked(copyImage).mockResolvedValue(false);
+    vi.mocked(copyResult).mockResolvedValue(false);
     const button = render();
 
     await click(button);
-    expect(button.title).toBe('Copy image');
+    expect(button.title).toBe('Copy result');
   });
 
   it('does nothing without a target', async () => {
     const button = render(() => null);
 
     await click(button);
-    expect(copyImage).not.toHaveBeenCalled();
+    expect(copyResult).not.toHaveBeenCalled();
   });
 });
