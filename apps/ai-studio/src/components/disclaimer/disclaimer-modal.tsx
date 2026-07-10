@@ -3,6 +3,9 @@ import { useState } from 'react';
 
 import styles from './disclaimer-modal.module.css';
 
+import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
+import { useExecutionStore } from '../../stores/use-execution-store';
+
 const STORAGE_KEY = 'ai-studio:disclaimer-acknowledged';
 
 function hasAcknowledged(): boolean {
@@ -15,6 +18,10 @@ function hasAcknowledged(): boolean {
 
 export function DisclaimerModal() {
   const [open, setOpen] = useState(() => !hasAcknowledged());
+  // The reopen button shares the bottom-right corner with the execution log
+  // and the expanded properties panel - hide it while either is on screen.
+  const logVisible = useExecutionStore((s) => s.events.length > 0 || s.status !== 'idle');
+  const { panelExpanded } = useRightPanelAnchor();
 
   function dismiss() {
     try {
@@ -26,6 +33,8 @@ export function DisclaimerModal() {
   }
 
   if (!open) {
+    if (logVisible || panelExpanded) return null;
+
     return (
       <button className={styles['reopen']} onClick={() => setOpen(true)} aria-label="About this demo">
         <Info size={20} weight="bold" />
