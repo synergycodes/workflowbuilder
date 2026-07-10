@@ -5,6 +5,7 @@ import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/
 
 import styles from './log-panel.module.css';
 
+import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 
@@ -66,15 +67,24 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 export function ExecutionLogPanel() {
   const events = useExecutionStore((s) => s.events);
   const status = useExecutionStore((s) => s.status);
+  const executionId = useExecutionStore((s) => s.executionId);
   const collapsed = useExecutionStore((s) => s.logCollapsed);
   // Clicking a node (incl. its flag marker) selects it on the canvas; the
   // highlight derives from that selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
+  const { rightOffset } = useRightPanelAnchor();
 
   const bodyRef = useRef<HTMLDivElement>(null);
+  // Follow the newest entry only while the user stays at the bottom; any
+  // scroll away pauses following, scrolling back to the bottom resumes it.
+  const stickToBottomRef = useRef(true);
 
   useEffect(() => {
-    if (!collapsed && bodyRef.current) {
+    stickToBottomRef.current = true;
+  }, [executionId]);
+
+  useEffect(() => {
+    if (!collapsed && stickToBottomRef.current && bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
   }, [events.length, collapsed]);
@@ -84,17 +94,26 @@ export function ExecutionLogPanel() {
     bodyRef.current?.querySelector(`[data-node-id="${selectedNodeId}"]`)?.scrollIntoView({ block: 'nearest' });
   }, [selectedNodeId, collapsed]);
 
+  function handleBodyScroll() {
+    const body = bodyRef.current;
+    if (!body) return;
+    stickToBottomRef.current = body.scrollHeight - body.scrollTop - body.clientHeight < 4;
+  }
+
   if (events.length === 0 && status === 'idle') return null;
 
   return (
-    <div className={`${styles['panel']} ${collapsed ? styles['panel--collapsed'] : ''}`}>
+    <div
+      className={`${styles['panel']} ${collapsed ? styles['panel--collapsed'] : ''}`}
+      style={{ '--log-panel-right': `${rightOffset}px` } as React.CSSProperties}
+    >
       <div className={styles['header']} onClick={toggleLog}>
         <span className={styles['title']}>Execution Log</span>
         <span className={`${styles['status']} ${styles[`status--${status}`]}`}>{status}</span>
         <span className={styles['toggle']}>{collapsed ? '▲' : '▼'}</span>
       </div>
       {!collapsed && (
-        <div ref={bodyRef} className={styles['body']}>
+        <div ref={bodyRef} className={styles['body']} onScroll={handleBodyScroll}>
           {events.map((event) => (
             <EventRow key={`${event.executionId}-${event.sequence}`} event={event} selectedNodeId={selectedNodeId} />
           ))}

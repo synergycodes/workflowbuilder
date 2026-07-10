@@ -1,11 +1,11 @@
 .panel {
   position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
+  /* Aligned with the bottom edge of the SDK right panel (1rem layout padding). */
+  bottom: 1rem;
+  right: var(--log-panel-right, 1rem);
   width: 30rem;
   max-width: calc(100vw - 3rem);
-  max-height: 60vh;
+  max-height: 26.875rem; /* 430px */
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: var(--wb-app-bar-border-radius);

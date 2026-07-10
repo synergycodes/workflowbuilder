@@ -24,13 +24,31 @@ type ExecutionStore = {
   logCollapsed: boolean;
 };
 
+const LOG_COLLAPSED_STORAGE_KEY = 'ai-studio:log-collapsed';
+
+function readStoredLogCollapsed() {
+  try {
+    return sessionStorage.getItem(LOG_COLLAPSED_STORAGE_KEY) === 'true';
+  } catch {
+    return false;
+  }
+}
+
+function storeLogCollapsed(logCollapsed: boolean) {
+  try {
+    sessionStorage.setItem(LOG_COLLAPSED_STORAGE_KEY, String(logCollapsed));
+  } catch {
+    // Storage unavailable (e.g. blocked); collapse state just won't persist.
+  }
+}
+
 const emptyStore: ExecutionStore = {
   executionId: undefined,
   status: 'idle',
   streamUrl: undefined,
   nodeStates: {},
   events: [],
-  logCollapsed: false,
+  logCollapsed: readStoredLogCollapsed(),
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
@@ -38,16 +56,19 @@ export const useExecutionStore = create<ExecutionStore>()(
 );
 
 export function resetExecution() {
-  useExecutionStore.setState(emptyStore);
+  useExecutionStore.setState({ ...emptyStore, logCollapsed: readStoredLogCollapsed() });
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
+  // Opening the log on every run is an event-driven override, deliberately
+  // not written to sessionStorage - the stored value tracks user toggles only.
   useExecutionStore.setState({
     executionId,
     status: 'pending',
     streamUrl,
     nodeStates: {},
     events: [],
+    logCollapsed: false,
   });
 }
 
@@ -103,11 +124,17 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
 }
 
 export function setLogCollapsed(logCollapsed: boolean) {
+  storeLogCollapsed(logCollapsed);
   useExecutionStore.setState({ logCollapsed });
 }
 
 export function toggleLog() {
-  useExecutionStore.setState((state) => ({ logCollapsed: !state.logCollapsed }));
+  useExecutionStore.setState((state) => {
+    const logCollapsed = !state.logCollapsed;
+    storeLogCollapsed(logCollapsed);
+
+    return { logCollapsed };
+  });
 }
 
 function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefined {
