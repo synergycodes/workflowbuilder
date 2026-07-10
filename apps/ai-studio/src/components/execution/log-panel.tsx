@@ -44,12 +44,22 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   const hasDetail = !!detail;
   const truncated = detail && detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
 
+  function handleToggle(mouseEvent: React.MouseEvent) {
+    if (!hasDetail) return;
+    // Selecting text (to copy log content) must not toggle the entry.
+    if (globalThis.getSelection()?.toString()) return;
+    // Nor should clicks on interactive elements inside the detail.
+    if (mouseEvent.target instanceof Element && mouseEvent.target.closest('a, button')) return;
+    setExpanded((v) => !v);
+  }
+
   return (
     <div
       data-node-id={isNode ? nodeId : undefined}
-      className={`${styles['event']} ${styles[`event--${event.type.split('_')[0]}`] ?? ''} ${highlighted ? styles['event--highlighted'] : ''}`}
+      className={`${styles['event']} ${hasDetail ? styles['event--toggleable'] : ''} ${styles[`event--${event.type.split('_')[0]}`] ?? ''} ${highlighted ? styles['event--highlighted'] : ''}`}
+      onClick={handleToggle}
     >
-      <div className={styles['event-header']} onClick={() => hasDetail && setExpanded((v) => !v)}>
+      <div className={styles['event-header']}>
         <span className={`${styles['badge']} ${styles[`badge--${event.type}`]}`}>{label}</span>
         {isNode && <span className={styles['node-id']}>{(event as { nodeId: string }).nodeId.slice(0, 8)}</span>}
         <span className={styles['time']}>{formatTime(event.timestamp)}</span>

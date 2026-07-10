@@ -63,15 +63,14 @@
   }
 }
 
+.event--toggleable {
+  cursor: pointer;
+}
+
 .event-header {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  cursor: default;
-}
-
-.event-header:has(+ .detail) {
-  cursor: pointer;
 }
 
 .badge {
@@ -126,7 +125,6 @@
   word-break: break-word;
   line-height: 1.5;
   font-size: 0.7rem;
-  cursor: pointer;
 }
 
 .detail--expanded {
