@@ -3,23 +3,14 @@ import { useEffect, useState } from 'react';
 const GAP_PX = 16;
 
 type RightPanelAnchor = {
-  /** Whether the SDK properties panel is expanded to full content height. */
   panelExpanded: boolean;
-  /**
-   * Distance (px) from the right viewport edge at which a floating element
-   * should sit so it hugs the properties panel: left of the panel when it
-   * is expanded, at the viewport edge when it is collapsed or absent.
-   */
   rightOffset: number;
 };
 
 const collapsedAnchor: RightPanelAnchor = { panelExpanded: false, rightOffset: GAP_PX };
 
-/**
- * The SDK does not expose the properties panel's expanded state, so this
- * measures the DOM: the right panel is the element after `#viewport-bounds`
- * in the default layout, and it is expanded when it fills the content height.
- */
+// The SDK does not expose the properties panel's expanded state, so this
+// measures the DOM: the panel is the element after #viewport-bounds.
 export function useRightPanelAnchor(): RightPanelAnchor {
   const [anchor, setAnchor] = useState(collapsedAnchor);
 

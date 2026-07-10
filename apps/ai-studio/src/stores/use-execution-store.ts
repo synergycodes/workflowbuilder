@@ -38,7 +38,7 @@ function storeLogCollapsed(logCollapsed: boolean) {
   try {
     sessionStorage.setItem(LOG_COLLAPSED_STORAGE_KEY, String(logCollapsed));
   } catch {
-    // Storage unavailable (e.g. blocked); collapse state just won't persist.
+    // storage unavailable
   }
 }
 
@@ -60,8 +60,7 @@ export function resetExecution() {
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
-  // Opening the log on every run is an event-driven override, deliberately
-  // not written to sessionStorage - the stored value tracks user toggles only.
+  // logCollapsed deliberately not persisted here - storage tracks user toggles only
   useExecutionStore.setState({
     executionId,
     status: 'pending',

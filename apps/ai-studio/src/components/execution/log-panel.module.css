@@ -1,6 +1,5 @@
 .panel {
   position: fixed;
-  /* Aligned with the bottom edge of the SDK right panel (1rem layout padding). */
   bottom: 1rem;
   right: var(--log-panel-right, 1rem);
   width: 30rem;

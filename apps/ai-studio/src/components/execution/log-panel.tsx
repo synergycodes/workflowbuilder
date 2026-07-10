@@ -46,9 +46,7 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 
   function handleToggle(mouseEvent: React.MouseEvent) {
     if (!hasDetail) return;
-    // Selecting text (to copy log content) must not toggle the entry.
     if (globalThis.getSelection()?.toString()) return;
-    // Nor should clicks on interactive elements inside the detail.
     if (mouseEvent.target instanceof Element && mouseEvent.target.closest('a, button')) return;
     setExpanded((v) => !v);
   }
@@ -85,8 +83,6 @@ export function ExecutionLogPanel() {
   const { rightOffset } = useRightPanelAnchor();
 
   const bodyRef = useRef<HTMLDivElement>(null);
-  // Follow the newest entry only while the user stays at the bottom; any
-  // scroll away pauses following, scrolling back to the bottom resumes it.
   const stickToBottomRef = useRef(true);
 
   useEffect(() => {
