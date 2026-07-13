@@ -4,7 +4,7 @@
   right: var(--log-panel-right, 1rem);
   width: 30rem;
   max-width: calc(100vw - 3rem);
-  max-height: 430px;
+  max-height: 26.875rem;
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: var(--wb-app-bar-border-radius);
