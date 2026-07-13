@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 
 const GAP_PX = 16;
+const EXPANDED_HEIGHT_RATIO = 0.9;
 
 type RightPanelAnchor = {
   panelExpanded: boolean;
@@ -9,42 +10,54 @@ type RightPanelAnchor = {
 
 const collapsedAnchor: RightPanelAnchor = { panelExpanded: false, rightOffset: GAP_PX };
 
+function findRightPanel() {
+  const panel = document.querySelector('#viewport-bounds')?.nextElementSibling;
+
+  return panel instanceof HTMLElement ? panel : undefined;
+}
+
+function measureAnchor(panel: HTMLElement): RightPanelAnchor {
+  const sidebar = panel.firstElementChild?.firstElementChild;
+  if (!(sidebar instanceof HTMLElement)) return collapsedAnchor;
+
+  const panelExpanded = sidebar.offsetHeight >= panel.offsetHeight * EXPANDED_HEIGHT_RATIO;
+  if (!panelExpanded) return collapsedAnchor;
+
+  return {
+    panelExpanded: true,
+    rightOffset: Math.round(window.innerWidth - sidebar.getBoundingClientRect().left) + GAP_PX,
+  };
+}
+
+function sameAnchor(current: RightPanelAnchor, next: RightPanelAnchor) {
+  return current.panelExpanded === next.panelExpanded && current.rightOffset === next.rightOffset;
+}
+
+function observeAnchor(panel: HTMLElement, onMeasure: (next: RightPanelAnchor) => void) {
+  const updateAnchor = () => onMeasure(measureAnchor(panel));
+
+  updateAnchor();
+
+  const observer = new ResizeObserver(updateAnchor);
+  observer.observe(panel);
+  window.addEventListener('resize', updateAnchor);
+
+  return () => {
+    observer.disconnect();
+    window.removeEventListener('resize', updateAnchor);
+  };
+}
+
 // The SDK does not expose the properties panel's expanded state, so this
 // measures the DOM: the panel is the element after #viewport-bounds.
 export function useRightPanelAnchor(): RightPanelAnchor {
   const [anchor, setAnchor] = useState(collapsedAnchor);
 
   useEffect(() => {
-    const anchorElement = document.querySelector('#viewport-bounds')?.nextElementSibling;
-    if (!(anchorElement instanceof HTMLElement)) return;
-    const panel: HTMLElement = anchorElement;
+    const panel = findRightPanel();
+    if (!panel) return;
 
-    function measure() {
-      const sidebar = panel.firstElementChild?.firstElementChild;
-      const panelExpanded = sidebar instanceof HTMLElement && sidebar.offsetHeight >= panel.offsetHeight * 0.9;
-
-      const next = panelExpanded
-        ? {
-            panelExpanded,
-            rightOffset: Math.round(window.innerWidth - sidebar.getBoundingClientRect().left) + GAP_PX,
-          }
-        : collapsedAnchor;
-
-      setAnchor((current) =>
-        current.panelExpanded === next.panelExpanded && current.rightOffset === next.rightOffset ? current : next,
-      );
-    }
-
-    measure();
-
-    const observer = new ResizeObserver(measure);
-    observer.observe(panel);
-    window.addEventListener('resize', measure);
-
-    return () => {
-      observer.disconnect();
-      window.removeEventListener('resize', measure);
-    };
+    return observeAnchor(panel, (next) => setAnchor((current) => (sameAnchor(current, next) ? current : next)));
   }, []);
 
   return anchor;

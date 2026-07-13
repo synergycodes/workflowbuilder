@@ -1,4 +1,5 @@
 import { useSingleSelectedElement } from '@workflowbuilder/sdk';
+import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
 import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
@@ -9,8 +10,12 @@ import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 
-function formatTime(iso: string) {
-  return new Date(iso).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+const DETAIL_PREVIEW_CHARS = 120;
+const NODE_ID_PREVIEW_CHARS = 8;
+const AT_BOTTOM_TOLERANCE_PX = 4;
+
+function formatTime(isoTimestamp: string) {
+  return new Date(isoTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
 }
 
 function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNodeId: string | null }) {
@@ -42,7 +47,8 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   }
 
   const hasDetail = !!detail;
-  const truncated = detail && detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
+  const truncated =
+    detail && detail.length > DETAIL_PREVIEW_CHARS ? detail.slice(0, DETAIL_PREVIEW_CHARS) + '…' : detail;
 
   function handleToggle({ target }: React.MouseEvent) {
     const clickedInteractiveElement = target instanceof Element && !!target.closest('a, button');
@@ -56,17 +62,20 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   return (
     <div
       data-node-id={isNode ? nodeId : undefined}
-      className={`${styles['event']} ${hasDetail ? styles['event--toggleable'] : ''} ${styles[`event--${event.type.split('_')[0]}`] ?? ''} ${highlighted ? styles['event--highlighted'] : ''}`}
+      className={clsx(styles['event'], {
+        [styles['event--toggleable']]: hasDetail,
+        [styles['event--highlighted']]: highlighted,
+      })}
       onClick={handleToggle}
     >
       <div className={styles['event-header']}>
-        <span className={`${styles['badge']} ${styles[`badge--${event.type}`]}`}>{label}</span>
-        {isNode && <span className={styles['node-id']}>{(event as { nodeId: string }).nodeId.slice(0, 8)}</span>}
+        <span className={clsx(styles['badge'], styles[`badge--${event.type}`])}>{label}</span>
+        {isNode && <span className={styles['node-id']}>{nodeId.slice(0, NODE_ID_PREVIEW_CHARS)}</span>}
         <span className={styles['time']}>{formatTime(event.timestamp)}</span>
         {hasDetail && <span className={styles['toggle']}>{expanded ? '▲' : '▼'}</span>}
       </div>
       {hasDetail && (
-        <div className={`${styles['detail']} ${expanded ? styles['detail--expanded'] : ''}`}>
+        <div className={clsx(styles['detail'], { [styles['detail--expanded']]: expanded })}>
           {expanded ? detail : truncated}
         </div>
       )}
@@ -75,10 +84,10 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 }
 
 export function ExecutionLogPanel() {
-  const events = useExecutionStore((s) => s.events);
-  const status = useExecutionStore((s) => s.status);
-  const executionId = useExecutionStore((s) => s.executionId);
-  const collapsed = useExecutionStore((s) => s.logCollapsed);
+  const events = useExecutionStore((state) => state.events);
+  const status = useExecutionStore((state) => state.status);
+  const executionId = useExecutionStore((state) => state.executionId);
+  const collapsed = useExecutionStore((state) => state.logCollapsed);
   // Clicking a node (incl. its flag marker) selects it on the canvas; the
   // highlight derives from that selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
@@ -105,19 +114,21 @@ export function ExecutionLogPanel() {
   function handleBodyScroll() {
     const body = bodyRef.current;
     if (!body) return;
-    stickToBottomRef.current = body.scrollHeight - body.scrollTop - body.clientHeight < 4;
+
+    const distanceFromBottom = body.scrollHeight - body.scrollTop - body.clientHeight;
+    stickToBottomRef.current = distanceFromBottom < AT_BOTTOM_TOLERANCE_PX;
   }
 
   if (events.length === 0 && status === 'idle') return null;
 
   return (
     <div
-      className={`${styles['panel']} ${collapsed ? styles['panel--collapsed'] : ''}`}
+      className={clsx(styles['panel'], { [styles['panel--collapsed']]: collapsed })}
       style={{ '--log-panel-right': `${rightOffset}px` } as React.CSSProperties}
     >
       <div className={styles['header']} onClick={toggleLog}>
         <span className={styles['title']}>Execution Log</span>
-        <span className={`${styles['status']} ${styles[`status--${status}`]}`}>{status}</span>
+        <span className={clsx(styles['status'], styles[`status--${status}`])}>{status}</span>
         <span className={styles['toggle']}>{collapsed ? '▲' : '▼'}</span>
       </div>
       {!collapsed && (

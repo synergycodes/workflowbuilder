@@ -18,7 +18,7 @@ function hasAcknowledged(): boolean {
 
 export function DisclaimerModal() {
   const [open, setOpen] = useState(() => !hasAcknowledged());
-  const logVisible = useExecutionStore((s) => s.events.length > 0 || s.status !== 'idle');
+  const logVisible = useExecutionStore((state) => state.events.length > 0 || state.status !== 'idle');
   const { panelExpanded } = useRightPanelAnchor();
 
   function dismiss() {

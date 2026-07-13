@@ -34,7 +34,7 @@ function readStoredLogCollapsed() {
   }
 }
 
-function storeLogCollapsed(logCollapsed: boolean) {
+function persistLogCollapsed(logCollapsed: boolean) {
   try {
     sessionStorage.setItem(LOG_COLLAPSED_STORAGE_KEY, String(logCollapsed));
   } catch {
@@ -123,17 +123,12 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
 }
 
 export function setLogCollapsed(logCollapsed: boolean) {
-  storeLogCollapsed(logCollapsed);
+  persistLogCollapsed(logCollapsed);
   useExecutionStore.setState({ logCollapsed });
 }
 
 export function toggleLog() {
-  useExecutionStore.setState((state) => {
-    const logCollapsed = !state.logCollapsed;
-    storeLogCollapsed(logCollapsed);
-
-    return { logCollapsed };
-  });
+  setLogCollapsed(!useExecutionStore.getState().logCollapsed);
 }
 
 function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefined {
