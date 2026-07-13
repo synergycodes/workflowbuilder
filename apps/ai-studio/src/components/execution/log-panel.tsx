@@ -44,11 +44,13 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   const hasDetail = !!detail;
   const truncated = detail && detail.length > 120 ? detail.slice(0, 120) + '…' : detail;
 
-  function handleToggle(mouseEvent: React.MouseEvent) {
-    if (!hasDetail) return;
-    if (globalThis.getSelection()?.toString()) return;
-    if (mouseEvent.target instanceof Element && mouseEvent.target.closest('a, button')) return;
-    setExpanded((v) => !v);
+  function handleToggle({ target }: React.MouseEvent) {
+    const clickedInteractiveElement = target instanceof Element && !!target.closest('a, button');
+    const isSelectingText = !!globalThis.getSelection()?.toString();
+
+    if (hasDetail && !clickedInteractiveElement && !isSelectingText) {
+      setExpanded((isExpanded) => !isExpanded);
+    }
   }
 
   return (

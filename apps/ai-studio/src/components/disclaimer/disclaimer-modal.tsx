@@ -18,7 +18,6 @@ function hasAcknowledged(): boolean {
 
 export function DisclaimerModal() {
   const [open, setOpen] = useState(() => !hasAcknowledged());
-  // the reopen button shares the bottom-right corner with both of these
   const logVisible = useExecutionStore((s) => s.events.length > 0 || s.status !== 'idle');
   const { panelExpanded } = useRightPanelAnchor();
 
