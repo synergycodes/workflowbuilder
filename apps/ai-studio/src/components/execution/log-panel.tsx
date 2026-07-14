@@ -50,10 +50,11 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   const truncated =
     detail && detail.length > DETAIL_PREVIEW_CHARS ? detail.slice(0, DETAIL_PREVIEW_CHARS) + '…' : detail;
 
-  function handleToggle() {
+  function handleToggle({ target }: React.MouseEvent) {
+    const clickedInteractiveElement = target instanceof Element && !!target.closest('a, button');
     const isSelectingText = !!globalThis.getSelection()?.toString();
 
-    if (hasDetail && !isSelectingText) {
+    if (hasDetail && !clickedInteractiveElement && !isSelectingText) {
       setExpanded((isExpanded) => !isExpanded);
     }
   }
@@ -61,12 +62,13 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   return (
     <div
       data-node-id={isNode ? nodeId : undefined}
-      className={clsx(styles['event'], { [styles['event--highlighted']]: highlighted })}
+      className={clsx(styles['event'], {
+        [styles['event--toggleable']]: hasDetail,
+        [styles['event--highlighted']]: highlighted,
+      })}
+      onClick={handleToggle}
     >
-      <div
-        className={clsx(styles['event-header'], { [styles['event-header--toggleable']]: hasDetail })}
-        onClick={handleToggle}
-      >
+      <div className={styles['event-header']}>
         <span className={clsx(styles['badge'], styles[`badge--${event.type}`])}>{label}</span>
         {isNode && <span className={styles['node-id']}>{nodeId.slice(0, NODE_ID_PREVIEW_CHARS)}</span>}
         <span className={styles['time']}>{formatTime(event.timestamp)}</span>
