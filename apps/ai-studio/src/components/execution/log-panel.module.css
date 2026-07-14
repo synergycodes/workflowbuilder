@@ -62,14 +62,14 @@
   }
 }
 
-.event--toggleable {
-  cursor: pointer;
-}
-
 .event-header {
   display: flex;
   align-items: center;
   gap: 0.375rem;
+}
+
+.event-header--toggleable {
+  cursor: pointer;
 }
 
 .badge {
