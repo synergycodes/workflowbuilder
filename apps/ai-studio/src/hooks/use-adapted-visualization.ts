@@ -5,7 +5,8 @@ import type { VisualizeRenderer } from '../utils/detect-format';
 
 const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
-type Adaptation = { key: string; output: string };
+// output null = the adapt call failed and the raw text is rendered instead.
+type Adaptation = { key: string; output: string | null };
 
 // The adapted content is an async derived value keyed by (renderer, text).
 // A stale adaptation is ignored by the key check, never reset by an effect,
@@ -15,29 +16,30 @@ export function useAdaptedVisualization(text: string, renderer: VisualizeRendere
   const [isAdapting, setIsAdapting] = useState(false);
 
   const adaptationKey = `${renderer}\n${text}`;
-  const adaptedText = adaptation?.key === adaptationKey ? adaptation.output : null;
-  const shouldAdapt = hasOutput && ADAPTABLE.has(renderer) && adaptedText === null;
+  const cached = adaptation?.key === adaptationKey ? adaptation : null;
+  const shouldAdapt = hasOutput && ADAPTABLE.has(renderer) && cached === null;
 
   useEffect(() => {
     if (!shouldAdapt) return;
 
-    let cancelled = false;
-    setIsAdapting(true);
-    adaptVisualization(text, renderer)
-      .then((output) => {
-        if (!cancelled) setAdaptation({ key: adaptationKey, output });
-      })
-      .catch(() => {
-        // keep original content
-      })
-      .finally(() => {
-        if (!cancelled) setIsAdapting(false);
-      });
+    const controller = new AbortController();
 
-    return () => {
-      cancelled = true;
-    };
+    async function adapt() {
+      setIsAdapting(true);
+      try {
+        const output = await adaptVisualization(text, renderer, controller.signal);
+        setAdaptation({ key: adaptationKey, output });
+      } catch {
+        if (!controller.signal.aborted) setAdaptation({ key: adaptationKey, output: null });
+      } finally {
+        if (!controller.signal.aborted) setIsAdapting(false);
+      }
+    }
+
+    void adapt();
+
+    return () => controller.abort();
   }, [shouldAdapt, adaptationKey, text, renderer]);
 
-  return { adaptedText, isAdapting };
+  return { adaptedText: cached?.output ?? null, isAdapting };
 }

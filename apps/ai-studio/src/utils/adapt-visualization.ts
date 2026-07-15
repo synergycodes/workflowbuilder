@@ -1,7 +1,7 @@
 import { BACKEND_URL } from '../config';
 import { getTurnstileToken } from '../security/turnstile';
 
-export async function adaptVisualization(content: string, format: string): Promise<string> {
+export async function adaptVisualization(content: string, format: string, signal?: AbortSignal): Promise<string> {
   const token = await getTurnstileToken();
   const response = await fetch(`${BACKEND_URL}/api/visualize/adapt`, {
     method: 'POST',
@@ -10,6 +10,7 @@ export async function adaptVisualization(content: string, format: string): Promi
       ...(token ? { 'cf-turnstile-token': token } : {}),
     },
     body: JSON.stringify({ content, format }),
+    signal,
   });
   if (!response.ok) {
     const error = (await response.json().catch(() => ({}))) as { message?: string };
