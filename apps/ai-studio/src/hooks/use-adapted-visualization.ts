@@ -41,5 +41,12 @@ export function useAdaptedVisualization(text: string, renderer: VisualizeRendere
     return () => controller.abort();
   }, [shouldAdapt, adaptationKey, text, renderer]);
 
-  return { adaptedText: cached?.output ?? null, isAdapting };
+  const adaptedOutput = cached?.output ?? null;
+
+  return {
+    /** Adapted content when available, the raw text otherwise. */
+    renderText: adaptedOutput ?? text,
+    isAdapted: adaptedOutput !== null,
+    isAdapting,
+  };
 }

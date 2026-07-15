@@ -66,14 +66,13 @@ export function VisualizeCard({ props }: Props) {
   const detection = detectFormat(text);
   const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
 
-  const { adaptedText, isAdapting } = useAdaptedVisualization(text, activeRenderer, hasOutput);
+  const { renderText, isAdapted, isAdapting } = useAdaptedVisualization(text, activeRenderer, hasOutput);
 
   if (!isVisualizeNode) {
     return null;
   }
 
-  const renderText = adaptedText ?? text;
-  const data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
+  const data = !isAdapted && mode === 'auto' ? detection.data : undefined;
   const Renderer = hasOutput ? getRenderer(activeRenderer) : null;
   const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
