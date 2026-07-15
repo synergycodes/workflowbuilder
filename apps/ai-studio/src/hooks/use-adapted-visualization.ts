@@ -44,7 +44,6 @@ export function useAdaptedVisualization(text: string, renderer: VisualizeRendere
   const adaptedOutput = cached?.output ?? null;
 
   return {
-    /** Adapted content when available, the raw text otherwise. */
     renderText: adaptedOutput ?? text,
     isAdapted: adaptedOutput !== null,
     isAdapting,
