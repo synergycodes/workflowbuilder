@@ -1,11 +1,10 @@
 .panel {
   position: fixed;
-  bottom: 1.5rem;
-  left: 50%;
-  transform: translateX(-50%);
+  bottom: 1rem;
+  right: var(--log-panel-right, 1rem);
   width: 30rem;
   max-width: calc(100vw - 3rem);
-  max-height: 60vh;
+  max-height: 26.875rem;
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: var(--wb-app-bar-border-radius);
@@ -63,15 +62,14 @@
   }
 }
 
+.event--toggleable {
+  cursor: pointer;
+}
+
 .event-header {
   display: flex;
   align-items: center;
   gap: 0.375rem;
-  cursor: default;
-}
-
-.event-header:has(+ .detail) {
-  cursor: pointer;
 }
 
 .badge {
@@ -126,7 +124,6 @@
   word-break: break-word;
   line-height: 1.5;
   font-size: 0.7rem;
-  cursor: pointer;
 }
 
 .detail--expanded {

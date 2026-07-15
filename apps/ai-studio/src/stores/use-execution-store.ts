@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import type {
   ExecutionEvent,
@@ -21,7 +21,7 @@ type ExecutionStore = {
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
-  logCollapsed: boolean;
+  isLogCollapsed: boolean;
 };
 
 const emptyStore: ExecutionStore = {
@@ -30,15 +30,22 @@ const emptyStore: ExecutionStore = {
   streamUrl: undefined,
   nodeStates: {},
   events: [],
-  logCollapsed: false,
+  isLogCollapsed: false,
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
-  devtools(() => ({ ...emptyStore }), { name: 'aiStudioExecutionStore' }),
+  devtools(
+    persist(() => ({ ...emptyStore }), {
+      name: 'ai-studio:execution-log',
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
+    }),
+    { name: 'aiStudioExecutionStore' },
+  ),
 );
 
 export function resetExecution() {
-  useExecutionStore.setState(emptyStore);
+  useExecutionStore.setState((state) => ({ ...emptyStore, isLogCollapsed: state.isLogCollapsed }));
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
@@ -48,6 +55,7 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     streamUrl,
     nodeStates: {},
     events: [],
+    isLogCollapsed: false,
   });
 }
 
@@ -102,12 +110,12 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
   }
 }
 
-export function setLogCollapsed(logCollapsed: boolean) {
-  useExecutionStore.setState({ logCollapsed });
+export function setLogCollapsed(isLogCollapsed: boolean) {
+  useExecutionStore.setState({ isLogCollapsed });
 }
 
 export function toggleLog() {
-  useExecutionStore.setState((state) => ({ logCollapsed: !state.logCollapsed }));
+  setLogCollapsed(!useExecutionStore.getState().isLogCollapsed);
 }
 
 function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefined {
