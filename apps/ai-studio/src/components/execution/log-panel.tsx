@@ -19,11 +19,11 @@ function formatTime(isoTimestamp: string) {
 }
 
 function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNodeId: string | null }) {
-  const [expanded, setExpanded] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const nodeId = (event as { nodeId?: string | null }).nodeId;
   const isNode = typeof nodeId === 'string' && nodeId.length > 0;
-  const highlighted = isNode && nodeId === selectedNodeId;
+  const isHighlighted = isNode && nodeId === selectedNodeId;
   const label = event.type.replaceAll('_', ' ');
 
   let detail: string | undefined;
@@ -55,7 +55,7 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
     const isSelectingText = !!globalThis.getSelection()?.toString();
 
     if (hasDetail && !clickedInteractiveElement && !isSelectingText) {
-      setExpanded((isExpanded) => !isExpanded);
+      setIsExpanded((current) => !current);
     }
   }
 
@@ -64,7 +64,7 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
       data-node-id={isNode ? nodeId : undefined}
       className={clsx(styles['event'], {
         [styles['event--toggleable']]: hasDetail,
-        [styles['event--highlighted']]: highlighted,
+        [styles['event--highlighted']]: isHighlighted,
       })}
       onClick={handleToggle}
     >
@@ -72,11 +72,11 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
         <span className={clsx(styles['badge'], styles[`badge--${event.type}`])}>{label}</span>
         {isNode && <span className={styles['node-id']}>{nodeId.slice(0, NODE_ID_PREVIEW_CHARS)}</span>}
         <span className={styles['time']}>{formatTime(event.timestamp)}</span>
-        {hasDetail && <span className={styles['toggle']}>{expanded ? '▲' : '▼'}</span>}
+        {hasDetail && <span className={styles['toggle']}>{isExpanded ? '▲' : '▼'}</span>}
       </div>
       {hasDetail && (
-        <div className={clsx(styles['detail'], { [styles['detail--expanded']]: expanded })}>
-          {expanded ? detail : truncated}
+        <div className={clsx(styles['detail'], { [styles['detail--expanded']]: isExpanded })}>
+          {isExpanded ? detail : truncated}
         </div>
       )}
     </div>
@@ -87,7 +87,7 @@ export function ExecutionLogPanel() {
   const events = useExecutionStore((state) => state.events);
   const status = useExecutionStore((state) => state.status);
   const executionId = useExecutionStore((state) => state.executionId);
-  const collapsed = useExecutionStore((state) => state.logCollapsed);
+  const isCollapsed = useExecutionStore((state) => state.isLogCollapsed);
   // Clicking a node (incl. its flag marker) selects it on the canvas; the
   // highlight derives from that selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
@@ -101,15 +101,15 @@ export function ExecutionLogPanel() {
   }, [executionId]);
 
   useEffect(() => {
-    if (!collapsed && stickToBottomRef.current && bodyRef.current) {
+    if (!isCollapsed && stickToBottomRef.current && bodyRef.current) {
       bodyRef.current.scrollTop = bodyRef.current.scrollHeight;
     }
-  }, [events.length, collapsed]);
+  }, [events.length, isCollapsed]);
 
   useEffect(() => {
-    if (!selectedNodeId || collapsed) return;
+    if (!selectedNodeId || isCollapsed) return;
     bodyRef.current?.querySelector(`[data-node-id="${selectedNodeId}"]`)?.scrollIntoView({ block: 'nearest' });
-  }, [selectedNodeId, collapsed]);
+  }, [selectedNodeId, isCollapsed]);
 
   function handleBodyScroll() {
     const body = bodyRef.current;
@@ -123,15 +123,15 @@ export function ExecutionLogPanel() {
 
   return (
     <div
-      className={clsx(styles['panel'], { [styles['panel--collapsed']]: collapsed })}
+      className={clsx(styles['panel'], { [styles['panel--collapsed']]: isCollapsed })}
       style={{ '--log-panel-right': `${rightOffset}px` } as React.CSSProperties}
     >
       <div className={styles['header']} onClick={toggleLog}>
         <span className={styles['title']}>Execution Log</span>
         <span className={clsx(styles['status'], styles[`status--${status}`])}>{status}</span>
-        <span className={styles['toggle']}>{collapsed ? '▲' : '▼'}</span>
+        <span className={styles['toggle']}>{isCollapsed ? '▲' : '▼'}</span>
       </div>
-      {!collapsed && (
+      {!isCollapsed && (
         <div ref={bodyRef} className={styles['body']} onScroll={handleBodyScroll}>
           {events.map((event) => (
             <EventRow key={`${event.executionId}-${event.sequence}`} event={event} selectedNodeId={selectedNodeId} />

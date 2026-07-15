@@ -4,11 +4,11 @@ const GAP_PX = 16;
 const EXPANDED_HEIGHT_RATIO = 0.9;
 
 type RightPanelAnchor = {
-  panelExpanded: boolean;
+  isPanelExpanded: boolean;
   rightOffset: number;
 };
 
-const collapsedAnchor: RightPanelAnchor = { panelExpanded: false, rightOffset: GAP_PX };
+const collapsedAnchor: RightPanelAnchor = { isPanelExpanded: false, rightOffset: GAP_PX };
 
 function findRightPanel() {
   const panel = document.querySelector('#viewport-bounds')?.nextElementSibling;
@@ -20,17 +20,17 @@ function measureAnchor(panel: HTMLElement): RightPanelAnchor {
   const sidebar = panel.firstElementChild?.firstElementChild;
   if (!(sidebar instanceof HTMLElement)) return collapsedAnchor;
 
-  const panelExpanded = sidebar.offsetHeight >= panel.offsetHeight * EXPANDED_HEIGHT_RATIO;
-  if (!panelExpanded) return collapsedAnchor;
+  const isPanelExpanded = sidebar.offsetHeight >= panel.offsetHeight * EXPANDED_HEIGHT_RATIO;
+  if (!isPanelExpanded) return collapsedAnchor;
 
   return {
-    panelExpanded: true,
+    isPanelExpanded: true,
     rightOffset: Math.round(window.innerWidth - sidebar.getBoundingClientRect().left) + GAP_PX,
   };
 }
 
 function sameAnchor(current: RightPanelAnchor, next: RightPanelAnchor) {
-  return current.panelExpanded === next.panelExpanded && current.rightOffset === next.rightOffset;
+  return current.isPanelExpanded === next.isPanelExpanded && current.rightOffset === next.rightOffset;
 }
 
 function observeAnchor(panel: HTMLElement, onMeasure: (next: RightPanelAnchor) => void) {

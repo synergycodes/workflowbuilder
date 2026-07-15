@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { devtools } from 'zustand/middleware';
+import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import type {
   ExecutionEvent,
@@ -21,26 +21,8 @@ type ExecutionStore = {
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
-  logCollapsed: boolean;
+  isLogCollapsed: boolean;
 };
-
-const LOG_COLLAPSED_STORAGE_KEY = 'ai-studio:log-collapsed';
-
-function readStoredLogCollapsed() {
-  try {
-    return sessionStorage.getItem(LOG_COLLAPSED_STORAGE_KEY) === 'true';
-  } catch {
-    return false;
-  }
-}
-
-function persistLogCollapsed(logCollapsed: boolean) {
-  try {
-    sessionStorage.setItem(LOG_COLLAPSED_STORAGE_KEY, String(logCollapsed));
-  } catch {
-    // storage unavailable
-  }
-}
 
 const emptyStore: ExecutionStore = {
   executionId: undefined,
@@ -48,26 +30,32 @@ const emptyStore: ExecutionStore = {
   streamUrl: undefined,
   nodeStates: {},
   events: [],
-  logCollapsed: readStoredLogCollapsed(),
+  isLogCollapsed: false,
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
-  devtools(() => ({ ...emptyStore }), { name: 'aiStudioExecutionStore' }),
+  devtools(
+    persist(() => ({ ...emptyStore }), {
+      name: 'ai-studio:execution-log',
+      storage: createJSONStorage(() => sessionStorage),
+      partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
+    }),
+    { name: 'aiStudioExecutionStore' },
+  ),
 );
 
 export function resetExecution() {
-  useExecutionStore.setState({ ...emptyStore, logCollapsed: readStoredLogCollapsed() });
+  useExecutionStore.setState((state) => ({ ...emptyStore, isLogCollapsed: state.isLogCollapsed }));
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
-  // logCollapsed deliberately not persisted here - storage tracks user toggles only
   useExecutionStore.setState({
     executionId,
     status: 'pending',
     streamUrl,
     nodeStates: {},
     events: [],
-    logCollapsed: false,
+    isLogCollapsed: false,
   });
 }
 
@@ -122,13 +110,12 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
   }
 }
 
-export function setLogCollapsed(logCollapsed: boolean) {
-  persistLogCollapsed(logCollapsed);
-  useExecutionStore.setState({ logCollapsed });
+export function setLogCollapsed(isLogCollapsed: boolean) {
+  useExecutionStore.setState({ isLogCollapsed });
 }
 
 export function toggleLog() {
-  setLogCollapsed(!useExecutionStore.getState().logCollapsed);
+  setLogCollapsed(!useExecutionStore.getState().isLogCollapsed);
 }
 
 function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefined {

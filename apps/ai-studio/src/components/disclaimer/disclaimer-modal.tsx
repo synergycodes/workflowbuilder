@@ -17,9 +17,9 @@ function hasAcknowledged(): boolean {
 }
 
 export function DisclaimerModal() {
-  const [open, setOpen] = useState(() => !hasAcknowledged());
-  const logVisible = useExecutionStore((state) => state.events.length > 0 || state.status !== 'idle');
-  const { panelExpanded } = useRightPanelAnchor();
+  const [isOpen, setIsOpen] = useState(() => !hasAcknowledged());
+  const isLogVisible = useExecutionStore((state) => state.events.length > 0 || state.status !== 'idle');
+  const { isPanelExpanded } = useRightPanelAnchor();
 
   function dismiss() {
     try {
@@ -27,14 +27,14 @@ export function DisclaimerModal() {
     } catch {
       // storage unavailable
     }
-    setOpen(false);
+    setIsOpen(false);
   }
 
-  if (!open) {
-    if (logVisible || panelExpanded) return null;
+  if (!isOpen) {
+    if (isLogVisible || isPanelExpanded) return null;
 
     return (
-      <button className={styles['reopen']} onClick={() => setOpen(true)} aria-label="About this demo">
+      <button className={styles['reopen']} onClick={() => setIsOpen(true)} aria-label="About this demo">
         <Info size={20} weight="bold" />
       </button>
     );
