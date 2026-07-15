@@ -1,12 +1,12 @@
 import { ArrowsOut, DownloadSimple, Eye } from '@phosphor-icons/react';
 import { getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import { Suspense, useEffect, useRef, useState } from 'react';
+import { Suspense, useRef, useState } from 'react';
 
 import styles from './visualize-card.module.css';
 
+import { useAdaptedVisualization } from '../../hooks/use-adapted-visualization';
 import { VISUALIZE_MODES } from '../../nodes/visualize/schema';
 import { useExecutionStore } from '../../stores/use-execution-store';
-import { adaptVisualization } from '../../utils/adapt-visualization';
 import { type VisualizeRenderer, detectFormat } from '../../utils/detect-format';
 import { downloadPng } from '../../utils/export-visualization';
 import { extractOutputText } from '../../utils/extract-output-text';
@@ -22,7 +22,6 @@ type Props = {
 
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(VISUALIZE_MODES);
-const ADAPTABLE = new Set<VisualizeRenderer>(['diagram', 'chart', 'table', 'json', 'stat-cards']);
 
 function EmptyState({ running }: { running: boolean }) {
   if (running) {
@@ -47,9 +46,7 @@ function EmptyState({ running }: { running: boolean }) {
 
 export function VisualizeCard({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
-  const [expanded, setExpanded] = useState(false);
-  const [adaptedText, setAdaptedText] = useState<string | null>(null);
-  const [adapting, setAdapting] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const contentRef = useRef<HTMLDivElement>(null);
 
   // Nodes/edges are static during a run, so snapshot reads are fine.
@@ -69,35 +66,13 @@ export function VisualizeCard({ props }: Props) {
   const detection = detectFormat(text);
   const activeRenderer: VisualizeRenderer = mode === 'auto' ? detection.renderer : mode;
 
-  useEffect(() => {
-    setAdaptedText(null);
-  }, [text]);
-
-  useEffect(() => {
-    if (!hasOutput || !ADAPTABLE.has(activeRenderer) || adaptedText !== null) return;
-    let cancelled = false;
-    setAdapting(true);
-    adaptVisualization(text, activeRenderer)
-      .then((output) => {
-        if (!cancelled) setAdaptedText(output);
-      })
-      .catch(() => {
-        // keep original content
-      })
-      .finally(() => {
-        if (!cancelled) setAdapting(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [hasOutput, activeRenderer, text, adaptedText]);
+  const { renderText, isAdapted, isAdapting } = useAdaptedVisualization(text, activeRenderer, hasOutput);
 
   if (!isVisualizeNode) {
     return null;
   }
 
-  const renderText = adaptedText ?? text;
-  const data = adaptedText === null && mode === 'auto' ? detection.data : undefined;
+  const data = !isAdapted && mode === 'auto' ? detection.data : undefined;
   const Renderer = hasOutput ? getRenderer(activeRenderer) : null;
   const badge = mode === 'auto' ? `Auto › ${RENDERER_LABELS[activeRenderer]}` : RENDERER_LABELS[activeRenderer];
   const isVector = activeRenderer === 'chart' || activeRenderer === 'diagram';
@@ -109,20 +84,20 @@ export function VisualizeCard({ props }: Props) {
           <div className={styles['toolbar']}>
             <span className={styles['badge']}>{badge}</span>
             <div className={styles['actions']}>
-              <button type="button" className={styles['action']} title="Expand" onClick={() => setExpanded(true)}>
+              <button type="button" className={styles['action']} title="Expand" onClick={() => setIsExpanded(true)}>
                 <ArrowsOut />
               </button>
               <CopyResultButton
                 className={styles['action']}
                 getTarget={() => contentRef.current}
                 text={renderText}
-                disabled={adapting}
+                disabled={isAdapting}
               />
               <button
                 type="button"
                 className={styles['action']}
                 title="Download PNG"
-                disabled={adapting}
+                disabled={isAdapting}
                 onClick={() => contentRef.current && void downloadPng(contentRef.current)}
               >
                 <DownloadSimple />
@@ -130,7 +105,7 @@ export function VisualizeCard({ props }: Props) {
             </div>
           </div>
           <div className={styles['body']}>
-            {adapting ? (
+            {isAdapting ? (
               <div className={styles['empty']}>
                 <div className={styles['dots']}>
                   <span className={styles['dot']} />
@@ -151,14 +126,14 @@ export function VisualizeCard({ props }: Props) {
       ) : (
         <EmptyState running={selfStatus === 'running'} />
       )}
-      {expanded && (
+      {isExpanded && (
         <VisualizeModal
           renderer={activeRenderer}
           text={renderText}
           data={data}
           badge={badge}
           isVector={isVector}
-          onClose={() => setExpanded(false)}
+          onClose={() => setIsExpanded(false)}
         />
       )}
     </div>
