@@ -114,6 +114,8 @@ services:
       TEMPORAL_ADDRESS: temporal:7233
       OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in deploy/ai-studio/.env}
       AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+      # optional - empty disables the AI Agent's web search tool
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
     depends_on:
       app-db:
         condition: service_healthy
