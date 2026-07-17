@@ -82,6 +82,9 @@ services:
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
       RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
+      # the backend calls the LLM itself for /api/visualize/adapt
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in deploy/ai-studio/.env}
+      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
     depends_on:
       app-db:
         condition: service_healthy
