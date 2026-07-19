@@ -27,14 +27,16 @@ i18n
   .init({
     resources: withOptionalComponentPluginsTranslation(resources),
     defaultNS,
-    fallbackLng: 'en',
+    fallbackLng: 'zh-cn',
     interpolation: {
       escapeValue: false,
     },
     returnNull: false,
     load: 'languageOnly',
     detection: {
-      order: ['localStorage', 'navigator'],
+      order: ['localStorage'],
       caches: ['localStorage'],
+      lookupLocalStorage: 'i18nextLng',
     },
+    lng: 'zh-cn',
   });
