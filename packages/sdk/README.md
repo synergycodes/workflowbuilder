@@ -27,15 +27,10 @@ Battle-tested in production by teams shipping AI workflow products.
 ## Install
 
 ```bash
-npm install @workflowbuilder/sdk \
-  react react-dom \
-  @xyflow/react \
-  @jsonforms/core @jsonforms/react \
-  i18next react-i18next i18next-browser-languagedetector \
-  immer zustand
+npm install @workflowbuilder/sdk @xyflow/react zustand
 ```
 
-The SDK ships its non-peer dependencies bundled in `dist/`. React, xyflow, JsonForms, i18next, immer, and zustand are declared as `peerDependencies` so your app and the SDK share a single copy of each. See [Peer dependencies](#peer-dependencies) below.
+Requires React 18 or 19. Everything else the SDK needs (JsonForms, i18next, immer, …) is a regular dependency and installs automatically. See [Peer dependencies](#peer-dependencies) below.
 
 ## Quick start
 
@@ -271,18 +266,22 @@ Full API reference: <https://www.workflowbuilder.io/docs/api/core/workflowbuilde
 
 ## Peer dependencies
 
-Install alongside the SDK (ranges declared in `peerDependencies`):
+Only the libraries your app touches directly are peers. Install them alongside the SDK
+(ranges declared in `peerDependencies`):
 
-- `react`, `react-dom` (`^18.0.0 || ^19.0.0`)
-- `@xyflow/react` (`^12.0.0`)
-- `@jsonforms/core`, `@jsonforms/react` (`^3.4.0`)
-- `i18next` (`^24.0.0`), `react-i18next` (`^15.0.0`), `i18next-browser-languagedetector` (`^8.0.0`)
-- `immer` (`^10.0.0`)
-- `zustand` (`^5.0.0`)
+- `react`, `react-dom` (`^18.0.0 || ^19.0.0`) — already in any React app
+- `@xyflow/react` (`^12.0.0`) — `Node`, `Edge`, `EdgeProps`, `NodeChange` types you use
+- `zustand` (`^5.0.0`) — `useStore` / `useChangesTrackerStore` return zustand store types
 
-These are declared as `peerDependencies` so the consumer app and the SDK share a single
-copy of each — required for singletons (zustand store identity, i18next instance,
-immer's frozen-object cache).
+They stay peers so the consumer app and the SDK share a single copy of each — required
+for singletons (zustand store identity, xyflow's React context). The remaining libraries
+the SDK relies on — `@jsonforms/core`, `@jsonforms/react`, `i18next`, `react-i18next`,
+`i18next-browser-languagedetector`, `immer` — are regular `dependencies`: they install
+automatically and are still externalized from the build, so package managers dedupe them
+to a single copy via the caret ranges (they hold singletons too — the i18next instance,
+immer's frozen-object cache, the JsonForms contexts — which is why they are never
+bundled). If you write custom JsonForms renderers, add `@jsonforms/core` to your own
+dependencies for the types you import directly.
 
 ## Support
 
