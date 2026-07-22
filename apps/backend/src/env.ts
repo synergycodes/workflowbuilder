@@ -20,5 +20,5 @@ export const env = {
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
   // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
   OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
-  AI_MODEL: envOr('AI_MODEL', 'google/gemini-2.5-flash-lite'),
+  AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
 };
