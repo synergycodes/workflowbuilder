@@ -24,26 +24,25 @@ Consumer-supplied renderers are tried **before** the built-ins. When two testers
 
 ## Custom renderer — full example
 
+Everything you need is re-exported from `@workflowbuilder/sdk` — you never install or import `@jsonforms/*` yourself. That matters for more than convenience: a renderer wrapped with a HOC from your own copy of JsonForms would read from a different React context than the SDK renders with and silently receive empty props. Importing from the SDK guarantees a single shared copy.
+
 ```tsx
-import { type JsonFormsRendererRegistryEntry, rankWith, uiTypeIs } from '@jsonforms/core';
-import { withJsonFormsControlProps } from '@jsonforms/react';
-import { WorkflowBuilder } from '@workflowbuilder/sdk';
+import {
+  type ControlProps,
+  type JsonFormsRendererExtension,
+  WorkflowBuilder,
+  rankWith,
+  uiTypeIs,
+  withJsonFormsControlProps,
+} from '@workflowbuilder/sdk';
 
 import '@workflowbuilder/sdk/style.css';
 
-function ColorPicker({
-  data,
-  handleChange,
-  path,
-}: {
-  data: string;
-  handleChange: (path: string, value: string) => void;
-  path: string;
-}) {
+function ColorPicker({ data, handleChange, path }: ControlProps) {
   return <input type="color" value={data ?? '#000000'} onChange={(e) => handleChange(path, e.target.value)} />;
 }
 
-const colorPickerRenderer: JsonFormsRendererRegistryEntry = {
+const colorPickerRenderer: JsonFormsRendererExtension = {
   tester: rankWith(5, uiTypeIs('ColorPicker')),
   renderer: withJsonFormsControlProps(ColorPicker),
 };
@@ -62,7 +61,7 @@ Any node whose `uischema` contains `{ type: 'ColorPicker', scope: '...' }` will 
 
 ## Cells
 
-`cells` work the same way — use `JsonFormsCellRendererRegistryEntry` for list/array cell rendering. Built-in cells are passed through when consumer cells are absent; if you provide any, yours are used as-is (no merging with built-ins for cells).
+`cells` work the same way — type the entry with `JsonFormsCellExtension` and wrap your component with `withJsonFormsCellProps` (also from `@workflowbuilder/sdk`) for list/array cell rendering. Built-in cells are passed through when consumer cells are absent; if you provide any, yours are used as-is (no merging with built-ins for cells).
 
 ## Translations
 
@@ -101,6 +100,10 @@ Translations are merged into the `plugins.*` namespace of the built-in i18n reso
 ```
 
 The same translations can also be registered imperatively via [`registerPluginTranslation`](/guides/build-a-plugin/#registerplugintranslation).
+
+## Authoring primitives
+
+All the JsonForms building blocks — the `withJsonForms*Props` HOCs, the `useJsonForms` hook, `JsonFormsDispatch`, the testers (`rankWith`, `uiTypeIs`, `schemaTypeIs`, …), `RuleEffect`, and the prop types (`ControlProps`, `CellProps`, …) — are re-exported from `@workflowbuilder/sdk`. The full list lives in the Forms section of the [API reference](/api/).
 
 ## Related types
 

@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': minor
 ---
 
-Reduce the required peer dependencies from ten to four. `@jsonforms/core`, `@jsonforms/react`, `i18next`, `react-i18next`, `i18next-browser-languagedetector` and `immer` are now regular dependencies that install automatically, so the full install is `@workflowbuilder/sdk @xyflow/react zustand` on any package manager (`react`/`react-dom` stay peers but are already in any React app).
+Slimmer install: the base install is now `@workflowbuilder/sdk @xyflow/react zustand`. `@jsonforms/core`, `@jsonforms/react`, `i18next`, `react-i18next`, `i18next-browser-languagedetector` and `immer` moved from peer to regular dependencies and install automatically. JsonForms authoring primitives (`withJsonFormsControlProps`, `rankWith`, `useJsonForms`, `RuleEffect`, `ControlProps`, …) are now re-exported from `@workflowbuilder/sdk`, so custom renderers need no extra installs.

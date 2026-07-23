@@ -151,16 +151,9 @@ To render a property with a custom React component, split the renderer into two 
 `renderers/color-picker.tsx`:
 
 ```tsx
-import { withJsonFormsControlProps } from '@jsonforms/react';
+import { type ControlProps, withJsonFormsControlProps } from '@workflowbuilder/sdk';
 
-type Props = {
-  data: string;
-  handleChange: (path: string, value: string) => void;
-  path: string;
-  label?: string;
-};
-
-function ColorPickerControl({ data, handleChange, path, label }: Props) {
+function ColorPickerControl({ data, handleChange, path, label }: ControlProps) {
   return (
     <label style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
       {label && <span>{label}</span>}
@@ -175,11 +168,11 @@ export const ColorPicker = withJsonFormsControlProps(ColorPickerControl);
 `renderers/color-picker-renderer.ts`:
 
 ```ts
-import { type JsonFormsRendererRegistryEntry, rankWith, uiTypeIs } from '@jsonforms/core';
+import { type JsonFormsRendererExtension, rankWith, uiTypeIs } from '@workflowbuilder/sdk';
 
 import { ColorPicker } from './color-picker';
 
-export const colorPickerRenderer: JsonFormsRendererRegistryEntry = {
+export const colorPickerRenderer: JsonFormsRendererExtension = {
   tester: rankWith(5, uiTypeIs('ColorPicker')),
   renderer: ColorPicker,
 };

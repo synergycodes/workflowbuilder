@@ -280,8 +280,13 @@ the SDK relies on — `@jsonforms/core`, `@jsonforms/react`, `i18next`, `react-i
 automatically and are still externalized from the build, so package managers dedupe them
 to a single copy via the caret ranges (they hold singletons too — the i18next instance,
 immer's frozen-object cache, the JsonForms contexts — which is why they are never
-bundled). If you write custom JsonForms renderers, add `@jsonforms/core` to your own
-dependencies for the types you import directly.
+bundled).
+
+Writing custom JsonForms renderers, cells, or testers still needs only the SDK: the
+authoring primitives (`withJsonFormsControlProps`, `rankWith`, `uiTypeIs`, `useJsonForms`,
+`ControlProps`, …) are re-exported from `@workflowbuilder/sdk`. Import them from there,
+never from `@jsonforms/*` directly — that guarantees your renderer uses the SDK's single
+JsonForms copy instead of a second one that would break the React context.
 
 ## Support
 
