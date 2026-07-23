@@ -91,7 +91,11 @@ function createValidateFunction(schema: object): ValidateFunction {
   const validator = new Validator(schema as Schema, '7', false);
 
   const validateFn = (data: unknown): boolean => {
-    const result = validator.validate(data);
+    // Default schema accepts '' string as valid for required this, clears those values and prompts required.
+    const formattedData = Object.fromEntries(
+      Object.entries(data || {}).filter(([, value]) => !(typeof value === 'string' && value.trim() === '')),
+    );
+    const result = validator.validate(formattedData);
     validateFn.errors = result.valid ? null : mapOutputToErrorObjects(result.errors);
     return result.valid;
   };

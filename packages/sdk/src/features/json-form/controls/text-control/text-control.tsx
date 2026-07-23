@@ -32,10 +32,7 @@ function TextControl(props: TextControlProps) {
   function onBlur() {
     const trimmed = inputValue.trim();
 
-    if (trimmed === '') {
-      // eslint-disable-next-line unicorn/no-useless-undefined
-      handleChange(path, undefined);
-    } else if (isNumberInput) {
+    if (isNumberInput) {
       const number_ = Number(trimmed);
       handleChange(path, Number.isNaN(number_) ? undefined : number_);
     } else {
