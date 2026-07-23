@@ -10,14 +10,24 @@ import svgr from 'vite-plugin-svgr';
 //    identity, immer's `setAutoFreeze` + draft `instanceof`, JsonForms
 //    React contexts, and React itself all break when two copies of the
 //    library exist in the consumer's runtime. Externalizing forces the
-//    consumer to provide the single instance.
+//    build to reference a single installed copy.
 // 2. Bundle bloat — these libs together account for ~500-800 KB that
 //    most consumer apps already ship. Sharing the consumer's copy keeps
 //    the editor lean.
+//
+// This list is INTENTIONALLY broader than `peerDependencies`. Only the
+// libraries a consumer touches directly (react, react-dom, @xyflow/react,
+// zustand) are peers; the rest (the JsonForms packages, immer, the
+// i18next family) are regular `dependencies` so consumers don't have
+// to install them by hand. Keeping the latter externalized (not bundled)
+// still lets package managers dedupe them to a single copy via the caret
+// ranges — bundling would instead hard-code a second copy and reintroduce
+// the singleton hazards above. So: externalize all of them, but only
+// declare the consumer-facing ones as peers.
 // Anything not on this list (clsx, notistack, remeda, ace-builds,
 // react-ace, react-mentions-ts, ajv, …) is small enough or
 // SDK-internal enough that bundling is fine.
-const EXTERNAL_PEER_PACKAGES = [
+const EXTERNAL_PACKAGES = [
   'react',
   'react-dom',
   '@xyflow/react',
@@ -30,8 +40,8 @@ const EXTERNAL_PEER_PACKAGES = [
   'zustand',
 ];
 
-const isExternalPeer = (id: string) =>
-  EXTERNAL_PEER_PACKAGES.some((peer) => id === peer || id.startsWith(`${peer}/`));
+const isExternalPackage = (id: string) =>
+  EXTERNAL_PACKAGES.some((packageName) => id === packageName || id.startsWith(`${packageName}/`));
 
 export default defineConfig(({ command }) => ({
   plugins: [
@@ -59,10 +69,7 @@ export default defineConfig(({ command }) => ({
       '@/assets': path.resolve(import.meta.dirname, 'src/assets'),
       '@': path.resolve(import.meta.dirname, 'src'),
       // overflow-ui doesn't export ./dist/index.css in its package.json exports field
-      'overflow-ui-css': path.resolve(
-        import.meta.dirname,
-        'node_modules/@synergycodes/overflow-ui/dist/index.css',
-      ),
+      'overflow-ui-css': path.resolve(import.meta.dirname, 'node_modules/@synergycodes/overflow-ui/dist/index.css'),
     },
   },
   // Inline `process.env.NODE_ENV` at SDK build time. The SDK bundles deps
@@ -87,7 +94,7 @@ export default defineConfig(({ command }) => ({
       cssFileName: 'style',
     },
     rollupOptions: {
-      external: isExternalPeer,
+      external: isExternalPackage,
     },
     outDir: './dist',
     emptyOutDir: true,

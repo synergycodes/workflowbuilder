@@ -16,8 +16,6 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@jsonforms/core": "^3.4.1",
-    "@jsonforms/react": "^3.4.1",
     "@microsoft/clarity": "^1.0.0",
     "@phosphor-icons/react": "^2.1.7",
     "@synergycodes/overflow-ui": "1.0.0-beta.27",
@@ -27,7 +25,6 @@
     "elkjs": "^0.9.3",
     "html-to-image": "1.11.11",
     "i18next": "^24.2.3",
-    "i18next-browser-languagedetector": "^8.0.5",
     "immer": "^10.1.1",
     "jspdf": "^3.0.1",
     "libavoid-js": "0.4.0-beta.1",
