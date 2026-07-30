@@ -7,7 +7,7 @@ Visual workflow editor SDK (React) with a reference backend and Temporal-based e
 Three onboarding paths (A installs from npm; B, C run the repo locally). README "Get started" covers all three. Path A ("Embed the SDK") installs `@workflowbuilder/sdk` from npm; the README has install + a minimal snippet, and the full guide lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
 
 | Command                      | Path | What it does                                                                            |
-| ----------------------------- | ---- | ----------------------------------------------------------------------------------------- |
+| ---------------------------- | ---- | --------------------------------------------------------------------------------------- |
 | `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents             |
 | `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                                        |
 | `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker                     |
