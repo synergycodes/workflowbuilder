@@ -18,12 +18,18 @@ import svgr from 'vite-plugin-svgr';
 // This list is INTENTIONALLY broader than `peerDependencies`. Only the
 // libraries a consumer touches directly (react, react-dom, @xyflow/react,
 // zustand) are peers; the rest (the JsonForms packages, immer, the
-// i18next family) are regular `dependencies` so consumers don't have
-// to install them by hand. Keeping the latter externalized (not bundled)
-// still lets package managers dedupe them to a single copy via the caret
-// ranges — bundling would instead hard-code a second copy and reintroduce
-// the singleton hazards above. So: externalize all of them, but only
-// declare the consumer-facing ones as peers.
+// i18next family, @base-ui/react, @phosphor-icons/react) are regular
+// `dependencies` so consumers don't have to install them by hand. Keeping
+// the latter externalized (not bundled) still lets package managers dedupe
+// them to a single copy via the caret ranges — bundling would instead
+// hard-code a second copy and reintroduce the singleton hazards above. So:
+// externalize all of them, but only declare the consumer-facing ones as
+// peers.
+// @base-ui/react and @phosphor-icons/react are here even though the SDK
+// only imports @phosphor-icons/react directly — @base-ui/react is pulled
+// in transitively through the bundled @workflowbuilder/ui and would
+// otherwise get inlined a second time alongside the copy @workflowbuilder/ui
+// (or the consumer app) already ships.
 // Anything not on this list (clsx, notistack, remeda, ace-builds,
 // react-ace, react-mentions-ts, ajv, …) is small enough or
 // SDK-internal enough that bundling is fine.
@@ -38,6 +44,8 @@ const EXTERNAL_PACKAGES = [
   'react-i18next',
   'immer',
   'zustand',
+  '@base-ui/react',
+  '@phosphor-icons/react',
 ];
 
 const isExternalPackage = (id: string) =>
