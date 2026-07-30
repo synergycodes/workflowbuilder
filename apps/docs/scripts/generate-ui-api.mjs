@@ -11,24 +11,37 @@ import { execFile } from 'node:child_process';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
-const docsRoot = path.resolve(here, '..');
-const repoRoot = path.resolve(docsRoot, '../..');
-const uiSrc = path.resolve(repoRoot, 'packages/ui/src');
-const outFile = path.resolve(docsRoot, 'src/generated/ui-api.json');
-const tdJson = path.resolve(docsRoot, 'node_modules/.cache/ui-typedoc.json');
+const documentsRoot = path.resolve(here, '..');
+const repoRoot = path.resolve(documentsRoot, '../..');
+const uiSource = path.resolve(repoRoot, 'packages/ui/src');
+const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
+const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
+
+// Comment patterns that are engineering notes on the token pipeline, not
+// public documentation - stripped so they never render as CSS variable
+// descriptions in the docs (see e.g. status.module.css, icon-size.module.css).
+const INTERNAL_NOTE_RE = /missing token/i;
 
 // slug -> { name, propsType, dir }. `propsType` is the exported prop type the
-// component accepts; `dir` is the component folder under packages/ui/src/components.
+// component accepts (or the list of variant prop types for a component whose
+// public surface is a discriminated union - see collectVariantProps); `dir`
+// is the component folder under packages/ui/src/components.
 const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  { slug: 'button', name: 'Button', propsType: 'BaseRegularButtonProps', dir: 'button' },
+  // Button has no single public props type - it renders one of three variant
+  // components depending on `children` (label / icon / icon+label). Merge
+  // their prop sets instead of documenting only the shared base.
+  { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'], dir: 'button' },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
+  { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
+  { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
   { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
@@ -52,12 +65,19 @@ const COMPONENTS = [
 
 async function runTypedoc() {
   await mkdir(path.dirname(tdJson), { recursive: true });
-  const bin = path.resolve(docsRoot, 'node_modules/.bin/typedoc');
+  const bin = path.resolve(documentsRoot, 'node_modules/.bin/typedoc');
   await promisify(execFile)(
     bin,
     [
       '--json', tdJson,
-      '--entryPoints', path.resolve(uiSrc, 'index.ts'),
+      // `expand` over the whole components tree (rather than resolving just
+      // `index.ts`'s re-exports) so that per-variant prop types like
+      // LabelButtonProps/IconButtonProps/IconLabelButtonProps - not
+      // individually re-exported from the package barrel, only reachable
+      // through the Button component's overloaded signature - still get a
+      // full type reflection collectVariantProps can look up by name.
+      '--entryPoints', path.resolve(uiSource, 'components'),
+      '--entryPointStrategy', 'expand',
       '--tsconfig', path.resolve(repoRoot, 'packages/ui/tsconfig.json'),
       '--excludeExternals', '--excludePrivate', '--skipErrorChecking', '--logLevel', 'Error',
     ],
@@ -80,7 +100,7 @@ function findTypeByName(root, name) {
   (function walk(node) {
     if (found) return;
     // 2097152 = TypeAlias, 256 = Interface
-    if (node.name === name && (node.kind === 2097152 || node.kind === 256)) found = node;
+    if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) found = node;
     for (const child of node.children ?? []) walk(child);
   })(root);
   return found;
@@ -89,16 +109,22 @@ function findTypeByName(root, name) {
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
   switch (t.type) {
-    case 'intrinsic': return t.name;
-    case 'literal': return typeof t.value === 'string' ? `'${t.value}'` : String(t.value);
-    case 'reference': {
-      const args = t.typeArguments?.length ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>` : '';
-      return `${t.name}${args}`;
+    case 'intrinsic': { return t.name;
     }
-    case 'union': return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
-    case 'intersection': return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
-    case 'array': return `${typeToString(t.elementType, byId, depth + 1)}[]`;
-    case 'tuple': return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
+    case 'literal': { return typeof t.value === 'string' ? `'${t.value}'` : String(t.value);
+    }
+    case 'reference': {
+      const arguments_ = t.typeArguments?.length ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>` : '';
+      return `${t.name}${arguments_}`;
+    }
+    case 'union': { return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
+    }
+    case 'intersection': { return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
+    }
+    case 'array': { return `${typeToString(t.elementType, byId, depth + 1)}[]`;
+    }
+    case 'tuple': { return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
+    }
     case 'reflection': {
       const sig = t.declaration?.signatures?.[0];
       if (sig) {
@@ -107,12 +133,18 @@ function typeToString(t, byId, depth = 0) {
       }
       return '{ … }';
     }
-    case 'indexedAccess': return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
-    case 'templateLiteral': return 'string';
-    case 'query': return typeToString(t.queryType, byId, depth + 1);
-    case 'predicate': return 'boolean';
-    case 'typeOperator': return `${t.operator} ${typeToString(t.target, byId, depth + 1)}`;
-    default: return t.name ?? 'unknown';
+    case 'indexedAccess': { return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
+    }
+    case 'templateLiteral': { return 'string';
+    }
+    case 'query': { return typeToString(t.queryType, byId, depth + 1);
+    }
+    case 'predicate': { return 'boolean';
+    }
+    case 'typeOperator': { return `${t.operator} ${typeToString(t.target, byId, depth + 1)}`;
+    }
+    default: { return t.name ?? 'unknown';
+    }
   }
 }
 
@@ -126,43 +158,43 @@ function defaultTag(comment) {
   if (!tag) return null;
   let value = tag.content.map((c) => c.text).join('').trim();
   value = value.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '').trim(); // strip ```ts … ``` fences
-  value = value.replace(/^`+|`+$/g, '').trim(); // strip inline backticks
+  value = value.replaceAll(/^`+|`+$/g, '').trim(); // strip inline backticks
   return value || null;
 }
 
 // Collect own properties from a prop type alias / interface, walking
 // intersections and skipping referenced (extended / native HTML) members.
-function collectProps(typeNode, byId, acc = new Map()) {
-  if (!typeNode) return acc;
+function collectProps(typeNode, byId, accumulator = new Map()) {
+  if (!typeNode) return accumulator;
   // TypeAlias / Interface: plain object members land directly on `.children`;
   // computed types (intersections etc.) land on `.type`.
-  if (typeNode.kind === 2097152 || typeNode.kind === 256) {
+  if (typeNode.kind === 2_097_152 || typeNode.kind === 256) {
     if (typeNode.children?.length) {
-      for (const child of typeNode.children) addProp(child, byId, acc);
-      return acc;
+      for (const child of typeNode.children) addProperty(child, byId, accumulator);
+      return accumulator;
     }
-    return collectProps(typeNode.type, byId, acc);
+    return collectProps(typeNode.type, byId, accumulator);
   }
   if (typeNode.type === 'intersection' || typeNode.type === 'union') {
-    for (const member of typeNode.types) collectProps(member, byId, acc);
-    return acc;
+    for (const member of typeNode.types) collectProps(member, byId, accumulator);
+    return accumulator;
   }
   if (typeNode.type === 'reflection' && typeNode.declaration?.children) {
-    for (const child of typeNode.declaration.children) addProp(child, byId, acc);
-    return acc;
+    for (const child of typeNode.declaration.children) addProperty(child, byId, accumulator);
+    return accumulator;
   }
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Only follow references into our own package's prop types, not native ones.
-    if (target && target.kind === 2097152) collectProps(target, byId, acc);
-    return acc;
+    if (target && target.kind === 2_097_152) collectProps(target, byId, accumulator);
+    return accumulator;
   }
-  return acc;
+  return accumulator;
 }
 
-function addProp(child, byId, acc) {
-  if (child.kind !== 1024 || acc.has(child.name)) return; // 1024 = Property
-  acc.set(child.name, {
+function addProperty(child, byId, accumulator) {
+  if (child.kind !== 1024 || accumulator.has(child.name)) return; // 1024 = Property
+  accumulator.set(child.name, {
     name: child.name,
     type: typeToString(child.type, byId),
     required: !child.flags?.isOptional,
@@ -171,11 +203,61 @@ function addProp(child, byId, acc) {
   });
 }
 
-function extractCssVariables(dir) {
-  const abs = path.resolve(uiSrc, 'components', dir);
+// Merge the prop sets of a discriminated-union component's variants (e.g.
+// Button's Label/Icon/IconLabel components). Props shared by every variant
+// with the same type are documented once, unqualified; props that are
+// variant-specific (missing from, or typed differently in, some variants)
+// get a note appended to their description so the table stays a single flat
+// list without a separate "variants" column.
+function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
+  const perVariant = [];
+  for (const typeName of propsTypeNames) {
+    const typeNode = findTypeByName(project, typeName);
+    if (!typeNode) {
+      warnings.push(`props type "${typeName}" not found for "${slug}"`);
+      continue;
+    }
+    perVariant.push({ typeName, props: collectProps(typeNode, byId) });
+  }
+
+  const propertyNames = new Set();
+  for (const variant of perVariant) for (const name of variant.props.keys()) propertyNames.add(name);
+
+  const merged = new Map();
+  for (const propertyName of propertyNames) {
+    const occurrences = perVariant
+      .filter((variant) => variant.props.has(propertyName))
+      .map((variant) => ({ typeName: variant.typeName, prop: variant.props.get(propertyName) }));
+    const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
+    const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
+
+    const base = occurrences[0].prop;
+    let description = base.description;
+    if (!sharedByAll) {
+      const variantLabel = (typeName) => typeName.replace(/Props$/, '');
+      const note =
+        distinctTypes.size > 1
+          ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type}`).join(', ')}).`
+          : `Only applies to the ${occurrences.map((o) => variantLabel(o.typeName)).join(', ')} variant.`;
+      description = description ? `${description} ${note}` : note;
+    }
+
+    merged.set(propertyName, {
+      name: propertyName,
+      type: sharedByAll ? base.type : [...distinctTypes].join(' | '),
+      required: occurrences.every((o) => o.prop.required),
+      default: base.default,
+      description,
+    });
+  }
+  return merged;
+}
+
+function extractCssVariables(directory) {
+  const abs = path.resolve(uiSource, 'components', directory);
   const files = globSync('**/*.css', { cwd: abs }).sort();
   const seen = new Set();
-  const vars = [];
+  const variables = [];
   for (const file of files) {
     const css = readFileSync(path.resolve(abs, file), 'utf8');
     // Match `--ax-public-xxx:` declarations, capturing an optional same-line comment.
@@ -184,10 +266,11 @@ function extractCssVariables(dir) {
     while ((m = re.exec(css))) {
       if (seen.has(m[1])) continue;
       seen.add(m[1]);
-      vars.push({ name: m[1], comment: (m[2] ?? '').trim() });
+      const comment = (m[2] ?? '').trim();
+      variables.push({ name: m[1], comment: INTERNAL_NOTE_RE.test(comment) ? '' : comment });
     }
   }
-  return vars;
+  return variables;
 }
 
 async function main() {
@@ -196,28 +279,40 @@ async function main() {
   const out = {};
   const warnings = [];
 
-  for (const c of COMPONENTS) {
+  for (const component of COMPONENTS) {
     let props = [];
-    if (c.propsType) {
-      const typeNode = findTypeByName(project, c.propsType);
+    if (Array.isArray(component.propsType)) {
+      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug).values()].sort(
+        (a, b) => a.name.localeCompare(b.name),
+      );
+    } else if (component.propsType) {
+      const typeNode = findTypeByName(project, component.propsType);
       if (typeNode) {
         props = [...collectProps(typeNode, byId).values()].sort((a, b) => a.name.localeCompare(b.name));
       } else {
-        warnings.push(`props type "${c.propsType}" not found for "${c.slug}"`);
+        warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
     }
-    out[c.slug] = { name: c.name, props, cssVariables: extractCssVariables(c.dir) };
+    out[component.slug] = { name: component.name, props, cssVariables: extractCssVariables(component.dir) };
   }
 
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
 
-  const summary = Object.entries(out).map(([s, v]) => `${s}: ${v.props.length} props, ${v.cssVariables.length} vars`);
+  const summary = Object.entries(out).map(([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`);
   console.log('✔ ui-api.json generated\n  ' + summary.join('\n  '));
-  if (warnings.length) console.warn('⚠ ' + warnings.join('\n⚠ '));
+
+  if (warnings.length > 0) {
+    // An unresolved props type means a rename/typo silently shipped an empty
+    // "no configurable props" page - fail the build instead of warning.
+    console.error('✗ ' + warnings.join('\n✗ '));
+    process.exitCode = 1;
+  }
 }
 
-main().catch((error) => {
+try {
+  await main();
+} catch (error) {
   console.error(error);
-  process.exit(1);
-});
+  process.exitCode = 1;
+}

@@ -4,7 +4,7 @@
 // TypeDoc. Mirrors the Overflow UI docs - required props first, no `?` marker.
 import data from '../../generated/ui-api.json';
 
-interface PropRow {
+interface PropertyRow {
   name: string;
   type: string;
   required: boolean;
@@ -13,7 +13,7 @@ interface PropRow {
 }
 
 const { slug } = Astro.props as { slug: string };
-const entry = (data as Record<string, { props: PropRow[] }>)[slug];
+const entry = (data as Record<string, { props: PropertyRow[] }>)[slug];
 const props = [...(entry?.props ?? [])].sort(
   (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
 );
@@ -24,23 +24,23 @@ const props = [...(entry?.props ?? [])].sort(
     <p>This component has no configurable props.</p>
   ) : (
     <dl class="props">
-      {props.map((prop) => (
+      {props.map((property) => (
         <div class="prop">
           <div class="prop-head">
-            <code class="prop-name">{prop.name}</code>
-            {prop.required && <span class="chip">required</span>}
+            <code class="prop-name">{property.name}</code>
+            {property.required && <span class="chip">required</span>}
           </div>
           <div class="meta">
             <span class="meta-label">Type</span>
-            <code>{prop.type}</code>
+            <code>{property.type}</code>
           </div>
-          {prop.default && (
+          {property.default && (
             <div class="meta">
               <span class="meta-label">Default</span>
-              <code>{prop.default}</code>
+              <code>{property.default}</code>
             </div>
           )}
-          {prop.description && <p class="prop-desc">{prop.description.replace(/\n/g, ' ')}</p>}
+          {property.description && <p class="prop-desc">{property.description.replaceAll('\n', ' ')}</p>}
         </div>
       ))}
     </dl>

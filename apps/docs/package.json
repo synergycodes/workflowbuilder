@@ -6,10 +6,10 @@
   "scripts": {
     "dev": "pnpm clean:typedoc && pnpm generate:ui-api && astro dev",
     "build": "pnpm clean:typedoc && pnpm generate:ui-api && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs && node scripts/copy-swa-config.mjs",
-    "generate:ui-api": "node scripts/generate-ui-api.mjs",
+    "generate:ui-api": "node scripts/generate-ui-api.mjs && node scripts/check-ui-component-coverage.mjs",
     "clean:typedoc": "node -e \"import('node:fs').then(fs => fs.rmSync('src/content/docs/api', { recursive: true, force: true }))\"",
     "preview": "astro preview",
-    "typecheck": "astro check",
+    "typecheck": "pnpm generate:ui-api && astro check",
     "format": "prettier --write --log-level silent \"**/*.astro\"",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix"

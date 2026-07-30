@@ -4,13 +4,13 @@
 // Overflow UI docs.
 import data from '../../generated/ui-api.json';
 
-interface CssVar {
+interface CssVariable {
   name: string;
   comment: string;
 }
 
 const { slug } = Astro.props as { slug: string };
-const entry = (data as Record<string, { cssVariables: CssVar[] }>)[slug];
+const entry = (data as Record<string, { cssVariables: CssVariable[] }>)[slug];
 const cssVariables = entry?.cssVariables ?? [];
 
 const isColor = (name: string) => /color|background|bg|shadow|stroke|fill/.test(name);
@@ -28,10 +28,10 @@ const groups = [
       {groups.map((group) => (
         <section class="group">
           <h3 class="group-label">{group.label}</h3>
-          {group.vars.map((cssVar) => (
+          {group.vars.map((cssVariable) => (
             <div class="var">
-              <code>{cssVar.name}</code>
-              {cssVar.comment && <span class="note">{cssVar.comment}</span>}
+              <code>{cssVariable.name}</code>
+              {cssVariable.comment && <span class="note">{cssVariable.comment}</span>}
             </div>
           ))}
         </section>
