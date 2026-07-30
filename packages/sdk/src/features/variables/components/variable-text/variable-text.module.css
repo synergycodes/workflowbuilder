@@ -131,7 +131,12 @@ body:has(.suggestionsContainer) {
     z-index: 200;
   }
 
-  &:has(:global(.base-Modal-root))::before {
+  /* Suppress this backdrop when a modal is also open — the modal has its
+     own backdrop, and `wb-modal-open` (toggled on <body> by ModalProvider
+     whenever the SDK's modal store is open) is the stable "a modal is
+     open" signal; the old MUI/Mantine modal root class it used to key off
+     no longer exists in the Base UI modal. */
+  &:global(.wb-modal-open)::before {
     display: none;
   }
 }

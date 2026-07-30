@@ -93,9 +93,12 @@
   }
 }
 
-/* Shows date picker over modal */
-body:has(.base-Modal-root) {
-  .mantine-Popover-dropdown {
-    z-index: 1001 !important;
-  }
+/* Shows date picker (and any other Base UI popover) over an open modal.
+   `.wb-modal-open` is toggled on <body> by ModalProvider whenever the SDK's
+   modal store is open; `[data-open]` is Base UI's own "popup is open" data
+   attribute, present on Popover.Popup/Menu.Popup/Select.Popup/etc. while
+   visible. Without this, a popover opened from inside a modal (e.g. the
+   DatePicker calendar) renders behind the modal's stacking context. */
+body.wb-modal-open [data-open] {
+  z-index: 1002 !important;
 }
