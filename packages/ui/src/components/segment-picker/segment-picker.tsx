@@ -22,7 +22,7 @@ export type SegmentPickerPropsBase = {
    * (default) - Items stretch to fill the container equally.
    * 'circle' - Items fit tightly around their content to maintain a circular shape.
    * Only supported when items contain icons only.
-   * @default ''
+   * @default 'default'
    */
   shape?: Shape;
   className?: string;
