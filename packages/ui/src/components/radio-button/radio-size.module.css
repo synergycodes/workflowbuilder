@@ -8,32 +8,34 @@
   --ax-public-radio-dot-size-extra-small: 0.5rem /* missing token */;
 }
 
-.medium {
-  width: var(--ax-public-radio-size-medium);
-  height: var(--ax-public-radio-size-medium);
+@layer ui.component {
+  .medium {
+    width: var(--ax-public-radio-size-medium);
+    height: var(--ax-public-radio-size-medium);
 
-  &::after {
-    width: var(--ax-public-radio-dot-size-medium);
-    height: var(--ax-public-radio-dot-size-medium);
+    &::after {
+      width: var(--ax-public-radio-dot-size-medium);
+      height: var(--ax-public-radio-dot-size-medium);
+    }
   }
-}
 
-.small {
-  width: var(--ax-public-radio-size-small);
-  height: var(--ax-public-radio-size-small);
+  .small {
+    width: var(--ax-public-radio-size-small);
+    height: var(--ax-public-radio-size-small);
 
-  &::after {
-    width: var(--ax-public-radio-dot-size-small);
-    height: var(--ax-public-radio-dot-size-small);
+    &::after {
+      width: var(--ax-public-radio-dot-size-small);
+      height: var(--ax-public-radio-dot-size-small);
+    }
   }
-}
 
-.extra-small {
-  width: var(--ax-public-radio-size-extra-small);
-  height: var(--ax-public-radio-size-extra-small);
+  .extra-small {
+    width: var(--ax-public-radio-size-extra-small);
+    height: var(--ax-public-radio-size-extra-small);
 
-  &::after {
-    width: var(--ax-public-radio-dot-size-extra-small);
-    height: var(--ax-public-radio-dot-size-extra-small);
+    &::after {
+      width: var(--ax-public-radio-dot-size-extra-small);
+      height: var(--ax-public-radio-dot-size-extra-small);
+    }
   }
 }
