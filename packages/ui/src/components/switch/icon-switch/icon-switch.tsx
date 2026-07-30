@@ -6,7 +6,7 @@ import styles from './icon-switch.module.css';
 
 import { BaseSwitchProps, Switch } from '../switch';
 
-type IconSwitchProps = WithIcon & {
+export type IconSwitchProps = WithIcon & {
   IconChecked: ReactNode;
   variant?: Variant;
 } & BaseSwitchProps;

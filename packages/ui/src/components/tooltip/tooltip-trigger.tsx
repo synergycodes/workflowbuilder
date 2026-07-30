@@ -2,7 +2,7 @@ import { mergeProps } from '@base-ui/react/merge-props';
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
 import { ReactElement, cloneElement, forwardRef, isValidElement } from 'react';
 
-import { TOOLTIP_CLOSE_DELAY, TOOLTIP_OPEN_DELAY } from './tooltip';
+import { TOOLTIP_CLOSE_DELAY, TOOLTIP_OPEN_DELAY } from './tooltip-context';
 
 /**
  * Tooltips trigger is the the element that toggles the tooltip

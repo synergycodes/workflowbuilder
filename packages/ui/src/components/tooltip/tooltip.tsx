@@ -1,12 +1,10 @@
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
-import { ReactNode, createContext, useContext, useMemo } from 'react';
+import { ReactNode, useMemo } from 'react';
 
-import { type PlacementContextValue, type TooltipPlacement, placementToSideAlign } from './placement';
+import { type TooltipPlacement, placementToSideAlign } from './placement';
 import { TooltipContent } from './tooltip-content';
+import { TooltipPlacementProvider } from './tooltip-context';
 import { TooltipTrigger } from './tooltip-trigger';
-
-export const TOOLTIP_OPEN_DELAY = 500;
-export const TOOLTIP_CLOSE_DELAY = 0;
 
 export type { TooltipPlacement } from './placement';
 
@@ -29,15 +27,6 @@ export type TooltipOptions = {
   onOpenChange?: (open: boolean) => void;
 };
 
-const TooltipPlacementContext = createContext<PlacementContextValue>({
-  side: 'bottom',
-  align: 'center',
-});
-
-export function useTooltipPlacement(): PlacementContextValue {
-  return useContext(TooltipPlacementContext);
-}
-
 type Props = {
   /**
    * Tooltip reference element.
@@ -55,7 +44,7 @@ export function Tooltip({ children, initialOpen, placement = 'bottom', open, onO
   const placementValue = useMemo(() => placementToSideAlign(placement), [placement]);
 
   return (
-    <TooltipPlacementContext.Provider value={placementValue}>
+    <TooltipPlacementProvider value={placementValue}>
       <BaseTooltip.Root
         defaultOpen={initialOpen}
         open={open}
@@ -72,7 +61,7 @@ export function Tooltip({ children, initialOpen, placement = 'bottom', open, onO
       >
         {children}
       </BaseTooltip.Root>
-    </TooltipPlacementContext.Provider>
+    </TooltipPlacementProvider>
   );
 }
 

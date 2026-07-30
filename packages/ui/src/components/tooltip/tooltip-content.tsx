@@ -4,7 +4,7 @@ import { forwardRef } from 'react';
 
 import styles from './tooltip.module.css';
 
-import { useTooltipPlacement } from './tooltip';
+import { useTooltipPlacement } from './tooltip-context';
 import { TooltipVariant } from './types';
 
 const TOOLTIP_OFFSET = 10;

@@ -23,7 +23,7 @@ function useCollapsibleContext() {
   console.error('<Collapsible.Button> and <Collapsible.Content> must be used within <Collapsible>');
 }
 
-type CollapsibleProps = {
+export type CollapsibleProps = {
   children: ReactNode;
   isExpanded?: boolean;
   defaultExpanded?: boolean;

@@ -35,7 +35,7 @@ const componentEntries = [
   'tooltip',
 ] as const;
 
-const externalPackages = ['@base-ui/react', 'react-textarea-autosize'];
+const externalPackages = ['@base-ui/react', '@phosphor-icons/react', 'react-textarea-autosize'];
 const externalModules = new Set(['react', 'react-dom', 'react/jsx-runtime']);
 
 function getEntries(): Record<string, string> {

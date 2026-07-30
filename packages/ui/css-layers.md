@@ -1,6 +1,6 @@
 # CSS layers
 
-Overflow UI emits all of its styles into two ordered cascade layers:
+`@workflowbuilder/ui` emits all of its styles into two ordered cascade layers:
 
 ```css
 @layer ui.base, ui.component;
