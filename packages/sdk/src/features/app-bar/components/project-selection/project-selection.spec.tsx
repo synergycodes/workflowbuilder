@@ -1,11 +1,11 @@
-import type { MenuItemProps } from '@synergycodes/overflow-ui';
 import { fireEvent, render, screen } from '@testing-library/react';
+import type { MenuItemProps } from '@workflowbuilder/ui';
 import { describe, expect, it, vi } from 'vitest';
 
 // Render the menu's `items` inline so we can assert on them without driving the
-// real overflow-ui popover. The component also imports Input/NavButton, so the
+// real menu popover. The component also imports Input/NavButton, so the
 // mock must expose them too.
-vi.mock('@synergycodes/overflow-ui', () => ({
+vi.mock('@workflowbuilder/ui', () => ({
   Menu: ({ items }: { items: MenuItemProps[] }) => (
     <ul>
       {items.map((item) => (
