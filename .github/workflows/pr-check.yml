@@ -2,9 +2,10 @@ name: PR Check
 
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Focus on the published packages @workflowbuilder/sdk and
-# @workflowbuilder/ui + global format consistency. Other workspaces (apps/docs,
-# demo, ai-studio, …) are not checked here — they're internal and have their
-# own broken-state tolerances (e.g. starlight virtual-module type errors).
+# @workflowbuilder/ui (plus its private @workflowbuilder/ui-tokens build) +
+# global format consistency. Other workspaces (apps/docs, demo, ai-studio, …)
+# are not checked here — they're internal and have their own broken-state
+# tolerances (e.g. starlight virtual-module type errors).
 
 on:
   pull_request:
@@ -100,7 +101,7 @@ jobs:
         run: npm run build
 
   ui:
-    name: UI lint + typecheck + test + build
+    name: UI + UI tokens lint + typecheck + test + build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -121,6 +122,15 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
+
+      - name: Lint tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens lint
+
+      - name: Typecheck tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens typecheck
+
+      - name: Test tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens test
 
       - name: Lint
         run: pnpm --filter @workflowbuilder/ui lint

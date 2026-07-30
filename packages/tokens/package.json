@@ -9,6 +9,8 @@
   "scripts": {
     "build": "tsx src/index.ts",
     "prepare": "tsx src/index.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
     "test": "vitest run"
   },
   "devDependencies": {
