@@ -25,9 +25,24 @@ validated `1.4.x` line), is a regular dependency and installs automatically.
 
 ## Styles
 
-The library ships its CSS as separate entry points. Import the global stylesheet
-**first** so the cascade-layer order is established before any component rule, then
-the design tokens:
+Importing a component from the package root injects that component's CSS
+automatically, including the layer order (`@layer ui.base, ui.component`),
+reset, and typography classes - so the only thing left to add is the design
+tokens:
+
+```ts
+// Design tokens (the `--ax-*` custom properties).
+import '@workflowbuilder/ui/tokens.css';
+```
+
+```tsx
+import { Button } from '@workflowbuilder/ui';
+```
+
+Need only one component's styles without the others? Import the per-component
+subpath instead. That only injects the component's own CSS, so import the
+global stylesheet once, **before any component**, to establish the cascade-layer
+order, plus the tokens:
 
 ```ts
 // Layer order (`@layer ui.base, ui.component`), reset, and typography classes.
@@ -35,16 +50,6 @@ import '@workflowbuilder/ui/styles.css';
 // Design tokens (the `--ax-*` custom properties).
 import '@workflowbuilder/ui/tokens.css';
 ```
-
-Importing a component from the package root injects that component's CSS
-automatically, so the imports above are all the global setup you need:
-
-```tsx
-import { Button } from '@workflowbuilder/ui';
-```
-
-Need only one component's styles without the others? Import the per-component
-subpath and add `styles.css` once for the layer order:
 
 ```tsx
 import { DatePicker } from '@workflowbuilder/ui/date-picker';
