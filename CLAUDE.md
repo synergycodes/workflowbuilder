@@ -71,6 +71,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | ------------------------- | ------------------------------------------------------- |
 | `packages/sdk`            | `packages/sdk/README.md`                                |
 | `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
+| `packages/tokens`         | `packages/tokens/README.md`                             |
 | `packages/execution-core` | `packages/execution-core/README.md`                     |
 | `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
 | `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
@@ -97,14 +98,14 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 
 ## Code Quality
 
-| Tool       | Command                       | Notes                                                     |
-| ---------- | ----------------------------- | --------------------------------------------------------- |
-| ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                     |
-| Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports` |
-| TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                             |
-| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                       |
-| Vitest     | `pnpm test`                   | Runs in `packages/sdk` and `packages/execution-core`      |
-| Full check | `pnpm check`                  | Run before PR                                             |
+| Tool       | Command                       | Notes                                                                                   |
+| ---------- | ----------------------------- | --------------------------------------------------------------------------------------- |
+| ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                   |
+| Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                               |
+| TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                           |
+| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                                                     |
+| Vitest     | `pnpm test`                   | Runs in `packages/sdk`, `packages/execution-core`, `packages/ui`, and `packages/tokens` |
+| Full check | `pnpm check`                  | Run before PR                                                                           |
 
 ## Getting Started
 
