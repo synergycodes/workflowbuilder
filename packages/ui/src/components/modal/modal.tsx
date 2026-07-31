@@ -10,7 +10,10 @@ import styles from './modal.module.css';
 import type { FooterVariant } from './types';
 
 export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> &
-  Partial<WithIcon> & {
+  // Plain WithIcon, not Partial<WithIcon>: `icon` is already optional there, and
+  // the generator's collectProps doesn't unwrap mapped types - Partial would
+  // silently drop `icon` from the docs Props table.
+  WithIcon & {
     /**
      * Title displayed in the modal header
      */
