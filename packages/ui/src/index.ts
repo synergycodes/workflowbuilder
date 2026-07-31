@@ -26,3 +26,4 @@ export * from './components/tooltip';
 // Shared types
 export * from './shared/types/size';
 export * from './shared/types/item-size';
+export * from './shared/types/with-icon';
