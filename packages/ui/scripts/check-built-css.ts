@@ -22,6 +22,8 @@ import { globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import postcss, { type ChildNode } from 'postcss';
+
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const distributionDirectory = path.resolve(currentDirectory, '../dist');
 
@@ -85,95 +87,47 @@ const ALLOWLISTED_FILES = new Set(['tokens.css', 'numerals-mode-1.css', 'primiti
  * root `index.css`, etc.) - CSS-module hashes in the scoping prefix change
  * between builds, a fixed selector list would not.
  */
-const isDeliberateDatePickerOverride = (selector: string): boolean => selector.includes('rdp-');
+const isDeliberateDatePickerOverride = (header: string): boolean => header.includes('rdp-');
 
-/** Skips a balanced `{ ... }` body (as well as quoted strings inside it) and returns the index just past the closing `}`. */
-function skipBlock(content: string, openBraceIndex: number): number {
-  let depth = 1;
-  let cursor = openBraceIndex + 1;
-  while (cursor < content.length && depth > 0) {
-    const char = content[cursor];
-    switch (char) {
-      case "'":
-      case '"': {
-        const quote = char;
-        cursor++;
-        while (cursor < content.length && content[cursor] !== quote) {
-          if (content[cursor] === '\\') cursor++;
-          cursor++;
+function hitFor(node: ChildNode): Hit {
+  const start = node.source?.start;
+  return {
+    line: start?.line ?? 0,
+    column: start?.column ?? 0,
+    snippet: node.toString().slice(0, 60).replaceAll(/\s+/g, ' '),
+  };
+}
+
+function findTopLevelViolations(content: string): Hit[] {
+  const hits: Hit[] = [];
+
+  for (const node of postcss.parse(content).nodes) {
+    switch (node.type) {
+      case 'atrule': {
+        // `@layer name { ... }` establishes a layer (everything inside is layered by
+        // definition) and `@layer a, b;` / `@charset` / `@import` statements carry no
+        // rules of their own.
+        const isStatement = node.nodes === undefined;
+        if (node.name === 'layer' || isStatement || isDeliberateDatePickerOverride(node.params)) break;
+        hits.push(hitFor(node));
+        break;
+      }
+      case 'rule': {
+        if (isDeliberateDatePickerOverride(node.selector)) break;
+        // Top-level `:root` blocks are the repo-wide convention for declaring design
+        // tokens; custom properties don't compete in the cascade the way normal
+        // declarations do, so they're exempt - but only as long as that's ALL they hold.
+        if (node.selector === ':root') {
+          hits.push(...node.nodes.filter((child) => child.type !== 'decl' || !child.prop.startsWith('--')).map(hitFor));
+          break;
         }
-        break;
-      }
-      case '{': {
-        depth++;
-        break;
-      }
-      case '}': {
-        depth--;
+        hits.push(hitFor(node));
         break;
       }
       default: {
         break;
       }
     }
-    cursor++;
-  }
-  return cursor;
-}
-
-function findTopLevelViolations(content: string): Hit[] {
-  const hits: Hit[] = [];
-  // Comments never carry rules of their own; blank them out (preserving length and
-  // newlines) so they can't be mistaken for a selector or interfere with offsets.
-  const source = content.replaceAll(/\/\*[\s\S]*?\*\//g, (match) => match.replaceAll(/[^\n]/g, ' '));
-  const length = source.length;
-  let cursor = 0;
-
-  while (cursor < length) {
-    const char = source[cursor];
-    if (/\s/.test(char)) {
-      cursor++;
-      continue;
-    }
-
-    if (char === '@') {
-      const nameMatch = /^@[\w-]+/.exec(source.slice(cursor));
-      const atRuleName = nameMatch ? nameMatch[0] : '@';
-      let headerEnd = cursor;
-      while (headerEnd < length && source[headerEnd] !== '{' && source[headerEnd] !== ';') headerEnd++;
-
-      if (source[headerEnd] === ';') {
-        // A statement, e.g. the `@layer ui.base, ui.component;` order declaration - no body to check.
-        cursor = headerEnd + 1;
-        continue;
-      }
-
-      if (source[headerEnd] === '{') {
-        const header = source.slice(cursor, headerEnd).trim();
-        const blockEnd = skipBlock(source, headerEnd);
-        // `@layer name { ... }` establishes a layer - everything inside is layered by
-        // definition, so it's out of scope for this check (its contents are still
-        // reachable directly by consumers, but that's the CSS-module scoping's job).
-        if (atRuleName !== '@layer' && !isDeliberateDatePickerOverride(header)) {
-          hits.push({ ...locate(content, cursor), snippet: snippetAt(content, cursor) });
-        }
-        cursor = blockEnd;
-        continue;
-      }
-
-      // Malformed/unterminated at-rule; nothing more to scan.
-      break;
-    }
-
-    const openBrace = source.indexOf('{', cursor);
-    if (openBrace === -1) break;
-    const selector = source.slice(cursor, openBrace).trim();
-    const blockEnd = skipBlock(source, openBrace);
-
-    if (selector !== ':root' && !isDeliberateDatePickerOverride(selector)) {
-      hits.push({ ...locate(content, cursor), snippet: snippetAt(content, cursor) });
-    }
-    cursor = blockEnd;
   }
 
   return hits;
