@@ -16,6 +16,10 @@
     width: 100%;
     min-width: 100px;
     align-items: center;
+    /* Push the caret to the far edge: Base UI's Select.Value wraps the value in
+       an inline span, so the inner container's width:100% resolves against that
+       span and cannot stretch - without this, the caret hugs the text. */
+    justify-content: space-between;
     background-color: transparent;
     cursor: pointer;
 
