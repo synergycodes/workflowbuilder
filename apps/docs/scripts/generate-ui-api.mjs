@@ -8,8 +8,8 @@
  * and as a prebuild step in `dev` / `build`.
  */
 import { execFile } from 'node:child_process';
-import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { globSync, readFileSync } from 'node:fs';
+import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -37,7 +37,12 @@ const COMPONENTS = [
   // Button has no single public props type - it renders one of three variant
   // components depending on `children` (label / icon / icon+label). Merge
   // their prop sets instead of documenting only the shared base.
-  { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'], dir: 'button' },
+  {
+    slug: 'button',
+    name: 'Button',
+    propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'],
+    dir: 'button',
+  },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
@@ -58,8 +63,18 @@ const COMPONENTS = [
   // Diagram components (props extracted the same way; NodePanel is a compound
   // component documented narratively, so it has no flat props entry here).
   { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },
-  { slug: 'node-description', name: 'NodeDescription', propsType: 'NodeDescriptionProps', dir: 'node/node-description' },
-  { slug: 'node-as-port-wrapper', name: 'NodeAsPortWrapper', propsType: 'NodeAsPortWrapperProps', dir: 'node/node-as-port-wrapper' },
+  {
+    slug: 'node-description',
+    name: 'NodeDescription',
+    propsType: 'NodeDescriptionProps',
+    dir: 'node/node-description',
+  },
+  {
+    slug: 'node-as-port-wrapper',
+    name: 'NodeAsPortWrapper',
+    propsType: 'NodeAsPortWrapperProps',
+    dir: 'node/node-as-port-wrapper',
+  },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
 ];
 
@@ -69,17 +84,31 @@ async function runTypedoc() {
   await promisify(execFile)(
     bin,
     [
-      '--json', tdJson,
+      '--json',
+      tdJson,
       // `expand` over the whole components tree (rather than resolving just
       // `index.ts`'s re-exports) so that per-variant prop types like
       // LabelButtonProps/IconButtonProps/IconLabelButtonProps - not
       // individually re-exported from the package barrel, only reachable
       // through the Button component's overloaded signature - still get a
       // full type reflection collectVariantProps can look up by name.
-      '--entryPoints', path.resolve(uiSource, 'components'),
-      '--entryPointStrategy', 'expand',
-      '--tsconfig', path.resolve(repoRoot, 'packages/ui/tsconfig.json'),
-      '--excludeExternals', '--excludePrivate', '--skipErrorChecking', '--logLevel', 'Error',
+      '--entryPoints',
+      path.resolve(uiSource, 'components'),
+      // `shared` must be an entry too: helper prop types like WithIcon live
+      // there, and a type outside the entry tree gets no reflection - its
+      // intersection members (e.g. Accordion/Modal's `icon`) silently vanish
+      // from the generated tables.
+      '--entryPoints',
+      path.resolve(uiSource, 'shared'),
+      '--entryPointStrategy',
+      'expand',
+      '--tsconfig',
+      path.resolve(repoRoot, 'packages/ui/tsconfig.json'),
+      '--excludeExternals',
+      '--excludePrivate',
+      '--skipErrorChecking',
+      '--logLevel',
+      'Error',
     ],
     { cwd: repoRoot, maxBuffer: 64 * 1024 * 1024 },
   );
@@ -109,55 +138,80 @@ function findTypeByName(root, name) {
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
   switch (t.type) {
-    case 'intrinsic': { return t.name;
+    case 'intrinsic': {
+      return t.name;
     }
-    case 'literal': { return typeof t.value === 'string' ? `'${t.value}'` : String(t.value);
+    case 'literal': {
+      return typeof t.value === 'string' ? `'${t.value}'` : String(t.value);
     }
     case 'reference': {
-      const arguments_ = t.typeArguments?.length ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>` : '';
+      const arguments_ = t.typeArguments?.length
+        ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>`
+        : '';
       return `${t.name}${arguments_}`;
     }
-    case 'union': { return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
+    case 'union': {
+      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
     }
-    case 'intersection': { return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
+    case 'intersection': {
+      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
     }
-    case 'array': { return `${typeToString(t.elementType, byId, depth + 1)}[]`;
+    case 'array': {
+      return `${typeToString(t.elementType, byId, depth + 1)}[]`;
     }
-    case 'tuple': { return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
+    case 'tuple': {
+      return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
     }
     case 'reflection': {
       const sig = t.declaration?.signatures?.[0];
       if (sig) {
-        const params = (sig.parameters ?? []).map((p) => `${p.name}: ${typeToString(p.type, byId, depth + 1)}`).join(', ');
+        const params = (sig.parameters ?? [])
+          .map((p) => `${p.name}: ${typeToString(p.type, byId, depth + 1)}`)
+          .join(', ');
         return `(${params}) => ${typeToString(sig.type, byId, depth + 1)}`;
       }
       return '{ … }';
     }
-    case 'indexedAccess': { return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
+    case 'indexedAccess': {
+      return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
-    case 'templateLiteral': { return 'string';
+    case 'templateLiteral': {
+      return 'string';
     }
-    case 'query': { return typeToString(t.queryType, byId, depth + 1);
+    case 'query': {
+      return typeToString(t.queryType, byId, depth + 1);
     }
-    case 'predicate': { return 'boolean';
+    case 'predicate': {
+      return 'boolean';
     }
-    case 'typeOperator': { return `${t.operator} ${typeToString(t.target, byId, depth + 1)}`;
+    case 'typeOperator': {
+      return `${t.operator} ${typeToString(t.target, byId, depth + 1)}`;
     }
-    default: { return t.name ?? 'unknown';
+    default: {
+      return t.name ?? 'unknown';
     }
   }
 }
 
 function summaryText(comment) {
   if (!comment?.summary) return '';
-  return comment.summary.map((s) => s.text).join('').trim();
+  return comment.summary
+    .map((s) => s.text)
+    .join('')
+    .trim();
 }
 
 function defaultTag(comment) {
   const tag = (comment?.blockTags ?? []).find((b) => b.tag === '@default' || b.tag === '@defaultValue');
   if (!tag) return null;
-  let value = tag.content.map((c) => c.text).join('').trim();
-  value = value.replace(/^```[a-z]*\s*/i, '').replace(/\s*```$/, '').trim(); // strip ```ts … ``` fences
+  let value = tag.content
+    .map((c) => c.text)
+    .join('')
+    .trim();
+  value = value
+    .replace(/^```[a-z]*\s*/i, '')
+    .replace(/\s*```$/, '')
+    .trim(); // strip ```ts … ``` fences
   value = value.replaceAll(/^`+|`+$/g, '').trim(); // strip inline backticks
   return value || null;
 }
@@ -299,7 +353,9 @@ async function main() {
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
 
-  const summary = Object.entries(out).map(([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`);
+  const summary = Object.entries(out).map(
+    ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
+  );
   console.log('✔ ui-api.json generated\n  ' + summary.join('\n  '));
 
   if (warnings.length > 0) {
