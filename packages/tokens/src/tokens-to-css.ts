@@ -1,45 +1,21 @@
 import { register } from '@tokens-studio/sd-transforms';
 import StyleDictionary, { Config, TransformedToken } from 'style-dictionary';
 
-import { config } from '../config';
-import { OUTPUT_DIR, TOKEN_OUTPUT_DIR } from './constants';
-import { toFileName } from './to-file-name';
-
-const { primitives, themes } = config;
+import { OUTPUT_DIR } from './constants';
+import { Manifest, TokenSetEntry } from './types';
 
 register(StyleDictionary);
 
-export async function tokensToCss() {
-  const primitiveSourceMap = createPrimitiveSourceMap();
-
-  await processPrimitiveTokens(primitiveSourceMap);
-  await processThemeTokens(primitiveSourceMap);
+export async function tokensToCss(manifest: Manifest) {
+  await processPrimitiveTokens(manifest.primitives);
+  await processThemeTokens(manifest);
 }
 
-function createPrimitiveSourceMap(): Map<string, string> {
-  const sourceMap = new Map();
-  for (const tokenSet of primitives) {
-    sourceMap.set(tokenSet, `${TOKEN_OUTPUT_DIR}${tokenSet}.json`);
-  }
-
-  return sourceMap;
-}
-
-async function processPrimitiveTokens(primitiveSourceMap: Map<string, string>): Promise<void> {
+async function processPrimitiveTokens(primitives: TokenSetEntry[]): Promise<void> {
   for (const primitive of primitives) {
-    const themeName = toFileName(primitive);
-    const sourcePath = primitiveSourceMap.get(primitive);
-
-    if (!sourcePath) {
-      console.warn(`Source path not found for primitive: ${primitive}`);
-      continue;
-    }
-
-    const source = [sourcePath];
-
     const config = createSDConfig({
-      name: themeName,
-      source,
+      fileName: primitive.fileName,
+      source: [primitive.jsonPath],
     });
 
     const styleDictionary = new StyleDictionary(config);
@@ -47,17 +23,15 @@ async function processPrimitiveTokens(primitiveSourceMap: Map<string, string>): 
   }
 }
 
-async function processThemeTokens(primitiveSourceMap: Map<string, string>): Promise<void> {
-  for (const { name, selector } of themes) {
-    const themeName = toFileName(name);
-    const primitiveSources = [...primitiveSourceMap.values()];
-    const source = [...primitiveSources, `${TOKEN_OUTPUT_DIR}${name}.json`];
+async function processThemeTokens({ primitives, themes }: Manifest): Promise<void> {
+  const primitiveSources = primitives.map((primitive) => primitive.jsonPath);
 
+  for (const theme of themes) {
     const config = createSDConfig({
-      name: themeName,
-      source,
-      selector,
-      filter: (token) => !primitives.some((primitive) => token.filePath.includes(primitive)),
+      fileName: theme.fileName,
+      source: [...primitiveSources, theme.jsonPath],
+      selector: theme.selector,
+      filter: (token) => !primitives.some((primitive) => token.filePath.includes(primitive.fileName)),
     });
 
     const styleDictionary = new StyleDictionary(config);
@@ -65,7 +39,7 @@ async function processThemeTokens(primitiveSourceMap: Map<string, string>): Prom
   }
 }
 
-function createSDConfig({ name, selector, source, filter }: SDConfigParams) {
+function createSDConfig({ fileName, selector, source, filter }: SDConfigParams) {
   return {
     source,
     preprocessors: ['tokens-studio'],
@@ -80,7 +54,7 @@ function createSDConfig({ name, selector, source, filter }: SDConfigParams) {
         },
         files: [
           {
-            destination: `${name}.css`,
+            destination: `${fileName}.css`,
             filter,
             format: 'css/variables',
           },
@@ -92,7 +66,7 @@ function createSDConfig({ name, selector, source, filter }: SDConfigParams) {
 }
 
 type SDConfigParams = {
-  name: string;
+  fileName: string;
   source: string[];
   selector?: string;
   filter?: (token: TransformedToken) => boolean;
@@ -102,6 +76,8 @@ const logOptions = {
   warnings: 'disabled', // 'warn' | 'error' | 'disabled'
   verbosity: 'verbose', // 'default' | 'silent' | 'verbose'
   errors: {
-    brokenReferences: 'console', // 'throw' | 'console'
+    // A dangling reference has no legitimate case - fail the build instead of
+    // shipping CSS with literal `{token.path}` values the browser discards.
+    brokenReferences: 'throw', // 'throw' | 'console'
   },
 } satisfies Config['log'];

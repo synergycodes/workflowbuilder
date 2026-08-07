@@ -1,32 +1,17 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
-import { config } from '../config';
-import { Theme } from './types';
+import { OUTPUT_DIR } from './constants';
+import { Manifest } from './types';
 
-const { primitives, themes } = config;
+/**
+ * Composes `dist/tokens.css` as a fully self-contained stylesheet: primitives
+ * and themes are inlined, never `@import`-ed. The file must survive being
+ * copied out alone (public/ dirs, CDNs, constructed stylesheets ignore
+ * `@import`) - a relative import would break silently there.
+ */
+export async function generateCSSBundle({ primitives, themes }: Manifest) {
+  const sources = [...primitives, ...themes];
+  const chunks = await Promise.all(sources.map(({ cssPath }) => readFile(cssPath, 'utf8')));
 
-export async function generateCSSBundle() {
-  // Local to the call so repeated invocations in one process don't accumulate.
-  const codeChunks: string[] = [];
-
-  for (const primitive of primitives) {
-    codeChunks.push(createPrimitiveImport(primitive));
-  }
-
-  for (const theme of themes) {
-    codeChunks.push(await createThemeImport(theme));
-  }
-
-  const code = codeChunks.join('\n\n');
-
-  return writeFile('./dist/tokens.css', code);
-}
-
-function createPrimitiveImport(name: string) {
-  return `@import "./${name}.css";`;
-}
-
-async function createThemeImport({ name }: Theme) {
-  const css = await readFile(`./dist/${name}.css`);
-  return css.toString();
+  return writeFile(`${OUTPUT_DIR}tokens.css`, chunks.join('\n'));
 }

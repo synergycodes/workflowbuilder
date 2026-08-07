@@ -1,11 +1,10 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
 
 import tokens from '../tokens.json';
 import { TOKEN_OUTPUT_DIR } from './constants';
-import { toFileName } from './to-file-name';
+import { Manifest } from './types';
 
-export function ejectTokens(): void {
+export function ejectTokens({ primitives, themes }: Manifest): void {
   // No try/catch on purpose: this is a build step whose only product is correct
   // token JSON. A write failure must abort the build (non-zero exit) instead of
   // letting tokensToCss() run against missing/stale files and emit broken CSS.
@@ -13,16 +12,10 @@ export function ejectTokens(): void {
     mkdirSync(TOKEN_OUTPUT_DIR, { recursive: true });
   }
 
-  // Filter out tokens metadata to get themes
-  const themes = Object.entries(tokens).filter(([name]) => !name.startsWith('$'));
+  for (const entry of [...primitives, ...themes]) {
+    const tokenSet = (tokens as Record<string, unknown>)[entry.key];
 
-  for (const [name, theme] of themes) {
-    const fileName = toFileName(name);
-
-    const outputFilePath = path.join(TOKEN_OUTPUT_DIR, `${fileName}.json`);
-    console.log(outputFilePath);
-
-    // Write the property value to a new JSON file
-    writeFileSync(outputFilePath, JSON.stringify(theme, null, 2), 'utf8');
+    console.log(entry.jsonPath);
+    writeFileSync(entry.jsonPath, JSON.stringify(tokenSet, null, 2), 'utf8');
   }
 }
