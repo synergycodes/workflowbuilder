@@ -31,6 +31,23 @@ describe('postcss-box-sizing', () => {
     expect(output).not.toContain('box-sizing');
   });
 
+  it('never touches @keyframes steps nested inside styling at-rules', async () => {
+    const output = await run(
+      '@layer ui.component { @media (min-width: 1px) { @keyframes flash { 0% { opacity: 0 } } } }',
+    );
+    expect(output).not.toContain('box-sizing');
+  });
+
+  it('never touches vendor-prefixed @keyframes steps', async () => {
+    const output = await run('@-webkit-keyframes flash { 0% { opacity: 0 } }');
+    expect(output).not.toContain('box-sizing');
+  });
+
+  it('skips :root also when grouped or qualified', async () => {
+    const output = await run(":root, .fallback { --x: 1px }\n:root[data-theme='dark'] { --y: 2px }");
+    expect(output).not.toContain('box-sizing');
+  });
+
   it('skips at-rules outside the styling allowlist', async () => {
     const output = await run('@starting-style { .button { opacity: 0 } }');
     expect(output).not.toContain('box-sizing');

@@ -8,6 +8,11 @@
       "@ui/*": ["./src/*"]
     }
   },
-  "include": ["src", "types.d.ts"],
-  "exclude": ["node_modules", "dist"]
+  // The named root .mts build files and scripts/ are part of the program on
+  // purpose: they used to sit in a typecheck blind spot and shipped type
+  // errors. vite.config.mts stays out (its `.mts`-extension imports need
+  // allowImportingTsExtensions, and that flag stalls tsc on this program for
+  // minutes - same pathology as a *.spec.mts reaching vite-plugin-dts).
+  "include": ["src", "types.d.ts", "postcss-box-sizing.mts", "combine-css-bundle.mts", "scripts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.mts"]
 }

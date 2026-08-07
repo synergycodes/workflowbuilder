@@ -43,8 +43,12 @@ type FailureReport = { file: string; hits: Hit[] };
 
 // Single source of truth shared with combine-css-bundle.mts, which stamps this
 // statement into every built stylesheet.
-const layerOrderStatement = postcss.parse(readFileSync(path.resolve(packageDirectory, 'src/styles/layers.css'), 'utf8'))
-  .first as AtRule;
+const layerOrderStatement = postcss
+  .parse(readFileSync(path.resolve(packageDirectory, 'src/styles/layers.css'), 'utf8'))
+  .nodes.find((node): node is AtRule => node.type === 'atrule' && node.name === 'layer' && node.nodes === undefined);
+if (!layerOrderStatement) {
+  throw new Error('src/styles/layers.css must contain a bare `@layer a, b;` order statement');
+}
 const KNOWN_LAYERS = layerOrderStatement.params.split(',').map((name) => name.trim());
 const KNOWN_LAYER_SET = new Set(KNOWN_LAYERS);
 
@@ -105,6 +109,9 @@ function checkNoNestedVariable(files: string[]): FailureReport[] {
  * properties only) and predate/sit outside the `ui.base` / `ui.component`
  * contract documented in `css-layers.md` - they're meant to load before it.
  */
+// Exact dist-relative paths: the three token files live at the dist root. A
+// same-named file anywhere else (e.g. assets/tokens.css from a `tokens`
+// entry) gets NO exemption.
 const ALLOWLISTED_FILES = new Set(['tokens.css', 'numerals-mode-1.css', 'primitives-mode-1.css']);
 
 function findTopLevelViolations(content: string): Hit[] {
@@ -126,7 +133,11 @@ function findTopLevelViolations(content: string): Hit[] {
         // tokens; custom properties don't compete in the cascade the way normal
         // declarations do, so they're exempt - but only as long as that's ALL they hold.
         if (node.selector === ':root') {
-          hits.push(...node.nodes.filter((child) => child.type !== 'decl' || !child.prop.startsWith('--')).map(hitFor));
+          hits.push(
+            ...node.nodes
+              .filter((child) => child.type !== 'comment' && (child.type !== 'decl' || !child.prop.startsWith('--')))
+              .map(hitFor),
+          );
           break;
         }
         hits.push(hitFor(node));
@@ -145,7 +156,7 @@ function checkLayerCoverage(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
   for (const file of files) {
-    if (ALLOWLISTED_FILES.has(path.basename(file))) continue;
+    if (ALLOWLISTED_FILES.has(file)) continue;
 
     const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
     const hits = findTopLevelViolations(content);
@@ -174,7 +185,7 @@ function checkOrderStatementFirst(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
   for (const file of files) {
-    if (ALLOWLISTED_FILES.has(path.basename(file))) continue;
+    if (ALLOWLISTED_FILES.has(file)) continue;
 
     const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
     const first = postcss.parse(content).nodes.find((node) => node.type !== 'comment');
@@ -207,6 +218,19 @@ function checkKnownLayerNames(files: string[]): FailureReport[] {
 
 // --- Check 5: exported entrypoints exist, dist CSS is import-free --------------
 
+// Walks an exports-map value, collecting every string target ending in .css -
+// covers plain strings and conditional-export objects ({ import, require,
+// default, ... }) at any nesting depth.
+function collectCssTargets(value: unknown, into: string[]): void {
+  if (typeof value === 'string') {
+    if (value.endsWith('.css')) into.push(value);
+    return;
+  }
+  if (value && typeof value === 'object') {
+    for (const nested of Object.values(value)) collectCssTargets(nested, into);
+  }
+}
+
 function checkPublishedSurface(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
@@ -214,12 +238,16 @@ function checkPublishedSurface(files: string[]): FailureReport[] {
     exports?: Record<string, unknown>;
   };
   for (const [specifier, target] of Object.entries(packageJson.exports ?? {})) {
-    if (typeof target !== 'string' || !target.endsWith('.css')) continue;
-    if (!existsSync(path.resolve(packageDirectory, target))) {
-      failures.push({
-        file: target,
-        hits: [{ line: 0, column: 0, snippet: `missing file for exports["${specifier}"]` }],
-      });
+    const cssTargets: string[] = [];
+    collectCssTargets(target, cssTargets);
+
+    for (const cssTarget of cssTargets) {
+      if (!existsSync(path.resolve(packageDirectory, cssTarget))) {
+        failures.push({
+          file: cssTarget,
+          hits: [{ line: 0, column: 0, snippet: `missing file for exports["${specifier}"]` }],
+        });
+      }
     }
   }
 
@@ -233,9 +261,9 @@ function checkPublishedSurface(files: string[]): FailureReport[] {
   for (const file of files) {
     const hits: Hit[] = [];
 
-    postcss
-      .parse(readFileSync(path.resolve(distributionDirectory, file), 'utf8'))
-      .walkAtRules('import', (atRule) => hits.push(hitFor(atRule)));
+    postcss.parse(readFileSync(path.resolve(distributionDirectory, file), 'utf8')).walkAtRules('import', (atRule) => {
+      hits.push(hitFor(atRule));
+    });
 
     if (hits.length > 0) failures.push({ file, hits });
   }
