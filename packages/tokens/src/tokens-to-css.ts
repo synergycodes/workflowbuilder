@@ -1,4 +1,5 @@
 import { register } from '@tokens-studio/sd-transforms';
+import path from 'node:path';
 import StyleDictionary, { Config, TransformedToken } from 'style-dictionary';
 
 import { OUTPUT_DIR } from './constants';
@@ -31,7 +32,11 @@ async function processThemeTokens({ primitives, themes }: Manifest): Promise<voi
       fileName: theme.fileName,
       source: [...primitiveSources, theme.jsonPath],
       selector: theme.selector,
-      filter: (token) => !primitives.some((primitive) => token.filePath.includes(primitive.fileName)),
+      // Compare the source file's basename, not a substring of the whole path:
+      // a set whose kebab name happens to appear in the directory prefix
+      // (e.g. a set named 'Tokens' vs ./dist/tokens/) must not match.
+      filter: (token) =>
+        !primitives.some((primitive) => path.basename(token.filePath) === `${primitive.fileName}.json`),
     });
 
     const styleDictionary = new StyleDictionary(config);

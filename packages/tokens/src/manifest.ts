@@ -19,12 +19,21 @@ export function buildManifest(
 ): Manifest {
   const exportedSets = new Set(exportedKeys.filter((key) => !key.startsWith('$')));
 
-  const missing = [...primitives, ...themes.map((theme) => theme.set)].filter((key) => !exportedSets.has(key));
+  const requested = [...primitives, ...themes.map((theme) => theme.set)];
+
+  const missing = requested.filter((key) => !exportedSets.has(key));
   if (missing.length > 0) {
     throw new Error(
       `config.ts references ${missing.map((key) => `'${key}'`).join(', ')} ` +
         `but tokens.json exports: ${[...exportedSets].join(', ')}`,
     );
+  }
+
+  // A set listed twice (or in both groups) would make two builds race for the
+  // same output file - the second silently overwrites the first.
+  const duplicates = requested.filter((key, index) => requested.indexOf(key) !== index);
+  if (duplicates.length > 0) {
+    throw new Error(`config.ts lists ${[...new Set(duplicates)].map((key) => `'${key}'`).join(', ')} more than once`);
   }
 
   return {

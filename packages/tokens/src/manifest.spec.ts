@@ -34,6 +34,15 @@ describe('buildManifest', () => {
     ).toThrowError(/'Tokens\/Drak'.+tokens\.json exports: Primitives\/Mode 1/);
   });
 
+  it('rejects a set listed more than once, also across groups', () => {
+    expect(() =>
+      buildManifest(exportedKeys, {
+        primitives: ['Primitives/Mode 1'],
+        themes: [{ set: 'Primitives/Mode 1', selector: 'html' }],
+      }),
+    ).toThrowError(/'Primitives\/Mode 1'.+more than once/);
+  });
+
   it('does not treat $-metadata keys as exported sets', () => {
     expect(() =>
       buildManifest(exportedKeys, {
