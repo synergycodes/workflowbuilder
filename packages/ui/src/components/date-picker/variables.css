@@ -1,3 +1,8 @@
+/* react-day-picker's own stylesheet joins `ui.base`, so the `ui.component`
+   theming in date-picker.module.css beats it by layer order alone - no
+   specificity tricks, no load-order requirement. */
+@import 'react-day-picker/style.css' layer(ui.base);
+
 :root {
   --ax-public-date-picker-dropdown-background: var(--ax-ui-bg-primary-default);
   --ax-public-date-picker-dropdown-border-color: var(--ax-ui-stroke-primary-default);

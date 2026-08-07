@@ -6,12 +6,11 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { type DateRange, DayPicker, type Matcher } from 'react-day-picker';
 
 import styles from './date-picker.module.css';
+// variables.css also pulls react-day-picker's stylesheet into `ui.base` - without
+// it the calendar grid, month caption, and nav render unstyled.
 import './variables.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import inputSizeStyles from '@ui/shared/styles/input-size.module.css';
-// react-day-picker ships no styles of its own in v9 - this provides the calendar
-// grid, month caption, and nav layout. Without it the calendar renders unstyled.
-import 'react-day-picker/style.css';
 
 import { dayjsTokenToDateFns, isDateTuple, normalizeInitialValue } from './date-utils';
 import type { DatePickerProps, DatePickerType } from './types';
