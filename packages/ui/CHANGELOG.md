@@ -30,9 +30,10 @@ Workflow Builder SDK.
   components retheme cleanly.
 - **Multi-entry build** with per-component subpath exports
   (`@workflowbuilder/ui/<component>`). Importing from the package root injects
-  all required styles; subpath imports inject only that component's CSS (add
-  `@workflowbuilder/ui/styles.css` once for the global layer order, reset, and
-  typography).
+  all required styles; subpath imports inject only that component's CSS. Every
+  built stylesheet carries the `@layer` order statement, so import order never
+  affects the cascade; add `@workflowbuilder/ui/styles.css` once if you also
+  want the global reset and typography.
 - **Dependencies**: `react` / `react-dom` are the only peer dependencies.
   `@base-ui/react` (pinned to the validated `1.4.x` line) and
   `react-textarea-autosize` are regular dependencies; `date-fns`,

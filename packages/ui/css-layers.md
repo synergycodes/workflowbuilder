@@ -36,6 +36,13 @@ stylesheets ignore `@import` entirely.
 leading with the statement, uses an unknown layer name, or ships rules outside
 `@layer`.
 
+## box-sizing
+
+`box-sizing: border-box` is injected into every styling rule of every
+`*.module.css` at build time by `postcss-box-sizing.mts` - you will not find
+the declarations in source. Rationale and rejected alternatives:
+`postcss-box-sizing.decision-log.md`.
+
 ## Third-party CSS
 
 Stylesheets we don't author join `ui.base` at import time, e.g.
