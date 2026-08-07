@@ -46,9 +46,10 @@ import '@workflowbuilder/ui/tokens.css';
 
 > **Subpath imports.** You can also import a single component directly, e.g.
 > `import { DatePicker } from '@workflowbuilder/ui/date-picker'`. That
-> injects only the component's own CSS, so import the global stylesheet once and
-> **before any component**, so the cascade layers are ordered correctly:
-> `import '@workflowbuilder/ui/styles.css'`.
+> injects only the component's own CSS. Every stylesheet carries the cascade
+> layer order, so import order doesn't matter; add
+> `import '@workflowbuilder/ui/styles.css'` once if you also want the global
+> reset and typography.
 
 ### 🎛️ Apply the Theme
 
