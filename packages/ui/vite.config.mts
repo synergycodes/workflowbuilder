@@ -120,7 +120,10 @@ export default defineConfig({
     libInjectCss(),
     // Per-entry .d.ts; rollupTypes is intentionally off (incompatible with this
     // multi-entry setup, see vite-plugin-dts docs).
-    dts({ entryRoot: 'src', exclude: ['src/**/*.spec.{ts,tsx}'] }),
+    // Excluding specs is load-bearing: a spec that escapes the filter (e.g. a
+    // root-level *.spec.mts) drags vitest's type graph into the ts program and
+    // stalls the build for 15+ minutes with no output.
+    dts({ entryRoot: 'src', exclude: ['src/**/*.spec.{ts,tsx}', '*.spec.mts'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),
     ...(process.env.BUNDLE_STATS ? bundleStatsPlugins() : []),

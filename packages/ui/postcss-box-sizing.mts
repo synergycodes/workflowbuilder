@@ -1,10 +1,29 @@
-import type { Plugin } from 'postcss';
+import type { Plugin, Rule } from 'postcss';
 
 /**
- * PostCSS plugin that adds `box-sizing: border-box` to every rule
+ * PostCSS plugin that adds `box-sizing: border-box` to every styling rule
  * in CSS Module files (*.module.css). This ensures all library
  * components use border-box sizing without leaking styles to users.
  */
+
+// Inject only inside contexts we KNOW are plain styling (an allowlist, not a
+// @keyframes blocklist): CSS keeps adding new at-rules, and for an unknown one
+// a missed box-sizing is easy to spot, while a wrongly injected one
+// (e.g. inside @keyframes) silently becomes animated.
+const STYLING_CONTEXTS = new Set(['media', 'supports', 'container', 'layer']);
+
+const vendorless = (atRuleName: string): string => atRuleName.replace(/^-\w+-/, '');
+
+function isPlainStylingContext(rule: Rule): boolean {
+  for (let parent = rule.parent; parent && parent.type !== 'root'; parent = parent.parent) {
+    if (parent.type === 'rule') continue;
+    if (parent.type === 'atrule' && STYLING_CONTEXTS.has(vendorless(parent.name))) continue;
+    return false;
+  }
+
+  return true;
+}
+
 export function boxSizingPlugin(): Plugin {
   return {
     postcssPlugin: 'postcss-box-sizing',
@@ -16,6 +35,7 @@ export function boxSizingPlugin(): Plugin {
 
           root.walkRules((rule) => {
             if (rule.selector === ':root') return;
+            if (!isPlainStylingContext(rule)) return;
 
             const hasDeclarations = rule.nodes?.some(
               (node) => node.type === 'decl',
