@@ -1,6 +1,6 @@
 # Workflow Builder — Starter
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2FApp.tsx)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2Fapp.tsx)
 
 A minimal, one-click example of [Workflow Builder](https://www.workflowbuilder.io/): a
 React + TypeScript + Vite app that embeds the `@workflowbuilder/sdk` editor.

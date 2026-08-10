@@ -20,7 +20,7 @@ Drag-and-drop workflow builder UI with a reference back-end and an execution eng
 
 [Try it live ->](https://app.workflowbuilder.io/)
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2FApp.tsx)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2Fapp.tsx)
 
 Used in production by teams including [Vercom](https://www.workflowbuilder.io/case-study/vercom), [Athena Intelligence](https://www.workflowbuilder.io/case-study/athena-intelligence), [Plura AI](https://www.workflowbuilder.io/case-study/plura-ai), and others.
 
@@ -46,7 +46,7 @@ Three onboarding paths. Pick one based on what you want to evaluate.
 
 Don't want to install or clone anything yet? [Try the live demo](https://app.workflowbuilder.io) in your browser, or open the runnable starter below:
 
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2FApp.tsx)
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter&file=src%2Fapp.tsx)
 
 ### Path A. Embed the SDK
 
