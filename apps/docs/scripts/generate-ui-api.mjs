@@ -8,7 +8,7 @@
  * and as a prebuild step in `dev` / `build`.
  */
 import { execFile } from 'node:child_process';
-import { globSync, readFileSync } from 'node:fs';
+import { existsSync, globSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import process from 'node:process';
@@ -134,15 +134,17 @@ function indexById(root) {
   return byId;
 }
 
-function findTypeByName(root, name) {
-  let found = null;
+function findTypeByName(root, name, warnings) {
+  const matches = [];
   (function walk(node) {
-    if (found) return;
     // 2097152 = TypeAlias, 256 = Interface
-    if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) found = node;
+    if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) matches.push(node);
     for (const child of node.children ?? []) walk(child);
   })(root);
-  return found;
+  if (matches.length > 1 && warnings) {
+    warnings.push(`type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`);
+  }
+  return matches[0] ?? null;
 }
 
 function typeToString(t, byId, depth = 0) {
@@ -228,7 +230,7 @@ function defaultTag(comment) {
 
 // Collect own properties from a prop type alias / interface, walking
 // intersections and skipping referenced (extended / native HTML) members.
-function collectProps(typeNode, byId, accumulator = new Map()) {
+function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (!typeNode) return accumulator;
   // TypeAlias / Interface: plain object members land directly on `.children`;
   // computed types (intersections etc.) land on `.type`.
@@ -237,10 +239,10 @@ function collectProps(typeNode, byId, accumulator = new Map()) {
       for (const child of typeNode.children) addProperty(child, byId, accumulator);
       return accumulator;
     }
-    return collectProps(typeNode.type, byId, accumulator);
+    return collectProps(typeNode.type, byId, accumulator, context);
   }
   if (typeNode.type === 'intersection' || typeNode.type === 'union') {
-    for (const member of typeNode.types) collectProps(member, byId, accumulator);
+    for (const member of typeNode.types) collectProps(member, byId, accumulator, context);
     return accumulator;
   }
   if (typeNode.type === 'reflection' && typeNode.declaration?.children) {
@@ -250,8 +252,20 @@ function collectProps(typeNode, byId, accumulator = new Map()) {
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Only follow references into our own package's prop types, not native ones.
-    if (target && target.kind === 2_097_152) collectProps(target, byId, accumulator);
+    if (target && target.kind === 2_097_152) collectProps(target, byId, accumulator, context);
     return accumulator;
+  }
+  // An unfollowed generic reference (Partial<X>, Omit<X, ...>) silently drops
+  // every prop of a first-party X - warn instead of shipping a slimmer table.
+  if (typeNode.type === 'reference' && typeNode.typeArguments?.length && context) {
+    const firstParty = typeNode.typeArguments.find(
+      (argument) => argument.type === 'reference' && typeof argument.target === 'number' && byId.get(argument.target),
+    );
+    if (firstParty) {
+      context.warnings.push(
+        `"${context.slug}": props of ${firstParty.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
+      );
+    }
   }
   return accumulator;
 }
@@ -276,12 +290,12 @@ function addProperty(child, byId, accumulator) {
 function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
   const perVariant = [];
   for (const typeName of propsTypeNames) {
-    const typeNode = findTypeByName(project, typeName);
+    const typeNode = findTypeByName(project, typeName, warnings);
     if (!typeNode) {
       warnings.push(`props type "${typeName}" not found for "${slug}"`);
       continue;
     }
-    perVariant.push({ typeName, props: collectProps(typeNode, byId) });
+    perVariant.push({ typeName, props: collectProps(typeNode, byId, new Map(), { warnings, slug }) });
   }
 
   const propertyNames = new Set();
@@ -320,8 +334,14 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
   return merged;
 }
 
-function extractCssVariables(directory) {
+function extractCssVariables(directory, warnings, slug) {
   const abs = path.resolve(uiSource, 'components', directory);
+  if (!existsSync(abs)) {
+    // globSync on a missing directory returns [] - the page would then claim
+    // the component exposes no CSS variables.
+    warnings.push(`"${slug}": component directory ${directory} does not exist`);
+    return [];
+  }
   const files = globSync('**/*.css', { cwd: abs }).sort();
   const seen = new Set();
   const variables = [];
@@ -353,14 +373,14 @@ async function main() {
         (a, b) => a.name.localeCompare(b.name),
       );
     } else if (component.propsType) {
-      const typeNode = findTypeByName(project, component.propsType);
+      const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
         props = [...collectProps(typeNode, byId).values()].sort((a, b) => a.name.localeCompare(b.name));
       } else {
         warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
     }
-    out[component.slug] = { name: component.name, props, cssVariables: extractCssVariables(component.dir) };
+    out[component.slug] = { name: component.name, props, cssVariables: extractCssVariables(component.dir, warnings, component.slug) };
   }
 
   await mkdir(path.dirname(outFile), { recursive: true });

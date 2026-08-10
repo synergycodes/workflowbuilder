@@ -14,6 +14,11 @@ interface PropertyRow {
 
 const { slug } = Astro.props as { slug: string };
 const entry = (data as Record<string, { props: PropertyRow[] }>)[slug];
+if (!entry) {
+  throw new Error(
+    `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
+  );
+}
 const props = [...(entry?.props ?? [])].sort(
   (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
 );

@@ -11,6 +11,11 @@ interface CssVariable {
 
 const { slug } = Astro.props as { slug: string };
 const entry = (data as Record<string, { cssVariables: CssVariable[] }>)[slug];
+if (!entry) {
+  throw new Error(
+    `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
+  );
+}
 const cssVariables = entry?.cssVariables ?? [];
 
 const isColor = (name: string) => /color|background|bg|shadow|stroke|fill/.test(name);
