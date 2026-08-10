@@ -77,4 +77,50 @@ export type DatePickerProps = {
    * `aria-labelledby` for the trigger button.
    */
   'aria-labelledby'?: string;
+
+  /**
+   * Format string used to render the selected date(s) in the trigger.
+   *
+   * **Note:** This implementation uses `date-fns` format tokens (e.g.
+   * `dd/MM/yyyy`). The legacy default value `DD/MM/YYYY` (dayjs tokens) is
+   * accepted and converted to the equivalent `date-fns` tokens for backwards
+   * compatibility.
+   *
+   * @default 'DD/MM/YYYY'
+   */
+  valueFormat?: string;
+  /**
+   * Placeholder text shown when no date is selected.
+   *
+   * @default 'dd/mm/yyyy'
+   */
+  placeholder?: string;
+  /**
+   * Picker type.
+   *
+   * - `default` selects a single date
+   * - `range` selects a `[from, to]` date range
+   * - `multiple` selects an arbitrary array of dates
+   *
+   * @default 'default'
+   */
+  type?: DatePickerType;
+  /**
+   * Initial value when the picker is uncontrolled.
+   *
+   * - `default` accepts `Date | string`
+   * - `range` accepts `[Date, Date]`
+   * - `multiple` accepts `Date[]`
+   */
+  defaultValue?: Date | [Date, Date] | Date[] | string;
+  /**
+   * Controlled selected value. When set, the picker becomes controlled.
+   */
+  value?: Date | [Date, Date] | Date[] | string;
+  /**
+   * Render the trigger in an error state.
+   *
+   * @default false
+   */
+  error?: boolean;
 };
