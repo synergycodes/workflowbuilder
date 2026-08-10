@@ -27,7 +27,7 @@
 /* 4. External component CSS. @workflowbuilder/ui styles arrive through the
       JS module graph (libInjectCss imports in its chunks) - importing its
       index.css here would bundle every rule twice. */
-@import '@xyflow/react/dist/style.css';
+@import '@xyflow/react/dist/style.css' layer(ext-lib);
 
 /* 5. Sub-layer order inside `ui` — must come AFTER @imports (has a body, so
       the spec classifies it as a statement that closes the @import prelude). */
