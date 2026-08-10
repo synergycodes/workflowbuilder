@@ -16,6 +16,8 @@ catalog:
   'react': 19.1.0
   '@types/react': 19.1.8
   'react-dom': 19.1.0
+  # Must match react - bump together.
+  'react-is': 19.1.0
   'ajv': ^8.18.0
 
 useNodeVersion: 22.12.0
