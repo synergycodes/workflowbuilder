@@ -1,0 +1,52 @@
+name: PR Check (docs)
+
+# The docs site is generated from packages/ui source (ui-api tables, live
+# examples) and consumes its built dist, so a PR touching either can break
+# the docs build - which otherwise first runs at release-time deploy.
+# Full `astro build` is the gate: it runs the ui-api generator, the
+# component-coverage guard, and page rendering (loud failures included).
+# Typecheck is deliberately absent: apps/docs tolerates known starlight
+# virtual-module type errors.
+
+on:
+  pull_request:
+    branches:
+      - main
+    paths:
+      - 'apps/docs/**'
+      - 'packages/ui/**'
+      - 'packages/tokens/**'
+      - 'pnpm-lock.yaml'
+
+permissions:
+  contents: read
+
+jobs:
+  docs:
+    name: Docs build (ui-api generator + coverage + astro)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build UI library
+        run: pnpm build:ui
+
+      - name: Build docs
+        run: pnpm build:docs
