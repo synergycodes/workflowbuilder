@@ -96,7 +96,16 @@ export function TextArea({
   const textareaClasses = clsx(styles['text-area'], inputFontStyles[size]);
 
   return (
-    <div className={containerClasses}>
+    <div
+      className={containerClasses}
+      // Padding lives on this wrapper, not on the <textarea> - forward clicks
+      // in the padding area so the field gains focus (see input.tsx).
+      onPointerDown={(event) => {
+        if (event.target !== event.currentTarget) return;
+        event.preventDefault();
+        event.currentTarget.querySelector('textarea')?.focus();
+      }}
+    >
       <TextareaAutosize
         value={value || ''}
         defaultValue={defaultValue}
