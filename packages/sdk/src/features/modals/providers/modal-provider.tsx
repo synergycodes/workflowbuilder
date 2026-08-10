@@ -1,5 +1,5 @@
 import { Modal } from '@workflowbuilder/ui';
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
 
 import { closeModal, useModalStore } from '../stores/use-modal-store';
@@ -14,6 +14,16 @@ export function ModalProvider() {
   const isOpen = useModalStore((state) => state.isOpen);
   const modal = useModalStore((state) => state.modal);
 
+  // The store clears `modal` on close; keep the last one so the content
+  // stays visible through the exit transition.
+  const lastModalRef = useRef(modal);
+
+  useEffect(() => {
+    if (modal) {
+      lastModalRef.current = modal;
+    }
+  }, [modal]);
+
   useEffect(() => {
     document.body.classList.toggle(MODAL_OPEN_BODY_CLASS, isOpen);
     return () => {
@@ -21,24 +31,24 @@ export function ModalProvider() {
     };
   }, [isOpen]);
 
-  if (!isOpen || !modal) {
-    return null;
-  }
+  const activeModal = modal ?? lastModalRef.current;
 
+  // Keep the Modal (its Dialog.Root) always mounted: enter/exit transitions
+  // only run when `open` toggles on an already-mounted root.
   return (
     <>
       {createPortal(
         <Modal
           size="large"
-          open={isOpen}
-          icon={modal.icon}
-          onClose={modal.isCloseButtonVisible ? closeModal : undefined}
-          title={modal.title || ''}
-          footer={modal.footer}
-          footerVariant={modal.footerVariant}
+          open={isOpen && !!modal}
+          icon={activeModal?.icon}
+          onClose={activeModal?.isCloseButtonVisible ? closeModal : undefined}
+          title={activeModal?.title || ''}
+          footer={activeModal?.footer}
+          footerVariant={activeModal?.footerVariant}
           className="workflow-builder-root"
         >
-          {modal.content}
+          {activeModal?.content}
         </Modal>,
         document.body,
       )}
