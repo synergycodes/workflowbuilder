@@ -32,7 +32,7 @@
     "check:built-css": "tsx ./scripts/check-built-css.ts",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "typecheck": "tsc --noEmit --pretty",
+    "typecheck": "tsc --noEmit --pretty && tsc --noEmit --pretty -p tsconfig.node.json",
     "test": "vitest run",
     "build:stats": "BUNDLE_STATS=1 vite build"
   },
