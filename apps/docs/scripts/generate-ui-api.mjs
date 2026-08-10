@@ -50,9 +50,19 @@ const COMPONENTS = [
   { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
-  { slug: 'nav-button', name: 'NavButton', propsType: 'NavBaseButtonProps', dir: 'button/nav-button' },
+  {
+    slug: 'nav-button',
+    name: 'NavButton',
+    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
+    dir: 'button/nav-button',
+  },
   { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },
-  { slug: 'segment-picker', name: 'SegmentPicker', propsType: 'SegmentPickerProps', dir: 'segment-picker' },
+  {
+    slug: 'segment-picker',
+    name: 'SegmentPicker',
+    propsType: ['ControlledSegmentPickerProps', 'UncontrolledSegmentPickerProps'],
+    dir: 'segment-picker',
+  },
   { slug: 'select', name: 'Select', propsType: 'SelectBaseProps', dir: 'select' },
   { slug: 'separator', name: 'Separator', propsType: null, dir: 'separator' },
   { slug: 'snackbar', name: 'Snackbar', propsType: 'SnackbarProps', dir: 'snackbar' },
@@ -281,7 +291,10 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
   for (const propertyName of propertyNames) {
     const occurrences = perVariant
       .filter((variant) => variant.props.has(propertyName))
-      .map((variant) => ({ typeName: variant.typeName, prop: variant.props.get(propertyName) }));
+      .map((variant) => ({ typeName: variant.typeName, prop: variant.props.get(propertyName) }))
+      // `foo?: never` marks a prop as forbidden in that variant - treat it as absent.
+      .filter((occurrence) => occurrence.prop.type !== 'never');
+    if (occurrences.length === 0) continue;
     const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
