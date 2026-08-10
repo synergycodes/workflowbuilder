@@ -24,9 +24,10 @@
 /* 3. Design tokens */
 @import '@workflowbuilder/ui/tokens.css';
 
-/* 4. External component CSS */
+/* 4. External component CSS. @workflowbuilder/ui styles arrive through the
+      JS module graph (libInjectCss imports in its chunks) - importing its
+      index.css here would bundle every rule twice. */
 @import '@xyflow/react/dist/style.css';
-@import '@workflowbuilder/ui/index.css';
 
 /* 5. Sub-layer order inside `ui` — must come AFTER @imports (has a body, so
       the spec classifies it as a statement that closes the @import prelude). */
