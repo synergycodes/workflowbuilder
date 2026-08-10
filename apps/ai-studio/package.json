@@ -24,7 +24,7 @@
     "html-to-image": "1.11.11",
     "immer": "^10.1.1",
     "mermaid": "^11.15.0",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "react-is": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "^15.4.1",

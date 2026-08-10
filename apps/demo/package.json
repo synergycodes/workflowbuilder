@@ -31,7 +31,7 @@
     "immer": "^10.1.1",
     "jspdf": "^3.0.1",
     "libavoid-js": "0.4.0-beta.1",
-    "react": "^19.1.0",
+    "react": "catalog:",
     "react-dom": "catalog:",
     "react-i18next": "^15.4.1",
     "remeda": "^2.19.2",
