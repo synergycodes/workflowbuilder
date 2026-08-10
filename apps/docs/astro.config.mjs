@@ -115,12 +115,19 @@ export default defineConfig({
           },
         }),
       ],
-      // `@workflowbuilder/ui` styles are safe to load globally: styles.css is
-      // just the @layer order + one :root var + opt-in `.ax-public-*` typography
-      // classes (no global reset), and tokens.css only defines `--ax-*` custom
-      // properties keyed on `html[data-theme]` — which Starlight already toggles,
-      // so the live component showcases follow the docs light/dark theme.
-      customCss: ['./src/styles/custom.css', '@workflowbuilder/ui/styles.css', '@workflowbuilder/ui/tokens.css'],
+      // `@workflowbuilder/ui` styles are safe to load globally: everything is
+      // layered (no global reset), classes are hashed or opt-in, and tokens.css
+      // only defines `--ax-*` custom properties keyed on `html[data-theme]` —
+      // which Starlight already toggles, so the live component showcases follow
+      // the docs light/dark theme. index.css is required at document level:
+      // Modal/Menu/Select/Tooltip/DatePicker portal their popups to body,
+      // outside the shadow roots that carry the preview styles.
+      customCss: [
+        './src/styles/custom.css',
+        '@workflowbuilder/ui/styles.css',
+        '@workflowbuilder/ui/tokens.css',
+        '@workflowbuilder/ui/index.css',
+      ],
       components: {
         Head: './src/components/head.astro',
         Search: './src/components/search.astro',
