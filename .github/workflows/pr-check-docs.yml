@@ -16,7 +16,12 @@ on:
       - 'apps/docs/**'
       - 'packages/ui/**'
       - 'packages/tokens/**'
+      # starlight-typedoc generates the /api reference from SDK sources.
+      - 'packages/sdk/**'
       - 'pnpm-lock.yaml'
+      - 'pnpm-workspace.yaml'
+      - 'package.json'
+      - '.github/workflows/pr-check-docs.yml'
 
 permissions:
   contents: read
