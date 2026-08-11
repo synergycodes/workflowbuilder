@@ -36,6 +36,17 @@ stylesheets ignore `@import` entirely.
 leading with the statement, uses an unknown layer name, or ships rules outside
 `@layer`.
 
+## Variable defaults
+
+`:root` blocks with variable defaults (`--ax-public-*` in component sources,
+the `--ax-*` design tokens copied from `@workflowbuilder/ui-tokens`) ship
+inside `ui.base`. Layered declarations lose to any unlayered consumer CSS, so
+a plain `:root { --ax-…: … }` override in an app always wins - even when a
+lazily loaded component stylesheet arrives after it. Sources keep the plain
+top-level `:root { … }` convention; the build does the wrapping
+(`postcss-layer-root-defaults.mts` for component CSS, the token-copy transform
+in `vite.config.mts` for the generated token files).
+
 ## box-sizing
 
 `box-sizing: border-box` is injected into every styling rule of every

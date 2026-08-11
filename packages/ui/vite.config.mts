@@ -1,3 +1,4 @@
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { visualizer } from 'rollup-plugin-visualizer';
@@ -9,6 +10,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 import { combineCssBundle } from './combine-css-bundle.mts';
 import { boxSizingPlugin } from './postcss-box-sizing.mts';
+import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mts';
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -55,10 +57,26 @@ function isExternal(id: string): boolean {
 
 function copyTokenStyles() {
   const files = ['tokens.css', 'numerals-mode-1.css', 'primitives-mode-1.css'];
+
+  for (const file of files) {
+    if (!existsSync(path.resolve(rootDirectory, `../tokens/dist/${file}`))) {
+      throw new Error(
+        `@workflowbuilder/ui-tokens dist is missing ${file} - ` +
+          'build the tokens first: `pnpm build:ui` (root) or `pnpm --filter @workflowbuilder/ui-tokens build`',
+      );
+    }
+  }
+
+  // The generated token files are raw `:root` / `html[data-theme]` blocks;
+  // shipping them means applying this package's layer contract: lead with the
+  // order statement, put the defaults in ui.base so consumer overrides win.
+  const layerOrder = readFileSync(path.resolve(rootDirectory, 'src/styles/layers.css'), 'utf8').trim();
+
   return viteStaticCopy({
     targets: files.map((file) => ({
       src: `../tokens/dist/${file}`,
       dest: '.',
+      transform: (content: string) => `${layerOrder}\n@layer ui.base {\n${content}\n}`,
     })),
   });
 }
@@ -108,7 +126,7 @@ export default defineConfig({
   css: {
     devSourcemap: true,
     postcss: {
-      plugins: [boxSizingPlugin()],
+      plugins: [boxSizingPlugin(), layerRootDefaultsPlugin()],
     },
   },
   resolve: {

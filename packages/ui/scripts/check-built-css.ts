@@ -5,12 +5,15 @@
  * past review or a build-tool transform introduces it.
  *
  * 1. `var()`'s first argument must be a `<custom-property-name>` (a dashed-ident) -
- *    never another function. Browsers silently invalidate `var(var(--foo))` and fall
- *    back, which is how WB-222 shipped a wrong snackbar icon color.
- * 2. Every component rule must live inside an `@layer` block. Unlayered CSS beats
- *    layered CSS regardless of specificity, so a rule that escapes `ui.base` /
- *    `ui.component` silently wins the cascade - this is how WB-190 shipped
- *    decision-node ports collapsed to ~5px (see `css-layers.md`).
+ *    never another function, an undashed name, or nothing. Browsers silently
+ *    invalidate the declaration and fall back, which is how WB-222 shipped a
+ *    wrong snackbar icon color (`var(var(--foo))`).
+ * 2. Every rule must live inside an `@layer` block - including `:root` variable
+ *    defaults (layered defaults lose to any unlayered consumer override, which
+ *    is the override contract). Unlayered CSS beats layered CSS regardless of
+ *    specificity, so a rule that escapes `ui.base` / `ui.component` silently
+ *    wins the cascade - this is how WB-190 shipped decision-node ports
+ *    collapsed to ~5px (see `css-layers.md`).
  * 3. Every stylesheet must LEAD with the full `@layer` order statement. The first
  *    use of a layer name fixes the order, so a component stylesheet that loads
  *    before the statement inverts the cascade (ui.base beats ui.component) -
@@ -74,22 +77,22 @@ function hitFor(node: ChildNode | undefined): Hit {
   };
 }
 
-// --- Check 1: var(var(...)) -------------------------------------------------
+// --- Check 1: var() first argument is a dashed ident --------------------------
 
-// Matches `var(` followed by optional whitespace and another `var(` —
-// covers the minified `var(var(` and the unminified `var( var(` /
-// `var(\n  var(`. Comments inside CSS values are uncommon enough that
-// false positives aren't a real concern.
-const nestedVariablePattern = /var\(\s*var\(/g;
+// Matches `var(` whose first argument does not start with `--`: another
+// function (`var(var(`), an undashed name (`var(ax-color)`) or an empty call
+// (`var()`), minified or not. Comments inside CSS values are uncommon enough
+// that false positives aren't a real concern.
+const malformedVariablePattern = /var\(\s*(?!--)/g;
 
-function checkNoNestedVariable(files: string[]): FailureReport[] {
+function checkVariableFirstArgument(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
   for (const file of files) {
     const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
     const hits: Hit[] = [];
 
-    for (const match of content.matchAll(nestedVariablePattern)) {
+    for (const match of content.matchAll(malformedVariablePattern)) {
       const { line, column } = locate(content, match.index);
       hits.push({ line, column, snippet: snippetAt(content, match.index) });
     }
@@ -102,18 +105,10 @@ function checkNoNestedVariable(files: string[]): FailureReport[] {
 
 // --- Check 2: no rule outside @layer ----------------------------------------
 
-/**
- * Files copied verbatim from `@workflowbuilder/ui-tokens` (see
- * `packages/ui/vite.config.mts`'s static-copy list). They're auto-generated
- * design-token stylesheets (`:root` / `html[data-theme]` blocks of custom
- * properties only) and predate/sit outside the `ui.base` / `ui.component`
- * contract documented in `css-layers.md` - they're meant to load before it.
- */
-// Exact dist-relative paths: the three token files live at the dist root. A
-// same-named file anywhere else (e.g. assets/tokens.css from a `tokens`
-// entry) gets NO exemption.
-const ALLOWLISTED_FILES = new Set(['tokens.css', 'numerals-mode-1.css', 'primitives-mode-1.css']);
-
+// No exemptions: `:root` variable defaults are layered too (the build wraps
+// them in `ui.base` - see postcss-layer-root-defaults.mts and the token-copy
+// transform in vite.config.mts), so consumer overrides win by layer rules,
+// not by load order.
 function findTopLevelViolations(content: string): Hit[] {
   const hits: Hit[] = [];
 
@@ -129,17 +124,6 @@ function findTopLevelViolations(content: string): Hit[] {
         break;
       }
       case 'rule': {
-        // Top-level `:root` blocks are the repo-wide convention for declaring design
-        // tokens; custom properties don't compete in the cascade the way normal
-        // declarations do, so they're exempt - but only as long as that's ALL they hold.
-        if (node.selector === ':root') {
-          hits.push(
-            ...node.nodes
-              .filter((child) => child.type !== 'comment' && (child.type !== 'decl' || !child.prop.startsWith('--')))
-              .map(hitFor),
-          );
-          break;
-        }
         hits.push(hitFor(node));
         break;
       }
@@ -156,8 +140,6 @@ function checkLayerCoverage(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
   for (const file of files) {
-    if (ALLOWLISTED_FILES.has(file)) continue;
-
     const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
     const hits = findTopLevelViolations(content);
 
@@ -185,8 +167,6 @@ function checkOrderStatementFirst(files: string[]): FailureReport[] {
   const failures: FailureReport[] = [];
 
   for (const file of files) {
-    if (ALLOWLISTED_FILES.has(file)) continue;
-
     const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
     const first = postcss.parse(content).nodes.find((node) => node.type !== 'comment');
 
@@ -295,17 +275,18 @@ const files = globSync('**/*.css', { cwd: distributionDirectory });
 
 const results = [
   report(
-    'Built CSS: no invalid var(var(...)) calls',
-    checkNoNestedVariable(files),
-    'The first argument of var() must be a --custom-property name. See WB-222.',
+    'Built CSS: every var() takes a --custom-property name',
+    checkVariableFirstArgument(files),
+    'The first argument of var() must be a --custom-property name - browsers silently ' +
+      'discard the whole declaration otherwise. See WB-222.',
   ),
   report(
     'Built CSS: every rule sits inside an @layer block',
     checkLayerCoverage(files),
     'Unlayered CSS wins the cascade over layered CSS regardless of specificity - wrap the ' +
       'source rule in `@layer ui.base { ... }` or `@layer ui.component { ... }` (see ' +
-      'packages/ui/css-layers.md). If this is a deliberate exception, allowlist it above ' +
-      'with a comment explaining why.',
+      'packages/ui/css-layers.md). `:root` defaults are wrapped by the build ' +
+      '(postcss-layer-root-defaults.mts); a hit here means CSS bypassed that pipeline.',
   ),
   report(
     'Built CSS: every file leads with the @layer order statement',
