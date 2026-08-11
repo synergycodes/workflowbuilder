@@ -194,6 +194,14 @@ The full reference for renderer/cell/translation registration lives at [Custom J
 
 The built-in renderer gives every node a header and one input + one output handle. When you need a different handle layout or a different shape, register a custom template under [`nodeTemplates`](/api/types/nodetemplatesmap/) keyed by the palette `type` string. No plugin needed.
 
+The template below uses the SDK's own building blocks (`NodePanel`, `NodeIcon`,
+`NodeDescription`) from the [`@workflowbuilder/ui`](/ui-library/) component
+library - a separate package, so install it first:
+
+```sh
+npm install @workflowbuilder/ui
+```
+
 `my-node-template.tsx`:
 
 ```tsx

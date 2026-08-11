@@ -74,11 +74,13 @@ The CSS is rebuilt from `tokens.json` whenever the package is built - on
 pnpm --filter @workflowbuilder/ui-tokens build
 ```
 
-## A note on "missing token" gaps
+## A note on "missing token" comments
 
-A handful of component variables in the source reference a design token that the
-current `tokens.json` export does not yet provide; these are flagged with a
-`/* missing token */` comment and fall back to a literal value. They are still
-valid override points (the `--ax-public-*` variable works), but the underlying
-design token they would normally read from is absent from the export. You will
-see such variables in some components' CSS variables tables.
+Some component variables in the source carry a `/* missing token */` comment -
+a marker from the design-system port meaning "no matching design token existed
+at the time, so this holds a literal value (or a stand-in token)". The export
+has grown since, and several of the referenced tokens now exist, so treat the
+comment as a historical hint rather than a statement about the current
+`tokens.json`. The flagged variables are ordinary `--ax-public-*` override
+points either way, and the comments are stripped from the generated CSS
+variables tables.
