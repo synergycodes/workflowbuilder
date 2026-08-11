@@ -10,4 +10,4 @@ export const schema = {
   },
 } satisfies NodeSchema;
 
-export type DecisionNodeSchema = typeof schema;
+export type ConditionNodeSchema = typeof schema;

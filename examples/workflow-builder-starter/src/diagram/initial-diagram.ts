@@ -31,15 +31,15 @@ export const initialNodes: WorkflowBuilderNode[] = [
     },
   },
   {
-    id: 'decision-1',
+    id: 'condition-1',
     type: 'node',
     position: { x: 800, y: 176 },
     data: {
-      type: 'decision',
-      icon: 'ArrowsSplit',
+      type: 'condition',
+      icon: 'Faders',
       properties: {
         label: 'Needs review?',
-        description: 'Branch on the result',
+        description: 'Checks the amount',
         status: 'active',
         condition: 'amount > 100',
       },
@@ -57,10 +57,10 @@ export const initialEdges: WorkflowBuilderEdge[] = [
     type: 'labelEdge',
   },
   {
-    id: 'edge-action-decision',
+    id: 'edge-action-condition',
     source: 'action-1',
     sourceHandle: 'source',
-    target: 'decision-1',
+    target: 'condition-1',
     targetHandle: 'target',
     type: 'labelEdge',
   },

@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "pnpm clean:typedoc && astro dev",
-    "build": "pnpm clean:typedoc && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs",
+    "build": "pnpm clean:typedoc && node scripts/check-sidebar-categories.mjs && astro build && node scripts/touch-distribution-index.mjs && node scripts/copy-swa-config.mjs",
     "clean:typedoc": "node -e \"import('node:fs').then(fs => fs.rmSync('src/content/docs/api', { recursive: true, force: true }))\"",
     "preview": "astro preview",
     "typecheck": "astro check",
