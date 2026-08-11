@@ -35,7 +35,7 @@ Workflow Builder SDK.
   affects the cascade; add `@workflowbuilder/ui/styles.css` once if you also
   want the global reset and typography.
 - **Dependencies**: `react` / `react-dom` are the only peer dependencies.
-  `@base-ui/react` (pinned to the validated `1.4.x` line) and
+  `@base-ui/react` (`^1.7.0`) and
   `react-textarea-autosize` are regular dependencies; `date-fns`,
   `react-day-picker`, `clsx`, and the Phosphor icons are bundled into the
   package output.
