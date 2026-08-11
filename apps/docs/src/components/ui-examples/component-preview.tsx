@@ -5,15 +5,19 @@ import { createPortal } from 'react-dom';
 
 import styles from './component-preview.module.css';
 
-// Render examples inside a shadow root so the components are styled ONLY by
-// `@workflowbuilder/ui`, isolated from the Starlight docs CSS (and vice versa) -
-// the same isolation the original Overflow UI docs use, so previews are faithful.
+// Render examples inside a shadow root so Starlight's stylesheet RULES cannot
+// reach the components (and the library's cannot leak out) - the same
+// isolation the original Overflow UI docs use. Inherited properties
+// (typography, color) and custom properties still cross the shadow boundary
+// by design: that is how the docs theme (`--ax-*` per data-theme) reaches the
+// examples, and why a preview is close to - not pixel-identical with - a
+// consumer app that inherits different page styles.
 //
 // Inside a shadow root `:root` matches nothing, so retarget the library's
-// root-scoped custom-property defaults to `:host`. The `--ax-*` design tokens
-// still inherit in from the document (tokens.css defines them per data-theme),
-// because custom properties cross the shadow boundary.
-const shadowCss = `${globalCss}\n${componentCss}`.replaceAll(':root', ':host');
+// root-scoped custom-property defaults to `:host`. The stage has a fixed
+// max width, so oversized examples (Snackbar) shrink instead of clipping.
+const shadowCss = `${`${globalCss}\n${componentCss}`.replaceAll(':root', ':host')}
+:host > :not(style) { max-width: 100%; }`;
 
 export function ComponentPreview({ children }: { children: ReactNode }) {
   const hostRef = useRef<HTMLDivElement>(null);
