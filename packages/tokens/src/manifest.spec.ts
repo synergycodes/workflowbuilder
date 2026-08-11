@@ -51,4 +51,13 @@ describe('buildManifest', () => {
       }),
     ).toThrowError(/'\$themes'/);
   });
+
+  it('rejects distinct keys that normalize to the same file name', () => {
+    expect(() =>
+      buildManifest(['Tokens/Dark', 'Tokens Dark'], {
+        primitives: ['Tokens Dark'],
+        themes: [{ set: 'Tokens/Dark', selector: 'html' }],
+      }),
+    ).toThrowError(/'Tokens Dark' and 'Tokens\/Dark' both resolve to 'tokens-dark'/);
+  });
 });

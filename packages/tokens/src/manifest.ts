@@ -36,6 +36,23 @@ export function buildManifest(
     throw new Error(`config.ts lists ${[...new Set(duplicates)].map((key) => `'${key}'`).join(', ')} more than once`);
   }
 
+  // Distinct keys can still normalize to the same file name ('Tokens Dark'
+  // and 'Tokens/Dark' both become tokens-dark) - the same silent-overwrite
+  // race, one step later.
+  const keysByFileName = new Map<string, string[]>();
+  for (const key of requested) {
+    const fileName = toFileName(key);
+    keysByFileName.set(fileName, [...(keysByFileName.get(fileName) ?? []), key]);
+  }
+  const collisions = [...keysByFileName.entries()].filter(([, keys]) => keys.length > 1);
+  if (collisions.length > 0) {
+    throw new Error(
+      collisions
+        .map(([fileName, keys]) => `${keys.map((key) => `'${key}'`).join(' and ')} both resolve to '${fileName}'`)
+        .join('; '),
+    );
+  }
+
   return {
     primitives: primitives.map(entryFor),
     themes: themes.map((theme) => ({ ...entryFor(theme.set), selector: theme.selector })),
