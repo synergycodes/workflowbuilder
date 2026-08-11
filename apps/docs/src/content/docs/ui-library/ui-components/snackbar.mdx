@@ -11,6 +11,11 @@ A `Snackbar` displays a brief message about an app process. It comes in several
 variants - success, error, warning, info and default - and can show a secondary
 subtitle, an action button, and a close button.
 
+The component is purely presentational: it renders inline where you place it,
+with no positioning, stacking, or auto-dismiss of its own. For toast-style
+behavior, mount it in your own portal/queue and drive dismissal from the
+`onClose` callback.
+
 <SnackbarExample client:visible />
 
 ## Usage
