@@ -210,7 +210,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 }
 ```
 
-Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-thumb-hover-color`, `--wb-scroll-track-color`).
+Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`).
 
 Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@workflowbuilder/ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
@@ -224,7 +224,12 @@ body {
   background-color: var(--wb-background-color);
   overflow: hidden;
 }
+```
 
+The stylesheet does **not** size your document — the editor fills whatever container
+you give it, so give it one. A typical full-viewport host adds in its own CSS:
+
+```css
 html,
 body,
 #root {
@@ -232,8 +237,8 @@ body,
 }
 ```
 
-The rules ship inside `@layer reset` (the lowest precedence in the SDK's cascade layer
-order), so any consumer-level rule on `body` / `html` / `#root` wins automatically — no
+The shipped resets live inside `@layer ui.base` (the lowest layer in the cascade
+order), so any consumer-level rule on `body` / `html` wins automatically — no
 specificity hacks or `!important` needed. Two things to be aware of:
 
 - **`overflow: hidden` on `<body>`** — the editor expects a full-viewport canvas with no
@@ -245,8 +250,9 @@ specificity hacks or `!important` needed. Two things to be aware of:
   `<WorkflowBuilder.Root />`, the token is undefined and the body falls back to
   transparent. Either ship the CSS or set `--wb-background-color` yourself.
 
-If you don't want the body resets at all, import the SDK before your own global
-stylesheet so your rules land in the unlayered cascade above `@layer reset`.
+If you don't want the body resets at all, just override them in your own global
+stylesheet — unlayered consumer CSS beats `@layer ui.base` regardless of import
+order.
 
 ## Single-instance constraint
 
