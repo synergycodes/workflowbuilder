@@ -20,7 +20,7 @@
 // Wired into apps/docs/package.json's `generate:ui-api` script, right after
 // the generator runs, so `dev` / `build` / `typecheck` all catch the drift.
 
-import { readFileSync } from 'node:fs';
+import { globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -45,13 +45,32 @@ function extractComponentDirectories(source) {
   return [...match[1].matchAll(/dir:\s*'([^']+)'/g)].map((m) => m[1]);
 }
 
+function extractComponentSlugs(source) {
+  const match = /const COMPONENTS = \[([\s\S]*?)];/.exec(source);
+  if (!match) throw new Error('Could not find `COMPONENTS` in generate-ui-api.mjs');
+  return [...match[1].matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1]);
+}
+
 const componentEntries = extractComponentEntries(readFileSync(viteConfigPath, 'utf8'));
-const componentDirectories = extractComponentDirectories(readFileSync(generatorPath, 'utf8'));
+const generatorSource = readFileSync(generatorPath, 'utf8');
+const componentDirectories = extractComponentDirectories(generatorSource);
+const componentSlugs = extractComponentSlugs(generatorSource);
 
 const missing = componentEntries.filter((entry) => {
   if (NARRATIVE_ONLY.has(entry)) return false;
   return !componentDirectories.some((directory) => directory === entry || directory.startsWith(`${entry}/`));
 });
+
+// A COMPONENTS entry only produces data - nothing renders it unless an MDX
+// page passes the slug to PropsTable / CssVariablesTable. Without this leg,
+// adding a generator entry with no page passes the whole build silently.
+const contentRoot = path.resolve(documentsRoot, 'src/content/docs');
+const pageSources = globSync('**/*.mdx', { cwd: contentRoot }).map((file) =>
+  readFileSync(path.resolve(contentRoot, file), 'utf8'),
+);
+const unrendered = componentSlugs.filter(
+  (slug) => !pageSources.some((source) => source.includes(`slug="${slug}"`)),
+);
 
 if (missing.length > 0) {
   console.error('error: componentEntries in packages/ui/vite.config.mts have no matching COMPONENTS entry.\n');
@@ -63,6 +82,22 @@ if (missing.length > 0) {
       'or add the entry to NARRATIVE_ONLY in this script if it is deliberately prose-only.',
   );
   process.exitCode = 1;
-} else {
-  console.log(`✓ component coverage ok — ${componentEntries.length} vite entries cross-checked.`);
+}
+
+if (unrendered.length > 0) {
+  console.error('error: COMPONENTS entries in generate-ui-api.mjs are rendered by no MDX page.\n');
+  for (const slug of unrendered) {
+    console.error(`  - ${slug}`);
+  }
+  console.error(
+    '\nAdd a docs page that uses <PropsTable slug="..."> / <CssVariablesTable slug="...">, ' +
+      'or remove the generator entry.',
+  );
+  process.exitCode = 1;
+}
+
+if (missing.length === 0 && unrendered.length === 0) {
+  console.log(
+    `✓ component coverage ok — ${componentEntries.length} vite entries and ${componentSlugs.length} docs slugs cross-checked.`,
+  );
 }
