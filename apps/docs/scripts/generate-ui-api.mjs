@@ -312,21 +312,31 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
     const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
+    // Required only when required in EVERY variant: `value` (controlled) and
+    // `defaultValue` (uncontrolled) marked required side by side would
+    // document a call that cannot exist. The variant note carries the detail.
+    const requiredEverywhere =
+      occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
+    const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
+
     const base = occurrences[0].prop;
     let description = base.description;
     if (!sharedByAll) {
       const variantLabel = (typeName) => typeName.replace(/Props$/, '');
+      const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
       const note =
         distinctTypes.size > 1
           ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type}`).join(', ')}).`
-          : `Only applies to the ${occurrences.map((o) => variantLabel(o.typeName)).join(', ')} variant.`;
+          : requiredInItsVariants
+            ? `Only applies to the ${variants} variant (required there).`
+            : `Only applies to the ${variants} variant.`;
       description = description ? `${description} ${note}` : note;
     }
 
     merged.set(propertyName, {
       name: propertyName,
       type: sharedByAll ? base.type : [...distinctTypes].join(' | '),
-      required: occurrences.every((o) => o.prop.required),
+      required: requiredEverywhere,
       default: base.default,
       description,
     });
