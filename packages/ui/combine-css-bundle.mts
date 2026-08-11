@@ -48,10 +48,19 @@ function assetsDirectoryOf(distributionDirectory: string): string {
 }
 
 function cssFilesIn(assetsDirectory: string): string[] {
-  return fs
+  const files = fs
     .readdirSync(assetsDirectory)
     .filter((file) => file.endsWith('.css'))
     .sort();
+
+  if (files.length === 0) {
+    throw new Error(
+      `wb-ui:combine-css-bundle: ${assetsDirectory} contains no CSS - ` +
+        'index.css would carry only the @layer order and no component rules',
+    );
+  }
+
+  return files;
 }
 
 function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory: string) {
