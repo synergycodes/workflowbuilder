@@ -69,7 +69,11 @@
       border-radius: 50%;
     }
 
+    /* State rules repeat the base rule's content-box opt-out: the build
+       injects border-box per rule, so an undeclared box-sizing here would
+       shrink the handle in exactly these states. */
     :global(.connectingfrom) {
+      box-sizing: content-box;
       background: var(--ax-public-node-port-background-color-hover);
       border-color: var(--ax-public-node-port-border-color-hover);
 
@@ -79,6 +83,7 @@
 
     :global(.react-flow__handle) {
       &:hover {
+        box-sizing: content-box;
         background-color: var(--ax-public-node-port-background-color-hover);
         border-color: var(--ax-public-node-port-border-color-hover);
 
@@ -88,6 +93,7 @@
     }
 
     &:hover :global(.react-flow__handle.connectionindicator) {
+      box-sizing: content-box;
       background-color: var(--ax-public-node-port-background-color-hover);
       border-color: var(--ax-public-node-port-border-color-hover);
 

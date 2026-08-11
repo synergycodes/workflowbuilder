@@ -62,4 +62,15 @@ describe('postcss-box-sizing', () => {
     const output = await run('.button { color: red }', '/fake/global.css');
     expect(output).toBe('.button { color: red }');
   });
+
+  // The plugin decides per rule; it cannot know that a state selector targets
+  // the same element as an opted-out base rule (undecidable from CSS alone).
+  // Contract: a content-box opt-out must be repeated in every state rule of
+  // that element, or the state rule silently becomes border-box.
+  it('injects into a state rule even when the base rule opts out', async () => {
+    const output = await run('.handle { box-sizing: content-box }\n.handle:hover { width: 1rem }');
+    expect(output).toBe(
+      '.handle { box-sizing: content-box }\n.handle:hover { box-sizing: border-box; width: 1rem }',
+    );
+  });
 });
