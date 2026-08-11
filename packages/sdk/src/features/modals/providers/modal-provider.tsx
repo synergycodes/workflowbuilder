@@ -1,5 +1,5 @@
 import { Modal } from '@workflowbuilder/ui';
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import { closeModal, useModalStore } from '../stores/use-modal-store';
@@ -31,7 +31,17 @@ export function ModalProvider() {
     };
   }, [isOpen]);
 
+  // The always-mounted portal touches `document` on every render; effects
+  // never run on the server, so this gates it out of SSR (the documented
+  // Next.js path server-renders even 'use client' components).
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const activeModal = modal ?? lastModalRef.current;
+
+  if (!mounted) return null;
 
   // Keep the Modal (its Dialog.Root) always mounted: enter/exit transitions
   // only run when `open` toggles on an already-mounted root.
