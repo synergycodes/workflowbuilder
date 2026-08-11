@@ -15,6 +15,7 @@ export type TooltipOptions = {
   initialOpen?: boolean;
   /**
    * Tooltip placement.
+   * @default 'bottom'
    */
   placement?: TooltipPlacement;
   /**

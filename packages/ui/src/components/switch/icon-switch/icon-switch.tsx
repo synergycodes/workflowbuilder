@@ -8,6 +8,9 @@ import { BaseSwitchProps, Switch } from '../switch';
 
 export type IconSwitchProps = WithIcon & {
   IconChecked: ReactNode;
+  /**
+   * @default 'primary'
+   */
   variant?: Variant;
 } & BaseSwitchProps;
 

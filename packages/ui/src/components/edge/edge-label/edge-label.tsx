@@ -7,6 +7,9 @@ import styles from './edge-label.module.css';
 import { EdgeLabelSize, EdgeState } from '../types';
 
 export type EdgeLabelProps = {
+  /**
+   * @default 'medium'
+   */
   size?: EdgeLabelSize;
   isHovered?: boolean;
   /**
@@ -15,10 +18,12 @@ export type EdgeLabelProps = {
    * text: Simple text label.
    * icon: Single icon without additional content.
    * compound: Mixed content like icons + text, multiple icons, etc.
+   * @default 'text'
    */
   type?: EdgeLabelType;
   /**
    * The visual state of the edge. Determines base styles like `strokeWidth`.
+   * @default 'default'
    */
   state?: EdgeState;
 };
