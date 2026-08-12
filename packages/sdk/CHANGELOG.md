@@ -1,5 +1,22 @@
 # Changelog
 
+## [2.3.0] - 2026-08-12
+
+### Added
+
+- `logo` and `logoHref` props on `<WorkflowBuilder.Root>`. `logo` accepts an image URL, `{ light, dark }` per-theme URLs, or a custom element and replaces the built-in app-bar logo; `logoHref` wraps it in a link.
+- `maxRows` option on the `TextArea` uischema control, capping how far the field auto-grows.
+
+### Changed
+
+- Slim the base install to `@workflowbuilder/sdk @xyflow/react zustand`. `@jsonforms/core`, `@jsonforms/react`, `i18next`, `react-i18next`, `i18next-browser-languagedetector` and `immer` moved from peer to regular dependencies and install automatically. JsonForms authoring primitives (`withJsonFormsControlProps`, `rankWith`, `useJsonForms`, `RuleEffect`, `ControlProps`, …) are now re-exported from `@workflowbuilder/sdk`, so custom renderers need no extra installs.
+- Drop the decision node's node-level output port; branches are its only outputs. Edges drawn from the old bare `source` handle lose their connection point.
+
+### Fixed
+
+- Add vertical spacing between branch cards in the decision properties panel. The accordion layout no longer lays out classless child divs, so custom controls should style their own root.
+- Stop the language selector from showing "EN" while the UI renders Polish for regional locales (e.g. `pl-PL`).
+
 ## [2.2.0] - 2026-06-29
 
 ### Added
@@ -56,6 +73,7 @@ First public npm release. The major bump continues the Workflow Builder version 
 
 - Distribution model: editor is now consumed via `npm install @workflowbuilder/sdk` instead of cloning the monorepo. Consumers no longer need monorepo tooling, tsconfig paths, or workspace symlinks.
 
+[2.3.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.3.0
 [2.2.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.2.0
 [2.1.0]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.1.0
 [2.0.1]: https://www.npmjs.com/package/@workflowbuilder/sdk/v/2.0.1
