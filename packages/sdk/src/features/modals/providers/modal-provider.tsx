@@ -5,9 +5,9 @@ import { createPortal } from 'react-dom';
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
 // Stable "a modal is open" signal for CSS that lives outside this component
-// (e.g. index.css, variable-text.module.css). Toggled here rather than read
-// off Base UI's Dialog internals so those selectors don't depend on
-// @workflowbuilder/ui's markup.
+// (variable-text.module.css suppresses its own backdrop while a modal dims the
+// page). Toggled here rather than read off Base UI's Dialog internals so those
+// selectors don't depend on @workflowbuilder/ui's markup.
 const MODAL_OPEN_BODY_CLASS = 'wb-modal-open';
 
 export function ModalProvider() {
