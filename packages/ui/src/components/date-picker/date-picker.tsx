@@ -11,6 +11,7 @@ import styles from './date-picker.module.css';
 import './variables.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import inputSizeStyles from '@ui/shared/styles/input-size.module.css';
+import listBoxStyles from '@ui/shared/styles/list-box.module.css';
 
 import { dayjsTokenToDateFns, isDateTuple, normalizeInitialValue } from './date-utils';
 import type { DatePickerProps, DatePickerType } from './types';
@@ -252,7 +253,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
         <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>
       </Popover.Trigger>
       <Popover.Portal>
-        <Popover.Positioner sideOffset={4} align="start">
+        <Popover.Positioner className={listBoxStyles['popup']} align="start">
           <Popover.Popup className={styles['calendar']}>{calendar}</Popover.Popup>
         </Popover.Positioner>
       </Popover.Portal>
