@@ -43,31 +43,6 @@
 }
 
 @layer ui.component {
-  .modal-base {
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    z-index: 1000;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    height: 100vh;
-    padding: 1.5rem;
-    overflow: auto;
-
-    transition:
-      opacity 200ms ease,
-      transform 200ms ease;
-
-    &[data-starting-style],
-    &[data-ending-style] {
-      opacity: 0;
-      transform: scale(0.96);
-    }
-  }
-
   .backdrop {
     position: fixed;
     top: 0;
@@ -86,29 +61,35 @@
     }
   }
 
-  .backdrop-close {
-    all: unset;
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-  }
-
   .modal {
-    position: relative;
-    z-index: 2;
-    margin: auto;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - 3rem);
     background-color: var(--ax-public-modal-background);
     border-radius: var(--ax-public-modal-border-radius);
     width: var(--ax-public-modal-width);
-    z-index: 1001;
     outline: none;
     box-shadow: var(--ax-public-modal-box-shadow);
+
+    transition:
+      opacity 200ms ease,
+      transform 200ms ease;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
   }
 
   .header {
     display: flex;
+    flex-shrink: 0;
     padding: var(--ax-public-modal-padding);
     justify-content: space-between;
     align-items: center;
@@ -161,12 +142,15 @@
     align-items: center;
     gap: var(--ax-public-modal-content-gap);
     align-self: stretch;
+    min-height: 0;
+    overflow: auto;
     background: var(--ax-public-modal-content-background);
     border-radius: var(--ax-public-modal-border-radius);
   }
 
   .footer {
     display: flex;
+    flex-shrink: 0;
     padding: var(--ax-public-modal-footer-padding);
     justify-content: space-between;
     align-items: center;

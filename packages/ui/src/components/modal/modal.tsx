@@ -76,33 +76,34 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       >
         <Dialog.Portal>
           <Dialog.Backdrop className={styles['backdrop']} />
-          <Dialog.Popup className={styles['modal-base']}>
-            <div className={clsx(styles['modal'], styles[size], className)} ref={ref} {...rest}>
-              <div className={styles['header']}>
-                <div className={styles['title-wrapper']}>
-                  {icon && <div className={styles['icon']}>{icon}</div>}
-                  <div className={styles['title-container']}>
-                    <Dialog.Title className={clsx(styles['title'], 'ax-public-h6')} render={<span />}>
-                      {title}
-                    </Dialog.Title>
-                    {subtitle && (
-                      <Dialog.Description className={clsx(styles['description'], 'ax-public-p11')} render={<span />}>
-                        {subtitle}
-                      </Dialog.Description>
-                    )}
-                  </div>
+          {/* The popup is the dialog window itself, not a full-screen wrapper:
+              Base UI closes on a press outside the popup, and a wrapper
+              covering the viewport would swallow every backdrop click. */}
+          <Dialog.Popup className={clsx(styles['modal'], styles[size], className)} ref={ref} {...rest}>
+            <div className={styles['header']}>
+              <div className={styles['title-wrapper']}>
+                {icon && <div className={styles['icon']}>{icon}</div>}
+                <div className={styles['title-container']}>
+                  <Dialog.Title className={clsx(styles['title'], 'ax-public-h6')} render={<span />}>
+                    {title}
+                  </Dialog.Title>
+                  {subtitle && (
+                    <Dialog.Description className={clsx(styles['description'], 'ax-public-p11')} render={<span />}>
+                      {subtitle}
+                    </Dialog.Description>
+                  )}
                 </div>
-                {onClose && (
-                  <NavButton onClick={onClose}>
-                    <X />
-                  </NavButton>
-                )}
               </div>
-
-              {children && <div className={styles['content']}>{children}</div>}
-
-              {footer && <div className={clsx(styles['footer'], styles[footerVariant])}>{footer}</div>}
+              {onClose && (
+                <NavButton onClick={onClose}>
+                  <X />
+                </NavButton>
+              )}
             </div>
+
+            {children && <div className={styles['content']}>{children}</div>}
+
+            {footer && <div className={clsx(styles['footer'], styles[footerVariant])}>{footer}</div>}
           </Dialog.Popup>
         </Dialog.Portal>
       </Dialog.Root>
