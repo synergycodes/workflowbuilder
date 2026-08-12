@@ -6,6 +6,7 @@ import data from '../../generated/ui-api.json';
 
 interface CssVariable {
   name: string;
+  kind: 'color' | 'size';
   comment: string;
 }
 
@@ -18,10 +19,9 @@ if (!entry) {
 }
 const cssVariables = entry?.cssVariables ?? [];
 
-const isColor = (name: string) => /color|background|bg|shadow|stroke|fill/.test(name);
 const groups = [
-  { label: 'Color', vars: cssVariables.filter((v) => isColor(v.name)) },
-  { label: 'Size', vars: cssVariables.filter((v) => !isColor(v.name)) },
+  { label: 'Color', vars: cssVariables.filter((v) => v.kind === 'color') },
+  { label: 'Size', vars: cssVariables.filter((v) => v.kind !== 'color') },
 ].filter((group) => group.vars.length > 0);
 ---
 

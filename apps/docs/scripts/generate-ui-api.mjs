@@ -15,6 +15,8 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import { COMPONENTS } from './ui-components.mjs';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
@@ -26,67 +28,6 @@ const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json'
 // public documentation - stripped so they never render as CSS variable
 // descriptions in the docs (see e.g. status.module.css, icon-size.module.css).
 const INTERNAL_NOTE_RE = /missing token/i;
-
-// slug -> { name, propsType, dir }. `propsType` is the exported prop type the
-// component accepts (or the list of variant prop types for a component whose
-// public surface is a discriminated union - see collectVariantProps); `dir`
-// is the component folder under packages/ui/src/components.
-const COMPONENTS = [
-  { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
-  { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  // Button has no single public props type - it renders one of three variant
-  // components depending on `children` (label / icon / icon+label). Merge
-  // their prop sets instead of documenting only the shared base.
-  {
-    slug: 'button',
-    name: 'Button',
-    propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'],
-    dir: 'button',
-  },
-  { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
-  { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
-  { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
-  { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
-  { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
-  { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
-  { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
-  {
-    slug: 'nav-button',
-    name: 'NavButton',
-    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
-    dir: 'button/nav-button',
-  },
-  { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },
-  {
-    slug: 'segment-picker',
-    name: 'SegmentPicker',
-    propsType: ['ControlledSegmentPickerProps', 'UncontrolledSegmentPickerProps'],
-    dir: 'segment-picker',
-  },
-  { slug: 'select', name: 'Select', propsType: 'SelectBaseProps', dir: 'select' },
-  { slug: 'separator', name: 'Separator', propsType: null, dir: 'separator' },
-  { slug: 'snackbar', name: 'Snackbar', propsType: 'SnackbarProps', dir: 'snackbar' },
-  { slug: 'status', name: 'Status', propsType: 'StatusProps', dir: 'status' },
-  { slug: 'switch', name: 'Switch', propsType: 'BaseSwitchProps', dir: 'switch' },
-  { slug: 'text-area', name: 'TextArea', propsType: 'TextAreaProps', dir: 'text-area' },
-  { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
-  // Diagram components (props extracted the same way; NodePanel is a compound
-  // component documented narratively, so it has no flat props entry here).
-  { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },
-  {
-    slug: 'node-description',
-    name: 'NodeDescription',
-    propsType: 'NodeDescriptionProps',
-    dir: 'node/node-description',
-  },
-  {
-    slug: 'node-as-port-wrapper',
-    name: 'NodeAsPortWrapper',
-    propsType: 'NodeAsPortWrapperProps',
-    dir: 'node/node-as-port-wrapper',
-  },
-  { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
-];
 
 async function runTypedoc() {
   await mkdir(path.dirname(tdJson), { recursive: true });
@@ -352,22 +293,65 @@ function extractCssVariables(directory, warnings, slug) {
     warnings.push(`"${slug}": component directory ${directory} does not exist`);
     return [];
   }
-  const files = globSync('**/*.css', { cwd: abs }).sort();
+  // Subcomponents with their own COMPONENTS entry document their own
+  // variables - without this a parent page repeats them and offers overrides
+  // that do nothing there (Button listing NavButton's, Switch IconSwitch's).
+  const nestedPrefixes = COMPONENTS.map((component) => component.dir)
+    .filter((dir) => dir.startsWith(`${directory}/`))
+    .map((dir) => `${dir.slice(directory.length + 1)}/`);
+
+  const files = globSync('**/*.css', { cwd: abs })
+    .filter((file) => !nestedPrefixes.some((prefix) => file.startsWith(prefix)))
+    .sort();
   const seen = new Set();
   const variables = [];
   for (const file of files) {
     const css = readFileSync(path.resolve(abs, file), 'utf8');
-    // Match `--ax-public-xxx:` declarations, capturing an optional same-line comment.
-    const re = /(--ax-public-[\w-]+)\s*:[^;]*?(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
+    // Match `--ax-public-xxx: value` declarations, capturing the value and an
+    // optional same-line comment.
+    const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
       if (seen.has(m[1])) continue;
       seen.add(m[1]);
-      const comment = (m[2] ?? '').trim();
-      variables.push({ name: m[1], comment: INTERNAL_NOTE_RE.test(comment) ? '' : comment });
+      const comment = (m[3] ?? '').trim();
+      variables.push({
+        name: m[1],
+        kind: valueKind(m[2].trim()),
+        comment: INTERNAL_NOTE_RE.test(comment) ? '' : comment,
+      });
     }
   }
   return variables;
+}
+
+// Groups the docs table by what the variable resolves to, not by what its name
+// suggests: `edge-stroke-width` is a length and `snackbar-success-border` is a
+// color, and neither reads that way from the name alone. Values usually point
+// at a design token, so the token stylesheets are followed to the literal.
+const LITERAL_COLOR_RE = /^(#|rgb|hsl|oklch|color-mix|linear-gradient|radial-gradient|transparent\b|currentColor\b)/i;
+
+const tokenValues = readTokenValues();
+
+function readTokenValues() {
+  const values = new Map();
+  const tokenDistribution = path.resolve(repoRoot, 'packages/tokens/dist');
+  if (!existsSync(tokenDistribution)) return values;
+  for (const file of globSync('*.css', { cwd: tokenDistribution })) {
+    const css = readFileSync(path.resolve(tokenDistribution, file), 'utf8');
+    for (const [, name, value] of css.matchAll(/(--ax-[\w-]+)\s*:\s*([^;]+);/g)) {
+      if (!values.has(name)) values.set(name, value.trim());
+    }
+  }
+  return values;
+}
+
+function valueKind(value, depth = 0) {
+  if (LITERAL_COLOR_RE.test(value)) return 'color';
+  const referenced = /var\(\s*(--[\w-]+)/.exec(value);
+  if (!referenced || depth > 8) return 'size';
+  const resolved = tokenValues.get(referenced[1]);
+  return resolved ? valueKind(resolved, depth + 1) : 'size';
 }
 
 async function main() {
@@ -385,7 +369,9 @@ async function main() {
     } else if (component.propsType) {
       const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
-        props = [...collectProps(typeNode, byId).values()].sort((a, b) => a.name.localeCompare(b.name));
+        props = [...collectProps(typeNode, byId, new Map(), { warnings, slug: component.slug }).values()].sort((a, b) =>
+          a.name.localeCompare(b.name),
+        );
       } else {
         warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
