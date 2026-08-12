@@ -1,0 +1,68 @@
+/**
+ * The documented component surface: which UI components get generated Props /
+ * CSS variables tables, which prop type each one exposes, and where its source
+ * lives under packages/ui/src/components.
+ *
+ * Imported by both the generator and the coverage guard, so the guard can
+ * never disagree with the generator about what is documented.
+ */
+// slug -> { name, propsType, dir }. `propsType` is the exported prop type the
+// component accepts (or the list of variant prop types for a component whose
+// public surface is a discriminated union - see collectVariantProps); `dir`
+// is the component folder under packages/ui/src/components.
+export const COMPONENTS = [
+  { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
+  { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
+  // Button has no single public props type - it renders one of three variant
+  // components depending on `children` (label / icon / icon+label). Merge
+  // their prop sets instead of documenting only the shared base.
+  {
+    slug: 'button',
+    name: 'Button',
+    propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'],
+    dir: 'button',
+  },
+  { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
+  { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
+  { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
+  { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
+  { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
+  { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
+  { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
+  {
+    slug: 'nav-button',
+    name: 'NavButton',
+    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
+    dir: 'button/nav-button',
+  },
+  { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },
+  {
+    slug: 'segment-picker',
+    name: 'SegmentPicker',
+    propsType: ['ControlledSegmentPickerProps', 'UncontrolledSegmentPickerProps'],
+    dir: 'segment-picker',
+  },
+  { slug: 'select', name: 'Select', propsType: 'SelectBaseProps', dir: 'select' },
+  { slug: 'separator', name: 'Separator', propsType: null, dir: 'separator' },
+  { slug: 'snackbar', name: 'Snackbar', propsType: 'SnackbarProps', dir: 'snackbar' },
+  { slug: 'status', name: 'Status', propsType: 'StatusProps', dir: 'status' },
+  { slug: 'switch', name: 'Switch', propsType: 'BaseSwitchProps', dir: 'switch' },
+  { slug: 'text-area', name: 'TextArea', propsType: 'TextAreaProps', dir: 'text-area' },
+  { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
+  // Diagram components (props extracted the same way; NodePanel is a compound
+  // component documented narratively, so it has no flat props entry here).
+  { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },
+  {
+    slug: 'node-description',
+    name: 'NodeDescription',
+    propsType: 'NodeDescriptionProps',
+    dir: 'node/node-description',
+  },
+  {
+    slug: 'node-as-port-wrapper',
+    name: 'NodeAsPortWrapper',
+    propsType: 'NodeAsPortWrapperProps',
+    dir: 'node/node-as-port-wrapper',
+  },
+  { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
+];

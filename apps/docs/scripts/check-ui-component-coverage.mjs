@@ -1,7 +1,10 @@
-// Asserts that every entry in packages/ui/vite.config.mts's `componentEntries`
-// (the list of publishable subpath bundles) has at least one matching entry
-// in generate-ui-api.mjs's `COMPONENTS` (the list of docs pages with a
-// generated Props / CSS variables table).
+// Asserts two things about the documented component surface:
+//
+//   1. every entry in packages/ui/vite.config.mts's `componentEntries` (the
+//      list of publishable subpath bundles) has a matching entry in
+//      `COMPONENTS` (scripts/ui-components.mjs);
+//   2. every `COMPONENTS` entry is actually rendered by an MDX page - a
+//      generated table nobody shows is the same drift in reverse.
 //
 // Without this guard, a new component can be added to the package's public
 // entry points and shipped to npm without ever getting a docs page - nothing
@@ -25,36 +28,31 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
+import { COMPONENTS } from './ui-components.mjs';
+
 const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
 const viteConfigPath = path.resolve(repoRoot, 'packages/ui/vite.config.mts');
-const generatorPath = path.resolve(here, 'generate-ui-api.mjs');
 
 const NARRATIVE_ONLY = new Set([]);
 
+// The vite entry list is TypeScript, so it is read as text rather than
+// imported. An empty result means the shape changed and every check below
+// would pass over nothing - fail instead.
 function extractComponentEntries(source) {
   const match = /const componentEntries = \[([\s\S]*?)] as const;/.exec(source);
   if (!match) throw new Error('Could not find `componentEntries` in packages/ui/vite.config.mts');
-  return [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
-}
-
-function extractComponentDirectories(source) {
-  const match = /const COMPONENTS = \[([\s\S]*?)];/.exec(source);
-  if (!match) throw new Error('Could not find `COMPONENTS` in generate-ui-api.mjs');
-  return [...match[1].matchAll(/dir:\s*'([^']+)'/g)].map((m) => m[1]);
-}
-
-function extractComponentSlugs(source) {
-  const match = /const COMPONENTS = \[([\s\S]*?)];/.exec(source);
-  if (!match) throw new Error('Could not find `COMPONENTS` in generate-ui-api.mjs');
-  return [...match[1].matchAll(/slug:\s*'([^']+)'/g)].map((m) => m[1]);
+  const entries = [...match[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
+  if (entries.length === 0) {
+    throw new Error('Extracted zero entries from `componentEntries` in packages/ui/vite.config.mts');
+  }
+  return entries;
 }
 
 const componentEntries = extractComponentEntries(readFileSync(viteConfigPath, 'utf8'));
-const generatorSource = readFileSync(generatorPath, 'utf8');
-const componentDirectories = extractComponentDirectories(generatorSource);
-const componentSlugs = extractComponentSlugs(generatorSource);
+const componentDirectories = COMPONENTS.map((component) => component.dir);
+const componentSlugs = COMPONENTS.map((component) => component.slug);
 
 const missing = componentEntries.filter((entry) => {
   if (NARRATIVE_ONLY.has(entry)) return false;
