@@ -3,6 +3,7 @@ import { useLayoutEffect, useRef } from 'react';
 
 import { registerPluginTranslation } from '../features/plugins-core/adapters/adapter-i18n';
 
+import { setAppBarBranding } from '../data/app-bar-branding';
 import { setCustomEdgeTemplates } from '../data/edge-templates';
 import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
@@ -56,6 +57,8 @@ export function WorkflowBuilderRoot({
   jsonForm,
   integration,
   name,
+  logo,
+  logoHref,
   layoutDirection,
   initialNodes,
   initialEdges,
@@ -131,6 +134,7 @@ export function WorkflowBuilderRoot({
   setCustomEdgeTemplates(edgeTemplates ?? null);
   setIsValidConnection(isValidConnection ?? null);
   setReactFlowProps(reactFlowProps ?? null);
+  setAppBarBranding({ logo, logoHref });
 
   const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
 

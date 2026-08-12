@@ -49,13 +49,10 @@ Don't want to install or clone anything yet? [Try the live demo](https://app.wor
 Use Workflow Builder inside your own React app. No clone, no Docker. Install the SDK and its peer dependencies from npm:
 
 ```bash
-npm install @workflowbuilder/sdk \
-  react react-dom \
-  @xyflow/react \
-  @jsonforms/core @jsonforms/react \
-  i18next react-i18next i18next-browser-languagedetector \
-  immer zustand
+npm install @workflowbuilder/sdk @xyflow/react zustand
 ```
+
+Requires React 18 or 19.
 
 Render the editor:
 

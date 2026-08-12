@@ -1,0 +1,9 @@
+:root {
+  --wb-decision-branches-gap: 0.75rem;
+}
+
+.branches {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wb-decision-branches-gap);
+}

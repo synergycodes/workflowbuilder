@@ -54,6 +54,7 @@ export type {
   WorkflowBuilderPlugin,
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
+  WorkflowBuilderLogo,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderEdgeTemplates,
   WorkflowBuilderIsValidConnection,
@@ -80,6 +81,14 @@ export type {
   JsonFormsCellExtension,
   PluginTranslationResource,
 } from './features/json-form/extension-registry';
+
+// =============================================================================
+// JsonForms authoring primitives
+// =============================================================================
+// So custom-renderer authors never install @jsonforms/* themselves. The
+// curated list lives in ./features/json-form/authoring.
+
+export * from './features/json-form/authoring';
 
 // =============================================================================
 // Integration

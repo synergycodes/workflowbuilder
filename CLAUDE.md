@@ -11,7 +11,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents |
 | `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                            |
 | `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker         |
-| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations. First run, or after schema changes                |
+| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations out-of-band (backend also auto-migrates on boot)   |
 | `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)     |
 | `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                        |
 | `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                               |
@@ -22,7 +22,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm test`                  | -    | Run tests in `packages/sdk` and `packages/execution-core`                   |
 | `pnpm check`                 | -    | Lint + typecheck + format + knip                                            |
 
-Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start, and `db:migrate` on the first run.
+Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 
 ### Agent signals
 
@@ -42,6 +42,9 @@ Long-running processes already emit stable log lines that scripts and agents can
 
 ```
 tools/              - Root dev scripts: preflight, setup:env, infra wait
+  deployment/       - Swarm/Ansible deploy path mirroring the workflow-builder repo (ACR, Traefik)
+deploy/
+  ai-studio/        - Production deployment: Dockerfile (runtime/web), compose, nginx, README
 apps/
   demo/             - Reference app consuming the SDK (React + Vite, port 4200)
   ai-studio/        - Reference AI workflow product (React + Vite, port 4201)
@@ -137,7 +140,7 @@ The SDK is the only npm-published workspace; everything else under `apps/` and `
 **Daily SDK change:**
 
 1. Edit `packages/sdk/**`, run tests/typecheck locally.
-2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments).
+2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments). Keep it to 1-2 plain sentences: the consumer-visible change plus any migration note - changesets become the public CHANGELOG, so no rationale, investigation history, or noise (that belongs in the commit message and PR).
 3. Commit code + changeset together with a Conventional Commits message:
    ```
    git add packages/sdk/... .changeset/<slug>.md

@@ -1,4 +1,4 @@
-import { Worker } from '@temporalio/worker';
+import { NativeConnection, Worker } from '@temporalio/worker';
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 
@@ -10,6 +10,7 @@ import type { AiStudioNode } from '../../domain/ai-studio-nodes';
 import { env } from '../../env';
 import { executeDecision } from '../../executors/decision';
 import { executeTrigger } from '../../executors/trigger';
+import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
 
 const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
@@ -24,7 +25,9 @@ const aiAgentLogger = logger.child({ component: 'ai-agent' });
 const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
   'ai-studio/trigger': executeTrigger,
   'ai-studio/decision': executeDecision,
-  'ai-studio/ai-agent': (node, context) => executeAiAgent(node, context, { model, logger: aiAgentLogger }),
+  'ai-studio/ai-agent': (node, context) =>
+    executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
+  'ai-studio/visualize': executeVisualize,
 };
 
 const activities = {
@@ -42,7 +45,11 @@ const activities = {
   },
 };
 
+// without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
+const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS });
+
 const worker = await Worker.create({
+  connection,
   workflowsPath: fileURLToPath(new URL('workflows/run-workflow.ts', import.meta.url)),
   activities,
   taskQueue,

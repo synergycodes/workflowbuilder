@@ -85,6 +85,13 @@ export function createExecutionsRoutes(
       return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
     }
 
+    // Any nginx hop between us and the browser buffers this stream into its
+    // proxy buffers by default and flushes only at stream close, turning live
+    // progress into one end-of-run burst. nginx honors this header from the
+    // upstream response and disables buffering per-response, covering hops
+    // whose config we don't own (e.g. a TLS-terminating host nginx).
+    c.header('X-Accel-Buffering', 'no');
+
     return streamSSE(c, async (stream) => {
       // Catch-up snapshot. Reuses the same incremental query (afterSequence=0)
       // that powers live drains — one query shape across the route, not two.

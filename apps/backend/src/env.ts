@@ -12,4 +12,13 @@ export const env = {
   HOST: envOr('HOST', '127.0.0.1'),
   DATABASE_URL: envOr('DATABASE_URL', 'postgresql://wb:wb@127.0.0.1:5432/workflow_builder'),
   TEMPORAL_ADDRESS: envOr('TEMPORAL_ADDRESS', '127.0.0.1:7233'),
+  // 0 disables (dev default); the deploy compose sets both
+  RATE_LIMIT_EXECUTE_PER_MINUTE: Number(envOr('RATE_LIMIT_EXECUTE_PER_MINUTE', '0')),
+  RATE_LIMIT_EXECUTE_PER_DAY: Number(envOr('RATE_LIMIT_EXECUTE_PER_DAY', '0')),
+  TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
+  // Null = Turnstile verification disabled (local dev runs unprotected).
+  TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
+  // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
+  OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
+  AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
 };

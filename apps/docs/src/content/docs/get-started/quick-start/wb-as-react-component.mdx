@@ -27,31 +27,28 @@ Install the SDK along with its peer dependencies:
   <TabItem label="npm">
 
 ```bash
-npm install @workflowbuilder/sdk react react-dom @xyflow/react @jsonforms/core @jsonforms/react i18next react-i18next i18next-browser-languagedetector immer zustand
+npm install @workflowbuilder/sdk @xyflow/react zustand
 ```
 
   </TabItem>
   <TabItem label="pnpm">
 
 ```bash
-pnpm add @workflowbuilder/sdk react react-dom @xyflow/react @jsonforms/core @jsonforms/react i18next react-i18next i18next-browser-languagedetector immer zustand
+pnpm add @workflowbuilder/sdk @xyflow/react zustand
 ```
 
   </TabItem>
   <TabItem label="yarn">
 
 ```bash
-yarn add @workflowbuilder/sdk react react-dom @xyflow/react @jsonforms/core @jsonforms/react i18next react-i18next i18next-browser-languagedetector immer zustand
+yarn add @workflowbuilder/sdk @xyflow/react zustand
 ```
 
   </TabItem>
 </Tabs>
 
-The SDK ships its non-peer dependencies bundled inside `dist/`, so the
-peer list above is everything you need to install yourself. React,
-xyflow, JsonForms, i18next, immer and zustand are kept external because
-they expose singletons (store identity, i18next instance, frozen-object
-caches) — your app and the SDK must share a single copy of each.
+Requires React 18 or 19. Everything else the SDK uses (JsonForms,
+i18next, immer, …) is a regular dependency and installs automatically.
 
 ## Usage
 

@@ -37,7 +37,7 @@ export type TextAreaControlElement = Override<
   BaseControlElement,
   {
     type: 'TextArea';
-  } & Pick<TextAreaProps, 'placeholder' | 'minRows'>
+  } & Pick<TextAreaProps, 'placeholder' | 'minRows' | 'maxRows'>
 >;
 export type TextAreaControlProps = ControlProps<string, TextAreaControlElement>;
 

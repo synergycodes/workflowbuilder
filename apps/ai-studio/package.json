@@ -13,16 +13,20 @@
     "test:watch": "vitest --passWithNoTests"
   },
   "dependencies": {
-    "@jsonforms/core": "^3.4.1",
-    "@jsonforms/react": "^3.4.1",
     "@phosphor-icons/react": "^2.1.7",
     "@synergycodes/overflow-ui": "1.0.0-beta.27",
     "@workflow-builder/types": "workspace:*",
     "@xyflow/react": "catalog:",
     "clsx": "^2.1.1",
+    "html-to-image": "1.11.11",
     "immer": "^10.1.1",
+    "mermaid": "^11.15.0",
     "react": "^19.1.0",
     "react-dom": "catalog:",
+    "react-i18next": "^15.4.1",
+    "react-markdown": "^10.1.0",
+    "recharts": "^3.9.0",
+    "remark-gfm": "^4.0.1",
     "zustand": "^5.0.1"
   },
   "devDependencies": {

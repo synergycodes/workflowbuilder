@@ -20,7 +20,8 @@ const languages: Language[] = [
 export function LanguageSelector() {
   const { t, i18n } = useTranslation();
 
-  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
+  const resolvedCode = i18n.resolvedLanguage ?? i18n.language?.split('-')[0];
+  const currentLanguage = languages.find((lang) => lang.code === resolvedCode) || languages[0];
 
   const languageItems: MenuItemProps[] = useMemo(
     () =>
