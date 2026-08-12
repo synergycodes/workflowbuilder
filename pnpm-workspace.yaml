@@ -3,8 +3,10 @@ packages:
   - './packages/*'
 
 catalog:
-  # Bump = visual pass over overlay transitions.
-  '@base-ui/react': ^1.7.0
+  # Exact-pinned: the keep-mounted modal relies on Base UI's transition
+  # lifecycle, and this range ships to consumers. Bump = visual pass over
+  # overlay transitions.
+  '@base-ui/react': 1.7.0
   '@phosphor-icons/core': ^2.1.1
   '@phosphor-icons/react': ^2.1.7
   '@xyflow/react': 12.10.0

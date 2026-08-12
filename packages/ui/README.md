@@ -23,7 +23,7 @@ yarn add @workflowbuilder/ui
 ```
 
 > **Peers &amp; dependencies.** The only peer dependencies are `react` and
-> `react-dom` (bring your own). `@base-ui/react` (`^1.7.0`) is a regular
+> `react-dom` (bring your own). `@base-ui/react` (pinned to `1.7.0`) is a regular
 > dependency, so it installs automatically — no need to add it yourself. The
 > heavier component dependencies (date-fns, react-day-picker, clsx, Phosphor
 > icons) are bundled into the package; `react-textarea-autosize` and

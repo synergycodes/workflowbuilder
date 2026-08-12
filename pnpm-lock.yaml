@@ -7,7 +7,7 @@ settings:
 catalogs:
   default:
     '@base-ui/react':
-      specifier: ^1.7.0
+      specifier: 1.7.0
       version: 1.7.0
     '@phosphor-icons/core':
       specifier: ^2.1.1
