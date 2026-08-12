@@ -5,11 +5,11 @@ export const GITHUB_REPO_BASE =
 /**
  * The runnable starter on GitHub, as `owner/repo/tree/<ref>/<path>`.
  *
- * Change the ref here and both the embed and every docs link follow. The three
- * READMEs repeat it, because Markdown cannot import a constant.
+ * Change the ref here and both the embed and every docs link follow. The root
+ * README (twice) and the starter's own README repeat it, because Markdown
+ * cannot import a constant.
  */
-export const STARTER_PROJECT =
-  'synergycodes/workflowbuilder/tree/feat/MARK-3156-stackblitz-starter-example/examples/workflow-builder-starter';
+export const STARTER_PROJECT = 'synergycodes/workflowbuilder/tree/main/examples/workflow-builder-starter';
 
 /** File the StackBlitz editor opens. */
 export const STARTER_FILE = 'src/app.tsx';
