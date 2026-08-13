@@ -8,8 +8,10 @@
  */
 // slug -> { name, propsType, dir }. `propsType` is the exported prop type the
 // component accepts (or the list of variant prop types for a component whose
-// public surface is a discriminated union - see collectVariantProps); `dir`
-// is the component folder under packages/ui/src/components.
+// public surface is a discriminated union - see collectVariantProps), or null
+// when the parts are described in prose instead. `dir` is the component folder
+// under packages/ui/src/components, or null for an entry that documents an API
+// but owns no stylesheet of its own.
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
@@ -65,4 +67,12 @@ export const COMPONENTS = [
     dir: 'node/node-as-port-wrapper',
   },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
+  // Documented on the Edge page, which already renders the edge variables -
+  // `dir: null` keeps them there instead of splitting them off to a hook that
+  // has no variables section of its own.
+  { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },
+  // Compound component: the parts and their props are described in prose on the
+  // page (like Separator, there is no single props type to generate from), but
+  // its CSS variables are generated.
+  { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];

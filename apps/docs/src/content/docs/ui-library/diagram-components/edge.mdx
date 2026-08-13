@@ -96,10 +96,7 @@ function LabeledEdge({
 A hook that maps an edge's `state` and hover flag to the CSS properties for its
 SVG path.
 
-| Parameter   | Type                                                   | Default     | Description                         |
-| ----------- | ------------------------------------------------------ | ----------- | ----------------------------------- |
-| `state`     | `'default' \| 'selected' \| 'disabled' \| 'temporary'` | `'default'` | Visual state of the edge.           |
-| `isHovered` | `boolean`                                              | `false`     | Applies hover color over the state. |
+<PropsTable slug="use-edge-style" />
 
 Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
 `style`.

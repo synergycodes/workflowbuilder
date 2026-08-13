@@ -3,6 +3,7 @@ title: NodePanel
 description: Node container with Root, Header, Content, and Handles slots.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import { NodePanelExample } from '../../../../components/ui-examples/node-panel';
 
 `NodePanel` is the structural container Workflow Builder uses to render a node on
@@ -73,39 +74,4 @@ function WorkflowNode({ id, icon, label, description, selected, isValid, showHan
 
 ## CSS variables
 
-Override these `--ax-public-*` custom properties to retune the node panel.
-
-### Layout
-
-| Variable                         | Description               |
-| -------------------------------- | ------------------------- |
-| `--ax-public-node-width`         | Node width.               |
-| `--ax-public-node-height`        | Node height.              |
-| `--ax-public-node-padding`       | Inner padding.            |
-| `--ax-public-node-gap`           | Gap between header items. |
-| `--ax-public-node-border-size`   | Border width.             |
-| `--ax-public-node-border-radius` | Corner radius.            |
-
-### Color & state
-
-| Variable                                  | Description                 |
-| ----------------------------------------- | --------------------------- |
-| `--ax-public-node-background-color`       | Background color.           |
-| `--ax-public-node-hover-background-color` | Background color on hover.  |
-| `--ax-public-node-border-color`           | Border color.               |
-| `--ax-public-node-border-hover-color`     | Border color on hover.      |
-| `--ax-public-node-border-color-selected`  | Border color when selected. |
-| `--ax-public-node-box-shadow-selected`    | Box shadow when selected.   |
-
-### Ports
-
-| Variable                                       | Description                     |
-| ---------------------------------------------- | ------------------------------- |
-| `--ax-public-node-port-size`                   | Connection port size.           |
-| `--ax-public-node-port-size-hover`             | Port size on hover.             |
-| `--ax-public-node-port-boundary-size`          | Port hit-area boundary size.    |
-| `--ax-public-node-port-border-size`            | Port border width.              |
-| `--ax-public-node-port-background-color`       | Port background color.          |
-| `--ax-public-node-port-background-color-hover` | Port background color on hover. |
-| `--ax-public-node-port-border-color`           | Port border color.              |
-| `--ax-public-node-port-border-color-hover`     | Port border color on hover.     |
+<CssVariablesTable slug="node-panel" />

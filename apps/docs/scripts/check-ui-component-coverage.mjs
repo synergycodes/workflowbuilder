@@ -51,7 +51,7 @@ function extractComponentEntries(source) {
 }
 
 const componentEntries = extractComponentEntries(readFileSync(viteConfigPath, 'utf8'));
-const componentDirectories = COMPONENTS.map((component) => component.dir);
+const componentDirectories = COMPONENTS.map((component) => component.dir).filter(Boolean);
 const componentSlugs = COMPONENTS.map((component) => component.slug);
 
 const missing = componentEntries.filter((entry) => {
