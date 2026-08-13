@@ -26,7 +26,7 @@ export function getSingleVariableMetadataIfPossible(
 ): VariableMetadata | undefined {
   const { reference, referenceWithoutBrackets } = getVariableReferences(maybeReference);
 
-  if (!reference || !referenceWithoutBrackets) {
+  if (!reference) {
     return;
   }
 

@@ -3,10 +3,15 @@ import type { MaybeVariableReference, VariableReference } from '../../types';
 import { getIsStringVariableReferenceStart } from './get-is-string-variable-reference';
 import { getVariableReferenceIfPossible } from './get-variable-reference-if-possible';
 
-type Response = {
-  reference: VariableReference | undefined;
-  referenceWithoutBrackets: string | undefined;
-};
+type Response =
+  | {
+      reference: VariableReference;
+      referenceWithoutBrackets: string;
+    }
+  | {
+      reference: undefined;
+      referenceWithoutBrackets: undefined;
+    };
 
 const INVALID_RESPONSE: Response = {
   reference: undefined,
