@@ -48,7 +48,9 @@
     color: unset;
     width: 100%;
     resize: none;
-    font: inherit;
+    /* Not the `font` shorthand - it would also set the size, overriding the
+       ax-public-* typography class the component is given. */
+    font-family: inherit;
 
     &:focus-visible {
       outline: none;
