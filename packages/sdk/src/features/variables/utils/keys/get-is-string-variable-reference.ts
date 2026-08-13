@@ -13,10 +13,14 @@ export function getIsStringVariableReference(value: MaybeVariableReference): boo
     return false;
   }
 
+  const hasInvalidCharacters = valueTrimmed.includes(' ');
+  if (hasInvalidCharacters) {
+    return true;
+  }
+
   const isOnlyOneVariable =
     `${VARIABLE_BRACKETS_START}${valueTrimmed.replaceAll(VARIABLE_BRACKETS_START, '').replaceAll(VARIABLE_BRACKETS_END, '')}${VARIABLE_BRACKETS_END}` ===
     valueTrimmed;
-
   if (isOnlyOneVariable) {
     return true;
   }

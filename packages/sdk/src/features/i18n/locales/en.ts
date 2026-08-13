@@ -138,6 +138,7 @@ export const en = {
     variableNotFound: 'Variable not found.',
     removeVariableWarning: 'Deleting this variable will permanently remove its configuration.',
     removeVariableIsBlocked: 'The variable is used in the following nodes and cannot be deleted.',
+    addVariableToContinue: 'Add a variable to continue',
   },
   loader: {
     text: 'Loading...',

@@ -8,6 +8,13 @@ export const LOGICAL_OPERATOR = {
 } as const;
 export type LogicalOperator = (typeof LOGICAL_OPERATOR)[keyof typeof LOGICAL_OPERATOR];
 
+/**
+ * String literal union of comparison operators recognised by the
+ * dynamic-conditions / decision-branches controls (`'isEqual'`,
+ * `'isGreaterThan'`, `'isContaining'`, …).
+ *
+ * @category Forms
+ */
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const comparisonsOperators = [
   'isEqual',
@@ -50,7 +57,24 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
 export const VARIABLE_BRACKETS_START = '{{';
 export const VARIABLE_BRACKETS_END = '}}';
 
+/**
+ * Reserved key under which the variable-text control looks up the
+ * available global variables when expanding `{{global.*}}` placeholders.
+ * Plugins that compose alternative variable sources should namespace
+ * their own keys to avoid colliding with this reserved value.
+ *
+ * @category Constants
+ */
 export const VARIABLE_GLOBAL_KEY = 'global';
+
+/**
+ * Reserved key under which the variable-text control looks up the
+ * available upstream nodes when expanding `{{nodes.*}}` placeholders.
+ * Plugins that compose alternative variable sources should namespace
+ * their own keys to avoid colliding with this reserved value.
+ *
+ * @category Constants
+ */
 export const VARIABLE_NODES_KEY = 'nodes';
 
 type VariableTypeOption = {
@@ -97,7 +121,7 @@ export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = 
   },
 };
 
-// Remove filter when other formats will be supported
+// TODO: Remove filter when other formats will be supported
 export const variableTypesOptions: VariableTypeOption[] = Object.values(variableTypeInfoByType).filter(
   ({ type, baseType }) => type === baseType,
 );

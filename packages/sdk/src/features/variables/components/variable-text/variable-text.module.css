@@ -156,6 +156,8 @@ body:has(.suggestionsContainer) {
 
 .suggestionsTitle {
   composes: ax-public-h10 from global;
+
+  color: var(--ax-txt-primary-default);
 }
 
 .suggestionsClose {

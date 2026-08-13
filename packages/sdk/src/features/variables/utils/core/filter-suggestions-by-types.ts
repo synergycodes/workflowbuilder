@@ -5,7 +5,7 @@ import type { VariableSuggestion } from '../../components/variable-text/variable
 type Params = {
   suggestions: VariableSuggestion[];
   excludeTypes: VariableType[];
-  // If empty accept all
+  // It accepts all if the array is empty or undefined.
   includeTypes: VariableType[] | undefined;
 };
 

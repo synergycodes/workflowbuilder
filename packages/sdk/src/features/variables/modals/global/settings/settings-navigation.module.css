@@ -1,3 +1,7 @@
+:root {
+  --wb-settings-navigation-background: var(--ax-public-modal-header-background);
+}
+
 .container {
   display: flex;
   flex-flow: column;
@@ -6,7 +10,7 @@
   text-align: left;
   gap: var(--wb-token-spacing-operator-wrap-gap, 4px);
   border-radius: var(--wb-token-radius-dropdown-wrap-s, 8px);
-  background: var(--wb-dropdown-bg-primary-default, #f9faf9);
+  background: var(--wb-settings-navigation-background);
 }
 
 .button {
@@ -32,7 +36,7 @@
 
   &:hover,
   &.button--active {
-    background: var(--wb-nav-button-bg-primary-hover, rgba(26, 26, 25, 0.02));
+    background: var(--ax-public-button-nav-background-color);
   }
 
   &.button--active {

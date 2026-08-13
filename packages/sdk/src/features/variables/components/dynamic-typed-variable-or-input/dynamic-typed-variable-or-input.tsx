@@ -15,7 +15,7 @@ import { DynamicTypedInput } from '../dynamic-typed-input/dynamic-typed-input';
 import { VariableSelect } from '../variable-select/variable-select';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
 
-type DynamicTypedVariableOrInputProps = {
+type Props = {
   className?: string;
   onChange: (value: string) => void;
   onBlur?: (value: string) => void;
@@ -39,7 +39,7 @@ export function DynamicTypedVariableOrInput({
   type,
   isDisabled,
   suggestionGroups = [],
-}: DynamicTypedVariableOrInputProps) {
+}: Props) {
   const { t } = useTranslation();
   const translateIfPossible = useTranslateIfPossible();
   const [mode, setMode] = useState<DynamicControlType>(getIsStringVariableReference(value) ? 'variable' : 'manual');

@@ -195,7 +195,6 @@ export function DynamicTypedInput({
             const newValue = getISODate(date);
 
             onChange(newValue);
-            // setTime(getTimeFromDateIfValid(newValue));
 
             // It's the most reliable method to call
             if (onBlur) {

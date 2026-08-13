@@ -5,7 +5,9 @@ import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '..
 
 type UndefinedNotIndexed = undefined;
 
-// General getter for all variables from a node, divided by source handles
+/**
+ * General getter for all variables from a node, grouped by source handles.
+ */
 export const getVariableBySourceHandlesForNode = (params: {
   nodeId: string;
   cachedStore?: VariablesSuggestionsStore;
@@ -36,11 +38,14 @@ export const getVariableBySourceHandlesForNode = (params: {
   return undefined;
 };
 
-// Getter for variables of picked node available from picked sourceHandle
+/**
+ * Getter for variables of the selected node available from the selected source handle.
+ *
+ * Pass a store if you want to call this function multiple times.
+ */
 export const getNodeVariablesSuggestions = (params: {
   nodeId: string;
   sourceHandle: string | undefined;
-  // Pass one store if you want to call it multiple times
   cachedStore?: VariablesSuggestionsStore;
 }): VariableSuggestion[] | UndefinedNotIndexed => {
   const bySourceHandle = getVariableBySourceHandlesForNode(params);

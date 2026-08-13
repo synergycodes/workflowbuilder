@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 import styles from './variable-select.module.css';
 
 import { focusNextElement } from '../../../../utils/a11y';
+import { VARIABLE_BRACKETS_START } from '../../constants';
 import { getIsStringVariableReference } from '../../utils/keys/get-is-string-variable-reference';
 import { VariableText } from '../variable-text/variable-text';
 import type { VariableTextProps } from '../variable-text/variable-text.types';
@@ -18,7 +19,7 @@ export function VariableSelect({ onChange, onBlur, endAdornment, ...props }: Pro
 
   const handleOnChange: VariableTextProps['onChange'] = useCallback(
     (value) => {
-      const newValue = value ? `{{` + value.split('{{').at(-1) : '';
+      const newValue = value ? VARIABLE_BRACKETS_START + value.split(VARIABLE_BRACKETS_START).at(-1) : '';
       const valueToPass = getIsStringVariableReference(newValue) ? newValue : '';
 
       onChange(valueToPass);
@@ -33,7 +34,7 @@ export function VariableSelect({ onChange, onBlur, endAdornment, ...props }: Pro
         return;
       }
 
-      const newValue = value ? `{{` + value.split('{{').at(-1) : '';
+      const newValue = value ? VARIABLE_BRACKETS_START + value.split(VARIABLE_BRACKETS_START).at(-1) : '';
       const valueToPass = getIsStringVariableReference(newValue) ? newValue : '';
 
       onBlur(valueToPass);

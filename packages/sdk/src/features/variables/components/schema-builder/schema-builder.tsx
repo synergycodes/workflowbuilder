@@ -7,11 +7,9 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './schema-builder.module.css';
 
-import { filterEmpty } from '@/utils/array';
-import { showSnackbar } from '@/utils/show-snackbar';
-
+import { filterEmpty } from '../../../../utils/array';
+import { showSnackbar } from '../../../../utils/show-snackbar';
 import { getNodesWithVariable } from '../../actions/get-nodes-with-variable';
-import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START } from '../../constants';
 import { openModalSchemaBuilderVariableConfig } from '../../modals/control/modal-schema-builder-variable-config';
 import { openModalSchemaBuilderVariableRemoval } from '../../modals/control/modal-schema-builder-variable-remove';
 import type { VariablesIndex } from '../../types';
@@ -55,11 +53,11 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
         return;
       }
 
-      const variableReference = nodeId
-        ? `${VARIABLE_BRACKETS_START}${getVariableReferenceWithoutBracketsForNode({ nodeId, propertyName: variableId })}${VARIABLE_BRACKETS_END}`
+      const referenceWithoutBrackets = nodeId
+        ? getVariableReferenceWithoutBracketsForNode({ nodeId, propertyName: variableId })
         : '';
 
-      const nodesWithVariable = variableReference ? getNodesWithVariable(variableReference) : [];
+      const nodesWithVariable = referenceWithoutBrackets ? getNodesWithVariable(referenceWithoutBrackets) : [];
 
       openModalSchemaBuilderVariableConfig({
         variant: nodesWithVariable.length > 0 ? 'edit-limited-strict' : 'edit',
@@ -67,7 +65,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
         isReadOnly: isDisabled,
         onSave: (variable) => {
           const newValue = { ...value };
-          // Remove the old variable
+          // Edited variable may have a different ID (if it is generated from the name)
           delete newValue[variableId];
 
           return onChange({
@@ -83,18 +81,17 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
 
   const handleRemove = useCallback(
     (variableId: string) => {
-      const variableReference = nodeId
-        ? `${VARIABLE_BRACKETS_START}${getVariableReferenceWithoutBracketsForNode({ nodeId, propertyName: variableId })}${VARIABLE_BRACKETS_END}`
+      const referenceWithoutBrackets = nodeId
+        ? getVariableReferenceWithoutBracketsForNode({ nodeId, propertyName: variableId })
         : '';
 
-      const nodesWithVariable = variableReference ? getNodesWithVariable(variableReference) : [];
+      const nodesWithVariable = referenceWithoutBrackets ? getNodesWithVariable(referenceWithoutBrackets) : [];
 
       openModalSchemaBuilderVariableRemoval({
         variable: value[variableId],
         isReadOnly: isDisabled,
         onRemove: () => {
           const newValue = { ...value };
-          // Remove the old variable
           delete newValue[variableId];
 
           onChange({
@@ -114,7 +111,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
       {variables.length === 0 && (
         <button className={styles['button-empty']} onClick={handleAddVariable} type="button">
           <Icon name="Info" size="large" />
-          <span>Add a variable to continue</span>
+          <span>{t('variables.addVariableToContinue')}</span>
         </button>
       )}
       {variables.map((variable) => (

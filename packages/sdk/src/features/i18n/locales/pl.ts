@@ -102,6 +102,7 @@ export const pl = {
     variableNotFound: 'Nie znaleziono zmiennej.',
     removeVariableWarning: 'Usunięcie tej zmiennej trwale usunie jej konfigurację.',
     removeVariableIsBlocked: 'Ta zmienna jest używana w następujących węzłach i nie może zostać usunięta.',
+    addVariableToContinue: 'Dodaj zmienną aby kontynuować',
   },
   loader: {
     text: 'Ładowanie...',
