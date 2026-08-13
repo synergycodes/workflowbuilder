@@ -12,8 +12,13 @@ interface PropertyRow {
   description: string;
 }
 
+interface Entry {
+  props: PropertyRow[];
+  nativeElement: string | null;
+}
+
 const { slug } = Astro.props as { slug: string };
-const entry = (data as Record<string, { props: PropertyRow[] }>)[slug];
+const entry = (data as Record<string, Entry>)[slug];
 if (!entry) {
   throw new Error(
     `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
@@ -22,7 +27,19 @@ if (!entry) {
 const props = [...(entry?.props ?? [])].sort(
   (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
 );
+// Components built on a native element forward everything else to it; listing
+// ~280 DOM attributes would bury the props that are actually ours.
+const nativeElement = entry?.nativeElement ?? null;
 ---
+
+{
+  nativeElement && (
+    <p class="native-note">
+      Also accepts every standard <code>&lt;{nativeElement}&gt;</code> attribute (<code>onChange</code>,{' '}
+      <code>placeholder</code>, <code>aria-*</code>, …); they are forwarded to the underlying element.
+    </p>
+  )
+}
 
 {
   props.length === 0 ? (
@@ -53,6 +70,12 @@ const props = [...(entry?.props ?? [])].sort(
 }
 
 <style>
+  .native-note {
+    margin-bottom: 0.75rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
   .props {
     display: flex;
     flex-direction: column;

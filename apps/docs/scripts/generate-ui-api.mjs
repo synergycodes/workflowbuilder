@@ -169,6 +169,44 @@ function defaultTag(comment) {
   return value || null;
 }
 
+// A component whose props extend a native element's attributes accepts far
+// more than the table lists (`placeholder`, `value`, `onChange`, aria-*, ...).
+// Enumerating ~280 DOM attributes would drown the table, so record which
+// element it forwards to and let the page say so in one line.
+const NATIVE_ATTRIBUTE_TYPES = new Map([
+  ['InputHTMLAttributes', 'input'],
+  ['ButtonHTMLAttributes', 'button'],
+  ['TextareaHTMLAttributes', 'textarea'],
+  ['SelectHTMLAttributes', 'select'],
+  ['AnchorHTMLAttributes', 'a'],
+  ['HTMLAttributes', 'element'],
+]);
+
+function findNativeElement(typeNode, byId, depth = 0) {
+  if (!typeNode || depth > 8) return null;
+  if (typeNode.type === 'reference') {
+    // TypeDoc keeps the qualifier when the import is namespaced (`React.HTMLAttributes`).
+    const element = NATIVE_ATTRIBUTE_TYPES.get(typeNode.name.replace(/^React\./, ''));
+    if (element === 'element') {
+      // Plain HTMLAttributes<T> - name the element from its type argument.
+      const tag = /^HTML(\w*?)Element$/.exec(typeNode.typeArguments?.[0]?.name ?? '')?.[1];
+      return tag ? tag.toLowerCase() || 'element' : 'element';
+    }
+    if (element) return element;
+    // A first-party alias can carry it indirectly (BaseButtonProps -> ButtonHTMLAttributes).
+    if (typeof typeNode.target === 'number') {
+      const found = findNativeElement(byId.get(typeNode.target)?.type, byId, depth + 1);
+      if (found) return found;
+    }
+  }
+  // The reference is usually wrapped: `Omit<InputHTMLAttributes<…>, 'size'>`.
+  for (const nested of [...(typeNode.types ?? []), ...(typeNode.typeArguments ?? [])]) {
+    const found = findNativeElement(nested, byId, depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
 // Collect own properties from a prop type alias / interface, walking
 // intersections and skipping referenced (extended / native HTML) members.
 function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
@@ -232,7 +270,7 @@ function addProperty(child, byId, accumulator) {
 // variant-specific (missing from, or typed differently in, some variants)
 // get a note appended to their description so the table stays a single flat
 // list without a separate "variants" column.
-function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
+function collectVariantProps(propsTypeNames, project, byId, warnings, slug, context) {
   const perVariant = [];
   for (const typeName of propsTypeNames) {
     const typeNode = findTypeByName(project, typeName, warnings);
@@ -240,7 +278,8 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
       warnings.push(`props type "${typeName}" not found for "${slug}"`);
       continue;
     }
-    perVariant.push({ typeName, props: collectProps(typeNode, byId, new Map(), { warnings, slug }) });
+    context.nativeElement ??= findNativeElement(typeNode.type, byId);
+    perVariant.push({ typeName, props: collectProps(typeNode, byId, new Map(), context) });
   }
 
   const propertyNames = new Set();
@@ -370,21 +409,28 @@ async function main() {
 
   for (const component of COMPONENTS) {
     let props = [];
+    const context = { warnings, slug: component.slug };
     if (Array.isArray(component.propsType)) {
-      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug).values()].sort(
+      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values()].sort(
         (a, b) => a.name.localeCompare(b.name),
       );
     } else if (component.propsType) {
       const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
-        props = [...collectProps(typeNode, byId, new Map(), { warnings, slug: component.slug }).values()].sort((a, b) =>
+        context.nativeElement = findNativeElement(typeNode.type, byId);
+        props = [...collectProps(typeNode, byId, new Map(), context).values()].sort((a, b) =>
           a.name.localeCompare(b.name),
         );
       } else {
         warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
     }
-    out[component.slug] = { name: component.name, props, cssVariables: extractCssVariables(component.dir, warnings, component.slug) };
+    out[component.slug] = {
+      name: component.name,
+      props,
+      nativeElement: context.nativeElement ?? null,
+      cssVariables: extractCssVariables(component.dir, warnings, component.slug),
+    };
   }
 
   await mkdir(path.dirname(outFile), { recursive: true });
