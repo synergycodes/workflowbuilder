@@ -49,7 +49,10 @@
     left: 0;
     width: 100%;
     height: 100%;
-    z-index: 0;
+    /* Just below the dialog window: at a lower value the host's own panels
+       stack above it, so they stay undimmed and swallow the clicks that should
+       dismiss the dialog. */
+    z-index: 1000;
     inset: 0;
     background-color: color-mix(in srgb, var(--ax-public-modal-backdrop-background), transparent 50%);
 
