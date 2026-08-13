@@ -193,7 +193,11 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Only follow references into our own package's prop types, not native ones.
-    if (target && target.kind === 2_097_152) collectProps(target, byId, accumulator, context);
+    // Both declaration forms count - a prop type written as an interface is as
+    // valid a target as a type alias.
+    if (target && (target.kind === 2_097_152 || target.kind === 256)) {
+      collectProps(target, byId, accumulator, context);
+    }
     return accumulator;
   }
   // An unfollowed generic reference (Partial<X>, Omit<X, ...>) silently drops
@@ -286,6 +290,10 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug) {
 }
 
 function extractCssVariables(directory, warnings, slug) {
+  // An entry that documents an API rather than a styled component (a hook, say)
+  // carries no directory - its page renders the owning component's variables.
+  if (!directory) return [];
+
   const abs = path.resolve(uiSource, 'components', directory);
   if (!existsSync(abs)) {
     // globSync on a missing directory returns [] - the page would then claim
@@ -297,7 +305,7 @@ function extractCssVariables(directory, warnings, slug) {
   // variables - without this a parent page repeats them and offers overrides
   // that do nothing there (Button listing NavButton's, Switch IconSwitch's).
   const nestedPrefixes = COMPONENTS.map((component) => component.dir)
-    .filter((nested) => nested.startsWith(`${directory}/`))
+    .filter((nested) => nested?.startsWith(`${directory}/`))
     .map((nested) => `${nested.slice(directory.length + 1)}/`);
 
   const files = globSync('**/*.css', { cwd: abs })
