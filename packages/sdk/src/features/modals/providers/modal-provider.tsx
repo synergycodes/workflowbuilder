@@ -4,18 +4,14 @@ import { createPortal } from 'react-dom';
 
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
-// Stable "a modal is open" signal for CSS that lives outside this component
-// (variable-text.module.css suppresses its own backdrop while a modal dims the
-// page). Toggled here rather than read off Base UI's Dialog internals so those
-// selectors don't depend on @workflowbuilder/ui's markup.
+// Read by variable-text.module.css to suppress its own backdrop.
 const MODAL_OPEN_BODY_CLASS = 'wb-modal-open';
 
 export function ModalProvider() {
   const isOpen = useModalStore((state) => state.isOpen);
   const modal = useModalStore((state) => state.modal);
 
-  // The store clears `modal` on close; keep the last one so the content
-  // stays visible through the exit transition.
+  // The store clears `modal` on close - keep it for the exit transition.
   const lastModalRef = useRef(modal);
 
   useEffect(() => {
@@ -31,9 +27,7 @@ export function ModalProvider() {
     };
   }, [isOpen]);
 
-  // The always-mounted portal touches `document` on every render; effects
-  // never run on the server, so this gates it out of SSR (the documented
-  // Next.js path server-renders even 'use client' components).
+  // The portal touches `document` on every render - keep it out of SSR.
   const [mounted, setMounted] = useState(false);
   useEffect(() => {
     setMounted(true);
@@ -43,8 +37,7 @@ export function ModalProvider() {
 
   if (!mounted) return null;
 
-  // Keep the Modal (its Dialog.Root) always mounted: enter/exit transitions
-  // only run when `open` toggles on an already-mounted root.
+  // Transitions only run when `open` toggles on an already-mounted root.
   return (
     <>
       {createPortal(

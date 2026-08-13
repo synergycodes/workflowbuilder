@@ -1,22 +1,14 @@
-/* Library CSS bundle
-   ORDER MATTERS — @layer declaration and @imports must come before any rule */
+/* The @layer declaration and every @import must precede any rule.
 
-/* 1. Layer order declaration — empty @layer is allowed before @import.
-      This is the SAME statement every @workflowbuilder/ui dist stylesheet
-      leads with. There is deliberately only ONE top-level layer (`ui`):
-      layer order is fixed by first mention anywhere in the document, and UI
-      chunk CSS arrives through the JS module graph, so it can parse before
-      this file. With every stylesheet opening with an identical statement,
-      load order cannot invert the cascade. Do not add another top-level
-      layer here - it would reintroduce that race (see packages/ui/css-layers.md). */
+   `ui` is the only top-level layer on purpose: layer order is fixed by first
+   mention anywhere in the document and UI chunk CSS can parse before this
+   file, so a second top-level layer would let load order invert the cascade.
+   See packages/ui/css-layers.md. */
 @layer ui.base, ui.component;
 
-/* 2. Web fonts — Poppins is bundled locally (via @fontsource/poppins) instead
-      of fetched from Google's CDN at runtime. Reasons: strict CSPs block the
-      external request, the IP leak before consent breaks GDPR-controlled
-      flows, and air-gapped deployments have no outbound internet at all.
-      Latin + latin-ext subsets only (covers English + Polish, the SDK's
-      shipping locales). Override `--wb-font-family` to use a different face. */
+/* Poppins is bundled rather than fetched from a CDN: strict CSPs block the
+   request, the pre-consent IP leak breaks GDPR flows, and air-gapped
+   deployments have no outbound internet. */
 @import '@fontsource/poppins/latin-300.css';
 @import '@fontsource/poppins/latin-400.css';
 @import '@fontsource/poppins/latin-500.css';
@@ -28,18 +20,13 @@
 @import '@fontsource/poppins/latin-ext-600.css';
 @import '@fontsource/poppins/latin-ext-700.css';
 
-/* 3. Design tokens */
 @import '@workflowbuilder/ui/tokens.css';
 
-/* 4. External component CSS. @workflowbuilder/ui styles arrive through the
-      JS module graph (libInjectCss imports in its chunks) - importing its
-      index.css here would bundle every rule twice. xyflow joins ui.base so
-      the UI's ui.component theming beats its defaults by layer order alone,
-      whatever loads first. */
+/* @workflowbuilder/ui styles arrive through the JS module graph - importing
+   its index.css here would bundle every rule twice. */
 @import '@xyflow/react/dist/style.css' layer(ui.base);
 
-/* 5. SDK variable defaults. Layered so a consumer's plain
-      `:root { --wb-…: … }` override wins regardless of load order. */
+/* Layered, so an unlayered consumer override wins whatever the load order. */
 @layer ui.base {
   :root {
     --wb-transition: 0.1s ease-in;
@@ -52,10 +39,6 @@
   }
 }
 
-/* 6. App global styles (reset, scrollbars, fonts, body). They sit in ui.base
-      next to the third-party defaults: component styles (ui.component) and
-      any unlayered consumer CSS beat them, which is exactly the contract a
-      reset wants. */
 @layer ui.base {
   ::-webkit-scrollbar {
     width: var(--wb-scroll-width);
