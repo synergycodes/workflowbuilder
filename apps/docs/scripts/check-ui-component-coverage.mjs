@@ -1,27 +1,8 @@
-// Asserts two things about the documented component surface:
-//
-//   1. every entry in packages/ui/vite.config.mts's `componentEntries` (the
-//      list of publishable subpath bundles) has a matching entry in
-//      `COMPONENTS` (scripts/ui-components.mjs);
-//   2. every `COMPONENTS` entry is actually rendered by an MDX page - a
-//      generated table nobody shows is the same drift in reverse.
-//
-// Without this guard, a new component can be added to the package's public
-// entry points and shipped to npm without ever getting a docs page - nothing
-// else in the build fails, the page just silently never exists. TypeDoc's
-// strict mode doesn't catch this either: it only checks that exported types
-// have doc comments, not that a docs page renders them.
-//
-// A vite entry counts as covered if COMPONENTS has a `dir` equal to the entry
-// name, or nested under it (`${entry}/...`) - entries like `node` bundle
-// several flat docs pages (node-icon, node-description, ...) rather than
-// mapping 1:1 by name. `NARRATIVE_ONLY` is an escape hatch for a vite entry
-// that is deliberately docs-only-by-prose with no generated props table at
-// all (none today - kept for the next one, e.g. a future compound component
-// documented like NodePanel).
-//
-// Wired into apps/docs/package.json's `generate:ui-api` script, right after
-// the generator runs, so `dev` / `build` / `typecheck` all catch the drift.
+// Cross-checks the documented component surface: every publishable subpath in
+// packages/ui/vite.config.mts has a COMPONENTS entry, and every COMPONENTS
+// entry is rendered by an MDX page. Without it a component ships to npm with
+// no docs page and nothing in the build complains. Runs as part of
+// `generate:ui-api`.
 
 import { globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
@@ -37,9 +18,7 @@ const viteConfigPath = path.resolve(repoRoot, 'packages/ui/vite.config.mts');
 
 const NARRATIVE_ONLY = new Set([]);
 
-// The vite entry list is TypeScript, so it is read as text rather than
-// imported. An empty result means the shape changed and every check below
-// would pass over nothing - fail instead.
+// Read as text, not imported - it is TypeScript. Empty means the shape changed.
 function extractComponentEntries(source) {
   const match = /const componentEntries = \[([\s\S]*?)] as const;/.exec(source);
   if (!match) throw new Error('Could not find `componentEntries` in packages/ui/vite.config.mts');
@@ -59,9 +38,6 @@ const missing = componentEntries.filter((entry) => {
   return !componentDirectories.some((directory) => directory === entry || directory.startsWith(`${entry}/`));
 });
 
-// A COMPONENTS entry only produces data - nothing renders it unless an MDX
-// page passes the slug to PropsTable / CssVariablesTable. Without this leg,
-// adding a generator entry with no page passes the whole build silently.
 const contentRoot = path.resolve(documentsRoot, 'src/content/docs');
 const pageSources = globSync('**/*.mdx', { cwd: contentRoot }).map((file) =>
   readFileSync(path.resolve(contentRoot, file), 'utf8'),

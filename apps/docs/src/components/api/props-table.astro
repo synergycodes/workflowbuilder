@@ -1,7 +1,5 @@
 ---
-// Renders a component's props as a card list (name + optional "required" chip +
-// Type / Default + description), generated from `@workflowbuilder/ui` source via
-// TypeDoc. Mirrors the Overflow UI docs - required props first, no `?` marker.
+// Props of a UI component, generated from source into ui-api.json.
 import data from '../../generated/ui-api.json';
 
 interface PropertyRow {
@@ -27,8 +25,6 @@ if (!entry) {
 const props = [...(entry?.props ?? [])].sort(
   (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
 );
-// Components built on a native element forward everything else to it; listing
-// ~280 DOM attributes would bury the props that are actually ours.
 const nativeElement = entry?.nativeElement ?? null;
 ---
 

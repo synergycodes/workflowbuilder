@@ -6,18 +6,13 @@
  * Imported by both the generator and the coverage guard, so the guard can
  * never disagree with the generator about what is documented.
  */
-// slug -> { name, propsType, dir }. `propsType` is the exported prop type the
-// component accepts (or the list of variant prop types for a component whose
-// public surface is a discriminated union - see collectVariantProps), or null
-// when the parts are described in prose instead. `dir` is the component folder
-// under packages/ui/src/components, or null for an entry that documents an API
-// but owns no stylesheet of its own.
+// `propsType`: the exported prop type, a list of variant types, or null when
+// the parts are described in prose. `dir`: the folder under
+// packages/ui/src/components, or null for an entry that owns no stylesheet.
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  // Button has no single public props type - it renders one of three variant
-  // components depending on `children` (label / icon / icon+label). Merge
-  // their prop sets instead of documenting only the shared base.
+  // No single props type - one of three variants depending on `children`.
   {
     slug: 'button',
     name: 'Button',
@@ -51,8 +46,7 @@ export const COMPONENTS = [
   { slug: 'switch', name: 'Switch', propsType: 'BaseSwitchProps', dir: 'switch' },
   { slug: 'text-area', name: 'TextArea', propsType: 'TextAreaProps', dir: 'text-area' },
   { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
-  // Diagram components (props extracted the same way; NodePanel is a compound
-  // component documented narratively, so it has no flat props entry here).
+  // Diagram components.
   { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },
   {
     slug: 'node-description',
@@ -67,12 +61,8 @@ export const COMPONENTS = [
     dir: 'node/node-as-port-wrapper',
   },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
-  // Documented on the Edge page, which already renders the edge variables -
-  // `dir: null` keeps them there instead of splitting them off to a hook that
-  // has no variables section of its own.
+  // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },
-  // Compound component: the parts and their props are described in prose on the
-  // page (like Separator, there is no single props type to generate from), but
-  // its CSS variables are generated.
+  // Compound component - parts described in prose, variables generated.
   { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];

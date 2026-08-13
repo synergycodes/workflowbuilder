@@ -24,9 +24,7 @@ const uiSource = path.resolve(repoRoot, 'packages/ui/src');
 const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
-// Comment patterns that are engineering notes on the token pipeline, not
-// public documentation - stripped so they never render as CSS variable
-// descriptions in the docs (see e.g. status.module.css, icon-size.module.css).
+// Engineering notes in the CSS, never public documentation.
 const INTERNAL_NOTE_RE = /missing token/i;
 
 async function runTypedoc() {
@@ -37,18 +35,10 @@ async function runTypedoc() {
     [
       '--json',
       tdJson,
-      // `expand` over the whole components tree (rather than resolving just
-      // `index.ts`'s re-exports) so that per-variant prop types like
-      // LabelButtonProps/IconButtonProps/IconLabelButtonProps - not
-      // individually re-exported from the package barrel, only reachable
-      // through the Button component's overloaded signature - still get a
-      // full type reflection collectVariantProps can look up by name.
+      // Whole tree, not the barrel: variant prop types are not re-exported.
       '--entryPoints',
       path.resolve(uiSource, 'components'),
-      // `shared` must be an entry too: helper prop types like WithIcon live
-      // there, and a type outside the entry tree gets no reflection - its
-      // intersection members (e.g. Accordion/Modal's `icon`) silently vanish
-      // from the generated tables.
+      // A type outside the entry tree gets no reflection and vanishes from the tables.
       '--entryPoints',
       path.resolve(uiSource, 'shared'),
       '--entryPointStrategy',
@@ -78,7 +68,6 @@ function indexById(root) {
 function findTypeByName(root, name, warnings) {
   const matches = [];
   (function walk(node) {
-    // 2097152 = TypeAlias, 256 = Interface
     if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) matches.push(node);
     for (const child of node.children ?? []) walk(child);
   })(root);
@@ -169,10 +158,8 @@ function defaultTag(comment) {
   return value || null;
 }
 
-// A component whose props extend a native element's attributes accepts far
-// more than the table lists (`placeholder`, `value`, `onChange`, aria-*, ...).
-// Enumerating ~280 DOM attributes would drown the table, so record which
-// element it forwards to and let the page say so in one line.
+// Which native element a component forwards its remaining props to; listing
+// ~280 DOM attributes in the table would drown the props that are ours.
 const NATIVE_ATTRIBUTE_TYPES = new Map([
   ['InputHTMLAttributes', 'input'],
   ['ButtonHTMLAttributes', 'button'],
@@ -185,21 +172,17 @@ const NATIVE_ATTRIBUTE_TYPES = new Map([
 function findNativeElement(typeNode, byId, depth = 0) {
   if (!typeNode || depth > 8) return null;
   if (typeNode.type === 'reference') {
-    // TypeDoc keeps the qualifier when the import is namespaced (`React.HTMLAttributes`).
     const element = NATIVE_ATTRIBUTE_TYPES.get(typeNode.name.replace(/^React\./, ''));
     if (element === 'element') {
-      // Plain HTMLAttributes<T> - name the element from its type argument.
       const tag = /^HTML(\w*?)Element$/.exec(typeNode.typeArguments?.[0]?.name ?? '')?.[1];
       return tag ? tag.toLowerCase() || 'element' : 'element';
     }
     if (element) return element;
-    // A first-party alias can carry it indirectly (BaseButtonProps -> ButtonHTMLAttributes).
     if (typeof typeNode.target === 'number') {
       const found = findNativeElement(byId.get(typeNode.target)?.type, byId, depth + 1);
       if (found) return found;
     }
   }
-  // The reference is usually wrapped: `Omit<InputHTMLAttributes<…>, 'size'>`.
   for (const nested of [...(typeNode.types ?? []), ...(typeNode.typeArguments ?? [])]) {
     const found = findNativeElement(nested, byId, depth + 1);
     if (found) return found;
@@ -207,12 +190,9 @@ function findNativeElement(typeNode, byId, depth = 0) {
   return null;
 }
 
-// Collect own properties from a prop type alias / interface, walking
-// intersections and skipping referenced (extended / native HTML) members.
+// Own properties of a prop type, walking intersections and skipping native members.
 function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (!typeNode) return accumulator;
-  // TypeAlias / Interface: plain object members land directly on `.children`;
-  // computed types (intersections etc.) land on `.type`.
   if (typeNode.kind === 2_097_152 || typeNode.kind === 256) {
     if (typeNode.children?.length) {
       for (const child of typeNode.children) addProperty(child, byId, accumulator);
@@ -230,16 +210,13 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   }
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
-    // Only follow references into our own package's prop types, not native ones.
-    // Both declaration forms count - a prop type written as an interface is as
-    // valid a target as a type alias.
+    // Follow first-party prop types only; both declaration forms count.
     if (target && (target.kind === 2_097_152 || target.kind === 256)) {
       collectProps(target, byId, accumulator, context);
     }
     return accumulator;
   }
-  // An unfollowed generic reference (Partial<X>, Omit<X, ...>) silently drops
-  // every prop of a first-party X - warn instead of shipping a slimmer table.
+  // Partial<X> / Omit<X, …> would silently drop every prop of X.
   if (typeNode.type === 'reference' && typeNode.typeArguments?.length && context) {
     const firstParty = typeNode.typeArguments.find(
       (argument) => argument.type === 'reference' && typeof argument.target === 'number' && byId.get(argument.target),
@@ -264,12 +241,8 @@ function addProperty(child, byId, accumulator) {
   });
 }
 
-// Merge the prop sets of a discriminated-union component's variants (e.g.
-// Button's Label/Icon/IconLabel components). Props shared by every variant
-// with the same type are documented once, unqualified; props that are
-// variant-specific (missing from, or typed differently in, some variants)
-// get a note appended to their description so the table stays a single flat
-// list without a separate "variants" column.
+// Merges the variants of a union/overload component into one flat table,
+// noting in the description where a prop applies to some variants only.
 function collectVariantProps(propsTypeNames, project, byId, warnings, slug, context) {
   const perVariant = [];
   for (const typeName of propsTypeNames) {
@@ -290,15 +263,13 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
     const occurrences = perVariant
       .filter((variant) => variant.props.has(propertyName))
       .map((variant) => ({ typeName: variant.typeName, prop: variant.props.get(propertyName) }))
-      // `foo?: never` marks a prop as forbidden in that variant - treat it as absent.
+      // `foo?: never` marks a prop forbidden in that variant.
       .filter((occurrence) => occurrence.prop.type !== 'never');
     if (occurrences.length === 0) continue;
     const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
-    // Required only when required in EVERY variant: `value` (controlled) and
-    // `defaultValue` (uncontrolled) marked required side by side would
-    // document a call that cannot exist. The variant note carries the detail.
+    // Required in every variant, else the table documents an impossible call.
     const requiredEverywhere =
       occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
     const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
@@ -329,20 +300,16 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
 }
 
 function extractCssVariables(directory, warnings, slug) {
-  // An entry that documents an API rather than a styled component (a hook, say)
-  // carries no directory - its page renders the owning component's variables.
+  // No directory - the entry documents an API, not a styled component.
   if (!directory) return [];
 
   const abs = path.resolve(uiSource, 'components', directory);
   if (!existsSync(abs)) {
-    // globSync on a missing directory returns [] - the page would then claim
-    // the component exposes no CSS variables.
     warnings.push(`"${slug}": component directory ${directory} does not exist`);
     return [];
   }
-  // Subcomponents with their own COMPONENTS entry document their own
-  // variables - without this a parent page repeats them and offers overrides
-  // that do nothing there (Button listing NavButton's, Switch IconSwitch's).
+  // Subcomponents with their own page document their own variables; an
+  // override offered on the parent page would do nothing.
   const nestedPrefixes = COMPONENTS.map((component) => component.dir)
     .filter((nested) => nested?.startsWith(`${directory}/`))
     .map((nested) => `${nested.slice(directory.length + 1)}/`);
@@ -354,8 +321,6 @@ function extractCssVariables(directory, warnings, slug) {
   const variables = [];
   for (const file of files) {
     const css = readFileSync(path.resolve(abs, file), 'utf8');
-    // Match `--ax-public-xxx: value` declarations, capturing the value and an
-    // optional same-line comment.
     const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
@@ -372,10 +337,8 @@ function extractCssVariables(directory, warnings, slug) {
   return variables;
 }
 
-// Groups the docs table by what the variable resolves to, not by what its name
-// suggests: `edge-stroke-width` is a length and `snackbar-success-border` is a
-// color, and neither reads that way from the name alone. Values usually point
-// at a design token, so the token stylesheets are followed to the literal.
+// Groups by what the value resolves to - the name misleads (`edge-stroke-width`
+// is a length, `snackbar-success-border` is a color), so follow it to the literal.
 const LITERAL_COLOR_RE = /^(#|rgb|hsl|oklch|color-mix|linear-gradient|radial-gradient|transparent\b|currentColor\b)/i;
 
 const tokenValues = readTokenValues();
@@ -442,8 +405,7 @@ async function main() {
   console.log('✔ ui-api.json generated\n  ' + summary.join('\n  '));
 
   if (warnings.length > 0) {
-    // An unresolved props type means a rename/typo silently shipped an empty
-    // "no configurable props" page - fail the build instead of warning.
+    // An unresolved type would silently ship a "no configurable props" page.
     console.error('✗ ' + warnings.join('\n✗ '));
     process.exitCode = 1;
   }
