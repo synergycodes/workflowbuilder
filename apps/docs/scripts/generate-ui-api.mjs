@@ -297,8 +297,8 @@ function extractCssVariables(directory, warnings, slug) {
   // variables - without this a parent page repeats them and offers overrides
   // that do nothing there (Button listing NavButton's, Switch IconSwitch's).
   const nestedPrefixes = COMPONENTS.map((component) => component.dir)
-    .filter((dir) => dir.startsWith(`${directory}/`))
-    .map((dir) => `${dir.slice(directory.length + 1)}/`);
+    .filter((nested) => nested.startsWith(`${directory}/`))
+    .map((nested) => `${nested.slice(directory.length + 1)}/`);
 
   const files = globSync('**/*.css', { cwd: abs })
     .filter((file) => !nestedPrefixes.some((prefix) => file.startsWith(prefix)))
