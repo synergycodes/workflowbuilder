@@ -18,19 +18,21 @@ in the library's icon container styling. It is usually placed in a
 ## Usage
 
 ```tsx
+import { User } from '@phosphor-icons/react';
 import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 
-import { Icon } from '@workflow-builder/icons';
-
-function NodeHeader({ icon, label, description }) {
+function NodeHeader({ label, description }) {
   return (
     <NodePanel.Header>
-      <NodeIcon icon={<Icon name={icon} size="large" />} />
+      <NodeIcon icon={<User />} />
       <NodeDescription label={label} description={description} />
     </NodePanel.Header>
   );
 }
 ```
+
+`icon` takes any `ReactNode`, so any icon library works - the example uses
+[Phosphor](https://phosphoricons.com/), which ships with the package.
 
 ## Props
 
