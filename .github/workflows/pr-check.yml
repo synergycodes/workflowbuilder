@@ -75,3 +75,26 @@ jobs:
 
       - name: Build
         run: pnpm --filter @workflowbuilder/sdk build:lib
+
+  starter:
+    name: Starter build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/workflow-builder-starter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/workflow-builder-starter/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build

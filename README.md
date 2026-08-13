@@ -20,6 +20,8 @@ Drag-and-drop workflow builder UI with a reference back-end and an execution eng
 
 [Try it live ->](https://app.workflowbuilder.io/)
 
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter%20Example&file=src%2Fapp.tsx)
+
 Used in production by teams including [Vercom](https://www.workflowbuilder.io/case-study/vercom), [Athena Intelligence](https://www.workflowbuilder.io/case-study/athena-intelligence), [Plura AI](https://www.workflowbuilder.io/case-study/plura-ai), and others.
 
 </div>
@@ -42,7 +44,9 @@ Three onboarding paths. Pick one based on what you want to evaluate.
 | See the editor running in your browser                 | [B. Try the demo](#path-b-try-the-demo)                       | ~2 min     | no     |
 | Run the full reference stack (editor + execution + AI) | [C. Run the full stack demo](#path-c-run-the-full-stack-demo) | ~10 min    | yes    |
 
-Don't want to install or clone anything yet? [Try the live demo](https://app.workflowbuilder.io) in your browser first.
+Don't want to install or clone anything yet? [Try the live demo](https://app.workflowbuilder.io) in your browser, or open the runnable starter below:
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter%20Example&file=src%2Fapp.tsx)
 
 ### Path A. Embed the SDK
 
