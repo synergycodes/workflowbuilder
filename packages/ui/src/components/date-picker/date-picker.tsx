@@ -6,8 +6,7 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { type DateRange, DayPicker, type Matcher } from 'react-day-picker';
 
 import styles from './date-picker.module.css';
-// variables.css also pulls react-day-picker's stylesheet into `ui.base` - without
-// it the calendar grid, month caption, and nav render unstyled.
+// variables.css also pulls react-day-picker's stylesheet into `ui.base`.
 import './variables.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import inputSizeStyles from '@ui/shared/styles/input-size.module.css';
@@ -97,9 +96,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
     normalizeInitialValue(defaultValue, type),
   );
   const [open, setOpen] = useState(false);
-  // In-progress range pick ({ from, to: undefined }). The public value
-  // type can't represent a partial range, so the draft renders the
-  // first-click highlight until the range completes.
+  // The public value type can't represent a partial range, hence a separate draft.
   const [rangeDraft, setRangeDraft] = useState<DateRange | undefined>();
 
   const currentValue = isControlled ? normalizeInitialValue(value, type) : internalValue;
@@ -121,9 +118,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
     [isControlled, onChange],
   );
 
-  // Open the calendar at the month of the current selection (react-day-picker
-  // does not derive this from `selected` — without it the calendar always
-  // opens on today's month).
+  // react-day-picker does not derive the visible month from `selected`.
   const defaultMonth = useMemo(() => {
     if (currentValue instanceof Date) return currentValue;
     if (Array.isArray(currentValue) && currentValue[0] instanceof Date) {
@@ -155,15 +150,11 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
       {type === 'default' && (
         <DayPicker
           mode="single"
-          // `required` disables react-day-picker's click-to-deselect, so
-          // re-clicking the selected day confirms instead of wiping the
-          // value (Mantine parity: allowDeselect was off).
+          // `required` disables react-day-picker's click-to-deselect.
           required
           selected={currentValue instanceof Date ? currentValue : undefined}
           onSelect={(selected) => {
             handleChange(selected ?? null);
-            // A single-date pick is a complete selection — close the
-            // popover. Range/multiple modes stay open for further picks.
             setOpen(false);
           }}
           disabled={disabledMatcher}
@@ -179,9 +170,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
       {type === 'range' && (
         <DayPicker
           mode="range"
-          // min={1} makes the first click report { from, to: undefined }
-          // instead of a same-day "complete" range, and rejects single-day
-          // ranges (Mantine parity: allowSingleDateInRange was off).
+          // min={1} makes the first click report a partial range instead of a same-day one.
           min={1}
           selected={rangeDraft ?? toDateRange(currentValue)}
           onSelect={(range) => {
@@ -209,10 +198,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
       {type === 'multiple' && (
         <DayPicker
           mode="multiple"
-          // In multiple mode the value is always Date[] | null (see
-          // normalizeInitialValue/handleChange) — never test the shape
-          // with isDateTuple here: a 2-element Date[] would match it and
-          // wipe the selection.
+          // Never narrow with isDateTuple here - a 2-element Date[] matches it and wipes the selection.
           selected={Array.isArray(currentValue) ? currentValue : undefined}
           onSelect={(dates) => handleChange(dates ?? [])}
           disabled={disabledMatcher}
@@ -235,7 +221,6 @@ export const DatePicker = forwardRef<HTMLButtonElement, Props>(function DatePick
         if (disabled || readOnly) return;
         setOpen(nextOpen);
         if (!nextOpen) {
-          // Closing mid-pick abandons the partial range.
           setRangeDraft(undefined);
         }
       }}

@@ -67,9 +67,6 @@ function copyTokenStyles() {
     }
   }
 
-  // The generated token files are raw `:root` / `html[data-theme]` blocks;
-  // shipping them means applying this package's layer contract: lead with the
-  // order statement, put the defaults in ui.base so consumer overrides win.
   const layerOrder = readFileSync(path.resolve(rootDirectory, 'src/styles/layers.css'), 'utf8').trim();
 
   return viteStaticCopy({
@@ -136,12 +133,8 @@ export default defineConfig({
   },
   plugins: [
     libInjectCss(),
-    // Per-entry .d.ts; rollupTypes is intentionally off (incompatible with this
-    // multi-entry setup, see vite-plugin-dts docs).
-    // Excluding specs is load-bearing: with a stray *.spec.mts present in the
-    // package the build stalled 15+ minutes with no output (observed on a
-    // root-level spec; the vitest type graph in the ts program is the prime
-    // suspect). Keep every spec shape excluded.
+    // A stray *.spec.mts in the ts program stalls this build for 15+ minutes
+    // with no output - keep every spec shape excluded.
     dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),

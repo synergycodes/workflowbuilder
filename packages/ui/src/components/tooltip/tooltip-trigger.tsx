@@ -21,18 +21,13 @@ export const TooltipTrigger = forwardRef<
       ref={propertyRef as React.Ref<HTMLButtonElement>}
       delay={TOOLTIP_OPEN_DELAY}
       closeDelay={TOOLTIP_CLOSE_DELAY}
-      // Keep parity with the previous Floating UI behaviour: clicking the
-      // trigger should not dismiss the tooltip while hover is still active.
       closeOnClick={false}
       render={(triggerProps, state) => {
         const dataState = state.open ? 'open' : 'closed';
 
         if (asChild && isValidElement(children)) {
           const childElement = children as ReactElement<Record<string, unknown>>;
-          // mergeProps composes event handlers (all of them run) and merges
-          // className/style — a plain spread would let a child's own
-          // onMouseEnter/onFocus silently replace Base UI's interaction
-          // handlers and break the tooltip.
+          // A plain spread would let a child's handlers replace Base UI's and break the tooltip.
           return cloneElement(childElement, {
             ...mergeProps(triggerProps, props as Record<string, unknown>, childElement.props ?? {}),
             'data-state': dataState,

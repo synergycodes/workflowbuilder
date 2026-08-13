@@ -22,7 +22,6 @@ export function combineCssBundle(rootDirectory: string): Plugin {
     name: 'wb-ui:combine-css-bundle',
     apply: 'build',
     closeBundle() {
-      // Combine before stamping so index.css carries a single statement at its top.
       writeCombinedStylesheet(distributionDirectory, stylesDirectory);
       writeGlobalStylesheet(distributionDirectory, stylesDirectory);
       prependLayerOrderToAssets(distributionDirectory, stylesDirectory);
@@ -66,14 +65,11 @@ function cssFilesIn(assetsDirectory: string): string[] {
 function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory: string) {
   const assetsDirectory = assetsDirectoryOf(distributionDirectory);
 
-  // Alphabetical order. Within one cascade layer file order only decides ties
-  // between equal-specificity rules; components don't share selectors, so this
-  // is safe. Replace .sort() with an explicit order if that ever changes.
+  // Within a layer, file order only breaks ties between equal-specificity rules.
   const styles = cssFilesIn(assetsDirectory)
     .map((file) => fs.readFileSync(path.resolve(assetsDirectory, file), 'utf8'))
     .join('\n');
 
-  // index.css is consumed standalone, so it declares the @layer order itself.
   const combined = `${readLayerOrder(stylesDirectory)}\n${styles}`;
   fs.writeFileSync(path.resolve(distributionDirectory, 'index.css'), combined);
 }

@@ -24,9 +24,9 @@
     cursor: pointer;
     color: var(--ax-public-list-item-color);
 
-    /* Base UI items expose state as data attributes (data-selected,
-       data-disabled, data-highlighted) — not the MUI-era base--* classes. */
-    &:hover:not([data-disabled]) {
+    /* State selectors below weigh the same, so order decides - a `:not()` here
+       would silently outrank the states under it. */
+    &:hover {
       background-color: var(--ax-public-list-item-background-color);
     }
 
@@ -45,6 +45,7 @@
 
     &[data-disabled] {
       color: var(--ax-public-input-color-disabled);
+      background-color: transparent;
       cursor: auto;
     }
 

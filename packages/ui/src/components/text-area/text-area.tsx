@@ -98,8 +98,7 @@ export function TextArea({
   return (
     <div
       className={containerClasses}
-      // Padding lives on this wrapper, not on the <textarea> - forward clicks
-      // in the padding area so the field gains focus (see input.tsx).
+      // Padding lives on the wrapper, so clicks there miss the field - forward them.
       onPointerDown={(event) => {
         if (event.target !== event.currentTarget) return;
         event.preventDefault();

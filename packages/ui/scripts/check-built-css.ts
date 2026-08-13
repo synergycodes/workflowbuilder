@@ -44,8 +44,6 @@ const distributionDirectory = path.resolve(packageDirectory, 'dist');
 type Hit = { line: number; column: number; snippet: string };
 type FailureReport = { file: string; hits: Hit[] };
 
-// Single source of truth shared with combine-css-bundle.mts, which stamps this
-// statement into every built stylesheet.
 const layerOrderStatement = postcss
   .parse(readFileSync(path.resolve(packageDirectory, 'src/styles/layers.css'), 'utf8'))
   .nodes.find((node): node is AtRule => node.type === 'atrule' && node.name === 'layer' && node.nodes === undefined);
@@ -79,10 +77,6 @@ function hitFor(node: ChildNode | undefined): Hit {
 
 // --- Check 1: var() first argument is a dashed ident --------------------------
 
-// Matches `var(` whose first argument does not start with `--`: another
-// function (`var(var(`), an undashed name (`var(ax-color)`) or an empty call
-// (`var()`), minified or not. Comments inside CSS values are uncommon enough
-// that false positives aren't a real concern.
 const malformedVariablePattern = /var\(\s*(?!--)/g;
 
 function checkVariableFirstArgument(files: string[]): FailureReport[] {
@@ -105,19 +99,12 @@ function checkVariableFirstArgument(files: string[]): FailureReport[] {
 
 // --- Check 2: no rule outside @layer ----------------------------------------
 
-// No exemptions: `:root` variable defaults are layered too (the build wraps
-// them in `ui.base` - see postcss-layer-root-defaults.mts and the token-copy
-// transform in vite.config.mts), so consumer overrides win by layer rules,
-// not by load order.
 function findTopLevelViolations(content: string): Hit[] {
   const hits: Hit[] = [];
 
   for (const node of postcss.parse(content).nodes) {
     switch (node.type) {
       case 'atrule': {
-        // `@layer name { ... }` establishes a layer (everything inside is layered by
-        // definition) and `@layer a, b;` / `@charset` statements carry no
-        // rules of their own.
         const isStatement = node.nodes === undefined;
         if (node.name === 'layer' || isStatement) break;
         hits.push(hitFor(node));

@@ -28,9 +28,7 @@ export function Input({
         },
         className,
       )}
-      // The padding lives on this wrapper, not on the <input>, so a click in
-      // the padding area lands here and the field never gains focus - forward
-      // it (adornment clicks keep their own behavior: target !== currentTarget).
+      // Padding lives on the wrapper, so clicks there miss the field - forward them.
       onPointerDown={(event) => {
         if (event.target !== event.currentTarget) return;
         event.preventDefault();
