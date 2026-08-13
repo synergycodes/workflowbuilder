@@ -181,6 +181,8 @@ export const en = {
     wrongDiagramFormat: 'Wrong diagram format',
     contentCopied: 'Content copied to clipboard',
     variablesListIsEmpty: 'The list of available variables is empty.',
+    variableNameAlreadyExists: 'A variable with this name already exists.',
+    variableWasNotFound: 'This variable was not found.',
     cantEditReadOnlyMode: 'Editing is blocked in read-only mode.',
   },
   workflowsSettings: {

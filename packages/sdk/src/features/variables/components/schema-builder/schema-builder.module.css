@@ -1,0 +1,43 @@
+.container {
+  display: flex;
+  flex-flow: column;
+  gap: 0.5rem;
+}
+
+.button-empty {
+  display: flex;
+  padding: 1.375rem 1rem;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
+  align-self: stretch;
+  border-radius: 0.5rem;
+  border: 1px solid var(--wb-ui-stroke-primary-default);
+  background: none;
+
+  svg {
+    color: #e8833a;
+  }
+
+  span {
+    color: var(--wb-colors-gray-900);
+    font-size: 0.8125rem;
+    font-weight: 600;
+  }
+}
+
+.preview {
+  padding: var(--wb-token-spacing-spacing-4) var(--wb-token-spacing-spacing-8);
+  color: var(--wb-txt-tertiary-default);
+
+  * {
+    font-size: 0.75rem;
+    gap: var(--wb-token-spacing-spacing-4);
+  }
+}
+
+.button--add {
+  display: flex;
+  width: 100%;
+}

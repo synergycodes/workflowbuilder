@@ -1,5 +1,6 @@
 import { NavButton, SnackbarType } from '@synergycodes/overflow-ui';
-import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo } from 'react';
+import clsx from 'clsx';
+import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
 
@@ -8,8 +9,9 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './variable-text.module.css';
 
 import type { VariableType } from '../../../../node/node-output-schema';
+import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
 import { showSnackbar } from '../../../../utils/show-snackbar';
-import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
+import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
 import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
 
 const DEFAULT_TRIGGER = '{{';
@@ -47,7 +49,7 @@ function buildMentionData(groups: VariableSuggestionGroup[]): VariableMentionDat
   return groups.flatMap((group) =>
     group.suggestions.map((suggestion) => ({
       id: suggestion.id,
-      display: suggestion.display,
+      display: `{{ ${suggestion.display} }}`,
       groupLabel: group.label,
       label: suggestion.label,
       description: suggestion.description,
@@ -167,6 +169,7 @@ export function VariableText({
   classNameWrapper,
   value,
   onChange,
+  onBlur,
   variant = 'text',
   suggestionGroups,
   title = DEFAULT_TITLE,
@@ -177,6 +180,7 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
+  const refValueForBlur = useRef(value);
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
@@ -188,11 +192,18 @@ export function VariableText({
       const item = mentionData.find((m) => m.id === typedId);
 
       if (item) {
-        return item.display ? `{{ ${item.display} }}` : defaultLabel;
+        return item.display || defaultLabel;
       }
 
       if (typedId.startsWith(VARIABLE_NODES_KEY)) {
         const nodeId = typedId.replace(`${VARIABLE_NODES_KEY}.`, '').split('.').at(0) || '';
+
+        const node = getNodeByIdAction(nodeId);
+
+        if (node) {
+          return `{{ ${node.data?.properties?.label} · ${t('plugins.validation.missingMentionNodeVariablePrefix')} · ${typedId.split('.').at(-1)} }}`;
+        }
+
         return `{{ ${t('plugins.validation.missingMentionNodePrefix')} (${nodeId.slice(0, 4)}...) · ${typedId.split('.').at(-1)} }}`;
       }
 
@@ -242,10 +253,37 @@ export function VariableText({
         });
       }
 
+      refValueForBlur.current = value;
+
       onChange(value);
     },
     [mentionData.length, onChange],
   );
+
+  const handleFocus = useCallback(
+    (event: { target: { value: string } }) => {
+      let value = event.target.value;
+
+      for (const variable of mentionData) {
+        if (variable.display) {
+          value = value.replaceAll(
+            variable.display,
+            `${VARIABLE_BRACKETS_START}${variable.id}${VARIABLE_BRACKETS_END}`,
+          );
+        }
+      }
+
+      refValueForBlur.current = value;
+    },
+    [mentionData],
+  );
+
+  const handleBlur = useCallback(() => {
+    // We can't rely on the value from the onBlur event because the value is updated afterward.
+    if (onBlur) {
+      onBlur(refValueForBlur.current);
+    }
+  }, [onBlur]);
 
   const {
     trigger = DEFAULT_TRIGGER,
@@ -256,8 +294,8 @@ export function VariableText({
 
   const classNames = useMemo(() => {
     const base = singleLine ? singleLineClassNames : multiLineClassNames;
-    let control = base.control;
 
+    let control = base.control;
     if (hasError) {
       control = control + ' ' + styles['control--error'];
     }
@@ -269,14 +307,15 @@ export function VariableText({
       ...base,
       control,
     };
-  }, [hasError, singleLine, className]);
+  }, [className, hasError, singleLine]);
 
   return (
     <MentionsInput
-      className={classNameWrapper}
-      key={`s-${suggestionGroups.length}-${hasError ? '-e' : ''}`}
+      className={clsx(styles['container'], classNameWrapper)}
       value={value}
       onMentionsChange={onMentionsChange}
+      onFocus={handleFocus}
+      onBlur={handleBlur}
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}

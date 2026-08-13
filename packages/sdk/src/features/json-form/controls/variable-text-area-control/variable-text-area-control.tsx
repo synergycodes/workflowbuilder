@@ -10,10 +10,12 @@ import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextAreaControl(props: VariableTextAreaControlProps) {
   const { data, handleChange, path, errors, enabled, uischema } = props;
-  const { placeholder, disabled } = uischema;
+  const { placeholder, variablesTypes, disabled } = uischema;
   const selection = useSingleSelectedElement();
-  // TODO: add param to pick what type of variables are available
-  const suggestionGroups = useAvailableVariables(selection?.node?.id, variablesTypesToExcludeInText);
+  const suggestionGroups = useAvailableVariables(selection?.node?.id, {
+    excludeTypes: variablesTypes ? [] : variablesTypesToExcludeInText,
+    includeTypes: variablesTypes,
+  });
 
   const isDisabled = !enabled || disabled === true;
 

@@ -17,7 +17,8 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
     properties: {
       eventType: { type: 'string', label: 'Event Type', description: 'The type of event that started the workflow' },
       timestamp: { type: 'string', label: 'Timestamp', description: 'ISO 8601 date-time when the trigger fired' },
-      payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
+      // TODO: Match JSON schema
+      // payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
     },
   },
 };

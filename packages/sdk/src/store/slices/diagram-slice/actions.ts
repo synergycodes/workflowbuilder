@@ -145,6 +145,10 @@ export function refreshNodesErrorsIfNeeded() {
   });
 }
 
+export function getStoreVariables() {
+  return useStore.getState().globalVariables;
+}
+
 export function saveVariableDefinition(definition: VariableDefinition) {
   useStore.setState((state) => ({
     globalVariables: {

@@ -145,6 +145,8 @@ export const pl = {
     wrongDiagramFormat: 'Nieprawidłowy format diagramu',
     contentCopied: 'Treść skopiowana do schowka',
     variablesListIsEmpty: 'Lista dostępnych zmiennych jest pusta.',
+    variableNameAlreadyExists: 'Zmienna o tej nazwie już istnieje.',
+    variableWasNotFound: 'Nie znaleziono tej zmiennej.',
     cantEditReadOnlyMode: 'Edycja jest zablokowana w trybie tylko do odczytu.',
   },
   aiTools: {

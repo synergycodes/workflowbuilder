@@ -16,7 +16,8 @@ export const action: PaletteItem<ActionNodeSchema> = {
     type: 'default',
     properties: {
       status: { type: 'string', label: 'Status', description: 'Execution status: success, failure, or skipped' },
-      result: { type: 'object', label: 'Result', description: 'The data returned by the action' },
+      // TODO: Match JSON schema
+      // result: { type: 'object', label: 'Result', description: 'The data returned by the action' },
       errorMessage: { type: 'string', label: 'Error Message', description: 'Error details if the action failed' },
     },
   },

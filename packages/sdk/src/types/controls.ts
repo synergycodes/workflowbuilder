@@ -1,6 +1,8 @@
 import type { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
 import type { InputProps, TextAreaProps } from '@synergycodes/overflow-ui';
 
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import type { ComparisonOperator, LogicalOperator } from '../features/variables/constants';
 import type { FieldSchema } from '../node/node-schema';
 import type { UISchemaRule } from './rules';
@@ -117,6 +119,7 @@ export type VariableTextControlElement = Override<
   BaseControlElement,
   {
     type: 'VariableText';
+    variablesTypes?: VariableType[];
   } & Pick<InputProps, 'placeholder'>
 >;
 export type VariableTextControlProps = ControlProps<string, VariableTextControlElement>;
@@ -125,6 +128,7 @@ export type VariableTextAreaControlElement = Override<
   BaseControlElement,
   {
     type: 'VariableTextArea';
+    variablesTypes?: VariableType[];
   } & Pick<TextAreaProps, 'placeholder' | 'minRows'>
 >;
 export type VariableTextAreaControlProps = ControlProps<string, VariableTextAreaControlElement>;

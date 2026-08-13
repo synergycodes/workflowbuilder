@@ -21,6 +21,7 @@ export type VariableSuggestionGroup = {
 export type VariableTextProps = {
   value: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   variant?: 'text' | 'text-area';
   suggestionGroups: VariableSuggestionGroup[];
 

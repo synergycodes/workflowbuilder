@@ -4,11 +4,11 @@ import styles from './dependencies.module.css';
 
 import { FormControlWithLabel } from '../../../../../components/form/form-control-with-label/form-control-with-label';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
-import { conditionsToDependencies } from '../../../../../features/variables/actions/conditions';
 import { VariableText } from '../../../../../features/variables/components/variable-text/variable-text';
 import { useAvailableVariables } from '../../../../../features/variables/hooks/use-available-variables';
 import type { DynamicCondition } from '../../../../../types/controls';
 import { noop } from '../../../../../utils/noop';
+import { conditionsToDependencies } from '../../../utils/conditional-transform';
 
 type Props = {
   conditions: DynamicCondition[];

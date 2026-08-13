@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.name {
+  max-width: 200px;
+  min-height: 1.75rem;
+  line-height: 1.3125rem;
+  display: inline-flex;
+  font-family: 'Courier New';
+  color: #6b3bff;
+  border-radius: 4px;
+  padding: 4px 8px 3px 8px;
+  background: #f4f0ff;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  word-break: break-all;
+}

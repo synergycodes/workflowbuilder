@@ -1,17 +1,20 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import type { VariableType } from '../../../node/node-output-schema';
 import { useStore } from '../../../store/store';
-import { filterEmpty } from '../../../utils/array';
-import { truncate } from '../../../utils/text';
-import { getAvailableVariablesByNodeId } from '../actions/get-available-variables-by-node-id';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
-import { getGlobalVariableKey } from '../utils/get-global-variable-key';
+import { getSuggestionsFromVariableIndex } from '../stores/core/get-suggestions-node-data/get-suggestions-from-variables-index';
+import { filterSuggestionsByTypes } from '../utils/core/filter-suggestions-by-types';
+import { getAvailableVariablesByNodeId } from '../utils/core/get-available-variables-by-node-id';
 
-export function useAvailableVariables(
-  nodeId: string | undefined,
-  excludeTypes: string[] = [],
-): VariableSuggestionGroup[] {
+type Options = {
+  excludeTypes?: VariableType[];
+  includeTypes?: VariableType[];
+};
+
+export function useAvailableVariables(nodeId: string | undefined, options?: Options): VariableSuggestionGroup[] {
+  const { excludeTypes = [], includeTypes = [] } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
   const edges = useStore((store) => store.edges);
@@ -19,26 +22,29 @@ export function useAvailableVariables(
   const { t } = useTranslation();
 
   const globalSuggestionsGroups = useMemo(() => {
-    const suggestions: VariableSuggestion[] = Object.values(globalVariables)
-      .filter(filterEmpty)
-      .map((definition) => {
-        return {
-          id: getGlobalVariableKey(definition.id),
-          display: truncate(definition.name, 25),
-          label: definition.name,
-          description: definition.description,
-          type: definition.type,
-        };
-      });
+    const suggestions: VariableSuggestion[] = getSuggestionsFromVariableIndex({
+      variablesIndex: globalVariables,
+      variant: 'global',
+    });
 
-    const globalGroup: VariableSuggestionGroup = {
-      label: t('workflowsSettings.tab.globalVariables'),
-      icon: 'Gear',
+    const filteredSuggestions = filterSuggestionsByTypes({
       suggestions,
-    };
+      excludeTypes,
+      includeTypes,
+    });
 
-    return [globalGroup];
-  }, [globalVariables, t]);
+    if (filteredSuggestions.length > 0) {
+      const globalGroup: VariableSuggestionGroup = {
+        label: t('workflowsSettings.tab.globalVariables'),
+        icon: 'Gear',
+        suggestions: filteredSuggestions,
+      };
+
+      return [globalGroup];
+    }
+
+    return [];
+  }, [excludeTypes, globalVariables, includeTypes, t]);
 
   const nodeSuggestionsGroups = useMemo(() => {
     return getAvailableVariablesByNodeId({
@@ -46,6 +52,7 @@ export function useAvailableVariables(
       nodes,
       edges,
       excludeTypes,
+      includeTypes,
     });
 
     // .length is critical here for performance.
