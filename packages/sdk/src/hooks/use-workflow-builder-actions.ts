@@ -106,7 +106,7 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
     () => ({
       save: () => onSave({ isAutoSave: false }),
 
-      openSettings: openModalWorkflowSettings,
+      openSettings: () => openModalWorkflowSettings(),
       openImport: openImportModal,
       openExport: openExportModal,
 

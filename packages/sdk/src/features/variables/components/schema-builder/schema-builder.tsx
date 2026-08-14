@@ -1,5 +1,5 @@
 import { PlusCircle } from '@phosphor-icons/react';
-
+import { Button, SnackbarType } from '@workflowbuilder/ui';
 import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -16,7 +16,6 @@ import type { VariablesIndex } from '../../types';
 import { getEmptyVariableDefinition } from '../../utils/get-empty-variable-definition';
 import { getVariableReferenceWithoutBracketsForNode } from '../../utils/keys/get-variable-reference-without-brackets-for-node';
 import { VariablePreview } from '../variable-preview/variable-preview';
-import { Button, SnackbarType } from '@workflowbuilder/ui';
 
 type Props = {
   isDisabled: boolean;

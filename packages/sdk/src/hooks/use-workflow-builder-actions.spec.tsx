@@ -18,7 +18,7 @@ vi.mock('../features/integration/components/import-export/import-modal/open-impo
   openImportModal: vi.fn(),
 }));
 
-vi.mock('../features/variables/modals/modal-settings', () => ({
+vi.mock('../features/variables/modals/global/modal-settings', () => ({
   openModalWorkflowSettings: vi.fn(),
 }));
 
