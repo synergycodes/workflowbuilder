@@ -130,6 +130,8 @@ export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'a
 
 export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
 
+export const variablesTypesNumeric: VariableType[] = ['number'];
+
 /**
  * Special keywords used to determine source-handle behaviour.
  *

@@ -6,6 +6,7 @@ import {
   migrateLegacyHandleIdsOnNodes,
 } from '../../../features/diagram/handles/migrate-legacy-handle-id';
 import { selectSingleSelectedElement } from '../../../features/properties-bar/use-single-selected-element';
+import { refreshAllSuggestions } from '../../../features/variables/stores/core/refresh-suggestions';
 import type { VariableDefinition } from '../../../features/variables/types';
 import type { LayoutDirection } from '../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../node/node-data';
@@ -116,6 +117,8 @@ export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFor
     edges: loadData.edges ? migrateLegacyHandleIdsOnEdges(loadData.edges) : state.edges,
     layoutDirection: loadData.layoutDirection ?? state.layoutDirection,
   }));
+
+  refreshAllSuggestions();
 }
 
 export function getStoreSingleSelected() {

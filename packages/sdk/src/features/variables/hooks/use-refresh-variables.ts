@@ -31,10 +31,6 @@ function useRefreshVariables() {
   }, []);
 
   useEffect(() => {
-    refreshAll();
-  }, [refreshAll]);
-
-  useEffect(() => {
     const wasNodeUpdated = ['dataUpdateNode', 'addNode'].includes(lastChangeName);
     const wasDiagramReloaded = ['undo', 'redo', 'import'].includes(lastChangeName);
 

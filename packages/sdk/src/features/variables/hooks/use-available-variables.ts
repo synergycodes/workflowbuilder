@@ -13,7 +13,12 @@ type Options = {
   includeTypes?: VariableType[];
 };
 
-export function useAvailableVariables(nodeId: string | undefined, options?: Options): VariableSuggestionGroup[] {
+type Response = {
+  suggestionGroups: VariableSuggestionGroup[];
+  totalVariables: number;
+};
+
+export function useAvailableVariables(nodeId: string | undefined, options?: Options): Response {
   const { excludeTypes = [], includeTypes = [] } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
@@ -60,6 +65,16 @@ export function useAvailableVariables(nodeId: string | undefined, options?: Opti
   }, [nodeId, edges.length, nodes.length]);
 
   return useMemo(() => {
-    return [...globalSuggestionsGroups, ...nodeSuggestionsGroups];
+    const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];
+    const totalVariables = suggestionGroups.reduce((stack: number, group) => {
+      stack += group.suggestions.length;
+
+      return stack;
+    }, 0);
+
+    return {
+      suggestionGroups,
+      totalVariables,
+    };
   }, [globalSuggestionsGroups, nodeSuggestionsGroups]);
 }

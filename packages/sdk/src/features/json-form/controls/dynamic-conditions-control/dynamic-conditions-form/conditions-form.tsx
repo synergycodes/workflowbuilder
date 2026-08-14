@@ -37,7 +37,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     );
 
     const selection = useSingleSelectedElement();
-    const suggestionGroups = useAvailableVariables(selection?.node?.id, {
+    const { suggestionGroups, totalVariables } = useAvailableVariables(selection?.node?.id, {
       excludeTypes: variablesTypesToExcludeNonPrimitive,
     });
 
@@ -88,7 +88,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
     return (
       <form ref={formRef} className={styles['form']} onSubmit={handleConfirm}>
-        <div key={lastIndex} className={styles['controls-container']}>
+        <div key={`${lastIndex}-${totalVariables}`} className={styles['controls-container']}>
           {conditions.map((condition, index) => (
             <ConditionsFormField
               key={index}

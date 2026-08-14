@@ -3,18 +3,19 @@ import { useCallback, useEffect, useState } from 'react';
 import { VariableText } from '../../../../features/variables/components/variable-text/variable-text';
 import { useAvailableVariables } from '../../../../features/variables/hooks/use-available-variables';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';
-import { variablesTypesToExcludeInText } from '../../../variables/constants';
+import { variablesTypesNumeric, variablesTypesToExcludeInText } from '../../../variables/constants';
 import type { VariableTextControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextControl(props: VariableTextControlProps) {
-  const { data, handleChange, path, errors, enabled, uischema } = props;
+  const { data, handleChange, path, errors, enabled, uischema, schema } = props;
   const { placeholder, variablesTypes, disabled } = uischema;
+  const { type } = schema;
   const selection = useSingleSelectedElement();
-  const suggestionGroups = useAvailableVariables(selection?.node?.id, {
+  const { suggestionGroups, totalVariables } = useAvailableVariables(selection?.node?.id, {
     excludeTypes: variablesTypes ? [] : variablesTypesToExcludeInText,
-    includeTypes: variablesTypes,
+    includeTypes: variablesTypes || (type === 'number' ? variablesTypesNumeric : undefined),
   });
 
   const isDisabled = !enabled || disabled === true;
@@ -32,6 +33,7 @@ function VariableTextControl(props: VariableTextControlProps) {
   return (
     <ControlWrapper {...props}>
       <VariableText
+        key={totalVariables}
         value={inputValue}
         onChange={setInputValue}
         variant="text"

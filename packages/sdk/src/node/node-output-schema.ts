@@ -11,7 +11,7 @@ export function getVariableTypeIfPrimitive(type: VariableType): VariableTypePrim
 }
 
 export type OutputProperty = {
-  type: VariableTypePrimitive;
+  type: VariableType;
   label?: string;
   description?: string;
 };

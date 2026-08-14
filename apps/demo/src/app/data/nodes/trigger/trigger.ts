@@ -18,8 +18,8 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
       source: {
         eventType: { type: 'string', label: 'Event Type', description: 'The type of event that started the workflow' },
         timestamp: { type: 'string', label: 'Timestamp', description: 'ISO 8601 date-time when the trigger fired' },
-        // TODO: Match JSON schema
-        // payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
+        // TODO: outputSchema and schema properties should support the full JsonSchema7 type imported from @jsonforms/core to build suggestions not only for objects but also for their variables.
+        payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
       },
     },
   },
