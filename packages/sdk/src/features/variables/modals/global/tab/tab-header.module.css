@@ -1,3 +1,7 @@
+:root {
+  --settings-tab-header-border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
+}
+
 .container {
   display: flex;
   width: 100%;
@@ -6,7 +10,7 @@
   padding-bottom: 1rem;
 
   &:not(.container--no-border) {
-    border-bottom: 1px solid var(--wb-ui-stroke-primary-default);
+    border-bottom: var(--settings-tab-header-border);
 
     + * {
       padding-top: var(--wb-token-spacing-modal-l-content-gap-2, 16px);
@@ -23,6 +27,10 @@
 .title,
 .description {
   margin: 0;
+}
+
+.title {
+  color: var(--ax-txt-primary-default);
 }
 
 .description {

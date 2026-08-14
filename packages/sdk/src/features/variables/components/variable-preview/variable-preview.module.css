@@ -5,8 +5,8 @@
   padding: var(--wb-token-spacing-spacing-12, 12px) var(--wb-token-spacing-spacing-16, 16px)
     var(--wb-token-spacing-spacing-12, 12px) 16px;
   border-radius: 8px;
-  border: 1px solid #e5e5e5;
-  background: #f9f9f9;
+  border: 1px solid var(--ax-ui-bg-secondary-default);
+  background: var(--ax-ui-bg-secondary-default);
   transition: all var(--wb-transition);
 
   &:hover {
