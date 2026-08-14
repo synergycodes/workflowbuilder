@@ -24,7 +24,11 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
               label: 'Event Type',
               description: 'The type of event that started the workflow',
             },
-            timestamp: { type: 'string', label: 'Timestamp', description: 'ISO 8601 date-time when the trigger fired' },
+            timestamp: {
+              type: 'datetime',
+              label: 'Timestamp',
+              description: 'ISO 8601 date-time when the trigger fired',
+            },
           },
         },
       },
@@ -41,12 +45,12 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
               description: 'The type of event that started the workflow',
             },
             startDate: {
-              type: 'date',
+              type: 'datetime',
               label: 'Start date',
               description: 'The date when the event was scheduled to start',
             },
             endDate: {
-              type: 'date',
+              type: 'datetime',
               label: 'End date',
               description: 'The date when the event was scheduled to end',
             },
