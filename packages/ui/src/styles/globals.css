@@ -1,0 +1,7 @@
+/* Wrapped by hand (not by the build plugin): this file is concatenated raw
+   into dist/styles.css, bypassing the PostCSS pipeline. */
+@layer ui.base {
+  :root {
+    --ax-public-transition: 0.1s ease-in;
+  }
+}

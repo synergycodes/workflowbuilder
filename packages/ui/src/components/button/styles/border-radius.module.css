@@ -1,0 +1,37 @@
+:root {
+  --ax-public-button-border-radius-extra-large: var(--ax-token-radius-button-xl);
+  --ax-public-button-border-radius-large: var(--ax-token-radius-button-l);
+  --ax-public-button-border-radius-medium: var(--ax-token-radius-button-m);
+  --ax-public-button-border-radius-small: var(--ax-token-radius-button-s);
+  --ax-public-button-border-radius-extra-small: var(--ax-token-radius-button-xs);
+
+  --ax-public-button-border-radius-circle: var(--ax-token-radius-button-round);
+}
+
+@layer ui.component {
+  :not(.circle) {
+    &.extra-large {
+      border-radius: var(--ax-public-button-border-radius-extra-large);
+    }
+
+    &.large {
+      border-radius: var(--ax-public-button-border-radius-large);
+    }
+
+    &.medium {
+      border-radius: var(--ax-public-button-border-radius-medium);
+    }
+
+    &.small {
+      border-radius: var(--ax-public-button-border-radius-small);
+    }
+
+    &.extra-small {
+      border-radius: var(--ax-public-button-border-radius-extra-small);
+    }
+  }
+
+  .circle {
+    border-radius: var(--ax-public-button-border-radius-circle);
+  }
+}

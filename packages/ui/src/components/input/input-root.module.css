@@ -1,0 +1,35 @@
+@layer ui.component {
+  .input-root {
+    display: flex;
+    align-items: center;
+    cursor: text;
+
+    color: var(--ax-public-input-root-color);
+
+    border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+
+    &:not(:hover) {
+      transition: all var(--ax-public-transition);
+    }
+
+    &:has(input:focus-visible) {
+      border-color: var(--ax-public-input-root-border-color-focus);
+    }
+
+    &:global(.base--error) {
+      background-color: var(--ax-public-input-root-background-color-error);
+      border-color: var(--ax-public-input-root-border-color-error);
+      color: var(--ax-public-input-root-color-error);
+    }
+
+    &:global(.base--disabled) {
+      color: var(--ax-public-input-root-color-disabled);
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      min-width: 1rem;
+    }
+  }
+}
