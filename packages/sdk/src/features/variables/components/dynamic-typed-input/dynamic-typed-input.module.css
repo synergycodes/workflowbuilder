@@ -6,6 +6,7 @@
 }
 
 .container--select {
+  position: relative;
   border-radius: var(--ax-public-input-border-radius-medium);
 
   > div > button {
@@ -14,8 +15,6 @@
   }
 }
 
-/* DatePicker renders its Popover.Trigger as the button itself, so the class
-   lands directly on it - no wrapper to descend through. */
 .date-picker {
   border-radius: var(--ax-public-input-border-radius-medium);
   min-height: 2.5rem;
@@ -24,25 +23,6 @@
 
 .date-with-reset-container {
   position: relative;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.reset-button {
-  position: absolute;
-  top: var(--ax-token-spacing-input-m-v-pad);
-  right: var(--ax-token-spacing-input-m-h-pad);
-  cursor: pointer;
-}
-
-.container--select {
-  position: relative;
-
-  > select {
-    min-height: 41px;
-  }
 }
 
 .adornment--select {
