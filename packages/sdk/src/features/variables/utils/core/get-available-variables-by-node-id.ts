@@ -7,6 +7,7 @@ import { useVariablesSuggestionsStore } from '../../stores/use-variable-suggesti
 import { getNodeAncestors } from '../diagram/get-node-ancestors';
 import { getNodeLabelForVariable } from '../diagram/get-node-label-for-variable';
 import { filterSuggestionsByTypes } from './filter-suggestions-by-types';
+import { filterSuggestionsDuplicates } from './filter-suggestions-duplicates';
 
 type Params = {
   nodeId: string | undefined;
@@ -33,7 +34,9 @@ export function getAvailableVariablesByNodeId({
   // BFS backward through edges to find all ancestor nodes
   const ancestors = getNodeAncestors(nodeId, edges);
 
-  const groups: VariableSuggestionGroup[] = [];
+  const groupsByLabel: {
+    [label: string]: VariableSuggestionGroup;
+  } = {};
 
   for (const ancestor of ancestors) {
     // Source handle is important because source handle from Source named error and success should returns different variables
@@ -63,14 +66,16 @@ export function getAvailableVariablesByNodeId({
       includeTypes,
     });
 
-    if (filteredSuggestions.length > 0) {
-      groups.push({
-        label: nodeLabel,
-        icon: node.data.icon,
-        suggestions: filteredSuggestions,
-      });
-    }
+    const uniqueSuggestions = groupsByLabel[nodeLabel]?.suggestions
+      ? filterSuggestionsDuplicates([...groupsByLabel[nodeLabel].suggestions, ...filteredSuggestions])
+      : filteredSuggestions;
+
+    groupsByLabel[nodeLabel] = {
+      label: nodeLabel,
+      icon: node.data.icon,
+      suggestions: uniqueSuggestions,
+    };
   }
 
-  return groups;
+  return Object.values(groupsByLabel);
 }

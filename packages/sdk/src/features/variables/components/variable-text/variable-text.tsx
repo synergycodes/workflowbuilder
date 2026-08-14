@@ -201,10 +201,12 @@ export function VariableText({
         const node = getNodeByIdAction(nodeId);
 
         if (node) {
-          return `{{ ${node.data?.properties?.label} · ${t('plugins.validation.missingMentionNodeVariablePrefix')} · ${typedId.split('.').at(-1)} }}`;
+          const nodeLabel = node.data?.properties?.label;
+
+          return `{{ ${nodeLabel ? `${nodeLabel} · ` : ''}${t('variables.missingMentionNodeVariablePrefix')} · ${typedId.split('.').at(-1)} }}`;
         }
 
-        return `{{ ${t('plugins.validation.missingMentionNodePrefix')} (${nodeId.slice(0, 4)}...) · ${typedId.split('.').at(-1)} }}`;
+        return `{{ ${t('variables.missingMentionNodePrefix')} (${nodeId.slice(0, 4)}...) · ${typedId.split('.').at(-1)} }}`;
       }
 
       return defaultLabel;

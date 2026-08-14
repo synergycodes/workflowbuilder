@@ -22,7 +22,7 @@ type Response = {
 const EMPTY_NODE_SUGGESTIONS: Response = {
   type: SUGGESTION_NODE_TYPE.COMMON,
   bySourceHandle: {
-    default: [],
+    every: [],
   },
 };
 
@@ -33,21 +33,32 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return EMPTY_NODE_SUGGESTIONS;
   }
 
+  const bySourceHandle: SuggestionsBySourceHandle = {
+    every: [],
+  };
+
   // Node that always returns the same variables
   if (definition.outputSchema.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
+    for (const [sourceHandle, properties] of Object.entries(definition.outputSchema.bySourceHandle)) {
+      if (properties) {
+        bySourceHandle[sourceHandle] = [
+          ...(bySourceHandle[sourceHandle] || []),
+          ...getSuggestionsFromOutputProperties({
+            nodeId: node.id,
+            nodeLabel,
+            properties: properties,
+          }),
+        ];
+      }
+    }
+
     return {
       type: SUGGESTION_NODE_TYPE.COMMON,
-      bySourceHandle: {
-        default: getSuggestionsFromOutputProperties({
-          nodeId: node.id,
-          nodeLabel,
-          properties: definition.outputSchema.properties,
-        }),
-      },
+      bySourceHandle,
     };
   }
 
-  // From variants (they have rules based on data inside the node and edges)
+  // From variants (they have rules based on data inside the node)
   if (definition.outputSchema.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
     const variantsMatchingDataPropertyValue = Object.values(definition.outputSchema.variants)
       .filter((variant) => {
@@ -55,30 +66,26 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
           return true;
         }
 
-        // We assume true if rule isn't set - the rule can be set for sourceHandle only
         const isValidPropertyValue =
-          'dataPropertyName' in variant.variantRule && variant.variantRule.dataPropertyName
-            ? node.data.properties[variant.variantRule.dataPropertyName] === variant.variantRule.dataPropertyValue
-            : true;
+          node.data.properties[variant.variantRule.dataPropertyName] === variant.variantRule.dataPropertyValue;
 
         return isValidPropertyValue;
       })
       .filter(filterEmpty);
 
-    const bySourceHandle: SuggestionsBySourceHandle = {
-      default: [],
-    };
-
     for (const variant of variantsMatchingDataPropertyValue) {
-      const sourceHandle = variant.variantRule?.sourceHandleId || 'default';
-      bySourceHandle[sourceHandle] = [
-        ...(bySourceHandle[sourceHandle] || []),
-        ...getSuggestionsFromOutputProperties({
-          nodeId: node.id,
-          nodeLabel,
-          properties: variant.properties,
-        }),
-      ];
+      for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle)) {
+        if (properties) {
+          bySourceHandle[sourceHandle] = [
+            ...(bySourceHandle[sourceHandle] || []),
+            ...getSuggestionsFromOutputProperties({
+              nodeId: node.id,
+              nodeLabel,
+              properties: properties,
+            }),
+          ];
+        }
+      }
     }
 
     return {
@@ -114,7 +121,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return {
       type: SUGGESTION_NODE_TYPE.CUSTOM,
       bySourceHandle: {
-        default: suggestions,
+        success: suggestions,
       },
     };
   }

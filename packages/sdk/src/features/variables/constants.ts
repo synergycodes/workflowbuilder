@@ -129,3 +129,26 @@ export const variableTypesOptions: VariableTypeOption[] = Object.values(variable
 export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'array'];
 
 export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
+
+/**
+ * Special keywords used to determine source-handle behaviour.
+ *
+ * Source handles may have arbitrary names, but handles containing one of these
+ * keywords are treated specially when processing `bySourceHandle`.
+ *
+ * - `EVERY` (`every`): Values assigned to this handle are additionally attached
+ *   to every branch. `every` values are always forwarded.
+ * - `SUCCESS` (`success`): A branch is considered successful when its source
+ *   handle does not contain the `ERROR` keyword. Successful branches receive
+ *   the values assigned to this handle in addition to their own values.
+ * - `ERROR` (`error`): Values assigned to this handle are additionally attached
+ *   to every branch whose source handle contains the `ERROR` keyword.
+ *
+ * The keywords are matched against the source-handle name, so source handles
+ * can have custom names while still triggering the corresponding behaviour.
+ */
+export const SPECIAL_SOURCE_HANDLE_KEYWORDS = {
+  EVERY: 'every',
+  SUCCESS: 'success',
+  ERROR: 'error',
+} as const;

@@ -1,7 +1,6 @@
-import { getNodeDefinition } from '@/utils/validation/get-node-definition';
-
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
 import { useStore } from '../../../../store/store';
+import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';
 import {
   type VariablesSuggestionsStore,
   emptyVariablesSuggestionsStore,

@@ -1,3 +1,4 @@
+import { SnackbarType } from '@synergycodes/overflow-ui';
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 import type {
   WorkflowBuilderEdgeTemplates,
@@ -8,6 +9,7 @@ import type {
 
 import '@workflowbuilder/sdk/style.css';
 
+import { showSnackbar } from '../../../../packages/sdk/src/utils/show-snackbar';
 import { DashedEdge } from './components/dashed-edge/dashed-edge';
 import { MultiPortNodeTemplate } from './components/multi-port-node/multi-port-node-template';
 import { demoPaletteItems } from './data/palette';
@@ -35,8 +37,19 @@ const edgeTemplates = {
   dashed: DashedEdge,
 } satisfies WorkflowBuilderEdgeTemplates;
 
-// A trigger is a workflow entry point, so it can never be a connection target.
-const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => targetNode.data.type !== 'trigger';
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => {
+  // A trigger is a workflow entry point, so it can never be a connection target.
+  if (targetNode.data.type === 'trigger') {
+    showSnackbar({
+      title: 'notValidConnection',
+      variant: SnackbarType.WARNING,
+    });
+
+    return false;
+  }
+
+  return true;
+};
 
 // Advanced escape hatch: forward extra ReactFlow props (SDK-owned props can't be set here).
 const reactFlowProps = {

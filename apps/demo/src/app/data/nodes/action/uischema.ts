@@ -45,16 +45,16 @@ const sendEmailProperties: ActionNodeUISchema = {
       placeholder: 'manager@example.com',
     },
     {
-      type: 'Text',
+      type: 'VariableText',
       scope: scope('properties.sendEmail.properties.subject'),
       label: 'Subject',
-      placeholder: 'Type your subject here...',
+      placeholder: 'Type your subject here... Use {{ to insert variables',
     },
     {
-      type: 'TextArea',
+      type: 'VariableTextArea',
       scope: scope('properties.sendEmail.properties.body'),
       label: 'Email Body',
-      placeholder: 'Type your message here...',
+      placeholder: 'Type your message here... Use {{ to insert variables',
       minRows: 5,
     },
     {

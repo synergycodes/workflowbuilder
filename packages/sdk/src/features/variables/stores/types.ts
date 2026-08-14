@@ -1,8 +1,11 @@
 import type { VariableSuggestion } from '../components/variable-text/variable-text.types';
+import type { SPECIAL_SOURCE_HANDLE_KEYWORDS } from '../constants';
 
 export type SuggestionsBySourceHandle = {
   [sourceHandle: string]: VariableSuggestion[] | undefined;
-  default: VariableSuggestion[];
+  [SPECIAL_SOURCE_HANDLE_KEYWORDS.EVERY]?: VariableSuggestion[];
+  [SPECIAL_SOURCE_HANDLE_KEYWORDS.SUCCESS]?: VariableSuggestion[];
+  [SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR]?: VariableSuggestion[];
 };
 
 export const SUGGESTION_NODE_TYPE = {

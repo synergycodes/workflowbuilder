@@ -14,10 +14,16 @@ export const notification: PaletteItem<NotificationNodeSchema> = {
   uischema,
   outputSchema: {
     type: 'default',
-    properties: {
-      sent: { type: 'boolean', label: 'Sent', description: 'Whether the notification was sent successfully' },
-      sentAt: { type: 'string', label: 'Sent At', description: 'ISO 8601 date-time when the notification was sent' },
-      recipient: { type: 'string', label: 'Recipient', description: 'The email address the notification was sent to' },
+    bySourceHandle: {
+      success: {
+        sent: { type: 'boolean', label: 'Sent', description: 'Whether the notification was sent successfully' },
+        sentAt: { type: 'string', label: 'Sent At', description: 'ISO 8601 date-time when the notification was sent' },
+        recipient: {
+          type: 'string',
+          label: 'Recipient',
+          description: 'The email address the notification was sent to',
+        },
+      },
     },
   },
 };

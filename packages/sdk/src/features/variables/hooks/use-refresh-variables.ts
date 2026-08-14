@@ -1,7 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 
-import { useChangesTrackerStore } from '@/features/changes-tracker/stores/use-changes-tracker-store';
-
+import { useChangesTrackerStore } from '../../changes-tracker/stores/use-changes-tracker-store';
 import { refreshAllSuggestions, refreshNodesIdsSuggestions } from '../stores/core/refresh-suggestions';
 
 type Refresh = {
@@ -21,6 +20,20 @@ function useRefreshVariables() {
   const lastChangeName = useChangesTrackerStore((store) => store.lastChangeName);
   const lastChangeParams = useChangesTrackerStore((store) => store.lastChangeParams);
 
+  const refreshAll = useCallback(() => {
+    timeoutRef.current = setTimeout(() => {
+      refreshAllSuggestions();
+      refreshRef.current = {
+        type: 'partial',
+        nodesIds: new Set<string>(),
+      };
+    }, REFRESH_ALL_VARIABLES_DELAY_MS);
+  }, []);
+
+  useEffect(() => {
+    refreshAll();
+  }, [refreshAll]);
+
   useEffect(() => {
     const wasNodeUpdated = ['dataUpdateNode', 'addNode'].includes(lastChangeName);
     const wasDiagramReloaded = ['undo', 'redo', 'import'].includes(lastChangeName);
@@ -38,6 +51,10 @@ function useRefreshVariables() {
       const nodeId = (lastChangeParams as unknown as { id?: string })?.id || '';
       if (nodeId) {
         refreshRef.current.nodesIds.add(nodeId);
+      } else {
+        console.warn('Expected nodeId from the event to refresh variables, but it was not received.');
+        // Force global refresh
+        refreshRef.current.type = 'global';
       }
     }
 
@@ -46,13 +63,7 @@ function useRefreshVariables() {
     }
 
     if (refreshRef.current.type === 'global') {
-      timeoutRef.current = setTimeout(() => {
-        refreshAllSuggestions();
-        refreshRef.current = {
-          type: 'partial',
-          nodesIds: new Set<string>(),
-        };
-      }, REFRESH_ALL_VARIABLES_DELAY_MS);
+      timeoutRef.current = setTimeout(refreshAll, REFRESH_ALL_VARIABLES_DELAY_MS);
 
       return;
     }
@@ -65,7 +76,7 @@ function useRefreshVariables() {
         nodesIds: new Set<string>(),
       };
     }, REFRESH_PART_VARIABLES_DELAY_MS);
-  }, [lastChangeName, lastChangeParams]);
+  }, [lastChangeName, lastChangeParams, refreshAll]);
 }
 
 export default useRefreshVariables;

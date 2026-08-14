@@ -1,5 +1,4 @@
-import { NODE_ID_FOR_COMMON_NODE_DATA } from '@/features/variables/constants';
-
+import { NODE_ID_FOR_COMMON_NODE_DATA } from '../../../constants';
 import type { SuggestionNodeType, SuggestionsBySourceHandle } from '../../types';
 import { SUGGESTION_NODE_TYPE } from '../../types';
 import type { VariablesSuggestionsStore } from '../../use-variable-suggestions-store';

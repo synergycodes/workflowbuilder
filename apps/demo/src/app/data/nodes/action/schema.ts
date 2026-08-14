@@ -91,8 +91,8 @@ export const schema = {
     sendEmail: {
       type: 'object',
       properties: {
-        address: { type: 'string' },
-        copy: { type: 'string' },
+        address: { type: 'string', format: 'email' },
+        copy: { type: 'string', format: 'email' },
         subject: { type: 'string' },
         body: { type: 'string' },
         priority: { type: 'string', options: Object.values(priorityOptions) },

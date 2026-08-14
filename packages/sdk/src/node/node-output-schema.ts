@@ -24,20 +24,24 @@ export const OUTPUT_SCHEMA_TYPE = {
 
 export type OutputPropertiesIndex = Record<string, OutputProperty | undefined>;
 
+export type PropertiesBySourceHandle = {
+  [sourceHandle: string]: OutputPropertiesIndex | undefined;
+  every?: OutputPropertiesIndex;
+};
+
 export type OutputVariant = {
   variantRule:
     | undefined
     | {
-        sourceHandleId?: string;
-        dataPropertyName?: string;
-        dataPropertyValue?: string;
+        dataPropertyName: string;
+        dataPropertyValue: string;
       };
-  properties: OutputPropertiesIndex;
+  bySourceHandle: PropertiesBySourceHandle;
 };
 
 export type NodeOutputSchemaDefault = {
   type: 'default';
-  properties: OutputPropertiesIndex;
+  bySourceHandle: PropertiesBySourceHandle;
 };
 
 export type NodeOutputSchemaVariant = {
@@ -45,9 +49,7 @@ export type NodeOutputSchemaVariant = {
     Predefined variant depending on the value of a property. 
   */
   type: 'variant';
-  variants: {
-    [variantName: string]: OutputVariant | undefined;
-  };
+  variants: OutputVariant[];
 };
 
 export type NodeOutputSchemaPropertyValue = {
