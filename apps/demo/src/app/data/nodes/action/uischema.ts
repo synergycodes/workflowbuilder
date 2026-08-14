@@ -81,7 +81,8 @@ const sendEmailProperties: ActionNodeUISchema = {
       elements: [
         { type: 'Label', text: 'Number of retries' },
         {
-          type: 'Text',
+          type: 'VariableDynamic',
+          variableType: 'number',
           scope: scope('properties.sendEmail.properties.retries'),
           rule: {
             effect: 'DISABLE',
