@@ -1,5 +1,5 @@
 import { PencilSimple, PencilSimpleSlash } from '@phosphor-icons/react';
-import { IconSwitch } from '@synergycodes/overflow-ui';
+import { IconSwitch } from '@workflowbuilder/ui';
 
 import { useStore } from '../../../../store/store';
 

@@ -1,4 +1,4 @@
-import { NavButton } from '@synergycodes/overflow-ui';
+import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import type { PropsWithChildren } from 'react';
 import { useTranslation } from 'react-i18next';

@@ -36,6 +36,18 @@ stylesheets ignore `@import` entirely.
 leading with the statement, uses an unknown layer name, or ships rules outside
 `@layer`.
 
+## One top-level layer across the ecosystem
+
+`ui` is deliberately the ONLY top-level layer, in this package and in the
+SDK's `index.css` alike. Layer order is fixed by the first mention anywhere in
+the document, and stylesheets here arrive through the JS module graph - so
+with two independent order declarations (say `reset, ext-lib, ui` in one file
+and `ui.base, ui.component` in another) the effective order would depend on
+which file parses first. Everything that must lose to component styles
+(third-party CSS such as xyflow, the SDK's reset block) joins `ui.base`
+instead of getting its own top-level layer, and every stylesheet opens with
+the identical `@layer ui.base, ui.component;` statement.
+
 ## Variable defaults
 
 `:root` blocks with variable defaults (`--ax-public-*` in component sources,

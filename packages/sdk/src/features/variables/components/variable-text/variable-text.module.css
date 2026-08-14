@@ -131,7 +131,8 @@ body:has(.suggestionsContainer) {
     z-index: 200;
   }
 
-  &:has(:global(.base-Modal-root))::before {
+  /* Modal already dims the page; don't stack a second backdrop. */
+  &:global(.wb-modal-open)::before {
     display: none;
   }
 }

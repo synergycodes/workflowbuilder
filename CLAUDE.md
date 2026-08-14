@@ -24,6 +24,8 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 
+App builds and dev servers consume the prebuilt `packages/ui/dist` (created on install). After editing `packages/ui/src`, run `pnpm build:ui` (or keep `pnpm --filter @workflowbuilder/ui dev` watching) - app commands do not rebuild it.
+
 ### Agent signals
 
 Long-running processes already emit stable log lines that scripts and agents can grep for:

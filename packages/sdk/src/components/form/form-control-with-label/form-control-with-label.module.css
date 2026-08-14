@@ -1,3 +1,5 @@
+@layer ui.base, ui.component;
+
 @layer ui.component {
   .container {
     display: flex;

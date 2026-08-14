@@ -79,7 +79,6 @@ All scripts run from the monorepo root. Grouped by purpose:
 | `dev:backend`   | Backend only (Hono server with `tsx watch`)                                                              |
 | `dev:worker`    | Execution worker only (Temporal worker with `tsx watch`)                                                 |
 | `dev:docs`      | Docs site (Astro)                                                                                        |
-| `dev:local`     | Demo frontend with `LOCAL_OVERFLOW_UI=true` (linked local overflow-ui)                                   |
 
 ### Infra (Docker lifecycle)
 

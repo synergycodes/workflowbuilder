@@ -1,4 +1,4 @@
-import { TextArea } from '@synergycodes/overflow-ui';
+import { TextArea } from '@workflowbuilder/ui';
 import { useEffect, useState } from 'react';
 
 import type { TextAreaControlProps } from '../../types/controls';

@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 const i18nState = { language: 'en', resolvedLanguage: 'en', changeLanguage: vi.fn() };
 
 // Render the Menu's trigger (children) so the displayed language code is queryable.
-vi.mock('@synergycodes/overflow-ui', () => ({
+vi.mock('@workflowbuilder/ui', () => ({
   Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
   NavButton: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
 }));

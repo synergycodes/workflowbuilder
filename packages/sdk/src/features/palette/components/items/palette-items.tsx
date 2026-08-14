@@ -1,4 +1,4 @@
-import { Accordion } from '@synergycodes/overflow-ui';
+import { Accordion } from '@workflowbuilder/ui';
 import type { DragEvent } from 'react';
 
 import styles from './palette-items.module.css';

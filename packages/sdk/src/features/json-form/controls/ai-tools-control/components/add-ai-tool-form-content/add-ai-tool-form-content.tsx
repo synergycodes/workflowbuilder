@@ -1,4 +1,4 @@
-import { Input, Select, TextArea } from '@synergycodes/overflow-ui';
+import { Input, Select, TextArea } from '@workflowbuilder/ui';
 import { useCallback, useState } from 'react';
 
 import { Icon } from '@workflow-builder/icons';

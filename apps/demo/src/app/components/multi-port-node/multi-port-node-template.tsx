@@ -1,6 +1,6 @@
-import { NodeDescription, NodeIcon, NodePanel } from '@synergycodes/overflow-ui';
 import { Icon, defineNodeTemplate, getHandleId, statusOptions } from '@workflowbuilder/sdk';
 import type { NodeDataProperties, WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';

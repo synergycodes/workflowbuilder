@@ -3,10 +3,10 @@ packages:
   - './packages/*'
 
 catalog:
-  # Pinned to the version the component library was validated against. Base UI
-  # changed Dialog/Popup transition behaviour after 1.4.x (1.6 broke the modal
-  # backdrop fade), so bump only after re-checking modal/menu/tooltip transitions.
-  '@base-ui/react': 1.4.1
+  # Exact-pinned: the keep-mounted modal relies on Base UI's transition
+  # lifecycle, and this range ships to consumers. Bump = visual pass over
+  # overlay transitions.
+  '@base-ui/react': 1.7.0
   '@phosphor-icons/core': ^2.1.1
   '@phosphor-icons/react': ^2.1.7
   '@xyflow/react': 12.10.0
@@ -16,6 +16,8 @@ catalog:
   'react': 19.1.0
   '@types/react': 19.1.8
   'react-dom': 19.1.0
+  # Must match react - bump together.
+  'react-is': 19.1.0
   'ajv': ^8.18.0
 
 useNodeVersion: 22.12.0
