@@ -1,0 +1,51 @@
+---
+title: Collapsible
+description: A compound component that expands and collapses a content section behind a toggle button.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { CollapsibleExample } from '../../../../components/ui-examples/collapsible';
+
+`Collapsible` toggles the visibility of a content section behind a rotating
+chevron button. Unlike `Accordion`, it's a compound component: `Collapsible`
+provides the expanded state, and you compose `Collapsible.Button` and
+`Collapsible.Content` yourself inside it. This is the building block Workflow
+Builder uses for the expand/collapse control on its node panels - see
+[`NodePanel`](/ui-library/diagram-components/node-panel/) for that composition.
+
+<CollapsibleExample client:visible />
+
+## Usage
+
+```tsx
+import { Collapsible } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Collapsible defaultExpanded>
+      <Collapsible.Button />
+      <Collapsible.Content>Additional details go here.</Collapsible.Content>
+    </Collapsible>
+  );
+}
+```
+
+## Parts
+
+`Collapsible.Button` and `Collapsible.Content` read the expanded state from
+context, so both must be rendered inside a `Collapsible`.
+
+| Part                  | Props               | Description                                                                                      |
+| --------------------- | ------------------- | ------------------------------------------------------------------------------------------------ |
+| `Collapsible`         | see [Props](#props) | State provider. Controlled via `isExpanded` + `onToggle`, or uncontrolled via `defaultExpanded`. |
+| `Collapsible.Button`  | none                | Toggle button rendered as a rotating chevron. Reads and flips the expanded state.                |
+| `Collapsible.Content` | `children`          | Content wrapper. Animates its height between collapsed and expanded.                             |
+
+## Props
+
+<PropsTable slug="collapsible" />
+
+## CSS variables
+
+<CssVariablesTable slug="collapsible" />

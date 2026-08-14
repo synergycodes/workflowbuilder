@@ -1,4 +1,4 @@
-import { Select, type SelectBaseProps } from '@synergycodes/overflow-ui';
+import { Select, type SelectBaseProps } from '@workflowbuilder/ui';
 
 import { Icon } from '@workflow-builder/icons';
 

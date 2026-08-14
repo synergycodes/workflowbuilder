@@ -1,0 +1,29 @@
+:root {
+  --ax-public-button-icon-padding-extra-large: var(--ax-token-spacing-button-xl-v-pad-2);
+  --ax-public-button-icon-padding-large: var(--ax-token-spacing-button-l-v-pad-2);
+  --ax-public-button-icon-padding-medium: var(--ax-token-spacing-button-m-v-pad-2);
+  --ax-public-button-icon-padding-small: var(--ax-token-spacing-button-s-v-pad-2);
+  --ax-public-button-icon-padding-extra-small: var(--ax-token-spacing-button-xs-v-pad-2);
+}
+
+@layer ui.component {
+  .extra-large {
+    padding: var(--ax-public-button-icon-padding-extra-large);
+  }
+
+  .large {
+    padding: var(--ax-public-button-icon-padding-large);
+  }
+
+  .medium {
+    padding: var(--ax-public-button-icon-padding-medium);
+  }
+
+  .small {
+    padding: var(--ax-public-button-icon-padding-small);
+  }
+
+  .extra-small {
+    padding: var(--ax-public-button-icon-padding-extra-small);
+  }
+}

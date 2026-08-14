@@ -2,7 +2,7 @@
 // the connection handlers must be inert and warn the user; in editable mode they
 // must forward to the store and track the change.
 //
-// `@synergycodes/overflow-ui` is mocked because the hook imports `SnackbarType`
+// `@workflowbuilder/ui` is mocked because the hook imports `SnackbarType`
 // from it, and the package's JS carries a CSS side-effect import vitest's
 // node-side transformer can't process. `show-snackbar` is mocked so the user
 // feedback can be asserted without rendering the snackbar stack.
@@ -13,7 +13,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetWorkflowStore, useStore } from '../../../store/store';
 import { useConnect } from './use-on-connect';
 
-vi.mock('@synergycodes/overflow-ui', () => ({
+vi.mock('@workflowbuilder/ui', () => ({
   SnackbarType: { SUCCESS: 'success', WARNING: 'warning', ERROR: 'error', INFO: 'info' },
 }));
 

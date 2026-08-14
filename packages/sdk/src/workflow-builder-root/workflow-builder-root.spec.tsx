@@ -14,7 +14,7 @@
 // Heavy descendants (`RuntimeIntegrationWrapper`, `RootShell`,
 // `ReactFlowProvider`) are stubbed: the contract under test is the Root's own
 // lifecycle wiring, not what the children do. Without stubs the test
-// transitively pulls `@synergycodes/overflow-ui`'s CSS side-effect import,
+// transitively pulls `@workflowbuilder/ui`'s CSS side-effect import,
 // which vitest's node-side transformer can't process.
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';

@@ -9,8 +9,8 @@
   height: var(--wb-variable-control-height);
 }
 
-.date-picker,
 .container--select {
+  position: relative;
   border-radius: var(--ax-public-input-border-radius-medium);
 
   > div > button {

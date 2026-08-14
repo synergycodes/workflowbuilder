@@ -1,0 +1,114 @@
+name: Release UI
+
+# Triggers on scoped tags `@workflowbuilder/ui@X.Y.Z` matching the version in
+# packages/ui/package.json. Mirrors release-sdk.yml. Maintainer pushes the tag
+# after merging the version-bump PR (which ran `pnpm changeset version`). See
+# packages/sdk/RELEASE.md (the release flow is shared between both packages).
+#
+# One-time npm setup: @workflowbuilder/ui needs its own GitHub Actions trusted
+# publisher registered on npmjs.com pointing at THIS workflow file
+# (.github/workflows/release-ui.yml). It is separate from the sdk one.
+
+on:
+  push:
+    tags:
+      - "@workflowbuilder/ui@*"
+  workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
+
+permissions:
+  contents: write # create GitHub Release
+  id-token: write # OIDC for npm Trusted Publisher (and provenance attestation)
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+
+      - name: Set up Node.js
+        # No `registry-url:` here on purpose — see the note in release-sdk.yml.
+        # setup-node's registry-url breaks OIDC by injecting a sentinel token.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Defensive layer — fail before npm, not on consumers.
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/ui lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/ui typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/ui test
+
+      - name: Build UI
+        # build:ui builds @workflowbuilder/ui-tokens first (ui consumes its
+        # built tokens.css) and runs the check:built-css guard afterwards.
+        run: pnpm build:ui
+
+      - name: Verify version matches tag
+        # Tag `@workflowbuilder/ui@X.Y.Z` must match packages/ui/package.json
+        # version. ${GITHUB_REF_NAME##*@} strips everything up to the last `@`.
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME##*@}"
+          PKG_VERSION=$(node -p "require('./packages/ui/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            echo "Did you forget to merge the version-bump PR before pushing the tag?"
+            exit 1
+          fi
+          echo "Publishing @workflowbuilder/ui@$PKG_VERSION"
+
+      - name: Check if version already published
+        # Idempotency — re-pushing a tag should not re-publish.
+        id: check-version
+        run: |
+          PKG_VERSION=$(node -p "require('./packages/ui/package.json').version")
+          if npm view "@workflowbuilder/ui@$PKG_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@workflowbuilder/ui@$PKG_VERSION already on npm — skipping publish step."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
+        # Requires @workflowbuilder/ui to have trusted publishing configured on
+        # npmjs.com pointing at this workflow file.
+        if: steps.check-version.outputs.already_published == 'false'
+        run: pnpm --filter @workflowbuilder/ui publish --no-git-checks --access public --provenance
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION=$(node -p "require('./packages/ui/package.json').version")
+          NOTES=$(awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/ui/CHANGELOG.md)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false

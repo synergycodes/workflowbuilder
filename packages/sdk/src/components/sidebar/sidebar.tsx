@@ -1,4 +1,4 @@
-import { Separator } from '@synergycodes/overflow-ui';
+import { Separator } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './sidebar.module.css';

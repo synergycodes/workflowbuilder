@@ -1,0 +1,61 @@
+:root {
+  --ax-public-edge-label-gap: var(--ax-token-spacing-label-gap);
+  --ax-public-edge-background-color: var(--ax-ui-bg-tertiary-default);
+  --ax-public-edge-label-color: var(--ax-txt-primary-default);
+
+  --ax-public-edge-label-border-size: var(--ax-token-stroke-edge-regular);
+  --ax-public-edge-label-border-size-selected: var(--ax-token-stroke-edge-bold);
+
+  --ax-public-edge-label-border-style: solid;
+  --ax-public-edge-label-border-color: var(--ax-edge-primary-default);
+  --ax-public-edge-label-border-color-selected: var(--ax-edge-primary-active);
+  --ax-public-edge-label-border-color-hover: var(--ax-edge-primary-hover);
+
+  --ax-public-edge-label-color-disabled: var(--ax-txt-quaternary-default);
+  --ax-public-edge-label-border-color-disabled: var(--ax-edge-primary-disabled);
+}
+
+@layer ui.component {
+  .container {
+    position: absolute;
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    gap: var(--ax-public-edge-label-gap);
+
+    pointer-events: auto;
+
+    width: max-content;
+
+    background-color: var(--ax-public-edge-background-color);
+    color: var(--ax-public-edge-label-color);
+
+    border: var(--ax-public-edge-label-border-size) var(--ax-public-edge-label-border-style)
+      var(--ax-public-edge-label-border-color);
+
+    transition: border var(--ax-public-transition);
+
+    &:hover,
+    &.hovered,
+    &.selected,
+    &.disabled {
+      transition: none;
+    }
+
+    &.hovered:not(.selected, .disabled, .temporary),
+    &:hover:not(.selected, .disabled, .temporary) {
+      border-color: var(--ax-public-edge-label-border-color-hover);
+    }
+
+    &.temporary,
+    &.selected {
+      border-width: var(--ax-public-edge-label-border-size-selected);
+      border-color: var(--ax-public-edge-label-border-color-selected);
+    }
+
+    &.disabled {
+      color: var(--ax-public-edge-label-color-disabled);
+      border-color: var(--ax-public-edge-label-border-color-disabled);
+    }
+  }
+}

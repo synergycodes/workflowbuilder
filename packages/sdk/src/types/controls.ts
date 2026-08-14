@@ -1,5 +1,5 @@
 import type { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
-import type { InputProps, TextAreaProps } from '@synergycodes/overflow-ui';
+import type { InputProps, TextAreaProps } from '@workflowbuilder/ui';
 
 import type { VariableType } from '@workflow-builder/types/node-output-schema';
 

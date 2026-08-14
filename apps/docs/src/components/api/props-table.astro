@@ -1,0 +1,128 @@
+---
+// Props of a UI component, generated from source into ui-api.json.
+import data from '../../generated/ui-api.json';
+
+interface PropertyRow {
+  name: string;
+  type: string;
+  required: boolean;
+  default: string | null;
+  description: string;
+}
+
+interface Entry {
+  props: PropertyRow[];
+  nativeElement: string | null;
+}
+
+const { slug } = Astro.props as { slug: string };
+const entry = (data as Record<string, Entry>)[slug];
+if (!entry) {
+  throw new Error(
+    `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
+  );
+}
+const props = [...(entry?.props ?? [])].sort(
+  (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
+);
+const nativeElement = entry?.nativeElement ?? null;
+---
+
+{
+  nativeElement && (
+    <p class="native-note">
+      Also accepts every standard <code>&lt;{nativeElement}&gt;</code> attribute (<code>onChange</code>,{' '}
+      <code>placeholder</code>, <code>aria-*</code>, …); they are forwarded to the underlying element.
+    </p>
+  )
+}
+
+{
+  props.length === 0 ? (
+    <p>This component has no configurable props.</p>
+  ) : (
+    <dl class="props">
+      {props.map((property) => (
+        <div class="prop">
+          <div class="prop-head">
+            <code class="prop-name">{property.name}</code>
+            {property.required && <span class="chip">required</span>}
+          </div>
+          <div class="meta">
+            <span class="meta-label">Type</span>
+            <code>{property.type}</code>
+          </div>
+          {property.default && (
+            <div class="meta">
+              <span class="meta-label">Default</span>
+              <code>{property.default}</code>
+            </div>
+          )}
+          {property.description && <p class="prop-desc">{property.description.replaceAll('\n', ' ')}</p>}
+        </div>
+      ))}
+    </dl>
+  )
+}
+
+<style>
+  .native-note {
+    margin-bottom: 0.75rem;
+    font-size: var(--sl-text-sm);
+    color: var(--sl-color-gray-3);
+  }
+
+  .props {
+    display: flex;
+    flex-direction: column;
+    gap: 1.75rem;
+    margin-top: 1rem;
+  }
+  .prop {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+  .prop-head {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+  }
+  .prop-name {
+    font-size: 1rem;
+    font-weight: 600;
+    background: none;
+    padding: 0;
+  }
+  .chip {
+    font-size: 0.6875rem;
+    line-height: 1;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    padding: 0.25rem 0.5rem;
+    border-radius: 999px;
+    background: var(--sl-color-accent-low);
+    color: var(--sl-color-accent-high);
+  }
+  .meta {
+    display: flex;
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .meta-label {
+    min-width: 3.5rem;
+    color: var(--sl-color-gray-3);
+    font-size: 0.8125rem;
+  }
+  .meta code {
+    font-size: 0.8125rem;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .prop-desc {
+    margin: 0.35rem 0 0;
+    color: var(--sl-color-gray-2);
+  }
+</style>

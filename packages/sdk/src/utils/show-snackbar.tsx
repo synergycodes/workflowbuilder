@@ -1,4 +1,4 @@
-import { Snackbar, type SnackbarProps } from '@synergycodes/overflow-ui';
+import { Snackbar, type SnackbarProps } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 import { closeSnackbar, enqueueSnackbar } from 'notistack';
 

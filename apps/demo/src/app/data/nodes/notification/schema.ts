@@ -38,8 +38,8 @@ export const schema = {
     sendEmail: {
       type: 'object',
       properties: {
-        address: { type: 'string', format: 'email' },
-        copy: { type: 'string', format: 'email' },
+        address: { type: 'string' },
+        copy: { type: 'string' },
         subject: { type: 'string' },
         body: { type: 'string' },
         priority: { type: 'string', options: Object.values(priorityOptions) },

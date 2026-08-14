@@ -24,6 +24,9 @@ tools/
 !tools/deployment/nginx
 .gitignore
 
+# examples
+examples/
+
 # env files hold secrets — never in a build context
 **/.env
 **/.env.*

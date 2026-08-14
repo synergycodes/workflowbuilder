@@ -1,0 +1,81 @@
+:root {
+  --ax-public-snackbar-border-size: 0.0625rem;
+  --ax-public-snackbar-padding: var(--ax-token-spacing-snackbar-v-pad-1) var(--ax-token-spacing-snackbar-h-pad-1);
+  --ax-public-snackbar-border-radius: var(--ax-token-radius-snackbar);
+  --ax-public-snackbar-content-gap: var(--ax-token-spacing-snackbar-gap-1);
+
+  --ax-public-snackbar-width: 31.25rem;
+  --ax-public-snackbar-title-color: var(--ax-txt-primary-default);
+  --ax-public-snackbar-subtitle-color: var(--ax-txt-secondary-default);
+  --ax-public-snackbar-close-icon-color: var(--ax-txt-tertiary-default);
+
+  --ax-public-snackbar-default-border: var(--ax-ui-stroke-secondary-default);
+  --ax-public-snackbar-default-background: var(--ax-ui-bg-primary-default);
+  --ax-public-snackbar-default-icon-color: var(--ax-txt-tertiary-default);
+
+  --ax-public-snackbar-success-border: var(--ax-colors-green-300); /* missing token */
+  --ax-public-snackbar-success-background:
+    linear-gradient(0deg, var(--ax-snackbar-bg-success) 0%, var(--ax-snackbar-bg-success) 100%),
+    var(--ax-ui-bg-primary-default);
+  --ax-public-snackbar-success-icon-color: var(--ax-colors-green-300); /* missing token */
+
+  --ax-public-snackbar-error-border: var(--ax-colors-red-400); /* missing token */
+  --ax-public-snackbar-error-background:
+    linear-gradient(0deg, var(--ax-snackbar-bg-error) 0%, var(--ax-snackbar-bg-error) 100%),
+    var(--ax-ui-bg-primary-default);
+  --ax-public-snackbar-error-icon-color: var(--ax-colors-red-400); /* missing token */
+
+  --ax-public-snackbar-warning-border: var(--ax-colors-orange-300); /* missing token */
+  --ax-public-snackbar-warning-background:
+    linear-gradient(0deg, var(--ax-snackbar-bg-warning) 0%, var(--ax-snackbar-bg-warning) 100%),
+    var(--ax-ui-bg-primary-default);
+
+  --ax-public-snackbar-warning-icon-color: var(--ax-colors-orange-300); /* missing token */
+
+  --ax-public-snackbar-info-border: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-snackbar-info-background:
+    linear-gradient(0deg, var(--ax-snackbar-bg-information) 0%, var(--ax-snackbar-bg-information) 100%),
+    var(--ax-ui-bg-primary-default);
+  --ax-public-snackbar-info-icon-color: var(--ax-colors-blue-400);
+}
+
+@layer ui.component {
+  .container {
+    display: flex;
+    width: calc(
+      var(--ax-public-snackbar-width) + 2 * var(--ax-token-spacing-snackbar-h-pad-1) + 2 *
+        var(--ax-public-snackbar-border-size)
+    );
+    border: var(--ax-public-snackbar-border-size) solid var(--ax-public-snackbar-default-border);
+    border-radius: var(--ax-public-snackbar-border-radius);
+    background: var(--ax-public-snackbar-default-background);
+    padding: var(--ax-public-snackbar-padding);
+
+    .content {
+      display: flex;
+      gap: var(--ax-public-snackbar-content-gap);
+      width: 100%;
+      min-width: 0;
+    }
+
+    &.success {
+      background: var(--ax-public-snackbar-success-background);
+      border-color: var(--ax-public-snackbar-success-border);
+    }
+
+    &.error {
+      background: var(--ax-public-snackbar-error-background);
+      border-color: var(--ax-public-snackbar-error-border);
+    }
+
+    &.warning {
+      background: var(--ax-public-snackbar-warning-background);
+      border-color: var(--ax-public-snackbar-warning-border);
+    }
+
+    &.info {
+      background: var(--ax-public-snackbar-info-background);
+      border-color: var(--ax-public-snackbar-info-border);
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { NavButton, Tooltip } from '@synergycodes/overflow-ui';
+import { NavButton, Tooltip } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';

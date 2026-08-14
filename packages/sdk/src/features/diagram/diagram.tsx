@@ -13,7 +13,6 @@ import { type DragEventHandler, useCallback, useEffect, useMemo } from 'react';
 import type { DragEvent } from 'react';
 
 import styles from './diagram.module.css';
-import '@xyflow/react/dist/style.css';
 
 import { getReactFlowProps } from '../../data/react-flow-config';
 import { usePaletteDrop } from '../../hooks/use-palette-drop';

@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 import type { OnConnect, OnConnectEnd, OnConnectStart } from '@xyflow/react';
 import { useCallback } from 'react';
 

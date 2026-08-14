@@ -5,15 +5,15 @@ description: How Workflow Builder is structured — the SDK package, surrounding
 
 ## Tech stack
 
-| Concern          | Library                                                                   |
-| ---------------- | ------------------------------------------------------------------------- |
-| UI library       | [React](https://react.dev/)                                               |
-| UI components    | [Overflow UI](https://www.overflow.dev/ui-components/authored/quickstart) |
-| Diagram engine   | [React Flow (xyflow)](https://reactflow.dev/)                             |
-| State management | [Zustand](https://zustand.docs.pmnd.rs/)                                  |
-| Dynamic forms    | [JsonForms](https://jsonforms.io/)                                        |
-| Build tool       | [Vite](https://vitejs.dev/)                                               |
-| Language         | TypeScript                                                                |
+| Concern          | Library                                                                           |
+| ---------------- | --------------------------------------------------------------------------------- |
+| UI library       | [React](https://react.dev/)                                                       |
+| UI components    | [`@workflowbuilder/ui`](/ui-library/overview/) on [Base UI](https://base-ui.com/) |
+| Diagram engine   | [React Flow (xyflow)](https://reactflow.dev/)                                     |
+| State management | [Zustand](https://zustand.docs.pmnd.rs/)                                          |
+| Dynamic forms    | [JsonForms](https://jsonforms.io/)                                                |
+| Build tool       | [Vite](https://vitejs.dev/)                                                       |
+| Language         | TypeScript                                                                        |
 
 All libraries are open-source with no additional license purchase required.
 

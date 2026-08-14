@@ -1,0 +1,11 @@
+{
+  "routes": [
+    {
+      "route": "/docs/get-started/quick-start/wb-as-react-component*",
+      "headers": {
+        "Cross-Origin-Opener-Policy": "same-origin",
+        "Cross-Origin-Embedder-Policy": "credentialless"
+      }
+    }
+  ]
+}

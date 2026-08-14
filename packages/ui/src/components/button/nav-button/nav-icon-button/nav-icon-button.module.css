@@ -1,0 +1,11 @@
+:root {
+  --ax-public-button-nav-color-hover: var(--ax-nav-button-icon-primary-hover);
+}
+
+@layer ui.component {
+  button:hover {
+    &.transparent {
+      background: transparent;
+    }
+  }
+}

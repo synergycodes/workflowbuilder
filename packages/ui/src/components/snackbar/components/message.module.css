@@ -1,0 +1,18 @@
+@layer ui.component {
+  .container {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+    flex: 1;
+    min-width: 0;
+    word-break: break-word;
+  }
+
+  .title {
+    color: var(--ax-public-snackbar-title-color);
+  }
+
+  .subtitle {
+    color: var(--ax-public-snackbar-subtitle-color);
+  }
+}

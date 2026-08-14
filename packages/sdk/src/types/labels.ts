@@ -1,5 +1,5 @@
 import type { LabelElement as BaseLabelElement } from '@jsonforms/core';
-import type { ItemSize } from '@synergycodes/overflow-ui';
+import type { ItemSize } from '@workflowbuilder/ui';
 
 import type { LabelVariant } from '../components/form/label/label';
 import type { Override } from './utils';

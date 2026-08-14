@@ -1,4 +1,3 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
 import type {
   WorkflowBuilderEdgeTemplates,
@@ -6,6 +5,7 @@ import type {
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderReactFlowProps,
 } from '@workflowbuilder/sdk';
+import { SnackbarType } from '@workflowbuilder/ui';
 
 import '@workflowbuilder/sdk/style.css';
 

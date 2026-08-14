@@ -1,10 +1,11 @@
 name: PR Check
 
 # Runs on every PR to give reviewers fast feedback on whether the change
-# is safe to merge. Focus on @workflowbuilder/sdk (what we publish to
-# npm) + global format consistency. Other workspaces (apps/docs, demo,
-# ai-studio, …) are not checked here — they're internal and have their
-# own broken-state tolerances (e.g. starlight virtual-module type errors).
+# is safe to merge. Focus on the published packages @workflowbuilder/sdk and
+# @workflowbuilder/ui (plus its private @workflowbuilder/ui-tokens build) +
+# global format consistency. apps/docs has its own path-filtered workflow
+# (pr-check-docs.yml); demo and ai-studio are not checked here — they're
+# internal and have their own broken-state tolerances.
 
 on:
   pull_request:
@@ -75,3 +76,72 @@ jobs:
 
       - name: Build
         run: pnpm --filter @workflowbuilder/sdk build:lib
+
+  starter:
+    name: Starter build
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: examples/workflow-builder-starter
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: examples/workflow-builder-starter/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+  ui:
+    name: UI + UI tokens lint + typecheck + test + build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens lint
+
+      - name: Typecheck tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens typecheck
+
+      - name: Test tokens
+        run: pnpm --filter @workflowbuilder/ui-tokens test
+
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/ui lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/ui typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/ui test
+
+      - name: Build
+        # build:ui builds @workflowbuilder/ui-tokens first, then ui, then runs
+        # the check:built-css guard.
+        run: pnpm build:ui

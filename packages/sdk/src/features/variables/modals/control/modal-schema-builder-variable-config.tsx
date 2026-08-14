@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 import { useCallback } from 'react';
 

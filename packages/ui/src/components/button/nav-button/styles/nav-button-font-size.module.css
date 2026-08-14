@@ -1,0 +1,6 @@
+@layer ui.component {
+  .xx-small,
+  .xxx-small {
+    composes: ax-public-button-extra-small from global;
+  }
+}

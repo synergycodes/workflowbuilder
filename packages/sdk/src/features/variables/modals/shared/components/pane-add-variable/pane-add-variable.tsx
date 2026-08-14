@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback } from 'react';
 

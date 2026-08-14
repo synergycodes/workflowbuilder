@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 import { useCallback, useMemo } from 'react';
 
 import { getStoreVariables, saveVariableDefinition } from '../../../../../../store/slices/diagram-slice/actions';

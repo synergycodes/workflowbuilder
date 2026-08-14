@@ -5,7 +5,7 @@ import { showSnackbar } from '../../../utils/show-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 import { getStoreSavingStatus, loadData, setStoreSavingStatus, useIntegrationStore } from './use-integration-store';
 
-vi.mock('@synergycodes/overflow-ui', () => ({
+vi.mock('@workflowbuilder/ui', () => ({
   SnackbarType: { SUCCESS: 'SUCCESS', ERROR: 'ERROR', INFO: 'INFO', WARNING: 'WARNING' },
 }));
 

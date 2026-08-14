@@ -1,4 +1,4 @@
-import { NavButton, SnackbarType } from '@synergycodes/overflow-ui';
+import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useRef } from 'react';
 import { useTranslation } from 'react-i18next';

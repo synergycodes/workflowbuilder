@@ -1,4 +1,4 @@
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import styles from './palette-footer.module.css';
