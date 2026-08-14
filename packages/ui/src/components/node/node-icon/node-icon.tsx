@@ -3,11 +3,11 @@ import { ReactNode } from 'react';
 
 import styles from './node-icon.module.css';
 
-type Props = {
+export type NodeIconProps = {
   icon: ReactNode;
   className?: string;
 };
 
-export function NodeIcon({ icon, className }: Props) {
+export function NodeIcon({ icon, className }: NodeIconProps) {
   return <div className={clsx(styles['container'], className)}>{icon}</div>;
 }

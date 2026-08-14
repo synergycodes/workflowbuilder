@@ -42,6 +42,11 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      # UI must build first: docs imports @workflowbuilder/ui/{styles,tokens}.css
+      # and its components, both resolved from packages/ui/dist.
+      - name: Build UI
+        run: pnpm build:ui
+
       # SDK must build first so TypeDoc can read its compiled types.
       - name: Build SDK
         run: pnpm --filter @workflowbuilder/sdk build:lib

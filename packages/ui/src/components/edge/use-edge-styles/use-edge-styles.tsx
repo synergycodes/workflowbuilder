@@ -4,7 +4,7 @@ import './use-edge-styles.css';
 
 import { EdgeState } from '../types';
 
-type UseEdgeStyleParams = {
+export type UseEdgeStyleParams = {
   /**
    * The visual state of the edge. Determines base styles like `strokeWidth`.
    */

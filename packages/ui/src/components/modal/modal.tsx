@@ -9,8 +9,11 @@ import styles from './modal.module.css';
 
 import type { FooterVariant } from './types';
 
-type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> &
-  Partial<WithIcon> & {
+export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> &
+  // Plain WithIcon, not Partial<WithIcon>: `icon` is already optional there, and
+  // the generator's collectProps doesn't unwrap mapped types - Partial would
+  // silently drop `icon` from the docs Props table.
+  WithIcon & {
     /**
      * Title displayed in the modal header
      */
@@ -29,10 +32,12 @@ type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, 
     footer?: ReactNode;
     /**
      * Size variant of the modal
+     * @default 'regular'
      */
     size?: 'regular' | 'large';
     /**
      * Variant of the footer styling
+     * @default 'integrated'
      */
     footerVariant?: FooterVariant;
     /**

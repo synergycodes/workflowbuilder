@@ -1,0 +1,69 @@
+---
+title: UI Library
+description: The component library behind Workflow Builder.
+---
+
+Workflow Builder's editor is rendered with **`@workflowbuilder/ui`**, the component
+library that lives in this monorepo (`packages/ui`) and is published to npm. It is
+built on the headless [Base UI](https://base-ui.com/) primitives and adds a styled,
+themeable layer on top - the same building blocks the SDK uses for its own nodes,
+panels, and controls.
+
+Browse the [UI Components](/ui-library/ui-components/) and
+[Diagram Components](/ui-library/diagram-components/) - each component has its own
+page with a live example, props, and CSS variables.
+
+## Install
+
+```sh
+npm install @workflowbuilder/ui
+```
+
+`react` (18 or 19) and `react-dom` are the only peer dependencies - provide
+your own. Everything else the components need, including `@base-ui/react`
+(`^1.7.0`), is a regular dependency and installs automatically.
+
+## Styles
+
+Importing a component from the package root injects that component's CSS
+automatically, including the layer order (`@layer ui.base, ui.component`)
+and typography classes - so the only thing left to add is the design
+tokens:
+
+```ts
+// Design tokens (the `--ax-*` custom properties).
+import '@workflowbuilder/ui/tokens.css';
+```
+
+```tsx
+import { Button } from '@workflowbuilder/ui';
+```
+
+Need only one component's styles without the others? Import the per-component
+subpath instead. That only injects the component's own CSS. Every built
+stylesheet carries the cascade-layer order, so import order doesn't matter;
+add the global stylesheet once if you also want the typography classes, plus
+the tokens:
+
+```ts
+// Optional: global typography classes.
+import '@workflowbuilder/ui/styles.css';
+// Design tokens (the `--ax-*` custom properties).
+import '@workflowbuilder/ui/tokens.css';
+```
+
+```tsx
+import { DatePicker } from '@workflowbuilder/ui/date-picker';
+```
+
+## Theming
+
+Design tokens are keyed on `html[data-theme]`, so set it to `light` or `dark` to
+switch themes (this is also how these docs theme the live examples):
+
+```html
+<html data-theme="light"></html>
+```
+
+Override any `--ax-*` token to retune colors, spacing, or radii without touching
+component markup.

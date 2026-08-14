@@ -95,7 +95,7 @@ description: Frequently asked questions about Workflow Builder for developers.
 
 12. **What technologies and libraries are used?**
     Workflow Builder is built on a modern, modular tech stack:
-    - **Overflow UI** - headless, unstyled React components for building customizable and accessible UIs.
+    - **`@workflowbuilder/ui`** - our component library (built on the headless Base UI) for customizable, accessible UIs.
     - **JSONForms** - enables dynamic creation of node properties through JSON Schema.
     - **React** - the frontend library for building the editor UI.
     - **Zustand** - lightweight state management, integrated with React Flow.

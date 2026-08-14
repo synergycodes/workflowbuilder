@@ -1,0 +1,37 @@
+---
+title: Accordion
+description: An interactive section that toggles the visibility of its content.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { AccordionExample } from '../../../../components/ui-examples/accordion';
+
+An `Accordion` lets users toggle the visibility of content. The content section
+can be expanded to reveal details and collapsed to hide them, keeping
+information organized and saving space. It is commonly used in FAQs, settings
+panels, and documentation to present layered content efficiently.
+
+<AccordionExample client:visible />
+
+## Usage
+
+```tsx
+import { Accordion } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Accordion label="What is @workflowbuilder/ui?" defaultOpen>
+      Our component library, built on Base UI.
+    </Accordion>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="accordion" />
+
+## CSS variables
+
+<CssVariablesTable slug="accordion" />

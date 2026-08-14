@@ -5,7 +5,7 @@ import './node-as-port.css';
 
 type Position = 'left' | 'top' | 'right' | 'bottom';
 
-type Props = {
+export type NodeAsPortWrapperProps = {
   isConnecting: boolean;
   targetPortPosition: Position;
   offset?: {
@@ -19,7 +19,7 @@ export const NodeAsPortWrapper = memo(function NodeAsPortWrapper({
   offset = { x: 0, y: 0 },
   targetPortPosition,
   children,
-}: PropsWithChildren<Props>) {
+}: PropsWithChildren<NodeAsPortWrapperProps>) {
   const ref = useRef<HTMLDivElement | null>(null);
   const [isConnectionTarget, setIsConnectionTarget] = useState(false);
   const canApplyStyles = isConnecting && isConnectionTarget;

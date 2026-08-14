@@ -5,7 +5,7 @@ import styles from './status.module.css';
 
 export type ValidationStatus = 'invalid';
 
-type Props = {
+export type StatusProps = {
   /**
    * The validation status to display.
    */
@@ -19,7 +19,7 @@ type Props = {
 /**
  * A component that displays a visual indicator based on validation status.
  */
-export function Status({ status, className }: Props) {
+export function Status({ status, className }: StatusProps) {
   if (status === 'invalid') {
     return (
       <span className={clsx(styles['status-container'], styles['status-container--invalid'], className)}>

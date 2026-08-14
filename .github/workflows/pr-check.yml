@@ -3,9 +3,9 @@ name: PR Check
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Focus on the published packages @workflowbuilder/sdk and
 # @workflowbuilder/ui (plus its private @workflowbuilder/ui-tokens build) +
-# global format consistency. Other workspaces (apps/docs, demo, ai-studio, …)
-# are not checked here — they're internal and have their own broken-state
-# tolerances (e.g. starlight virtual-module type errors).
+# global format consistency. apps/docs has its own path-filtered workflow
+# (pr-check-docs.yml); demo and ai-studio are not checked here — they're
+# internal and have their own broken-state tolerances.
 
 on:
   pull_request:

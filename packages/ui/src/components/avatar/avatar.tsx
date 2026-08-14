@@ -2,7 +2,7 @@ import clsx from 'clsx';
 
 import styles from './avatar.module.css';
 
-type Props = {
+export type AvatarProps = {
   /**
    * Provide to use it as alt of the image for better a11y
    */
@@ -13,6 +13,7 @@ type Props = {
   imageUrl?: string;
   /**
    * Size of the circle container
+   * @default 'extra-large'
    */
   size?: Size;
 };
@@ -22,7 +23,7 @@ type Size = 'extra-large' | 'large' | 'medium' | 'small';
 /**
  * Component for displaying user avatars with various sizes
  */
-export function Avatar({ imageUrl, username, size = 'extra-large' }: Props) {
+export function Avatar({ imageUrl, username, size = 'extra-large' }: AvatarProps) {
   return (
     <div className={clsx(styles['container'], styles[size])}>
       <img src={imageUrl} alt={username} />

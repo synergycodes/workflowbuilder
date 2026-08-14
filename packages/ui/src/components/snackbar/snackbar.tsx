@@ -31,6 +31,7 @@ export type SnackbarProps = {
   onButtonClick?: () => void;
   /**
    * Whether to show the close button
+   * @default false
    */
   close?: boolean;
   /**

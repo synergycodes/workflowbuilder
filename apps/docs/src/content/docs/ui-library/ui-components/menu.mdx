@@ -1,0 +1,43 @@
+---
+title: Menu
+description: A dropdown list of actions anchored to a trigger element.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { MenuExample } from '../../../../components/ui-examples/menu';
+
+A `Menu` renders a dropdown list of actions anchored to a trigger element. Each
+entry is a regular item or a separator, and items can be marked as destructive
+for actions such as delete.
+
+<MenuExample client:visible />
+
+## Usage
+
+```tsx
+import { Button, Menu } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Menu
+      items={[
+        { label: 'Edit', onClick: () => {} },
+        { label: 'Duplicate', onClick: () => {} },
+        { type: 'separator' },
+        { label: 'Delete', destructive: true, onClick: () => {} },
+      ]}
+    >
+      <Button variant="secondary">Open menu</Button>
+    </Menu>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="menu" />
+
+## CSS variables
+
+<CssVariablesTable slug="menu" />
