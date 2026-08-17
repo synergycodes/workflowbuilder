@@ -1,11 +1,12 @@
 // Temporal workflow entry. Runs inside V8 sandbox — only deterministic code
 // + proxyActivities allowed. Delegates graph traversal to the pure runGraph
 // from execution-core, wiring Temporal proxyActivities as port implementations.
-import { CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
+import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
 
 import {
   type ActivityRunnerPort,
   type EventEmitterPort,
+  type RunGraphOutcome,
   type WorkflowExecutionInput,
   runGraph,
 } from '@workflow-builder/execution-core/workflow';
@@ -36,8 +37,10 @@ const events: EventEmitterPort = {
 };
 
 export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): Promise<void> {
+  let outcome: RunGraphOutcome;
+
   try {
-    await runGraph(input, runner, events);
+    outcome = await runGraph(input, runner, events);
   } catch (error) {
     if (isCancellation(error)) {
       // Root scope is cancelled — shield cleanup so these activities aren't
@@ -48,5 +51,13 @@ export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): 
       });
     }
     throw error;
+  }
+
+  // runGraph already emitted execution_failed and wrote the 'failed' status — this check
+  // tells Temporal to close the run as Failed rather than Completed. It has to be a
+  // TemporalFailure (anything else fails the workflow *task* and retries forever), and
+  // non-retryable since replaying a deterministic graph failure would re-run LLM activities.
+  if (outcome.status === 'failed') {
+    throw ApplicationFailure.nonRetryable(outcome.error.message, outcome.error.code ?? 'WorkflowExecutionFailed');
   }
 }

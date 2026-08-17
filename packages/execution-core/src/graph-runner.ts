@@ -19,6 +19,14 @@ import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 // policy literal so the wiring reads consistently from schema to runner.
 const RESERVED_ERROR_HANDLE = 'errorRoute';
 
+// How the run ended. Returned rather than thrown so `runGraph` stays engine-agnostic:
+// each engine adapter decides how a failed outcome maps onto its own vocabulary (the
+// Temporal adapter raises an ApplicationFailure so the Workflow Execution shows as
+// Failed rather than Completed). Note a node failing under errorPolicy 'continue' or
+// 'errorRoute' is absorbed by the graph and still yields `{ status: 'completed' }` —
+// only an unhandled node failure, a stall, or a missing entrypoint fails the run.
+export type RunGraphOutcome = { status: 'completed' } | { status: 'failed'; error: { message: string; code?: string } };
+
 // Topological scheduler. A node becomes ready only when ALL of its incoming
 // edges are resolved (predecessor either completed via a live route, or was
 // pruned by a decision node's nextPort). Ready nodes within the same wave
@@ -36,16 +44,16 @@ export async function runGraph<TNode extends BaseNode>(
   input: WorkflowExecutionInput<TNode>,
   runner: ActivityRunnerPort<TNode>,
   events: EventEmitterPort,
-): Promise<void> {
+): Promise<RunGraphOutcome> {
   const adjacency = buildAdjacencyMap(input.definition.nodes, input.definition.edges);
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
+  await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
+
   const entrypoints = input.definition.nodes.filter((node) => (inDegree.get(node.id) ?? 0) === 0);
   if (entrypoints.length === 0) {
-    throw new Error('Workflow has no entrypoint node');
+    return await failExecution(input.executionId, events, { message: 'Workflow has no entrypoint node' });
   }
-
-  await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
 
   // pendingPredecessors counts incoming edges not yet resolved (completed OR pruned).
   // liveIncoming counts incoming edges that resolved via a non-pruned route.
@@ -77,9 +85,7 @@ export async function runGraph<TNode extends BaseNode>(
     // one in deterministic node order, just like the previous behavior.
     const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
     if (fatal && fatal.failed) {
-      await events.emitEvent(input.executionId, 'execution_failed', { error: { message: fatal.message } });
-      await events.updateStatus(input.executionId, 'failed', fatal.message);
-      return;
+      return await failExecution(input.executionId, events, { message: fatal.message, code: fatal.code });
     }
 
     const newlyReady: TNode[] = [];
@@ -115,13 +121,25 @@ export async function runGraph<TNode extends BaseNode>(
   }
   if (stalled.length > 0) {
     const message = `Workflow stalled: nodes never became ready: ${stalled.join(', ')}`;
-    await events.emitEvent(input.executionId, 'execution_failed', { error: { message } });
-    await events.updateStatus(input.executionId, 'failed', message);
-    return;
+    return await failExecution(input.executionId, events, { message });
   }
 
   await events.emitEvent(input.executionId, 'execution_completed');
   await events.updateStatus(input.executionId, 'completed');
+  return { status: 'completed' };
+}
+
+// Emits the terminal failure signals and shapes the outcome. Every failure path routes
+// through here so the event, the engine status, and the returned outcome can never drift.
+async function failExecution(
+  executionId: string,
+  events: EventEmitterPort,
+  error: { message: string; code?: string },
+): Promise<RunGraphOutcome> {
+  const payload = error.code === undefined ? { message: error.message } : { message: error.message, code: error.code };
+  await events.emitEvent(executionId, 'execution_failed', { error: payload });
+  await events.updateStatus(executionId, 'failed', error.message);
+  return { status: 'failed', error: payload };
 }
 
 type NodeStatus = 'pending' | 'completed' | 'skipped';
