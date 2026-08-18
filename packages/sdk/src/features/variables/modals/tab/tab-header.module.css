@@ -11,7 +11,7 @@
   border-bottom: var(--settings-tab-header-border);
 
   + * {
-    padding-top: var(--wb-token-spacing-modal-l-content-gap-2, 16px);
+    padding-top: var(--ax-token-spacing-spacing-16);
   }
 }
 
