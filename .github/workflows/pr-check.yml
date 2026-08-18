@@ -11,6 +11,9 @@ on:
   pull_request:
     branches:
       - main
+      # DS 2.0 integration branch — PRs targeting it need the same feedback
+      # as PRs to main (it all merges into main at the end of the migration).
+      - ds-2.0
 
 permissions:
   contents: read
