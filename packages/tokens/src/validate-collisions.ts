@@ -12,7 +12,7 @@
 type TokenLeaf = { value: unknown; type: string };
 type TokenNode = TokenLeaf | { [key: string]: TokenNode };
 
-export type CssNameCollision = {
+type CssNameCollision = {
   cssName: string;
   entries: { path: string; value: unknown }[];
   sameValue: boolean;
