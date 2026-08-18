@@ -5,7 +5,6 @@ import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities 
 
 import {
   type ActivityRunnerPort,
-  type EventEmitterPort,
   type RunGraphOutcome,
   type WorkflowExecutionInput,
   runGraph,
@@ -13,6 +12,7 @@ import {
 
 import type { AiStudioNode } from '../../../domain/ai-studio-nodes';
 import type { Activities } from '../activities-interface';
+import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
 // DB activities: fast, idempotent INSERT/UPDATE — short timeout, aggressive retries
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>({
@@ -30,13 +30,8 @@ const runner: ActivityRunnerPort<AiStudioNode> = {
   executeNode: (node, context) => nodeActivities.executeNode(node, context),
 };
 
-const events: EventEmitterPort = {
-  emitEvent: (executionId, type, payload, nodeId) => databaseActivities.emitEvent(executionId, type, payload, nodeId),
-  updateStatus: (executionId, status, errorMessage) =>
-    databaseActivities.updateStatus(executionId, status, errorMessage),
-};
-
 export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): Promise<void> {
+  const events = createSequencedEventEmitter(databaseActivities);
   let outcome: RunGraphOutcome;
 
   try {

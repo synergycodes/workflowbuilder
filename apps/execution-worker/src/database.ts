@@ -6,13 +6,13 @@ import { env } from './env';
 const sql = postgres(env.DATABASE_URL);
 
 export const database = {
-  async emitExecutionEvent(executionId: string, type: string, payload?: unknown, nodeId?: string) {
+  async emitExecutionEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
     await sql`
       INSERT INTO execution_events (id, execution_id, sequence, timestamp, type, node_id, path_id, payload_json, tenant_id, created_at)
       VALUES (
         gen_random_uuid(),
         ${executionId},
-        (SELECT COALESCE(MAX(sequence), 0) + 1 FROM execution_events WHERE execution_id = ${executionId}),
+        ${sequence},
         now(),
         ${type},
         ${nodeId ?? null},
@@ -21,9 +21,10 @@ export const database = {
         (SELECT tenant_id FROM executions WHERE id = ${executionId}),
         now()
       )
+      ON CONFLICT (execution_id, sequence) DO NOTHING
     `;
 
-    // Postgres NOTIFY → backend SSE stream picks this up and fans out to clients
+    // Postgres NOTIFY → backend SSE stream picks this up and fans out to clients.
     await sql`SELECT pg_notify('execution_events', ${executionId})`;
   },
 
