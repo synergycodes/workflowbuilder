@@ -11,6 +11,7 @@
     "prepare": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
+    "lint:usage": "node scripts/lint-token-usage.mjs",
     "test": "vitest run"
   },
   "devDependencies": {
