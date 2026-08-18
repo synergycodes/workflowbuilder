@@ -166,4 +166,227 @@
     font-size: 0.625rem;
     line-height: 100%;
   }
+
+  /* DS 2.0 type roles — one class per text style from the Typography guidelines.
+     Naming: wb-type-{family}-{size}[-emphasized]; Emphasized = SemiBold 600. */
+
+  :root {
+    /* PROVISIONAL font-size primitives (wb/font-size/NNN, NNN = px × 12.5):
+       the DS 2.0 variables export (WB-487) will ship these in tokens.css and,
+       being unlayered, will override this layered block — remove it then. */
+    --wb-font-size-125: 0.625rem;
+    --wb-font-size-137: 0.6875rem;
+    --wb-font-size-150: 0.75rem;
+    --wb-font-size-162: 0.8125rem;
+    --wb-font-size-175: 0.875rem;
+    --wb-font-size-200: 1rem;
+    --wb-font-size-225: 1.125rem;
+    --wb-font-size-250: 1.25rem;
+    --wb-font-size-275: 1.375rem;
+    --wb-font-size-300: 1.5rem;
+    --wb-font-size-350: 1.75rem;
+    --wb-font-size-400: 2rem;
+  }
+
+  .wb-type-display-s,
+  .wb-type-display-m,
+  .wb-type-display-l,
+  .wb-type-headline-s,
+  .wb-type-headline-m,
+  .wb-type-headline-l,
+  .wb-type-title-s,
+  .wb-type-title-m,
+  .wb-type-title-l,
+  .wb-type-body-s,
+  .wb-type-body-m,
+  .wb-type-body-l,
+  .wb-type-label-s,
+  .wb-type-label-m,
+  .wb-type-label-l,
+  .wb-type-label-xl,
+  .wb-type-node-s,
+  .wb-type-node-m,
+  .wb-type-node-l,
+  .wb-type-display-s-emphasized,
+  .wb-type-display-m-emphasized,
+  .wb-type-display-l-emphasized,
+  .wb-type-headline-s-emphasized,
+  .wb-type-headline-m-emphasized,
+  .wb-type-headline-l-emphasized,
+  .wb-type-title-s-emphasized,
+  .wb-type-title-m-emphasized,
+  .wb-type-title-l-emphasized,
+  .wb-type-body-s-emphasized,
+  .wb-type-body-m-emphasized,
+  .wb-type-body-l-emphasized,
+  .wb-type-label-s-emphasized,
+  .wb-type-label-m-emphasized,
+  .wb-type-label-l-emphasized,
+  .wb-type-label-xl-emphasized,
+  .wb-type-node-s-emphasized,
+  .wb-type-node-m-emphasized,
+  .wb-type-node-l-emphasized {
+    font-family: 'Poppins', system-ui, sans-serif;
+    font-weight: 400;
+  }
+
+  .wb-type-code {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-weight: 400;
+  }
+
+  /* Display — hero and marketing moments */
+
+  .wb-type-display-s,
+  .wb-type-display-s-emphasized {
+    font-size: var(--wb-font-size-300);
+    line-height: 130%;
+  }
+
+  .wb-type-display-m,
+  .wb-type-display-m-emphasized {
+    font-size: var(--wb-font-size-350);
+    line-height: 120%;
+  }
+
+  .wb-type-display-l,
+  .wb-type-display-l-emphasized {
+    font-size: var(--wb-font-size-400);
+    line-height: 120%;
+  }
+
+  /* Headline — page and section headings */
+
+  .wb-type-headline-s,
+  .wb-type-headline-s-emphasized {
+    font-size: var(--wb-font-size-250);
+    line-height: 130%;
+  }
+
+  .wb-type-headline-m,
+  .wb-type-headline-m-emphasized {
+    font-size: var(--wb-font-size-275);
+    line-height: 130%;
+  }
+
+  .wb-type-headline-l,
+  .wb-type-headline-l-emphasized {
+    font-size: var(--wb-font-size-300);
+    line-height: 130%;
+  }
+
+  /* Title — card and group titles */
+
+  .wb-type-title-s,
+  .wb-type-title-s-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 140%;
+  }
+
+  .wb-type-title-m,
+  .wb-type-title-m-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  .wb-type-title-l,
+  .wb-type-title-l-emphasized {
+    font-size: var(--wb-font-size-225);
+    line-height: 130%;
+  }
+
+  /* Body — running text */
+
+  .wb-type-body-s,
+  .wb-type-body-s-emphasized {
+    font-size: var(--wb-font-size-150);
+    line-height: 130%;
+  }
+
+  .wb-type-body-m,
+  .wb-type-body-m-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 140%;
+  }
+
+  .wb-type-body-l,
+  .wb-type-body-l-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  /* Label — buttons, chips, captions */
+
+  .wb-type-label-s,
+  .wb-type-label-s-emphasized {
+    font-size: var(--wb-font-size-125);
+    line-height: 100%;
+  }
+
+  .wb-type-label-m,
+  .wb-type-label-m-emphasized {
+    font-size: var(--wb-font-size-150);
+    line-height: 100%;
+  }
+
+  .wb-type-label-l,
+  .wb-type-label-l-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 100%;
+  }
+
+  .wb-type-label-xl,
+  .wb-type-label-xl-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 100%;
+  }
+
+  /* Node — canvas node and port labels (WB-specific) */
+
+  .wb-type-node-s,
+  .wb-type-node-s-emphasized {
+    font-size: var(--wb-font-size-137);
+    line-height: 130%;
+  }
+
+  .wb-type-node-m,
+  .wb-type-node-m-emphasized {
+    font-size: var(--wb-font-size-162);
+    line-height: 140%;
+  }
+
+  .wb-type-node-l,
+  .wb-type-node-l-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  /* UI/Code — monospace role for code, token names, IDs (Regular only) */
+
+  .wb-type-code {
+    font-size: var(--wb-font-size-150);
+    line-height: 130%;
+  }
+
+  .wb-type-display-s-emphasized,
+  .wb-type-display-m-emphasized,
+  .wb-type-display-l-emphasized,
+  .wb-type-headline-s-emphasized,
+  .wb-type-headline-m-emphasized,
+  .wb-type-headline-l-emphasized,
+  .wb-type-title-s-emphasized,
+  .wb-type-title-m-emphasized,
+  .wb-type-title-l-emphasized,
+  .wb-type-body-s-emphasized,
+  .wb-type-body-m-emphasized,
+  .wb-type-body-l-emphasized,
+  .wb-type-label-s-emphasized,
+  .wb-type-label-m-emphasized,
+  .wb-type-label-l-emphasized,
+  .wb-type-label-xl-emphasized,
+  .wb-type-node-s-emphasized,
+  .wb-type-node-m-emphasized,
+  .wb-type-node-l-emphasized {
+    font-weight: 600;
+  }
 }
