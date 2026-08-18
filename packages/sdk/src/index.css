@@ -20,6 +20,10 @@
 @import '@fontsource/poppins/latin-ext-600.css';
 @import '@fontsource/poppins/latin-ext-700.css';
 
+/* Inter serves the DS 2.0 UI/Code type role (wb-type-code), Regular only. */
+@import '@fontsource/inter/latin-400.css';
+@import '@fontsource/inter/latin-ext-400.css';
+
 @import '@workflowbuilder/ui/tokens.css';
 
 /* @workflowbuilder/ui styles arrive through the JS module graph - importing
