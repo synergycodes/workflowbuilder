@@ -8,7 +8,7 @@
   --ax-public-track-selected-color: var(--ax-ui-bg-tertiary-selected);
   --ax-public-thumb-no-selected-color: var(--ax-nav-button-icon-primary-default);
   --ax-public-thumb-disabled-color: var(--ax-nav-button-icon-primary-disabled);
-  --ax-public-thumb-selected-color: var(--ax-colors-gray-100,); /* missing token */
+  --ax-public-thumb-selected-color: var(--ax-colors-gray-100); /* missing token */
 
   --ax-public-switch-focus-border-color: var(--ax-txt-primary-default);
   --ax-public-switch-border-size: 0.0625rem;
