@@ -1,0 +1,58 @@
+---
+title: Typography
+description: The DS 2.0 type roles shipped by @workflowbuilder/ui as wb-type-* utility classes.
+---
+
+`@workflowbuilder/ui` ships the Design System 2.0 type scale as utility
+classes: one class per text style, named `wb-type-{family}-{size}` with an
+optional `-emphasized` suffix. A class carries the complete style — family,
+size, weight, and line-height — so text never hard-codes font values.
+
+```html
+<h2 class="wb-type-headline-m">Workflow settings</h2>
+<p class="wb-type-body-m">Configure how each node runs.</p>
+<span class="wb-type-label-l-emphasized">Connection: active</span>
+```
+
+Two typefaces ship with the SDK bundle: **Poppins** for every UI role and
+**Inter** for the `wb-type-code` role. Emphasized maps to SemiBold (600),
+Regular to 400.
+
+## The scale
+
+| Family   | Used for                       | Classes (`wb-type-…`)                          | px                |
+| -------- | ------------------------------ | ---------------------------------------------- | ----------------- |
+| Display  | Hero moments, big empty states | `display-s` · `display-m` · `display-l`        | 24 · 28 · 32      |
+| Headline | Page titles, major sections    | `headline-s` · `headline-m` · `headline-l`     | 20 · 22 · 24      |
+| Title    | Card titles, group labels      | `title-s` · `title-m` · `title-l`              | 14 · 16 · 18      |
+| Body     | Running text, descriptions     | `body-s` · `body-m` · `body-l`                 | 12 · 14 · 16      |
+| Label    | Buttons, chips, captions       | `label-s` · `label-m` · `label-l` · `label-xl` | 10 · 12 · 14 · 16 |
+| Node     | Canvas node and port labels    | `node-s` · `node-m` · `node-l`                 | 11 · 13 · 16      |
+| UI/Code  | Code, token names, IDs         | `code` (Regular only)                          | 12                |
+
+Every family except UI/Code doubles with an `-emphasized` variant
+(`wb-type-title-m-emphasized`), for 39 styles total.
+
+Which role to reach for:
+
+| Context                         | Recommended role                 |
+| ------------------------------- | -------------------------------- |
+| Page / hero title               | `display-*` or `headline-l`      |
+| Major section heading           | `headline-s`/`-m` or `title-l`   |
+| Card or group title             | `title-s`/`-m`                   |
+| Running text and descriptions   | `body-m` (`body-s` for dense UI) |
+| Captions, helper text, metadata | `label-m`/`-l`                   |
+| Buttons and chips               | `label-l-emphasized`             |
+| Canvas node and port labels     | `node-s`/`-m`                    |
+| Code, token names, IDs          | `code`                           |
+
+## Font-size tokens
+
+Class font sizes reference the `--wb-font-size-*` primitives
+(`wb/font-size/NNN` in Figma, where `NNN` is px × 12.5; the CSS values are
+rem). Until the DS 2.0 token export ships them through
+`@workflowbuilder/ui/tokens.css`, the classes define these primitives
+themselves — the migration swaps the source without touching consumers.
+
+The pre-2.0 `ax-public-h*`/`ax-public-p*` classes remain available; components
+move to `wb-type-*` as they are redesigned.
