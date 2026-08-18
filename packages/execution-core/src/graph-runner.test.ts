@@ -103,7 +103,7 @@ describe('runGraph — topological scheduling', () => {
     });
     const events = makeEvents();
 
-    await runGraph(
+    const outcome = await runGraph(
       makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
@@ -113,6 +113,7 @@ describe('runGraph — topological scheduling', () => {
     expect(runner.contexts.B).toEqual({ A: 'a-result' });
     expect(runner.contexts.C).toEqual({ A: 'a-result', B: 'b-result' });
     expect(events.statuses.at(-1)).toEqual({ status: 'completed', errorMessage: undefined });
+    expect(outcome).toEqual({ status: 'completed' });
   });
 
   it('fan-out A→{B,C} runs B and C in same wave', async () => {
@@ -270,7 +271,7 @@ describe('runGraph — topological scheduling', () => {
     });
     const events = makeEvents();
 
-    await runGraph(
+    const outcome = await runGraph(
       makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
@@ -281,20 +282,24 @@ describe('runGraph — topological scheduling', () => {
     const failedEvent = events.events.find((event) => event.type === 'execution_failed');
     expect(failedEvent).toBeDefined();
     expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'boom' });
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'boom' } });
   });
 
-  it('throws when there is no entrypoint', async () => {
+  it('fails the run when there is no entrypoint', async () => {
     const runner = makeRunner();
     const events = makeEvents();
 
     // Cycle with no in-degree-zero node
-    await expect(
-      runGraph(
-        makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
-        runner.port,
-        events.port,
-      ),
-    ).rejects.toThrow('Workflow has no entrypoint node');
+    const outcome = await runGraph(
+      makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'Workflow has no entrypoint node' } });
+    expect(runner.callOrder).toEqual([]);
+    expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'execution_failed']);
+    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'Workflow has no entrypoint node' });
   });
 
   it('cycle reachable from an entrypoint fails the workflow with a stalled-node message', async () => {
@@ -306,7 +311,7 @@ describe('runGraph — topological scheduling', () => {
     const runner = makeRunner();
     const events = makeEvents();
 
-    await runGraph(
+    const outcome = await runGraph(
       makeInput(
         [trigger('A'), trigger('B'), trigger('C')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'C'), edge('e3', 'C', 'B')],
@@ -320,6 +325,7 @@ describe('runGraph — topological scheduling', () => {
     expect(failedEvent?.payload).toEqual({
       error: { message: expect.stringContaining('Workflow stalled') },
     });
+    expect(outcome.status).toBe('failed');
     expect(events.statuses.at(-1)?.status).toBe('failed');
     expect(events.statuses.at(-1)?.errorMessage).toContain('B');
     expect(events.statuses.at(-1)?.errorMessage).toContain('C');
@@ -556,20 +562,19 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     expectNoConsoleWrites();
   });
 
-  it('a missing-entrypoint throw writes nothing to console — error surfaces by throw, not by log', async () => {
-    // The no-entrypoint path is the only one that throws synchronously instead
-    // of routing through events. The throw is the signal; no console fallback.
+  it('a missing entrypoint writes nothing to console — surfaces via execution_failed event', async () => {
     const runner = makeRunner();
     const events = makeEvents();
 
-    await expect(
-      runGraph(
-        makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
-        runner.port,
-        events.port,
-      ),
-    ).rejects.toThrow('Workflow has no entrypoint node');
+    const outcome = await runGraph(
+      makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
+      runner.port,
+      events.port,
+    );
 
+    expect(outcome.status).toBe('failed');
+    const failedEvent = events.events.find((event) => event.type === 'execution_failed');
+    expect(failedEvent?.payload).toEqual({ error: { message: 'Workflow has no entrypoint node' } });
     expectNoConsoleWrites();
   });
 });
@@ -594,7 +599,7 @@ describe('runGraph — errorPolicy', () => {
     const runner = makeRunner({ B: { throws: 'boom' } });
     const events = makeEvents();
 
-    await runGraph(
+    const outcome = await runGraph(
       makeInput([trigger('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
@@ -605,6 +610,7 @@ describe('runGraph — errorPolicy', () => {
     // node_failed for B was emitted, execution itself completed.
     expect(events.events.some((event) => event.type === 'node_failed' && event.nodeId === 'B')).toBe(true);
     expect(events.statuses.at(-1)?.status).toBe('completed');
+    expect(outcome).toEqual({ status: 'completed' });
   });
 
   it("'continue' preserves NodeExecutionError code in the absorbed output", async () => {
@@ -635,7 +641,7 @@ describe('runGraph — errorPolicy', () => {
     const runner = makeRunner({ B: { throws: 'boom' } });
     const events = makeEvents();
 
-    await runGraph(
+    const outcome = await runGraph(
       makeInput(
         [trigger('A'), trigger('B', 'errorRoute'), trigger('Success'), trigger('Recovery')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'Success', 'success'), edge('e3', 'B', 'Recovery', 'errorRoute')],
@@ -648,6 +654,7 @@ describe('runGraph — errorPolicy', () => {
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'Success')).toBe(false);
     expect(runner.contexts.Recovery).toEqual({ A: 'out-A', B: { error: { message: 'boom' } } });
     expect(events.statuses.at(-1)?.status).toBe('completed');
+    expect(outcome).toEqual({ status: 'completed' });
   });
 
   it("'errorRoute' — skip propagates transitively through the dead success branch", async () => {

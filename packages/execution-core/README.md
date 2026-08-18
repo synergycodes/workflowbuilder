@@ -106,32 +106,34 @@ The registry's mapped type — `{ [K in TNode['type']]: NodeExecutor<Extract<TNo
 
 Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
 
-| Policy       | When the node throws                                                                                                                                                                         | Use case                                                |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `'fail'`     | (default) Emit `node_failed`, then abort the workflow with `execution_failed`.                                                                                                               | Unrecoverable infra / programming bugs.                 |
-| `'continue'` | Emit `node_failed`, set `nodeOutputs[id] = { error: { message, code? } }`, schedule downstream nodes through every outgoing edge **except** those tagged with the reserved `'error'` handle. | Best-effort steps; downstream inspects the error.       |
-| `'route'`    | Emit `node_failed`, set the same `{ error }` output, but only follow outgoing edges whose `sourceHandle === 'error'`. The success branch is pruned by the standard skip-propagation path.    | Retry-with-fallback, send-to-DLQ, compensating actions. |
+| Policy         | When the node throws                                                                                                                                                                                       | Use case                                                |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `'fail'`       | (default) Emit `node_failed`, then abort the workflow with `execution_failed` and end the run as `{ status: 'failed' }`, which the engine adapter surfaces as a failed run (Temporal closes it as Failed). | Unrecoverable infra / programming bugs.                 |
+| `'continue'`   | Emit `node_failed`, set `nodeOutputs[id] = { error: { message, code? } }`, schedule downstream nodes through every outgoing edge **except** those tagged with the reserved `'errorRoute'` handle.          | Best-effort steps; downstream inspects the error.       |
+| `'errorRoute'` | Emit `node_failed`, set the same `{ error }` output, but only follow outgoing edges whose `sourceHandle === 'errorRoute'`. The success branch is pruned by the standard skip-propagation path.             | Retry-with-fallback, send-to-DLQ, compensating actions. |
 
-`'route'` piggybacks on the same `nextPort` mechanism decision nodes use — non-`'error'` edges are pruned through the standard skip-propagation path, so deep dead branches stay dormant.
+`'errorRoute'` piggybacks on the same `nextPort` mechanism decision nodes use — non-`'errorRoute'` edges are pruned through the standard skip-propagation path, so deep dead branches stay dormant.
 
-### `'error'` is a reserved `sourceHandle`
+Only `'fail'` ends the run as failed. A node that fails under `'continue'` or `'errorRoute'` is absorbed by the graph: `node_failed` is still emitted, so the failure stays visible to anyone tailing events, but the run itself completes — `runGraph` returns `{ status: 'completed' }` and the engine reports a successful run.
 
-The string `'error'` is reserved as the runner's error-routing port name. Edges tagged with `sourceHandle === 'error'` fire **only** when the upstream node failed with policy `'route'`. Every other propagation path — success, `'continue'` on error, decision branching — prunes them. That means:
+### `'errorRoute'` is a reserved `sourceHandle`
+
+The string `'errorRoute'` is reserved as the runner's error-routing port name — deliberately the same literal as the policy, so the wiring reads consistently from schema to runner. Edges tagged with `sourceHandle === 'errorRoute'` fire **only** when the upstream node failed with policy `'errorRoute'`. Every other propagation path — success, `'continue'` on error, decision branching — prunes them. That means:
 
 - A successful node with an unconnected error branch never fires it.
 - A `'continue'` failure flows the error output to **regular** downstream edges only; the dedicated error branch stays dormant.
-- Decision nodes must not use `'error'` as a branch handle.
+- Decision nodes must not use `'errorRoute'` as a branch handle.
 
 ```ts
 const node: MyNode = {
   id: 'fetch-customer',
   type: 'my/http-call',
   config: { url: '…' },
-  errorPolicy: 'route',
+  errorPolicy: 'errorRoute',
 };
 ```
 
-If a node with `'route'` policy fails but has no outgoing edge tagged `'error'`, the run completes cleanly — the failure is recorded as `node_failed` and nothing else fires. That makes `'route'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
+If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the run completes cleanly — the failure is recorded as `node_failed` and nothing else fires. That makes `'errorRoute'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
 
 ## Template references
 
@@ -154,6 +156,7 @@ Authors typing references in the workflow builder UI: see the [variable picker g
 1. Implement `WorkflowEnginePort<TNode>` (`submit`, `cancel`).
 2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalEngine` for the new adapter).
 3. Make sure your engine wires `runGraph` (or equivalent traversal) to its activity primitives.
+4. Translate a `{ status: 'failed' }` outcome from `runGraph` into your engine's own failure vocabulary. `runGraph` never throws for node failures — it reports them by return value — so an adapter that ignores the outcome will close failed runs as successful. See `run-workflow.ts` for the Temporal case, which raises `ApplicationFailure.nonRetryable` (only a `TemporalFailure` fails a Workflow Execution; anything else fails the workflow _task_ and retries it forever).
 
 ## Replay determinism
 
