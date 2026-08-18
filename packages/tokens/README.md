@@ -44,4 +44,31 @@ the repo root.
 pnpm --filter @workflowbuilder/ui-tokens test
 ```
 
+## Token usage lint
+
+```bash
+pnpm --filter @workflowbuilder/ui-tokens lint:usage
+```
+
+`scripts/lint-token-usage.mjs` validates every `var(--…)` in `packages/*/src` and
+`apps/*/src` (docs excluded) against the names that actually exist: the built token dist,
+custom properties defined in sources (CSS declarations, inline `'--x':` styles and
+`setProperty` calls in TS/TSX), the provisional registry, and a short allowlist of names
+injected at runtime by third-party libraries (e.g. Base UI's `--anchor-width`).
+
+Two rules, both errors:
+
+1. `var(--name)` where `--name` is defined nowhere — catches prefix typos and drift after
+   a token export update.
+2. A fallback on a system token (`var(--wb-…, x)` / `var(--ax-…, x)`) — fallbacks silently
+   mask rule-1 typos. When a fallback is genuinely needed, annotate the line with
+   `/* fallback-ok: reason */`; the lint prints an inventory of all annotated lines.
+
+Runs in CI (`pr-check.yml`, after the tokens build) and per-file from lint-staged on
+commit. If `dist/` is missing the script builds it first.
+
+`tokens-provisional.json` (optional, next to `tokens.json`) registers tokens that the
+design file does not export yet: `{ "tokens": { "--wb-…": "<value>" } }`. Names listed
+there count as defined; the registry is the to-remove list once the real export lands.
+
 Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
