@@ -201,9 +201,8 @@ async function runNode<TNode extends BaseNode>(
   events: EventEmitterPort,
   executionId: string,
 ): Promise<NodeRunResult<TNode>> {
-  await events.emitEvent(executionId, 'node_started', undefined, node.id);
-
   try {
+    await events.emitEvent(executionId, 'node_started', undefined, node.id);
     const result = await runner.executeNode(node, context);
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
