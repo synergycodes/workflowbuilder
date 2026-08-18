@@ -177,17 +177,17 @@ body:has(.suggestionsContainer) {
   display: flex;
   color: var(--ax-txt-primary-default);
   align-items: center;
-  gap: var(--wb-token-spacing-spacing-4, 4px);
+  gap: var(--ax-token-spacing-spacing-4);
   flex: 1 0 0;
   padding: 6px;
 }
 
 .iconWrapper {
   display: flex;
-  padding: var(--wb-token-spacing-button-s-v-pad-2, 7px);
+  padding: var(--ax-token-spacing-button-s-v-pad-2);
   justify-content: center;
   align-items: center;
-  gap: var(--wb-token-spacing-button-s-gap, 8px);
+  gap: var(--ax-token-spacing-button-s-gap);
 
   svg {
     fill: var(--wb-txt-ghost-primary-default);

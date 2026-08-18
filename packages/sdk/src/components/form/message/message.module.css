@@ -20,13 +20,13 @@
 }
 
 .container--neutral {
-  --color: var(--wb-colors-gray-800);
-  --background-color: var(--wb-ui-bg-secondary-default);
+  --color: var(--ax-colors-gray-800);
+  --background-color: var(--ax-ui-bg-secondary-default);
 }
 
 .container--warning {
-  --color: var(--wb-chips-acc5-txt);
-  --background-color: var(--wb-chips-acc5-bg);
+  --color: var(--ax-chips-acc5-txt);
+  --background-color: var(--ax-chips-acc5-bg);
 }
 
 .container--error {
