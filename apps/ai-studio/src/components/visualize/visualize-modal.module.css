@@ -16,11 +16,11 @@
   flex-direction: column;
   width: min(56rem, 92vw);
   max-height: 86vh;
-  background: var(--ax-ui-bg-primary-default, #ffffff);
-  border: 0.0625rem solid var(--ax-ui-stroke-primary-default, #edeff3);
+  background: var(--ax-ui-bg-primary-default);
+  border: 0.0625rem solid var(--ax-ui-stroke-primary-default);
   border-radius: 0.9rem;
   box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.4);
-  color: var(--ax-txt-primary-default, #151516);
+  color: var(--ax-txt-primary-default);
   overflow: hidden;
 
   &,
@@ -34,7 +34,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-bottom: 0.0625rem solid var(--ax-ui-stroke-primary-default, #edeff3);
+  border-bottom: 0.0625rem solid var(--ax-ui-stroke-primary-default);
 }
 
 .title {
@@ -47,8 +47,8 @@
   font-size: 0.7rem;
   padding: 0.15rem 0.5rem;
   border-radius: 0.3rem;
-  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  background: var(--ax-ui-bg-secondary-default);
+  color: var(--ax-txt-tertiary-default);
 }
 
 .actions {
@@ -66,7 +66,7 @@
   border: none;
   border-radius: 0.4rem;
   background: transparent;
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  color: var(--ax-txt-tertiary-default);
   cursor: pointer;
 }
 
@@ -76,8 +76,8 @@
 }
 
 .action:hover {
-  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
-  color: var(--ax-txt-primary-default, #151516);
+  background: var(--ax-ui-bg-secondary-default);
+  color: var(--ax-txt-primary-default);
 }
 
 .body {
@@ -87,6 +87,6 @@
 }
 
 .loading {
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  color: var(--ax-txt-tertiary-default);
   font-size: 0.85rem;
 }
