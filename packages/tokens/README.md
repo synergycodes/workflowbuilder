@@ -45,3 +45,24 @@ pnpm --filter @workflowbuilder/ui-tokens test
 ```
 
 Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
+
+## DS 2.0 migration tooling
+
+The DS 2.0 rename map lives in `migration/2026-06-15-ds2-migration-map.md`
+(the designer changelog, checked in verbatim). Two scripts turn it into code
+changes — the migration fixes usages at the source instead of shipping a
+compatibility bridge:
+
+```bash
+node scripts/build-codemod-map.mjs   # md → codemod-map.json (renames, removed, prefix rules)
+node scripts/codemod-usages.mjs      # dry-run: var(--ax-…) → var(--wb-…) plan
+node scripts/codemod-usages.mjs --write
+```
+
+`codemod-map.json` is the reviewable artifact: 144 renames, 38 removals with
+replacements, primitive prefix rules, and a `manual` list for names that have
+no 1:1 target (chips factory, state-split nav-button) — the codemod reports
+those instead of rewriting them. Rows the parser cannot resolve land in
+`unparsed`, never dropped silently. The `dimensions` section stays empty until
+the 2.0 export lands; value→token pairs for the Numerals scale are generated
+against the real export in the pipeline-switch PR.

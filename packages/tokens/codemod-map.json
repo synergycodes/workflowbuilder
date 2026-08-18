@@ -1,0 +1,1241 @@
+{
+  "$source": "migration/2026-06-15-ds2-migration-map.md",
+  "$generatedBy": "scripts/build-codemod-map.mjs",
+  "prefixRules": [
+    {
+      "oldCssPrefix": "--ax-colors-",
+      "newCssPrefix": "--wb-colors-"
+    }
+  ],
+  "manual": [
+    {
+      "pattern": "--ax-chips-*",
+      "reason": "Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task (WB-489)."
+    },
+    {
+      "pattern": "--ax-nav-button-bg-primary-hover",
+      "reason": "One legacy token served hover/pressed/focus states (map §10) — split per state in the Buttons task (WB-490)."
+    }
+  ],
+  "renames": [
+    {
+      "old": "wb/txt-primary-default",
+      "new": "wb/ui/text/default",
+      "oldCss": "--ax-txt-primary-default",
+      "newCss": "--wb-ui-text-default"
+    },
+    {
+      "old": "wb/txt-primary-inverse",
+      "new": "wb/ui/text/inverse-default",
+      "oldCss": "--ax-txt-primary-inverse",
+      "newCss": "--wb-ui-text-inverse-default"
+    },
+    {
+      "old": "wb/txt-primary-disabled",
+      "new": "wb/ui/text/disabled",
+      "oldCss": "--ax-txt-primary-disabled",
+      "newCss": "--wb-ui-text-disabled",
+      "valueChanged": true,
+      "note": "Light: `gray-100-75` → `gray-900-30`, fix"
+    },
+    {
+      "old": "wb/txt-primary-white",
+      "new": "wb/ui/text/onaccent-default",
+      "oldCss": "--ax-txt-primary-white",
+      "newCss": "--wb-ui-text-onaccent-default"
+    },
+    {
+      "old": "wb/txt-secondary-default",
+      "new": "wb/ui/text/subtle-default",
+      "oldCss": "--ax-txt-secondary-default",
+      "newCss": "--wb-ui-text-subtle-default"
+    },
+    {
+      "old": "wb/txt-secondary-inverse",
+      "new": "wb/ui/text/inverse-subtle-default",
+      "oldCss": "--ax-txt-secondary-inverse",
+      "newCss": "--wb-ui-text-inverse-subtle-default"
+    },
+    {
+      "old": "wb/txt-tertiary-default",
+      "new": "wb/ui/text/muted-default",
+      "oldCss": "--ax-txt-tertiary-default",
+      "newCss": "--wb-ui-text-muted-default"
+    },
+    {
+      "old": "wb/txt-quaternary-default",
+      "new": "wb/ui/text/ghost-default",
+      "oldCss": "--ax-txt-quaternary-default",
+      "newCss": "--wb-ui-text-ghost-default"
+    },
+    {
+      "old": "wb/txt-tooltip-bw",
+      "new": "wb/ui/text/tooltip-default",
+      "oldCss": "--ax-txt-tooltip-bw",
+      "newCss": "--wb-ui-text-tooltip-default"
+    },
+    {
+      "old": "wb/txt-tooltip-blue",
+      "new": "wb/ui/text/tooltip-accent-default",
+      "oldCss": "--ax-txt-tooltip-blue",
+      "newCss": "--wb-ui-text-tooltip-accent-default"
+    },
+    {
+      "old": "wb/txt-ghost-primary-default",
+      "new": "wb/ui/text/action-default",
+      "oldCss": "--ax-txt-ghost-primary-default",
+      "newCss": "--wb-ui-text-action-default",
+      "valueChanged": true,
+      "note": "brand `#3969FF`"
+    },
+    {
+      "old": "wb/txt-ghost-primary-disabled",
+      "new": "wb/ui/text/action-disabled",
+      "oldCss": "--ax-txt-ghost-primary-disabled",
+      "newCss": "--wb-ui-text-action-disabled"
+    },
+    {
+      "old": "wb/txt-error-default",
+      "new": "wb/ui/text/critical-default",
+      "oldCss": "--ax-txt-error-default",
+      "newCss": "--wb-ui-text-critical-default",
+      "valueChanged": true,
+      "note": "red refreshed"
+    },
+    {
+      "old": "wb/txt-destructive-disabled",
+      "new": "wb/ui/text/critical-disabled",
+      "oldCss": "--ax-txt-destructive-disabled",
+      "newCss": "--wb-ui-text-critical-disabled"
+    },
+    {
+      "old": "wb/txt-success-default",
+      "new": "wb/ui/text/success-default",
+      "oldCss": "--ax-txt-success-default",
+      "newCss": "--wb-ui-text-success-default",
+      "valueChanged": true,
+      "note": "green refreshed"
+    },
+    {
+      "old": "wb/txt-ghost-success-disabled",
+      "new": "wb/ui/text/success-disabled",
+      "oldCss": "--ax-txt-ghost-success-disabled",
+      "newCss": "--wb-ui-text-success-disabled"
+    },
+    {
+      "old": "wb/txt-info-default",
+      "new": "wb/ui/text/info-default",
+      "oldCss": "--ax-txt-info-default",
+      "newCss": "--wb-ui-text-info-default",
+      "valueChanged": true,
+      "note": "acc1 refreshed"
+    },
+    {
+      "old": "wb/txt-warning-default",
+      "new": "wb/ui/text/warning-default",
+      "oldCss": "--ax-txt-warning-default",
+      "newCss": "--wb-ui-text-warning-default",
+      "valueChanged": true,
+      "note": "orange refreshed"
+    },
+    {
+      "old": "wb/txt-ghost-warning-disabled",
+      "new": "wb/ui/text/warning-disabled",
+      "oldCss": "--ax-txt-ghost-warning-disabled",
+      "newCss": "--wb-ui-text-warning-disabled"
+    },
+    {
+      "old": "wb/icon-primary-default",
+      "new": "wb/ui/icon/action-default",
+      "oldCss": "--ax-icon-primary-default",
+      "newCss": "--wb-ui-icon-action-default"
+    },
+    {
+      "old": "wb/icon-txt-default",
+      "new": "wb/ui/icon/default",
+      "oldCss": "--ax-icon-txt-default",
+      "newCss": "--wb-ui-icon-default",
+      "note": "via interim `onsurface-default`, merged 2026-06-10; codeSyntax `--wb-icon-txt-default` now lives on `icon/default`"
+    },
+    {
+      "old": "wb/icon-txt-inverse",
+      "new": "wb/ui/icon/inverse-default",
+      "oldCss": "--ax-icon-txt-inverse",
+      "newCss": "--wb-ui-icon-inverse-default"
+    },
+    {
+      "old": "wb/icon-disabled",
+      "new": "wb/ui/icon/disabled",
+      "oldCss": "--ax-icon-disabled",
+      "newCss": "--wb-ui-icon-disabled"
+    },
+    {
+      "old": "wb/icon-error-default",
+      "new": "wb/ui/icon/critical-default",
+      "oldCss": "--ax-icon-error-default",
+      "newCss": "--wb-ui-icon-critical-default",
+      "valueChanged": true,
+      "note": "acc2 → red"
+    },
+    {
+      "old": "wb/icon-success-default",
+      "new": "wb/ui/icon/success-default",
+      "oldCss": "--ax-icon-success-default",
+      "newCss": "--wb-ui-icon-success-default",
+      "valueChanged": true,
+      "note": "acc3 → green"
+    },
+    {
+      "old": "wb/icon-warning-default",
+      "new": "wb/ui/icon/warning-default",
+      "oldCss": "--ax-icon-warning-default",
+      "newCss": "--wb-ui-icon-warning-default",
+      "valueChanged": true,
+      "note": "acc5 → orange"
+    },
+    {
+      "old": "wb/ui-stroke-primary-default",
+      "new": "wb/ui/stroke/default",
+      "oldCss": "--ax-ui-stroke-primary-default",
+      "newCss": "--wb-ui-stroke-default"
+    },
+    {
+      "old": "wb/ui-stroke-secondary-default",
+      "new": "wb/ui/stroke/subtle",
+      "oldCss": "--ax-ui-stroke-secondary-default",
+      "newCss": "--wb-ui-stroke-subtle"
+    },
+    {
+      "old": "wb/ui-stroke-primary-focus",
+      "new": "wb/ui/stroke/focus",
+      "oldCss": "--ax-ui-stroke-primary-focus",
+      "newCss": "--wb-ui-stroke-focus",
+      "valueChanged": true,
+      "note": "acc1 refreshed"
+    },
+    {
+      "old": "wb/ui-stroke-primary-highlight",
+      "new": "wb/ui/stroke/highlight",
+      "oldCss": "--ax-ui-stroke-primary-highlight",
+      "newCss": "--wb-ui-stroke-highlight"
+    },
+    {
+      "old": "wb/ui-separator-primary-default",
+      "new": "wb/ui/stroke/divider",
+      "oldCss": "--ax-ui-separator-primary-default",
+      "newCss": "--wb-ui-stroke-divider"
+    },
+    {
+      "old": "wb/ui-bg-primary-default",
+      "new": "wb/ui/bg/base",
+      "oldCss": "--ax-ui-bg-primary-default",
+      "newCss": "--wb-ui-bg-base"
+    },
+    {
+      "old": "wb/ui-bg-secondary-default",
+      "new": "wb/ui/bg/elevated",
+      "oldCss": "--ax-ui-bg-secondary-default",
+      "newCss": "--wb-ui-bg-elevated"
+    },
+    {
+      "old": "wb/ui-bg-tertiary-default",
+      "new": "wb/ui/bg/inset",
+      "oldCss": "--ax-ui-bg-tertiary-default",
+      "newCss": "--wb-ui-bg-inset"
+    },
+    {
+      "old": "wb/ui-canvas-dots-default",
+      "new": "wb/ui/bg/canvas-dots",
+      "oldCss": "--ax-ui-canvas-dots-default",
+      "newCss": "--wb-ui-bg-canvas-dots"
+    },
+    {
+      "old": "wb/ui-bg-tertiary-selected",
+      "new": "wb/components/selector/fill-checked",
+      "oldCss": "--ax-ui-bg-tertiary-selected",
+      "newCss": "--wb-components-selector-fill-checked"
+    },
+    {
+      "old": "wb/focus-ring-element",
+      "new": "wb/ui/focus-ring",
+      "oldCss": "--ax-focus-ring-element",
+      "newCss": "--wb-ui-focus-ring",
+      "valueChanged": true,
+      "note": "flattened single token, 2026-06-10; acc1 refreshed"
+    },
+    {
+      "old": "wb/button-primary-bg-default",
+      "new": "wb/components/button/solid/primary/default",
+      "oldCss": "--ax-button-primary-bg-default",
+      "newCss": "--wb-components-button-solid-primary-default",
+      "valueChanged": true,
+      "note": "acc1 `#3969FF`"
+    },
+    {
+      "old": "wb/button-primary-bg-hover",
+      "new": "wb/components/button/solid/primary/hover",
+      "oldCss": "--ax-button-primary-bg-hover",
+      "newCss": "--wb-components-button-solid-primary-hover",
+      "valueChanged": true,
+      "note": "acc1 `#3969FF`"
+    },
+    {
+      "old": "wb/button-primary-bg-active",
+      "new": "wb/components/button/solid/primary/active",
+      "oldCss": "--ax-button-primary-bg-active",
+      "newCss": "--wb-components-button-solid-primary-active",
+      "valueChanged": true,
+      "note": "acc1 `#3969FF`"
+    },
+    {
+      "old": "wb/button-primary-bg-focus",
+      "new": "wb/components/button/solid/primary/focus",
+      "oldCss": "--ax-button-primary-bg-focus",
+      "newCss": "--wb-components-button-solid-primary-focus",
+      "valueChanged": true,
+      "note": "acc1 `#3969FF`"
+    },
+    {
+      "old": "wb/button-primary-bg-loading",
+      "new": "wb/components/button/solid/primary/loading",
+      "oldCss": "--ax-button-primary-bg-loading",
+      "newCss": "--wb-components-button-solid-primary-loading",
+      "valueChanged": true,
+      "note": "acc1 `#3969FF`"
+    },
+    {
+      "old": "wb/button-primary-bg-disabled",
+      "new": "wb/components/button/solid/disabled",
+      "oldCss": "--ax-button-primary-bg-disabled",
+      "newCss": "--wb-components-button-solid-disabled"
+    },
+    {
+      "old": "wb/button-gray-bg-default",
+      "new": "wb/components/button/solid/gray/default",
+      "oldCss": "--ax-button-gray-bg-default",
+      "newCss": "--wb-components-button-solid-gray-default"
+    },
+    {
+      "old": "wb/button-gray-bg-hover",
+      "new": "wb/components/button/solid/gray/hover",
+      "oldCss": "--ax-button-gray-bg-hover",
+      "newCss": "--wb-components-button-solid-gray-hover"
+    },
+    {
+      "old": "wb/button-gray-bg-active",
+      "new": "wb/components/button/solid/gray/active",
+      "oldCss": "--ax-button-gray-bg-active",
+      "newCss": "--wb-components-button-solid-gray-active"
+    },
+    {
+      "old": "wb/button-gray-bg-focus",
+      "new": "wb/components/button/solid/gray/focus",
+      "oldCss": "--ax-button-gray-bg-focus",
+      "newCss": "--wb-components-button-solid-gray-focus"
+    },
+    {
+      "old": "wb/button-gray-bg-loading",
+      "new": "wb/components/button/solid/gray/loading",
+      "oldCss": "--ax-button-gray-bg-loading",
+      "newCss": "--wb-components-button-solid-gray-loading"
+    },
+    {
+      "old": "wb/button-red-bg-default",
+      "new": "wb/components/button/solid/critical/default",
+      "oldCss": "--ax-button-red-bg-default",
+      "newCss": "--wb-components-button-solid-critical-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-red-bg-hover",
+      "new": "wb/components/button/solid/critical/hover",
+      "oldCss": "--ax-button-red-bg-hover",
+      "newCss": "--wb-components-button-solid-critical-hover",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-red-bg-active",
+      "new": "wb/components/button/solid/critical/active",
+      "oldCss": "--ax-button-red-bg-active",
+      "newCss": "--wb-components-button-solid-critical-active",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-red-bg-focus",
+      "new": "wb/components/button/solid/critical/focus",
+      "oldCss": "--ax-button-red-bg-focus",
+      "newCss": "--wb-components-button-solid-critical-focus",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-red-bg-loading",
+      "new": "wb/components/button/solid/critical/loading",
+      "oldCss": "--ax-button-red-bg-loading",
+      "newCss": "--wb-components-button-solid-critical-loading",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-green-bg-default",
+      "new": "wb/components/button/solid/success/default",
+      "oldCss": "--ax-button-green-bg-default",
+      "newCss": "--wb-components-button-solid-success-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-green-bg-hover",
+      "new": "wb/components/button/solid/success/hover",
+      "oldCss": "--ax-button-green-bg-hover",
+      "newCss": "--wb-components-button-solid-success-hover",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-green-bg-active",
+      "new": "wb/components/button/solid/success/active",
+      "oldCss": "--ax-button-green-bg-active",
+      "newCss": "--wb-components-button-solid-success-active",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-green-bg-focus",
+      "new": "wb/components/button/solid/success/focus",
+      "oldCss": "--ax-button-green-bg-focus",
+      "newCss": "--wb-components-button-solid-success-focus",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-green-bg-loading",
+      "new": "wb/components/button/solid/success/loading",
+      "oldCss": "--ax-button-green-bg-loading",
+      "newCss": "--wb-components-button-solid-success-loading",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-orange-bg-default",
+      "new": "wb/components/button/solid/warning/default",
+      "oldCss": "--ax-button-orange-bg-default",
+      "newCss": "--wb-components-button-solid-warning-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-orange-bg-hover",
+      "new": "wb/components/button/solid/warning/hover",
+      "oldCss": "--ax-button-orange-bg-hover",
+      "newCss": "--wb-components-button-solid-warning-hover",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-orange-bg-active",
+      "new": "wb/components/button/solid/warning/active",
+      "oldCss": "--ax-button-orange-bg-active",
+      "newCss": "--wb-components-button-solid-warning-active",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-orange-bg-focus",
+      "new": "wb/components/button/solid/warning/focus",
+      "oldCss": "--ax-button-orange-bg-focus",
+      "newCss": "--wb-components-button-solid-warning-focus",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-orange-bg-loading",
+      "new": "wb/components/button/solid/warning/loading",
+      "oldCss": "--ax-button-orange-bg-loading",
+      "newCss": "--wb-components-button-solid-warning-loading",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-default",
+      "new": "wb/components/button/ghost/primary/default",
+      "oldCss": "--ax-button-ghost-primary-bg-default",
+      "newCss": "--wb-components-button-ghost-primary-default",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-hover",
+      "new": "wb/components/button/ghost/primary/hover",
+      "oldCss": "--ax-button-ghost-primary-bg-hover",
+      "newCss": "--wb-components-button-ghost-primary-hover",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-active",
+      "new": "wb/components/button/ghost/primary/active",
+      "oldCss": "--ax-button-ghost-primary-bg-active",
+      "newCss": "--wb-components-button-ghost-primary-active",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-focus",
+      "new": "wb/components/button/ghost/primary/focus",
+      "oldCss": "--ax-button-ghost-primary-bg-focus",
+      "newCss": "--wb-components-button-ghost-primary-focus",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-loading",
+      "new": "wb/components/button/ghost/primary/loading",
+      "oldCss": "--ax-button-ghost-primary-bg-loading",
+      "newCss": "--wb-components-button-ghost-primary-loading",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-bg-disabled",
+      "new": "wb/components/button/ghost/primary/disabled",
+      "oldCss": "--ax-button-ghost-primary-bg-disabled",
+      "newCss": "--wb-components-button-ghost-primary-disabled",
+      "valueChanged": true,
+      "note": "primary now flows through `brand/*`, acc1 refreshed"
+    },
+    {
+      "old": "wb/button-ghost-primary-stroke-default",
+      "new": "wb/components/button/ghost/primary/stroke-default",
+      "oldCss": "--ax-button-ghost-primary-stroke-default",
+      "newCss": "--wb-components-button-ghost-primary-stroke-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/button-ghost-success-bg-default",
+      "new": "wb/components/button/ghost/success/default",
+      "oldCss": "--ax-button-ghost-success-bg-default",
+      "newCss": "--wb-components-button-ghost-success-default"
+    },
+    {
+      "old": "wb/button-ghost-success-bg-hover",
+      "new": "wb/components/button/ghost/success/hover",
+      "oldCss": "--ax-button-ghost-success-bg-hover",
+      "newCss": "--wb-components-button-ghost-success-hover"
+    },
+    {
+      "old": "wb/button-ghost-success-bg-active",
+      "new": "wb/components/button/ghost/success/active",
+      "oldCss": "--ax-button-ghost-success-bg-active",
+      "newCss": "--wb-components-button-ghost-success-active"
+    },
+    {
+      "old": "wb/button-ghost-success-bg-focus",
+      "new": "wb/components/button/ghost/success/focus",
+      "oldCss": "--ax-button-ghost-success-bg-focus",
+      "newCss": "--wb-components-button-ghost-success-focus"
+    },
+    {
+      "old": "wb/button-ghost-success-bg-loading",
+      "new": "wb/components/button/ghost/success/loading",
+      "oldCss": "--ax-button-ghost-success-bg-loading",
+      "newCss": "--wb-components-button-ghost-success-loading"
+    },
+    {
+      "old": "wb/button-ghost-success-bg-disabled",
+      "new": "wb/components/button/ghost/success/disabled",
+      "oldCss": "--ax-button-ghost-success-bg-disabled",
+      "newCss": "--wb-components-button-ghost-success-disabled"
+    },
+    {
+      "old": "wb/button-ghost-success-stroke-default",
+      "new": "wb/components/button/ghost/success/stroke-default",
+      "oldCss": "--ax-button-ghost-success-stroke-default",
+      "newCss": "--wb-components-button-ghost-success-stroke-default"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-default",
+      "new": "wb/components/button/ghost/warning/default",
+      "oldCss": "--ax-button-ghost-warning-bg-default",
+      "newCss": "--wb-components-button-ghost-warning-default"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-hover",
+      "new": "wb/components/button/ghost/warning/hover",
+      "oldCss": "--ax-button-ghost-warning-bg-hover",
+      "newCss": "--wb-components-button-ghost-warning-hover"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-active",
+      "new": "wb/components/button/ghost/warning/active",
+      "oldCss": "--ax-button-ghost-warning-bg-active",
+      "newCss": "--wb-components-button-ghost-warning-active"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-focus",
+      "new": "wb/components/button/ghost/warning/focus",
+      "oldCss": "--ax-button-ghost-warning-bg-focus",
+      "newCss": "--wb-components-button-ghost-warning-focus"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-loading",
+      "new": "wb/components/button/ghost/warning/loading",
+      "oldCss": "--ax-button-ghost-warning-bg-loading",
+      "newCss": "--wb-components-button-ghost-warning-loading"
+    },
+    {
+      "old": "wb/button-ghost-warning-bg-disabled",
+      "new": "wb/components/button/ghost/warning/disabled",
+      "oldCss": "--ax-button-ghost-warning-bg-disabled",
+      "newCss": "--wb-components-button-ghost-warning-disabled"
+    },
+    {
+      "old": "wb/button-ghost-warning-stroke-default",
+      "new": "wb/components/button/ghost/warning/stroke-default",
+      "oldCss": "--ax-button-ghost-warning-stroke-default",
+      "newCss": "--wb-components-button-ghost-warning-stroke-default"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-default",
+      "new": "wb/components/button/ghost/critical/default",
+      "oldCss": "--ax-button-ghost-destructive-bg-default",
+      "newCss": "--wb-components-button-ghost-critical-default"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-hover",
+      "new": "wb/components/button/ghost/critical/hover",
+      "oldCss": "--ax-button-ghost-destructive-bg-hover",
+      "newCss": "--wb-components-button-ghost-critical-hover"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-active",
+      "new": "wb/components/button/ghost/critical/active",
+      "oldCss": "--ax-button-ghost-destructive-bg-active",
+      "newCss": "--wb-components-button-ghost-critical-active"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-focus",
+      "new": "wb/components/button/ghost/critical/focus",
+      "oldCss": "--ax-button-ghost-destructive-bg-focus",
+      "newCss": "--wb-components-button-ghost-critical-focus"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-loading",
+      "new": "wb/components/button/ghost/critical/loading",
+      "oldCss": "--ax-button-ghost-destructive-bg-loading",
+      "newCss": "--wb-components-button-ghost-critical-loading"
+    },
+    {
+      "old": "wb/button-ghost-destructive-bg-disabled",
+      "new": "wb/components/button/ghost/critical/disabled",
+      "oldCss": "--ax-button-ghost-destructive-bg-disabled",
+      "newCss": "--wb-components-button-ghost-critical-disabled"
+    },
+    {
+      "old": "wb/button-ghost-destructive-stroke-default",
+      "new": "wb/components/button/ghost/critical/stroke-default",
+      "oldCss": "--ax-button-ghost-destructive-stroke-default",
+      "newCss": "--wb-components-button-ghost-critical-stroke-default"
+    },
+    {
+      "old": "wb/input-stroke-primary-default",
+      "new": "wb/components/text-field/stroke-default",
+      "oldCss": "--ax-input-stroke-primary-default",
+      "newCss": "--wb-components-text-field-stroke-default"
+    },
+    {
+      "old": "wb/input-stroke-primary-focus",
+      "new": "wb/components/text-field/stroke-focus",
+      "oldCss": "--ax-input-stroke-primary-focus",
+      "newCss": "--wb-components-text-field-stroke-focus",
+      "valueChanged": true,
+      "note": "acc1 refreshed"
+    },
+    {
+      "old": "wb/input-stroke-primary-error",
+      "new": "wb/components/text-field/stroke-critical",
+      "oldCss": "--ax-input-stroke-primary-error",
+      "newCss": "--wb-components-text-field-stroke-critical",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/input-stroke-primary-success",
+      "new": "wb/components/text-field/stroke-success",
+      "oldCss": "--ax-input-stroke-primary-success",
+      "newCss": "--wb-components-text-field-stroke-success",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/input-bg-primary-error",
+      "new": "wb/components/text-field/bg-primary-critical",
+      "oldCss": "--ax-input-bg-primary-error",
+      "newCss": "--wb-components-text-field-bg-primary-critical",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/input-bg-primary-success",
+      "new": "wb/components/text-field/bg-primary-success",
+      "oldCss": "--ax-input-bg-primary-success",
+      "newCss": "--wb-components-text-field-bg-primary-success",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/nav-button-bg-primary-hover",
+      "new": "wb/components/nav-button/bg-primary-hover",
+      "oldCss": "--ax-nav-button-bg-primary-hover",
+      "newCss": "--wb-components-nav-button-bg-primary-hover",
+      "note": "see section 10 — this one old token split into three new state tokens"
+    },
+    {
+      "old": "wb/nav-button-icon-primary-default",
+      "new": "wb/components/nav-button/icon-primary-default",
+      "oldCss": "--ax-nav-button-icon-primary-default",
+      "newCss": "--wb-components-nav-button-icon-primary-default",
+      "valueChanged": true,
+      "note": "pressed: brand `#3969FF`"
+    },
+    {
+      "old": "wb/nav-button-icon-primary-hover",
+      "new": "wb/components/nav-button/icon-primary-hover",
+      "oldCss": "--ax-nav-button-icon-primary-hover",
+      "newCss": "--wb-components-nav-button-icon-primary-hover",
+      "valueChanged": true,
+      "note": "pressed: brand `#3969FF`"
+    },
+    {
+      "old": "wb/nav-button-icon-primary-active",
+      "new": "wb/components/nav-button/icon-primary-active",
+      "oldCss": "--ax-nav-button-icon-primary-active",
+      "newCss": "--wb-components-nav-button-icon-primary-active",
+      "valueChanged": true,
+      "note": "pressed: brand `#3969FF`"
+    },
+    {
+      "old": "wb/nav-button-icon-primary-pressed",
+      "new": "wb/components/nav-button/icon-primary-pressed",
+      "oldCss": "--ax-nav-button-icon-primary-pressed",
+      "newCss": "--wb-components-nav-button-icon-primary-pressed",
+      "valueChanged": true,
+      "note": "pressed: brand `#3969FF`"
+    },
+    {
+      "old": "wb/nav-button-icon-primary-disabled",
+      "new": "wb/components/nav-button/icon-primary-disabled",
+      "oldCss": "--ax-nav-button-icon-primary-disabled",
+      "newCss": "--wb-components-nav-button-icon-primary-disabled",
+      "valueChanged": true,
+      "note": "pressed: brand `#3969FF`"
+    },
+    {
+      "old": "wb/snackbar-bg-information",
+      "new": "wb/components/snackbar/bg-info",
+      "oldCss": "--ax-snackbar-bg-information",
+      "newCss": "--wb-components-snackbar-bg-info"
+    },
+    {
+      "old": "wb/snackbar-bg-warning",
+      "new": "wb/components/snackbar/bg-warning",
+      "oldCss": "--ax-snackbar-bg-warning",
+      "newCss": "--wb-components-snackbar-bg-warning"
+    },
+    {
+      "old": "wb/snackbar-bg-success",
+      "new": "wb/components/snackbar/bg-success",
+      "oldCss": "--ax-snackbar-bg-success",
+      "newCss": "--wb-components-snackbar-bg-success"
+    },
+    {
+      "old": "wb/snackbar-bg-error",
+      "new": "wb/components/snackbar/bg-critical",
+      "oldCss": "--ax-snackbar-bg-error",
+      "newCss": "--wb-components-snackbar-bg-critical"
+    },
+    {
+      "old": "wb/dropzone-bg-default",
+      "new": "wb/components/dropzone/bg-default",
+      "oldCss": "--ax-dropzone-bg-default",
+      "newCss": "--wb-components-dropzone-bg-default"
+    },
+    {
+      "old": "wb/dropzone-bg-hover",
+      "new": "wb/components/dropzone/bg-hover",
+      "oldCss": "--ax-dropzone-bg-hover",
+      "newCss": "--wb-components-dropzone-bg-hover"
+    },
+    {
+      "old": "wb/dropzone-bg-dragging",
+      "new": "wb/components/dropzone/bg-dragging",
+      "oldCss": "--ax-dropzone-bg-dragging",
+      "newCss": "--wb-components-dropzone-bg-dragging"
+    },
+    {
+      "old": "wb/dropzone-bg-error",
+      "new": "wb/components/dropzone/bg-critical",
+      "oldCss": "--ax-dropzone-bg-error",
+      "newCss": "--wb-components-dropzone-bg-critical"
+    },
+    {
+      "old": "wb/dropzone-stroke-default",
+      "new": "wb/components/dropzone/stroke-default",
+      "oldCss": "--ax-dropzone-stroke-default",
+      "newCss": "--wb-components-dropzone-stroke-default"
+    },
+    {
+      "old": "wb/dropzone-stroke-hover",
+      "new": "wb/components/dropzone/stroke-hover",
+      "oldCss": "--ax-dropzone-stroke-hover",
+      "newCss": "--wb-components-dropzone-stroke-hover"
+    },
+    {
+      "old": "wb/dropzone-stroke-dragging",
+      "new": "wb/components/dropzone/stroke-dragging",
+      "oldCss": "--ax-dropzone-stroke-dragging",
+      "newCss": "--wb-components-dropzone-stroke-dragging"
+    },
+    {
+      "old": "wb/dropzone-stroke-error",
+      "new": "wb/components/dropzone/stroke-critical",
+      "oldCss": "--ax-dropzone-stroke-error",
+      "newCss": "--wb-components-dropzone-stroke-critical"
+    },
+    {
+      "old": "wb/tooltip-bg-default",
+      "new": "wb/components/tooltip/bg-default",
+      "oldCss": "--ax-tooltip-bg-default",
+      "newCss": "--wb-components-tooltip-bg-default"
+    },
+    {
+      "old": "wb/tooltip-bg-blue",
+      "new": "wb/components/tooltip/bg-info",
+      "oldCss": "--ax-tooltip-bg-blue",
+      "newCss": "--wb-components-tooltip-bg-info",
+      "valueChanged": true,
+      "note": "no more literal color in the name; acc1 refreshed"
+    },
+    {
+      "old": "wb/pt-bg-primary-default",
+      "new": "wb/components/tour/bg-primary-default",
+      "oldCss": "--ax-pt-bg-primary-default",
+      "newCss": "--wb-components-tour-bg-primary-default"
+    },
+    {
+      "old": "wb/pt-stroke-primary-default",
+      "new": "wb/components/tour/stroke-default",
+      "oldCss": "--ax-pt-stroke-primary-default",
+      "newCss": "--wb-components-tour-stroke-default"
+    },
+    {
+      "old": "wb/tab-stroke-default",
+      "new": "wb/components/tab/stroke-default",
+      "oldCss": "--ax-tab-stroke-default",
+      "newCss": "--wb-components-tab-stroke-default"
+    },
+    {
+      "old": "wb/tab-stroke-hover",
+      "new": "wb/components/tab/stroke-hover",
+      "oldCss": "--ax-tab-stroke-hover",
+      "newCss": "--wb-components-tab-stroke-hover"
+    },
+    {
+      "old": "wb/tab-stroke-active",
+      "new": "wb/components/tab/stroke-active",
+      "oldCss": "--ax-tab-stroke-active",
+      "newCss": "--wb-components-tab-stroke-active"
+    },
+    {
+      "old": "wb/avatar-fill-default",
+      "new": "wb/components/avatar/fill-default",
+      "oldCss": "--ax-avatar-fill-default",
+      "newCss": "--wb-components-avatar-fill-default"
+    },
+    {
+      "old": "wb/avatar-stroke-default",
+      "new": "wb/components/avatar/stroke-default",
+      "oldCss": "--ax-avatar-stroke-default",
+      "newCss": "--wb-components-avatar-stroke-default"
+    },
+    {
+      "old": "wb/datepicker-bg-primary",
+      "new": "wb/components/datepicker/bg-primary",
+      "oldCss": "--ax-datepicker-bg-primary",
+      "newCss": "--wb-components-datepicker-bg-primary",
+      "valueChanged": true,
+      "note": "acc1-600 → acc1-500, plus acc1 refreshed"
+    },
+    {
+      "old": "wb/datepicker-bg-secondary",
+      "new": "wb/components/datepicker/bg-secondary",
+      "oldCss": "--ax-datepicker-bg-secondary",
+      "newCss": "--wb-components-datepicker-bg-secondary"
+    },
+    {
+      "old": "wb/scrollbar-bg-default",
+      "new": "wb/components/scrollbar/bg-default",
+      "oldCss": "--ax-scrollbar-bg-default",
+      "newCss": "--wb-components-scrollbar-bg-default"
+    },
+    {
+      "old": "wb/chips-neutral-txt",
+      "new": "wb/components/chips/solid-text",
+      "oldCss": "--ax-chips-neutral-txt",
+      "newCss": "--wb-components-chips-solid-text"
+    },
+    {
+      "old": "wb/badge-notify-error-bg-default",
+      "new": "wb/canvas/badge-notify/critical-bg-default",
+      "oldCss": "--ax-badge-notify-error-bg-default",
+      "newCss": "--wb-canvas-badge-notify-critical-bg-default"
+    },
+    {
+      "old": "wb/badge-notify-error-ico-default",
+      "new": "wb/canvas/badge-notify/critical-icon",
+      "oldCss": "--ax-badge-notify-error-ico-default",
+      "newCss": "--wb-canvas-badge-notify-critical-icon",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/badge-notify-success-bg-default",
+      "new": "wb/canvas/badge-notify/success-bg-default",
+      "oldCss": "--ax-badge-notify-success-bg-default",
+      "newCss": "--wb-canvas-badge-notify-success-bg-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/badge-notify-success-ico-default",
+      "new": "wb/canvas/badge-notify/success-icon",
+      "oldCss": "--ax-badge-notify-success-ico-default",
+      "newCss": "--wb-canvas-badge-notify-success-icon",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/badge-notify-warning-bg-default",
+      "new": "wb/canvas/badge-notify/warning-bg-default",
+      "oldCss": "--ax-badge-notify-warning-bg-default",
+      "newCss": "--wb-canvas-badge-notify-warning-bg-default",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/badge-notify-warning-ico-default",
+      "new": "wb/canvas/badge-notify/warning-icon",
+      "oldCss": "--ax-badge-notify-warning-ico-default",
+      "newCss": "--wb-canvas-badge-notify-warning-icon",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/widget-swatches-acc1",
+      "new": "wb/canvas/widget-swatches/acc1",
+      "oldCss": "--ax-widget-swatches-acc1",
+      "newCss": "--wb-canvas-widget-swatches-acc1"
+    },
+    {
+      "old": "wb/widget-swatches-acc2",
+      "new": "wb/canvas/widget-swatches/acc2",
+      "oldCss": "--ax-widget-swatches-acc2",
+      "newCss": "--wb-canvas-widget-swatches-acc2"
+    },
+    {
+      "old": "wb/widget-swatches-acc3",
+      "new": "wb/canvas/widget-swatches/acc3",
+      "oldCss": "--ax-widget-swatches-acc3",
+      "newCss": "--wb-canvas-widget-swatches-acc3"
+    },
+    {
+      "old": "wb/widget-swatches-acc4",
+      "new": "wb/canvas/widget-swatches/acc4",
+      "oldCss": "--ax-widget-swatches-acc4",
+      "newCss": "--wb-canvas-widget-swatches-acc4"
+    },
+    {
+      "old": "wb/widget-swatches-acc5",
+      "new": "wb/canvas/widget-swatches/acc5",
+      "oldCss": "--ax-widget-swatches-acc5",
+      "newCss": "--wb-canvas-widget-swatches-acc5"
+    },
+    {
+      "old": "wb/widget-swatches-acc6",
+      "new": "wb/canvas/widget-swatches/acc6",
+      "oldCss": "--ax-widget-swatches-acc6",
+      "newCss": "--wb-canvas-widget-swatches-acc6"
+    },
+    {
+      "old": "wb/focus-ring-node-active",
+      "new": "wb/canvas/node/focus-active",
+      "oldCss": "--ax-focus-ring-node-active",
+      "newCss": "--wb-canvas-node-focus-active",
+      "valueChanged": true,
+      "note": "acc1 refreshed"
+    },
+    {
+      "old": "wb/focus-ring-node-error",
+      "new": "wb/canvas/node/focus-critical",
+      "oldCss": "--ax-focus-ring-node-error",
+      "newCss": "--wb-canvas-node-focus-critical",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/focus-ring-node-success",
+      "new": "wb/canvas/node/focus-success",
+      "oldCss": "--ax-focus-ring-node-success",
+      "newCss": "--wb-canvas-node-focus-success",
+      "valueChanged": true
+    },
+    {
+      "old": "wb/focus-ring-node-warning",
+      "new": "wb/canvas/node/focus-warning",
+      "oldCss": "--ax-focus-ring-node-warning",
+      "newCss": "--wb-canvas-node-focus-warning",
+      "valueChanged": true
+    }
+  ],
+  "removed": [
+    {
+      "old": "wb/dropdown-bg-primary-default",
+      "replacement": "wb/ui/bg/base",
+      "oldCss": "--ax-dropdown-bg-primary-default",
+      "replacementCss": "--wb-ui-bg-base",
+      "note": "dropdown panels"
+    },
+    {
+      "old": "wb/dropdown-bg-secondary-default",
+      "replacement": "wb/ui/bg/inset",
+      "oldCss": "--ax-dropdown-bg-secondary-default",
+      "replacementCss": "--wb-ui-bg-inset",
+      "note": "embedded options"
+    },
+    {
+      "old": "wb/node-bg-primary-default",
+      "replacement": "wb/canvas/node/bg-primary-default",
+      "oldCss": "--ax-node-bg-primary-default",
+      "replacementCss": "--wb-canvas-node-bg-primary-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-bg-primary-hover",
+      "replacement": "wb/canvas/node/bg-primary-hover",
+      "oldCss": "--ax-node-bg-primary-hover",
+      "replacementCss": "--wb-canvas-node-bg-primary-hover",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-bg-primary-active",
+      "replacement": "wb/canvas/node/bg-primary-active",
+      "oldCss": "--ax-node-bg-primary-active",
+      "replacementCss": "--wb-canvas-node-bg-primary-active",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-bg-primary-disabled",
+      "replacement": "wb/canvas/node/bg-primary-disabled",
+      "oldCss": "--ax-node-bg-primary-disabled",
+      "replacementCss": "--wb-canvas-node-bg-primary-disabled",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-bg-secondary-default",
+      "replacement": "wb/canvas/node/bg-secondary-default",
+      "oldCss": "--ax-node-bg-secondary-default",
+      "replacementCss": "--wb-canvas-node-bg-secondary-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-stroke-primary-default",
+      "replacement": "wb/canvas/node/stroke-default",
+      "oldCss": "--ax-node-stroke-primary-default",
+      "replacementCss": "--wb-canvas-node-stroke-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-stroke-primary-hover",
+      "replacement": "wb/canvas/node/stroke-hover",
+      "oldCss": "--ax-node-stroke-primary-hover",
+      "replacementCss": "--wb-canvas-node-stroke-hover",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-icon-primary-default",
+      "replacement": "wb/canvas/node/icon-primary",
+      "oldCss": "--ax-node-icon-primary-default",
+      "replacementCss": "--wb-canvas-node-icon-primary",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-icon-primary-disabled",
+      "replacement": "wb/ui/icon/disabled",
+      "oldCss": "--ax-node-icon-primary-disabled",
+      "replacementCss": "--wb-ui-icon-disabled",
+      "rebuilt": true,
+      "note": "none — handled by `wb/ui/icon/disabled`"
+    },
+    {
+      "old": "wb/node-txt-disabled",
+      "replacement": "wb/canvas/node/text-disabled",
+      "oldCss": "--ax-node-txt-disabled",
+      "replacementCss": "--wb-canvas-node-text-disabled",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-port-fill-default",
+      "replacement": "wb/canvas/port/fill-default",
+      "oldCss": "--ax-node-port-fill-default",
+      "replacementCss": "--wb-canvas-port-fill-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-port-fill-active",
+      "replacement": "wb/canvas/port/fill-active",
+      "oldCss": "--ax-node-port-fill-active",
+      "replacementCss": "--wb-canvas-port-fill-active",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-port-stroke-default",
+      "replacement": "wb/canvas/port/stroke-default",
+      "oldCss": "--ax-node-port-stroke-default",
+      "replacementCss": "--wb-canvas-port-stroke-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/node-port-stroke-active",
+      "replacement": "wb/canvas/port/stroke-active",
+      "oldCss": "--ax-node-port-stroke-active",
+      "replacementCss": "--wb-canvas-port-stroke-active",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/edge-primary-default",
+      "replacement": "wb/canvas/edge/stroke-default",
+      "oldCss": "--ax-edge-primary-default",
+      "replacementCss": "--wb-canvas-edge-stroke-default",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/edge-primary-hover",
+      "replacement": "wb/canvas/edge/stroke-hover",
+      "oldCss": "--ax-edge-primary-hover",
+      "replacementCss": "--wb-canvas-edge-stroke-hover",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/edge-primary-active",
+      "replacement": "wb/canvas/edge/stroke-active",
+      "oldCss": "--ax-edge-primary-active",
+      "replacementCss": "--wb-canvas-edge-stroke-active",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/edge-primary-disabled",
+      "replacement": "wb/canvas/edge/stroke-disabled",
+      "oldCss": "--ax-edge-primary-disabled",
+      "replacementCss": "--wb-canvas-edge-stroke-disabled",
+      "rebuilt": true
+    },
+    {
+      "old": "wb/edge-primary-error",
+      "replacement": "wb/canvas/edge/stroke-critical",
+      "oldCss": "--ax-edge-primary-error",
+      "replacementCss": "--wb-canvas-edge-stroke-critical",
+      "rebuilt": true,
+      "valueChanged": true
+    },
+    {
+      "old": "wb/edge-primary-success",
+      "replacement": "wb/canvas/edge/stroke-success",
+      "oldCss": "--ax-edge-primary-success",
+      "replacementCss": "--wb-canvas-edge-stroke-success",
+      "rebuilt": true,
+      "valueChanged": true
+    },
+    {
+      "old": "wb/edge-primary-warning",
+      "replacement": "wb/canvas/edge/stroke-warning",
+      "oldCss": "--ax-edge-primary-warning",
+      "replacementCss": "--wb-canvas-edge-stroke-warning",
+      "rebuilt": true,
+      "valueChanged": true
+    },
+    {
+      "old": "wb/shadow",
+      "replacement": "wb/shadow/ui/color",
+      "oldCss": "--ax-shadow",
+      "replacementCss": "--wb-shadow-ui-color"
+    },
+    {
+      "old": "wb/snackbar-bg-default",
+      "replacement": "snackbar/stroke-*",
+      "oldCss": "--ax-snackbar-bg-default",
+      "replacementCss": "--wb-snackbar-stroke"
+    },
+    {
+      "old": "wb/tab-stroke-line",
+      "replacement": "wb/ui/stroke/*",
+      "oldCss": "--ax-tab-stroke-line",
+      "replacementCss": "--wb-ui-stroke"
+    },
+    {
+      "old": "wb/icon-black",
+      "replacement": "wb/ui/icon/default",
+      "oldCss": "--ax-icon-black",
+      "replacementCss": "--wb-ui-icon-default"
+    },
+    {
+      "old": "wb/icon-white",
+      "replacement": "wb/ui/icon/default",
+      "oldCss": "--ax-icon-white",
+      "replacementCss": "--wb-ui-icon-default"
+    },
+    {
+      "old": "wb/dropdown-bg-destructive-default",
+      "replacement": null,
+      "oldCss": "--ax-dropdown-bg-destructive-default",
+      "replacementCss": null
+    },
+    {
+      "old": "wb/dropdown-bg-destructive-hover",
+      "replacement": null,
+      "oldCss": "--ax-dropdown-bg-destructive-hover",
+      "replacementCss": null
+    },
+    {
+      "old": "wb/dropdown-bg-secondary-active",
+      "replacement": null,
+      "oldCss": "--ax-dropdown-bg-secondary-active",
+      "replacementCss": null
+    },
+    {
+      "old": "wb/button-gray-bg-disabled",
+      "replacement": "wb/components/button/solid/disabled",
+      "oldCss": "--ax-button-gray-bg-disabled",
+      "replacementCss": "--wb-components-button-solid-disabled"
+    },
+    {
+      "old": "wb/button-green-bg-disabled",
+      "replacement": "wb/components/button/solid/disabled",
+      "oldCss": "--ax-button-green-bg-disabled",
+      "replacementCss": "--wb-components-button-solid-disabled"
+    },
+    {
+      "old": "wb/button-red-bg-disabled",
+      "replacement": "wb/components/button/solid/disabled",
+      "oldCss": "--ax-button-red-bg-disabled",
+      "replacementCss": "--wb-components-button-solid-disabled"
+    },
+    {
+      "old": "wb/txt-destuctive-default",
+      "replacement": "txt-error-default",
+      "oldCss": "--ax-txt-destuctive-default",
+      "replacementCss": "--wb-txt-error-default",
+      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
+    },
+    {
+      "old": "1592:58782",
+      "replacement": "txt-error-default",
+      "oldCss": "--ax-1592-58782",
+      "replacementCss": "--wb-txt-error-default",
+      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
+    },
+    {
+      "old": "wb/txt-destructive-default",
+      "replacement": "txt-error-default",
+      "oldCss": "--ax-txt-destructive-default",
+      "replacementCss": "--wb-txt-error-default",
+      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
+    },
+    {
+      "old": "wb/ui/icon/onsurface-default",
+      "replacement": "wb/ui/icon/default",
+      "oldCss": "--ax-ui-icon-onsurface-default",
+      "replacementCss": "--wb-ui-icon-default",
+      "note": "2026-06-10"
+    }
+  ],
+  "dimensions": [],
+  "unparsed": []
+}
