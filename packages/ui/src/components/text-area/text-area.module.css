@@ -8,6 +8,7 @@
   --ax-public-textarea-root-border-color-error: var(--ax-input-stroke-primary-error);
   --ax-public-textarea-root-color-error: var(--ax-txt-error-default);
   --ax-public-textarea-root-color-disabled: var(--ax-txt-quaternary-default);
+  --ax-public-textarea-root-background-color-disabled: transparent;
 }
 
 @layer ui.component {
