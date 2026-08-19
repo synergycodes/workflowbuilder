@@ -13,17 +13,36 @@ type TestNode = BaseNode & { type: 'test/node' };
 
 type Recorded = { sequence: number; type: string; nodeId?: string };
 
-// Records what reached persistence, and yields to the microtask queue before
-// resolving so that concurrent emits from one wave genuinely overlap — a counter
-// read across an await boundary would collide here.
-function makePersistence(): { persistence: EventPersistence; recorded: Recorded[] } {
+// Records what reached persistence. `trace` logs entry and exit of each write so a
+// test can tell serialized writes from overlapping ones. `failAt` rejects the write
+// carrying that sequence number, standing in for an emitEvent that exhausted its
+// Temporal retries.
+function makePersistence(options: { failAt?: number } = {}): {
+  persistence: EventPersistence;
+  recorded: Recorded[];
+  trace: string[];
+} {
   const recorded: Recorded[] = [];
+  const trace: string[] = [];
   return {
     recorded,
+    trace,
     persistence: {
       async emitEvent(_executionId, sequence, type, _payload, nodeId) {
-        await Promise.resolve();
+        trace.push(`start:${sequence}`);
+        // Lower sequence numbers take *more* microtask turns, so if these writes ever
+        // ran concurrently they would finish in descending order — the exact inversion
+        // the SSE cursor cannot survive. Deterministic (no timers, no randomness), so
+        // it is replay-safe and stable across runs.
+        for (let turn = 0; turn < Math.max(1, 16 - sequence); turn++) {
+          await Promise.resolve();
+        }
+        if (options.failAt === sequence) {
+          trace.push(`fail:${sequence}`);
+          throw new Error(`insert failed at ${sequence}`);
+        }
         recorded.push({ sequence, type, nodeId });
+        trace.push(`end:${sequence}`);
       },
       async updateStatus() {
         await Promise.resolve();
@@ -126,6 +145,77 @@ describe('createSequencedEventEmitter', () => {
     for (let run = 1; run < fingerprints.length; run++) {
       expect(fingerprints[run], `run ${run} diverged from run 0`).toBe(fingerprints[0]);
     }
+  });
+
+  // The backend SSE drain advances a monotonic cursor over `sequence > cursor`, so a
+  // row committing after a higher-numbered one has already moved the cursor is never
+  // delivered. These pin the writer-side half of that contract.
+  it('never has two writes in flight at once, even when the caller emits concurrently', async () => {
+    const { persistence, trace } = makePersistence();
+    const events = createSequencedEventEmitter(persistence);
+
+    await Promise.all([
+      events.emitEvent('exec-1', 'node_started', undefined, 'B'),
+      events.emitEvent('exec-1', 'node_started', undefined, 'C'),
+      events.emitEvent('exec-1', 'node_started', undefined, 'D'),
+    ]);
+
+    // Strictly start/end paired — never start:2 before end:1.
+    expect(trace).toEqual(['start:1', 'end:1', 'start:2', 'end:2', 'start:3', 'end:3']);
+  });
+
+  it('commits a whole parallel wave in ascending sequence order', async () => {
+    const { persistence, trace } = makePersistence();
+
+    await runGraph(fanOutGraph(), runner, createSequencedEventEmitter(persistence));
+
+    const commitOrder = trace.filter((entry) => entry.startsWith('end:')).map((entry) => Number(entry.slice(4)));
+    expect(commitOrder).toEqual([...commitOrder].sort((a, b) => a - b));
+    expect(commitOrder).toEqual([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12]);
+  });
+
+  // Chain-poisoning: `tail = write` would make one rejection skip the onFulfilled of
+  // every later link, silently dropping the rest of the run's events.
+  it('keeps emitting after a failed write — one rejection does not poison the chain', async () => {
+    const { persistence, recorded } = makePersistence({ failAt: 2 });
+    const events = createSequencedEventEmitter(persistence);
+
+    await events.emitEvent('exec-1', 'execution_started');
+    await expect(events.emitEvent('exec-1', 'node_started', undefined, 'B')).rejects.toThrow('insert failed at 2');
+    await events.emitEvent('exec-1', 'node_started', undefined, 'C');
+    await events.emitEvent('exec-1', 'node_completed', { output: 'x' }, 'C');
+
+    // 2 is a permanent gap; everything after it still lands, still ascending.
+    expect(recorded.map((entry) => entry.sequence)).toEqual([1, 3, 4]);
+  });
+
+  it('surfaces the failure to the caller so it can reach the error policy', async () => {
+    // The emitter must not swallow: runNode's catch is what applies errorPolicy.
+    const { persistence } = makePersistence({ failAt: 1 });
+    const events = createSequencedEventEmitter(persistence);
+
+    await expect(events.emitEvent('exec-1', 'node_started', undefined, 'B')).rejects.toThrow('insert failed at 1');
+  });
+
+  it('a run whose node_started emit fails still completes, with a gap and no reordering', async () => {
+    // End to end through runGraph: errorPolicy 'continue' absorbs the failed emit,
+    // the run carries on, and the surviving events stay in ascending commit order.
+    const { persistence, recorded, trace } = makePersistence({ failAt: 4 });
+
+    const outcome = await runGraph(
+      makeInput(
+        [node('A'), { ...node('B'), errorPolicy: 'continue' }, node('C')],
+        [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')],
+      ),
+      runner,
+      createSequencedEventEmitter(persistence),
+    );
+
+    expect(outcome).toEqual({ status: 'completed' });
+    const commitOrder = trace.filter((entry) => entry.startsWith('end:')).map((entry) => Number(entry.slice(4)));
+    expect(commitOrder).toEqual([...commitOrder].sort((a, b) => a - b));
+    expect(recorded.map((entry) => entry.sequence)).not.toContain(4);
+    expect(recorded.length).toBeGreaterThan(0);
   });
 
   it('keeps a separate counter per emitter so concurrent runs cannot share numbers', async () => {
