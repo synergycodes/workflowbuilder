@@ -208,9 +208,9 @@
     font-family: 'Poppins', system-ui, sans-serif;
   }
 
-  /* Descendants too: the SDK sets font-family on every element via a
-     universal selector, which would otherwise override the inherited family
-     inside a code-role element. */
+  /* Descendants too: a universal font-family reset (the SDK ships one, host
+     apps commonly do too) sets the family explicitly on every element, and
+     an explicit declaration beats the family inherited from this class. */
   .wb-text-code,
   .wb-text-code * {
     font-family: 'Inter', system-ui, sans-serif;
