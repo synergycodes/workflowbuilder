@@ -1,0 +1,11 @@
+{
+  "plugins": ["stylelint-value-no-unknown-custom-properties", "./tools/stylelint/no-system-token-fallbacks.mjs"],
+  "ignoreFiles": ["**/node_modules/**", "**/dist/**", "apps/docs/**"],
+  "rules": {
+    "csstools/value-no-unknown-custom-properties": [
+      true,
+      { "importFrom": ["./tools/stylelint/custom-properties.mjs"] }
+    ],
+    "wb/no-system-token-fallbacks": true
+  }
+}

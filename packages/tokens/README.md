@@ -44,31 +44,36 @@ the repo root.
 pnpm --filter @workflowbuilder/ui-tokens test
 ```
 
+Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
+
 ## Token usage lint
 
 ```bash
-pnpm --filter @workflowbuilder/ui-tokens lint:usage
+pnpm lint:styles
 ```
 
-`scripts/lint-token-usage.mjs` validates every `var(--…)` in `packages/*/src` and
-`apps/*/src` (docs excluded) against the names that actually exist: the built token dist,
-custom properties defined in sources (CSS declarations, inline `'--x':` styles and
-`setProperty` calls in TS/TSX), the provisional registry, and a short allowlist of names
-injected at runtime by third-party libraries (e.g. Base UI's `--anchor-width`).
+Stylelint (root `.stylelintrc.json`) validates workspace CSS with two rules,
+both errors:
 
-Two rules, both errors:
+1. `csstools/value-no-unknown-custom-properties` — every `var(--name)` must
+   resolve to a definition that actually exists. The definition set is built
+   by `tools/stylelint/custom-properties.mjs`: the token dist, every
+   custom-property declaration in `packages/*/src` and `apps/*/src` CSS, and a
+   short inline list of names set at runtime from JS (Base UI's
+   `--anchor-width`, the node-as-port and log-panel inline styles). Catches
+   prefix typos and drift after a token export update.
+2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
+   — no fallbacks on `var(--wb-…)` / `var(--ax-…)`; a fallback silently masks
+   exactly the typos rule 1 exists to catch. Genuine exceptions use the
+   standard mechanism with a mandatory reason:
+   `/* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason */`.
 
-1. `var(--name)` where `--name` is defined nowhere — catches prefix typos and drift after
-   a token export update.
-2. A fallback on a system token (`var(--wb-…, x)` / `var(--ax-…, x)`) — fallbacks silently
-   mask rule-1 typos. When a fallback is genuinely needed, annotate the line with
-   `/* fallback-ok: reason */`; the lint prints an inventory of all annotated lines.
+Runs in CI (`pr-check.yml`, after `pnpm build:ui`), per-file from lint-staged
+on commit, and as part of `pnpm check`. Requires a built `dist/` (created by
+`pnpm install` and `pnpm build:ui`). `apps/docs` is excluded via `ignoreFiles`,
+consistently in every mode.
 
-Runs in CI (`pr-check.yml`, after the tokens build) and per-file from lint-staged on
-commit. If `dist/` is missing the script builds it first.
-
-`tokens-provisional.json` (optional, next to `tokens.json`) registers tokens that the
-design file does not export yet: `{ "tokens": { "--wb-…": "<value>" } }`. Names listed
-there count as defined; the registry is the to-remove list once the real export lands.
-
-Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
+Tokens the design file does not export yet are defined provisionally right in
+the stylesheet that consumes them (with a comment marking them for removal
+once the export lands) — the collector picks source-CSS definitions up
+automatically.

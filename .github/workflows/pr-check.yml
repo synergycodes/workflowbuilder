@@ -4,8 +4,9 @@ name: PR Check
 # is safe to merge. Focus on the published packages @workflowbuilder/sdk and
 # @workflowbuilder/ui (plus its private @workflowbuilder/ui-tokens build) +
 # global format consistency. apps/docs has its own path-filtered workflow
-# (pr-check-docs.yml); demo and ai-studio are not checked here — they're
-# internal and have their own broken-state tolerances.
+# (pr-check-docs.yml); demo and ai-studio are not built here — they're
+# internal and have their own broken-state tolerances — but their CSS goes
+# through the style lint below like every other workspace's.
 
 on:
   pull_request:
@@ -146,5 +147,7 @@ jobs:
         # the check:built-css guard.
         run: pnpm build:ui
 
-      - name: Token usage lint
-        run: pnpm --filter @workflowbuilder/ui-tokens lint:usage
+      - name: Style lint (token usage + fallbacks)
+        run: |
+          pnpm lint:styles
+          echo "DS 2.0 migration meter: $(grep -rho 'var(--ax-' packages/*/src apps/*/src --include='*.css' --include='*.tsx' --include='*.ts' | wc -l) var(--ax-*) usages remaining"
