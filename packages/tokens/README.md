@@ -57,11 +57,12 @@ both errors:
 
 1. `csstools/value-no-unknown-custom-properties` — every `var(--name)` must
    resolve to a definition that actually exists. The definition set is built
-   by `tools/stylelint/custom-properties.mjs`: the token dist, every
-   custom-property declaration in `packages/*/src` and `apps/*/src` CSS, and a
-   short inline list of names set at runtime from JS (Base UI's
-   `--anchor-width`, the node-as-port and log-panel inline styles). Catches
-   prefix typos and drift after a token export update.
+   by `tools/stylelint/custom-properties.mjs`: the token dist plus every
+   custom-property declaration in `packages/*/src` and `apps/*/src` CSS.
+   Catches prefix typos and drift after a token export update. Variables set
+   at runtime from JS (Base UI's `--anchor-width`, inline-style bridges) have
+   no CSS definition by design — their usage sites carry a
+   `stylelint-disable-next-line` comment with the reason.
 2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
    — no fallbacks on `var(--wb-…)` / `var(--ax-…)`; a fallback silently masks
    exactly the typos rule 1 exists to catch. Genuine exceptions use the

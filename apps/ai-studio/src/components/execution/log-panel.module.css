@@ -1,6 +1,7 @@
 .panel {
   position: fixed;
   bottom: 1rem;
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
   right: var(--log-panel-right, 1rem);
   width: 30rem;
   max-width: calc(100vw - 3rem);
