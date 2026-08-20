@@ -12,16 +12,22 @@ export function getVariableTypeIfPrimitive(type: VariableType): VariableTypePrim
 
 export type OutputProperty = {
   type: VariableType;
-  label: string;
+  label?: string;
   description?: string;
 };
 
 export const OUTPUT_SCHEMA_TYPE = {
   DEFAULT: 'default',
   VARIANT: 'variant',
+  PROPERTY_VALUE: 'property-value',
 } as const;
 
-export type OutputPropertiesIndex = Record<string, OutputProperty>;
+export type OutputPropertiesIndex = Record<string, OutputProperty | undefined>;
+
+export type PropertiesBySourceHandle = {
+  [sourceHandle: string]: OutputPropertiesIndex | undefined;
+  every?: OutputPropertiesIndex;
+};
 
 export type OutputVariant = {
   variantRule:
@@ -30,22 +36,28 @@ export type OutputVariant = {
         dataPropertyName: string;
         dataPropertyValue: string;
       };
-  properties: OutputPropertiesIndex;
+  bySourceHandle: PropertiesBySourceHandle;
 };
 
 export type NodeOutputSchemaDefault = {
   type: 'default';
-  properties: OutputPropertiesIndex;
+  bySourceHandle: PropertiesBySourceHandle;
 };
 
 export type NodeOutputSchemaVariant = {
   /*
-        Variants may be set dynamically by the node configuration.
-      */
+    Predefined variant depending on the value of a property. 
+  */
   type: 'variant';
-  variants: {
-    [variantName: string]: OutputVariant | undefined;
-  };
+  variants: OutputVariant[];
 };
 
-export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant;
+export type NodeOutputSchemaPropertyValue = {
+  /*
+    Value is built dynamically in the node property.
+  */
+  type: 'property-value';
+  propertyPath: string;
+};
+
+export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant | NodeOutputSchemaPropertyValue;

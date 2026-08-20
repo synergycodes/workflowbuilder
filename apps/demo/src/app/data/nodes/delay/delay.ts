@@ -14,9 +14,11 @@ export const delay: PaletteItem<DelayNodeSchema> = {
   uischema,
   outputSchema: {
     type: 'default',
-    properties: {
-      resumedAt: { type: 'string', label: 'Resumed At', description: 'ISO 8601 date-time when the delay ended' },
-      delayDuration: { type: 'number', label: 'Delay Duration', description: 'Actual wait time in milliseconds' },
+    bySourceHandle: {
+      success: {
+        resumedAt: { type: 'string', label: 'Resumed At', description: 'ISO 8601 date-time when the delay ended' },
+        delayDuration: { type: 'number', label: 'Delay Duration', description: 'Actual wait time in milliseconds' },
+      },
     },
   },
 };

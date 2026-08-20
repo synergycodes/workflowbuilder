@@ -16,9 +16,11 @@ export const decision: PaletteItem<DecisionNodeSchema> = {
   uischema,
   outputSchema: {
     type: 'default',
-    properties: {
-      selectedBranch: { type: 'string', label: 'Selected Branch', description: 'Label of the branch that was taken' },
-      branchIndex: { type: 'number', label: 'Branch Index', description: 'Zero-based index of the selected branch' },
+    bySourceHandle: {
+      every: {
+        selectedBranch: { type: 'string', label: 'Selected Branch', description: 'Label of the branch that was taken' },
+        branchIndex: { type: 'number', label: 'Branch Index', description: 'Zero-based index of the selected branch' },
+      },
     },
   },
 };
