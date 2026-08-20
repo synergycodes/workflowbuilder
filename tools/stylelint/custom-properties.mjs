@@ -1,10 +1,11 @@
 /**
- * importFrom source for `csstools/value-no-unknown-custom-properties`.
+ * Feeds stylelint the set of custom properties defined anywhere in the repo.
  *
- * Collects every custom-property definition the repo actually ships — the
- * built token dist plus all workspace source CSS — so the rule validates
- * `var(--…)` usages against names that exist somewhere, without a hand-kept
- * file list going stale.
+ * The unknown-property rule checks names one file at a time, but our
+ * definitions live outside the files that use them (the built token dist,
+ * sibling variables.css files). This module is wired into the rule's
+ * `importFrom` option in .stylelintrc.mjs, so "defined" means defined
+ * anywhere in the workspace — collected by glob, not by a hand-kept list.
  *
  * Requires a built `packages/tokens/dist` (created by `pnpm install` via the
  * tokens package's `prepare` script, and by `pnpm build:ui`).
