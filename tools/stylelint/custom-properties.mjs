@@ -18,20 +18,9 @@ import postcss from 'postcss';
 
 const REPO_ROOT = path.resolve(fileURLToPath(import.meta.url), '../../..');
 
-// Set at runtime from JS, so no stylesheet defines them.
-const RUNTIME_DEFINED = {
-  // Base UI positioner writes the anchor dimensions onto the popup element.
-  '--anchor-width': '0px',
-  '--anchor-height': '0px',
-  // packages/ui node-as-port-wrapper.tsx inline style.
-  '--ax-node-as-port-width': '0px',
-  '--ax-node-as-port-height': '0px',
-  '--ax-node-as-port-position': 'none',
-  // apps/ai-studio log-panel.tsx inline style.
-  '--log-panel-right': '0px',
-};
-
-const customProperties = { ...RUNTIME_DEFINED };
+// Variables set at runtime from JS have no definition anywhere in CSS —
+// their usage sites carry a stylelint-disable comment with the reason.
+const customProperties = {};
 
 const files = globSync(['packages/tokens/dist/**/*.css', 'packages/*/src/**/*.css', 'apps/*/src/**/*.css'], {
   cwd: REPO_ROOT,
