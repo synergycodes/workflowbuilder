@@ -8,14 +8,10 @@ name: PR Check
 # internal and have their own broken-state tolerances — but their CSS goes
 # through the style lint below like every other workspace's.
 
+# Every PR gets checks regardless of its base branch — this keeps stacked
+# PRs and integration branches covered without a base allowlist to maintain.
 on:
   pull_request:
-    branches:
-      - main
-      # DS 2.0 PR stack: layers target the branch below, and the pull_request
-      # branches filter matches the base. Remove after the stack lands.
-      - token-usage-guard
-      - 'ds2-**'
 
 permissions:
   contents: read
