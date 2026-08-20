@@ -1,0 +1,21 @@
+/* The typefaces behind the wb-type-* classes ship with this package, bundled
+   rather than fetched from a CDN: strict CSPs block the request, the
+   pre-consent IP leak breaks GDPR flows, and air-gapped deployments have no
+   outbound internet. Vite inlines these imports (lib mode embeds the files
+   as base64, exactly as the SDK bundle always did); they reach consumers
+   through the JS module graph via the root barrel, so subpath-only
+   consumers must load the families themselves. */
+@import '@fontsource/poppins/latin-300.css' layer(ui.base);
+@import '@fontsource/poppins/latin-400.css' layer(ui.base);
+@import '@fontsource/poppins/latin-500.css' layer(ui.base);
+@import '@fontsource/poppins/latin-600.css' layer(ui.base);
+@import '@fontsource/poppins/latin-700.css' layer(ui.base);
+@import '@fontsource/poppins/latin-ext-300.css' layer(ui.base);
+@import '@fontsource/poppins/latin-ext-400.css' layer(ui.base);
+@import '@fontsource/poppins/latin-ext-500.css' layer(ui.base);
+@import '@fontsource/poppins/latin-ext-600.css' layer(ui.base);
+@import '@fontsource/poppins/latin-ext-700.css' layer(ui.base);
+
+/* Inter serves the UI/Code type role (wb-type-code), Regular only. */
+@import '@fontsource/inter/latin-400.css' layer(ui.base);
+@import '@fontsource/inter/latin-ext-400.css' layer(ui.base);
