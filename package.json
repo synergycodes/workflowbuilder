@@ -25,6 +25,7 @@
     "lint": "pnpm -r lint",
     "lint:fix": "pnpm -r lint:fix",
     "lint:styles": "stylelint \"packages/*/src/**/*.css\" \"apps/*/src/**/*.css\"",
+    "migration:meter": "node tools/migration-meter.mjs",
     "format": "prettier --write --log-level silent \"**/*.+(css|ts|tsx|json|md|mdx|astro)\"",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",

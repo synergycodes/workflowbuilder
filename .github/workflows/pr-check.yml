@@ -148,6 +148,7 @@ jobs:
         run: pnpm build:ui
 
       - name: Style lint (token usage + fallbacks)
-        run: |
-          pnpm lint:styles
-          echo "DS 2.0 migration meter: $(grep -rho 'var(--ax-' packages/*/src apps/*/src --include='*.css' --include='*.tsx' --include='*.ts' | wc -l) var(--ax-*) usages remaining"
+        run: pnpm lint:styles
+
+      - name: DS 2.0 migration meter
+        run: pnpm migration:meter
