@@ -8,10 +8,10 @@ name: PR Check (docs)
 # Typecheck is deliberately absent: apps/docs tolerates known starlight
 # virtual-module type errors.
 
+# Every PR gets checks regardless of its base branch — this keeps stacked
+# PRs and integration branches covered without a base allowlist to maintain.
 on:
   pull_request:
-    branches:
-      - main
     paths:
       - 'apps/docs/**'
       - 'packages/ui/**'

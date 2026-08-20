@@ -6,6 +6,7 @@
   }
 
   .popup {
+    /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set by the Base UI positioner at runtime */
     width: var(--anchor-width);
   }
 }

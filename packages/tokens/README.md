@@ -45,3 +45,36 @@ pnpm --filter @workflowbuilder/ui-tokens test
 ```
 
 Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
+
+## Token usage lint
+
+```bash
+pnpm lint:styles
+```
+
+Stylelint (root `.stylelintrc.mjs`) validates workspace CSS with two rules,
+both errors:
+
+1. `csstools/value-no-unknown-custom-properties` — every `var(--name)` must
+   resolve to a definition that actually exists. The definition set is built
+   by `tools/stylelint/custom-properties.mjs`: the token dist plus every
+   custom-property declaration in `packages/*/src` and `apps/*/src` CSS.
+   Catches prefix typos and drift after a token export update. Variables set
+   at runtime from JS (Base UI's `--anchor-width`, inline-style bridges) have
+   no CSS definition by design — their usage sites carry a
+   `stylelint-disable-next-line` comment with the reason.
+2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
+   — no fallbacks on `var(--wb-…)` / `var(--ax-…)`; a fallback silently masks
+   exactly the typos rule 1 exists to catch. Genuine exceptions use the
+   standard mechanism with a mandatory reason:
+   `/* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason */`.
+
+Runs in CI (`pr-check.yml`, after `pnpm build:ui`), per-file from lint-staged
+on commit, and as part of `pnpm check`. Requires a built `dist/` (created by
+`pnpm install` and `pnpm build:ui`). `apps/docs` is excluded via `ignoreFiles`,
+consistently in every mode.
+
+Tokens the design file does not export yet are defined provisionally right in
+the stylesheet that consumes them (with a comment marking them for removal
+once the export lands) — the collector picks source-CSS definitions up
+automatically.
