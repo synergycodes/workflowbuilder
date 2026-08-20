@@ -19,6 +19,7 @@ const componentEntries = [
   'avatar',
   'button',
   'checkbox',
+  'chips',
   'collapsible',
   'date-picker',
   'edge',
