@@ -50,7 +50,9 @@ function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
 type EventCall = { type: string; nodeId?: string; payload?: unknown };
 type StatusCall = { status: string; errorMessage?: string };
 
-function makeEvents(): {
+type EmitFailure = { type: string; nodeId?: string; message: string };
+
+function makeEvents(failOn?: EmitFailure): {
   port: EventEmitterPort;
   events: EventCall[];
   statuses: StatusCall[];
@@ -63,6 +65,9 @@ function makeEvents(): {
     port: {
       async emitEvent(_executionId, type, payload, nodeId) {
         events.push({ type, nodeId, payload });
+        if (failOn && failOn.type === type && failOn.nodeId === nodeId) {
+          throw new Error(failOn.message);
+        }
       },
       async updateStatus(_executionId, status, errorMessage) {
         statuses.push({ status, errorMessage });
@@ -580,6 +585,55 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
 });
 
 describe('runGraph — errorPolicy', () => {
+  it('a failing node_started is a step failure — node_failed is emitted and the node never runs', async () => {
+    const runner = makeRunner();
+    const events = makeEvents({ type: 'node_started', nodeId: 'B', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      runner.port,
+      events.port,
+    );
+
+    // B's executor is never reached, but the failure is reported as B's.
+    expect(runner.callOrder).toEqual(['A']);
+    expect(events.events.some((event) => event.type === 'node_failed' && event.nodeId === 'B')).toBe(true);
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'events table unreachable' } });
+    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'events table unreachable' });
+  });
+
+  it("a failing node_started honors 'continue' — downstream still runs", async () => {
+    const runner = makeRunner();
+    const events = makeEvents({ type: 'node_started', nodeId: 'B', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput([trigger('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A', 'C']);
+    expect(runner.contexts.C).toEqual({ A: 'out-A', B: { error: { message: 'events table unreachable' } } });
+    expect(outcome).toEqual({ status: 'completed' });
+  });
+
+  it("a failing node_started honors 'errorRoute' — the error branch fires", async () => {
+    const runner = makeRunner();
+    const events = makeEvents({ type: 'node_started', nodeId: 'B', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput(
+        [trigger('A'), trigger('B', 'errorRoute'), trigger('Recover'), trigger('Success')],
+        [edge('e1', 'A', 'B'), edge('e2', 'B', 'Recover', 'errorRoute'), edge('e3', 'B', 'Success')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A', 'Recover']);
+    expect(outcome).toEqual({ status: 'completed' });
+  });
+
   it("'fail' set explicitly behaves like the default — aborts the workflow", async () => {
     // Regression pin: making the policy explicit must not change behavior.
     const runner = makeRunner({ B: { throws: 'boom' } });

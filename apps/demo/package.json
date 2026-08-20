@@ -12,7 +12,7 @@
     "typecheck:watch": "tsc --noEmit --watch --pretty",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "vitest run",
+    "test": "vitest run --passWithNoTests",
     "test:watch": "vitest"
   },
   "dependencies": {

@@ -19,7 +19,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                           |
 | `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two) |
 | `pnpm build`                 | -    | Build the demo app                                                                      |
-| `pnpm test`                  | -    | Run tests in `packages/sdk` and `packages/execution-core`                               |
+| `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)              |
 | `pnpm check`                 | -    | Lint + typecheck + format + knip                                                        |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
@@ -100,14 +100,14 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 
 ## Code Quality
 
-| Tool       | Command                       | Notes                                                                                   |
-| ---------- | ----------------------------- | --------------------------------------------------------------------------------------- |
-| ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                   |
-| Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                               |
-| TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                           |
-| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                                                     |
-| Vitest     | `pnpm test`                   | Runs in `packages/sdk`, `packages/execution-core`, `packages/ui`, and `packages/tokens` |
-| Full check | `pnpm check`                  | Run before PR                                                                           |
+| Tool       | Command                       | Notes                                                                                                   |
+| ---------- | ----------------------------- | ------------------------------------------------------------------------------------------------------- |
+| ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
+| Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
+| TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
+| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                                                                     |
+| Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
+| Full check | `pnpm check`                  | Run before PR                                                                                           |
 
 ## Getting Started
 
