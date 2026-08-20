@@ -2,7 +2,7 @@
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
+    gap: var(--wb-space-50);
     border-radius: var(--wb-radius-50);
     white-space: nowrap;
   }
@@ -19,28 +19,30 @@
       var(--wb-components-chips-overlay-outline),
       var(--wb-components-chips-overlay-outline)
     );
-    border: 0.0625rem solid var(--wb-components-chips-inset-outline);
+    /* An inset ring, not a border: Figma's inside stroke overlaps the padding,
+       a CSS border would add to it and widen the chip. */
+    box-shadow: inset 0 0 0 var(--wb-size-12) var(--wb-components-chips-inset-outline);
     color: var(--wb-components-chips-inset-outline);
   }
 
   .s {
     height: 0.875rem;
-    padding-inline: 0.25rem;
+    padding-inline: var(--wb-space-50);
   }
 
   .m {
     height: 1rem;
-    padding-inline: 0.25rem;
+    padding-inline: var(--wb-space-50);
   }
 
   .l {
     height: 1.25rem;
-    padding-inline: 0.375rem;
+    padding-inline: var(--wb-space-75);
   }
 
   .xl {
     height: 1.375rem;
-    padding-inline: 0.375rem;
+    padding-inline: var(--wb-space-75);
   }
 
   .icon,
@@ -49,7 +51,7 @@
     align-items: center;
   }
 
-  .icon > svg,
+  .icon svg,
   .close svg {
     width: 0.625rem;
     height: 0.625rem;
@@ -61,5 +63,10 @@
     background: none;
     color: inherit;
     cursor: pointer;
+
+    &:focus-visible {
+      box-shadow: 0 0 0 2px var(--ax-focus-ring-element);
+      outline: none;
+    }
   }
 }
