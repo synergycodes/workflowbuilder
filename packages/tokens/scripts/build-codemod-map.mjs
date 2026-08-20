@@ -2,7 +2,7 @@
  * Generates codemod-map.json from the designer migration changelog
  * (migration/2026-06-15-ds2-migration-map.md).
  *
- * Parses the rename tables (section 7), the removed/rebuilt tables
+ * Parses the rename tables (section 7) and the removed/rebuilt tables
  * (sections 8.1 and 8.3) and emits, for every pair, both the Figma names and
  * the CSS custom-property names the codemod operates on:
  *   old  `wb/txt-primary-default`  -> oldCss  `--ax-txt-primary-default`
@@ -10,8 +10,11 @@
  * (The legacy export prefixed variables with `ax/`; the map's OLD column
  * writes them under `wb/`. Only the segment after the prefix matters.)
  *
- * Anything the parser cannot resolve into an unambiguous 1:1 pair lands in
- * `unparsed` — loudly, so a map update never silently drops rows.
+ * The parser never guesses: only code spans shaped like a concrete token
+ * path (`wb/…`, no globs) count as names. A row whose replacement cell stays
+ * ambiguous after that filter lands in `unparsed` — unless a human resolved
+ * it in RESOLVED_BY_HAND below, which is the explicit, reviewable place for
+ * judgment calls the changelog prose requires.
  *
  * Usage: node scripts/build-codemod-map.mjs [path-to-map.md]
  */
@@ -26,7 +29,31 @@ const OUT_PATH = path.join(TOKENS_DIRECTORY, 'codemod-map.json');
 
 const markdown = readFileSync(MAP_PATH, 'utf8');
 
+/**
+ * Rows whose replacement cell mixes prose with more than one candidate —
+ * resolved by a human against the changelog text instead of a heuristic.
+ * Keyed by the OLD Figma name; `valueChanged` mirrors the row's ⚠ where set.
+ */
+const RESOLVED_BY_HAND = {
+  // §8.3: typo-duplicate of txt-error-default, "merged into wb/ui/text/critical-default";
+  // the row names both spellings ("same token under either spelling").
+  'wb/txt-destuctive-default': { replacement: 'wb/ui/text/critical-default' },
+  'wb/txt-destructive-default': { replacement: 'wb/ui/text/critical-default' },
+  // §8.3: interim 2.0 name, never present in the legacy export — merged into icon/default.
+  'wb/ui/icon/onsurface-default': { replacement: 'wb/ui/icon/default' },
+  // §8.3: "literal colors; use wb/ui/icon/default / onaccent".
+  'wb/icon-black': { replacement: 'wb/ui/icon/default' },
+  'wb/icon-white': {
+    replacement: 'wb/ui/icon/onaccent-default',
+    note: 'onaccent icon token — verify the exact name against the 2.0 export',
+  },
+};
+
 const ELLIPSIS = /\{(?:…|\.\.\.)\}/;
+
+/** A concrete token path: `wb/…`, no glob stars. Filters out Figma IDs,
+ * suffix shorthands, and `--wb-…` codeSyntax mentions inside notes. */
+const isTokenPath = (span) => /^wb\/[^*]+$/.test(span);
 
 /**
  * Expands `{a,b,c}` alternatives and `accN..M` ranges into concrete names.
@@ -55,9 +82,10 @@ function expandName(name, inheritedList) {
 }
 
 /**
- * Expands every code span of an OLD cell. A span that starts with an
- * ellipsis (`…-hover`) inherits its stem from the previous span in the same
- * cell ('wb/dropdown-bg-destructive-default', '…-hover' → …-destructive-hover).
+ * Expands the OLD cell's code spans. A span that starts with an ellipsis
+ * (`…-hover`) inherits its stem from the previous span in the same cell;
+ * anything that is neither a token path nor an ellipsis (e.g. a Figma ID
+ * mentioned in a note) is dropped.
  */
 function expandOldCell(spans, inheritedList) {
   const names = [];
@@ -68,6 +96,7 @@ function expandOldCell(spans, inheritedList) {
       names.push(previous.replace(/-[a-z0-9]+$/, '') + tail);
       continue;
     }
+    if (!isTokenPath(span)) continue;
     names.push(...expandName(span, inheritedList));
   }
   return names;
@@ -96,16 +125,48 @@ function cells(row) {
 
 const codeSpans = (text) => [...text.matchAll(/`([^`]+)`/g)].map((match) => match[1]);
 
-/** `{…}` / `..6` in the NEW column inherits the same expansion list as OLD. */
-function resolveNewNames(newSpans, braceList) {
-  const target = newSpans[0];
-  if (target === undefined) return [];
-  return expandName(target, braceList);
-}
+/** Italic notes, whichever emphasis marker the document carries. */
 const noteOf = (text) => {
-  const italics = [...text.matchAll(/\*\(([^)]+)\)\*/g)].map((match) => match[1]);
+  const italics = [...text.matchAll(/[*_]\(([^)]+)\)[*_]/g)].map((match) => match[1]);
   return italics.length > 0 ? italics.join('; ') : undefined;
 };
+
+/**
+ * A row-level ⚠ with a note naming specific states (e.g. "pressed: brand
+ * #3969FF") applies only to those expanded names; without such a note it
+ * applies to every name from the row.
+ */
+function valueChangedFor(name, rowFlag, note, braceList) {
+  if (!rowFlag) return false;
+  if (!note || !braceList) return true;
+  const mentioned = braceList.filter((state) => new RegExp(`\\b${state}\\b`).test(note));
+  if (mentioned.length === 0) return true;
+  return mentioned.some((state) => name.endsWith(`-${state}`) || name.endsWith(`/${state}`));
+}
+
+function renameEntry(oldName, target, { rowFlag, note, braceList }) {
+  return {
+    old: oldName,
+    new: target,
+    oldCss: oldCss(oldName),
+    newCss: newCss(target),
+    ...(valueChangedFor(oldName, rowFlag, note, braceList) && { valueChanged: true }),
+    ...(note && { note }),
+  };
+}
+
+function removedEntry(oldName, replacement, { rowFlag, note, braceList, rebuilt, extra = {} }) {
+  return {
+    old: oldName,
+    replacement,
+    oldCss: oldCss(oldName),
+    replacementCss: replacement === null ? null : newCss(replacement),
+    ...(rebuilt && { rebuilt }),
+    ...(valueChangedFor(oldName, rowFlag, note, braceList) && { valueChanged: true }),
+    ...(note && { note }),
+    ...extra,
+  };
+}
 
 const lines = markdown.split('\n');
 const renames = [];
@@ -140,8 +201,7 @@ for (const line of lines) {
   const braceList = lastBraceList;
 
   const oldNames = expandOldCell(codeSpans(oldCell), braceList);
-  const newSpans = codeSpans(newCell);
-  const valueChanged = line.includes('⚠');
+  const rowFlag = line.includes('⚠');
   const note = noteOf(line) ?? noteOf(oldCell);
 
   if (oldNames.length === 0) {
@@ -149,31 +209,21 @@ for (const line of lines) {
     continue;
   }
 
+  const newSpansAll = codeSpans(newCell);
+  const candidates = newSpansAll.filter((span) => isTokenPath(span)).flatMap((span) => expandName(span, braceList));
+
   const isRemovedRow = /\*\*removed\*\*/i.test(newCell) || /\(none/i.test(newCell) || inRemoved === true;
 
   if (inRenames && !isRemovedRow) {
-    const newNames = resolveNewNames(newSpans, braceList);
-    if (newNames.length === oldNames.length) {
+    if (candidates.length === oldNames.length) {
       for (const [position, oldName] of oldNames.entries()) {
-        renames.push({
-          old: oldName,
-          new: newNames[position],
-          oldCss: oldCss(oldName),
-          newCss: newCss(newNames[position]),
-          ...(valueChanged && { valueChanged }),
-          ...(note && { note }),
-        });
+        renames.push(renameEntry(oldName, candidates[position], { rowFlag, note, braceList }));
       }
-    } else if (newNames.length === 1) {
+    } else if (candidates.length > 0 && newSpansAll.filter((span) => isTokenPath(span)).length === 1) {
+      // One token expression in the cell (extra spans were note mentions);
+      // a single unexpanded target maps every OLD name onto it.
       for (const oldName of oldNames) {
-        renames.push({
-          old: oldName,
-          new: newNames[0],
-          oldCss: oldCss(oldName),
-          newCss: newCss(newNames[0]),
-          ...(valueChanged && { valueChanged }),
-          ...(note && { note }),
-        });
+        renames.push(renameEntry(oldName, candidates[0], { rowFlag, note, braceList }));
       }
     } else {
       unparsed.push({ section, row: line.trim() });
@@ -182,43 +232,37 @@ for (const line of lines) {
   }
 
   // Removed rows (8.1 rebuilt, 8.3 removals, and `**removed**` rows in 7.7).
-  const replacementNames = resolveNewNames(newSpans, braceList);
   const rebuilt = section === '8.1';
-  if (replacementNames.length === oldNames.length && replacementNames.length > 0) {
+  const context = { rowFlag, note, braceList, rebuilt };
+
+  const handResolved = oldNames.every((name) => RESOLVED_BY_HAND[name]);
+  if (handResolved) {
+    for (const oldName of oldNames) {
+      const resolution = RESOLVED_BY_HAND[oldName];
+      removed.push(
+        removedEntry(oldName, resolution.replacement, {
+          ...context,
+          extra: { resolvedByHand: true, ...(resolution.note && { note: resolution.note }) },
+        }),
+      );
+    }
+  } else if (candidates.length === oldNames.length && candidates.length > 0) {
     for (const [position, oldName] of oldNames.entries()) {
-      removed.push({
-        old: oldName,
-        replacement: replacementNames[position],
-        oldCss: oldCss(oldName),
-        replacementCss: newCss(replacementNames[position]),
-        ...(rebuilt && { rebuilt }),
-        ...(valueChanged && { valueChanged }),
-        ...(note && { note }),
-      });
+      removed.push(removedEntry(oldName, candidates[position], context));
     }
-  } else if (replacementNames.length === 1) {
+  } else if (candidates.length === 1 && newSpansAll.length === 1) {
+    // A clean consolidation: many OLD names, exactly one token span and
+    // nothing else in the cell (e.g. button-*-disabled → solid/disabled).
     for (const oldName of oldNames) {
-      removed.push({
-        old: oldName,
-        replacement: replacementNames[0],
-        oldCss: oldCss(oldName),
-        replacementCss: newCss(replacementNames[0]),
-        ...(rebuilt && { rebuilt }),
-        ...(valueChanged && { valueChanged }),
-        ...(note && { note }),
-      });
+      removed.push(removedEntry(oldName, candidates[0], context));
     }
-  } else if (replacementNames.length === 0) {
+  } else if (candidates.length === 0) {
     for (const oldName of oldNames) {
-      removed.push({
-        old: oldName,
-        replacement: null,
-        oldCss: oldCss(oldName),
-        replacementCss: null,
-        ...(note && { note }),
-      });
+      removed.push(removedEntry(oldName, null, context));
     }
   } else {
+    // More candidates than a positional or clean-consolidation match allows
+    // — prose-mixed cell; do not guess.
     unparsed.push({ section, row: line.trim() });
   }
 }
@@ -243,13 +287,7 @@ const map = {
   manual: [
     {
       pattern: '--ax-chips-*',
-      reason:
-        'Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task.',
-    },
-    {
-      pattern: '--ax-nav-button-bg-primary-hover',
-      reason:
-        'One legacy token served hover/pressed/focus states (map §10) — split per state in the Buttons task.',
+      reason: 'Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task.',
     },
   ],
   renames: dedupedRenames,
@@ -263,9 +301,13 @@ const map = {
 
 writeFileSync(OUT_PATH, `${JSON.stringify(map, null, 2)}\n`);
 console.log(
-  `codemod-map.json: ${dedupedRenames.length} renames, ${dedupedRemoved.length} removed, ${unparsed.length} unparsed rows.`,
+  `codemod-map.json: ${dedupedRenames.length} renames, ${dedupedRemoved.length} removed ` +
+    `(${dedupedRemoved.filter((entry) => entry.replacement === null).length} without a replacement, ` +
+    `${dedupedRemoved.filter((entry) => entry.resolvedByHand).length} resolved by hand), ` +
+    `${unparsed.length} unparsed rows.`,
 );
 if (unparsed.length > 0) {
-  console.log('unparsed rows (resolve manually or fix the parser):');
+  console.log('unparsed rows (resolve in RESOLVED_BY_HAND or fix the parser):');
   for (const entry of unparsed) console.log(`  [${entry.section}] ${entry.row}`);
+  process.exitCode = 1;
 }

@@ -48,21 +48,26 @@ Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.t
 
 ## DS 2.0 migration tooling
 
-The DS 2.0 rename map lives in `migration/2026-06-15-ds2-migration-map.md`
-(the designer changelog, checked in verbatim). Two scripts turn it into code
-changes — the migration fixes usages at the source instead of shipping a
-compatibility bridge:
+The DS 2.0 rename map lives in `migration/2026-06-15-ds2-migration-map.md` —
+the designer changelog checked in verbatim (guarded by `.prettierignore`;
+reformatting corrupts token paths inside emphasis markers). Two scripts turn
+it into code changes — the migration fixes usages at the source instead of
+shipping a compatibility bridge:
 
 ```bash
-node scripts/build-codemod-map.mjs   # md → codemod-map.json (renames, removed, prefix rules)
-node scripts/codemod-usages.mjs      # dry-run: var(--ax-…) → var(--wb-…) plan
-node scripts/codemod-usages.mjs --write
+pnpm --filter @workflowbuilder/ui-tokens codemod:map    # md → codemod-map.json
+pnpm --filter @workflowbuilder/ui-tokens codemod:apply  # dry-run: var(--ax-…) → var(--wb-…) plan
+pnpm --filter @workflowbuilder/ui-tokens codemod:apply -- --write
 ```
 
-`codemod-map.json` is the reviewable artifact: 144 renames, 38 removals with
-replacements, primitive prefix rules, and a `manual` list for names that have
-no 1:1 target (chips factory, state-split nav-button) — the codemod reports
-those instead of rewriting them. Rows the parser cannot resolve land in
-`unparsed`, never dropped silently. The `dimensions` section stays empty until
-the 2.0 export lands; value→token pairs for the Numerals scale are generated
-against the real export in the pipeline-switch PR.
+`codemod-map.json` is the reviewable artifact — CI regenerates it and fails
+on any diff, so it can never drift from the changelog. Contents: 144 renames,
+37 removals (32 with a replacement, 5 without), primitive prefix rules, and a
+`manual` list for names with no 1:1 target (the chips factory) — the codemod
+reports those for hand-editing instead of rewriting them. The parser never
+guesses: an ambiguous row lands in `unparsed` (build fails) unless a human
+resolved it in the generator's `RESOLVED_BY_HAND` table. The `dimensions`
+section stays empty until the 2.0 export lands; value→token pairs for the
+Numerals scale are generated against the real export in the pipeline-switch
+PR — the codemod's dry-run reports those usages as "unmapped but defined in
+today's dist" so the gap stays visible.

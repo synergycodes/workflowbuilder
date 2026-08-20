@@ -11,10 +11,6 @@
     {
       "pattern": "--ax-chips-*",
       "reason": "Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task."
-    },
-    {
-      "pattern": "--ax-nav-button-bg-primary-hover",
-      "reason": "One legacy token served hover/pressed/focus states (map §10) — split per state in the Buttons task."
     }
   ],
   "renames": [
@@ -679,7 +675,6 @@
       "new": "wb/components/nav-button/icon-primary-default",
       "oldCss": "--ax-nav-button-icon-primary-default",
       "newCss": "--wb-components-nav-button-icon-primary-default",
-      "valueChanged": true,
       "note": "pressed: brand `#3969FF`"
     },
     {
@@ -687,7 +682,6 @@
       "new": "wb/components/nav-button/icon-primary-hover",
       "oldCss": "--ax-nav-button-icon-primary-hover",
       "newCss": "--wb-components-nav-button-icon-primary-hover",
-      "valueChanged": true,
       "note": "pressed: brand `#3969FF`"
     },
     {
@@ -695,7 +689,6 @@
       "new": "wb/components/nav-button/icon-primary-active",
       "oldCss": "--ax-nav-button-icon-primary-active",
       "newCss": "--wb-components-nav-button-icon-primary-active",
-      "valueChanged": true,
       "note": "pressed: brand `#3969FF`"
     },
     {
@@ -711,7 +704,6 @@
       "new": "wb/components/nav-button/icon-primary-disabled",
       "oldCss": "--ax-nav-button-icon-primary-disabled",
       "newCss": "--wb-components-nav-button-icon-primary-disabled",
-      "valueChanged": true,
       "note": "pressed: brand `#3969FF`"
     },
     {
@@ -1149,27 +1141,30 @@
     },
     {
       "old": "wb/snackbar-bg-default",
-      "replacement": "snackbar/stroke-*",
+      "replacement": null,
       "oldCss": "--ax-snackbar-bg-default",
-      "replacementCss": "--wb-snackbar-stroke"
+      "replacementCss": null
     },
     {
       "old": "wb/tab-stroke-line",
-      "replacement": "wb/ui/stroke/*",
+      "replacement": null,
       "oldCss": "--ax-tab-stroke-line",
-      "replacementCss": "--wb-ui-stroke"
+      "replacementCss": null
     },
     {
       "old": "wb/icon-black",
       "replacement": "wb/ui/icon/default",
       "oldCss": "--ax-icon-black",
-      "replacementCss": "--wb-ui-icon-default"
+      "replacementCss": "--wb-ui-icon-default",
+      "resolvedByHand": true
     },
     {
       "old": "wb/icon-white",
-      "replacement": "wb/ui/icon/default",
+      "replacement": "wb/ui/icon/onaccent-default",
       "oldCss": "--ax-icon-white",
-      "replacementCss": "--wb-ui-icon-default"
+      "replacementCss": "--wb-ui-icon-onaccent-default",
+      "resolvedByHand": true,
+      "note": "onaccent icon token — verify the exact name against the 2.0 export"
     },
     {
       "old": "wb/dropdown-bg-destructive-default",
@@ -1209,31 +1204,27 @@
     },
     {
       "old": "wb/txt-destuctive-default",
-      "replacement": "txt-error-default",
+      "replacement": "wb/ui/text/critical-default",
       "oldCss": "--ax-txt-destuctive-default",
-      "replacementCss": "--wb-txt-error-default",
-      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
-    },
-    {
-      "old": "1592:58782",
-      "replacement": "txt-error-default",
-      "oldCss": "--ax-1592-58782",
-      "replacementCss": "--wb-txt-error-default",
-      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
+      "replacementCss": "--wb-ui-text-critical-default",
+      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling",
+      "resolvedByHand": true
     },
     {
       "old": "wb/txt-destructive-default",
-      "replacement": "txt-error-default",
+      "replacement": "wb/ui/text/critical-default",
       "oldCss": "--ax-txt-destructive-default",
-      "replacementCss": "--wb-txt-error-default",
-      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling"
+      "replacementCss": "--wb-ui-text-critical-default",
+      "note": "ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling",
+      "resolvedByHand": true
     },
     {
       "old": "wb/ui/icon/onsurface-default",
       "replacement": "wb/ui/icon/default",
       "oldCss": "--ax-ui-icon-onsurface-default",
       "replacementCss": "--wb-ui-icon-default",
-      "note": "2026-06-10"
+      "note": "2026-06-10",
+      "resolvedByHand": true
     }
   ],
   "dimensions": [],

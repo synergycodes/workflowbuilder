@@ -145,3 +145,10 @@ jobs:
         # build:ui builds @workflowbuilder/ui-tokens first, then ui, then runs
         # the check:built-css guard.
         run: pnpm build:ui
+
+      - name: Codemod map reproducibility
+        # codemod-map.json is a committed artifact; it must match what its
+        # generator produces from the checked-in designer changelog.
+        run: |
+          pnpm --filter @workflowbuilder/ui-tokens codemod:map
+          git diff --exit-code -- packages/tokens/codemod-map.json

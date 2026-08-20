@@ -11,10 +11,13 @@
     "prepare": "tsx src/index.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
-    "test": "vitest run"
+    "test": "vitest run",
+    "codemod:map": "node scripts/build-codemod-map.mjs",
+    "codemod:apply": "node scripts/codemod-usages.mjs"
   },
   "devDependencies": {
     "@tokens-studio/sd-transforms": "^1.2.12",
+    "change-case": "^5.4.4",
     "remeda": "^2.21.2",
     "style-dictionary": "^4.3.3",
     "tsx": "^4.19.3",
