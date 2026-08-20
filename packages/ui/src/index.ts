@@ -1,6 +1,7 @@
 import './styles/fonts.css';
 import './styles/globals.css';
 import './styles/layers.css';
+import './styles/provisional.css';
 import './styles/typography.css';
 
 export * from './components/accordion';
