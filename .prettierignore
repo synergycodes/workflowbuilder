@@ -5,3 +5,7 @@
 apps/icons/src/utils/icons.gen.ts
 # Astro auto-generated content collections + types (gitignored, regenerated on build/dev)
 **/.astro/
+# Designer changelog checked in verbatim — reformatting corrupted token paths in emphasis markers
+packages/tokens/migration/
+# Generated artifact — byte format owned by its generator (CI checks reproducibility)
+packages/tokens/codemod-map.json

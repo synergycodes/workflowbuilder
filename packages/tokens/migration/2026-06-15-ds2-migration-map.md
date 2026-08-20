@@ -2,14 +2,14 @@
 
 ## Old DS → New DS (WB 2.0)
 
-|                                     |                                                                                                                                                                                                                                                                      |
-| ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Old system (production, source)** | `Dv3nOrLqTgGEU7QB2SRDSL` — _WB · UI · Design System_ — [Figma link](https://www.figma.com/design/Dv3nOrLqTgGEU7QB2SRDSL/WB---UI---Design-System)                                                                                                                     |
-| **New system (target)**             | `hfT6zrYS948n8LrEK9y3Wh` — _WB 2.0 · UI · Design System_ — [Figma link](https://www.figma.com/design/hfT6zrYS948n8LrEK9y3Wh/WB-2.0---UI---Design-System--in-progress-)                                                                                               |
-| **Baseline comparison**             | 2026-05-29 (variable-by-variable diff, matched by internal ID)                                                                                                                                                                                                       |
-| **Revisions folded in**             | 2026-06-10 (component domain restructure, `acc1` refresh, Nav Button rebind) · 2026-06-12 (drifted `wb/canvas/*` leaf names re-aligned: `-default` suffixes restored on 10 tokens by ID — names in this document were and remain correct)                            |
-| **Compiled & live-verified**        | 2026-06-12 — collection counts, mode names, collection IDs, Tokens domain breakdown, and key values re-read directly from both Figma files via the Plugin API (see Appendix — Verification log)                                                                      |
-| **Status**                          | **SINGLE SOURCE OF TRUTH.** This document supersedes all prior Polish-language changelogs (`wb-ds-changelog-dev-migration.md`, `wb-ds-changelog-dev-2026-06-10.md`). In case of any discrepancy with earlier documents or mapping files, **this document prevails.** |
+| | |
+|---|---|
+| **Old system (production, source)** | `Dv3nOrLqTgGEU7QB2SRDSL` — *WB · UI · Design System* — [Figma link](https://www.figma.com/design/Dv3nOrLqTgGEU7QB2SRDSL/WB---UI---Design-System) |
+| **New system (target)** | `hfT6zrYS948n8LrEK9y3Wh` — *WB 2.0 · UI · Design System* — [Figma link](https://www.figma.com/design/hfT6zrYS948n8LrEK9y3Wh/WB-2.0---UI---Design-System--in-progress-) |
+| **Baseline comparison** | 2026-05-29 (variable-by-variable diff, matched by internal ID) |
+| **Revisions folded in** | 2026-06-10 (component domain restructure, `acc1` refresh, Nav Button rebind) · 2026-06-12 (drifted `wb/canvas/*` leaf names re-aligned: `-default` suffixes restored on 10 tokens by ID — names in this document were and remain correct) |
+| **Compiled & live-verified** | 2026-06-12 — collection counts, mode names, collection IDs, Tokens domain breakdown, and key values re-read directly from both Figma files via the Plugin API (see Appendix — Verification log) |
+| **Status** | **SINGLE SOURCE OF TRUTH.** This document supersedes all prior Polish-language changelogs (`wb-ds-changelog-dev-migration.md`, `wb-ds-changelog-dev-2026-06-10.md`). In case of any discrepancy with earlier documents or mapping files, **this document prevails.** |
 
 **Purpose.** This is the single reference for re-pointing the entire codebase (CSS variables, Style Dictionary / Tokens Studio export, component props, enums, class names) from the old design system to the new one. All mappings were verified directly in the live Figma files, variable by variable, by internal ID.
 
@@ -34,15 +34,15 @@
 
 ## 2. The numbers
 
-| Collection / asset   | Old               | New (verified 2026-06-12)                                     | Delta                      |
-| -------------------- | ----------------- | ------------------------------------------------------------- | -------------------------- |
-| Primitives           | 154 (colors only) | 264 (colors + dimensions + `transparent`)                     | +110                       |
-| Tokens (Light/Dark)  | 207               | 200 — `wb/ui/*` 55 · `wb/components/*` 105 · `wb/canvas/*` 40 | −7                         |
-| Numerals             | 316               | — (dissolved)                                                 | −316                       |
-| Canvas (dimensions)  | —                 | 56                                                            | +56                        |
-| Effects (Light/Dark) | —                 | 29                                                            | +29                        |
-| Text Styles          | 38                | 39                                                            | +1 (full name replacement) |
-| Effect Styles        | 10                | 10                                                            | 0 (renamed)                |
+| Collection / asset | Old | New (verified 2026-06-12) | Delta |
+|---|---|---|---|
+| Primitives | 154 (colors only) | 264 (colors + dimensions + `transparent`) | +110 |
+| Tokens (Light/Dark) | 207 | 200 — `wb/ui/*` 55 · `wb/components/*` 105 · `wb/canvas/*` 40 | −7 |
+| Numerals | 316 | — (dissolved) | −316 |
+| Canvas (dimensions) | — | 56 | +56 |
+| Effects (Light/Dark) | — | 29 | +29 |
+| Text Styles | 38 | 39 | +1 (full name replacement) |
+| Effect Styles | 10 | 10 | 0 (renamed) |
 
 **Change volume in Tokens:** 146 renames (2026-05-29 taxonomy) + 103 restructured paths (2026-06-10) · 61 removed by ID (+3 more on 2026-06-10) · 52 added by ID (+5 Nav Button backgrounds on 2026-06-10).
 
@@ -74,13 +74,13 @@ Effects    (29, light/dark)     → shadow geometry components (x/y/blur/spread)
 
 **Collection IDs (verified 2026-06-12):**
 
-| Collection | Old file                         | New file                                                        |
-| ---------- | -------------------------------- | --------------------------------------------------------------- |
-| Primitives | `VariableCollectionId:17:332`    | `VariableCollectionId:17:332` _(same — the new file is a fork)_ |
-| Tokens     | `VariableCollectionId:17:391`    | `VariableCollectionId:17:391` _(same)_                          |
-| Numerals   | `VariableCollectionId:2666:3363` | — (dissolved)                                                   |
-| Canvas     | —                                | `VariableCollectionId:7266:20`                                  |
-| Effects    | —                                | `VariableCollectionId:9126:20`                                  |
+| Collection | Old file | New file |
+|---|---|---|
+| Primitives | `VariableCollectionId:17:332` | `VariableCollectionId:17:332` *(same — the new file is a fork)* |
+| Tokens | `VariableCollectionId:17:391` | `VariableCollectionId:17:391` *(same)* |
+| Numerals | `VariableCollectionId:2666:3363` | — (dissolved) |
+| Canvas | — | `VariableCollectionId:7266:20` |
+| Effects | — | `VariableCollectionId:9126:20` |
 
 **Implication for code:** if your build exports variables per collection (Style Dictionary / Tokens Studio / custom export), add two new sources (`Canvas`, `Effects`) and remove `Numerals`. The `Primitives` and `Tokens` collection IDs are identical in both files (see table above), which helps diffing — but every variable name changed regardless.
 
@@ -90,25 +90,25 @@ Effects    (29, light/dark)     → shadow geometry components (x/y/blur/spread)
 
 ## 4. Naming conventions and terminology (find-replace rules)
 
-| Rule                | Old                                     | New                                                                                                                          |
-| ------------------- | --------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------- |
-| Domain              | none                                    | `wb/ui/*` (UI), `wb/components/*` (components), or `wb/canvas/*` (canvas)                                                    |
-| Hierarchy separator | flat dash                               | slash namespace                                                                                                              |
-| Component tokens    | `wb/{component}-*`                      | `wb/components/{component}/*`                                                                                                |
-| Text                | `txt`                                   | `text`                                                                                                                       |
-| Icon                | `ico`, `icon-txt`                       | `icon`                                                                                                                       |
-| Error status        | `error`                                 | `critical`                                                                                                                   |
-| Destructive action  | `destructive`                           | `critical`                                                                                                                   |
-| Info status         | `information`                           | `info`                                                                                                                       |
-| Text hierarchy      | `primary/secondary/tertiary/quaternary` | roles: `default/subtle/muted/ghost`                                                                                          |
-| Backgrounds         | `ui-bg-primary/secondary/tertiary`      | `ui/bg/base/elevated/inset`                                                                                                  |
-| Input               | `input-*`                               | `text-field-*`                                                                                                               |
-| Pin tooltip / tour  | `pt-*`                                  | `tour/*`                                                                                                                     |
-| Button leaf         | `{variant}-{color}-bg-{state}`          | nested path `{variant}/{color}/{state}` (fill is the default role; non-fill roles named explicitly, e.g. `…/stroke-default`) |
+| Rule | Old | New |
+|---|---|---|
+| Domain | none | `wb/ui/*` (UI), `wb/components/*` (components), or `wb/canvas/*` (canvas) |
+| Hierarchy separator | flat dash | slash namespace |
+| Component tokens | `wb/{component}-*` | `wb/components/{component}/*` |
+| Text | `txt` | `text` |
+| Icon | `ico`, `icon-txt` | `icon` |
+| Error status | `error` | `critical` |
+| Destructive action | `destructive` | `critical` |
+| Info status | `information` | `info` |
+| Text hierarchy | `primary/secondary/tertiary/quaternary` | roles: `default/subtle/muted/ghost` |
+| Backgrounds | `ui-bg-primary/secondary/tertiary` | `ui/bg/base/elevated/inset` |
+| Input | `input-*` | `text-field-*` |
+| Pin tooltip / tour | `pt-*` | `tour/*` |
+| Button leaf | `{variant}-{color}-bg-{state}` | nested path `{variant}/{color}/{state}` (fill is the default role; non-fill roles named explicitly, e.g. `…/stroke-default`) |
 
 Additional rules:
 
-- **`-default` suffixes are kept system-wide** (deliberate decision for searchability). `no suffix = default state` is _not_ the convention here — `default` is always explicit on default-state tokens within stateful families (single-state role tokens like `canvas/node/icon-primary`, `canvas/node/text`, `canvas/node/decor-primary` carry no state suffix by design). _Note: a temporary drift was detected on 2026-06-12 — ten `wb/canvas/_`default-state tokens had lost their`-default` suffix in the file; restored by ID the same day. If any token export was generated from the drifted state, regenerate it.\*
+- **`-default` suffixes are kept system-wide** (deliberate decision for searchability). `no suffix = default state` is *not* the convention here — `default` is always explicit on default-state tokens within stateful families (single-state role tokens like `canvas/node/icon-primary`, `canvas/node/text`, `canvas/node/decor-primary` carry no state suffix by design). *Note: a temporary drift was detected on 2026-06-12 — ten `wb/canvas/*` default-state tokens had lost their `-default` suffix in the file; restored by ID the same day. If any token export was generated from the drifted state, regenerate it.*
 - Leaf names are flat and dash-joined (`ui/icon/action-default`, not `ui/icon/action/default`).
 - **Typo cleanup:** the old system contains a misspelled token `wb/txt-destuctive-default` (missing "r") — `VariableID:1592:58782`, Tokens collection, old file. Verified **still present under the misspelled name on 2026-06-12**; a manual in-place rename to `wb/txt-destructive-default` is scheduled (rename preserves the ID, so both spellings are the same token). Whichever spelling your legacy export carries, it was a **duplicate of `wb/txt-error-default`** and has **no counterpart in the new system** — it merged into `wb/ui/text/critical-default`. Remove the key from code either way. The new file contains zero occurrences of either spelling (verified).
 - For the 2026-06-10 restructure specifically, two global transforms cover almost everything: `wb/ui/components/` → `wb/components/` (all component tokens) and the button leaf transformation above. If you had already started consuming the interim `wb.ui.components.*` paths, re-point them.
@@ -123,17 +123,17 @@ This is the most important section for visual regression: changing a hex in Prim
 
 The old palettes were narrow (100–400) with muted hexes. The new ones are full 50–950 scales in the Tailwind/M3 style, with more vivid bases.
 
-| Primitive    | Old hex           | New hex               |
-| ------------ | ----------------- | --------------------- |
-| `red-400`    | `#962929` (brick) | `#e02020` (vivid red) |
-| `red-500`    | `#7d0000`         | `#c41a1a`             |
-| `red-100`    | `#f7e9e9`         | `#fee2e2`             |
-| `green-400`  | `#007c29`         | `#16a34a`             |
-| `green-300`  | `#29974e`         | `#4ade80`             |
-| `green-100`  | `#e9f7ee`         | `#dcfce7`             |
-| `orange-400` | `#e59800`         | `#f59e0b`             |
-| `orange-300` | `#ffaf10`         | `#fcd34d`             |
-| `orange-100` | `#f7f2e9`         | `#fef3c7`             |
+| Primitive | Old hex | New hex |
+|---|---|---|
+| `red-400` | `#962929` (brick) | `#e02020` (vivid red) |
+| `red-500` | `#7d0000` | `#c41a1a` |
+| `red-100` | `#f7e9e9` | `#fee2e2` |
+| `green-400` | `#007c29` | `#16a34a` |
+| `green-300` | `#29974e` | `#4ade80` |
+| `green-100` | `#e9f7ee` | `#dcfce7` |
+| `orange-400` | `#e59800` | `#f59e0b` |
+| `orange-300` | `#ffaf10` | `#fcd34d` |
+| `orange-100` | `#f7f2e9` | `#fef3c7` |
 
 - `red`, `green`, `orange` extended to the full scale **50, 100, 200, 300, 400, 500, 600, 700, 800, 900, 950** (previously only 100–400 for green/orange, 100–600 for red).
 - `blue` extended to **50–950** (was 100–600 + 350).
@@ -142,19 +142,19 @@ The old palettes were narrow (100–400) with muted hexes. The new ones are full
 
 **Motivation:** the old `acc1-500` (`#1096E7`) gave a white-text contrast of **3.21 — below WCAG AA** for normal text, so the default state of the primary button was inaccessible. The new palette is anchored at `acc1-500` = **`#3969FF`** (white text 4.53 ✓ AA). The primary button now passes full AA on default/hover/active **without shifting the ramp** (`brand/fill*` still aliases 500/600/700).
 
-| Primitive  | Old hex   | New hex   | White-text contrast (new) |
-| ---------- | --------- | --------- | ------------------------- |
-| `acc1-50`  | `#F0F8FF` | `#EDF2FF` | — (tints)                 |
-| `acc1-100` | `#E0F0FE` | `#CCD9FF` | —                         |
-| `acc1-200` | `#BBE2FC` | `#99B3FF` | —                         |
-| `acc1-300` | `#5FBEFA` | `#6B90FF` | 2.98                      |
-| `acc1-400` | `#3AB0F6` | `#527DFF` | 3.66 (AA-large)           |
-| `acc1-500` | `#1096E7` | `#3969FF` | **4.53 ✓ AA**             |
-| `acc1-600` | `#0477C5` | `#144CF5` | **6.21 ✓ AA**             |
-| `acc1-700` | `#045FA0` | `#0F3FCC` | **8.07 ✓ AA**             |
-| `acc1-800` | `#085184` | `#11349C` | 10.53 (AAA)               |
-| `acc1-900` | `#0D446D` | `#132C76` | 12.73 (AAA)               |
-| `acc1-950` | `#092B48` | `#111F4B` | 15.89 (AAA)               |
+| Primitive | Old hex | New hex | White-text contrast (new) |
+|---|---|---|---|
+| `acc1-50` | `#F0F8FF` | `#EDF2FF` | — (tints) |
+| `acc1-100` | `#E0F0FE` | `#CCD9FF` | — |
+| `acc1-200` | `#BBE2FC` | `#99B3FF` | — |
+| `acc1-300` | `#5FBEFA` | `#6B90FF` | 2.98 |
+| `acc1-400` | `#3AB0F6` | `#527DFF` | 3.66 (AA-large) |
+| `acc1-500` | `#1096E7` | `#3969FF` | **4.53 ✓ AA** |
+| `acc1-600` | `#0477C5` | `#144CF5` | **6.21 ✓ AA** |
+| `acc1-700` | `#045FA0` | `#0F3FCC` | **8.07 ✓ AA** |
+| `acc1-800` | `#085184` | `#11349C` | 10.53 (AAA) |
+| `acc1-900` | `#0D446D` | `#132C76` | 12.73 (AAA) |
+| `acc1-950` | `#092B48` | `#111F4B` | 15.89 (AAA) |
 
 Alpha variants follow the base (alpha preserved): `acc1-500-{10,20,30,40,50}` → `#3969FF` at the respective opacity; `acc1-950-{10..50}` → `#111F4B`. **21 value changes in total.** Names and IDs are unchanged — this is a pure value change.
 
@@ -183,20 +183,20 @@ Alpha variants follow the base (alpha preserved): `acc1-500-{10,20,30,40,50}` �
 
 The most important semantic change. In the old system the same status had two sources in Primitives (e.g. critical = `red-*` in some tokens, `acc2-*` in others — different hexes). In the new system, `critical/success/warning` alias **exclusively** to `red/green/orange`.
 
-| Token (new name)                            | Old alias           | New alias        |
-| ------------------------------------------- | ------------------- | ---------------- |
-| `wb/canvas/badge-notify/critical-icon`      | `acc2-50`           | `red-50`         |
-| `wb/canvas/badge-notify/success-bg-default` | `acc3-500`          | `green-500`      |
-| `wb/canvas/badge-notify/success-icon`       | `acc3-50`           | `green-50`       |
-| `wb/canvas/badge-notify/warning-bg-default` | `acc5-500`          | `orange-500`     |
-| `wb/canvas/badge-notify/warning-icon`       | `acc5-50`           | `orange-50`      |
-| `wb/canvas/edge/stroke-success`             | `acc3-500/400`      | `green-500/400`  |
-| `wb/canvas/edge/stroke-warning`             | `acc5-500/400`      | `orange-500/400` |
-| `wb/canvas/node/focus-critical`             | `acc2-500-40`       | `red-400-40`     |
-| `wb/canvas/node/focus-success`              | `acc3-500-40`       | `green-400-40`   |
-| `wb/canvas/node/focus-warning`              | `acc5-500-40`       | `orange-400-40`  |
-| `wb/ui/icon/success-default`                | `acc3-600/500`      | `green-400/100`  |
-| `wb/ui/icon/warning-default`                | `acc5-500/acc5-400` | `orange-400/100` |
+| Token (new name) | Old alias | New alias |
+|---|---|---|
+| `wb/canvas/badge-notify/critical-icon` | `acc2-50` | `red-50` |
+| `wb/canvas/badge-notify/success-bg-default` | `acc3-500` | `green-500` |
+| `wb/canvas/badge-notify/success-icon` | `acc3-50` | `green-50` |
+| `wb/canvas/badge-notify/warning-bg-default` | `acc5-500` | `orange-500` |
+| `wb/canvas/badge-notify/warning-icon` | `acc5-50` | `orange-50` |
+| `wb/canvas/edge/stroke-success` | `acc3-500/400` | `green-500/400` |
+| `wb/canvas/edge/stroke-warning` | `acc5-500/400` | `orange-500/400` |
+| `wb/canvas/node/focus-critical` | `acc2-500-40` | `red-400-40` |
+| `wb/canvas/node/focus-success` | `acc3-500-40` | `green-400-40` |
+| `wb/canvas/node/focus-warning` | `acc5-500-40` | `orange-400-40` |
+| `wb/ui/icon/success-default` | `acc3-600/500` | `green-400/100` |
+| `wb/ui/icon/warning-default` | `acc5-500/acc5-400` | `orange-400/100` |
 
 ---
 
@@ -206,145 +206,145 @@ The most important semantic change. In the old system the same status had two so
 
 ### 7.1 Foundations — Text (`txt-*` → `ui/text/*`)
 
-| Old                             | New                                                                   |
-| ------------------------------- | --------------------------------------------------------------------- |
-| `wb/txt-primary-default`        | `wb/ui/text/default`                                                  |
-| `wb/txt-primary-inverse`        | `wb/ui/text/inverse-default`                                          |
-| `wb/txt-primary-disabled`       | `wb/ui/text/disabled` ⚠ _(Light: `gray-100-75` → `gray-900-30`, fix)_ |
-| `wb/txt-primary-white`          | `wb/ui/text/onaccent-default`                                         |
-| `wb/txt-secondary-default`      | `wb/ui/text/subtle-default`                                           |
-| `wb/txt-secondary-inverse`      | `wb/ui/text/inverse-subtle-default`                                   |
-| `wb/txt-tertiary-default`       | `wb/ui/text/muted-default`                                            |
-| `wb/txt-quaternary-default`     | `wb/ui/text/ghost-default`                                            |
-| `wb/txt-tooltip-bw`             | `wb/ui/text/tooltip-default`                                          |
-| `wb/txt-tooltip-blue`           | `wb/ui/text/tooltip-accent-default`                                   |
-| `wb/txt-ghost-primary-default`  | `wb/ui/text/action-default` ⚠ _(brand `#3969FF`)_                     |
-| `wb/txt-ghost-primary-disabled` | `wb/ui/text/action-disabled`                                          |
-| `wb/txt-error-default`          | `wb/ui/text/critical-default` ⚠ _(red refreshed)_                     |
-| `wb/txt-destructive-disabled`   | `wb/ui/text/critical-disabled`                                        |
-| `wb/txt-success-default`        | `wb/ui/text/success-default` ⚠ _(green refreshed)_                    |
-| `wb/txt-ghost-success-disabled` | `wb/ui/text/success-disabled`                                         |
-| `wb/txt-info-default`           | `wb/ui/text/info-default` ⚠ _(acc1 refreshed)_                        |
-| `wb/txt-warning-default`        | `wb/ui/text/warning-default` ⚠ _(orange refreshed)_                   |
-| `wb/txt-ghost-warning-disabled` | `wb/ui/text/warning-disabled`                                         |
+| Old | New |
+|---|---|
+| `wb/txt-primary-default` | `wb/ui/text/default` |
+| `wb/txt-primary-inverse` | `wb/ui/text/inverse-default` |
+| `wb/txt-primary-disabled` | `wb/ui/text/disabled` ⚠ *(Light: `gray-100-75` → `gray-900-30`, fix)* |
+| `wb/txt-primary-white` | `wb/ui/text/onaccent-default` |
+| `wb/txt-secondary-default` | `wb/ui/text/subtle-default` |
+| `wb/txt-secondary-inverse` | `wb/ui/text/inverse-subtle-default` |
+| `wb/txt-tertiary-default` | `wb/ui/text/muted-default` |
+| `wb/txt-quaternary-default` | `wb/ui/text/ghost-default` |
+| `wb/txt-tooltip-bw` | `wb/ui/text/tooltip-default` |
+| `wb/txt-tooltip-blue` | `wb/ui/text/tooltip-accent-default` |
+| `wb/txt-ghost-primary-default` | `wb/ui/text/action-default` ⚠ *(brand `#3969FF`)* |
+| `wb/txt-ghost-primary-disabled` | `wb/ui/text/action-disabled` |
+| `wb/txt-error-default` | `wb/ui/text/critical-default` ⚠ *(red refreshed)* |
+| `wb/txt-destructive-disabled` | `wb/ui/text/critical-disabled` |
+| `wb/txt-success-default` | `wb/ui/text/success-default` ⚠ *(green refreshed)* |
+| `wb/txt-ghost-success-disabled` | `wb/ui/text/success-disabled` |
+| `wb/txt-info-default` | `wb/ui/text/info-default` ⚠ *(acc1 refreshed)* |
+| `wb/txt-warning-default` | `wb/ui/text/warning-default` ⚠ *(orange refreshed)* |
+| `wb/txt-ghost-warning-disabled` | `wb/ui/text/warning-disabled` |
 
 ### 7.2 Foundations — Icon (`icon-*` → `ui/icon/*`)
 
-| Old                       | New                                                                                                                                         |
-| ------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wb/icon-primary-default` | `wb/ui/icon/action-default`                                                                                                                 |
-| `wb/icon-txt-default`     | `wb/ui/icon/default` _(via interim `onsurface-default`, merged 2026-06-10; codeSyntax `--wb-icon-txt-default` now lives on `icon/default`)_ |
-| `wb/icon-txt-inverse`     | `wb/ui/icon/inverse-default`                                                                                                                |
-| `wb/icon-disabled`        | `wb/ui/icon/disabled`                                                                                                                       |
-| `wb/icon-error-default`   | `wb/ui/icon/critical-default` ⚠ _(acc2 → red)_                                                                                              |
-| `wb/icon-success-default` | `wb/ui/icon/success-default` ⚠ _(acc3 → green)_                                                                                             |
-| `wb/icon-warning-default` | `wb/ui/icon/warning-default` ⚠ _(acc5 → orange)_                                                                                            |
+| Old | New |
+|---|---|
+| `wb/icon-primary-default` | `wb/ui/icon/action-default` |
+| `wb/icon-txt-default` | `wb/ui/icon/default` *(via interim `onsurface-default`, merged 2026-06-10; codeSyntax `--wb-icon-txt-default` now lives on `icon/default`)* |
+| `wb/icon-txt-inverse` | `wb/ui/icon/inverse-default` |
+| `wb/icon-disabled` | `wb/ui/icon/disabled` |
+| `wb/icon-error-default` | `wb/ui/icon/critical-default` ⚠ *(acc2 → red)* |
+| `wb/icon-success-default` | `wb/ui/icon/success-default` ⚠ *(acc3 → green)* |
+| `wb/icon-warning-default` | `wb/ui/icon/warning-default` ⚠ *(acc5 → orange)* |
 
 ### 7.3 Foundations — Stroke / Background / Focus
 
-| Old                               | New                                                                            |
-| --------------------------------- | ------------------------------------------------------------------------------ |
-| `wb/ui-stroke-primary-default`    | `wb/ui/stroke/default`                                                         |
-| `wb/ui-stroke-secondary-default`  | `wb/ui/stroke/subtle`                                                          |
-| `wb/ui-stroke-primary-focus`      | `wb/ui/stroke/focus` ⚠ _(acc1 refreshed)_                                      |
-| `wb/ui-stroke-primary-highlight`  | `wb/ui/stroke/highlight`                                                       |
-| `wb/ui-separator-primary-default` | `wb/ui/stroke/divider`                                                         |
-| `wb/ui-bg-primary-default`        | `wb/ui/bg/base`                                                                |
-| `wb/ui-bg-secondary-default`      | `wb/ui/bg/elevated`                                                            |
-| `wb/ui-bg-tertiary-default`       | `wb/ui/bg/inset`                                                               |
-| `wb/ui-canvas-dots-default`       | `wb/ui/bg/canvas-dots`                                                         |
-| `wb/ui-bg-tertiary-selected`      | `wb/components/selector/fill-checked`                                          |
-| `wb/focus-ring-element`           | `wb/ui/focus-ring` _(flattened single token, 2026-06-10)_ ⚠ _(acc1 refreshed)_ |
+| Old | New |
+|---|---|
+| `wb/ui-stroke-primary-default` | `wb/ui/stroke/default` |
+| `wb/ui-stroke-secondary-default` | `wb/ui/stroke/subtle` |
+| `wb/ui-stroke-primary-focus` | `wb/ui/stroke/focus` ⚠ *(acc1 refreshed)* |
+| `wb/ui-stroke-primary-highlight` | `wb/ui/stroke/highlight` |
+| `wb/ui-separator-primary-default` | `wb/ui/stroke/divider` |
+| `wb/ui-bg-primary-default` | `wb/ui/bg/base` |
+| `wb/ui-bg-secondary-default` | `wb/ui/bg/elevated` |
+| `wb/ui-bg-tertiary-default` | `wb/ui/bg/inset` |
+| `wb/ui-canvas-dots-default` | `wb/ui/bg/canvas-dots` |
+| `wb/ui-bg-tertiary-selected` | `wb/components/selector/fill-checked` |
+| `wb/focus-ring-element` | `wb/ui/focus-ring` *(flattened single token, 2026-06-10)* ⚠ *(acc1 refreshed)* |
 
 ### 7.4 Button — solid (`button-{primary,gray,red,green,orange}-*`)
 
 > Color → status mapping: `red → critical`, `green → success`, `orange → warning`. **Disabled state consolidated**: four separate disabled tokens (`primary/gray/red/green`) → one shared `solid/disabled`. The shared disabled sits at the variant level, not the color level — intentional.
 
-| Old                                                         | New                                                                                            |
-| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
-| `wb/button-primary-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/primary/{default,hover,active,focus,loading}` ⚠ _(acc1 `#3969FF`)_ |
-| `wb/button-primary-bg-disabled`                             | `wb/components/button/solid/disabled`                                                          |
-| `wb/button-gray-bg-{default,hover,active,focus,loading}`    | `wb/components/button/solid/gray/{…}`                                                          |
-| `wb/button-gray-bg-disabled`                                | `wb/components/button/solid/disabled` _(consolidated)_                                         |
-| `wb/button-red-bg-{default,hover,active,focus,loading}`     | `wb/components/button/solid/critical/{…}` ⚠                                                    |
-| `wb/button-red-bg-disabled`                                 | `wb/components/button/solid/disabled` _(consolidated)_                                         |
-| `wb/button-green-bg-{default,hover,active,focus,loading}`   | `wb/components/button/solid/success/{…}` ⚠                                                     |
-| `wb/button-green-bg-disabled`                               | `wb/components/button/solid/disabled` _(consolidated)_                                         |
-| `wb/button-orange-bg-{default,hover,active,focus,loading}`  | `wb/components/button/solid/warning/{…}` ⚠                                                     |
+| Old | New |
+|---|---|
+| `wb/button-primary-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/primary/{default,hover,active,focus,loading}` ⚠ *(acc1 `#3969FF`)* |
+| `wb/button-primary-bg-disabled` | `wb/components/button/solid/disabled` |
+| `wb/button-gray-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/gray/{…}` |
+| `wb/button-gray-bg-disabled` | `wb/components/button/solid/disabled` *(consolidated)* |
+| `wb/button-red-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/critical/{…}` ⚠ |
+| `wb/button-red-bg-disabled` | `wb/components/button/solid/disabled` *(consolidated)* |
+| `wb/button-green-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/success/{…}` ⚠ |
+| `wb/button-green-bg-disabled` | `wb/components/button/solid/disabled` *(consolidated)* |
+| `wb/button-orange-bg-{default,hover,active,focus,loading}` | `wb/components/button/solid/warning/{…}` ⚠ |
 
 ⚠ **Solid critical/success/warning color logic changed.** Old `button-green-bg-default` = `green-300`, hover = `green-400`. New `solid/success/default` = `green-500`, hover = `green-600`, active = `green-700` — full saturation plus correct darkening across states. Critical (`red-500/600/700`) and warning (`orange-500/600/700`) follow the same pattern. Button appearance changes noticeably.
 
 ### 7.5 Button — ghost (`button-ghost-{primary,success,warning,destructive}-*`)
 
-| Old                                                                        | New                                                                                                                                           |
-| -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| `wb/button-ghost-primary-bg-{default,hover,active,focus,loading,disabled}` | `wb/components/button/ghost/primary/{default,hover,active,focus,loading,disabled}` ⚠ _(primary now flows through `brand/_`, acc1 refreshed)\* |
-| `wb/button-ghost-primary-stroke-default`                                   | `wb/components/button/ghost/primary/stroke-default` ⚠                                                                                         |
-| `wb/button-ghost-success-bg-{…}`                                           | `wb/components/button/ghost/success/{…}`                                                                                                      |
-| `wb/button-ghost-success-stroke-default`                                   | `wb/components/button/ghost/success/stroke-default`                                                                                           |
-| `wb/button-ghost-warning-bg-{…}`                                           | `wb/components/button/ghost/warning/{…}`                                                                                                      |
-| `wb/button-ghost-warning-stroke-default`                                   | `wb/components/button/ghost/warning/stroke-default`                                                                                           |
-| `wb/button-ghost-destructive-bg-{…}`                                       | `wb/components/button/ghost/critical/{…}`                                                                                                     |
-| `wb/button-ghost-destructive-stroke-default`                               | `wb/components/button/ghost/critical/stroke-default`                                                                                          |
+| Old | New |
+|---|---|
+| `wb/button-ghost-primary-bg-{default,hover,active,focus,loading,disabled}` | `wb/components/button/ghost/primary/{default,hover,active,focus,loading,disabled}` ⚠ *(primary now flows through `brand/*`, acc1 refreshed)* |
+| `wb/button-ghost-primary-stroke-default` | `wb/components/button/ghost/primary/stroke-default` ⚠ |
+| `wb/button-ghost-success-bg-{…}` | `wb/components/button/ghost/success/{…}` |
+| `wb/button-ghost-success-stroke-default` | `wb/components/button/ghost/success/stroke-default` |
+| `wb/button-ghost-warning-bg-{…}` | `wb/components/button/ghost/warning/{…}` |
+| `wb/button-ghost-warning-stroke-default` | `wb/components/button/ghost/warning/stroke-default` |
+| `wb/button-ghost-destructive-bg-{…}` | `wb/components/button/ghost/critical/{…}` |
+| `wb/button-ghost-destructive-stroke-default` | `wb/components/button/ghost/critical/stroke-default` |
 
 In Style Dictionary terms, the button moved from a flat string to a nested structure: `wb.button-primary-bg-loading` → `wb.components.button.solid.primary.loading`.
 
 ### 7.6 Input → Text Field
 
-| Old                               | New                                                          |
-| --------------------------------- | ------------------------------------------------------------ |
-| `wb/input-stroke-primary-default` | `wb/components/text-field/stroke-default`                    |
-| `wb/input-stroke-primary-focus`   | `wb/components/text-field/stroke-focus` ⚠ _(acc1 refreshed)_ |
-| `wb/input-stroke-primary-error`   | `wb/components/text-field/stroke-critical` ⚠                 |
-| `wb/input-stroke-primary-success` | `wb/components/text-field/stroke-success` ⚠                  |
-| `wb/input-bg-primary-error`       | `wb/components/text-field/bg-primary-critical` ⚠             |
-| `wb/input-bg-primary-success`     | `wb/components/text-field/bg-primary-success` ⚠              |
+| Old | New |
+|---|---|
+| `wb/input-stroke-primary-default` | `wb/components/text-field/stroke-default` |
+| `wb/input-stroke-primary-focus` | `wb/components/text-field/stroke-focus` ⚠ *(acc1 refreshed)* |
+| `wb/input-stroke-primary-error` | `wb/components/text-field/stroke-critical` ⚠ |
+| `wb/input-stroke-primary-success` | `wb/components/text-field/stroke-success` ⚠ |
+| `wb/input-bg-primary-error` | `wb/components/text-field/bg-primary-critical` ⚠ |
+| `wb/input-bg-primary-success` | `wb/components/text-field/bg-primary-success` ⚠ |
 
 ### 7.7 Other UI components
 
-| Old                                                                  | New                                                                                                                   |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `wb/nav-button-bg-primary-hover`                                     | `wb/components/nav-button/bg-primary-hover` _(see section 10 — this one old token split into three new state tokens)_ |
-| `wb/nav-button-icon-primary-{default,hover,active,pressed,disabled}` | `wb/components/nav-button/icon-primary-{…}` ⚠ _(pressed: brand `#3969FF`)_                                            |
-| `wb/snackbar-bg-information`                                         | `wb/components/snackbar/bg-info`                                                                                      |
-| `wb/snackbar-bg-warning`                                             | `wb/components/snackbar/bg-warning`                                                                                   |
-| `wb/snackbar-bg-success`                                             | `wb/components/snackbar/bg-success`                                                                                   |
-| `wb/snackbar-bg-error`                                               | `wb/components/snackbar/bg-critical`                                                                                  |
-| `wb/dropzone-bg-{default,hover,dragging}`                            | `wb/components/dropzone/bg-{default,hover,dragging}`                                                                  |
-| `wb/dropzone-bg-error`                                               | `wb/components/dropzone/bg-critical`                                                                                  |
-| `wb/dropzone-stroke-{default,hover,dragging}`                        | `wb/components/dropzone/stroke-{…}`                                                                                   |
-| `wb/dropzone-stroke-error`                                           | `wb/components/dropzone/stroke-critical`                                                                              |
-| `wb/dropdown-bg-primary-default`                                     | **removed** → use `wb/ui/bg/base` _(dropdown panels)_                                                                 |
-| `wb/dropdown-bg-secondary-default`                                   | **removed** → use `wb/ui/bg/inset` _(embedded options)_                                                               |
-| `wb/tooltip-bg-default`                                              | `wb/components/tooltip/bg-default`                                                                                    |
-| `wb/tooltip-bg-blue`                                                 | `wb/components/tooltip/bg-info` _(no more literal color in the name)_ ⚠ _(acc1 refreshed)_                            |
-| `wb/pt-bg-primary-default`                                           | `wb/components/tour/bg-primary-default`                                                                               |
-| `wb/pt-stroke-primary-default`                                       | `wb/components/tour/stroke-default`                                                                                   |
-| `wb/tab-stroke-{default,hover,active}`                               | `wb/components/tab/stroke-{…}`                                                                                        |
-| `wb/avatar-fill-default`                                             | `wb/components/avatar/fill-default`                                                                                   |
-| `wb/avatar-stroke-default`                                           | `wb/components/avatar/stroke-default`                                                                                 |
-| `wb/datepicker-bg-primary`                                           | `wb/components/datepicker/bg-primary` ⚠ _(acc1-600 → acc1-500, plus acc1 refreshed)_                                  |
-| `wb/datepicker-bg-secondary`                                         | `wb/components/datepicker/bg-secondary`                                                                               |
-| `wb/scrollbar-bg-default`                                            | `wb/components/scrollbar/bg-default`                                                                                  |
-| `wb/chips-neutral-txt`                                               | `wb/components/chips/solid-text`                                                                                      |
+| Old | New |
+|---|---|
+| `wb/nav-button-bg-primary-hover` | `wb/components/nav-button/bg-primary-hover` *(see section 10 — this one old token split into three new state tokens)* |
+| `wb/nav-button-icon-primary-{default,hover,active,pressed,disabled}` | `wb/components/nav-button/icon-primary-{…}` ⚠ *(pressed: brand `#3969FF`)* |
+| `wb/snackbar-bg-information` | `wb/components/snackbar/bg-info` |
+| `wb/snackbar-bg-warning` | `wb/components/snackbar/bg-warning` |
+| `wb/snackbar-bg-success` | `wb/components/snackbar/bg-success` |
+| `wb/snackbar-bg-error` | `wb/components/snackbar/bg-critical` |
+| `wb/dropzone-bg-{default,hover,dragging}` | `wb/components/dropzone/bg-{default,hover,dragging}` |
+| `wb/dropzone-bg-error` | `wb/components/dropzone/bg-critical` |
+| `wb/dropzone-stroke-{default,hover,dragging}` | `wb/components/dropzone/stroke-{…}` |
+| `wb/dropzone-stroke-error` | `wb/components/dropzone/stroke-critical` |
+| `wb/dropdown-bg-primary-default` | **removed** → use `wb/ui/bg/base` *(dropdown panels)* |
+| `wb/dropdown-bg-secondary-default` | **removed** → use `wb/ui/bg/inset` *(embedded options)* |
+| `wb/tooltip-bg-default` | `wb/components/tooltip/bg-default` |
+| `wb/tooltip-bg-blue` | `wb/components/tooltip/bg-info` *(no more literal color in the name)* ⚠ *(acc1 refreshed)* |
+| `wb/pt-bg-primary-default` | `wb/components/tour/bg-primary-default` |
+| `wb/pt-stroke-primary-default` | `wb/components/tour/stroke-default` |
+| `wb/tab-stroke-{default,hover,active}` | `wb/components/tab/stroke-{…}` |
+| `wb/avatar-fill-default` | `wb/components/avatar/fill-default` |
+| `wb/avatar-stroke-default` | `wb/components/avatar/stroke-default` |
+| `wb/datepicker-bg-primary` | `wb/components/datepicker/bg-primary` ⚠ *(acc1-600 → acc1-500, plus acc1 refreshed)* |
+| `wb/datepicker-bg-secondary` | `wb/components/datepicker/bg-secondary` |
+| `wb/scrollbar-bg-default` | `wb/components/scrollbar/bg-default` |
+| `wb/chips-neutral-txt` | `wb/components/chips/solid-text` |
 
 ### 7.8 Canvas — badge-notify, widget-swatches, node focus
 
 > These three groups were **moved into the `canvas/*` domain** (IDs preserved, so it's a rename, not a rebuild). Terminology: `error → critical`, `ico → icon`.
 
-| Old                                   | New                                                |
-| ------------------------------------- | -------------------------------------------------- |
-| `wb/badge-notify-error-bg-default`    | `wb/canvas/badge-notify/critical-bg-default`       |
-| `wb/badge-notify-error-ico-default`   | `wb/canvas/badge-notify/critical-icon` ⚠           |
-| `wb/badge-notify-success-bg-default`  | `wb/canvas/badge-notify/success-bg-default` ⚠      |
-| `wb/badge-notify-success-ico-default` | `wb/canvas/badge-notify/success-icon` ⚠            |
-| `wb/badge-notify-warning-bg-default`  | `wb/canvas/badge-notify/warning-bg-default` ⚠      |
-| `wb/badge-notify-warning-ico-default` | `wb/canvas/badge-notify/warning-icon` ⚠            |
-| `wb/widget-swatches-acc1..6`          | `wb/canvas/widget-swatches/acc1..6`                |
-| `wb/focus-ring-node-active`           | `wb/canvas/node/focus-active` ⚠ _(acc1 refreshed)_ |
-| `wb/focus-ring-node-error`            | `wb/canvas/node/focus-critical` ⚠                  |
-| `wb/focus-ring-node-success`          | `wb/canvas/node/focus-success` ⚠                   |
-| `wb/focus-ring-node-warning`          | `wb/canvas/node/focus-warning` ⚠                   |
+| Old | New |
+|---|---|
+| `wb/badge-notify-error-bg-default` | `wb/canvas/badge-notify/critical-bg-default` |
+| `wb/badge-notify-error-ico-default` | `wb/canvas/badge-notify/critical-icon` ⚠ |
+| `wb/badge-notify-success-bg-default` | `wb/canvas/badge-notify/success-bg-default` ⚠ |
+| `wb/badge-notify-success-ico-default` | `wb/canvas/badge-notify/success-icon` ⚠ |
+| `wb/badge-notify-warning-bg-default` | `wb/canvas/badge-notify/warning-bg-default` ⚠ |
+| `wb/badge-notify-warning-ico-default` | `wb/canvas/badge-notify/warning-icon` ⚠ |
+| `wb/widget-swatches-acc1..6` | `wb/canvas/widget-swatches/acc1..6` |
+| `wb/focus-ring-node-active` | `wb/canvas/node/focus-active` ⚠ *(acc1 refreshed)* |
+| `wb/focus-ring-node-error` | `wb/canvas/node/focus-critical` ⚠ |
+| `wb/focus-ring-node-success` | `wb/canvas/node/focus-success` ⚠ |
+| `wb/focus-ring-node-warning` | `wb/canvas/node/focus-warning` ⚠ |
 
 ---
 
@@ -354,23 +354,23 @@ In Style Dictionary terms, the button moved from a flat string to a nested struc
 
 ### 8.1 Canvas: node / port / edge — rebuilt as `canvas/*` (Removed → re-created)
 
-| Old token (removed)                                  | New equivalent (created)                    |
-| ---------------------------------------------------- | ------------------------------------------- |
-| `wb/node-bg-primary-{default,hover,active,disabled}` | `wb/canvas/node/bg-primary-{…}`             |
-| `wb/node-bg-secondary-default`                       | `wb/canvas/node/bg-secondary-default`       |
-| `wb/node-stroke-primary-{default,hover}`             | `wb/canvas/node/stroke-{default,hover}`     |
-| `wb/node-icon-primary-default`                       | `wb/canvas/node/icon-primary`               |
-| `wb/node-icon-primary-disabled`                      | _(none — handled by `wb/ui/icon/disabled`)_ |
-| `wb/node-txt-disabled`                               | `wb/canvas/node/text-disabled`              |
-| `wb/node-port-fill-{default,active}`                 | `wb/canvas/port/fill-{default,active}`      |
-| `wb/node-port-stroke-{default,active}`               | `wb/canvas/port/stroke-{default,active}`    |
-| `wb/edge-primary-default`                            | `wb/canvas/edge/stroke-default`             |
-| `wb/edge-primary-hover`                              | `wb/canvas/edge/stroke-hover`               |
-| `wb/edge-primary-active`                             | `wb/canvas/edge/stroke-active`              |
-| `wb/edge-primary-disabled`                           | `wb/canvas/edge/stroke-disabled`            |
-| `wb/edge-primary-error`                              | `wb/canvas/edge/stroke-critical` ⚠          |
-| `wb/edge-primary-success`                            | `wb/canvas/edge/stroke-success` ⚠           |
-| `wb/edge-primary-warning`                            | `wb/canvas/edge/stroke-warning` ⚠           |
+| Old token (removed) | New equivalent (created) |
+|---|---|
+| `wb/node-bg-primary-{default,hover,active,disabled}` | `wb/canvas/node/bg-primary-{…}` |
+| `wb/node-bg-secondary-default` | `wb/canvas/node/bg-secondary-default` |
+| `wb/node-stroke-primary-{default,hover}` | `wb/canvas/node/stroke-{default,hover}` |
+| `wb/node-icon-primary-default` | `wb/canvas/node/icon-primary` |
+| `wb/node-icon-primary-disabled` | *(none — handled by `wb/ui/icon/disabled`)* |
+| `wb/node-txt-disabled` | `wb/canvas/node/text-disabled` |
+| `wb/node-port-fill-{default,active}` | `wb/canvas/port/fill-{default,active}` |
+| `wb/node-port-stroke-{default,active}` | `wb/canvas/port/stroke-{default,active}` |
+| `wb/edge-primary-default` | `wb/canvas/edge/stroke-default` |
+| `wb/edge-primary-hover` | `wb/canvas/edge/stroke-hover` |
+| `wb/edge-primary-active` | `wb/canvas/edge/stroke-active` |
+| `wb/edge-primary-disabled` | `wb/canvas/edge/stroke-disabled` |
+| `wb/edge-primary-error` | `wb/canvas/edge/stroke-critical` ⚠ |
+| `wb/edge-primary-success` | `wb/canvas/edge/stroke-success` ⚠ |
+| `wb/edge-primary-warning` | `wb/canvas/edge/stroke-warning` ⚠ |
 
 New additions in `canvas/node/*` on top of the rebuild: `bg-content-default`, `text` (default), `text-subtle`, `decor-primary` (see section 9).
 
@@ -380,18 +380,18 @@ The entire old per-accent matrix is gone: `chips-neutral-{bg,icon,x}` + `chips-a
 
 ### 8.3 Other removals
 
-| Removed token                                                                                                                             | Reason / replacement                                                                                                                                                           |
-| ----------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `wb/shadow`                                                                                                                               | moved to the **Effects** collection → `wb/shadow/ui/color`                                                                                                                     |
-| `wb/snackbar-bg-default`                                                                                                                  | neutral snackbar now uses a foundation background; separate `snackbar/stroke-*` tokens were added                                                                              |
-| `wb/tab-stroke-line`                                                                                                                      | removed (tab line via `wb/ui/stroke/*`)                                                                                                                                        |
-| `wb/icon-black`, `wb/icon-white`                                                                                                          | removed (literal colors; use `wb/ui/icon/default` / `onaccent`)                                                                                                                |
-| `wb/dropdown-bg-destructive-default`, `…-hover`                                                                                           | removed (destructive dropdown variant retired)                                                                                                                                 |
-| `wb/dropdown-bg-secondary-active`                                                                                                         | removed                                                                                                                                                                        |
-| `wb/button-gray-bg-disabled`, `wb/button-green-bg-disabled`, `wb/button-red-bg-disabled`                                                  | consolidated into `wb/components/button/solid/disabled`                                                                                                                        |
-| `wb/txt-destuctive-default` _(ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling)_ | typo-duplicate of `txt-error-default`, merged into `wb/ui/text/critical-default`                                                                                               |
-| `wb/dropdown-bg-primary-default`, `wb/dropdown-bg-secondary-default` _(2026-06-10)_                                                       | pass-through tokens deleted after re-pointing all consumers — panels → `wb/ui/bg/base`, embedded options → `wb/ui/bg/inset`. **Do not introduce `dropdown/*` keys into code.** |
-| `wb/ui/icon/onsurface-default` _(2026-06-10)_                                                                                             | redundant duplicate of `wb/ui/icon/default` (same value and role) — merged; legacy `icon-txt-default` maps to `wb/ui/icon/default`                                             |
+| Removed token | Reason / replacement |
+|---|---|
+| `wb/shadow` | moved to the **Effects** collection → `wb/shadow/ui/color` |
+| `wb/snackbar-bg-default` | neutral snackbar now uses a foundation background; separate `snackbar/stroke-*` tokens were added |
+| `wb/tab-stroke-line` | removed (tab line via `wb/ui/stroke/*`) |
+| `wb/icon-black`, `wb/icon-white` | removed (literal colors; use `wb/ui/icon/default` / `onaccent`) |
+| `wb/dropdown-bg-destructive-default`, `…-hover` | removed (destructive dropdown variant retired) |
+| `wb/dropdown-bg-secondary-active` | removed |
+| `wb/button-gray-bg-disabled`, `wb/button-green-bg-disabled`, `wb/button-red-bg-disabled` | consolidated into `wb/components/button/solid/disabled` |
+| `wb/txt-destuctive-default` *(ID `1592:58782`; manual rename to `wb/txt-destructive-default` pending — same token under either spelling)* | typo-duplicate of `txt-error-default`, merged into `wb/ui/text/critical-default` |
+| `wb/dropdown-bg-primary-default`, `wb/dropdown-bg-secondary-default` *(2026-06-10)* | pass-through tokens deleted after re-pointing all consumers — panels → `wb/ui/bg/base`, embedded options → `wb/ui/bg/inset`. **Do not introduce `dropdown/*` keys into code.** |
+| `wb/ui/icon/onsurface-default` *(2026-06-10)* | redundant duplicate of `wb/ui/icon/default` (same value and role) — merged; legacy `icon-txt-default` maps to `wb/ui/icon/default` |
 
 ---
 
@@ -401,17 +401,17 @@ The entire old per-accent matrix is gone: `chips-neutral-{bg,icon,x}` + `chips-a
 
 The missing link for the lead color. Primary components now alias `brand/*`, not `acc1` directly. This is a thin, role-named abstraction — if the brand color ever changes again, only the `brand/*` aliases move.
 
-| Token                            | Alias         | Role                                                                                                        |
-| -------------------------------- | ------------- | ----------------------------------------------------------------------------------------------------------- |
-| `wb/ui/brand/fill`               | `acc1-500`    | primary surface (default)                                                                                   |
-| `wb/ui/brand/fill-hover`         | `acc1-600`    | primary hover                                                                                               |
-| `wb/ui/brand/fill-active`        | `acc1-700`    | primary pressed                                                                                             |
-| `wb/ui/brand/fill-subtle`        | `acc1-500-10` | ghost-primary background                                                                                    |
-| `wb/ui/brand/fill-subtle-hover`  | `acc1-500-20` | ghost hover                                                                                                 |
-| `wb/ui/brand/fill-subtle-active` | `acc1-500-30` | ghost pressed                                                                                               |
-| `wb/ui/brand/border`             | `acc1-500`    | primary outline/accent                                                                                      |
-| `wb/ui/brand/text-on`            | `gray-100`    | text on brand surface (mode-independent; verified AA on all primary button states after the `acc1` refresh) |
-| `wb/ui/brand/identity`           | `acc1-500`    | logo / brand identity                                                                                       |
+| Token | Alias | Role |
+|---|---|---|
+| `wb/ui/brand/fill` | `acc1-500` | primary surface (default) |
+| `wb/ui/brand/fill-hover` | `acc1-600` | primary hover |
+| `wb/ui/brand/fill-active` | `acc1-700` | primary pressed |
+| `wb/ui/brand/fill-subtle` | `acc1-500-10` | ghost-primary background |
+| `wb/ui/brand/fill-subtle-hover` | `acc1-500-20` | ghost hover |
+| `wb/ui/brand/fill-subtle-active` | `acc1-500-30` | ghost pressed |
+| `wb/ui/brand/border` | `acc1-500` | primary outline/accent |
+| `wb/ui/brand/text-on` | `gray-100` | text on brand surface (mode-independent; verified AA on all primary button states after the `acc1` refresh) |
+| `wb/ui/brand/identity` | `acc1-500` | logo / brand identity |
 
 ### 9.2 UI foundations (NEW)
 
@@ -440,12 +440,12 @@ The missing link for the lead color. Primary components now alias `brand/*`, not
 
 ### 9.6 Nav Button state set (NEW, 2026-06-10)
 
-| Token                                          | Light →                | Dark →                 | Scopes                   |
-| ---------------------------------------------- | ---------------------- | ---------------------- | ------------------------ |
-| `wb/components/nav-button/bg-primary-default`  | `→ colors/transparent` | `→ colors/transparent` | `FRAME_FILL, SHAPE_FILL` |
-| `wb/components/nav-button/bg-primary-pressed`  | `→ gray-900-5`         | `→ gray-100-5`         | `FRAME_FILL, SHAPE_FILL` |
-| `wb/components/nav-button/bg-primary-active`   | `→ ui/brand/fill`      | `→ ui/brand/fill`      | `FRAME_FILL, SHAPE_FILL` |
-| `wb/components/nav-button/bg-primary-focus`    | `→ gray-900-5`         | `→ gray-100-5`         | `FRAME_FILL, SHAPE_FILL` |
+| Token | Light → | Dark → | Scopes |
+|---|---|---|---|
+| `wb/components/nav-button/bg-primary-default` | `→ colors/transparent` | `→ colors/transparent` | `FRAME_FILL, SHAPE_FILL` |
+| `wb/components/nav-button/bg-primary-pressed` | `→ gray-900-5` | `→ gray-100-5` | `FRAME_FILL, SHAPE_FILL` |
+| `wb/components/nav-button/bg-primary-active` | `→ ui/brand/fill` | `→ ui/brand/fill` | `FRAME_FILL, SHAPE_FILL` |
+| `wb/components/nav-button/bg-primary-focus` | `→ gray-900-5` | `→ gray-100-5` | `FRAME_FILL, SHAPE_FILL` |
 | `wb/components/nav-button/bg-primary-disabled` | `→ colors/transparent` | `→ colors/transparent` | `FRAME_FILL, SHAPE_FILL` |
 
 The pre-existing `bg-primary-hover` completes the set — all 6 background states are now tokenized: default · hover · pressed · active · focus · disabled, alongside the 5 icon states (`icon-primary-{default,hover,active,pressed,disabled}`; Focus reuses `icon-primary-default` deliberately). Note: `bg-primary-pressed` and `bg-primary-focus` currently share the hover value (`gray-900-5`) — a candidate for differentiation, pending design decision.
@@ -456,19 +456,19 @@ The pre-existing `bg-primary-hover` completes the set — all 6 background state
 
 The Nav Button component in the new file was discovered still hanging on **remote variables from the old, legacy DS library** (flat names). All 402 bindings are now local (0 remote). For code that consumed the old flat names, the mapping is **state-dependent**, because one old variable served three states:
 
-| Legacy (old DS, remote)                                              | → New local token                                                     |
-| -------------------------------------------------------------------- | --------------------------------------------------------------------- |
-| `wb/nav-button-icon-primary-default`                                 | `wb/components/nav-button/icon-primary-default`                       |
-| `wb/nav-button-icon-primary-hover`                                   | `wb/components/nav-button/icon-primary-hover`                         |
-| `wb/nav-button-icon-primary-active`                                  | `wb/components/nav-button/icon-primary-active`                        |
-| `wb/nav-button-icon-primary-pressed`                                 | `wb/components/nav-button/icon-primary-pressed` ⚠ _(brand `#3969FF`)_ |
-| `wb/nav-button-icon-primary-disabled`                                | `wb/components/nav-button/icon-primary-disabled`                      |
-| `wb/nav-button-bg-primary-hover` _(Hover state)_                     | `wb/components/nav-button/bg-primary-hover`                           |
-| `wb/nav-button-bg-primary-hover` _(Pressed state)_                   | `wb/components/nav-button/bg-primary-pressed`                         |
-| `wb/nav-button-bg-primary-hover` _(Focus state)_                     | `wb/components/nav-button/bg-primary-focus`                           |
-| `wb/button-primary-bg-default` _(Active background)_                 | `wb/components/nav-button/bg-primary-active` ⚠ _(brand `#3969FF`)_    |
-| `wb/ui-bg-primary-default` _(white focus inner ring)_                | `wb/ui/bg/base`                                                       |
-| `wb/pt-stroke-primary-default` _(focus ring, "No background" style)_ | `wb/ui/stroke/focus`                                                  |
+| Legacy (old DS, remote) | → New local token |
+|---|---|
+| `wb/nav-button-icon-primary-default` | `wb/components/nav-button/icon-primary-default` |
+| `wb/nav-button-icon-primary-hover` | `wb/components/nav-button/icon-primary-hover` |
+| `wb/nav-button-icon-primary-active` | `wb/components/nav-button/icon-primary-active` |
+| `wb/nav-button-icon-primary-pressed` | `wb/components/nav-button/icon-primary-pressed` ⚠ *(brand `#3969FF`)* |
+| `wb/nav-button-icon-primary-disabled` | `wb/components/nav-button/icon-primary-disabled` |
+| `wb/nav-button-bg-primary-hover` *(Hover state)* | `wb/components/nav-button/bg-primary-hover` |
+| `wb/nav-button-bg-primary-hover` *(Pressed state)* | `wb/components/nav-button/bg-primary-pressed` |
+| `wb/nav-button-bg-primary-hover` *(Focus state)* | `wb/components/nav-button/bg-primary-focus` |
+| `wb/button-primary-bg-default` *(Active background)* | `wb/components/nav-button/bg-primary-active` ⚠ *(brand `#3969FF`)* |
+| `wb/ui-bg-primary-default` *(white focus inner ring)* | `wb/ui/bg/base` |
+| `wb/pt-stroke-primary-default` *(focus ring, "No background" style)* | `wb/ui/stroke/focus` |
 
 **Visual changes (intended):** Active background and Pressed icon now use the new brand `#3969FF` instead of the stale legacy `#1096E7`. All other states changed source only (remote → local) with identical results. Placeholder icon fills (`#ffffff`) inside the swap slot remain unbound on purpose — a real icon brings its own color; do not treat them as Nav Button tokens.
 
@@ -514,17 +514,17 @@ Dimension tokens for `node/port/edge/widget`, aliasing `space/*`, `radius/*`, `s
 
 ### 12.1 Effect Styles — renamed into a slash hierarchy (10 → 10)
 
-| Old                  | New                                |
-| -------------------- | ---------------------------------- |
-| `shadow-xs`          | `shadow/ui/xs`                     |
-| `shadow-s`           | `shadow/ui/s`                      |
-| `shadow-m`           | `shadow/ui/m`                      |
-| `shadow-l`           | `shadow/ui/l`                      |
-| `shadow-xl`          | `shadow/ui/xl`                     |
-| `focus-ring-element` | `shadow/ui/focus-element`          |
-| `focus-ring-active`  | `shadow/canvas/focus-node/active`  |
+| Old | New |
+|---|---|
+| `shadow-xs` | `shadow/ui/xs` |
+| `shadow-s` | `shadow/ui/s` |
+| `shadow-m` | `shadow/ui/m` |
+| `shadow-l` | `shadow/ui/l` |
+| `shadow-xl` | `shadow/ui/xl` |
+| `focus-ring-element` | `shadow/ui/focus-element` |
+| `focus-ring-active` | `shadow/canvas/focus-node/active` |
 | `focus-ring-warning` | `shadow/canvas/focus-node/warning` |
-| `focus-ring-error`   | `shadow/canvas/focus-node/error`   |
+| `focus-ring-error` | `shadow/canvas/focus-node/error` |
 | `focus-ring-success` | `shadow/canvas/focus-node/success` |
 
 > Note: the Effect Style `focus-node/error` keeps the old `error` term (color tokens already use `critical`) — a known naming mismatch, pending closure (verified still named `error` on 2026-06-12). If you build a code-side enum, prefer `critical` and map the style name.
@@ -550,16 +550,16 @@ The Effect Styles' own color properties are **not yet bound to variables** (hard
 
 The old and new name sets are **disjoint** — this is not a rename, it's a new ramp. Every typography class in code requires manual mapping.
 
-| Old system (38)                                                 | New system (39)                                        |
-| --------------------------------------------------------------- | ------------------------------------------------------ |
-| `Heading/H1` … `Heading/H12`                                    | `Display/{S,M,L}`, `Headline/{S,M,L}`, `Title/{S,M,L}` |
-| `Paragraph/P1` … `Paragraph/P12`                                | `Body/{S,M,L}`                                         |
-| `Button/Button {Large,Medium,Small,XtraSmall}` + `Txt` variants | (covered by `Label/*`)                                 |
-| `Label/{Medium,Small,XtraSmall}`                                | `Label/{S,M,L,XL}`                                     |
-| `KeyShortcut/Txt {Large,Medium,Small}`                          | (map onto `Label/*` or `UI/Code`)                      |
-| —                                                               | `Node/{S,M,L}` _(new family for the canvas)_           |
-| —                                                               | every family has an `… Emphasized` variant             |
-| —                                                               | `UI/Code`                                              |
+| Old system (38) | New system (39) |
+|---|---|
+| `Heading/H1` … `Heading/H12` | `Display/{S,M,L}`, `Headline/{S,M,L}`, `Title/{S,M,L}` |
+| `Paragraph/P1` … `Paragraph/P12` | `Body/{S,M,L}` |
+| `Button/Button {Large,Medium,Small,XtraSmall}` + `Txt` variants | (covered by `Label/*`) |
+| `Label/{Medium,Small,XtraSmall}` | `Label/{S,M,L,XL}` |
+| `KeyShortcut/Txt {Large,Medium,Small}` | (map onto `Label/*` or `UI/Code`) |
+| — | `Node/{S,M,L}` *(new family for the canvas)* |
+| — | every family has an `… Emphasized` variant |
+| — | `UI/Code` |
 
 **Implication:** typography is the most manual part of the migration — there is no ID or name continuity. Recommended: build a mapping table from old H/P numbers to new roles (e.g. `Heading/H1` → `Display/L`, `Paragraph/P3` → `Body/M`) based on the real font sizes in both files before re-pointing.
 
@@ -651,7 +651,7 @@ Rebuilt as a 252-variant set with the full tokenized state model from section 9.
 - `ds-test-ii-audyt-usprawnien.md` (v3) — canonical design-side audit / session-restore document
 - ~~`wb-ds-changelog-dev-migration.md`~~ and ~~`wb-ds-changelog-dev-2026-06-10.md`~~ — Polish-language changelogs, **superseded by this document** and scheduled for deletion. Do not reference them.
 
-_Export-by-name reminder: if the build uses variable names as keys (Style Dictionary / Tokens Studio), every rename in this document is a downstream key change — update wherever names are hardcoded._
+*Export-by-name reminder: if the build uses variable names as keys (Style Dictionary / Tokens Studio), every rename in this document is a downstream key change — update wherever names are hardcoded.*
 
 ---
 
@@ -659,15 +659,15 @@ _Export-by-name reminder: if the build uses variable names as keys (Style Dictio
 
 All of the following was re-read live from both Figma files via the Plugin API on 2026-06-12:
 
-| Check                   | Old file (`Dv3nOrLqTgGEU7QB2SRDSL`)                                                     | New file (`hfT6zrYS948n8LrEK9y3Wh`)                                                                                                     |
-| ----------------------- | --------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
-| Primitives              | 154 vars, mode `Mode 1`                                                                 | 264 vars, mode `Mode 1`                                                                                                                 |
-| Tokens                  | 207 vars, modes `Light`/`Dark`                                                          | 200 vars, modes `Light`/`Dark`; domains `wb/ui/*` 55 · `wb/components/*` 105 · `wb/canvas/*` 40; names outside the three domains: **0** |
-| Numerals                | 316 vars, mode `Mode 1`                                                                 | —                                                                                                                                       |
-| Canvas                  | —                                                                                       | 56 vars (all FLOAT), mode `value`                                                                                                       |
-| Effects                 | —                                                                                       | 29 vars, modes `light`/`dark`                                                                                                           |
-| Text Styles             | 38                                                                                      | 39                                                                                                                                      |
-| Effect Styles           | 10                                                                                      | 10 — names verified, including the `shadow/canvas/focus-node/error` mismatch                                                            |
-| `acc1-500`              | —                                                                                       | `#3969FF` confirmed (RGB 57/105/255)                                                                                                    |
-| `wb/colors/transparent` | —                                                                                       | present, `VariableID:10665:20`                                                                                                          |
-| `destuctive` typo       | **still present** as `wb/txt-destuctive-default` (`1592:58782`) — manual rename pending | zero occurrences of either spelling                                                                                                     |
+| Check | Old file (`Dv3nOrLqTgGEU7QB2SRDSL`) | New file (`hfT6zrYS948n8LrEK9y3Wh`) |
+|---|---|---|
+| Primitives | 154 vars, mode `Mode 1` | 264 vars, mode `Mode 1` |
+| Tokens | 207 vars, modes `Light`/`Dark` | 200 vars, modes `Light`/`Dark`; domains `wb/ui/*` 55 · `wb/components/*` 105 · `wb/canvas/*` 40; names outside the three domains: **0** |
+| Numerals | 316 vars, mode `Mode 1` | — |
+| Canvas | — | 56 vars (all FLOAT), mode `value` |
+| Effects | — | 29 vars, modes `light`/`dark` |
+| Text Styles | 38 | 39 |
+| Effect Styles | 10 | 10 — names verified, including the `shadow/canvas/focus-node/error` mismatch |
+| `acc1-500` | — | `#3969FF` confirmed (RGB 57/105/255) |
+| `wb/colors/transparent` | — | present, `VariableID:10665:20` |
+| `destuctive` typo | **still present** as `wb/txt-destuctive-default` (`1592:58782`) — manual rename pending | zero occurrences of either spelling |
