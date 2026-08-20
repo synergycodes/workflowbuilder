@@ -149,6 +149,3 @@ jobs:
 
       - name: Style lint (token usage + fallbacks)
         run: pnpm lint:styles
-
-      - name: DS 2.0 migration meter
-        run: pnpm migration:meter
