@@ -20,7 +20,7 @@
 }
 
 .container--neutral {
-  --color: var(--ax-colors-gray-800);
+  --color: var(--ax-txt-primary-default);
   --background-color: var(--ax-ui-bg-secondary-default);
 }
 
