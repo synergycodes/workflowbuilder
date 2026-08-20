@@ -34,9 +34,8 @@ function collectLeaves(node: TokenNode, path: string[], out: { path: string; val
   }
 }
 
-/** The emitted CSS name: Style Dictionary's `name/kebab` transform runs
- * change-case's kebabCase over the space-joined token path — use the same
- * function so the two can never drift. */
+/** Must match Style Dictionary's `name/kebab` output — same function
+ * (change-case), same input shape, so the two cannot drift. */
 function toCssName(tokenPath: string): string {
   return `--${kebabCase(tokenPath.split('/').join(' '))}`;
 }

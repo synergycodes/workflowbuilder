@@ -11,8 +11,7 @@ on:
   pull_request:
     branches:
       - main
-      # DS 2.0 integration branch — PRs targeting it need the same feedback
-      # as PRs to main (it all merges into main at the end of the migration).
+      # Long-lived DS 2.0 integration branch; merges into main at the end.
       - ds-2.0
 
 permissions:
@@ -150,8 +149,6 @@ jobs:
         run: pnpm build:ui
 
       - name: Codemod map reproducibility
-        # codemod-map.json is a committed artifact; it must match what its
-        # generator produces from the checked-in designer changelog.
         run: |
           pnpm --filter @workflowbuilder/ui-tokens codemod:map
           git diff --exit-code -- packages/tokens/codemod-map.json

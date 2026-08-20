@@ -12,7 +12,7 @@ on:
   pull_request:
     branches:
       - main
-      # DS 2.0 integration branch — same feedback as PRs to main.
+      # Long-lived DS 2.0 integration branch; merges into main at the end.
       - ds-2.0
     paths:
       - 'apps/docs/**'

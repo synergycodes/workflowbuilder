@@ -114,7 +114,6 @@ function toCss(figmaName, prefix) {
 const oldCss = (name) => toCss(name, '--ax-');
 const newCss = (name) => toCss(name, '--wb-');
 
-/** Splits a markdown table row into trimmed cells. */
 function cells(row) {
   return row
     .replace(/^\|/, '')
@@ -192,8 +191,6 @@ for (const line of lines) {
   const [oldCell, newCell] = cells(line);
   if (oldCell === undefined || newCell === undefined) continue;
 
-  // A fully-written brace list becomes the inheritance context for `{…}`
-  // rows below it in the same table.
   const fullBrace = oldCell.match(/\{([^}…]+)\}/);
   if (fullBrace && fullBrace[1].includes(',')) {
     lastBraceList = fullBrace[1].split(',').map((part) => part.trim());
@@ -261,8 +258,6 @@ for (const line of lines) {
       removed.push(removedEntry(oldName, null, context));
     }
   } else {
-    // More candidates than a positional or clean-consolidation match allows
-    // — prose-mixed cell; do not guess.
     unparsed.push({ section, row: line.trim() });
   }
 }
@@ -283,7 +278,6 @@ const map = {
   // Primitives keep their names 1:1 under the new namespace; validated
   // against the real 2.0 export by the manifest when it lands.
   prefixRules: [{ oldCssPrefix: '--ax-colors-', newCssPrefix: '--wb-colors-' }],
-  // Not expressible as 1:1 renames — handled inside their component tasks:
   manual: [
     {
       pattern: '--ax-chips-*',

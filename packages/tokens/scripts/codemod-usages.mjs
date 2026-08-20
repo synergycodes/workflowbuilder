@@ -12,9 +12,8 @@
  * names that exist in today's token dist (a real gap that will dangle after
  * the pipeline switch) and component-local names that need no rewrite.
  *
- * Dry-run by default; pass --write to modify files. apps/docs is excluded
- * (not part of the shipped packages; its one usage is handled in the docs
- * workflow separately).
+ * Dry-run by default; pass --write to modify files. apps/docs is excluded —
+ * it is not part of the shipped packages.
  *
  * Usage: node scripts/codemod-usages.mjs [--write]
  */
