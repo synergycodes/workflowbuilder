@@ -1,11 +1,6 @@
 :root {
-  --wb-edge-color: var(--ax-colors-gray-500); /* missing token */
-  --wb-edge-color-temporary: color-mix(in srgb, var(--ax-colors-gray-500) 50%, transparent);
-  --wb-edge-color-hover: var(--ax-colors-gray-600); /* missing token */
-  --wb-edge-color-select: var(--ax-colors-acc1-500); /* missing token */
-
-  --wb-edge-label-color: var(--ax-colors-gray-500); /* missing token */
+  --wb-edge-label-color: var(--ax-colors-gray-500);
   --wb-edge-label-color-hover: var(--ax-edge-primary-hover);
   --wb-edge-label-color-select: var(--ax-edge-primary-active);
-  --wb-edge-label-background: var(--ax-colors-gray-200); /* missing token */
+  --wb-edge-label-background: var(--ax-colors-gray-200);
 }
