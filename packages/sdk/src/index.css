@@ -23,6 +23,10 @@
     --wb-scroll-radius: 0.625rem;
     --wb-scroll-thumb-color: var(--ax-scrollbar-bg-default);
     --wb-scroll-track-color: transparent;
+    /* Candidate for removal at the 3.0.0 close-out: the wb-text-* classes
+       carry their own families, so this variable loses reach as components
+       adopt them — decide then between removing it and narrowing it to
+       consumer-slot content. */
     --wb-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
 }
