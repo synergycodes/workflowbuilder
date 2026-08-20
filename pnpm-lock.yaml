@@ -510,12 +510,6 @@ importers:
       '@cfworker/json-schema':
         specifier: 4.1.1
         version: 4.1.1
-      '@fontsource/inter':
-        specifier: ^5.3.0
-        version: 5.3.0
-      '@fontsource/poppins':
-        specifier: ^5.2.7
-        version: 5.2.7
       '@jsonforms/core':
         specifier: ^3.4.0
         version: 3.5.1
@@ -1876,12 +1870,6 @@ packages:
 
   '@floating-ui/utils@0.2.12':
     resolution: {integrity: sha512-HpCo8tmWzLVad5s2d19EhAz5zqrrQ6s69qd6moPMQvkOuSwDT1YgRfWSVuc4ennqrgv3OHppiOGMQ7oC13yIww==}
-
-  '@fontsource/inter@5.3.0':
-    resolution: {integrity: sha512-RofMylZmjlJEfELXeNHFWBRcSs75rGU/6bV2S2jfnvv/3rPXPGe0LgUJTklcHZ9lM4OZmAVFhcJPnACfb91A3g==}
-
-  '@fontsource/poppins@5.2.7':
-    resolution: {integrity: sha512-6uQyPmseo4FgI97WIhA4yWRlNaoLk4vSDK/PyRwdqqZb5zAEuc+Kunt8JTMcsHYUEGYBtN15SNkMajMdqUSUmg==}
 
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
@@ -9651,10 +9639,6 @@ snapshots:
       react-dom: 19.1.0(react@19.1.0)
 
   '@floating-ui/utils@0.2.12': {}
-
-  '@fontsource/inter@5.3.0': {}
-
-  '@fontsource/poppins@5.2.7': {}
 
   '@gerrit0/mini-shiki@3.23.0':
     dependencies:
