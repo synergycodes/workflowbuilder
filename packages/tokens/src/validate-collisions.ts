@@ -9,6 +9,8 @@
  * benign); different-value collisions throw, because the emitted value
  * would then depend on object iteration order.
  */
+import { kebabCase } from 'change-case';
+
 type TokenLeaf = { value: unknown; type: string };
 type TokenNode = TokenLeaf | { [key: string]: TokenNode };
 
@@ -32,14 +34,11 @@ function collectLeaves(node: TokenNode, path: string[], out: { path: string; val
   }
 }
 
-/** Mirrors the sd-transforms kebab output (which keeps letter–digit runs like
- * 'acc7' together — remeda's toKebabCase would split them to 'acc-7'). */
+/** The emitted CSS name: Style Dictionary's `name/kebab` transform runs
+ * change-case's kebabCase over the space-joined token path — use the same
+ * function so the two can never drift. */
 function toCssName(tokenPath: string): string {
-  const kebab = tokenPath
-    .toLowerCase()
-    .replaceAll(/[^a-z0-9]+/g, '-')
-    .replaceAll(/^-+|-+$/g, '');
-  return `--${kebab}`;
+  return `--${kebabCase(tokenPath.split('/').join(' '))}`;
 }
 
 export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssNameCollision[] {
@@ -71,7 +70,11 @@ export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssN
  */
 export function assertNoValueCollisions(tokens: Record<string, unknown>, setKeys: string[]): void {
   for (const setKey of setKeys) {
-    const collisions = findCssNameCollisions(tokens[setKey] as Record<string, TokenNode>);
+    const tokenSet = tokens[setKey];
+    if (!tokenSet) {
+      throw new Error(`tokens.json does not export a '${setKey}' set`);
+    }
+    const collisions = findCssNameCollisions(tokenSet as Record<string, TokenNode>);
     const conflicting = collisions.filter((collision) => !collision.sameValue);
 
     for (const collision of collisions.filter((c) => c.sameValue)) {
