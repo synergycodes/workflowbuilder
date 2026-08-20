@@ -353,7 +353,6 @@
     line-height: 140%;
   }
 
-  /* No emphasized variant by design — UI/Code ships Regular only. */
   .wb-text-code {
     font-size: var(--wb-font-size-150);
     line-height: 130%;
