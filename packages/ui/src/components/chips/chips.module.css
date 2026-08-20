@@ -19,9 +19,9 @@
       var(--wb-components-chips-overlay-outline),
       var(--wb-components-chips-overlay-outline)
     );
-    /* An inset ring, not a border: Figma's inside stroke overlaps the padding,
-       a CSS border would add to it and widen the chip. */
-    box-shadow: inset 0 0 0 var(--wb-size-12) var(--wb-components-chips-inset-outline);
+    /* A ring, not a border: the stroke sits outside the box (Figma
+       strokeAlign OUTSIDE), while a border would consume the padding. */
+    box-shadow: 0 0 0 var(--wb-size-12) var(--wb-components-chips-inset-outline);
     color: var(--wb-components-chips-inset-outline);
   }
 
