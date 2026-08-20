@@ -6,24 +6,8 @@
    See packages/ui/css-layers.md. */
 @layer ui.base, ui.component;
 
-/* Poppins is bundled rather than fetched from a CDN: strict CSPs block the
-   request, the pre-consent IP leak breaks GDPR flows, and air-gapped
-   deployments have no outbound internet. */
-@import '@fontsource/poppins/latin-300.css';
-@import '@fontsource/poppins/latin-400.css';
-@import '@fontsource/poppins/latin-500.css';
-@import '@fontsource/poppins/latin-600.css';
-@import '@fontsource/poppins/latin-700.css';
-@import '@fontsource/poppins/latin-ext-300.css';
-@import '@fontsource/poppins/latin-ext-400.css';
-@import '@fontsource/poppins/latin-ext-500.css';
-@import '@fontsource/poppins/latin-ext-600.css';
-@import '@fontsource/poppins/latin-ext-700.css';
-
-/* Inter serves the DS 2.0 UI/Code type role (wb-type-code), Regular only. */
-@import '@fontsource/inter/latin-400.css';
-@import '@fontsource/inter/latin-ext-400.css';
-
+/* Poppins and Inter ship with @workflowbuilder/ui (next to the wb-type-*
+   classes that require them) and arrive through the JS module graph. */
 @import '@workflowbuilder/ui/tokens.css';
 
 /* @workflowbuilder/ui styles arrive through the JS module graph - importing
