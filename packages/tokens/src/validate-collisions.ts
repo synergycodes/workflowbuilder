@@ -67,7 +67,7 @@ export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssN
  * Validates every configured set in the raw tokens.json export. Different
  * values behind one CSS name fail the build; identical values only warn so
  * the known Figma-side duplicates don't block builds until design removes
- * them at the source (WB-421).
+ * them at the source.
  */
 export function assertNoValueCollisions(tokens: Record<string, unknown>, setKeys: string[]): void {
   for (const setKey of setKeys) {
@@ -78,7 +78,7 @@ export function assertNoValueCollisions(tokens: Record<string, unknown>, setKeys
       console.warn(
         `tokens: '${setKey}' exports duplicate names for ${collision.cssName} ` +
           `(${collision.entries.map((entry) => `'${entry.path}'`).join(', ')}) — same value, ` +
-          'the built CSS keeps one copy; remove the duplicate in Figma (WB-421).',
+          'the built CSS keeps one copy; remove the duplicate in Figma.',
       );
     }
 

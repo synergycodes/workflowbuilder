@@ -244,12 +244,12 @@ const map = {
     {
       pattern: '--ax-chips-*',
       reason:
-        'Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task (WB-489).',
+        'Chips rebuilt as a 4-token factory (map §8.2/§9.3) — chip coloring is rebuilt in the Chips task.',
     },
     {
       pattern: '--ax-nav-button-bg-primary-hover',
       reason:
-        'One legacy token served hover/pressed/focus states (map §10) — split per state in the Buttons task (WB-490).',
+        'One legacy token served hover/pressed/focus states (map §10) — split per state in the Buttons task.',
     },
   ],
   renames: dedupedRenames,
