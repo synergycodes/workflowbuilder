@@ -167,11 +167,6 @@
     line-height: 100%;
   }
 
-  /* DS 2.0 type roles — one class per text style from the Typography guidelines.
-     Naming: wb-text-{family}-{size}[-emphasized]; Emphasized = SemiBold 600.
-     Font sizes reference the wb/font-size primitives (see _provisional.css
-     until the DS 2.0 export ships them). */
-
   .wb-text-display-s,
   .wb-text-display-m,
   .wb-text-display-l,
