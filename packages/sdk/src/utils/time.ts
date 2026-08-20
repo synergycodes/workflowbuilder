@@ -55,7 +55,7 @@ export function getISODate(dateLike: DateLike | null): string {
     const year = date.getFullYear();
     const dateISO = date.toISOString();
     if (year < 1980) {
-      console.warn(`DateString doesn't is number but may be wrong`, dateLike, dateISO);
+      console.warn(`DateString is a number but may be wrong`, dateLike, dateISO);
     }
 
     return dateISO;

@@ -37,10 +37,5 @@ export function getDefinitionErrors(definition: Partial<VariableDefinition>): De
     }
   }
 
-  // Uncomment if required
-  // if (!definition.description) {
-  //   validity.description = true;
-  // }
-
   return validity;
 }

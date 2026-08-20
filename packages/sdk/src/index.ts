@@ -112,6 +112,7 @@ export type {
   IconType,
   LayoutDirection,
   PaletteItem,
+  PaletteGroup,
   PaletteItemOrGroup,
   TemplateModel,
 } from './node/common';
@@ -202,6 +203,7 @@ export {
 } from './features/diagram/listeners/node-drag-start-listeners';
 
 export { getHandleId } from './features/diagram/handles/get-handle-id';
+export { getNodeAncestors } from './features/variables/utils/diagram/get-node-ancestors';
 
 // =============================================================================
 // JsonForms helpers (plugin schema authoring)
@@ -228,7 +230,6 @@ export {
   EDGE_OFFSET,
   SELF_CONNECTING_EDGE_LABEL_OFFSET,
 } from './features/diagram/edges/edge.consts';
-export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // =============================================================================
 // i18n
@@ -260,3 +261,25 @@ export { Icon } from '@workflow-builder/icons';
  * @category Icons
  */
 export type { WBIcon } from '@workflow-builder/icons';
+
+// =============================================================================
+// Elements
+// =============================================================================
+// Individual UI schema element types, for consumers building parts of a
+// `UISchema` piecemeal (e.g. a helper returning a single layout element).
+
+export type { UISchemaElement } from './types/uischema';
+
+// =============================================================================
+// Variables
+// =============================================================================
+// Delimiters wrapping a variable reference in a string value
+// (`{{nodeId.output}}`), so consumers build and parse references without
+// hardcoding the brackets.
+
+export { VARIABLE_BRACKETS_START, VARIABLE_BRACKETS_END } from './features/variables/constants';
+export { VARIABLE_NODES_KEY } from './features/variables/constants';
+
+export { useVariablesSuggestionsStore } from './features/variables/stores/use-variable-suggestions-store';
+export type { VariablesSuggestionsStore } from './features/variables/stores/use-variable-suggestions-store';
+export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';

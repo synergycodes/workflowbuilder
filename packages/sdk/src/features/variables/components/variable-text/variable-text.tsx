@@ -1,6 +1,6 @@
 import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useRef } from 'react';
+import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
 
@@ -8,11 +8,16 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './variable-text.module.css';
 
-import type { VariableType } from '../../../../node/node-output-schema';
 import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
 import { showSnackbar } from '../../../../utils/show-snackbar';
 import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
-import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
+import { buildMentionData } from './core/build-mention-data';
+import type {
+  VariableMentionData,
+  VariableSuggestion,
+  VariableSuggestionGroup,
+  VariableTextProps,
+} from './variable-text.types';
 
 const DEFAULT_TRIGGER = '{{';
 const DEFAULT_MARKUP = '{{__id__}}';
@@ -37,26 +42,6 @@ const multiLineClassNames = {
   ...baseClassNames,
   control: `${styles['control']} ${styles['multiLine']}`,
 };
-
-type VariableMentionData = MentionDataItem & {
-  groupLabel?: string;
-  label: string;
-  description?: string;
-  type: VariableType;
-};
-
-function buildMentionData(groups: VariableSuggestionGroup[]): VariableMentionData[] {
-  return groups.flatMap((group) =>
-    group.suggestions.map((suggestion) => ({
-      id: suggestion.id,
-      display: `{{ ${suggestion.display} }}`,
-      groupLabel: group.label,
-      label: suggestion.label,
-      description: suggestion.description,
-      type: suggestion.type,
-    })),
-  );
-}
 
 function defaultRenderGroupItem(suggestion: VariableSuggestion, _focused: boolean): ReactNode {
   return (
@@ -90,80 +75,6 @@ function stopLibraryMouseDown(event: React.MouseEvent) {
   event.stopPropagation();
 }
 
-function handleClose() {
-  if (document.activeElement instanceof HTMLElement) {
-    document.activeElement.blur();
-  }
-}
-
-function SuggestionsContainer({
-  groups,
-  title,
-  renderGroupHeader,
-  children,
-}: {
-  groups: VariableSuggestionGroup[];
-  title: string;
-  renderGroupHeader: (group: VariableSuggestionGroup) => ReactNode;
-  children: ReactElement;
-}) {
-  const ul = children as ReactElement<{ children?: ReactElement[]; className?: string }>;
-  const items = ul.props.children;
-
-  if (!items || !Array.isArray(items) || items.length === 0) {
-    return children;
-  }
-
-  // Build a lookup from suggestion id → group for efficient header injection
-  const groupByItemId = new Map<string, VariableSuggestionGroup>();
-  for (const group of groups) {
-    for (const s of group.suggestions) {
-      groupByItemId.set(s.id, group);
-    }
-  }
-
-  const grouped: ReactNode[] = [];
-  let previousLabel = '';
-
-  for (const item of items) {
-    // Library keys are formatted as "childIndex-suggestionId", e.g. "0-nodeId.propKey"
-    const suggestionId = String(item.key ?? '').replace(/^\d+-/, '');
-    const group = groupByItemId.get(suggestionId);
-    const label = group?.label ?? '';
-
-    if (label !== previousLabel) {
-      const headerGroup = group ?? groups.find((group) => group.label === label);
-      if (headerGroup && (headerGroup.label || headerGroup.icon)) {
-        grouped.push(
-          <li key={`header-${label}`} className={styles['groupHeader']} onMouseDown={stopLibraryMouseDown}>
-            {renderGroupHeader(headerGroup)}
-          </li>,
-        );
-      }
-      previousLabel = label;
-    }
-
-    grouped.push(item);
-  }
-
-  return (
-    <div className={styles['suggestionsContainer']} onMouseDown={preventBlur}>
-      <div className={styles['suggestionsHeader']}>
-        <span className={styles['suggestionsTitle']}>{title}</span>
-        <NavButton
-          onMouseDown={(event: React.MouseEvent) => {
-            event.stopPropagation();
-            handleClose();
-          }}
-        >
-          <Icon name="X" />
-        </NavButton>
-      </div>
-      {cloneElement(ul, {}, grouped)}
-    </div>
-  );
-}
-
 export function VariableText({
   className,
   classNameWrapper,
@@ -180,10 +91,86 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
+  const [key, setKey] = useState(crypto.randomUUID());
   const refValueForBlur = useRef(value);
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
+
+  const handleClose = useCallback(() => {
+    setKey(crypto.randomUUID());
+  }, []);
+
+  const SuggestionsContainer = useCallback(
+    ({
+      groups,
+      title,
+      renderGroupHeader,
+      children,
+    }: {
+      groups: VariableSuggestionGroup[];
+      title: string;
+      renderGroupHeader: (group: VariableSuggestionGroup) => ReactNode;
+      children: ReactElement;
+    }) => {
+      const ul = children as ReactElement<{ children?: ReactElement[]; className?: string }>;
+      const items = ul.props.children;
+
+      if (!items || !Array.isArray(items) || items.length === 0) {
+        return children;
+      }
+
+      // Build a lookup from suggestion id → group for efficient header injection
+      const groupByItemId = new Map<string, VariableSuggestionGroup>();
+      for (const group of groups) {
+        for (const s of group.suggestions) {
+          groupByItemId.set(s.id, group);
+        }
+      }
+
+      const grouped: ReactNode[] = [];
+      let previousLabel = '';
+
+      for (const item of items) {
+        // Library keys are formatted as "childIndex-suggestionId", e.g. "0-nodeId.propKey"
+        const suggestionId = String(item.key ?? '').replace(/^\d+-/, '');
+        const group = groupByItemId.get(suggestionId);
+        const label = group?.label ?? '';
+
+        if (label !== previousLabel) {
+          const headerGroup = group ?? groups.find((group) => group.label === label);
+          if (headerGroup && (headerGroup.label || headerGroup.icon)) {
+            grouped.push(
+              <li key={`header-${label}`} className={styles['groupHeader']} onMouseDown={stopLibraryMouseDown}>
+                {renderGroupHeader(headerGroup)}
+              </li>,
+            );
+          }
+          previousLabel = label;
+        }
+
+        grouped.push(item);
+      }
+
+      return (
+        <div className={styles['suggestionsContainer']} onMouseDown={preventBlur}>
+          <div className={styles['suggestionsHeader']}>
+            <span className={styles['suggestionsTitle']}>{title}</span>
+            <NavButton
+              onMouseDown={(event: React.MouseEvent) => {
+                event.stopPropagation();
+                handleClose();
+              }}
+            >
+              <Icon name="X" />
+            </NavButton>
+          </div>
+          {cloneElement(ul, {}, grouped)}
+        </div>
+      );
+    },
+    [handleClose],
+  );
 
   const displayTransform = useCallback(
     (id: string | number) => {
@@ -242,7 +229,7 @@ export function VariableText({
         {children}
       </SuggestionsContainer>
     ),
-    [suggestionGroups, title, renderGroupHeader],
+    [SuggestionsContainer, suggestionGroups, title, renderGroupHeader],
   );
 
   const onMentionsChange = useCallback(
@@ -313,11 +300,13 @@ export function VariableText({
 
   return (
     <MentionsInput
+      key={key}
       className={clsx(styles['container'], classNameWrapper)}
       value={value}
       onMentionsChange={onMentionsChange}
       onFocus={handleFocus}
       onBlur={handleBlur}
+      onSubmit={handleBlur}
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}

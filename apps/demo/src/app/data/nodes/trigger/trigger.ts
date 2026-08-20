@@ -75,5 +75,3 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
     ],
   },
 };
-
-// payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
