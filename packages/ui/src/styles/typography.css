@@ -172,7 +172,7 @@
 
   :root {
     /* PROVISIONAL font-size primitives (wb/font-size/NNN, NNN = px × 12.5):
-       the DS 2.0 variables export (WB-487) will ship these in tokens.css and,
+       the DS 2.0 variables export will ship these in tokens.css and,
        being unlayered, will override this layered block — remove it then. */
     --wb-font-size-125: 0.625rem;
     --wb-font-size-137: 0.6875rem;
