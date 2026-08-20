@@ -52,7 +52,7 @@ Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.t
 pnpm lint:styles
 ```
 
-Stylelint (root `.stylelintrc.json`) validates workspace CSS with two rules,
+Stylelint (root `.stylelintrc.mjs`) validates workspace CSS with two rules,
 both errors:
 
 1. `csstools/value-no-unknown-custom-properties` — every `var(--name)` must
