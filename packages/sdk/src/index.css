@@ -6,7 +6,7 @@
    See packages/ui/css-layers.md. */
 @layer ui.base, ui.component;
 
-/* Poppins and Inter ship with @workflowbuilder/ui (next to the wb-type-*
+/* Poppins and Inter ship with @workflowbuilder/ui (next to the wb-text-*
    classes that require them) and arrive through the JS module graph. */
 @import '@workflowbuilder/ui/tokens.css';
 

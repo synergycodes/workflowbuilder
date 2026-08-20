@@ -168,7 +168,7 @@
   }
 
   /* DS 2.0 type roles — one class per text style from the Typography guidelines.
-     Naming: wb-type-{family}-{size}[-emphasized]; Emphasized = SemiBold 600. */
+     Naming: wb-text-{family}-{size}[-emphasized]; Emphasized = SemiBold 600. */
 
   :root {
     /* PROVISIONAL font-size primitives (wb/font-size/NNN, NNN ≈ px × 12.5, truncated):
@@ -188,230 +188,230 @@
     --wb-font-size-400: 2rem;
   }
 
-  .wb-type-display-s,
-  .wb-type-display-m,
-  .wb-type-display-l,
-  .wb-type-headline-s,
-  .wb-type-headline-m,
-  .wb-type-headline-l,
-  .wb-type-title-s,
-  .wb-type-title-m,
-  .wb-type-title-l,
-  .wb-type-body-s,
-  .wb-type-body-m,
-  .wb-type-body-l,
-  .wb-type-label-s,
-  .wb-type-label-m,
-  .wb-type-label-l,
-  .wb-type-label-xl,
-  .wb-type-node-s,
-  .wb-type-node-m,
-  .wb-type-node-l,
-  .wb-type-display-s-emphasized,
-  .wb-type-display-m-emphasized,
-  .wb-type-display-l-emphasized,
-  .wb-type-headline-s-emphasized,
-  .wb-type-headline-m-emphasized,
-  .wb-type-headline-l-emphasized,
-  .wb-type-title-s-emphasized,
-  .wb-type-title-m-emphasized,
-  .wb-type-title-l-emphasized,
-  .wb-type-body-s-emphasized,
-  .wb-type-body-m-emphasized,
-  .wb-type-body-l-emphasized,
-  .wb-type-label-s-emphasized,
-  .wb-type-label-m-emphasized,
-  .wb-type-label-l-emphasized,
-  .wb-type-label-xl-emphasized,
-  .wb-type-node-s-emphasized,
-  .wb-type-node-m-emphasized,
-  .wb-type-node-l-emphasized {
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
     font-family: 'Poppins', system-ui, sans-serif;
   }
 
   /* Descendants too: the SDK sets font-family on every element via a
      universal selector, which would otherwise override the inherited family
      inside a code-role element. */
-  .wb-type-code,
-  .wb-type-code * {
+  .wb-text-code,
+  .wb-text-code * {
     font-family: 'Inter', system-ui, sans-serif;
   }
 
-  .wb-type-display-s,
-  .wb-type-display-m,
-  .wb-type-display-l,
-  .wb-type-headline-s,
-  .wb-type-headline-m,
-  .wb-type-headline-l,
-  .wb-type-title-s,
-  .wb-type-title-m,
-  .wb-type-title-l,
-  .wb-type-body-s,
-  .wb-type-body-m,
-  .wb-type-body-l,
-  .wb-type-label-s,
-  .wb-type-label-m,
-  .wb-type-label-l,
-  .wb-type-label-xl,
-  .wb-type-node-s,
-  .wb-type-node-m,
-  .wb-type-node-l,
-  .wb-type-code {
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-code {
     font-weight: 400;
   }
 
   /* Display — hero and marketing moments */
 
-  .wb-type-display-s,
-  .wb-type-display-s-emphasized {
+  .wb-text-display-s,
+  .wb-text-display-s-emphasized {
     font-size: var(--wb-font-size-300);
     line-height: 130%;
   }
 
-  .wb-type-display-m,
-  .wb-type-display-m-emphasized {
+  .wb-text-display-m,
+  .wb-text-display-m-emphasized {
     font-size: var(--wb-font-size-350);
     line-height: 120%;
   }
 
-  .wb-type-display-l,
-  .wb-type-display-l-emphasized {
+  .wb-text-display-l,
+  .wb-text-display-l-emphasized {
     font-size: var(--wb-font-size-400);
     line-height: 120%;
   }
 
   /* Headline — page and section headings */
 
-  .wb-type-headline-s,
-  .wb-type-headline-s-emphasized {
+  .wb-text-headline-s,
+  .wb-text-headline-s-emphasized {
     font-size: var(--wb-font-size-250);
     line-height: 130%;
   }
 
-  .wb-type-headline-m,
-  .wb-type-headline-m-emphasized {
+  .wb-text-headline-m,
+  .wb-text-headline-m-emphasized {
     font-size: var(--wb-font-size-275);
     line-height: 130%;
   }
 
-  .wb-type-headline-l,
-  .wb-type-headline-l-emphasized {
+  .wb-text-headline-l,
+  .wb-text-headline-l-emphasized {
     font-size: var(--wb-font-size-300);
     line-height: 130%;
   }
 
   /* Title — card and group titles */
 
-  .wb-type-title-s,
-  .wb-type-title-s-emphasized {
+  .wb-text-title-s,
+  .wb-text-title-s-emphasized {
     font-size: var(--wb-font-size-175);
     line-height: 140%;
   }
 
-  .wb-type-title-m,
-  .wb-type-title-m-emphasized {
+  .wb-text-title-m,
+  .wb-text-title-m-emphasized {
     font-size: var(--wb-font-size-200);
     line-height: 140%;
   }
 
-  .wb-type-title-l,
-  .wb-type-title-l-emphasized {
+  .wb-text-title-l,
+  .wb-text-title-l-emphasized {
     font-size: var(--wb-font-size-225);
     line-height: 130%;
   }
 
   /* Body — running text */
 
-  .wb-type-body-s,
-  .wb-type-body-s-emphasized {
+  .wb-text-body-s,
+  .wb-text-body-s-emphasized {
     font-size: var(--wb-font-size-150);
     line-height: 130%;
   }
 
-  .wb-type-body-m,
-  .wb-type-body-m-emphasized {
+  .wb-text-body-m,
+  .wb-text-body-m-emphasized {
     font-size: var(--wb-font-size-175);
     line-height: 140%;
   }
 
-  .wb-type-body-l,
-  .wb-type-body-l-emphasized {
+  .wb-text-body-l,
+  .wb-text-body-l-emphasized {
     font-size: var(--wb-font-size-200);
     line-height: 140%;
   }
 
   /* Label — buttons, chips, captions */
 
-  .wb-type-label-s,
-  .wb-type-label-s-emphasized {
+  .wb-text-label-s,
+  .wb-text-label-s-emphasized {
     font-size: var(--wb-font-size-125);
     line-height: 100%;
   }
 
-  .wb-type-label-m,
-  .wb-type-label-m-emphasized {
+  .wb-text-label-m,
+  .wb-text-label-m-emphasized {
     font-size: var(--wb-font-size-150);
     line-height: 100%;
   }
 
-  .wb-type-label-l,
-  .wb-type-label-l-emphasized {
+  .wb-text-label-l,
+  .wb-text-label-l-emphasized {
     font-size: var(--wb-font-size-175);
     line-height: 100%;
   }
 
-  .wb-type-label-xl,
-  .wb-type-label-xl-emphasized {
+  .wb-text-label-xl,
+  .wb-text-label-xl-emphasized {
     font-size: var(--wb-font-size-200);
     line-height: 100%;
   }
 
   /* Node — canvas node and port labels (WB-specific) */
 
-  .wb-type-node-s,
-  .wb-type-node-s-emphasized {
+  .wb-text-node-s,
+  .wb-text-node-s-emphasized {
     font-size: var(--wb-font-size-137);
     line-height: 130%;
   }
 
-  .wb-type-node-m,
-  .wb-type-node-m-emphasized {
+  .wb-text-node-m,
+  .wb-text-node-m-emphasized {
     font-size: var(--wb-font-size-162);
     line-height: 140%;
   }
 
-  .wb-type-node-l,
-  .wb-type-node-l-emphasized {
+  .wb-text-node-l,
+  .wb-text-node-l-emphasized {
     font-size: var(--wb-font-size-200);
     line-height: 140%;
   }
 
   /* UI/Code — code, token names, IDs (Regular only) */
 
-  .wb-type-code {
+  .wb-text-code {
     font-size: var(--wb-font-size-150);
     line-height: 130%;
   }
 
-  .wb-type-display-s-emphasized,
-  .wb-type-display-m-emphasized,
-  .wb-type-display-l-emphasized,
-  .wb-type-headline-s-emphasized,
-  .wb-type-headline-m-emphasized,
-  .wb-type-headline-l-emphasized,
-  .wb-type-title-s-emphasized,
-  .wb-type-title-m-emphasized,
-  .wb-type-title-l-emphasized,
-  .wb-type-body-s-emphasized,
-  .wb-type-body-m-emphasized,
-  .wb-type-body-l-emphasized,
-  .wb-type-label-s-emphasized,
-  .wb-type-label-m-emphasized,
-  .wb-type-label-l-emphasized,
-  .wb-type-label-xl-emphasized,
-  .wb-type-node-s-emphasized,
-  .wb-type-node-m-emphasized,
-  .wb-type-node-l-emphasized {
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
     font-weight: 600;
   }
 }

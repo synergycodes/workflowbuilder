@@ -210,7 +210,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 }
 ```
 
-Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`). One deliberate carve-out: the `wb-type-*` typography classes from `@workflowbuilder/ui` carry their own font families (Poppins; Inter for `wb-type-code`) and do not follow `--wb-font-family` — each class reproduces a complete Figma text style.
+Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`). One deliberate carve-out: the `wb-text-*` typography classes from `@workflowbuilder/ui` carry their own font families (Poppins; Inter for `wb-text-code`) and do not follow `--wb-font-family` — each class reproduces a complete Figma text style.
 
 Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@workflowbuilder/ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 

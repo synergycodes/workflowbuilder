@@ -1,26 +1,26 @@
 ---
 title: Typography
-description: The DS 2.0 type roles shipped by @workflowbuilder/ui as wb-type-* utility classes.
+description: The DS 2.0 type roles shipped by @workflowbuilder/ui as wb-text-* utility classes.
 ---
 
 `@workflowbuilder/ui` ships the Design System 2.0 type scale as utility
-classes: one class per text style, named `wb-type-{family}-{size}` with an
+classes: one class per text style, named `wb-text-{family}-{size}` with an
 optional `-emphasized` suffix. A class carries the complete style — family,
 size, weight, and line-height — so text never hard-codes font values.
 
 ```html
-<h2 class="wb-type-headline-m">Workflow settings</h2>
-<p class="wb-type-body-m">Configure how each node runs.</p>
-<span class="wb-type-label-l-emphasized">Connection: active</span>
+<h2 class="wb-text-headline-m">Workflow settings</h2>
+<p class="wb-text-body-m">Configure how each node runs.</p>
+<span class="wb-text-label-l-emphasized">Connection: active</span>
 ```
 
 Two typefaces ship with `@workflowbuilder/ui` itself (via the root import; subpath-only consumers load them independently): **Poppins** for every UI role and
-**Inter** for the `wb-type-code` role. Emphasized maps to SemiBold (600),
+**Inter** for the `wb-text-code` role. Emphasized maps to SemiBold (600),
 Regular to 400.
 
 ## The scale
 
-| Family   | Used for                       | Classes (`wb-type-…`)                          | px                |
+| Family   | Used for                       | Classes (`wb-text-…`)                          | px                |
 | -------- | ------------------------------ | ---------------------------------------------- | ----------------- |
 | Display  | Hero moments, big empty states | `display-s` · `display-m` · `display-l`        | 24 · 28 · 32      |
 | Headline | Page titles, major sections    | `headline-s` · `headline-m` · `headline-l`     | 20 · 22 · 24      |
@@ -31,7 +31,7 @@ Regular to 400.
 | UI/Code  | Code, token names, IDs         | `code` (Regular only)                          | 12                |
 
 Every family except UI/Code doubles with an `-emphasized` variant
-(`wb-type-title-m-emphasized`), for 39 styles total.
+(`wb-text-title-m-emphasized`), for 39 styles total.
 
 Which role to reach for:
 
@@ -55,4 +55,4 @@ rem). Until the DS 2.0 token export ships them through
 themselves — the migration swaps the source without touching consumers.
 
 The pre-2.0 `ax-public-h*`/`ax-public-p*` classes remain available; components
-move to `wb-type-*` as they are redesigned.
+move to `wb-text-*` as they are redesigned.
