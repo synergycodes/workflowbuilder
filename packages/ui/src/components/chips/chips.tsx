@@ -6,7 +6,8 @@ import styles from './chips.module.css';
 
 export type ChipProps = {
   /**
-   * The tag text.
+   * The tag text. Interpolated into the close affordance's accessible name,
+   * so it stays a string.
    */
   label: string;
   /**
@@ -16,6 +17,7 @@ export type ChipProps = {
    */
   variant?: ChipVariant;
   /**
+   * Height and horizontal padding step.
    * @default 'm'
    */
   size?: ChipSize;
