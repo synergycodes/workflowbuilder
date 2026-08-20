@@ -75,7 +75,7 @@ function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory:
 }
 
 function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: string) {
-  const globals = ['layers.css', 'globals.css', 'typography.css']
+  const globals = ['layers.css', 'globals.css', 'provisional.css', 'typography.css']
     .map((file) => fs.readFileSync(path.resolve(stylesDirectory, file), 'utf8'))
     .join('\n');
 

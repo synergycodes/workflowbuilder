@@ -168,25 +168,9 @@
   }
 
   /* DS 2.0 type roles — one class per text style from the Typography guidelines.
-     Naming: wb-text-{family}-{size}[-emphasized]; Emphasized = SemiBold 600. */
-
-  :root {
-    /* PROVISIONAL font-size primitives (wb/font-size/NNN, NNN ≈ px × 12.5, truncated):
-       the DS 2.0 variables export will ship these in tokens.css and,
-       being unlayered, will override this layered block — remove it then. */
-    --wb-font-size-125: 0.625rem;
-    --wb-font-size-137: 0.6875rem;
-    --wb-font-size-150: 0.75rem;
-    --wb-font-size-162: 0.8125rem;
-    --wb-font-size-175: 0.875rem;
-    --wb-font-size-200: 1rem;
-    --wb-font-size-225: 1.125rem;
-    --wb-font-size-250: 1.25rem;
-    --wb-font-size-275: 1.375rem;
-    --wb-font-size-300: 1.5rem;
-    --wb-font-size-350: 1.75rem;
-    --wb-font-size-400: 2rem;
-  }
+     Naming: wb-text-{family}-{size}[-emphasized]; Emphasized = SemiBold 600.
+     Font sizes reference the wb/font-size primitives (see provisional.css
+     until the DS 2.0 export ships them). */
 
   .wb-text-display-s,
   .wb-text-display-m,
