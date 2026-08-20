@@ -2,9 +2,7 @@
  * Stylelint rule: forbid fallbacks on system design tokens.
  *
  * `var(--wb-…, x)` / `var(--ax-…, x)` silently masks a mistyped token name —
- * the fallback renders and the typo ships. The companion rule
- * `csstools/value-no-unknown-custom-properties` cannot catch that case
- * because a var() with a fallback is valid CSS regardless of the name.
+ * the fallback renders and the typo ships.
  *
  * Legitimate exceptions use the standard mechanism with a mandatory reason:
  *   /* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason *\/
