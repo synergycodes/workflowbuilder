@@ -12,6 +12,10 @@ on:
   pull_request:
     branches:
       - main
+      # DS 2.0 PR stack: layers target the branch below, and the pull_request
+      # branches filter matches the base. Remove after the stack lands.
+      - token-usage-guard
+      - 'ds2-**'
 
 permissions:
   contents: read
