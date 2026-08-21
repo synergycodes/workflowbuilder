@@ -1,8 +1,8 @@
 :root {
   --ax-public-list-box-background-color: var(--wb-ui-bg-base);
-  --ax-public-list-box-border-radius: var(--wb-space-100);
-  --ax-public-list-box-box-shadow: var(--wb-space-0) var(--wb-space-100) var(--wb-space-200) var(--wb-space-negative-50)
-    var(--wb-shadow-ui-color);
+  --ax-public-list-box-border-radius: var(--wb-radius-100);
+  --ax-public-list-box-box-shadow: var(--wb-shadow-ui-s-x) var(--wb-shadow-ui-s-y) var(--wb-shadow-ui-s-blur)
+    var(--wb-shadow-ui-s-spread) var(--wb-shadow-ui-color);
   --ax-public-list-box-padding: var(--wb-space-50) var(--wb-space-50);
   --ax-public-list-box-gap: var(--wb-space-50);
 }

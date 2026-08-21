@@ -2,7 +2,7 @@
   --ax-public-tooltip-default-background: var(--wb-components-tooltip-bg-default);
   --ax-public-tooltip-blue-background: var(--wb-components-tooltip-bg-info);
   --ax-public-tooltip-padding: var(--wb-space-100) var(--wb-space-150);
-  --ax-public-tooltip-radius-size: var(--wb-space-100);
+  --ax-public-tooltip-radius-size: var(--wb-radius-100);
   --ax-public-tooltip-text-color: var(--wb-ui-text-tooltip-default);
   --ax-public-tooltip-blue-text-color: var(--wb-ui-text-tooltip-accent-default);
 }

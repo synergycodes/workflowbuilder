@@ -7,9 +7,9 @@
   --ax-public-checkbox-icon-size-small: 0.75rem;
   --ax-public-checkbox-icon-size-extra-small: 0.625rem;
 
-  --ax-public-checkbox-border-radius-medium: var(--wb-space-50);
-  --ax-public-checkbox-border-radius-small: var(--wb-space-50);
-  --ax-public-checkbox-border-radius-extra-small: var(--wb-space-50);
+  --ax-public-checkbox-border-radius-medium: var(--wb-radius-50);
+  --ax-public-checkbox-border-radius-small: var(--wb-radius-50);
+  --ax-public-checkbox-border-radius-extra-small: var(--wb-radius-50);
 
   --ax-public-checkbox-border-width: 0.0625rem;
 

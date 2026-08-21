@@ -5,7 +5,7 @@
 
   --ax-public-node-padding: var(--wb-space-100);
   --ax-public-node-gap: var(--wb-space-100);
-  --ax-public-node-border-radius: var(--wb-space-150);
+  --ax-public-node-border-radius: var(--wb-canvas-node-head-radius);
 
   --ax-public-node-border-color: var(--wb-canvas-node-stroke-default);
   --ax-public-node-background-color: var(--wb-canvas-node-bg-primary-default);
@@ -13,8 +13,8 @@
   --ax-public-node-border-hover-color: var(--wb-canvas-node-stroke-hover);
 
   --ax-public-node-border-color-selected: var(--wb-canvas-node-stroke-hover);
-  --ax-public-node-box-shadow-selected: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
-    var(--wb-canvas-node-focus-active);
+  --ax-public-node-box-shadow-selected: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
+    var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread) var(--wb-canvas-node-focus-active);
 }
 
 @layer ui.component {

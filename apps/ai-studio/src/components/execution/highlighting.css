@@ -21,12 +21,15 @@ html[data-theme='dark'] {
   --ai-studio-node-shadow-color--completed: var(--ai-studio-edge-color--active);
   --ai-studio-node-shadow-color--failed: var(--wb-colors-red-400);
 
-  --ai-studio-node-shadow--active: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
+  --ai-studio-node-shadow--active: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
+    var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread)
     var(--ai-studio-node-shadow-color--active);
 
-  --ai-studio-node-shadow--completed: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
+  --ai-studio-node-shadow--completed: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
+    var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread)
     var(--ai-studio-node-shadow-color--completed);
 
-  --ai-studio-node-shadow--failed: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
+  --ai-studio-node-shadow--failed: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
+    var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread)
     var(--ai-studio-node-shadow-color--failed);
 }

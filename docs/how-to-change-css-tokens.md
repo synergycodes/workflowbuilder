@@ -1,6 +1,6 @@
 # How to change CSS tokens?
 
-All colors, spacing, and radii resolve through `--ax-*` custom properties
+All colors, spacing, and radii resolve through `--wb-*` design-token custom properties
 defined in `@workflowbuilder/ui/tokens.css` (imported by the SDK's stylesheet).
 The shipped defaults live inside the `ui.base` cascade layer, so a plain
 unlayered override in your own stylesheet always wins - import order does not
@@ -12,8 +12,8 @@ Override the variables you care about in any stylesheet of your app:
 
 ```css
 :root {
-  --ax-button-primary-bg-default: #0f62fe;
-  --ax-ui-bg-tertiary-default: #f4f4f4;
+  --wb-components-button-solid-primary-default: #0f62fe;
+  --wb-ui-bg-inset: #f4f4f4;
 }
 ```
 

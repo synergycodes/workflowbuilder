@@ -3,9 +3,9 @@
   --ax-public-input-padding-medium: var(--wb-space-125) var(--wb-space-150);
   --ax-public-input-padding-small: var(--wb-space-100) var(--wb-space-150);
 
-  --ax-public-input-border-radius-large: var(--wb-space-100);
-  --ax-public-input-border-radius-medium: var(--wb-space-75);
-  --ax-public-input-border-radius-small: var(--wb-space-75);
+  --ax-public-input-border-radius-large: var(--wb-radius-100);
+  --ax-public-input-border-radius-medium: var(--wb-radius-75);
+  --ax-public-input-border-radius-small: var(--wb-radius-75);
 
   --ax-public-input-gap-large: var(--wb-space-100);
   --ax-public-input-gap-medium: var(--wb-space-100);

@@ -14,10 +14,19 @@ import { assertNoValueCollisions } from './validate-collisions';
 fs.rmSync(OUTPUT_DIR, { recursive: true, force: true });
 
 const manifest = buildManifest();
+const configuredSets = [
+  ...manifest.primitives.map(({ key }) => ({ key, selector: ':root' })),
+  ...manifest.themes.map(({ key, selector }) => ({ key, selector })),
+];
+const setKeysBySelector = new Map<string, string[]>();
+for (const { key, selector } of configuredSets) {
+  setKeysBySelector.set(selector, [...(setKeysBySelector.get(selector) ?? []), key]);
+}
 
 assertNoValueCollisions(
   tokens,
-  [...manifest.primitives, ...manifest.themes].map((entry) => entry.key),
+  configuredSets.map((entry) => entry.key),
+  [...setKeysBySelector.values()],
 );
 
 ejectTokens(manifest);

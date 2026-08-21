@@ -1,7 +1,7 @@
 :root {
   --ax-public-snackbar-border-size: 0.0625rem;
   --ax-public-snackbar-padding: var(--wb-space-200) var(--wb-space-200);
-  --ax-public-snackbar-border-radius: var(--wb-space-100);
+  --ax-public-snackbar-border-radius: var(--wb-radius-100);
   --ax-public-snackbar-content-gap: var(--wb-space-150);
 
   --ax-public-snackbar-width: 31.25rem;

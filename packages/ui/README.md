@@ -88,7 +88,7 @@ You can override them:
 
 ```css
 :root {
-  --ax-ui-bg-primary-default: #40ba12;
+  --wb-ui-bg-base: #40ba12;
 }
 ```
 
