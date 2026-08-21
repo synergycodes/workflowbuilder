@@ -12,12 +12,7 @@
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  {
-    slug: 'button',
-    name: 'Button',
-    propsType: 'ButtonProps',
-    dir: 'button',
-  },
+  { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps'], dir: 'button' },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
   { slug: 'chips', name: 'Chip', propsType: 'ChipProps', dir: 'chips' },
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },

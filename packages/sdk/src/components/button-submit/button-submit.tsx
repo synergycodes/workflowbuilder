@@ -1,10 +1,10 @@
 import { Spinner } from '@phosphor-icons/react';
-import { Button } from '@workflowbuilder/ui';
+import { Button, type LabelButtonProps } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './button-submit.module.css';
 
-type Props = Omit<React.ComponentProps<typeof Button>, 'children'> & {
+type Props = Omit<LabelButtonProps, 'children'> & {
   classNameWrapper?: string;
   isPending: boolean;
   children: React.ReactNode;
