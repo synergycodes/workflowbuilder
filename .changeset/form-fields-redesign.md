@@ -1,6 +1,6 @@
 ---
 '@workflowbuilder/ui': major
-'@workflowbuilder/sdk': minor
+'@workflowbuilder/sdk': major
 ---
 
-Input and TextArea now take a `state` enum instead of `error`, use letter sizes, and support prefix, suffix, and clear icon slots. Read-only fields remain focusable and copyable, and the new NumberField adds bounded keyboard and stepper controls.
+Input and TextArea now use `state` instead of `error`, letter-based sizes, `prefixIcon`/`suffixIcon` instead of `startAdornment`/`endAdornment`, and an optional clear action. Fields now provide associated label and helper text composition, while NumberField adds nullable values and bounded keyboard and stepper controls.

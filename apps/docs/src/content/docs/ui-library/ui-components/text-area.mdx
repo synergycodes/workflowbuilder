@@ -25,6 +25,8 @@ function Example() {
     <TextArea
       size="m"
       state={value ? 'success' : 'default'}
+      label="Description"
+      helperText="Explain what this workflow does"
       placeholder="Multi-line input"
       value={value}
       onChange={(event) => setValue(event.target.value)}

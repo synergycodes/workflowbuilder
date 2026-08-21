@@ -8,7 +8,7 @@ export type FieldSize = (typeof FIELD_SIZES)[number];
 
 export type FieldControlProps = {
   /**
-   * The read-only state also applies the native read-only behavior.
+   * Disabled controls take precedence over the read-only state.
    * @default 'default'
    */
   state?: FieldState;
@@ -20,4 +20,7 @@ export type FieldControlProps = {
   suffixIcon?: ReactNode;
   /** Renders a clear affordance that invokes this callback. */
   onClear?: () => void;
+  label?: ReactNode;
+  helperText?: ReactNode;
+  isRequired?: boolean;
 };

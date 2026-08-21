@@ -11,10 +11,6 @@
       border-color: var(--ax-public-input-root-border-color-hover);
     }
 
-    &[data-state='default']:not([data-disabled]):focus-within {
-      border-color: var(--ax-public-input-root-border-color-focus);
-    }
-
     &[data-state='critical']:not([data-disabled]) {
       background-color: var(--ax-public-input-root-background-color-critical);
       border-color: var(--ax-public-input-root-border-color-critical);
@@ -34,6 +30,10 @@
     &[data-disabled] {
       color: var(--ax-public-input-root-color-disabled);
       cursor: not-allowed;
+    }
+
+    &:not([data-disabled]):focus-within {
+      border-color: var(--ax-public-input-root-border-color-focus);
     }
   }
 
