@@ -1,125 +1,73 @@
+import { X } from '@phosphor-icons/react';
+import type { FieldControlProps } from '@ui/shared/types/field';
 import clsx from 'clsx';
-import type React from 'react';
+import { type ComponentPropsWithoutRef, type TextareaHTMLAttributes, forwardRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
 
 import styles from './text-area.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import inputSizeStyles from '@ui/shared/styles/input-size.module.css';
 
-import type { ItemSize } from '../../shared/types/item-size';
+export type TextAreaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size' | 'style'> &
+  FieldControlProps & {
+    maxRows?: number;
+    minRows?: number;
+    style?: ComponentPropsWithoutRef<typeof TextareaAutosize>['style'];
+  };
 
-export type TextAreaProps = {
-  /**
-   * Controlled value of the textarea
-   */
-  value?: string;
-  /**
-   * Initial value of the textarea
-   */
-  defaultValue?: string;
-  /**
-   * Placeholder text for the textarea
-   */
-  placeholder?: string;
-  /**
-   * Size of the textarea
-   * @default 'medium'
-   */
-  size?: ItemSize;
-  /**
-   * Maximum number of rows the textarea can expand to
-   */
-  maxRows?: number;
-  /**
-   * Minimum number of rows the textarea can expand to
-   */
-  minRows?: number;
-  /**
-   * Whether the textarea is disabled
-   */
-  disabled?: boolean;
-  /**
-   * Whether the textarea has an error
-   */
-  error?: boolean;
-  /**
-   * Callback function to handle change in textarea value
-   */
-  onChange?: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
-  /**
-   * Callback function to handle click
-   */
-  onClick?: (event: React.MouseEvent<HTMLTextAreaElement>) => void;
-  /**
-   * Function called when the input loses focus.
-   * The event parameter may be undefined.
-   */
-  onBlur?: (event?: React.FocusEvent) => void;
-  /**
-   * Custom class name for the textarea
-   */
-  className?: string;
-  /**
-   * Enables or disables browser spell checking
-   */
-  spellCheck?: boolean;
-};
-
-/**
- * Component for displaying a textarea with customizable size, rows, and error state
- */
-export function TextArea({
-  value,
-  defaultValue,
-  placeholder,
-  size = 'medium',
-  maxRows,
-  minRows,
-  disabled,
-  error,
-  onChange,
-  onClick,
-  onBlur,
-  className,
-  spellCheck,
-  ...props
-}: TextAreaProps) {
-  const containerClasses = clsx(
-    styles['text-area-container'],
-    inputSizeStyles[size],
-    {
-      'base--error': error,
-      'base--disabled': disabled,
-    },
+export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
+  {
+    size = 'm',
+    state = 'default',
+    prefixIcon,
+    suffixIcon,
+    onClear,
+    maxRows,
+    minRows,
+    disabled,
+    readOnly,
     className,
-  );
-
-  const textareaClasses = clsx(styles['text-area'], inputFontStyles[size]);
+    ...props
+  },
+  ref,
+) {
+  const isReadOnly = state === 'read-only' || readOnly === true;
+  const fieldState = isReadOnly ? 'read-only' : state;
 
   return (
     <div
-      className={containerClasses}
-      // Padding lives on the wrapper, so clicks there miss the field - forward them.
+      className={clsx(styles['text-area-container'], styles[`size-${size}`], inputSizeStyles[size], className)}
+      data-state={fieldState}
+      data-disabled={disabled || undefined}
       onPointerDown={(event) => {
         if (event.target !== event.currentTarget) return;
         event.preventDefault();
         event.currentTarget.querySelector('textarea')?.focus();
       }}
     >
+      {prefixIcon && <span className={styles['icon']}>{prefixIcon}</span>}
       <TextareaAutosize
-        value={value || ''}
-        defaultValue={defaultValue}
-        placeholder={placeholder}
+        {...props}
+        ref={ref}
         minRows={minRows}
         maxRows={maxRows}
         disabled={disabled}
-        onChange={onChange}
-        onClick={onClick}
-        onBlur={onBlur}
-        className={textareaClasses}
-        spellCheck={spellCheck}
-        {...props}
+        readOnly={isReadOnly}
+        className={clsx(styles['text-area'], inputFontStyles[size])}
       />
+      {suffixIcon && <span className={styles['icon']}>{suffixIcon}</span>}
+      {onClear && (
+        <button
+          type="button"
+          className={styles['clear']}
+          aria-label="Clear text area"
+          disabled={disabled || isReadOnly}
+          onPointerDown={(event) => event.preventDefault()}
+          onClick={onClear}
+        >
+          <X />
+        </button>
+      )}
     </div>
   );
-}
+});

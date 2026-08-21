@@ -1,4 +1,24 @@
 :root {
+  --ax-public-input-height-l: calc(var(--wb-size-500) + var(--wb-size-25));
+  --ax-public-input-height-m: calc(var(--wb-size-400) + var(--wb-size-50));
+  --ax-public-input-height-s: var(--wb-size-400);
+  --ax-public-input-height-xs: calc(var(--wb-size-300) + var(--wb-size-50));
+
+  --ax-public-input-padding-l: var(--wb-space-137) var(--wb-space-150);
+  --ax-public-input-padding-m: var(--wb-space-125) var(--wb-space-150);
+  --ax-public-input-padding-s: var(--wb-space-100) var(--wb-space-150);
+  --ax-public-input-padding-xs: var(--wb-space-75) var(--wb-space-150);
+
+  --ax-public-input-border-radius-l: var(--wb-radius-100);
+  --ax-public-input-border-radius-m: var(--wb-radius-75);
+  --ax-public-input-border-radius-s: var(--wb-radius-75);
+  --ax-public-input-border-radius-xs: var(--wb-radius-75);
+
+  --ax-public-input-gap-l: var(--wb-space-100);
+  --ax-public-input-gap-m: var(--wb-space-100);
+  --ax-public-input-gap-s: var(--wb-space-100);
+  --ax-public-input-gap-xs: var(--wb-space-100);
+
   --ax-public-input-padding-large: var(--wb-space-137) var(--wb-space-150);
   --ax-public-input-padding-medium: var(--wb-space-125) var(--wb-space-150);
   --ax-public-input-padding-small: var(--wb-space-100) var(--wb-space-150);
@@ -13,6 +33,34 @@
 }
 
 @layer ui.component {
+  .l {
+    height: var(--ax-public-input-height-l);
+    padding: var(--ax-public-input-padding-l);
+    border-radius: var(--ax-public-input-border-radius-l);
+    gap: var(--ax-public-input-gap-l);
+  }
+
+  .m {
+    height: var(--ax-public-input-height-m);
+    padding: var(--ax-public-input-padding-m);
+    border-radius: var(--ax-public-input-border-radius-m);
+    gap: var(--ax-public-input-gap-m);
+  }
+
+  .s {
+    height: var(--ax-public-input-height-s);
+    padding: var(--ax-public-input-padding-s);
+    border-radius: var(--ax-public-input-border-radius-s);
+    gap: var(--ax-public-input-gap-s);
+  }
+
+  .xs {
+    height: var(--ax-public-input-height-xs);
+    padding: var(--ax-public-input-padding-xs);
+    border-radius: var(--ax-public-input-border-radius-xs);
+    gap: var(--ax-public-input-gap-xs);
+  }
+
   .large {
     padding: var(--ax-public-input-padding-large);
     border-radius: var(--ax-public-input-border-radius-large);

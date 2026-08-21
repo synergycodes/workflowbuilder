@@ -88,7 +88,7 @@ export function VariableForm(props: Props) {
       <FormControlWithLabel label="common.name" required>
         <Input
           value={formData.name}
-          error={formData.fieldsWithErrors.has('name')}
+          state={formData.fieldsWithErrors.has('name') ? 'critical' : 'default'}
           placeholder={t('common.namePlaceholder')}
           onChange={(event) => handleInputUpdate('name', event.target.value)}
         />
@@ -114,12 +114,12 @@ export function VariableForm(props: Props) {
       <FormControlWithLabel label="common.description">
         <TextArea
           value={formData.description}
-          error={formData.fieldsWithErrors.has('description')}
+          state={formData.fieldsWithErrors.has('description') ? 'critical' : 'default'}
           placeholder={t('common.descriptionPlaceholder')}
           onChange={(event) => handleInputUpdate('description', event.target.value)}
           minRows={3}
           maxRows={3}
-          size="medium"
+          size="m"
         />
       </FormControlWithLabel>
       <div className={styles['buttons']}>

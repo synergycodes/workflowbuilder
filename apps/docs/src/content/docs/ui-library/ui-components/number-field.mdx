@@ -1,0 +1,35 @@
+---
+title: NumberField
+description: A numeric input with keyboard stepping and always-visible stepper controls.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NumberFieldExample } from '../../../../components/ui-examples/number-field';
+
+A `NumberField` accepts numeric values and keeps increment and decrement controls
+visible on its trailing edge. Arrow keys and the stepper respect `min`, `max`,
+and `step`.
+
+<NumberFieldExample client:visible />
+
+## Usage
+
+```tsx
+import { NumberField } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+function Example() {
+  const [value, setValue] = useState(3);
+
+  return <NumberField aria-label="Quantity" value={value} min={0} max={10} onValueChange={setValue} />;
+}
+```
+
+## Props
+
+<PropsTable slug="number-field" />
+
+## CSS variables
+
+<CssVariablesTable slug="number-field" />

@@ -1,10 +1,12 @@
 @layer ui.component {
   .input {
+    min-width: 0;
+    width: 100%;
+    flex: 1;
     border: none;
     background: transparent;
     padding: 0;
-    color: unset;
-    width: 100%;
+    color: var(--ax-public-input-color);
 
     white-space: nowrap;
     overflow: hidden;
@@ -16,11 +18,12 @@
 
     &:disabled {
       color: var(--ax-public-input-color-disabled);
+      cursor: not-allowed;
     }
 
     &::placeholder {
-      color: unset;
-      opacity: 0.5;
+      color: var(--ax-public-input-placeholder-color);
+      opacity: 1;
     }
   }
 }
