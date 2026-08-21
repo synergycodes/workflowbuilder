@@ -13,14 +13,13 @@
   }
 
   .outline {
-    /* Two fills, as designed: the brand surface under the theme overlay. */
+    /* Two stacked fills: the brand surface under the theme overlay. */
     background-color: var(--wb-components-chips-inset-outline);
     background-image: linear-gradient(
       var(--wb-components-chips-overlay-outline),
       var(--wb-components-chips-overlay-outline)
     );
-    /* A ring, not a border: the stroke sits outside the box (Figma
-       strokeAlign OUTSIDE), while a border would consume the padding. */
+    /* The stroke sits outside the box; a border would consume the padding. */
     box-shadow: 0 0 0 var(--wb-size-12) var(--wb-components-chips-inset-outline);
     color: var(--wb-components-chips-inset-outline);
   }

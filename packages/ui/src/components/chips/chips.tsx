@@ -5,28 +5,18 @@ import { HTMLAttributes, ReactNode, forwardRef } from 'react';
 import styles from './chips.module.css';
 
 export type ChipProps = {
-  /**
-   * The tag text. Interpolated into the close affordance's accessible name,
-   * so it stays a string.
-   */
   label: string;
   /**
-   * Solid renders on the neutral chip surface; outline renders the brand
-   * outline treatment.
    * @default 'solid'
    */
   variant?: ChipVariant;
   /**
-   * Height and horizontal padding step.
    * @default 'm'
    */
   size?: ChipSize;
-  /**
-   * Icon rendered before the label.
-   */
   prefixIcon?: ReactNode;
   /**
-   * When provided, a close affordance is rendered and invokes this callback.
+   * When set, a close affordance is rendered and invokes this callback.
    */
   onClose?: () => void;
   /**
@@ -39,9 +29,6 @@ export type ChipProps = {
 export type ChipVariant = 'solid' | 'outline';
 export type ChipSize = 's' | 'm' | 'l' | 'xl';
 
-/**
- * Compact tag for labeling and filtering, in the two DS 2.0 treatments.
- */
 export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
   ({ label, variant = 'solid', size = 'm', prefixIcon, onClose, closeLabel, className, ...rest }, ref) => {
     return (
