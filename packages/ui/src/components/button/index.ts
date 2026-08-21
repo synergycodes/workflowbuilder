@@ -1,3 +1,4 @@
+export * from './menu-trigger-button';
 export * from './nav-button/nav-button';
 export * from './nav-button/types';
 export * from './regular-button/button';

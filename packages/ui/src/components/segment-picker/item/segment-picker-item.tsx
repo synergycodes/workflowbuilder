@@ -1,38 +1,35 @@
-import {
-  hasChildrenWithStringAndIcons,
-  hasIconChildrenOnly,
-  hasStringChildrenOnly,
-} from '@ui/components/button/guards';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
-import { NavIconButtonProps } from '@ui/components/button/nav-button/nav-icon-button/nav-icon-button';
-import { NavIconLabelButtonProps } from '@ui/components/button/nav-button/nav-icon-label-button/nav-icon-label-button';
-import { NavLabelButtonProps } from '@ui/components/button/nav-button/nav-label-button/nav-label-button';
+import type { NavButtonProps } from '@ui/components/button/nav-button/types';
 import clsx from 'clsx';
-import { MouseEvent, useContext } from 'react';
+import { type MouseEvent, type ReactNode, isValidElement, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
-import { BaseButtonProps } from '../../button/types';
+import type { BaseButtonProps } from '../../button/types';
 import { SegmentPickerContext } from '../utils/context';
 
-export type SegmentPickerItemProps = BaseButtonProps & {
-  value: string;
-} & (
-    | Pick<NavLabelButtonProps, 'children'>
-    | Pick<NavIconButtonProps, 'children'>
-    | Pick<NavIconLabelButtonProps, 'children'>
-  );
+export type SegmentPickerItemProps = BaseButtonProps &
+  Pick<NavButtonProps, 'prefixIcon' | 'suffixIcon'> & {
+    value: string;
+  };
 
-/**
- * A single item in the SegmentPicker, rendered as a NavButton under the hood.
- *
- * Automatically receives size and shape from SegmentPicker context.
- * Must be used only within a SegmentPicker component.
- *
- * Determines which NavButton variant to render based on its children
- * (label only, icon only, or icon + label).
- */
-export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps) {
+type Slots = { prefixIcon?: ReactNode; label?: ReactNode; suffixIcon?: ReactNode };
+
+function toSlots(children: ReactNode): Slots {
+  if (Array.isArray(children)) {
+    const parts = children.filter((child) => child != null && child !== false);
+    const prefixIcon = isValidElement(parts[0]) ? parts[0] : undefined;
+    const last = parts.at(-1);
+    const suffixIcon = parts.length > 1 && isValidElement(last) ? last : undefined;
+    const label = parts.filter((child) => !isValidElement(child));
+
+    return { prefixIcon, label: label.length > 0 ? label : undefined, suffixIcon };
+  }
+
+  return isValidElement(children) ? { prefixIcon: children } : { label: children };
+}
+
+export function Item({ children, className, prefixIcon, suffixIcon, value, ...buttonProps }: SegmentPickerItemProps) {
   const context = useContext(SegmentPickerContext);
 
   if (!context) {
@@ -40,29 +37,26 @@ export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps
     return null;
   }
 
-  const { selectedValue, onSelect, shape, ...other } = context;
+  const { selectedValue, onSelect, shape, size, navVariant } = context;
+  const slots = toSlots(children);
+  const isSelected = selectedValue === value;
 
-  const props = {
-    className: clsx(itemShapeStyles['item'], itemShapeStyles[shape ?? 'default']),
-    isSelected: selectedValue === value,
-    onClick: (event: MouseEvent<HTMLButtonElement>) => onSelect(event, value),
-    shape,
-    children,
-    ...other,
-    ...buttonProps,
-  };
-
-  if (hasStringChildrenOnly<NavLabelButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  if (hasIconChildrenOnly<NavIconButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  if (hasChildrenWithStringAndIcons<NavIconLabelButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  return null;
+  return (
+    <NavButton
+      aria-pressed={isSelected}
+      className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], className)}
+      isSelected={isSelected}
+      onClick={(event: MouseEvent<HTMLButtonElement>) => {
+        if (isSelected) return;
+        onSelect(event, value);
+      }}
+      prefixIcon={prefixIcon ?? slots.prefixIcon}
+      size={size}
+      variant={navVariant}
+      suffixIcon={suffixIcon ?? slots.suffixIcon}
+      {...buttonProps}
+    >
+      {slots.label}
+    </NavButton>
+  );
 }

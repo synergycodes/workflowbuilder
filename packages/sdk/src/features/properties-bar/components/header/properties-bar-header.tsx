@@ -27,21 +27,24 @@ export function PropertiesBarHeader({
   return (
     <div className={styles['header']}>
       <NavButton
-        size="small"
+        aria-label={isPropertiesBarOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar')}
+        size="s"
         onClick={onTogglePropertiesBar}
         tooltip={isPropertiesBarOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar')}
         disabled={!hasSelection}
-      >
-        <Icon name="SidebarSimple" />
-      </NavButton>
+        prefixIcon={<Icon name="SidebarSimple" />}
+      />
       <div className={styles['text-container']}>
         <span className={name ? 'ax-public-h9' : 'ax-public-h7'}>{header}</span>
         {name && <p className="ax-public-p11">{name}</p>}
       </div>
       {onDotsClick && (
-        <NavButton size="small" onClick={onDotsClick}>
-          <Icon name="DotsThreeVertical" />
-        </NavButton>
+        <NavButton
+          aria-label={t('tooltips.menu')}
+          size="s"
+          onClick={onDotsClick}
+          prefixIcon={<Icon name="DotsThreeVertical" />}
+        />
       )}
     </div>
   );

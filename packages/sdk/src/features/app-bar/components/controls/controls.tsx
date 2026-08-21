@@ -25,9 +25,11 @@ export function Controls() {
       {items.length > 0 && (
         <div className={styles['menu-container']}>
           <Menu items={items}>
-            <NavButton tooltip={t('tooltips.menu')}>
-              <DotsThreeVertical />
-            </NavButton>
+            <NavButton
+              aria-label={t('tooltips.menu')}
+              tooltip={t('tooltips.menu')}
+              prefixIcon={<DotsThreeVertical />}
+            />
           </Menu>
         </div>
       )}

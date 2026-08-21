@@ -89,9 +89,11 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
       )}
       <div className={styles['menu-container']}>
         <Menu items={items}>
-          <NavButton tooltip={t('tooltips.pickTheProject')}>
-            <CaretDown />
-          </NavButton>
+          <NavButton
+            aria-label={t('tooltips.pickTheProject')}
+            tooltip={t('tooltips.pickTheProject')}
+            prefixIcon={<CaretDown />}
+          />
         </Menu>
       </div>
     </div>
