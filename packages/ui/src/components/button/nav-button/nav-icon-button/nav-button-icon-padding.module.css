@@ -1,6 +1,6 @@
 :root {
-  --ax-public-button-icon-padding-xx-small: var(--ax-token-spacing-button-xxs-v-pad);
-  --ax-public-button-icon-padding-xxx-small: var(--ax-token-spacing-button-xxxs-v-pad);
+  --ax-public-button-icon-padding-xx-small: var(--wb-space-75);
+  --ax-public-button-icon-padding-xxx-small: var(--wb-space-50);
 }
 
 @layer ui.component {

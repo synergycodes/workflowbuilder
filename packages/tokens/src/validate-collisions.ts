@@ -5,14 +5,14 @@
  * emit `--ax-colors-acc7-100` and silently overwrite each other in the
  * built CSS.
  *
- * Same-value collisions warn (today's export carries ten of them, all
- * benign); different-value collisions throw, because the emitted value
- * would then depend on object iteration order.
+ * Same-value collisions warn; different-value collisions throw, because the
+ * emitted value would then depend on object iteration order.
  */
 import StyleDictionary, { TransformedToken } from 'style-dictionary';
 
 type TokenLeaf = { value: unknown; type: string };
 type TokenNode = TokenLeaf | { [key: string]: TokenNode };
+type TokenEntry = { path: string; value: unknown };
 
 type CssNameCollision = {
   cssName: string;
@@ -24,7 +24,7 @@ function isLeaf(node: TokenNode): node is TokenLeaf {
   return typeof node === 'object' && node !== null && 'value' in node && 'type' in node;
 }
 
-function collectLeaves(node: TokenNode, path: string[], out: { path: string; value: unknown }[]) {
+function collectLeaves(node: TokenNode, path: string[], out: TokenEntry[]) {
   if (isLeaf(node)) {
     out.push({ path: path.join('/'), value: node.value });
     return;
@@ -42,14 +42,17 @@ function toCssName(tokenPath: string): string {
   return `--${kebabName({ path: tokenPath.split('/') } as TransformedToken, {}, {})}`;
 }
 
-export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssNameCollision[] {
-  const leaves: { path: string; value: unknown }[] = [];
+function getLeaves(tokenSet: Record<string, TokenNode>): TokenEntry[] {
+  const leaves: TokenEntry[] = [];
   for (const [key, node] of Object.entries(tokenSet)) {
     collectLeaves(node, [key], leaves);
   }
+  return leaves;
+}
 
-  const byCssName = new Map<string, { path: string; value: unknown }[]>();
-  for (const leaf of leaves) {
+export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssNameCollision[] {
+  const byCssName = new Map<string, TokenEntry[]>();
+  for (const leaf of getLeaves(tokenSet)) {
     const cssName = toCssName(leaf.path);
     byCssName.set(cssName, [...(byCssName.get(cssName) ?? []), leaf]);
   }
@@ -69,7 +72,11 @@ export function findCssNameCollisions(tokenSet: Record<string, TokenNode>): CssN
  * the known Figma-side duplicates don't block builds until design removes
  * them at the source.
  */
-export function assertNoValueCollisions(tokens: Record<string, unknown>, setKeys: string[]): void {
+export function assertNoValueCollisions(
+  tokens: Record<string, unknown>,
+  setKeys: string[],
+  cssScopeGroups: string[][] = [],
+): void {
   for (const setKey of setKeys) {
     const tokenSet = tokens[setKey];
     if (!tokenSet) {
@@ -93,6 +100,32 @@ export function assertNoValueCollisions(tokens: Record<string, unknown>, setKeys
             (collision) =>
               `'${setKey}': ${collision.entries.map((entry) => `'${entry.path}' (${JSON.stringify(entry.value)})`).join(' and ')} ` +
               `all emit ${collision.cssName} with different values — the winner would depend on iteration order`,
+          )
+          .join('\n'),
+      );
+    }
+  }
+
+  for (const setKeysInScope of cssScopeGroups) {
+    const setsByCssName = new Map<string, string[]>();
+    for (const setKey of setKeysInScope) {
+      const tokenSet = tokens[setKey];
+      if (!tokenSet) {
+        throw new Error(`tokens.json does not export a '${setKey}' set`);
+      }
+      const cssNames = new Set(getLeaves(tokenSet as Record<string, TokenNode>).map((entry) => toCssName(entry.path)));
+      for (const cssName of cssNames) {
+        setsByCssName.set(cssName, [...(setsByCssName.get(cssName) ?? []), setKey]);
+      }
+    }
+
+    const collisions = [...setsByCssName.entries()].filter(([, owners]) => owners.length > 1);
+    if (collisions.length > 0) {
+      throw new Error(
+        collisions
+          .map(
+            ([cssName, owners]) =>
+              `${owners.map((owner) => `'${owner}'`).join(' and ')} both emit ${cssName} under one CSS selector — the winner would depend on bundle order`,
           )
           .join('\n'),
       );

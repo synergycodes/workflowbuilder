@@ -7,6 +7,38 @@ import { Manifest, TokenSetEntry } from './types';
 
 register(StyleDictionary);
 
+StyleDictionary.registerTransform({
+  name: 'wb/font-size-rem',
+  type: 'value',
+  filter: (token) => token.path[1] === 'font-size',
+  transform: (token) => {
+    const value = String(token.value);
+    const match = /^(-?[\d.]+)px$/.exec(value);
+    if (!match) {
+      throw new Error(
+        `wb/font-size-rem expected '${token.path.join('/')}' to use px, received ${JSON.stringify(value)}`,
+      );
+    }
+    return `${Number.parseFloat(match[1]) / 16}rem`;
+  },
+});
+
+StyleDictionary.registerTransform({
+  name: 'wb/dimension-rem',
+  type: 'value',
+  filter: (token) => ['space', 'radius', 'size'].includes(token.path[1]),
+  transform: (token) => {
+    const value = String(token.value);
+    const match = /^(-?[\d.]+)px$/.exec(value);
+    if (!match) {
+      throw new Error(
+        `wb/dimension-rem expected '${token.path.join('/')}' to use px, received ${JSON.stringify(value)}`,
+      );
+    }
+    return `${Number.parseFloat(match[1]) / 16}rem`;
+  },
+});
+
 export async function tokensToCss(manifest: Manifest) {
   await processPrimitiveTokens(manifest.primitives);
   await processThemeTokens(manifest);
@@ -51,7 +83,7 @@ function createSDConfig({ fileName, selector, source, filter }: SDConfigParams) 
     platforms: {
       css: {
         transformGroup: 'tokens-studio',
-        transforms: ['name/kebab'],
+        transforms: ['name/kebab', 'wb/font-size-rem', 'wb/dimension-rem'],
         buildPath: OUTPUT_DIR,
         options: {
           outputReferences: true,

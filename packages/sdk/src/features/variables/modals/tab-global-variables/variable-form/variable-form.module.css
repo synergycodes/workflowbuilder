@@ -4,7 +4,7 @@
   height: 100%;
   width: 100%;
   gap: 1rem;
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
 }
 
 .buttons {

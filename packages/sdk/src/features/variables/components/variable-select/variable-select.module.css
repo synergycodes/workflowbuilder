@@ -5,7 +5,7 @@
 .adornment {
   position: absolute;
   top: 50%;
-  right: var(--ax-token-spacing-input-m-h-pad);
+  right: var(--wb-space-150);
   transform: translateY(-50%);
   z-index: 1;
 }

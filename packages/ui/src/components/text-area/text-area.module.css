@@ -1,13 +1,13 @@
 :root {
-  --ax-public-textarea-color-disabled: var(--ax-txt-quaternary-default);
-  --ax-public-textarea-root-color: var(--ax-txt-secondary-default);
-  --ax-public-textarea-root-border-color: var(--ax-input-stroke-primary-default);
-  --ax-public-textarea-root-border-color-focus: var(--ax-input-stroke-primary-focus);
+  --ax-public-textarea-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-textarea-root-color: var(--wb-ui-text-subtle-default);
+  --ax-public-textarea-root-border-color: var(--wb-components-text-field-stroke-default);
+  --ax-public-textarea-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
   --ax-public-textarea-root-border-size: 0.0625rem;
-  --ax-public-textarea-root-background-color-error: var(--ax-input-bg-primary-error);
-  --ax-public-textarea-root-border-color-error: var(--ax-input-stroke-primary-error);
-  --ax-public-textarea-root-color-error: var(--ax-txt-error-default);
-  --ax-public-textarea-root-color-disabled: var(--ax-txt-quaternary-default);
+  --ax-public-textarea-root-background-color-error: var(--wb-components-text-field-bg-primary-critical);
+  --ax-public-textarea-root-border-color-error: var(--wb-components-text-field-stroke-critical);
+  --ax-public-textarea-root-color-error: var(--wb-ui-text-critical-default);
+  --ax-public-textarea-root-color-disabled: var(--wb-ui-text-ghost-default);
   --ax-public-textarea-root-background-color-disabled: transparent;
 }
 

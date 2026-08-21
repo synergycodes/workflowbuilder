@@ -1,9 +1,9 @@
 :root {
-  --ax-public-status-right: var(--ax-primitive-even-12) /* missing token */;
-  --ax-public-status-size: var(--ax-primitive-even-20) /* missing token */;
-  --ax-public-status-icon-size: var(--ax-primitive-even-12) /* missing token */;
-  --ax-public-status-invalid-color: var(--ax-colors-orange-100) /* missing token */;
-  --ax-public-status-invalid-background-color: var(--ax-colors-orange-400) /* missing token */;
+  --ax-public-status-right: var(--wb-space-150) /* missing token */;
+  --ax-public-status-size: var(--wb-space-250) /* missing token */;
+  --ax-public-status-icon-size: var(--wb-space-150) /* missing token */;
+  --ax-public-status-invalid-color: var(--wb-colors-orange-100) /* missing token */;
+  --ax-public-status-invalid-background-color: var(--wb-colors-orange-400) /* missing token */;
 }
 
 @layer ui.component {

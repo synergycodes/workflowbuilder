@@ -1,11 +1,10 @@
 :root {
-  --ax-public-list-box-background-color: var(--ax-dropdown-bg-primary-default);
-  --ax-public-list-box-border-radius: var(--ax-token-radius-dropdown-wrap-s);
-  --ax-public-list-box-box-shadow: var(--ax-token-shadow-shadow-s-x) var(--ax-token-shadow-shadow-s-y)
-    var(--ax-token-shadow-shadow-s-blur) var(--ax-token-shadow-shadow-s-spread) var(--ax-shadow);
-  --ax-public-list-box-padding: var(--ax-token-spacing-dropdown-wrap-s-v-pad)
-    var(--ax-token-spacing-dropdown-wrap-s-h-pad);
-  --ax-public-list-box-gap: var(--ax-token-spacing-dropdown-wrap-s-gap);
+  --ax-public-list-box-background-color: var(--wb-ui-bg-base);
+  --ax-public-list-box-border-radius: var(--wb-radius-100);
+  --ax-public-list-box-box-shadow: var(--wb-shadow-ui-s-x) var(--wb-shadow-ui-s-y) var(--wb-shadow-ui-s-blur)
+    var(--wb-shadow-ui-s-spread) var(--wb-shadow-ui-color);
+  --ax-public-list-box-padding: var(--wb-space-50) var(--wb-space-50);
+  --ax-public-list-box-gap: var(--wb-space-50);
 }
 
 @layer ui.component {

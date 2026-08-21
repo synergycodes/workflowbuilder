@@ -1,7 +1,7 @@
 # @workflowbuilder/ui-tokens
 
 Private design-token build for `@workflowbuilder/ui`. Turns Figma-exported tokens into the
-`--ax-*` CSS variables the component library ships (light/dark themes + primitives).
+`--wb-*` CSS variables the component library ships (light/dark themes + primitives).
 
 Not published to npm (`private: true`); consumed only as a workspace build step.
 
@@ -13,9 +13,10 @@ Not published to npm (`private: true`); consumed only as a workspace build step.
 3. `src/eject-tokens.ts` - splits `tokens.json` into one JSON file per theme/primitive set
    under `dist/tokens/`.
 4. `src/tokens-to-css.ts` - runs each set through [Style Dictionary](https://styledictionary.com/)
-   (with `@tokens-studio/sd-transforms`) to emit `dist/<theme>.css` files scoped to
-   `html[data-theme='light']` / `html[data-theme='dark']`. A broken token reference fails
-   the build (`brokenReferences: 'throw'`).
+   (with `@tokens-studio/sd-transforms`) to emit `dist/<theme>.css` files. Canvas is scoped
+   to `:root`; Tokens and Effects are scoped to `html[data-theme='light']` or
+   `html[data-theme='dark']`. Font-size, space, radius, and size primitives are emitted in rem.
+   A broken token reference fails the build (`brokenReferences: 'throw'`).
 5. `src/generate-css-bundle.ts` - inlines the primitive and theme CSS into a single
    self-contained `dist/tokens.css` (no `@import`, so the file survives being copied out
    alone).
@@ -24,8 +25,8 @@ Not published to npm (`private: true`); consumed only as a workspace build step.
 as `tokens.json` exports them (e.g. `Tokens/Dark`); a name mismatch fails the build with
 the available keys listed.
 
-`packages/ui`'s build copies `dist/tokens.css` (and the primitive CSS files) out of this
-package's `dist/` and re-exports them as `@workflowbuilder/ui/tokens.css` - see
+`packages/ui`'s build copies `dist/tokens.css` out of this package's `dist/` and re-exports
+it as `@workflowbuilder/ui/tokens.css` - see
 `packages/ui/vite.config.mts`.
 
 ## Build
@@ -64,7 +65,7 @@ both errors:
    no CSS definition by design — their usage sites carry a
    `stylelint-disable-next-line` comment with the reason.
 2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
-   — no fallbacks on `var(--wb-…)` / `var(--ax-…)`; a fallback silently masks
+   — no fallbacks on `var(--wb-…)` / `var(--ax-public-…)`; a fallback silently masks
    exactly the typos rule 1 exists to catch. Genuine exceptions use the
    standard mechanism with a mandatory reason:
    `/* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason */`.

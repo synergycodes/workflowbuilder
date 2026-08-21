@@ -4,8 +4,8 @@
   gap: 0.75rem;
   border-radius: 0.5rem;
   padding: 0.625rem;
-  border: 1px solid var(--ax-ui-stroke-primary-default);
-  color: var(--ax-txt-primary-default);
+  border: 1px solid var(--wb-ui-stroke-default);
+  color: var(--wb-ui-text-default);
 
   composes: ax-public-h10 from global;
 }

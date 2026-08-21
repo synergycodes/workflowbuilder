@@ -212,7 +212,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 
 Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`).
 
-Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--ax-*` token layer from `@workflowbuilder/ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
+Deeper color and spacing customization (palette, semantic UI tokens) goes through the `--wb-*` design-token layer from `@workflowbuilder/ui`. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
 **Prefix ownership.** The `--wb-*` namespace is shared by two owners, split by convention: names with a design-domain segment (`--wb-ui-*`, `--wb-components-*`, `--wb-canvas-*`, `--wb-colors-*`, `--wb-space-*`, `--wb-radius-*`, `--wb-size-*`, `--wb-font-size-*`, `--wb-shadow-*`) belong to the design-token export; everything else under `--wb-*` (like the theming variables above) is defined by the SDK itself. The two sets do not collide because exported names always carry a domain segment. Every `var(--…)` in workspace CSS is validated in CI against the set of names that actually exist (stylelint, see `packages/tokens/README.md`).
 

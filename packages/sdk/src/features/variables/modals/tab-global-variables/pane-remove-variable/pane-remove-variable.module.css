@@ -3,8 +3,8 @@
 }
 
 .description {
-  margin-top: var(--ax-token-spacing-spacing-16);
-  margin-bottom: var(--ax-token-spacing-spacing-20);
+  margin-top: var(--wb-space-200);
+  margin-bottom: var(--wb-space-250);
 }
 
 .list {
@@ -14,14 +14,14 @@
   border-radius: 8px;
   border: 1px solid var(--wb-settings-remove-bg);
   background: var(--wb-settings-remove-bg);
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
   margin: 0;
-  padding: var(--ax-token-spacing-spacing-12) var(--ax-token-spacing-spacing-16) var(--ax-token-spacing-spacing-12) 16px;
+  padding: var(--wb-space-150) var(--wb-space-200) var(--wb-space-150) 16px;
 
   li {
     margin: 0;
     padding: 0;
-    margin-left: var(--ax-token-spacing-spacing-16);
+    margin-left: var(--wb-space-200);
   }
 }
 
@@ -36,7 +36,7 @@
 .buttons {
   margin-top: auto;
   display: flex;
-  padding-top: var(--ax-token-spacing-spacing-16);
+  padding-top: var(--wb-space-200);
 
   > :last-child {
     margin-left: auto;
