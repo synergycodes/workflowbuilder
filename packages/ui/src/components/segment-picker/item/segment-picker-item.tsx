@@ -1,7 +1,7 @@
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
 import type { NavButtonProps } from '@ui/components/button/nav-button/types';
 import clsx from 'clsx';
-import { type MouseEvent, isValidElement, useContext } from 'react';
+import { type MouseEvent, type ReactNode, isValidElement, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
@@ -13,6 +13,22 @@ export type SegmentPickerItemProps = BaseButtonProps &
     value: string;
   };
 
+type Slots = { prefixIcon?: ReactNode; label?: ReactNode; suffixIcon?: ReactNode };
+
+function toSlots(children: ReactNode): Slots {
+  if (Array.isArray(children)) {
+    const parts = children.filter((child) => child != null && child !== false);
+    const prefixIcon = isValidElement(parts[0]) ? parts[0] : undefined;
+    const last = parts.at(-1);
+    const suffixIcon = parts.length > 1 && isValidElement(last) ? last : undefined;
+    const label = parts.filter((child) => !isValidElement(child));
+
+    return { prefixIcon, label: label.length > 0 ? label : undefined, suffixIcon };
+  }
+
+  return isValidElement(children) ? { prefixIcon: children } : { label: children };
+}
+
 export function Item({ children, className, prefixIcon, suffixIcon, value, ...buttonProps }: SegmentPickerItemProps) {
   const context = useContext(SegmentPickerContext);
 
@@ -21,21 +37,26 @@ export function Item({ children, className, prefixIcon, suffixIcon, value, ...bu
     return null;
   }
 
-  const { selectedValue, onSelect, shape, size, styleVariant } = context;
-  const hasLegacyIconChild = prefixIcon == null && suffixIcon == null && isValidElement(children);
+  const { selectedValue, onSelect, shape, size, navVariant } = context;
+  const slots = toSlots(children);
+  const isSelected = selectedValue === value;
 
   return (
     <NavButton
+      aria-pressed={isSelected}
       className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], className)}
-      isSelected={selectedValue === value}
-      onClick={(event: MouseEvent<HTMLButtonElement>) => onSelect(event, value)}
-      prefixIcon={hasLegacyIconChild ? children : prefixIcon}
+      isSelected={isSelected}
+      onClick={(event: MouseEvent<HTMLButtonElement>) => {
+        if (isSelected) return;
+        onSelect(event, value);
+      }}
+      prefixIcon={prefixIcon ?? slots.prefixIcon}
       size={size}
-      styleVariant={styleVariant}
-      suffixIcon={suffixIcon}
+      variant={navVariant}
+      suffixIcon={suffixIcon ?? slots.suffixIcon}
       {...buttonProps}
     >
-      {hasLegacyIconChild ? undefined : children}
+      {slots.label}
     </NavButton>
   );
 }

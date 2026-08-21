@@ -43,7 +43,7 @@ export const COMPONENTS = [
   {
     slug: 'nav-button',
     name: 'NavButton',
-    propsType: 'NavButtonProps',
+    propsType: ['NavLabelButtonProps', 'NavIconButtonProps'],
     dir: 'button/nav-button',
   },
   { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },
