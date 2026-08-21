@@ -1,5 +1,5 @@
 :root {
-  --ax-public-snackbar-border-size: 0.0625rem;
+  --ax-public-snackbar-border-size: var(--wb-size-12);
   --ax-public-snackbar-padding: var(--wb-space-200) var(--wb-space-200);
   --ax-public-snackbar-border-radius: var(--wb-radius-100);
   --ax-public-snackbar-content-gap: var(--wb-space-150);
@@ -9,34 +9,25 @@
   --ax-public-snackbar-subtitle-color: var(--wb-ui-text-subtle-default);
   --ax-public-snackbar-close-icon-color: var(--wb-ui-text-muted-default);
 
-  --ax-public-snackbar-default-border: var(--wb-ui-stroke-subtle);
+  --ax-public-snackbar-default-border: var(--wb-components-snackbar-stroke-default);
   --ax-public-snackbar-default-background: var(--wb-ui-bg-base);
   --ax-public-snackbar-default-icon-color: var(--wb-ui-text-muted-default);
 
-  --ax-public-snackbar-success-border: var(--wb-colors-green-300); /* missing token */
-  --ax-public-snackbar-success-background:
-    linear-gradient(0deg, var(--wb-components-snackbar-bg-success) 0%, var(--wb-components-snackbar-bg-success) 100%),
-    var(--wb-ui-bg-base);
-  --ax-public-snackbar-success-icon-color: var(--wb-colors-green-300); /* missing token */
+  --ax-public-snackbar-success-border: var(--wb-components-snackbar-stroke-success);
+  --ax-public-snackbar-success-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-success-icon-color: var(--wb-components-snackbar-stroke-success);
 
-  --ax-public-snackbar-error-border: var(--wb-colors-red-400); /* missing token */
-  --ax-public-snackbar-error-background:
-    linear-gradient(0deg, var(--wb-components-snackbar-bg-critical) 0%, var(--wb-components-snackbar-bg-critical) 100%),
-    var(--wb-ui-bg-base);
-  --ax-public-snackbar-error-icon-color: var(--wb-colors-red-400); /* missing token */
+  --ax-public-snackbar-error-border: var(--wb-components-snackbar-stroke-critical);
+  --ax-public-snackbar-error-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-error-icon-color: var(--wb-components-snackbar-stroke-critical);
 
-  --ax-public-snackbar-warning-border: var(--wb-colors-orange-300); /* missing token */
-  --ax-public-snackbar-warning-background:
-    linear-gradient(0deg, var(--wb-components-snackbar-bg-warning) 0%, var(--wb-components-snackbar-bg-warning) 100%),
-    var(--wb-ui-bg-base);
+  --ax-public-snackbar-warning-border: var(--wb-components-snackbar-stroke-warning);
+  --ax-public-snackbar-warning-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-warning-icon-color: var(--wb-components-snackbar-stroke-warning);
 
-  --ax-public-snackbar-warning-icon-color: var(--wb-colors-orange-300); /* missing token */
-
-  --ax-public-snackbar-info-border: var(--wb-components-selector-fill-checked);
-  --ax-public-snackbar-info-background:
-    linear-gradient(0deg, var(--wb-components-snackbar-bg-info) 0%, var(--wb-components-snackbar-bg-info) 100%),
-    var(--wb-ui-bg-base);
-  --ax-public-snackbar-info-icon-color: var(--wb-colors-blue-400);
+  --ax-public-snackbar-info-border: var(--wb-components-snackbar-stroke-info);
+  --ax-public-snackbar-info-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-info-icon-color: var(--wb-components-snackbar-stroke-info);
 }
 
 @layer ui.component {
@@ -45,7 +36,7 @@
     width: calc(var(--ax-public-snackbar-width) + 2 * var(--wb-space-200) + 2 * var(--ax-public-snackbar-border-size));
     border: var(--ax-public-snackbar-border-size) solid var(--ax-public-snackbar-default-border);
     border-radius: var(--ax-public-snackbar-border-radius);
-    background: var(--ax-public-snackbar-default-background);
+    background-color: var(--ax-public-snackbar-default-background);
     padding: var(--ax-public-snackbar-padding);
 
     .content {
@@ -56,22 +47,35 @@
     }
 
     &.success {
-      background: var(--ax-public-snackbar-success-background);
+      background-color: var(--ax-public-snackbar-success-background);
+      background-image: linear-gradient(
+        var(--wb-components-snackbar-bg-success),
+        var(--wb-components-snackbar-bg-success)
+      );
       border-color: var(--ax-public-snackbar-success-border);
     }
 
     &.error {
-      background: var(--ax-public-snackbar-error-background);
+      background-color: var(--ax-public-snackbar-error-background);
+      background-image: linear-gradient(
+        var(--wb-components-snackbar-bg-critical),
+        var(--wb-components-snackbar-bg-critical)
+      );
       border-color: var(--ax-public-snackbar-error-border);
     }
 
     &.warning {
-      background: var(--ax-public-snackbar-warning-background);
+      background-color: var(--ax-public-snackbar-warning-background);
+      background-image: linear-gradient(
+        var(--wb-components-snackbar-bg-warning),
+        var(--wb-components-snackbar-bg-warning)
+      );
       border-color: var(--ax-public-snackbar-warning-border);
     }
 
     &.info {
-      background: var(--ax-public-snackbar-info-background);
+      background-color: var(--ax-public-snackbar-info-background);
+      background-image: linear-gradient(var(--wb-components-snackbar-bg-info), var(--wb-components-snackbar-bg-info));
       border-color: var(--ax-public-snackbar-info-border);
     }
   }

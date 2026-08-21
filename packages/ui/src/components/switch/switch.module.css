@@ -6,12 +6,12 @@
   --ax-public-switch-disabled-border-color: var(--wb-ui-stroke-subtle);
   --ax-public-track-no-selected-color: var(--wb-ui-bg-base);
   --ax-public-track-selected-color: var(--wb-components-selector-fill-checked);
-  --ax-public-thumb-no-selected-color: var(--wb-components-nav-button-icon-primary-default);
-  --ax-public-thumb-disabled-color: var(--wb-components-nav-button-icon-primary-disabled);
-  --ax-public-thumb-selected-color: var(--wb-colors-gray-100); /* missing token */
+  --ax-public-thumb-no-selected-color: var(--wb-ui-text-subtle-default);
+  --ax-public-thumb-disabled-color: var(--wb-ui-icon-disabled);
+  --ax-public-thumb-selected-color: var(--wb-ui-text-onaccent-default);
 
-  --ax-public-switch-focus-border-color: var(--wb-ui-text-default);
-  --ax-public-switch-border-size: 0.0625rem;
+  --ax-public-switch-focus-border-color: var(--wb-shadow-ui-focus);
+  --ax-public-switch-border-size: var(--wb-size-12);
 }
 
 @layer ui.base {
@@ -22,7 +22,7 @@
     justify-content: center;
     position: relative;
     cursor: pointer;
-    border-radius: 100px;
+    border-radius: var(--wb-radius-full);
     border: var(--ax-public-switch-border-size) solid var(--ax-public-switch-outline-color);
 
     &:not(:hover) {
@@ -31,7 +31,7 @@
 
     .thumb {
       position: absolute;
-      border-radius: 100px;
+      border-radius: var(--wb-radius-full);
       background-color: var(--ax-public-thumb-no-selected-color);
       transition: transform var(--ax-public-transition);
     }
@@ -40,7 +40,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      border-radius: 100px;
+      border-radius: var(--wb-radius-full);
     }
 
     .thumb-contents {
@@ -49,7 +49,9 @@
 
     &:focus-visible {
       outline: none;
-      box-shadow: 0 0 0 2px var(--ax-public-switch-focus-border-color);
+      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
+        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+        var(--ax-public-switch-focus-border-color);
     }
 
     &[data-checked] {

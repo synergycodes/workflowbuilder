@@ -2,10 +2,10 @@
   --ax-public-icon-switch-width: 4.125rem;
   --ax-public-icon-switch-height: 2.125rem;
   --ax-public-icon-switch-thumb-size: 1.75rem;
-  --ax-public-icon-switch-thumb-offset: 0.1875rem;
-  --ax-public-icon-switch-translate: 2rem;
-  --ax-public-icon-switch-padding: 0.5rem;
-  --ax-public-icon-switch-icon-size: 1rem;
+  --ax-public-icon-switch-thumb-offset: var(--wb-size-37);
+  --ax-public-icon-switch-translate: var(--wb-size-400);
+  --ax-public-icon-switch-padding: var(--wb-space-100);
+  --ax-public-icon-switch-icon-size: var(--wb-size-200);
 
   --ax-public-icon-switch-track-bg: var(--wb-ui-bg-inset);
   --ax-public-icon-switch-thumb-bg-primary: var(--wb-components-selector-fill-checked);
@@ -49,7 +49,7 @@
     left: var(--ax-public-icon-switch-thumb-offset);
     width: var(--ax-public-icon-switch-thumb-size);
     height: var(--ax-public-icon-switch-thumb-size);
-    border-radius: 50%;
+    border-radius: var(--wb-radius-full);
     transition: transform 0.1s ease-in-out;
     display: flex;
     align-items: center;
