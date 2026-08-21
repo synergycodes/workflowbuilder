@@ -7,7 +7,7 @@
   --ax-public-button-primary-background-focus: var(--wb-components-button-solid-primary-focus);
   --ax-public-button-primary-background-disabled: var(--wb-components-button-solid-disabled);
   --ax-public-button-primary-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-button-primary-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-button-primary-color-disabled: var(--wb-ui-text-disabled);
 
   --ax-public-button-secondary-background: var(--wb-components-button-solid-gray-default);
   --ax-public-button-secondary-background-hover: var(--wb-components-button-solid-gray-hover);
@@ -15,13 +15,7 @@
   --ax-public-button-secondary-background-focus: var(--wb-components-button-solid-gray-focus);
   --ax-public-button-secondary-background-disabled: var(--wb-components-button-solid-disabled);
   --ax-public-button-secondary-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-button-secondary-color-disabled: var(--wb-ui-text-ghost-default);
-  --ax-public-button-secondary-border-color: var(--wb-ui-stroke-subtle);
-  --ax-public-button-secondary-border-color-hover: var(--wb-colors-gray-500);
-  --ax-public-button-secondary-color-active: var(--wb-ui-text-subtle-default);
-  --ax-public-button-secondary-border-color-active: var(--wb-colors-gray-500);
-  --ax-public-button-secondary-border-color-focus: var(--wb-colors-gray-500);
-  --ax-public-button-secondary-border-color-disabled: var(--wb-ui-stroke-subtle);
+  --ax-public-button-secondary-color-disabled: var(--wb-ui-text-disabled);
 
   --ax-public-button-critical-background: var(--wb-components-button-solid-critical-default);
   --ax-public-button-critical-background-hover: var(--wb-components-button-solid-critical-hover);
@@ -29,7 +23,7 @@
   --ax-public-button-critical-background-focus: var(--wb-components-button-solid-critical-focus);
   --ax-public-button-critical-background-disabled: var(--wb-components-button-solid-disabled);
   --ax-public-button-critical-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-button-critical-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-button-critical-color-disabled: var(--wb-ui-text-disabled);
 
   --ax-public-button-success-background: var(--wb-components-button-solid-success-default);
   --ax-public-button-success-background-hover: var(--wb-components-button-solid-success-hover);
@@ -37,7 +31,7 @@
   --ax-public-button-success-background-focus: var(--wb-components-button-solid-success-focus);
   --ax-public-button-success-background-disabled: var(--wb-components-button-solid-disabled);
   --ax-public-button-success-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-button-success-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-button-success-color-disabled: var(--wb-ui-text-disabled);
 
   --ax-public-button-warning-background: var(--wb-components-button-solid-warning-default);
   --ax-public-button-warning-background-hover: var(--wb-components-button-solid-warning-hover);
@@ -45,7 +39,7 @@
   --ax-public-button-warning-background-focus: var(--wb-components-button-solid-warning-focus);
   --ax-public-button-warning-background-disabled: var(--wb-components-button-solid-disabled);
   --ax-public-button-warning-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-button-warning-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-button-warning-color-disabled: var(--wb-ui-text-disabled);
 
   --ax-public-button-ghost-primary-background-color: var(--wb-components-button-ghost-primary-default);
   --ax-public-button-ghost-primary-background-color-hover: var(--wb-components-button-ghost-primary-hover);
@@ -95,23 +89,6 @@
   --ax-public-button-ghost-warning-border-color: var(--wb-components-button-ghost-warning-stroke-default);
   --ax-public-button-ghost-warning-color: var(--wb-ui-text-warning-default);
   --ax-public-button-ghost-warning-color-disabled: var(--wb-ui-text-warning-disabled);
-
-  --ax-public-button-gray-background: var(--wb-components-button-solid-gray-default);
-  --ax-public-button-gray-background-hover: var(--wb-components-button-solid-gray-hover);
-  --ax-public-button-gray-background-active: var(--wb-components-button-solid-gray-active);
-  --ax-public-button-gray-background-focus: var(--wb-components-button-solid-gray-focus);
-  --ax-public-button-error-background: var(--wb-components-button-solid-critical-default);
-  --ax-public-button-error-background-hover: var(--wb-components-button-solid-critical-hover);
-  --ax-public-button-error-background-active: var(--wb-components-button-solid-critical-active);
-  --ax-public-button-error-background-focus: var(--wb-components-button-solid-critical-focus);
-  --ax-public-button-ghost-destructive-background-color: var(--wb-components-button-ghost-critical-default);
-  --ax-public-button-ghost-destructive-background-color-hover: var(--wb-components-button-ghost-critical-hover);
-  --ax-public-button-ghost-destructive-background-color-active: var(--wb-components-button-ghost-critical-active);
-  --ax-public-button-ghost-destructive-background-color-focus: var(--wb-components-button-ghost-critical-focus);
-  --ax-public-button-ghost-destructive-background-color-disabled: var(--wb-components-button-ghost-critical-disabled);
-  --ax-public-button-ghost-destructive-border-color: var(--wb-components-button-ghost-critical-stroke-default);
-  --ax-public-button-ghost-destructive-color: var(--wb-ui-text-critical-default);
-  --ax-public-button-ghost-destructive-color-disabled: var(--wb-ui-text-critical-disabled);
 }
 
 @layer ui.component {

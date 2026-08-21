@@ -1,6 +1,6 @@
 ---
 '@workflowbuilder/ui': major
-'@workflowbuilder/sdk': minor
+'@workflowbuilder/sdk': major
 ---
 
-The Button API now uses variant, letter-based size, shape, prefixIcon, suffixIcon, and children props; children-structure inference has been removed. Variants rename gray to secondary, error to critical, and ghost-destructive to ghost-critical, while the former outlined secondary becomes ghost-secondary and secondary now identifies the solid gray treatment. Sizes now use xl, l, m, s, and xs.
+`Button` takes `variant`, `size` and `shape` and composes its content from `prefixIcon`, `children` and `suffixIcon`; the label/icon/icon+label subtypes and their prop types are gone. Migrate variants (the outlined treatment is `ghost-secondary`, `secondary` is the solid grey former `gray`, `error` is `critical`, `ghost-destructive` is `ghost-critical`), sizes (`extra-large`…`extra-small` become `xl`…`xs`), and `shape="circle"` (now `"round"`).

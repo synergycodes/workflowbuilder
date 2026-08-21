@@ -1,11 +1,11 @@
 import { PlusCircle } from '@phosphor-icons/react';
-import { Button } from '@workflowbuilder/ui';
+import { Button, type LabelButtonProps } from '@workflowbuilder/ui';
 
 import styles from './placeholder-button.module.css';
 
 type Props = {
   label: string;
-} & Omit<React.ComponentProps<typeof Button>, 'children'>;
+} & Omit<LabelButtonProps, 'children'>;
 
 export function PlaceholderButton({ label, size = 'xs', ...props }: Props) {
   return (

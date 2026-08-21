@@ -25,19 +25,33 @@ export const BUTTON_SHAPES = ['default', 'square', 'round'] as const;
 
 export type ButtonShape = (typeof BUTTON_SHAPES)[number];
 
-export type ButtonProps = {
+export type LabelButtonProps = {
   /** @default 'primary' */
   variant?: ButtonVariant;
   /** @default 'm' */
   size?: ButtonSize;
-  /**
-   * Square and round buttons render only `prefixIcon`, or a single element child as a fallback.
-   * @default 'default'
-   */
-  shape?: ButtonShape;
+  /** @default 'default' */
+  shape?: 'default';
+  children: ReactNode;
   prefixIcon?: ReactNode;
   suffixIcon?: ReactNode;
   isLoading?: boolean;
   tooltip?: string;
   tooltipType?: TooltipVariant;
-} & ButtonHTMLAttributes<HTMLButtonElement>;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+
+export type IconButtonProps = {
+  /** @default 'primary' */
+  variant?: ButtonVariant;
+  /** @default 'm' */
+  size?: ButtonSize;
+  shape: 'square' | 'round';
+  prefixIcon: ReactNode;
+  children?: never;
+  suffixIcon?: never;
+  isLoading?: boolean;
+  tooltip?: string;
+  tooltipType?: TooltipVariant;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+
+export type ButtonProps = LabelButtonProps | IconButtonProps;
