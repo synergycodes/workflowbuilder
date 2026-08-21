@@ -3,28 +3,28 @@
   --ax-public-modal-border-radius: var(--wb-radius-200);
   --ax-public-modal-padding: var(--wb-space-200);
 
-  --ax-public-modal-description-size: 0.625rem;
+  --ax-public-modal-description-size: var(--wb-font-size-125);
   --ax-public-modal-description-line-height: 140%;
 
   --ax-public-modal-icon-padding: var(--wb-space-112);
   --ax-public-modal-content-padding: var(--wb-space-300) var(--wb-space-200);
-  --ax-public-modal-footer-padding: 0px var(--wb-space-200) var(--wb-space-200) var(--wb-space-200);
+  --ax-public-modal-footer-padding: var(--wb-space-0) var(--wb-space-200) var(--wb-space-200) var(--wb-space-200);
 
-  --ax-public-modal-background: var(--wb-ui-bg-base);
+  --ax-public-modal-background: var(--wb-ui-bg-elevated);
   --ax-public-modal-backdrop-background: var(--wb-colors-gray-900);
-  --ax-public-modal-close-button-color: var(--wb-components-nav-button-icon-primary-default);
+  --ax-public-modal-close-button-color: var(--wb-ui-text-subtle-default);
   --ax-public-modal-header-background: var(--wb-ui-bg-elevated);
   --ax-public-modal-header-border-color: var(--wb-ui-stroke-default);
   --ax-public-modal-title-color: var(--wb-ui-text-default);
   --ax-public-modal-description-color: var(--wb-ui-text-subtle-default);
-  --ax-public-modal-icon-background: var(--wb-components-button-solid-primary-default);
+  --ax-public-modal-icon-background: var(--wb-ui-brand-fill);
   --ax-public-modal-icon-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-modal-content-background: var(--wb-ui-bg-base);
+  --ax-public-modal-content-background: var(--wb-ui-bg-elevated);
   --ax-public-modal-footer-border-color: var(--wb-ui-stroke-default);
 
   --ax-public-modal-large-width: 30rem;
   --ax-public-modal-large-padding: var(--wb-space-300);
-  --ax-public-modal-large-title-size: 1.125rem;
+  --ax-public-modal-large-title-size: var(--wb-font-size-225);
   --ax-public-modal-large-title-line-height: 130%;
   --ax-public-modal-large-icon-padding: var(--wb-space-137);
 
@@ -37,7 +37,7 @@
   --ax-public-modal-icon-border-radius: var(--wb-radius-75);
   --ax-public-modal-icon-border-radius-large: var(--wb-radius-100);
 
-  --ax-public-modal-content-gap: 0.25rem;
+  --ax-public-modal-content-gap: var(--wb-space-50);
 }
 
 @layer ui.component {
@@ -70,7 +70,7 @@
     z-index: 1001;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - 3rem);
+    max-height: calc(100dvh - var(--wb-space-600));
     background-color: var(--ax-public-modal-background);
     border-radius: var(--ax-public-modal-border-radius);
     width: var(--ax-public-modal-width);
@@ -95,7 +95,7 @@
     justify-content: space-between;
     align-items: center;
     border-radius: var(--ax-public-modal-border-radius) var(--ax-public-modal-border-radius) 0 0;
-    border-bottom: 1px solid var(--ax-public-modal-header-border-color);
+    border-bottom: var(--wb-size-12) solid var(--ax-public-modal-header-border-color);
     background: var(--ax-public-modal-header-background);
   }
 
@@ -158,7 +158,7 @@
     align-self: stretch;
 
     &.separated {
-      border-top: 1px solid var(--ax-public-modal-footer-border-color);
+      border-top: var(--wb-size-12) solid var(--ax-public-modal-footer-border-color);
     }
   }
 

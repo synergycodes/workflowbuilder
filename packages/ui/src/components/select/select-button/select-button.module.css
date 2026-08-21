@@ -44,6 +44,8 @@
     &:focus-visible {
       border-color: var(--ax-public-select-button-border-color-focus);
       outline: none;
+      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
+        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread) var(--wb-shadow-ui-focus);
     }
 
     &:disabled {
