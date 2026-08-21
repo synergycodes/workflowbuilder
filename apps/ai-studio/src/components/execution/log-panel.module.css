@@ -9,7 +9,7 @@
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: var(--wb-app-bar-border-radius);
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
   display: flex;
   flex-direction: column;
   z-index: 10;
@@ -91,7 +91,7 @@
 }
 
 .badge--node_started {
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
 }
 
 .badge--node_failed,
@@ -100,7 +100,7 @@
 }
 
 .badge--execution_cancelled {
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
 }
 
 .node-id {
@@ -160,6 +160,6 @@
 }
 
 .event--highlighted {
-  background: color-mix(in srgb, var(--ax-colors-acc1-500), transparent 88%);
-  box-shadow: inset 0.1875rem 0 0 var(--ax-colors-acc1-500);
+  background: color-mix(in srgb, var(--wb-colors-acc1-500), transparent 88%);
+  box-shadow: inset 0.1875rem 0 0 var(--wb-colors-acc1-500);
 }

@@ -4,11 +4,11 @@
   --ax-public-node-port-size-hover: 0.75rem;
   --ax-public-node-port-border-size: 0.125rem;
 
-  --ax-public-node-port-background-color: var(--ax-node-port-fill-default);
-  --ax-public-node-port-border-color: var(--ax-node-port-stroke-default);
+  --ax-public-node-port-background-color: var(--wb-canvas-port-fill-default);
+  --ax-public-node-port-border-color: var(--wb-canvas-port-stroke-default);
 
-  --ax-public-node-port-background-color-hover: var(--ax-node-port-fill-active);
-  --ax-public-node-port-border-color-hover: var(--ax-node-port-stroke-active);
+  --ax-public-node-port-background-color-hover: var(--wb-canvas-port-fill-active);
+  --ax-public-node-port-border-color-hover: var(--wb-canvas-port-stroke-active);
 }
 
 @layer ui.component {

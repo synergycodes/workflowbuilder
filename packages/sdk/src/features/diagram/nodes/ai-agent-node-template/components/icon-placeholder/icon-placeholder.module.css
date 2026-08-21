@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: var(--ax-token-radius-button-s);
-  outline: 1px dashed var(--ax-ui-stroke-secondary-default);
+  border-radius: var(--wb-space-50);
+  outline: 1px dashed var(--wb-ui-stroke-subtle);
   padding: 0.4375rem;
 }

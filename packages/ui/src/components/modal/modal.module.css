@@ -1,43 +1,41 @@
 :root {
   --ax-public-modal-width: 26.25rem;
-  --ax-public-modal-border-radius: var(--ax-token-radius-modal-m);
-  --ax-public-modal-padding: var(--ax-token-spacing-modal-m-header-pad);
+  --ax-public-modal-border-radius: var(--wb-space-200);
+  --ax-public-modal-padding: var(--wb-space-200);
 
   --ax-public-modal-description-size: 0.625rem;
   --ax-public-modal-description-line-height: 140%;
 
-  --ax-public-modal-icon-padding: var(--ax-token-spacing-button-m-v-pad-2);
-  --ax-public-modal-content-padding: var(--ax-token-spacing-modal-m-content-v-pad)
-    var(--ax-token-spacing-modal-m-content-h-pad);
-  --ax-public-modal-footer-padding: 0px var(--ax-token-spacing-modal-m-header-pad)
-    var(--ax-token-spacing-modal-m-header-pad) var(--ax-token-spacing-modal-m-header-pad);
+  --ax-public-modal-icon-padding: var(--wb-space-112);
+  --ax-public-modal-content-padding: var(--wb-space-300) var(--wb-space-200);
+  --ax-public-modal-footer-padding: 0px var(--wb-space-200) var(--wb-space-200) var(--wb-space-200);
 
-  --ax-public-modal-background: var(--ax-ui-bg-primary-default);
-  --ax-public-modal-backdrop-background: var(--ax-colors-gray-900);
-  --ax-public-modal-close-button-color: var(--ax-nav-button-icon-primary-default);
-  --ax-public-modal-header-background: var(--ax-ui-bg-secondary-default);
-  --ax-public-modal-header-border-color: var(--ax-ui-stroke-primary-default);
-  --ax-public-modal-title-color: var(--ax-txt-primary-default);
-  --ax-public-modal-description-color: var(--ax-txt-secondary-default);
-  --ax-public-modal-icon-background: var(--ax-button-primary-bg-default);
-  --ax-public-modal-icon-color: var(--ax-txt-primary-white);
-  --ax-public-modal-content-background: var(--ax-ui-bg-primary-default);
-  --ax-public-modal-footer-border-color: var(--ax-ui-stroke-primary-default);
+  --ax-public-modal-background: var(--wb-ui-bg-base);
+  --ax-public-modal-backdrop-background: var(--wb-colors-gray-900);
+  --ax-public-modal-close-button-color: var(--wb-components-nav-button-icon-primary-default);
+  --ax-public-modal-header-background: var(--wb-ui-bg-elevated);
+  --ax-public-modal-header-border-color: var(--wb-ui-stroke-default);
+  --ax-public-modal-title-color: var(--wb-ui-text-default);
+  --ax-public-modal-description-color: var(--wb-ui-text-subtle-default);
+  --ax-public-modal-icon-background: var(--wb-components-button-solid-primary-default);
+  --ax-public-modal-icon-color: var(--wb-ui-text-onaccent-default);
+  --ax-public-modal-content-background: var(--wb-ui-bg-base);
+  --ax-public-modal-footer-border-color: var(--wb-ui-stroke-default);
 
   --ax-public-modal-large-width: 30rem;
-  --ax-public-modal-large-padding: var(--ax-token-spacing-modal-l-header-pad);
+  --ax-public-modal-large-padding: var(--wb-space-300);
   --ax-public-modal-large-title-size: 1.125rem;
   --ax-public-modal-large-title-line-height: 130%;
-  --ax-public-modal-large-icon-padding: var(--ax-token-spacing-button-l-v-pad-2);
+  --ax-public-modal-large-icon-padding: var(--wb-space-137);
 
-  --ax-public-modal-box-shadow: var(--ax-token-shadow-shadow-l-x) var(--ax-token-shadow-shadow-l-y)
-    var(--ax-token-shadow-shadow-l-blur) var(--ax-token-shadow-shadow-l-spread) var(--ax-shadow);
+  --ax-public-modal-box-shadow: var(--wb-space-0) var(--wb-space-200) var(--wb-space-400) var(--wb-space-negative-100)
+    var(--wb-shadow-ui-color);
 
-  --ax-public-modal-gap: var(--ax-token-spacing-modal-m-header-gap);
-  --ax-public-modal-gap-large: var(--ax-token-spacing-modal-l-header-gap);
+  --ax-public-modal-gap: var(--wb-space-150);
+  --ax-public-modal-gap-large: var(--wb-space-150);
 
-  --ax-public-modal-icon-border-radius: var(--ax-token-radius-button-m);
-  --ax-public-modal-icon-border-radius-large: var(--ax-token-radius-button-l);
+  --ax-public-modal-icon-border-radius: var(--wb-space-75);
+  --ax-public-modal-icon-border-radius-large: var(--wb-space-100);
 
   --ax-public-modal-content-gap: 0.25rem;
 }
@@ -104,13 +102,13 @@
   .title-wrapper {
     display: flex;
     align-items: center;
-    gap: var(--ax-token-spacing-modal-m-header-gap);
+    gap: var(--wb-space-150);
   }
 
   .title-container {
     display: flex;
     flex-direction: column;
-    gap: var(--ax-token-spacing-modal-m-header-gap);
+    gap: var(--wb-space-150);
   }
 
   .icon {

@@ -1,8 +1,8 @@
 :root {
-  --ax-public-segment-picker-gap: var(--ax-token-spacing-seg-picker-gap);
-  --ax-public-segment-picker-padding: var(--ax-token-spacing-seg-picker-pad);
-  --ax-public-segment-picker-background-color: var(--ax-ui-bg-tertiary-default);
-  --ax-public-segment-picker-circle-border-radius: var(--ax-token-radius-button-round);
+  --ax-public-segment-picker-gap: var(--wb-space-50);
+  --ax-public-segment-picker-padding: var(--wb-space-50);
+  --ax-public-segment-picker-background-color: var(--wb-ui-bg-inset);
+  --ax-public-segment-picker-circle-border-radius: var(--wb-radius-full);
 }
 
 @layer ui.component {

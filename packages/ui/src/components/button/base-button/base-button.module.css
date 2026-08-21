@@ -1,8 +1,8 @@
 :root {
-  --ax-public-button-background-color-disabled: var(--ax-button-primary-bg-disabled);
-  --ax-public-button-focus-visible-box-shadow-color: var(--ax-txt-primary-default);
-  --ax-public-button-inner-border-color: var(--ax-ui-bg-primary-default);
-  --ax-public-button-color: var(--ax-txt-primary-white);
+  --ax-public-button-background-color-disabled: var(--wb-components-button-solid-disabled);
+  --ax-public-button-focus-visible-box-shadow-color: var(--wb-ui-text-default);
+  --ax-public-button-inner-border-color: var(--wb-ui-bg-base);
+  --ax-public-button-color: var(--wb-ui-text-onaccent-default);
 }
 
 @layer ui.base {

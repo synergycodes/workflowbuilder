@@ -1,18 +1,18 @@
 :root {
-  --ax-public-edge-label-gap: var(--ax-token-spacing-label-gap);
-  --ax-public-edge-background-color: var(--ax-ui-bg-tertiary-default);
-  --ax-public-edge-label-color: var(--ax-txt-primary-default);
+  --ax-public-edge-label-gap: var(--wb-space-100);
+  --ax-public-edge-background-color: var(--wb-ui-bg-inset);
+  --ax-public-edge-label-color: var(--wb-ui-text-default);
 
-  --ax-public-edge-label-border-size: var(--ax-token-stroke-edge-regular);
-  --ax-public-edge-label-border-size-selected: var(--ax-token-stroke-edge-bold);
+  --ax-public-edge-label-border-size: var(--wb-space-25);
+  --ax-public-edge-label-border-size-selected: var(--wb-space-37);
 
   --ax-public-edge-label-border-style: solid;
-  --ax-public-edge-label-border-color: var(--ax-edge-primary-default);
-  --ax-public-edge-label-border-color-selected: var(--ax-edge-primary-active);
-  --ax-public-edge-label-border-color-hover: var(--ax-edge-primary-hover);
+  --ax-public-edge-label-border-color: var(--wb-canvas-edge-stroke-default);
+  --ax-public-edge-label-border-color-selected: var(--wb-canvas-edge-stroke-active);
+  --ax-public-edge-label-border-color-hover: var(--wb-canvas-edge-stroke-hover);
 
-  --ax-public-edge-label-color-disabled: var(--ax-txt-quaternary-default);
-  --ax-public-edge-label-border-color-disabled: var(--ax-edge-primary-disabled);
+  --ax-public-edge-label-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-edge-label-border-color-disabled: var(--wb-canvas-edge-stroke-disabled);
 }
 
 @layer ui.component {

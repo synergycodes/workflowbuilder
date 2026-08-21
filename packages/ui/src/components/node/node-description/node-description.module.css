@@ -1,6 +1,6 @@
 :root {
-  --ax-public-node-title-color: var(--ax-txt-primary-default);
-  --ax-public-node-title-subtitle: var(--ax-txt-secondary-default);
+  --ax-public-node-title-color: var(--wb-ui-text-default);
+  --ax-public-node-title-subtitle: var(--wb-ui-text-subtle-default);
 }
 
 @layer ui.component {

@@ -1,5 +1,5 @@
 :root {
-  --spinner-color: var(--ax-txt-primary-white);
+  --spinner-color: var(--wb-ui-text-onaccent-default);
 }
 
 .container {
@@ -7,7 +7,7 @@
 }
 
 .container--success {
-  --spinner-color: var(--ax-txt-primary-white);
+  --spinner-color: var(--wb-ui-text-onaccent-default);
 }
 
 .container--ghost-destructive {

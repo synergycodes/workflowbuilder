@@ -17,7 +17,7 @@
   font-family: 'Courier New';
   border-radius: 4px;
   padding: 4px 8px 3px 8px;
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
   background: var(--wb-variable-bg);
   display: -webkit-box;
   -webkit-line-clamp: 1;

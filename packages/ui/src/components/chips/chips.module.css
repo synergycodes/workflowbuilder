@@ -62,7 +62,7 @@
     cursor: pointer;
 
     &:focus-visible {
-      box-shadow: 0 0 0 2px var(--ax-focus-ring-element);
+      box-shadow: 0 0 0 2px var(--wb-ui-focus-ring);
       outline: none;
     }
   }

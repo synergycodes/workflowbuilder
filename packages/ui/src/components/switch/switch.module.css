@@ -1,16 +1,16 @@
 @import './switch-size.module.css';
 
 :root {
-  --ax-public-switch-outline-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-switch-disabled-background-color: var(--ax-ui-bg-tertiary-default);
-  --ax-public-switch-disabled-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-track-no-selected-color: var(--ax-ui-bg-primary-default);
-  --ax-public-track-selected-color: var(--ax-ui-bg-tertiary-selected);
-  --ax-public-thumb-no-selected-color: var(--ax-nav-button-icon-primary-default);
-  --ax-public-thumb-disabled-color: var(--ax-nav-button-icon-primary-disabled);
-  --ax-public-thumb-selected-color: var(--ax-colors-gray-100); /* missing token */
+  --ax-public-switch-outline-color: var(--wb-ui-stroke-subtle);
+  --ax-public-switch-disabled-background-color: var(--wb-ui-bg-inset);
+  --ax-public-switch-disabled-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-track-no-selected-color: var(--wb-ui-bg-base);
+  --ax-public-track-selected-color: var(--wb-components-selector-fill-checked);
+  --ax-public-thumb-no-selected-color: var(--wb-components-nav-button-icon-primary-default);
+  --ax-public-thumb-disabled-color: var(--wb-components-nav-button-icon-primary-disabled);
+  --ax-public-thumb-selected-color: var(--wb-colors-gray-100); /* missing token */
 
-  --ax-public-switch-focus-border-color: var(--ax-txt-primary-default);
+  --ax-public-switch-focus-border-color: var(--wb-ui-text-default);
   --ax-public-switch-border-size: 0.0625rem;
 }
 

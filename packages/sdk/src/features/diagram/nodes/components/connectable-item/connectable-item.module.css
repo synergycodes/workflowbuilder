@@ -1,9 +1,9 @@
 :root {
   --wb-connectable-item-horizontal-padding: 0.75rem;
   --wb-connectable-item-vertical-padding: 0.625rem;
-  --wb-connectable-item-background: var(--ax-ui-bg-tertiary-default);
+  --wb-connectable-item-background: var(--wb-ui-bg-inset);
   --wb-connectable-item-border-width: 0.0625rem;
-  --wb-connectable-item-border-color: var(--ax-input-stroke-primary-default);
+  --wb-connectable-item-border-color: var(--wb-components-text-field-stroke-default);
   --wb-connectable-item-border-radius: 0.375rem;
 }
 

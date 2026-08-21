@@ -1,17 +1,25 @@
 :root {
-  --ax-public-list-item-background-color: var(--ax-dropdown-bg-secondary-default);
-  --ax-public-list-item-background-color-selected: var(--ax-dropdown-bg-secondary-active);
-  --ax-public-list-item-color-selected: var(--ax-txt-primary-white);
-  --ax-public-list-item-color: var(--ax-txt-primary-default);
+  --ax-public-list-item-background-color: var(--wb-ui-bg-inset);
+  --ax-public-list-item-background-color-selected: var(--wb-colors-acc1-600);
+  --ax-public-list-item-color-selected: var(--wb-ui-text-onaccent-default);
+  --ax-public-list-item-color: var(--wb-ui-text-default);
 
-  --ax-public-list-item-background-color-focus: var(--ax-dropdown-bg-secondary-default);
-  --ax-public-list-item-outline-color-focus: var(--ax-ui-stroke-primary-focus);
+  --ax-public-list-item-background-color-focus: var(--wb-ui-bg-inset);
+  --ax-public-list-item-outline-color-focus: var(--wb-ui-stroke-focus);
   --ax-public-list-item-outline-size: 0.0625rem;
 
-  --ax-public-list-item-color-destructive: var(--ax-txt-error-default);
-  --ax-public-list-item-background-color-destructive: var(--ax-dropdown-bg-destructive-default);
-  --ax-public-list-item-background-color-hover-destructive: var(--ax-dropdown-bg-destructive-hover);
-  --ax-public-list-border-radius: var(--ax-token-radius-dropdown-item-s);
+  --ax-public-list-item-color-destructive: var(--wb-ui-text-critical-default);
+  --ax-public-list-item-background-color-destructive: var(--wb-colors-red-400-10);
+  --ax-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-20);
+  --ax-public-list-border-radius: var(--wb-space-75);
+}
+
+@layer ui.base {
+  html[data-theme='dark'] {
+    --ax-public-list-item-background-color-selected: var(--wb-colors-acc1-500);
+    --ax-public-list-item-background-color-destructive: var(--wb-colors-red-400-30);
+    --ax-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-50);
+  }
 }
 
 @layer ui.component {
