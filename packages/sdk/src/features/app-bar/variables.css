@@ -1,6 +1,6 @@
 :root {
   --wb-app-bar-background: var(--wb-ui-bg-base);
-  --wb-app-bar-border-radius: var(--wb-space-150);
+  --wb-app-bar-border-radius: var(--wb-canvas-node-shell-radius);
   --wb-app-bar-border-color: var(--wb-ui-stroke-default);
   --wb-app-bar-folder-name-color: var(--wb-ui-text-muted-default);
   --wb-app-bar-diagram-title-color: var(--wb-ui-text-default);

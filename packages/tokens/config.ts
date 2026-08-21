@@ -5,6 +5,8 @@ import { Config } from './src/types';
 export const config: Config = {
   primitives: ['Primitives/Mode 1'],
   themes: [
+    // Canvas is root-scoped, not a theme: it sits here because only theme
+    // builds include the primitive sources it references.
     {
       set: 'Canvas/value',
       selector: ':root',

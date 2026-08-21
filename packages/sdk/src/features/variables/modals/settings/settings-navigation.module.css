@@ -9,7 +9,7 @@
   align-self: flex-start;
   text-align: left;
   gap: var(--wb-space-50);
-  border-radius: var(--wb-space-100);
+  border-radius: var(--wb-radius-100);
   background: var(--wb-settings-navigation-background);
 }
 
@@ -29,7 +29,7 @@
   line-height: 100%; /* 14px */
   font-weight: 600;
   font-size: 0.875rem;
-  border-radius: var(--wb-space-100);
+  border-radius: var(--wb-radius-100);
   background: transparent;
   border: none;
   transition: all var(--wb-transition);

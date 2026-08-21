@@ -2,7 +2,7 @@
   --wb-message-control-error-color: var(--ax-public-snackbar-title-color);
   --wb-message-control-error-background-color: var(--ax-public-snackbar-error-background);
   --wb-message-control-spacing: var(--wb-space-100);
-  --wb-message-control-border-radius: var(--wb-space-100);
+  --wb-message-control-border-radius: var(--wb-radius-100);
   --wb-message-control-padding: var(--wb-space-100) var(--wb-space-200);
 }
 

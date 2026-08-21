@@ -1,10 +1,10 @@
 :root {
-  --ax-public-edge-label-gap: var(--wb-space-100);
+  --ax-public-edge-label-gap: var(--wb-canvas-edge-label-gap);
   --ax-public-edge-background-color: var(--wb-ui-bg-inset);
   --ax-public-edge-label-color: var(--wb-ui-text-default);
 
-  --ax-public-edge-label-border-size: var(--wb-space-25);
-  --ax-public-edge-label-border-size-selected: var(--wb-space-37);
+  --ax-public-edge-label-border-size: var(--wb-canvas-edge-stroke-regular);
+  --ax-public-edge-label-border-size-selected: var(--wb-canvas-edge-stroke-bold);
 
   --ax-public-edge-label-border-style: solid;
   --ax-public-edge-label-border-color: var(--wb-canvas-edge-stroke-default);

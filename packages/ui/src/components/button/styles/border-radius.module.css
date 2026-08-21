@@ -1,9 +1,9 @@
 :root {
-  --ax-public-button-border-radius-extra-large: var(--wb-space-100);
-  --ax-public-button-border-radius-large: var(--wb-space-100);
-  --ax-public-button-border-radius-medium: var(--wb-space-75);
-  --ax-public-button-border-radius-small: var(--wb-space-50);
-  --ax-public-button-border-radius-extra-small: var(--wb-space-50);
+  --ax-public-button-border-radius-extra-large: var(--wb-radius-100);
+  --ax-public-button-border-radius-large: var(--wb-radius-100);
+  --ax-public-button-border-radius-medium: var(--wb-radius-75);
+  --ax-public-button-border-radius-small: var(--wb-radius-50);
+  --ax-public-button-border-radius-extra-small: var(--wb-radius-50);
 
   --ax-public-button-border-radius-circle: var(--wb-radius-full);
 }

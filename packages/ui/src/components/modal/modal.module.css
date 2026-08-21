@@ -1,6 +1,6 @@
 :root {
   --ax-public-modal-width: 26.25rem;
-  --ax-public-modal-border-radius: var(--wb-space-200);
+  --ax-public-modal-border-radius: var(--wb-radius-200);
   --ax-public-modal-padding: var(--wb-space-200);
 
   --ax-public-modal-description-size: 0.625rem;
@@ -28,14 +28,14 @@
   --ax-public-modal-large-title-line-height: 130%;
   --ax-public-modal-large-icon-padding: var(--wb-space-137);
 
-  --ax-public-modal-box-shadow: var(--wb-space-0) var(--wb-space-200) var(--wb-space-400) var(--wb-space-negative-100)
-    var(--wb-shadow-ui-color);
+  --ax-public-modal-box-shadow: var(--wb-shadow-ui-l-x) var(--wb-shadow-ui-l-y) var(--wb-shadow-ui-l-blur)
+    var(--wb-shadow-ui-l-spread) var(--wb-shadow-ui-color);
 
   --ax-public-modal-gap: var(--wb-space-150);
   --ax-public-modal-gap-large: var(--wb-space-150);
 
-  --ax-public-modal-icon-border-radius: var(--wb-space-75);
-  --ax-public-modal-icon-border-radius-large: var(--wb-space-100);
+  --ax-public-modal-icon-border-radius: var(--wb-radius-75);
+  --ax-public-modal-icon-border-radius-large: var(--wb-radius-100);
 
   --ax-public-modal-content-gap: 0.25rem;
 }
