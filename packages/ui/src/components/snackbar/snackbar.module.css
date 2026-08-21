@@ -14,19 +14,26 @@
   --ax-public-snackbar-default-icon-color: var(--wb-ui-text-muted-default);
 
   --ax-public-snackbar-success-border: var(--wb-components-snackbar-stroke-success);
-  --ax-public-snackbar-success-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-success-background:
+    linear-gradient(var(--wb-components-snackbar-bg-success), var(--wb-components-snackbar-bg-success)),
+    var(--wb-ui-bg-base);
   --ax-public-snackbar-success-icon-color: var(--wb-components-snackbar-stroke-success);
 
   --ax-public-snackbar-error-border: var(--wb-components-snackbar-stroke-critical);
-  --ax-public-snackbar-error-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-error-background:
+    linear-gradient(var(--wb-components-snackbar-bg-critical), var(--wb-components-snackbar-bg-critical)),
+    var(--wb-ui-bg-base);
   --ax-public-snackbar-error-icon-color: var(--wb-components-snackbar-stroke-critical);
 
   --ax-public-snackbar-warning-border: var(--wb-components-snackbar-stroke-warning);
-  --ax-public-snackbar-warning-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-warning-background:
+    linear-gradient(var(--wb-components-snackbar-bg-warning), var(--wb-components-snackbar-bg-warning)),
+    var(--wb-ui-bg-base);
   --ax-public-snackbar-warning-icon-color: var(--wb-components-snackbar-stroke-warning);
 
   --ax-public-snackbar-info-border: var(--wb-components-snackbar-stroke-info);
-  --ax-public-snackbar-info-background: var(--wb-ui-bg-base);
+  --ax-public-snackbar-info-background:
+    linear-gradient(var(--wb-components-snackbar-bg-info), var(--wb-components-snackbar-bg-info)), var(--wb-ui-bg-base);
   --ax-public-snackbar-info-icon-color: var(--wb-components-snackbar-stroke-info);
 }
 
@@ -36,7 +43,7 @@
     width: calc(var(--ax-public-snackbar-width) + 2 * var(--wb-space-200) + 2 * var(--ax-public-snackbar-border-size));
     border: var(--ax-public-snackbar-border-size) solid var(--ax-public-snackbar-default-border);
     border-radius: var(--ax-public-snackbar-border-radius);
-    background-color: var(--ax-public-snackbar-default-background);
+    background: var(--ax-public-snackbar-default-background);
     padding: var(--ax-public-snackbar-padding);
 
     .content {
@@ -47,35 +54,22 @@
     }
 
     &.success {
-      background-color: var(--ax-public-snackbar-success-background);
-      background-image: linear-gradient(
-        var(--wb-components-snackbar-bg-success),
-        var(--wb-components-snackbar-bg-success)
-      );
+      background: var(--ax-public-snackbar-success-background);
       border-color: var(--ax-public-snackbar-success-border);
     }
 
     &.error {
-      background-color: var(--ax-public-snackbar-error-background);
-      background-image: linear-gradient(
-        var(--wb-components-snackbar-bg-critical),
-        var(--wb-components-snackbar-bg-critical)
-      );
+      background: var(--ax-public-snackbar-error-background);
       border-color: var(--ax-public-snackbar-error-border);
     }
 
     &.warning {
-      background-color: var(--ax-public-snackbar-warning-background);
-      background-image: linear-gradient(
-        var(--wb-components-snackbar-bg-warning),
-        var(--wb-components-snackbar-bg-warning)
-      );
+      background: var(--ax-public-snackbar-warning-background);
       border-color: var(--ax-public-snackbar-warning-border);
     }
 
     &.info {
-      background-color: var(--ax-public-snackbar-info-background);
-      background-image: linear-gradient(var(--wb-components-snackbar-bg-info), var(--wb-components-snackbar-bg-info));
+      background: var(--ax-public-snackbar-info-background);
       border-color: var(--ax-public-snackbar-info-border);
     }
   }

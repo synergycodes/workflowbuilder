@@ -36,8 +36,6 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      width: var(--ax-public-radio-dot-size-small);
-      height: var(--ax-public-radio-dot-size-small);
       border-radius: var(--ax-public-radio-border-radius);
       background-color: var(--ax-public-radio-dot-color);
       opacity: 0;

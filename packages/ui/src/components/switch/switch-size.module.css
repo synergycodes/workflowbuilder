@@ -1,15 +1,15 @@
 :root {
-  --ax-public-switch-width-medium: var(--wb-size-500);
-  --ax-public-switch-height-medium: var(--wb-size-300);
-  --ax-public-switch-thumb-padding-medium: var(--wb-size-25);
+  --ax-public-switch-width-medium: 1.875rem;
+  --ax-public-switch-height-medium: 1.25rem;
+  --ax-public-switch-thumb-padding-medium: var(--wb-size-37);
 
-  --ax-public-switch-width-small: var(--wb-size-400);
-  --ax-public-switch-height-small: var(--wb-size-200);
-  --ax-public-switch-thumb-padding-small: var(--wb-size-25);
+  --ax-public-switch-width-small: 1.75rem;
+  --ax-public-switch-height-small: 1.125rem;
+  --ax-public-switch-thumb-padding-small: var(--wb-size-37);
 
-  --ax-public-switch-width-extra-small: var(--wb-size-300);
-  --ax-public-switch-height-extra-small: var(--wb-size-150);
-  --ax-public-switch-thumb-padding-extra-small: var(--wb-size-25);
+  --ax-public-switch-width-extra-small: 1.625rem;
+  --ax-public-switch-height-extra-small: var(--wb-size-200);
+  --ax-public-switch-thumb-padding-extra-small: var(--wb-size-37);
 }
 
 :root {
