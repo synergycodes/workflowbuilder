@@ -1,4 +1,4 @@
-import type { NavButtonSize, NavButtonStyle } from '@ui/components/button/nav-button/types';
+import type { NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
 import type { Shape } from '@ui/components/button/types';
 import type { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
@@ -28,7 +28,7 @@ const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
   'xxx-small': 'xxxs',
 };
 
-const NAV_BUTTON_STYLE_BY_SEGMENT_PICKER_SHAPE: Record<Shape, NavButtonStyle> = {
+const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<Shape, NavButtonVariant> = {
   default: 'square',
   circle: 'round',
 };
@@ -83,7 +83,7 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
           onSelect: handleSelect,
           size: NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE[size],
           shape: validShape,
-          styleVariant: NAV_BUTTON_STYLE_BY_SEGMENT_PICKER_SHAPE[validShape],
+          navVariant: NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE[validShape],
         }}
       >
         <div ref={ref} className={clsx(styles['container'], styles[validShape], borderRadiusStyles[size], className)}>

@@ -11,10 +11,10 @@ export function NavButtonExample() {
       <div className={styles['rows']}>
         <div className={styles['row']}>
           <NavButton prefixIcon={<House />}>Square</NavButton>
-          <NavButton styleVariant="round" prefixIcon={<House />}>
+          <NavButton variant="round" prefixIcon={<House />}>
             Round
           </NavButton>
-          <NavButton styleVariant="plain" prefixIcon={<House />}>
+          <NavButton variant="plain" prefixIcon={<House />}>
             Plain
           </NavButton>
           <NavButton isSelected prefixIcon={<House />} suffixIcon={<ArrowRight />}>

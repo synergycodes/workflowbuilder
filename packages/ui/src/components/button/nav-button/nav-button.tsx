@@ -8,7 +8,7 @@ import type { NavButtonProps } from './types';
 
 export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>(
   (
-    { children, className, isSelected = false, prefixIcon, size = 'm', styleVariant = 'square', suffixIcon, ...props },
+    { children, className, isSelected = false, prefixIcon, size = 'm', suffixIcon, variant = 'square', ...props },
     ref,
   ) => {
     const isIconOnly = children == null;
@@ -17,7 +17,7 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>(
       <BaseButton
         ref={ref}
         className={className}
-        styles={clsx(styles['nav-button'], styles[size], styles[styleVariant], {
+        styles={clsx(styles['nav-button'], styles[size], styles[variant], {
           [styles['icon-only']]: isIconOnly,
           [styles['selected']]: isSelected,
         })}
