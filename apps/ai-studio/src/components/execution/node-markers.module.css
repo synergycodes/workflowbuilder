@@ -1,17 +1,17 @@
 .container {
   position: absolute;
-  top: calc(100% + 0.5rem);
+  top: calc(100% + var(--wb-space-100));
   left: 0;
   font-weight: 500;
-  padding: var(--ax-public-node-padding);
-  border-radius: var(--ax-public-node-border-radius);
-  border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
-  background: var(--ax-public-node-background-color);
-  color: var(--ax-public-node-title-subtitle);
+  padding: var(--wb-space-100);
+  border-radius: var(--wb-canvas-node-head-radius);
+  border: var(--wb-size-12) solid var(--wb-canvas-node-stroke-default);
+  background: var(--wb-canvas-node-bg-primary-default);
+  color: var(--wb-canvas-node-text-subtle);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0.5rem;
+  gap: var(--wb-space-100);
 
   &,
   * {
@@ -34,7 +34,7 @@
 }
 
 .icon--completed {
-  color: var(--ax-public-node-title-color);
+  color: var(--wb-canvas-node-text);
 }
 
 .icon--failed {
