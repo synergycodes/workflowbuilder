@@ -1,0 +1,33 @@
+---
+title: Chip
+description: Compact tag for labeling and filtering, in solid and outline treatments.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { ChipsExample } from '../../../../components/ui-examples/chips';
+
+A `Chip` is a compact tag in one of two treatments: `solid` on the neutral
+chip surface, or `outline` with the brand border and accent. Four sizes
+(`s`, `m`, `l`, `xl`), an optional prefix icon, and an optional close
+affordance.
+
+<ChipsExample client:visible />
+
+## Usage
+
+```tsx
+import { Chip } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Chip label="tag label" variant="outline" size="l" onClose={() => remove()} />;
+}
+```
+
+## Props
+
+<PropsTable slug="chips" />
+
+## CSS variables
+
+<CssVariablesTable slug="chips" />
