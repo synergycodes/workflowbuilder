@@ -22,9 +22,9 @@
  * 4. Only the layer names declared in `src/styles/layers.css` may appear. An
  *    unknown name (a typo) lands AFTER the declared order and silently wins
  *    the cascade.
- * 5. Every `*.css` entry in package.json `exports` must exist in dist, and no
- *    dist stylesheet may use `@import` - a relative import breaks silently when
- *    a file is copied out alone, and constructed stylesheets ignore imports.
+ * 5. Every `*.css` entry in package.json `exports` must exist in dist, no dist
+ *    stylesheet may use `@import`, and every non-data `url()` must resolve to a
+ *    file in dist.
  *
  * These are the only lines of defense for these bug classes today; source-level lint
  * rules would catch some of them earlier but none is configured yet.
@@ -238,6 +238,41 @@ function checkPublishedSurface(files: string[]): FailureReport[] {
   return failures;
 }
 
+function checkUrlTargets(files: string[]): FailureReport[] {
+  const failures: FailureReport[] = [];
+  const urlPattern = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/gi;
+
+  for (const file of files) {
+    const content = readFileSync(path.resolve(distributionDirectory, file), 'utf8');
+    const hits: Hit[] = [];
+
+    postcss.parse(content).walkDecls((declaration) => {
+      for (const match of declaration.value.matchAll(urlPattern)) {
+        const reference = (match[1] ?? match[2] ?? match[3]).trim();
+        if (reference.toLowerCase().startsWith('data:')) continue;
+
+        let targetPath = '';
+        try {
+          const fileReference = decodeURIComponent(reference.split(/[?#]/, 1)[0]);
+          targetPath = path.resolve(distributionDirectory, path.dirname(file), fileReference);
+        } catch {
+          hits.push(hitFor(declaration));
+          continue;
+        }
+
+        const relativeTarget = path.relative(distributionDirectory, targetPath);
+        if (relativeTarget.startsWith('..') || path.isAbsolute(relativeTarget) || !existsSync(targetPath)) {
+          hits.push(hitFor(declaration));
+        }
+      }
+    });
+
+    if (hits.length > 0) failures.push({ file, hits });
+  }
+
+  return failures;
+}
+
 // --- Run all checks ---------------------------------------------------------
 
 function report(title: string, failures: FailureReport[], hint: string): boolean {
@@ -291,6 +326,11 @@ const results = [
     checkPublishedSurface(files),
     'package.json exports must point at real files, and dist CSS must be self-contained - ' +
       'a relative @import breaks silently when a file is copied out of the package.',
+  ),
+  report(
+    'Built CSS: every non-data url() resolves inside dist',
+    checkUrlTargets(files),
+    'Copy every referenced asset into dist and keep its path relative to the stylesheet.',
   ),
 ];
 

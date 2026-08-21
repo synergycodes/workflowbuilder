@@ -1,7 +1,8 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'node:path';
-import { defineConfig } from 'vite';
+import { type Plugin, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
@@ -51,10 +52,34 @@ const EXTERNAL_PACKAGES = [
 const isExternalPackage = (id: string) =>
   EXTERNAL_PACKAGES.some((packageName) => id === packageName || id.startsWith(`${packageName}/`));
 
+function emitUiFontAssets(): Plugin {
+  const distributionDirectory = path.resolve(import.meta.dirname, 'dist');
+
+  return {
+    name: 'wb-sdk:emit-ui-font-assets',
+    apply: 'build',
+    closeBundle() {
+      const uiDistribution = path.resolve(import.meta.dirname, '../ui/dist');
+      const stylesheetPath = path.resolve(distributionDirectory, 'style.css');
+      const fontStyles = fs.readFileSync(path.resolve(uiDistribution, 'fonts.css'), 'utf8');
+      const assetsDirectory = path.resolve(distributionDirectory, 'assets');
+
+      fs.mkdirSync(assetsDirectory, { recursive: true });
+      for (const file of fs.readdirSync(path.resolve(uiDistribution, 'assets'))) {
+        if (!file.endsWith('.woff2')) continue;
+        fs.copyFileSync(path.resolve(uiDistribution, 'assets', file), path.resolve(assetsDirectory, file));
+      }
+
+      fs.appendFileSync(stylesheetPath, `\n${fontStyles}`);
+    },
+  };
+}
+
 export default defineConfig(({ command }) => ({
   plugins: [
     svgr(),
     react(),
+    emitUiFontAssets(),
     dts({
       // Bundle all type declarations into a single dist/index.d.ts file
       // via rollup-plugin-dts (matches the meeting decision to stop

@@ -57,6 +57,7 @@
     },
     "./index.css": "./dist/index.css",
     "./styles.css": "./dist/styles.css",
+    "./fonts.css": "./dist/fonts.css",
     "./tokens.css": "./dist/tokens.css"
   },
   "dependencies": {
