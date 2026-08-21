@@ -1,5 +1,5 @@
 /* PROVISIONAL — this whole file is scheduled for deletion.
-   Tokens the DS 2.0 Figma export does not ship yet, defined here so the
+   Tokens the Figma token export does not ship yet, defined here so the
    classes that consume them work today. When the export lands in tokens.css
    its unlayered definitions override this layered block automatically; then
    delete this file together with its two wire-ups (src/index.ts import and
