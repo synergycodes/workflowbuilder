@@ -1,7 +1,7 @@
 :root {
   --wb-indicator-dot-size: 0.75rem;
   --wb-indicator-dot-radius: calc(var(--wb-indicator-dot-size) / 2);
-  --wb-indicator-dot-background-color: var(--ax-colors-orange-400); /* missing token */
+  --wb-indicator-dot-background-color: var(--wb-colors-orange-400); /* missing token */
   --wb-indicator-dot-pulse-radius-size: 0.625rem;
 }
 

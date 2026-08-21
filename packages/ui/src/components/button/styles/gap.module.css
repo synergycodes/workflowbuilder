@@ -1,9 +1,9 @@
 :root {
-  --ax-public-button-gap-extra-large: var(--ax-token-spacing-button-xl-gap);
-  --ax-public-button-gap-large: var(--ax-token-spacing-button-l-gap);
-  --ax-public-button-gap-medium: var(--ax-token-spacing-button-m-gap);
-  --ax-public-button-gap-small: var(--ax-token-spacing-button-s-gap);
-  --ax-public-button-gap-extra-small: var(--ax-token-spacing-button-xs-gap);
+  --ax-public-button-gap-extra-large: var(--wb-space-100);
+  --ax-public-button-gap-large: var(--wb-space-100);
+  --ax-public-button-gap-medium: var(--wb-space-100);
+  --ax-public-button-gap-small: var(--wb-space-100);
+  --ax-public-button-gap-extra-small: var(--wb-space-100);
 }
 
 @layer ui.component {

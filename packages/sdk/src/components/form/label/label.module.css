@@ -1,8 +1,8 @@
 @layer ui.base, ui.component;
 
 :root {
-  --ax-public-form-label-color: var(--ax-txt-secondary-default);
-  --ax-public-form-label-asterisk-color: var(--ax-txt-error-default);
+  --ax-public-form-label-color: var(--wb-ui-text-subtle-default);
+  --ax-public-form-label-asterisk-color: var(--wb-ui-text-critical-default);
 }
 
 @layer ui.component {

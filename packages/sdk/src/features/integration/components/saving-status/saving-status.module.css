@@ -1,7 +1,7 @@
 :root {
-  --wb-saving-status--in-progress-color: var(--ax-colors-acc1-500); /* missing token */
-  --wb-saving-status--saved-color: var(--ax-input-stroke-primary-success); /* missing token */
-  --wb-saving-status--not-saved-color: var(--ax-input-stroke-primary-error); /* missing token */
+  --wb-saving-status--in-progress-color: var(--wb-colors-acc1-500); /* missing token */
+  --wb-saving-status--saved-color: var(--wb-components-text-field-stroke-success); /* missing token */
+  --wb-saving-status--not-saved-color: var(--wb-components-text-field-stroke-critical); /* missing token */
 }
 
 .status {

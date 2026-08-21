@@ -1,11 +1,11 @@
 :root {
-  --ax-public-button-border-radius-extra-large: var(--ax-token-radius-button-xl);
-  --ax-public-button-border-radius-large: var(--ax-token-radius-button-l);
-  --ax-public-button-border-radius-medium: var(--ax-token-radius-button-m);
-  --ax-public-button-border-radius-small: var(--ax-token-radius-button-s);
-  --ax-public-button-border-radius-extra-small: var(--ax-token-radius-button-xs);
+  --ax-public-button-border-radius-extra-large: var(--wb-space-100);
+  --ax-public-button-border-radius-large: var(--wb-space-100);
+  --ax-public-button-border-radius-medium: var(--wb-space-75);
+  --ax-public-button-border-radius-small: var(--wb-space-50);
+  --ax-public-button-border-radius-extra-small: var(--wb-space-50);
 
-  --ax-public-button-border-radius-circle: var(--ax-token-radius-button-round);
+  --ax-public-button-border-radius-circle: var(--wb-radius-full);
 }
 
 @layer ui.component {

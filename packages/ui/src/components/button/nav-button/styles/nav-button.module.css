@@ -1,8 +1,8 @@
 :root {
-  --ax-public-button-nav-background-color: var(--ax-nav-button-bg-primary-hover);
-  --ax-public-button-nav-color: var(--ax-nav-button-icon-primary-default);
-  --ax-public-button-nav-color-active: var(--ax-nav-button-icon-primary-pressed);
-  --ax-public-button-nav-color-disabled: var(--ax-nav-button-icon-primary-disabled);
+  --ax-public-button-nav-background-color: var(--wb-components-nav-button-bg-primary-hover);
+  --ax-public-button-nav-color: var(--wb-components-nav-button-icon-primary-default);
+  --ax-public-button-nav-color-active: var(--wb-components-nav-button-icon-primary-pressed);
+  --ax-public-button-nav-color-disabled: var(--wb-components-nav-button-icon-primary-disabled);
 }
 
 @layer ui.component {
@@ -30,8 +30,8 @@
 
     &.selected {
       pointer-events: none;
-      background-color: var(--ax-button-primary-bg-default);
-      color: var(--ax-nav-button-icon-primary-active);
+      background-color: var(--wb-components-button-solid-primary-default);
+      color: var(--wb-components-nav-button-icon-primary-active);
     }
   }
 }

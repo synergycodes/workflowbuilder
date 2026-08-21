@@ -1,34 +1,32 @@
 html[data-theme='light'] {
-  --ai-studio-edge-color--active: var(--ax-colors-green-400);
+  --ai-studio-edge-color--active: var(--wb-colors-green-400);
+  --ai-studio-status-color--completed: var(--wb-colors-green-400);
   --ai-studio-status-color--incomplete: var(--ax-txt-warning-default);
 }
 
 html[data-theme='dark'] {
-  --ai-studio-edge-color--active: var(--ax-colors-green-200);
+  --ai-studio-edge-color--active: var(--wb-colors-green-200);
+  --ai-studio-status-color--completed: var(--wb-colors-green-200);
   /* No dark warning-accent token exists (--ax-txt-warning-default is orange-100 body-text cream). */
   --ai-studio-status-color--incomplete: var(--ax-colors-orange-300);
 }
 
 :root {
-  --ai-studio-status-color--completed: var(--ax-txt-success-default);
-  --ai-studio-status-color--failed: var(--ax-txt-error-default);
+  --ai-studio-status-color--failed: var(--wb-ui-text-critical-default);
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
   --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
   --ai-studio-node-shadow-color--active: var(--ai-studio-edge-color--active);
   --ai-studio-node-shadow-color--completed: var(--ai-studio-edge-color--active);
-  --ai-studio-node-shadow-color--failed: var(--ax-colors-red-400);
+  --ai-studio-node-shadow-color--failed: var(--wb-colors-red-400);
 
-  --ai-studio-node-shadow--active: var(--ax-token-shadow-focus-node-active-x) var(--ax-token-shadow-focus-node-active-y)
-    var(--ax-token-shadow-focus-node-active-blur) var(--ax-token-shadow-focus-node-active-spread)
+  --ai-studio-node-shadow--active: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
     var(--ai-studio-node-shadow-color--active);
 
-  --ai-studio-node-shadow--completed: var(--ax-token-shadow-focus-node-active-x)
-    var(--ax-token-shadow-focus-node-active-y) var(--ax-token-shadow-focus-node-active-blur)
-    var(--ax-token-shadow-focus-node-active-spread) var(--ai-studio-node-shadow-color--completed);
+  --ai-studio-node-shadow--completed: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
+    var(--ai-studio-node-shadow-color--completed);
 
-  --ai-studio-node-shadow--failed: var(--ax-token-shadow-focus-node-active-x) var(--ax-token-shadow-focus-node-active-y)
-    var(--ax-token-shadow-focus-node-active-blur) var(--ax-token-shadow-focus-node-active-spread)
+  --ai-studio-node-shadow--failed: var(--wb-space-0) var(--wb-space-0) var(--wb-space-0) var(--wb-space-50)
     var(--ai-studio-node-shadow-color--failed);
 }

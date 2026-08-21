@@ -1,8 +1,8 @@
 :root {
-  --wb-app-bar-background: var(--ax-ui-bg-primary-default);
-  --wb-app-bar-border-radius: var(--ax-token-radius-shell);
-  --wb-app-bar-border-color: var(--ax-ui-stroke-primary-default);
-  --wb-app-bar-folder-name-color: var(--ax-txt-tertiary-default);
-  --wb-app-bar-diagram-title-color: var(--ax-txt-primary-default);
-  --wb-app-bar-logo-color: var(--ax-txt-primary-default);
+  --wb-app-bar-background: var(--wb-ui-bg-base);
+  --wb-app-bar-border-radius: var(--wb-space-150);
+  --wb-app-bar-border-color: var(--wb-ui-stroke-default);
+  --wb-app-bar-folder-name-color: var(--wb-ui-text-muted-default);
+  --wb-app-bar-diagram-title-color: var(--wb-ui-text-default);
+  --wb-app-bar-logo-color: var(--wb-ui-text-default);
 }

@@ -1,15 +1,15 @@
 :root {
-  --ax-public-radio-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-radio-bg: var(--ax-ui-bg-primary-default);
-  --ax-public-radio-checked-bg: var(--ax-ui-bg-tertiary-selected);
-  --ax-public-radio-dot-color: var(--ax-colors-gray-100); /* missing token */
+  --ax-public-radio-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-radio-bg: var(--wb-ui-bg-base);
+  --ax-public-radio-checked-bg: var(--wb-components-selector-fill-checked);
+  --ax-public-radio-dot-color: var(--wb-colors-gray-100); /* missing token */
 
-  --ax-public-radio-focus-border-color: var(--ax-txt-primary-default);
+  --ax-public-radio-focus-border-color: var(--wb-ui-text-default);
 
-  --ax-public-radio-disabled-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-radio-disabled-bg: var(--ax-ui-bg-tertiary-default);
-  --ax-public-radio-disabled-dot-color: var(--ax-nav-button-icon-primary-disabled);
-  --ax-public-radio-border-radius: var(--ax-token-radius-radiobutton);
+  --ax-public-radio-disabled-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-radio-disabled-bg: var(--wb-ui-bg-inset);
+  --ax-public-radio-disabled-dot-color: var(--wb-components-nav-button-icon-primary-disabled);
+  --ax-public-radio-border-radius: var(--wb-radius-full);
 }
 
 @layer ui.component {

@@ -1,6 +1,6 @@
 :root {
   --ax-public-list-item-separator-border-size: 0.0625rem;
-  --ax-public-list-item-separator-background-color: var(--ax-ui-separator-primary-default);
+  --ax-public-list-item-separator-background-color: var(--wb-ui-stroke-divider);
 }
 
 @layer ui.component {

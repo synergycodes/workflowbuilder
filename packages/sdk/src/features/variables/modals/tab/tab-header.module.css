@@ -11,7 +11,7 @@
   border-bottom: var(--settings-tab-header-border);
 
   + * {
-    padding-top: var(--ax-token-spacing-spacing-16);
+    padding-top: var(--wb-space-200);
   }
 }
 
@@ -27,7 +27,7 @@
 }
 
 .title {
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
 }
 
 .children {

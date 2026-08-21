@@ -18,10 +18,10 @@
 @layer ui.base {
   :root {
     --wb-transition: 0.1s ease-in;
-    --wb-background-color: var(--ax-ui-bg-tertiary-default);
+    --wb-background-color: var(--wb-ui-bg-inset);
     --wb-scroll-width: 0.375rem;
     --wb-scroll-radius: 0.625rem;
-    --wb-scroll-thumb-color: var(--ax-scrollbar-bg-default);
+    --wb-scroll-thumb-color: var(--wb-components-scrollbar-bg-default);
     --wb-scroll-track-color: transparent;
     /* Candidate for removal at the 3.0.0 close-out: the wb-text-* classes
        carry their own families, so this variable loses reach as components

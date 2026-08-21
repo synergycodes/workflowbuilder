@@ -16,11 +16,11 @@
   max-width: 460px;
   padding: 2rem;
   font-family: var(--wb-font-family);
-  background: var(--ax-ui-bg-primary-default);
-  border: 0.0625rem solid var(--ax-ui-stroke-primary-default);
+  background: var(--wb-ui-bg-base);
+  border: 0.0625rem solid var(--wb-ui-stroke-default);
   border-radius: var(--wb-app-bar-border-radius);
   box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.25);
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
 }
 
 .close {
@@ -35,13 +35,13 @@
   border: none;
   border-radius: 0.5rem;
   background: transparent;
-  color: var(--ax-txt-tertiary-default);
+  color: var(--wb-ui-text-muted-default);
   cursor: pointer;
 }
 
 .close:hover {
-  background: var(--ax-ui-bg-secondary-default);
-  color: var(--ax-txt-primary-default);
+  background: var(--wb-ui-bg-elevated);
+  color: var(--wb-ui-text-default);
 }
 
 .heading {
@@ -59,22 +59,22 @@
   height: 2.25rem;
   flex-shrink: 0;
   border-radius: 0.6rem;
-  background: var(--ax-ui-bg-secondary-default);
-  color: var(--ax-colors-acc1-500);
+  background: var(--wb-ui-bg-elevated);
+  color: var(--wb-colors-acc1-500);
 }
 
 .title {
   margin: 0;
   font-size: 1.25rem;
   font-weight: 600;
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
 }
 
 .body {
   margin: 0 0 1.5rem;
   font-size: 0.92rem;
   line-height: 1.6;
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
 }
 
 .body p {
@@ -86,7 +86,7 @@
 }
 
 .body strong {
-  color: var(--ax-txt-primary-default);
+  color: var(--wb-ui-text-default);
   font-weight: 600;
 }
 
@@ -98,7 +98,7 @@
   padding: 0.7rem 1rem;
   border: none;
   border-radius: 0.625rem;
-  background: var(--ax-colors-acc1-500);
+  background: var(--wb-colors-acc1-500);
   color: #ffffff;
   font-size: 0.95rem;
   font-weight: 600;
@@ -107,7 +107,7 @@
 }
 
 .cta:hover {
-  background: var(--ax-colors-acc1-600);
+  background: var(--wb-colors-acc1-600);
 }
 
 .reopen {
@@ -123,11 +123,11 @@
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: 50%;
   background: var(--wb-app-bar-background);
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
   cursor: pointer;
   box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .reopen:hover {
-  color: var(--ax-colors-acc1-500);
+  color: var(--wb-colors-acc1-500);
 }

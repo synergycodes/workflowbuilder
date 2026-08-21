@@ -1,7 +1,7 @@
 :root {
   --ax-public-button-loader-dot-size: 0.3125rem;
   --ax-public-button-loader-dot-border-radius: 0.3125rem;
-  --ax-public-button-loader-dot-color: var(--ax-txt-primary-white);
+  --ax-public-button-loader-dot-color: var(--wb-ui-text-onaccent-default);
   --ax-public-button-loader-animation-duration: 0.75s;
 }
 
