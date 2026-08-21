@@ -12,4 +12,18 @@
   .extra-small {
     composes: ax-public-button-small from global;
   }
+
+  .xl {
+    composes: wb-text-label-xl-emphasized from global;
+  }
+
+  .l {
+    composes: wb-text-label-l-emphasized from global;
+  }
+
+  .m,
+  .s,
+  .xs {
+    composes: wb-text-label-m-emphasized from global;
+  }
 }

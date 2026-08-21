@@ -58,9 +58,9 @@ export function PaneRemoveVariable({ className, setActivePane, id }: Props) {
         {variable && (
           <div className={styles['buttons']}>
             <ButtonSubmit
-              size="medium"
+              size="m"
               onClick={handleRemove}
-              variant="error"
+              variant="critical"
               isPending={false}
               disabled={nodesWithVariable.length > 0}
             >
