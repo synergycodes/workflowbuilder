@@ -21,6 +21,7 @@ export const COMPONENTS = [
   { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
+  { slug: 'number-field', name: 'NumberField', propsType: 'NumberFieldProps', dir: 'number-field' },
   {
     slug: 'nav-button',
     name: 'NavButton',
