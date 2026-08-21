@@ -25,10 +25,24 @@ your own. Everything else the components need, including `@base-ui/react`
 
 ## Styles
 
-Importing a component from the package root injects that component's CSS
-automatically, including the layer order (`@layer ui.base, ui.component`)
-and typography classes - so the only thing left to add is the design
-tokens:
+The package has five style surfaces:
+
+- **`@workflowbuilder/ui`** is the root barrel. It provides every component and
+  all component and global CSS, but not the design token values.
+- **`@workflowbuilder/ui/<component>`** provides one component and only that
+  component's CSS. Add `styles.css` for the global reset, typography and fonts,
+  and `tokens.css` for the design tokens.
+- **`@workflowbuilder/ui/index.css`** provides all component and global CSS,
+  including typography and fonts, but not the design token values.
+- **`@workflowbuilder/ui/styles.css`** provides the global reset, typography and
+  fonts, but no component CSS or design token values.
+- **`@workflowbuilder/ui/tokens.css`** provides the design token values, but no
+  component, typography or font rules.
+
+The stylesheets reference `./assets/*.woff2`, so preserve the package's `dist`
+layout when copying or serving them.
+
+With the root barrel, add only the design tokens:
 
 ```ts
 // Design tokens (the `--wb-*` custom properties).
@@ -39,16 +53,11 @@ import '@workflowbuilder/ui/tokens.css';
 import { Button } from '@workflowbuilder/ui';
 ```
 
-Need only one component's styles without the others? Import the per-component
-subpath instead. That only injects the component's own CSS. Every built
-stylesheet carries the cascade-layer order, so import order doesn't matter;
-add the global stylesheet once if you also want the typography classes, plus
-the tokens:
+Every built stylesheet carries the cascade-layer order, so import order does
+not matter. With a per-component subpath, add the global stylesheet and tokens:
 
 ```ts
-// Optional: global typography classes.
 import '@workflowbuilder/ui/styles.css';
-// Design tokens (the `--wb-*` custom properties).
 import '@workflowbuilder/ui/tokens.css';
 ```
 
