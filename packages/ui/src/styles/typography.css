@@ -166,4 +166,213 @@
     font-size: 0.625rem;
     line-height: 100%;
   }
+
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
+
+  .wb-text-code {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-code {
+    font-weight: 400;
+  }
+
+  .wb-text-display-s,
+  .wb-text-display-s-emphasized {
+    font-size: var(--wb-font-size-300);
+    line-height: 130%;
+  }
+
+  .wb-text-display-m,
+  .wb-text-display-m-emphasized {
+    font-size: var(--wb-font-size-350);
+    line-height: 120%;
+  }
+
+  .wb-text-display-l,
+  .wb-text-display-l-emphasized {
+    font-size: var(--wb-font-size-400);
+    line-height: 120%;
+  }
+
+  .wb-text-headline-s,
+  .wb-text-headline-s-emphasized {
+    font-size: var(--wb-font-size-250);
+    line-height: 130%;
+  }
+
+  .wb-text-headline-m,
+  .wb-text-headline-m-emphasized {
+    font-size: var(--wb-font-size-275);
+    line-height: 130%;
+  }
+
+  .wb-text-headline-l,
+  .wb-text-headline-l-emphasized {
+    font-size: var(--wb-font-size-300);
+    line-height: 130%;
+  }
+
+  .wb-text-title-s,
+  .wb-text-title-s-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 140%;
+  }
+
+  .wb-text-title-m,
+  .wb-text-title-m-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  .wb-text-title-l,
+  .wb-text-title-l-emphasized {
+    font-size: var(--wb-font-size-225);
+    line-height: 130%;
+  }
+
+  .wb-text-body-s,
+  .wb-text-body-s-emphasized {
+    font-size: var(--wb-font-size-150);
+    line-height: 130%;
+  }
+
+  .wb-text-body-m,
+  .wb-text-body-m-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 140%;
+  }
+
+  .wb-text-body-l,
+  .wb-text-body-l-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  .wb-text-label-s,
+  .wb-text-label-s-emphasized {
+    font-size: var(--wb-font-size-125);
+    line-height: 100%;
+  }
+
+  .wb-text-label-m,
+  .wb-text-label-m-emphasized {
+    font-size: var(--wb-font-size-150);
+    line-height: 100%;
+  }
+
+  .wb-text-label-l,
+  .wb-text-label-l-emphasized {
+    font-size: var(--wb-font-size-175);
+    line-height: 100%;
+  }
+
+  .wb-text-label-xl,
+  .wb-text-label-xl-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 100%;
+  }
+
+  .wb-text-node-s,
+  .wb-text-node-s-emphasized {
+    font-size: var(--wb-font-size-137);
+    line-height: 130%;
+  }
+
+  .wb-text-node-m,
+  .wb-text-node-m-emphasized {
+    font-size: var(--wb-font-size-162);
+    line-height: 140%;
+  }
+
+  .wb-text-node-l,
+  .wb-text-node-l-emphasized {
+    font-size: var(--wb-font-size-200);
+    line-height: 140%;
+  }
+
+  .wb-text-code {
+    font-size: var(--wb-font-size-150);
+    line-height: 130%;
+  }
+
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
+    font-weight: 600;
+  }
 }
