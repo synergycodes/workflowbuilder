@@ -7,6 +7,13 @@ import { Manifest, TokenSetEntry } from './types';
 
 register(StyleDictionary);
 
+StyleDictionary.registerTransform({
+  name: 'wb/font-size-rem',
+  type: 'value',
+  filter: (token) => token.path.includes('font-size'),
+  transform: (token) => `${Number.parseFloat(String(token.value)) / 16}rem`,
+});
+
 export async function tokensToCss(manifest: Manifest) {
   await processPrimitiveTokens(manifest.primitives);
   await processThemeTokens(manifest);
@@ -51,7 +58,7 @@ function createSDConfig({ fileName, selector, source, filter }: SDConfigParams) 
     platforms: {
       css: {
         transformGroup: 'tokens-studio',
-        transforms: ['name/kebab'],
+        transforms: ['name/kebab', 'wb/font-size-rem'],
         buildPath: OUTPUT_DIR,
         options: {
           outputReferences: true,
