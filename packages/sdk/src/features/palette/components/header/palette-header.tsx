@@ -17,12 +17,12 @@ export function PaletteHeader({ onClick, isSidebarExpanded }: PaletteHeaderProps
     <div className={styles['container']}>
       <span className="ax-public-h7">{t('palette.nodesLibrary')}</span>
       <NavButton
-        size="small"
+        aria-label={isSidebarExpanded ? t('tooltips.closePalette') : t('tooltips.openPalette')}
+        size="s"
         onClick={onClick}
         tooltip={isSidebarExpanded ? t('tooltips.closePalette') : t('tooltips.openPalette')}
-      >
-        <Icon name="SidebarSimple" />
-      </NavButton>
+        prefixIcon={<Icon name="SidebarSimple" />}
+      />
     </div>
   );
 }

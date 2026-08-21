@@ -34,9 +34,7 @@ export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onCl
         </Button>
       )}
       {close && onClose && (
-        <NavButton size="xxx-small" transparent={true} onClick={onClose}>
-          <X />
-        </NavButton>
+        <NavButton aria-label="Close" size="xxxs" styleVariant="plain" onClick={onClose} prefixIcon={<X />} />
       )}
     </div>
   );

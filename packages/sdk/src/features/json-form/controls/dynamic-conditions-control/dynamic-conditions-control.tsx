@@ -44,9 +44,14 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
     <div className={styles['container']}>
       <div className={styles['header']}>
         <span className={clsx('ax-public-h10', styles['title'])}>{t('title')}</span>
-        <NavButton size="small" onClick={openEditorModal} tooltip={t('title')} disabled={isDisabled}>
-          <Icon name="FrameCorners" size="small" />
-        </NavButton>
+        <NavButton
+          aria-label={t('title')}
+          size="s"
+          onClick={openEditorModal}
+          tooltip={t('title')}
+          disabled={isDisabled}
+          prefixIcon={<Icon name="FrameCorners" size="small" />}
+        />
       </div>
       <Dependencies conditions={data} onClick={openEditorModal} disabled={isDisabled} />
       <Chip size="l" className={styles['tag']} label={t('totalNumber', { count: data.length })} />

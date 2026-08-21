@@ -26,6 +26,12 @@ export const COMPONENTS = [
     cssSources: ['shared/styles/field-control-size.module.css'],
   },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
+  {
+    slug: 'menu-trigger-button',
+    name: 'MenuTriggerButton',
+    propsType: 'MenuTriggerButtonProps',
+    dir: 'button/menu-trigger-button',
+  },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
     slug: 'number-field',
@@ -37,7 +43,7 @@ export const COMPONENTS = [
   {
     slug: 'nav-button',
     name: 'NavButton',
-    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
+    propsType: 'NavButtonProps',
     dir: 'button/nav-button',
   },
   { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },

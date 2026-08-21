@@ -1,16 +1,23 @@
-import { Size } from '@ui/shared/types/size';
+import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-import { BaseButtonProps } from '../types';
+import type { TooltipVariant } from '../../tooltip/types';
 
-export type NavBaseButtonProps = BaseButtonProps & {
-  /**
-   * Size variant of the nav button.
-   * @default 'medium'
-   */
-  size?: Size;
+export const NAV_BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs', 'xxs', 'xxxs'] as const;
+
+export type NavButtonSize = (typeof NAV_BUTTON_SIZES)[number];
+
+export const NAV_BUTTON_STYLES = ['square', 'round', 'plain'] as const;
+
+export type NavButtonStyle = (typeof NAV_BUTTON_STYLES)[number];
+
+export type NavButtonProps = {
+  /** @default 'm' */
+  size?: NavButtonSize;
+  /** @default 'square' */
+  styleVariant?: NavButtonStyle;
   isSelected?: boolean;
-};
-
-export type { NavIconButtonProps } from './nav-icon-button/nav-icon-button';
-export type { NavIconLabelButtonProps } from './nav-icon-label-button/nav-icon-label-button';
-export type { NavLabelButtonProps } from './nav-label-button/nav-label-button';
+  prefixIcon?: ReactNode;
+  suffixIcon?: ReactNode;
+  tooltip?: string;
+  tooltipType?: TooltipVariant;
+} & ButtonHTMLAttributes<HTMLButtonElement>;

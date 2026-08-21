@@ -149,13 +149,13 @@ function SuggestionsContainer({
       <div className={styles['suggestionsHeader']}>
         <span className={styles['suggestionsTitle']}>{title}</span>
         <NavButton
+          aria-label="Close"
           onMouseDown={(event: React.MouseEvent) => {
             event.stopPropagation();
             handleClose();
           }}
-        >
-          <Icon name="X" />
-        </NavButton>
+          prefixIcon={<Icon name="X" />}
+        />
       </div>
       {cloneElement(ul, {}, grouped)}
     </div>

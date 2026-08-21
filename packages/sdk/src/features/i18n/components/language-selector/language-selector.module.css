@@ -2,5 +2,4 @@
   composes: ax-public-p9 from global;
 
   color: var(--wb-app-bar-diagram-title-color);
-  padding-right: 0.5rem;
 }

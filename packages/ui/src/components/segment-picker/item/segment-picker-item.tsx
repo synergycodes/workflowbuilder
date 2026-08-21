@@ -1,38 +1,19 @@
-import {
-  hasChildrenWithStringAndIcons,
-  hasIconChildrenOnly,
-  hasStringChildrenOnly,
-} from '@ui/components/button/guards';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
-import { NavIconButtonProps } from '@ui/components/button/nav-button/nav-icon-button/nav-icon-button';
-import { NavIconLabelButtonProps } from '@ui/components/button/nav-button/nav-icon-label-button/nav-icon-label-button';
-import { NavLabelButtonProps } from '@ui/components/button/nav-button/nav-label-button/nav-label-button';
+import type { NavButtonProps } from '@ui/components/button/nav-button/types';
 import clsx from 'clsx';
-import { MouseEvent, useContext } from 'react';
+import { type MouseEvent, isValidElement, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
-import { BaseButtonProps } from '../../button/types';
+import type { BaseButtonProps } from '../../button/types';
 import { SegmentPickerContext } from '../utils/context';
 
-export type SegmentPickerItemProps = BaseButtonProps & {
-  value: string;
-} & (
-    | Pick<NavLabelButtonProps, 'children'>
-    | Pick<NavIconButtonProps, 'children'>
-    | Pick<NavIconLabelButtonProps, 'children'>
-  );
+export type SegmentPickerItemProps = BaseButtonProps &
+  Pick<NavButtonProps, 'prefixIcon' | 'suffixIcon'> & {
+    value: string;
+  };
 
-/**
- * A single item in the SegmentPicker, rendered as a NavButton under the hood.
- *
- * Automatically receives size and shape from SegmentPicker context.
- * Must be used only within a SegmentPicker component.
- *
- * Determines which NavButton variant to render based on its children
- * (label only, icon only, or icon + label).
- */
-export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps) {
+export function Item({ children, className, prefixIcon, suffixIcon, value, ...buttonProps }: SegmentPickerItemProps) {
   const context = useContext(SegmentPickerContext);
 
   if (!context) {
@@ -40,29 +21,21 @@ export function Item({ children, value, ...buttonProps }: SegmentPickerItemProps
     return null;
   }
 
-  const { selectedValue, onSelect, shape, ...other } = context;
+  const { selectedValue, onSelect, shape, size, styleVariant } = context;
+  const hasLegacyIconChild = prefixIcon == null && suffixIcon == null && isValidElement(children);
 
-  const props = {
-    className: clsx(itemShapeStyles['item'], itemShapeStyles[shape ?? 'default']),
-    isSelected: selectedValue === value,
-    onClick: (event: MouseEvent<HTMLButtonElement>) => onSelect(event, value),
-    shape,
-    children,
-    ...other,
-    ...buttonProps,
-  };
-
-  if (hasStringChildrenOnly<NavLabelButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  if (hasIconChildrenOnly<NavIconButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  if (hasChildrenWithStringAndIcons<NavIconLabelButtonProps>(props)) {
-    return <NavButton {...props} />;
-  }
-
-  return null;
+  return (
+    <NavButton
+      className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], className)}
+      isSelected={selectedValue === value}
+      onClick={(event: MouseEvent<HTMLButtonElement>) => onSelect(event, value)}
+      prefixIcon={hasLegacyIconChild ? children : prefixIcon}
+      size={size}
+      styleVariant={styleVariant}
+      suffixIcon={suffixIcon}
+      {...buttonProps}
+    >
+      {hasLegacyIconChild ? undefined : children}
+    </NavButton>
+  );
 }
