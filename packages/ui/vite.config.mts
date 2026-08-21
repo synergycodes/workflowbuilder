@@ -27,6 +27,7 @@ const componentEntries = [
   'menu',
   'modal',
   'node',
+  'number-field',
   'radio-button',
   'segment-picker',
   'select',

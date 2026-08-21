@@ -44,6 +44,7 @@ export function DynamicTypedInput({
   const [time, setTime] = useState(getIsDateType(type) ? getTimeFromDateIfValid(value) : undefined);
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
+  const errorProps = { error: isError };
 
   const suggestionGroupsForString = useMemo(() => {
     if (!variableTypeInfo || typesForInput.includes(variableTypeInfo.type) === false) {
@@ -88,9 +89,7 @@ export function DynamicTypedInput({
         className={className}
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
-        // Adornment here doesn't make sense since we show variable picker above
-        // endAdornment={endAdornment}
-        error={isError || isInvalidNumberValue}
+        state={isError || isInvalidNumberValue ? 'critical' : 'default'}
         placeholder={
           placeholder ??
           t(baseType === 'number' ? 'variables.placeholderTypeNumber' : 'variables.placeholderTypeString')
@@ -104,13 +103,13 @@ export function DynamicTypedInput({
     return (
       <div className={styles['container--select']}>
         <Select
+          {...errorProps}
           className={className}
           value={value}
           items={itemsForBoolean}
           onChange={(_event, value) => onChange(value as string)}
           placeholder={placeholder}
           disabled={disabled}
-          error={isError}
         />
         {endAdornment && <span className={styles['adornment--select']}>{endAdornment}</span>}
       </div>
@@ -121,6 +120,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['date-with-reset-container']}>
         <DatePicker
+          {...errorProps}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={getDateIfValid(value)}
@@ -131,7 +131,6 @@ export function DynamicTypedInput({
           }}
           valueFormat={'dd-MM-yyyy'}
           placeholder={placeholder || 'DD-MM-YYYY'}
-          error={isError}
           disabled={disabled}
         />
         {endAdornment && <span className={styles['adornment--date']}>{endAdornment}</span>}
@@ -145,6 +144,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['row']}>
         <DatePicker
+          {...errorProps}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={date}
@@ -159,40 +159,41 @@ export function DynamicTypedInput({
           // valueFormat="DD-MM-YYYY HH:mm"
           // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
-          error={isError}
         />
-        <Input
-          className={className}
-          value={time}
-          placeholder="HH:mm"
-          onChange={(event) => {
-            const value = (event.target.value as string).slice(0, 5);
-            if (value.length < 5) {
-              setTime(value);
-
-              return;
-            }
-
-            if (value.length === 5) {
-              if (getIsValidTime(value)) {
+        <div className={styles['time-with-adornment']}>
+          <Input
+            className={className}
+            value={time}
+            placeholder="HH:mm"
+            onChange={(event) => {
+              const value = (event.target.value as string).slice(0, 5);
+              if (value.length < 5) {
                 setTime(value);
 
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, value)?.toISOString());
-                }
-              } else {
-                setTime(timeForRawDates);
+                return;
+              }
 
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
+              if (value.length === 5) {
+                if (getIsValidTime(value)) {
+                  setTime(value);
+
+                  if (date && getIsValidDate(date)) {
+                    onChange(setDateWithTimeFromTime(date, value)?.toISOString());
+                  }
+                } else {
+                  setTime(timeForRawDates);
+
+                  if (date && getIsValidDate(date)) {
+                    onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
+                  }
                 }
               }
-            }
-          }}
-          disabled={disabled || !date}
-          error={isError}
-          endAdornment={endAdornment}
-        />
+            }}
+            disabled={disabled || !date}
+            state={isError ? 'critical' : 'default'}
+          />
+          {endAdornment && <span className={styles['adornment--time']}>{endAdornment}</span>}
+        </div>
       </div>
     );
   }

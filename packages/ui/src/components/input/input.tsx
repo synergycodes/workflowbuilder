@@ -1,43 +1,89 @@
 import { Input as InputBase } from '@base-ui/react/input';
+import { X } from '@phosphor-icons/react';
+import { Field } from '@ui/shared/components/field/field';
 import clsx from 'clsx';
+import { forwardRef } from 'react';
 
 import inputRootStyles from './input-root.module.css';
 import inputStyles from './input.module.css';
 import './variables.css';
+import inputSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
-import inputSizeStyles from '@ui/shared/styles/input-size.module.css';
 
 import type { InputProps } from './types';
 
-export function Input({
-  size = 'medium',
-  startAdornment,
-  endAdornment,
-  error = false,
-  className,
-  ...props
-}: InputProps) {
+export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
+  {
+    size = 'm',
+    state = 'default',
+    prefixIcon,
+    suffixIcon,
+    onClear,
+    label,
+    helperText,
+    isRequired,
+    className,
+    disabled,
+    readOnly,
+    id,
+    required,
+    'aria-describedby': ariaDescribedBy,
+    'aria-invalid': ariaInvalid,
+    ...props
+  },
+  ref,
+) {
+  const isReadOnly = !disabled && (state === 'read-only' || readOnly === true);
+  const fieldState = disabled && state === 'read-only' ? 'default' : isReadOnly ? 'read-only' : state;
+  const isNativeRequired = required || isRequired;
+
   return (
-    <div
-      className={clsx(
-        inputRootStyles['input-root'],
-        inputSizeStyles[size],
-        {
-          'base--error': error,
-          'base--disabled': props.disabled,
-        },
-        className,
-      )}
-      // Padding lives on the wrapper, so clicks there miss the field - forward them.
-      onPointerDown={(event) => {
-        if (event.target !== event.currentTarget) return;
-        event.preventDefault();
-        event.currentTarget.querySelector('input')?.focus();
-      }}
+    <Field
+      id={id}
+      label={label}
+      helperText={helperText}
+      isRequired={isNativeRequired}
+      state={fieldState}
+      ariaDescribedBy={ariaDescribedBy}
     >
-      {startAdornment}
-      <InputBase {...props} className={clsx(inputStyles['input'], inputFontStyles[size])} />
-      {endAdornment}
-    </div>
+      {({ controlId, describedBy }) => (
+        <div
+          className={clsx(inputRootStyles['input-root'], inputSizeStyles[size], className)}
+          data-state={fieldState}
+          data-disabled={disabled || undefined}
+          onPointerDown={(event) => {
+            if (event.target !== event.currentTarget) return;
+            event.preventDefault();
+            event.currentTarget.querySelector('input')?.focus();
+          }}
+        >
+          {prefixIcon && <span className={inputRootStyles['icon']}>{prefixIcon}</span>}
+          <InputBase
+            {...props}
+            ref={ref}
+            id={controlId}
+            disabled={disabled}
+            readOnly={isReadOnly}
+            required={isNativeRequired}
+            aria-describedby={describedBy}
+            aria-invalid={fieldState === 'critical' ? true : ariaInvalid}
+            className={clsx(inputStyles['input'], inputFontStyles[size])}
+          />
+          {suffixIcon && <span className={inputRootStyles['icon']}>{suffixIcon}</span>}
+          {onClear && (
+            <button
+              type="button"
+              className={inputRootStyles['clear']}
+              aria-label="Clear input"
+              disabled={disabled || isReadOnly}
+              onPointerDown={(event) => event.preventDefault()}
+              onClick={onClear}
+            >
+              <X />
+            </button>
+          )}
+        </div>
+      )}
+    </Field>
   );
-}
+});
