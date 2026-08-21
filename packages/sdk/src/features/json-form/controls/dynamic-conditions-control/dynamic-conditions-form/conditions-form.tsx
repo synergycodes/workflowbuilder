@@ -99,9 +99,15 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
             />
           ))}
         </div>
-        <Button className={styles['add-button']} size="small" variant="secondary" onClick={addCondition}>
-          <Icon name="PlusCircle" />
-        </Button>
+        <Button
+          className={styles['add-button']}
+          size="s"
+          variant="ghost-secondary"
+          shape="square"
+          prefixIcon={<Icon name="PlusCircle" />}
+          aria-label="Add condition"
+          onClick={addCondition}
+        />
       </form>
     );
   },

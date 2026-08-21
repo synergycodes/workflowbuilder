@@ -10,7 +10,7 @@
     pointer-events: none;
   }
 
-  .hide-label {
+  .hide-content {
     opacity: 0;
   }
 
@@ -51,6 +51,7 @@
     0% {
       opacity: 1;
     }
+
     100% {
       opacity: 0.2;
     }

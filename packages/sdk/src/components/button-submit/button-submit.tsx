@@ -22,7 +22,6 @@ export function ButtonSubmit({ classNameWrapper = '', isPending = false, childre
         classNameWrapper,
       )}
     >
-      {/* @ts-expect-error The rules for children are complex, and there is no easy way to pass them to a wrapper. */}
       <Button {...buttonProps}>{children}</Button>
       {isPending && <Spinner className={styles['icon--spinner']} />}
     </span>

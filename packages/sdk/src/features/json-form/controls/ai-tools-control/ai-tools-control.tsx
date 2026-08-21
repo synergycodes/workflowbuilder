@@ -58,7 +58,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
         const label = toolOption?.label;
 
         const sharedButtonProps: Partial<ComponentProps<typeof Button>> = {
-          variant: 'secondary',
+          variant: 'ghost-secondary',
           className: styles['selected-tool-button'],
           onClick: () => openEditorModal(toolData),
           disabled: isDisabled,
@@ -68,8 +68,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           <FormControlWithLabel key={toolData.id || index} label={`Tool #${index + 1}`}>
             <div className={styles['tool-row']}>
               {icon ? (
-                <Button {...sharedButtonProps}>
-                  <Icon name={icon} />
+                <Button {...sharedButtonProps} prefixIcon={<Icon name={icon} />}>
                   {label}
                 </Button>
               ) : (
@@ -82,8 +81,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           </FormControlWithLabel>
         );
       })}
-      <Button variant="primary" onClick={(_) => openEditorModal()} disabled={isDisabled}>
-        <PlusCircle />
+      <Button variant="primary" prefixIcon={<PlusCircle />} onClick={(_) => openEditorModal()} disabled={isDisabled}>
         {t('addToolSlot')}
       </Button>
     </>

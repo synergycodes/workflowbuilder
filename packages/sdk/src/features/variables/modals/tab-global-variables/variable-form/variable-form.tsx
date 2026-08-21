@@ -123,7 +123,7 @@ export function VariableForm(props: Props) {
         />
       </FormControlWithLabel>
       <div className={styles['buttons']}>
-        <ButtonSubmit size="medium" type="submit" isPending={false}>
+        <ButtonSubmit size="m" type="submit" isPending={false}>
           {t(props.variant === 'add' ? 'workflowsSettings.tab.addVariable' : 'common.save')}
         </ButtonSubmit>
       </div>

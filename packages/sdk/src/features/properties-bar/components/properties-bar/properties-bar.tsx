@@ -88,7 +88,7 @@ function PropertiesBarComponent({
       }
       footer={
         isExpanded && (
-          <Button onClick={onDeleteClick} variant="ghost-destructive">
+          <Button onClick={onDeleteClick} variant="ghost-critical">
             {selection?.node ? deleteNodeLabel : deleteEdgeLabel}
           </Button>
         )

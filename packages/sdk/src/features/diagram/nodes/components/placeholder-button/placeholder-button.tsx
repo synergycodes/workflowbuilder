@@ -7,10 +7,15 @@ type Props = {
   label: string;
 } & Omit<React.ComponentProps<typeof Button>, 'children'>;
 
-export function PlaceholderButton({ label, size = 'extra-small', ...props }: Props) {
+export function PlaceholderButton({ label, size = 'xs', ...props }: Props) {
   return (
-    <Button className={styles['placeholder-button']} size={size} variant="secondary" {...props}>
-      <PlusCircle weight="bold" />
+    <Button
+      className={styles['placeholder-button']}
+      size={size}
+      variant="ghost-secondary"
+      prefixIcon={<PlusCircle weight="bold" />}
+      {...props}
+    >
       {label}
     </Button>
   );
