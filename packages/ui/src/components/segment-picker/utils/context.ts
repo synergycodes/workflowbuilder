@@ -1,12 +1,13 @@
-import { Shape } from '@ui/components/button/types';
-import { Size } from '@ui/shared/types/size';
-import { MouseEvent, createContext } from 'react';
+import type { NavButtonSize, NavButtonStyle } from '@ui/components/button/nav-button/types';
+import type { Shape } from '@ui/components/button/types';
+import { type MouseEvent, createContext } from 'react';
 
 type SegmentPickerContextType = {
   selectedValue: string | undefined;
   onSelect: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
-  size?: Size;
-  shape?: Shape;
+  size: NavButtonSize;
+  shape: Shape;
+  styleVariant: NavButtonStyle;
 };
 
 export const SegmentPickerContext = createContext<SegmentPickerContextType | undefined>(undefined);

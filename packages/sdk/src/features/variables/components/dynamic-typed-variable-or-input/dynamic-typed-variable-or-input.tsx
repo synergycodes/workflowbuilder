@@ -60,9 +60,13 @@ export function DynamicTypedVariableOrInput({
         suggestionGroups={suggestionGroupsForType}
         hasError={isError}
         endAdornment={
-          <NavButton className={styles['button-toggle']} tooltip={t('variables.typeValue')} onClick={handleToggleMode}>
-            <Icon name="PencilSimple" />
-          </NavButton>
+          <NavButton
+            aria-label={t('variables.typeValue')}
+            className={styles['button-toggle']}
+            tooltip={t('variables.typeValue')}
+            onClick={handleToggleMode}
+            prefixIcon={<Icon name="PencilSimple" />}
+          />
         }
       />
     );
@@ -80,12 +84,12 @@ export function DynamicTypedVariableOrInput({
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
           <NavButton
+            aria-label={t('variables.pickVariable')}
             className={styles['button-toggle']}
             tooltip={t('variables.pickVariable')}
             onClick={handleToggleMode}
-          >
-            <Icon name="BracketsCurly" />
-          </NavButton>
+            prefixIcon={<Icon name="BracketsCurly" />}
+          />
         ) : undefined
       }
     />

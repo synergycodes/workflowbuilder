@@ -36,11 +36,12 @@ export function LanguageSelector() {
   return (
     <>
       <Menu items={languageItems} size="small">
-        <NavButton tooltip={t('tooltips.changeLanguage')}>
-          <>
-            <span className={styles['title']}>{currentLanguage.code.toUpperCase()}</span>
-            <CaretDown />
-          </>
+        <NavButton
+          aria-label={t('tooltips.changeLanguage')}
+          suffixIcon={<CaretDown />}
+          tooltip={t('tooltips.changeLanguage')}
+        >
+          <span className={styles['title']}>{currentLanguage.code.toUpperCase()}</span>
         </NavButton>
       </Menu>
     </>

@@ -29,14 +29,22 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
         <VariableMeta name={variable.name} type={variable.type} />
         <div className={styles['actions']}>
           {onEdit && (
-            <NavButton tooltip={t('common.edit')} onClick={onEdit} size="extra-small">
-              <Icon name="PencilSimple" />
-            </NavButton>
+            <NavButton
+              aria-label={t('common.edit')}
+              tooltip={t('common.edit')}
+              onClick={onEdit}
+              size="xs"
+              prefixIcon={<Icon name="PencilSimple" />}
+            />
           )}
           {onRemove && (
-            <NavButton tooltip={t('common.remove')} onClick={onRemove} size="extra-small">
-              <Icon name="Trash" />
-            </NavButton>
+            <NavButton
+              aria-label={t('common.remove')}
+              tooltip={t('common.remove')}
+              onClick={onRemove}
+              size="xs"
+              prefixIcon={<Icon name="Trash" />}
+            />
           )}
         </div>
       </div>

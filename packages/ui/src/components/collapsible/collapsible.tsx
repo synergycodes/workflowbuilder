@@ -54,13 +54,13 @@ Collapsible.Button = function CollapsibleButton() {
 
   return (
     <NavButton
+      aria-label={context?.isExpanded ? 'Collapse' : 'Expand'}
       className={clsx(styles['expand-button'], {
         [styles['expanded']]: context?.isExpanded,
       })}
       onClick={context?.toggle}
-    >
-      <CaretUp />
-    </NavButton>
+      prefixIcon={<CaretUp />}
+    />
   );
 };
 

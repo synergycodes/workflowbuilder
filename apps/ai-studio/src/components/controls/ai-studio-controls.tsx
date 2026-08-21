@@ -38,18 +38,28 @@ export function AiStudioControls() {
     >
       <div className={styles['panel']}>
         {isRunning ? (
-          <NavButton onClick={cancel} tooltip="Cancel execution">
-            <Icon name="Stop" />
-          </NavButton>
+          <NavButton
+            aria-label="Cancel execution"
+            onClick={cancel}
+            tooltip="Cancel execution"
+            prefixIcon={<Icon name="Stop" />}
+          />
         ) : (
-          <NavButton onClick={handleExecute} tooltip="Execute (backend)" disabled={isRunning}>
-            <Icon name="Play" />
-          </NavButton>
+          <NavButton
+            aria-label="Execute (backend)"
+            onClick={handleExecute}
+            tooltip="Execute (backend)"
+            disabled={isRunning}
+            prefixIcon={<Icon name="Play" />}
+          />
         )}
         {isDone && (
-          <NavButton onClick={reset} tooltip="Reset">
-            <Icon name="ArrowCounterClockwise" />
-          </NavButton>
+          <NavButton
+            aria-label="Reset"
+            onClick={reset}
+            tooltip="Reset"
+            prefixIcon={<Icon name="ArrowCounterClockwise" />}
+          />
         )}
       </div>
     </div>

@@ -36,7 +36,7 @@
 
   &:hover,
   &.button--active {
-    background: var(--ax-public-button-nav-background-color);
+    background: var(--ax-public-nav-button-background-color-hover);
   }
 
   &.button--active {

@@ -61,12 +61,12 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
       <div className={styles['header']}>
         <h1 className="ax-public-h10">{t('decisionBranches.branch', { index: index + 1 })}</h1>
         <div className={styles['actions']}>
-          <NavButton onClick={onClickEdit}>
-            <SlidersHorizontal weight="bold" />
-          </NavButton>
-          <NavButton onClick={onClickRemove}>
-            <Trash weight="bold" />
-          </NavButton>
+          <NavButton
+            aria-label={t('common.edit')}
+            onClick={onClickEdit}
+            prefixIcon={<SlidersHorizontal weight="bold" />}
+          />
+          <NavButton aria-label={t('common.remove')} onClick={onClickRemove} prefixIcon={<Trash weight="bold" />} />
         </div>
       </div>
       <div>

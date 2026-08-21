@@ -30,11 +30,17 @@ export const COMPONENTS = [
     ],
   },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
+  {
+    slug: 'menu-trigger-button',
+    name: 'MenuTriggerButton',
+    propsType: 'MenuTriggerButtonProps',
+    dir: 'button/menu-trigger-button',
+  },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
     slug: 'nav-button',
     name: 'NavButton',
-    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
+    propsType: 'NavButtonProps',
     dir: 'button/nav-button',
   },
   { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },

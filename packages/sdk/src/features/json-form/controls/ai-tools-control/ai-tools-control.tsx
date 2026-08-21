@@ -16,7 +16,7 @@ import { openAddToolModal } from './open-add-tool-modal';
 import { toolOptions } from './select-options';
 
 function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiToolsControlProps) {
-  const { t } = useTranslation(undefined, { keyPrefix: 'aiTools' });
+  const { t } = useTranslation();
   const isDisabled = !enabled || uischema.disabled === true;
   const handleSubmit = useCallback(
     (change: AiAgentTool) => {
@@ -74,15 +74,18 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
               ) : (
                 <Button {...sharedButtonProps}>{label}</Button>
               )}
-              <NavButton onClick={() => onRemoveTool(toolData.id)} disabled={isDisabled}>
-                <Trash weight="bold" />
-              </NavButton>
+              <NavButton
+                aria-label={t('common.remove')}
+                onClick={() => onRemoveTool(toolData.id)}
+                disabled={isDisabled}
+                prefixIcon={<Trash weight="bold" />}
+              />
             </div>
           </FormControlWithLabel>
         );
       })}
       <Button variant="primary" prefixIcon={<PlusCircle />} onClick={(_) => openEditorModal()} disabled={isDisabled}>
-        {t('addToolSlot')}
+        {t('aiTools.addToolSlot')}
       </Button>
     </>
   );
