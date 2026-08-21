@@ -28,6 +28,9 @@ function Example() {
     <Input
       size="m"
       state={hasError ? 'critical' : 'default'}
+      label="Project name"
+      helperText={hasError ? 'Enter at least three characters' : 'Shown throughout the workspace'}
+      isRequired
       placeholder="Type something"
       value={value}
       onChange={(event) => setValue(event.target.value)}

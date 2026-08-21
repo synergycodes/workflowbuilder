@@ -12,6 +12,7 @@ export function InputExample() {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--wb-space-100)' }}>
         <Input
           size="l"
+          label="Search"
           prefixIcon={<MagnifyingGlass />}
           placeholder="Large input"
           value={value}
@@ -21,6 +22,9 @@ export function InputExample() {
         <Input
           size="m"
           state="critical"
+          label="Project name"
+          helperText="Enter at least three characters"
+          isRequired
           placeholder="Critical input"
           value={value}
           onChange={(event) => setValue(event.target.value)}
@@ -28,11 +32,13 @@ export function InputExample() {
         <Input
           size="s"
           state="success"
+          label="Display name"
+          helperText="Name is available"
           placeholder="Successful input"
           value={value}
           onChange={(event) => setValue(event.target.value)}
         />
-        <Input size="xs" state="read-only" value={value || 'Read-only value'} />
+        <Input label="Identifier" size="xs" state="read-only" value={value || 'Read-only value'} />
       </div>
     </ComponentPreview>
   );

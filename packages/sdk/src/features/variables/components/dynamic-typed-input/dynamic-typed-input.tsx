@@ -160,38 +160,40 @@ export function DynamicTypedInput({
           // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
         />
-        <Input
-          className={className}
-          value={time}
-          placeholder="HH:mm"
-          onChange={(event) => {
-            const value = (event.target.value as string).slice(0, 5);
-            if (value.length < 5) {
-              setTime(value);
-
-              return;
-            }
-
-            if (value.length === 5) {
-              if (getIsValidTime(value)) {
+        <div className={styles['time-with-adornment']}>
+          <Input
+            className={className}
+            value={time}
+            placeholder="HH:mm"
+            onChange={(event) => {
+              const value = (event.target.value as string).slice(0, 5);
+              if (value.length < 5) {
                 setTime(value);
 
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, value)?.toISOString());
-                }
-              } else {
-                setTime(timeForRawDates);
+                return;
+              }
 
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
+              if (value.length === 5) {
+                if (getIsValidTime(value)) {
+                  setTime(value);
+
+                  if (date && getIsValidDate(date)) {
+                    onChange(setDateWithTimeFromTime(date, value)?.toISOString());
+                  }
+                } else {
+                  setTime(timeForRawDates);
+
+                  if (date && getIsValidDate(date)) {
+                    onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
+                  }
                 }
               }
-            }
-          }}
-          disabled={disabled || !date}
-          state={isError ? 'critical' : 'default'}
-          suffixIcon={endAdornment}
-        />
+            }}
+            disabled={disabled || !date}
+            state={isError ? 'critical' : 'default'}
+          />
+          {endAdornment && <span className={styles['adornment--time']}>{endAdornment}</span>}
+        </div>
       </div>
     );
   }

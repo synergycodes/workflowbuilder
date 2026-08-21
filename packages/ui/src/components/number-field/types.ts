@@ -1,3 +1,4 @@
+import type { NumberFieldRootChangeEventDetails } from '@base-ui/react/number-field';
 import type { FieldControlProps } from '@ui/shared/types/field';
 import type { InputHTMLAttributes } from 'react';
 
@@ -6,13 +7,13 @@ export type NumberFieldProps = Omit<
   'defaultValue' | 'max' | 'min' | 'size' | 'step' | 'type' | 'value'
 > &
   FieldControlProps & {
-    value?: number;
-    defaultValue?: number;
-    onValueChange?: (value: number) => void;
+    value?: number | null;
+    defaultValue?: number | null;
+    onValueChange?: (value: number | null, details: NumberFieldRootChangeEventDetails) => void;
     min?: number;
     max?: number;
     /**
      * @default 1
      */
-    step?: number;
+    step?: number | 'any';
   };

@@ -31,10 +31,6 @@
       border-color: var(--ax-public-textarea-root-border-color-hover);
     }
 
-    &[data-state='default']:not([data-disabled]):focus-within {
-      border-color: var(--ax-public-textarea-root-border-color-focus);
-    }
-
     &[data-state='critical']:not([data-disabled]) {
       background-color: var(--ax-public-textarea-root-background-color-critical);
       border-color: var(--ax-public-textarea-root-border-color-critical);
@@ -54,6 +50,10 @@
     &[data-disabled] {
       color: var(--ax-public-textarea-root-color-disabled);
       cursor: not-allowed;
+    }
+
+    &:not([data-disabled]):focus-within {
+      border-color: var(--ax-public-textarea-root-border-color-focus);
     }
   }
 

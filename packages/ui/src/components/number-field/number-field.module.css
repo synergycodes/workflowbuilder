@@ -13,10 +13,6 @@
       border-color: var(--ax-public-number-field-root-border-color-hover);
     }
 
-    &[data-field-state='default']:not([data-field-disabled]):focus-within {
-      border-color: var(--ax-public-number-field-root-border-color-focus);
-    }
-
     &[data-field-state='critical']:not([data-field-disabled]) {
       background-color: var(--ax-public-number-field-root-background-color-critical);
       border-color: var(--ax-public-number-field-root-border-color-critical);
@@ -36,6 +32,10 @@
     &[data-field-disabled] {
       color: var(--ax-public-number-field-color-disabled);
       cursor: not-allowed;
+    }
+
+    &:not([data-field-disabled]):focus-within {
+      border-color: var(--ax-public-number-field-root-border-color-focus);
     }
   }
 

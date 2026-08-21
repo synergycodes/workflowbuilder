@@ -20,9 +20,9 @@ import { NumberField } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
 function Example() {
-  const [value, setValue] = useState(3);
+  const [value, setValue] = useState<number | null>(3);
 
-  return <NumberField aria-label="Quantity" value={value} min={0} max={10} onValueChange={setValue} />;
+  return <NumberField label="Quantity" value={value} min={0} max={10} onValueChange={setValue} />;
 }
 ```
 

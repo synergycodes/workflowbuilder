@@ -1,0 +1,54 @@
+import { type ReactNode, useId } from 'react';
+
+import styles from './field.module.css';
+
+import type { FieldState } from '../../types/field';
+
+type FieldRenderProps = {
+  controlId: string | undefined;
+  describedBy: string | undefined;
+};
+
+type FieldProps = {
+  ariaDescribedBy?: string;
+  children: (props: FieldRenderProps) => ReactNode;
+  helperText?: ReactNode;
+  id?: string;
+  isRequired?: boolean;
+  label?: ReactNode;
+  state: FieldState;
+};
+
+export function Field({ ariaDescribedBy, children, helperText, id, isRequired, label, state }: FieldProps) {
+  const generatedId = useId();
+  const hasLabel = label !== undefined && label !== null;
+  const hasHelper = helperText !== undefined && helperText !== null;
+  const isComposed = hasLabel || hasHelper;
+  const controlId = id ?? (isComposed ? generatedId : undefined);
+  const helperId = hasHelper ? `${controlId ?? generatedId}-helper` : undefined;
+  const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(' ') || undefined;
+  const control = children({ controlId, describedBy });
+
+  if (!isComposed) return control;
+
+  return (
+    <div className={styles['field']} data-state={state}>
+      {hasLabel && (
+        <label className={styles['label']} htmlFor={controlId}>
+          {label}
+          {isRequired && (
+            <span className={styles['required']} aria-hidden="true">
+              *
+            </span>
+          )}
+        </label>
+      )}
+      {control}
+      {hasHelper && (
+        <span className={styles['helper']} id={helperId}>
+          {helperText}
+        </span>
+      )}
+    </div>
+  );
+}

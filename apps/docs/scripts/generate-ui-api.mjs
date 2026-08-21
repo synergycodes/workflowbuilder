@@ -72,7 +72,9 @@ function findTypeByName(root, name, warnings) {
     for (const child of node.children ?? []) walk(child);
   })(root);
   if (matches.length > 1 && warnings) {
-    warnings.push(`type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`);
+    warnings.push(
+      `type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`,
+    );
   }
   return matches[0] ?? null;
 }
@@ -270,8 +272,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
     // Required in every variant, else the table documents an impossible call.
-    const requiredEverywhere =
-      occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
+    const requiredEverywhere = occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
     const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
 
     const base = occurrences[0].prop;
@@ -299,7 +300,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
   return merged;
 }
 
-function extractCssVariables(directory, warnings, slug) {
+function extractCssVariables(directory, cssSources, warnings, slug) {
   // No directory - the entry documents an API, not a styled component.
   if (!directory) return [];
 
@@ -316,11 +317,17 @@ function extractCssVariables(directory, warnings, slug) {
 
   const files = globSync('**/*.css', { cwd: abs })
     .filter((file) => !nestedPrefixes.some((prefix) => file.startsWith(prefix)))
-    .sort();
+    .sort()
+    .map((file) => path.resolve(abs, file));
+  for (const source of cssSources ?? []) {
+    const sourcePath = path.resolve(uiSource, source);
+    if (existsSync(sourcePath)) files.push(sourcePath);
+    else warnings.push(`"${slug}": CSS source ${source} does not exist`);
+  }
   const seen = new Set();
   const variables = [];
   for (const file of files) {
-    const css = readFileSync(path.resolve(abs, file), 'utf8');
+    const css = readFileSync(file, 'utf8');
     const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
@@ -374,9 +381,9 @@ async function main() {
     let props = [];
     const context = { warnings, slug: component.slug };
     if (Array.isArray(component.propsType)) {
-      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values()].sort(
-        (a, b) => a.name.localeCompare(b.name),
-      );
+      props = [
+        ...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values(),
+      ].sort((a, b) => a.name.localeCompare(b.name));
     } else if (component.propsType) {
       const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
@@ -392,7 +399,7 @@ async function main() {
       name: component.name,
       props,
       nativeElement: context.nativeElement ?? null,
-      cssVariables: extractCssVariables(component.dir, warnings, component.slug),
+      cssVariables: extractCssVariables(component.dir, component.cssSources, warnings, component.slug),
     };
   }
 
