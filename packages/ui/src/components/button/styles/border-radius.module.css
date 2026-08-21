@@ -6,6 +6,12 @@
   --ax-public-button-border-radius-extra-small: var(--wb-radius-50);
 
   --ax-public-button-border-radius-circle: var(--wb-radius-full);
+  --ax-public-button-border-radius-xl: var(--wb-radius-100);
+  --ax-public-button-border-radius-l: var(--wb-radius-100);
+  --ax-public-button-border-radius-m: var(--wb-radius-75);
+  --ax-public-button-border-radius-s: var(--wb-radius-50);
+  --ax-public-button-border-radius-xs: var(--wb-radius-50);
+  --ax-public-button-border-radius-round: var(--wb-radius-full);
 }
 
 @layer ui.component {
@@ -33,5 +39,29 @@
 
   .circle {
     border-radius: var(--ax-public-button-border-radius-circle);
+  }
+
+  .xl {
+    border-radius: var(--ax-public-button-border-radius-xl);
+  }
+
+  .l {
+    border-radius: var(--ax-public-button-border-radius-l);
+  }
+
+  .m {
+    border-radius: var(--ax-public-button-border-radius-m);
+  }
+
+  .s {
+    border-radius: var(--ax-public-button-border-radius-s);
+  }
+
+  .xs {
+    border-radius: var(--ax-public-button-border-radius-xs);
+  }
+
+  .round {
+    border-radius: var(--ax-public-button-border-radius-round);
   }
 }

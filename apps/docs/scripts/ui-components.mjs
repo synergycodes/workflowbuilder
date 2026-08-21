@@ -12,11 +12,10 @@
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  // No single props type - one of three variants depending on `children`.
   {
     slug: 'button',
     name: 'Button',
-    propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'],
+    propsType: 'ButtonProps',
     dir: 'button',
   },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },

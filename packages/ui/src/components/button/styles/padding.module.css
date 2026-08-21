@@ -1,0 +1,29 @@
+:root {
+  --ax-public-button-padding-xl: var(--wb-space-200) var(--wb-space-200);
+  --ax-public-button-padding-l: var(--wb-space-175) var(--wb-space-200);
+  --ax-public-button-padding-m: var(--wb-space-150) var(--wb-space-150);
+  --ax-public-button-padding-s: var(--wb-space-125) var(--wb-space-125);
+  --ax-public-button-padding-xs: var(--wb-space-100) var(--wb-space-100);
+}
+
+@layer ui.component {
+  .xl {
+    padding: var(--ax-public-button-padding-xl);
+  }
+
+  .l {
+    padding: var(--ax-public-button-padding-l);
+  }
+
+  .m {
+    padding: var(--ax-public-button-padding-m);
+  }
+
+  .s {
+    padding: var(--ax-public-button-padding-s);
+  }
+
+  .xs {
+    padding: var(--ax-public-button-padding-xs);
+  }
+}

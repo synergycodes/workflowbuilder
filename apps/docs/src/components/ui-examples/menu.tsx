@@ -13,7 +13,7 @@ export function MenuExample() {
           { label: 'Delete', destructive: true, onClick: () => {} },
         ]}
       >
-        <Button variant="secondary">Open menu</Button>
+        <Button variant="ghost-secondary">Open menu</Button>
       </Menu>
     </ComponentPreview>
   );

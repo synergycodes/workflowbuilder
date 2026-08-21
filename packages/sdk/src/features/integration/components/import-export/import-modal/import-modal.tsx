@@ -69,13 +69,19 @@ export function ImportModal() {
       )}
       <div className={styles['actions']}>
         {warnings.length > 0 && errors.length === 0 && (
-          <Button variant="warning" onClick={() => handleImport({ shouldIgnoreWarnings: true })}>
-            <Icon name="DownloadSimple" />
+          <Button
+            variant="warning"
+            prefixIcon={<Icon name="DownloadSimple" />}
+            onClick={() => handleImport({ shouldIgnoreWarnings: true })}
+          >
             {t('importExport.ignoreAndImport')}
           </Button>
         )}
-        <Button variant="primary" onClick={() => handleImport({ shouldIgnoreWarnings: false })}>
-          <Icon name="DownloadSimple" />
+        <Button
+          variant="primary"
+          prefixIcon={<Icon name="DownloadSimple" />}
+          onClick={() => handleImport({ shouldIgnoreWarnings: false })}
+        >
           {t('importExport.import')}
         </Button>
       </div>
