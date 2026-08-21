@@ -1,11 +1,11 @@
 :root {
-  --ax-public-radio-size-medium: var(--wb-size-300);
-  --ax-public-radio-size-small: var(--wb-size-200);
-  --ax-public-radio-size-extra-small: var(--wb-size-150);
+  --ax-public-radio-size-medium: 1.25rem;
+  --ax-public-radio-size-small: 1.125rem;
+  --ax-public-radio-size-extra-small: var(--wb-size-200);
 
-  --ax-public-radio-dot-size-medium: var(--wb-size-150);
+  --ax-public-radio-dot-size-medium: 0.625rem;
   --ax-public-radio-dot-size-small: var(--wb-size-100);
-  --ax-public-radio-dot-size-extra-small: var(--wb-size-50);
+  --ax-public-radio-dot-size-extra-small: var(--wb-size-100);
 }
 
 @layer ui.component {
