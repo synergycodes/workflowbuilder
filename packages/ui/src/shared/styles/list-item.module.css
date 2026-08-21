@@ -5,8 +5,8 @@
   --ax-public-list-item-color: var(--wb-ui-text-default);
 
   --ax-public-list-item-background-color-focus: var(--wb-ui-bg-fill-hover);
-  --ax-public-list-item-outline-color-focus: var(--wb-ui-stroke-focus);
-  --ax-public-list-item-outline-size: 0.0625rem;
+  --ax-public-list-item-outline-color-focus: var(--wb-shadow-ui-focus);
+  --ax-public-list-item-outline-size: var(--wb-shadow-ui-focus-element-spread);
 
   --ax-public-list-item-color-destructive: var(--wb-ui-text-critical-default);
   --ax-public-list-item-background-color-destructive: var(--wb-colors-red-400-10);
@@ -40,7 +40,10 @@
 
     &:focus-visible,
     &[data-highlighted] {
-      outline: var(--ax-public-list-item-outline-size) solid var(--ax-public-list-item-outline-color-focus);
+      outline: none;
+      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
+        var(--wb-shadow-ui-focus-element-blur) var(--ax-public-list-item-outline-size)
+        var(--ax-public-list-item-outline-color-focus);
       background-color: var(--ax-public-list-item-background-color-focus);
     }
 
