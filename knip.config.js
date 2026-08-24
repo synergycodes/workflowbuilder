@@ -38,9 +38,6 @@ export default {
     'packages/sdk': {
       entry: ['src/index.ts', 'src/**/*.{ts,tsx}', 'vite.config.mts'],
       project: ['src/**/*.{ts,tsx}', 'vite.config.mts'],
-      // @fontsource/poppins is consumed via @import statements in src/index.css.
-      // Knip only walks JS/TS, so it can't see the CSS reference.
-      ignoreDependencies: ['@fontsource/poppins'],
     },
     'apps/backend': {
       entry: ['src/server.ts', 'drizzle.config.ts'],
@@ -58,10 +55,11 @@ export default {
     },
     'packages/ui': {
       entry: ['src/index.ts', 'vite.config.mts', 'scripts/check-built-css.ts'],
-      project: ['src/**/*.{ts,tsx}', '*.mts', 'scripts/**/*.ts'],
+      project: ['src/**/*.{ts,tsx,mts}', '*.mts', 'scripts/**/*.ts'],
       // Built tokens are copied by relative path (../tokens/dist) in vite.config,
-      // so the workspace dep is real even though it is never imported by name.
-      ignoreDependencies: ['@workflowbuilder/ui-tokens'],
+      // and the fontsource families feed the post-build font generator - real
+      // dependencies knip's JS/TS walk cannot see.
+      ignoreDependencies: ['@workflowbuilder/ui-tokens', '@fontsource/poppins', '@fontsource/inter'],
     },
     'packages/tokens': {
       entry: ['src/index.ts'],
