@@ -92,6 +92,12 @@ function edge(id: string, source: string, target: string, sourceHandle?: string)
   return { id, sourceNodeId: source, targetNodeId: target, sourceHandle };
 }
 
+function skipsFrom(events: EventCall[]): { nodeId: string | undefined; reason: unknown }[] {
+  return events
+    .filter((event) => event.type === 'node_skipped')
+    .map((event) => ({ nodeId: event.nodeId, reason: (event.payload as { reason: string }).reason }));
+}
+
 function makeInput(nodes: TestNode[], edges: WorkflowEdgeDefinition[]): WorkflowExecutionInput<TestNode> {
   const definition: WorkflowDefinition<TestNode> = { workflowId: 'wf-1', nodes, edges };
   return {
@@ -202,7 +208,7 @@ describe('runGraph — topological scheduling', () => {
     expect(runner.contexts.C).toEqual({ S: 'out-S', A: 'out-A', Aprime: 'out-Aprime', B: 'out-B' });
   });
 
-  it('decision routing — node reachable only via pruned branch is skipped silently', async () => {
+  it('decision routing — node reachable only via pruned branch is skipped and reported', async () => {
     // D is a decision picking branch X. C is reachable only via Y → must be skipped.
     const runner = makeRunner({
       D: { output: { matchedBranch: 'X' }, nextPort: 'X' },
@@ -216,10 +222,35 @@ describe('runGraph — topological scheduling', () => {
     );
 
     expect(runner.callOrder).toEqual(['D', 'B']);
-    // No node_started for C
+    // C never ran, but the run says so out loud rather than leaving it indistinguishable
+    // from a node still pending. D ran and chose another handle → branch_not_taken.
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'C')).toBe(false);
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'C', reason: 'branch_not_taken' }]);
     // Graph still completes successfully
     expect(events.statuses.at(-1)?.status).toBe('completed');
+  });
+
+  it('node_skipped lands after the wave that pruned it and before the next wave starts', async () => {
+    // Ordering is the contract a log panel renders against: the skip must read as a
+    // consequence of D's completion, not arrive interleaved with B's execution.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput([start('D'), trigger('B'), trigger('C')], [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(events.events.map((event) => `${event.type}:${event.nodeId ?? '-'}`)).toEqual([
+      'execution_started:-',
+      'node_started:D',
+      'node_completed:D',
+      'node_skipped:C',
+      'node_started:B',
+      'node_completed:B',
+      'execution_completed:-',
+    ]);
   });
 
   it('decision-pruned fan-in — join executes with only the live predecessor', async () => {
@@ -268,6 +299,42 @@ describe('runGraph — topological scheduling', () => {
     // Only D, B, and E execute
     expect(runner.callOrder.sort()).toEqual(['B', 'D', 'E']);
     expect(runner.contexts.E).toEqual({ D: 'd', B: 'out-B' });
+    // C is the head of the dead branch (D ran, chose X); Cprime is deeper inside it.
+    expect(skipsFrom(events.events)).toEqual([
+      { nodeId: 'C', reason: 'branch_not_taken' },
+      { nodeId: 'Cprime', reason: 'upstream_skipped' },
+    ]);
+  });
+
+  it("skip reason ignores the order a join's predecessors resolve in", async () => {
+    // J joins two dead edges of different kinds: C→J (C was itself skipped) resolves
+    // first, then B→J (B ran and routed to K instead). One live-but-pruned incoming
+    // edge is enough, so J reports branch_not_taken regardless of which edge lands
+    // last — a "whichever predecessor resolved last wins" rule would call it
+    // upstream_skipped here.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' }, B: { output: 'b', nextPort: 'P' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('D'), trigger('B'), trigger('C'), trigger('J'), trigger('K')],
+        [
+          edge('e1', 'D', 'B', 'X'),
+          edge('e2', 'D', 'C', 'Y'),
+          edge('e3', 'C', 'J'),
+          edge('e4', 'B', 'J', 'Q'),
+          edge('e5', 'B', 'K', 'P'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['D', 'B', 'K']);
+    expect(skipsFrom(events.events)).toEqual([
+      { nodeId: 'C', reason: 'branch_not_taken' },
+      { nodeId: 'J', reason: 'branch_not_taken' },
+    ]);
   });
 
   it('failure short-circuits the graph — emits execution_failed and stops', async () => {
@@ -714,6 +781,9 @@ describe('runGraph — errorPolicy', () => {
 
     expect(runner.callOrder).toEqual(['A', 'B', 'Recovery']);
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'Success')).toBe(false);
+    // B ran (and failed) before routing to the error handle, so the pruned success
+    // branch is a branch not taken — not an upstream skip.
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'Success', reason: 'branch_not_taken' }]);
     expect(runner.contexts.Recovery).toEqual({ A: 'out-A', B: { error: { message: 'boom' } } });
     expect(events.statuses.at(-1)?.status).toBe('completed');
     expect(outcome).toEqual({ status: 'completed' });
@@ -748,6 +818,10 @@ describe('runGraph — errorPolicy', () => {
     );
 
     expect(runner.callOrder).toEqual(['A', 'B', 'Recovery', 'Done']);
+    expect(skipsFrom(events.events)).toEqual([
+      { nodeId: 'Success', reason: 'branch_not_taken' },
+      { nodeId: 'SuccessPrime', reason: 'upstream_skipped' },
+    ]);
     expect(events.statuses.at(-1)?.status).toBe('completed');
   });
 

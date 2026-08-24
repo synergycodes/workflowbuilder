@@ -4,6 +4,7 @@ export type ExecutionEventType =
   | 'node_waiting'
   | 'node_completed'
   | 'node_failed'
+  | 'node_skipped'
   | 'branch_spawned'
   | 'branches_joined'
   | 'execution_completed'
@@ -28,6 +29,16 @@ export type BranchesJoinedPayload = {
 
 export type NodeCompletedPayload = {
   output: unknown;
+};
+
+// Why a node never ran. 'branch_not_taken' — an upstream node completed but
+// routed elsewhere (a decision picking another branch, or an 'errorRoute'
+// policy pruning the success branch). 'upstream_skipped' — every predecessor
+// was itself skipped, so this node sits deeper in an already-dead branch.
+export type NodeSkipReason = 'branch_not_taken' | 'upstream_skipped';
+
+export type NodeSkippedPayload = {
+  reason: NodeSkipReason;
 };
 
 export type ExecutionErrorPayload = {
@@ -81,6 +92,11 @@ export type NodeFailedEvent = NodeEvent & {
   payload: ExecutionErrorPayload;
 };
 
+export type NodeSkippedEvent = NodeEvent & {
+  type: 'node_skipped';
+  payload: NodeSkippedPayload;
+};
+
 export type BranchSpawnedEvent = NodeEvent & {
   type: 'branch_spawned';
   payload: BranchSpawnedPayload;
@@ -112,6 +128,7 @@ export type ExecutionEvent =
   | NodeWaitingEvent
   | NodeCompletedEvent
   | NodeFailedEvent
+  | NodeSkippedEvent
   | BranchSpawnedEvent
   | BranchesJoinedEvent
   | ExecutionCompletedEvent

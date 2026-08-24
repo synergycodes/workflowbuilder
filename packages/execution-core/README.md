@@ -136,6 +136,19 @@ const node: MyNode = {
 
 If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the run completes cleanly — the failure is recorded as `node_failed` and nothing else fires. That makes `'errorRoute'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
 
+## Skipped nodes
+
+A node whose every incoming edge resolved without a live route never runs — a decision picked another branch, an `'errorRoute'` failure pruned the success branch, or the node sits downstream of one of those. The runner emits a `node_skipped` event for each, so an operator tailing the stream can tell "this node was never reached" from "this node is still pending".
+
+| `payload.reason`     | Meaning                                                                                     |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `'branch_not_taken'` | At least one predecessor ran and routed elsewhere — this is the head of the dead branch.    |
+| `'upstream_skipped'` | Every predecessor was itself skipped — this node sits deeper inside an already-dead branch. |
+
+The reason does not depend on the order a node's predecessors happen to resolve in: one live-but-pruned incoming edge is enough to make it `'branch_not_taken'`.
+
+Events are emitted once the whole wave has propagated, after that wave's `node_completed` events and before the next wave's `node_started`. A skipped node emits exactly one `node_skipped` and no `node_started`/`node_completed`, so it stays absent from `nodeOutputs` — downstream joins see only the live predecessors' outputs.
+
 ## Template references
 
 `resolveTemplate(template, context)` (in `src/templates/`) interpolates `{{namespace.path}}` references against the live `ExecutionContext`. Three forms are supported - **strict by default**, with two opt-in modifiers for missing values:
@@ -193,7 +206,7 @@ export interface LoggerPort {
 
 ### Where logger lives
 
-`LoggerPort` is **not** passed into `runGraph`, and `runGraph` does **not** import it. The runner is re-exported from the sandbox-safe entry (`@workflow-builder/execution-core/workflow`) and runs inside Temporal's V8 workflow context, where every call to `new Date()` poisons history replay. Lifecycle signals (`execution_started/completed/failed`, `node_started/completed/failed`) already flow through `EventEmitterPort` — operators tail those for run-time observability of a workflow.
+`LoggerPort` is **not** passed into `runGraph`, and `runGraph` does **not** import it. The runner is re-exported from the sandbox-safe entry (`@workflow-builder/execution-core/workflow`) and runs inside Temporal's V8 workflow context, where every call to `new Date()` poisons history replay. Lifecycle signals (`execution_started/completed/failed`, `node_started/completed/failed`, `node_skipped`) already flow through `EventEmitterPort` — operators tail those for run-time observability of a workflow.
 
 Use `LoggerPort` outside the sandbox — in HTTP routes, in activity executors (LLM calls, HTTP retries), at app startup.
 

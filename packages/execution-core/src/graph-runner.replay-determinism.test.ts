@@ -182,6 +182,32 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     expect(records[0]!.activityCallOrder).toEqual(['D', 'B']);
   });
 
+  it('node_skipped — several skips in one wave keep the same order and reasons', async () => {
+    // The one event a skipped node ever emits, so its position and payload are all a
+    // replay has to compare. Emission order comes from `propagate`'s breadth-first walk
+    // over the dead subtree, seeded from `definition.nodes` order — a switch to a Set
+    // or an emit-as-you-go inside the wave would re-order these without changing
+    // anything else the runner records.
+    const input = makeInput(
+      [start('D'), trigger('Live'), trigger('C1'), trigger('C2'), trigger('C1prime')],
+      [
+        edge('e1', 'D', 'Live', 'X'),
+        edge('e2', 'D', 'C1', 'Y'),
+        edge('e3', 'D', 'C2', 'Z'),
+        edge('e4', 'C1', 'C1prime'),
+      ],
+    );
+
+    const records = await runNTimes(input, { D: { output: 'd', nextPort: 'X' } }, RUNS);
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.filter((event) => event.type === 'node_skipped')).toEqual([
+      { type: 'node_skipped', nodeId: 'C1', payload: { reason: 'branch_not_taken' } },
+      { type: 'node_skipped', nodeId: 'C2', payload: { reason: 'branch_not_taken' } },
+      { type: 'node_skipped', nodeId: 'C1prime', payload: { reason: 'upstream_skipped' } },
+    ]);
+  });
+
   it('node failure — failure path is deterministic too (same error code, same event sequence)', async () => {
     // The catch branch builds errorPayload from the thrown error. Across
     // replays the activity returns the same error (cached in history), so

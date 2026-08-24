@@ -41,6 +41,11 @@
   color: var(--ai-studio-status-color--failed);
 }
 
+.icon--skipped {
+  color: var(--ax-txt-secondary, #888);
+  opacity: 0.7;
+}
+
 .icon--running {
   color: var(--ai-studio-status-color--completed);
   animation: spin 1.6s linear infinite;
