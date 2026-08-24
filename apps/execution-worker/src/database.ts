@@ -29,7 +29,7 @@ export const database = {
   },
 
   async updateExecutionStatus(executionId: string, status: string, errorMessage?: string) {
-    const isTerminal = ['completed', 'failed', 'cancelled'].includes(status);
+    const isTerminal = ['completed', 'incomplete', 'failed', 'cancelled'].includes(status);
 
     await sql`
       UPDATE executions SET

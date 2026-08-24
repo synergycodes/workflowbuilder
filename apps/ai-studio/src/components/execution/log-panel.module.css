@@ -94,6 +94,10 @@
   color: var(--ax-txt-secondary-default, #888);
 }
 
+.badge--execution_incomplete {
+  color: var(--ai-studio-status-color--incomplete);
+}
+
 .badge--node_failed,
 .badge--execution_failed {
   color: var(--ai-studio-status-color--failed);
@@ -157,6 +161,11 @@
 .status--completed {
   color: var(--ai-studio-status-color--completed);
   background: var(--ai-studio-status-bg--completed);
+}
+
+.status--incomplete {
+  color: var(--ai-studio-status-color--incomplete);
+  background: var(--ai-studio-status-bg--incomplete);
 }
 
 .status--failed {

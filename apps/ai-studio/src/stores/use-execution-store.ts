@@ -130,6 +130,9 @@ function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefi
     case 'execution_completed': {
       return 'completed';
     }
+    case 'execution_incomplete': {
+      return 'incomplete';
+    }
     case 'execution_failed': {
       return 'failed';
     }

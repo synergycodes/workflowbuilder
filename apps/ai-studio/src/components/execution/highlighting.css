@@ -1,16 +1,19 @@
 html[data-theme='light'] {
   --ai-studio-edge-color--active: var(--ax-colors-green-400);
   --ai-studio-status-color--completed: var(--ax-colors-green-400);
+  --ai-studio-status-color--incomplete: var(--ax-colors-orange-400);
 }
 
 html[data-theme='dark'] {
   --ai-studio-edge-color--active: var(--ax-colors-green-200);
   --ai-studio-status-color--completed: var(--ax-colors-green-200);
+  --ai-studio-status-color--incomplete: var(--ax-colors-orange-300);
 }
 
 :root {
   --ai-studio-status-color--failed: var(--ax-txt-error-default);
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
+  --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
   --ai-studio-node-shadow-color--active: var(--ai-studio-edge-color--active);

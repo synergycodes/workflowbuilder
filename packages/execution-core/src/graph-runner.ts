@@ -1,4 +1,4 @@
-import type { NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
+import type { DeadEnd, NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   NodeErrorPolicy,
@@ -22,13 +22,18 @@ import { resolveStartNode } from './resolve-start-node';
 const RESERVED_ERROR_HANDLE = 'errorRoute';
 
 // How the run ended. Returned rather than thrown so `runGraph` stays engine-agnostic:
-// each engine adapter decides how a failed outcome maps onto its own vocabulary (the
-// Temporal adapter raises an ApplicationFailure so the Workflow Execution shows as
-// Failed rather than Completed). Note a node failing under errorPolicy 'continue' or
-// 'errorRoute' is absorbed by the graph and still yields `{ status: 'completed' }` —
-// only an unhandled node failure, a stall, or a malformed start (missing, duplicated,
-// or with orphaned nodes alongside it) fails the run.
-export type RunGraphOutcome = { status: 'completed' } | { status: 'failed'; error: { message: string; code?: string } };
+// each engine adapter decides how an outcome maps onto its own vocabulary (the
+// Temporal adapter raises an ApplicationFailure for 'failed' so the Workflow Execution
+// shows as Failed rather than Completed; 'incomplete' closes normally, since nothing
+// went wrong). Note a node failing under errorPolicy 'continue' is absorbed by the graph
+// and still yields `{ status: 'completed' }` — only an unhandled node failure, a stall,
+// or a malformed start (missing, duplicated, or with orphaned nodes alongside it) fails
+// the run. 'incomplete' means every route the graph took was followed to its end, but at
+// least one of them led nowhere — see `deadEnds`.
+export type RunGraphOutcome =
+  | { status: 'completed' }
+  | { status: 'incomplete'; deadEnds: DeadEnd[] }
+  | { status: 'failed'; error: { message: string; code?: string } };
 
 // Topological scheduler. A node becomes ready only when ALL of its incoming
 // edges are resolved (predecessor either completed via a live route, or was
@@ -39,7 +44,7 @@ export type RunGraphOutcome = { status: 'completed' } | { status: 'failed'; erro
 // sandbox-safe entry (`./workflow`) and therefore runs inside Temporal's
 // V8 workflow context, where every call to `new Date()`, `Math.random()`,
 // or other non-deterministic source poisons history replay. Lifecycle
-// signals (execution_started/completed/failed, node_started/completed/failed,
+// signals (execution_started/completed/incomplete/failed, node_started/completed/failed,
 // node_skipped) already flow through EventEmitterPort — operators tail those for run-time
 // observability. Activity executors that need real-time logs (LLM failures,
 // HTTP retries) hold their own LoggerPort outside the sandbox.
@@ -73,6 +78,7 @@ export async function runGraph<TNode extends BaseNode>(
 
   let ready: TNode[] = [startNode];
   const nodeOutputs: Record<string, unknown> = {};
+  const deadEnds: DeadEnd[] = [];
 
   while (ready.length > 0) {
     const context: ExecutionContext = {
@@ -111,12 +117,12 @@ export async function runGraph<TNode extends BaseNode>(
         nodeOutputs[result.node.id] = errorOutput;
         state.status.set(result.node.id, 'completed');
         const nextPort = policy === 'errorRoute' ? RESERVED_ERROR_HANDLE : undefined;
-        propagate(result.node.id, nextPort, true, state, newlyReady, skipped);
+        propagate(result.node.id, nextPort, true, state, newlyReady, skipped, deadEnds);
         continue;
       }
       nodeOutputs[result.node.id] = result.output;
       state.status.set(result.node.id, 'completed');
-      propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
+      propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped, deadEnds);
     }
 
     // Emitted once the whole wave has propagated, so a skip reads as a consequence of
@@ -152,6 +158,12 @@ export async function runGraph<TNode extends BaseNode>(
   if (stalled.length > 0) {
     const message = `Workflow stalled: nodes never became ready: ${stalled.join(', ')}`;
     return await failExecution(input.executionId, events, { message });
+  }
+
+  if (deadEnds.length > 0) {
+    await events.emitEvent(input.executionId, 'execution_incomplete', { deadEnds });
+    await events.updateStatus(input.executionId, 'incomplete');
+    return { status: 'incomplete', deadEnds };
   }
 
   await events.emitEvent(input.executionId, 'execution_completed');
@@ -206,9 +218,9 @@ type SkippedNode = { id: string; reason: NodeSkipReason };
 // don't stall downstream join points and deep dead-branch chains can't blow the
 // call stack.
 //
-// Newly ready nodes land in `out`, newly skipped ones in `skippedOut`; both are
-// appended in traversal order and neither is emitted from here, so the caller
-// keeps control of event ordering.
+// Newly ready nodes land in `out`, newly skipped ones in `skippedOut`, and a root that
+// routed nowhere in `deadEndOut`; all three are appended in traversal order and none are
+// emitted from here, so the caller keeps control of event ordering.
 function propagate<TNode extends BaseNode>(
   rootId: string,
   rootNextPort: string | undefined,
@@ -216,15 +228,21 @@ function propagate<TNode extends BaseNode>(
   state: SchedulerState<TNode>,
   out: TNode[],
   skippedOut: SkippedNode[],
+  deadEndOut: DeadEnd[],
 ): void {
-  const queue: { fromId: string; nextPort: string | undefined; sourceLive: boolean }[] = [
-    { fromId: rootId, nextPort: rootNextPort, sourceLive: rootSourceLive },
+  // `isRoot` rather than comparing against `rootId`: a cycle can walk back into the root
+  // during skip propagation, and those entries carry `sourceLive: false`, so counting
+  // them would report a live root as a dead end.
+  const queue: { fromId: string; nextPort: string | undefined; sourceLive: boolean; isRoot: boolean }[] = [
+    { fromId: rootId, nextPort: rootNextPort, sourceLive: rootSourceLive, isRoot: true },
   ];
+  let rootRoutedSomewhere = false;
   while (queue.length > 0) {
-    const { fromId, nextPort, sourceLive } = queue.shift()!;
+    const { fromId, nextPort, sourceLive, isRoot } = queue.shift()!;
     const successors = state.adjacency.get(fromId) ?? [];
     for (const { node: target, sourceHandle } of successors) {
       const edgeLive = isEdgeLive(sourceLive, nextPort, sourceHandle);
+      if (isRoot && edgeLive) rootRoutedSomewhere = true;
       state.pendingPredecessors.set(target.id, (state.pendingPredecessors.get(target.id) ?? 0) - 1);
       if (edgeLive) {
         state.liveIncoming.set(target.id, (state.liveIncoming.get(target.id) ?? 0) + 1);
@@ -241,10 +259,17 @@ function propagate<TNode extends BaseNode>(
         } else {
           state.status.set(target.id, 'skipped');
           skippedOut.push({ id: target.id, reason: skipReason(state.livePruneKind.get(target.id)) });
-          queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false });
+          queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false, isRoot: false });
         }
       }
     }
+  }
+
+  // A node that named a port but reached nothing through it. Only an explicit port
+  // counts: a plain leaf returns none and is a legitimate end of a branch, whereas a
+  // decision that picked a branch — or an 'errorRoute' failure — promised a route.
+  if (rootNextPort !== undefined && !rootRoutedSomewhere) {
+    deadEndOut.push({ nodeId: rootId, port: rootNextPort });
   }
 }
 

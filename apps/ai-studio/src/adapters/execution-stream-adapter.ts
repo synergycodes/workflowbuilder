@@ -3,8 +3,13 @@ import type { ExecutionEvent, ExecutionSnapshot } from '@workflow-builder/types/
 import { BACKEND_URL } from '../config';
 import { applyConnectionLost, applyEvent, applySnapshot } from '../stores/use-execution-store';
 
-const TERMINAL_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
-const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+const TERMINAL_TYPES = new Set([
+  'execution_completed',
+  'execution_incomplete',
+  'execution_failed',
+  'execution_cancelled',
+]);
+const TERMINAL_STATUSES = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
 const MAX_RETRIES = 5;
 
 export function connectExecutionStream(executionId: string, streamUrl: string): () => void {

@@ -232,6 +232,35 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     expect(records[0]!.statuses.at(-1)?.status).toBe('failed');
   });
 
+  it('dead ends — the terminal incomplete payload is identical across runs', async () => {
+    // `deadEnds` accumulates across waves in propagation order, then ships as one payload.
+    // An accidental Set, or emitting per-wave instead of once at the end, would re-order
+    // the list without changing any other recorded call.
+    const input = makeInput(
+      [start('S'), trigger('D1'), trigger('D2'), trigger('Live')],
+      [edge('e1', 'S', 'D1'), edge('e2', 'S', 'D2'), edge('e3', 'S', 'Live')],
+    );
+
+    const records = await runNTimes(
+      input,
+      { D1: { output: 'd1', nextPort: 'gone-1' }, D2: { output: 'd2', nextPort: 'gone-2' } },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.at(-1)).toEqual({
+      type: 'execution_incomplete',
+      nodeId: undefined,
+      payload: {
+        deadEnds: [
+          { nodeId: 'D1', port: 'gone-1' },
+          { nodeId: 'D2', port: 'gone-2' },
+        ],
+      },
+    });
+    expect(records[0]!.statuses.at(-1)?.status).toBe('incomplete');
+  });
+
   it('node failure — failure path is deterministic too (same error code, same event sequence)', async () => {
     // The catch branch builds errorPayload from the thrown error. Across
     // replays the activity returns the same error (cached in history), so

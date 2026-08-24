@@ -50,6 +50,13 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 
       break;
     }
+    case 'execution_incomplete': {
+      detail = event.payload.deadEnds
+        .map(({ nodeId, port }) => `${nodeId} routed to "${port}" — nothing connected to that handle`)
+        .join('\n');
+
+      break;
+    }
     // No default
   }
 

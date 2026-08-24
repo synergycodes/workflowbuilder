@@ -3,7 +3,12 @@ import type { ExecutionEventRow } from './fetch-events-after';
 export type EventFetcher = (executionId: string, afterSequence: number) => Promise<ExecutionEventRow[]>;
 type EventWriter = (event: ExecutionEventRow) => Promise<void>;
 
-const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
+const TERMINAL_EVENT_TYPES = new Set([
+  'execution_completed',
+  'execution_incomplete',
+  'execution_failed',
+  'execution_cancelled',
+]);
 
 export type DrainResult = {
   lastSequence: number;

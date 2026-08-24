@@ -134,7 +134,7 @@ const node: MyNode = {
 };
 ```
 
-If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the run completes cleanly — the failure is recorded as `node_failed`, and the success branch it pruned reports `node_skipped` (see [Skipped nodes](#skipped-nodes)). Nothing else fires. That makes `'errorRoute'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
+If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the failure is recorded as `node_failed`, any regular branch it pruned reports `node_skipped` (see [Skipped nodes](#skipped-nodes)), and the run ends **incomplete** — the policy named a port and nothing was wired to it. See [Incomplete runs](#incomplete-runs). For deliberate absorption, use `'continue'` on a node with no downstream edges: it records `node_failed` and ends the branch without claiming a route it does not have.
 
 ## Skipped nodes
 
@@ -155,6 +155,27 @@ Events are emitted once the whole wave has propagated, after that wave's `node_c
 A wave that contains a fatal (`'fail'`) failure still emits the skips its surviving siblings produced, before the terminal `execution_failed` — a failed run is where the "never taken" / "never reached" distinction matters most. Nodes downstream of the fatal node itself emit nothing: they were never resolved, which is not the same as being skipped.
 
 A `node_skipped` emit that exhausts its retries is swallowed and the run carries on. The event is advisory — a node that was never going to execute must not be able to abort an otherwise healthy run — and the sequence number the failed emit consumed leaves a gap the backend drain steps over.
+
+## Incomplete runs
+
+A run is **incomplete** when a node returned an explicit `nextPort` and no outgoing edge went live. Each occurrence is a _dead end_, recorded as `{ nodeId, port }`; the run finishes everything else it can reach, then emits a single terminal `execution_incomplete` event naming every one of them, sets the execution status to `'incomplete'`, and returns `{ status: 'incomplete', deadEnds }`.
+
+It is deliberately **not** a failure. Nothing threw, so the engine closes the run normally — the Temporal adapter returns rather than raising an `ApplicationFailure`, and the Workflow Execution shows as Completed. What changes is the run's own status, so an operator can tell "the graph ran" from "the graph ran everything it was supposed to".
+
+| Shape                                                       | Outcome                                                                   |
+| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
+| A decision routes to a handle no edge carries               | **incomplete**                                                            |
+| A decision node with no outgoing edges at all               | **incomplete**                                                            |
+| An `'errorRoute'` failure with no `'errorRoute'` edge       | **incomplete**                                                            |
+| A plain leaf (returns no `nextPort`)                        | completed                                                                 |
+| A decision routes to a wired handle; other branches pruned  | completed, others `node_skipped`                                          |
+| A successful node whose only outgoing edges are error edges | completed — `nextPort` is undefined, so the success path is simply a leaf |
+| A `'continue'` failure on a leaf                            | completed                                                                 |
+| Nodes that never became ready (a cycle)                     | **failed** — see below                                                    |
+
+Failure always wins. An unhandled node failure returns before the terminal check, and the stall check runs ahead of it, so a run reports incomplete only where it would otherwise have reported completed.
+
+`Workflow stalled: nodes never became ready` stays a **failure** and keeps its own name. A stall is the scheduler genuinely unable to proceed — a cycle, or a dangling-edge bug — where an incomplete run has finished and simply did not reach everything. Two different conditions, two different words.
 
 ## Template references
 
@@ -191,7 +212,7 @@ In practice this means:
 - **Positional `Promise.all`.** Concurrent waves use `Promise.all`, which resolves with results in input order regardless of completion order. The runner reads positionally and never branches on which promise finished first; `Promise.race` and `Promise.any` are not used.
 - **No top-level side effects.** `graph-runner.ts` only exports function declarations. Nothing reads the environment or instantiates dated objects at import time.
 
-A regression test (`graph-runner.replay-determinism.test.ts`) runs each canonical topology (linear, fan-out, diamond, decision, failure, stall) ten times against an identical deterministic port mock and asserts the resulting sequence of `EventEmitterPort` calls, statuses, and activity invocations is byte-equivalent across runs.
+A regression test (`graph-runner.replay-determinism.test.ts`) runs each canonical topology (linear, fan-out, diamond, decision, skip, dead end, failure, stall) ten times against an identical deterministic port mock and asserts the resulting sequence of `EventEmitterPort` calls, statuses, and activity invocations is byte-equivalent across runs.
 
 A full audit — every potential source of non-determinism enumerated with a verdict, plus maintenance rules for future contributors — lives in [`replay-audit.md`](./replay-audit.md). Read it before adding code that runs inside `runGraph`.
 
@@ -213,7 +234,7 @@ export interface LoggerPort {
 
 ### Where logger lives
 
-`LoggerPort` is **not** passed into `runGraph`, and `runGraph` does **not** import it. The runner is re-exported from the sandbox-safe entry (`@workflow-builder/execution-core/workflow`) and runs inside Temporal's V8 workflow context, where every call to `new Date()` poisons history replay. Lifecycle signals (`execution_started/completed/failed`, `node_started/completed/failed`, `node_skipped`) already flow through `EventEmitterPort` — operators tail those for run-time observability of a workflow.
+`LoggerPort` is **not** passed into `runGraph`, and `runGraph` does **not** import it. The runner is re-exported from the sandbox-safe entry (`@workflow-builder/execution-core/workflow`) and runs inside Temporal's V8 workflow context, where every call to `new Date()` poisons history replay. Lifecycle signals (`execution_started/completed/incomplete/failed`, `node_started/completed/failed`, `node_skipped`) already flow through `EventEmitterPort` — operators tail those for run-time observability of a workflow.
 
 Use `LoggerPort` outside the sandbox — in HTTP routes, in activity executors (LLM calls, HTTP retries), at app startup.
 

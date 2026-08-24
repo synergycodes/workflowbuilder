@@ -15,7 +15,7 @@ import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
-const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+const TERMINAL_STATUSES = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
 
 export function createExecutionsRoutes(
   assertAuthorized: AssertAuthorized,

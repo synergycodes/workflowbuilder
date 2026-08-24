@@ -978,17 +978,19 @@ describe('runGraph — errorPolicy', () => {
     expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'hard' });
   });
 
-  it("'errorRoute' with no 'errorRoute' edge — workflow completes as a silent DLQ", async () => {
-    // No outgoing edge with sourceHandle 'errorRoute' means routing has nowhere to
-    // go. The runner emits node_failed and ends the run cleanly — useful when
-    // the caller just wants the failure recorded.
+  it("'errorRoute' with no 'errorRoute' edge — run ends incomplete, not as a silent DLQ", async () => {
+    // Behaviour reversal: this used to end the run cleanly, documented as a silent DLQ.
+    // The policy names a port, so 'errorRoute' with nothing wired to it is the same
+    // broken promise as a decision routing to a handle nobody connected. Deliberate
+    // absorption is what 'continue' is for.
     const runner = makeRunner({ A: { throws: 'boom' } });
     const events = makeEvents();
 
-    await runGraph(makeInput([start('A', 'errorRoute')], []), runner.port, events.port);
+    const outcome = await runGraph(makeInput([start('A', 'errorRoute')], []), runner.port, events.port);
 
     expect(events.events.some((event) => event.type === 'node_failed' && event.nodeId === 'A')).toBe(true);
-    expect(events.statuses.at(-1)?.status).toBe('completed');
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'A', port: 'errorRoute' }] });
+    expect(events.statuses.at(-1)?.status).toBe('incomplete');
   });
 
   it("'continue' does not fire edges tagged with the reserved 'errorRoute' source handle", async () => {
@@ -1174,5 +1176,156 @@ describe('runGraph — node_skipped emit failures', () => {
     expect(events.events.at(-1)?.type).toBe('execution_failed');
     expect(outcome).toEqual({ status: 'failed', error: { message: 'hard' } });
     expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'hard' });
+  });
+});
+
+describe('runGraph — incomplete runs (dead ends)', () => {
+  it('decision routes to an unwired handle — run ends incomplete and names the node and port', async () => {
+    // The motivating case: the edge for branch 'Y' was deleted, but the decision still
+    // picks 'Y'. Previously the run closed as completed with a chunk of graph never run.
+    const runner = makeRunner({ D: { output: { matchedBranch: 'Y' }, nextPort: 'Y' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('D'), trigger('B')], [edge('e1', 'D', 'B', 'X')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['D']);
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'Y' }] });
+    expect(events.events.at(-1)).toEqual({
+      type: 'execution_incomplete',
+      nodeId: undefined,
+      payload: { deadEnds: [{ nodeId: 'D', port: 'Y' }] },
+    });
+    expect(events.events.some((event) => event.type === 'execution_completed')).toBe(false);
+    expect(events.statuses.at(-1)).toEqual({ status: 'incomplete', errorMessage: undefined });
+  });
+
+  it('decision with no outgoing edges at all — same rule, no special case', async () => {
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
+
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'X' }] });
+  });
+
+  it('plain leaf returns no port — still a completed run', async () => {
+    // The negative case the rule hinges on: a branch that simply ends is not a dead end.
+    const runner = makeRunner();
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+  });
+
+  it('successful node whose only outgoing edges are error edges — still completed', async () => {
+    // A success with an unconnected error branch is a leaf as far as the success path is
+    // concerned: `nextPort` is undefined, so the rule must not fire. The case most likely
+    // to break under a careless refactor of the dead-end check.
+    const runner = makeRunner();
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('Recovery')], [edge('e1', 'A', 'Recovery', 'errorRoute')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A']);
+    expect(outcome).toEqual({ status: 'completed' });
+  });
+
+  it('a dead end does not stop the rest of the graph', async () => {
+    // Two legs off the start. Leg 1 dead-ends at D; leg 2 must still run to completion,
+    // and the run reports incomplete only at the end.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'gone' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('S'), trigger('D'), trigger('Leg2'), trigger('Leg2Prime')],
+        [edge('e1', 'S', 'D'), edge('e2', 'S', 'Leg2'), edge('e3', 'Leg2', 'Leg2Prime')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['S', 'D', 'Leg2', 'Leg2Prime']);
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'gone' }] });
+  });
+
+  it('several dead ends in one run are all collected', async () => {
+    // Both decisions DO have an outgoing edge — just on a handle neither of them picked,
+    // so X is pruned and skipped while both routes are recorded as dead ends.
+    const runner = makeRunner({
+      D1: { output: 'd1', nextPort: 'gone-1' },
+      D2: { output: 'd2', nextPort: 'gone-2' },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('S'), trigger('D1'), trigger('D2'), trigger('X')],
+        [edge('e1', 'S', 'D1'), edge('e2', 'S', 'D2'), edge('e3', 'D1', 'X', 'other'), edge('e4', 'D2', 'X', 'other')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({
+      status: 'incomplete',
+      deadEnds: [
+        { nodeId: 'D1', port: 'gone-1' },
+        { nodeId: 'D2', port: 'gone-2' },
+      ],
+    });
+  });
+
+  it('a fatal node failure takes precedence over a dead end', async () => {
+    // Both happen in the same wave. Failure returns early, so the run never reaches the
+    // terminal incomplete check and no execution_incomplete is emitted.
+    const runner = makeRunner({
+      D: { output: 'd', nextPort: 'gone' },
+      Boom: { throws: 'boom' },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('S'), trigger('D'), trigger('Boom')], [edge('e1', 'S', 'D'), edge('e2', 'S', 'Boom')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'boom' } });
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+    expect(events.statuses.at(-1)?.status).toBe('failed');
+  });
+
+  it('a cycle still fails rather than reporting incomplete', async () => {
+    // 'stalled' keeps meaning exactly one thing: nodes that never became ready. That is a
+    // genuine stall and stays a failure, deliberately not folded into 'incomplete'.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'gone' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('S'), trigger('D'), trigger('B'), trigger('C')],
+        [edge('e1', 'S', 'D'), edge('e2', 'S', 'B'), edge('e3', 'B', 'C'), edge('e4', 'C', 'B')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome.status).toBe('failed');
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
   });
 });

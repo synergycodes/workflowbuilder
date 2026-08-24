@@ -8,6 +8,7 @@ export type ExecutionEventType =
   | 'branch_spawned'
   | 'branches_joined'
   | 'execution_completed'
+  | 'execution_incomplete'
   | 'execution_failed'
   | 'execution_cancelled';
 
@@ -51,6 +52,15 @@ export type ExecutionCompletedPayload = {
 
 export type ExecutionCancelledPayload = {
   reason?: string;
+};
+
+export type DeadEnd = {
+  nodeId: string;
+  port: string;
+};
+
+export type ExecutionIncompletePayload = {
+  deadEnds: DeadEnd[];
 };
 
 type BaseEvent = {
@@ -108,6 +118,11 @@ export type ExecutionCompletedEvent = BaseEvent & {
   payload?: ExecutionCompletedPayload;
 };
 
+export type ExecutionIncompleteEvent = BaseEvent & {
+  type: 'execution_incomplete';
+  payload: ExecutionIncompletePayload;
+};
+
 export type ExecutionFailedEvent = BaseEvent & {
   type: 'execution_failed';
   payload: ExecutionErrorPayload;
@@ -128,6 +143,7 @@ export type ExecutionEvent =
   | BranchSpawnedEvent
   | BranchesJoinedEvent
   | ExecutionCompletedEvent
+  | ExecutionIncompleteEvent
   | ExecutionFailedEvent
   | ExecutionCancelledEvent;
 
@@ -138,4 +154,11 @@ export type ExecutionSnapshot = {
   events: ExecutionEvent[];
 };
 
-export type ExecutionStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelling' | 'cancelled';
+export type ExecutionStatus =
+  | 'pending'
+  | 'running'
+  | 'completed'
+  | 'incomplete'
+  | 'failed'
+  | 'cancelling'
+  | 'cancelled';
