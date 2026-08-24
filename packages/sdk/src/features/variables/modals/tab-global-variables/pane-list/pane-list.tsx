@@ -32,7 +32,7 @@ export function PaneList({ className, setActivePane }: Props) {
         description="workflowsSettings.tab.globalVariablesDescription"
       >
         <Button
-          variant="ghost-secondary"
+          variant="secondary"
           size="xs"
           prefixIcon={<Icon name="Plus" />}
           onClick={() => setActivePane(VARIABLE_PANE.ADD)}

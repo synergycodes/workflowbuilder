@@ -56,7 +56,7 @@ export function DeleteConfirmationButtons({ onDeleteClick, onCancelClick }: Dele
 
   return (
     <div className={styles['buttons']}>
-      <Button variant="ghost-secondary" onClick={onCancelClick}>
+      <Button variant="secondary" onClick={onCancelClick}>
         {t('deleteConfirmation.cancel')}
       </Button>
       <Button onClick={onDeleteClick} size="m" variant="critical" autoFocus>

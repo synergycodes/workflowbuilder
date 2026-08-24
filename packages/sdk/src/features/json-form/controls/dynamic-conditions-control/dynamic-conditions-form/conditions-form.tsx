@@ -102,7 +102,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
         <Button
           className={styles['add-button']}
           size="s"
-          variant="ghost-secondary"
+          variant="secondary"
           shape="square"
           prefixIcon={<Icon name="PlusCircle" />}
           aria-label="Add condition"
