@@ -1,18 +1,18 @@
 :root {
-  --ax-public-edge-label-gap: var(--wb-canvas-edge-label-gap);
-  --ax-public-edge-background-color: var(--wb-ui-bg-inset);
-  --ax-public-edge-label-color: var(--wb-ui-text-default);
+  --wb-public-edge-label-gap: var(--wb-canvas-edge-label-gap);
+  --wb-public-edge-background-color: var(--wb-ui-bg-inset);
+  --wb-public-edge-label-color: var(--wb-ui-text-default);
 
-  --ax-public-edge-label-border-size: var(--wb-canvas-edge-stroke-regular);
-  --ax-public-edge-label-border-size-selected: var(--wb-canvas-edge-stroke-bold);
+  --wb-public-edge-label-border-size: var(--wb-canvas-edge-stroke-regular);
+  --wb-public-edge-label-border-size-selected: var(--wb-canvas-edge-stroke-bold);
 
-  --ax-public-edge-label-border-style: solid;
-  --ax-public-edge-label-border-color: var(--wb-canvas-edge-stroke-default);
-  --ax-public-edge-label-border-color-selected: var(--wb-canvas-edge-stroke-active);
-  --ax-public-edge-label-border-color-hover: var(--wb-canvas-edge-stroke-hover);
+  --wb-public-edge-label-border-style: solid;
+  --wb-public-edge-label-border-color: var(--wb-canvas-edge-stroke-default);
+  --wb-public-edge-label-border-color-selected: var(--wb-canvas-edge-stroke-active);
+  --wb-public-edge-label-border-color-hover: var(--wb-canvas-edge-stroke-hover);
 
-  --ax-public-edge-label-color-disabled: var(--wb-ui-text-ghost-default);
-  --ax-public-edge-label-border-color-disabled: var(--wb-canvas-edge-stroke-disabled);
+  --wb-public-edge-label-color-disabled: var(--wb-ui-text-ghost-default);
+  --wb-public-edge-label-border-color-disabled: var(--wb-canvas-edge-stroke-disabled);
 }
 
 @layer ui.component {
@@ -21,19 +21,19 @@
     display: inline-flex;
     justify-content: center;
     align-items: center;
-    gap: var(--ax-public-edge-label-gap);
+    gap: var(--wb-public-edge-label-gap);
 
     pointer-events: auto;
 
     width: max-content;
 
-    background-color: var(--ax-public-edge-background-color);
-    color: var(--ax-public-edge-label-color);
+    background-color: var(--wb-public-edge-background-color);
+    color: var(--wb-public-edge-label-color);
 
-    border: var(--ax-public-edge-label-border-size) var(--ax-public-edge-label-border-style)
-      var(--ax-public-edge-label-border-color);
+    border: var(--wb-public-edge-label-border-size) var(--wb-public-edge-label-border-style)
+      var(--wb-public-edge-label-border-color);
 
-    transition: border var(--ax-public-transition);
+    transition: border var(--wb-public-transition);
 
     &:hover,
     &.hovered,
@@ -44,18 +44,18 @@
 
     &.hovered:not(.selected, .disabled, .temporary),
     &:hover:not(.selected, .disabled, .temporary) {
-      border-color: var(--ax-public-edge-label-border-color-hover);
+      border-color: var(--wb-public-edge-label-border-color-hover);
     }
 
     &.temporary,
     &.selected {
-      border-width: var(--ax-public-edge-label-border-size-selected);
-      border-color: var(--ax-public-edge-label-border-color-selected);
+      border-width: var(--wb-public-edge-label-border-size-selected);
+      border-color: var(--wb-public-edge-label-border-color-selected);
     }
 
     &.disabled {
-      color: var(--ax-public-edge-label-color-disabled);
-      border-color: var(--ax-public-edge-label-border-color-disabled);
+      color: var(--wb-public-edge-label-color-disabled);
+      border-color: var(--wb-public-edge-label-border-color-disabled);
     }
   }
 }

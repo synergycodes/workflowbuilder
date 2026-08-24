@@ -1,33 +1,33 @@
 :root {
-  --ax-public-input-padding-large: var(--wb-space-137) var(--wb-space-150);
-  --ax-public-input-padding-medium: var(--wb-space-125) var(--wb-space-150);
-  --ax-public-input-padding-small: var(--wb-space-100) var(--wb-space-150);
+  --wb-public-input-padding-large: var(--wb-space-137) var(--wb-space-150);
+  --wb-public-input-padding-medium: var(--wb-space-125) var(--wb-space-150);
+  --wb-public-input-padding-small: var(--wb-space-100) var(--wb-space-150);
 
-  --ax-public-input-border-radius-large: var(--wb-radius-100);
-  --ax-public-input-border-radius-medium: var(--wb-radius-75);
-  --ax-public-input-border-radius-small: var(--wb-radius-75);
+  --wb-public-input-border-radius-large: var(--wb-radius-100);
+  --wb-public-input-border-radius-medium: var(--wb-radius-75);
+  --wb-public-input-border-radius-small: var(--wb-radius-75);
 
-  --ax-public-input-gap-large: var(--wb-space-100);
-  --ax-public-input-gap-medium: var(--wb-space-100);
-  --ax-public-input-gap-small: var(--wb-space-100);
+  --wb-public-input-gap-large: var(--wb-space-100);
+  --wb-public-input-gap-medium: var(--wb-space-100);
+  --wb-public-input-gap-small: var(--wb-space-100);
 }
 
 @layer ui.component {
   .large {
-    padding: var(--ax-public-input-padding-large);
-    border-radius: var(--ax-public-input-border-radius-large);
-    gap: var(--ax-public-input-gap-large);
+    padding: var(--wb-public-input-padding-large);
+    border-radius: var(--wb-public-input-border-radius-large);
+    gap: var(--wb-public-input-gap-large);
   }
 
   .medium {
-    padding: var(--ax-public-input-padding-medium);
-    border-radius: var(--ax-public-input-border-radius-medium);
-    gap: var(--ax-public-input-gap-medium);
+    padding: var(--wb-public-input-padding-medium);
+    border-radius: var(--wb-public-input-border-radius-medium);
+    gap: var(--wb-public-input-gap-medium);
   }
 
   .small {
-    padding: var(--ax-public-input-padding-small);
-    border-radius: var(--ax-public-input-border-radius-small);
-    gap: var(--ax-public-input-gap-small);
+    padding: var(--wb-public-input-padding-small);
+    border-radius: var(--wb-public-input-border-radius-small);
+    gap: var(--wb-public-input-gap-small);
   }
 }

@@ -31,6 +31,7 @@ Example token categories:
 - **Spacing:** `--wb-space-50`, `--wb-space-100`, ..., `--wb-space-400`
 - **Border radius:** `--wb-radius-50`, `--wb-radius-100`, ..., `--wb-radius-300`
 - **Shadows:** `--wb-shadow-ui-xs-*`, `--wb-shadow-ui-s-*`, ..., `--wb-shadow-ui-xl-*`
+- **Component overrides:** `--wb-public-*`, with component-local UI variables shown in generated component-page tables
 
 Theming is done by overriding CSS custom properties. Create a CSS file with your overrides and import it after the default theme:
 
@@ -42,7 +43,7 @@ Theming is done by overriding CSS custom properties. Create a CSS file with your
 }
 ```
 
-Both light and dark mode tokens are defined separately, so you can customize each theme independently.
+Both light and dark mode tokens are defined separately, so you can customize each theme independently. Use a component's `--wb-public-*` variables when a change should not affect the shared token system.
 
 ## Light and dark mode
 

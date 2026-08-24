@@ -25,4 +25,4 @@ Provide the font yourself (via `@font-face`, `@fontsource/<font>`, etc.) — the
 
 ## Other tokens
 
-The SDK exposes its own `--wb-*` variables (background, scrollbar, transitions) plus the larger `--wb-*` design-token set re-exported from `@workflowbuilder/ui`. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
+The SDK exposes its own `--wb-*` variables (background, scrollbar, transitions), the generated design-token set from `@workflowbuilder/ui`, and `--wb-public-*` overrides for individual components. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.

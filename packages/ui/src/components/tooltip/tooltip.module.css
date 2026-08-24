@@ -1,19 +1,19 @@
 :root {
-  --ax-public-tooltip-default-background: var(--wb-components-tooltip-bg-default);
-  --ax-public-tooltip-blue-background: var(--wb-components-tooltip-bg-info);
-  --ax-public-tooltip-padding: var(--wb-space-100) var(--wb-space-150);
-  --ax-public-tooltip-radius-size: var(--wb-radius-100);
-  --ax-public-tooltip-text-color: var(--wb-ui-text-tooltip-default);
-  --ax-public-tooltip-blue-text-color: var(--wb-ui-text-tooltip-accent-default);
+  --wb-public-tooltip-default-background: var(--wb-components-tooltip-bg-default);
+  --wb-public-tooltip-blue-background: var(--wb-components-tooltip-bg-info);
+  --wb-public-tooltip-padding: var(--wb-space-100) var(--wb-space-150);
+  --wb-public-tooltip-radius-size: var(--wb-radius-100);
+  --wb-public-tooltip-text-color: var(--wb-ui-text-tooltip-default);
+  --wb-public-tooltip-blue-text-color: var(--wb-ui-text-tooltip-accent-default);
 }
 
 @layer ui.component {
   .container {
-    --tooltip-background: var(--ax-public-tooltip-default-background);
-    --tooltip-text-color: var(--ax-public-tooltip-text-color);
+    --tooltip-background: var(--wb-public-tooltip-default-background);
+    --tooltip-text-color: var(--wb-public-tooltip-text-color);
 
-    padding: var(--ax-public-tooltip-padding);
-    border-radius: var(--ax-public-tooltip-radius-size);
+    padding: var(--wb-public-tooltip-padding);
+    border-radius: var(--wb-public-tooltip-radius-size);
     width: max-content;
     max-width: 33vw;
     z-index: 100;
@@ -22,8 +22,8 @@
   }
 
   .container[data-tooltip-type='blue'] {
-    --tooltip-background: var(--ax-public-tooltip-blue-background);
-    --tooltip-text-color: var(--ax-public-tooltip-blue-text-color);
+    --tooltip-background: var(--wb-public-tooltip-blue-background);
+    --tooltip-text-color: var(--wb-public-tooltip-blue-text-color);
   }
 
   .arrow {

@@ -1,5 +1,5 @@
 :root {
-  --wb-settings-navigation-background: var(--ax-public-modal-header-background);
+  --wb-settings-navigation-background: var(--wb-public-modal-header-background);
 }
 
 .container {
@@ -36,7 +36,7 @@
 
   &:hover,
   &.button--active {
-    background: var(--ax-public-nav-button-background-color-hover);
+    background: var(--wb-public-nav-button-background-color-hover);
   }
 
   &.button--active {

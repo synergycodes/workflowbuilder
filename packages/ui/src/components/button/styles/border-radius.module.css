@@ -1,34 +1,34 @@
 :root {
-  --ax-public-button-border-radius-xl: var(--wb-radius-100);
-  --ax-public-button-border-radius-l: var(--wb-radius-100);
-  --ax-public-button-border-radius-m: var(--wb-radius-75);
-  --ax-public-button-border-radius-s: var(--wb-radius-50);
-  --ax-public-button-border-radius-xs: var(--wb-radius-50);
-  --ax-public-button-border-radius-round: var(--wb-radius-full);
+  --wb-public-button-border-radius-xl: var(--wb-radius-100);
+  --wb-public-button-border-radius-l: var(--wb-radius-100);
+  --wb-public-button-border-radius-m: var(--wb-radius-75);
+  --wb-public-button-border-radius-s: var(--wb-radius-50);
+  --wb-public-button-border-radius-xs: var(--wb-radius-50);
+  --wb-public-button-border-radius-round: var(--wb-radius-full);
 }
 
 @layer ui.component {
   .xl {
-    border-radius: var(--ax-public-button-border-radius-xl);
+    border-radius: var(--wb-public-button-border-radius-xl);
   }
 
   .l {
-    border-radius: var(--ax-public-button-border-radius-l);
+    border-radius: var(--wb-public-button-border-radius-l);
   }
 
   .m {
-    border-radius: var(--ax-public-button-border-radius-m);
+    border-radius: var(--wb-public-button-border-radius-m);
   }
 
   .s {
-    border-radius: var(--ax-public-button-border-radius-s);
+    border-radius: var(--wb-public-button-border-radius-s);
   }
 
   .xs {
-    border-radius: var(--ax-public-button-border-radius-xs);
+    border-radius: var(--wb-public-button-border-radius-xs);
   }
 
   .round {
-    border-radius: var(--ax-public-button-border-radius-round);
+    border-radius: var(--wb-public-button-border-radius-round);
   }
 }

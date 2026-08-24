@@ -1,19 +1,19 @@
 :root {
-  --ax-public-textarea-color: var(--wb-ui-text-default);
-  --ax-public-textarea-color-disabled: var(--wb-ui-text-ghost-default);
-  --ax-public-textarea-placeholder-color: var(--wb-ui-text-ghost-default);
-  --ax-public-textarea-root-background-color: var(--wb-ui-bg-base);
-  --ax-public-textarea-root-background-color-disabled: var(--wb-ui-bg-fill-disabled);
-  --ax-public-textarea-root-background-color-critical: var(--wb-components-text-field-bg-primary-critical);
-  --ax-public-textarea-root-background-color-success: var(--wb-components-text-field-bg-primary-success);
-  --ax-public-textarea-root-border-color: var(--wb-components-text-field-stroke-default);
-  --ax-public-textarea-root-border-color-hover: var(--wb-ui-stroke-default);
-  --ax-public-textarea-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
-  --ax-public-textarea-root-border-color-critical: var(--wb-components-text-field-stroke-critical);
-  --ax-public-textarea-root-border-color-success: var(--wb-components-text-field-stroke-success);
-  --ax-public-textarea-root-border-size: var(--wb-size-12);
-  --ax-public-textarea-root-icon-color: var(--wb-ui-text-subtle-default);
-  --ax-public-textarea-root-color-disabled: var(--wb-ui-text-ghost-default);
+  --wb-public-textarea-color: var(--wb-ui-text-default);
+  --wb-public-textarea-color-disabled: var(--wb-ui-text-ghost-default);
+  --wb-public-textarea-placeholder-color: var(--wb-ui-text-ghost-default);
+  --wb-public-textarea-root-background-color: var(--wb-ui-bg-base);
+  --wb-public-textarea-root-background-color-disabled: var(--wb-ui-bg-fill-disabled);
+  --wb-public-textarea-root-background-color-critical: var(--wb-components-text-field-bg-primary-critical);
+  --wb-public-textarea-root-background-color-success: var(--wb-components-text-field-bg-primary-success);
+  --wb-public-textarea-root-border-color: var(--wb-components-text-field-stroke-default);
+  --wb-public-textarea-root-border-color-hover: var(--wb-ui-stroke-default);
+  --wb-public-textarea-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
+  --wb-public-textarea-root-border-color-critical: var(--wb-components-text-field-stroke-critical);
+  --wb-public-textarea-root-border-color-success: var(--wb-components-text-field-stroke-success);
+  --wb-public-textarea-root-border-size: var(--wb-size-12);
+  --wb-public-textarea-root-icon-color: var(--wb-ui-text-subtle-default);
+  --wb-public-textarea-root-color-disabled: var(--wb-ui-text-ghost-default);
 }
 
 @layer ui.component {
@@ -22,37 +22,37 @@
     min-width: 0;
     width: 100%;
     align-items: flex-start;
-    background-color: var(--ax-public-textarea-root-background-color);
-    color: var(--ax-public-textarea-root-icon-color);
-    border: var(--ax-public-textarea-root-border-size) solid var(--ax-public-textarea-root-border-color);
+    background-color: var(--wb-public-textarea-root-background-color);
+    color: var(--wb-public-textarea-root-icon-color);
+    border: var(--wb-public-textarea-root-border-size) solid var(--wb-public-textarea-root-border-color);
 
     &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
-      border-color: var(--ax-public-textarea-root-border-color-hover);
+      border-color: var(--wb-public-textarea-root-border-color-hover);
     }
 
     &[data-state='critical']:not([data-disabled]) {
-      background-color: var(--ax-public-textarea-root-background-color-critical);
-      border-color: var(--ax-public-textarea-root-border-color-critical);
+      background-color: var(--wb-public-textarea-root-background-color-critical);
+      border-color: var(--wb-public-textarea-root-border-color-critical);
     }
 
     &[data-state='success']:not([data-disabled]) {
-      background-color: var(--ax-public-textarea-root-background-color-success);
-      border-color: var(--ax-public-textarea-root-border-color-success);
+      background-color: var(--wb-public-textarea-root-background-color-success);
+      border-color: var(--wb-public-textarea-root-border-color-success);
     }
 
     &[data-state='read-only']:not([data-disabled]),
     &[data-disabled] {
-      background-color: var(--ax-public-textarea-root-background-color-disabled);
-      border-color: var(--ax-public-textarea-root-border-color);
+      background-color: var(--wb-public-textarea-root-background-color-disabled);
+      border-color: var(--wb-public-textarea-root-border-color);
     }
 
     &[data-disabled] {
-      color: var(--ax-public-textarea-root-color-disabled);
+      color: var(--wb-public-textarea-root-color-disabled);
       cursor: not-allowed;
     }
 
     &:not([data-disabled]):focus-within {
-      border-color: var(--ax-public-textarea-root-border-color-focus);
+      border-color: var(--wb-public-textarea-root-border-color-focus);
     }
   }
 
@@ -74,7 +74,7 @@
     border: none;
     background: transparent;
     padding: 0;
-    color: var(--ax-public-textarea-color);
+    color: var(--wb-public-textarea-color);
     width: 100%;
     resize: none;
     font-family: inherit;
@@ -84,12 +84,12 @@
     }
 
     &:disabled {
-      color: var(--ax-public-textarea-color-disabled);
+      color: var(--wb-public-textarea-color-disabled);
       cursor: not-allowed;
     }
 
     &::placeholder {
-      color: var(--ax-public-textarea-placeholder-color);
+      color: var(--wb-public-textarea-placeholder-color);
       opacity: 1;
     }
   }
@@ -116,7 +116,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      color: var(--ax-public-textarea-color);
+      color: var(--wb-public-textarea-color);
     }
 
     &:focus-visible {

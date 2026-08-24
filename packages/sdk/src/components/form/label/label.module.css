@@ -1,15 +1,15 @@
 @layer ui.base, ui.component;
 
 :root {
-  --ax-public-form-label-color: var(--wb-ui-text-subtle-default);
-  --ax-public-form-label-asterisk-color: var(--wb-ui-text-critical-default);
+  --wb-public-form-label-color: var(--wb-ui-text-subtle-default);
+  --wb-public-form-label-asterisk-color: var(--wb-ui-text-critical-default);
 }
 
 @layer ui.component {
   .container {
     display: flex;
     gap: 0.25rem;
-    color: var(--ax-public-form-label-color);
+    color: var(--wb-public-form-label-color);
     align-items: center;
 
     .label {
@@ -24,7 +24,7 @@
       height: 0.625rem;
       min-width: 0.625rem;
 
-      color: var(--ax-public-form-label-asterisk-color);
+      color: var(--wb-public-form-label-asterisk-color);
     }
   }
 

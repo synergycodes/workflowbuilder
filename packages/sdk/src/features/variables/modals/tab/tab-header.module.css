@@ -1,5 +1,5 @@
 :root {
-  --settings-tab-header-border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
+  --settings-tab-header-border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
 }
 
 .container {

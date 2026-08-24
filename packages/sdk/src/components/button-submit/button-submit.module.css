@@ -11,7 +11,7 @@
 }
 
 .container--ghost-critical {
-  --spinner-color: var(--ax-public-button-ghost-critical-color);
+  --spinner-color: var(--wb-public-button-ghost-critical-color);
 }
 
 .container--pending button {

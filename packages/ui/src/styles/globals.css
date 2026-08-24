@@ -2,6 +2,6 @@
    into dist/styles.css, bypassing the PostCSS pipeline. */
 @layer ui.base {
   :root {
-    --ax-public-transition: 0.1s ease-in;
+    --wb-public-transition: 0.1s ease-in;
   }
 }

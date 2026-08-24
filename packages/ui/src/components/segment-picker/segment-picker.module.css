@@ -1,20 +1,20 @@
 :root {
-  --ax-public-segment-picker-gap: var(--wb-space-50);
-  --ax-public-segment-picker-padding: var(--wb-space-50);
-  --ax-public-segment-picker-background-color: var(--wb-ui-bg-inset);
-  --ax-public-segment-picker-circle-border-radius: var(--wb-radius-full);
+  --wb-public-segment-picker-gap: var(--wb-space-50);
+  --wb-public-segment-picker-padding: var(--wb-space-50);
+  --wb-public-segment-picker-background-color: var(--wb-ui-bg-inset);
+  --wb-public-segment-picker-circle-border-radius: var(--wb-radius-full);
 }
 
 @layer ui.component {
   .container {
     display: flex;
-    gap: var(--ax-public-segment-picker-gap);
-    padding: var(--ax-public-segment-picker-padding);
+    gap: var(--wb-public-segment-picker-gap);
+    padding: var(--wb-public-segment-picker-padding);
 
-    background-color: var(--ax-public-segment-picker-background-color);
+    background-color: var(--wb-public-segment-picker-background-color);
 
     &.circle {
-      border-radius: var(--ax-public-segment-picker-circle-border-radius);
+      border-radius: var(--wb-public-segment-picker-circle-border-radius);
       width: fit-content;
     }
 

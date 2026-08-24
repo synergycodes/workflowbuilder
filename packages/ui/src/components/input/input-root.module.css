@@ -3,37 +3,37 @@
     display: flex;
     align-items: center;
     cursor: text;
-    background-color: var(--ax-public-input-root-background-color);
-    border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
-    color: var(--ax-public-input-root-icon-color);
+    background-color: var(--wb-public-input-root-background-color);
+    border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
+    color: var(--wb-public-input-root-icon-color);
 
     &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
-      border-color: var(--ax-public-input-root-border-color-hover);
+      border-color: var(--wb-public-input-root-border-color-hover);
     }
 
     &[data-state='critical']:not([data-disabled]) {
-      background-color: var(--ax-public-input-root-background-color-critical);
-      border-color: var(--ax-public-input-root-border-color-critical);
+      background-color: var(--wb-public-input-root-background-color-critical);
+      border-color: var(--wb-public-input-root-border-color-critical);
     }
 
     &[data-state='success']:not([data-disabled]) {
-      background-color: var(--ax-public-input-root-background-color-success);
-      border-color: var(--ax-public-input-root-border-color-success);
+      background-color: var(--wb-public-input-root-background-color-success);
+      border-color: var(--wb-public-input-root-border-color-success);
     }
 
     &[data-state='read-only']:not([data-disabled]),
     &[data-disabled] {
-      background-color: var(--ax-public-input-root-background-color-disabled);
-      border-color: var(--ax-public-input-root-border-color);
+      background-color: var(--wb-public-input-root-background-color-disabled);
+      border-color: var(--wb-public-input-root-border-color);
     }
 
     &[data-disabled] {
-      color: var(--ax-public-input-root-color-disabled);
+      color: var(--wb-public-input-root-color-disabled);
       cursor: not-allowed;
     }
 
     &:not([data-disabled]):focus-within {
-      border-color: var(--ax-public-input-root-border-color-focus);
+      border-color: var(--wb-public-input-root-border-color-focus);
     }
   }
 
@@ -59,7 +59,7 @@
     cursor: pointer;
 
     &:hover:not(:disabled) {
-      color: var(--ax-public-input-color);
+      color: var(--wb-public-input-color);
     }
 
     &:focus-visible {

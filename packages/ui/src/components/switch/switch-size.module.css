@@ -1,48 +1,48 @@
 :root {
-  --ax-public-switch-width-medium: 1.875rem;
-  --ax-public-switch-height-medium: 1.25rem;
-  --ax-public-switch-thumb-padding-medium: var(--wb-size-37);
+  --wb-public-switch-width-medium: 1.875rem;
+  --wb-public-switch-height-medium: 1.25rem;
+  --wb-public-switch-thumb-padding-medium: var(--wb-size-37);
 
-  --ax-public-switch-width-small: 1.75rem;
-  --ax-public-switch-height-small: 1.125rem;
-  --ax-public-switch-thumb-padding-small: var(--wb-size-37);
+  --wb-public-switch-width-small: 1.75rem;
+  --wb-public-switch-height-small: 1.125rem;
+  --wb-public-switch-thumb-padding-small: var(--wb-size-37);
 
-  --ax-public-switch-width-extra-small: 1.625rem;
-  --ax-public-switch-height-extra-small: var(--wb-size-200);
-  --ax-public-switch-thumb-padding-extra-small: var(--wb-size-37);
+  --wb-public-switch-width-extra-small: 1.625rem;
+  --wb-public-switch-height-extra-small: var(--wb-size-200);
+  --wb-public-switch-thumb-padding-extra-small: var(--wb-size-37);
 }
 
 :root {
   --ax-switch-thumb-size-medium: calc(
-    var(--ax-public-switch-height-medium) - 2 * var(--ax-public-switch-thumb-padding-medium)
+    var(--wb-public-switch-height-medium) - 2 * var(--wb-public-switch-thumb-padding-medium)
   );
 
   --ax-switch-thumb-size-small: calc(
-    var(--ax-public-switch-height-small) - 2 * var(--ax-public-switch-thumb-padding-small)
+    var(--wb-public-switch-height-small) - 2 * var(--wb-public-switch-thumb-padding-small)
   );
 
   --ax-switch-thumb-size-extra-small: calc(
-    var(--ax-public-switch-height-extra-small) - 2 * var(--ax-public-switch-thumb-padding-extra-small)
+    var(--wb-public-switch-height-extra-small) - 2 * var(--wb-public-switch-thumb-padding-extra-small)
   );
 }
 
 @layer ui.base {
   .medium {
-    width: var(--ax-public-switch-width-medium);
-    height: var(--ax-public-switch-height-medium);
+    width: var(--wb-public-switch-width-medium);
+    height: var(--wb-public-switch-height-medium);
 
     & .thumb {
       width: var(--ax-switch-thumb-size-medium);
       height: var(--ax-switch-thumb-size-medium);
-      left: var(--ax-public-switch-thumb-padding-medium);
+      left: var(--wb-public-switch-thumb-padding-medium);
     }
 
     &[data-checked] {
       .thumb {
         transform: translateX(
           calc(
-            var(--ax-public-switch-width-medium) - var(--ax-switch-thumb-size-medium) - 2 *
-              var(--ax-public-switch-thumb-padding-medium) - var(--ax-public-switch-border-size)
+            var(--wb-public-switch-width-medium) - var(--ax-switch-thumb-size-medium) - 2 *
+              var(--wb-public-switch-thumb-padding-medium) - var(--wb-public-switch-border-size)
           )
         );
       }
@@ -50,21 +50,21 @@
   }
 
   .small {
-    width: var(--ax-public-switch-width-small);
-    height: var(--ax-public-switch-height-small);
+    width: var(--wb-public-switch-width-small);
+    height: var(--wb-public-switch-height-small);
 
     .thumb {
       width: var(--ax-switch-thumb-size-small);
       height: var(--ax-switch-thumb-size-small);
-      left: var(--ax-public-switch-thumb-padding-small);
+      left: var(--wb-public-switch-thumb-padding-small);
     }
 
     &[data-checked] {
       .thumb {
         transform: translateX(
           calc(
-            var(--ax-public-switch-width-small) - var(--ax-switch-thumb-size-small) - 2 *
-              var(--ax-public-switch-thumb-padding-small) - var(--ax-public-switch-border-size)
+            var(--wb-public-switch-width-small) - var(--ax-switch-thumb-size-small) - 2 *
+              var(--wb-public-switch-thumb-padding-small) - var(--wb-public-switch-border-size)
           )
         );
       }
@@ -72,21 +72,21 @@
   }
 
   .extra-small {
-    width: var(--ax-public-switch-width-extra-small);
-    height: var(--ax-public-switch-height-extra-small);
+    width: var(--wb-public-switch-width-extra-small);
+    height: var(--wb-public-switch-height-extra-small);
 
     .thumb {
       width: var(--ax-switch-thumb-size-extra-small);
       height: var(--ax-switch-thumb-size-extra-small);
-      left: var(--ax-public-switch-thumb-padding-extra-small);
+      left: var(--wb-public-switch-thumb-padding-extra-small);
     }
 
     &[data-checked] {
       .thumb {
         transform: translateX(
           calc(
-            var(--ax-public-switch-width-extra-small) - var(--ax-switch-thumb-size-extra-small) - 2 *
-              var(--ax-public-switch-thumb-padding-extra-small) - var(--ax-public-switch-border-size)
+            var(--wb-public-switch-width-extra-small) - var(--ax-switch-thumb-size-extra-small) - 2 *
+              var(--wb-public-switch-thumb-padding-extra-small) - var(--wb-public-switch-border-size)
           )
         );
       }

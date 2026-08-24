@@ -1,23 +1,23 @@
 :root {
-  --ax-public-node-icon-border-size: 0.0625rem;
-  --ax-public-node-icon-border-radius: var(--wb-canvas-node-head-icon-radius);
-  --ax-public-node-icon-padding: var(--wb-space-125);
+  --wb-public-node-icon-border-size: 0.0625rem;
+  --wb-public-node-icon-border-radius: var(--wb-canvas-node-head-icon-radius);
+  --wb-public-node-icon-padding: var(--wb-space-125);
 
-  --ax-public-node-icon-color: var(--wb-canvas-node-icon-primary);
-  --ax-public-node-icon-container-border-color: var(--wb-canvas-node-stroke-default);
-  --ax-public-node-icon-container-background-color: var(--wb-canvas-node-bg-secondary-default);
+  --wb-public-node-icon-color: var(--wb-canvas-node-icon-primary);
+  --wb-public-node-icon-container-border-color: var(--wb-canvas-node-stroke-default);
+  --wb-public-node-icon-container-background-color: var(--wb-canvas-node-bg-secondary-default);
 }
 
 @layer ui.component {
   .container {
     display: flex;
-    padding: var(--ax-public-node-icon-padding);
+    padding: var(--wb-public-node-icon-padding);
     justify-content: center;
     align-items: center;
-    color: var(--ax-public-node-icon-color);
+    color: var(--wb-public-node-icon-color);
 
-    border-radius: var(--ax-public-node-icon-border-radius);
-    border: var(--ax-public-node-icon-border-size) solid var(--ax-public-node-icon-container-border-color);
-    background: var(--ax-public-node-icon-container-background-color);
+    border-radius: var(--wb-public-node-icon-border-radius);
+    border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
+    background: var(--wb-public-node-icon-container-background-color);
   }
 }

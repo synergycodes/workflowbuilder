@@ -1,14 +1,14 @@
 :root {
-  --ax-public-select-border-size: var(--wb-size-12);
-  --ax-public-select-button-color: var(--wb-ui-text-default);
-  --ax-public-select-button-border-color: var(--wb-components-text-field-stroke-default);
-  --ax-public-select-button-border-color-focus: var(--wb-components-text-field-stroke-focus);
-  --ax-public-select-button-focus-ring-color: var(--wb-shadow-ui-focus);
-  --ax-public-select-button-color-disabled: var(--wb-components-text-field-stroke-default);
+  --wb-public-select-border-size: var(--wb-size-12);
+  --wb-public-select-button-color: var(--wb-ui-text-default);
+  --wb-public-select-button-border-color: var(--wb-components-text-field-stroke-default);
+  --wb-public-select-button-border-color-focus: var(--wb-components-text-field-stroke-focus);
+  --wb-public-select-button-focus-ring-color: var(--wb-shadow-ui-focus);
+  --wb-public-select-button-color-disabled: var(--wb-components-text-field-stroke-default);
 
-  --ax-public-select-button-background-color-error: var(--wb-components-text-field-bg-primary-critical);
-  --ax-public-select-button-border-color-error: var(--wb-components-text-field-stroke-critical);
-  --ax-public-select-button-color-error: var(--wb-ui-text-critical-default);
+  --wb-public-select-button-background-color-error: var(--wb-components-text-field-bg-primary-critical);
+  --wb-public-select-button-border-color-error: var(--wb-components-text-field-stroke-critical);
+  --wb-public-select-button-color-error: var(--wb-ui-text-critical-default);
 }
 
 @layer ui.component {
@@ -24,34 +24,34 @@
     background-color: transparent;
     cursor: pointer;
 
-    color: var(--ax-public-select-button-color);
+    color: var(--wb-public-select-button-color);
 
-    border: var(--ax-public-select-border-size) solid var(--ax-public-select-button-border-color);
+    border: var(--wb-public-select-border-size) solid var(--wb-public-select-button-border-color);
 
     &:not(:hover) {
-      transition: all var(--ax-public-transition);
+      transition: all var(--wb-public-transition);
     }
 
     &[data-popup-open] {
-      border-color: var(--ax-public-select-button-border-color-focus);
+      border-color: var(--wb-public-select-button-border-color-focus);
     }
 
     &.container--error {
-      background-color: var(--ax-public-select-button-background-color-error);
-      border-color: var(--ax-public-select-button-border-color-error);
-      color: var(--ax-public-select-button-color-error);
+      background-color: var(--wb-public-select-button-background-color-error);
+      border-color: var(--wb-public-select-button-border-color-error);
+      color: var(--wb-public-select-button-color-error);
     }
 
     &:focus-visible {
-      border-color: var(--ax-public-select-button-border-color-focus);
+      border-color: var(--wb-public-select-button-border-color-focus);
       outline: none;
       box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
         var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
-        var(--ax-public-select-button-focus-ring-color);
+        var(--wb-public-select-button-focus-ring-color);
     }
 
     &:disabled {
-      color: var(--ax-public-select-button-color-disabled);
+      color: var(--wb-public-select-button-color-disabled);
       cursor: auto;
     }
 

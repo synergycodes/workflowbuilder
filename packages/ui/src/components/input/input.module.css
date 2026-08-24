@@ -6,7 +6,7 @@
     border: none;
     background: transparent;
     padding: 0;
-    color: var(--ax-public-input-color);
+    color: var(--wb-public-input-color);
 
     white-space: nowrap;
     overflow: hidden;
@@ -17,12 +17,12 @@
     }
 
     &:disabled {
-      color: var(--ax-public-input-color-disabled);
+      color: var(--wb-public-input-color-disabled);
       cursor: not-allowed;
     }
 
     &::placeholder {
-      color: var(--ax-public-input-placeholder-color);
+      color: var(--wb-public-input-placeholder-color);
       opacity: 1;
     }
   }

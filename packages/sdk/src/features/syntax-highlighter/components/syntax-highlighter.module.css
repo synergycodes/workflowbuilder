@@ -30,19 +30,19 @@ html[data-theme='dark'] {
 }
 
 .container {
-  padding: var(--ax-public-input-padding-medium);
+  padding: var(--wb-public-input-padding-medium);
   padding-right: 0;
-  border-radius: var(--ax-public-input-border-radius-medium);
-  border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
-  /* border-bottom: 1px solid var(--ax-public-textarea-root-border-color); */
-  /* transition: all var(--ax-public-transition); */
+  border-radius: var(--wb-public-input-border-radius-medium);
+  border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
+  /* border-bottom: 1px solid var(--wb-public-textarea-root-border-color); */
+  /* transition: all var(--wb-public-transition); */
 
   * {
     font-family: monospace !important;
   }
 
   :global(.ace_editor) {
-    padding: var(--ax-public-input-padding-medium);
+    padding: var(--wb-public-input-padding-medium);
     color: var(--wb-syntax-highlighter-color) !important;
     background-color: transparent;
   }

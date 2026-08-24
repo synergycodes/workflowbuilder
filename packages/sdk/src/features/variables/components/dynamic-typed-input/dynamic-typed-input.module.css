@@ -7,7 +7,7 @@
 
 .container--select {
   position: relative;
-  border-radius: var(--ax-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-medium);
 
   > div > button {
     min-height: 2.5rem;
@@ -16,7 +16,7 @@
 }
 
 .date-picker {
-  border-radius: var(--ax-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-medium);
   min-height: 2.5rem;
   text-align: left;
 }

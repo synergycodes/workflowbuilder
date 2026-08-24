@@ -1,8 +1,8 @@
 :root {
-  --ax-public-button-background-color-disabled: var(--wb-components-button-solid-disabled);
-  --ax-public-button-focus-visible-box-shadow-color: var(--wb-ui-text-default);
-  --ax-public-button-inner-border-color: var(--wb-ui-bg-base);
-  --ax-public-button-color: var(--wb-ui-text-onaccent-default);
+  --wb-public-button-background-color-disabled: var(--wb-components-button-solid-disabled);
+  --wb-public-button-focus-visible-box-shadow-color: var(--wb-ui-text-default);
+  --wb-public-button-inner-border-color: var(--wb-ui-bg-base);
+  --wb-public-button-color: var(--wb-ui-text-onaccent-default);
 }
 
 @layer ui.base {
@@ -11,23 +11,23 @@
     align-items: center;
     justify-content: center;
     position: relative;
-    color: var(--ax-public-button-color);
+    color: var(--wb-public-button-color);
     border: unset;
     cursor: pointer;
 
     &:focus-visible {
       box-shadow:
-        0px 0px 0px 2px var(--ax-public-button-focus-visible-box-shadow-color),
-        inset 0 0 0 1px var(--ax-public-button-inner-border-color);
+        0px 0px 0px 2px var(--wb-public-button-focus-visible-box-shadow-color),
+        inset 0 0 0 1px var(--wb-public-button-inner-border-color);
       outline: none;
     }
 
     &:not(:hover) {
-      transition: all var(--ax-public-transition);
+      transition: all var(--wb-public-transition);
     }
 
     &:disabled {
-      background-color: var(--ax-public-button-background-color-disabled);
+      background-color: var(--wb-public-button-background-color-disabled);
       cursor: auto;
     }
   }

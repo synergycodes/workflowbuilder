@@ -1,29 +1,29 @@
 :root {
-  --ax-public-button-height-xl: var(--wb-size-600);
-  --ax-public-button-height-l: 2.625rem /* missing token */;
-  --ax-public-button-height-m: 2.25rem /* missing token */;
-  --ax-public-button-height-s: var(--wb-size-400);
-  --ax-public-button-height-xs: 1.75rem /* missing token */;
+  --wb-public-button-height-xl: var(--wb-size-600);
+  --wb-public-button-height-l: 2.625rem /* missing token */;
+  --wb-public-button-height-m: 2.25rem /* missing token */;
+  --wb-public-button-height-s: var(--wb-size-400);
+  --wb-public-button-height-xs: 1.75rem /* missing token */;
 }
 
 @layer ui.component {
   .xl {
-    height: var(--ax-public-button-height-xl);
+    height: var(--wb-public-button-height-xl);
   }
 
   .l {
-    height: var(--ax-public-button-height-l);
+    height: var(--wb-public-button-height-l);
   }
 
   .m {
-    height: var(--ax-public-button-height-m);
+    height: var(--wb-public-button-height-m);
   }
 
   .s {
-    height: var(--ax-public-button-height-s);
+    height: var(--wb-public-button-height-s);
   }
 
   .xs {
-    height: var(--ax-public-button-height-xs);
+    height: var(--wb-public-button-height-xs);
   }
 }

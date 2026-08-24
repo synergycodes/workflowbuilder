@@ -1,44 +1,44 @@
 :root {
-  --ax-public-node-width: 16.125rem;
-  --ax-public-node-height: 100%;
-  --ax-public-node-border-size: 0.0625rem;
+  --wb-public-node-width: 16.125rem;
+  --wb-public-node-height: 100%;
+  --wb-public-node-border-size: 0.0625rem;
 
-  --ax-public-node-padding: var(--wb-space-100);
-  --ax-public-node-gap: var(--wb-space-100);
-  --ax-public-node-border-radius: var(--wb-canvas-node-head-radius);
+  --wb-public-node-padding: var(--wb-space-100);
+  --wb-public-node-gap: var(--wb-space-100);
+  --wb-public-node-border-radius: var(--wb-canvas-node-head-radius);
 
-  --ax-public-node-border-color: var(--wb-canvas-node-stroke-default);
-  --ax-public-node-background-color: var(--wb-canvas-node-bg-primary-default);
-  --ax-public-node-hover-background-color: var(--wb-canvas-node-bg-primary-default);
-  --ax-public-node-border-hover-color: var(--wb-canvas-node-stroke-hover);
+  --wb-public-node-border-color: var(--wb-canvas-node-stroke-default);
+  --wb-public-node-background-color: var(--wb-canvas-node-bg-primary-default);
+  --wb-public-node-hover-background-color: var(--wb-canvas-node-bg-primary-default);
+  --wb-public-node-border-hover-color: var(--wb-canvas-node-stroke-hover);
 
-  --ax-public-node-border-color-selected: var(--wb-canvas-node-stroke-hover);
-  --ax-public-node-box-shadow-selected: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
+  --wb-public-node-border-color-selected: var(--wb-canvas-node-stroke-hover);
+  --wb-public-node-box-shadow-selected: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
     var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread) var(--wb-canvas-node-focus-active);
 }
 
 @layer ui.component {
   .node-panel-wrapper:hover .container {
-    background: var(--ax-public-node-hover-background-color);
-    border-color: var(--ax-public-node-border-hover-color);
+    background: var(--wb-public-node-hover-background-color);
+    border-color: var(--wb-public-node-border-hover-color);
   }
 
   .container {
     display: flex;
-    width: var(--ax-public-node-width);
-    height: var(--ax-public-node-height);
-    padding: var(--ax-public-node-padding);
-    gap: var(--ax-public-node-gap);
+    width: var(--wb-public-node-width);
+    height: var(--wb-public-node-height);
+    padding: var(--wb-public-node-padding);
+    gap: var(--wb-public-node-gap);
     align-items: center;
     flex-direction: column;
 
-    border-radius: var(--ax-public-node-border-radius);
-    border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
-    background: var(--ax-public-node-background-color);
+    border-radius: var(--wb-public-node-border-radius);
+    border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+    background: var(--wb-public-node-background-color);
 
     &.selected {
-      border-color: var(--ax-public-node-border-color-selected);
-      box-shadow: var(--ax-public-node-box-shadow-selected);
+      border-color: var(--wb-public-node-border-color-selected);
+      box-shadow: var(--wb-public-node-box-shadow-selected);
     }
 
     &:not(:hover) {
