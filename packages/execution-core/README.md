@@ -54,6 +54,7 @@ The mapped-type registry refuses to compile if a key drifts away from the union 
 ```
 src/
 ├── graph-runner.ts          # Topological scheduler over nodes/edges — engine-agnostic, generic in TNode
+├── resolve-start-node.ts    # Entry-shape rule: exactly one `role: 'start'` node, no orphans
 ├── execution-context.ts     # Readonly context passed to every node executor
 ├── ports/
 │   ├── workflow-engine.port.ts   # submit(), cancel() — implemented by adapters (TemporalEngine, …)

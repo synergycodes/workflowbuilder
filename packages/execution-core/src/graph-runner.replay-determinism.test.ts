@@ -80,6 +80,10 @@ function trigger(id: string): TestNode {
   return { id, type: 'test/node', config: {} };
 }
 
+function start(id: string): TestNode {
+  return { id, type: 'test/node', config: {}, role: 'start' };
+}
+
 function edge(id: string, source: string, target: string, sourceHandle?: string): WorkflowEdgeDefinition {
   return { id, sourceNodeId: source, targetNodeId: target, sourceHandle };
 }
@@ -129,7 +133,7 @@ const RUNS = 10;
 
 describe('runGraph — replay determinism (re-execution equivalence)', () => {
   it('linear A→B→C — every run produces the same activity order, events, statuses', async () => {
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
 
     const records = await runNTimes(input, {}, RUNS);
     expectAllRunsIdentical(records);
@@ -144,7 +148,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // Promise.all resolves with results in input order. The runner reads
     // them positionally, so the recorded event sequence must be identical
     // even though B and C run concurrently.
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]);
 
     const records = await runNTimes(input, {}, RUNS);
     expectAllRunsIdentical(records);
@@ -156,7 +160,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
 
   it('diamond A→{B,C}→D — fan-in join sees both upstreams in deterministic order', async () => {
     const input = makeInput(
-      [trigger('A'), trigger('B'), trigger('C'), trigger('D')],
+      [start('A'), trigger('B'), trigger('C'), trigger('D')],
       [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
     );
 
@@ -169,7 +173,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // The pruning decision in `propagate` comes from `nextPort` (data) and
     // `sourceHandle` (data) — both injected, no randomness possible. Pin it.
     const input = makeInput(
-      [trigger('D'), trigger('B'), trigger('C')],
+      [start('D'), trigger('B'), trigger('C')],
       [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')],
     );
 
@@ -182,7 +186,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // The catch branch builds errorPayload from the thrown error. Across
     // replays the activity returns the same error (cached in history), so
     // the same payload must surface. Pin it.
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
 
     const records = await runNTimes(input, { B: { throws: { message: 'slow down', code: 'rate_limited' } } }, RUNS);
     expectAllRunsIdentical(records);
@@ -198,7 +202,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // switched to Set or to Object.keys (no longer Map) could re-order the
     // stalled-nodes list and change the message. Pin both.
     const input = makeInput(
-      [trigger('A'), trigger('B'), trigger('C')],
+      [start('A'), trigger('B'), trigger('C')],
       [edge('e1', 'A', 'B'), edge('e2', 'B', 'C'), edge('e3', 'C', 'B')],
     );
 
@@ -212,10 +216,17 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
   it('asymmetric fan-in — depth-mismatched join waits for both, every run', async () => {
     // The scheduler's job is exactly this case (B depth 1, Aprime depth 2,
     // join at C). Replay determinism here doubles as a regression pin for
-    // the scheduling algorithm.
+    // the scheduling algorithm. S fans out to the two legs, since a second
+    // root is no longer a legal shape.
     const input = makeInput(
-      [trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
-      [edge('e1', 'A', 'Aprime'), edge('e2', 'Aprime', 'C'), edge('e3', 'B', 'C')],
+      [start('S'), trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
+      [
+        edge('e1', 'S', 'A'),
+        edge('e2', 'A', 'Aprime'),
+        edge('e3', 'Aprime', 'C'),
+        edge('e4', 'S', 'B'),
+        edge('e5', 'B', 'C'),
+      ],
     );
 
     const records = await runNTimes(input, {}, RUNS);

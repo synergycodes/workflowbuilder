@@ -16,6 +16,16 @@ describe('workflowSnapshotSchema', () => {
     expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
   });
 
+  it("keeps the editor's node kind so entrypoints stay identifiable", () => {
+    const snapshot = {
+      nodes: [{ id: 'n1', type: 'start-node', data: { type: 'my-product/trigger' } }],
+      edges: [],
+    };
+
+    const result = workflowSnapshotSchema.parse(snapshot);
+    expect(result.nodes[0]!.type).toBe('start-node');
+  });
+
   it('rejects a node missing `id`', () => {
     const snapshot = {
       nodes: [{ data: { type: 'x/y' } }],
@@ -149,6 +159,23 @@ describe('mapToExecutionModel', () => {
       { id: 'e2', sourceNodeId: 'a', targetNodeId: 'c', sourceHandle: undefined },
       { id: 'e3', sourceNodeId: 'a', targetNodeId: 'd', sourceHandle: 'branch-x' },
     ]);
+  });
+
+  it("lifts the editor's start-node kind to role 'start'", () => {
+    const result = mapToExecutionModel('wf-1', {
+      nodes: [
+        { id: 'n1', type: 'start-node', data: { type: 'my-product/trigger' } },
+        { id: 'n2', type: 'node', data: { type: 'my-product/action' } },
+        { id: 'n3', data: { type: 'my-product/action' } },
+      ],
+      edges: [],
+    });
+
+    // Only the start node carries a role; the runner reads it to pick entrypoints
+    // instead of inferring them from in-degree.
+    expect(result.nodes[0]!.role).toBe('start');
+    expect(result.nodes[1]!.role).toBeUndefined();
+    expect(result.nodes[2]!.role).toBeUndefined();
   });
 
   it('passes unknown node types through unchanged — backend does not know any vocabulary', () => {

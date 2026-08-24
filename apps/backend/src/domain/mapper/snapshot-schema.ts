@@ -8,6 +8,12 @@ import { z } from 'zod';
 
 const frontendNodeSchema = z.object({
   id: z.string(),
+  // The editor's node kind (`start-node`, `node`, `decision-node`, ...), as
+  // opposed to `data.type`, which is the product's own vocabulary. Kept because
+  // the runner needs to know which nodes are entrypoints: zod strips whatever it
+  // is not told about, and dropping this is what let a node with no incoming
+  // edge act as a second trigger.
+  type: z.string().optional(),
   data: z.object({
     type: z.string(),
     properties: z.record(z.string(), z.unknown()).optional(),

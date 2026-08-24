@@ -2,6 +2,7 @@ import {
   type BaseNode,
   NODE_ERROR_POLICIES,
   type NodeErrorPolicy,
+  type NodeRole,
   type WorkflowDefinition,
   type WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
@@ -16,6 +17,12 @@ type FrontendEdge = WorkflowSnapshot['edges'][number];
 // out of sync with the runner's union.
 const ERROR_POLICIES: ReadonlySet<NodeErrorPolicy> = new Set(NODE_ERROR_POLICIES);
 
+// The editor's kind for an entrypoint node, mirroring `NodeType.StartNode` in
+// `@workflowbuilder/sdk`. Spelled out as a literal rather than imported: the
+// backend deliberately does not depend on the React SDK. If the SDK renames the
+// kind, this has to move with it.
+const START_NODE_KIND = 'start-node';
+
 // Structural pass-through. The backend treats nodes as opaque `{ id, type, config }`;
 // the worker narrows `config` against its own concrete node union when it dispatches
 // the executor. Unknown types reach the worker and fail there as `node_failed`.
@@ -25,18 +32,21 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// `errorPolicy` is authored in the UI as a regular JSONForms property
-// (via `sharedProperties` in the SDK), so it arrives nested in
-// `data.properties`. The runner expects it at the top level of `BaseNode`,
-// so we lift it here and keep `config` free of runner-only fields.
+// Two runner-level fields are lifted out of the frontend shape here so `config`
+// stays free of them. `errorPolicy` is authored in the UI as a regular JSONForms
+// property (via `sharedProperties` in the SDK) and arrives nested in
+// `data.properties`. `role` is derived from the editor's node kind, which lives
+// on the node itself rather than in its properties.
 function mapNode(node: FrontendNode): BaseNode {
   const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
+  const role: NodeRole | undefined = node.type === START_NODE_KIND ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,
     config,
     ...(errorPolicy === undefined ? {} : { errorPolicy }),
+    ...(role === undefined ? {} : { role }),
   };
 }
 

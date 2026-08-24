@@ -82,6 +82,12 @@ function trigger(id: string, errorPolicy?: NodeErrorPolicy): TestNode {
     : { id, type: 'test/node', config: {}, errorPolicy };
 }
 
+function start(id: string, errorPolicy?: NodeErrorPolicy): TestNode {
+  return errorPolicy === undefined
+    ? { id, type: 'test/node', config: {}, role: 'start' }
+    : { id, type: 'test/node', config: {}, role: 'start', errorPolicy };
+}
+
 function edge(id: string, source: string, target: string, sourceHandle?: string): WorkflowEdgeDefinition {
   return { id, sourceNodeId: source, targetNodeId: target, sourceHandle };
 }
@@ -109,7 +115,7 @@ describe('runGraph — topological scheduling', () => {
     const events = makeEvents();
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -126,7 +132,7 @@ describe('runGraph — topological scheduling', () => {
     const events = makeEvents();
 
     await runGraph(
-      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]),
+      makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]),
       runner.port,
       events.port,
     );
@@ -145,7 +151,7 @@ describe('runGraph — topological scheduling', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('B'), trigger('C'), trigger('D')],
+        [start('A'), trigger('B'), trigger('C'), trigger('D')],
         [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
       ),
       runner.port,
@@ -159,17 +165,27 @@ describe('runGraph — topological scheduling', () => {
     expect(runner.callOrder.filter((id) => id === 'D')).toHaveLength(1);
   });
 
-  it('asymmetric fan-in A→Aprime→C, B→C — C waits for BOTH', async () => {
-    // The canonical fan-in bug: B is depth 1, Aprime is depth 2.
+  it('asymmetric fan-in S→A→Aprime→C, S→B→C — C waits for BOTH', async () => {
+    // The canonical fan-in bug: from the start, B is depth 1 and Aprime is depth 2.
     // Old BFS scheduled C in wave 2 alongside Aprime → C ran without nodeOutputs[Aprime].
     // New algorithm: C waits until BOTH B and Aprime complete.
+    //
+    // The asymmetry used to come from B being a second root. With exactly one start
+    // required, S fans out to the two legs of differing depth instead — same shape
+    // for the scheduler, one legal entrypoint.
     const runner = makeRunner();
     const events = makeEvents();
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
-        [edge('e1', 'A', 'Aprime'), edge('e2', 'Aprime', 'C'), edge('e3', 'B', 'C')],
+        [start('S'), trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
+        [
+          edge('e1', 'S', 'A'),
+          edge('e2', 'A', 'Aprime'),
+          edge('e3', 'Aprime', 'C'),
+          edge('e4', 'S', 'B'),
+          edge('e5', 'B', 'C'),
+        ],
       ),
       runner.port,
       events.port,
@@ -183,23 +199,7 @@ describe('runGraph — topological scheduling', () => {
     expect(indexAprime).toBeLessThan(indexC);
     expect(indexB).toBeLessThan(indexC);
     // C sees both upstreams in nodeOutputs
-    expect(runner.contexts.C).toEqual({ A: 'out-A', Aprime: 'out-Aprime', B: 'out-B' });
-  });
-
-  it('multi-entrypoint — independent roots run together', async () => {
-    const runner = makeRunner();
-    const events = makeEvents();
-
-    await runGraph(
-      makeInput([trigger('R1'), trigger('R2'), trigger('Out')], [edge('e1', 'R1', 'Out'), edge('e2', 'R2', 'Out')]),
-      runner.port,
-      events.port,
-    );
-
-    // Both R1 and R2 run before Out
-    expect(runner.callOrder.slice(0, 2).sort()).toEqual(['R1', 'R2']);
-    expect(runner.callOrder.at(-1)).toBe('Out');
-    expect(runner.contexts.Out).toEqual({ R1: 'out-R1', R2: 'out-R2' });
+    expect(runner.contexts.C).toEqual({ S: 'out-S', A: 'out-A', Aprime: 'out-Aprime', B: 'out-B' });
   });
 
   it('decision routing — node reachable only via pruned branch is skipped silently', async () => {
@@ -210,7 +210,7 @@ describe('runGraph — topological scheduling', () => {
     const events = makeEvents();
 
     await runGraph(
-      makeInput([trigger('D'), trigger('B'), trigger('C')], [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')]),
+      makeInput([start('D'), trigger('B'), trigger('C')], [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')]),
       runner.port,
       events.port,
     );
@@ -231,7 +231,7 @@ describe('runGraph — topological scheduling', () => {
 
     await runGraph(
       makeInput(
-        [trigger('D'), trigger('B'), trigger('C'), trigger('E')],
+        [start('D'), trigger('B'), trigger('C'), trigger('E')],
         [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y'), edge('e3', 'B', 'E'), edge('e4', 'C', 'E')],
       ),
       runner.port,
@@ -252,7 +252,7 @@ describe('runGraph — topological scheduling', () => {
 
     await runGraph(
       makeInput(
-        [trigger('D'), trigger('B'), trigger('C'), trigger('Cprime'), trigger('E')],
+        [start('D'), trigger('B'), trigger('C'), trigger('Cprime'), trigger('E')],
         [
           edge('e1', 'D', 'B', 'X'),
           edge('e2', 'D', 'C', 'Y'),
@@ -277,7 +277,7 @@ describe('runGraph — topological scheduling', () => {
     const events = makeEvents();
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -290,21 +290,27 @@ describe('runGraph — topological scheduling', () => {
     expect(outcome).toEqual({ status: 'failed', error: { message: 'boom' } });
   });
 
-  it('fails the run when there is no entrypoint', async () => {
+  it('a graph rejected by the start-node rule fails the run before any node executes', async () => {
+    // The rule itself — missing start, duplicate starts, an edge back into the start,
+    // orphans — is covered in resolve-start-node.test.ts. What matters here is the
+    // wiring: a rejected graph fails the execution, reports the reason, and runs
+    // nothing. Orphan is the motivating shape: its only edge was deleted, so inferring
+    // roots from in-degree would run it in wave 1 with no upstream output and still
+    // feed its result downstream.
     const runner = makeRunner();
     const events = makeEvents();
 
-    // Cycle with no in-degree-zero node
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
+      makeInput([start('T'), trigger('A'), trigger('Orphan')], [edge('e1', 'T', 'A')]),
       runner.port,
       events.port,
     );
 
-    expect(outcome).toEqual({ status: 'failed', error: { message: 'Workflow has no entrypoint node' } });
+    const message = 'Workflow has orphaned nodes (no incoming edge and not a start node): Orphan';
+    expect(outcome).toEqual({ status: 'failed', error: { message } });
     expect(runner.callOrder).toEqual([]);
     expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'execution_failed']);
-    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'Workflow has no entrypoint node' });
+    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: message });
   });
 
   it('cycle reachable from an entrypoint fails the workflow with a stalled-node message', async () => {
@@ -318,7 +324,7 @@ describe('runGraph — topological scheduling', () => {
 
     const outcome = await runGraph(
       makeInput(
-        [trigger('A'), trigger('B'), trigger('C')],
+        [start('A'), trigger('B'), trigger('C')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'C'), edge('e3', 'C', 'B')],
       ),
       runner.port,
@@ -351,7 +357,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A'), trigger('D')], [edge('e1', 'A', 'D')]), runner, events.port);
+    await runGraph(makeInput([start('A'), trigger('D')], [edge('e1', 'A', 'D')]), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'D');
     expect(nodeFailed?.payload).toEqual({
@@ -377,7 +383,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({ error: { message: 'boom' } });
@@ -401,7 +407,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({
@@ -424,7 +430,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+    await runGraph(makeInput([start('A')], []), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed');
     expect(nodeFailed?.payload).toEqual({ error: { message: 'rate limit exceeded' } });
@@ -450,7 +456,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+    await runGraph(makeInput([start('A')], []), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed');
     expect(nodeFailed).toBeDefined();
@@ -475,7 +481,7 @@ describe('runGraph — topological scheduling', () => {
     };
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A')], []), runner, events.port);
+    await runGraph(makeInput([start('A')], []), runner, events.port);
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed');
     expect(nodeFailed?.payload).toEqual({
@@ -525,7 +531,7 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     const events = makeEvents();
 
     await runGraph(
-      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]),
+      makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]),
       runner.port,
       events.port,
     );
@@ -538,7 +544,7 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     const runner = makeRunner({ B: { throws: 'boom' } });
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
 
     expect(events.statuses.at(-1)?.status).toBe('failed');
     expect(events.events.some((event) => event.type === 'node_failed' && event.nodeId === 'B')).toBe(true);
@@ -553,7 +559,7 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('B'), trigger('C')],
+        [start('A'), trigger('B'), trigger('C')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'C'), edge('e3', 'C', 'B')],
       ),
       runner.port,
@@ -567,19 +573,21 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     expectNoConsoleWrites();
   });
 
-  it('a missing entrypoint writes nothing to console — surfaces via execution_failed event', async () => {
+  it('a missing start node writes nothing to console — surfaces via execution_failed event', async () => {
     const runner = makeRunner();
     const events = makeEvents();
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'A')]),
+      makeInput([trigger('A'), trigger('B')], [edge('e1', 'A', 'B')]),
       runner.port,
       events.port,
     );
 
     expect(outcome.status).toBe('failed');
     const failedEvent = events.events.find((event) => event.type === 'execution_failed');
-    expect(failedEvent?.payload).toEqual({ error: { message: 'Workflow has no entrypoint node' } });
+    expect(failedEvent?.payload).toEqual({
+      error: { message: 'Workflow has no start node: exactly one node must be marked as the start node' },
+    });
     expectNoConsoleWrites();
   });
 });
@@ -590,7 +598,7 @@ describe('runGraph — errorPolicy', () => {
     const events = makeEvents({ type: 'node_started', nodeId: 'B', message: 'events table unreachable' });
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -607,7 +615,7 @@ describe('runGraph — errorPolicy', () => {
     const events = makeEvents({ type: 'node_started', nodeId: 'B', message: 'events table unreachable' });
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -623,7 +631,7 @@ describe('runGraph — errorPolicy', () => {
 
     const outcome = await runGraph(
       makeInput(
-        [trigger('A'), trigger('B', 'errorRoute'), trigger('Recover'), trigger('Success')],
+        [start('A'), trigger('B', 'errorRoute'), trigger('Recover'), trigger('Success')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'Recover', 'errorRoute'), edge('e3', 'B', 'Success')],
       ),
       runner.port,
@@ -640,7 +648,7 @@ describe('runGraph — errorPolicy', () => {
     const events = makeEvents();
 
     await runGraph(
-      makeInput([trigger('A'), trigger('B', 'fail'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B', 'fail'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -654,7 +662,7 @@ describe('runGraph — errorPolicy', () => {
     const events = makeEvents();
 
     const outcome = await runGraph(
-      makeInput([trigger('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner.port,
       events.port,
     );
@@ -679,7 +687,7 @@ describe('runGraph — errorPolicy', () => {
     const events = makeEvents();
 
     await runGraph(
-      makeInput([trigger('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      makeInput([start('A'), trigger('B', 'continue'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
       runner,
       events.port,
     );
@@ -697,7 +705,7 @@ describe('runGraph — errorPolicy', () => {
 
     const outcome = await runGraph(
       makeInput(
-        [trigger('A'), trigger('B', 'errorRoute'), trigger('Success'), trigger('Recovery')],
+        [start('A'), trigger('B', 'errorRoute'), trigger('Success'), trigger('Recovery')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'Success', 'success'), edge('e3', 'B', 'Recovery', 'errorRoute')],
       ),
       runner.port,
@@ -720,7 +728,7 @@ describe('runGraph — errorPolicy', () => {
     await runGraph(
       makeInput(
         [
-          trigger('A'),
+          start('A'),
           trigger('B', 'errorRoute'),
           trigger('Success'),
           trigger('SuccessPrime'),
@@ -749,7 +757,7 @@ describe('runGraph — errorPolicy', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('B', 'continue'), trigger('C'), trigger('D')],
+        [start('A'), trigger('B', 'continue'), trigger('C'), trigger('D')],
         [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
       ),
       runner.port,
@@ -776,7 +784,7 @@ describe('runGraph — errorPolicy', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('B', 'continue'), trigger('C', 'fail')],
+        [start('A'), trigger('B', 'continue'), trigger('C', 'fail')],
         [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')],
       ),
       runner.port,
@@ -793,7 +801,7 @@ describe('runGraph — errorPolicy', () => {
     const runner = makeRunner({ A: { throws: 'boom' } });
     const events = makeEvents();
 
-    await runGraph(makeInput([trigger('A', 'errorRoute')], []), runner.port, events.port);
+    await runGraph(makeInput([start('A', 'errorRoute')], []), runner.port, events.port);
 
     expect(events.events.some((event) => event.type === 'node_failed' && event.nodeId === 'A')).toBe(true);
     expect(events.statuses.at(-1)?.status).toBe('completed');
@@ -808,7 +816,7 @@ describe('runGraph — errorPolicy', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('B', 'continue'), trigger('Success'), trigger('ErrorBranch')],
+        [start('A'), trigger('B', 'continue'), trigger('Success'), trigger('ErrorBranch')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'Success'), edge('e3', 'B', 'ErrorBranch', 'errorRoute')],
       ),
       runner.port,
@@ -828,7 +836,7 @@ describe('runGraph — errorPolicy', () => {
 
     await runGraph(
       makeInput(
-        [trigger('A'), trigger('Success'), trigger('ErrorBranch')],
+        [start('A'), trigger('Success'), trigger('ErrorBranch')],
         [edge('e1', 'A', 'Success'), edge('e2', 'A', 'ErrorBranch', 'errorRoute')],
       ),
       runner.port,
