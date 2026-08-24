@@ -27,8 +27,6 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         mode={mode}
         theme="github_light_default"
         onChange={onChange}
-        fontSize={12}
-        lineHeight={16}
         showPrintMargin={false}
         showGutter={false}
         highlightActiveLine={false}

@@ -15,7 +15,7 @@ export function PaletteHeader({ onClick, isSidebarExpanded }: PaletteHeaderProps
 
   return (
     <div className={styles['container']}>
-      <span className="ax-public-h7">{t('palette.nodesLibrary')}</span>
+      <span className="wb-text-title-m-emphasized">{t('palette.nodesLibrary')}</span>
       <NavButton
         aria-label={isSidebarExpanded ? t('tooltips.closePalette') : t('tooltips.openPalette')}
         size="s"

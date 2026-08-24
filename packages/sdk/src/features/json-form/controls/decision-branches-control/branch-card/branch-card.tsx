@@ -59,7 +59,7 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
   return (
     <div className={styles['branch-card']}>
       <div className={styles['header']}>
-        <h1 className="ax-public-h10">{t('decisionBranches.branch', { index: index + 1 })}</h1>
+        <h1 className="wb-text-body-s-emphasized">{t('decisionBranches.branch', { index: index + 1 })}</h1>
         <div className={styles['actions']}>
           <NavButton
             aria-label={t('common.edit')}
@@ -80,7 +80,7 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
         </FormControlWithLabel>
       </div>
       <button
-        className={clsx(styles['conditions-chip'], 'ax-public-p11', {
+        className={clsx(styles['conditions-chip'], 'wb-text-label-s', {
           [styles['no-conditions']]: conditionCount === 0,
         })}
         onClick={onClickEdit}

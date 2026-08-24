@@ -205,12 +205,11 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 ```css
 :root {
   --wb-background-color: #fafafa;
-  --wb-font-family: 'Inter', system-ui, sans-serif;
   --wb-transition: 0.15s ease-in;
 }
 ```
 
-Available `--wb-*` tokens: `--wb-background-color`, `--wb-font-family`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`).
+Available `--wb-*` tokens: `--wb-background-color`, `--wb-transition`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`). Built-in editor text uses bundled type styles: semantic `wb-text-*` roles on migrated surfaces and Poppins-backed deprecated classes on remaining UI primitives. `--wb-font-family` remains available for consumer-owned surfaces that opt into `font-family: var(--wb-font-family)`; overriding it no longer rethemes built-in text.
 
 Deeper color and spacing customization goes through the generated `--wb-*` design-token layer from `@workflowbuilder/ui`. Hand-authored overrides use `--wb-public-*`. The UI Library's component pages include generated CSS-variable tables for component-local UI overrides. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 

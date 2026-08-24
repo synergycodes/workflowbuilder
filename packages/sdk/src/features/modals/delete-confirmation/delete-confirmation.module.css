@@ -9,7 +9,7 @@
     font-weight: 700;
   }
 
-  composes: ax-public-p9 from global;
+  composes: wb-text-body-m from global;
   user-select: none;
 }
 

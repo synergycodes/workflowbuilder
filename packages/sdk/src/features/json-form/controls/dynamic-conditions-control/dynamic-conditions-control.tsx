@@ -43,7 +43,7 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
   return (
     <div className={styles['container']}>
       <div className={styles['header']}>
-        <span className={clsx('ax-public-h10', styles['title'])}>{t('title')}</span>
+        <span className={clsx('wb-text-body-s-emphasized', styles['title'])}>{t('title')}</span>
         <NavButton
           aria-label={t('title')}
           size="s"

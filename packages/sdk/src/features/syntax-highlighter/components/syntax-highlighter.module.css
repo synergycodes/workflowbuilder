@@ -30,6 +30,7 @@ html[data-theme='dark'] {
 }
 
 .container {
+  composes: wb-text-code from global;
   padding: var(--wb-public-input-padding-medium);
   padding-right: 0;
   border-radius: var(--wb-public-input-border-radius-medium);
@@ -37,11 +38,10 @@ html[data-theme='dark'] {
   /* border-bottom: 1px solid var(--wb-public-textarea-root-border-color); */
   /* transition: all var(--wb-public-transition); */
 
-  * {
-    font-family: monospace !important;
-  }
-
   :global(.ace_editor) {
+    /* Ace positions content from one measured glyph width, so its editor must remain monospaced. */
+    font: inherit !important;
+    font-family: monospace !important;
     padding: var(--wb-public-input-padding-medium);
     color: var(--wb-syntax-highlighter-color) !important;
     background-color: transparent;

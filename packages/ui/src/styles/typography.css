@@ -13,6 +13,7 @@
   .ax-public-h10,
   .ax-public-h11,
   .ax-public-h12 {
+    font-family: 'Poppins', system-ui, sans-serif;
     font-weight: 600;
   }
 
@@ -28,6 +29,7 @@
   .ax-public-p10,
   .ax-public-p11,
   .ax-public-p12 {
+    font-family: 'Poppins', system-ui, sans-serif;
     font-weight: 400;
   }
 
@@ -130,6 +132,7 @@
   .ax-public-button-medium,
   .ax-public-button-small,
   .ax-public-button-extra-small {
+    font-family: 'Poppins', system-ui, sans-serif;
     font-weight: 600;
     line-height: 100%;
   }
@@ -151,6 +154,12 @@
   }
 
   /* Edge Label */
+
+  .ax-public-edge-label-medium,
+  .ax-public-edge-label-small,
+  .ax-public-edge-label-extra-small {
+    font-family: 'Poppins', system-ui, sans-serif;
+  }
 
   .ax-public-edge-label-medium {
     font-size: 0.75rem;

@@ -28,6 +28,7 @@
   }
 
   .calendar {
+    composes: wb-text-body-s from global;
     background: var(--wb-public-date-picker-dropdown-background);
     border: var(--wb-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
     border-radius: var(--wb-radius-100);

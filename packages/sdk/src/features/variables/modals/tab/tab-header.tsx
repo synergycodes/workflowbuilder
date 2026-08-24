@@ -32,9 +32,9 @@ export function TabHeader({ title, description, onGoBack, children, className = 
         />
       )}
       <div className={styles['content']}>
-        <h4 className={clsx('ax-public-h7', styles['title'])}>{translateIfPossible(title) || title}</h4>
+        <h4 className={clsx('wb-text-title-m-emphasized', styles['title'])}>{translateIfPossible(title) || title}</h4>
         {description && (
-          <p className={clsx('ax-public-p10', styles['description'])}>
+          <p className={clsx('wb-text-body-s', styles['description'])}>
             {translateIfPossible(description) || description}
           </p>
         )}

@@ -5,7 +5,7 @@
 }
 
 .container {
-  composes: ax-public-p11 from global;
+  composes: wb-text-body-s from global;
   color: var(--wb-public-form-rich-text-color);
 
   a {

@@ -39,7 +39,7 @@ html[data-theme='dark'] .container--warning {
 }
 
 .content {
-  composes: ax-public-p11 from global;
+  composes: wb-text-body-s from global;
 
   padding-top: 1px;
 }

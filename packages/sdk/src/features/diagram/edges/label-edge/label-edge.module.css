@@ -1,5 +1,5 @@
 .label {
-  composes: ax-public-p10 from global;
+  composes: wb-text-body-s from global;
 
   position: absolute;
   pointer-events: auto;

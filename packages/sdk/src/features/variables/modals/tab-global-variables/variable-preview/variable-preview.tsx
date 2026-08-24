@@ -48,7 +48,7 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
           )}
         </div>
       </div>
-      <p className={clsx('ax-public-p11', styles['description'])}>{variable.description}</p>
+      <p className={clsx('wb-text-body-s', styles['description'])}>{variable.description}</p>
     </div>
   );
 }

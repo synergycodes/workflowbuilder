@@ -12,9 +12,7 @@
 .name {
   max-width: 200px;
   min-height: 1.75rem;
-  line-height: 1.3125rem;
   display: inline-flex;
-  font-family: 'Courier New';
   border-radius: 4px;
   padding: 4px 8px 3px 8px;
   color: var(--wb-ui-text-default);
