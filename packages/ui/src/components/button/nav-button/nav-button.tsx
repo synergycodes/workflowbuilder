@@ -1,7 +1,6 @@
 import clsx from 'clsx';
 import { ReactElement, forwardRef } from 'react';
 
-import borderRadiusStyles from '../styles/border-radius.module.css';
 import navBorderRadiusStyles from './styles/nav-button-border-radius.module.css';
 import navButtonStyles from './styles/nav-button.module.css';
 
@@ -47,7 +46,6 @@ const NavButtonComponent = forwardRef<
     ref,
     ...props,
     className: clsx(
-      borderRadiusStyles[size],
       navBorderRadiusStyles[size],
       navButtonStyles['nav-button'],
       { [navButtonStyles['selected']]: isSelected },

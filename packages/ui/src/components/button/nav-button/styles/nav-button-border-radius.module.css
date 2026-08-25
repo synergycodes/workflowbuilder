@@ -1,10 +1,36 @@
 :root {
+  --ax-public-button-border-radius-extra-large: var(--wb-radius-100);
+  --ax-public-button-border-radius-large: var(--wb-radius-100);
+  --ax-public-button-border-radius-medium: var(--wb-radius-75);
+  --ax-public-button-border-radius-small: var(--wb-radius-50);
+  --ax-public-button-border-radius-extra-small: var(--wb-radius-50);
+  --ax-public-button-border-radius-circle: var(--wb-radius-full);
   --ax-public-button-border-radius-xx-small: var(--wb-radius-50);
   --ax-public-button-border-radius-xxx-small: var(--wb-radius-50);
 }
 
 @layer ui.component {
   :not(.circle) {
+    &.extra-large {
+      border-radius: var(--ax-public-button-border-radius-extra-large);
+    }
+
+    &.large {
+      border-radius: var(--ax-public-button-border-radius-large);
+    }
+
+    &.medium {
+      border-radius: var(--ax-public-button-border-radius-medium);
+    }
+
+    &.small {
+      border-radius: var(--ax-public-button-border-radius-small);
+    }
+
+    &.extra-small {
+      border-radius: var(--ax-public-button-border-radius-extra-small);
+    }
+
     &.xx-small {
       border-radius: var(--ax-public-button-border-radius-xx-small);
     }
@@ -12,5 +38,9 @@
     &.xxx-small {
       border-radius: var(--ax-public-button-border-radius-xxx-small);
     }
+  }
+
+  .circle {
+    border-radius: var(--ax-public-button-border-radius-circle);
   }
 }

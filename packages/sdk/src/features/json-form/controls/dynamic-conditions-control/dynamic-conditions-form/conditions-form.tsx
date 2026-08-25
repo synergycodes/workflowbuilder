@@ -1,5 +1,6 @@
 import { Button } from '@workflowbuilder/ui';
 import { type ForwardedRef, forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -31,6 +32,7 @@ export interface ConditionsFormHandle {
 
 export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormProps>(
   ({ onChange, value }: ConditionsFormProps, ref: ForwardedRef<ConditionsFormHandle>) => {
+    const { t } = useTranslation();
     const [shouldShowValidation, setShouldShowValidation] = useState(false);
     const [conditions, setConditions] = useState<Partial<DynamicCondition>[]>(
       value.length > 0 ? value : [emptyCondition],
@@ -105,7 +107,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
           variant="secondary"
           shape="square"
           prefixIcon={<Icon name="PlusCircle" />}
-          aria-label="Add condition"
+          aria-label={t('conditions.add')}
           onClick={addCondition}
         />
       </form>

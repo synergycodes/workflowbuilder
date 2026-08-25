@@ -101,6 +101,7 @@ export const en = {
     label: 'Title',
   },
   conditions: {
+    add: 'Add condition',
     title: 'Conditional Editor',
     subtitle: 'Define Your Conditional Rules',
     cancel: 'Cancel',

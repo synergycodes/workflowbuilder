@@ -1,4 +1,4 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react';
 
 import type { TooltipVariant } from '../../tooltip/types';
 
@@ -33,10 +33,12 @@ export type LabelButtonProps = {
   /** @default 'default' */
   shape?: 'default';
   children: ReactNode;
-  prefixIcon?: ReactNode;
-  suffixIcon?: ReactNode;
+  prefixIcon?: ReactElement;
+  suffixIcon?: ReactElement;
+  /** @default false */
   isLoading?: boolean;
   tooltip?: string;
+  /** @default 'default' */
   tooltipType?: TooltipVariant;
 } & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
 
@@ -45,13 +47,16 @@ export type IconButtonProps = {
   variant?: ButtonVariant;
   /** @default 'm' */
   size?: ButtonSize;
-  shape: 'square' | 'round';
-  prefixIcon: ReactNode;
+  shape: Exclude<ButtonShape, 'default'>;
+  prefixIcon: ReactElement;
   children?: never;
   suffixIcon?: never;
+  /** @default false */
   isLoading?: boolean;
   tooltip?: string;
+  /** @default 'default' */
   tooltipType?: TooltipVariant;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+  'aria-label': string;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children'>;
 
 export type ButtonProps = LabelButtonProps | IconButtonProps;

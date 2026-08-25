@@ -58,7 +58,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
         const label = toolOption?.label;
 
         const sharedButtonProps = {
-          variant: 'ghost-secondary' as const,
+          variant: 'secondary' as const,
           className: styles['selected-tool-button'],
           onClick: () => openEditorModal(toolData),
           disabled: isDisabled,

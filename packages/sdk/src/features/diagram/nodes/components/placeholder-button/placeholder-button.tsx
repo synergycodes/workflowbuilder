@@ -12,7 +12,7 @@ export function PlaceholderButton({ label, size = 'xs', ...props }: Props) {
     <Button
       className={styles['placeholder-button']}
       size={size}
-      variant="secondary"
+      variant="ghost-secondary"
       prefixIcon={<PlusCircle weight="bold" />}
       {...props}
     >
