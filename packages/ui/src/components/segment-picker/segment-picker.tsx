@@ -28,7 +28,7 @@ const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
   'xxx-small': 'xxxs',
 };
 
-const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<Shape, NavButtonVariant> = {
+const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<Shape, Exclude<NavButtonVariant, 'plain'>> = {
   default: 'square',
   circle: 'round',
 };
@@ -70,6 +70,8 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
     const selectedValue = isControlled ? value : internalValue;
 
     const handleSelect = (event: MouseEvent<HTMLButtonElement>, newValue: string) => {
+      if (newValue === selectedValue) return;
+
       if (!isControlled) {
         setInternalValue(newValue);
       }

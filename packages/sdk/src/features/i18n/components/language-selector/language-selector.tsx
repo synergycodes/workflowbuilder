@@ -20,6 +20,7 @@ export function LanguageSelector() {
 
   const resolvedCode = i18n.resolvedLanguage ?? i18n.language?.split('-')[0];
   const currentLanguage = languages.find((lang) => lang.code === resolvedCode) || languages[0];
+  const visibleCode = currentLanguage.code.toUpperCase();
 
   const languageItems: MenuItemProps[] = useMemo(
     () =>
@@ -35,11 +36,11 @@ export function LanguageSelector() {
     <>
       <Menu items={languageItems} size="small">
         <NavButton
-          aria-label={t('tooltips.changeLanguage')}
+          aria-label={`${visibleCode} - ${t('tooltips.changeLanguage')}`}
           suffixIcon={<CaretDown />}
           tooltip={t('tooltips.changeLanguage')}
         >
-          {currentLanguage.code.toUpperCase()}
+          {visibleCode}
         </NavButton>
       </Menu>
     </>

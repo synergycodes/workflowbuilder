@@ -8,9 +8,9 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { NavButtonExample } from '../../../../components/ui-examples/nav-button';
 
 `NavButton` renders its label from `children` and accepts optional `prefixIcon`
-and `suffixIcon` props. Leave `children` empty and provide `prefixIcon` for a
-square icon-only button, and use `variant` to select square, round, or
-no-background styling.
+and `suffixIcon` props. Omit `children` and provide `prefixIcon` for an icon-only
+button. Use `variant` to select square or round styling; icon-only buttons also
+support the no-background `plain` variant.
 
 The `isSelected` prop renders the persistent Pressed state, including while the
 button is hovered. The mouse-down `:active` state uses a separate Active token.

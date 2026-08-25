@@ -7,7 +7,7 @@ type SegmentPickerContextType = {
   onSelect: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
   size: NavButtonSize;
   shape: Shape;
-  navVariant: NavButtonVariant;
+  navVariant: Exclude<NavButtonVariant, 'plain'>;
 };
 
 export const SegmentPickerContext = createContext<SegmentPickerContextType | undefined>(undefined);

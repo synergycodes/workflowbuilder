@@ -1,6 +1,6 @@
-import type { ButtonHTMLAttributes, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import type { TooltipVariant } from '../../tooltip/types';
+import type { BaseButtonProps, IconNode } from '../types';
 
 export const NAV_BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs', 'xxs', 'xxxs'] as const;
 
@@ -10,30 +10,26 @@ export const NAV_BUTTON_VARIANTS = ['square', 'round', 'plain'] as const;
 
 export type NavButtonVariant = (typeof NAV_BUTTON_VARIANTS)[number];
 
-export type NavLabelButtonProps = {
+type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
   /** @default 'm' */
   size?: NavButtonSize;
-  /** @default 'square' */
-  variant?: NavButtonVariant;
   isSelected?: boolean;
-  children: ReactNode;
-  prefixIcon?: ReactNode;
-  suffixIcon?: ReactNode;
-  tooltip?: string;
-  tooltipType?: TooltipVariant;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+};
 
-export type NavIconButtonProps = {
-  /** @default 'm' */
-  size?: NavButtonSize;
+export type NavLabelButtonProps = NavButtonBaseProps & {
+  /** @default 'square' */
+  variant?: Exclude<NavButtonVariant, 'plain'>;
+  children: ReactNode;
+  prefixIcon?: IconNode;
+  suffixIcon?: IconNode;
+};
+
+export type NavIconButtonProps = NavButtonBaseProps & {
   /** @default 'square' */
   variant?: NavButtonVariant;
-  isSelected?: boolean;
-  prefixIcon: ReactNode;
+  prefixIcon: IconNode;
   children?: never;
   suffixIcon?: never;
-  tooltip?: string;
-  tooltipType?: TooltipVariant;
-} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+};
 
 export type NavButtonProps = NavLabelButtonProps | NavIconButtonProps;

@@ -63,31 +63,31 @@
     padding-inline: var(--nav-button-label-padding-inline);
     gap: var(--nav-button-gap);
     border-radius: var(--nav-button-border-radius);
-    background-color: var(--nav-button-background, var(--ax-public-nav-button-background-color-default));
+    background-color: var(--nav-button-background-default);
     color: var(--ax-public-nav-button-color-default);
 
     &:not(:disabled):hover {
-      background-color: var(--ax-public-nav-button-background-color-hover);
+      background-color: var(--nav-button-background-hover);
       color: var(--ax-public-nav-button-color-hover);
     }
 
     &.selected:not(:disabled) {
-      background-color: var(--ax-public-nav-button-background-color-pressed);
+      background-color: var(--nav-button-background-selected);
       color: var(--ax-public-nav-button-color-pressed);
     }
 
-    &:not(:disabled):focus-visible {
-      background-color: var(--ax-public-nav-button-background-color-focus);
+    &:not(.selected):not(:disabled):focus-visible {
+      background-color: var(--nav-button-background-focus);
       color: var(--ax-public-nav-button-color-default);
     }
 
     &:not(:disabled):active {
-      background-color: var(--ax-public-nav-button-background-color-active);
+      background-color: var(--nav-button-background-active);
       color: var(--ax-public-nav-button-color-active);
     }
 
     &:disabled {
-      background-color: var(--ax-public-nav-button-background-color-disabled);
+      background-color: var(--nav-button-background-disabled);
       color: var(--ax-public-nav-button-color-disabled);
     }
   }
@@ -98,17 +98,10 @@
   }
 
   .icon {
-    display: flex;
-    flex: none;
-    align-items: center;
-    justify-content: center;
+    composes: icon from '../styles/icon-size.module.css';
+
     width: var(--nav-button-icon-size);
     height: var(--nav-button-icon-size);
-
-    svg {
-      width: 100%;
-      height: 100%;
-    }
   }
 
   .xl {
@@ -192,11 +185,22 @@
     --nav-button-border-radius: var(--ax-public-nav-button-border-radius-round);
   }
 
-  .square {
-    --nav-button-background: var(--ax-public-nav-button-background-color-default);
+  .square,
+  .round {
+    --nav-button-background-default: var(--ax-public-nav-button-background-color-default);
+    --nav-button-background-hover: var(--ax-public-nav-button-background-color-hover);
+    --nav-button-background-selected: var(--ax-public-nav-button-background-color-pressed);
+    --nav-button-background-focus: var(--ax-public-nav-button-background-color-focus);
+    --nav-button-background-active: var(--ax-public-nav-button-background-color-active);
+    --nav-button-background-disabled: var(--ax-public-nav-button-background-color-disabled);
   }
 
   .plain {
-    --nav-button-background: var(--wb-colors-transparent);
+    --nav-button-background-default: var(--wb-colors-transparent);
+    --nav-button-background-hover: var(--wb-colors-transparent);
+    --nav-button-background-selected: var(--wb-colors-transparent);
+    --nav-button-background-focus: var(--wb-colors-transparent);
+    --nav-button-background-active: var(--wb-colors-transparent);
+    --nav-button-background-disabled: var(--wb-colors-transparent);
   }
 }

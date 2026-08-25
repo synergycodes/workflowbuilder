@@ -8,7 +8,11 @@ const i18nState = { language: 'en', resolvedLanguage: 'en', changeLanguage: vi.f
 // Render the Menu's trigger (children) so the displayed language code is queryable.
 vi.mock('@workflowbuilder/ui', () => ({
   Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-  NavButton: ({ children }: { children?: ReactNode }) => <button type="button">{children}</button>,
+  NavButton: ({ 'aria-label': ariaLabel, children }: { 'aria-label'?: string; children?: ReactNode }) => (
+    <button type="button" aria-label={ariaLabel}>
+      {children}
+    </button>
+  ),
 }));
 
 vi.mock('@workflow-builder/icons', () => ({
@@ -29,6 +33,7 @@ describe('LanguageSelector — label reflects the resolved language', () => {
     render(<LanguageSelector />);
 
     expect(screen.getByText('PL')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'PL - tooltips.changeLanguage' })).toBeTruthy();
     expect(screen.queryByText('EN')).toBeNull();
   });
 

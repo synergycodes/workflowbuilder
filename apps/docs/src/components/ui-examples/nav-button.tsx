@@ -14,9 +14,7 @@ export function NavButtonExample() {
           <NavButton variant="round" prefixIcon={<House />}>
             Round
           </NavButton>
-          <NavButton variant="plain" prefixIcon={<House />}>
-            Plain
-          </NavButton>
+          <NavButton aria-label="Plain" variant="plain" prefixIcon={<House />} />
           <NavButton isSelected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
             Selected
           </NavButton>

@@ -1,11 +1,11 @@
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
 import type { NavButtonProps } from '@ui/components/button/nav-button/types';
 import clsx from 'clsx';
-import { type MouseEvent, type ReactNode, isValidElement, useContext } from 'react';
+import { Children, type MouseEvent, type ReactNode, isValidElement, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
-import type { BaseButtonProps } from '../../button/types';
+import type { BaseButtonProps, IconNode } from '../../button/types';
 import { SegmentPickerContext } from '../utils/context';
 
 export type SegmentPickerItemProps = BaseButtonProps &
@@ -13,23 +13,27 @@ export type SegmentPickerItemProps = BaseButtonProps &
     value: string;
   };
 
-type Slots = { prefixIcon?: ReactNode; label?: ReactNode; suffixIcon?: ReactNode };
+type Slots = { prefixIcon?: IconNode; label?: ReactNode; suffixIcon?: IconNode };
 
 function toSlots(children: ReactNode): Slots {
-  if (Array.isArray(children)) {
-    const parts = children.filter((child) => child != null && child !== false);
-    const prefixIcon = isValidElement(parts[0]) ? parts[0] : undefined;
-    const last = parts.at(-1);
-    const suffixIcon = parts.length > 1 && isValidElement(last) ? last : undefined;
-    const label = parts.filter((child) => !isValidElement(child));
+  const parts = Children.toArray(children);
+  const prefixIcon = isValidElement(parts[0]) ? parts[0] : undefined;
+  const last = parts.at(-1);
+  const suffixIcon = parts.length > 1 && isValidElement(last) ? last : undefined;
+  const labelParts = parts.slice(prefixIcon ? 1 : 0, suffixIcon ? -1 : undefined);
 
-    return { prefixIcon, label: label.length > 0 ? label : undefined, suffixIcon };
-  }
-
-  return isValidElement(children) ? { prefixIcon: children } : { label: children };
+  return { prefixIcon, label: labelParts.length > 0 ? labelParts : undefined, suffixIcon };
 }
 
-export function Item({ children, className, prefixIcon, suffixIcon, value, ...buttonProps }: SegmentPickerItemProps) {
+export function Item({
+  children,
+  className,
+  onClick,
+  prefixIcon,
+  suffixIcon,
+  value,
+  ...buttonProps
+}: SegmentPickerItemProps) {
   const context = useContext(SegmentPickerContext);
 
   if (!context) {
@@ -47,8 +51,8 @@ export function Item({ children, className, prefixIcon, suffixIcon, value, ...bu
       className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], className)}
       isSelected={isSelected}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
-        if (isSelected) return;
         onSelect(event, value);
+        onClick?.(event);
       }}
       prefixIcon={prefixIcon ?? slots.prefixIcon}
       size={size}

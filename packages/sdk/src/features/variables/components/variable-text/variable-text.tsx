@@ -105,6 +105,7 @@ function SuggestionsContainer({
   renderGroupHeader: (group: VariableSuggestionGroup) => ReactNode;
   children: ReactElement;
 }) {
+  const { t } = useTranslation();
   const ul = children as ReactElement<{ children?: ReactElement[]; className?: string }>;
   const items = ul.props.children;
 
@@ -149,7 +150,7 @@ function SuggestionsContainer({
       <div className={styles['suggestionsHeader']}>
         <span className={styles['suggestionsTitle']}>{title}</span>
         <NavButton
-          aria-label="Close"
+          aria-label={t('common.close')}
           onMouseDown={(event: React.MouseEvent) => {
             event.stopPropagation();
             handleClose();
