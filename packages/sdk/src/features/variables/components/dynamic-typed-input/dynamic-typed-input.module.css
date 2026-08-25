@@ -25,11 +25,6 @@
   position: relative;
 }
 
-.time-with-adornment {
-  position: relative;
-  min-width: 0;
-}
-
 .adornment--select {
   position: absolute;
   top: 50%;
@@ -42,14 +37,6 @@
   position: absolute;
   top: 50%;
   right: calc(var(--wb-space-150));
-  transform: translateY(-50%);
-  z-index: 1;
-}
-
-.adornment--time {
-  position: absolute;
-  top: 50%;
-  right: var(--wb-space-150);
   transform: translateY(-50%);
   z-index: 1;
 }

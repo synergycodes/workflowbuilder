@@ -12,6 +12,7 @@ type FieldRenderProps = {
 type FieldProps = {
   ariaDescribedBy?: string;
   children: (props: FieldRenderProps) => ReactNode;
+  disabled?: boolean;
   helperText?: ReactNode;
   id?: string;
   isRequired?: boolean;
@@ -19,20 +20,20 @@ type FieldProps = {
   state: FieldState;
 };
 
-export function Field({ ariaDescribedBy, children, helperText, id, isRequired, label, state }: FieldProps) {
+export function Field({ ariaDescribedBy, children, disabled, helperText, id, isRequired, label, state }: FieldProps) {
   const generatedId = useId();
   const hasLabel = label !== undefined && label !== null;
   const hasHelper = helperText !== undefined && helperText !== null;
   const isComposed = hasLabel || hasHelper;
   const controlId = id ?? (isComposed ? generatedId : undefined);
-  const helperId = hasHelper ? `${controlId ?? generatedId}-helper` : undefined;
+  const helperId = hasHelper ? `${controlId}-helper` : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(' ') || undefined;
   const control = children({ controlId, describedBy });
 
   if (!isComposed) return control;
 
   return (
-    <div className={styles['field']} data-state={state}>
+    <div className={styles['field']} data-state={state} data-disabled={disabled || undefined}>
       {hasLabel && (
         <label className={styles['label']} htmlFor={controlId}>
           {label}
@@ -45,7 +46,7 @@ export function Field({ ariaDescribedBy, children, helperText, id, isRequired, l
       )}
       {control}
       {hasHelper && (
-        <span className={styles['helper']} id={helperId}>
+        <span className={styles['helper']} id={helperId} role={state === 'critical' ? 'alert' : undefined}>
           {helperText}
         </span>
       )}

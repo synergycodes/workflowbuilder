@@ -21,7 +21,6 @@
     display: flex;
     min-width: 0;
     width: 100%;
-    height: auto;
     align-items: flex-start;
     background-color: var(--ax-public-textarea-root-background-color);
     color: var(--ax-public-textarea-root-icon-color);
@@ -55,10 +54,6 @@
     &:not([data-disabled]):focus-within {
       border-color: var(--ax-public-textarea-root-border-color-focus);
     }
-  }
-
-  .text-area-container.text-area-container {
-    height: auto;
   }
 
   .size-l {
@@ -105,10 +100,6 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-  }
-
-  .icon {
-    pointer-events: none;
   }
 
   .icon svg,

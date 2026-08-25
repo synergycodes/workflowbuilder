@@ -1,6 +1,6 @@
 import { X } from '@phosphor-icons/react';
 import { Field } from '@ui/shared/components/field/field';
-import type { FieldControlProps } from '@ui/shared/types/field';
+import type { FieldControlProps, FieldSize } from '@ui/shared/types/field';
 import clsx from 'clsx';
 import { type ComponentPropsWithoutRef, type TextareaHTMLAttributes, forwardRef } from 'react';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -9,12 +9,13 @@ import styles from './text-area.module.css';
 import inputSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 
-export type TextAreaProps = Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size' | 'style'> &
-  FieldControlProps & {
-    maxRows?: number;
-    minRows?: number;
-    style?: ComponentPropsWithoutRef<typeof TextareaAutosize>['style'];
-  };
+export type TextAreaProps = {
+  maxRows?: number;
+  minRows?: number;
+  size?: Exclude<FieldSize, 'xs'>;
+  style?: ComponentPropsWithoutRef<typeof TextareaAutosize>['style'];
+} & Omit<TextareaHTMLAttributes<HTMLTextAreaElement>, 'size' | 'style'> &
+  FieldControlProps;
 
 export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function TextArea(
   {
@@ -50,6 +51,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
       helperText={helperText}
       isRequired={isNativeRequired}
       state={fieldState}
+      disabled={disabled}
       ariaDescribedBy={ariaDescribedBy}
     >
       {({ controlId, describedBy }) => (
@@ -58,7 +60,11 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
           data-state={fieldState}
           data-disabled={disabled || undefined}
           onPointerDown={(event) => {
-            if (event.target !== event.currentTarget) return;
+            if (
+              !(event.target instanceof Element) ||
+              event.target.closest('button, a, input, select, textarea, [tabindex]')
+            )
+              return;
             event.preventDefault();
             event.currentTarget.querySelector('textarea')?.focus();
           }}

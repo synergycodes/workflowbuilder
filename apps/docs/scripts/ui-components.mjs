@@ -23,7 +23,11 @@ export const COMPONENTS = [
     name: 'Input',
     propsType: 'InputProps',
     dir: 'input',
-    cssSources: ['shared/styles/field-control-size.module.css'],
+    cssSources: [
+      'shared/components/field/field.module.css',
+      'shared/styles/field-control-height.module.css',
+      'shared/styles/field-control-size.module.css',
+    ],
   },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
@@ -32,7 +36,11 @@ export const COMPONENTS = [
     name: 'NumberField',
     propsType: 'NumberFieldProps',
     dir: 'number-field',
-    cssSources: ['shared/styles/field-control-size.module.css'],
+    cssSources: [
+      'shared/components/field/field.module.css',
+      'shared/styles/field-control-height.module.css',
+      'shared/styles/field-control-size.module.css',
+    ],
   },
   {
     slug: 'nav-button',
@@ -57,7 +65,7 @@ export const COMPONENTS = [
     name: 'TextArea',
     propsType: 'TextAreaProps',
     dir: 'text-area',
-    cssSources: ['shared/styles/field-control-size.module.css'],
+    cssSources: ['shared/components/field/field.module.css', 'shared/styles/field-control-size.module.css'],
   },
   { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
   // Diagram components.

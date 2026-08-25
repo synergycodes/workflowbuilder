@@ -2,6 +2,7 @@
   .number-field {
     display: flex;
     min-width: 0;
+    width: 100%;
     align-items: center;
     overflow: hidden;
     background-color: var(--ax-public-number-field-root-background-color);
@@ -9,21 +10,21 @@
     color: var(--ax-public-number-field-root-icon-color);
     cursor: text;
 
-    &[data-field-state='default']:not([data-field-disabled]):not(:focus-within):hover {
+    &[data-state='default']:not([data-field-disabled]):not(:focus-within):hover {
       border-color: var(--ax-public-number-field-root-border-color-hover);
     }
 
-    &[data-field-state='critical']:not([data-field-disabled]) {
+    &[data-state='critical']:not([data-field-disabled]) {
       background-color: var(--ax-public-number-field-root-background-color-critical);
       border-color: var(--ax-public-number-field-root-border-color-critical);
     }
 
-    &[data-field-state='success']:not([data-field-disabled]) {
+    &[data-state='success']:not([data-field-disabled]) {
       background-color: var(--ax-public-number-field-root-background-color-success);
       border-color: var(--ax-public-number-field-root-border-color-success);
     }
 
-    &[data-field-state='read-only']:not([data-field-disabled]),
+    &[data-state='read-only']:not([data-field-disabled]),
     &[data-field-disabled] {
       background-color: var(--ax-public-number-field-root-background-color-disabled);
       border-color: var(--ax-public-number-field-root-border-color);
@@ -85,10 +86,6 @@
     flex: 0 0 auto;
     align-items: center;
     justify-content: center;
-  }
-
-  .icon {
-    pointer-events: none;
   }
 
   .icon svg,

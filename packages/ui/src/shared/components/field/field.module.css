@@ -1,35 +1,50 @@
+:root {
+  --ax-public-field-gap: var(--wb-space-75);
+  --ax-public-field-row-min-height: var(--wb-size-200);
+  --ax-public-field-font-size: var(--wb-font-size-150);
+  --ax-public-field-font-weight: 400;
+  --ax-public-field-line-height: var(--wb-size-200);
+  --ax-public-field-label-color: var(--wb-ui-text-default);
+  --ax-public-field-helper-color: var(--wb-ui-text-subtle-default);
+  --ax-public-field-critical-color: var(--wb-components-text-field-stroke-critical);
+  --ax-public-field-color-disabled: var(--wb-ui-text-ghost-default);
+}
+
 @layer ui.component {
   .field {
     display: flex;
     min-width: 0;
     width: 100%;
     flex-direction: column;
-    gap: var(--wb-space-75);
+    gap: var(--ax-public-field-gap);
   }
 
   .label,
   .helper {
     display: flex;
-    height: var(--wb-size-200);
-    align-items: center;
-    font-size: var(--wb-font-size-150);
-    font-weight: 400;
-    line-height: var(--wb-size-200);
+    min-height: var(--ax-public-field-row-min-height);
+    font-size: var(--ax-public-field-font-size);
+    font-weight: var(--ax-public-field-font-weight);
+    line-height: var(--ax-public-field-line-height);
   }
 
   .label {
-    color: var(--wb-ui-text-default);
+    color: var(--ax-public-field-label-color);
   }
 
   .required {
-    color: var(--wb-components-text-field-stroke-critical);
+    color: var(--ax-public-field-critical-color);
   }
 
   .helper {
-    color: var(--wb-ui-text-subtle-default);
+    color: var(--ax-public-field-helper-color);
   }
 
-  .field[data-state='critical'] .helper {
-    color: var(--wb-components-text-field-stroke-critical);
+  .field[data-state='critical']:not([data-disabled]) .helper {
+    color: var(--ax-public-field-critical-color);
+  }
+
+  .field[data-disabled] :is(.label, .helper, .required) {
+    color: var(--ax-public-field-color-disabled);
   }
 }

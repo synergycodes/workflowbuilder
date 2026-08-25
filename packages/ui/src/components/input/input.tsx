@@ -7,6 +7,7 @@ import { forwardRef } from 'react';
 import inputRootStyles from './input-root.module.css';
 import inputStyles from './input.module.css';
 import './variables.css';
+import inputHeightStyles from '@ui/shared/styles/field-control-height.module.css';
 import inputSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 
@@ -44,15 +45,20 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
       helperText={helperText}
       isRequired={isNativeRequired}
       state={fieldState}
+      disabled={disabled}
       ariaDescribedBy={ariaDescribedBy}
     >
       {({ controlId, describedBy }) => (
         <div
-          className={clsx(inputRootStyles['input-root'], inputSizeStyles[size], className)}
+          className={clsx(inputRootStyles['input-root'], inputHeightStyles[size], inputSizeStyles[size], className)}
           data-state={fieldState}
           data-disabled={disabled || undefined}
           onPointerDown={(event) => {
-            if (event.target !== event.currentTarget) return;
+            if (
+              !(event.target instanceof Element) ||
+              event.target.closest('button, a, input, select, textarea, [tabindex]')
+            )
+              return;
             event.preventDefault();
             event.currentTarget.querySelector('input')?.focus();
           }}

@@ -45,10 +45,6 @@
     justify-content: center;
   }
 
-  .icon {
-    pointer-events: none;
-  }
-
   .icon svg,
   .clear svg {
     width: var(--wb-size-200);

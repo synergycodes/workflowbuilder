@@ -4,7 +4,8 @@ import { useState } from 'react';
 import { ComponentPreview } from './component-preview';
 
 export function TextAreaExample() {
-  const [value, setValue] = useState('');
+  const [description, setDescription] = useState('');
+  const [summary, setSummary] = useState('');
 
   return (
     <ComponentPreview>
@@ -13,9 +14,9 @@ export function TextAreaExample() {
           size="l"
           label="Description"
           placeholder="Large text area"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
-          onClear={() => setValue('')}
+          value={description}
+          onChange={(event) => setDescription(event.target.value)}
+          onClear={() => setDescription('')}
         />
         <TextArea
           size="m"
@@ -24,10 +25,10 @@ export function TextAreaExample() {
           helperText="A summary is required"
           isRequired
           placeholder="Critical text area"
-          value={value}
-          onChange={(event) => setValue(event.target.value)}
+          value={summary}
+          onChange={(event) => setSummary(event.target.value)}
         />
-        <TextArea label="Notes" size="s" state="read-only" value={value || 'Read-only value'} />
+        <TextArea label="Notes" size="s" state="read-only" value="Read-only value" />
       </div>
     </ComponentPreview>
   );

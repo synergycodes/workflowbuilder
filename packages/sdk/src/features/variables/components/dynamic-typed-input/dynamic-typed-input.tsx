@@ -44,7 +44,6 @@ export function DynamicTypedInput({
   const [time, setTime] = useState(getIsDateType(type) ? getTimeFromDateIfValid(value) : undefined);
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
-  const errorProps = { error: isError };
 
   const suggestionGroupsForString = useMemo(() => {
     if (!variableTypeInfo || typesForInput.includes(variableTypeInfo.type) === false) {
@@ -103,7 +102,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['container--select']}>
         <Select
-          {...errorProps}
+          error={isError}
           className={className}
           value={value}
           items={itemsForBoolean}
@@ -120,7 +119,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['date-with-reset-container']}>
         <DatePicker
-          {...errorProps}
+          error={isError}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={getDateIfValid(value)}
@@ -144,7 +143,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['row']}>
         <DatePicker
-          {...errorProps}
+          error={isError}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={date}
@@ -160,40 +159,38 @@ export function DynamicTypedInput({
           // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
         />
-        <div className={styles['time-with-adornment']}>
-          <Input
-            className={className}
-            value={time}
-            placeholder="HH:mm"
-            onChange={(event) => {
-              const value = (event.target.value as string).slice(0, 5);
-              if (value.length < 5) {
+        <Input
+          className={className}
+          value={time}
+          placeholder="HH:mm"
+          suffixIcon={endAdornment}
+          onChange={(event) => {
+            const value = (event.target.value as string).slice(0, 5);
+            if (value.length < 5) {
+              setTime(value);
+
+              return;
+            }
+
+            if (value.length === 5) {
+              if (getIsValidTime(value)) {
                 setTime(value);
 
-                return;
-              }
+                if (date && getIsValidDate(date)) {
+                  onChange(setDateWithTimeFromTime(date, value)?.toISOString());
+                }
+              } else {
+                setTime(timeForRawDates);
 
-              if (value.length === 5) {
-                if (getIsValidTime(value)) {
-                  setTime(value);
-
-                  if (date && getIsValidDate(date)) {
-                    onChange(setDateWithTimeFromTime(date, value)?.toISOString());
-                  }
-                } else {
-                  setTime(timeForRawDates);
-
-                  if (date && getIsValidDate(date)) {
-                    onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
-                  }
+                if (date && getIsValidDate(date)) {
+                  onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
                 }
               }
-            }}
-            disabled={disabled || !date}
-            state={isError ? 'critical' : 'default'}
-          />
-          {endAdornment && <span className={styles['adornment--time']}>{endAdornment}</span>}
-        </div>
+            }
+          }}
+          disabled={disabled || !date}
+          state={isError ? 'critical' : 'default'}
+        />
       </div>
     );
   }

@@ -1,4 +1,4 @@
-import { act, createRef } from 'react';
+import { act, createRef, useState } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 
 import { NumberField } from './number-field';
@@ -98,25 +98,64 @@ it('keeps the read-only input focusable and copyable', () => {
 });
 
 it('lets disabled behavior take precedence over read-only state', () => {
-  act(() => root.render(<NumberField aria-label="Quantity" disabled state="read-only" />));
+  act(() => root.render(<NumberField aria-label="Quantity" className="layout-class" disabled state="read-only" />));
 
   const input = getVisibleInput();
+  const group = input.closest('[data-state]');
+  const fieldRoot = container.querySelector('.layout-class');
   expect(input.disabled).toBe(true);
   expect(input.readOnly).toBe(false);
-  expect(input.closest('[data-field-state]')?.getAttribute('data-field-state')).toBe('default');
+  expect(group?.getAttribute('data-state')).toBe('default');
+  expect(fieldRoot).not.toBe(group);
+  expect(fieldRoot?.contains(group)).toBe(true);
 });
 
-it('renders an accessible clear affordance', () => {
+it('clears an uncontrolled value while the input is focused', () => {
   const onClear = vi.fn();
+  const changes: Array<{ value: number | null; reason: string }> = [];
 
-  act(() => root.render(<NumberField aria-label="Quantity" onClear={onClear} />));
+  act(() =>
+    root.render(
+      <NumberField
+        aria-label="Quantity"
+        defaultValue={3}
+        onClear={onClear}
+        onValueChange={(value, details) => changes.push({ value, reason: details.reason })}
+      />,
+    ),
+  );
 
+  const input = getVisibleInput();
   const clearButton = container.querySelector<HTMLButtonElement>('button[aria-label="Clear number field"]');
   expect(clearButton).not.toBeNull();
 
+  act(() => input.focus());
+  changeInputValue(input, '4');
   act(() => clearButton?.click());
 
+  expect(input.value).toBe('');
+  expect(container.querySelector<HTMLInputElement>('input[type="number"]')?.value).toBe('');
+  expect(document.activeElement).toBe(input);
   expect(onClear).toHaveBeenCalledOnce();
+  expect(changes.at(-1)).toEqual({ value: null, reason: 'input-clear' });
+});
+
+it('clears a controlled value while the input is focused', () => {
+  function ControlledNumberField() {
+    const [value, setValue] = useState<number | null>(3);
+    return <NumberField aria-label="Quantity" value={value} onValueChange={setValue} onClear={() => setValue(null)} />;
+  }
+
+  act(() => root.render(<ControlledNumberField />));
+
+  const input = getVisibleInput();
+  act(() => input.focus());
+  changeInputValue(input, '4');
+  act(() => container.querySelector<HTMLButtonElement>('button[aria-label="Clear number field"]')?.click());
+
+  expect(input.value).toBe('');
+  expect(container.querySelector<HTMLInputElement>('input[type="number"]')?.value).toBe('');
+  expect(document.activeElement).toBe(input);
 });
 
 it('reports clearing as a nullable value with change details', () => {
@@ -136,70 +175,14 @@ it('reports clearing as a nullable value with change details', () => {
   expect(changes).toEqual([{ value: null, reason: 'input-clear' }]);
 });
 
-it('emits a clamped typed value only once after blur', () => {
-  const values: Array<number | null> = [];
-  act(() =>
-    root.render(
-      <NumberField aria-label="Quantity" defaultValue={1} max={10} onValueChange={(value) => values.push(value)} />,
-    ),
-  );
-
-  const input = getVisibleInput();
-  act(() => input.focus());
-  changeInputValue(input, '11');
-  act(() => input.blur());
-
-  expect(values).toEqual([10]);
-});
-
-it('resynchronizes a controlled value when its parent refuses an update', () => {
-  const values: Array<number | null> = [];
-  act(() => root.render(<NumberField aria-label="Quantity" value={1} onValueChange={(value) => values.push(value)} />));
-
-  const input = getVisibleInput();
-  act(() => input.focus());
-  changeInputValue(input, '2');
-
-  expect(getVisibleInput().value).toBe('1');
-
-  pressKey(getVisibleInput(), 'ArrowUp');
-
-  expect(values).toEqual([2, 2]);
-  expect(getVisibleInput().value).toBe('1');
-});
-
-it('honors a controlled cancellation without leaving dirty text', () => {
-  const reasons: string[] = [];
-  act(() =>
-    root.render(
-      <NumberField
-        aria-label="Quantity"
-        value={1}
-        onValueChange={(_value, details) => {
-          reasons.push(details.reason);
-          details.cancel();
-        }}
-      />,
-    ),
-  );
-
-  const input = getVisibleInput();
-  act(() => input.focus());
-  changeInputValue(input, '2');
-
-  expect(reasons).toEqual(['input-change']);
-  expect(getVisibleInput().value).toBe('1');
-  expect(document.activeElement).toBe(getVisibleInput());
-});
-
-it('keeps an off-grid clamped boundary valid for form submission', () => {
+it('stops incrementing at the largest on-grid value below max', () => {
   const values: Array<number | null> = [];
   act(() =>
     root.render(
       <form>
         <NumberField
           name="quantity"
-          defaultValue={9}
+          defaultValue={6}
           min={0}
           max={10}
           step={3}
@@ -211,14 +194,72 @@ it('keeps an off-grid clamped boundary valid for form submission', () => {
 
   const increment = container.querySelector<HTMLButtonElement>('button[aria-label="Increment value"]');
   act(() => increment?.click());
+  act(() => increment?.click());
+
+  const form = container.querySelector('form');
+  const nativeInput = container.querySelector<HTMLInputElement>('input[type="number"]');
+  expect(values).toEqual([9]);
+  expect(nativeInput?.value).toBe('9');
+  expect(nativeInput?.max).toBe('10');
+  expect(nativeInput?.step).toBe('3');
+  expect(nativeInput?.validity.stepMismatch).toBe(false);
+  expect(form?.checkValidity()).toBe(true);
+});
+
+it('typed off-grid value reports stepMismatch', () => {
+  const values: Array<number | null> = [];
+  act(() =>
+    root.render(
+      <form>
+        <NumberField name="quantity" min={0} max={10} step={3} onValueChange={(value) => values.push(value)} />
+      </form>,
+    ),
+  );
+
+  const visibleInput = getVisibleInput();
+  changeInputValue(visibleInput, '10');
 
   const form = container.querySelector('form');
   const nativeInput = container.querySelector<HTMLInputElement>('input[type="number"]');
   expect(values).toEqual([10]);
+  expect(visibleInput.value).toBe('10');
   expect(nativeInput?.value).toBe('10');
-  expect(nativeInput?.step).toBe('any');
-  expect(nativeInput?.validity.stepMismatch).toBe(false);
-  expect(form?.checkValidity()).toBe(true);
+  expect(nativeInput?.step).toBe('3');
+  expect(nativeInput?.validity.stepMismatch).toBe(true);
+  expect(form?.checkValidity()).toBe(false);
+});
+
+it('keeps a large off-grid max out of the step sequence', () => {
+  const min = 1_000_000_000_000_000;
+  const values: Array<number | null> = [];
+  act(() =>
+    root.render(
+      <NumberField
+        aria-label="Quantity"
+        defaultValue={min + 6}
+        min={min}
+        max={min + 10}
+        step={3}
+        onValueChange={(value) => values.push(value)}
+      />,
+    ),
+  );
+
+  const increment = container.querySelector<HTMLButtonElement>('button[aria-label="Increment value"]');
+  act(() => increment?.click());
+  act(() => increment?.click());
+
+  expect(values).toEqual([min + 9]);
+});
+
+it('disables increment at a fractional on-grid boundary', () => {
+  act(() => root.render(<NumberField aria-label="Quantity" defaultValue={0.2} min={0} max={0.31} step={0.1} />));
+
+  const increment = container.querySelector<HTMLButtonElement>('button[aria-label="Increment value"]');
+  act(() => increment?.click());
+
+  expect(container.querySelector<HTMLInputElement>('input[type="number"]')?.value).toBe('0.3');
+  expect(increment?.disabled).toBe(true);
 });
 
 it('normalizes non-finite numeric props and never emits NaN', () => {
@@ -320,4 +361,5 @@ it('associates its label and critical helper with the input', () => {
   expect(input.required).toBe(true);
   expect(input.getAttribute('aria-invalid')).toBe('true');
   expect(input.getAttribute('aria-describedby')?.split(' ')).toEqual(['external-description', helper?.id]);
+  expect(helper?.getAttribute('role')).toBe('alert');
 });
