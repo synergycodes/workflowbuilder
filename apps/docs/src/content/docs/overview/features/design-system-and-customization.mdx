@@ -31,7 +31,10 @@ Example token categories:
 - **Spacing:** `--wb-space-50`, `--wb-space-100`, ..., `--wb-space-400`
 - **Border radius:** `--wb-radius-50`, `--wb-radius-100`, ..., `--wb-radius-300`
 - **Shadows:** `--wb-shadow-ui-xs-*`, `--wb-shadow-ui-s-*`, ..., `--wb-shadow-ui-xl-*`
-- **Component overrides:** `--wb-public-*`, with component-local UI variables shown in generated component-page tables
+
+### Component overrides
+
+The hand-authored `--wb-public-*` variables are a separate family for per-component customization. The generated CSS-variable tables on UI Library component pages are the `--wb-public-*` tables.
 
 Theming is done by overriding CSS custom properties. Create a CSS file with your overrides and import it after the default theme:
 

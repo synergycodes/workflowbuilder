@@ -3,11 +3,11 @@
   top: calc(100% + var(--wb-space-100));
   left: 0;
   font-weight: 500;
-  padding: var(--ax-public-node-padding);
-  border-radius: var(--ax-public-node-border-radius);
-  border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
-  background: var(--ax-public-node-background-color);
-  color: var(--ax-public-node-title-subtitle);
+  padding: var(--wb-public-node-padding);
+  border-radius: var(--wb-public-node-border-radius);
+  border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+  background: var(--wb-public-node-background-color);
+  color: var(--wb-public-node-title-subtitle);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -34,7 +34,7 @@
 }
 
 .icon--completed {
-  color: var(--ax-public-node-title-color);
+  color: var(--wb-public-node-title-color);
 }
 
 .icon--failed {

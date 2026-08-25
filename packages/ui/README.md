@@ -82,9 +82,9 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 ## Customization
 
-`@workflowbuilder/ui` exposes `--wb-public-*` CSS variables for component-level customization.
+`@workflowbuilder/ui` styles components with generated `--wb-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
-You can override them:
+Override a generated design token:
 
 ```css
 :root {
@@ -92,7 +92,7 @@ You can override them:
 }
 ```
 
-or a public override scoped to one component:
+Or scope a public override to one component:
 
 ```css
 :root {
