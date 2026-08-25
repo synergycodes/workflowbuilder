@@ -29,7 +29,7 @@
   --ax-public-snackbar-warning-background:
     linear-gradient(var(--wb-components-snackbar-bg-warning), var(--wb-components-snackbar-bg-warning)),
     var(--wb-ui-bg-base);
-  --ax-public-snackbar-warning-icon-color: var(--wb-components-snackbar-stroke-warning);
+  --ax-public-snackbar-warning-icon-color: var(--wb-ui-icon-warning-default);
 
   --ax-public-snackbar-info-border: var(--wb-components-snackbar-stroke-info);
   --ax-public-snackbar-info-background:

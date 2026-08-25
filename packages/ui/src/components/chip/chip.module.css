@@ -1,3 +1,7 @@
+:root {
+  --ax-public-chip-focus-ring-color: var(--wb-shadow-ui-focus);
+}
+
 @layer ui.component {
   .chip {
     display: inline-flex;
@@ -63,7 +67,8 @@
 
     &:focus-visible {
       box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread) var(--wb-shadow-ui-focus);
+        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+        var(--ax-public-chip-focus-ring-color);
       outline: none;
     }
   }

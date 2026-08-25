@@ -10,16 +10,15 @@
   --ax-public-modal-content-padding: var(--wb-space-300) var(--wb-space-200);
   --ax-public-modal-footer-padding: var(--wb-space-0) var(--wb-space-200) var(--wb-space-200) var(--wb-space-200);
 
-  --ax-public-modal-background: var(--wb-ui-bg-elevated);
+  --ax-public-modal-background: var(--wb-ui-bg-base);
   --ax-public-modal-backdrop-background: var(--wb-colors-gray-900);
-  --ax-public-modal-close-button-color: var(--wb-ui-text-subtle-default);
   --ax-public-modal-header-background: var(--wb-ui-bg-elevated);
   --ax-public-modal-header-border-color: var(--wb-ui-stroke-default);
   --ax-public-modal-title-color: var(--wb-ui-text-default);
   --ax-public-modal-description-color: var(--wb-ui-text-subtle-default);
   --ax-public-modal-icon-background: var(--wb-ui-brand-fill);
   --ax-public-modal-icon-color: var(--wb-ui-text-onaccent-default);
-  --ax-public-modal-content-background: var(--wb-ui-bg-elevated);
+  --ax-public-modal-content-background: var(--wb-ui-bg-base);
   --ax-public-modal-footer-border-color: var(--wb-ui-stroke-default);
 
   --ax-public-modal-large-width: 30rem;

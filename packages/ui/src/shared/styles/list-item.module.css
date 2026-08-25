@@ -48,7 +48,7 @@
     }
 
     /* After the highlight rule: a selected item keeps its selected colors
-       while highlighted — the outline alone marks the keyboard cursor. */
+       while highlighted — the ring alone marks the keyboard cursor. */
     &[data-selected] {
       background-color: var(--ax-public-list-item-background-color-selected);
       color: var(--ax-public-list-item-color-selected);
