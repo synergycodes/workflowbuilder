@@ -1,7 +1,13 @@
 ---
-'@workflowbuilder/ui': minor
-'@workflowbuilder/sdk': minor
+'@workflowbuilder/ui': major
+'@workflowbuilder/sdk': major
 ---
 
 Fonts now ship as `.woff2` assets next to the stylesheets, with only the two dominant faces inlined.
-A Content-Security-Policy that lists `font-src` now needs `'self'` or the serving origin instead of `data:`.
+
+Breaking changes:
+
+- Preserve the published `dist/assets` directory next to copied stylesheets so their relative font URLs keep resolving.
+- If a Content Security Policy defines `font-src`, add `'self'` or the serving origin while retaining `data:` for the inlined faces.
+
+Only Poppins latin 400 and 600 are inline. Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets and may briefly render in the fallback font; preload the relevant files when that flash of unstyled text (FOUT) is unacceptable.

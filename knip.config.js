@@ -55,7 +55,7 @@ export default {
     },
     'packages/ui': {
       entry: ['src/index.ts', 'vite.config.mts', 'scripts/check-built-css.ts'],
-      project: ['src/**/*.{ts,tsx,mts}', '*.mts', 'scripts/**/*.ts'],
+      project: ['src/**/*.{ts,tsx}', '*.mts', 'scripts/**/*.ts'],
       // Built tokens are copied by relative path (../tokens/dist) in vite.config,
       // and the fontsource families feed the post-build font generator - real
       // dependencies knip's JS/TS walk cannot see.

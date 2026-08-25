@@ -61,8 +61,30 @@ function emitUiFontAssets(): Plugin {
     closeBundle() {
       const uiDistribution = path.resolve(import.meta.dirname, '../ui/dist');
       const stylesheetPath = path.resolve(distributionDirectory, 'style.css');
-      const fontStyles = fs.readFileSync(path.resolve(uiDistribution, 'fonts.css'), 'utf8');
+      const fontStylesPath = path.resolve(uiDistribution, 'fonts.css');
       const assetsDirectory = path.resolve(distributionDirectory, 'assets');
+
+      if (!fs.existsSync(fontStylesPath)) {
+        throw new Error(
+          '@workflowbuilder/ui dist is missing fonts.css - build the UI first: `pnpm build:ui`',
+        );
+      }
+      if (!fs.existsSync(stylesheetPath)) {
+        throw new Error(
+          `wb-sdk:emit-ui-font-assets: ${stylesheetPath} is missing - ` +
+            'the Vite build emitted no SDK stylesheet to receive the font faces',
+        );
+      }
+
+      const fontStyles = fs
+        .readFileSync(fontStylesPath, 'utf8')
+        .replace(/^@layer ui\.base, ui\.component;\s*/, '');
+      const stylesheet = fs
+        .readFileSync(stylesheetPath, 'utf8')
+        .replaceAll(
+          /@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g,
+          '',
+        );
 
       fs.mkdirSync(assetsDirectory, { recursive: true });
       for (const file of fs.readdirSync(path.resolve(uiDistribution, 'assets'))) {
@@ -70,6 +92,7 @@ function emitUiFontAssets(): Plugin {
         fs.copyFileSync(path.resolve(uiDistribution, 'assets', file), path.resolve(assetsDirectory, file));
       }
 
+      fs.writeFileSync(stylesheetPath, stylesheet);
       fs.appendFileSync(stylesheetPath, `\n${fontStyles}`);
     },
   };

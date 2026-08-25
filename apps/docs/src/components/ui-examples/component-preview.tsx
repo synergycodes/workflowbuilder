@@ -1,15 +1,15 @@
-import componentCss from '@workflowbuilder/ui/index.css?raw';
-import globalCss from '@workflowbuilder/ui/styles.css?raw';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import styles from './component-preview.module.css';
 
+import previewCss from '../../../../../packages/ui/dist/docs-preview.css?raw';
+
 // Examples render in a shadow root so Starlight's rules cannot reach them and
 // the library's cannot leak out. Inherited and custom properties still cross
 // the boundary - that is how the docs theme reaches the examples. Inside a
 // shadow root `:root` matches nothing, hence the retarget to `:host`.
-const shadowCss = `${`${globalCss}\n${componentCss}`.replaceAll(':root', ':host')}
+const shadowCss = `${previewCss.replaceAll(':root', ':host')}
 :host > :not(style) { max-width: 100%; }`;
 
 export function ComponentPreview({ children }: { children: ReactNode }) {

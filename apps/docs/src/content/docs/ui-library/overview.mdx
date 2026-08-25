@@ -42,6 +42,15 @@ The package has five style surfaces:
 The stylesheets reference `./assets/*.woff2`, so preserve the package's `dist`
 layout when copying or serving them.
 
+Only Poppins latin 400 and 600 are inline. Other weights, Inter, and non-ASCII
+glyphs use `font-display: swap` assets, so they can briefly appear in the
+fallback font while loading. Preload the relevant `.woff2` files when that
+flash of unstyled text (FOUT) is unacceptable:
+
+```html
+<link rel="preload" href="/assets/poppins-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+```
+
 With the root barrel, add only the design tokens:
 
 ```ts

@@ -6,14 +6,13 @@ import type { Plugin } from 'vite';
 /**
  * Post-build CSS steps for the multi-entry library bundle. See css-layers.md.
  *
- * Emits `index.css` (all component styles, prefixed with the @layer order)
- * and `styles.css` (the global layer order, reset, typography and fonts), then
- * stamps the @layer order statement into every per-component stylesheet in
- * `dist/assets/`. Duplicate statements are no-ops, so whichever stylesheet
- * loads first establishes the correct order. Do not rely on import order
- * instead: in the built barrel the injected per-chunk CSS evaluates before
- * the entry CSS, so "the declaration loads first" is true in src/ but false
- * in dist/ (the inverted-cascade bug class).
+ * Emits the standalone stylesheets, font assets, and a font-free stylesheet
+ * for docs previews, then stamps the @layer order statement into every
+ * per-component stylesheet in `dist/assets/`. Duplicate statements are
+ * no-ops, so whichever stylesheet loads first establishes the correct order.
+ * Do not rely on import order instead: in the built barrel the injected
+ * per-chunk CSS evaluates before the entry CSS, so "the declaration loads
+ * first" is true in src/ but false in dist/ (the inverted-cascade bug class).
  */
 export function combineCssBundle(rootDirectory: string): Plugin {
   const distributionDirectory = path.resolve(rootDirectory, 'dist');
@@ -23,11 +22,13 @@ export function combineCssBundle(rootDirectory: string): Plugin {
     name: 'wb-ui:combine-css-bundle',
     apply: 'build',
     closeBundle() {
+      assetsDirectoryOf(distributionDirectory);
       const fontStyles = emitFontAssets(distributionDirectory);
       const layerOrder = readLayerOrder(stylesDirectory);
       fs.writeFileSync(path.resolve(distributionDirectory, 'fonts.css'), `${layerOrder}\n${fontStyles}\n`);
       writeCombinedStylesheet(distributionDirectory, stylesDirectory, fontStyles);
       writeGlobalStylesheet(distributionDirectory, stylesDirectory, fontStyles);
+      appendFontStylesToEntryChunk(distributionDirectory, fontStyles);
       prependLayerOrderToAssets(distributionDirectory, stylesDirectory);
     },
   };
@@ -94,7 +95,7 @@ const FONT_FACES: FontFaceDefinition[] = [
 
 const require = createRequire(import.meta.url);
 
-export function emitFontAssets(distributionDirectory: string): string {
+function emitFontAssets(distributionDirectory: string): string {
   const assetsDirectory = path.resolve(distributionDirectory, 'assets');
   fs.mkdirSync(assetsDirectory, { recursive: true });
 
@@ -189,8 +190,9 @@ function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory:
     .map((file) => fs.readFileSync(path.resolve(assetsDirectory, file), 'utf8'))
     .join('\n');
 
-  const combined = `${readLayerOrder(stylesDirectory)}\n${styles}\n${fontStyles}`;
-  fs.writeFileSync(path.resolve(distributionDirectory, 'index.css'), combined);
+  const combined = `${readLayerOrder(stylesDirectory)}\n${styles}`;
+  fs.writeFileSync(path.resolve(distributionDirectory, 'index.css'), `${combined}\n${fontStyles}`);
+  fs.writeFileSync(path.resolve(distributionDirectory, 'docs-preview.css'), combined);
 }
 
 function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: string, fontStyles: string) {
@@ -199,6 +201,19 @@ function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: s
     .join('\n');
 
   fs.writeFileSync(path.resolve(distributionDirectory, 'styles.css'), `${globals}\n${fontStyles}`);
+}
+
+function appendFontStylesToEntryChunk(distributionDirectory: string, fontStyles: string) {
+  const stylesheetPath = path.resolve(assetsDirectoryOf(distributionDirectory), 'index.css');
+  if (!fs.existsSync(stylesheetPath)) {
+    throw new Error(
+      `wb-ui:combine-css-bundle: ${stylesheetPath} is missing - ` +
+        'the root JS barrel has no entry-chunk stylesheet to carry the font faces',
+    );
+  }
+
+  const entryChunkFontStyles = fontStyles.replaceAll('url(./assets/', 'url(./');
+  fs.appendFileSync(stylesheetPath, `\n${entryChunkFontStyles}`);
 }
 
 function prependLayerOrderToAssets(distributionDirectory: string, stylesDirectory: string) {

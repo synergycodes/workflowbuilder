@@ -60,7 +60,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:lib": "vite build",
+    "build:lib": "vite build && pnpm exec tsx ../ui/scripts/check-built-css.ts dist",
     "prepublishOnly": "pnpm build:lib"
   },
   "peerDependencies": {
