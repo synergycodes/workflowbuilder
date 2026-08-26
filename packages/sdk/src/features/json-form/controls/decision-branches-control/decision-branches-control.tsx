@@ -4,14 +4,15 @@ import { useTranslation } from 'react-i18next';
 import styles from './decision-branches-control.module.css';
 
 import { PlaceholderButton } from '../../../diagram/nodes/components/placeholder-button/placeholder-button';
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { DecisionBranch, DecisionBranchesControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { BranchCard } from './branch-card/branch-card';
 import { createDecisionBranch } from './create-decision-branch';
 
 function DecisionBranchesControl(props: DecisionBranchesControlProps) {
-  const { data = [], handleChange, path, enabled, uischema } = props;
-  const isDisabled = !enabled || uischema.disabled === true;
+  const { data = [], handleChange, path } = props;
+  const isEditable = useIsControlEditable(props);
 
   const decisionBranches = data as DecisionBranch[];
 
@@ -33,7 +34,7 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
   }
 
   function onAddBranch() {
-    if (isDisabled) {
+    if (!isEditable) {
       return;
     }
     handleChange(path, [...decisionBranches, createDecisionBranch()]);
@@ -48,7 +49,7 @@ function DecisionBranchesControl(props: DecisionBranchesControlProps) {
           branch={branch}
           onUpdate={onUpdateBranch}
           onRemove={onRemoveBranch}
-          enabled={!isDisabled}
+          enabled={isEditable}
         />
       ))}
       <PlaceholderButton onClick={onAddBranch} label={t('decisionBranches.addBranch')} />
