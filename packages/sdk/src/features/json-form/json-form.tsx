@@ -48,6 +48,7 @@ export function JSONForm(props: Props) {
         ajv={workflowBuilderValidator}
         {...rest}
         config={{ readonly }}
+        readonly={readonly}
       />
     </div>
   );

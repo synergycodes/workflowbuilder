@@ -6,7 +6,7 @@ import { getByPath } from '../../../../../utils/object';
 import type { VariablesIndex } from '../../../types';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
-import { getSuggestionsFromOutputProperties } from './get-suggestions-from-output-properties';
+import { getSuggestionsFromOutputSchema } from './get-suggestions-from-output-schema';
 import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
 
 type Params = {
@@ -43,10 +43,10 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       if (properties) {
         bySourceHandle[sourceHandle] = [
           ...(bySourceHandle[sourceHandle] || []),
-          ...getSuggestionsFromOutputProperties({
+          ...getSuggestionsFromOutputSchema({
             nodeId: node.id,
             nodeLabel,
-            properties: properties,
+            properties,
           }),
         ];
       }
@@ -78,10 +78,10 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
         if (properties) {
           bySourceHandle[sourceHandle] = [
             ...(bySourceHandle[sourceHandle] || []),
-            ...getSuggestionsFromOutputProperties({
+            ...getSuggestionsFromOutputSchema({
               nodeId: node.id,
               nodeLabel,
-              properties: properties,
+              properties,
             }),
           ];
         }

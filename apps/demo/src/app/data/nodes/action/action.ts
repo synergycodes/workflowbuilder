@@ -18,15 +18,17 @@ export const action: PaletteItem<ActionNodeSchema> = {
       success: {
         type: 'object',
         properties: {
-          status: {
-            type: 'string',
-            title: 'Status',
-            description: 'Execution status: success, failure, or skipped',
-          },
           result: {
             type: 'object',
             title: 'Result',
             description: 'The data returned by the action',
+            properties: {
+              status: {
+                type: 'string',
+                title: 'Status',
+                description: 'Execution status: success, failure, or skipped',
+              },
+            },
           },
         },
       },

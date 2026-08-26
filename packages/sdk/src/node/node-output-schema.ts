@@ -24,12 +24,11 @@ export const OUTPUT_SCHEMA_TYPE = {
   PROPERTY_VALUE: 'property-value',
 } as const;
 
-// export type OutputPropertiesIndex = Record<string, OutputProperty | undefined>;
-export type OutputPropertiesIndex = JsonSchema7;
+export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
 
 export type PropertiesBySourceHandle = {
-  [sourceHandle: string]: OutputPropertiesIndex | undefined;
-  every?: OutputPropertiesIndex;
+  [sourceHandle: string]: JsonSchema7 | undefined;
+  every?: JsonSchema7;
 };
 
 export type OutputVariant = {
