@@ -10,6 +10,7 @@ export const triggerPaletteItem: PaletteItem<TriggerSchema> = {
   type: 'ai-studio/trigger',
   icon: 'Lightning',
   templateType: NodeType.StartNode,
+  isStartNode: true,
   defaultPropertiesData,
   schema,
   uischema,
