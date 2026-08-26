@@ -20,6 +20,8 @@ export type FieldControlProps = {
   suffixIcon?: ReactNode;
   /** Renders a clear affordance that invokes this callback. */
   onClear?: () => void;
+  /** Accessible name for the clear affordance rendered when `onClear` is provided. */
+  clearLabel?: string;
   label?: ReactNode;
   helperText?: ReactNode;
   isRequired?: boolean;

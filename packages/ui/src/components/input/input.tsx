@@ -20,6 +20,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
     prefixIcon,
     suffixIcon,
     onClear,
+    clearLabel = 'Clear input',
     label,
     helperText,
     isRequired,
@@ -80,7 +81,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
             <button
               type="button"
               className={inputRootStyles['clear']}
-              aria-label="Clear input"
+              aria-label={clearLabel}
               disabled={disabled || isReadOnly}
               onPointerDown={(event) => event.preventDefault()}
               onClick={onClear}

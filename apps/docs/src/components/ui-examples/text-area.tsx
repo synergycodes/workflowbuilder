@@ -17,6 +17,7 @@ export function TextAreaExample() {
           value={description}
           onChange={(event) => setDescription(event.target.value)}
           onClear={() => setDescription('')}
+          clearLabel="Clear description"
         />
         <TextArea
           size="m"

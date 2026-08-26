@@ -24,6 +24,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
     prefixIcon,
     suffixIcon,
     onClear,
+    clearLabel = 'Clear text area',
     label,
     helperText,
     isRequired,
@@ -88,7 +89,7 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
             <button
               type="button"
               className={styles['clear']}
-              aria-label="Clear text area"
+              aria-label={clearLabel}
               disabled={disabled || isReadOnly}
               onPointerDown={(event) => event.preventDefault()}
               onClick={onClear}

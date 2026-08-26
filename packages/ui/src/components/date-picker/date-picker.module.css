@@ -11,9 +11,9 @@
     }
 
     &.container--error {
-      background-color: var(--ax-public-input-root-background-color-error);
-      border-color: var(--ax-public-input-root-border-color-error);
-      color: var(--ax-public-input-root-color-error);
+      background-color: var(--ax-public-input-root-background-color-critical);
+      border-color: var(--ax-public-input-root-border-color-critical);
+      color: var(--ax-public-input-root-color-critical);
     }
 
     &.container--placeholder {

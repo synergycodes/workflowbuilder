@@ -20,6 +20,7 @@ export function InputExample() {
           value={search}
           onChange={(event) => setSearch(event.target.value)}
           onClear={() => setSearch('')}
+          clearLabel="Clear search"
         />
         <Input
           size="m"

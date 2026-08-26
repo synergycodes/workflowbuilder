@@ -18,13 +18,13 @@
   transition: all var(--ax-public-transition);
 
   &.control--error {
-    background-color: var(--ax-public-input-root-background-color-error);
-    border-color: var(--ax-public-input-root-border-color-error);
-    color: var(--ax-public-input-root-color-error);
+    background-color: var(--ax-public-input-root-background-color-critical);
+    border-color: var(--ax-public-input-root-border-color-critical);
+    color: var(--ax-public-input-root-color-critical);
 
     .mention {
-      border: 1px solid color-mix(in srgb, var(--ax-public-input-root-border-color-error), transparent 90%);
-      background-color: color-mix(in srgb, var(--ax-public-input-root-border-color-error), transparent 90%);
+      border: 1px solid color-mix(in srgb, var(--ax-public-input-root-border-color-critical), transparent 90%);
+      background-color: color-mix(in srgb, var(--ax-public-input-root-border-color-critical), transparent 90%);
     }
   }
 }
