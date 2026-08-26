@@ -3,7 +3,7 @@ import { Chip } from '@workflowbuilder/ui';
 
 import { ComponentPreview } from './component-preview';
 
-export function ChipsExample() {
+export function ChipExample() {
   return (
     <ComponentPreview>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>

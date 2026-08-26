@@ -2,7 +2,7 @@ import { X } from '@phosphor-icons/react';
 import clsx from 'clsx';
 import { HTMLAttributes, ReactNode, forwardRef } from 'react';
 
-import styles from './chips.module.css';
+import styles from './chip.module.css';
 
 export type ChipProps = {
   label: string;
