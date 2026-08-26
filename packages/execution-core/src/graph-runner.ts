@@ -68,7 +68,7 @@ export async function runGraph<TNode extends BaseNode>(
     pendingPredecessors: new Map(inDegree),
     liveIncoming: new Map(input.definition.nodes.map((node) => [node.id, 0])),
     status: new Map(input.definition.nodes.map((node) => [node.id, 'pending'])),
-    prunedFromLiveSource: new Set(),
+    livePruneKind: new Map(),
   };
 
   let ready: TNode[] = [startNode];
@@ -181,10 +181,20 @@ type SchedulerState<TNode extends BaseNode> = {
   status: Map<string, NodeStatus>;
   // Nodes with at least one incoming edge pruned while its source was live — an upstream
   // node ran and routed elsewhere. Separates the head of a dead branch from the rest of it
-  // when reporting why a node was skipped. A set, not a flag overwritten by the last edge
-  // resolved: the reason must not depend on the order a node's predecessors resolve in.
-  prunedFromLiveSource: Set<string>;
+  // when reporting why a node was skipped, and distinguishes a dormant error branch
+  // ('error') from one something actively routed away from ('branch').
+  //
+  // Not a flag overwritten by the last edge resolved: the reason must not depend on the
+  // order a node's predecessors resolve in. 'branch' outranks 'error' and is never
+  // overwritten, so the recorded kind is a pure function of the set of prunings.
+  livePruneKind: Map<string, LivePruneKind>;
 };
+
+// How an incoming edge died while its source was still live. 'error' — the edge is
+// reserved for error routing and the source never error-routed. 'branch' — anything
+// else: a decision picked another handle, or an error-routing source pruned a
+// regular branch.
+type LivePruneKind = 'branch' | 'error';
 
 type SkippedNode = { id: string; reason: NodeSkipReason };
 
@@ -219,7 +229,10 @@ function propagate<TNode extends BaseNode>(
       if (edgeLive) {
         state.liveIncoming.set(target.id, (state.liveIncoming.get(target.id) ?? 0) + 1);
       } else if (sourceLive) {
-        state.prunedFromLiveSource.add(target.id);
+        const kind: LivePruneKind = sourceHandle === RESERVED_ERROR_HANDLE ? 'error' : 'branch';
+        if (state.livePruneKind.get(target.id) !== 'branch') {
+          state.livePruneKind.set(target.id, kind);
+        }
       }
 
       if ((state.pendingPredecessors.get(target.id) ?? 0) === 0 && state.status.get(target.id) === 'pending') {
@@ -227,15 +240,20 @@ function propagate<TNode extends BaseNode>(
           out.push(target);
         } else {
           state.status.set(target.id, 'skipped');
-          skippedOut.push({
-            id: target.id,
-            reason: state.prunedFromLiveSource.has(target.id) ? 'branch_not_taken' : 'upstream_skipped',
-          });
+          skippedOut.push({ id: target.id, reason: skipReason(state.livePruneKind.get(target.id)) });
           queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false });
         }
       }
     }
   }
+}
+
+function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
+  if (kind === undefined) {
+    return 'upstream_skipped';
+  }
+
+  return kind === 'error' ? 'error_route_not_taken' : 'branch_not_taken';
 }
 
 type NodeRunResult<TNode extends BaseNode> =

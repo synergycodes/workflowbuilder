@@ -1009,6 +1009,9 @@ describe('runGraph — errorPolicy', () => {
 
     expect(runner.callOrder).toEqual(['A', 'B', 'Success']);
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'ErrorBranch')).toBe(false);
+    // B failed, but its dedicated error edge is dormant rather than routed away from —
+    // reporting 'branch_not_taken' here would read as a contradiction next to node_failed.
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'ErrorBranch', reason: 'error_route_not_taken' }]);
     expect(events.statuses.at(-1)?.status).toBe('completed');
   });
 
@@ -1029,7 +1032,85 @@ describe('runGraph — errorPolicy', () => {
 
     expect(runner.callOrder).toEqual(['A', 'Success']);
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'ErrorBranch')).toBe(false);
+    // Every healthy run of a graph with error handling wired up lands here, so the
+    // reason has to say "nothing failed" rather than "a branch was not taken".
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'ErrorBranch', reason: 'error_route_not_taken' }]);
     expect(events.statuses.at(-1)?.status).toBe('completed');
+  });
+
+  it('dormant error branch — the subtree below it is still upstream_skipped', async () => {
+    // Only the head of the dormant branch gets the error-specific reason; nodes deeper
+    // in it were skipped because their predecessor was, same as any other dead branch.
+    const runner = makeRunner({});
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('Success'), trigger('ErrorBranch'), trigger('Cleanup')],
+        [
+          edge('e1', 'A', 'Success'),
+          edge('e2', 'A', 'ErrorBranch', 'errorRoute'),
+          edge('e3', 'ErrorBranch', 'Cleanup'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(skipsFrom(events.events)).toEqual([
+      { nodeId: 'ErrorBranch', reason: 'error_route_not_taken' },
+      { nodeId: 'Cleanup', reason: 'upstream_skipped' },
+    ]);
+  });
+
+  it('mixed incoming pruning — a routed-away branch outranks a dormant error edge', async () => {
+    // J hangs off both S1's dormant error edge and S2's branch that routed to K.
+    // Something actively routed away from J, so that is the reason worth reporting;
+    // calling it a dormant error branch would hide a real routing decision.
+    const runner = makeRunner({ S2: { output: 's2', nextPort: 'P' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('S1'), trigger('S2'), trigger('J'), trigger('K')],
+        [
+          edge('e1', 'A', 'S1'),
+          edge('e2', 'A', 'S2'),
+          edge('e3', 'S1', 'J', 'errorRoute'),
+          edge('e4', 'S2', 'J', 'Q'),
+          edge('e5', 'S2', 'K', 'P'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder.sort()).toEqual(['A', 'K', 'S1', 'S2']);
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'J', reason: 'branch_not_taken' }]);
+  });
+
+  it('mixed incoming pruning — precedence holds when the error edge resolves last', async () => {
+    // Mirror of the previous case with the two sources declared the other way round.
+    // A last-edge-wins rule would flip this to error_route_not_taken.
+    const runner = makeRunner({ S2: { output: 's2', nextPort: 'P' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('S2'), trigger('S1'), trigger('J'), trigger('K')],
+        [
+          edge('e1', 'A', 'S2'),
+          edge('e2', 'A', 'S1'),
+          edge('e3', 'S2', 'J', 'Q'),
+          edge('e4', 'S1', 'J', 'errorRoute'),
+          edge('e5', 'S2', 'K', 'P'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'J', reason: 'branch_not_taken' }]);
   });
 });
 

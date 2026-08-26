@@ -13,6 +13,7 @@ import { extractOutputText } from '../../utils/extract-output-text';
 const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
   branch_not_taken: 'branch not taken',
   upstream_skipped: 'upstream skipped',
+  error_route_not_taken: 'error branch not taken',
 };
 
 const DETAIL_PREVIEW_CHARS = 120;
