@@ -87,19 +87,23 @@ export async function runGraph<TNode extends BaseNode>(
     const results = await Promise.all(ready.map((node) => runNode(node, context, runner, events, input.executionId)));
 
     // Fatal failures (policy 'fail') abort the whole execution — pick the first
-    // one in deterministic node order, just like the previous behavior.
+    // one in deterministic node order, just like the previous behavior. The abort
+    // itself waits until the wave has propagated and emitted its skips: siblings
+    // that resolved in this same wave still owe their `node_skipped` events, and
+    // `execution_failed` has to stay the last event of the run.
     const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
-    if (fatal && fatal.failed) {
-      return await failExecution(input.executionId, events, { message: fatal.message, code: fatal.code });
-    }
 
     const newlyReady: TNode[] = [];
     const skipped: SkippedNode[] = [];
     for (const result of results) {
       if (result.failed) {
+        const policy = resolveErrorPolicy(result.node);
+        // A fatal node resolves nothing — no output, no propagation — so its
+        // successors keep their pending predecessor count and emit no event.
+        // Never reached is a different state from deliberately skipped.
+        if (policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
         // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
-        const policy = resolveErrorPolicy(result.node);
         const errorOutput =
           result.code === undefined
             ? { error: { message: result.message } }
@@ -119,10 +123,20 @@ export async function runGraph<TNode extends BaseNode>(
     // the wave that pruned it rather than arriving mid-wave. Order is a pure function of
     // the definition: `results` follows `ready`, which follows `definition.nodes`, and
     // `propagate` walks the dead subtree breadth-first from there — nothing wall-clock or
-    // completion-order dependent, so a replay reproduces it. Emit failures are not
-    // swallowed: as with every other lifecycle emit, an exhausted `emitEvent` fails the run.
+    // completion-order dependent, so a replay reproduces it. An exhausted `emitEvent` is
+    // swallowed rather than failing the run: the event is advisory, so a node that was
+    // never going to execute must not be able to abort a run that is otherwise healthy.
     for (const node of skipped) {
-      await events.emitEvent(input.executionId, 'node_skipped', { reason: node.reason }, node.id);
+      try {
+        await events.emitEvent(input.executionId, 'node_skipped', { reason: node.reason }, node.id);
+      } catch {
+        // Swallowed on purpose — see above. Nothing is logged: this runs inside the
+        // Temporal workflow sandbox, which has no LoggerPort.
+      }
+    }
+
+    if (fatal && fatal.failed) {
+      return await failExecution(input.executionId, events, { message: fatal.message, code: fatal.code });
     }
 
     ready = newlyReady;

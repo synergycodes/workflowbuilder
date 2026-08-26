@@ -208,6 +208,30 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     ]);
   });
 
+  it('fatal wave with sibling skips — the skips-then-execution_failed tail is stable', async () => {
+    // The abort path now emits the wave's skips before failExecution, so two ordered
+    // emissions race in the same wave: D's propagation and C's fatal failure. Both are
+    // resolved from `results` order, not completion order, so the tail must be identical
+    // every run — with execution_failed last, which the SSE drain treats as terminal.
+    const input = makeInput(
+      [start('A'), trigger('D'), trigger('C'), trigger('L'), trigger('M')],
+      [edge('e1', 'A', 'D'), edge('e2', 'A', 'C'), edge('e3', 'D', 'L', 'X'), edge('e4', 'D', 'M', 'Y')],
+    );
+
+    const records = await runNTimes(
+      input,
+      { D: { output: 'd', nextPort: 'X' }, C: { throws: { message: 'hard' } } },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.map((event) => `${event.type}:${event.nodeId ?? '-'}`).slice(-2)).toEqual([
+      'node_skipped:M',
+      'execution_failed:-',
+    ]);
+    expect(records[0]!.statuses.at(-1)?.status).toBe('failed');
+  });
+
   it('node failure — failure path is deterministic too (same error code, same event sequence)', async () => {
     // The catch branch builds errorPayload from the thrown error. Across
     // replays the activity returns the same error (cached in history), so

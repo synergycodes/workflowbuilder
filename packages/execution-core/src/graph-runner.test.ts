@@ -618,6 +618,22 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     expectNoConsoleWrites();
   });
 
+  it('a swallowed node_skipped emit failure writes nothing to console', async () => {
+    // The catch around the skip emit is the one place tempted into a console.warn.
+    // Inside the sandbox that would poison replay, so the failure stays silent.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' } });
+    const events = makeEvents({ type: 'node_skipped', nodeId: 'C', message: 'events table unreachable' });
+
+    await runGraph(
+      makeInput([start('D'), trigger('B'), trigger('C')], [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(events.statuses.at(-1)?.status).toBe('completed');
+    expectNoConsoleWrites();
+  });
+
   it('a stalled run (cycle) writes nothing to console — stall surfaces via execution_failed event', async () => {
     // B↔C cycle reachable from A. Runner can't drain it; the post-loop stall
     // check fires and emits execution_failed via EventEmitterPort — no console.
@@ -848,8 +864,9 @@ describe('runGraph — errorPolicy', () => {
   });
 
   it('mixed policies in one wave — a fatal failure still aborts even alongside continue', async () => {
-    // A fans out to B (continue, fails) and C (fail, fails). The fatal failure
-    // wins; B's absorbed error never gets propagated because the run aborts.
+    // A fans out to B (continue, fails) and C (fail, fails). The fatal failure wins.
+    // B still propagates — its absorbed error reaches S — but S became ready in the
+    // aborted wave, so it never runs and emits nothing.
     const runner = makeRunner({
       B: { throws: 'soft' },
       C: { throws: 'hard' },
@@ -858,13 +875,106 @@ describe('runGraph — errorPolicy', () => {
 
     await runGraph(
       makeInput(
-        [start('A'), trigger('B', 'continue'), trigger('C', 'fail')],
-        [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')],
+        [start('A'), trigger('B', 'continue'), trigger('C', 'fail'), trigger('S')],
+        [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'S')],
       ),
       runner.port,
       events.port,
     );
 
+    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'hard' });
+    expect(runner.callOrder).not.toContain('S');
+    expect(events.events.some((event) => event.nodeId === 'S')).toBe(false);
+  });
+
+  it("fatal wave — a surviving sibling's dead branch is skipped before execution_failed", async () => {
+    // A fans out to D (routes to X) and C (fatal). D's pruned Y branch still owes a
+    // node_skipped: a failed run is exactly where a post-mortem needs to tell "never
+    // taken" from "never reached". execution_failed stays last so the SSE drain, which
+    // closes on the terminal event, never truncates the skips.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' }, C: { throws: 'hard' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('A'), trigger('D'), trigger('C', 'fail'), trigger('L'), trigger('M')],
+        [edge('e1', 'A', 'D'), edge('e2', 'A', 'C'), edge('e3', 'D', 'L', 'X'), edge('e4', 'D', 'M', 'Y')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'M', reason: 'branch_not_taken' }]);
+    expect(events.events.at(-1)?.type).toBe('execution_failed');
+    expect(events.events.at(-2)).toMatchObject({ type: 'node_skipped', nodeId: 'M' });
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'hard' } });
+    // L became ready in the aborted wave — never reached, so no event of its own.
+    expect(events.events.some((event) => event.nodeId === 'L')).toBe(false);
+  });
+
+  it('fatal wave — nodes downstream of the fatal node get no event at all', async () => {
+    // N sits behind the fatal C. It is not skipped (nothing routed away from it),
+    // it is simply never resolved — the distinction the sibling execution_incomplete
+    // work owns. Emitting node_skipped here would claim a decision that never happened.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' }, C: { throws: 'hard' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('D'), trigger('C', 'fail'), trigger('L'), trigger('M'), trigger('N')],
+        [
+          edge('e1', 'A', 'D'),
+          edge('e2', 'A', 'C'),
+          edge('e3', 'D', 'L', 'X'),
+          edge('e4', 'D', 'M', 'Y'),
+          edge('e5', 'C', 'N'),
+        ],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(events.events.some((event) => event.nodeId === 'N')).toBe(false);
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'M', reason: 'branch_not_taken' }]);
+  });
+
+  it('two fatal failures in one wave — the first in node order names the failure, neither propagates', async () => {
+    const runner = makeRunner({ C1: { throws: 'first' }, C2: { throws: 'second' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('A'), trigger('C1', 'fail'), trigger('C2', 'fail'), trigger('X1'), trigger('X2')],
+        [edge('e1', 'A', 'C1'), edge('e2', 'A', 'C2'), edge('e3', 'C1', 'X1'), edge('e4', 'C2', 'X2')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'first' } });
+    expect(events.events.some((event) => event.nodeId === 'X1' || event.nodeId === 'X2')).toBe(false);
+    expect(events.events.at(-1)?.type).toBe('execution_failed');
+  });
+
+  it("fatal wave — an 'errorRoute' sibling still routes, and its pruned branch is skipped", async () => {
+    // R fails with errorRoute in the same wave as the fatal C. R's error routing still
+    // happens (S is pruned and reported), but Recover became ready in the aborted wave,
+    // so it never runs.
+    const runner = makeRunner({ R: { throws: 'soft' }, C: { throws: 'hard' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('R', 'errorRoute'), trigger('C', 'fail'), trigger('Recover'), trigger('S')],
+        [edge('e1', 'A', 'R'), edge('e2', 'A', 'C'), edge('e3', 'R', 'Recover', 'errorRoute'), edge('e4', 'R', 'S')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'S', reason: 'branch_not_taken' }]);
+    expect(events.events.some((event) => event.nodeId === 'Recover')).toBe(false);
+    expect(events.events.at(-1)?.type).toBe('execution_failed');
     expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'hard' });
   });
 
@@ -920,5 +1030,68 @@ describe('runGraph — errorPolicy', () => {
     expect(runner.callOrder).toEqual(['A', 'Success']);
     expect(events.events.some((event) => event.type === 'node_started' && event.nodeId === 'ErrorBranch')).toBe(false);
     expect(events.statuses.at(-1)?.status).toBe('completed');
+  });
+});
+
+describe('runGraph — node_skipped emit failures', () => {
+  // node_skipped is advisory: it reports a node that was never going to execute.
+  // An exhausted emit must therefore not take down a run that is otherwise healthy —
+  // unlike node_started/node_completed, which describe real work and route through
+  // errorPolicy. The lost row leaves a sequence gap the backend drain steps over.
+  it('a failing node_skipped emit does not fail the run', async () => {
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' } });
+    const events = makeEvents({ type: 'node_skipped', nodeId: 'C', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput([start('D'), trigger('B'), trigger('C')], [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(events.statuses.at(-1)).toEqual({ status: 'completed', errorMessage: undefined });
+    expect(events.events.some((event) => event.type === 'execution_completed')).toBe(true);
+    // The run carried on past the failed emit — B still executed.
+    expect(runner.callOrder).toEqual(['D', 'B']);
+  });
+
+  it('a failing skip emit does not suppress the remaining skips of the wave', async () => {
+    // Per-emit try/catch, not one wrapping the loop: C2 is still reported after C1 fails.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' } });
+    const events = makeEvents({ type: 'node_skipped', nodeId: 'C1', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('D'), trigger('B'), trigger('C1'), trigger('C2')],
+        [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C1', 'Y'), edge('e3', 'D', 'C2', 'Z')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(skipsFrom(events.events)).toEqual([
+      { nodeId: 'C1', reason: 'branch_not_taken' },
+      { nodeId: 'C2', reason: 'branch_not_taken' },
+    ]);
+    expect(outcome).toEqual({ status: 'completed' });
+  });
+
+  it('a failing skip emit in a fatal wave still ends with execution_failed last', async () => {
+    // The swallowed emit must not disturb the terminal-event contract.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'X' }, C: { throws: 'hard' } });
+    const events = makeEvents({ type: 'node_skipped', nodeId: 'M', message: 'events table unreachable' });
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('A'), trigger('D'), trigger('C', 'fail'), trigger('L'), trigger('M')],
+        [edge('e1', 'A', 'D'), edge('e2', 'A', 'C'), edge('e3', 'D', 'L', 'X'), edge('e4', 'D', 'M', 'Y')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(events.events.at(-1)?.type).toBe('execution_failed');
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'hard' } });
+    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: 'hard' });
   });
 });

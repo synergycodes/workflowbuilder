@@ -149,6 +149,10 @@ The reason does not depend on the order a node's predecessors happen to resolve 
 
 Events are emitted once the whole wave has propagated, after that wave's `node_completed` events and before the next wave's `node_started`. A skipped node emits exactly one `node_skipped` and no `node_started`/`node_completed`, so it stays absent from `nodeOutputs` — downstream joins see only the live predecessors' outputs.
 
+A wave that contains a fatal (`'fail'`) failure still emits the skips its surviving siblings produced, before the terminal `execution_failed` — a failed run is where the "never taken" / "never reached" distinction matters most. Nodes downstream of the fatal node itself emit nothing: they were never resolved, which is not the same as being skipped.
+
+A `node_skipped` emit that exhausts its retries is swallowed and the run carries on. The event is advisory — a node that was never going to execute must not be able to abort an otherwise healthy run — and the sequence number the failed emit consumed leaves a gap the backend drain steps over.
+
 ## Template references
 
 `resolveTemplate(template, context)` (in `src/templates/`) interpolates `{{namespace.path}}` references against the live `ExecutionContext`. Three forms are supported - **strict by default**, with two opt-in modifiers for missing values:
