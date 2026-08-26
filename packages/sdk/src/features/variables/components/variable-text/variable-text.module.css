@@ -63,8 +63,8 @@
  * ALL text must be transparent — user reads text from the input layer above.
  * Only mention backgrounds are visible through the transparent input background.
  *
- * The library uses Tailwind utility classes (text-transparent, etc.) internally
- * which have no effect without Tailwind — we must set them manually.
+ * The library's text-transparent utility has no effect without Tailwind, so the
+ * transparent color must be set manually.
  */
 .highlighter {
   composes: wb-text-label-m from global;

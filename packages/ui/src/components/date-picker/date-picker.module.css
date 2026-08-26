@@ -55,6 +55,18 @@
     transition: background-color 0.12s ease;
   }
 
+  .calendar :global(.rdp-weekday) {
+    font-size: 12px;
+    font-weight: 400;
+    line-height: 130%;
+  }
+
+  .calendar :global(.rdp-month_caption) {
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 130%;
+  }
+
   /* month-nav chevrons: react-day-picker paints them with --rdp-accent-color;
      render them as a neutral nav control so both arrows match each other and the
      rest of the calendar. */
@@ -69,5 +81,8 @@
   .calendar :global(.rdp-selected .rdp-day_button) {
     background-color: var(--wb-public-date-picker-date-selected-background-color);
     color: var(--wb-public-date-picker-date-selected-color);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 130%;
   }
 }

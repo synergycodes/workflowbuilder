@@ -58,7 +58,6 @@ export function EdgeLabel({
   return (
     <EdgeLabelRenderer>
       <Label
-        className="wb-text-label-m"
         data-edge-label-id={id}
         style={style}
         isHovered={hovered}

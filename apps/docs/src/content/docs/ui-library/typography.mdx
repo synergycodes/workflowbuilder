@@ -14,9 +14,7 @@ size, weight, and line-height — so text never hard-codes font values.
 <span class="wb-text-label-l-emphasized">Connection: active</span>
 ```
 
-Two typefaces ship with `@workflowbuilder/ui` itself (via the root import; subpath-only consumers load them independently): **Poppins** for every UI role and
-**Inter** for the `wb-text-code` role. Emphasized maps to SemiBold (600),
-Regular to 400.
+Two typefaces ship with `@workflowbuilder/ui` itself (via the root import; subpath-only consumers load them independently): **Poppins** for the display, headline, title, body, label, and node roles, and **Inter** for `wb-text-code`. The `wb-text-code-mono` role uses a fixed-width system stack. Emphasized maps to SemiBold (600), Regular to 400.
 
 ## The scale
 
@@ -29,11 +27,12 @@ Regular to 400.
 | Label    | Buttons, chips, captions       | `label-s` · `label-m` · `label-l` · `label-xl` | 10 · 12 · 14 · 16 |
 | Node     | Canvas node and port labels    | `node-s` · `node-m` · `node-l`                 | 11 · 13 · 16      |
 | UI/Code  | Code, token names, IDs         | `code` (Regular only)                          | 12                |
+| UI/Mono  | Fixed-width editor content     | `code-mono` (Regular only)                     | 12                |
 
-Every family except UI/Code doubles with an `-emphasized` variant
-(`wb-text-title-m-emphasized`), for 39 styles total.
+Every family except UI/Code and UI/Mono doubles with an `-emphasized` variant
+(`wb-text-title-m-emphasized`), for 40 styles total.
 
-`wb-text-code` is proportional Inter. Editors whose cursor model requires fixed-width glyphs, such as Ace, keep a monospace family while using the role's size, weight, and line-height.
+`wb-text-code` is proportional Inter. Use `wb-text-code-mono` for editors whose cursor model requires fixed-width glyphs.
 
 Which role to reach for:
 
@@ -48,6 +47,7 @@ Which role to reach for:
 | Chips (every size)              | `label-s`                        |
 | Canvas node and port labels     | `node-s`/`-m`                    |
 | Code, token names, IDs          | `code`                           |
+| Fixed-width editor content      | `code-mono`                      |
 
 ## Font-size tokens
 
@@ -57,6 +57,6 @@ rem). Until the token export ships them through
 `@workflowbuilder/ui/tokens.css`, the classes define these primitives
 themselves — the migration swaps the source without touching consumers.
 
-The pre-2.0 `ax-public-*` typography classes are deprecated and retained only
+The legacy `ax-public-*` classes are deprecated and retained only
 for compatibility while components move to `wb-text-*`. Do not adopt them in
 new code; their removal will be announced with a future major release.

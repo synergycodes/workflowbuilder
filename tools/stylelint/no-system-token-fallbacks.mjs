@@ -11,6 +11,7 @@ import valueParser from 'postcss-value-parser';
 import stylelint from 'stylelint';
 
 const ruleName = 'wb/no-system-token-fallbacks';
+const tokensWithRequiredFallbacks = new Set(['--wb-public-font-family', '--wb-public-font-family-mono']);
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
   rejected: (name) => `Unexpected fallback on system token "${name}" — fallbacks mask typos`,
@@ -26,7 +27,7 @@ const rule = (primary) => (root, result) => {
     valueParser(decl.value).walk((node) => {
       if (node.type !== 'function' || node.value !== 'var') return;
       const [first, ...rest] = node.nodes;
-      if (!first || !/^--(wb|ax)-/.test(first.value)) return;
+      if (!first || !/^--(wb|ax)-/.test(first.value) || tokensWithRequiredFallbacks.has(first.value)) return;
       if (rest.some((argument) => argument.type === 'div' && argument.value === ',')) {
         stylelint.utils.report({
           ruleName,

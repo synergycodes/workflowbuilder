@@ -34,12 +34,14 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         readOnly={isDisabled}
         width="100%"
         height="auto"
+        fontSize={14}
         style={{
           textIndent: 'none',
           minHeight: '1rem',
           boxSizing: 'border-box',
         }}
         setOptions={{
+          fontFamily: "ui-monospace, 'Cascadia Mono', monospace",
           useWorker: false,
           enableBasicAutocompletion: false,
           enableLiveAutocompletion: false,

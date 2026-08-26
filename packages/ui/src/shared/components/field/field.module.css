@@ -17,6 +17,7 @@
     width: 100%;
     flex-direction: column;
     gap: var(--wb-public-field-gap);
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   }
 
   .label,

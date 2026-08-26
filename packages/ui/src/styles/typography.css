@@ -1,4 +1,9 @@
 @layer ui.base {
+  :root {
+    --wb-public-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --wb-public-font-family-mono: ui-monospace, 'Cascadia Mono', monospace;
+  }
+
   /* Heading and paragraph styles */
 
   .ax-public-h1,
@@ -13,7 +18,7 @@
   .ax-public-h10,
   .ax-public-h11,
   .ax-public-h12 {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
     font-weight: 600;
   }
 
@@ -29,7 +34,7 @@
   .ax-public-p10,
   .ax-public-p11,
   .ax-public-p12 {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
     font-weight: 400;
   }
 
@@ -132,7 +137,7 @@
   .ax-public-button-medium,
   .ax-public-button-small,
   .ax-public-button-extra-small {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
     font-weight: 600;
     line-height: 100%;
   }
@@ -158,7 +163,7 @@
   .ax-public-edge-label-medium,
   .ax-public-edge-label-small,
   .ax-public-edge-label-extra-small {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   }
 
   .ax-public-edge-label-medium {
@@ -214,11 +219,15 @@
   .wb-text-node-s-emphasized,
   .wb-text-node-m-emphasized,
   .wb-text-node-l-emphasized {
-    font-family: 'Poppins', system-ui, sans-serif;
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   }
 
   .wb-text-code {
     font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .wb-text-code-mono {
+    font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
   }
 
   .wb-text-display-s,
@@ -240,7 +249,8 @@
   .wb-text-node-s,
   .wb-text-node-m,
   .wb-text-node-l,
-  .wb-text-code {
+  .wb-text-code,
+  .wb-text-code-mono {
     font-weight: 400;
   }
 
@@ -358,7 +368,8 @@
     line-height: 140%;
   }
 
-  .wb-text-code {
+  .wb-text-code,
+  .wb-text-code-mono {
     font-size: var(--wb-font-size-150);
     line-height: 130%;
   }

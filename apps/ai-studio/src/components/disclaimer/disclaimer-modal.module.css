@@ -15,7 +15,7 @@
   width: 100%;
   max-width: 460px;
   padding: 2rem;
-  font-family: var(--wb-font-family);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   background: var(--wb-ui-bg-base);
   border: 0.0625rem solid var(--wb-ui-stroke-default);
   border-radius: var(--wb-app-bar-border-radius);
