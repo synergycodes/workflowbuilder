@@ -21,7 +21,6 @@ export type OutputProperty = {
 export const OUTPUT_SCHEMA_TYPE = {
   DEFAULT: 'default',
   VARIANT: 'variant',
-  PROPERTY_VALUE: 'property-value',
 } as const;
 
 export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
@@ -31,15 +30,28 @@ export type PropertiesBySourceHandle = {
   every?: JsonSchema7;
 };
 
-export type OutputVariant = {
-  variantRule:
-    | undefined
-    | {
-        dataPropertyName: string;
-        dataPropertyValue: string;
+export type OutputVariant =
+  | {
+      variantRule:
+        | undefined
+        | {
+            onlyIfPropertyNameEquals: { path: string; value: string | number };
+          };
+      bySourceHandle: PropertiesBySourceHandle;
+    }
+  | {
+      variantRule: {
+        onlyIfPropertyNameEquals: { path: string; value: string | number };
+        fromValueOfPropertyPath: string;
+        toSourceHandles: string[];
       };
-  bySourceHandle: PropertiesBySourceHandle;
-};
+    }
+  | {
+      variantRule: {
+        fromValueOfPropertyPath: string;
+        toSourceHandles: string[];
+      };
+    };
 
 export type NodeOutputSchemaDefault = {
   type: 'default';
@@ -54,12 +66,4 @@ export type NodeOutputSchemaVariant = {
   variants: OutputVariant[];
 };
 
-export type NodeOutputSchemaPropertyValue = {
-  /*
-    Value is built dynamically in the node property.
-  */
-  type: 'property-value';
-  propertyPath: string;
-};
-
-export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant | NodeOutputSchemaPropertyValue;
+export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant;

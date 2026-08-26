@@ -62,28 +62,63 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
   if (definition.outputSchema.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
     const variantsMatchingDataPropertyValue = Object.values(definition.outputSchema.variants)
       .filter((variant) => {
-        if (!variant?.variantRule) {
-          return true;
+        if (variant.variantRule && 'onlyIfPropertyNameEquals' in variant.variantRule) {
+          const { path, value } = variant.variantRule.onlyIfPropertyNameEquals;
+          const isValid = getByPath(node.data.properties, path) === value;
+
+          if (!isValid) {
+            return false;
+          }
         }
 
-        const isValidPropertyValue =
-          node.data.properties[variant.variantRule.dataPropertyName] === variant.variantRule.dataPropertyValue;
-
-        return isValidPropertyValue;
+        // No rule is always a match
+        return true;
       })
       .filter(filterEmpty);
 
     for (const variant of variantsMatchingDataPropertyValue) {
-      for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle)) {
-        if (properties) {
-          bySourceHandle[sourceHandle] = [
-            ...(bySourceHandle[sourceHandle] || []),
-            ...getSuggestionsFromOutputSchema({
-              nodeId: node.id,
-              nodeLabel,
-              properties,
-            }),
-          ];
+      // Default variables by sourceHandle
+      if ('bySourceHandle' in variant) {
+        for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle)) {
+          if (properties) {
+            bySourceHandle[sourceHandle] = [
+              ...(bySourceHandle[sourceHandle] || []),
+              ...getSuggestionsFromOutputSchema({
+                nodeId: node.id,
+                nodeLabel,
+                properties,
+              }),
+            ];
+          }
+        }
+      }
+
+      if (
+        variant.variantRule &&
+        'fromValueOfPropertyPath' in variant.variantRule &&
+        variant.variantRule.fromValueOfPropertyPath
+      ) {
+        const variablesIndex = getByPath(
+          node.data.properties,
+          variant.variantRule.fromValueOfPropertyPath,
+        ) as unknown as VariablesIndex | undefined;
+
+        const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
+
+        // TODO: Add better guard
+        // It's an output of schema-builder control
+        if (variablesIndex) {
+          const suggestions = getSuggestionsFromVariableIndex({
+            variablesIndex,
+            nodeId: node.id,
+            nodeLabel,
+            variant: 'nodes',
+          });
+
+          for (const sourceHandle of sourceHandlesToAdd) {
+            console.log(sourceHandle);
+            bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+          }
         }
       }
     }
@@ -91,38 +126,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return {
       type: SUGGESTION_NODE_TYPE.CUSTOM,
       bySourceHandle,
-    };
-  }
-
-  // Build with schema builder control
-  if (definition?.outputSchema.type === OUTPUT_SCHEMA_TYPE.PROPERTY_VALUE) {
-    // TODO: Add better guard
-    const variablesIndex = getByPath(node.data.properties, definition.outputSchema.propertyPath) as unknown as
-      | VariablesIndex
-      | undefined;
-
-    if (!variablesIndex) {
-      return {
-        ...EMPTY_NODE_SUGGESTIONS,
-        /*
-          It's custom because it has built-in controls, and even if it's empty, that doesn't mean the others are empty too.
-        */
-        type: SUGGESTION_NODE_TYPE.CUSTOM,
-      };
-    }
-
-    const suggestions = getSuggestionsFromVariableIndex({
-      variablesIndex,
-      nodeId: node.id,
-      nodeLabel,
-      variant: 'nodes',
-    });
-
-    return {
-      type: SUGGESTION_NODE_TYPE.CUSTOM,
-      bySourceHandle: {
-        success: suggestions,
-      },
     };
   }
 

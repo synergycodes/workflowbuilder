@@ -38,8 +38,7 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
       },
       {
         variantRule: {
-          dataPropertyName: 'type',
-          dataPropertyValue: 'timeBasedTrigger',
+          onlyIfPropertyNameEquals: { path: 'type', value: 'timeBasedTrigger' },
         },
         bySourceHandle: {
           success: {
@@ -68,8 +67,7 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
       },
       {
         variantRule: {
-          dataPropertyName: 'type',
-          dataPropertyValue: 'eventBasedTrigger',
+          onlyIfPropertyNameEquals: { path: 'type', value: 'eventBasedTrigger' },
         },
         bySourceHandle: {
           success: {
