@@ -19,15 +19,19 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
         variantRule: undefined,
         bySourceHandle: {
           every: {
-            eventType: {
-              type: 'string',
-              label: 'Event Type',
-              description: 'The type of event that started the workflow',
-            },
-            timestamp: {
-              type: 'datetime',
-              label: 'Timestamp',
-              description: 'ISO 8601 date-time when the trigger fired',
+            type: 'object',
+            properties: {
+              eventType: {
+                type: 'string',
+                title: 'Event Type',
+                description: 'The type of event that started the workflow',
+              },
+              timestamp: {
+                type: 'string',
+                format: 'date-time',
+                title: 'Timestamp',
+                description: 'ISO 8601 date-time when the trigger fired',
+              },
             },
           },
         },
@@ -39,20 +43,25 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
         },
         bySourceHandle: {
           success: {
-            allDay: {
-              type: 'boolean',
-              label: 'All day event',
-              description: 'The type of event that started the workflow',
-            },
-            startDate: {
-              type: 'datetime',
-              label: 'Start date',
-              description: 'The date when the event was scheduled to start',
-            },
-            endDate: {
-              type: 'datetime',
-              label: 'End date',
-              description: 'The date when the event was scheduled to end',
+            type: 'object',
+            properties: {
+              allDay: {
+                type: 'boolean',
+                title: 'All day event',
+                description: 'The type of event that started the workflow',
+              },
+              startDate: {
+                type: 'string',
+                format: 'date-time',
+                title: 'Start date',
+                description: 'The date when the event was scheduled to start',
+              },
+              endDate: {
+                type: 'string',
+                format: 'date-time',
+                title: 'End date',
+                description: 'The date when the event was scheduled to end',
+              },
             },
           },
         },
@@ -64,10 +73,13 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
         },
         bySourceHandle: {
           success: {
-            typeOfEventType: {
-              type: 'string',
-              label: 'Type of event type',
-              description: 'For example: form submission, user action etc.',
+            type: 'object',
+            properties: {
+              typeOfEventType: {
+                type: 'string',
+                title: 'Type of event type',
+                description: 'For example: form submission, user action etc.',
+              },
             },
           },
         },

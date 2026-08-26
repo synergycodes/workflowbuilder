@@ -18,8 +18,19 @@ export const decision: PaletteItem<DecisionNodeSchema> = {
     type: 'default',
     bySourceHandle: {
       every: {
-        selectedBranch: { type: 'string', label: 'Selected Branch', description: 'Label of the branch that was taken' },
-        branchIndex: { type: 'number', label: 'Branch Index', description: 'Zero-based index of the selected branch' },
+        type: 'object',
+        properties: {
+          selectedBranch: {
+            type: 'string',
+            title: 'Selected Branch',
+            description: 'Label of the branch that was taken',
+          },
+          branchIndex: {
+            type: 'number',
+            title: 'Branch Index',
+            description: 'Zero-based index of the selected branch',
+          },
+        },
       },
     },
   },

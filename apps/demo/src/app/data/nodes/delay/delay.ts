@@ -16,8 +16,20 @@ export const delay: PaletteItem<DelayNodeSchema> = {
     type: 'default',
     bySourceHandle: {
       success: {
-        resumedAt: { type: 'string', label: 'Resumed At', description: 'ISO 8601 date-time when the delay ended' },
-        delayDuration: { type: 'number', label: 'Delay Duration', description: 'Actual wait time in milliseconds' },
+        type: 'object',
+        properties: {
+          resumedAt: {
+            type: 'string',
+            format: 'date-time',
+            title: 'Resumed At',
+            description: 'ISO 8601 date-time when the delay ended',
+          },
+          delayDuration: {
+            type: 'number',
+            title: 'Delay Duration',
+            description: 'Actual wait time in milliseconds',
+          },
+        },
       },
     },
   },

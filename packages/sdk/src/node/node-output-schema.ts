@@ -1,3 +1,5 @@
+import type { JsonSchema7 } from '@jsonforms/core';
+
 export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date';
 
 export type VariableType = VariableTypePrimitive | 'object' | 'array';
@@ -22,7 +24,8 @@ export const OUTPUT_SCHEMA_TYPE = {
   PROPERTY_VALUE: 'property-value',
 } as const;
 
-export type OutputPropertiesIndex = Record<string, OutputProperty | undefined>;
+// export type OutputPropertiesIndex = Record<string, OutputProperty | undefined>;
+export type OutputPropertiesIndex = JsonSchema7;
 
 export type PropertiesBySourceHandle = {
   [sourceHandle: string]: OutputPropertiesIndex | undefined;
