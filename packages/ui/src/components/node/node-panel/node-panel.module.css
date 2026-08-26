@@ -3,18 +3,19 @@
   --wb-public-node-height: 100%;
   --wb-public-node-border-size: 0.0625rem;
 
-  --wb-public-node-padding: var(--wb-space-100);
-  --wb-public-node-gap: var(--wb-space-100);
-  --wb-public-node-border-radius: var(--wb-canvas-node-head-radius);
+  --wb-public-node-padding: var(--wb-ds-space-100);
+  --wb-public-node-gap: var(--wb-ds-space-100);
+  --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
 
-  --wb-public-node-border-color: var(--wb-canvas-node-stroke-default);
-  --wb-public-node-background-color: var(--wb-canvas-node-bg-primary-default);
-  --wb-public-node-hover-background-color: var(--wb-canvas-node-bg-primary-default);
-  --wb-public-node-border-hover-color: var(--wb-canvas-node-stroke-hover);
+  --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
+  --wb-public-node-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-border-hover-color: var(--wb-ds-canvas-node-stroke-hover);
 
-  --wb-public-node-border-color-selected: var(--wb-canvas-node-stroke-hover);
-  --wb-public-node-box-shadow-selected: var(--wb-shadow-canvas-focus-node-x) var(--wb-shadow-canvas-focus-node-y)
-    var(--wb-shadow-canvas-focus-node-blur) var(--wb-shadow-canvas-focus-node-spread) var(--wb-canvas-node-focus-active);
+  --wb-public-node-border-color-selected: var(--wb-ds-canvas-node-stroke-hover);
+  --wb-public-node-box-shadow-selected: var(--wb-ds-shadow-canvas-focus-node-x) var(--wb-ds-shadow-canvas-focus-node-y)
+    var(--wb-ds-shadow-canvas-focus-node-blur) var(--wb-ds-shadow-canvas-focus-node-spread)
+    var(--wb-ds-canvas-node-focus-active);
 }
 
 @layer ui.component {
@@ -43,8 +44,8 @@
 
     &:not(:hover) {
       transition:
-        border-color var(--wb-transition),
-        box-shadow var(--wb-transition);
+        border-color var(--wb-public-transition),
+        box-shadow var(--wb-public-transition);
     }
 
     .header-wrapper {

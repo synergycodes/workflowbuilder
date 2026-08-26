@@ -1,11 +1,11 @@
 :root {
   --wb-public-node-icon-border-size: 0.0625rem;
-  --wb-public-node-icon-border-radius: var(--wb-canvas-node-head-icon-radius);
-  --wb-public-node-icon-padding: var(--wb-space-125);
+  --wb-public-node-icon-border-radius: var(--wb-ds-canvas-node-head-icon-radius);
+  --wb-public-node-icon-padding: var(--wb-ds-space-125);
 
-  --wb-public-node-icon-color: var(--wb-canvas-node-icon-primary);
-  --wb-public-node-icon-container-border-color: var(--wb-canvas-node-stroke-default);
-  --wb-public-node-icon-container-background-color: var(--wb-canvas-node-bg-secondary-default);
+  --wb-public-node-icon-color: var(--wb-ds-canvas-node-icon-primary);
+  --wb-public-node-icon-container-border-color: var(--wb-ds-canvas-node-stroke-default);
+  --wb-public-node-icon-container-background-color: var(--wb-ds-canvas-node-bg-secondary-default);
 }
 
 @layer ui.component {

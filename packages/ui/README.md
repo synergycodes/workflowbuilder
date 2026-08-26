@@ -82,13 +82,13 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 ## Customization
 
-`@workflowbuilder/ui` styles components with generated `--wb-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
+`@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
 Override a generated design token:
 
 ```css
 :root {
-  --wb-ui-bg-base: #40ba12;
+  --wb-ds-ui-bg-base: #40ba12;
 }
 ```
 

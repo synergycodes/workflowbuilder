@@ -1,42 +1,43 @@
 :root {
   --wb-public-modal-width: 26.25rem;
-  --wb-public-modal-border-radius: var(--wb-radius-200);
-  --wb-public-modal-padding: var(--wb-space-200);
+  --wb-public-modal-border-radius: var(--wb-ds-radius-200);
+  --wb-public-modal-padding: var(--wb-ds-space-200);
 
-  --wb-public-modal-description-size: var(--wb-font-size-125);
+  --wb-public-modal-description-size: var(--wb-ds-font-size-125);
   --wb-public-modal-description-line-height: 100%;
 
-  --wb-public-modal-icon-padding: var(--wb-space-112);
-  --wb-public-modal-content-padding: var(--wb-space-300) var(--wb-space-200);
-  --wb-public-modal-footer-padding: var(--wb-space-0) var(--wb-space-200) var(--wb-space-200) var(--wb-space-200);
+  --wb-public-modal-icon-padding: var(--wb-ds-space-112);
+  --wb-public-modal-content-padding: var(--wb-ds-space-300) var(--wb-ds-space-200);
+  --wb-public-modal-footer-padding: var(--wb-ds-space-0) var(--wb-ds-space-200) var(--wb-ds-space-200)
+    var(--wb-ds-space-200);
 
-  --wb-public-modal-background: var(--wb-ui-bg-base);
-  --wb-public-modal-backdrop-background: var(--wb-colors-gray-900);
-  --wb-public-modal-header-background: var(--wb-ui-bg-elevated);
-  --wb-public-modal-header-border-color: var(--wb-ui-stroke-default);
-  --wb-public-modal-title-color: var(--wb-ui-text-default);
-  --wb-public-modal-description-color: var(--wb-ui-text-subtle-default);
-  --wb-public-modal-icon-background: var(--wb-ui-brand-fill);
-  --wb-public-modal-icon-color: var(--wb-ui-text-onaccent-default);
-  --wb-public-modal-content-background: var(--wb-ui-bg-base);
-  --wb-public-modal-footer-border-color: var(--wb-ui-stroke-default);
+  --wb-public-modal-background: var(--wb-ds-ui-bg-base);
+  --wb-public-modal-backdrop-background: var(--wb-ds-colors-gray-900);
+  --wb-public-modal-header-background: var(--wb-ds-ui-bg-elevated);
+  --wb-public-modal-header-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-public-modal-title-color: var(--wb-ds-ui-text-default);
+  --wb-public-modal-description-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-modal-icon-background: var(--wb-ds-ui-brand-fill);
+  --wb-public-modal-icon-color: var(--wb-ds-ui-text-onaccent-default);
+  --wb-public-modal-content-background: var(--wb-ds-ui-bg-base);
+  --wb-public-modal-footer-border-color: var(--wb-ds-ui-stroke-default);
 
   --wb-public-modal-large-width: 30rem;
-  --wb-public-modal-large-padding: var(--wb-space-300);
-  --wb-public-modal-large-title-size: var(--wb-font-size-225);
+  --wb-public-modal-large-padding: var(--wb-ds-space-300);
+  --wb-public-modal-large-title-size: var(--wb-ds-font-size-225);
   --wb-public-modal-large-title-line-height: 130%;
-  --wb-public-modal-large-icon-padding: var(--wb-space-137);
+  --wb-public-modal-large-icon-padding: var(--wb-ds-space-137);
 
-  --wb-public-modal-box-shadow: var(--wb-shadow-ui-l-x) var(--wb-shadow-ui-l-y) var(--wb-shadow-ui-l-blur)
-    var(--wb-shadow-ui-l-spread) var(--wb-shadow-ui-color);
+  --wb-public-modal-box-shadow: var(--wb-ds-shadow-ui-l-x) var(--wb-ds-shadow-ui-l-y) var(--wb-ds-shadow-ui-l-blur)
+    var(--wb-ds-shadow-ui-l-spread) var(--wb-ds-shadow-ui-color);
 
-  --wb-public-modal-gap: var(--wb-space-150);
-  --wb-public-modal-gap-large: var(--wb-space-150);
+  --wb-public-modal-gap: var(--wb-ds-space-150);
+  --wb-public-modal-gap-large: var(--wb-ds-space-150);
 
-  --wb-public-modal-icon-border-radius: var(--wb-radius-75);
-  --wb-public-modal-icon-border-radius-large: var(--wb-radius-100);
+  --wb-public-modal-icon-border-radius: var(--wb-ds-radius-75);
+  --wb-public-modal-icon-border-radius-large: var(--wb-ds-radius-100);
 
-  --wb-public-modal-content-gap: var(--wb-space-50);
+  --wb-public-modal-content-gap: var(--wb-ds-space-50);
 }
 
 @layer ui.component {
@@ -69,7 +70,7 @@
     z-index: 1001;
     display: flex;
     flex-direction: column;
-    max-height: calc(100dvh - var(--wb-space-600));
+    max-height: calc(100dvh - var(--wb-ds-space-600));
     background-color: var(--wb-public-modal-background);
     border-radius: var(--wb-public-modal-border-radius);
     width: var(--wb-public-modal-width);
@@ -94,20 +95,20 @@
     justify-content: space-between;
     align-items: center;
     border-radius: var(--wb-public-modal-border-radius) var(--wb-public-modal-border-radius) 0 0;
-    border-bottom: var(--wb-size-12) solid var(--wb-public-modal-header-border-color);
+    border-bottom: var(--wb-ds-size-12) solid var(--wb-public-modal-header-border-color);
     background: var(--wb-public-modal-header-background);
   }
 
   .title-wrapper {
     display: flex;
     align-items: center;
-    gap: var(--wb-space-150);
+    gap: var(--wb-ds-space-150);
   }
 
   .title-container {
     display: flex;
     flex-direction: column;
-    gap: var(--wb-space-150);
+    gap: var(--wb-ds-space-150);
   }
 
   .icon {
@@ -157,7 +158,7 @@
     align-self: stretch;
 
     &.separated {
-      border-top: var(--wb-size-12) solid var(--wb-public-modal-footer-border-color);
+      border-top: var(--wb-ds-size-12) solid var(--wb-public-modal-footer-border-color);
     }
   }
 

@@ -3,9 +3,9 @@
     content: '';
     position: absolute;
     /* stylelint-disable csstools/value-no-unknown-custom-properties -- set from node-as-port-wrapper.tsx inline style */
-    width: var(--ax-node-as-port-width);
-    height: var(--ax-node-as-port-height);
-    transform: var(--ax-node-as-port-position);
+    width: var(--node-as-port-width);
+    height: var(--node-as-port-height);
+    transform: var(--node-as-port-position);
     /* stylelint-enable csstools/value-no-unknown-custom-properties */
     border-radius: 0;
   }

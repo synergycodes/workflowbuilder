@@ -1,6 +1,6 @@
 :root {
-  --wb-public-avatar-border-color: var(--wb-components-text-field-stroke-default); /* missing token */
-  --wb-public-avatar-background-color: var(--wb-colors-blue-500); /* missing token */
+  --wb-public-avatar-border-color: var(--wb-ds-components-text-field-stroke-default); /* missing token */
+  --wb-public-avatar-background-color: var(--wb-ds-colors-blue-500); /* missing token */
   --wb-public-avatar-border-size: 0.0625rem;
 }
 

@@ -1,11 +1,11 @@
 :root {
-  --wb-branches-container-gap: 0.25rem;
+  --wb-sdk-branches-container-gap: 0.25rem;
 }
 
 .branches-container {
   display: flex;
   justify-content: center;
-  gap: var(--wb-branches-container-gap);
+  gap: var(--wb-sdk-branches-container-gap);
 
   &.vertical {
     flex-direction: column;

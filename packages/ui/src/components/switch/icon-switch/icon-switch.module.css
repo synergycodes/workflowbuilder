@@ -2,16 +2,16 @@
   --wb-public-icon-switch-width: 4.125rem;
   --wb-public-icon-switch-height: 2.125rem;
   --wb-public-icon-switch-thumb-size: 1.75rem;
-  --wb-public-icon-switch-thumb-offset: var(--wb-size-37);
-  --wb-public-icon-switch-translate: var(--wb-size-400);
-  --wb-public-icon-switch-padding: var(--wb-space-100);
-  --wb-public-icon-switch-icon-size: var(--wb-size-200);
+  --wb-public-icon-switch-thumb-offset: var(--wb-ds-size-37);
+  --wb-public-icon-switch-translate: var(--wb-ds-size-400);
+  --wb-public-icon-switch-padding: var(--wb-ds-space-100);
+  --wb-public-icon-switch-icon-size: var(--wb-ds-size-200);
 
-  --wb-public-icon-switch-track-bg: var(--wb-ui-bg-inset);
-  --wb-public-icon-switch-thumb-bg-primary: var(--wb-components-selector-fill-checked);
-  --wb-public-icon-switch-icon-color: var(--wb-ui-text-muted-default);
-  --wb-public-icon-switch-icon-selected-color: var(--wb-ui-text-onaccent-default);
-  --wb-public-icon-switch-thumb-bg-secondary: var(--wb-ui-bg-base);
+  --wb-public-icon-switch-track-bg: var(--wb-ds-ui-bg-inset);
+  --wb-public-icon-switch-thumb-bg-primary: var(--wb-ds-components-selector-fill-checked);
+  --wb-public-icon-switch-icon-color: var(--wb-ds-ui-text-muted-default);
+  --wb-public-icon-switch-icon-selected-color: var(--wb-ds-ui-text-onaccent-default);
+  --wb-public-icon-switch-thumb-bg-secondary: var(--wb-ds-ui-bg-base);
 }
 
 @layer ui.component {
@@ -49,7 +49,7 @@
     left: var(--wb-public-icon-switch-thumb-offset);
     width: var(--wb-public-icon-switch-thumb-size);
     height: var(--wb-public-icon-switch-thumb-size);
-    border-radius: var(--wb-radius-full);
+    border-radius: var(--wb-ds-radius-full);
     transition: transform 0.1s ease-in-out;
     display: flex;
     align-items: center;

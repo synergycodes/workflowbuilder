@@ -1,19 +1,19 @@
 :root {
-  --wb-public-textarea-color: var(--wb-ui-text-default);
-  --wb-public-textarea-color-disabled: var(--wb-ui-text-ghost-default);
-  --wb-public-textarea-placeholder-color: var(--wb-ui-text-ghost-default);
-  --wb-public-textarea-root-background-color: var(--wb-ui-bg-base);
-  --wb-public-textarea-root-background-color-disabled: var(--wb-ui-bg-fill-disabled);
-  --wb-public-textarea-root-background-color-critical: var(--wb-components-text-field-bg-primary-critical);
-  --wb-public-textarea-root-background-color-success: var(--wb-components-text-field-bg-primary-success);
-  --wb-public-textarea-root-border-color: var(--wb-components-text-field-stroke-default);
-  --wb-public-textarea-root-border-color-hover: var(--wb-ui-stroke-default);
-  --wb-public-textarea-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
-  --wb-public-textarea-root-border-color-critical: var(--wb-components-text-field-stroke-critical);
-  --wb-public-textarea-root-border-color-success: var(--wb-components-text-field-stroke-success);
-  --wb-public-textarea-root-border-size: var(--wb-size-12);
-  --wb-public-textarea-root-icon-color: var(--wb-ui-text-subtle-default);
-  --wb-public-textarea-root-color-disabled: var(--wb-ui-text-ghost-default);
+  --wb-public-textarea-color: var(--wb-ds-ui-text-default);
+  --wb-public-textarea-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-textarea-placeholder-color: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-textarea-root-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-textarea-root-background-color-disabled: var(--wb-ds-ui-bg-fill-disabled);
+  --wb-public-textarea-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
+  --wb-public-textarea-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
+  --wb-public-textarea-root-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-textarea-root-border-color-hover: var(--wb-ds-ui-stroke-default);
+  --wb-public-textarea-root-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
+  --wb-public-textarea-root-border-color-critical: var(--wb-ds-components-text-field-stroke-critical);
+  --wb-public-textarea-root-border-color-success: var(--wb-ds-components-text-field-stroke-success);
+  --wb-public-textarea-root-border-size: var(--wb-ds-size-12);
+  --wb-public-textarea-root-icon-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-textarea-root-color-disabled: var(--wb-ds-ui-text-ghost-default);
 }
 
 @layer ui.component {
@@ -57,15 +57,15 @@
   }
 
   .size-l {
-    min-height: calc(var(--wb-size-800) + var(--wb-size-700));
+    min-height: calc(var(--wb-ds-size-800) + var(--wb-ds-size-700));
   }
 
   .size-m {
-    min-height: calc(var(--wb-size-1000) + var(--wb-space-250));
+    min-height: calc(var(--wb-ds-size-1000) + var(--wb-ds-space-250));
   }
 
   .size-s {
-    min-height: var(--wb-size-1000);
+    min-height: var(--wb-ds-size-1000);
   }
 
   .text-area {
@@ -104,8 +104,8 @@
 
   .icon svg,
   .clear svg {
-    width: var(--wb-size-200);
-    height: var(--wb-size-200);
+    width: var(--wb-ds-size-200);
+    height: var(--wb-ds-size-200);
   }
 
   .clear {
@@ -120,9 +120,9 @@
     }
 
     &:focus-visible {
-      border-radius: var(--wb-radius-25);
-      outline: var(--wb-size-12) solid var(--wb-ui-focus-ring);
-      outline-offset: var(--wb-size-25);
+      border-radius: var(--wb-ds-radius-25);
+      outline: var(--wb-ds-size-12) solid var(--wb-ds-ui-focus-ring);
+      outline-offset: var(--wb-ds-size-25);
     }
 
     &:disabled {

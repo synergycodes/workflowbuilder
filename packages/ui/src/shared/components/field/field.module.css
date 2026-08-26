@@ -1,13 +1,13 @@
 :root {
-  --wb-public-field-gap: var(--wb-space-75);
-  --wb-public-field-row-min-height: var(--wb-size-200);
-  --wb-public-field-font-size: var(--wb-font-size-150);
+  --wb-public-field-gap: var(--wb-ds-space-75);
+  --wb-public-field-row-min-height: var(--wb-ds-size-200);
+  --wb-public-field-font-size: var(--wb-ds-font-size-150);
   --wb-public-field-font-weight: 400;
-  --wb-public-field-line-height: var(--wb-size-200);
-  --wb-public-field-label-color: var(--wb-ui-text-default);
-  --wb-public-field-helper-color: var(--wb-ui-text-subtle-default);
-  --wb-public-field-critical-color: var(--wb-components-text-field-stroke-critical);
-  --wb-public-field-color-disabled: var(--wb-ui-text-ghost-default);
+  --wb-public-field-line-height: var(--wb-ds-size-200);
+  --wb-public-field-label-color: var(--wb-ds-ui-text-default);
+  --wb-public-field-helper-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-field-critical-color: var(--wb-ds-components-text-field-stroke-critical);
+  --wb-public-field-color-disabled: var(--wb-ds-ui-text-ghost-default);
 }
 
 @layer ui.component {

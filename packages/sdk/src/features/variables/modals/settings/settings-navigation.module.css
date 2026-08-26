@@ -1,5 +1,5 @@
 :root {
-  --wb-settings-navigation-background: var(--wb-public-modal-header-background);
+  --wb-sdk-settings-navigation-background: var(--wb-public-modal-header-background);
 }
 
 .container {
@@ -8,9 +8,9 @@
   flex-shrink: 0;
   align-self: flex-start;
   text-align: left;
-  gap: var(--wb-space-50);
-  border-radius: var(--wb-radius-100);
-  background: var(--wb-settings-navigation-background);
+  gap: var(--wb-ds-space-50);
+  border-radius: var(--wb-ds-radius-100);
+  background: var(--wb-sdk-settings-navigation-background);
 }
 
 .button {
@@ -18,14 +18,14 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  color: var(--wb-components-nav-button-icon-primary-default);
+  color: var(--wb-ds-components-nav-button-icon-primary-default);
   height: 2.25rem;
-  padding: 0 var(--wb-space-200);
+  padding: 0 var(--wb-ds-space-200);
 
-  border-radius: var(--wb-radius-100);
+  border-radius: var(--wb-ds-radius-100);
   background: transparent;
   border: none;
-  transition: all var(--wb-transition);
+  transition: all var(--wb-public-transition);
 
   &:hover,
   &.button--active {
@@ -33,6 +33,6 @@
   }
 
   &.button--active {
-    color: var(--wb-components-nav-button-icon-primary-pressed);
+    color: var(--wb-ds-components-nav-button-icon-primary-pressed);
   }
 }

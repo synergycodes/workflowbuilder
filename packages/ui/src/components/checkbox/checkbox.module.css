@@ -1,30 +1,30 @@
 :root {
   --wb-public-checkbox-size-medium: 1.25rem;
   --wb-public-checkbox-size-small: 1.125rem;
-  --wb-public-checkbox-size-extra-small: var(--wb-size-200);
+  --wb-public-checkbox-size-extra-small: var(--wb-ds-size-200);
 
   --wb-public-checkbox-icon-size-medium: 0.875rem;
-  --wb-public-checkbox-icon-size-small: var(--wb-size-150);
+  --wb-public-checkbox-icon-size-small: var(--wb-ds-size-150);
   --wb-public-checkbox-icon-size-extra-small: 0.625rem;
 
-  --wb-public-checkbox-border-radius-medium: var(--wb-radius-50);
-  --wb-public-checkbox-border-radius-small: var(--wb-radius-50);
-  --wb-public-checkbox-border-radius-extra-small: var(--wb-radius-50);
+  --wb-public-checkbox-border-radius-medium: var(--wb-ds-radius-50);
+  --wb-public-checkbox-border-radius-small: var(--wb-ds-radius-50);
+  --wb-public-checkbox-border-radius-extra-small: var(--wb-ds-radius-50);
 
-  --wb-public-checkbox-border-width: var(--wb-size-12);
+  --wb-public-checkbox-border-width: var(--wb-ds-size-12);
 
-  --wb-public-checkbox-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-checkbox-bg: var(--wb-ui-bg-base);
-  --wb-public-checkbox-icon-color: var(--wb-ui-text-onaccent-default);
+  --wb-public-checkbox-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-bg: var(--wb-ds-ui-bg-base);
+  --wb-public-checkbox-icon-color: var(--wb-ds-ui-text-onaccent-default);
 
-  --wb-public-checkbox-checked-bg: var(--wb-components-selector-fill-checked);
+  --wb-public-checkbox-checked-bg: var(--wb-ds-components-selector-fill-checked);
 
-  --wb-public-checkbox-focus-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-checkbox-focus-border-shadow: var(--wb-shadow-ui-focus);
+  --wb-public-checkbox-focus-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-focus-border-shadow: var(--wb-ds-shadow-ui-focus);
 
-  --wb-public-checkbox-disabled-bg: var(--wb-ui-bg-inset);
-  --wb-public-checkbox-disabled-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-checkbox-disabled-icon-color: var(--wb-ui-icon-disabled);
+  --wb-public-checkbox-disabled-bg: var(--wb-ds-ui-bg-inset);
+  --wb-public-checkbox-disabled-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-disabled-icon-color: var(--wb-ds-ui-icon-disabled);
 }
 
 @layer ui.component {
@@ -104,8 +104,8 @@
     }
 
     &:focus-visible {
-      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
         var(--wb-public-checkbox-focus-border-shadow);
       border-color: var(--wb-public-checkbox-border-color);
       outline: none;

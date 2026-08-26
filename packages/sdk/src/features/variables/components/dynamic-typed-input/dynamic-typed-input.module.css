@@ -28,7 +28,7 @@
 .adornment--select {
   position: absolute;
   top: 50%;
-  right: calc(var(--wb-space-150) + 1rem + var(--wb-space-150));
+  right: calc(var(--wb-ds-space-150) + 1rem + var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }
@@ -36,7 +36,7 @@
 .adornment--date {
   position: absolute;
   top: 50%;
-  right: calc(var(--wb-space-150));
+  right: calc(var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }

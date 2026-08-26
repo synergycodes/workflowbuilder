@@ -1,8 +1,8 @@
 :root {
-  --wb-public-segment-picker-gap: var(--wb-space-50);
-  --wb-public-segment-picker-padding: var(--wb-space-50);
-  --wb-public-segment-picker-background-color: var(--wb-ui-bg-inset);
-  --wb-public-segment-picker-circle-border-radius: var(--wb-radius-full);
+  --wb-public-segment-picker-gap: var(--wb-ds-space-50);
+  --wb-public-segment-picker-padding: var(--wb-ds-space-50);
+  --wb-public-segment-picker-background-color: var(--wb-ds-ui-bg-inset);
+  --wb-public-segment-picker-circle-border-radius: var(--wb-ds-radius-full);
 }
 
 @layer ui.component {

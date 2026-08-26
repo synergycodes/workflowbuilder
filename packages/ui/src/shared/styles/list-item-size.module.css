@@ -1,10 +1,10 @@
 :root {
-  --wb-public-list-item-padding-large: var(--wb-space-137) var(--wb-space-100);
-  --wb-public-list-item-padding-medium: var(--wb-space-125) var(--wb-space-100);
-  --wb-public-list-item-padding-small: var(--wb-space-100) var(--wb-space-100);
-  --wb-public-list-item-gap-small: var(--wb-space-150);
-  --wb-public-list-item-gap-medium: var(--wb-space-150);
-  --wb-public-list-item-gap-large: var(--wb-space-150);
+  --wb-public-list-item-padding-large: var(--wb-ds-space-137) var(--wb-ds-space-100);
+  --wb-public-list-item-padding-medium: var(--wb-ds-space-125) var(--wb-ds-space-100);
+  --wb-public-list-item-padding-small: var(--wb-ds-space-100) var(--wb-ds-space-100);
+  --wb-public-list-item-gap-small: var(--wb-ds-space-150);
+  --wb-public-list-item-gap-medium: var(--wb-ds-space-150);
+  --wb-public-list-item-gap-large: var(--wb-ds-space-150);
 }
 
 @layer ui.component {

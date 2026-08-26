@@ -1,24 +1,24 @@
 :root {
-  --wb-public-list-item-background-color: var(--wb-ui-bg-fill-hover);
-  --wb-public-list-item-background-color-selected: var(--wb-colors-acc1-600);
-  --wb-public-list-item-color-selected: var(--wb-ui-text-onaccent-default);
-  --wb-public-list-item-color: var(--wb-ui-text-default);
+  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-background-color-selected: var(--wb-ds-colors-acc1-600);
+  --wb-public-list-item-color-selected: var(--wb-ds-ui-text-onaccent-default);
+  --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
-  --wb-public-list-item-background-color-focus: var(--wb-ui-bg-fill-hover);
-  --wb-public-list-item-outline-color-focus: var(--wb-shadow-ui-focus);
-  --wb-public-list-item-outline-size: var(--wb-shadow-ui-focus-element-spread);
+  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
+  --wb-public-list-item-outline-size: var(--wb-ds-shadow-ui-focus-element-spread);
 
-  --wb-public-list-item-color-destructive: var(--wb-ui-text-critical-default);
-  --wb-public-list-item-background-color-destructive: var(--wb-colors-red-400-10);
-  --wb-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-20);
-  --wb-public-list-border-radius: var(--wb-radius-75);
+  --wb-public-list-item-color-destructive: var(--wb-ds-ui-text-critical-default);
+  --wb-public-list-item-background-color-destructive: var(--wb-ds-colors-red-400-10);
+  --wb-public-list-item-background-color-hover-destructive: var(--wb-ds-colors-red-400-20);
+  --wb-public-list-border-radius: var(--wb-ds-radius-75);
 }
 
 @layer ui.base {
   html[data-theme='dark'] {
-    --wb-public-list-item-background-color-selected: var(--wb-colors-acc1-500);
-    --wb-public-list-item-background-color-destructive: var(--wb-colors-red-400-30);
-    --wb-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-50);
+    --wb-public-list-item-background-color-selected: var(--wb-ds-colors-acc1-500);
+    --wb-public-list-item-background-color-destructive: var(--wb-ds-colors-red-400-30);
+    --wb-public-list-item-background-color-hover-destructive: var(--wb-ds-colors-red-400-50);
   }
 }
 
@@ -41,8 +41,8 @@
     &:focus-visible,
     &[data-highlighted] {
       outline: none;
-      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-public-list-item-outline-size)
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-public-list-item-outline-size)
         var(--wb-public-list-item-outline-color-focus);
       background-color: var(--wb-public-list-item-background-color-focus);
 

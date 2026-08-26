@@ -1,10 +1,10 @@
 :root {
-  --wb-settings-remove-bg: var(--wb-public-modal-header-background);
+  --wb-sdk-settings-remove-bg: var(--wb-public-modal-header-background);
 }
 
 .description {
-  margin-top: var(--wb-space-200);
-  margin-bottom: var(--wb-space-250);
+  margin-top: var(--wb-ds-space-200);
+  margin-bottom: var(--wb-ds-space-250);
 }
 
 .list {
@@ -12,16 +12,16 @@
   flex-flow: column;
   gap: 8px;
   border-radius: 8px;
-  border: 1px solid var(--wb-settings-remove-bg);
-  background: var(--wb-settings-remove-bg);
-  color: var(--wb-ui-text-subtle-default);
+  border: 1px solid var(--wb-sdk-settings-remove-bg);
+  background: var(--wb-sdk-settings-remove-bg);
+  color: var(--wb-ds-ui-text-subtle-default);
   margin: 0;
-  padding: var(--wb-space-150) var(--wb-space-200) var(--wb-space-150) 16px;
+  padding: var(--wb-ds-space-150) var(--wb-ds-space-200) var(--wb-ds-space-150) 16px;
 
   li {
     margin: 0;
     padding: 0;
-    margin-left: var(--wb-space-200);
+    margin-left: var(--wb-ds-space-200);
   }
 }
 
@@ -36,7 +36,7 @@
 .buttons {
   margin-top: auto;
   display: flex;
-  padding-top: var(--wb-space-200);
+  padding-top: var(--wb-ds-space-200);
 
   > :last-child {
     margin-left: auto;

@@ -1,6 +1,6 @@
 div.container {
   padding-bottom: 0;
-  margin-bottom: calc(-1 * var(--modal-padding-y));
+  margin-bottom: calc(-1 * var(--wb-sdk-modal-padding-y));
   position: relative;
 
   &::after {
@@ -24,7 +24,7 @@ div.container {
   flex-flow: column;
   gap: 0.5rem;
   overflow: auto;
-  margin-right: calc(-1 * var(--wb-space-200));
-  padding-right: var(--wb-space-200);
-  padding-bottom: var(--modal-padding-y);
+  margin-right: calc(-1 * var(--wb-ds-space-200));
+  padding-right: var(--wb-ds-space-200);
+  padding-bottom: var(--wb-sdk-modal-padding-y);
 }

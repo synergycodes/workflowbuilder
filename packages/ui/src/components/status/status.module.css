@@ -1,9 +1,9 @@
 :root {
-  --wb-public-status-right: var(--wb-space-150) /* missing token */;
-  --wb-public-status-size: var(--wb-space-250) /* missing token */;
-  --wb-public-status-icon-size: var(--wb-space-150) /* missing token */;
-  --wb-public-status-invalid-color: var(--wb-colors-orange-100) /* missing token */;
-  --wb-public-status-invalid-background-color: var(--wb-colors-orange-400) /* missing token */;
+  --wb-public-status-right: var(--wb-ds-space-150) /* missing token */;
+  --wb-public-status-size: var(--wb-ds-space-250) /* missing token */;
+  --wb-public-status-icon-size: var(--wb-ds-space-150) /* missing token */;
+  --wb-public-status-invalid-color: var(--wb-ds-colors-orange-100) /* missing token */;
+  --wb-public-status-invalid-background-color: var(--wb-ds-colors-orange-400) /* missing token */;
 }
 
 @layer ui.component {

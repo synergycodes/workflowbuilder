@@ -1,8 +1,8 @@
 :root {
-  --wb-public-edge-color-disabled: var(--wb-canvas-edge-stroke-disabled);
-  --wb-public-edge-color-select: var(--wb-canvas-edge-stroke-active);
-  --wb-public-edge-color-hover: var(--wb-canvas-edge-stroke-hover);
-  --wb-public-edge-color: var(--wb-canvas-edge-stroke-default);
+  --wb-public-edge-color-disabled: var(--wb-ds-canvas-edge-stroke-disabled);
+  --wb-public-edge-color-select: var(--wb-ds-canvas-edge-stroke-active);
+  --wb-public-edge-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
+  --wb-public-edge-color: var(--wb-ds-canvas-edge-stroke-default);
   --wb-public-edge-stroke-width-select: 3;
   --wb-public-edge-stroke-width: 2;
 }

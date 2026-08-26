@@ -1,7 +1,7 @@
 :root {
-  --wb-saving-status--in-progress-color: var(--wb-colors-acc1-500); /* missing token */
-  --wb-saving-status--saved-color: var(--wb-components-text-field-stroke-success); /* missing token */
-  --wb-saving-status--not-saved-color: var(--wb-components-text-field-stroke-critical); /* missing token */
+  --wb-sdk-saving-status--in-progress-color: var(--wb-ds-colors-acc1-500); /* missing token */
+  --wb-sdk-saving-status--saved-color: var(--wb-ds-components-text-field-stroke-success); /* missing token */
+  --wb-sdk-saving-status--not-saved-color: var(--wb-ds-components-text-field-stroke-critical); /* missing token */
 }
 
 .status {
@@ -13,7 +13,7 @@
   svg {
     width: 0.875rem;
     height: 0.875rem;
-    background-color: var(--wb-app-bar-background);
+    background-color: var(--wb-sdk-app-bar-background);
     border-radius: 50%;
   }
 
@@ -23,7 +23,7 @@
 .status--saving {
   svg {
     animation: spin infinite linear 1.3s;
-    color: var(--wb-saving-status--in-progress-color);
+    color: var(--wb-sdk-saving-status--in-progress-color);
   }
 }
 
@@ -38,7 +38,7 @@
 
 .status--saved {
   svg {
-    color: var(--wb-saving-status--saved-color);
+    color: var(--wb-sdk-saving-status--saved-color);
     animation: fade-out 0.5s both;
     animation-delay: 0.8s;
   }
@@ -46,7 +46,7 @@
 
 .status--not-saved {
   svg {
-    color: var(--wb-saving-status--not-saved-color);
+    color: var(--wb-sdk-saving-status--not-saved-color);
     animation: fade-out 0.5s both;
     animation-delay: 0.8s;
   }

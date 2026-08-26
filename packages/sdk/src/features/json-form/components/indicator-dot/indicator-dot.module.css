@@ -1,8 +1,8 @@
 :root {
-  --wb-indicator-dot-size: 0.75rem;
-  --wb-indicator-dot-radius: calc(var(--wb-indicator-dot-size) / 2);
-  --wb-indicator-dot-background-color: var(--wb-colors-orange-400); /* missing token */
-  --wb-indicator-dot-pulse-radius-size: 0.625rem;
+  --wb-sdk-indicator-dot-size: 0.75rem;
+  --wb-sdk-indicator-dot-radius: calc(var(--wb-sdk-indicator-dot-size) / 2);
+  --wb-sdk-indicator-dot-background-color: var(--wb-ds-colors-orange-400); /* missing token */
+  --wb-sdk-indicator-dot-pulse-radius-size: 0.625rem;
 }
 
 .with-indicator-dot {
@@ -11,23 +11,23 @@
   &::before {
     content: '';
     position: absolute;
-    background: var(--wb-indicator-dot-background-color);
+    background: var(--wb-sdk-indicator-dot-background-color);
     border-radius: 50%;
-    height: var(--wb-indicator-dot-size);
-    width: var(--wb-indicator-dot-size);
+    height: var(--wb-sdk-indicator-dot-size);
+    width: var(--wb-sdk-indicator-dot-size);
     animation: pulse 2s infinite;
-    left: calc(-1 * var(--wb-sidebar-horizontal-padding) - var(--wb-indicator-dot-radius));
-    top: calc(50% - var(--wb-indicator-dot-radius));
+    left: calc(-1 * var(--wb-sdk-sidebar-horizontal-padding) - var(--wb-sdk-indicator-dot-radius));
+    top: calc(50% - var(--wb-sdk-indicator-dot-radius));
   }
 }
 
 @keyframes pulse {
   0% {
-    box-shadow: 0 0 0 0 var(--wb-indicator-dot-background-color);
+    box-shadow: 0 0 0 0 var(--wb-sdk-indicator-dot-background-color);
   }
 
   70% {
-    box-shadow: 0 0 0 var(--wb-indicator-dot-pulse-radius-size) transparent;
+    box-shadow: 0 0 0 var(--wb-sdk-indicator-dot-pulse-radius-size) transparent;
   }
 
   100% {

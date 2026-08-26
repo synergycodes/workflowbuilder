@@ -1,20 +1,20 @@
 :root {
-  --wb-public-input-color: var(--wb-ui-text-default);
-  --wb-public-input-color-disabled: var(--wb-ui-text-ghost-default);
-  --wb-public-input-placeholder-color: var(--wb-ui-text-ghost-default);
+  --wb-public-input-color: var(--wb-ds-ui-text-default);
+  --wb-public-input-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-input-placeholder-color: var(--wb-ds-ui-text-ghost-default);
 
-  --wb-public-input-root-background-color: var(--wb-ui-bg-base);
-  --wb-public-input-root-background-color-disabled: var(--wb-ui-bg-fill-disabled);
-  --wb-public-input-root-background-color-critical: var(--wb-components-text-field-bg-primary-critical);
-  --wb-public-input-root-background-color-success: var(--wb-components-text-field-bg-primary-success);
-  --wb-public-input-root-border-color: var(--wb-components-text-field-stroke-default);
-  --wb-public-input-root-border-color-hover: var(--wb-ui-stroke-default);
-  --wb-public-input-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
-  --wb-public-input-root-border-color-critical: var(--wb-components-text-field-stroke-critical);
-  --wb-public-input-root-border-color-success: var(--wb-components-text-field-stroke-success);
-  --wb-public-input-root-border-size: var(--wb-size-12);
-  --wb-public-input-root-icon-color: var(--wb-ui-text-subtle-default);
-  --wb-public-input-root-color-disabled: var(--wb-ui-text-ghost-default);
-  --wb-public-input-root-color: var(--wb-ui-text-subtle-default);
-  --wb-public-input-root-color-critical: var(--wb-ui-text-default);
+  --wb-public-input-root-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-input-root-background-color-disabled: var(--wb-ds-ui-bg-fill-disabled);
+  --wb-public-input-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
+  --wb-public-input-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
+  --wb-public-input-root-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-input-root-border-color-hover: var(--wb-ds-ui-stroke-default);
+  --wb-public-input-root-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
+  --wb-public-input-root-border-color-critical: var(--wb-ds-components-text-field-stroke-critical);
+  --wb-public-input-root-border-color-success: var(--wb-ds-components-text-field-stroke-success);
+  --wb-public-input-root-border-size: var(--wb-ds-size-12);
+  --wb-public-input-root-icon-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-input-root-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-input-root-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-input-root-color-critical: var(--wb-ds-ui-text-default);
 }

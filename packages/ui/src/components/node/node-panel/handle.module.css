@@ -4,11 +4,11 @@
   --wb-public-node-port-size-hover: 0.75rem;
   --wb-public-node-port-border-size: 0.125rem;
 
-  --wb-public-node-port-background-color: var(--wb-canvas-port-fill-default);
-  --wb-public-node-port-border-color: var(--wb-canvas-port-stroke-default);
+  --wb-public-node-port-background-color: var(--wb-ds-canvas-port-fill-default);
+  --wb-public-node-port-border-color: var(--wb-ds-canvas-port-stroke-default);
 
-  --wb-public-node-port-background-color-hover: var(--wb-canvas-port-fill-active);
-  --wb-public-node-port-border-color-hover: var(--wb-canvas-port-stroke-active);
+  --wb-public-node-port-background-color-hover: var(--wb-ds-canvas-port-fill-active);
+  --wb-public-node-port-border-color-hover: var(--wb-ds-canvas-port-stroke-active);
 }
 
 @layer ui.component {

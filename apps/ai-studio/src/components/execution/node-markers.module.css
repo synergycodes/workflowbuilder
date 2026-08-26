@@ -1,6 +1,6 @@
 .container {
   position: absolute;
-  top: calc(100% + var(--wb-space-100));
+  top: calc(100% + var(--wb-ds-space-100));
   left: 0;
   font-weight: 500;
   padding: var(--wb-public-node-padding);
@@ -11,7 +11,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: var(--wb-space-100);
+  gap: var(--wb-ds-space-100);
 
   &,
   * {
@@ -42,7 +42,7 @@
 }
 
 .icon--skipped {
-  color: var(--wb-ui-text-subtle-default);
+  color: var(--wb-ds-ui-text-subtle-default);
   opacity: 0.7;
 }
 

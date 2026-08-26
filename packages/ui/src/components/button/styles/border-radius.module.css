@@ -1,10 +1,10 @@
 :root {
-  --wb-public-button-border-radius-xl: var(--wb-radius-100);
-  --wb-public-button-border-radius-l: var(--wb-radius-100);
-  --wb-public-button-border-radius-m: var(--wb-radius-75);
-  --wb-public-button-border-radius-s: var(--wb-radius-50);
-  --wb-public-button-border-radius-xs: var(--wb-radius-50);
-  --wb-public-button-border-radius-round: var(--wb-radius-full);
+  --wb-public-button-border-radius-xl: var(--wb-ds-radius-100);
+  --wb-public-button-border-radius-l: var(--wb-ds-radius-100);
+  --wb-public-button-border-radius-m: var(--wb-ds-radius-75);
+  --wb-public-button-border-radius-s: var(--wb-ds-radius-50);
+  --wb-public-button-border-radius-xs: var(--wb-ds-radius-50);
+  --wb-public-button-border-radius-round: var(--wb-ds-radius-full);
 }
 
 @layer ui.component {

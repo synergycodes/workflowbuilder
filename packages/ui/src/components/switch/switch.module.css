@@ -1,17 +1,17 @@
 @import './switch-size.module.css';
 
 :root {
-  --wb-public-switch-outline-color: var(--wb-ui-stroke-subtle);
-  --wb-public-switch-disabled-background-color: var(--wb-ui-bg-inset);
-  --wb-public-switch-disabled-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-track-no-selected-color: var(--wb-ui-bg-base);
-  --wb-public-track-selected-color: var(--wb-components-selector-fill-checked);
-  --wb-public-thumb-no-selected-color: var(--wb-ui-text-subtle-default);
-  --wb-public-thumb-disabled-color: var(--wb-ui-icon-disabled);
-  --wb-public-thumb-selected-color: var(--wb-ui-text-onaccent-default);
+  --wb-public-switch-outline-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-switch-disabled-background-color: var(--wb-ds-ui-bg-inset);
+  --wb-public-switch-disabled-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-track-no-selected-color: var(--wb-ds-ui-bg-base);
+  --wb-public-track-selected-color: var(--wb-ds-components-selector-fill-checked);
+  --wb-public-thumb-no-selected-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-thumb-disabled-color: var(--wb-ds-ui-icon-disabled);
+  --wb-public-thumb-selected-color: var(--wb-ds-ui-text-onaccent-default);
 
-  --wb-public-switch-focus-border-color: var(--wb-shadow-ui-focus);
-  --wb-public-switch-border-size: var(--wb-size-12);
+  --wb-public-switch-focus-border-color: var(--wb-ds-shadow-ui-focus);
+  --wb-public-switch-border-size: var(--wb-ds-size-12);
 }
 
 @layer ui.base {
@@ -22,7 +22,7 @@
     justify-content: center;
     position: relative;
     cursor: pointer;
-    border-radius: var(--wb-radius-full);
+    border-radius: var(--wb-ds-radius-full);
     border: var(--wb-public-switch-border-size) solid var(--wb-public-switch-outline-color);
 
     &:not(:hover) {
@@ -31,7 +31,7 @@
 
     .thumb {
       position: absolute;
-      border-radius: var(--wb-radius-full);
+      border-radius: var(--wb-ds-radius-full);
       background-color: var(--wb-public-thumb-no-selected-color);
       transition: transform var(--wb-public-transition);
     }
@@ -40,7 +40,7 @@
       position: absolute;
       width: 100%;
       height: 100%;
-      border-radius: var(--wb-radius-full);
+      border-radius: var(--wb-ds-radius-full);
     }
 
     .thumb-contents {
@@ -49,8 +49,8 @@
 
     &:focus-visible {
       outline: none;
-      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
         var(--wb-public-switch-focus-border-color);
     }
 

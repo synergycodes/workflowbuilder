@@ -3,7 +3,7 @@
   flex-direction: column;
   gap: 1rem;
 
-  color: var(--wb-ui-text-subtle-default);
+  color: var(--wb-ds-ui-text-subtle-default);
 
   b {
     font-weight: 700;
