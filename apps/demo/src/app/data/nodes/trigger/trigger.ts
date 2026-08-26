@@ -9,6 +9,7 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
   description: 'node.trigger.description',
   type: 'trigger',
   icon: 'Lightning',
+  isStartNode: true,
   defaultPropertiesData,
   schema,
   uischema,
