@@ -23,7 +23,7 @@ type Props = {
 type VisualizeMode = VisualizeRenderer | 'auto';
 const VALID_MODES = new Set<string>(VISUALIZE_MODES);
 
-function EmptyState({ running }: { running: boolean }) {
+function EmptyState({ running, skipped }: { running: boolean; skipped: boolean }) {
   if (running) {
     return (
       <div className={styles['empty']}>
@@ -33,6 +33,14 @@ function EmptyState({ running }: { running: boolean }) {
           <span className={styles['dot']} />
         </div>
         <p className={styles['empty-text']}>Generating visualization…</p>
+      </div>
+    );
+  }
+  if (skipped) {
+    return (
+      <div className={styles['empty']}>
+        <Eye className={styles['empty-icon']} weight="duotone" />
+        <p className={styles['empty-text']}>This node was skipped — its branch was not taken during the last run.</p>
       </div>
     );
   }
@@ -124,7 +132,7 @@ export function VisualizeCard({ props }: Props) {
           </div>
         </>
       ) : (
-        <EmptyState running={selfStatus === 'running'} />
+        <EmptyState running={selfStatus === 'running'} skipped={selfStatus === 'skipped'} />
       )}
       {isExpanded && (
         <VisualizeModal

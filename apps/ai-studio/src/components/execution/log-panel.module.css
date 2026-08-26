@@ -91,7 +91,7 @@
 
 .badge--node_started,
 .badge--node_skipped {
-  color: var(--ax-txt-secondary, #888);
+  color: var(--ax-txt-secondary-default, #888);
 }
 
 .badge--node_failed,
@@ -100,7 +100,7 @@
 }
 
 .badge--execution_cancelled {
-  color: var(--ax-txt-secondary, #888);
+  color: var(--ax-txt-secondary-default, #888);
 }
 
 .node-id {

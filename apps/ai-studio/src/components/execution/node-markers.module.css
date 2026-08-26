@@ -42,7 +42,7 @@
 }
 
 .icon--skipped {
-  color: var(--ax-txt-secondary, #888);
+  color: var(--ax-txt-secondary-default, #888);
   opacity: 0.7;
 }
 
