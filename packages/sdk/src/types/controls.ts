@@ -100,37 +100,15 @@ export type DatePickerControlElement = Override<
 export type DatePickerControlProps = ControlProps<Date, DatePickerControlElement>;
 
 /**
-
  * Configuration options available to all UI schema elements.
-
  *
-
  * @see https://jsonforms.io/docs/integrations/react#config
-
  */
-
 export type BaseControlConfig = {
-  /**
-   * Whether to hide the asterisk displayed in labels for required inputs.
-   */
-  hideRequiredAsterisk?: boolean;
   /**
    * Whether all renderers should render the control in a disabled state.
    */
   readonly?: boolean;
-  /**
-   * Whether to restrict the number of characters to the `maxLength`
-   * specified in the JSON Schema.
-   */
-  restrict?: boolean;
-  /**
-   * Whether to show input descriptions even when the input is not focused.
-   */
-  showUnfocusedDescription?: boolean;
-  /**
-   * Whether the control should take the full available width.
-   */
-  trim?: boolean;
 };
 
 export type BaseControlProps = Override<

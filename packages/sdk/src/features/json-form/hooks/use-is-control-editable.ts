@@ -13,13 +13,13 @@ type Params = {
  * The control is considered non-editable when:
  * - `enabled` is explicitly set to `false`.
  * - `config.readonly` is explicitly set to `true`.
- * - `uischema.disabled` is explicitly set to `false`.
+ * - `uischema.disabled` is explicitly set to `true`.
  *
  * @param controlProps - Configuration and UI schema state of the control.
  * @returns `true` when the control is editable; otherwise, `false`.
  */
 export function useIsControlEditable(controlProps: Params): boolean {
-  // Default value usually matching JSONForm readonly
+  // Default value usually matching JSONForm readonly (can be modified by "rule")
   if (controlProps.enabled === false) {
     return false;
   }
@@ -30,7 +30,7 @@ export function useIsControlEditable(controlProps: Params): boolean {
   }
 
   // Optional flag on control
-  if (controlProps.uischema.disabled === false) {
+  if (controlProps.uischema.disabled === true) {
     return false;
   }
 
