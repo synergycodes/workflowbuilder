@@ -1,16 +1,16 @@
 @layer ui.component {
   .extra-large {
-    composes: ax-public-button-large from global;
+    composes: wb-text-label-xl-emphasized from global;
   }
 
   .large {
-    composes: ax-public-button-medium from global;
+    composes: wb-text-label-l-emphasized from global;
   }
 
   .medium,
   .small,
   .extra-small {
-    composes: ax-public-button-small from global;
+    composes: wb-text-label-m-emphasized from global;
   }
 
   .xl {

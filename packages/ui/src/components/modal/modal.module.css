@@ -4,7 +4,7 @@
   --wb-public-modal-padding: var(--wb-space-200);
 
   --wb-public-modal-description-size: var(--wb-font-size-125);
-  --wb-public-modal-description-line-height: 140%;
+  --wb-public-modal-description-line-height: 100%;
 
   --wb-public-modal-icon-padding: var(--wb-space-112);
   --wb-public-modal-content-padding: var(--wb-space-300) var(--wb-space-200);

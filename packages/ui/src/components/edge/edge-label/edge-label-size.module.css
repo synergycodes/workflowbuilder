@@ -28,7 +28,7 @@
 @layer ui.component {
   .medium {
     border-radius: var(--wb-public-edge-label-medium-border-radius);
-    composes: ax-public-edge-label-medium from global;
+    composes: wb-text-label-m from global;
 
     svg {
       width: var(--wb-public-edge-label-medium-icon-size);
@@ -38,7 +38,7 @@
 
   .small {
     border-radius: var(--wb-public-edge-label-small-border-radius);
-    composes: ax-public-edge-label-small from global;
+    composes: wb-text-label-m from global;
 
     svg {
       width: var(--wb-public-edge-label-small-icon-size);
@@ -48,7 +48,7 @@
 
   .extra-small {
     border-radius: var(--wb-public-edge-label-extra-small-border-radius);
-    composes: ax-public-edge-label-extra-small from global;
+    composes: wb-text-label-s from global;
 
     svg {
       width: var(--wb-public-edge-label-extra-small-icon-size);

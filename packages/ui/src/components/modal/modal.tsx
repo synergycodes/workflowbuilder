@@ -95,11 +95,11 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               <div className={styles['title-wrapper']}>
                 {icon && <div className={styles['icon']}>{icon}</div>}
                 <div className={styles['title-container']}>
-                  <Dialog.Title className={clsx(styles['title'], 'ax-public-h6')} render={<span />}>
+                  <Dialog.Title className={clsx(styles['title'], 'wb-text-title-l-emphasized')} render={<span />}>
                     {title}
                   </Dialog.Title>
                   {subtitle && (
-                    <Dialog.Description className={clsx(styles['description'], 'ax-public-p11')} render={<span />}>
+                    <Dialog.Description className={clsx(styles['description'], 'wb-text-label-s')} render={<span />}>
                       {subtitle}
                     </Dialog.Description>
                   )}
