@@ -32,17 +32,6 @@ export const COMPONENTS = [
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
-    slug: 'number-field',
-    name: 'NumberField',
-    propsType: 'NumberFieldProps',
-    dir: 'number-field',
-    cssSources: [
-      'shared/components/field/field.module.css',
-      'shared/styles/field-control-height.module.css',
-      'shared/styles/field-control-size.module.css',
-    ],
-  },
-  {
     slug: 'nav-button',
     name: 'NavButton',
     propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],

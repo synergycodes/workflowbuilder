@@ -15,7 +15,6 @@ export * from './components/input';
 export * from './components/menu';
 export * from './components/modal';
 export * from './components/node';
-export * from './components/number-field';
 export * from './components/radio-button';
 export * from './components/segment-picker';
 export * from './components/select';
