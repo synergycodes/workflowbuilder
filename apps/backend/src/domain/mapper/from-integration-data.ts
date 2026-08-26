@@ -17,12 +17,6 @@ type FrontendEdge = WorkflowSnapshot['edges'][number];
 // out of sync with the runner's union.
 const ERROR_POLICIES: ReadonlySet<NodeErrorPolicy> = new Set(NODE_ERROR_POLICIES);
 
-// The editor's kind for an entrypoint node, mirroring `NodeType.StartNode` in
-// `@workflowbuilder/sdk`. Spelled out as a literal rather than imported: the
-// backend deliberately does not depend on the React SDK. If the SDK renames the
-// kind, this has to move with it.
-const START_NODE_KIND = 'start-node';
-
 // Structural pass-through. The backend treats nodes as opaque `{ id, type, config }`;
 // the worker narrows `config` against its own concrete node union when it dispatches
 // the executor. Unknown types reach the worker and fail there as `node_failed`.
@@ -35,12 +29,12 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
 // Two runner-level fields are lifted out of the frontend shape here so `config`
 // stays free of them. `errorPolicy` is authored in the UI as a regular JSONForms
 // property (via `sharedProperties` in the SDK) and arrives nested in
-// `data.properties`. `role` is derived from the editor's node kind, which lives
-// on the node itself rather than in its properties.
+// `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
+// which sits alongside the properties rather than inside them.
 function mapNode(node: FrontendNode): BaseNode {
   const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
-  const role: NodeRole | undefined = node.type === START_NODE_KIND ? 'start' : undefined;
+  const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,

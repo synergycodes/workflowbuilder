@@ -16,14 +16,24 @@ describe('workflowSnapshotSchema', () => {
     expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
   });
 
-  it("keeps the editor's node kind so entrypoints stay identifiable", () => {
+  it('keeps `data.isStartNode` so entrypoints stay identifiable', () => {
+    const snapshot = {
+      nodes: [{ id: 'n1', data: { type: 'my-product/trigger', isStartNode: true } }],
+      edges: [],
+    };
+
+    const result = workflowSnapshotSchema.parse(snapshot);
+    expect(result.nodes[0]!.data.isStartNode).toBe(true);
+  });
+
+  it("strips the editor's node kind — it is a rendering detail, not an entrypoint marker", () => {
     const snapshot = {
       nodes: [{ id: 'n1', type: 'start-node', data: { type: 'my-product/trigger' } }],
       edges: [],
     };
 
     const result = workflowSnapshotSchema.parse(snapshot);
-    expect(result.nodes[0]!.type).toBe('start-node');
+    expect(result.nodes[0]).not.toHaveProperty('type');
   });
 
   it('rejects a node missing `id`', () => {
@@ -161,21 +171,48 @@ describe('mapToExecutionModel', () => {
     ]);
   });
 
-  it("lifts the editor's start-node kind to role 'start'", () => {
+  it("lifts `data.isStartNode` to role 'start'", () => {
     const result = mapToExecutionModel('wf-1', {
       nodes: [
-        { id: 'n1', type: 'start-node', data: { type: 'my-product/trigger' } },
-        { id: 'n2', type: 'node', data: { type: 'my-product/action' } },
+        // Any node type can be an entrypoint — the flag is what counts, not the
+        // product type or the visual template it renders with.
+        { id: 'n1', data: { type: 'my-product/action', isStartNode: true } },
+        { id: 'n2', data: { type: 'my-product/action', isStartNode: false } },
         { id: 'n3', data: { type: 'my-product/action' } },
       ],
       edges: [],
     });
 
-    // Only the start node carries a role; the runner reads it to pick entrypoints
-    // instead of inferring them from in-degree.
+    // Only the flagged node carries a role; the runner reads it to pick the
+    // entrypoint instead of inferring one from in-degree.
     expect(result.nodes[0]!.role).toBe('start');
     expect(result.nodes[1]!.role).toBeUndefined();
     expect(result.nodes[2]!.role).toBeUndefined();
+  });
+
+  it('gives a legacy start-node kind no role — the flag is the only marker', () => {
+    // Diagrams saved before the flag existed marked their entrypoint with the
+    // editor's node kind alone. Those no longer resolve, and the runner rejects
+    // them with "Workflow has no start node" until the node is re-created.
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [{ id: 'n1', type: 'start-node', data: { type: 'my-product/trigger' } }],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.role).toBeUndefined();
+  });
+
+  it('keeps the entrypoint flag out of `config`', () => {
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [{ id: 'n1', data: { type: 'my-product/trigger', isStartNode: true, properties: { foo: 1 } } }],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.config).toEqual({ foo: 1 });
   });
 
   it('passes unknown node types through unchanged — backend does not know any vocabulary', () => {
