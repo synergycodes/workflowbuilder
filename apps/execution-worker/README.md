@@ -55,6 +55,7 @@ src/
 - **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID.
 - **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. See [run-workflow.ts](src/engines/temporal/workflows/run-workflow.ts).
 - **Sandbox constraint:** `workflows/*.ts` runs in V8 with no Web APIs — import from `@workflow-builder/execution-core/workflow` (sandbox-safe subset), never from the root barrel.
+- **Deploys that change the emitted event set:** drain in-flight runs first. Replaying an old run's history against a new emit sequence diverges — see [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
 ## Adding a new engine
 

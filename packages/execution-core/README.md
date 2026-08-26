@@ -134,7 +134,7 @@ const node: MyNode = {
 };
 ```
 
-If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the run completes cleanly — the failure is recorded as `node_failed` and nothing else fires. That makes `'errorRoute'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
+If a node with `'errorRoute'` policy fails but has no outgoing edge tagged `'errorRoute'`, the run completes cleanly — the failure is recorded as `node_failed`, and the success branch it pruned reports `node_skipped` (see [Skipped nodes](#skipped-nodes)). Nothing else fires. That makes `'errorRoute'` usable as a silent DLQ when paired with downstream observability on `node_failed` events.
 
 ## Skipped nodes
 
