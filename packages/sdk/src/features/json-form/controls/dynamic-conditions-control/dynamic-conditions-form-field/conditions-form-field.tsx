@@ -16,6 +16,7 @@ import {
   comparisonOperatorsByPrimitiveType,
 } from '../../../../../features/variables/constants';
 import type { VariableTypePrimitive } from '../../../../../node/node-output-schema';
+import { useStore } from '../../../../../store/store';
 import type { DynamicCondition } from '../../../../../types/controls';
 import { getStringVariableTypeIfPossible } from '../../../../variables/actions/get-string-variable-type-if-possible';
 import { type ConditionErrors, getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
@@ -45,6 +46,7 @@ const getTypeOptions = (
 };
 
 export function ConditionsFormField(props: ConditionsFormFieldProps) {
+  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
   const { condition, onChange, onRemove, shouldShowOperator = false, shouldShowValidation, suggestionGroups } = props;
   const [{ xType, comparisonsOperators }, setTypeOptions] = useState(getTypeOptions(condition.x));
 
@@ -123,6 +125,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             isError={shouldShowValidation && errors.y}
             type={xType}
             suggestionGroups={suggestionGroups}
+            isDisabled={isReadOnlyMode}
           />
         </div>
         <NavButton onClick={onRemove} tooltip={t('tooltips.menu')}>

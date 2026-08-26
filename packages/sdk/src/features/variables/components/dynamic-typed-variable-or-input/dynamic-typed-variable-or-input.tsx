@@ -78,6 +78,7 @@ export function DynamicTypedVariableOrInput({
             className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.typeValue')}
             onClick={handleToggleMode}
+            disabled={isDisabled}
           >
             <Icon name="PencilSimple" />
           </NavButton>
@@ -99,7 +100,11 @@ export function DynamicTypedVariableOrInput({
       suggestionGroups={suggestionGroupsForType}
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
-          <NavButton className={clsx(styles['button-toggle'], 'right-adornment')} onClick={handleToggleMode}>
+          <NavButton
+            className={clsx(styles['button-toggle'], 'right-adornment')}
+            onClick={handleToggleMode}
+            disabled={isDisabled}
+          >
             <Tooltip>
               <Tooltip.Trigger>
                 <Icon name="BracketsCurly" />
