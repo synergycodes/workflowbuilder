@@ -47,7 +47,7 @@ export function getAvailableVariablesByNodeId({
     }
 
     const definition = getNodeDefinition(node);
-    if (!definition?.outputSchema) {
+    if (!definition?.schemaOutput) {
       continue;
     }
 

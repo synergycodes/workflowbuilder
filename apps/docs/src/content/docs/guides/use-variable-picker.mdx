@@ -24,7 +24,7 @@ The picker is wired up on these built-in fields:
 
 The chip is the editor view; the diagram stores the raw form `{{nodes.<nodeId>.<property>}}`.
 
-Suggestions come only from **ancestor** nodes - nodes reachable by following edges backward from the selected node. Each suggestion is built from the ancestor's `outputSchema`, so a node only appears in the picker if it declares one.
+Suggestions come only from **ancestor** nodes - nodes reachable by following edges backward from the selected node. Each suggestion is built from the ancestor's `schemaOutput`, so a node only appears in the picker if it declares one.
 
 ## Syntax
 
@@ -57,7 +57,7 @@ The SDK only stores these references as text on the diagram. Actual values are f
 
 ### `nodes.<nodeId>.<path>`
 
-Output of an ancestor node, keyed by the node's `id`. **Surfaced in the picker.** The available properties for each ancestor come from that node's `outputSchema`.
+Output of an ancestor node, keyed by the node's `id`. **Surfaced in the picker.** The available properties for each ancestor come from that node's `schemaOutput`.
 
 For example, an AI Agent node emits `response`, `tokensUsed`, and `model`, so a downstream field can reference any of:
 
@@ -162,14 +162,14 @@ The control behaves like the matching plain control, except `{{` opens the sugge
 
 ### Expose the node's outputs to downstream pickers
 
-Add an `outputSchema` to the node's `PaletteItem`. Each entry describes one output property the node will emit:
+Add an `schemaOutput` to the node's `PaletteItem`. Each entry describes one output property the node will emit:
 
 ```typescript
 import type { PaletteItem } from '@workflowbuilder/sdk';
 
 export const myNode: PaletteItem = {
   // ...label, type, schema, defaults, uischema
-  outputSchema: {
+  schemaOutput: {
     properties: {
       response: { type: 'string', label: 'Response', description: 'The text returned by the model' },
       tokensUsed: { type: 'number', label: 'Tokens Used' },
@@ -178,7 +178,7 @@ export const myNode: PaletteItem = {
 };
 ```
 
-Without an `outputSchema`, the node never appears as a group in any downstream picker.
+Without an `schemaOutput`, the node never appears as a group in any downstream picker.
 
 ## See also
 

@@ -270,12 +270,21 @@ export type { WBIcon } from '@workflow-builder/icons';
 
 export type { UISchemaElement } from './types/uischema';
 
+/**
+ * Displays a snackbar notification to the user.
+ *
+ * @param message - The message to display in the snackbar.
+ */
+export { showSnackbar } from './utils/show-snackbar';
+
 // =============================================================================
 // Variables
 // =============================================================================
 // Delimiters wrapping a variable reference in a string value
 // (`{{nodeId.output}}`), so consumers build and parse references without
 // hardcoding the brackets.
+
+export type { NodeSchemaOutput } from './node/node-output-schema';
 
 export { VARIABLE_BRACKETS_START, VARIABLE_BRACKETS_END } from './features/variables/constants';
 export { VARIABLE_NODES_KEY } from './features/variables/constants';

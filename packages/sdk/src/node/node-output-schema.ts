@@ -53,12 +53,12 @@ export type OutputVariant =
       };
     };
 
-export type NodeOutputSchemaDefault = {
+export type NodeSchemaOutputDefault = {
   type: 'default';
   bySourceHandle: PropertiesBySourceHandle;
 };
 
-export type NodeOutputSchemaVariant = {
+export type NodeSchemaOutputVariant = {
   /*
     Predefined variant depending on the value of a property. 
   */
@@ -66,4 +66,4 @@ export type NodeOutputSchemaVariant = {
   variants: OutputVariant[];
 };
 
-export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant;
+export type NodeSchemaOutput = NodeSchemaOutputDefault | NodeSchemaOutputVariant;

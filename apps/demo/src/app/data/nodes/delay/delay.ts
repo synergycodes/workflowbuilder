@@ -2,6 +2,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type DelayNodeSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const delay: PaletteItem<DelayNodeSchema> = {
@@ -11,26 +12,6 @@ export const delay: PaletteItem<DelayNodeSchema> = {
   icon: 'Timer',
   defaultPropertiesData,
   schema,
+  schemaOutput,
   uischema,
-  outputSchema: {
-    type: 'default',
-    bySourceHandle: {
-      success: {
-        type: 'object',
-        properties: {
-          resumedAt: {
-            type: 'string',
-            format: 'date-time',
-            title: 'Resumed At',
-            description: 'ISO 8601 date-time when the delay ended',
-          },
-          delayDuration: {
-            type: 'number',
-            title: 'Delay Duration',
-            description: 'Actual wait time in milliseconds',
-          },
-        },
-      },
-    },
-  },
 };

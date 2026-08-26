@@ -3,7 +3,8 @@ import type { Edge, Node } from '@xyflow/react';
 import type { NodeDataProperties } from '../types/default-properties';
 import type { UISchema } from '../types/uischema';
 import type { IconType } from './common';
-import type { NodeOutputSchema } from './node-output-schema';
+import type { DeprecatedNodeOutputSchema } from './deprecated/deprecated-node-output-schema';
+import type { NodeSchemaOutput } from './node-output-schema';
 import type { BaseNodeProperties, NodeSchema } from './node-schema';
 import type { NodeType } from './node-types';
 
@@ -30,7 +31,15 @@ export type NodeDefinition<T extends NodeSchema> = {
   /** describes how the form looks like and to which fields data properties should be mapped */
   uischema?: UISchema;
   /** describes the output properties this node produces, used by the variable picker */
-  outputSchema?: NodeOutputSchema;
+  schemaOutput?: NodeSchemaOutput;
+  /**
+   * @deprecated outputSchema is deprecated. Switch to schemaOutput instead.
+   * The newer version uses a schema similar to the Node schema, but also supports handling responses
+   * by source handle (the error port does not receive successful variables).
+   *
+   * outputSchema will be removed in the next major release (3.0).
+   */
+  outputSchema?: DeprecatedNodeOutputSchema;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
   Pick<NodeData, 'type' | 'icon' | 'templateType'>;
 

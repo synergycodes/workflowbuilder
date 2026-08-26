@@ -3,6 +3,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type DecisionNodeSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const decision: PaletteItem<DecisionNodeSchema> = {
@@ -13,25 +14,6 @@ export const decision: PaletteItem<DecisionNodeSchema> = {
   templateType: NodeType.DecisionNode,
   defaultPropertiesData,
   schema,
+  schemaOutput,
   uischema,
-  outputSchema: {
-    type: 'default',
-    bySourceHandle: {
-      every: {
-        type: 'object',
-        properties: {
-          selectedBranch: {
-            type: 'string',
-            title: 'Selected Branch',
-            description: 'Label of the branch that was taken',
-          },
-          branchIndex: {
-            type: 'number',
-            title: 'Branch Index',
-            description: 'Zero-based index of the selected branch',
-          },
-        },
-      },
-    },
-  },
 };

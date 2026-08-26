@@ -5,11 +5,11 @@ import type {
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderReactFlowProps,
 } from '@workflowbuilder/sdk';
+import { showSnackbar } from '@workflowbuilder/sdk';
 import { SnackbarType } from '@workflowbuilder/ui';
 
 import '@workflowbuilder/sdk/style.css';
 
-import { showSnackbar } from '../../../../packages/sdk/src/utils/show-snackbar';
 import { DashedEdge } from './components/dashed-edge/dashed-edge';
 import { MultiPortNodeTemplate } from './components/multi-port-node/multi-port-node-template';
 import { demoPaletteItems } from './data/palette';

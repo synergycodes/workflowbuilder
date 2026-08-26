@@ -29,7 +29,7 @@ const EMPTY_NODE_SUGGESTIONS: Response = {
 export function getSuggestionsNodeData({ definition, node }: Params): Response {
   const nodeLabel = getNodeLabelForVariable({ node, definition });
 
-  if (!definition?.outputSchema?.type) {
+  if (!definition?.schemaOutput?.type) {
     return EMPTY_NODE_SUGGESTIONS;
   }
 
@@ -38,8 +38,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
   };
 
   // Node that always returns the same variables
-  if (definition.outputSchema.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
-    for (const [sourceHandle, properties] of Object.entries(definition.outputSchema.bySourceHandle)) {
+  if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
+    for (const [sourceHandle, properties] of Object.entries(definition.schemaOutput.bySourceHandle)) {
       if (properties) {
         bySourceHandle[sourceHandle] = [
           ...(bySourceHandle[sourceHandle] || []),
@@ -59,8 +59,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
   }
 
   // From variants (they have rules based on data inside the node)
-  if (definition.outputSchema.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
-    const variantsMatchingDataPropertyValue = Object.values(definition.outputSchema.variants)
+  if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
+    const variantsMatchingDataPropertyValue = Object.values(definition.schemaOutput.variants)
       .filter((variant) => {
         if (variant.variantRule && 'onlyIfPropertyNameEquals' in variant.variantRule) {
           const { path, value } = variant.variantRule.onlyIfPropertyNameEquals;
