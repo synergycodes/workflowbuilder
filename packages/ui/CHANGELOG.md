@@ -25,7 +25,7 @@ Workflow Builder SDK.
   IconSwitch, Checkbox, RadioButton, SegmentPicker, DatePicker, Accordion,
   Avatar, Snackbar, Status, Separator, plus the NodePanel / NodeIcon /
   NodeDescription / EdgeLabel diagram primitives.
-- **Theming** via `--wb-ds-*` design tokens, isolated in cascade layers
+- **Theming** via `--ax-*` design tokens, isolated in cascade layers
   (`@layer ui.base, ui.component`) so app styles win without `!important` and
   components retheme cleanly.
 - **Multi-entry build** with per-component subpath exports

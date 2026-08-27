@@ -29,7 +29,7 @@
 
   .calendar {
     composes: wb-text-body-s from global;
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 400;
     line-height: 130%;
     background: var(--wb-public-date-picker-dropdown-background);
@@ -59,13 +59,13 @@
   }
 
   .calendar :global(.rdp-weekday) {
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 400;
     line-height: 130%;
   }
 
   .calendar :global(.rdp-month_caption) {
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 600;
     line-height: 130%;
   }
@@ -84,7 +84,7 @@
   .calendar :global(.rdp-selected .rdp-day_button) {
     background-color: var(--wb-public-date-picker-date-selected-background-color);
     color: var(--wb-public-date-picker-date-selected-color);
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 600;
     line-height: 130%;
   }

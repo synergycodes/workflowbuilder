@@ -3,4 +3,4 @@
 '@workflowbuilder/sdk': major
 ---
 
-Public component CSS variables use the `--wb-public-*` prefix with no compatibility aliases. Replace the legacy public prefix in consumer overrides.
+Public component CSS variables move one-to-one from `--ax-public-*` to `--wb-public-*`, with no compatibility aliases. Replace that prefix in consumer overrides.
