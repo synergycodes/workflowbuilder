@@ -1,5 +1,5 @@
 import clsx from 'clsx';
-import { forwardRef } from 'react';
+import { Children, forwardRef } from 'react';
 
 import styles from './nav-button.module.css';
 
@@ -17,7 +17,8 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
     variant = 'square',
     ...props
   } = buttonProps;
-  const isIconOnly = children == null || children === false || children === '';
+  const renderableChildren = Children.toArray(children).filter((child) => child !== '');
+  const isIconOnly = renderableChildren.length === 0;
 
   return (
     <BaseButton
@@ -30,11 +31,11 @@ export const NavButton = forwardRef<HTMLButtonElement, NavButtonProps>((buttonPr
       {...props}
     >
       {isIconOnly ? (
-        <span className={styles['icon']}>{prefixIcon}</span>
+        <span className={styles['icon']}>{prefixIcon ?? suffixIcon}</span>
       ) : (
         <>
           {prefixIcon != null && <span className={styles['icon']}>{prefixIcon}</span>}
-          <span>{children}</span>
+          <span>{renderableChildren}</span>
           {suffixIcon != null && <span className={styles['icon']}>{suffixIcon}</span>}
         </>
       )}

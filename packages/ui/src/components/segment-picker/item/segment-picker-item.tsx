@@ -1,29 +1,17 @@
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
 import type { NavButtonProps } from '@ui/components/button/nav-button/types';
 import clsx from 'clsx';
-import { Children, type MouseEvent, type ReactNode, isValidElement, useContext } from 'react';
+import { type MouseEvent, useContext } from 'react';
 
 import itemShapeStyles from './segment-picker-item-shape.module.css';
 
-import type { BaseButtonProps, IconNode } from '../../button/types';
+import type { BaseButtonProps } from '../../button/types';
 import { SegmentPickerContext } from '../utils/context';
 
 export type SegmentPickerItemProps = BaseButtonProps &
   Pick<NavButtonProps, 'prefixIcon' | 'suffixIcon'> & {
     value: string;
   };
-
-type Slots = { prefixIcon?: IconNode; label?: ReactNode; suffixIcon?: IconNode };
-
-function toSlots(children: ReactNode): Slots {
-  const parts = Children.toArray(children);
-  const prefixIcon = isValidElement(parts[0]) ? parts[0] : undefined;
-  const last = parts.at(-1);
-  const suffixIcon = parts.length > 1 && isValidElement(last) ? last : undefined;
-  const labelParts = parts.slice(prefixIcon ? 1 : 0, suffixIcon ? -1 : undefined);
-
-  return { prefixIcon, label: labelParts.length > 0 ? labelParts : undefined, suffixIcon };
-}
 
 export function Item({
   children,
@@ -42,7 +30,6 @@ export function Item({
   }
 
   const { selectedValue, onSelect, shape, size, navVariant } = context;
-  const slots = toSlots(children);
   const isSelected = selectedValue === value;
 
   return (
@@ -54,13 +41,13 @@ export function Item({
         onSelect(event, value);
         onClick?.(event);
       }}
-      prefixIcon={prefixIcon ?? slots.prefixIcon}
+      prefixIcon={prefixIcon}
       size={size}
       variant={navVariant}
-      suffixIcon={suffixIcon ?? slots.suffixIcon}
+      suffixIcon={suffixIcon}
       {...buttonProps}
     >
-      {slots.label}
+      {children}
     </NavButton>
   );
 }
