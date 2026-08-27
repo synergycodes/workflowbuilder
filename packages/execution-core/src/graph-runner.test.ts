@@ -1181,8 +1181,12 @@ describe('runGraph — node_skipped emit failures', () => {
 
 describe('runGraph — incomplete runs (dead ends)', () => {
   it('decision routes to an unwired handle — run ends incomplete and names the node and port', async () => {
-    // The motivating case: the edge for branch 'Y' was deleted, but the decision still
-    // picks 'Y'. Previously the run closed as completed with a chunk of graph never run.
+    // The motivating case: the decision picks 'Y' but no edge carries that handle — the
+    // branch was renamed in config while the edge kept the old name, or was never wired.
+    // Previously the run closed as completed with a chunk of graph never run. (Deleting
+    // a node's sole incoming edge is a different shape, caught earlier as an
+    // orphaned-nodes failure; the deletion shape that reaches this rule is the join
+    // test below.)
     const runner = makeRunner({ D: { output: { matchedBranch: 'Y' }, nextPort: 'Y' } });
     const events = makeEvents();
 
@@ -1210,6 +1214,28 @@ describe('runGraph — incomplete runs (dead ends)', () => {
     const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
 
     expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'X' }] });
+  });
+
+  it('edge deleted from a join — dead end recorded while the join still runs via its other input', async () => {
+    // The genuine-deletion shape that reaches the rule: D's 'Y' edge was removed, but
+    // its former target J keeps another input (S→J), so the orphan check never fires.
+    // D still picks 'Y' — a dead end — D's surviving 'X' edge is pruned, and J runs
+    // through S with only that live input.
+    const runner = makeRunner({ D: { output: 'd', nextPort: 'Y' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('S'), trigger('D'), trigger('J')],
+        [edge('e1', 'S', 'D'), edge('e2', 'S', 'J'), edge('e3', 'D', 'J', 'X')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['S', 'D', 'J']);
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'Y' }] });
+    expect(skipsFrom(events.events)).toEqual([]);
   });
 
   it('plain leaf returns no port — still a completed run', async () => {
