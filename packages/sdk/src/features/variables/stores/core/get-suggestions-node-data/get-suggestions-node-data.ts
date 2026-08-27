@@ -6,7 +6,8 @@ import { getByPath } from '../../../../../utils/object';
 import type { VariablesIndex } from '../../../types';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
-import { getSuggestionsFromOutputSchema } from './get-suggestions-from-output-schema';
+import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema.ts';
+import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-ouput';
 import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
 
 type Params = {
@@ -28,14 +29,69 @@ const EMPTY_NODE_SUGGESTIONS: Response = {
 
 export function getSuggestionsNodeData({ definition, node }: Params): Response {
   const nodeLabel = getNodeLabelForVariable({ node, definition });
-
-  if (!definition?.schemaOutput?.type) {
-    return EMPTY_NODE_SUGGESTIONS;
-  }
-
   const bySourceHandle: SuggestionsBySourceHandle = {
     every: [],
   };
+
+  if (!definition?.schemaOutput?.type) {
+    // outputSchema is deprecated and will be removed in future versions
+    if (definition?.outputSchema?.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
+      // The old format doesn't return the same value for all handles
+      bySourceHandle['every'] = [
+        ...(bySourceHandle['every'] || []),
+        ...getDeprecatedSuggestionsFromOutputSchema({
+          nodeId: node.id,
+          nodeLabel,
+          properties: definition.outputSchema.properties,
+        }),
+      ];
+
+      return {
+        type: SUGGESTION_NODE_TYPE.COMMON,
+        bySourceHandle,
+      };
+    }
+
+    if (definition?.outputSchema?.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
+      // The old format accepted only one rule at the time, newer merges multiple rules
+      const variant = Object.values(definition.outputSchema.variants).find((variant) => {
+        if (!variant?.variantRule) {
+          return true;
+        }
+
+        const { dataPropertyName, dataPropertyValue } = variant.variantRule;
+
+        if (node.data.properties[dataPropertyName] === dataPropertyValue) {
+          return true;
+        }
+
+        return false;
+      });
+
+      if (variant) {
+        bySourceHandle['every'] = [
+          ...(bySourceHandle['every'] || []),
+          ...getDeprecatedSuggestionsFromOutputSchema({
+            nodeId: node.id,
+            nodeLabel,
+            properties: variant.properties,
+          }),
+        ];
+
+        return {
+          type: SUGGESTION_NODE_TYPE.CUSTOM,
+          bySourceHandle,
+        };
+      }
+
+      return {
+        type: SUGGESTION_NODE_TYPE.CUSTOM,
+        bySourceHandle: {},
+      };
+    }
+
+    return EMPTY_NODE_SUGGESTIONS;
+  }
 
   // Node that always returns the same variables
   if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
@@ -43,7 +99,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       if (properties) {
         bySourceHandle[sourceHandle] = [
           ...(bySourceHandle[sourceHandle] || []),
-          ...getSuggestionsFromOutputSchema({
+          ...getSuggestionsFromSchemaOutput({
             nodeId: node.id,
             nodeLabel,
             properties,
@@ -83,7 +139,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
           if (properties) {
             bySourceHandle[sourceHandle] = [
               ...(bySourceHandle[sourceHandle] || []),
-              ...getSuggestionsFromOutputSchema({
+              ...getSuggestionsFromSchemaOutput({
                 nodeId: node.id,
                 nodeLabel,
                 properties,

@@ -2,7 +2,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type ActionNodeSchema, schema } from './schema';
-import { schemaOutput } from './schema-output';
+// import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const action: PaletteItem<ActionNodeSchema> = {
@@ -12,6 +12,15 @@ export const action: PaletteItem<ActionNodeSchema> = {
   description: 'node.action.description',
   defaultPropertiesData,
   schema,
-  schemaOutput,
+  // schemaOutput,
+  // Example of a deprecated response. Use schemaOutput instead.
+  outputSchema: {
+    type: 'default',
+    properties: {
+      status: { type: 'string', label: 'Status', description: 'Execution status: success, failure, or skipped' },
+      result: { type: 'object', label: 'Result', description: 'The data returned by the action' },
+      errorMessage: { type: 'string', label: 'Error Message', description: 'Error details if the action failed' },
+    },
+  },
   uischema,
 };

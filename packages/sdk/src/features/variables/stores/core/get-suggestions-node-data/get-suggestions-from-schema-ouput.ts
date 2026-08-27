@@ -13,9 +13,9 @@ type Params = {
 };
 
 /**
- * Produces a list of suggestions generated from `outputPropertiesIndex` (used by node definition variants).
+ * Produces a list of suggestions generated from JsonSchema7 (used by node definition variants).
  */
-export function getSuggestionsFromOutputSchema({ nodeId, nodeLabel, properties }: Params): VariableSuggestion[] {
+export function getSuggestionsFromSchemaOutput({ nodeId, nodeLabel, properties }: Params): VariableSuggestion[] {
   const flattenedProperties = getFlattenedPropertiesFromJsonSchema7(properties);
 
   return Object.entries(flattenedProperties)

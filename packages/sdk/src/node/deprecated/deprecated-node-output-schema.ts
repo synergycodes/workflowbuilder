@@ -21,7 +21,7 @@ export type DeprecatedNodeOutputSchemaVariant = {
   */
   type: 'variant';
   variants: {
-    [variantName: string]: FlattenedPropertiesIndex | undefined;
+    [variantName: string]: DeprecatedOutputVariant | undefined;
   };
 };
 
