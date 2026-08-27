@@ -41,7 +41,7 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
           boxSizing: 'border-box',
         }}
         setOptions={{
-          fontFamily: "ui-monospace, 'Cascadia Mono', monospace",
+          fontFamily: "var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace)",
           useWorker: false,
           enableBasicAutocompletion: false,
           enableLiveAutocompletion: false,

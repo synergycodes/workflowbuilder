@@ -1,6 +1,0 @@
-:root {
-  --wb-edge-label-color: var(--wb-colors-gray-500);
-  --wb-edge-label-color-hover: var(--wb-canvas-edge-stroke-hover);
-  --wb-edge-label-color-select: var(--wb-canvas-edge-stroke-active);
-  --wb-edge-label-background: var(--wb-colors-gray-200);
-}

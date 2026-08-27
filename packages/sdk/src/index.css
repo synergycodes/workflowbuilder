@@ -69,4 +69,7 @@
       box-sizing: border-box;
     }
   }
+  .workflow-builder-root-shell {
+    display: contents;
+  }
 }

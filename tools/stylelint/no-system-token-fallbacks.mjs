@@ -1,10 +1,12 @@
 /**
- * Stylelint rule: forbid fallbacks on system design tokens.
+ * Stylelint rule: validate fallbacks on system design tokens.
  *
  * `var(--wb-…, x)` / `var(--ax-…, x)` silently masks a mistyped token name —
  * the fallback renders and the typo ships.
  *
- * Legitimate exceptions use the standard mechanism with a mandatory reason:
+ * The public font tokens require fallbacks so standalone component CSS remains
+ * usable without the stylesheet that defines their defaults. Legitimate
+ * exceptions for other tokens use the standard mechanism with a mandatory reason:
  *   /* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason *\/
  */
 import valueParser from 'postcss-value-parser';
@@ -15,6 +17,7 @@ const tokensWithRequiredFallbacks = new Set(['--wb-public-font-family', '--wb-pu
 
 const messages = stylelint.utils.ruleMessages(ruleName, {
   rejected: (name) => `Unexpected fallback on system token "${name}" — fallbacks mask typos`,
+  required: (name) => `Expected fallback on public font token "${name}"`,
 });
 
 const meta = {
@@ -27,8 +30,26 @@ const rule = (primary) => (root, result) => {
     valueParser(decl.value).walk((node) => {
       if (node.type !== 'function' || node.value !== 'var') return;
       const [first, ...rest] = node.nodes;
-      if (!first || !/^--(wb|ax)-/.test(first.value) || tokensWithRequiredFallbacks.has(first.value)) return;
-      if (rest.some((argument) => argument.type === 'div' && argument.value === ',')) {
+      if (!first || !/^--(wb|ax)-/.test(first.value)) return;
+
+      const separatorIndex = rest.findIndex((argument) => argument.type === 'div' && argument.value === ',');
+      const hasFallback =
+        separatorIndex !== -1 &&
+        rest.slice(separatorIndex + 1).some((argument) => argument.type !== 'comment' && argument.value.trim());
+
+      if (tokensWithRequiredFallbacks.has(first.value)) {
+        if (!hasFallback) {
+          stylelint.utils.report({
+            ruleName,
+            result,
+            node: decl,
+            message: messages.required(first.value),
+          });
+        }
+        return;
+      }
+
+      if (separatorIndex !== -1) {
         stylelint.utils.report({
           ruleName,
           result,

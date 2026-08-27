@@ -29,6 +29,9 @@
 
   .calendar {
     composes: wb-text-body-s from global;
+    font-size: var(--wb-font-size-150);
+    font-weight: 400;
+    line-height: 130%;
     background: var(--wb-public-date-picker-dropdown-background);
     border: var(--wb-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
     border-radius: var(--wb-radius-100);
