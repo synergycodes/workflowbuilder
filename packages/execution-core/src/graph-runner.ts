@@ -265,10 +265,11 @@ function propagate<TNode extends BaseNode>(
     }
   }
 
-  // A node that named a port but reached nothing through it. Only an explicit port
-  // counts: a plain leaf returns none and is a legitimate end of a branch, whereas a
-  // decision that picked a branch — or an 'errorRoute' failure — promised a route.
-  if (rootNextPort !== undefined && !rootRoutedSomewhere) {
+  // A node that named a port but reached nothing through it. Only a non-empty port
+  // counts — truthiness, to mirror `isEdgeLive`'s `!nextPort`: config arrives
+  // unvalidated, and a falsy port ('' or a smuggled null) routes as "no port" there,
+  // so it must not read as a promised route here.
+  if (rootNextPort && !rootRoutedSomewhere) {
     deadEndOut.push({ nodeId: rootId, port: rootNextPort });
   }
 }

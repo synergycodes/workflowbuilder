@@ -158,7 +158,7 @@ A `node_skipped` emit that exhausts its retries is swallowed and the run carries
 
 ## Incomplete runs
 
-A run is **incomplete** when a node returned an explicit `nextPort` and no outgoing edge went live. Each occurrence is a _dead end_, recorded as `{ nodeId, port }`; the run finishes everything else it can reach, then emits a single terminal `execution_incomplete` event naming every one of them, sets the execution status to `'incomplete'`, and returns `{ status: 'incomplete', deadEnds }`.
+A run is **incomplete** when a node returned a non-empty `nextPort` and no outgoing edge went live. A falsy `nextPort` — `''`, or a `null` that unvalidated config lets through — counts as no port, mirroring the router, which treats a falsy `nextPort` as unrestricted routing. Each occurrence is a _dead end_, recorded as `{ nodeId, port }`; the run finishes everything else it can reach, then emits a single terminal `execution_incomplete` event naming every one of them, sets the execution status to `'incomplete'`, and returns `{ status: 'incomplete', deadEnds }`.
 
 It is deliberately **not** a failure. Nothing threw, so the engine closes the run normally — the Temporal adapter returns rather than raising an `ApplicationFailure`, and the Workflow Execution shows as Completed. What changes is the run's own status, so an operator can tell "the graph ran" from "the graph ran everything it was supposed to".
 
@@ -168,6 +168,7 @@ It is deliberately **not** a failure. Nothing threw, so the engine closes the ru
 | A decision node with no outgoing edges at all               | **incomplete**                                                            |
 | An `'errorRoute'` failure with no `'errorRoute'` edge       | **incomplete**                                                            |
 | A plain leaf (returns no `nextPort`)                        | completed                                                                 |
+| A leaf whose `nextPort` is `''` (or otherwise falsy)        | completed — falsy means "no port", same as the router                     |
 | A decision routes to a wired handle; other branches pruned  | completed, others `node_skipped`                                          |
 | A successful node whose only outgoing edges are error edges | completed — `nextPort` is undefined, so the success path is simply a leaf |
 | A `'continue'` failure on a leaf                            | completed                                                                 |

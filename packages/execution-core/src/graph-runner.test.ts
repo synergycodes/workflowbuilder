@@ -1244,6 +1244,47 @@ describe('runGraph — incomplete runs (dead ends)', () => {
     expect(outcome).toEqual({ status: 'completed' });
   });
 
+  it('an empty-string nextPort on a leaf is not a dead end — falsy means no port', async () => {
+    // The router (`isEdgeLive`) treats a falsy nextPort as "no restriction", so the
+    // dead-end rule must agree: '' promised nothing, the node is a plain leaf.
+    const runner = makeRunner({ D: { output: 'd', nextPort: '' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+  });
+
+  it('an empty-string nextPort with a regular edge routes like no port — every edge fires', async () => {
+    // The router half of the same contract: '' does not restrict routing, so B runs.
+    // If this and the leaf case above ever disagree, one value has two meanings again.
+    const runner = makeRunner({ D: { output: 'd', nextPort: '' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('D'), trigger('B')], [edge('e1', 'D', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['D', 'B']);
+    expect(outcome).toEqual({ status: 'completed' });
+  });
+
+  it('a null nextPort smuggled through unvalidated config is not a dead end', async () => {
+    // Config reaches the runner as z.unknown(), and executeDecision returns
+    // branch.sourceHandle verbatim — so null arrives at runtime despite the string
+    // typing. It must not end up in the `port: string` payload field.
+    const runner = makeRunner({ D: { output: 'd', nextPort: null as unknown as string } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+  });
+
   it('a dead end does not stop the rest of the graph', async () => {
     // Two legs off the start. Leg 1 dead-ends at D; leg 2 must still run to completion,
     // and the run reports incomplete only at the end.
