@@ -15,7 +15,7 @@ export function getIsStringVariableReference(value: MaybeVariableReference): boo
 
   const hasInvalidCharacters = valueTrimmed.includes(' ');
   if (hasInvalidCharacters) {
-    return true;
+    return false;
   }
 
   const isOnlyOneVariable =

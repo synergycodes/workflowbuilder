@@ -1,8 +1,8 @@
 import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useRef, useState } from 'react';
+import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
+import { Mention, type MentionDataItem, MentionsInput, type MentionsInputProps } from 'react-mentions-ts';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -10,7 +10,7 @@ import styles from './variable-text.module.css';
 
 import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
 import { showSnackbar } from '../../../../utils/show-snackbar';
-import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
+import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
 import { buildMentionData } from './core/build-mention-data';
 import type {
   VariableMentionData,
@@ -22,6 +22,8 @@ import type {
 const DEFAULT_TRIGGER = '{{';
 const DEFAULT_MARKUP = '{{__id__}}';
 const DEFAULT_TITLE = 'Variables';
+
+type MentionsInputBlurHandler = NonNullable<MentionsInputProps['onBlur']>;
 
 const baseClassNames = {
   control: styles['control'],
@@ -92,7 +94,6 @@ export function VariableText({
 }: VariableTextProps) {
   const { t } = useTranslation();
   const [key, setKey] = useState(crypto.randomUUID());
-  const refValueForBlur = useRef(value);
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
@@ -242,37 +243,22 @@ export function VariableText({
         });
       }
 
-      refValueForBlur.current = value;
-
       onChange(value);
     },
     [mentionData.length, onChange],
   );
 
-  const handleFocus = useCallback(
-    (event: { target: { value: string } }) => {
-      let value = event.target.value;
+  const { onBlur: onMentionsInputBlur, ...restMentionsInputProps } = mentionsInputProps ?? {};
 
-      for (const variable of mentionData) {
-        if (variable.display) {
-          value = value.replaceAll(
-            variable.display,
-            `${VARIABLE_BRACKETS_START}${variable.id}${VARIABLE_BRACKETS_END}`,
-          );
-        }
-      }
-
-      refValueForBlur.current = value;
+  // `event.target.value` holds the display text (labels, "Missing node" placeholders),
+  // not the `{{id}}` markup — the controlled `value` prop is the only source of truth.
+  const handleBlur = useCallback<MentionsInputBlurHandler>(
+    (event) => {
+      onMentionsInputBlur?.(event);
+      onBlur?.(value);
     },
-    [mentionData],
+    [onBlur, onMentionsInputBlur, value],
   );
-
-  const handleBlur = useCallback(() => {
-    // We can't rely on the value from the onBlur event because the value is updated afterward.
-    if (onBlur) {
-      onBlur(refValueForBlur.current);
-    }
-  }, [onBlur]);
 
   const {
     trigger = DEFAULT_TRIGGER,
@@ -300,17 +286,15 @@ export function VariableText({
 
   return (
     <MentionsInput
+      {...restMentionsInputProps}
       key={key}
       className={clsx(styles['container'], classNameWrapper)}
       value={value}
       onMentionsChange={onMentionsChange}
-      onFocus={handleFocus}
       onBlur={handleBlur}
-      onSubmit={handleBlur}
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}
-      {...mentionsInputProps}
     >
       <Mention
         trigger={trigger}

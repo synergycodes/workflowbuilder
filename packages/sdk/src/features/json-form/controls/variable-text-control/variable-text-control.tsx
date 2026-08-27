@@ -26,9 +26,12 @@ function VariableTextControl(props: VariableTextControlProps) {
     setInputValue(data ?? '');
   }, [data]);
 
-  const onBlur = useCallback(() => {
-    handleChange(path, inputValue || undefined);
-  }, [handleChange, path, inputValue]);
+  const onBlur = useCallback(
+    (value: string) => {
+      handleChange(path, value || undefined);
+    },
+    [handleChange, path],
+  );
 
   return (
     <ControlWrapper {...props}>
@@ -36,10 +39,11 @@ function VariableTextControl(props: VariableTextControlProps) {
         key={totalVariables}
         value={inputValue}
         onChange={setInputValue}
+        onBlur={onBlur}
         variant="text"
         suggestionGroups={suggestionGroups}
         hasError={errors.length > 0}
-        mentionsInputProps={{ disabled: isDisabled, placeholder, onBlur }}
+        mentionsInputProps={{ disabled: isDisabled, placeholder }}
       />
     </ControlWrapper>
   );
