@@ -18,7 +18,7 @@ type Response = {
   totalVariables: number;
 };
 
-export function useAvailableVariables(nodeId: string | undefined, options?: Options): Response {
+export function useNodeVariables(nodeId: string | undefined, options?: Options): Response {
   const { excludeTypes = [], includeTypes = [] } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
@@ -60,6 +60,7 @@ export function useAvailableVariables(nodeId: string | undefined, options?: Opti
       includeTypes,
     });
 
+    // Variables can’t change while the modal containing them is in use, so we only need to refresh them when they change.
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [nodeId, edges.length, nodes.length]);

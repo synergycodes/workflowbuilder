@@ -5,7 +5,7 @@ import type { WBControlProps } from '../../../../types/controls';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';
 import { DynamicTypedVariableOrInput } from '../../../variables/components/dynamic-typed-variable-or-input/dynamic-typed-variable-or-input';
-import { useAvailableVariables } from '../../../variables/hooks/use-available-variables';
+import { useNodeVariables } from '../../../variables/hooks/use-node-variables';
 import { getBooleanIfPossible } from '../../../variables/utils/get-boolean-if-possible';
 import { getIsStringVariableReference } from '../../../variables/utils/keys/get-is-string-variable-reference';
 import { createControlRenderer } from '../../utils/rendering';
@@ -26,7 +26,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
   const { data, handleChange, path, errors, enabled, uischema } = props;
   const { placeholder, variableType } = uischema;
   const selection = useSingleSelectedElement();
-  const { suggestionGroups, totalVariables } = useAvailableVariables(selection?.node?.id, {
+  const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
     excludeTypes: [],
     includeTypes: variableTypesForSuggestions[variableType],
   });

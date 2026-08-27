@@ -9,7 +9,7 @@ import type { DynamicCondition } from '../../../../../features/json-form/types/c
 import { closeModal } from '../../../../../features/modals/stores/use-modal-store';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
 import { variablesTypesToExcludeNonPrimitive } from '../../../../../features/variables/constants';
-import { useAvailableVariables } from '../../../../../features/variables/hooks/use-available-variables';
+import { useNodeVariables } from '../../../../variables/hooks/use-node-variables';
 import { getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
@@ -37,7 +37,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     );
 
     const selection = useSingleSelectedElement();
-    const { suggestionGroups, totalVariables } = useAvailableVariables(selection?.node?.id, {
+    const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
       excludeTypes: variablesTypesToExcludeNonPrimitive,
     });
 

@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { VariableText } from '../../../../features/variables/components/variable-text/variable-text';
-import { useAvailableVariables } from '../../../../features/variables/hooks/use-available-variables';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';
 import { variablesTypesNumeric, variablesTypesToExcludeInText } from '../../../variables/constants';
+import { useNodeVariables } from '../../../variables/hooks/use-node-variables';
 import type { VariableTextControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
@@ -13,7 +13,7 @@ function VariableTextControl(props: VariableTextControlProps) {
   const { placeholder, variablesTypes, disabled } = uischema;
   const { type } = schema;
   const selection = useSingleSelectedElement();
-  const { suggestionGroups, totalVariables } = useAvailableVariables(selection?.node?.id, {
+  const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
     excludeTypes: variablesTypes ? [] : variablesTypesToExcludeInText,
     includeTypes: variablesTypes || (type === 'number' ? variablesTypesNumeric : undefined),
   });

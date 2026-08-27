@@ -280,15 +280,23 @@ export { showSnackbar } from './utils/show-snackbar';
 // =============================================================================
 // Variables
 // =============================================================================
-// Delimiters wrapping a variable reference in a string value
-// (`{{nodeId.output}}`), so consumers build and parse references without
-// hardcoding the brackets.
 
+// The output contract of a node — the shape downstream nodes can reference as
+// variables. Attach it via `NodeData.schemaOutput`. Two forms:
+// `{ type: 'default', bySourceHandle }` maps each source handle to a JSON
+// Schema (`every` covers all handles at once, e.g. `success` / `error` split);
+// `{ type: 'variant', variants }` picks the shape at runtime from a property
+// value, for nodes whose outputs depend on how they are configured.
 export type { NodeSchemaOutput } from './node/node-output-schema';
 
-export { VARIABLE_BRACKETS_START, VARIABLE_BRACKETS_END } from './features/variables/constants';
-export { VARIABLE_NODES_KEY } from './features/variables/constants';
+// Every variable a node can reference — global variables plus the outputs of
+// its ancestors — grouped for a picker UI. Optionally narrowed by variable type
+// (`includeTypes` / `excludeTypes`). Recomputes only when node/edge counts
+// change, so it is cheap to call from a modal or properties panel.
+export { useNodeVariables } from './features/variables/hooks/use-node-variables';
 
-export { useVariablesSuggestionsStore } from './features/variables/stores/use-variable-suggestions-store';
-export type { VariablesSuggestionsStore } from './features/variables/stores/use-variable-suggestions-store';
+// Imperative, non-React counterpart: the variables a single node exposes on one
+// of its source handles (branch-aware — an error handle gets the error-branch
+// outputs, others the success ones). Returns `undefined` when the node has not
+// been indexed yet.
 export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';
