@@ -19,7 +19,13 @@ StyleDictionary.registerTransform({
         `wb/font-size-rem expected '${token.path.join('/')}' to use px, received ${JSON.stringify(value)}`,
       );
     }
-    return `${Number.parseFloat(match[1]) / 16}rem`;
+    const pixels = Number.parseFloat(match[1]);
+    if (!Number.isFinite(pixels)) {
+      throw new TypeError(
+        `wb/font-size-rem expected '${token.path.join('/')}' to contain a finite number, received ${JSON.stringify(value)}`,
+      );
+    }
+    return `${pixels / 16}rem`;
   },
 });
 
@@ -35,7 +41,13 @@ StyleDictionary.registerTransform({
         `wb/dimension-rem expected '${token.path.join('/')}' to use px, received ${JSON.stringify(value)}`,
       );
     }
-    return `${Number.parseFloat(match[1]) / 16}rem`;
+    const pixels = Number.parseFloat(match[1]);
+    if (!Number.isFinite(pixels)) {
+      throw new TypeError(
+        `wb/dimension-rem expected '${token.path.join('/')}' to contain a finite number, received ${JSON.stringify(value)}`,
+      );
+    }
+    return `${pixels / 16}rem`;
   },
 });
 

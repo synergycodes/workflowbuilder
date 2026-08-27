@@ -2,7 +2,9 @@
   --wb-template-tile-background: var(--wb-ui-bg-elevated); /* missing token */
   --wb-template-tile-subtitle-color: var(--wb-colors-gray-500); /* missing token */
   --wb-template-tile-outline-color: var(--wb-colors-gray-400); /* missing token */
-  --wb-template-tile-outline-hover-color: var(--wb-colors-acc1-500); /* missing token */
+  --wb-template-tile-outline-hover-color: var(
+    --wb-canvas-node-stroke-hover
+  ); /* missing token: template tile hover outline */
   --wb-template-tile-color: var(--wb-ui-text-default); /* missing token */
   --wb-template-icon-color: var(--wb-ui-text-default); /* missing token */
 }

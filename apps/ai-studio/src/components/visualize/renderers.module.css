@@ -40,7 +40,7 @@
 }
 
 .markdown a {
-  color: var(--wb-colors-acc1-500);
+  color: var(--wb-ui-text-action-default);
   text-decoration: underline;
 }
 
@@ -95,7 +95,7 @@
 }
 
 .rich a {
-  color: var(--wb-colors-acc1-500);
+  color: var(--wb-ui-text-action-default);
   text-decoration: underline;
 }
 
