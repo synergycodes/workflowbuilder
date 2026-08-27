@@ -1,8 +1,11 @@
 name: PR Check
 
 # Runs on every PR to give reviewers fast feedback on whether the change
-# is safe to merge. Focus on the published packages @workflowbuilder/sdk and
-# @workflowbuilder/ui (plus its private @workflowbuilder/ui-tokens build) +
+# is safe to merge. Two things are gated here: the published packages
+# @workflowbuilder/sdk and @workflowbuilder/ui (plus its private
+# @workflowbuilder/ui-tokens build), and the execution pipeline
+# (execution-core, backend, execution-worker) — whose determinism tests guard
+# Temporal replay safety and so must not be able to regress silently. Plus
 # global format consistency. apps/docs has its own path-filtered workflow
 # (pr-check-docs.yml); demo and ai-studio are not checked here — they're
 # internal and have their own broken-state tolerances.
@@ -145,3 +148,39 @@ jobs:
         # build:ui builds @workflowbuilder/ui-tokens first, then ui, then runs
         # the check:built-css guard.
         run: pnpm build:ui
+
+  execution:
+    name: Execution pipeline lint + typecheck + test
+    runs-on: ubuntu-latest
+    # No `services:` block: all three suites are pure unit tests against
+    # in-memory fakes — no Postgres, no Temporal, no API keys. If a suite here
+    # ever needs real infra, give it its own job rather than adding services
+    # to this one.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
+
+      - name: Test
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
