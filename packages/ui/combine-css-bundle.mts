@@ -16,17 +16,27 @@ import type { Plugin } from 'vite';
  */
 export function combineCssBundle(rootDirectory: string): Plugin {
   const distributionDirectory = path.resolve(rootDirectory, 'dist');
+  const documentationPreviewDirectory = path.resolve(rootDirectory, 'tmp');
   const stylesDirectory = path.resolve(rootDirectory, 'src/styles');
+  let buildFailed = false;
 
   return {
     name: 'wb-ui:combine-css-bundle',
     apply: 'build',
+    buildStart() {
+      buildFailed = false;
+    },
+    buildEnd(error) {
+      buildFailed = error !== undefined;
+    },
     closeBundle() {
+      if (buildFailed) return;
+
       assetsDirectoryOf(distributionDirectory);
       const fontStyles = emitFontAssets(distributionDirectory);
       const layerOrder = readLayerOrder(stylesDirectory);
       fs.writeFileSync(path.resolve(distributionDirectory, 'fonts.css'), `${layerOrder}\n${fontStyles}\n`);
-      writeCombinedStylesheet(distributionDirectory, stylesDirectory, fontStyles);
+      writeCombinedStylesheet(distributionDirectory, documentationPreviewDirectory, stylesDirectory, fontStyles);
       writeGlobalStylesheet(distributionDirectory, stylesDirectory, fontStyles);
       appendFontStylesToEntryChunk(distributionDirectory, fontStyles);
       prependLayerOrderToAssets(distributionDirectory, stylesDirectory);
@@ -182,7 +192,12 @@ function cssFilesIn(assetsDirectory: string): string[] {
   return files;
 }
 
-function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory: string, fontStyles: string) {
+function writeCombinedStylesheet(
+  distributionDirectory: string,
+  documentationPreviewDirectory: string,
+  stylesDirectory: string,
+  fontStyles: string,
+) {
   const assetsDirectory = assetsDirectoryOf(distributionDirectory);
 
   // Within a layer, file order only breaks ties between equal-specificity rules.
@@ -192,7 +207,8 @@ function writeCombinedStylesheet(distributionDirectory: string, stylesDirectory:
 
   const combined = `${readLayerOrder(stylesDirectory)}\n${styles}`;
   fs.writeFileSync(path.resolve(distributionDirectory, 'index.css'), `${combined}\n${fontStyles}`);
-  fs.writeFileSync(path.resolve(distributionDirectory, 'docs-preview.css'), combined);
+  fs.mkdirSync(documentationPreviewDirectory, { recursive: true });
+  fs.writeFileSync(path.resolve(documentationPreviewDirectory, 'docs-preview.css'), combined);
 }
 
 function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: string, fontStyles: string) {

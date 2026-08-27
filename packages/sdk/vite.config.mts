@@ -54,20 +54,27 @@ const isExternalPackage = (id: string) =>
 
 function emitUiFontAssets(): Plugin {
   const distributionDirectory = path.resolve(import.meta.dirname, 'dist');
+  let buildFailed = false;
 
   return {
     name: 'wb-sdk:emit-ui-font-assets',
     apply: 'build',
+    buildStart() {
+      buildFailed = false;
+    },
+    buildEnd(error) {
+      buildFailed = error !== undefined;
+    },
     closeBundle() {
+      if (buildFailed) return;
+
       const uiDistribution = path.resolve(import.meta.dirname, '../ui/dist');
       const stylesheetPath = path.resolve(distributionDirectory, 'style.css');
       const fontStylesPath = path.resolve(uiDistribution, 'fonts.css');
       const assetsDirectory = path.resolve(distributionDirectory, 'assets');
 
       if (!fs.existsSync(fontStylesPath)) {
-        throw new Error(
-          '@workflowbuilder/ui dist is missing fonts.css - build the UI first: `pnpm build:ui`',
-        );
+        throw new Error('@workflowbuilder/ui dist is missing fonts.css - build the UI first: `pnpm build:ui`');
       }
       if (!fs.existsSync(stylesheetPath)) {
         throw new Error(
@@ -76,15 +83,10 @@ function emitUiFontAssets(): Plugin {
         );
       }
 
-      const fontStyles = fs
-        .readFileSync(fontStylesPath, 'utf8')
-        .replace(/^@layer ui\.base, ui\.component;\s*/, '');
+      const fontStyles = fs.readFileSync(fontStylesPath, 'utf8').replace(/^@layer ui\.base, ui\.component;\s*/, '');
       const stylesheet = fs
         .readFileSync(stylesheetPath, 'utf8')
-        .replaceAll(
-          /@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g,
-          '',
-        );
+        .replaceAll(/@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g, '');
 
       fs.mkdirSync(assetsDirectory, { recursive: true });
       for (const file of fs.readdirSync(path.resolve(uiDistribution, 'assets'))) {

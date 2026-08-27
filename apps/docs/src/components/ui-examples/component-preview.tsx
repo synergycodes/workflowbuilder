@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 
 import styles from './component-preview.module.css';
 
-import previewCss from '../../../../../packages/ui/dist/docs-preview.css?raw';
+import previewCss from '../../../../../packages/ui/tmp/docs-preview.css?raw';
 
 // Examples render in a shadow root so Starlight's rules cannot reach them and
 // the library's cannot leak out. Inherited and custom properties still cross
