@@ -45,6 +45,11 @@
         var(--wb-shadow-ui-focus-element-blur) var(--ax-public-list-item-outline-size)
         var(--ax-public-list-item-outline-color-focus);
       background-color: var(--ax-public-list-item-background-color-focus);
+
+      @media (forced-colors: active) {
+        outline: var(--ax-public-list-item-outline-size) solid Highlight;
+        box-shadow: none;
+      }
     }
 
     /* After the highlight rule: a selected item keeps its selected colors
