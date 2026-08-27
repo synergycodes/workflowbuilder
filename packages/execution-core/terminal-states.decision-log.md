@@ -6,7 +6,7 @@
 
 ## Context
 
-A graph could route itself into nothing and report success. `executeDecision` returns `nextPort = branch.sourceHandle`; if no edge carries that handle — the edge was deleted, the branch was renamed in config while the edge kept the old handle, or the branch was never wired — every outgoing edge is pruned. The runner had nothing left to schedule, fell out of the wave loop, emitted `execution_completed`, and Temporal closed the Workflow Execution as Completed.
+A graph could route itself into nothing and report success. `executeDecision` returns `nextPort = branch.sourceHandle`; if no edge carries that handle — an edge removed from a join (its target keeps another input) or removed together with its target node, a branch renamed in config while the edge kept the old handle, or a branch never wired — every outgoing edge is pruned. The runner had nothing left to schedule, fell out of the wave loop, emitted `execution_completed`, and Temporal closed the Workflow Execution as Completed. Deleting a node's sole incoming edge is a different shape: it orphans the target and is caught before any node runs, as the orphaned-nodes failure in `resolve-start-node.ts`.
 
 This is the same class of bug as the missing start node (F3), one layer down: the run looks like it worked, and the work that never happened is invisible unless you count nodes by hand. `node_skipped` (F1) made the downstream nodes visible, but reports them as `branch_not_taken` — "the decision chose elsewhere". It didn't. It chose a branch that does not exist.
 

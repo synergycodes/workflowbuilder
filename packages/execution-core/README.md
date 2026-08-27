@@ -92,6 +92,8 @@ Concrete executors and node configs live in the worker package that consumes the
    }
    ```
 
+   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it.
+
 3. Register it in your worker's `NodeExecutorRegistry<MyNode>`:
 
    ```ts
@@ -107,15 +109,15 @@ The registry's mapped type — `{ [K in TNode['type']]: NodeExecutor<Extract<TNo
 
 Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
 
-| Policy         | When the node throws                                                                                                                                                                                       | Use case                                                |
-| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
-| `'fail'`       | (default) Emit `node_failed`, then abort the workflow with `execution_failed` and end the run as `{ status: 'failed' }`, which the engine adapter surfaces as a failed run (Temporal closes it as Failed). | Unrecoverable infra / programming bugs.                 |
-| `'continue'`   | Emit `node_failed`, set `nodeOutputs[id] = { error: { message, code? } }`, schedule downstream nodes through every outgoing edge **except** those tagged with the reserved `'errorRoute'` handle.          | Best-effort steps; downstream inspects the error.       |
-| `'errorRoute'` | Emit `node_failed`, set the same `{ error }` output, but only follow outgoing edges whose `sourceHandle === 'errorRoute'`. The success branch is pruned by the standard skip-propagation path.             | Retry-with-fallback, send-to-DLQ, compensating actions. |
+| Policy         | When the node throws                                                                                                                                                                                                                                                                                    | Use case                                                |
+| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
+| `'fail'`       | (default) Emit `node_failed`, then abort the workflow with `execution_failed` and end the run as `{ status: 'failed' }`, which the engine adapter surfaces as a failed run (Temporal closes it as Failed).                                                                                              | Unrecoverable infra / programming bugs.                 |
+| `'continue'`   | Emit `node_failed`, set `nodeOutputs[id] = { error: { message, code? } }`, schedule downstream nodes through every outgoing edge **except** those tagged with the reserved `'errorRoute'` handle.                                                                                                       | Best-effort steps; downstream inspects the error.       |
+| `'errorRoute'` | Emit `node_failed`, set the same `{ error }` output, but only follow outgoing edges whose `sourceHandle === 'errorRoute'`. The success branch is pruned by the standard skip-propagation path. If no `'errorRoute'` edge exists, the run ends **incomplete** (see [Incomplete runs](#incomplete-runs)). | Retry-with-fallback, send-to-DLQ, compensating actions. |
 
 `'errorRoute'` piggybacks on the same `nextPort` mechanism decision nodes use — non-`'errorRoute'` edges are pruned through the standard skip-propagation path, so deep dead branches stay dormant.
 
-Only `'fail'` ends the run as failed. A node that fails under `'continue'` or `'errorRoute'` is absorbed by the graph: `node_failed` is still emitted, so the failure stays visible to anyone tailing events, but the run itself completes — `runGraph` returns `{ status: 'completed' }` and the engine reports a successful run.
+Only `'fail'` ends the run as failed. A node that fails under `'continue'` is absorbed by the graph: `node_failed` is still emitted, so the failure stays visible to anyone tailing events, but the run itself completes — `runGraph` returns `{ status: 'completed' }` and the engine reports a successful run. `'errorRoute'` absorbs the failure the same way only when the error port is actually routed; the same failure with no live `'errorRoute'` edge ends the run as `{ status: 'incomplete' }` — see [Incomplete runs](#incomplete-runs).
 
 ### `'errorRoute'` is a reserved `sourceHandle`
 
