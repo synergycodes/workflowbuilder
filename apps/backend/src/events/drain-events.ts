@@ -1,14 +1,12 @@
+import { TERMINAL_EXECUTION_EVENT_TYPES } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import type { ExecutionEventRow } from './fetch-events-after';
 
 export type EventFetcher = (executionId: string, afterSequence: number) => Promise<ExecutionEventRow[]>;
 type EventWriter = (event: ExecutionEventRow) => Promise<void>;
 
-const TERMINAL_EVENT_TYPES = new Set([
-  'execution_completed',
-  'execution_incomplete',
-  'execution_failed',
-  'execution_cancelled',
-]);
+// Set<string> because ExecutionEventRow.type is a plain string from $inferSelect.
+const TERMINAL_EVENT_TYPES = new Set<string>(TERMINAL_EXECUTION_EVENT_TYPES);
 
 export type DrainResult = {
   lastSequence: number;

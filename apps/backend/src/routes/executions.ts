@@ -2,6 +2,8 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 
+import { TERMINAL_EXECUTION_STATUSES } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import type { AssertAuthorized, AuthVariables } from '../auth';
 import { database } from '../db/client';
 import { executions } from '../db/schema';
@@ -15,7 +17,7 @@ import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
-const TERMINAL_STATUSES = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
+const TERMINAL_STATUSES = new Set<string>(TERMINAL_EXECUTION_STATUSES);
 
 export function createExecutionsRoutes(
   assertAuthorized: AssertAuthorized,

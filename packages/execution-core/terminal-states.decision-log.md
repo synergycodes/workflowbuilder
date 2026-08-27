@@ -48,7 +48,7 @@ Keeping the word free matters as much as picking the right one: `Workflow stalle
   - Temporal still reports Completed, so nothing that watches for Failed Workflow Executions starts alarming on a misconfigured graph.
 
 - **Cons**
-  - Six separate places enumerate terminal states (worker `database.ts`, backend `drain-events.ts` and `routes/executions.ts`, ai-studio stream adapter, store, and controls). All six had to change together; missing one hangs an SSE stream, leaves `finished_at` null, or strands the UI mid-run. There is no single source of truth for "terminal" — worth consolidating if a fourth state ever appears.
+  - Six separate places enumerate terminal states (worker `database.ts`, backend `drain-events.ts` and `routes/executions.ts`, ai-studio stream adapter, store, and controls). All six had to change together; missing one hangs an SSE stream, leaves `finished_at` null, or strands the UI mid-run. There is no single source of truth for "terminal" — worth consolidating if a fourth state ever appears. (Consolidated since: `TERMINAL_EXECUTION_STATUSES` / `TERMINAL_EXECUTION_EVENT_TYPES` / `TERMINAL_EVENT_TO_STATUS` in `packages/types` are now the source; the enumeration sites derive from them.)
   - The `errorRoute` reversal is a behaviour change for anyone who relied on the silent-DLQ shape. They now get `'incomplete'` where they got `'completed'`; the migration is to switch those nodes to `'continue'`.
 
 ## Status

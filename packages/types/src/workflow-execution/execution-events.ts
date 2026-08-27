@@ -1,3 +1,31 @@
+// Single source of truth for "the run is over" — the worker derives its terminal
+// SQL guard, the backend its stream-close gates, and ai-studio its EventSource
+// close conditions from these tuples. Adding a terminal state is a one-line change
+// here; the literal types update automatically via `(typeof …)[number]`, and the
+// unions below are composed from them so the lists cannot drift apart.
+export const TERMINAL_EXECUTION_STATUSES = ['completed', 'incomplete', 'failed', 'cancelled'] as const;
+
+export type TerminalExecutionStatus = (typeof TERMINAL_EXECUTION_STATUSES)[number];
+
+export const TERMINAL_EXECUTION_EVENT_TYPES = [
+  'execution_completed',
+  'execution_incomplete',
+  'execution_failed',
+  'execution_cancelled',
+] as const;
+
+export type TerminalExecutionEventType = (typeof TERMINAL_EXECUTION_EVENT_TYPES)[number];
+
+// A terminal event is the durable fact; the status row is derived state that can lag
+// it (the worker writes them in two separate activities). This map is the one place
+// that correspondence is written down; `satisfies` keeps it total over the tuple.
+export const TERMINAL_EVENT_TO_STATUS = {
+  execution_completed: 'completed',
+  execution_incomplete: 'incomplete',
+  execution_failed: 'failed',
+  execution_cancelled: 'cancelled',
+} as const satisfies Record<TerminalExecutionEventType, TerminalExecutionStatus>;
+
 export type ExecutionEventType =
   | 'execution_started'
   | 'node_started'
@@ -7,10 +35,7 @@ export type ExecutionEventType =
   | 'node_skipped'
   | 'branch_spawned'
   | 'branches_joined'
-  | 'execution_completed'
-  | 'execution_incomplete'
-  | 'execution_failed'
-  | 'execution_cancelled';
+  | TerminalExecutionEventType;
 
 export type ExecutionStartedPayload = {
   workflowId: string;
@@ -154,11 +179,4 @@ export type ExecutionSnapshot = {
   events: ExecutionEvent[];
 };
 
-export type ExecutionStatus =
-  | 'pending'
-  | 'running'
-  | 'completed'
-  | 'incomplete'
-  | 'failed'
-  | 'cancelling'
-  | 'cancelled';
+export type ExecutionStatus = 'pending' | 'running' | 'cancelling' | TerminalExecutionStatus;

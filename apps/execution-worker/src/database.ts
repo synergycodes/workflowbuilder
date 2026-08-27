@@ -1,9 +1,15 @@
 // Worker DB access — raw SQL to avoid coupling worker to backend's Drizzle schema.
 import postgres from 'postgres';
 
+import { TERMINAL_EXECUTION_STATUSES } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import { env } from './env';
 
 const sql = postgres(env.DATABASE_URL);
+
+// Widened alias: `status` arrives as a plain string, and `.includes` on a
+// literal-union tuple rejects it.
+const TERMINAL_STATUSES: readonly string[] = TERMINAL_EXECUTION_STATUSES;
 
 export const database = {
   async emitExecutionEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
@@ -29,7 +35,7 @@ export const database = {
   },
 
   async updateExecutionStatus(executionId: string, status: string, errorMessage?: string) {
-    const isTerminal = ['completed', 'incomplete', 'failed', 'cancelled'].includes(status);
+    const isTerminal = TERMINAL_STATUSES.includes(status);
 
     await sql`
       UPDATE executions SET
