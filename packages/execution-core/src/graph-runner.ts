@@ -117,12 +117,14 @@ export async function runGraph<TNode extends BaseNode>(
         nodeOutputs[result.node.id] = errorOutput;
         state.status.set(result.node.id, 'completed');
         const nextPort = policy === 'errorRoute' ? RESERVED_ERROR_HANDLE : undefined;
-        propagate(result.node.id, nextPort, true, state, newlyReady, skipped, deadEnds);
+        const deadEnd = propagate(result.node.id, nextPort, true, state, newlyReady, skipped);
+        if (deadEnd) deadEnds.push(deadEnd);
         continue;
       }
       nodeOutputs[result.node.id] = result.output;
       state.status.set(result.node.id, 'completed');
-      propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped, deadEnds);
+      const deadEnd = propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
+      if (deadEnd) deadEnds.push(deadEnd);
     }
 
     // Emitted once the whole wave has propagated, so a skip reads as a consequence of
@@ -218,9 +220,10 @@ type SkippedNode = { id: string; reason: NodeSkipReason };
 // don't stall downstream join points and deep dead-branch chains can't blow the
 // call stack.
 //
-// Newly ready nodes land in `out`, newly skipped ones in `skippedOut`, and a root that
-// routed nowhere in `deadEndOut`; all three are appended in traversal order and none are
-// emitted from here, so the caller keeps control of event ordering.
+// Newly ready nodes land in `out`, newly skipped ones in `skippedOut`; both are
+// appended in traversal order and neither is emitted from here, so the caller keeps
+// control of event ordering. The return value is a single post-loop verdict about the
+// root — it named a port and nothing went live through it — or `undefined`.
 function propagate<TNode extends BaseNode>(
   rootId: string,
   rootNextPort: string | undefined,
@@ -228,21 +231,21 @@ function propagate<TNode extends BaseNode>(
   state: SchedulerState<TNode>,
   out: TNode[],
   skippedOut: SkippedNode[],
-  deadEndOut: DeadEnd[],
-): void {
-  // `isRoot` rather than comparing against `rootId`: a cycle can walk back into the root
-  // during skip propagation, and those entries carry `sourceLive: false`, so counting
-  // them would report a live root as a dead end.
-  const queue: { fromId: string; nextPort: string | undefined; sourceLive: boolean; isRoot: boolean }[] = [
-    { fromId: rootId, nextPort: rootNextPort, sourceLive: rootSourceLive, isRoot: true },
+): DeadEnd | undefined {
+  // Root liveness is static — adjacency never mutates and isEdgeLive reads no
+  // scheduler state — so it is computed upfront rather than tracked in the loop.
+  const rootRoutedSomewhere = (state.adjacency.get(rootId) ?? []).some(({ sourceHandle }) =>
+    isEdgeLive(rootSourceLive, rootNextPort, sourceHandle),
+  );
+
+  const queue: { fromId: string; nextPort: string | undefined; sourceLive: boolean }[] = [
+    { fromId: rootId, nextPort: rootNextPort, sourceLive: rootSourceLive },
   ];
-  let rootRoutedSomewhere = false;
   while (queue.length > 0) {
-    const { fromId, nextPort, sourceLive, isRoot } = queue.shift()!;
+    const { fromId, nextPort, sourceLive } = queue.shift()!;
     const successors = state.adjacency.get(fromId) ?? [];
     for (const { node: target, sourceHandle } of successors) {
       const edgeLive = isEdgeLive(sourceLive, nextPort, sourceHandle);
-      if (isRoot && edgeLive) rootRoutedSomewhere = true;
       state.pendingPredecessors.set(target.id, (state.pendingPredecessors.get(target.id) ?? 0) - 1);
       if (edgeLive) {
         state.liveIncoming.set(target.id, (state.liveIncoming.get(target.id) ?? 0) + 1);
@@ -259,7 +262,7 @@ function propagate<TNode extends BaseNode>(
         } else {
           state.status.set(target.id, 'skipped');
           skippedOut.push({ id: target.id, reason: skipReason(state.livePruneKind.get(target.id)) });
-          queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false, isRoot: false });
+          queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false });
         }
       }
     }
@@ -270,8 +273,9 @@ function propagate<TNode extends BaseNode>(
   // unvalidated, and a falsy port ('' or a smuggled null) routes as "no port" there,
   // so it must not read as a promised route here.
   if (rootNextPort && !rootRoutedSomewhere) {
-    deadEndOut.push({ nodeId: rootId, port: rootNextPort });
+    return { nodeId: rootId, port: rootNextPort };
   }
+  return undefined;
 }
 
 function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
