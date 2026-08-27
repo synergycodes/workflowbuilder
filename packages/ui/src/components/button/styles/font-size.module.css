@@ -1,18 +1,4 @@
 @layer ui.component {
-  .extra-large {
-    composes: wb-text-label-xl-emphasized from global;
-  }
-
-  .large {
-    composes: wb-text-label-l-emphasized from global;
-  }
-
-  .medium,
-  .small,
-  .extra-small {
-    composes: wb-text-label-m-emphasized from global;
-  }
-
   .xl {
     composes: wb-text-label-xl-emphasized from global;
   }
