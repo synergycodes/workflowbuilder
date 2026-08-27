@@ -61,11 +61,9 @@ export const TextArea = forwardRef<HTMLTextAreaElement, TextAreaProps>(function 
           data-state={fieldState}
           data-disabled={disabled || undefined}
           onPointerDown={(event) => {
-            if (
-              !(event.target instanceof Element) ||
-              event.target.closest('button, a, input, select, textarea, [tabindex]')
-            )
-              return;
+            if (!(event.target instanceof Element)) return;
+            const interactiveTarget = event.target.closest('button, a, input, select, textarea, [tabindex]');
+            if (interactiveTarget && event.currentTarget.contains(interactiveTarget)) return;
             event.preventDefault();
             event.currentTarget.querySelector('textarea')?.focus();
           }}

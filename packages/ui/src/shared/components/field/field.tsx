@@ -22,15 +22,12 @@ type FieldProps = {
 
 export function Field({ ariaDescribedBy, children, disabled, helperText, id, isRequired, label, state }: FieldProps) {
   const generatedId = useId();
-  const hasLabel = label !== undefined && label !== null;
-  const hasHelper = helperText !== undefined && helperText !== null;
-  const isComposed = hasLabel || hasHelper;
-  const controlId = id ?? (isComposed ? generatedId : undefined);
+  const hasLabel = label !== undefined && label !== null && typeof label !== 'boolean';
+  const hasHelper = helperText !== undefined && helperText !== null && typeof helperText !== 'boolean';
+  const controlId = id ?? generatedId;
   const helperId = hasHelper ? `${controlId}-helper` : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(' ') || undefined;
   const control = children({ controlId, describedBy });
-
-  if (!isComposed) return control;
 
   return (
     <div className={styles['field']} data-state={state} data-disabled={disabled || undefined}>
