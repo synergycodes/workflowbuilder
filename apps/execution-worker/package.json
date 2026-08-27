@@ -10,8 +10,8 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.5.0",
