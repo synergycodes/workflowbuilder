@@ -21,7 +21,7 @@ type Response = {
 };
 
 const EMPTY_NODE_SUGGESTIONS: Response = {
-  type: SUGGESTION_NODE_TYPE.COMMON,
+  type: SUGGESTION_NODE_TYPE.CUSTOM,
   bySourceHandle: {
     every: [],
   },
@@ -47,8 +47,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       ];
 
       return {
-        // type: SUGGESTION_NODE_TYPE.COMMON,
-        type: SUGGESTION_NODE_TYPE.CUSTOM,
+        type: SUGGESTION_NODE_TYPE.COMMON,
         bySourceHandle,
       };
     }
@@ -110,8 +109,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     }
 
     return {
-      // type: SUGGESTION_NODE_TYPE.COMMON,
-      type: SUGGESTION_NODE_TYPE.CUSTOM,
+      type: SUGGESTION_NODE_TYPE.COMMON,
       bySourceHandle,
     };
   }

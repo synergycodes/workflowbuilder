@@ -10,7 +10,7 @@ import styles from './variable-text.module.css';
 
 import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
 import { showSnackbar } from '../../../../utils/show-snackbar';
-import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
+import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY, variableTypeInfoByType } from '../../constants';
 import { buildMentionData } from './core/build-mention-data';
 import type {
   VariableMentionData,
@@ -47,7 +47,10 @@ const multiLineClassNames = {
 
 function defaultRenderGroupItem(suggestion: VariableSuggestion, _focused: boolean): ReactNode {
   return (
-    <div className={styles['suggestionContent']}>
+    <div
+      className={styles['suggestionContent']}
+      title={variableTypeInfoByType[suggestion.type]?.label || suggestion.type}
+    >
       <span className={styles['suggestionLabel']}>{suggestion.label}</span>
       {suggestion.description && <span className={styles['suggestionDescription']}>{suggestion.description}</span>}
     </div>
@@ -191,7 +194,7 @@ export function VariableText({
         if (node) {
           const nodeLabel = node.data?.properties?.label;
 
-          return `{{ ${nodeLabel ? `${nodeLabel} · ` : ''}${t('variables.missingMentionNodeVariablePrefix')} · ${typedId.split('.').at(-1)} }}`;
+          return `{{ ${nodeLabel ? `${nodeLabel}` : ''}${t('variables.missingMentionNodeVariablePrefix')} · ${typedId.split('.').at(-1)} }}`;
         }
 
         return `{{ ${t('variables.missingMentionNodePrefix')} (${nodeId.slice(0, 4)}...) · ${typedId.split('.').at(-1)} }}`;

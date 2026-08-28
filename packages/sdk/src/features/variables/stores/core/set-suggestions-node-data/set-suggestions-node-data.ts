@@ -1,4 +1,4 @@
-import { NODE_ID_FOR_COMMON_NODE_DATA } from '../../../constants';
+import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA, VARIABLE_DELIMITER } from '../../../constants';
 import type { SuggestionNodeType, SuggestionsBySourceHandle } from '../../types';
 import { SUGGESTION_NODE_TYPE } from '../../types';
 import type { VariablesSuggestionsStore } from '../../use-variable-suggestions-store';
@@ -8,6 +8,7 @@ type ParamsShared = {
   type: SuggestionNodeType;
   nodeId: string;
   nodeType: string;
+  nodeLabel: string;
   bySourceHandle: SuggestionsBySourceHandle;
 };
 
@@ -39,6 +40,10 @@ export function setVariablesSuggestionsNodeData(params: Params): VariablesSugges
             sourceHandle,
             suggestions?.map((suggestion) => ({
               ...suggestion,
+              display: suggestion.display
+                .split(VARIABLE_DELIMITER)
+                .map((chunk, index) => (index === 0 ? NODE_LABEL_FOR_COMMON_NODE_DATA : chunk))
+                .join(VARIABLE_DELIMITER),
               id: suggestion.id.replace(params.nodeId, NODE_ID_FOR_COMMON_NODE_DATA),
             })),
           ]),
@@ -49,6 +54,7 @@ export function setVariablesSuggestionsNodeData(params: Params): VariablesSugges
         [params.nodeId]: {
           type: SUGGESTION_NODE_TYPE.COMMON,
           nodeType: params.nodeType,
+          nodeLabel: params.nodeLabel,
         },
       },
     };

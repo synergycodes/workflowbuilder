@@ -2,6 +2,7 @@ import type { FlattenedPropertiesIndex } from '../../../../../node/node-output-s
 import { filterEmpty } from '../../../../../utils/array';
 import { keyToLabel, truncate } from '../../../../../utils/text';
 import type { VariableSuggestion } from '../../../components/variable-text/variable-text.types';
+import { VARIABLE_DELIMITER } from '../../../constants';
 import { getVariableReferenceWithoutBracketsForNode } from '../../../utils/keys/get-variable-reference-without-brackets-for-node';
 
 type Params = {
@@ -29,7 +30,9 @@ export function getDeprecatedSuggestionsFromOutputSchema({
       property
         ? {
             id: getVariableReferenceWithoutBracketsForNode({ nodeId, propertyName: propertyKey }),
-            display: `${truncate(nodeLabel, 15)} · ${truncate(property.label || keyToLabel(propertyKey), 15)}`,
+            display: [truncate(nodeLabel, 15), truncate(property.label || keyToLabel(propertyKey), 15)]
+              .filter(Boolean)
+              .join(VARIABLE_DELIMITER),
             label: property.label || truncate(property.label || keyToLabel(propertyKey), 25),
             description: property.description,
             type: property.type,

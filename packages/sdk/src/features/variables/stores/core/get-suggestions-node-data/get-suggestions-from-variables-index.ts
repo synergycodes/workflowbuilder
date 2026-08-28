@@ -1,6 +1,7 @@
 import { filterEmpty } from '../../../../../utils/array';
 import { truncate } from '../../../../../utils/text';
 import type { VariableSuggestion } from '../../../components/variable-text/variable-text.types';
+import { VARIABLE_DELIMITER } from '../../../constants';
 import type { VariablesIndex } from '../../../types';
 import { getVariableReferenceWithoutBracketsForGlobal } from '../../../utils/keys/get-variable-reference-without-brackets-for-global';
 import { getVariableReferenceWithoutBracketsForNode } from '../../../utils/keys/get-variable-reference-without-brackets-for-node';
@@ -38,7 +39,9 @@ export const getSuggestionsFromVariableIndex = ({ variablesIndex, ...props }: Pa
           }
         : {
             id: getVariableReferenceWithoutBracketsForNode({ nodeId: props.nodeId, propertyName: definition.id }),
-            display: `${truncate(props.nodeLabel, 15)} · ${truncate(definition.name, 15)}`,
+            display: [truncate(props.nodeLabel, 15), truncate(definition.name, 15)]
+              .filter(Boolean)
+              .join(VARIABLE_DELIMITER),
             label: definition.name,
             description: definition.description,
             type: definition.type,

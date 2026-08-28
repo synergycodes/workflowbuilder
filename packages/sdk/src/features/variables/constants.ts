@@ -1,6 +1,7 @@
 import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
 
 export const NODE_ID_FOR_COMMON_NODE_DATA = '<NODE_ID>';
+export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<NODE_LABEL>';
 
 export const LOGICAL_OPERATOR = {
   OR: 'OR',
@@ -56,6 +57,7 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
 
 export const VARIABLE_BRACKETS_START = '{{';
 export const VARIABLE_BRACKETS_END = '}}';
+export const VARIABLE_DELIMITER = ' · ';
 
 /**
  * Reserved key under which the variable-text control looks up the

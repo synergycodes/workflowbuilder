@@ -1,6 +1,7 @@
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
 import { useStore } from '../../../../store/store';
 import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';
+import { getNodeLabelForVariable } from '../../utils/diagram/get-node-label-for-variable';
 import {
   type VariablesSuggestionsStore,
   emptyVariablesSuggestionsStore,
@@ -16,12 +17,14 @@ function refreshNodesSuggestions(nodes: WorkflowBuilderNode[], initialStore: Var
     const definition = getNodeDefinition(node);
 
     if (definition) {
+      const nodeLabel = getNodeLabelForVariable({ node, definition });
       const { type, bySourceHandle } = getSuggestionsNodeData({ node, definition });
 
       currentStore = setVariablesSuggestionsNodeData({
         type,
         nodeId: node.id,
         nodeType: node.data.type,
+        nodeLabel,
         bySourceHandle,
         cachedStore: currentStore,
         shouldOnlyPassedStore: true,

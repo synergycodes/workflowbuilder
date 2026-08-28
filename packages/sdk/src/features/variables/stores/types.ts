@@ -19,6 +19,7 @@ export type SuggestionsNodeData =
       // References array kept in commonByType (we don't need to store the same array for each node)
       type: typeof SUGGESTION_NODE_TYPE.COMMON;
       nodeType: string;
+      nodeLabel: string;
     }
   | {
       // Custom setup for nodes that require configuration based on data in node

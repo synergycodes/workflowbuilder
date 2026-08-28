@@ -1,5 +1,10 @@
+import { truncate } from '../../../../utils/text';
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
-import { NODE_ID_FOR_COMMON_NODE_DATA, SPECIAL_SOURCE_HANDLE_KEYWORDS } from '../../constants';
+import {
+  NODE_ID_FOR_COMMON_NODE_DATA,
+  NODE_LABEL_FOR_COMMON_NODE_DATA,
+  SPECIAL_SOURCE_HANDLE_KEYWORDS,
+} from '../../constants';
 import { SUGGESTION_NODE_TYPE, type SuggestionsBySourceHandle } from '../types';
 import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '../use-variable-suggestions-store';
 
@@ -30,6 +35,7 @@ export const getVariableBySourceHandlesForNode = (params: {
       (stack: SuggestionsBySourceHandle, [sourceHandle, suggestions = []]) => {
         stack[sourceHandle] = suggestions.map((suggestion) => ({
           ...suggestion,
+          display: suggestion.display.replace(NODE_LABEL_FOR_COMMON_NODE_DATA, truncate(nodeData.nodeLabel, 15)),
           id: suggestion.id.replace(NODE_ID_FOR_COMMON_NODE_DATA, params.nodeId),
         }));
 
