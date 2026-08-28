@@ -22,6 +22,7 @@
     "@temporalio/client": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
+    "@workflowbuilder/temporal": "workspace:*",
     "ai": "^6.0.168",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.0",

@@ -49,7 +49,7 @@ export default {
       entry: ['src/index.ts'],
     },
     'apps/execution-worker': {
-      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows/run-workflow.ts'],
+      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
     },
     'apps/docs': {
       entry: ['astro.config.mjs', 'src/components/**/*.astro'],

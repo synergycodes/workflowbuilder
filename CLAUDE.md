@@ -27,6 +27,8 @@ Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` befo
 
 App builds and dev servers consume the prebuilt `packages/ui/dist` (created on install). After editing `packages/ui/src`, run `pnpm build:ui` (or keep `pnpm --filter @workflowbuilder/ui dev` watching) - app commands do not rebuild it.
 
+The same applies to `@workflowbuilder/temporal`: the worker and the backend import its built `dist`, so after editing `packages/temporal/src` run `pnpm build:temporal` (or keep `pnpm --filter @workflowbuilder/temporal dev` watching) before `pnpm dev:worker` picks the change up.
+
 ### Agent signals
 
 Long-running processes already emit stable log lines that scripts and agents can grep for:
@@ -51,7 +53,7 @@ apps/
   demo/             - Reference app consuming the SDK (React + Vite, port 4200)
   ai-studio/        - Reference AI workflow product (React + Vite, port 4201)
   backend/          - Hono REST + SSE server, Drizzle/Postgres, Temporal client (port 3001)
-  execution-worker/ - Temporal worker hosting execution-core (task queue: workflow-execution)
+  execution-worker/ - Temporal worker built on @workflowbuilder/temporal: node executors + DB store (task queue: workflow-execution)
   docs/             - Astro + Starlight documentation site
   icons/            - Icon generation pipeline
   tools/            - @workflow-builder/tools workspace (decision-log collector, lint-staged config)
