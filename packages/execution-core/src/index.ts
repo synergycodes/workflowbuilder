@@ -19,3 +19,5 @@ export type { NodeExecutor, NodeExecutorRegistry } from './registry/node-executo
 export { resolveExecutor } from './registry/node-executor-registry';
 
 export { resolveTemplate } from './templates/resolve-template';
+
+export { redactSensitive, withRedactedPayloads, REDACTED, SENSITIVE_KEY_RULES } from './redact';
