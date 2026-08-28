@@ -8,7 +8,7 @@ The execution layer is split into hexagonal layers so the workflow engine (Tempo
 
 ```
 backend route  ──▶  WorkflowEnginePort<TNode>  ──┐
-                                                  ├──▶  TemporalEngine  ──▶  Temporal
+                                                  ├──▶  TemporalWorkflowEngine  ──▶  Temporal
                                                   └──▶  (future) InMemoryEngine, BullMQEngine, …
 
 worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort)
@@ -57,7 +57,7 @@ src/
 ├── resolve-start-node.ts    # Entry-shape rule: exactly one `role: 'start'` node, no orphans
 ├── execution-context.ts     # Readonly context passed to every node executor
 ├── ports/
-│   ├── workflow-engine.port.ts   # submit(), cancel() — implemented by adapters (TemporalEngine, …)
+│   ├── workflow-engine.port.ts   # submit(), cancel() — implemented by adapters (TemporalWorkflowEngine, …)
 │   ├── activity-runner.port.ts   # executeNode() — implemented by worker via proxyActivities
 │   └── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
@@ -199,7 +199,7 @@ Authors typing references in the workflow builder UI: see the [variable picker g
 ## Adding a new workflow engine
 
 1. Implement `WorkflowEnginePort<TNode>` (`submit`, `cancel`).
-2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalEngine` for the new adapter).
+2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalWorkflowEngine` for the new adapter).
 3. Make sure your engine wires `runGraph` (or equivalent traversal) to its activity primitives.
 4. Translate a `{ status: 'failed' }` outcome from `runGraph` into your engine's own failure vocabulary. `runGraph` never throws for node failures — it reports them by return value — so an adapter that ignores the outcome will close failed runs as successful. See `run-workflow.ts` for the Temporal case, which raises `ApplicationFailure.nonRetryable` (only a `TemporalFailure` fails a Workflow Execution; anything else fails the workflow _task_ and retries it forever).
 

@@ -2,7 +2,7 @@
 
 ## Scope
 
-`runGraph` from `packages/execution-core/src/graph-runner.ts` is re-exported via the sandbox-safe entry `@workflow-builder/execution-core/workflow` and invoked from `apps/execution-worker/src/engines/temporal/workflows/run-workflow.ts`, which runs inside Temporal's V8 workflow sandbox. Every line executed in that context must be deterministic — Temporal replays workflow history on worker restart, code upgrade, and failover. Any non-determinism corrupts replay silently in production.
+`runGraph` from `packages/execution-core/src/graph-runner.ts` is re-exported via the sandbox-safe entry `@workflow-builder/execution-core/workflow` and invoked from `packages/temporal/src/workflow/run-workflow.ts` (published as `@workflowbuilder/temporal/workflow`), which runs inside Temporal's V8 workflow sandbox. Every line executed in that context must be deterministic — Temporal replays workflow history on worker restart, code upgrade, and failover. Any non-determinism corrupts replay silently in production.
 
 This document audits every code path reachable from `runGraph` in the sandbox, enumerates known sources of non-determinism, and records the verdict for each.
 
@@ -51,7 +51,7 @@ The audit therefore focuses on `graph-runner.ts` + `errors.ts`. Activities and a
 
 ## How activities preserve determinism for the runner
 
-The runner calls into three ports — `ActivityRunnerPort.executeNode`, `EventEmitterPort.emitEvent`, `EventEmitterPort.updateStatus`. In the Temporal adapter (`run-workflow.ts`) these are wired via `proxyActivities`. Temporal records each activity's input, output, and timing in workflow history at first execution; on replay it returns the cached result without re-executing the activity. From the runner's point of view, every `await runner.executeNode(...)` returns the same `NodeExecutionResult` on first run and on replay — so any non-determinism inside the executor (an LLM call, a network round-trip, a database write) is contained in the activity boundary and never reaches the workflow code.
+The runner calls into three ports — `ActivityRunnerPort.executeNode`, `EventEmitterPort.emitEvent`, `EventEmitterPort.updateStatus`. In the Temporal adapter (`packages/temporal/src/workflow/run-workflow.ts`) these are wired via `proxyActivities`. Temporal records each activity's input, output, and timing in workflow history at first execution; on replay it returns the cached result without re-executing the activity. From the runner's point of view, every `await runner.executeNode(...)` returns the same `NodeExecutionResult` on first run and on replay — so any non-determinism inside the executor (an LLM call, a network round-trip, a database write) is contained in the activity boundary and never reaches the workflow code.
 
 The same holds for failures: a `throw` from an activity is also recorded; replay re-throws the same error with the same message. The runner's `catch` branch in `runNode` therefore runs identically across replays.
 
