@@ -162,23 +162,87 @@ The control behaves like the matching plain control, except `{{` opens the sugge
 
 ### Expose the node's outputs to downstream pickers
 
-Add an `schemaOutput` to the node's `PaletteItem`. Each entry describes one output property the node will emit:
+Add a `schemaOutput` (type `NodeSchemaOutput`) to the node's `PaletteItem`. It describes what the node emits on each of its **source handles** as a JSON Schema, so the picker can offer the right properties depending on which port the downstream node is connected to (an `error` port does not receive the success-branch outputs).
 
 ```typescript
-import type { PaletteItem } from '@workflowbuilder/sdk';
+import type { NodeSchemaOutput, PaletteItem } from '@workflowbuilder/sdk';
 
-export const myNode: PaletteItem = {
-  // ...label, type, schema, defaults, uischema
-  schemaOutput: {
-    properties: {
-      response: { type: 'string', label: 'Response', description: 'The text returned by the model' },
-      tokensUsed: { type: 'number', label: 'Tokens Used' },
+const schemaOutput: NodeSchemaOutput = {
+  type: 'default',
+  bySourceHandle: {
+    success: {
+      type: 'object',
+      properties: {
+        response: { type: 'string', title: 'Response', description: 'The text returned by the model' },
+        tokensUsed: { type: 'number', title: 'Tokens Used' },
+        finishedAt: { type: 'string', format: 'date-time', title: 'Finished At' },
+      },
+    },
+    error: {
+      type: 'object',
+      properties: {
+        errorMessage: { type: 'string', title: 'Error Message' },
+      },
     },
   },
 };
+
+export const myNode: PaletteItem = {
+  // ...label, type, schema, defaults, uischema
+  schemaOutput,
+};
 ```
 
-Without an `schemaOutput`, the node never appears as a group in any downstream picker.
+How the schema is read:
+
+- Keys of `bySourceHandle` are source handle ids (`success`, `error`, ...). Use the special key `every` for properties emitted on all handles.
+- Each value is a JSON Schema object (`type: 'object'` with `properties`). `title` becomes the suggestion label, `description` its help text.
+- Supported property types: `string`, `number`, `boolean`, `object`, `array`. A `string` with `format: 'date-time'` is surfaced as a date-time variable.
+- Nested `object` properties are flattened to dot paths - `result.status` in the schema becomes `{{nodes.<id>.result.status}}` in the picker.
+
+Without a `schemaOutput`, the node never appears as a group in any downstream picker.
+
+#### Outputs that depend on configuration
+
+If the node's outputs change with how it is configured (e.g. a Trigger node whose fields differ per trigger type), use the `variant` form. Every variant whose rule matches the node's current `properties` is merged into the suggestions; a variant with `variantRule: undefined` always applies:
+
+```typescript
+const schemaOutput: NodeSchemaOutput = {
+  type: 'variant',
+  variants: [
+    {
+      variantRule: undefined,
+      bySourceHandle: {
+        every: {
+          type: 'object',
+          properties: {
+            eventType: { type: 'string', title: 'Event Type' },
+          },
+        },
+      },
+    },
+    {
+      variantRule: { onlyIfPropertyNameEquals: { path: 'type', value: 'timeBasedTrigger' } },
+      bySourceHandle: {
+        success: {
+          type: 'object',
+          properties: {
+            startDate: { type: 'string', format: 'date-time', title: 'Start date' },
+          },
+        },
+      },
+    },
+  ],
+};
+```
+
+`onlyIfPropertyNameEquals.path` is a dot path into the node's `properties`; the variant applies when the value at that path strictly equals `value`.
+
+A variant can also take its properties from user-defined variables stored on the node instead of a static schema: `variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandles: ['success'] }` reads the variable definitions saved at `properties.outputs` (the value produced by the SDK's schema-builder control) and exposes them on the listed handles.
+
+:::note
+`outputSchema` (the previous flat `{ properties }` shape) is deprecated and still accepted, but will be removed in the next major release. Migrate to `schemaOutput`.
+:::
 
 ## See also
 
