@@ -47,7 +47,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       ];
 
       return {
-        type: SUGGESTION_NODE_TYPE.COMMON,
+        // type: SUGGESTION_NODE_TYPE.COMMON,
+        type: SUGGESTION_NODE_TYPE.CUSTOM,
         bySourceHandle,
       };
     }
@@ -109,7 +110,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     }
 
     return {
-      type: SUGGESTION_NODE_TYPE.COMMON,
+      // type: SUGGESTION_NODE_TYPE.COMMON,
+      type: SUGGESTION_NODE_TYPE.CUSTOM,
       bySourceHandle,
     };
   }

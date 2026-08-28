@@ -2,7 +2,7 @@
 
 ### Proposed by: Szymon Tondowski
 
-### Date: 13.08.2026
+### Date: 28.08.2026
 
 ## Context
 
@@ -10,7 +10,7 @@ Workflow Builder supports passing variables by typing '{{' in dedicated controls
 
 Variable suggestions for a given control depend on the global variables and the variables produced by previous nodes connected to it.
 
-We need a robust mechanism for storing accessing variable suggestions so that the picker can efficiently provide the relevant options whenever the user starts typing '{{'.
+We need a robust mechanism for storing and accessing variable suggestions so that the picker can efficiently provide the relevant options whenever the user starts typing '{{'.
 
 ## Decisions
 
