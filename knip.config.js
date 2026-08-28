@@ -67,5 +67,21 @@ export default {
       entry: ['src/index.ts'],
       project: ['src/**/*.ts', 'config.ts'],
     },
+    'packages/temporal': {
+      // test/fixtures/workflows.ts is an entry in its own right: the bundling test
+      // hands it to Temporal's workflow bundler by path, so nothing imports it.
+      entry: [
+        'src/index.ts',
+        'src/client/index.ts',
+        'src/workflow/index.ts',
+        'tsup.config.ts',
+        'test/fixtures/workflows.ts',
+      ],
+      project: ['src/**/*.ts', 'test/**/*.ts', 'tsup.config.ts'],
+      // Both are bundled into dist through src/core-contract.ts, which imports them
+      // by relative path (see the note there), so the workspace deps are real even
+      // though they are never imported by name.
+      ignoreDependencies: ['@workflow-builder/execution-core', '@workflow-builder/types'],
+    },
   },
 };

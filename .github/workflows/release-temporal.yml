@@ -1,0 +1,122 @@
+name: Release Temporal
+
+# Triggers on scoped tags `@workflowbuilder/temporal@X.Y.Z` matching the version in
+# packages/temporal/package.json. Mirrors release-ui.yml. Maintainer pushes the tag
+# after merging the version-bump PR (which ran `pnpm changeset version`). See
+# packages/sdk/RELEASE.md (the release flow is shared between all published packages).
+#
+# One-time npm setup: @workflowbuilder/temporal needs its own GitHub Actions trusted
+# publisher registered on npmjs.com pointing at THIS workflow file
+# (.github/workflows/release-temporal.yml). For a package that has never been
+# published, add it under org settings -> Packages -> "Add trusted publisher".
+
+on:
+  push:
+    tags:
+      - "@workflowbuilder/temporal@*"
+  workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
+
+permissions:
+  contents: write # create GitHub Release
+  id-token: write # OIDC for npm Trusted Publisher (and provenance attestation)
+
+jobs:
+  publish:
+    name: Build and publish to npm
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+
+      - name: Set up Node.js
+        # No `registry-url:` here on purpose — see the note in release-sdk.yml.
+        # setup-node's registry-url breaks OIDC by injecting a sentinel token.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Defensive layer — fail before npm, not on consumers.
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/temporal lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/temporal typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/temporal test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/temporal build
+
+      - name: Verify the published shape
+        # Three subpaths with their own types — exactly where an exports map breaks
+        # quietly. publint checks the packaging, attw checks that each subpath's types
+        # actually resolve. Versions pinned so a tool release cannot block a publish;
+        # the esm-only attw profile matches the package (ESM without CJS is a finding
+        # under stricter profiles).
+        working-directory: packages/temporal
+        run: |
+          pnpm dlx publint@0.3.24
+          pnpm dlx @arethetypeswrong/cli@0.18.5 --pack --profile esm-only
+
+      - name: Verify version matches tag
+        # Tag `@workflowbuilder/temporal@X.Y.Z` must match packages/temporal/package.json
+        # version. ${GITHUB_REF_NAME##*@} strips everything up to the last `@`.
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME##*@}"
+          PKG_VERSION=$(node -p "require('./packages/temporal/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            echo "Did you forget to merge the version-bump PR before pushing the tag?"
+            exit 1
+          fi
+          echo "Publishing @workflowbuilder/temporal@$PKG_VERSION"
+
+      - name: Check if version already published
+        # Idempotency — re-pushing a tag should not re-publish.
+        id: check-version
+        run: |
+          PKG_VERSION=$(node -p "require('./packages/temporal/package.json').version")
+          if npm view "@workflowbuilder/temporal@$PKG_VERSION" version 2>/dev/null; then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@workflowbuilder/temporal@$PKG_VERSION already on npm — skipping publish step."
+          else
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
+        if: steps.check-version.outputs.already_published == 'false'
+        run: pnpm --filter @workflowbuilder/temporal publish --no-git-checks --access public --provenance
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        run: |
+          VERSION=$(node -p "require('./packages/temporal/package.json').version")
+          NOTES=$(awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/temporal/CHANGELOG.md)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false

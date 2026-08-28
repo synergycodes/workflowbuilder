@@ -19,7 +19,7 @@
   "dependencies": {
     "@hono/node-server": "^1.14.0",
     "@openrouter/ai-sdk-provider": "^2.8.0",
-    "@temporalio/client": "^1.11.0",
+    "@temporalio/client": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
     "ai": "^6.0.168",

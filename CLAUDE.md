@@ -18,6 +18,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm infra:down`            | C    | Stop the Docker stack                                                                   |
 | `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                           |
 | `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two) |
+| `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)             |
 | `pnpm build`                 | -    | Build the demo app                                                                      |
 | `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)              |
 | `pnpm check`                 | -    | Lint + typecheck + format + knip                                                        |
@@ -59,6 +60,7 @@ packages/
   ui/               - @workflowbuilder/ui published component library (Base UI), consumed by sdk/demo/ai-studio
   tokens/           - @workflowbuilder/ui-tokens private design-token build (style-dictionary), feeds packages/ui
   execution-core/   - Pure topological graph runner + node executor registry
+  temporal/         - @workflowbuilder/temporal published Temporal Plugin (activities + workflow runner); bundles execution-core + types into its dist
   types/            - Shared TypeScript types
 ```
 
@@ -74,6 +76,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
 | `packages/tokens`         | `packages/tokens/README.md`                             |
 | `packages/execution-core` | `packages/execution-core/README.md`                     |
+| `packages/temporal`       | `packages/temporal/README.md`                           |
 | `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
 | `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
 | `apps/backend`            | `apps/backend/README.md`                                |
@@ -139,7 +142,9 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ### Releasing `@workflowbuilder/sdk`
 
-Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/ui` (the component library, built on Base UI). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Both publish via scoped release tags (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`), each with its own workflow (`release-sdk.yml`, `release-ui.yml`) - see `packages/sdk/RELEASE.md`.
+Three workspaces are set up to publish to npm: `@workflowbuilder/sdk`, `@workflowbuilder/ui` (the component library, built on Base UI) and `@workflowbuilder/temporal` (the Temporal Plugin). **`@workflowbuilder/temporal` is not on npm yet** - it is in development, consumed only inside this repo, and its first publish needs an explicit go-ahead. It is held back by `"private": true` in its `package.json` (publish skips it silently, exit 0) plus the absence of an npm trusted publisher. Do not remove either, and do not push its release tag, until then; see the box at the top of [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Each publishes via its own scoped release tag (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`) and its own workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`) - see `packages/sdk/RELEASE.md`.
+
+**Changesets for bundled execution packages.** `@workflow-builder/execution-core` and `@workflow-builder/types` are private and source-only, and `@workflowbuilder/temporal` bundles both into its `dist` (they reach it through `packages/temporal/src/core-contract.ts`, the one file allowed to import them by relative path). A change in either that alters execution behaviour or the published types therefore needs a changeset for `@workflowbuilder/temporal` - that release is how it reaches consumers. A pure refactor needs none. `pr-check.yml` warns when those paths change without one.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
@@ -164,7 +169,9 @@ Two workspaces are npm-published: `@workflowbuilder/sdk` and `@workflowbuilder/u
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
 
-Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/sdk/RELEASE.md` § "Why these decisions".
+Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/sdk/RELEASE.md` § "Why these decisions".
+
+`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay".
 
 Canonical procedure with edge cases and rollback: [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md).
 
