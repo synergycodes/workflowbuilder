@@ -1,9 +1,15 @@
 // Worker DB access — raw SQL to avoid coupling worker to backend's Drizzle schema.
 import postgres from 'postgres';
 
+import { TERMINAL_EXECUTION_STATUSES } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import { env } from './env';
 
 const sql = postgres(env.DATABASE_URL);
+
+// Widened alias: `status` arrives as a plain string, and `.includes` on a
+// literal-union tuple rejects it.
+const TERMINAL_STATUSES: readonly string[] = TERMINAL_EXECUTION_STATUSES;
 
 export const database = {
   async emitExecutionEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
@@ -29,8 +35,11 @@ export const database = {
   },
 
   async updateExecutionStatus(executionId: string, status: string, errorMessage?: string) {
-    const isTerminal = ['completed', 'failed', 'cancelled'].includes(status);
+    const isTerminal = TERMINAL_STATUSES.includes(status);
 
+    // Terminal statuses are immutable: a cancel cleanup landing after the run already
+    // wrote `failed` must not flip it to `cancelled`. Matching 0 rows is a silent
+    // no-op, which also makes a retried terminal write idempotent.
     await sql`
       UPDATE executions SET
         status = ${status},
@@ -39,6 +48,7 @@ export const database = {
         error_message = ${errorMessage ?? null},
         updated_at = now()
       WHERE id = ${executionId}
+        AND status NOT IN ${sql([...TERMINAL_EXECUTION_STATUSES])}
     `;
   },
 };

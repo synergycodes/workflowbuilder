@@ -28,7 +28,7 @@ export function AiStudioControls() {
   }, [executeFromCanvas]);
 
   const isRunning = status === 'pending' || status === 'running';
-  const isDone = status === 'completed' || status === 'failed' || status === 'cancelled';
+  const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
 
   return (
     <div

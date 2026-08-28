@@ -31,7 +31,7 @@ Wrap the `runGraph(...)` call in `runWorkflow` with a `try/catch` that:
 
 - **Catch inside `runGraph` itself** — rejected. Would leak Temporal coupling (`isCancellation`, `CancellationScope`) into the engine-agnostic execution core. Other engines (e.g., a future in-process runner) would have to invent their own cancellation primitives that match Temporal's, or carry around a no-op shim.
 - **Cooperative cancellation via periodic `cancelRequested` polling inside the graph runner** — rejected. More code, racier semantics (cancellation only checked between iterations), and it doesn't free in-flight activities any sooner than Temporal's own propagation does.
-- **Add a "terminal-state guard" to `updateExecutionStatus`** so the rare `failed`-then-cancel race can't overwrite a terminal status — deferred. Belongs to a separate hardening pass on the worker DB layer; out of scope for this single-bug PR.
+- **Add a "terminal-state guard" to `updateExecutionStatus`** so the rare `failed`-then-cancel race can't overwrite a terminal status — deferred. Belongs to a separate hardening pass on the worker DB layer; out of scope for this single-bug PR. (Landed since: `updateExecutionStatus` now guards `status NOT IN (<terminal>)` — see `apps/execution-worker/src/database.ts`.)
 
 ## Consequences
 
@@ -41,7 +41,7 @@ Wrap the `runGraph(...)` call in `runWorkflow` with a `try/catch` that:
   - Engine-agnostic core (`execution-core`) stays free of Temporal imports.
 
 - **Cons**
-  - Narrow race window: if `runGraph` has already emitted `execution_failed` and is mid-`updateStatus('failed')` activity when the cancel arrives, the workflow's await throws `CancelledFailure`, our cleanup runs, and `updateExecutionStatus` overwrites `'failed'` → `'cancelled'`. Acceptable trade-off; mitigation deferred to a future PR that adds a terminal-state guard at the DB layer.
+  - Narrow race window: if `runGraph` has already emitted `execution_failed` and is mid-`updateStatus('failed')` activity when the cancel arrives, the workflow's await throws `CancelledFailure`, our cleanup runs, and `updateExecutionStatus` overwrites `'failed'` → `'cancelled'`. Acceptable trade-off; mitigation deferred to a future PR that adds a terminal-state guard at the DB layer. (Closed since by the terminal-state guard in `database.ts`; the overwrite is now a no-op.)
   - No automated regression test in this PR — `apps/execution-worker` has no test infrastructure today, and standing one up (`@temporalio/testing` + vitest) is a separate scope decision. Verified via the manual smoke test documented in the PR description.
 
 ## Status
