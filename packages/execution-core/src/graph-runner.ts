@@ -1,3 +1,4 @@
+import type { NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   NodeErrorPolicy,
@@ -38,8 +39,8 @@ export type RunGraphOutcome = { status: 'completed' } | { status: 'failed'; erro
 // sandbox-safe entry (`./workflow`) and therefore runs inside Temporal's
 // V8 workflow context, where every call to `new Date()`, `Math.random()`,
 // or other non-deterministic source poisons history replay. Lifecycle
-// signals (execution_started/completed/failed, node_started/completed/failed)
-// already flow through EventEmitterPort — operators tail those for run-time
+// signals (execution_started/completed/failed, node_started/completed/failed,
+// node_skipped) already flow through EventEmitterPort — operators tail those for run-time
 // observability. Activity executors that need real-time logs (LLM failures,
 // HTTP retries) hold their own LoggerPort outside the sandbox.
 export async function runGraph<TNode extends BaseNode>(
@@ -67,6 +68,7 @@ export async function runGraph<TNode extends BaseNode>(
     pendingPredecessors: new Map(inDegree),
     liveIncoming: new Map(input.definition.nodes.map((node) => [node.id, 0])),
     status: new Map(input.definition.nodes.map((node) => [node.id, 'pending'])),
+    livePruneKind: new Map(),
   };
 
   let ready: TNode[] = [startNode];
@@ -85,18 +87,23 @@ export async function runGraph<TNode extends BaseNode>(
     const results = await Promise.all(ready.map((node) => runNode(node, context, runner, events, input.executionId)));
 
     // Fatal failures (policy 'fail') abort the whole execution — pick the first
-    // one in deterministic node order, just like the previous behavior.
+    // one in deterministic node order, just like the previous behavior. The abort
+    // itself waits until the wave has propagated and emitted its skips: siblings
+    // that resolved in this same wave still owe their `node_skipped` events, and
+    // `execution_failed` has to stay the last event of the run.
     const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
-    if (fatal && fatal.failed) {
-      return await failExecution(input.executionId, events, { message: fatal.message, code: fatal.code });
-    }
 
     const newlyReady: TNode[] = [];
+    const skipped: SkippedNode[] = [];
     for (const result of results) {
       if (result.failed) {
+        const policy = resolveErrorPolicy(result.node);
+        // A fatal node resolves nothing — no output, no propagation — so its
+        // successors keep their pending predecessor count and emit no event.
+        // Never reached is a different state from deliberately skipped.
+        if (policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
         // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
-        const policy = resolveErrorPolicy(result.node);
         const errorOutput =
           result.code === undefined
             ? { error: { message: result.message } }
@@ -104,12 +111,32 @@ export async function runGraph<TNode extends BaseNode>(
         nodeOutputs[result.node.id] = errorOutput;
         state.status.set(result.node.id, 'completed');
         const nextPort = policy === 'errorRoute' ? RESERVED_ERROR_HANDLE : undefined;
-        propagate(result.node.id, nextPort, true, state, newlyReady);
+        propagate(result.node.id, nextPort, true, state, newlyReady, skipped);
         continue;
       }
       nodeOutputs[result.node.id] = result.output;
       state.status.set(result.node.id, 'completed');
-      propagate(result.node.id, result.nextPort, true, state, newlyReady);
+      propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
+    }
+
+    // Emitted once the whole wave has propagated, so a skip reads as a consequence of
+    // the wave that pruned it rather than arriving mid-wave. Order is a pure function of
+    // the definition: `results` follows `ready`, which follows `definition.nodes`, and
+    // `propagate` walks the dead subtree breadth-first from there — nothing wall-clock or
+    // completion-order dependent, so a replay reproduces it. An exhausted `emitEvent` is
+    // swallowed rather than failing the run: the event is advisory, so a node that was
+    // never going to execute must not be able to abort a run that is otherwise healthy.
+    for (const node of skipped) {
+      try {
+        await events.emitEvent(input.executionId, 'node_skipped', { reason: node.reason }, node.id);
+      } catch {
+        // Swallowed on purpose — see above. Nothing is logged: this runs inside the
+        // Temporal workflow sandbox, which has no LoggerPort.
+      }
+    }
+
+    if (fatal && fatal.failed) {
+      return await failExecution(input.executionId, events, { message: fatal.message, code: fatal.code });
     }
 
     ready = newlyReady;
@@ -152,7 +179,24 @@ type SchedulerState<TNode extends BaseNode> = {
   pendingPredecessors: Map<string, number>;
   liveIncoming: Map<string, number>;
   status: Map<string, NodeStatus>;
+  // Nodes with at least one incoming edge pruned while its source was live — an upstream
+  // node ran and routed elsewhere. Separates the head of a dead branch from the rest of it
+  // when reporting why a node was skipped, and distinguishes a dormant error branch
+  // ('error') from one something actively routed away from ('branch').
+  //
+  // Not a flag overwritten by the last edge resolved: the reason must not depend on the
+  // order a node's predecessors resolve in. 'branch' outranks 'error' and is never
+  // overwritten, so the recorded kind is a pure function of the set of prunings.
+  livePruneKind: Map<string, LivePruneKind>;
 };
+
+// How an incoming edge died while its source was still live. 'error' — the edge is
+// reserved for error routing and the source never error-routed. 'branch' — anything
+// else: a decision picked another handle, or an error-routing source pruned a
+// regular branch.
+type LivePruneKind = 'branch' | 'error';
+
+type SkippedNode = { id: string; reason: NodeSkipReason };
 
 // Resolves all outgoing edges from `rootId`. For each successor, decrements its
 // pending counter, increments live counter if the edge is alive (no decision
@@ -161,12 +205,17 @@ type SchedulerState<TNode extends BaseNode> = {
 // through its own outgoing edges via the same queue, so unreachable subtrees
 // don't stall downstream join points and deep dead-branch chains can't blow the
 // call stack.
+//
+// Newly ready nodes land in `out`, newly skipped ones in `skippedOut`; both are
+// appended in traversal order and neither is emitted from here, so the caller
+// keeps control of event ordering.
 function propagate<TNode extends BaseNode>(
   rootId: string,
   rootNextPort: string | undefined,
   rootSourceLive: boolean,
   state: SchedulerState<TNode>,
   out: TNode[],
+  skippedOut: SkippedNode[],
 ): void {
   const queue: { fromId: string; nextPort: string | undefined; sourceLive: boolean }[] = [
     { fromId: rootId, nextPort: rootNextPort, sourceLive: rootSourceLive },
@@ -179,6 +228,11 @@ function propagate<TNode extends BaseNode>(
       state.pendingPredecessors.set(target.id, (state.pendingPredecessors.get(target.id) ?? 0) - 1);
       if (edgeLive) {
         state.liveIncoming.set(target.id, (state.liveIncoming.get(target.id) ?? 0) + 1);
+      } else if (sourceLive) {
+        const kind: LivePruneKind = sourceHandle === RESERVED_ERROR_HANDLE ? 'error' : 'branch';
+        if (state.livePruneKind.get(target.id) !== 'branch') {
+          state.livePruneKind.set(target.id, kind);
+        }
       }
 
       if ((state.pendingPredecessors.get(target.id) ?? 0) === 0 && state.status.get(target.id) === 'pending') {
@@ -186,11 +240,20 @@ function propagate<TNode extends BaseNode>(
           out.push(target);
         } else {
           state.status.set(target.id, 'skipped');
+          skippedOut.push({ id: target.id, reason: skipReason(state.livePruneKind.get(target.id)) });
           queue.push({ fromId: target.id, nextPort: undefined, sourceLive: false });
         }
       }
     }
   }
+}
+
+function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
+  if (kind === undefined) {
+    return 'upstream_skipped';
+  }
+
+  return kind === 'error' ? 'error_route_not_taken' : 'branch_not_taken';
 }
 
 type NodeRunResult<TNode extends BaseNode> =

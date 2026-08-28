@@ -3,10 +3,6 @@
 Self-contained, portable deployment of the AI Studio stack (WB-229). Runs on
 any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
-> Deploying onto the company Swarm cluster instead? See
-> [`tools/deployment/`](../../tools/deployment/README.md) — same images,
-> Traefik/ACR/Ansible orchestration aligned with the workflow-builder repo.
-
 ## What runs
 
 | Service       | Image                          | Role                                            | Exposed                  |
@@ -97,6 +93,14 @@ docker exec ai-studio-app-db-1 pg_dump -U wb workflow_builder > backup.sql
 
 Workflow data is treated as ephemeral for the public demo — losing the
 volumes is acceptable; there is nothing precious in them.
+
+**Before deploying a worker image that changes which execution events are
+emitted**, let in-flight executions finish. Temporal replays a running
+workflow's history against the deployed code, so a run started on the old
+emit sequence diverges when replayed on the new one. Check for active runs in
+the Temporal UI (`--profile debug`), or accept that any still running will
+fail. Deploys that leave the emit sequence alone are unaffected. See
+[`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
 ## Known limitations (accepted for the lean MVP)
 

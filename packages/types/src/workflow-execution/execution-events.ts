@@ -4,6 +4,7 @@ export type ExecutionEventType =
   | 'node_waiting'
   | 'node_completed'
   | 'node_failed'
+  | 'node_skipped'
   | 'branch_spawned'
   | 'branches_joined'
   | 'execution_completed'
@@ -28,6 +29,12 @@ export type BranchesJoinedPayload = {
 
 export type NodeCompletedPayload = {
   output: unknown;
+};
+
+export type NodeSkipReason = 'branch_not_taken' | 'upstream_skipped' | 'error_route_not_taken';
+
+export type NodeSkippedPayload = {
+  reason: NodeSkipReason;
 };
 
 export type ExecutionErrorPayload = {
@@ -81,6 +88,11 @@ export type NodeFailedEvent = NodeEvent & {
   payload: ExecutionErrorPayload;
 };
 
+export type NodeSkippedEvent = NodeEvent & {
+  type: 'node_skipped';
+  payload: NodeSkippedPayload;
+};
+
 export type BranchSpawnedEvent = NodeEvent & {
   type: 'branch_spawned';
   payload: BranchSpawnedPayload;
@@ -112,6 +124,7 @@ export type ExecutionEvent =
   | NodeWaitingEvent
   | NodeCompletedEvent
   | NodeFailedEvent
+  | NodeSkippedEvent
   | BranchSpawnedEvent
   | BranchesJoinedEvent
   | ExecutionCompletedEvent

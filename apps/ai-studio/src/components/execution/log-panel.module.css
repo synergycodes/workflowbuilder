@@ -89,8 +89,9 @@
   color: var(--ai-studio-status-color--completed);
 }
 
-.badge--node_started {
-  color: var(--ax-txt-secondary, #888);
+.badge--node_started,
+.badge--node_skipped {
+  color: var(--ax-txt-secondary-default, #888);
 }
 
 .badge--node_failed,
@@ -99,13 +100,22 @@
 }
 
 .badge--execution_cancelled {
-  color: var(--ax-txt-secondary, #888);
+  color: var(--ax-txt-secondary-default, #888);
 }
 
 .node-id {
   font-family: monospace;
   font-size: 0.65rem;
   opacity: 0.5;
+}
+
+.reason {
+  font-size: 0.65rem;
+  font-style: italic;
+  opacity: 0.55;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .time {
