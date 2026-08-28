@@ -238,7 +238,7 @@ const schemaOutput: NodeSchemaOutput = {
 
 `onlyIfPropertyNameEquals.path` is a dot path into the node's `properties`; the variant applies when the value at that path strictly equals `value`.
 
-A variant can also take its properties from user-defined variables stored on the node instead of a static schema: `variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandles: ['success'] }` reads the variable definitions saved at `properties.outputs` (the value produced by the SDK's schema-builder control) and exposes them on the listed handles.
+A variant can also take its properties from user-defined variables stored on the node instead of a static schema: `variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandles: ['success'] }` reads the variable definitions saved at `properties.outputs`.
 
 :::note
 `outputSchema` (the previous flat `{ properties }` shape) is deprecated and still accepted, but will be removed in the next major release. Migrate to `schemaOutput`.
