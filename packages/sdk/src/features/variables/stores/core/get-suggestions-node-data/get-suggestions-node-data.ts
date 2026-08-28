@@ -6,8 +6,8 @@ import { getByPath } from '../../../../../utils/object';
 import type { VariablesIndex } from '../../../types';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
-import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema.ts';
-import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-ouput';
+import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
+import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
 import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
 
 type Params = {
@@ -172,7 +172,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
           });
 
           for (const sourceHandle of sourceHandlesToAdd) {
-            console.log(sourceHandle);
             bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
           }
         }

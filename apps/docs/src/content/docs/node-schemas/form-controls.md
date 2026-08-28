@@ -154,7 +154,7 @@ Multi-line variant of `VariableText`. Same `{{...}}` placeholder behaviour.
 
 ## `MessageOnError`
 
-Inline message that surfaces when a node-level validation error matches the `scope`. Renders nothing if there's no error on that property — useful for context-specific guidance ("This input requires an upstream variable") next to the affected field.
+Inline message that surfaces when a node-level validation error matches the `scope`. Renders nothing if there's no error on that property — useful for context-specific guidance ("A custom error message") next to the affected field.
 
 | Prop   | Type   | Required | Notes                                                                                                 |
 | ------ | ------ | -------- | ----------------------------------------------------------------------------------------------------- |
@@ -163,8 +163,8 @@ Inline message that surfaces when a node-level validation error matches the `sco
 ```ts
 {
   type: 'MessageOnError',
-  scope: '#/properties/missingPreviousVariable',
-  text: 'This field needs a variable from an upstream node.',
+  scope: '#/properties/customError',
+  text: 'A custom error message.',
 }
 ```
 

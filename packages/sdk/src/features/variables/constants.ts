@@ -123,7 +123,6 @@ export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = 
   },
 };
 
-// TODO: Remove filter when other formats will be supported
 export const variableTypesOptions: VariableTypeOption[] = Object.values(variableTypeInfoByType).filter(
   ({ type, baseType }) => type === baseType,
 );

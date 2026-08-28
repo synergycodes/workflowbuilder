@@ -4,7 +4,7 @@ export const capitalizeFirstLetter = (text: string | undefined = '') =>
 export const truncate = (text: string, maxLength: number) =>
   text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
-const floorCaseToPascalCase = (text: string): string => {
+const snakeCaseToPascalCase = (text: string): string => {
   const textWithoutSpaces = text.replaceAll(' ', '_');
   if (textWithoutSpaces.includes('_') === false) {
     return text;
@@ -21,7 +21,7 @@ export const keyToLabel = (key: string): string => {
   if (!key) {
     return '';
   }
-  const pascalCaseKey = floorCaseToPascalCase(key);
+  const pascalCaseKey = snakeCaseToPascalCase(key);
 
   const words = pascalCaseKey.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+/g) ?? [];
   return words
@@ -42,10 +42,10 @@ export const keyToLabel = (key: string): string => {
     .join(' ');
 };
 
-export const labelToFloorCase = (label: string) => {
+export const labelToSnakeCase = (label: string) => {
   // Normalization guessing the best strategy
   const labelToUse = label.replaceAll(' ', '_');
-  const pascalCaseLabel = floorCaseToPascalCase(labelToUse);
+  const pascalCaseLabel = snakeCaseToPascalCase(labelToUse);
 
   const words = pascalCaseLabel.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+/g) ?? [];
 

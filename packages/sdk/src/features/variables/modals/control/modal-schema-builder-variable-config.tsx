@@ -7,7 +7,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './modal-schema-builder-variable-config.module.css';
 
 import { showSnackbar } from '../../../../utils/show-snackbar';
-import { labelToFloorCase } from '../../../../utils/text';
+import { labelToSnakeCase } from '../../../../utils/text';
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
 import type { VariableDefinition, VariablesIndex } from '../../types';
 import {
@@ -24,7 +24,7 @@ type Props = {
 function ModalSchemaBuilderVariableConfig(props: Props) {
   const handleSave: PaneEditVariableProps['onSave'] = useCallback(
     (definition: VariableDefinition) => {
-      const floorIdForAPI = labelToFloorCase(definition.name);
+      const floorIdForAPI = labelToSnakeCase(definition.name);
 
       if (props.variant === VARIABLE_FORM_VARIANT.ADD && props.variablesById[floorIdForAPI]) {
         showSnackbar({
