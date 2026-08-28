@@ -64,9 +64,9 @@
     "@temporalio/plugin": "catalog:"
   },
   "peerDependencies": {
-    "@temporalio/client": "^1.16.0",
-    "@temporalio/worker": "^1.16.0",
-    "@temporalio/workflow": "^1.16.0"
+    "@temporalio/client": "^1.23.0",
+    "@temporalio/worker": "^1.23.0",
+    "@temporalio/workflow": "^1.23.0"
   },
   "peerDependenciesMeta": {
     "@temporalio/client": {
