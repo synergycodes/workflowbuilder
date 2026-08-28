@@ -11,6 +11,17 @@ export const NODE_ERROR_POLICIES = ['fail', 'continue', 'errorRoute'] as const;
 
 export type NodeErrorPolicy = (typeof NODE_ERROR_POLICIES)[number];
 
+// Structural role a node plays in the graph, independent of its product type.
+// `start` marks the execution entrypoint. Every runnable workflow declares exactly
+// one: the runner begins there instead of inferring roots from in-degree, so a node
+// left with no incoming edge is an authoring mistake rather than a second trigger.
+//
+// Unlike `NODE_ERROR_POLICIES` this needs no runtime tuple: a role is derived by
+// the backend mapper from the editor's node kind, never validated against a value
+// a client sent, so nothing has to check membership at runtime. Adding a role
+// stays a one-line change.
+export type NodeRole = 'start';
+
 // Minimal contract every node carries through the runner. Concrete node types
 // in worker packages narrow `config` via discriminated unions on `type`.
 export type BaseNode = {
@@ -18,6 +29,7 @@ export type BaseNode = {
   type: string;
   config: unknown;
   errorPolicy?: NodeErrorPolicy;
+  role?: NodeRole;
 };
 
 export type WorkflowEdgeDefinition = {

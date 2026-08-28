@@ -56,7 +56,8 @@ description: Frequently asked questions about Workflow Builder for developers.
              "subtitle": "Initiate workflows"
            },
            "type": "trigger",
-           "icon": "Lightning"
+           "icon": "Lightning",
+           "isStartNode": true
          }
        }
      ],
@@ -71,7 +72,7 @@ description: Frequently asked questions about Workflow Builder for developers.
    }
    ```
 
-   Node and edge types follow React Flow conventions. The `data.properties` object is where your custom per-node configuration lives - it maps directly to whatever your execution engine expects.
+   Node and edge types follow React Flow conventions. The `data.properties` object is where your custom per-node configuration lives - it maps directly to whatever your execution engine expects. The optional `data.isStartNode` flag marks the node your run begins at, so your engine can find the entry point without inferring it from the graph shape or matching on a node type.
 
 8. **How do I add custom nodes?**
    Custom nodes are React components registered via a JSON Schema definition. The schema drives the properties panel automatically - you define fields, validation rules, and defaults, and Workflow Builder generates the configuration UI. See the [Add Custom Node Type](/guides/add-a-custom-node/) guide for a step-by-step tutorial.

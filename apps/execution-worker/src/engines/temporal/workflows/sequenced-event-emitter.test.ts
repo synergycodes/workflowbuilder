@@ -55,6 +55,10 @@ function node(id: string): TestNode {
   return { id, type: 'test/node', config: {} };
 }
 
+function startNode(id: string): TestNode {
+  return { id, type: 'test/node', config: {}, role: 'start' };
+}
+
 type TestEdge = WorkflowExecutionInput<TestNode>['definition']['edges'][number];
 
 function edge(id: string, source: string, target: string): TestEdge {
@@ -84,7 +88,7 @@ const runner: ActivityRunnerPort<TestNode> = {
 // A→{B,C,D}→E: one four-wide wave, so four node_started emits are in flight at once.
 function fanOutGraph(): WorkflowExecutionInput<TestNode> {
   return makeInput(
-    [node('A'), node('B'), node('C'), node('D'), node('E')],
+    [startNode('A'), node('B'), node('C'), node('D'), node('E')],
     [
       edge('e1', 'A', 'B'),
       edge('e2', 'A', 'C'),
@@ -204,7 +208,7 @@ describe('createSequencedEventEmitter', () => {
 
     const outcome = await runGraph(
       makeInput(
-        [node('A'), { ...node('B'), errorPolicy: 'continue' }, node('C')],
+        [startNode('A'), { ...node('B'), errorPolicy: 'continue' }, node('C')],
         [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')],
       ),
       runner,

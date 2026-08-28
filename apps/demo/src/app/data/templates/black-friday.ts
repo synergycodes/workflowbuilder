@@ -17,6 +17,7 @@ const diagram: DiagramModel = {
             dataSource: 'Time-based Trigger',
           },
           type: 'trigger',
+          isStartNode: true,
           icon: 'Lightning',
         },
         selected: false,

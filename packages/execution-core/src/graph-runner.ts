@@ -9,6 +9,7 @@ import type { ExecutionContext } from './execution-context';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
+import { resolveStartNode } from './resolve-start-node';
 
 // `sourceHandle` reserved for the 'errorRoute' error policy. Edges tagged
 // with this value fire ONLY when the upstream node failed with policy
@@ -24,7 +25,8 @@ const RESERVED_ERROR_HANDLE = 'errorRoute';
 // Temporal adapter raises an ApplicationFailure so the Workflow Execution shows as
 // Failed rather than Completed). Note a node failing under errorPolicy 'continue' or
 // 'errorRoute' is absorbed by the graph and still yields `{ status: 'completed' }` —
-// only an unhandled node failure, a stall, or a missing entrypoint fails the run.
+// only an unhandled node failure, a stall, or a malformed start (missing, duplicated,
+// or with orphaned nodes alongside it) fails the run.
 export type RunGraphOutcome = { status: 'completed' } | { status: 'failed'; error: { message: string; code?: string } };
 
 // Topological scheduler. A node becomes ready only when ALL of its incoming
@@ -50,10 +52,11 @@ export async function runGraph<TNode extends BaseNode>(
 
   await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
 
-  const entrypoints = input.definition.nodes.filter((node) => (inDegree.get(node.id) ?? 0) === 0);
-  if (entrypoints.length === 0) {
-    return await failExecution(input.executionId, events, { message: 'Workflow has no entrypoint node' });
+  const entry = resolveStartNode(input.definition.nodes, inDegree);
+  if ('error' in entry) {
+    return await failExecution(input.executionId, events, { message: entry.error });
   }
+  const startNode = entry.startNode;
 
   // pendingPredecessors counts incoming edges not yet resolved (completed OR pruned).
   // liveIncoming counts incoming edges that resolved via a non-pruned route.
@@ -66,7 +69,7 @@ export async function runGraph<TNode extends BaseNode>(
     status: new Map(input.definition.nodes.map((node) => [node.id, 'pending'])),
   };
 
-  let ready: TNode[] = entrypoints;
+  let ready: TNode[] = [startNode];
   const nodeOutputs: Record<string, unknown> = {};
 
   while (ready.length > 0) {

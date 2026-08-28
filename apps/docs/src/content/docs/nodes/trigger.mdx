@@ -9,7 +9,8 @@ import NodeDocumentation from '@/components/node-documentation.astro';
 
 <NodeDocumentation node="trigger">
 
-The Trigger node is the entry point of every workflow. It defines when and how a workflow starts. Every workflow must begin with exactly one Trigger node, placed at the start of the diagram.
+The Trigger node is the entry point of every workflow. It defines when and how a workflow starts. Every workflow needs exactly one start node, placed at the start of the diagram — the Trigger node ships marked as one through its `isStartNode` flag.
+Any node type can take that role, so a run can begin somewhere else if your product calls for it; see [Add Custom Node Type](/guides/add-a-custom-node/) to mark your own.
 
 ## When to use
 
