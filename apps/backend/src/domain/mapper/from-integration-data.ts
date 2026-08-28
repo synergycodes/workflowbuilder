@@ -2,6 +2,7 @@ import {
   type BaseNode,
   NODE_ERROR_POLICIES,
   type NodeErrorPolicy,
+  type NodeRole,
   type WorkflowDefinition,
   type WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
@@ -25,18 +26,21 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// `errorPolicy` is authored in the UI as a regular JSONForms property
-// (via `sharedProperties` in the SDK), so it arrives nested in
-// `data.properties`. The runner expects it at the top level of `BaseNode`,
-// so we lift it here and keep `config` free of runner-only fields.
+// Two runner-level fields are lifted out of the frontend shape here so `config`
+// stays free of them. `errorPolicy` is authored in the UI as a regular JSONForms
+// property (via `sharedProperties` in the SDK) and arrives nested in
+// `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
+// which sits alongside the properties rather than inside them.
 function mapNode(node: FrontendNode): BaseNode {
   const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
+  const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,
     config,
     ...(errorPolicy === undefined ? {} : { errorPolicy }),
+    ...(role === undefined ? {} : { role }),
   };
 }
 

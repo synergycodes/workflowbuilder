@@ -1,6 +1,7 @@
 export type { BaseNode, NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
 
 export { runGraph } from './graph-runner';
+export type { RunGraphOutcome } from './graph-runner';
 
 export { NodeExecutionError } from './errors';
 

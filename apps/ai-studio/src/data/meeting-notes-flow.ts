@@ -10,6 +10,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 300 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'Meeting Transcript',
             description: 'A raw transcript pasted in.',

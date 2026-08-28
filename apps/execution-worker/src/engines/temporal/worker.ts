@@ -36,8 +36,8 @@ const activities = {
     return executor(node, context);
   },
 
-  async emitEvent(executionId: string, type: string, payload?: unknown, nodeId?: string) {
-    await database.emitExecutionEvent(executionId, type, payload, nodeId);
+  async emitEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
+    await database.emitExecutionEvent(executionId, sequence, type, payload, nodeId);
   },
 
   async updateStatus(executionId: string, status: string, errorMessage?: string) {

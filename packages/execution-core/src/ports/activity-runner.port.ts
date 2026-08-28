@@ -4,6 +4,9 @@ import type { ExecutionContext } from '../execution-context';
 
 export type NodeExecutionResult = {
   output: unknown;
+  // Naming a port promises a live route: if no outgoing edge goes live for it, the run
+  // ends incomplete with `{ nodeId, port }`. Falsy ('' or a smuggled null) means "no
+  // port", mirroring the router. 'errorRoute' is reserved for the error policy.
   nextPort?: string;
 };
 

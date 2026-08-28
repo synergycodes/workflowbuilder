@@ -1,9 +1,12 @@
+import { TERMINAL_EXECUTION_EVENT_TYPES } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import type { ExecutionEventRow } from './fetch-events-after';
 
 export type EventFetcher = (executionId: string, afterSequence: number) => Promise<ExecutionEventRow[]>;
 type EventWriter = (event: ExecutionEventRow) => Promise<void>;
 
-const TERMINAL_EVENT_TYPES = new Set(['execution_completed', 'execution_failed', 'execution_cancelled']);
+// Set<string> because ExecutionEventRow.type is a plain string from $inferSelect.
+const TERMINAL_EVENT_TYPES = new Set<string>(TERMINAL_EXECUTION_EVENT_TYPES);
 
 export type DrainResult = {
   lastSequence: number;
@@ -15,6 +18,11 @@ export type DrainResult = {
   writeFailed: boolean;
 };
 
+// Requires rows to become visible in ascending `sequence` order: the cursor only moves
+// forward, so a row committing below it is never selected again and its event is lost.
+// The worker upholds that by serializing its event writes — see
+// `apps/execution-worker/src/engines/temporal/workflows/sequenced-event-emitter.ts`.
+// Gaps in the numbering are fine; only reordering is not. See drain-order.test.ts.
 export async function drainEventsSince(
   executionId: string,
   afterSequence: number,

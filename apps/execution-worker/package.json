@@ -10,14 +10,15 @@
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
-    "test": "vitest run --passWithNoTests",
-    "test:watch": "vitest --passWithNoTests"
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.5.0",
     "@temporalio/worker": "^1.11.0",
     "@temporalio/workflow": "^1.11.0",
     "@workflow-builder/execution-core": "workspace:*",
+    "@workflow-builder/types": "workspace:*",
     "ai": "^6.0.0",
     "dotenv": "^17.4.2",
     "postgres": "^3.4.5",

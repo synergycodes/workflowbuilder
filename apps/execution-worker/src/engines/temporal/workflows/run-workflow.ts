@@ -1,17 +1,18 @@
 // Temporal workflow entry. Runs inside V8 sandbox — only deterministic code
 // + proxyActivities allowed. Delegates graph traversal to the pure runGraph
 // from execution-core, wiring Temporal proxyActivities as port implementations.
-import { CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
+import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
 
 import {
   type ActivityRunnerPort,
-  type EventEmitterPort,
+  type RunGraphOutcome,
   type WorkflowExecutionInput,
   runGraph,
 } from '@workflow-builder/execution-core/workflow';
 
 import type { AiStudioNode } from '../../../domain/ai-studio-nodes';
 import type { Activities } from '../activities-interface';
+import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
 // DB activities: fast, idempotent INSERT/UPDATE — short timeout, aggressive retries
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>({
@@ -29,15 +30,12 @@ const runner: ActivityRunnerPort<AiStudioNode> = {
   executeNode: (node, context) => nodeActivities.executeNode(node, context),
 };
 
-const events: EventEmitterPort = {
-  emitEvent: (executionId, type, payload, nodeId) => databaseActivities.emitEvent(executionId, type, payload, nodeId),
-  updateStatus: (executionId, status, errorMessage) =>
-    databaseActivities.updateStatus(executionId, status, errorMessage),
-};
-
 export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): Promise<void> {
+  const events = createSequencedEventEmitter(databaseActivities);
+  let outcome: RunGraphOutcome;
+
   try {
-    await runGraph(input, runner, events);
+    outcome = await runGraph(input, runner, events);
   } catch (error) {
     if (isCancellation(error)) {
       // Root scope is cancelled — shield cleanup so these activities aren't
@@ -48,5 +46,18 @@ export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): 
       });
     }
     throw error;
+  }
+
+  // runGraph already emitted execution_failed and wrote the 'failed' status — this check
+  // tells Temporal to close the run as Failed rather than Completed. It has to be a
+  // TemporalFailure (anything else fails the workflow *task* and retries forever), and
+  // non-retryable since replaying a deterministic graph failure would re-run LLM activities.
+  //
+  // Only 'failed' throws. An 'incomplete' outcome — a branch that routed to a port with
+  // nothing wired to it — falls through on purpose: nothing errored, so the Workflow
+  // Execution closes as Completed and the run's own 'incomplete' status carries the
+  // detail. Do not add it to this check.
+  if (outcome.status === 'failed') {
+    throw ApplicationFailure.nonRetryable(outcome.error.message, outcome.error.code ?? 'WorkflowExecutionFailed');
   }
 }

@@ -37,9 +37,9 @@ const edgeTemplates = {
   dashed: DashedEdge,
 } satisfies WorkflowBuilderEdgeTemplates;
 
+// A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => {
-  // A trigger is a workflow entry point, so it can never be a connection target.
-  if (targetNode.data.type === 'trigger') {
+  if (targetNode.data.isStartNode) {
     showSnackbar({
       title: 'notValidConnection',
       variant: SnackbarType.WARNING,
