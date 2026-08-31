@@ -22,10 +22,17 @@ The Temporal SDK packages are peer dependencies, so your project pins one versio
 
 ```bash
 # worker side
-npm install @temporalio/worker @temporalio/workflow
+npm install @temporalio/worker @temporalio/workflow @temporalio/plugin
 # client side (starting and cancelling runs)
 npm install @temporalio/client
 ```
+
+**Keep every `@temporalio/*` package on the same version.** They are released together and
+their types reference each other across package boundaries, so a mismatch shows up as
+confusing type errors or, worse, at runtime. `@temporalio/plugin` is the one to watch: it
+declares no dependencies of its own yet its types come from `worker`, `client` and
+`common`, so nothing stops it from drifting ahead on its own. That is why it is a peer
+here rather than something this package installs for you.
 
 ## Worker
 
