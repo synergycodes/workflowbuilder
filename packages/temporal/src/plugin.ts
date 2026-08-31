@@ -10,14 +10,9 @@ export type WorkflowBuilderPluginOptions<TNode extends BaseNode> = CreateActivit
   taskQueue?: string;
 };
 
-// Temporal's Technical Review Standards ask for `my_library.MyPlugin`, and every
-// example in their plugins guide passes `organization.PluginName`. Their own shipped
-// plugins disagree: @temporalio/interceptors-opentelemetry registers
-// 'OpenTelemetryPlugin' and @temporalio/ai-sdk registers 'AiSDKPlugin', both bare
-// class names. The dotted form satisfies the written standard and the docs at once,
-// so it is the safer pick — do not "simplify" it back to the class name.
-//
-// This string is what users see in worker logs; it is not the npm package name.
+// Shows up in users' worker logs and is part of what Temporal reviews, so it changes
+// deliberately (a test pins it). Not the npm package name: their Technical Review
+// Standards ask for the `my_library.MyPlugin` format.
 const PLUGIN_NAME = 'workflowbuilder.WorkflowBuilderPlugin';
 
 // Registers the activities that execute a Workflow Builder graph on Temporal.
