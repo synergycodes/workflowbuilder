@@ -11,6 +11,7 @@ import { executeDecision } from '../../executors/decision';
 import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
+import { withPayloadSizeWarning } from '../../store-payload-warning';
 
 const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
 
@@ -29,7 +30,7 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
       executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
     'ai-studio/visualize': executeVisualize,
   },
-  store: database,
+  store: withPayloadSizeWarning(database, logger),
 });
 
 // without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
