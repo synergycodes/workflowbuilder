@@ -30,9 +30,11 @@ const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
   'ai-studio/visualize': executeVisualize,
 };
 
-// Mirrors Temporal's own per-blob warn threshold. Payloads this large also count
-// toward the 50 MB per-run history cap (emitEvent args are recorded in history),
-// so a warning here surfaces runs drifting toward the limit before they hit it.
+// Mirrors Temporal's own per-blob warn threshold (`limit.blobSize.warn`, default 512 KB;
+// the hard error is at 2 MB): https://docs.temporal.io/references/dynamic-configuration
+// Payloads this large also count toward the 50 MB per-run history cap (emitEvent args
+// are recorded in history), so a warning here surfaces runs drifting toward the limit
+// before they hit it.
 const PAYLOAD_WARN_BYTES = 512 * 1024;
 
 const activities = {
