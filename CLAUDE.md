@@ -108,6 +108,15 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 
+### Referencing future work in code
+
+This repo is public, but ticket IDs (`WB-123`) point to a private ClickUp — for external readers they are dead links. Never put ticket IDs in code comments, READMEs, or anything else that ships. Instead:
+
+- Write the comment self-sufficiently: state the limitation and the direction of the fix in plain words.
+- End it with a stable kebab-case slug naming the work: `(follow-up: temporal-payload-codec)`.
+- Add a matching `Code marker: <slug>` line to the ClickUp task's description, so picking the task up later starts with `grep -r "follow-up: <slug>"` — grep survives file moves.
+- Ticket IDs belong in commit messages and PR descriptions, where `git blame` leads to full context.
+
 ## Getting Started
 
 If you're new to this repo and want to build your own consumer app or POC, follow this order:

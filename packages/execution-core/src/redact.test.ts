@@ -205,9 +205,10 @@ describe('withRedactedPayloads', () => {
     ]);
   });
 
-  // The runner only fills error.message/code today, but WB-597 subtask 5 will
-  // put structured provider errors — which can echo request config — into
-  // error.details. The decorator must already cover that shape.
+  // The runner only fills error.message/code today, but structured provider
+  // errors — which can echo request config — are planned to land in
+  // error.details (follow-up: provider-error-details). The decorator must
+  // already cover that shape.
   it('masks sensitive keys inside node_failed error details', async () => {
     const inner = makeInner();
     const events = withRedactedPayloads(inner.port);

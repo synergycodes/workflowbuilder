@@ -10,9 +10,10 @@ import type { EventEmitterPort } from './ports/event-emitter.port';
 // execution itself.
 //
 // Matching is key-based only. Secrets arriving through VALUES (e.g. a resolved
-// `{{variables.x}}` template) are not caught — value-based redaction belongs to
-// the variables feature, and encrypting Temporal's own event history (where
-// activity args land unredacted) is WB-597 subtask 4.
+// `{{variables.x}}` template) are not caught — that belongs to the variables
+// feature (follow-up: value-based-redaction). Encrypting Temporal's own event
+// history, where activity args land unredacted, is planned separately
+// (follow-up: temporal-payload-codec).
 export const REDACTED = '[REDACTED]';
 
 const TRUNCATED = '[TRUNCATED]';
