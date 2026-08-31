@@ -123,6 +123,12 @@ describe('WorkflowBuilderPlugin', () => {
     expect(configured.workflowsPath).toBe('/somewhere/workflows.ts');
   });
 
+  it('registers under the name Temporal expects to see in logs', () => {
+    // Reviewed by Temporal and surfaced in users' worker logs, so it changes
+    // deliberately. See the note next to PLUGIN_NAME for why it is dotted.
+    expect(makePlugin().name).toBe('workflowbuilder.WorkflowBuilderPlugin');
+  });
+
   it('defaults the task queue to the shared constant and takes an override', () => {
     expect(makePlugin().taskQueue).toBe('workflow-execution');
     expect(makePlugin('other-queue').taskQueue).toBe('other-queue');
