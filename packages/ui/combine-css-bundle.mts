@@ -103,9 +103,14 @@ const FONT_FACES: FontFaceDefinition[] = [
   },
 ];
 
+const FONT_LICENSE_FILES: Record<FontFaceDefinition['packageName'], string> = {
+  '@fontsource/inter': 'OFL-inter.txt',
+  '@fontsource/poppins': 'OFL-poppins.txt',
+};
+
 const require = createRequire(import.meta.url);
 
-function emitFontAssets(distributionDirectory: string): string {
+export function emitFontAssets(distributionDirectory: string): string {
   const assetsDirectory = path.resolve(distributionDirectory, 'assets');
   fs.mkdirSync(assetsDirectory, { recursive: true });
 
@@ -116,6 +121,10 @@ function emitFontAssets(distributionDirectory: string): string {
     if (!packageDirectory) {
       packageDirectory = path.dirname(require.resolve(`${face.packageName}/package.json`));
       packageDirectories.set(face.packageName, packageDirectory);
+      fs.copyFileSync(
+        path.resolve(packageDirectory, 'LICENSE'),
+        path.resolve(assetsDirectory, FONT_LICENSE_FILES[face.packageName]),
+      );
     }
 
     let packageUnicodeRanges = unicodeRanges.get(face.packageName);

@@ -42,12 +42,32 @@ The package has six style surfaces:
   component, typography or font rules.
 
 The stylesheets reference `./assets/*.woff2`, so preserve the package's `dist`
-layout when copying or serving them.
+layout when copying or serving them. The font assets' SIL Open Font License 1.1
+texts ship beside them as `assets/OFL-poppins.txt` and `assets/OFL-inter.txt`.
 
 Only Poppins latin 400 and 600 are inline. Other weights, Inter, and non-ASCII
 glyphs use `font-display: swap` assets, so they can briefly appear in the
-fallback font while loading. Preload the relevant `.woff2` files when that
-flash of unstyled text (FOUT) is unacceptable:
+fallback font while loading.
+
+### Shipped font faces
+
+| Family  | Weight | Subset    | File name                            | Delivery |
+| ------- | ------ | --------- | ------------------------------------ | -------- |
+| Poppins | 300    | latin     | `poppins-latin-300-normal.woff2`     | Asset    |
+| Poppins | 400    | latin     | `poppins-latin-400-normal.woff2`     | Inline   |
+| Poppins | 500    | latin     | `poppins-latin-500-normal.woff2`     | Asset    |
+| Poppins | 600    | latin     | `poppins-latin-600-normal.woff2`     | Inline   |
+| Poppins | 700    | latin     | `poppins-latin-700-normal.woff2`     | Asset    |
+| Poppins | 300    | latin-ext | `poppins-latin-ext-300-normal.woff2` | Asset    |
+| Poppins | 400    | latin-ext | `poppins-latin-ext-400-normal.woff2` | Asset    |
+| Poppins | 500    | latin-ext | `poppins-latin-ext-500-normal.woff2` | Asset    |
+| Poppins | 600    | latin-ext | `poppins-latin-ext-600-normal.woff2` | Asset    |
+| Poppins | 700    | latin-ext | `poppins-latin-ext-700-normal.woff2` | Asset    |
+| Inter   | 400    | latin     | `inter-latin-400-normal.woff2`       | Asset    |
+| Inter   | 400    | latin-ext | `inter-latin-ext-400-normal.woff2`   | Asset    |
+
+Preload the relevant `.woff2` files when that flash of unstyled text (FOUT) is
+unacceptable:
 
 ```html
 <link rel="preload" href="./assets/poppins-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin />
