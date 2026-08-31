@@ -13,17 +13,18 @@ This document audits every code path reachable from `runGraph` in the sandbox, e
 
 ## Files in the sandbox
 
-The sandbox entry `workflow.ts` re-exports the following. Only `runGraph` and `NodeExecutionError` reach the bundle as runtime code; the rest are types (erased at compile time).
+The sandbox entry `workflow.ts` re-exports the following. Only `runGraph`, `NodeExecutionError`, and the redaction module reach the bundle as runtime code; the rest are types (erased at compile time).
 
 | Source                                             | Kind     | Runtime? |
 | -------------------------------------------------- | -------- | -------- |
 | `packages/execution-core/src/graph-runner.ts`      | function | yes      |
 | `packages/execution-core/src/errors.ts`            | class    | yes      |
+| `packages/execution-core/src/redact.ts`            | function | yes      |
 | `packages/execution-core/src/execution-context.ts` | type     | no       |
 | `packages/execution-core/src/ports/*.port.ts`      | types    | no       |
 | `packages/types/.../execution-model.ts`            | types    | no       |
 
-The audit therefore focuses on `graph-runner.ts` + `errors.ts`. Activities and adapters live outside the sandbox — they are covered only as ports the runner calls into.
+The audit therefore focuses on `graph-runner.ts` + `errors.ts` + `redact.ts` (a pure, depth-capped walk over plain objects — no clock, no random, no I/O; see rule 8). Activities and adapters live outside the sandbox — they are covered only as ports the runner calls into.
 
 ## Sources of non-determinism reviewed
 
@@ -73,7 +74,7 @@ Code added inside `runGraph` or any file reachable from `./workflow.ts` must obe
 6. **No `Set` for control flow.** Insertion order is fine in the spec, but a future regression that adds non-deterministic `add()` order would break replay silently. Stay with `Map<id, value>` and explicit ordering.
 7. **No top-level side effects in new modules.** Module init runs at workflow start; reading `process.env` or constructing dated objects at import time poisons replay.
 8. **No unbounded traversal.** Any walk over user-supplied or adapter-supplied data (e.g. `Error.cause`, future error metadata) must carry a hard depth cap. An infinite loop in sandbox code hangs the workflow indefinitely AND wedges every subsequent replay — there is no "the run will fail and restart" recovery path.
-9. **Changing the set or order of emitted events is a deploy-time concern, not just a coding one.** Rules 1-8 keep a single run reproducible against itself. This one is different: adding, removing, or reordering an `emitEvent` call changes the sequence of commands a workflow produces, so a run **started on the old code and replayed on the new code** diverges — the mismatch is between two versions, not inside one. Drain in-flight executions before rolling out such a change, or gate it behind Temporal's `patched()` (no `patched()` call exists in the repo today; introducing one is the [out-of-scope](#scope) versioning task). This applies to every lifecycle emit, `node_skipped` included.
+9. **Changing the set or order of emitted events is a deploy-time concern, not just a coding one.** Rules 1-8 keep a single run reproducible against itself. This one is different: adding, removing, or reordering an `emitEvent` call changes the sequence of commands a workflow produces, so a run **started on the old code and replayed on the new code** diverges — the mismatch is between two versions, not inside one. Drain in-flight executions before rolling out such a change, or gate it behind Temporal's `patched()` (no `patched()` call exists in the repo today; introducing one is the [out-of-scope](#scope) versioning task). This applies to every lifecycle emit, `node_skipped` included. Changing only the _arguments_ of an existing emit (e.g. giving `node_started` a payload) is not such a change: the command sequence is intact, so in-flight runs replay fine and simply record a mix of old and new payload shapes.
 
 Wiring a logger into `runGraph` is the most likely way a future change would break replay. A typical console adapter calls `new Date().toISOString()` per log line, which poisons history reproduction. If a logger ever needs to ship from the runner, it must be passed in as a sandbox-safe port whose impl writes through an activity (so the timestamp is recorded outside the sandbox), not directly to console.
 
