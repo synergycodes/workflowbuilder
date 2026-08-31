@@ -30,6 +30,11 @@ const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
   'ai-studio/visualize': executeVisualize,
 };
 
+// Mirrors Temporal's own per-blob warn threshold. Payloads this large also count
+// toward the 50 MB per-run history cap (emitEvent args are recorded in history),
+// so a warning here surfaces runs drifting toward the limit before they hit it.
+const PAYLOAD_WARN_BYTES = 512 * 1024;
+
 const activities = {
   async executeNode(node: AiStudioNode, context: ExecutionContext) {
     const executor = resolveExecutor(nodeExecutors, node);
@@ -37,6 +42,12 @@ const activities = {
   },
 
   async emitEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
+    if (payload !== undefined) {
+      const bytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
+      if (bytes > PAYLOAD_WARN_BYTES) {
+        logger.warn('execution event payload exceeds warn threshold', { executionId, sequence, type, nodeId, bytes });
+      }
+    }
     await database.emitExecutionEvent(executionId, sequence, type, payload, nodeId);
   },
 

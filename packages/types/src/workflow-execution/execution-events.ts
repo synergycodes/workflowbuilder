@@ -55,7 +55,8 @@ export type BranchesJoinedPayload = {
 
 export type NodeStartedPayload = {
   config: unknown;
-  nodeOutputs: Record<string, unknown>;
+  // Ids of the nodes whose outputs were visible when this node started.
+  visibleNodeIds: string[];
 };
 
 export type NodeCompletedPayload = {

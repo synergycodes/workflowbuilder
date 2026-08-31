@@ -304,12 +304,8 @@ async function runNode<TNode extends BaseNode>(
   executionId: string,
 ): Promise<NodeRunResult<TNode>> {
   try {
-    await events.emitEvent(
-      executionId,
-      'node_started',
-      { config: node.config, nodeOutputs: context.nodeOutputs },
-      node.id,
-    );
+    const visibleNodeIds = Object.keys(context.nodeOutputs);
+    await events.emitEvent(executionId, 'node_started', { config: node.config, visibleNodeIds }, node.id);
     const result = await runner.executeNode(node, context);
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };

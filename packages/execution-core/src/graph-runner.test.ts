@@ -12,6 +12,7 @@ import { runGraph } from './graph-runner';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
+import { reconstructNodeInputs } from './reconstruct-node-inputs';
 import { REDACTED } from './redact';
 
 // Generic test node — graph-runner is product-agnostic, so the test stays
@@ -1403,14 +1404,15 @@ describe('runGraph — incomplete runs (dead ends)', () => {
 });
 
 describe('runGraph — node_started payload', () => {
-  it('records the node config and the outputs visible at start', async () => {
+  it('records the node config and the ids of the outputs visible at start', async () => {
     const runner = makeRunner({ A: { output: 'a-result' } });
     const events = makeEvents();
 
     await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
 
-    expect(startedPayload(events.events, 'A')).toEqual({ config: {}, nodeOutputs: {} });
-    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, nodeOutputs: { A: 'a-result' } });
+    expect(startedPayload(events.events, 'A')).toEqual({ config: {}, visibleNodeIds: [] });
+    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(reconstructNodeInputs(events.events, 'B')).toEqual({ config: {}, nodeOutputs: { A: 'a-result' } });
   });
 
   it('diamond A→{B,C}→D — concurrent siblings record the wave snapshot, not each other', async () => {
@@ -1426,15 +1428,16 @@ describe('runGraph — node_started payload', () => {
       events.port,
     );
 
-    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, nodeOutputs: { A: 'out-A' } });
-    expect(startedPayload(events.events, 'C')).toEqual({ config: {}, nodeOutputs: { A: 'out-A' } });
-    expect(startedPayload(events.events, 'D')).toEqual({
+    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(startedPayload(events.events, 'C')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(startedPayload(events.events, 'D')).toEqual({ config: {}, visibleNodeIds: ['A', 'B', 'C'] });
+    expect(reconstructNodeInputs(events.events, 'D')).toEqual({
       config: {},
       nodeOutputs: { A: 'out-A', B: 'out-B', C: 'out-C' },
     });
   });
 
-  it("records the absorbed error output of an upstream 'continue' node", async () => {
+  it("reconstructs the absorbed error output of an upstream 'continue' node from its node_failed event", async () => {
     const runner = makeRunner({ Boom: { throws: 'boom' } });
     const events = makeEvents();
 
@@ -1447,7 +1450,8 @@ describe('runGraph — node_started payload', () => {
       events.port,
     );
 
-    expect(startedPayload(events.events, 'D')).toEqual({
+    expect(startedPayload(events.events, 'D')).toEqual({ config: {}, visibleNodeIds: ['S', 'Boom'] });
+    expect(reconstructNodeInputs(events.events, 'D')).toEqual({
       config: {},
       nodeOutputs: { S: 'out-S', Boom: { error: { message: 'boom' } } },
     });
@@ -1475,10 +1479,17 @@ describe('runGraph — node_started payload', () => {
     // Recorded history is masked...
     expect(startedPayload(events.events, 'B')).toEqual({
       config: { apiKey: REDACTED, prompt: 'hello' },
-      nodeOutputs: { A: 'out-A' },
+      visibleNodeIds: ['A'],
     });
     const completedB = events.events.find((event) => event.type === 'node_completed' && event.nodeId === 'B');
     expect(completedB?.payload).toEqual({ output: { authToken: REDACTED, text: 'done' } });
+
+    // ...and stays masked through reconstruction, which joins ids back to the
+    // recorded (redacted) completion payloads...
+    expect(reconstructNodeInputs(events.events, 'C')).toEqual({
+      config: {},
+      nodeOutputs: { A: 'out-A', B: { authToken: REDACTED, text: 'done' } },
+    });
 
     // ...while execution saw the real values: B got its config untouched, and
     // downstream C got B's unredacted output.
