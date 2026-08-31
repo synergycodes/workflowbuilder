@@ -2,6 +2,7 @@ import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@work
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -47,6 +48,7 @@ export const AiAgentNodeTemplate = memo(
     layoutDirection = 'RIGHT',
     onAddTool,
   }: Props) => {
+    const { t } = useTranslation();
     const isCanvasNode = showHandles;
     const handleTargetId = getHandleId({ handleType: 'target' });
     const handleSourceId = getHandleId({ handleType: 'source' });
@@ -59,7 +61,7 @@ export const AiAgentNodeTemplate = memo(
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <Collapsible>
+      <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
         <NodePanel.Root selected={selected}>
           <NodePanel.Header className={styles['header']}>
             <NodeIcon className={styles['icon']} icon={iconElement} />
