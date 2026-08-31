@@ -2,6 +2,8 @@ import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Input } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
+import styles from './form-fields.module.css';
+
 import { ComponentPreview } from './component-preview';
 
 export function InputExample() {
@@ -11,7 +13,7 @@ export function InputExample() {
 
   return (
     <ComponentPreview>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--wb-space-100)' }}>
+      <div className={styles['example-stack']}>
         <Input
           size="l"
           label="Search"

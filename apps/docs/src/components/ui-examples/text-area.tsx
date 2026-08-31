@@ -1,6 +1,8 @@
 import { TextArea } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
+import styles from './form-fields.module.css';
+
 import { ComponentPreview } from './component-preview';
 
 export function TextAreaExample() {
@@ -9,7 +11,7 @@ export function TextAreaExample() {
 
   return (
     <ComponentPreview>
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--wb-space-100)' }}>
+      <div className={`${styles['example-stack']} ${styles['example-wrap']}`}>
         <TextArea
           size="l"
           label="Description"
