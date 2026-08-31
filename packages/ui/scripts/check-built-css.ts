@@ -1,4 +1,4 @@
-import { existsSync, globSync, readFileSync, statSync } from 'node:fs';
+import { globSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import path from 'node:path';
 
 import postcss, { AtRule, type ChildNode, type Declaration, type Node } from 'postcss';
@@ -32,6 +32,19 @@ function isOrderStatement(node: ChildNode | undefined): boolean {
 
 function add(file: string, node: Node | undefined, message: string): void {
   problems.push(`${file}:${node?.source?.start?.line ?? 1} ${message}. See ${pitfalls}.`);
+}
+
+function existsWithExactCase(root: string, relativeTarget: string): boolean {
+  let current = root;
+  return relativeTarget.split(path.sep).every((segment) => {
+    try {
+      if (!readdirSync(current).includes(segment)) return false;
+    } catch {
+      return false;
+    }
+    current = path.join(current, segment);
+    return true;
+  });
 }
 
 function isPublicDefault(declaration: Declaration): boolean {
@@ -107,7 +120,7 @@ for (const { path: directory, ownsLayerContract } of directories) {
         const relativeTarget = path.relative(directory, target);
         const outside =
           relativeTarget === '..' || relativeTarget.startsWith(`..${path.sep}`) || path.isAbsolute(relativeTarget);
-        if (outside || !existsSync(target) || !statSync(target).isFile())
+        if (outside || !existsWithExactCase(directory, relativeTarget) || !statSync(target).isFile())
           add(file, declaration, 'Missing built URL target');
       }
     });

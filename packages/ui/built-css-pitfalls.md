@@ -57,7 +57,7 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 **How to spot it** - Search declarations for the legacy `--ax-` prefix and for `--wb-` properties outside `--wb-ds-`, `--wb-sdk-`, or `--wb-public-`. Unprefixed component-local and third-party properties remain valid. Source Stylelint separately verifies that variable uses resolve and applies the fallback contract from `wb/no-system-token-fallbacks`.
 
-**Automated?** - Yes. `Unsanctioned variable namespace` checks declaration property names without a catalogue of individual variables.
+**Automated?** - Yes. `Unsanctioned variable namespace` checks declaration property names without a catalogue of individual variables. It does not inspect custom property names inside `var()` values. This narrowing is safe today because Stylelint's `csstools/value-no-unknown-custom-properties` rule rejects unknown names in source files, and the build does not generate new `var()` references. If a build transform starts rewriting `var()` values, the narrowing is no longer safe and the value check must be restored.
 
 ## Built CSS import
 
