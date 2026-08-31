@@ -34,7 +34,7 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         readOnly={isDisabled}
         width="100%"
         height="auto"
-        fontSize={14}
+        fontSize={12}
         style={{
           textIndent: 'none',
           minHeight: '1rem',
