@@ -2,10 +2,10 @@
   width: 100%;
   margin-top: 0.4rem;
   padding-top: 0.5rem;
-  border-top: 0.0625rem solid var(--ax-ui-stroke-primary-default, #edeff3);
+  border-top: 0.0625rem solid var(--ax-ui-stroke-primary-default);
   font-family: var(--wb-font-family);
   text-align: left;
-  color: var(--ax-txt-primary-default, #151516);
+  color: var(--ax-txt-primary-default);
 
   &,
   * {
@@ -30,8 +30,8 @@
   font-size: 0.64rem;
   padding: 0.15rem 0.4rem;
   border-radius: 0.3rem;
-  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  background: var(--ax-ui-bg-secondary-default);
+  color: var(--ax-txt-tertiary-default);
 }
 
 .actions {
@@ -50,7 +50,7 @@
   border: none;
   border-radius: 0.3rem;
   background: transparent;
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  color: var(--ax-txt-tertiary-default);
   cursor: pointer;
 }
 
@@ -60,8 +60,8 @@
 }
 
 .action:hover {
-  background: var(--ax-ui-bg-secondary-default, #f5f5f7);
-  color: var(--ax-txt-primary-default, #151516);
+  background: var(--ax-ui-bg-secondary-default);
+  color: var(--ax-txt-primary-default);
 }
 
 .action:disabled {
@@ -93,7 +93,7 @@
 .empty-icon {
   width: 1.6rem;
   height: 1.6rem;
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  color: var(--ax-txt-tertiary-default);
   opacity: 0.55;
 }
 
@@ -101,7 +101,7 @@
   margin: 0;
   font-size: 0.74rem;
   line-height: 1.45;
-  color: var(--ax-txt-tertiary-default, #6f7480);
+  color: var(--ax-txt-tertiary-default);
 }
 
 .dots {
@@ -114,7 +114,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: var(--ax-colors-acc1-500, #1096e7);
+  background: var(--ax-colors-acc1-500);
   animation: md-pulse 1s ease-in-out infinite;
 }
 

@@ -1,6 +1,7 @@
 .panel {
   position: fixed;
   bottom: 1rem;
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
   right: var(--log-panel-right, 1rem);
   width: 30rem;
   max-width: calc(100vw - 3rem);
@@ -8,7 +9,7 @@
   background: var(--wb-app-bar-background);
   border: 0.0625rem solid var(--wb-app-bar-border-color);
   border-radius: var(--wb-app-bar-border-radius);
-  color: var(--ax-txt-primary-default, #151516);
+  color: var(--ax-txt-primary-default);
   display: flex;
   flex-direction: column;
   z-index: 10;
@@ -91,7 +92,7 @@
 
 .badge--node_started,
 .badge--node_skipped {
-  color: var(--ax-txt-secondary-default, #888);
+  color: var(--ax-txt-secondary-default);
 }
 
 .badge--execution_incomplete {
@@ -104,7 +105,7 @@
 }
 
 .badge--execution_cancelled {
-  color: var(--ax-txt-secondary-default, #888);
+  color: var(--ax-txt-secondary-default);
 }
 
 .node-id {
@@ -178,6 +179,6 @@
 }
 
 .event--highlighted {
-  background: color-mix(in srgb, var(--ax-colors-acc1-500, #1096e7), transparent 88%);
-  box-shadow: inset 0.1875rem 0 0 var(--ax-colors-acc1-500, #1096e7);
+  background: color-mix(in srgb, var(--ax-colors-acc1-500), transparent 88%);
+  box-shadow: inset 0.1875rem 0 0 var(--ax-colors-acc1-500);
 }

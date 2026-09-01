@@ -15,7 +15,7 @@
   @media (width > 800px) {
     flex-flow: row;
     height: 500px;
-    gap: var(--wb-primitive-4rule-48, 48px);
+    gap: var(--ax-primitive-4rule-48);
   }
 }
 

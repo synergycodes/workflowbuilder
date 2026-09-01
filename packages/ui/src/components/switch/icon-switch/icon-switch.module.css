@@ -50,7 +50,6 @@
     width: var(--ax-public-icon-switch-thumb-size);
     height: var(--ax-public-icon-switch-thumb-size);
     border-radius: 50%;
-    background-color: var(--ax-public-icon-switch-thumb-bg);
     transition: transform 0.1s ease-in-out;
     display: flex;
     align-items: center;
