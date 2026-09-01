@@ -12,7 +12,9 @@ export function generateIcons() {
   setupOutputDirectory();
 
   for (const path of sources) {
-    execSync(`npx @svgr/cli --no-index --typescript --out-dir ${outputDirectory} -- ${path}`);
+    // `pnpm exec`, not `npx`: npx would fetch @svgr/cli from the registry on every
+    // build, which breaks an offline install and an air-gapped image build.
+    execSync(`pnpm exec svgr --no-index --typescript --out-dir ${outputDirectory} -- ${path}`);
   }
 
   const keys = generateKeys();
