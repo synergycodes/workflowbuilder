@@ -18,21 +18,21 @@ What it owns and what stays yours:
 npm install @workflowbuilder/temporal
 ```
 
-The Temporal SDK packages are peer dependencies, so your project pins one version of them. Install the ones for the side you are building:
+On the worker side you also need Temporal's worker package, which stays yours because it
+owns the process:
 
 ```bash
-# worker side
-npm install @temporalio/worker @temporalio/workflow @temporalio/plugin
-# client side (starting and cancelling runs)
-npm install @temporalio/client
+npm install @temporalio/worker
 ```
 
-**Keep every `@temporalio/*` package on the same version.** They are released together and
-their types reference each other across package boundaries, so a mismatch shows up as
-confusing type errors or, worse, at runtime. `@temporalio/plugin` is the one to watch: it
-declares no dependencies of its own yet its types come from `worker`, `client` and
-`common`, so nothing stops it from drifting ahead on its own. That is why it is a peer
-here rather than something this package installs for you.
+Everything else this package imports at run time (`@temporalio/client`, `workflow`,
+`plugin`) comes with it, following the same pattern as Temporal's own plugins.
+
+**Keep `@temporalio/worker` on the same version line as this package's Temporal
+dependencies.** The SDK packages are released together and reference each other across
+package boundaries, and the workflow sandbox in particular has to agree with the worker
+running it. This package tracks one SDK line at a time; the version it was built against
+is in its `dependencies`.
 
 ## Worker
 

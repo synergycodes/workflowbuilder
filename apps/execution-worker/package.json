@@ -15,7 +15,6 @@
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.5.0",
-    "@temporalio/plugin": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",

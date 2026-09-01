@@ -61,19 +61,10 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@temporalio/client": "^1.23.0",
-    "@temporalio/plugin": "^1.23.0",
-    "@temporalio/worker": "^1.23.0",
-    "@temporalio/workflow": "^1.23.0"
+    "@temporalio/worker": "^1.23.0"
   },
   "peerDependenciesMeta": {
-    "@temporalio/client": {
-      "optional": true
-    },
     "@temporalio/worker": {
-      "optional": true
-    },
-    "@temporalio/workflow": {
       "optional": true
     }
   },
@@ -95,5 +86,10 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "sideEffects": false
+  "sideEffects": false,
+  "dependencies": {
+    "@temporalio/client": "catalog:",
+    "@temporalio/plugin": "catalog:",
+    "@temporalio/workflow": "catalog:"
+  }
 }

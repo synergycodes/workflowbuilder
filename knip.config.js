@@ -50,6 +50,11 @@ export default {
     },
     'apps/execution-worker': {
       entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
+      // @temporalio/workflow is never imported by this app's code, but Temporal's
+      // workflow bundler resolves it from *here* while compiling workflows.ts (the
+      // re-exported runner imports it), so it has to be installed in this workspace.
+      // Removing it makes the bundler fail at worker startup, not at build time.
+      ignoreDependencies: ['@temporalio/workflow'],
     },
     'apps/docs': {
       entry: ['astro.config.mjs', 'src/components/**/*.astro'],
