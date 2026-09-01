@@ -155,7 +155,17 @@ jobs:
         # @workflowbuilder/temporal's dist, so a behaviour change in either ships to
         # consumers only when this package is released. A warning, not a failure —
         # a pure refactor legitimately needs no changeset.
+        #
+        # Silent until the package is publishable. While it is still `private: true`
+        # there is no released version to be compatible with, so a changeset would
+        # only describe a change against a version nobody installed; see CLAUDE.md.
+        # Keying the guard on `private` rather than a date means the first publish
+        # turns it back on by itself.
         run: |
+          if node -e "process.exit(require('./packages/temporal/package.json').private === true ? 0 : 1)"; then
+            echo "@workflowbuilder/temporal is still private; changeset guard skipped."
+            exit 0
+          fi
           CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
           if echo "$CHANGED" | grep -qE '^packages/(execution-core|types)/'; then
             if ! grep -rlq '@workflowbuilder/temporal' .changeset/*.md 2>/dev/null; then
