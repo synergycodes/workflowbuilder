@@ -14,13 +14,13 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^2.0.74",
+    "@ai-sdk/openai-compatible": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
     "@workflowbuilder/temporal": "workspace:*",
-    "ai": "^6.0.0",
+    "ai": "catalog:",
     "dotenv": "^17.4.2",
     "postgres": "^3.4.5",
     "tsx": "^4.19.3"

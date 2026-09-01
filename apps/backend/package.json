@@ -17,13 +17,13 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
-    "@ai-sdk/openai-compatible": "^2.0.74",
+    "@ai-sdk/openai-compatible": "catalog:",
     "@hono/node-server": "^1.14.0",
     "@temporalio/client": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
     "@workflowbuilder/temporal": "workspace:*",
-    "ai": "^6.0.168",
+    "ai": "catalog:",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.0",
     "hono": "^4.7.0",
