@@ -11,8 +11,8 @@ export type NodeDescriptionProps = {
 export function NodeDescription({ label, description, className }: NodeDescriptionProps) {
   return (
     <div className={clsx(styles['container'], className)}>
-      <span className={clsx('ax-public-h9', styles['title'])}>{label}</span>
-      <span className={clsx('ax-public-p11', styles['subtitle'])}>{description}</span>
+      <span className={clsx('wb-text-title-s-emphasized', styles['title'])}>{label}</span>
+      <span className={clsx('wb-text-node-s', styles['subtitle'])}>{description}</span>
     </div>
   );
 }

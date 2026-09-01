@@ -9,19 +9,19 @@
 
 @layer ui.component {
   .large {
-    composes: ax-public-p9 from global;
+    composes: wb-text-label-l from global;
     padding: var(--wb-public-list-item-padding-large);
     gap: var(--wb-public-list-item-gap-large);
   }
 
   .medium {
-    composes: ax-public-p10 from global;
+    composes: wb-text-label-m from global;
     padding: var(--wb-public-list-item-padding-medium);
     gap: var(--wb-public-list-item-gap-medium);
   }
 
   .small {
-    composes: ax-public-p10 from global;
+    composes: wb-text-label-m from global;
     padding: var(--wb-public-list-item-padding-small);
     gap: var(--wb-public-list-item-gap-small);
   }

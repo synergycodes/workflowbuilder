@@ -1,8 +1,8 @@
 import { globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
+import { describe, expect, it } from 'vitest';
 
 import postcss from 'postcss';
-import { describe, expect, it } from 'vitest';
 
 const REPO_ROOT = path.resolve(import.meta.dirname, '../..');
 const TYPOGRAPHY_PATH = path.join(import.meta.dirname, 'src/styles/typography.css');
@@ -15,7 +15,7 @@ describe('global typography compositions', () => {
   it('resolves every global composition to a typography class', () => {
     const definedClasses = new Set<string>();
     readCss(TYPOGRAPHY_PATH).walkRules((rule) => {
-      for (const match of rule.selector.matchAll(/\.((?:wb-text|ax-public)-[\w-]+)\b/g)) {
+      for (const match of rule.selector.matchAll(/\.(wb-text-[\w-]+)\b/g)) {
         definedClasses.add(match[1]);
       }
     });
