@@ -10,8 +10,8 @@
   --spinner-color: var(--wb-ui-text-onaccent-default);
 }
 
-.container--ghost-destructive {
-  --spinner-color: var(--ax-public-button-ghost-destructive-color);
+.container--ghost-critical {
+  --spinner-color: var(--ax-public-button-ghost-critical-color);
 }
 
 .container--pending button {

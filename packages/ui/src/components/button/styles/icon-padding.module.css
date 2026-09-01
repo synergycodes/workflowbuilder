@@ -1,29 +1,29 @@
 :root {
-  --ax-public-button-icon-padding-extra-large: var(--wb-space-150);
-  --ax-public-button-icon-padding-large: var(--wb-space-137);
-  --ax-public-button-icon-padding-medium: var(--wb-space-112);
-  --ax-public-button-icon-padding-small: var(--wb-space-87);
-  --ax-public-button-icon-padding-extra-small: var(--wb-space-75);
+  --ax-public-button-icon-padding-xl: var(--wb-space-150);
+  --ax-public-button-icon-padding-l: var(--wb-space-137);
+  --ax-public-button-icon-padding-m: var(--wb-space-112);
+  --ax-public-button-icon-padding-s: var(--wb-space-87);
+  --ax-public-button-icon-padding-xs: var(--wb-space-75);
 }
 
 @layer ui.component {
-  .extra-large {
-    padding: var(--ax-public-button-icon-padding-extra-large);
+  .xl {
+    padding: var(--ax-public-button-icon-padding-xl);
   }
 
-  .large {
-    padding: var(--ax-public-button-icon-padding-large);
+  .l {
+    padding: var(--ax-public-button-icon-padding-l);
   }
 
-  .medium {
-    padding: var(--ax-public-button-icon-padding-medium);
+  .m {
+    padding: var(--ax-public-button-icon-padding-m);
   }
 
-  .small {
-    padding: var(--ax-public-button-icon-padding-small);
+  .s {
+    padding: var(--ax-public-button-icon-padding-s);
   }
 
-  .extra-small {
-    padding: var(--ax-public-button-icon-padding-extra-small);
+  .xs {
+    padding: var(--ax-public-button-icon-padding-xs);
   }
 }

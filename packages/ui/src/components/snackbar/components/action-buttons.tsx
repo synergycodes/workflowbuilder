@@ -1,6 +1,6 @@
 import { X } from '@phosphor-icons/react';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
-import { Variant } from '@ui/components/button/regular-button/types';
+import { ButtonVariant } from '@ui/components/button/regular-button/types';
 
 import styles from './action-buttons.module.css';
 
@@ -16,9 +16,9 @@ type ActionButtonsProps = {
 };
 
 export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onClose }: ActionButtonsProps) {
-  const buttonTypeMap: Record<string, Variant> = {
+  const buttonTypeMap: Record<string, ButtonVariant> = {
     [SnackbarType.DEFAULT]: 'primary',
-    [SnackbarType.ERROR]: 'error',
+    [SnackbarType.ERROR]: 'critical',
     [SnackbarType.INFO]: 'primary',
     [SnackbarType.WARNING]: 'warning',
     [SnackbarType.SUCCESS]: 'success',

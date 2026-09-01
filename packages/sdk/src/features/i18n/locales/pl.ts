@@ -160,6 +160,7 @@ export const pl = {
     label: 'Tytuł',
   },
   conditions: {
+    add: 'Dodaj warunek',
     title: 'Edytor Warunków',
     subtitle: 'Zdefiniuj Reguły Warunkowe',
     cancel: 'Anuluj',

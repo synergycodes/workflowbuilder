@@ -17,7 +17,7 @@ export function PaletteFooter({ onTemplateClick }: Props) {
   return (
     <div className={styles['container']}>
       <OptionalFooterContent>
-        <Button disabled={isReadOnly} variant="secondary" onClick={onTemplateClick} size="small">
+        <Button disabled={isReadOnly} variant="secondary" onClick={onTemplateClick} size="s">
           {t('palette.templates')}
         </Button>
       </OptionalFooterContent>

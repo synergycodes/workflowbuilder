@@ -1,24 +1,62 @@
-import { SIZES, Size } from '../../../shared/types/size';
-import { rangeBetween } from '../../../shared/utils/arrays';
-import { BaseButtonProps } from '../types';
+import type { ButtonHTMLAttributes, ReactElement, ReactNode } from 'react';
+
+import type { TooltipVariant } from '../../tooltip/types';
 
 export const BUTTON_VARIANTS = [
   'primary',
   'secondary',
-  'gray',
-  'error',
-  'warning',
+  'critical',
   'success',
-  'ghost-destructive',
+  'warning',
+  'ghost-primary',
+  'ghost-secondary',
+  'ghost-critical',
+  'ghost-success',
+  'ghost-warning',
 ] as const;
 
-export const BUTTON_SIZES = rangeBetween(SIZES, 'extra-small', 'extra-large');
+export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
 
-export type ButtonSize = Extract<Size, 'extra-small' | 'small' | 'medium' | 'large' | 'extra-large'>;
+export const BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs'] as const;
 
-export type Variant = (typeof BUTTON_VARIANTS)[number];
+export type ButtonSize = (typeof BUTTON_SIZES)[number];
 
-export type BaseRegularButtonProps = BaseButtonProps & {
-  variant?: Variant;
+export const BUTTON_SHAPES = ['default', 'square', 'round'] as const;
+
+export type ButtonShape = (typeof BUTTON_SHAPES)[number];
+
+export type LabelButtonProps = {
+  /** @default 'primary' */
+  variant?: ButtonVariant;
+  /** @default 'm' */
   size?: ButtonSize;
-};
+  /** @default 'default' */
+  shape?: 'default';
+  children: ReactNode;
+  prefixIcon?: ReactElement;
+  suffixIcon?: ReactElement;
+  /** @default false */
+  isLoading?: boolean;
+  tooltip?: string;
+  /** @default 'default' */
+  tooltipType?: TooltipVariant;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'children'>;
+
+export type IconButtonProps = {
+  /** @default 'primary' */
+  variant?: ButtonVariant;
+  /** @default 'm' */
+  size?: ButtonSize;
+  shape: Exclude<ButtonShape, 'default'>;
+  prefixIcon: ReactElement;
+  children?: never;
+  suffixIcon?: never;
+  /** @default false */
+  isLoading?: boolean;
+  tooltip?: string;
+  /** @default 'default' */
+  tooltipType?: TooltipVariant;
+  'aria-label': string;
+} & Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'aria-label' | 'children'>;
+
+export type ButtonProps = LabelButtonProps | IconButtonProps;

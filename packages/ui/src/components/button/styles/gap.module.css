@@ -1,29 +1,29 @@
 :root {
-  --ax-public-button-gap-extra-large: var(--wb-space-100);
-  --ax-public-button-gap-large: var(--wb-space-100);
-  --ax-public-button-gap-medium: var(--wb-space-100);
-  --ax-public-button-gap-small: var(--wb-space-100);
-  --ax-public-button-gap-extra-small: var(--wb-space-100);
+  --ax-public-button-gap-xl: var(--wb-space-100);
+  --ax-public-button-gap-l: var(--wb-space-100);
+  --ax-public-button-gap-m: var(--wb-space-100);
+  --ax-public-button-gap-s: var(--wb-space-100);
+  --ax-public-button-gap-xs: var(--wb-space-100);
 }
 
 @layer ui.component {
-  .extra-large {
-    gap: var(--ax-public-button-gap-extra-large);
+  .xl {
+    gap: var(--ax-public-button-gap-xl);
   }
 
-  .large {
-    gap: var(--ax-public-button-gap-large);
+  .l {
+    gap: var(--ax-public-button-gap-l);
   }
 
-  .medium {
-    gap: var(--ax-public-button-gap-medium);
+  .m {
+    gap: var(--ax-public-button-gap-m);
   }
 
-  .small {
-    gap: var(--ax-public-button-gap-small);
+  .s {
+    gap: var(--ax-public-button-gap-s);
   }
 
-  .extra-small {
-    gap: var(--ax-public-button-gap-extra-small);
+  .xs {
+    gap: var(--ax-public-button-gap-xs);
   }
 }

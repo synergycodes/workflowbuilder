@@ -1,6 +1,6 @@
 import { PlusCircle, Trash } from '@phosphor-icons/react';
 import { Button, NavButton } from '@workflowbuilder/ui';
-import { type ComponentProps, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
@@ -57,8 +57,8 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
         const icon = toolOption?.icon;
         const label = toolOption?.label;
 
-        const sharedButtonProps: Partial<ComponentProps<typeof Button>> = {
-          variant: 'secondary',
+        const sharedButtonProps = {
+          variant: 'secondary' as const,
           className: styles['selected-tool-button'],
           onClick: () => openEditorModal(toolData),
           disabled: isDisabled,
@@ -68,8 +68,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           <FormControlWithLabel key={toolData.id || index} label={`Tool #${index + 1}`}>
             <div className={styles['tool-row']}>
               {icon ? (
-                <Button {...sharedButtonProps}>
-                  <Icon name={icon} />
+                <Button {...sharedButtonProps} prefixIcon={<Icon name={icon} />}>
                   {label}
                 </Button>
               ) : (
@@ -82,8 +81,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           </FormControlWithLabel>
         );
       })}
-      <Button variant="primary" onClick={(_) => openEditorModal()} disabled={isDisabled}>
-        <PlusCircle />
+      <Button variant="primary" prefixIcon={<PlusCircle />} onClick={(_) => openEditorModal()} disabled={isDisabled}>
         {t('addToolSlot')}
       </Button>
     </>

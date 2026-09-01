@@ -1,44 +1,50 @@
 :root {
-  --ax-public-icon-size-extra-large: 1.5rem /* missing token */;
-  --ax-public-icon-size-large: 1.25rem /* missing token */;
-  --ax-public-icon-size-medium: 1.125rem /* missing token */;
-  --ax-public-icon-size-small: 1.125rem /* missing token */;
-  --ax-public-icon-size-extra-small: 1rem /* missing token */;
+  --ax-public-icon-size-xl: var(--wb-size-300);
+  --ax-public-icon-size-l: 1.25rem /* missing token */;
+  --ax-public-icon-size-m: 1.125rem /* missing token */;
+  --ax-public-icon-size-s: 1.125rem /* missing token */;
+  --ax-public-icon-size-xs: var(--wb-size-200);
 }
 
 @layer ui.component {
-  .extra-large {
+  .icon {
+    display: flex;
+    flex: none;
+    align-items: center;
+    justify-content: center;
+
     svg {
-      width: var(--ax-public-icon-size-extra-large);
-      height: var(--ax-public-icon-size-extra-large);
+      width: 100%;
+      min-width: 100%;
+      max-width: 100%;
+      height: 100%;
+      min-height: 100%;
+      max-height: 100%;
     }
   }
 
-  .large {
-    svg {
-      width: var(--ax-public-icon-size-large);
-      height: var(--ax-public-icon-size-large);
-    }
+  .xl > .icon {
+    width: var(--ax-public-icon-size-xl);
+    height: var(--ax-public-icon-size-xl);
   }
 
-  .medium {
-    svg {
-      width: var(--ax-public-icon-size-medium);
-      height: var(--ax-public-icon-size-medium);
-    }
+  .l > .icon {
+    width: var(--ax-public-icon-size-l);
+    height: var(--ax-public-icon-size-l);
   }
 
-  .small {
-    svg {
-      width: var(--ax-public-icon-size-small);
-      height: var(--ax-public-icon-size-small);
-    }
+  .m > .icon {
+    width: var(--ax-public-icon-size-m);
+    height: var(--ax-public-icon-size-m);
   }
 
-  .extra-small {
-    svg {
-      width: var(--ax-public-icon-size-extra-small);
-      height: var(--ax-public-icon-size-extra-small);
-    }
+  .s > .icon {
+    width: var(--ax-public-icon-size-s);
+    height: var(--ax-public-icon-size-s);
+  }
+
+  .xs > .icon {
+    width: var(--ax-public-icon-size-xs);
+    height: var(--ax-public-icon-size-xs);
   }
 }

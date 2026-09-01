@@ -31,8 +31,12 @@ export function PaneList({ className, setActivePane }: Props) {
         title="workflowsSettings.tab.globalVariables"
         description="workflowsSettings.tab.globalVariablesDescription"
       >
-        <Button variant="secondary" size="extra-small" onClick={() => setActivePane(VARIABLE_PANE.ADD)}>
-          <Icon name="Plus" />
+        <Button
+          variant="secondary"
+          size="xs"
+          prefixIcon={<Icon name="Plus" />}
+          onClick={() => setActivePane(VARIABLE_PANE.ADD)}
+        >
           {t('workflowsSettings.tab.addVariable')}
         </Button>
       </TabHeader>
