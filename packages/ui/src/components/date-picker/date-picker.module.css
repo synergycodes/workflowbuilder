@@ -29,8 +29,8 @@
 
   .calendar {
     background: var(--ax-public-date-picker-dropdown-background);
-    border: 0.0625rem solid var(--ax-public-date-picker-dropdown-border-color);
-    border-radius: 0.5rem;
+    border: var(--wb-size-12) solid var(--ax-public-date-picker-dropdown-border-color);
+    border-radius: var(--wb-radius-100);
     box-shadow: var(--ax-public-date-picker-dropdown-box-shadow);
     color: var(--ax-public-date-picker-color);
   }
@@ -42,7 +42,7 @@
    * `.calendar` is the Popover popup that wraps the calendar.
    */
   .calendar :global(.rdp-root) {
-    --rdp-day_button-border-radius: 0.375rem;
+    --rdp-day_button-border-radius: var(--wb-radius-75);
     --rdp-selected-border: none;
     --rdp-today-color: var(--ax-public-date-picker-date-today-color);
     /* retheme react-day-picker's accent (range

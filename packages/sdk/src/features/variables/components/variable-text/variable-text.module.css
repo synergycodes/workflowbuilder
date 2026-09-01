@@ -111,7 +111,7 @@
   border: 1px solid var(--wb-variable-text-suggestion-border);
   border-radius: var(--ax-public-input-border-radius-medium);
   background: var(--wb-variable-text-suggestion-bg);
-  box-shadow: 0 4px 12px rgb(0 0 0 / 12%);
+  box-shadow: 0 4px 12px var(--wb-shadow-ui-color);
 }
 
 .suggestionsContainer {

@@ -1,8 +1,9 @@
 :root {
-  --ax-public-select-border-size: 0.0625rem;
+  --ax-public-select-border-size: var(--wb-size-12);
   --ax-public-select-button-color: var(--wb-ui-text-default);
   --ax-public-select-button-border-color: var(--wb-components-text-field-stroke-default);
   --ax-public-select-button-border-color-focus: var(--wb-components-text-field-stroke-focus);
+  --ax-public-select-button-focus-ring-color: var(--wb-shadow-ui-focus);
   --ax-public-select-button-color-disabled: var(--wb-components-text-field-stroke-default);
 
   --ax-public-select-button-background-color-error: var(--wb-components-text-field-bg-primary-critical);
@@ -44,6 +45,9 @@
     &:focus-visible {
       border-color: var(--ax-public-select-button-border-color-focus);
       outline: none;
+      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
+        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+        var(--ax-public-select-button-focus-ring-color);
     }
 
     &:disabled {

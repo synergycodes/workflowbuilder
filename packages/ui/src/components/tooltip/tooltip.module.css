@@ -27,8 +27,8 @@
   }
 
   .arrow {
-    width: 10px;
-    height: 4px;
+    width: 0.625rem;
+    height: var(--wb-size-50);
     background-color: var(--tooltip-background);
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }
