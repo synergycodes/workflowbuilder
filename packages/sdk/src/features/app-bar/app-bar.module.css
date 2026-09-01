@@ -1,7 +1,7 @@
 .container {
-  background: var(--wb-app-bar-background);
-  border-radius: var(--wb-app-bar-border-radius);
-  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  background: var(--wb-sdk-app-bar-background);
+  border-radius: var(--wb-sdk-app-bar-border-radius);
+  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
   height: auto;
   padding: 0.75rem 1rem;
@@ -16,7 +16,7 @@
     gap: 2rem;
 
     .logo {
-      color: var(--wb-app-bar-logo-color);
+      color: var(--wb-sdk-app-bar-logo-color);
     }
 
     .logo-link {
@@ -59,12 +59,12 @@
 }
 
 .folder-name {
-  color: var(--wb-app-bar-folder-name-color);
+  color: var(--wb-sdk-app-bar-folder-name-color);
   composes: wb-text-body-m from global;
 }
 
 .title {
-  color: var(--wb-app-bar-diagram-title-color);
+  color: var(--wb-sdk-app-bar-diagram-title-color);
   composes: wb-text-body-m from global;
   min-height: 1em;
   min-width: 1em;

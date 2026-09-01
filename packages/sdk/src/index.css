@@ -15,26 +15,26 @@
 /* Layered, so an unlayered consumer override wins whatever the load order. */
 @layer ui.base {
   :root {
-    --wb-transition: 0.1s ease-in;
-    --wb-background-color: var(--wb-ui-bg-canvas);
-    --wb-scroll-width: 0.375rem;
-    --wb-scroll-radius: var(--wb-radius-125);
-    --wb-scroll-thumb-color: var(--wb-components-scrollbar-bg-default);
-    --wb-scroll-track-color: var(--wb-colors-transparent);
+    --wb-public-transition: 0.1s ease-in;
+    --wb-public-background-color: var(--wb-ds-ui-bg-canvas);
+    --wb-public-scroll-width: 0.375rem;
+    --wb-public-scroll-radius: var(--wb-ds-radius-125);
+    --wb-public-scroll-thumb-color: var(--wb-ds-components-scrollbar-bg-default);
+    --wb-public-scroll-track-color: var(--wb-ds-colors-transparent);
   }
 }
 
 @layer ui.base {
   ::-webkit-scrollbar {
-    width: var(--wb-scroll-width);
+    width: var(--wb-public-scroll-width);
   }
   ::-webkit-scrollbar-track {
-    border-radius: var(--wb-scroll-radius);
-    background: var(--wb-scroll-track-color);
+    border-radius: var(--wb-public-scroll-radius);
+    background: var(--wb-public-scroll-track-color);
   }
   ::-webkit-scrollbar-thumb {
-    border-radius: var(--wb-scroll-radius);
-    background: var(--wb-scroll-thumb-color);
+    border-radius: var(--wb-public-scroll-radius);
+    background: var(--wb-public-scroll-thumb-color);
   }
   input[type='number'],
   input[type='time'] {
@@ -51,7 +51,7 @@
   }
   body {
     margin: 0;
-    background-color: var(--wb-background-color);
+    background-color: var(--wb-public-background-color);
     overflow: hidden;
   }
   button {

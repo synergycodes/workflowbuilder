@@ -1,10 +1,10 @@
 :root {
-  --wb-connectable-item-horizontal-padding: 0.75rem;
-  --wb-connectable-item-vertical-padding: 0.625rem;
-  --wb-connectable-item-background: var(--wb-ui-bg-inset);
-  --wb-connectable-item-border-width: 0.0625rem;
-  --wb-connectable-item-border-color: var(--wb-components-text-field-stroke-default);
-  --wb-connectable-item-border-radius: 0.375rem;
+  --wb-sdk-connectable-item-horizontal-padding: 0.75rem;
+  --wb-sdk-connectable-item-vertical-padding: 0.625rem;
+  --wb-sdk-connectable-item-background: var(--wb-ds-ui-bg-inset);
+  --wb-sdk-connectable-item-border-width: 0.0625rem;
+  --wb-sdk-connectable-item-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-sdk-connectable-item-border-radius: 0.375rem;
 }
 
 .connectable-item {
@@ -14,12 +14,12 @@
   display: flex;
   max-width: calc(
     var(--wb-public-node-width) - (6 * var(--wb-public-node-padding)) + 2 *
-      var(--wb-connectable-item-horizontal-padding) + 2 * var(--wb-connectable-item-border-width)
+      var(--wb-sdk-connectable-item-horizontal-padding) + 2 * var(--wb-sdk-connectable-item-border-width)
   );
-  padding: var(--wb-connectable-item-vertical-padding) var(--wb-connectable-item-horizontal-padding);
-  background-color: var(--wb-connectable-item-background);
-  border: var(--wb-connectable-item-border-width) solid var(--wb-connectable-item-border-color);
-  border-radius: var(--wb-connectable-item-border-radius);
+  padding: var(--wb-sdk-connectable-item-vertical-padding) var(--wb-sdk-connectable-item-horizontal-padding);
+  background-color: var(--wb-sdk-connectable-item-background);
+  border: var(--wb-sdk-connectable-item-border-width) solid var(--wb-sdk-connectable-item-border-color);
+  border-radius: var(--wb-sdk-connectable-item-border-radius);
   justify-content: space-between;
 
   .label {
@@ -41,5 +41,5 @@
 }
 
 .connectable-item--right {
-  gap: var(--wb-connectable-item-horizontal-padding);
+  gap: var(--wb-sdk-connectable-item-horizontal-padding);
 }

@@ -1,11 +1,11 @@
 :root {
-  --wb-public-segment-picker-border-radius-extra-large: var(--wb-radius-150);
-  --wb-public-segment-picker-border-radius-large: var(--wb-radius-150);
-  --wb-public-segment-picker-border-radius-medium: var(--wb-radius-125);
-  --wb-public-segment-picker-border-radius-small: var(--wb-radius-100);
-  --wb-public-segment-picker-border-radius-extra-small: var(--wb-radius-100);
-  --wb-public-segment-picker-border-radius-xx-small: var(--wb-radius-100);
-  --wb-public-segment-picker-border-radius-xxx-small: var(--wb-radius-100);
+  --wb-public-segment-picker-border-radius-extra-large: var(--wb-ds-radius-150);
+  --wb-public-segment-picker-border-radius-large: var(--wb-ds-radius-150);
+  --wb-public-segment-picker-border-radius-medium: var(--wb-ds-radius-125);
+  --wb-public-segment-picker-border-radius-small: var(--wb-ds-radius-100);
+  --wb-public-segment-picker-border-radius-extra-small: var(--wb-ds-radius-100);
+  --wb-public-segment-picker-border-radius-xx-small: var(--wb-ds-radius-100);
+  --wb-public-segment-picker-border-radius-xxx-small: var(--wb-ds-radius-100);
 }
 
 @layer ui.component {

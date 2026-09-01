@@ -208,7 +208,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
         nodesDraggable={!isReadOnlyMode}
         isValidConnection={isValidConnection}
       >
-        <Background color="var(--wb-ui-bg-canvas-dots)" bgColor="var(--wb-background-color)" />
+        <Background color="var(--wb-ds-ui-bg-canvas-dots)" bgColor="var(--wb-public-background-color)" />
       </ReactFlow>
     </div>
   );

@@ -1,7 +1,7 @@
 .example-stack {
   display: flex;
   flex-direction: column;
-  gap: var(--wb-space-100);
+  gap: var(--wb-ds-space-100);
 }
 
 .example-wrap {

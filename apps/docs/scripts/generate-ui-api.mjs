@@ -356,7 +356,7 @@ function readTokenValues() {
   if (!existsSync(tokenDistribution)) return values;
   for (const file of globSync('*.css', { cwd: tokenDistribution })) {
     const css = readFileSync(path.resolve(tokenDistribution, file), 'utf8');
-    for (const [, name, value] of css.matchAll(/(--(?:wb|ax)-[\w-]+)\s*:\s*([^;]+);/g)) {
+    for (const [, name, value] of css.matchAll(/(--wb-ds-[\w-]+)\s*:\s*([^;]+);/g)) {
       if (!values.has(name)) values.set(name, value.trim());
     }
   }

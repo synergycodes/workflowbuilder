@@ -3,19 +3,19 @@
 }
 
 .container {
-  --modal-padding-x: var(--wb-space-300);
-  --modal-padding-y: var(--wb-space-300);
+  --wb-sdk-modal-padding-x: var(--wb-ds-space-300);
+  --wb-sdk-modal-padding-y: var(--wb-ds-space-300);
 
   width: 100%;
   display: flex;
   flex-flow: column;
   gap: 2rem;
-  color: var(--wb-ui-text-subtle-default);
+  color: var(--wb-ds-ui-text-subtle-default);
 
   @media (width > 800px) {
     flex-flow: row;
     height: 500px;
-    gap: var(--wb-space-600);
+    gap: var(--wb-ds-space-600);
   }
 }
 
@@ -32,7 +32,7 @@
     /* We wan't list to be scrollable to the bottom */
     &:has([data-no-b-pd]) {
       padding-bottom: 0;
-      margin-bottom: calc(-1 * var(--modal-padding-y));
+      margin-bottom: calc(-1 * var(--wb-sdk-modal-padding-y));
     }
   }
 

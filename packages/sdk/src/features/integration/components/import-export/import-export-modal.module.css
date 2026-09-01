@@ -1,8 +1,8 @@
 :root {
-  --wb-import-error-color: var(--wb-public-snackbar-title-color);
-  --wb-import-error-background-color: var(--wb-public-snackbar-error-background);
-  --wb-import-error-border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-error-border);
-  --wb-import-error-border-radius: var(--wb-public-snackbar-border-radius);
+  --wb-sdk-import-error-color: var(--wb-public-snackbar-title-color);
+  --wb-sdk-import-error-background-color: var(--wb-public-snackbar-error-background);
+  --wb-sdk-import-error-border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-error-border);
+  --wb-sdk-import-error-border-radius: var(--wb-public-snackbar-border-radius);
 }
 
 .container {
@@ -13,15 +13,15 @@
 }
 
 .tip {
-  color: var(--wb-ui-text-subtle-default);
+  color: var(--wb-ds-ui-text-subtle-default);
 }
 
 .error {
   padding: var(--wb-public-snackbar-padding);
-  color: var(--wb-import-error-color);
-  background: var(--wb-import-error-background-color);
-  border: var(--wb-import-error-border);
-  border-radius: var(--wb-import-error-border-radius);
+  color: var(--wb-sdk-import-error-color);
+  background: var(--wb-sdk-import-error-background-color);
+  border: var(--wb-sdk-import-error-border);
+  border-radius: var(--wb-sdk-import-error-border-radius);
 }
 
 .actions {

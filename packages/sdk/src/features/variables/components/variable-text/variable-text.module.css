@@ -1,13 +1,13 @@
 :root {
-  --wb-color-violet-400-20: rgba(148, 131, 255, 0.2);
-  --wb-variable-text-mention-bg: var(--wb-color-violet-400-20);
-  --wb-variable-text-suggestion-bg: var(--wb-ui-bg-base);
-  --wb-variable-text-suggestion-hover: var(--wb-ui-bg-elevated);
-  --wb-variable-text-suggestion-border: var(--wb-ui-stroke-default);
-  --wb-variable-text-suggestion-bg-error: var(--wb-ui-bg-base);
-  --wb-txt-ghost-primary-default: #6b3bff;
+  --wb-sdk-color-violet-400-20: rgba(148, 131, 255, 0.2);
+  --wb-sdk-variable-text-mention-bg: var(--wb-sdk-color-violet-400-20);
+  --wb-sdk-variable-text-suggestion-bg: var(--wb-ds-ui-bg-base);
+  --wb-sdk-variable-text-suggestion-hover: var(--wb-ds-ui-bg-elevated);
+  --wb-sdk-variable-text-suggestion-border: var(--wb-ds-ui-stroke-default);
+  --wb-sdk-variable-text-suggestion-bg-error: var(--wb-ds-ui-bg-base);
+  --wb-sdk-txt-ghost-primary-default: #6b3bff;
 
-  --wb-variable-backdrop: color-mix(in srgb, var(--wb-public-modal-backdrop-background), transparent 50%);
+  --wb-sdk-variable-backdrop: color-mix(in srgb, var(--wb-public-modal-backdrop-background), transparent 50%);
 }
 
 .control {
@@ -82,7 +82,7 @@
   text-align: center;
   border-radius: 4px;
   padding: 0;
-  background-color: var(--wb-variable-text-mention-bg);
+  background-color: var(--wb-sdk-variable-text-mention-bg);
   color: transparent;
   /* If broken to multiple lines it will keep rounded corners */
   box-decoration-break: clone;
@@ -104,10 +104,10 @@
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: 1px solid var(--wb-variable-text-suggestion-border);
+  border: 1px solid var(--wb-sdk-variable-text-suggestion-border);
   border-radius: var(--wb-public-input-border-radius-medium);
-  background: var(--wb-variable-text-suggestion-bg);
-  box-shadow: 0 4px 12px var(--wb-shadow-ui-color);
+  background: var(--wb-sdk-variable-text-suggestion-bg);
+  box-shadow: 0 4px 12px var(--wb-ds-shadow-ui-color);
 }
 
 .suggestionsContainer {
@@ -123,7 +123,7 @@ body:has(.suggestionsContainer) {
     position: fixed;
     width: 100vw;
     height: 100dvh;
-    background-color: var(--wb-variable-backdrop);
+    background-color: var(--wb-sdk-variable-backdrop);
     z-index: 200;
   }
 
@@ -142,7 +142,7 @@ body:has(.suggestionsContainer) {
 
 .suggestionsTitle {
   composes: wb-text-body-s-emphasized from global;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
 }
 
 .suggestionsClose {
@@ -155,7 +155,7 @@ body:has(.suggestionsContainer) {
   border: none;
   border-radius: 0.25rem;
   background: transparent;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
   cursor: pointer;
 }
 
@@ -169,24 +169,24 @@ body:has(.suggestionsContainer) {
 
 .groupHeader {
   composes: wb-text-body-s-emphasized from global;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   display: flex;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   align-items: center;
-  gap: var(--wb-space-50);
+  gap: var(--wb-ds-space-50);
   flex: 1 0 0;
   padding: 6px;
 }
 
 .iconWrapper {
   display: flex;
-  padding: var(--wb-space-87);
+  padding: var(--wb-ds-space-87);
   justify-content: center;
   align-items: center;
-  gap: var(--wb-space-100);
+  gap: var(--wb-ds-space-100);
 
   svg {
-    fill: var(--wb-txt-ghost-primary-default);
+    fill: var(--wb-sdk-txt-ghost-primary-default);
   }
 }
 
@@ -202,7 +202,7 @@ body:has(.suggestionsContainer) {
 }
 
 .suggestionItemFocused {
-  background: var(--wb-variable-text-suggestion-hover);
+  background: var(--wb-sdk-variable-text-suggestion-hover);
 }
 
 .suggestionContent {
@@ -213,13 +213,13 @@ body:has(.suggestionsContainer) {
 }
 
 .suggestionLabel {
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   composes: wb-text-body-s-emphasized from global;
 }
 
 .suggestionDescription {
   composes: wb-text-body-s from global;
-  color: var(--wb-ui-text-subtle-default);
+  color: var(--wb-ds-ui-text-subtle-default);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;

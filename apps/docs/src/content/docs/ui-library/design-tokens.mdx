@@ -1,9 +1,9 @@
 ---
 title: Design tokens
-description: How @workflowbuilder/ui turns Figma design tokens into the --wb-* CSS custom properties that style every component.
+description: How @workflowbuilder/ui turns Figma design tokens into the --wb-ds-* CSS custom properties that style every component.
 ---
 
-Every `@workflowbuilder/ui` component uses generated `--wb-*` design tokens for
+Every `@workflowbuilder/ui` component uses generated `--wb-ds-*` design tokens for
 shared visual decisions. Components also expose hand-authored `--wb-public-*`
 variables whose defaults may reference tokens or component-specific values.
 
@@ -32,10 +32,10 @@ tokens.css             # the six above, bundled - this is what you import
 **Effects/light**, and **Effects/dark**.
 Style Dictionary flattens each into kebab-cased CSS variables:
 
-- **Primitives** become `--wb-colors-*`, `--wb-space-*`, `--wb-radius-*`, etc.
+- **Primitives** become `--wb-ds-colors-*`, `--wb-ds-space-*`, `--wb-ds-radius-*`, etc.
   on `:root` - the raw palette and scales.
 - **Tokens/Light** and **Tokens/Dark** become the _semantic_ layer
-  (`--wb-ui-*`, `--wb-components-*`, …), each scoped to
+  (`--wb-ds-ui-*`, `--wb-ds-components-*`, …), each scoped to
   `html[data-theme='light']` / `html[data-theme='dark']` so a single attribute
   switch reskins everything.
 - **Effects** carry the shadow values per theme; **Canvas** styles the diagram
@@ -61,8 +61,8 @@ import '@workflowbuilder/ui/tokens.css';
 
 There are three override levels, from broadest to most local:
 
-1. **Primitives** (`--wb-colors-*`, `--wb-space-*`, …) - retune the palette/scales globally.
-2. **Semantic tokens** (`--wb-ui-*`, `--wb-components-*`, …) - re-map meaning (e.g. make "primary" green).
+1. **Primitives** (`--wb-ds-colors-*`, `--wb-ds-space-*`, …) - retune the palette/scales globally.
+2. **Semantic tokens** (`--wb-ds-ui-*`, `--wb-ds-components-*`, …) - re-map meaning (e.g. make "primary" green).
 3. **Component variables** (`--wb-public-*`) - tweak a single component; component pages include generated tables for component-local variables.
 
 For the enterprise path you replace `tokens.json` with one generated from your

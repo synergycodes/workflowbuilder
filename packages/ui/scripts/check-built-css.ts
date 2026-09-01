@@ -28,6 +28,10 @@
  *    `@font-face` rule so importing the barrel cannot silently lose the fonts.
  * 7. The SDK's three public-variable defaults must be present inside an
  *    `@layer` so unlayered consumer overrides always win.
+ * 8. Workflow Builder variables may use only `--wb-ds-*`, `--wb-sdk-*`, or
+ *    `--wb-public-*`, and the legacy shared prefix is forbidden. Unprefixed
+ *    component-local and third-party properties such as `--button-*` and
+ *    `--anchor-width` remain allowed because they do not claim a shared namespace.
  *
  * These are the only lines of defense for these bug classes today; source-level lint
  * rules would catch some of them earlier but none is configured yet.
@@ -93,6 +97,32 @@ function checkVariableFirstArgument(files: string[]): FailureReport[] {
       const { line, column } = locate(content, match.index);
       hits.push({ line, column, snippet: snippetAt(content, match.index) });
     }
+
+    if (hits.length > 0) failures.push({ file, hits });
+  }
+
+  return failures;
+}
+
+const SANCTIONED_WORKFLOW_BUILDER_PREFIXES = ['--wb-ds-', '--wb-sdk-', '--wb-public-'];
+const LEGACY_VARIABLE_PREFIX = `--${'ax'}-`;
+
+function checkVariableNamespaces(files: string[], targetDistributionDirectory: string): FailureReport[] {
+  const failures: FailureReport[] = [];
+
+  for (const file of files) {
+    const content = readFileSync(path.resolve(targetDistributionDirectory, file), 'utf8');
+    const hits: Hit[] = [];
+
+    postcss.parse(content).walkDecls((declaration) => {
+      const names = `${declaration.prop}: ${declaration.value}`.match(/--[\w-]+/g) ?? [];
+      const hasInvalidName = names.some(
+        (name) =>
+          name.startsWith(LEGACY_VARIABLE_PREFIX) ||
+          (name.startsWith('--wb-') && !SANCTIONED_WORKFLOW_BUILDER_PREFIXES.some((prefix) => name.startsWith(prefix))),
+      );
+      if (hasInvalidName) hits.push(hitFor(declaration));
+    });
 
     if (hits.length > 0) failures.push({ file, hits });
   }
@@ -419,6 +449,12 @@ const results = [
       'discard the whole declaration otherwise.',
   ),
   report(
+    'Built CSS: Workflow Builder variables use sanctioned namespaces',
+    checkVariableNamespaces(files, distributionDirectory),
+    'Use `--wb-ds-*` for generated design tokens, `--wb-sdk-*` for SDK internals, ' +
+      '`--wb-public-*` for supported overrides, or an unprefixed component-local name.',
+  ),
+  report(
     'Built CSS: every rule sits inside an @layer block',
     checkLayerCoverage(files),
     'Unlayered CSS wins the cascade over layered CSS regardless of specificity - wrap the ' +
@@ -464,6 +500,13 @@ for (const directory of process.argv.slice(2)) {
       `Built CSS (${rootLabel}): every non-data url() resolves inside dist`,
       checkUrlTargets(targetFiles, targetDistributionDirectory),
       'Copy every referenced asset into dist and keep its path relative to the stylesheet.',
+      rootLabel,
+    ),
+    report(
+      `Built CSS (${rootLabel}): Workflow Builder variables use sanctioned namespaces`,
+      checkVariableNamespaces(targetFiles, targetDistributionDirectory),
+      'Use `--wb-ds-*` for generated design tokens, `--wb-sdk-*` for SDK internals, ' +
+        '`--wb-public-*` for supported overrides, or an unprefixed component-local name.',
       rootLabel,
     ),
     report(

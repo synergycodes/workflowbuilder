@@ -47,8 +47,8 @@
 
   .icon svg,
   .clear svg {
-    width: var(--wb-size-200);
-    height: var(--wb-size-200);
+    width: var(--wb-ds-size-200);
+    height: var(--wb-ds-size-200);
   }
 
   .clear {
@@ -63,9 +63,9 @@
     }
 
     &:focus-visible {
-      border-radius: var(--wb-radius-25);
-      outline: var(--wb-size-12) solid var(--wb-ui-focus-ring);
-      outline-offset: var(--wb-size-25);
+      border-radius: var(--wb-ds-radius-25);
+      outline: var(--wb-ds-size-12) solid var(--wb-ds-ui-focus-ring);
+      outline-offset: var(--wb-ds-size-25);
     }
 
     &:disabled {

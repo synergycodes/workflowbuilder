@@ -29,12 +29,12 @@
 
   .calendar {
     composes: wb-text-body-s from global;
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 400;
     line-height: 130%;
     background: var(--wb-public-date-picker-dropdown-background);
-    border: var(--wb-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
-    border-radius: var(--wb-radius-100);
+    border: var(--wb-ds-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
+    border-radius: var(--wb-ds-radius-100);
     box-shadow: var(--wb-public-date-picker-dropdown-box-shadow);
     color: var(--wb-public-date-picker-color);
   }
@@ -46,7 +46,7 @@
    * `.calendar` is the Popover popup that wraps the calendar.
    */
   .calendar :global(.rdp-root) {
-    --rdp-day_button-border-radius: var(--wb-radius-75);
+    --rdp-day_button-border-radius: var(--wb-ds-radius-75);
     --rdp-selected-border: none;
     --rdp-today-color: var(--wb-public-date-picker-date-today-color);
     /* retheme react-day-picker's accent (range
@@ -59,13 +59,13 @@
   }
 
   .calendar :global(.rdp-weekday) {
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 400;
     line-height: 130%;
   }
 
   .calendar :global(.rdp-month_caption) {
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 600;
     line-height: 130%;
   }
@@ -84,7 +84,7 @@
   .calendar :global(.rdp-selected .rdp-day_button) {
     background-color: var(--wb-public-date-picker-date-selected-background-color);
     color: var(--wb-public-date-picker-date-selected-color);
-    font-size: var(--wb-font-size-150);
+    font-size: var(--wb-ds-font-size-150);
     font-weight: 600;
     line-height: 130%;
   }

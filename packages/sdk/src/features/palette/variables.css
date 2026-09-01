@@ -1,4 +1,4 @@
 :root {
-  --wb-palette-item-outline-color-hover: var(--wb-canvas-node-stroke-hover);
-  --wb-palette-item-shad-color-hover: rgba(21, 21, 22, 0.1);
+  --wb-sdk-palette-item-outline-color-hover: var(--wb-ds-canvas-node-stroke-hover);
+  --wb-sdk-palette-item-shad-color-hover: rgba(21, 21, 22, 0.1);
 }

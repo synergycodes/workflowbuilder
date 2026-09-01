@@ -1,6 +1,6 @@
 @layer ui.base {
   :root {
-    --wb-public-form-rich-text-color: var(--wb-ui-text-subtle-default);
+    --wb-public-form-rich-text-color: var(--wb-ds-ui-text-subtle-default);
   }
 }
 

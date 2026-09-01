@@ -1,15 +1,15 @@
 :root {
-  --wb-public-input-padding-large: var(--wb-space-137) var(--wb-space-150);
-  --wb-public-input-padding-medium: var(--wb-space-125) var(--wb-space-150);
-  --wb-public-input-padding-small: var(--wb-space-100) var(--wb-space-150);
+  --wb-public-input-padding-large: var(--wb-ds-space-137) var(--wb-ds-space-150);
+  --wb-public-input-padding-medium: var(--wb-ds-space-125) var(--wb-ds-space-150);
+  --wb-public-input-padding-small: var(--wb-ds-space-100) var(--wb-ds-space-150);
 
-  --wb-public-input-border-radius-large: var(--wb-radius-100);
-  --wb-public-input-border-radius-medium: var(--wb-radius-75);
-  --wb-public-input-border-radius-small: var(--wb-radius-75);
+  --wb-public-input-border-radius-large: var(--wb-ds-radius-100);
+  --wb-public-input-border-radius-medium: var(--wb-ds-radius-75);
+  --wb-public-input-border-radius-small: var(--wb-ds-radius-75);
 
-  --wb-public-input-gap-large: var(--wb-space-100);
-  --wb-public-input-gap-medium: var(--wb-space-100);
-  --wb-public-input-gap-small: var(--wb-space-100);
+  --wb-public-input-gap-large: var(--wb-ds-space-100);
+  --wb-public-input-gap-medium: var(--wb-ds-space-100);
+  --wb-public-input-gap-small: var(--wb-ds-space-100);
 }
 
 @layer ui.component {

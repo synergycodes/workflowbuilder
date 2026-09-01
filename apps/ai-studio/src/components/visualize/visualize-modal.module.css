@@ -16,11 +16,11 @@
   flex-direction: column;
   width: min(56rem, 92vw);
   max-height: 86vh;
-  background: var(--wb-ui-bg-base);
-  border: 0.0625rem solid var(--wb-ui-stroke-default);
+  background: var(--wb-ds-ui-bg-base);
+  border: 0.0625rem solid var(--wb-ds-ui-stroke-default);
   border-radius: 0.9rem;
   box-shadow: 0 1.5rem 4rem rgba(0, 0, 0, 0.4);
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   overflow: hidden;
 
   &,
@@ -34,7 +34,7 @@
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-bottom: 0.0625rem solid var(--wb-ui-stroke-default);
+  border-bottom: 0.0625rem solid var(--wb-ds-ui-stroke-default);
 }
 
 .title {
@@ -47,8 +47,8 @@
   font-size: 0.7rem;
   padding: 0.15rem 0.5rem;
   border-radius: 0.3rem;
-  background: var(--wb-ui-bg-elevated);
-  color: var(--wb-ui-text-muted-default);
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .actions {
@@ -66,7 +66,7 @@
   border: none;
   border-radius: 0.4rem;
   background: transparent;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
   cursor: pointer;
 }
 
@@ -76,8 +76,8 @@
 }
 
 .action:hover {
-  background: var(--wb-ui-bg-elevated);
-  color: var(--wb-ui-text-default);
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-ui-text-default);
 }
 
 .body {
@@ -87,6 +87,6 @@
 }
 
 .loading {
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
   font-size: 0.85rem;
 }

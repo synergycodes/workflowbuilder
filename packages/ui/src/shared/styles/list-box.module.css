@@ -1,10 +1,10 @@
 :root {
-  --wb-public-list-box-background-color: var(--wb-ui-bg-base);
-  --wb-public-list-box-border-radius: var(--wb-radius-100);
-  --wb-public-list-box-box-shadow: var(--wb-shadow-ui-s-x) var(--wb-shadow-ui-s-y) var(--wb-shadow-ui-s-blur)
-    var(--wb-shadow-ui-s-spread) var(--wb-shadow-ui-color);
-  --wb-public-list-box-padding: var(--wb-space-50) var(--wb-space-50);
-  --wb-public-list-box-gap: var(--wb-space-50);
+  --wb-public-list-box-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-list-box-border-radius: var(--wb-ds-radius-100);
+  --wb-public-list-box-box-shadow: var(--wb-ds-shadow-ui-s-x) var(--wb-ds-shadow-ui-s-y) var(--wb-ds-shadow-ui-s-blur)
+    var(--wb-ds-shadow-ui-s-spread) var(--wb-ds-shadow-ui-color);
+  --wb-public-list-box-padding: var(--wb-ds-space-50) var(--wb-ds-space-50);
+  --wb-public-list-box-gap: var(--wb-ds-space-50);
 }
 
 @layer ui.component {

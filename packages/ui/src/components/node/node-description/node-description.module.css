@@ -1,6 +1,6 @@
 :root {
-  --wb-public-node-title-color: var(--wb-ui-text-default);
-  --wb-public-node-title-subtitle: var(--wb-ui-text-subtle-default);
+  --wb-public-node-title-color: var(--wb-ds-ui-text-default);
+  --wb-public-node-title-subtitle: var(--wb-ds-ui-text-subtle-default);
 }
 
 @layer ui.component {

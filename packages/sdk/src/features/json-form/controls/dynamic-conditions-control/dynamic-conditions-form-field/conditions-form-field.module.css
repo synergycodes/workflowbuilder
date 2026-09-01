@@ -1,7 +1,7 @@
 :root {
-  --wb-conditions-form-inputs-background: var(--wb-ui-bg-elevated); /* missing token */
-  --wb-conditions-form-input-background: var(--wb-ui-bg-base); /* missing token */
-  --wb-conditions-form-input-background-destructive: var(--wb-colors-red-400-10); /* missing token */
+  --wb-sdk-conditions-form-inputs-background: var(--wb-ds-ui-bg-elevated); /* missing token */
+  --wb-sdk-conditions-form-input-background: var(--wb-ds-ui-bg-base); /* missing token */
+  --wb-sdk-conditions-form-input-background-destructive: var(--wb-ds-colors-red-400-10); /* missing token */
 }
 
 .container {
@@ -10,10 +10,10 @@
   gap: 0.125rem;
   padding: 0.25rem 0.375rem;
   border-radius: 0.5rem;
-  background-color: var(--wb-conditions-form-inputs-background);
+  background-color: var(--wb-sdk-conditions-form-inputs-background);
 
   &.container-error {
-    background-color: var(--wb-conditions-form-input-background-destructive);
+    background-color: var(--wb-sdk-conditions-form-input-background-destructive);
   }
 }
 
@@ -25,7 +25,7 @@
 }
 
 .input {
-  background-color: var(--wb-conditions-form-input-background);
+  background-color: var(--wb-sdk-conditions-form-input-background);
 }
 
 .segment-picker-container {

@@ -1,7 +1,7 @@
 .markdown {
   font-size: 0.85rem;
   line-height: 1.6;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   overflow-wrap: anywhere;
 }
 
@@ -40,7 +40,7 @@
 }
 
 .markdown a {
-  color: var(--wb-ui-text-action-default);
+  color: var(--wb-ds-ui-text-action-default);
   text-decoration: underline;
 }
 
@@ -51,7 +51,7 @@
 .markdown code {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.82em;
-  background: var(--wb-ui-bg-elevated);
+  background: var(--wb-ds-ui-bg-elevated);
   padding: 0.1em 0.35em;
   border-radius: 0.25rem;
 }
@@ -59,7 +59,7 @@
 .markdown pre {
   margin: 0.6em 0;
   padding: 0.7em 0.85em;
-  background: var(--wb-ui-bg-elevated);
+  background: var(--wb-ds-ui-bg-elevated);
   border-radius: 0.5rem;
   overflow-x: auto;
 }
@@ -72,8 +72,8 @@
 .markdown blockquote {
   margin: 0.6em 0;
   padding-left: 0.85em;
-  border-left: 0.1875rem solid var(--wb-ui-stroke-default);
-  color: var(--wb-ui-text-subtle-default);
+  border-left: 0.1875rem solid var(--wb-ds-ui-stroke-default);
+  color: var(--wb-ds-ui-text-subtle-default);
 }
 
 .rich p {
@@ -89,13 +89,13 @@
 .rich code {
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.85em;
-  background: var(--wb-ui-bg-elevated);
+  background: var(--wb-ds-ui-bg-elevated);
   padding: 0.05em 0.3em;
   border-radius: 0.2rem;
 }
 
 .rich a {
-  color: var(--wb-ui-text-action-default);
+  color: var(--wb-ds-ui-text-action-default);
   text-decoration: underline;
 }
 
@@ -108,7 +108,7 @@
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.8rem;
   line-height: 1.55;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   white-space: pre-wrap;
   overflow-wrap: anywhere;
 }
@@ -117,7 +117,7 @@
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
   font-size: 0.78rem;
   line-height: 1.5;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
 }
 
 .json-row {
@@ -132,18 +132,18 @@
 
 .json-children {
   padding-left: 0.9rem;
-  border-left: 0.0625rem solid var(--wb-ui-stroke-default);
+  border-left: 0.0625rem solid var(--wb-ds-ui-stroke-default);
   margin-left: 0.25rem;
 }
 
 .json-toggle {
   width: 0.7rem;
   flex-shrink: 0;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .json-key {
-  color: var(--wb-colors-acc1-600);
+  color: var(--wb-ds-colors-acc1-600);
 }
 
 .json-string {
@@ -160,7 +160,7 @@
 }
 
 .json-bracket {
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .table {
@@ -171,14 +171,14 @@
 
 .table th,
 .table td {
-  border: 0.0625rem solid var(--wb-ui-stroke-default);
+  border: 0.0625rem solid var(--wb-ds-ui-stroke-default);
   padding: 0.3em 0.5em;
   text-align: left;
   vertical-align: top;
 }
 
 .table th {
-  background: var(--wb-ui-bg-elevated);
+  background: var(--wb-ds-ui-bg-elevated);
   font-weight: 600;
   position: sticky;
   top: 0;
@@ -192,15 +192,15 @@
 
 .stat-card {
   padding: 0.6rem 0.7rem;
-  border: 0.0625rem solid var(--wb-ui-stroke-default);
+  border: 0.0625rem solid var(--wb-ds-ui-stroke-default);
   border-radius: 0.5rem;
-  background: var(--wb-ui-bg-elevated);
+  background: var(--wb-ds-ui-bg-elevated);
 }
 
 .stat-value {
   font-size: 1.05rem;
   font-weight: 600;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
   overflow-wrap: anywhere;
 }
 
@@ -209,13 +209,13 @@
   font-size: 0.7rem;
   text-transform: uppercase;
   letter-spacing: 0.03em;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .fallback-note {
   margin-bottom: 0.4rem;
   font-size: 0.72rem;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .chart {

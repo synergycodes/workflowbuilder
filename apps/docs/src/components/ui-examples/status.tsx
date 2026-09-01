@@ -14,7 +14,7 @@ export function StatusExample() {
           display: 'inline-flex',
           alignItems: 'center',
           padding: '0.875rem 1.25rem',
-          border: '1px solid var(--wb-ui-stroke-default)',
+          border: '1px solid var(--wb-ds-ui-stroke-default)',
           borderRadius: '0.5rem',
         }}
       >

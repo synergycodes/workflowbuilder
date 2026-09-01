@@ -1,8 +1,8 @@
 :root {
-  --wb-public-button-height-xl: var(--wb-size-600);
+  --wb-public-button-height-xl: var(--wb-ds-size-600);
   --wb-public-button-height-l: 2.625rem /* missing token */;
   --wb-public-button-height-m: 2.25rem /* missing token */;
-  --wb-public-button-height-s: var(--wb-size-400);
+  --wb-public-button-height-s: var(--wb-ds-size-400);
   --wb-public-button-height-xs: 1.75rem /* missing token */;
 }
 

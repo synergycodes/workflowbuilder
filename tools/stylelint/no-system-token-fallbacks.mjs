@@ -1,7 +1,7 @@
 /**
  * Stylelint rule: validate fallbacks on system design tokens.
  *
- * `var(--wb-…, x)` / `var(--ax-…, x)` silently masks a mistyped token name —
+ * A fallback on `--wb-ds-*`, `--wb-sdk-*`, or `--wb-public-*` silently masks a mistyped token name -
  * the fallback renders and the typo ships.
  *
  * The public font tokens require fallbacks so standalone component CSS remains
@@ -30,7 +30,7 @@ const rule = (primary) => (root, result) => {
     valueParser(decl.value).walk((node) => {
       if (node.type !== 'function' || node.value !== 'var') return;
       const [first, ...rest] = node.nodes;
-      if (!first || !/^--(wb|ax)-/.test(first.value)) return;
+      if (!first || !/^--wb-(ds|sdk|public)-/.test(first.value)) return;
 
       const separatorIndex = rest.findIndex((argument) => argument.type === 'div' && argument.value === ',');
       const hasFallback =

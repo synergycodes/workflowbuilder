@@ -4,17 +4,17 @@
 @import 'react-day-picker/style.css' layer(ui.base);
 
 :root {
-  --wb-public-date-picker-dropdown-background: var(--wb-ui-bg-base);
-  --wb-public-date-picker-dropdown-border-color: var(--wb-ui-stroke-default);
-  --wb-public-date-picker-dropdown-box-shadow: 0px 4px 20px var(--wb-shadow-ui-color);
+  --wb-public-date-picker-dropdown-background: var(--wb-ds-ui-bg-base);
+  --wb-public-date-picker-dropdown-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-public-date-picker-dropdown-box-shadow: 0px 4px 20px var(--wb-ds-shadow-ui-color);
 
-  --wb-public-date-picker-color: var(--wb-ui-text-subtle-default);
-  --wb-public-date-picker-header-background: var(--wb-ui-bg-elevated);
-  --wb-public-date-picker-date-header-color: var(--wb-ui-text-muted-default);
-  --wb-public-date-picker-nav-color: var(--wb-ui-text-subtle-default);
-  --wb-public-date-picker-date-outside-color: var(--wb-ui-text-ghost-default);
-  --wb-public-date-picker-date-hover-background-color: var(--wb-components-datepicker-bg-secondary);
-  --wb-public-date-picker-date-selected-background-color: var(--wb-components-datepicker-bg-primary);
-  --wb-public-date-picker-date-selected-color: var(--wb-ui-text-default);
-  --wb-public-date-picker-date-today-color: var(--wb-ui-stroke-highlight);
+  --wb-public-date-picker-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-date-picker-header-background: var(--wb-ds-ui-bg-elevated);
+  --wb-public-date-picker-date-header-color: var(--wb-ds-ui-text-muted-default);
+  --wb-public-date-picker-nav-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-date-picker-date-outside-color: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-date-picker-date-hover-background-color: var(--wb-ds-components-datepicker-bg-secondary);
+  --wb-public-date-picker-date-selected-background-color: var(--wb-ds-components-datepicker-bg-primary);
+  --wb-public-date-picker-date-selected-color: var(--wb-ds-ui-text-default);
+  --wb-public-date-picker-date-today-color: var(--wb-ds-ui-stroke-highlight);
 }

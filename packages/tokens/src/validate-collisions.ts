@@ -1,14 +1,16 @@
 /**
  * Detects token names that become the same CSS custom property after the
- * Style Dictionary kebab transform — e.g. the Figma-side duplicate
- * 'ax/colors/acc7- 100' (stray space) vs 'ax/colors/acc7-100', which both
- * emit `--ax-colors-acc7-100` and silently overwrite each other in the
+ * Style Dictionary name transform — e.g. the Figma-side duplicate
+ * 'wb/colors/acc7- 100' (stray space) vs 'wb/colors/acc7-100', which both
+ * emit `--wb-ds-colors-acc7-100` and silently overwrite each other in the
  * built CSS.
  *
  * Same-value collisions warn; different-value collisions throw, because the
  * emitted value would then depend on object iteration order.
  */
-import StyleDictionary, { TransformedToken } from 'style-dictionary';
+import { TransformedToken } from 'style-dictionary';
+
+import { cssVariableName } from './css-variable-name';
 
 type TokenLeaf = { value: unknown; type: string };
 type TokenNode = TokenLeaf | { [key: string]: TokenNode };
@@ -34,12 +36,9 @@ function collectLeaves(node: TokenNode, path: string[], out: TokenEntry[]) {
   }
 }
 
-const kebabName = StyleDictionary.hooks.transforms['name/kebab'].transform;
-
-/** Must match Style Dictionary's `name/kebab` output — it IS that transform,
- * invoked directly, so the two cannot drift. */
+/** Must use the same name transform as the Style Dictionary build. */
 function toCssName(tokenPath: string): string {
-  return `--${kebabName({ path: tokenPath.split('/') } as TransformedToken, {}, {})}`;
+  return `--${cssVariableName({ path: tokenPath.split('/') } as TransformedToken)}`;
 }
 
 function getLeaves(tokenSet: Record<string, TokenNode>): TokenEntry[] {

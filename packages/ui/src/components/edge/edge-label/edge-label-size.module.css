@@ -1,24 +1,24 @@
 :root {
-  --wb-public-edge-label-medium-label-padding: var(--wb-canvas-edge-label-m-v-pad-1)
-    var(--wb-canvas-edge-label-m-h-pad-1);
-  --wb-public-edge-label-small-label-padding: var(--wb-canvas-edge-label-s-v-pad-1)
-    var(--wb-canvas-edge-label-s-h-pad-1);
-  --wb-public-edge-label-extra-small-label-padding: var(--wb-canvas-edge-label-xs-v-pad-1) var(--wb-space-125);
+  --wb-public-edge-label-medium-label-padding: var(--wb-ds-canvas-edge-label-m-v-pad-1)
+    var(--wb-ds-canvas-edge-label-m-h-pad-1);
+  --wb-public-edge-label-small-label-padding: var(--wb-ds-canvas-edge-label-s-v-pad-1)
+    var(--wb-ds-canvas-edge-label-s-h-pad-1);
+  --wb-public-edge-label-extra-small-label-padding: var(--wb-ds-canvas-edge-label-xs-v-pad-1) var(--wb-ds-space-125);
 
-  --wb-public-edge-label-medium-icon-padding: var(--wb-canvas-edge-label-m-v-pad-2);
-  --wb-public-edge-label-small-icon-padding: var(--wb-canvas-edge-label-s-v-pad-2);
-  --wb-public-edge-label-extra-small-icon-padding: var(--wb-canvas-edge-label-xs-v-pad-2);
+  --wb-public-edge-label-medium-icon-padding: var(--wb-ds-canvas-edge-label-m-v-pad-2);
+  --wb-public-edge-label-small-icon-padding: var(--wb-ds-canvas-edge-label-s-v-pad-2);
+  --wb-public-edge-label-extra-small-icon-padding: var(--wb-ds-canvas-edge-label-xs-v-pad-2);
 
-  --wb-public-edge-label-medium-content-padding: var(--wb-canvas-edge-label-m-v-pad-2)
-    var(--wb-canvas-edge-label-m-h-pad-2);
-  --wb-public-edge-label-small-content-padding: var(--wb-canvas-edge-label-s-v-pad-2)
-    var(--wb-canvas-edge-label-s-h-pad-2);
-  --wb-public-edge-label-extra-small-content-padding: var(--wb-canvas-edge-label-xs-v-pad-2)
-    var(--wb-canvas-edge-label-xs-h-pad-2);
+  --wb-public-edge-label-medium-content-padding: var(--wb-ds-canvas-edge-label-m-v-pad-2)
+    var(--wb-ds-canvas-edge-label-m-h-pad-2);
+  --wb-public-edge-label-small-content-padding: var(--wb-ds-canvas-edge-label-s-v-pad-2)
+    var(--wb-ds-canvas-edge-label-s-h-pad-2);
+  --wb-public-edge-label-extra-small-content-padding: var(--wb-ds-canvas-edge-label-xs-v-pad-2)
+    var(--wb-ds-canvas-edge-label-xs-h-pad-2);
 
-  --wb-public-edge-label-medium-border-radius: var(--wb-canvas-edge-label-m-radius);
-  --wb-public-edge-label-small-border-radius: var(--wb-canvas-edge-label-s-radius);
-  --wb-public-edge-label-extra-small-border-radius: var(--wb-canvas-edge-label-xs-radius);
+  --wb-public-edge-label-medium-border-radius: var(--wb-ds-canvas-edge-label-m-radius);
+  --wb-public-edge-label-small-border-radius: var(--wb-ds-canvas-edge-label-s-radius);
+  --wb-public-edge-label-extra-small-border-radius: var(--wb-ds-canvas-edge-label-xs-radius);
 
   --wb-public-edge-label-medium-icon-size: 1.125rem;
   --wb-public-edge-label-small-icon-size: 1rem;

@@ -1,6 +1,6 @@
 :root {
-  --wb-variable-bg: var(--wb-color-violet-400-20);
-  --wb-variable-txt: #6b3bff;
+  --wb-sdk-variable-bg: var(--wb-sdk-color-violet-400-20);
+  --wb-sdk-variable-txt: #6b3bff;
 }
 
 .container {
@@ -16,8 +16,8 @@
   min-height: 1.75rem;
   border-radius: 4px;
   padding: 4px 8px 3px 8px;
-  color: var(--wb-ui-text-default);
-  background: var(--wb-variable-bg);
+  color: var(--wb-ds-ui-text-default);
+  background: var(--wb-sdk-variable-bg);
 }
 
 .name-text {

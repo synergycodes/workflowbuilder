@@ -1,18 +1,18 @@
 :root {
-  --wb-public-edge-label-gap: var(--wb-canvas-edge-label-gap);
-  --wb-public-edge-background-color: var(--wb-ui-bg-inset);
-  --wb-public-edge-label-color: var(--wb-ui-text-default);
+  --wb-public-edge-label-gap: var(--wb-ds-canvas-edge-label-gap);
+  --wb-public-edge-background-color: var(--wb-ds-ui-bg-inset);
+  --wb-public-edge-label-color: var(--wb-ds-ui-text-default);
 
-  --wb-public-edge-label-border-size: var(--wb-canvas-edge-stroke-regular);
-  --wb-public-edge-label-border-size-selected: var(--wb-canvas-edge-stroke-bold);
+  --wb-public-edge-label-border-size: var(--wb-ds-canvas-edge-stroke-regular);
+  --wb-public-edge-label-border-size-selected: var(--wb-ds-canvas-edge-stroke-bold);
 
   --wb-public-edge-label-border-style: solid;
-  --wb-public-edge-label-border-color: var(--wb-canvas-edge-stroke-default);
-  --wb-public-edge-label-border-color-selected: var(--wb-canvas-edge-stroke-active);
-  --wb-public-edge-label-border-color-hover: var(--wb-canvas-edge-stroke-hover);
+  --wb-public-edge-label-border-color: var(--wb-ds-canvas-edge-stroke-default);
+  --wb-public-edge-label-border-color-selected: var(--wb-ds-canvas-edge-stroke-active);
+  --wb-public-edge-label-border-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
 
-  --wb-public-edge-label-color-disabled: var(--wb-ui-text-ghost-default);
-  --wb-public-edge-label-border-color-disabled: var(--wb-canvas-edge-stroke-disabled);
+  --wb-public-edge-label-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-edge-label-border-color-disabled: var(--wb-ds-canvas-edge-stroke-disabled);
 }
 
 @layer ui.component {

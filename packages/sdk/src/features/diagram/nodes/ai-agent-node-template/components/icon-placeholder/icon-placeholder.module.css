@@ -2,7 +2,7 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  border-radius: var(--wb-radius-50);
-  outline: 1px dashed var(--wb-ui-stroke-subtle);
+  border-radius: var(--wb-ds-radius-50);
+  outline: 1px dashed var(--wb-ds-ui-stroke-subtle);
   padding: 0.4375rem;
 }

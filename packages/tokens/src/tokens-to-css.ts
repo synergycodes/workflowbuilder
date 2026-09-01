@@ -3,9 +3,16 @@ import path from 'node:path';
 import StyleDictionary, { Config, TransformedToken } from 'style-dictionary';
 
 import { OUTPUT_DIR } from './constants';
+import { cssVariableName } from './css-variable-name';
 import { Manifest, TokenSetEntry } from './types';
 
 register(StyleDictionary);
+
+StyleDictionary.registerTransform({
+  name: 'wb/css-variable-name',
+  type: 'name',
+  transform: cssVariableName,
+});
 
 StyleDictionary.registerTransform({
   name: 'wb/font-size-rem',
@@ -95,7 +102,7 @@ function createSDConfig({ fileName, selector, source, filter }: SDConfigParams) 
     platforms: {
       css: {
         transformGroup: 'tokens-studio',
-        transforms: ['name/kebab', 'wb/font-size-rem', 'wb/dimension-rem'],
+        transforms: ['wb/css-variable-name', 'wb/font-size-rem', 'wb/dimension-rem'],
         buildPath: OUTPUT_DIR,
         options: {
           outputReferences: true,

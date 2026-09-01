@@ -2,10 +2,10 @@
   width: 100%;
   margin-top: 0.4rem;
   padding-top: 0.5rem;
-  border-top: 0.0625rem solid var(--wb-ui-stroke-default);
+  border-top: 0.0625rem solid var(--wb-ds-ui-stroke-default);
   font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   text-align: left;
-  color: var(--wb-ui-text-default);
+  color: var(--wb-ds-ui-text-default);
 
   &,
   * {
@@ -30,8 +30,8 @@
   font-size: 0.64rem;
   padding: 0.15rem 0.4rem;
   border-radius: 0.3rem;
-  background: var(--wb-ui-bg-elevated);
-  color: var(--wb-ui-text-muted-default);
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .actions {
@@ -50,7 +50,7 @@
   border: none;
   border-radius: 0.3rem;
   background: transparent;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
   cursor: pointer;
 }
 
@@ -60,8 +60,8 @@
 }
 
 .action:hover {
-  background: var(--wb-ui-bg-elevated);
-  color: var(--wb-ui-text-default);
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-ui-text-default);
 }
 
 .action:disabled {
@@ -93,7 +93,7 @@
 .empty-icon {
   width: 1.6rem;
   height: 1.6rem;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
   opacity: 0.55;
 }
 
@@ -101,7 +101,7 @@
   margin: 0;
   font-size: 0.74rem;
   line-height: 1.45;
-  color: var(--wb-ui-text-muted-default);
+  color: var(--wb-ds-ui-text-muted-default);
 }
 
 .dots {
@@ -114,7 +114,7 @@
   width: 0.45rem;
   height: 0.45rem;
   border-radius: 50%;
-  background: var(--wb-colors-acc1-500);
+  background: var(--wb-ds-colors-acc1-500);
   animation: md-pulse 1s ease-in-out infinite;
 }
 

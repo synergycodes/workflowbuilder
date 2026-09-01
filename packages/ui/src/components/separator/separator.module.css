@@ -1,6 +1,6 @@
 :root {
   --wb-public-list-item-separator-border-size: 0.0625rem;
-  --wb-public-list-item-separator-background-color: var(--wb-ui-stroke-divider);
+  --wb-public-list-item-separator-background-color: var(--wb-ds-ui-stroke-divider);
 }
 
 @layer ui.component {

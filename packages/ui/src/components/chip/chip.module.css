@@ -1,49 +1,49 @@
 :root {
-  --wb-public-chip-focus-ring-color: var(--wb-shadow-ui-focus);
+  --wb-public-chip-focus-ring-color: var(--wb-ds-shadow-ui-focus);
 }
 
 @layer ui.component {
   .chip {
     display: inline-flex;
     align-items: center;
-    gap: var(--wb-space-50);
-    border-radius: var(--wb-radius-50);
+    gap: var(--wb-ds-space-50);
+    border-radius: var(--wb-ds-radius-50);
     white-space: nowrap;
   }
 
   .solid {
-    background-color: var(--wb-components-chips-solid);
-    color: var(--wb-components-chips-solid-text);
+    background-color: var(--wb-ds-components-chips-solid);
+    color: var(--wb-ds-components-chips-solid-text);
   }
 
   .outline {
-    background-color: var(--wb-components-chips-inset-outline);
+    background-color: var(--wb-ds-components-chips-inset-outline);
     background-image: linear-gradient(
-      var(--wb-components-chips-overlay-outline),
-      var(--wb-components-chips-overlay-outline)
+      var(--wb-ds-components-chips-overlay-outline),
+      var(--wb-ds-components-chips-overlay-outline)
     );
-    box-shadow: 0 0 0 var(--wb-size-12) var(--wb-components-chips-inset-outline);
-    color: var(--wb-components-chips-inset-outline);
+    box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-inset-outline);
+    color: var(--wb-ds-components-chips-inset-outline);
   }
 
   .s {
     height: 0.875rem;
-    padding-inline: var(--wb-space-50);
+    padding-inline: var(--wb-ds-space-50);
   }
 
   .m {
     height: 1rem;
-    padding-inline: var(--wb-space-50);
+    padding-inline: var(--wb-ds-space-50);
   }
 
   .l {
     height: 1.25rem;
-    padding-inline: var(--wb-space-75);
+    padding-inline: var(--wb-ds-space-75);
   }
 
   .xl {
     height: 1.375rem;
-    padding-inline: var(--wb-space-75);
+    padding-inline: var(--wb-ds-space-75);
   }
 
   .icon,
@@ -66,8 +66,8 @@
     cursor: pointer;
 
     &:focus-visible {
-      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
         var(--wb-public-chip-focus-ring-color);
       outline: none;
     }

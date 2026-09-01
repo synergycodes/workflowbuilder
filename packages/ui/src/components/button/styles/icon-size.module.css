@@ -1,9 +1,9 @@
 :root {
-  --wb-public-icon-size-xl: var(--wb-size-300);
+  --wb-public-icon-size-xl: var(--wb-ds-size-300);
   --wb-public-icon-size-l: 1.25rem /* missing token */;
   --wb-public-icon-size-m: 1.125rem /* missing token */;
   --wb-public-icon-size-s: 1.125rem /* missing token */;
-  --wb-public-icon-size-xs: var(--wb-size-200);
+  --wb-public-icon-size-xs: var(--wb-ds-size-200);
 }
 
 @layer ui.component {

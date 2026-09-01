@@ -1,7 +1,7 @@
 # How to change CSS tokens?
 
 `@workflowbuilder/ui` resolves colors, spacing, and radii through generated
-`--wb-*` design tokens defined in `@workflowbuilder/ui/tokens.css` and
+`--wb-ds-*` design tokens defined in `@workflowbuilder/ui/tokens.css` and
 hand-authored `--wb-public-*` component overrides. Its shipped defaults live
 inside the `ui.base` cascade layer, so a plain unlayered override in your own
 stylesheet always wins - import order does not matter.
@@ -12,8 +12,8 @@ Override the variables you care about in any stylesheet of your app:
 
 ```css
 :root {
-  --wb-components-button-solid-primary-default: #0f62fe;
-  --wb-ui-bg-inset: #f4f4f4;
+  --wb-ds-components-button-solid-primary-default: #0f62fe;
+  --wb-ds-ui-bg-inset: #f4f4f4;
   --wb-public-date-picker-dropdown-background: #fff;
 }
 ```

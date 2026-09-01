@@ -1,11 +1,11 @@
 :root {
   --wb-public-radio-size-medium: 1.25rem;
   --wb-public-radio-size-small: 1.125rem;
-  --wb-public-radio-size-extra-small: var(--wb-size-200);
+  --wb-public-radio-size-extra-small: var(--wb-ds-size-200);
 
   --wb-public-radio-dot-size-medium: 0.625rem;
-  --wb-public-radio-dot-size-small: var(--wb-size-100);
-  --wb-public-radio-dot-size-extra-small: var(--wb-size-100);
+  --wb-public-radio-dot-size-small: var(--wb-ds-size-100);
+  --wb-public-radio-dot-size-extra-small: var(--wb-ds-size-100);
 }
 
 @layer ui.component {

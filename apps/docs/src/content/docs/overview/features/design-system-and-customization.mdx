@@ -24,13 +24,13 @@ The UI is powered by CSS custom properties (tokens) for colors, typography, spac
 
 Example token categories:
 
-- **UI backgrounds:** `--wb-ui-bg-base`, `--wb-ui-bg-elevated`, `--wb-ui-bg-inset`
-- **Text:** `--wb-ui-text-default`, `--wb-ui-text-subtle-default`, `--wb-ui-text-muted-default`
-- **Node:** `--wb-canvas-node-bg-primary-default`, `--wb-canvas-node-stroke-default`, `--wb-canvas-node-icon-primary`
-- **Buttons:** `--wb-components-button-solid-primary-default`, `--wb-components-button-solid-gray-default`
-- **Spacing:** `--wb-space-50`, `--wb-space-100`, ..., `--wb-space-400`
-- **Border radius:** `--wb-radius-50`, `--wb-radius-100`, ..., `--wb-radius-300`
-- **Shadows:** `--wb-shadow-ui-xs-*`, `--wb-shadow-ui-s-*`, ..., `--wb-shadow-ui-xl-*`
+- **UI backgrounds:** `--wb-ds-ui-bg-base`, `--wb-ds-ui-bg-elevated`, `--wb-ds-ui-bg-inset`
+- **Text:** `--wb-ds-ui-text-default`, `--wb-ds-ui-text-subtle-default`, `--wb-ds-ui-text-muted-default`
+- **Node:** `--wb-ds-canvas-node-bg-primary-default`, `--wb-ds-canvas-node-stroke-default`, `--wb-ds-canvas-node-icon-primary`
+- **Buttons:** `--wb-ds-components-button-solid-primary-default`, `--wb-ds-components-button-solid-gray-default`
+- **Spacing:** `--wb-ds-space-50`, `--wb-ds-space-100`, ..., `--wb-ds-space-400`
+- **Border radius:** `--wb-ds-radius-50`, `--wb-ds-radius-100`, ..., `--wb-ds-radius-300`
+- **Shadows:** `--wb-ds-shadow-ui-xs-*`, `--wb-ds-shadow-ui-s-*`, ..., `--wb-ds-shadow-ui-xl-*`
 
 ### Component overrides
 
@@ -40,9 +40,9 @@ Theming is done by overriding CSS custom properties. Create a CSS file with your
 
 ```css
 :root {
-  --wb-ui-bg-base: #1a1a2e;
-  --wb-ui-text-default: #e0e0e0;
-  --wb-components-button-solid-primary-default: #4a90d9;
+  --wb-ds-ui-bg-base: #1a1a2e;
+  --wb-ds-ui-text-default: #e0e0e0;
+  --wb-ds-components-button-solid-primary-default: #4a90d9;
 }
 ```
 
@@ -54,7 +54,7 @@ Workflow Builder supports both light and dark modes out of the box, controlled b
 
 ## Styled components on headless foundations
 
-Workflow Builder ships with a complete default theme, but the underlying components come from [`@workflowbuilder/ui`](/ui-library/overview/), our component library built on the headless [Base UI](https://base-ui.com/) primitives. The styled layer is fully tokenized and isolated in cascade layers, so you can retheme or replace it through the `--wb-*` design tokens without fighting against built-in component styles. The visual layer is fully separate from the functional layer.
+Workflow Builder ships with a complete default theme, but the underlying components come from [`@workflowbuilder/ui`](/ui-library/overview/), our component library built on the headless [Base UI](https://base-ui.com/) primitives. The styled layer is fully tokenized and isolated in cascade layers, so you can retheme or replace it through the `--wb-ds-*` design tokens without fighting against built-in component styles. The visual layer is fully separate from the functional layer.
 
 ## White-label support
 

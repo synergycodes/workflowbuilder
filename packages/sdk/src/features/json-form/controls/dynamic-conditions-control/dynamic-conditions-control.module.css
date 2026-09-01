@@ -1,13 +1,13 @@
 :root {
-  --wb-conditions-form-border-color: var(--wb-ui-stroke-default); /* missing token */
-  --wb-conditions-form-border-radius: 0.75rem; /* missing token */
-  --wb-conditions-form-header-color: var(--wb-public-form-label-color);
+  --wb-sdk-conditions-form-border-color: var(--wb-ds-ui-stroke-default); /* missing token */
+  --wb-sdk-conditions-form-border-radius: 0.75rem; /* missing token */
+  --wb-sdk-conditions-form-header-color: var(--wb-public-form-label-color);
 }
 
 .container {
   padding: 0.5rem;
-  border: 1px solid var(--wb-conditions-form-border-color);
-  border-radius: var(--wb-conditions-form-border-radius);
+  border: 1px solid var(--wb-sdk-conditions-form-border-color);
+  border-radius: var(--wb-sdk-conditions-form-border-radius);
 }
 
 .header {
@@ -17,7 +17,7 @@
   gap: 0.375rem;
   margin-bottom: 0.75rem;
   font-weight: 600;
-  color: var(--wb-conditions-form-header-color);
+  color: var(--wb-sdk-conditions-form-header-color);
 }
 
 .title {

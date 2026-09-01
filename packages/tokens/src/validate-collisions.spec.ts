@@ -5,7 +5,7 @@ import { assertNoValueCollisions, findCssNameCollisions } from './validate-colli
 describe('findCssNameCollisions', () => {
   it('finds names that kebab to the same CSS custom property', () => {
     const collisions = findCssNameCollisions({
-      ax: {
+      wb: {
         colors: {
           'acc7- 100': { value: '#cfd0d6', type: 'color' },
           'acc7-100': { value: '#cfd0d6', type: 'color' },
@@ -16,10 +16,10 @@ describe('findCssNameCollisions', () => {
 
     expect(collisions).toEqual([
       {
-        cssName: '--ax-colors-acc7-100',
+        cssName: '--wb-ds-colors-acc7-100',
         entries: [
-          { path: 'ax/colors/acc7- 100', value: '#cfd0d6' },
-          { path: 'ax/colors/acc7-100', value: '#cfd0d6' },
+          { path: 'wb/colors/acc7- 100', value: '#cfd0d6' },
+          { path: 'wb/colors/acc7-100', value: '#cfd0d6' },
         ],
         sameValue: true,
       },
@@ -29,7 +29,7 @@ describe('findCssNameCollisions', () => {
   it('returns nothing for distinct names', () => {
     expect(
       findCssNameCollisions({
-        ax: { colors: { 'gray-100': { value: '#eee', type: 'color' } } },
+        wb: { colors: { 'gray-100': { value: '#eee', type: 'color' } } },
       }),
     ).toEqual([]);
   });
@@ -40,7 +40,7 @@ describe('assertNoValueCollisions', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const tokens = {
       'Primitives/Mode 1': {
-        ax: {
+        wb: {
           colors: {
             'acc7- 100': { value: '#cfd0d6', type: 'color' },
             'acc7-100': { value: '#cfd0d6', type: 'color' },
@@ -57,7 +57,7 @@ describe('assertNoValueCollisions', () => {
   it('throws when one CSS name would carry different values', () => {
     const tokens = {
       'Primitives/Mode 1': {
-        ax: {
+        wb: {
           colors: {
             'acc7- 100': { value: '#ffffff', type: 'color' },
             'acc7-100': { value: '#cfd0d6', type: 'color' },
@@ -66,7 +66,7 @@ describe('assertNoValueCollisions', () => {
       },
     };
 
-    expect(() => assertNoValueCollisions(tokens, ['Primitives/Mode 1'])).toThrow(/--ax-colors-acc7-100/);
+    expect(() => assertNoValueCollisions(tokens, ['Primitives/Mode 1'])).toThrow(/--wb-ds-colors-acc7-100/);
   });
 
   it('throws when sets in one CSS scope define the same name', () => {
@@ -81,7 +81,7 @@ describe('assertNoValueCollisions', () => {
 
     expect(() =>
       assertNoValueCollisions(tokens, ['Tokens/Dark', 'Effects/dark'], [['Tokens/Dark', 'Effects/dark']]),
-    ).toThrow(/'Tokens\/Dark' and 'Effects\/dark' both emit --wb-shadow-color/);
+    ).toThrow(/'Tokens\/Dark' and 'Effects\/dark' both emit --wb-ds-shadow-color/);
   });
 
   it('accepts disjoint names from sets in one CSS scope', () => {

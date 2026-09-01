@@ -1,15 +1,15 @@
 :root {
-  --wb-public-radio-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-radio-bg: var(--wb-ui-bg-base);
-  --wb-public-radio-checked-bg: var(--wb-components-selector-fill-checked);
-  --wb-public-radio-dot-color: var(--wb-ui-text-onaccent-default);
+  --wb-public-radio-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-radio-bg: var(--wb-ds-ui-bg-base);
+  --wb-public-radio-checked-bg: var(--wb-ds-components-selector-fill-checked);
+  --wb-public-radio-dot-color: var(--wb-ds-ui-text-onaccent-default);
 
-  --wb-public-radio-focus-border-color: var(--wb-shadow-ui-focus);
+  --wb-public-radio-focus-border-color: var(--wb-ds-shadow-ui-focus);
 
-  --wb-public-radio-disabled-border-color: var(--wb-ui-stroke-subtle);
-  --wb-public-radio-disabled-bg: var(--wb-ui-bg-inset);
-  --wb-public-radio-disabled-dot-color: var(--wb-ui-icon-disabled);
-  --wb-public-radio-border-radius: var(--wb-radius-full);
+  --wb-public-radio-disabled-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-radio-disabled-bg: var(--wb-ds-ui-bg-inset);
+  --wb-public-radio-disabled-dot-color: var(--wb-ds-ui-icon-disabled);
+  --wb-public-radio-border-radius: var(--wb-ds-radius-full);
 }
 
 @layer ui.component {
@@ -23,7 +23,7 @@
     appearance: none;
     position: relative;
     margin: 0;
-    border: var(--wb-size-12) solid var(--wb-public-radio-border-color);
+    border: var(--wb-ds-size-12) solid var(--wb-public-radio-border-color);
     border-radius: var(--wb-public-radio-border-radius);
     background-color: var(--wb-public-radio-bg);
     cursor: pointer;
@@ -36,7 +36,7 @@
       top: 50%;
       left: 50%;
       transform: translate(-50%, -50%);
-      border-radius: var(--wb-radius-full);
+      border-radius: var(--wb-ds-radius-full);
       background-color: var(--wb-public-radio-dot-color);
       opacity: 0;
     }
@@ -52,8 +52,8 @@
 
     &:focus-visible {
       outline: none;
-      box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--wb-shadow-ui-focus-element-spread)
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
         var(--wb-public-radio-focus-border-color);
     }
 

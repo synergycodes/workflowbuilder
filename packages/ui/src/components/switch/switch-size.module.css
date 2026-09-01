@@ -1,39 +1,29 @@
 :root {
   --wb-public-switch-width-medium: 1.875rem;
   --wb-public-switch-height-medium: 1.25rem;
-  --wb-public-switch-thumb-padding-medium: var(--wb-size-37);
+  --wb-public-switch-thumb-padding-medium: var(--wb-ds-size-37);
 
   --wb-public-switch-width-small: 1.75rem;
   --wb-public-switch-height-small: 1.125rem;
-  --wb-public-switch-thumb-padding-small: var(--wb-size-37);
+  --wb-public-switch-thumb-padding-small: var(--wb-ds-size-37);
 
   --wb-public-switch-width-extra-small: 1.625rem;
-  --wb-public-switch-height-extra-small: var(--wb-size-200);
-  --wb-public-switch-thumb-padding-extra-small: var(--wb-size-37);
-}
-
-:root {
-  --ax-switch-thumb-size-medium: calc(
-    var(--wb-public-switch-height-medium) - 2 * var(--wb-public-switch-thumb-padding-medium)
-  );
-
-  --ax-switch-thumb-size-small: calc(
-    var(--wb-public-switch-height-small) - 2 * var(--wb-public-switch-thumb-padding-small)
-  );
-
-  --ax-switch-thumb-size-extra-small: calc(
-    var(--wb-public-switch-height-extra-small) - 2 * var(--wb-public-switch-thumb-padding-extra-small)
-  );
+  --wb-public-switch-height-extra-small: var(--wb-ds-size-200);
+  --wb-public-switch-thumb-padding-extra-small: var(--wb-ds-size-37);
 }
 
 @layer ui.base {
   .medium {
+    --switch-thumb-size-medium: calc(
+      var(--wb-public-switch-height-medium) - 2 * var(--wb-public-switch-thumb-padding-medium)
+    );
+
     width: var(--wb-public-switch-width-medium);
     height: var(--wb-public-switch-height-medium);
 
     & .thumb {
-      width: var(--ax-switch-thumb-size-medium);
-      height: var(--ax-switch-thumb-size-medium);
+      width: var(--switch-thumb-size-medium);
+      height: var(--switch-thumb-size-medium);
       left: var(--wb-public-switch-thumb-padding-medium);
     }
 
@@ -41,7 +31,7 @@
       .thumb {
         transform: translateX(
           calc(
-            var(--wb-public-switch-width-medium) - var(--ax-switch-thumb-size-medium) - 2 *
+            var(--wb-public-switch-width-medium) - var(--switch-thumb-size-medium) - 2 *
               var(--wb-public-switch-thumb-padding-medium) - var(--wb-public-switch-border-size)
           )
         );
@@ -50,12 +40,16 @@
   }
 
   .small {
+    --switch-thumb-size-small: calc(
+      var(--wb-public-switch-height-small) - 2 * var(--wb-public-switch-thumb-padding-small)
+    );
+
     width: var(--wb-public-switch-width-small);
     height: var(--wb-public-switch-height-small);
 
     .thumb {
-      width: var(--ax-switch-thumb-size-small);
-      height: var(--ax-switch-thumb-size-small);
+      width: var(--switch-thumb-size-small);
+      height: var(--switch-thumb-size-small);
       left: var(--wb-public-switch-thumb-padding-small);
     }
 
@@ -63,7 +57,7 @@
       .thumb {
         transform: translateX(
           calc(
-            var(--wb-public-switch-width-small) - var(--ax-switch-thumb-size-small) - 2 *
+            var(--wb-public-switch-width-small) - var(--switch-thumb-size-small) - 2 *
               var(--wb-public-switch-thumb-padding-small) - var(--wb-public-switch-border-size)
           )
         );
@@ -72,12 +66,16 @@
   }
 
   .extra-small {
+    --switch-thumb-size-extra-small: calc(
+      var(--wb-public-switch-height-extra-small) - 2 * var(--wb-public-switch-thumb-padding-extra-small)
+    );
+
     width: var(--wb-public-switch-width-extra-small);
     height: var(--wb-public-switch-height-extra-small);
 
     .thumb {
-      width: var(--ax-switch-thumb-size-extra-small);
-      height: var(--ax-switch-thumb-size-extra-small);
+      width: var(--switch-thumb-size-extra-small);
+      height: var(--switch-thumb-size-extra-small);
       left: var(--wb-public-switch-thumb-padding-extra-small);
     }
 
@@ -85,7 +83,7 @@
       .thumb {
         transform: translateX(
           calc(
-            var(--wb-public-switch-width-extra-small) - var(--ax-switch-thumb-size-extra-small) - 2 *
+            var(--wb-public-switch-width-extra-small) - var(--switch-thumb-size-extra-small) - 2 *
               var(--wb-public-switch-thumb-padding-extra-small) - var(--wb-public-switch-border-size)
           )
         );

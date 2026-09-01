@@ -204,20 +204,20 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 
 ```css
 :root {
-  --wb-background-color: #fafafa;
-  --wb-transition: 0.15s ease-in;
+  --wb-public-background-color: #fafafa;
+  --wb-public-transition: 0.15s ease-in;
   --wb-public-font-family: 'Inter', system-ui, sans-serif;
   --wb-public-font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 }
 ```
 
-Available tokens: `--wb-background-color`, `--wb-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-scroll-width`, `--wb-scroll-radius`, `--wb-scroll-thumb-color`, `--wb-scroll-track-color`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
+Available tokens: `--wb-public-background-color`, `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
 
 Custom layouts passed as Root children and SDK-owned body portals join the builder's font scope. Content that a host or plugin portals elsewhere does not: CSS variables and font inheritance follow DOM ancestry, not the React tree. The same boundary applies to every token above. Modal, Menu, Tooltip, Select, and DatePicker surfaces mount under `document.body`, so an override scoped only to an app shell will not reach them; use `:root` or apply the overrides to the portal container too.
 
-Deeper color and spacing customization goes through the generated `--wb-*` design-token layer from `@workflowbuilder/ui`. Hand-authored overrides use `--wb-public-*`. The UI Library's component pages include generated CSS-variable tables for component-local UI overrides. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
+Deeper color and spacing customization goes through the generated `--wb-ds-*` design-token layer from `@workflowbuilder/ui`. Hand-authored overrides use `--wb-public-*`. The UI Library's component pages include generated CSS-variable tables for component-local UI overrides. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
-**Prefix ownership.** The `--wb-*` namespace has three families. Names with a design-domain segment (`--wb-ui-*`, `--wb-components-*`, `--wb-canvas-*`, `--wb-colors-*`, `--wb-space-*`, `--wb-radius-*`, `--wb-size-*`, `--wb-font-size-*`, `--wb-shadow-*`) come from the design-token export. `--wb-public-*` variables are the hand-authored component override contract shared by `@workflowbuilder/ui` and `@workflowbuilder/sdk`; remaining top-level names such as the theming variables above belong to the SDK. Every `var(--…)` in workspace CSS is validated in CI against the set of names that actually exist (stylelint, see `packages/tokens/README.md`).
+**Prefix ownership.** The Workflow Builder namespace has three families. `--wb-ds-*` variables come from the Figma design-token export, `--wb-sdk-*` variables are private SDK implementation details, and `--wb-public-*` variables are the supported customization contract shared by `@workflowbuilder/ui` and `@workflowbuilder/sdk`. Every `var(--…)` in workspace CSS is validated in continuous integration (CI) against the set of names that actually exist (stylelint, see `packages/tokens/README.md`).
 
 ## CSS — global resets
 
@@ -226,7 +226,7 @@ Deeper color and spacing customization goes through the generated `--wb-*` desig
 ```css
 body {
   margin: 0;
-  background-color: var(--wb-background-color);
+  background-color: var(--wb-public-background-color);
   overflow: hidden;
 }
 ```
@@ -250,10 +250,10 @@ specificity hacks or `!important` needed. Two things to be aware of:
   page-level scrollbar. If you embed the editor inside a scrolling page, override
   `body { overflow: auto; }` (or scope the SDK to a sized container with its own
   `overflow: hidden`) and let the editor's own viewport handle pan/zoom.
-- **`background-color: var(--wb-background-color)`** — the body picks up the SDK's
+- **`background-color: var(--wb-public-background-color)`** — the body picks up the SDK's
   background token. If you don't ship the SDK style sheet but render
   `<WorkflowBuilder.Root />`, the token is undefined and the body falls back to
-  transparent. Either ship the CSS or set `--wb-background-color` yourself.
+  transparent. Either ship the CSS or set `--wb-public-background-color` yourself.
 
 If you don't want the body resets at all, just override them in your own global
 stylesheet — unlayered consumer CSS beats `@layer ui.base` regardless of import

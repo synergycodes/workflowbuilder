@@ -1,13 +1,13 @@
 :root {
-  --wb-loader-background-opacity: 1;
-  --wb-panel-background-color: var(--wb-ui-bg-base);
+  --wb-sdk-loader-background-opacity: 1;
+  --wb-sdk-panel-background-color: var(--wb-ds-ui-bg-base);
 }
 
 .container {
   position: absolute;
   width: 100%;
   height: 100%;
-  background-color: var(--wb-panel-background-color);
+  background-color: var(--wb-sdk-panel-background-color);
   z-index: 100;
   animation: fade-in 0.3s both;
 
@@ -33,13 +33,13 @@
   }
 
   to {
-    opacity: var(--wb-loader-background-opacity);
+    opacity: var(--wb-sdk-loader-background-opacity);
   }
 }
 
 @keyframes fade-out {
   from {
-    opacity: var(--wb-loader-background-opacity);
+    opacity: var(--wb-sdk-loader-background-opacity);
   }
 
   to {

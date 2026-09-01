@@ -1,10 +1,10 @@
 :root {
-  --wb-public-tooltip-default-background: var(--wb-components-tooltip-bg-default);
-  --wb-public-tooltip-blue-background: var(--wb-components-tooltip-bg-info);
-  --wb-public-tooltip-padding: var(--wb-space-100) var(--wb-space-150);
-  --wb-public-tooltip-radius-size: var(--wb-radius-100);
-  --wb-public-tooltip-text-color: var(--wb-ui-text-tooltip-default);
-  --wb-public-tooltip-blue-text-color: var(--wb-ui-text-tooltip-accent-default);
+  --wb-public-tooltip-default-background: var(--wb-ds-components-tooltip-bg-default);
+  --wb-public-tooltip-blue-background: var(--wb-ds-components-tooltip-bg-info);
+  --wb-public-tooltip-padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
+  --wb-public-tooltip-radius-size: var(--wb-ds-radius-100);
+  --wb-public-tooltip-text-color: var(--wb-ds-ui-text-tooltip-default);
+  --wb-public-tooltip-blue-text-color: var(--wb-ds-ui-text-tooltip-accent-default);
 }
 
 @layer ui.component {
@@ -28,7 +28,7 @@
 
   .arrow {
     width: 0.625rem;
-    height: var(--wb-size-50);
+    height: var(--wb-ds-size-50);
     background-color: var(--tooltip-background);
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }

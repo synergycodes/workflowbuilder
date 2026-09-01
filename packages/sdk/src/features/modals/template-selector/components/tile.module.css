@@ -1,27 +1,27 @@
 :root {
-  --wb-template-tile-background: var(--wb-ui-bg-elevated); /* missing token */
-  --wb-template-tile-subtitle-color: var(--wb-colors-gray-500); /* missing token */
-  --wb-template-tile-outline-color: var(--wb-colors-gray-400); /* missing token */
-  --wb-template-tile-outline-hover-color: var(
-    --wb-canvas-node-stroke-hover
+  --wb-sdk-template-tile-background: var(--wb-ds-ui-bg-elevated); /* missing token */
+  --wb-sdk-template-tile-subtitle-color: var(--wb-ds-colors-gray-500); /* missing token */
+  --wb-sdk-template-tile-outline-color: var(--wb-ds-colors-gray-400); /* missing token */
+  --wb-sdk-template-tile-outline-hover-color: var(
+    --wb-ds-canvas-node-stroke-hover
   ); /* missing token: template tile hover outline */
-  --wb-template-tile-color: var(--wb-ui-text-default); /* missing token */
-  --wb-template-icon-color: var(--wb-ui-text-default); /* missing token */
+  --wb-sdk-template-tile-color: var(--wb-ds-ui-text-default); /* missing token */
+  --wb-sdk-template-icon-color: var(--wb-ds-ui-text-default); /* missing token */
 }
 
 .tile {
-  width: var(--wb-template-title-width);
-  padding: var(--wb-template-title-padding);
+  width: var(--wb-sdk-template-title-width);
+  padding: var(--wb-sdk-template-title-padding);
   display: flex;
   flex-direction: column;
   align-items: flex-start;
   gap: 1rem;
   border-radius: 0.375rem;
-  background: var(--wb-template-tile-background);
+  background: var(--wb-sdk-template-tile-background);
   outline: 1px solid transparent;
 
   & svg {
-    color: var(--wb-template-icon-color);
+    color: var(--wb-sdk-template-icon-color);
   }
 
   .description {
@@ -32,33 +32,33 @@
     gap: 0.25rem;
 
     .title {
-      color: var(--wb-template-tile-color);
+      color: var(--wb-sdk-template-tile-color);
     }
 
     .sub-title {
-      color: var(--wb-template-tile-subtitle-color);
+      color: var(--wb-sdk-template-tile-subtitle-color);
     }
   }
 
   &.outlined {
-    outline: 1px solid var(--wb-template-tile-outline-color);
+    outline: 1px solid var(--wb-sdk-template-tile-outline-color);
     background-color: transparent;
   }
 
   &:hover {
-    outline: 1px solid var(--wb-template-tile-outline-hover-color);
+    outline: 1px solid var(--wb-sdk-template-tile-outline-hover-color);
     cursor: pointer;
 
     & svg {
-      color: var(--wb-template-tile-outline-hover-color);
+      color: var(--wb-sdk-template-tile-outline-hover-color);
     }
   }
 
   &:not(:hover) {
-    transition: outline var(--wb-transition);
+    transition: outline var(--wb-public-transition);
 
     & svg {
-      transition: color var(--wb-transition);
+      transition: color var(--wb-public-transition);
     }
   }
 }
