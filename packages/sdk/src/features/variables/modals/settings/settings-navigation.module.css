@@ -14,6 +14,7 @@
 }
 
 .button {
+  composes: wb-text-label-l-emphasized from global;
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
@@ -21,14 +22,6 @@
   height: 2.25rem;
   padding: 0 var(--wb-space-200);
 
-  /* Button/Button Medium */
-  font-family: Poppins;
-  font-size: 14px;
-  font-style: normal;
-  font-weight: 600;
-  line-height: 100%; /* 14px */
-  font-weight: 600;
-  font-size: 0.875rem;
   border-radius: var(--wb-radius-100);
   background: transparent;
   border: none;

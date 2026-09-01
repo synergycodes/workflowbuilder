@@ -50,7 +50,7 @@ export default defineConfig({
         // Route `@workflowbuilder/sdk` through a docs-only shim that re-exports
         // just the symbols demo's schema/uischema files import — without the
         // SDK barrel's CSS side-effect, which would leak a full-viewport reset
-        // (body overflow:hidden, global Poppins) into the docs layout.
+        // (body overflow:hidden) into the docs layout.
         {
           find: /^@workflowbuilder\/sdk$/,
           replacement: path.resolve(import.meta.dirname, 'src/sdk-shim.ts'),

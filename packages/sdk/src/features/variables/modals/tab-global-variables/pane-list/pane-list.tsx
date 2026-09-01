@@ -41,7 +41,9 @@ export function PaneList({ className, setActivePane }: Props) {
         </Button>
       </TabHeader>
       {variablesIds.length === 0 && (
-        <p className={clsx('ax-public-p9', styles['empty-message'])}>{t('workflowsSettings.tab.emptyVariablesList')}</p>
+        <p className={clsx('wb-text-body-m', styles['empty-message'])}>
+          {t('workflowsSettings.tab.emptyVariablesList')}
+        </p>
       )}
       <div className={styles['variables']}>
         {variablesIds.map((id) => (

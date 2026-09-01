@@ -7,5 +7,5 @@
   border: 1px solid var(--wb-ui-stroke-default);
   color: var(--wb-ui-text-default);
 
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
 }

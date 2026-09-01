@@ -15,5 +15,5 @@
   border: var(--wb-node-section-border-width) solid var(--wb-node-section-border-color);
   color: var(--wb-ui-text-default);
 
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
 }

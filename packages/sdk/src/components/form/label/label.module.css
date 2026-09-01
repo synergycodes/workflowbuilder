@@ -31,12 +31,12 @@
   }
 
   .large {
-    composes: ax-public-p10 from global;
+    composes: wb-text-body-s from global;
   }
 
   .medium,
   .small {
-    composes: ax-public-p11 from global;
+    composes: wb-text-label-s from global;
   }
   .title {
     font-weight: 600;

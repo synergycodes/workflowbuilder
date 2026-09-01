@@ -66,8 +66,10 @@ both errors:
    `stylelint-disable-next-line` comment with the reason.
 2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
    — no fallbacks on system `var(--wb-…)` or `var(--ax-…)` properties; a fallback silently masks
-   exactly the typos rule 1 exists to catch. Genuine exceptions use the
-   standard mechanism with a mandatory reason:
+   exactly the typos rule 1 exists to catch. The public font-family variables
+   are the only exceptions and require fallbacks so standalone component CSS
+   remains usable without their default definitions. Genuine exceptions for
+   other tokens use the standard mechanism with a mandatory reason:
    `/* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason */`.
 
 Runs in CI (`pr-check.yml`, after `pnpm build:ui`), per-file from lint-staged

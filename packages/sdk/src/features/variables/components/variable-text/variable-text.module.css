@@ -34,6 +34,7 @@
 }
 
 .input {
+  composes: wb-text-label-m from global;
   position: relative;
   z-index: 1;
   display: block;
@@ -43,9 +44,6 @@
   border: none;
   background: transparent;
   color: unset;
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 400;
   line-height: 140%;
   outline: none;
   resize: none;
@@ -65,17 +63,15 @@
  * ALL text must be transparent — user reads text from the input layer above.
  * Only mention backgrounds are visible through the transparent input background.
  *
- * The library uses Tailwind utility classes (text-transparent, etc.) internally
- * which have no effect without Tailwind — we must set them manually.
+ * The library's text-transparent utility has no effect without Tailwind, so the
+ * transparent color must be set manually.
  */
 .highlighter {
+  composes: wb-text-label-m from global;
   padding: var(--wb-public-input-padding-medium);
   border: none;
   background: transparent;
   color: transparent;
-  font: inherit;
-  font-size: 0.75rem;
-  font-weight: 400;
   line-height: 140%;
   box-sizing: border-box;
   overflow: hidden;
@@ -145,7 +141,7 @@ body:has(.suggestionsContainer) {
 }
 
 .suggestionsTitle {
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
   color: var(--wb-ui-text-default);
 }
 
@@ -172,7 +168,7 @@ body:has(.suggestionsContainer) {
 }
 
 .groupHeader {
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
   color: var(--wb-ui-text-default);
   display: flex;
   color: var(--wb-ui-text-default);
@@ -218,11 +214,11 @@ body:has(.suggestionsContainer) {
 
 .suggestionLabel {
   color: var(--wb-ui-text-default);
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
 }
 
 .suggestionDescription {
-  composes: ax-public-p11 from global;
+  composes: wb-text-body-s from global;
   color: var(--wb-ui-text-subtle-default);
   display: -webkit-box;
   -webkit-line-clamp: 2;

@@ -21,11 +21,6 @@
     --wb-scroll-radius: var(--wb-radius-125);
     --wb-scroll-thumb-color: var(--wb-components-scrollbar-bg-default);
     --wb-scroll-track-color: var(--wb-colors-transparent);
-    /* Candidate for removal at the 3.0.0 close-out: the wb-text-* classes
-       carry their own families, so this variable loses reach as components
-       adopt them — decide then between removing it and narrowing it to
-       consumer-slot content. */
-    --wb-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   }
 }
 
@@ -54,9 +49,6 @@
   input[type='time']::-webkit-calendar-picker-indicator {
     display: none;
   }
-  * {
-    font-family: var(--wb-font-family);
-  }
   body {
     margin: 0;
     background-color: var(--wb-background-color);
@@ -69,10 +61,15 @@
     cursor: copy;
   }
   .workflow-builder-root {
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+
     *,
     *::before,
     *::after {
       box-sizing: border-box;
     }
+  }
+  .workflow-builder-root-shell {
+    display: contents;
   }
 }

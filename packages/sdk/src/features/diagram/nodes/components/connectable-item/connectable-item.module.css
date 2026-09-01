@@ -8,7 +8,7 @@
 }
 
 .connectable-item {
-  composes: ax-public-p11 from global;
+  composes: wb-text-node-s from global;
 
   position: relative;
   display: flex;

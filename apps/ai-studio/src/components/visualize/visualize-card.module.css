@@ -3,7 +3,7 @@
   margin-top: 0.4rem;
   padding-top: 0.5rem;
   border-top: 0.0625rem solid var(--wb-ui-stroke-default);
-  font-family: var(--wb-font-family);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   text-align: left;
   color: var(--wb-ui-text-default);
 

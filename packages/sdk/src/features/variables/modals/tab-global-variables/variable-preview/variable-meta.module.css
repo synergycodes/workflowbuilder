@@ -10,18 +10,19 @@
 }
 
 .name {
+  display: inline-flex;
+  align-items: center;
   max-width: 200px;
   min-height: 1.75rem;
-  line-height: 1.3125rem;
-  display: inline-flex;
-  font-family: 'Courier New';
   border-radius: 4px;
   padding: 4px 8px 3px 8px;
   color: var(--wb-ui-text-default);
   background: var(--wb-variable-bg);
-  display: -webkit-box;
-  -webkit-line-clamp: 1;
-  line-clamp: 1;
-  -webkit-box-orient: vertical;
+}
+
+.name-text {
+  min-width: 0;
   overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }

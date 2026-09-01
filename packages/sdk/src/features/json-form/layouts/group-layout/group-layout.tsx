@@ -13,7 +13,7 @@ function GroupLayout(props: LayoutProps<GroupLayoutElement>) {
   return (
     <LayoutWrapper {...props}>
       <div className={styles['group-layout']}>
-        <h1 className={clsx(styles['group-header'], 'ax-public-h10')}>{uischema.label}</h1>
+        <h1 className={clsx(styles['group-header'], 'wb-text-body-s-emphasized')}>{uischema.label}</h1>
         {renderElements(props)}
       </div>
     </LayoutWrapper>

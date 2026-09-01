@@ -39,16 +39,16 @@ export function PaneRemoveVariable({ className, setActivePane, id }: Props) {
     <div className={clsx(className)}>
       <TabHeader title="workflowsSettings.tab.removeVariable" onGoBack={() => setActivePane(VARIABLE_PANE.LIST)} />
       <div className={styles['content']}>
-        {!variable && t('variables.variableNotFound')}
+        {!variable && <span className="wb-text-body-m">{t('variables.variableNotFound')}</span>}
         {variable && <VariableMeta name={variable.name} type={variable.type} />}
         {nodesWithVariable.length === 0 ? (
-          <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.removeVariableWarning')}</p>
+          <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.removeVariableWarning')}</p>
         ) : (
           <>
-            <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.removeVariableIsBlocked')}</p>
+            <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.removeVariableIsBlocked')}</p>
             <ul className={styles['list']}>
               {nodesWithVariable.map(({ id, title }) => (
-                <li key={id} className="ax-public-p10">
+                <li key={id} className="wb-text-body-s">
                   {title}
                 </li>
               ))}

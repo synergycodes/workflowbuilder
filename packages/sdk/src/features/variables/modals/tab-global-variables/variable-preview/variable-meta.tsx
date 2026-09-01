@@ -13,8 +13,11 @@ type Props = {
 
 export function VariableMeta({ className = '', name, type }: Props) {
   return (
-    <div className={clsx('ax-public-p10', styles['container'], className)}>
-      <span className={styles['name']}>{name}</span>|<span>{variableTypeInfoByType[type].label}</span>
+    <div className={clsx('wb-text-body-s', styles['container'], className)}>
+      <span className={clsx('wb-text-code-mono', styles['name'])}>
+        <span className={styles['name-text']}>{name}</span>
+      </span>
+      |<span>{variableTypeInfoByType[type].label}</span>
     </div>
   );
 }

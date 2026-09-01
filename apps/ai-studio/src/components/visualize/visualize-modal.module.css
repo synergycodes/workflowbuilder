@@ -8,7 +8,7 @@
   padding: 2rem;
   background: rgba(8, 10, 14, 0.55);
   backdrop-filter: blur(2px);
-  font-family: var(--wb-font-family);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
 }
 
 .modal {

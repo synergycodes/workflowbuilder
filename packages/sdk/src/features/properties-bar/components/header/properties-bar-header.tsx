@@ -35,8 +35,8 @@ export function PropertiesBarHeader({
         prefixIcon={<Icon name="SidebarSimple" />}
       />
       <div className={styles['text-container']}>
-        <span className={name ? 'ax-public-h9' : 'ax-public-h7'}>{header}</span>
-        {name && <p className="ax-public-p11">{name}</p>}
+        <span className={name ? 'wb-text-title-s-emphasized' : 'wb-text-title-m-emphasized'}>{header}</span>
+        {name && <p className="wb-text-label-s">{name}</p>}
       </div>
       {onDotsClick && (
         <NavButton

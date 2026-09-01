@@ -28,6 +28,10 @@
   }
 
   .calendar {
+    composes: wb-text-body-s from global;
+    font-size: var(--wb-font-size-150);
+    font-weight: 400;
+    line-height: 130%;
     background: var(--wb-public-date-picker-dropdown-background);
     border: var(--wb-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
     border-radius: var(--wb-radius-100);
@@ -54,6 +58,18 @@
     transition: background-color 0.12s ease;
   }
 
+  .calendar :global(.rdp-weekday) {
+    font-size: var(--wb-font-size-150);
+    font-weight: 400;
+    line-height: 130%;
+  }
+
+  .calendar :global(.rdp-month_caption) {
+    font-size: var(--wb-font-size-150);
+    font-weight: 600;
+    line-height: 130%;
+  }
+
   /* month-nav chevrons: react-day-picker paints them with --rdp-accent-color;
      render them as a neutral nav control so both arrows match each other and the
      rest of the calendar. */
@@ -68,5 +84,8 @@
   .calendar :global(.rdp-selected .rdp-day_button) {
     background-color: var(--wb-public-date-picker-date-selected-background-color);
     color: var(--wb-public-date-picker-date-selected-color);
+    font-size: var(--wb-font-size-150);
+    font-weight: 600;
+    line-height: 130%;
   }
 }

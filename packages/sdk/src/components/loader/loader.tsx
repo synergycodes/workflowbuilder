@@ -29,7 +29,7 @@ export const Loader = memo(({ isLoading, isSemiTransparent }: LoaderType) => {
 
   return (
     <div className={clsx(styles['container'], visibilityClassName)} style={setLoaderBackgroundOpacityVariable}>
-      <div className={styles['loader']}>{t('loader.text')}</div>
+      <div className={clsx(styles['loader'], 'wb-text-headline-s')}>{t('loader.text')}</div>
     </div>
   );
 });
