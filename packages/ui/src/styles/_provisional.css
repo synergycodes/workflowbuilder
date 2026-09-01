@@ -1,0 +1,23 @@
+/* PROVISIONAL — this whole file is scheduled for deletion.
+   Tokens the Figma token export does not ship yet, defined here so the
+   classes that consume them work today. When the export lands in tokens.css
+   its unlayered definitions override this layered block automatically; then
+   delete this file together with its two wire-ups (src/index.ts import and
+   the combine-css-bundle globals list) — both fail the build if forgotten. */
+@layer ui.base {
+  :root {
+    /* wb/font-size/NNN, NNN ≈ px × 12.5 (truncated). */
+    --wb-font-size-125: 0.625rem;
+    --wb-font-size-137: 0.6875rem;
+    --wb-font-size-150: 0.75rem;
+    --wb-font-size-162: 0.8125rem;
+    --wb-font-size-175: 0.875rem;
+    --wb-font-size-200: 1rem;
+    --wb-font-size-225: 1.125rem;
+    --wb-font-size-250: 1.25rem;
+    --wb-font-size-275: 1.375rem;
+    --wb-font-size-300: 1.5rem;
+    --wb-font-size-350: 1.75rem;
+    --wb-font-size-400: 2rem;
+  }
+}
