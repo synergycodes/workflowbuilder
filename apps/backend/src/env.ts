@@ -19,6 +19,16 @@ export const env = {
   HOST: envOr('HOST', '127.0.0.1'),
   DATABASE_URL: envOr('DATABASE_URL', 'postgresql://wb:wb@127.0.0.1:5432/workflow_builder'),
   TEMPORAL_ADDRESS: envOr('TEMPORAL_ADDRESS', '127.0.0.1:7233'),
+  // Must match the worker's. Temporal Cloud spells it `<namespace>.<accountId>`.
+  TEMPORAL_NAMESPACE: envOr('TEMPORAL_NAMESPACE', 'default'),
+  // Unset means "infer": any of the credentials below turns TLS on. Set it to
+  // 'true' to require TLS on its own, or 'false' to assert plaintext.
+  TEMPORAL_TLS: envOptional('TEMPORAL_TLS'),
+  TEMPORAL_API_KEY: envOptional('TEMPORAL_API_KEY'),
+  // Paths, read at connect time. CA for a private issuer; the cert/key pair for mTLS.
+  TEMPORAL_TLS_CA_PATH: envOptional('TEMPORAL_TLS_CA_PATH'),
+  TEMPORAL_TLS_CERT_PATH: envOptional('TEMPORAL_TLS_CERT_PATH'),
+  TEMPORAL_TLS_KEY_PATH: envOptional('TEMPORAL_TLS_KEY_PATH'),
   // 0 disables (dev default); the deploy compose sets both
   RATE_LIMIT_EXECUTE_PER_MINUTE: Number(envOr('RATE_LIMIT_EXECUTE_PER_MINUTE', '0')),
   RATE_LIMIT_EXECUTE_PER_DAY: Number(envOr('RATE_LIMIT_EXECUTE_PER_DAY', '0')),

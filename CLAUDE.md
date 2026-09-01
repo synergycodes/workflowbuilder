@@ -102,7 +102,7 @@ UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuil
 - Temporal server on `7233` (gRPC)
 - Temporal UI on http://localhost:8233
 
-Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the box. `pnpm infra:down` stops everything.
+Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the box. Pointing either app at a secured cluster or Temporal Cloud is env-only (`TEMPORAL_NAMESPACE`, `TEMPORAL_TLS`, `TEMPORAL_API_KEY`, `TEMPORAL_TLS_*_PATH`) - see `apps/backend/README.md` "Connecting to a secured Temporal cluster". `pnpm infra:down` stops everything.
 
 ## Code Quality
 
