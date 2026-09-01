@@ -1,24 +1,24 @@
 :root {
-  --ax-public-list-item-background-color: var(--wb-ui-bg-fill-hover);
-  --ax-public-list-item-background-color-selected: var(--wb-colors-acc1-600);
-  --ax-public-list-item-color-selected: var(--wb-ui-text-onaccent-default);
-  --ax-public-list-item-color: var(--wb-ui-text-default);
+  --wb-public-list-item-background-color: var(--wb-ui-bg-fill-hover);
+  --wb-public-list-item-background-color-selected: var(--wb-colors-acc1-600);
+  --wb-public-list-item-color-selected: var(--wb-ui-text-onaccent-default);
+  --wb-public-list-item-color: var(--wb-ui-text-default);
 
-  --ax-public-list-item-background-color-focus: var(--wb-ui-bg-fill-hover);
-  --ax-public-list-item-outline-color-focus: var(--wb-shadow-ui-focus);
-  --ax-public-list-item-outline-size: var(--wb-shadow-ui-focus-element-spread);
+  --wb-public-list-item-background-color-focus: var(--wb-ui-bg-fill-hover);
+  --wb-public-list-item-outline-color-focus: var(--wb-shadow-ui-focus);
+  --wb-public-list-item-outline-size: var(--wb-shadow-ui-focus-element-spread);
 
-  --ax-public-list-item-color-destructive: var(--wb-ui-text-critical-default);
-  --ax-public-list-item-background-color-destructive: var(--wb-colors-red-400-10);
-  --ax-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-20);
-  --ax-public-list-border-radius: var(--wb-radius-75);
+  --wb-public-list-item-color-destructive: var(--wb-ui-text-critical-default);
+  --wb-public-list-item-background-color-destructive: var(--wb-colors-red-400-10);
+  --wb-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-20);
+  --wb-public-list-border-radius: var(--wb-radius-75);
 }
 
 @layer ui.base {
   html[data-theme='dark'] {
-    --ax-public-list-item-background-color-selected: var(--wb-colors-acc1-500);
-    --ax-public-list-item-background-color-destructive: var(--wb-colors-red-400-30);
-    --ax-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-50);
+    --wb-public-list-item-background-color-selected: var(--wb-colors-acc1-500);
+    --wb-public-list-item-background-color-destructive: var(--wb-colors-red-400-30);
+    --wb-public-list-item-background-color-hover-destructive: var(--wb-colors-red-400-50);
   }
 }
 
@@ -26,28 +26,28 @@
   .list-item {
     display: flex;
     align-items: center;
-    border-radius: var(--ax-public-list-border-radius);
+    border-radius: var(--wb-public-list-border-radius);
     width: max-content;
     min-width: 100%;
     cursor: pointer;
-    color: var(--ax-public-list-item-color);
+    color: var(--wb-public-list-item-color);
 
     /* State selectors below weigh the same, so order decides - a `:not()` here
        would silently outrank the states under it. */
     &:hover {
-      background-color: var(--ax-public-list-item-background-color);
+      background-color: var(--wb-public-list-item-background-color);
     }
 
     &:focus-visible,
     &[data-highlighted] {
       outline: none;
       box-shadow: var(--wb-shadow-ui-focus-element-x) var(--wb-shadow-ui-focus-element-y)
-        var(--wb-shadow-ui-focus-element-blur) var(--ax-public-list-item-outline-size)
-        var(--ax-public-list-item-outline-color-focus);
-      background-color: var(--ax-public-list-item-background-color-focus);
+        var(--wb-shadow-ui-focus-element-blur) var(--wb-public-list-item-outline-size)
+        var(--wb-public-list-item-outline-color-focus);
+      background-color: var(--wb-public-list-item-background-color-focus);
 
       @media (forced-colors: active) {
-        outline: var(--ax-public-list-item-outline-size) solid Highlight;
+        outline: var(--wb-public-list-item-outline-size) solid Highlight;
         box-shadow: none;
       }
     }
@@ -55,24 +55,24 @@
     /* After the highlight rule: a selected item keeps its selected colors
        while highlighted — the ring alone marks the keyboard cursor. */
     &[data-selected] {
-      background-color: var(--ax-public-list-item-background-color-selected);
-      color: var(--ax-public-list-item-color-selected);
+      background-color: var(--wb-public-list-item-background-color-selected);
+      color: var(--wb-public-list-item-color-selected);
     }
 
     &[data-disabled] {
-      color: var(--ax-public-input-color-disabled);
+      color: var(--wb-public-input-color-disabled);
       background-color: transparent;
       cursor: auto;
     }
 
     &.destructive {
-      color: var(--ax-public-list-item-color-destructive);
-      background-color: var(--ax-public-list-item-background-color-destructive);
+      color: var(--wb-public-list-item-color-destructive);
+      background-color: var(--wb-public-list-item-background-color-destructive);
 
       &:hover,
       &:focus-visible,
       &[data-highlighted] {
-        background-color: var(--ax-public-list-item-background-color-hover-destructive);
+        background-color: var(--wb-public-list-item-background-color-hover-destructive);
       }
     }
 

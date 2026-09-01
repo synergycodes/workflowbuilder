@@ -1,9 +1,9 @@
 :root {
-  --ax-public-icon-size-xl: var(--wb-size-300);
-  --ax-public-icon-size-l: 1.25rem /* missing token */;
-  --ax-public-icon-size-m: 1.125rem /* missing token */;
-  --ax-public-icon-size-s: 1.125rem /* missing token */;
-  --ax-public-icon-size-xs: var(--wb-size-200);
+  --wb-public-icon-size-xl: var(--wb-size-300);
+  --wb-public-icon-size-l: 1.25rem /* missing token */;
+  --wb-public-icon-size-m: 1.125rem /* missing token */;
+  --wb-public-icon-size-s: 1.125rem /* missing token */;
+  --wb-public-icon-size-xs: var(--wb-size-200);
 }
 
 @layer ui.component {
@@ -24,27 +24,27 @@
   }
 
   .xl > .icon {
-    width: var(--ax-public-icon-size-xl);
-    height: var(--ax-public-icon-size-xl);
+    width: var(--wb-public-icon-size-xl);
+    height: var(--wb-public-icon-size-xl);
   }
 
   .l > .icon {
-    width: var(--ax-public-icon-size-l);
-    height: var(--ax-public-icon-size-l);
+    width: var(--wb-public-icon-size-l);
+    height: var(--wb-public-icon-size-l);
   }
 
   .m > .icon {
-    width: var(--ax-public-icon-size-m);
-    height: var(--ax-public-icon-size-m);
+    width: var(--wb-public-icon-size-m);
+    height: var(--wb-public-icon-size-m);
   }
 
   .s > .icon {
-    width: var(--ax-public-icon-size-s);
-    height: var(--ax-public-icon-size-s);
+    width: var(--wb-public-icon-size-s);
+    height: var(--wb-public-icon-size-s);
   }
 
   .xs > .icon {
-    width: var(--ax-public-icon-size-xs);
-    height: var(--ax-public-icon-size-xs);
+    width: var(--wb-public-icon-size-xs);
+    height: var(--wb-public-icon-size-xs);
   }
 }

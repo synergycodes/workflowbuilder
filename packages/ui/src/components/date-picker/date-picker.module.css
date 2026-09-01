@@ -1,19 +1,19 @@
 @layer ui.component {
   .container {
     background: transparent;
-    border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
-    color: var(--ax-public-input-root-color);
+    border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
+    color: var(--wb-public-input-root-color);
     cursor: pointer;
     width: 100%;
 
     &[aria-expanded='true'] {
-      border-color: var(--ax-public-input-root-border-color-focus);
+      border-color: var(--wb-public-input-root-border-color-focus);
     }
 
     &.container--error {
-      background-color: var(--ax-public-input-root-background-color-critical);
-      border-color: var(--ax-public-input-root-border-color-critical);
-      color: var(--ax-public-input-root-color-critical);
+      background-color: var(--wb-public-input-root-background-color-critical);
+      border-color: var(--wb-public-input-root-border-color-critical);
+      color: var(--wb-public-input-root-color-critical);
     }
 
     &.container--placeholder {
@@ -28,11 +28,11 @@
   }
 
   .calendar {
-    background: var(--ax-public-date-picker-dropdown-background);
-    border: var(--wb-size-12) solid var(--ax-public-date-picker-dropdown-border-color);
+    background: var(--wb-public-date-picker-dropdown-background);
+    border: var(--wb-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
     border-radius: var(--wb-radius-100);
-    box-shadow: var(--ax-public-date-picker-dropdown-box-shadow);
-    color: var(--ax-public-date-picker-color);
+    box-shadow: var(--wb-public-date-picker-dropdown-box-shadow);
+    color: var(--wb-public-date-picker-color);
   }
 
   /*
@@ -44,10 +44,10 @@
   .calendar :global(.rdp-root) {
     --rdp-day_button-border-radius: var(--wb-radius-75);
     --rdp-selected-border: none;
-    --rdp-today-color: var(--ax-public-date-picker-date-today-color);
+    --rdp-today-color: var(--wb-public-date-picker-date-today-color);
     /* retheme react-day-picker's accent (range
        endpoints, focus rings) to our token instead. */
-    --rdp-accent-color: var(--ax-public-date-picker-date-today-color);
+    --rdp-accent-color: var(--wb-public-date-picker-date-today-color);
   }
 
   .calendar :global(.rdp-day_button) {
@@ -58,15 +58,15 @@
      render them as a neutral nav control so both arrows match each other and the
      rest of the calendar. */
   .calendar :global(.rdp-chevron) {
-    fill: var(--ax-public-date-picker-nav-color);
+    fill: var(--wb-public-date-picker-nav-color);
   }
 
   .calendar :global(.rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover) {
-    background-color: var(--ax-public-date-picker-date-hover-background-color);
+    background-color: var(--wb-public-date-picker-date-hover-background-color);
   }
 
   .calendar :global(.rdp-selected .rdp-day_button) {
-    background-color: var(--ax-public-date-picker-date-selected-background-color);
-    color: var(--ax-public-date-picker-date-selected-color);
+    background-color: var(--wb-public-date-picker-date-selected-background-color);
+    color: var(--wb-public-date-picker-date-selected-color);
   }
 }

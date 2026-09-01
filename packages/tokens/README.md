@@ -65,7 +65,7 @@ both errors:
    no CSS definition by design — their usage sites carry a
    `stylelint-disable-next-line` comment with the reason.
 2. `wb/no-system-token-fallbacks` (`tools/stylelint/no-system-token-fallbacks.mjs`)
-   — no fallbacks on `var(--wb-…)` / `var(--ax-public-…)`; a fallback silently masks
+   — no fallbacks on system `var(--wb-…)` or `var(--ax-…)` properties; a fallback silently masks
    exactly the typos rule 1 exists to catch. Genuine exceptions use the
    standard mechanism with a mandatory reason:
    `/* stylelint-disable-next-line wb/no-system-token-fallbacks -- reason */`.

@@ -1,41 +1,41 @@
 :root {
-  --ax-public-radio-size-medium: 1.25rem;
-  --ax-public-radio-size-small: 1.125rem;
-  --ax-public-radio-size-extra-small: var(--wb-size-200);
+  --wb-public-radio-size-medium: 1.25rem;
+  --wb-public-radio-size-small: 1.125rem;
+  --wb-public-radio-size-extra-small: var(--wb-size-200);
 
-  --ax-public-radio-dot-size-medium: 0.625rem;
-  --ax-public-radio-dot-size-small: var(--wb-size-100);
-  --ax-public-radio-dot-size-extra-small: var(--wb-size-100);
+  --wb-public-radio-dot-size-medium: 0.625rem;
+  --wb-public-radio-dot-size-small: var(--wb-size-100);
+  --wb-public-radio-dot-size-extra-small: var(--wb-size-100);
 }
 
 @layer ui.component {
   .medium {
-    width: var(--ax-public-radio-size-medium);
-    height: var(--ax-public-radio-size-medium);
+    width: var(--wb-public-radio-size-medium);
+    height: var(--wb-public-radio-size-medium);
 
     &::after {
-      width: var(--ax-public-radio-dot-size-medium);
-      height: var(--ax-public-radio-dot-size-medium);
+      width: var(--wb-public-radio-dot-size-medium);
+      height: var(--wb-public-radio-dot-size-medium);
     }
   }
 
   .small {
-    width: var(--ax-public-radio-size-small);
-    height: var(--ax-public-radio-size-small);
+    width: var(--wb-public-radio-size-small);
+    height: var(--wb-public-radio-size-small);
 
     &::after {
-      width: var(--ax-public-radio-dot-size-small);
-      height: var(--ax-public-radio-dot-size-small);
+      width: var(--wb-public-radio-dot-size-small);
+      height: var(--wb-public-radio-dot-size-small);
     }
   }
 
   .extra-small {
-    width: var(--ax-public-radio-size-extra-small);
-    height: var(--ax-public-radio-size-extra-small);
+    width: var(--wb-public-radio-size-extra-small);
+    height: var(--wb-public-radio-size-extra-small);
 
     &::after {
-      width: var(--ax-public-radio-dot-size-extra-small);
-      height: var(--ax-public-radio-dot-size-extra-small);
+      width: var(--wb-public-radio-dot-size-extra-small);
+      height: var(--wb-public-radio-dot-size-extra-small);
     }
   }
 }

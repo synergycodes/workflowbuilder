@@ -1,13 +1,13 @@
 :root {
-  --ax-public-avatar-border-color: var(--wb-components-text-field-stroke-default); /* missing token */
-  --ax-public-avatar-background-color: var(--wb-colors-blue-500); /* missing token */
-  --ax-public-avatar-border-size: 0.0625rem;
+  --wb-public-avatar-border-color: var(--wb-components-text-field-stroke-default); /* missing token */
+  --wb-public-avatar-background-color: var(--wb-colors-blue-500); /* missing token */
+  --wb-public-avatar-border-size: 0.0625rem;
 }
 
 @layer ui.component {
   .container {
-    border: var(--ax-public-avatar-border-size) solid var(--ax-public-avatar-border-color);
-    background-color: var(--ax-public-avatar-background-color);
+    border: var(--wb-public-avatar-border-size) solid var(--wb-public-avatar-border-color);
+    background-color: var(--wb-public-avatar-background-color);
     border-radius: 50%;
     overflow: hidden;
     display: flex;
@@ -15,23 +15,23 @@
     justify-content: center;
 
     &.extra-large {
-      width: calc(2.5rem + 2 * var(--ax-public-avatar-border-size));
-      height: calc(2.5rem + 2 * var(--ax-public-avatar-border-size));
+      width: calc(2.5rem + 2 * var(--wb-public-avatar-border-size));
+      height: calc(2.5rem + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.large {
-      width: calc(2rem + 2 * var(--ax-public-avatar-border-size));
-      height: calc(2rem + 2 * var(--ax-public-avatar-border-size));
+      width: calc(2rem + 2 * var(--wb-public-avatar-border-size));
+      height: calc(2rem + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.medium {
-      width: calc(1.5rem + 2 * var(--ax-public-avatar-border-size));
-      height: calc(1.5rem + 2 * var(--ax-public-avatar-border-size));
+      width: calc(1.5rem + 2 * var(--wb-public-avatar-border-size));
+      height: calc(1.5rem + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.small {
-      width: calc(1.125rem + 2 * var(--ax-public-avatar-border-size));
-      height: calc(1.125rem + 2 * var(--ax-public-avatar-border-size));
+      width: calc(1.125rem + 2 * var(--wb-public-avatar-border-size));
+      height: calc(1.125rem + 2 * var(--wb-public-avatar-border-size));
     }
 
     img {

@@ -1,7 +1,7 @@
 :root {
   --wb-conditions-form-border-color: var(--wb-ui-stroke-default); /* missing token */
   --wb-conditions-form-border-radius: 0.75rem; /* missing token */
-  --wb-conditions-form-header-color: var(--ax-public-form-label-color);
+  --wb-conditions-form-header-color: var(--wb-public-form-label-color);
 }
 
 .container {

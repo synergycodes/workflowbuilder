@@ -1,5 +1,5 @@
 :root {
-  --wb-settings-remove-bg: var(--ax-public-modal-header-background);
+  --wb-settings-remove-bg: var(--wb-public-modal-header-background);
 }
 
 .description {

@@ -1,6 +1,6 @@
 :root {
-  --ax-public-node-title-color: var(--wb-ui-text-default);
-  --ax-public-node-title-subtitle: var(--wb-ui-text-subtle-default);
+  --wb-public-node-title-color: var(--wb-ui-text-default);
+  --wb-public-node-title-subtitle: var(--wb-ui-text-subtle-default);
 }
 
 @layer ui.component {
@@ -13,7 +13,7 @@
     width: 100%;
 
     .title {
-      color: var(--ax-public-node-title-color);
+      color: var(--wb-public-node-title-color);
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
@@ -21,7 +21,7 @@
     }
 
     .subtitle {
-      color: var(--ax-public-node-title-subtitle);
+      color: var(--wb-public-node-title-subtitle);
     }
   }
 }

@@ -1,28 +1,28 @@
 :root {
-  --ax-public-list-item-padding-large: var(--wb-space-137) var(--wb-space-100);
-  --ax-public-list-item-padding-medium: var(--wb-space-125) var(--wb-space-100);
-  --ax-public-list-item-padding-small: var(--wb-space-100) var(--wb-space-100);
-  --ax-public-list-item-gap-small: var(--wb-space-150);
-  --ax-public-list-item-gap-medium: var(--wb-space-150);
-  --ax-public-list-item-gap-large: var(--wb-space-150);
+  --wb-public-list-item-padding-large: var(--wb-space-137) var(--wb-space-100);
+  --wb-public-list-item-padding-medium: var(--wb-space-125) var(--wb-space-100);
+  --wb-public-list-item-padding-small: var(--wb-space-100) var(--wb-space-100);
+  --wb-public-list-item-gap-small: var(--wb-space-150);
+  --wb-public-list-item-gap-medium: var(--wb-space-150);
+  --wb-public-list-item-gap-large: var(--wb-space-150);
 }
 
 @layer ui.component {
   .large {
     composes: ax-public-p9 from global;
-    padding: var(--ax-public-list-item-padding-large);
-    gap: var(--ax-public-list-item-gap-large);
+    padding: var(--wb-public-list-item-padding-large);
+    gap: var(--wb-public-list-item-gap-large);
   }
 
   .medium {
     composes: ax-public-p10 from global;
-    padding: var(--ax-public-list-item-padding-medium);
-    gap: var(--ax-public-list-item-gap-medium);
+    padding: var(--wb-public-list-item-padding-medium);
+    gap: var(--wb-public-list-item-gap-medium);
   }
 
   .small {
     composes: ax-public-p10 from global;
-    padding: var(--ax-public-list-item-padding-small);
-    gap: var(--ax-public-list-item-gap-small);
+    padding: var(--wb-public-list-item-padding-small);
+    gap: var(--wb-public-list-item-gap-small);
   }
 }

@@ -50,7 +50,7 @@ the identical `@layer ui.base, ui.component;` statement.
 
 ## Variable defaults
 
-`:root` blocks with variable defaults (`--ax-public-*` in component sources,
+`:root` blocks with variable defaults (`--wb-public-*` in component sources,
 the `--wb-*` design tokens copied from `@workflowbuilder/ui-tokens`) ship
 inside `ui.base`. Layered declarations lose to any unlayered consumer CSS, so
 a plain `:root { --wb-…: … }` override in an app always wins - even when a

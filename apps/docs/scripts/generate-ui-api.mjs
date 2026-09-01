@@ -328,7 +328,7 @@ function extractCssVariables(directory, cssSources, warnings, slug) {
   const variables = [];
   for (const file of files) {
     const css = readFileSync(file, 'utf8');
-    const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
+    const re = /(--wb-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
       if (seen.has(m[1])) continue;

@@ -1,10 +1,10 @@
 :root {
-  --ax-public-list-box-background-color: var(--wb-ui-bg-base);
-  --ax-public-list-box-border-radius: var(--wb-radius-100);
-  --ax-public-list-box-box-shadow: var(--wb-shadow-ui-s-x) var(--wb-shadow-ui-s-y) var(--wb-shadow-ui-s-blur)
+  --wb-public-list-box-background-color: var(--wb-ui-bg-base);
+  --wb-public-list-box-border-radius: var(--wb-radius-100);
+  --wb-public-list-box-box-shadow: var(--wb-shadow-ui-s-x) var(--wb-shadow-ui-s-y) var(--wb-shadow-ui-s-blur)
     var(--wb-shadow-ui-s-spread) var(--wb-shadow-ui-color);
-  --ax-public-list-box-padding: var(--wb-space-50) var(--wb-space-50);
-  --ax-public-list-box-gap: var(--wb-space-50);
+  --wb-public-list-box-padding: var(--wb-space-50) var(--wb-space-50);
+  --wb-public-list-box-gap: var(--wb-space-50);
 }
 
 @layer ui.component {
@@ -20,19 +20,19 @@
      attributes (same pattern as Tooltip.Popup and Dialog.Popup). */
   .list-box {
     display: flex;
-    padding: var(--ax-public-list-box-padding);
+    padding: var(--wb-public-list-box-padding);
     flex-direction: column;
     align-items: center;
-    gap: var(--ax-public-list-box-gap);
+    gap: var(--wb-public-list-box-gap);
     max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
 
     margin: 0;
 
-    border-radius: var(--ax-public-list-box-border-radius);
-    background: var(--ax-public-list-box-background-color);
-    box-shadow: var(--ax-public-list-box-box-shadow);
+    border-radius: var(--wb-public-list-box-border-radius);
+    background: var(--wb-public-list-box-background-color);
+    box-shadow: var(--wb-public-list-box-box-shadow);
 
     transition:
       opacity 150ms ease-out,

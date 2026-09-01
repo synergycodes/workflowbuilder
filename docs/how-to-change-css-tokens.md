@@ -1,10 +1,10 @@
 # How to change CSS tokens?
 
-All colors, spacing, and radii resolve through `--wb-*` design-token custom properties
-defined in `@workflowbuilder/ui/tokens.css` (imported by the SDK's stylesheet).
-The shipped defaults live inside the `ui.base` cascade layer, so a plain
-unlayered override in your own stylesheet always wins - import order does not
-matter.
+`@workflowbuilder/ui` resolves colors, spacing, and radii through generated
+`--wb-*` design tokens defined in `@workflowbuilder/ui/tokens.css` and
+hand-authored `--wb-public-*` component overrides. Its shipped defaults live
+inside the `ui.base` cascade layer, so a plain unlayered override in your own
+stylesheet always wins - import order does not matter.
 
 ## Consuming from npm (SDK or UI package)
 
@@ -14,13 +14,15 @@ Override the variables you care about in any stylesheet of your app:
 :root {
   --wb-components-button-solid-primary-default: #0f62fe;
   --wb-ui-bg-inset: #f4f4f4;
+  --wb-public-date-picker-dropdown-background: #fff;
 }
 ```
 
-To discover variable names, inspect elements in devtools or browse
-`node_modules/@workflowbuilder/ui/dist/tokens.css`. Theme-specific values are
-keyed on `html[data-theme='light' | 'dark']`, so scope your overrides the same
-way when they should apply to one theme only.
+Discover design-token names in `node_modules/@workflowbuilder/ui/dist/tokens.css`
+and UI component overrides in `node_modules/@workflowbuilder/ui/dist/index.css`.
+UI component pages also include generated tables for component-local variables.
+Theme-specific values are keyed on `html[data-theme='light' | 'dark']`, so scope
+your overrides the same way when they should apply to one theme only.
 
 ## Working in this monorepo
 

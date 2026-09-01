@@ -3,10 +3,9 @@ title: Design tokens
 description: How @workflowbuilder/ui turns Figma design tokens into the --wb-* CSS custom properties that style every component.
 ---
 
-Every `@workflowbuilder/ui` component is styled with CSS custom properties
-(`--wb-*`) rather than hard-coded values. Those properties are generated from a
-single design-token source, so the visual language stays consistent and is
-retunable without touching component code.
+Every `@workflowbuilder/ui` component uses generated `--wb-*` design tokens for
+shared visual decisions. Components also expose hand-authored `--wb-public-*`
+variables whose defaults may reference tokens or component-specific values.
 
 ## The pipeline
 
@@ -64,10 +63,10 @@ There are three override levels, from broadest to most local:
 
 1. **Primitives** (`--wb-colors-*`, `--wb-space-*`, …) - retune the palette/scales globally.
 2. **Semantic tokens** (`--wb-ui-*`, `--wb-components-*`, …) - re-map meaning (e.g. make "primary" green).
-3. **Component variables** (`--ax-public-*`) - tweak a single component; see each component's CSS variables table.
+3. **Component variables** (`--wb-public-*`) - tweak a single component; component pages include generated tables for component-local variables.
 
 For the enterprise path you replace `tokens.json` with one generated from your
-own Figma design kit and rebuild; the `--wb-*` surface stays the same.
+own Figma design kit and rebuild; the generated design-token surface stays the same.
 
 ## Regenerating
 

@@ -26,6 +26,8 @@
  *    required to remain self-contained and usable without a CDN.
  * 6. The root JS barrel's entry-chunk stylesheet must carry every generated
  *    `@font-face` rule so importing the barrel cannot silently lose the fonts.
+ * 7. The SDK's three public-variable defaults must be present inside an
+ *    `@layer` so unlayered consumer overrides always win.
  *
  * These are the only lines of defense for these bug classes today; source-level lint
  * rules would catch some of them earlier but none is configured yet.
@@ -36,7 +38,7 @@ import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import postcss, { type AtRule, type ChildNode } from 'postcss';
+import postcss, { AtRule, type ChildNode, type Node } from 'postcss';
 
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
 const packageDirectory = path.resolve(currentDirectory, '..');
@@ -132,6 +134,45 @@ function checkLayerCoverage(files: string[]): FailureReport[] {
     const hits = findTopLevelViolations(content);
 
     if (hits.length > 0) failures.push({ file, hits });
+  }
+
+  return failures;
+}
+
+const SDK_LAYERED_PUBLIC_DEFAULTS = new Set([
+  '--wb-public-form-label-color',
+  '--wb-public-form-label-asterisk-color',
+  '--wb-public-form-rich-text-color',
+]);
+
+function checkSdkPublicDefaultLayerCoverage(files: string[], targetDistributionDirectory: string): FailureReport[] {
+  const failures: FailureReport[] = [];
+  const found = new Set<string>();
+
+  for (const file of files) {
+    const hits: Hit[] = [];
+    const content = readFileSync(path.resolve(targetDistributionDirectory, file), 'utf8');
+
+    postcss.parse(content).walkDecls((declaration) => {
+      if (!SDK_LAYERED_PUBLIC_DEFAULTS.has(declaration.prop)) return;
+      found.add(declaration.prop);
+
+      let ancestor: Node | undefined = declaration.parent;
+      while (ancestor && !(ancestor instanceof AtRule && ancestor.name === 'layer')) {
+        ancestor = ancestor.parent;
+      }
+      if (!ancestor) hits.push(hitFor(declaration));
+    });
+
+    if (hits.length > 0) failures.push({ file, hits });
+  }
+
+  const missing = [...SDK_LAYERED_PUBLIC_DEFAULTS].filter((name) => !found.has(name));
+  if (missing.length > 0) {
+    failures.push({
+      file: '(dist)',
+      hits: missing.map((name) => ({ line: 0, column: 0, snippet: `${name} is missing` })),
+    });
   }
 
   return failures;
@@ -423,6 +464,12 @@ for (const directory of process.argv.slice(2)) {
       `Built CSS (${rootLabel}): every non-data url() resolves inside dist`,
       checkUrlTargets(targetFiles, targetDistributionDirectory),
       'Copy every referenced asset into dist and keep its path relative to the stylesheet.',
+      rootLabel,
+    ),
+    report(
+      `Built CSS (${rootLabel}): SDK public defaults are present inside @layer blocks`,
+      checkSdkPublicDefaultLayerCoverage(targetFiles, targetDistributionDirectory),
+      'The three SDK-owned `--wb-public-form-*` defaults must ship inside an `@layer` block.',
       rootLabel,
     ),
   );

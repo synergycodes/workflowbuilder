@@ -1,29 +1,29 @@
 :root {
-  --ax-public-button-gap-xl: var(--wb-space-100);
-  --ax-public-button-gap-l: var(--wb-space-100);
-  --ax-public-button-gap-m: var(--wb-space-100);
-  --ax-public-button-gap-s: var(--wb-space-100);
-  --ax-public-button-gap-xs: var(--wb-space-100);
+  --wb-public-button-gap-xl: var(--wb-space-100);
+  --wb-public-button-gap-l: var(--wb-space-100);
+  --wb-public-button-gap-m: var(--wb-space-100);
+  --wb-public-button-gap-s: var(--wb-space-100);
+  --wb-public-button-gap-xs: var(--wb-space-100);
 }
 
 @layer ui.component {
   .xl {
-    gap: var(--ax-public-button-gap-xl);
+    gap: var(--wb-public-button-gap-xl);
   }
 
   .l {
-    gap: var(--ax-public-button-gap-l);
+    gap: var(--wb-public-button-gap-l);
   }
 
   .m {
-    gap: var(--ax-public-button-gap-m);
+    gap: var(--wb-public-button-gap-m);
   }
 
   .s {
-    gap: var(--ax-public-button-gap-s);
+    gap: var(--wb-public-button-gap-s);
   }
 
   .xs {
-    gap: var(--ax-public-button-gap-xs);
+    gap: var(--wb-public-button-gap-xs);
   }
 }
