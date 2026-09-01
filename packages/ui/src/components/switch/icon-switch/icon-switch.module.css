@@ -7,11 +7,11 @@
   --ax-public-icon-switch-padding: 0.5rem;
   --ax-public-icon-switch-icon-size: 1rem;
 
-  --ax-public-icon-switch-track-bg: var(--ax-ui-bg-tertiary-default);
-  --ax-public-icon-switch-thumb-bg-primary: var(--ax-ui-bg-tertiary-selected);
-  --ax-public-icon-switch-icon-color: var(--ax-txt-tertiary-default);
-  --ax-public-icon-switch-icon-selected-color: var(--ax-txt-primary-white);
-  --ax-public-icon-switch-thumb-bg-secondary: var(--ax-ui-bg-primary-default);
+  --ax-public-icon-switch-track-bg: var(--wb-ui-bg-inset);
+  --ax-public-icon-switch-thumb-bg-primary: var(--wb-components-selector-fill-checked);
+  --ax-public-icon-switch-icon-color: var(--wb-ui-text-muted-default);
+  --ax-public-icon-switch-icon-selected-color: var(--wb-ui-text-onaccent-default);
+  --ax-public-icon-switch-thumb-bg-secondary: var(--wb-ui-bg-base);
 }
 
 @layer ui.component {

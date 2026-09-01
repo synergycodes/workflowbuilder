@@ -2,14 +2,14 @@
   display: flex;
   flex-flow: column;
   gap: 0.5rem;
-  padding: var(--ax-token-spacing-spacing-12) var(--ax-token-spacing-spacing-16) var(--ax-token-spacing-spacing-12) 16px;
+  padding: var(--wb-space-150) var(--wb-space-200) var(--wb-space-150) 16px;
   border-radius: 8px;
-  border: 1px solid var(--ax-ui-bg-secondary-default);
-  background: var(--ax-ui-bg-secondary-default);
+  border: 1px solid var(--wb-ui-bg-elevated);
+  background: var(--wb-ui-bg-elevated);
   transition: all var(--wb-transition);
 
   &:hover {
-    border-color: var(--ax-ui-stroke-primary-highlight);
+    border-color: var(--wb-ui-stroke-highlight);
 
     .actions {
       opacity: 1;
@@ -31,7 +31,7 @@
 
 .description {
   margin: 0;
-  color: var(--ax-txt-tertiary-default);
+  color: var(--wb-ui-text-muted-default);
   display: -webkit-box;
   -webkit-line-clamp: 2;
   line-clamp: 2;

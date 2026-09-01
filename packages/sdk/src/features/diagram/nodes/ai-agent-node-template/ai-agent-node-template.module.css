@@ -23,14 +23,14 @@
   }
 
   .selected-model-icon {
-    background-color: var(--ax-txt-primary-default);
-    color: var(--ax-txt-primary-inverse);
+    background-color: var(--wb-ui-text-default);
+    color: var(--wb-ui-text-inverse-default);
     outline: none;
   }
 
   .selected-memory-icon {
-    color: var(--ax-txt-primary-white);
-    background-color: var(--ax-button-gray-bg-default);
+    color: var(--wb-ui-text-onaccent-default);
+    background-color: var(--wb-components-button-solid-gray-default);
     outline: none;
   }
 }

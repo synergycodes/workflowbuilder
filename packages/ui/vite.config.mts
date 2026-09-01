@@ -57,7 +57,7 @@ function isExternal(id: string): boolean {
 }
 
 function copyTokenStyles() {
-  const files = ['tokens.css', 'numerals-mode-1.css', 'primitives-mode-1.css'];
+  const files = ['tokens.css'];
 
   for (const file of files) {
     if (!existsSync(path.resolve(rootDirectory, `../tokens/dist/${file}`))) {

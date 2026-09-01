@@ -7,24 +7,24 @@
   --ax-public-checkbox-icon-size-small: 0.75rem;
   --ax-public-checkbox-icon-size-extra-small: 0.625rem;
 
-  --ax-public-checkbox-border-radius-medium: var(--ax-token-radius-checkbox-m);
-  --ax-public-checkbox-border-radius-small: var(--ax-token-radius-checkbox-s);
-  --ax-public-checkbox-border-radius-extra-small: var(--ax-token-radius-checkbox-xs);
+  --ax-public-checkbox-border-radius-medium: var(--wb-radius-50);
+  --ax-public-checkbox-border-radius-small: var(--wb-radius-50);
+  --ax-public-checkbox-border-radius-extra-small: var(--wb-radius-50);
 
   --ax-public-checkbox-border-width: 0.0625rem;
 
-  --ax-public-checkbox-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-checkbox-bg: var(--ax-ui-bg-primary-default);
-  --ax-public-checkbox-icon-color: var(--ax-colors-gray-100); /* missing token */
+  --ax-public-checkbox-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-checkbox-bg: var(--wb-ui-bg-base);
+  --ax-public-checkbox-icon-color: var(--wb-colors-gray-100); /* missing token */
 
-  --ax-public-checkbox-checked-bg: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-checkbox-checked-bg: var(--wb-components-selector-fill-checked);
 
-  --ax-public-checkbox-focus-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-checkbox-focus-border-shadow: var(--ax-txt-primary-default);
+  --ax-public-checkbox-focus-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-checkbox-focus-border-shadow: var(--wb-ui-text-default);
 
-  --ax-public-checkbox-disabled-bg: var(--ax-ui-bg-tertiary-default);
-  --ax-public-checkbox-disabled-border-color: var(--ax-ui-stroke-secondary-default);
-  --ax-public-checkbox-disabled-icon-color: var(--ax-nav-button-icon-primary-disabled);
+  --ax-public-checkbox-disabled-bg: var(--wb-ui-bg-inset);
+  --ax-public-checkbox-disabled-border-color: var(--wb-ui-stroke-subtle);
+  --ax-public-checkbox-disabled-icon-color: var(--wb-components-nav-button-icon-primary-disabled);
 }
 
 @layer ui.component {

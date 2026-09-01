@@ -1,5 +1,5 @@
 :root {
-  --ax-public-form-rich-text-color: var(--ax-txt-secondary-default);
+  --ax-public-form-rich-text-color: var(--wb-ui-text-subtle-default);
 }
 
 .container {

@@ -1,9 +1,9 @@
 :root {
   --wb-message-control-error-color: var(--ax-public-snackbar-title-color);
   --wb-message-control-error-background-color: var(--ax-public-snackbar-error-background);
-  --wb-message-control-spacing: var(--ax-primitive-even-8);
-  --wb-message-control-border-radius: var(--ax-primitive-even-8);
-  --wb-message-control-padding: var(--ax-primitive-even-8) var(--ax-primitive-even-16);
+  --wb-message-control-spacing: var(--wb-space-100);
+  --wb-message-control-border-radius: var(--wb-radius-100);
+  --wb-message-control-padding: var(--wb-space-100) var(--wb-space-200);
 }
 
 .container {
@@ -20,13 +20,17 @@
 }
 
 .container--neutral {
-  --color: var(--ax-txt-primary-default);
-  --background-color: var(--ax-ui-bg-secondary-default);
+  --color: var(--wb-ui-text-default);
+  --background-color: var(--wb-ui-bg-elevated);
 }
 
 .container--warning {
-  --color: var(--ax-chips-acc5-txt);
-  --background-color: var(--ax-chips-acc5-bg);
+  --color: var(--wb-colors-acc5-700);
+  --background-color: var(--wb-colors-acc5-500-10);
+}
+
+html[data-theme='dark'] .container--warning {
+  --color: var(--wb-colors-acc5-200);
 }
 
 .container--error {

@@ -3,19 +3,19 @@
 }
 
 .container {
-  --modal-padding-x: var(--ax-token-spacing-modal-l-header-pad);
-  --modal-padding-y: var(--ax-token-spacing-modal-l-header-pad);
+  --modal-padding-x: var(--wb-space-300);
+  --modal-padding-y: var(--wb-space-300);
 
   width: 100%;
   display: flex;
   flex-flow: column;
   gap: 2rem;
-  color: var(--ax-txt-secondary-default);
+  color: var(--wb-ui-text-subtle-default);
 
   @media (width > 800px) {
     flex-flow: row;
     height: 500px;
-    gap: var(--ax-primitive-4rule-48);
+    gap: var(--wb-space-600);
   }
 }
 

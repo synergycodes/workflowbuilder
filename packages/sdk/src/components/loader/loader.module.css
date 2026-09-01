@@ -1,6 +1,6 @@
 :root {
   --wb-loader-background-opacity: 1;
-  --wb-panel-background-color: var(--ax-ui-bg-primary-default);
+  --wb-panel-background-color: var(--wb-ui-bg-base);
 }
 
 .container {

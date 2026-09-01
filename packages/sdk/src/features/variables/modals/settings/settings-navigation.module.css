@@ -8,8 +8,8 @@
   flex-shrink: 0;
   align-self: flex-start;
   text-align: left;
-  gap: var(--ax-token-spacing-spacing-4);
-  border-radius: var(--ax-token-radius-dropdown-wrap-s);
+  gap: var(--wb-space-50);
+  border-radius: var(--wb-radius-100);
   background: var(--wb-settings-navigation-background);
 }
 
@@ -17,9 +17,9 @@
   display: inline-flex;
   justify-content: flex-start;
   align-items: center;
-  color: var(--ax-nav-button-icon-primary-default);
+  color: var(--wb-components-nav-button-icon-primary-default);
   height: 2.25rem;
-  padding: 0 var(--ax-token-spacing-button-l-h-pad-1);
+  padding: 0 var(--wb-space-200);
 
   /* Button/Button Medium */
   font-family: Poppins;
@@ -29,7 +29,7 @@
   line-height: 100%; /* 14px */
   font-weight: 600;
   font-size: 0.875rem;
-  border-radius: var(--ax-token-radius-button-l);
+  border-radius: var(--wb-radius-100);
   background: transparent;
   border: none;
   transition: all var(--wb-transition);
@@ -40,6 +40,6 @@
   }
 
   &.button--active {
-    color: var(--ax-nav-button-icon-primary-pressed);
+    color: var(--wb-components-nav-button-icon-primary-pressed);
   }
 }

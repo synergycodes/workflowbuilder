@@ -1,25 +1,27 @@
 :root {
-  --wb-syntax-highlighter-color: var(--ax-colors-gray-600);
-  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-acc5-700);
-  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-blue-500);
-  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
-  --wb-syntax-highlighter-color-cursor: var(--ax-colors-blue-500);
+  --wb-syntax-highlighter-color: var(--wb-colors-gray-600);
+  --wb-syntax-highlighter-color-variable-key: var(--wb-colors-acc5-700);
+  --wb-syntax-highlighter-color-variable-value: var(--wb-colors-blue-500);
+  --wb-syntax-highlighter-background-color-highlight: var(--wb-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--wb-colors-blue-500);
 }
 
 html[data-theme='light'] {
-  --wb-syntax-highlighter-color: var(--ax-colors-gray-600);
-  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-acc5-700);
-  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-acc1-600);
-  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
-  --wb-syntax-highlighter-color-cursor: var(--ax-txt-secondary-default);
+  --wb-syntax-highlighter-color: var(--wb-colors-gray-600);
+  --wb-syntax-highlighter-color-variable-key: var(--wb-colors-acc5-700);
+  --wb-syntax-highlighter-color-variable-value: var(--wb-colors-acc1-600);
+  --wb-syntax-highlighter-background-color-highlight: var(--wb-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--wb-ui-text-subtle-default);
 }
 
 html[data-theme='dark'] {
-  --wb-syntax-highlighter-color: var(--ax-colors-gray-200);
-  --wb-syntax-highlighter-color-variable-key: var(--ax-colors-orange-300);
-  --wb-syntax-highlighter-color-variable-value: var(--ax-colors-acc1-400);
-  --wb-syntax-highlighter-background-color-highlight: var(--ax-colors-green-400-30);
-  --wb-syntax-highlighter-color-cursor: var(--ax-colors-blue-500);
+  --wb-syntax-highlighter-color: var(--wb-colors-gray-200);
+  --wb-syntax-highlighter-color-variable-key: var(--wb-colors-orange-300);
+  --wb-syntax-highlighter-color-variable-value: var(
+    --wb-colors-acc1-300
+  ); /* missing token: syntax highlighter literal color */
+  --wb-syntax-highlighter-background-color-highlight: var(--wb-colors-green-400-30);
+  --wb-syntax-highlighter-color-cursor: var(--wb-colors-blue-500);
 }
 
 /* It shows a tooltip indicating that editing is blocked when disabled */
