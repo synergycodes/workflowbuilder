@@ -19,5 +19,23 @@
     --wb-font-size-300: 1.5rem;
     --wb-font-size-350: 1.75rem;
     --wb-font-size-400: 2rem;
+
+    --wb-radius-50: 0.25rem;
+    --wb-space-50: 0.25rem;
+    --wb-space-75: 0.375rem;
+    --wb-size-12: 0.0625rem;
+    --wb-components-chips-inset-outline: var(--ax-colors-acc1-500);
+  }
+
+  html[data-theme='light'] {
+    --wb-components-chips-solid: var(--ax-colors-gray-300);
+    --wb-components-chips-solid-text: var(--ax-colors-gray-800);
+    --wb-components-chips-overlay-outline: color-mix(in srgb, var(--ax-colors-gray-100) 85%, transparent);
+  }
+
+  html[data-theme='dark'] {
+    --wb-components-chips-solid: var(--ax-colors-gray-650);
+    --wb-components-chips-solid-text: var(--ax-colors-gray-100);
+    --wb-components-chips-overlay-outline: color-mix(in srgb, var(--ax-colors-gray-900) 75%, transparent);
   }
 }

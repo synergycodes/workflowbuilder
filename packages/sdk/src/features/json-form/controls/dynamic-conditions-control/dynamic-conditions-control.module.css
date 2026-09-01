@@ -2,8 +2,6 @@
   --wb-conditions-form-border-color: var(--ax-ui-stroke-primary-default); /* missing token */
   --wb-conditions-form-border-radius: 0.75rem; /* missing token */
   --wb-conditions-form-header-color: var(--ax-public-form-label-color);
-
-  --wb-conditions-form-tag-bg-color: var(--ax-chips-neutral-bg);
 }
 
 .container {
@@ -27,12 +25,5 @@
 }
 
 .tag {
-  composes: ax-public-p10 from global;
-
-  display: inline-block;
   margin-top: 0.25rem;
-  padding: 0.25rem 0.5rem;
-  border-radius: 0.25rem;
-  background-color: var(--wb-conditions-form-tag-bg-color);
-  margin-right: auto;
 }
