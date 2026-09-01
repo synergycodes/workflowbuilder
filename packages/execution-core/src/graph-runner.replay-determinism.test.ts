@@ -80,6 +80,10 @@ function trigger(id: string): TestNode {
   return { id, type: 'test/node', config: {} };
 }
 
+function start(id: string): TestNode {
+  return { id, type: 'test/node', config: {}, role: 'start' };
+}
+
 function edge(id: string, source: string, target: string, sourceHandle?: string): WorkflowEdgeDefinition {
   return { id, sourceNodeId: source, targetNodeId: target, sourceHandle };
 }
@@ -129,7 +133,7 @@ const RUNS = 10;
 
 describe('runGraph — replay determinism (re-execution equivalence)', () => {
   it('linear A→B→C — every run produces the same activity order, events, statuses', async () => {
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
 
     const records = await runNTimes(input, {}, RUNS);
     expectAllRunsIdentical(records);
@@ -144,7 +148,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // Promise.all resolves with results in input order. The runner reads
     // them positionally, so the recorded event sequence must be identical
     // even though B and C run concurrently.
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'A', 'C')]);
 
     const records = await runNTimes(input, {}, RUNS);
     expectAllRunsIdentical(records);
@@ -156,7 +160,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
 
   it('diamond A→{B,C}→D — fan-in join sees both upstreams in deterministic order', async () => {
     const input = makeInput(
-      [trigger('A'), trigger('B'), trigger('C'), trigger('D')],
+      [start('A'), trigger('B'), trigger('C'), trigger('D')],
       [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
     );
 
@@ -169,7 +173,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // The pruning decision in `propagate` comes from `nextPort` (data) and
     // `sourceHandle` (data) — both injected, no randomness possible. Pin it.
     const input = makeInput(
-      [trigger('D'), trigger('B'), trigger('C')],
+      [start('D'), trigger('B'), trigger('C')],
       [edge('e1', 'D', 'B', 'X'), edge('e2', 'D', 'C', 'Y')],
     );
 
@@ -178,11 +182,90 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     expect(records[0]!.activityCallOrder).toEqual(['D', 'B']);
   });
 
+  it('node_skipped — several skips in one wave keep the same order and reasons', async () => {
+    // The one event a skipped node ever emits, so its position and payload are all a
+    // replay has to compare. Emission order comes from `propagate`'s breadth-first walk
+    // over the dead subtree, seeded from `definition.nodes` order — a switch to a Set
+    // or an emit-as-you-go inside the wave would re-order these without changing
+    // anything else the runner records.
+    const input = makeInput(
+      [start('D'), trigger('Live'), trigger('C1'), trigger('C2'), trigger('C1prime')],
+      [
+        edge('e1', 'D', 'Live', 'X'),
+        edge('e2', 'D', 'C1', 'Y'),
+        edge('e3', 'D', 'C2', 'Z'),
+        edge('e4', 'C1', 'C1prime'),
+      ],
+    );
+
+    const records = await runNTimes(input, { D: { output: 'd', nextPort: 'X' } }, RUNS);
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.filter((event) => event.type === 'node_skipped')).toEqual([
+      { type: 'node_skipped', nodeId: 'C1', payload: { reason: 'branch_not_taken' } },
+      { type: 'node_skipped', nodeId: 'C2', payload: { reason: 'branch_not_taken' } },
+      { type: 'node_skipped', nodeId: 'C1prime', payload: { reason: 'upstream_skipped' } },
+    ]);
+  });
+
+  it('fatal wave with sibling skips — the skips-then-execution_failed tail is stable', async () => {
+    // The abort path now emits the wave's skips before failExecution, so two ordered
+    // emissions race in the same wave: D's propagation and C's fatal failure. Both are
+    // resolved from `results` order, not completion order, so the tail must be identical
+    // every run — with execution_failed last, which the SSE drain treats as terminal.
+    const input = makeInput(
+      [start('A'), trigger('D'), trigger('C'), trigger('L'), trigger('M')],
+      [edge('e1', 'A', 'D'), edge('e2', 'A', 'C'), edge('e3', 'D', 'L', 'X'), edge('e4', 'D', 'M', 'Y')],
+    );
+
+    const records = await runNTimes(
+      input,
+      { D: { output: 'd', nextPort: 'X' }, C: { throws: { message: 'hard' } } },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.map((event) => `${event.type}:${event.nodeId ?? '-'}`).slice(-2)).toEqual([
+      'node_skipped:M',
+      'execution_failed:-',
+    ]);
+    expect(records[0]!.statuses.at(-1)?.status).toBe('failed');
+  });
+
+  it('dead ends — the terminal incomplete payload is identical across runs', async () => {
+    // `deadEnds` accumulates across waves in propagation order, then ships as one payload.
+    // An accidental Set, or emitting per-wave instead of once at the end, would re-order
+    // the list without changing any other recorded call.
+    const input = makeInput(
+      [start('S'), trigger('D1'), trigger('D2'), trigger('Live')],
+      [edge('e1', 'S', 'D1'), edge('e2', 'S', 'D2'), edge('e3', 'S', 'Live')],
+    );
+
+    const records = await runNTimes(
+      input,
+      { D1: { output: 'd1', nextPort: 'gone-1' }, D2: { output: 'd2', nextPort: 'gone-2' } },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.at(-1)).toEqual({
+      type: 'execution_incomplete',
+      nodeId: undefined,
+      payload: {
+        deadEnds: [
+          { nodeId: 'D1', port: 'gone-1' },
+          { nodeId: 'D2', port: 'gone-2' },
+        ],
+      },
+    });
+    expect(records[0]!.statuses.at(-1)?.status).toBe('incomplete');
+  });
+
   it('node failure — failure path is deterministic too (same error code, same event sequence)', async () => {
     // The catch branch builds errorPayload from the thrown error. Across
     // replays the activity returns the same error (cached in history), so
     // the same payload must surface. Pin it.
-    const input = makeInput([trigger('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
+    const input = makeInput([start('A'), trigger('B'), trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]);
 
     const records = await runNTimes(input, { B: { throws: { message: 'slow down', code: 'rate_limited' } } }, RUNS);
     expectAllRunsIdentical(records);
@@ -198,7 +281,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     // switched to Set or to Object.keys (no longer Map) could re-order the
     // stalled-nodes list and change the message. Pin both.
     const input = makeInput(
-      [trigger('A'), trigger('B'), trigger('C')],
+      [start('A'), trigger('B'), trigger('C')],
       [edge('e1', 'A', 'B'), edge('e2', 'B', 'C'), edge('e3', 'C', 'B')],
     );
 
@@ -212,10 +295,17 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
   it('asymmetric fan-in — depth-mismatched join waits for both, every run', async () => {
     // The scheduler's job is exactly this case (B depth 1, Aprime depth 2,
     // join at C). Replay determinism here doubles as a regression pin for
-    // the scheduling algorithm.
+    // the scheduling algorithm. S fans out to the two legs, since a second
+    // root is no longer a legal shape.
     const input = makeInput(
-      [trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
-      [edge('e1', 'A', 'Aprime'), edge('e2', 'Aprime', 'C'), edge('e3', 'B', 'C')],
+      [start('S'), trigger('A'), trigger('Aprime'), trigger('B'), trigger('C')],
+      [
+        edge('e1', 'S', 'A'),
+        edge('e2', 'A', 'Aprime'),
+        edge('e3', 'Aprime', 'C'),
+        edge('e4', 'S', 'B'),
+        edge('e5', 'B', 'C'),
+      ],
     );
 
     const records = await runNTimes(input, {}, RUNS);

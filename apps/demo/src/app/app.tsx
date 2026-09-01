@@ -35,8 +35,8 @@ const edgeTemplates = {
   dashed: DashedEdge,
 } satisfies WorkflowBuilderEdgeTemplates;
 
-// A trigger is a workflow entry point, so it can never be a connection target.
-const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => targetNode.data.type !== 'trigger';
+// A start node is where the run begins, so it can never be a connection target.
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 // Advanced escape hatch: forward extra ReactFlow props (SDK-owned props can't be set here).
 const reactFlowProps = {

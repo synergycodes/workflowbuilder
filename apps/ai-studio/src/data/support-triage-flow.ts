@@ -16,6 +16,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 300 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'New Support Ticket',
             description: 'A support ticket arrives in the shared inbox.',

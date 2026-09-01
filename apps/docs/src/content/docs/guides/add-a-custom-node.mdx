@@ -18,12 +18,12 @@ Custom nodes let you extend Workflow Builder with node types that match your spe
 
 A node is a [`PaletteItem`](/api/types/paletteitem/) made of four pieces. File organisation is a suggestion — collapse them into one file if you prefer.
 
-| Piece                   | Defined in                   | Purpose                                            |
-| ----------------------- | ---------------------------- | -------------------------------------------------- |
-| `schema`                | `schema.ts`                  | Shape and validation of the node's properties.     |
-| `uischema`              | `uischema.ts`                | How those properties render in the property panel. |
-| `defaultPropertiesData` | `default-properties-data.ts` | Initial values applied when the node is dropped.   |
-| Top-level fields        | `<node-name>.ts`             | `type`, `label`, `description`, `icon`.            |
+| Piece                   | Defined in                   | Purpose                                                               |
+| ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
+| `schema`                | `schema.ts`                  | Shape and validation of the node's properties.                        |
+| `uischema`              | `uischema.ts`                | How those properties render in the property panel.                    |
+| `defaultPropertiesData` | `default-properties-data.ts` | Initial values applied when the node is dropped.                      |
+| Top-level fields        | `<node-name>.ts`             | `type`, `label`, `description`, `icon` — plus optional `isStartNode`. |
 
 ## 1. JSON Schema — `webhook/schema.ts`
 
@@ -111,6 +111,18 @@ export const webhookNode: PaletteItem<WebhookNodeSchema> = {
   uischema,
 };
 ```
+
+If this node is where a run begins, add `isStartNode: true`. The editor copies the flag onto every node dropped from this palette item, so it travels with the saved diagram as `data.isStartNode` and your execution engine can find the entry point directly:
+
+```ts
+export const webhookNode: PaletteItem<WebhookNodeSchema> = {
+  type: 'webhook',
+  // ...
+  isStartNode: true,
+};
+```
+
+The flag is independent of how the node looks — any node type can be an entry point, not just one using the built-in start-node template.
 
 ## 5. Register the node
 
@@ -252,7 +264,7 @@ Wire it through the `nodeTemplates` prop on `<WorkflowBuilder.Root>`:
 />
 ```
 
-The key must match the palette item's `type`. Keys that collide with built-in template names (`'node'`, `'start-node'`, `'ai-node'`, `'decision-node'`) override the built-in renderer for that node category. Declare `nodeTemplates` at module level — recreating the map on every render busts ReactFlow's internal memoisation and remounts every node on the canvas.
+The key must match the palette item's `type`. Keys that collide with built-in template names (`'node'`, `'start-node'`, `'ai-node'`, `'decision-node'`) override the built-in renderer for that node category. This affects rendering only — a node is an entry point because of its `isStartNode` flag, never because of the template it draws with. Declare `nodeTemplates` at module level — recreating the map on every render busts ReactFlow's internal memoisation and remounts every node on the canvas.
 
 The same template renders both the canvas node and the static palette thumbnail / drag-ghost. In preview mode `data`, `selected`, and `layoutDirection` are `undefined` — read them with optional chaining and fall back to defaults.
 

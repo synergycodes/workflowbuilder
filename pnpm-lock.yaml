@@ -435,6 +435,9 @@ importers:
       '@workflow-builder/execution-core':
         specifier: workspace:*
         version: link:../../packages/execution-core
+      '@workflow-builder/types':
+        specifier: workspace:*
+        version: link:../../packages/types
       ai:
         specifier: ^6.0.0
         version: 6.0.168(zod@4.3.6)

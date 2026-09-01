@@ -7,7 +7,7 @@ import type {
   ExecutionStatus,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
-type NodeExecutionStatus = 'idle' | 'running' | 'completed' | 'failed';
+type NodeExecutionStatus = 'idle' | 'running' | 'completed' | 'failed' | 'skipped';
 
 export type NodeExecutionState = {
   status: NodeExecutionStatus;
@@ -107,6 +107,10 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
       states[event.nodeId] = { status: 'failed', error: event.payload.error };
       break;
     }
+    case 'node_skipped': {
+      states[event.nodeId] = { status: 'skipped' };
+      break;
+    }
   }
 }
 
@@ -125,6 +129,9 @@ function eventToExecutionStatus(event: ExecutionEvent): ExecutionStatus | undefi
     }
     case 'execution_completed': {
       return 'completed';
+    }
+    case 'execution_incomplete': {
+      return 'incomplete';
     }
     case 'execution_failed': {
       return 'failed';

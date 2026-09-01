@@ -10,4 +10,6 @@ A collection of scripts and utilities for automating project-specific developmen
 
 ## Example of usage
 
-``bash tools/deployment/scripts/prepare-community-version.sh`
+```bash
+pnpm -F @workflow-builder/tools collect-decision-logs
+```

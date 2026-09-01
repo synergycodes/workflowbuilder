@@ -28,7 +28,7 @@ export function usePaletteDrop() {
         return;
       }
 
-      const { defaultPropertiesData, type, icon, templateType = NodeType.Node } = nodeDefinition;
+      const { defaultPropertiesData, type, icon, templateType = NodeType.Node, isStartNode } = nodeDefinition;
       const defaultProps = defaultPropertiesData as BaseNodeProperties;
 
       const label =
@@ -43,6 +43,7 @@ export function usePaletteDrop() {
         properties: { ...defaultPropertiesData, label, description },
         type,
         icon,
+        ...(isStartNode ? { isStartNode: true } : {}),
       };
 
       const reactFlowNodeType = resolveReactFlowNodeType(type, templateType, getCustomNodeTemplates());

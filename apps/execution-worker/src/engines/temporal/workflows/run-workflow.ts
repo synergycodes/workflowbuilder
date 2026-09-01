@@ -52,6 +52,11 @@ export async function runWorkflow(input: WorkflowExecutionInput<AiStudioNode>): 
   // tells Temporal to close the run as Failed rather than Completed. It has to be a
   // TemporalFailure (anything else fails the workflow *task* and retries forever), and
   // non-retryable since replaying a deterministic graph failure would re-run LLM activities.
+  //
+  // Only 'failed' throws. An 'incomplete' outcome — a branch that routed to a port with
+  // nothing wired to it — falls through on purpose: nothing errored, so the Workflow
+  // Execution closes as Completed and the run's own 'incomplete' status carries the
+  // detail. Do not add it to this check.
   if (outcome.status === 'failed') {
     throw ApplicationFailure.nonRetryable(outcome.error.message, outcome.error.code ?? 'WorkflowExecutionFailed');
   }

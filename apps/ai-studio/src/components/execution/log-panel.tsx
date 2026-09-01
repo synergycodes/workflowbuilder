@@ -2,13 +2,19 @@ import { useSingleSelectedElement } from '@workflowbuilder/sdk';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
-import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
+import type { ExecutionEvent, NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
 
 import styles from './log-panel.module.css';
 
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
+
+const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
+  branch_not_taken: 'branch not taken',
+  upstream_skipped: 'upstream skipped',
+  error_route_not_taken: 'error branch not taken',
+};
 
 const DETAIL_PREVIEW_CHARS = 120;
 const NODE_ID_PREVIEW_CHARS = 8;
@@ -25,6 +31,7 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   const isNode = typeof nodeId === 'string' && nodeId.length > 0;
   const isHighlighted = isNode && nodeId === selectedNodeId;
   const label = event.type.replaceAll('_', ' ');
+  const skipReason = event.type === 'node_skipped' ? SKIP_REASON_LABEL[event.payload.reason] : undefined;
 
   let detail: string | undefined;
   switch (event.type) {
@@ -40,6 +47,13 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
     }
     case 'execution_failed': {
       detail = event.payload.error.message;
+
+      break;
+    }
+    case 'execution_incomplete': {
+      detail = event.payload.deadEnds
+        .map(({ nodeId, port }) => `${nodeId} routed to "${port}" — nothing connected to that handle`)
+        .join('\n');
 
       break;
     }
@@ -71,6 +85,7 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
       <div className={styles['event-header']}>
         <span className={clsx(styles['badge'], styles[`badge--${event.type}`])}>{label}</span>
         {isNode && <span className={styles['node-id']}>{nodeId.slice(0, NODE_ID_PREVIEW_CHARS)}</span>}
+        {skipReason && <span className={styles['reason']}>{skipReason}</span>}
         <span className={styles['time']}>{formatTime(event.timestamp)}</span>
         {hasDetail && <span className={styles['toggle']}>{isExpanded ? '▲' : '▼'}</span>}
       </div>

@@ -6,18 +6,18 @@ import { useCallback } from 'react';
 import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
-import { useHasNodeTypeInDiagram } from '../../hooks/use-has-node-type-in-diagram';
+import { useHasStartNode } from '../../hooks/use-has-start-node';
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
-  const shouldShowControls = useHasNodeTypeInDiagram('ai-studio/trigger');
+  const shouldShowControls = useHasStartNode();
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
     const edges = getStoreEdges();
 
-    const triggerNode = nodes.find((n) => n.data.type === 'ai-studio/trigger');
-    const inputPrompt = (triggerNode?.data.properties as { inputPrompt?: string })?.inputPrompt ?? '';
+    const startNode = nodes.find((n) => n.data.isStartNode);
+    const inputPrompt = (startNode?.data.properties as { inputPrompt?: string })?.inputPrompt ?? '';
     const triggerPayload = inputPrompt ? { input: inputPrompt } : {};
 
     try {
@@ -28,7 +28,7 @@ export function AiStudioControls() {
   }, [executeFromCanvas]);
 
   const isRunning = status === 'pending' || status === 'running';
-  const isDone = status === 'completed' || status === 'failed' || status === 'cancelled';
+  const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
 
   return (
     <div

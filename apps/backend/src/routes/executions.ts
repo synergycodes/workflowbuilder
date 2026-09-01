@@ -1,6 +1,12 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, notInArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
+
+import {
+  TERMINAL_EVENT_TO_STATUS,
+  TERMINAL_EXECUTION_STATUSES,
+  type TerminalExecutionEventType,
+} from '@workflow-builder/types/workflow-execution/execution-events';
 
 import type { AssertAuthorized, AuthVariables } from '../auth';
 import { database } from '../db/client';
@@ -15,7 +21,7 @@ import type { TenantVariables } from '../tenant';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
-const TERMINAL_STATUSES = new Set(['completed', 'failed', 'cancelled']);
+const TERMINAL_STATUSES = new Set<string>(TERMINAL_EXECUTION_STATUSES);
 
 export function createExecutionsRoutes(
   assertAuthorized: AssertAuthorized,
@@ -98,17 +104,29 @@ export function createExecutionsRoutes(
       const existingEvents = await fetchEventsAfter(executionId, 0);
       const lastSequence = existingEvents.length > 0 ? Number(existingEvents.at(-1)!.sequence) : 0;
 
+      // The worker commits the terminal event and the terminal status in two separate
+      // activities, so the row read before this stream opened can lag the events read
+      // here. Trusting the stale row would send a live-looking snapshot (the client
+      // closes only on a terminal snapshot status, so it would reconnect forever) and
+      // seed the drainer past the terminal row: the catch-up drain returns empty,
+      // `updateStatus` fires no NOTIFY, and the stream heartbeats until the client
+      // gives up. The last event is the authority on "over" — derive the status from it.
+      const lastEventType = existingEvents.at(-1)?.type;
+      const effectiveStatus = isTerminalEventType(lastEventType)
+        ? TERMINAL_EVENT_TO_STATUS[lastEventType]
+        : execution.status;
+
       await stream.writeSSE({
         data: JSON.stringify({
           type: 'execution_snapshot',
           executionId,
-          status: execution.status,
+          status: effectiveStatus,
           lastSequence,
           events: existingEvents.map(formatEvent),
         }),
       });
 
-      if (TERMINAL_STATUSES.has(execution.status)) {
+      if (TERMINAL_STATUSES.has(effectiveStatus)) {
         return;
       }
 
@@ -187,10 +205,21 @@ export function createExecutionsRoutes(
       return c.json({ code: 'execution_not_cancellable', message: 'Execution already finished' }, 409);
     }
 
-    await database
+    // The check above is a courtesy read; this WHERE is the enforcement. The worker
+    // can commit a terminal status between the two, and an unguarded UPDATE would
+    // resurrect the finished run as 'cancelling' — a status nothing ever writes it
+    // out of. 'cancelling' itself stays cancellable on purpose: a repeat cancel is
+    // an idempotent no-op write and a second engine cancel is harmless, which is
+    // friendlier to a retrying client than a 409.
+    const [updated] = await database
       .update(executions)
       .set({ status: 'cancelling', updatedAt: new Date() })
-      .where(eq(executions.id, executionId));
+      .where(and(eq(executions.id, executionId), notInArray(executions.status, [...TERMINAL_EXECUTION_STATUSES])))
+      .returning({ id: executions.id });
+
+    if (!updated) {
+      return c.json({ code: 'execution_not_cancellable', message: 'Execution already finished' }, 409);
+    }
 
     logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
     await getWorkflowEngine().cancel(execution.id);
@@ -199,6 +228,10 @@ export function createExecutionsRoutes(
   });
 
   return routes;
+}
+
+function isTerminalEventType(type: string | undefined): type is TerminalExecutionEventType {
+  return type !== undefined && type in TERMINAL_EVENT_TO_STATUS;
 }
 
 function formatEvent(event: ExecutionEventRow) {
