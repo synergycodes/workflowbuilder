@@ -27,3 +27,14 @@ export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ActivityProfile = {
   startToCloseTimeout: '30s',
   retry: { maximumAttempts: 5 },
 };
+
+// Per-node-type overrides for the node activity, keyed by `node.type`. A type with
+// no entry resolves to DEFAULT_NODE_ACTIVITY_PROFILE.
+//
+// Entries are complete profiles, not partials, on purpose. A partial would let a
+// caller set a timeout and silently lose the retry cap, and the value Temporal falls
+// back to is unlimited retries with backoff — an LLM node would then burn budget on
+// a permanently failing call. Spread the default to change one field:
+//
+//   { 'my/slow-node': { ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30m' } }
+export type NodeActivityProfiles = Readonly<Record<string, ActivityProfile>>;

@@ -215,6 +215,61 @@ describe('mapToExecutionModel', () => {
     expect(result.nodes[0]!.config).toEqual({ foo: 1 });
   });
 
+  it('lifts the authored label out of `config`', () => {
+    // Lifted for the same reason as errorPolicy and role: an engine reads it. The
+    // Temporal adapter schedules each node activity with the label as its Summary,
+    // so Event History lists the diagram's own names.
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        {
+          id: 'n1',
+          data: { type: 'my-product/action', properties: { label: 'Fetch order', description: 'why', foo: 1 } },
+        },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.label).toBe('Fetch order');
+    // `description` is the other shared property and stays put — no engine reads it.
+    expect(result.nodes[0]!.config).toEqual({ description: 'why', foo: 1 });
+  });
+
+  it('trims the label and drops a blank one', () => {
+    // An empty Summary is worse than none: Temporal then renders nothing where it
+    // would otherwise fall back to showing the activity type.
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'n1', data: { type: 'my-product/action', properties: { label: '  Approve  ' } } },
+        { id: 'n2', data: { type: 'my-product/action', properties: { label: '   ' } } },
+        { id: 'n3', data: { type: 'my-product/action', properties: { label: '' } } },
+        { id: 'n4', data: { type: 'my-product/action', properties: {} } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.label).toBe('Approve');
+    expect(result.nodes[1]).not.toHaveProperty('label');
+    expect(result.nodes[2]).not.toHaveProperty('label');
+    expect(result.nodes[3]).not.toHaveProperty('label');
+  });
+
+  it('ignores a non-string label rather than forwarding it', () => {
+    // `properties` is `Record<string, unknown>` at the boundary, so a client can send
+    // anything under that key. It must not reach Temporal's options as a non-string.
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [{ id: 'n1', data: { type: 'my-product/action', properties: { label: { nested: true } } } }],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]).not.toHaveProperty('label');
+  });
+
   it('passes unknown node types through unchanged — backend does not know any vocabulary', () => {
     // The whole point of the structural mapper: a type the backend has never
     // heard of reaches the worker, where the registry-miss becomes a

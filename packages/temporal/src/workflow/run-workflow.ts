@@ -4,11 +4,13 @@
 //
 // A plugin cannot register this itself: the TypeScript SDK builds the workflow
 // bundle from a single module, so the consumer re-exports it from their own
-// workflows file. See the package README.
+// workflows file. That same constraint is why anything configurable about the
+// workflow arrives through `createRunWorkflow` rather than through plugin options.
+// See the package README.
 import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
 
 import type { Activities } from './activities-interface';
-import { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
+import { DEFAULT_DATABASE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import {
   type ActivityRunnerPort,
   type BaseNode,
@@ -16,19 +18,60 @@ import {
   type WorkflowExecutionInput,
   runGraph,
 } from './core-contract';
+import { resolveNodeActivityOptions } from './node-activity-options';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
+// One profile for both DB activities, proxied once: they are the same shape of work
+// whatever the graph looks like.
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
   DEFAULT_DATABASE_ACTIVITY_PROFILE,
 );
 
-const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(DEFAULT_NODE_ACTIVITY_PROFILE);
-
-const runner: ActivityRunnerPort<BaseNode> = {
-  executeNode: (node, context) => nodeActivities.executeNode(node, context),
+export type RunWorkflowOptions = {
+  // Per-node-type timeouts and retry caps. Omit for the previous behaviour: every
+  // node activity on DEFAULT_NODE_ACTIVITY_PROFILE.
+  nodeActivityProfiles?: NodeActivityProfiles;
 };
 
-export async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
+// Builds the workflow function. Configuration has to arrive this way rather than
+// through the plugin: the TypeScript SDK compiles the workflow bundle from the
+// consumer's own workflows module, so the worker-side plugin cannot reach into it.
+// The profiles are therefore declared where the bundle is built:
+//
+//   // workflows.ts
+//   import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
+//   export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
+//
+// Consumers who need no per-type profiles keep re-exporting `runWorkflow` directly,
+// which is the same one-liner as before.
+export function createRunWorkflow(options: RunWorkflowOptions = {}) {
+  const profiles = options.nodeActivityProfiles ?? {};
+
+  // Proxied per call rather than once per module, because the options now depend on
+  // the node: its type picks the profile and its label becomes the Summary. The proxy
+  // is a plain object built from deterministic inputs, so building one per node costs
+  // nothing that matters and stays replay-safe.
+  const runner: ActivityRunnerPort<BaseNode> = {
+    executeNode: (node, context) => {
+      const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(
+        resolveNodeActivityOptions(node, profiles),
+      );
+      return nodeActivities.executeNode(node, context);
+    },
+  };
+
+  return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
+    return runGraphWith(runner, input);
+  };
+}
+
+// The zero-config workflow, named so Temporal registers it as `runWorkflow`.
+export const runWorkflow = createRunWorkflow();
+
+async function runGraphWith(
+  runner: ActivityRunnerPort<BaseNode>,
+  input: WorkflowExecutionInput<BaseNode>,
+): Promise<void> {
   const events = createSequencedEventEmitter(databaseActivities);
   let outcome: RunGraphOutcome;
 

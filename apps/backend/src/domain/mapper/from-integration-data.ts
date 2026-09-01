@@ -26,22 +26,35 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// Two runner-level fields are lifted out of the frontend shape here so `config`
-// stays free of them. `errorPolicy` is authored in the UI as a regular JSONForms
-// property (via `sharedProperties` in the SDK) and arrives nested in
+// Three runner-level fields are lifted out of the frontend shape here so `config`
+// stays free of them. `errorPolicy` and `label` are authored in the UI as regular
+// JSONForms properties (via `sharedProperties` in the SDK) and arrive nested in
 // `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
 // which sits alongside the properties rather than inside them.
+//
+// `label` is lifted rather than left in `config` because an engine consumes it:
+// the Temporal adapter schedules each node activity with the label as its Summary.
+// `description`, the other shared property, stays in `config` — no engine reads it.
 function mapNode(node: FrontendNode): BaseNode {
-  const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
+  const { errorPolicy: rawErrorPolicy, label: rawLabel, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
+  const label = isNonEmptyString(rawLabel) ? rawLabel.trim() : undefined;
   const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,
     config,
+    ...(label === undefined ? {} : { label }),
     ...(errorPolicy === undefined ? {} : { errorPolicy }),
     ...(role === undefined ? {} : { role }),
   };
+}
+
+// Blank labels are dropped rather than forwarded: an empty Summary in Event History
+// is worse than none, because Temporal then shows nothing where it would otherwise
+// fall back to the activity type.
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isErrorPolicy(value: unknown): value is NodeErrorPolicy {

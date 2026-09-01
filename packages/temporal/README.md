@@ -76,6 +76,25 @@ export { runWorkflow } from '@workflowbuilder/temporal/workflow';
 
 That one line is required. The TypeScript SDK builds the workflow bundle from a single module, so a plugin cannot register a workflow on your behalf. Re-exporting it from your own workflows module is how the bundle picks it up. (Temporal's own AI SDK plugin has the same constraint.)
 
+The same constraint is why anything configurable about the workflow is configured here rather than on the plugin. To give some node types their own timeout and retry cap, build the workflow instead of re-exporting it:
+
+```ts
+import { DEFAULT_NODE_ACTIVITY_PROFILE, createRunWorkflow } from '@workflowbuilder/temporal/workflow';
+
+export const runWorkflow = createRunWorkflow({
+  nodeActivityProfiles: {
+    // A thinking-mode model needs room; keep an explicit retry cap.
+    'my-product/ai-agent': { startToCloseTimeout: '30m', retry: { maximumAttempts: 3 } },
+    // Change one field and inherit the rest.
+    'my-product/decision': { ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30s' },
+  },
+});
+```
+
+Keep the export named `runWorkflow`: that is the name the client starts, and a test pins the two together.
+
+Entries are whole profiles rather than partials on purpose. A partial would let you set a timeout and silently drop the retry cap, and what Temporal falls back to is unlimited retries with backoff, which on a permanently failing model call is an unbounded bill. A node type with no entry resolves to `DEFAULT_NODE_ACTIVITY_PROFILE` and nothing else.
+
 ## Client
 
 ```ts
@@ -115,6 +134,12 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 ## Default activity profiles
 
 Node activities get 10 minutes and 2 attempts, because a node may call a model. The two database activities get 30 seconds and 5 attempts, because they are fast idempotent writes. Both are exported (`DEFAULT_NODE_ACTIVITY_PROFILE`, `DEFAULT_DATABASE_ACTIVITY_PROFILE`) and pinned by a test, so an upgrade cannot silently change how long your nodes are allowed to run.
+
+Per-node-type overrides go through `createRunWorkflow` (see `workflows.ts` above). `resolveNodeActivityOptions` is exported from `/workflow` so you can unit-test your own profile map against the same resolution the workflow uses, instead of reading it back out of Event History.
+
+## Node labels in Event History
+
+Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. Nothing to configure: the label travels on the node, and a node without one simply gets no summary, where Temporal falls back to showing the activity type.
 
 ## Versioning and replay
 
