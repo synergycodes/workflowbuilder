@@ -81,6 +81,18 @@ Swapping the LLM is a one-liner: change `AI_MODEL` to any
 [OpenRouter model id](https://openrouter.ai/models) and
 `docker compose up -d worker`.
 
+**Pointing at a different LLM.** `AI_BASE_URL` takes any OpenAI-compatible
+endpoint, so a gateway or a model hosted inside your own network works without
+a code change — set it alongside `AI_API_KEY` and `AI_MODEL`. Leave `AI_API_KEY`
+empty and the stack still comes up: every node type runs except AI Agent nodes,
+which fail with `ai_not_configured`.
+
+**Pointing at a different Temporal.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`,
+`TEMPORAL_TLS` and `TEMPORAL_API_KEY` are passed to both the backend and the
+worker, which is all an operated cluster or Temporal Cloud needs. mTLS uses
+`TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH`; those are not in this
+compose because the PEM files have to be mounted into both containers first.
+
 ## Operations
 
 ```bash
@@ -110,6 +122,7 @@ fail. Deploys that leave the emit sequence alone are unaffected. See
 - **Single backend replica.** The rate limiter is process-local. Scaling out
   needs a shared store (Redis) — deferred to the scale-ready task.
 - **`temporalio/auto-setup` is dev-grade.** Fine for a demo; move to Temporal
-  Cloud or an operated cluster for sustained load.
+  Cloud or an operated cluster for sustained load. That move is configuration
+  only — see "Pointing at a different Temporal" above.
 - **Anyone-can-edit demo content.** Visitors share one workspace; data is
   wiped whenever you decide to recreate the volumes.

@@ -75,15 +75,22 @@ services:
       HOST: 0.0.0.0
       PORT: 3001
       DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
-      TEMPORAL_ADDRESS: temporal:7233
+      # point these at an external cluster or Temporal Cloud to retire the bundled one
+      TEMPORAL_ADDRESS: ${TEMPORAL_ADDRESS:-temporal:7233}
+      TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
+      TEMPORAL_TLS: ${TEMPORAL_TLS:-}
+      TEMPORAL_API_KEY: ${TEMPORAL_API_KEY:-}
       # explicit opt-in — a forgotten env var fails loudly instead of exposing the API
       WB_AUTH_PORT: allow-all
       # only nginx can reach the backend, so X-Forwarded-For is trustworthy
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
       RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
-      # the backend calls the LLM itself for /api/visualize/adapt
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in deploy/ai-studio/.env}
+      # the backend calls the LLM itself for /api/visualize/adapt. Both key names are
+      # passed through; the app prefers AI_API_KEY and falls back to the older one.
+      AI_API_KEY: ${AI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://openrouter.ai/api/v1}
       AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
     depends_on:
       app-db:
@@ -111,8 +118,15 @@ services:
     command: ['pnpm', '--filter', 'execution-worker', 'start:prod']
     environment:
       DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
-      TEMPORAL_ADDRESS: temporal:7233
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:?set OPENROUTER_API_KEY in deploy/ai-studio/.env}
+      # must resolve to the same namespace the backend submits to
+      TEMPORAL_ADDRESS: ${TEMPORAL_ADDRESS:-temporal:7233}
+      TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
+      TEMPORAL_TLS: ${TEMPORAL_TLS:-}
+      TEMPORAL_API_KEY: ${TEMPORAL_API_KEY:-}
+      # empty is allowed: the worker starts and runs every node except AI Agent ones
+      AI_API_KEY: ${AI_API_KEY:-}
+      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-https://openrouter.ai/api/v1}
       AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
       # optional - empty disables the AI Agent's web search tool
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
