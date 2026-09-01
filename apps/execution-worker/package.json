@@ -15,10 +15,11 @@
   },
   "dependencies": {
     "@openrouter/ai-sdk-provider": "^2.5.0",
-    "@temporalio/worker": "^1.11.0",
-    "@temporalio/workflow": "^1.11.0",
+    "@temporalio/worker": "catalog:",
+    "@temporalio/workflow": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
+    "@workflowbuilder/temporal": "workspace:*",
     "ai": "^6.0.0",
     "dotenv": "^17.4.2",
     "postgres": "^3.4.5",

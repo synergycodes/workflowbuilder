@@ -1,8 +1,7 @@
 import { NativeConnection, Worker } from '@temporalio/worker';
+import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
-
-import { type ExecutionContext, type NodeExecutorRegistry, resolveExecutor } from '@workflow-builder/execution-core';
 
 import { executeAiAgent } from '../../activities/ai-agent';
 import { database } from '../../database';
@@ -12,61 +11,37 @@ import { executeDecision } from '../../executors/decision';
 import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
+import { withPayloadSizeWarning } from '../../store-payload-warning';
 
 const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
-
-const taskQueue = 'workflow-execution';
 
 const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
 const model = openrouter.chat(env.AI_MODEL);
 
 const aiAgentLogger = logger.child({ component: 'ai-agent' });
 
-const nodeExecutors: NodeExecutorRegistry<AiStudioNode> = {
-  'ai-studio/trigger': executeTrigger,
-  'ai-studio/decision': executeDecision,
-  'ai-studio/ai-agent': (node, context) =>
-    executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
-  'ai-studio/visualize': executeVisualize,
-};
-
-// Mirrors Temporal's own per-blob warn threshold (`limit.blobSize.warn`, default 512 KB;
-// the hard error is at 2 MB): https://docs.temporal.io/references/dynamic-configuration
-// Payloads this large also count toward the 50 MB per-run history cap (emitEvent args
-// are recorded in history), so a warning here surfaces runs drifting toward the limit
-// before they hit it.
-const PAYLOAD_WARN_BYTES = 512 * 1024;
-
-const activities = {
-  async executeNode(node: AiStudioNode, context: ExecutionContext) {
-    const executor = resolveExecutor(nodeExecutors, node);
-    return executor(node, context);
+// The plugin contributes the three activities that execute a graph. What each node
+// type actually does stays here, and so does where events are persisted.
+const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
+  executors: {
+    'ai-studio/trigger': executeTrigger,
+    'ai-studio/decision': executeDecision,
+    'ai-studio/ai-agent': (node, context) =>
+      executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
+    'ai-studio/visualize': executeVisualize,
   },
-
-  async emitEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
-    if (payload !== undefined) {
-      const bytes = Buffer.byteLength(JSON.stringify(payload), 'utf8');
-      if (bytes > PAYLOAD_WARN_BYTES) {
-        logger.warn('execution event payload exceeds warn threshold', { executionId, sequence, type, nodeId, bytes });
-      }
-    }
-    await database.emitExecutionEvent(executionId, sequence, type, payload, nodeId);
-  },
-
-  async updateStatus(executionId: string, status: string, errorMessage?: string) {
-    await database.updateExecutionStatus(executionId, status, errorMessage);
-  },
-};
+  store: withPayloadSizeWarning(database, logger),
+});
 
 // without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
 const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS });
 
 const worker = await Worker.create({
   connection,
-  workflowsPath: fileURLToPath(new URL('workflows/run-workflow.ts', import.meta.url)),
-  activities,
-  taskQueue,
+  taskQueue: plugin.taskQueue,
+  workflowsPath: fileURLToPath(new URL('workflows.ts', import.meta.url)),
+  plugins: [plugin],
 });
 
-logger.info('execution worker started', { taskQueue });
+logger.info('execution worker started', { taskQueue: plugin.taskQueue });
 await worker.run();

@@ -49,7 +49,12 @@ export default {
       entry: ['src/index.ts'],
     },
     'apps/execution-worker': {
-      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows/run-workflow.ts'],
+      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
+      // @temporalio/workflow is never imported by this app's code, but Temporal's
+      // workflow bundler resolves it from *here* while compiling workflows.ts (the
+      // re-exported runner imports it), so it has to be installed in this workspace.
+      // Removing it makes the bundler fail at worker startup, not at build time.
+      ignoreDependencies: ['@temporalio/workflow'],
     },
     'apps/docs': {
       entry: ['astro.config.mjs', 'src/components/**/*.astro'],
@@ -66,6 +71,22 @@ export default {
     'packages/tokens': {
       entry: ['src/index.ts'],
       project: ['src/**/*.ts', 'config.ts'],
+    },
+    'packages/temporal': {
+      // test/fixtures/workflows.ts is an entry in its own right: the bundling test
+      // hands it to Temporal's workflow bundler by path, so nothing imports it.
+      entry: [
+        'src/index.ts',
+        'src/client/index.ts',
+        'src/workflow/index.ts',
+        'tsup.config.ts',
+        'test/fixtures/workflows.ts',
+      ],
+      project: ['src/**/*.ts', 'test/**/*.ts', 'tsup.config.ts'],
+      // Both are bundled into dist through src/core-contract.ts, which imports them
+      // by relative path (see the note there), so the workspace deps are real even
+      // though they are never imported by name.
+      ignoreDependencies: ['@workflow-builder/execution-core', '@workflow-builder/types'],
     },
   },
 };

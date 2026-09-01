@@ -19,6 +19,13 @@ catalog:
   # Must match react - bump together.
   'react-is': 19.1.0
   'ajv': ^8.18.0
+  # Temporal SDK. @workflowbuilder/temporal declares worker/workflow/client as peers,
+  # so the repo keeps one version across the package and both reference apps — the
+  # peer range we publish is then exactly what we test against. Bump together.
+  '@temporalio/client': ^1.23.0
+  '@temporalio/plugin': ^1.23.0
+  '@temporalio/worker': ^1.23.0
+  '@temporalio/workflow': ^1.23.0
 
 useNodeVersion: 22.12.0
 engineStrict: true
