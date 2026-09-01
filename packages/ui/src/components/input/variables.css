@@ -1,14 +1,20 @@
 :root {
+  --ax-public-input-color: var(--wb-ui-text-default);
   --ax-public-input-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-input-placeholder-color: var(--wb-ui-text-ghost-default);
 
-  --ax-public-input-root-color: var(--wb-ui-text-subtle-default);
+  --ax-public-input-root-background-color: var(--wb-ui-bg-base);
+  --ax-public-input-root-background-color-disabled: var(--wb-ui-bg-fill-disabled);
+  --ax-public-input-root-background-color-critical: var(--wb-components-text-field-bg-primary-critical);
+  --ax-public-input-root-background-color-success: var(--wb-components-text-field-bg-primary-success);
   --ax-public-input-root-border-color: var(--wb-components-text-field-stroke-default);
+  --ax-public-input-root-border-color-hover: var(--wb-ui-stroke-default);
   --ax-public-input-root-border-color-focus: var(--wb-components-text-field-stroke-focus);
-  --ax-public-input-root-border-size: 0.0625rem;
-
-  --ax-public-input-root-background-color-error: var(--wb-components-text-field-bg-primary-critical);
-  --ax-public-input-root-border-color-error: var(--wb-components-text-field-stroke-critical);
-  --ax-public-input-root-color-error: var(--wb-ui-text-critical-default);
-
+  --ax-public-input-root-border-color-critical: var(--wb-components-text-field-stroke-critical);
+  --ax-public-input-root-border-color-success: var(--wb-components-text-field-stroke-success);
+  --ax-public-input-root-border-size: var(--wb-size-12);
+  --ax-public-input-root-icon-color: var(--wb-ui-text-subtle-default);
   --ax-public-input-root-color-disabled: var(--wb-ui-text-ghost-default);
+  --ax-public-input-root-color: var(--wb-ui-text-subtle-default);
+  --ax-public-input-root-color-critical: var(--wb-ui-text-default);
 }

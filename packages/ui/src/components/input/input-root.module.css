@@ -3,33 +3,73 @@
     display: flex;
     align-items: center;
     cursor: text;
-
-    color: var(--ax-public-input-root-color);
-
+    background-color: var(--ax-public-input-root-background-color);
     border: var(--ax-public-input-root-border-size) solid var(--ax-public-input-root-border-color);
+    color: var(--ax-public-input-root-icon-color);
 
-    &:not(:hover) {
-      transition: all var(--ax-public-transition);
+    &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
+      border-color: var(--ax-public-input-root-border-color-hover);
     }
 
-    &:has(input:focus-visible) {
+    &[data-state='critical']:not([data-disabled]) {
+      background-color: var(--ax-public-input-root-background-color-critical);
+      border-color: var(--ax-public-input-root-border-color-critical);
+    }
+
+    &[data-state='success']:not([data-disabled]) {
+      background-color: var(--ax-public-input-root-background-color-success);
+      border-color: var(--ax-public-input-root-border-color-success);
+    }
+
+    &[data-state='read-only']:not([data-disabled]),
+    &[data-disabled] {
+      background-color: var(--ax-public-input-root-background-color-disabled);
+      border-color: var(--ax-public-input-root-border-color);
+    }
+
+    &[data-disabled] {
+      color: var(--ax-public-input-root-color-disabled);
+      cursor: not-allowed;
+    }
+
+    &:not([data-disabled]):focus-within {
       border-color: var(--ax-public-input-root-border-color-focus);
     }
+  }
 
-    &:global(.base--error) {
-      background-color: var(--ax-public-input-root-background-color-error);
-      border-color: var(--ax-public-input-root-border-color-error);
-      color: var(--ax-public-input-root-color-error);
+  .icon,
+  .clear {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon svg,
+  .clear svg {
+    width: var(--wb-size-200);
+    height: var(--wb-size-200);
+  }
+
+  .clear {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--ax-public-input-color);
     }
 
-    &:global(.base--disabled) {
-      color: var(--ax-public-input-root-color-disabled);
+    &:focus-visible {
+      border-radius: var(--wb-radius-25);
+      outline: var(--wb-size-12) solid var(--wb-ui-focus-ring);
+      outline-offset: var(--wb-size-25);
     }
 
-    svg {
-      width: 1rem;
-      height: 1rem;
-      min-width: 1rem;
+    &:disabled {
+      cursor: not-allowed;
     }
   }
 }

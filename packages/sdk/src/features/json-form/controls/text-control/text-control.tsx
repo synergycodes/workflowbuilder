@@ -51,7 +51,7 @@ function TextControl(props: TextControlProps) {
         value={inputValue}
         onChange={onChange}
         onBlur={onBlur}
-        error={hasErrors}
+        state={hasErrors ? 'critical' : 'default'}
         disabled={isDisabled}
         placeholder={placeholder}
       />

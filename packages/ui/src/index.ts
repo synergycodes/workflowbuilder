@@ -29,3 +29,4 @@ export * from './components/tooltip';
 export * from './shared/types/size';
 export * from './shared/types/item-size';
 export * from './shared/types/with-icon';
+export * from './shared/types/field';

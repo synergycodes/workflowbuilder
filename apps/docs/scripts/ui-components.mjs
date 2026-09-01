@@ -18,7 +18,17 @@ export const COMPONENTS = [
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
   { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
-  { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
+  {
+    slug: 'input',
+    name: 'Input',
+    propsType: 'InputProps',
+    dir: 'input',
+    cssSources: [
+      'shared/components/field/field.module.css',
+      'shared/styles/field-control-height.module.css',
+      'shared/styles/field-control-size.module.css',
+    ],
+  },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
@@ -39,7 +49,13 @@ export const COMPONENTS = [
   { slug: 'snackbar', name: 'Snackbar', propsType: 'SnackbarProps', dir: 'snackbar' },
   { slug: 'status', name: 'Status', propsType: 'StatusProps', dir: 'status' },
   { slug: 'switch', name: 'Switch', propsType: 'BaseSwitchProps', dir: 'switch' },
-  { slug: 'text-area', name: 'TextArea', propsType: 'TextAreaProps', dir: 'text-area' },
+  {
+    slug: 'text-area',
+    name: 'TextArea',
+    propsType: 'TextAreaProps',
+    dir: 'text-area',
+    cssSources: ['shared/components/field/field.module.css', 'shared/styles/field-control-size.module.css'],
+  },
   { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
   // Diagram components.
   { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },
