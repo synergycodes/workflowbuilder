@@ -50,8 +50,8 @@ that goes through the error policy.
 
 ## Rules once files live here
 
-1. A failing replay means the change breaks in-flight runs. Either guard it with
-   `patched()`, or declare it a major release with a note to drain runs first.
+1. A failing replay means today's code would issue commands the recorded run never made.
+   What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
 3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES=1` rewrites the
@@ -60,3 +60,39 @@ that goes through the error policy.
 
 `v0-` names the pre-release baseline: the package has not published a version yet, so
 these are histories from the code as it stood before the first release.
+
+## What a red cross-version test means
+
+**Before the first release**, which is where the package is today: `private: true`, no
+published version, no consumer outside this repo. No run recorded by an older build
+exists anywhere, so nothing is stranded and no deploy is at risk. Red means one thing,
+and it is a design signal rather than an incident: a command reached a path that was
+supposed to be left alone. Read the change first. If the new command genuinely belongs
+on that path, re-record the history and say so in the commit message. `patched()` is not
+needed and no major is due.
+
+**After the first release**, the same red is a compatibility break with runs that may be
+sitting in someone's Event History for days. Guard the change with `patched()`, or
+declare a major with a note to drain in-flight runs first. Do not re-record: that throws
+away the only evidence of what the published version actually did.
+
+### Reading the change
+
+Only some things move the command sequence, so the triage is quick.
+
+Adds a command, and will turn the test red:
+
+- a new `emitEvent` / `executeNode` / `updateStatus` call, or an existing one moved or removed
+- a timer, including `sleep` and a `condition` given a timeout
+- anything above reached on a path an older run also took
+
+Adds nothing, and leaves the test green:
+
+- registering a signal, query or update handler (`setHandler`) — workflow-local state, never written to history
+- a `condition()` that is awaited without a deadline, or never reached at all
+- changing only the _arguments_ of an existing emit
+
+Both halves are verified, not assumed: a stand-in for the durable-pause seam (an update
+handler registered unconditionally, plus an unreached `condition()`) replays the
+committed history green, while one extra `emitEvent` in `runGraph` fails it with a
+`DeterminismViolationError`.
