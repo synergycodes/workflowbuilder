@@ -1,17 +1,15 @@
 html[data-theme='light'] {
   --ai-studio-edge-color--active: var(--wb-colors-green-400);
   --ai-studio-status-color--completed: var(--wb-colors-green-400);
-  --ai-studio-status-color--incomplete: var(--ax-txt-warning-default);
 }
 
 html[data-theme='dark'] {
   --ai-studio-edge-color--active: var(--wb-colors-green-200);
   --ai-studio-status-color--completed: var(--wb-colors-green-200);
-  /* No dark warning-accent token exists (--ax-txt-warning-default is orange-100 body-text cream). */
-  --ai-studio-status-color--incomplete: var(--ax-colors-orange-300);
 }
 
 :root {
+  --ai-studio-status-color--incomplete: var(--wb-ui-text-warning-default);
   --ai-studio-status-color--failed: var(--wb-ui-text-critical-default);
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
   --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
