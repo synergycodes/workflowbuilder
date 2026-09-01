@@ -68,16 +68,16 @@ Where to put a new script: root `tools/` for pure-Node bootstrap (runs before an
 
 Each workspace has its own context. Read the relevant file before extending a workspace.
 
-| Workspace                 | Authoritative docs                                      |
-| ------------------------- | ------------------------------------------------------- |
-| `packages/sdk`            | `packages/sdk/README.md`                                |
-| `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
-| `packages/tokens`         | `packages/tokens/README.md`                             |
-| `packages/execution-core` | `packages/execution-core/README.md`                     |
-| `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
-| `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
-| `apps/backend`            | `apps/backend/README.md`                                |
-| `apps/execution-worker`   | `apps/execution-worker/README.md`                       |
+| Workspace                 | Authoritative docs                                                                           |
+| ------------------------- | -------------------------------------------------------------------------------------------- |
+| `packages/sdk`            | `packages/sdk/README.md`                                                                     |
+| `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`, `packages/ui/built-css-pitfalls.md`) |
+| `packages/tokens`         | `packages/tokens/README.md`                                                                  |
+| `packages/execution-core` | `packages/execution-core/README.md`                                                          |
+| `apps/demo`               | `apps/demo/CLAUDE.md`                                                                        |
+| `apps/ai-studio`          | `apps/ai-studio/README.md`                                                                   |
+| `apps/backend`            | `apps/backend/README.md`                                                                     |
+| `apps/execution-worker`   | `apps/execution-worker/README.md`                                                            |
 
 ## Types & Aliases
 

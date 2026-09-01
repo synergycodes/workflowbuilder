@@ -26,10 +26,11 @@
     "url": "https://github.com/synergycodes/workflowbuilder/issues"
   },
   "scripts": {
-    "build": "vite build && pnpm check:built-css",
+    "build": "vite build && pnpm check:built-css && pnpm publint",
     "dev": "vite build --watch",
     "prepare": "pnpm build",
     "check:built-css": "tsx ./scripts/check-built-css.ts",
+    "publint": "publint",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
     "typecheck": "tsc --noEmit --pretty && tsc --noEmit --pretty -p tsconfig.node.json",
@@ -76,6 +77,7 @@
     "eslint-plugin-react": "^7.37.4",
     "eslint-plugin-react-hooks": "^5.2.0",
     "postcss": "^8.5.3",
+    "publint": "^0.3.24",
     "react": "catalog:",
     "react-day-picker": "^9.14.0",
     "react-dom": "catalog:",

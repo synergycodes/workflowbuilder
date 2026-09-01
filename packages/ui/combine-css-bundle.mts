@@ -15,9 +15,6 @@ import type { Plugin } from 'vite';
  * first" is true in src/ but false in dist/ (the inverted-cascade bug class).
  */
 export function combineCssBundle(rootDirectory: string): Plugin {
-  const distributionDirectory = path.resolve(rootDirectory, 'dist');
-  const documentationPreviewDirectory = path.resolve(rootDirectory, 'tmp');
-  const stylesDirectory = path.resolve(rootDirectory, 'src/styles');
   let buildFailed = false;
 
   return {
@@ -31,17 +28,23 @@ export function combineCssBundle(rootDirectory: string): Plugin {
     },
     closeBundle() {
       if (buildFailed) return;
-
-      assetsDirectoryOf(distributionDirectory);
-      const fontStyles = emitFontAssets(distributionDirectory);
-      const layerOrder = readLayerOrder(stylesDirectory);
-      fs.writeFileSync(path.resolve(distributionDirectory, 'fonts.css'), `${layerOrder}\n${fontStyles}\n`);
-      writeCombinedStylesheet(distributionDirectory, documentationPreviewDirectory, stylesDirectory, fontStyles);
-      writeGlobalStylesheet(distributionDirectory, stylesDirectory, fontStyles);
-      appendFontStylesToEntryChunk(distributionDirectory, fontStyles);
-      prependLayerOrderToAssets(distributionDirectory, stylesDirectory);
+      finalizeCssBundle(rootDirectory);
     },
   };
+}
+
+export function finalizeCssBundle(rootDirectory: string) {
+  const distributionDirectory = path.resolve(rootDirectory, 'dist');
+  const documentationPreviewDirectory = path.resolve(rootDirectory, 'tmp');
+  const stylesDirectory = path.resolve(rootDirectory, 'src/styles');
+  assetsDirectoryOf(distributionDirectory);
+  const fontStyles = emitFontAssets(distributionDirectory);
+  const layerOrder = readLayerOrder(stylesDirectory);
+  fs.writeFileSync(path.resolve(distributionDirectory, 'fonts.css'), `${layerOrder}\n${fontStyles}\n`);
+  writeCombinedStylesheet(distributionDirectory, documentationPreviewDirectory, stylesDirectory, fontStyles);
+  writeGlobalStylesheet(distributionDirectory, stylesDirectory, fontStyles);
+  appendFontStylesToEntryChunk(distributionDirectory, fontStyles);
+  prependLayerOrderToAssets(distributionDirectory, stylesDirectory);
 }
 
 type FontFaceDefinition = {
