@@ -12,6 +12,7 @@ import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
 import { withPayloadSizeWarning } from '../../store-payload-warning';
+import { buildTemporalConnectionOptions } from './temporal-connection';
 
 if (!env.AI_API_KEY) {
   logger.warn('no LLM key configured — AI Agent nodes will fail; every other node type runs as usual');
@@ -37,15 +38,26 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
   store: withPayloadSizeWarning(database, logger),
 });
 
-// without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
-const connection = await NativeConnection.connect({ address: env.TEMPORAL_ADDRESS });
+// without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS.
+// Contradictory TEMPORAL_* values throw here, before the worker starts polling.
+const connection = await NativeConnection.connect({
+  address: env.TEMPORAL_ADDRESS,
+  ...buildTemporalConnectionOptions({
+    tls: env.TEMPORAL_TLS,
+    apiKey: env.TEMPORAL_API_KEY,
+    caPath: env.TEMPORAL_TLS_CA_PATH,
+    certPath: env.TEMPORAL_TLS_CERT_PATH,
+    keyPath: env.TEMPORAL_TLS_KEY_PATH,
+  }),
+});
 
 const worker = await Worker.create({
   connection,
+  namespace: env.TEMPORAL_NAMESPACE,
   taskQueue: plugin.taskQueue,
   workflowsPath: fileURLToPath(new URL('workflows.ts', import.meta.url)),
   plugins: [plugin],
 });
 
-logger.info('execution worker started', { taskQueue: plugin.taskQueue });
+logger.info('execution worker started', { taskQueue: plugin.taskQueue, namespace: env.TEMPORAL_NAMESPACE });
 await worker.run();
