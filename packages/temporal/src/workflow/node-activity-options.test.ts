@@ -10,9 +10,8 @@ function node(overrides: Partial<BaseNode> = {}): BaseNode {
 
 describe('resolveNodeActivityOptions', () => {
   describe('timeouts and retries', () => {
-    // The trap this whole file exists to catch. Temporal's own default is unlimited
-    // retries with backoff, so a resolution bug does not fail loudly — it quietly
-    // turns a permanently failing LLM node into an unbounded spend.
+    // The trap: Temporal's own default is unlimited retries with backoff, so a
+    // resolution bug does not fail loudly, it just spends.
     it('falls back to the blanket profile for a type with no entry', () => {
       const resolved = resolveNodeActivityOptions(node({ type: 'test/unprofiled' }), {});
 
@@ -39,9 +38,6 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('ignores an inherited key rather than treating it as a profile', () => {
-      // `profiles` is a plain record, so a node type of 'toString' or 'constructor'
-      // would otherwise resolve to something off Object.prototype and be handed to
-      // Temporal as activity options.
       const resolved = resolveNodeActivityOptions(node({ type: 'constructor' }), {});
 
       expect(resolved).toEqual(DEFAULT_NODE_ACTIVITY_PROFILE);
@@ -56,8 +52,7 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('omits the key entirely for an unlabelled node', () => {
-      // Not `summary: undefined`: that is a different command payload, and Temporal
-      // shows the activity type when no summary is set at all.
+      // Not `summary: undefined`: that is a different command payload.
       const resolved = resolveNodeActivityOptions(node(), {});
 
       expect('summary' in resolved).toBe(false);

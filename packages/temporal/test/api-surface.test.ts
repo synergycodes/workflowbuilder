@@ -50,9 +50,8 @@ describe('public API surface', () => {
 
 describe('default activity profiles', () => {
   // These are the values the worker has always used. Per-node-type profiles layer on
-  // top; a node type without metadata has to keep resolving to exactly this, never to
-  // Temporal's own default of unlimited retries with backoff. That resolution is
-  // pinned in src/workflow/node-activity-options.test.ts.
+  // top; a type without metadata keeps resolving to exactly this, which is pinned in
+  // src/workflow/node-activity-options.test.ts.
   it('keeps node activities at 10 minutes and 2 attempts', () => {
     expect(rootEntry.DEFAULT_NODE_ACTIVITY_PROFILE).toEqual({
       startToCloseTimeout: '10m',

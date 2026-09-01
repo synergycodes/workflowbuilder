@@ -18,7 +18,6 @@ export type { Activities } from './activities-interface';
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
 export type { ActivityProfile, NodeActivityProfiles } from './activity-profiles';
 
-// Exported so a consumer can unit-test their own profile map against the same
-// resolution the workflow uses, rather than asserting on Temporal history.
+// Exported so a consumer can unit-test their own profile map.
 export { resolveNodeActivityOptions } from './node-activity-options';
 export type { NodeActivityOptions } from './node-activity-options';

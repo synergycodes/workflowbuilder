@@ -4,9 +4,7 @@
 //
 // A plugin cannot register this itself: the TypeScript SDK builds the workflow
 // bundle from a single module, so the consumer re-exports it from their own
-// workflows file. That same constraint is why anything configurable about the
-// workflow arrives through `createRunWorkflow` rather than through plugin options.
-// See the package README.
+// workflows file. See the package README.
 import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
 
 import type { Activities } from './activities-interface';
@@ -21,36 +19,21 @@ import {
 import { resolveNodeActivityOptions } from './node-activity-options';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
-// One profile for both DB activities, proxied once: they are the same shape of work
-// whatever the graph looks like.
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
   DEFAULT_DATABASE_ACTIVITY_PROFILE,
 );
 
 export type RunWorkflowOptions = {
-  // Per-node-type timeouts and retry caps. Omit for the previous behaviour: every
-  // node activity on DEFAULT_NODE_ACTIVITY_PROFILE.
   nodeActivityProfiles?: NodeActivityProfiles;
 };
 
-// Builds the workflow function. Configuration has to arrive this way rather than
-// through the plugin: the TypeScript SDK compiles the workflow bundle from the
-// consumer's own workflows module, so the worker-side plugin cannot reach into it.
-// The profiles are therefore declared where the bundle is built:
-//
-//   // workflows.ts
-//   import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
-//   export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
-//
-// Consumers who need no per-type profiles keep re-exporting `runWorkflow` directly,
-// which is the same one-liner as before.
+// Profiles arrive here rather than through plugin options because the TypeScript SDK
+// compiles the workflow bundle from the consumer's own workflows module, which the
+// worker-side plugin cannot reach into. See the README for the snippet.
 export function createRunWorkflow(options: RunWorkflowOptions = {}) {
   const profiles = options.nodeActivityProfiles ?? {};
 
-  // Proxied per call rather than once per module, because the options now depend on
-  // the node: its type picks the profile and its label becomes the Summary. The proxy
-  // is a plain object built from deterministic inputs, so building one per node costs
-  // nothing that matters and stays replay-safe.
+  // Proxied per call, not once per module: the options depend on the node.
   const runner: ActivityRunnerPort<BaseNode> = {
     executeNode: (node, context) => {
       const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(

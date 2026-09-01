@@ -28,12 +28,8 @@ export type BaseNode = {
   id: string;
   type: string;
   config: unknown;
-  // The node's label as authored on the canvas. Lifted out of `config` by the
-  // backend mapper, alongside `errorPolicy` and `role`, because an engine reads
-  // it: the Temporal adapter passes it as the activity Summary so Event History
-  // reads 1:1 with the diagram instead of listing anonymous executeNode rows.
-  // Optional because a node may be unlabelled, and because nothing downstream
-  // may depend on it being present.
+  // Lifted out of `config` by the backend mapper: the Temporal adapter schedules
+  // each node activity with it as the Summary.
   label?: string;
   errorPolicy?: NodeErrorPolicy;
   role?: NodeRole;

@@ -30,11 +30,8 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
 // stays free of them. `errorPolicy` and `label` are authored in the UI as regular
 // JSONForms properties (via `sharedProperties` in the SDK) and arrive nested in
 // `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
-// which sits alongside the properties rather than inside them.
-//
-// `label` is lifted rather than left in `config` because an engine consumes it:
-// the Temporal adapter schedules each node activity with the label as its Summary.
-// `description`, the other shared property, stays in `config` — no engine reads it.
+// which sits alongside the properties rather than inside them. `description`, the
+// other shared property, stays in `config`: no engine reads it.
 function mapNode(node: FrontendNode): BaseNode {
   const { errorPolicy: rawErrorPolicy, label: rawLabel, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
@@ -50,9 +47,7 @@ function mapNode(node: FrontendNode): BaseNode {
   };
 }
 
-// Blank labels are dropped rather than forwarded: an empty Summary in Event History
-// is worse than none, because Temporal then shows nothing where it would otherwise
-// fall back to the activity type.
+// A blank Summary renders as nothing; no Summary falls back to the activity type.
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0;
 }

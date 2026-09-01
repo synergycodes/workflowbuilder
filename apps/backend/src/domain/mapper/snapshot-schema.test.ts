@@ -216,9 +216,7 @@ describe('mapToExecutionModel', () => {
   });
 
   it('lifts the authored label out of `config`', () => {
-    // Lifted for the same reason as errorPolicy and role: an engine reads it. The
-    // Temporal adapter schedules each node activity with the label as its Summary,
-    // so Event History lists the diagram's own names.
+    // Lifted for the same reason as errorPolicy and role: an engine reads it.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         {
@@ -237,8 +235,7 @@ describe('mapToExecutionModel', () => {
   });
 
   it('trims the label and drops a blank one', () => {
-    // An empty Summary is worse than none: Temporal then renders nothing where it
-    // would otherwise fall back to showing the activity type.
+    // An empty Summary renders as nothing; no Summary falls back to the activity type.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         { id: 'n1', data: { type: 'my-product/action', properties: { label: '  Approve  ' } } },
@@ -258,8 +255,8 @@ describe('mapToExecutionModel', () => {
   });
 
   it('ignores a non-string label rather than forwarding it', () => {
-    // `properties` is `Record<string, unknown>` at the boundary, so a client can send
-    // anything under that key. It must not reach Temporal's options as a non-string.
+    // `properties` is `Record<string, unknown>` at the boundary, so a client can
+    // send anything under that key.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [{ id: 'n1', data: { type: 'my-product/action', properties: { label: { nested: true } } } }],
       edges: [],

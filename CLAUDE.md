@@ -36,10 +36,12 @@ Long-running processes already emit stable log lines that scripts and agents can
 | Process              | Ready signal                                                                     |
 | -------------------- | -------------------------------------------------------------------------------- |
 | `pnpm dev:demo`      | `VITE vX.Y.Z  ready in NNN ms` and `Local:   http://localhost:4200/`             |
-| `pnpm dev:backend`   | `Backend running on http://127.0.0.1:3001`                                       |
-| `pnpm dev:worker`    | `Execution worker started on task queue: workflow-execution`                     |
+| `pnpm dev:backend`   | `backend listening` (structured: `{"component":"backend","url":"..."}`)          |
+| `pnpm dev:worker`    | `execution worker started` (structured: `{"taskQueue":"workflow-execution"}`)    |
 | `pnpm dev:ai-studio` | All three above interleaved with `[backend]`, `[worker]`, `[ai-studio]` prefixes |
 | `pnpm infra:wait`    | `Temporal ready`                                                                 |
+
+Grep for the message text only, not for a rendered sentence: the backend and worker log through a structured logger, so the fields arrive as JSON after the message and their order is not guaranteed. Both lines are lowercase.
 
 `pnpm preflight --json` returns `{ ok: boolean, checks: [{ name: string, status: 'pass' | 'warn' | 'fail', detail: string }] }` for programmatic inspection. Top-level `ok` is `true` when no check has `status: 'fail'`.
 
