@@ -104,7 +104,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
 | Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
-| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                                                                     |
+| Knip       | `pnpm exec knip`              | Detects unused exports/dependencies (not part of `pnpm check` or CI)                                    |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 

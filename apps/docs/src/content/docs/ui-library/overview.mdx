@@ -25,10 +25,55 @@ your own. Everything else the components need, including `@base-ui/react`
 
 ## Styles
 
-Importing a component from the package root injects that component's CSS
-automatically, including the layer order (`@layer ui.base, ui.component`)
-and typography classes - so the only thing left to add is the design
-tokens:
+The package has six style surfaces:
+
+- **`@workflowbuilder/ui`** is the root barrel. It provides every component and
+  all component and global CSS, but not the design token values.
+- **`@workflowbuilder/ui/<component>`** provides one component and only that
+  component's CSS. Add `styles.css` for the global reset, typography and fonts,
+  and `tokens.css` for the design tokens.
+- **`@workflowbuilder/ui/index.css`** provides all component and global CSS,
+  including typography and fonts, but not the design token values.
+- **`@workflowbuilder/ui/styles.css`** provides the global reset, typography and
+  fonts, but no component CSS or design token values.
+- **`@workflowbuilder/ui/fonts.css`** provides the font faces, but no global,
+  component or design token rules.
+- **`@workflowbuilder/ui/tokens.css`** provides the design token values, but no
+  component, typography or font rules.
+
+The stylesheets reference `./assets/*.woff2`, so preserve the package's `dist`
+layout when copying or serving them. The font assets' SIL Open Font License 1.1
+texts ship beside them as `assets/OFL-poppins.txt` and `assets/OFL-inter.txt`.
+
+Only Poppins latin 400 and 600 are inline. Other weights, Inter, and non-ASCII
+glyphs use `font-display: swap` assets, so they can briefly appear in the
+fallback font while loading.
+
+### Shipped font faces
+
+| Family  | Weight | Subset    | File name                            | Delivery |
+| ------- | ------ | --------- | ------------------------------------ | -------- |
+| Poppins | 300    | latin     | `poppins-latin-300-normal.woff2`     | Asset    |
+| Poppins | 400    | latin     | `poppins-latin-400-normal.woff2`     | Inline   |
+| Poppins | 500    | latin     | `poppins-latin-500-normal.woff2`     | Asset    |
+| Poppins | 600    | latin     | `poppins-latin-600-normal.woff2`     | Inline   |
+| Poppins | 700    | latin     | `poppins-latin-700-normal.woff2`     | Asset    |
+| Poppins | 300    | latin-ext | `poppins-latin-ext-300-normal.woff2` | Asset    |
+| Poppins | 400    | latin-ext | `poppins-latin-ext-400-normal.woff2` | Asset    |
+| Poppins | 500    | latin-ext | `poppins-latin-ext-500-normal.woff2` | Asset    |
+| Poppins | 600    | latin-ext | `poppins-latin-ext-600-normal.woff2` | Asset    |
+| Poppins | 700    | latin-ext | `poppins-latin-ext-700-normal.woff2` | Asset    |
+| Inter   | 400    | latin     | `inter-latin-400-normal.woff2`       | Asset    |
+| Inter   | 400    | latin-ext | `inter-latin-ext-400-normal.woff2`   | Asset    |
+
+Preload the relevant `.woff2` files when that flash of unstyled text (FOUT) is
+unacceptable:
+
+```html
+<link rel="preload" href="./assets/poppins-latin-ext-400-normal.woff2" as="font" type="font/woff2" crossorigin />
+```
+
+With the root barrel, add only the design tokens:
 
 ```ts
 // Design tokens (the `--wb-*` custom properties).
@@ -39,16 +84,11 @@ import '@workflowbuilder/ui/tokens.css';
 import { Button } from '@workflowbuilder/ui';
 ```
 
-Need only one component's styles without the others? Import the per-component
-subpath instead. That only injects the component's own CSS. Every built
-stylesheet carries the cascade-layer order, so import order doesn't matter;
-add the global stylesheet once if you also want the typography classes, plus
-the tokens:
+Every built stylesheet carries the cascade-layer order, so import order does
+not matter. With a per-component subpath, add the global stylesheet and tokens:
 
 ```ts
-// Optional: global typography classes.
 import '@workflowbuilder/ui/styles.css';
-// Design tokens (the `--wb-*` custom properties).
 import '@workflowbuilder/ui/tokens.css';
 ```
 

@@ -6,14 +6,12 @@
  *
  * 1. `var()`'s first argument must be a `<custom-property-name>` (a dashed-ident) -
  *    never another function, an undashed name, or nothing. Browsers silently
- *    invalidate the declaration and fall back, which is how WB-222 shipped a
- *    wrong snackbar icon color (`var(var(--foo))`).
+ *    invalidate the declaration and fall back.
  * 2. Every rule must live inside an `@layer` block - including `:root` variable
  *    defaults (layered defaults lose to any unlayered consumer override, which
  *    is the override contract). Unlayered CSS beats layered CSS regardless of
  *    specificity, so a rule that escapes `ui.base` / `ui.component` silently
- *    wins the cascade - this is how WB-190 shipped decision-node ports
- *    collapsed to ~5px (see `css-layers.md`).
+ *    wins the cascade (see `css-layers.md`).
  * 3. Every stylesheet must LEAD with the full `@layer` order statement. The first
  *    use of a layer name fixes the order, so a component stylesheet that loads
  *    before the statement inverts the cascade (ui.base beats ui.component) -
@@ -22,16 +20,19 @@
  * 4. Only the layer names declared in `src/styles/layers.css` may appear. An
  *    unknown name (a typo) lands AFTER the declared order and silently wins
  *    the cascade.
- * 5. Every `*.css` entry in package.json `exports` must exist in dist, and no
- *    dist stylesheet may use `@import` - a relative import breaks silently when
- *    a file is copied out alone, and constructed stylesheets ignore imports.
+ * 5. Every `*.css` entry in package.json `exports` must exist in dist, no dist
+ *    stylesheet may use `@import`, and every non-data `url()` must resolve to a
+ *    file in dist. Absolute URLs are rejected on purpose: published styles are
+ *    required to remain self-contained and usable without a CDN.
+ * 6. The root JS barrel's entry-chunk stylesheet must carry every generated
+ *    `@font-face` rule so importing the barrel cannot silently lose the fonts.
  *
  * These are the only lines of defense for these bug classes today; source-level lint
  * rules would catch some of them earlier but none is configured yet.
  *
  * Exits non-zero on any match.
  */
-import { existsSync, globSync, readFileSync } from 'node:fs';
+import { existsSync, globSync, readFileSync, readdirSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -238,9 +239,118 @@ function checkPublishedSurface(files: string[]): FailureReport[] {
   return failures;
 }
 
+function isExactFileWithin(rootDirectory: string, targetPath: string): boolean {
+  const relativeTarget = path.relative(rootDirectory, targetPath);
+  if (
+    relativeTarget === '' ||
+    relativeTarget === '..' ||
+    relativeTarget.startsWith(`..${path.sep}`) ||
+    path.isAbsolute(relativeTarget)
+  ) {
+    return false;
+  }
+
+  const segments = relativeTarget.split(path.sep);
+  let currentDirectory = rootDirectory;
+
+  for (const [index, segment] of segments.entries()) {
+    try {
+      const entry = readdirSync(currentDirectory, { withFileTypes: true }).find(({ name }) => name === segment);
+      if (!entry) return false;
+      if (index === segments.length - 1) return entry.isFile();
+      if (!entry.isDirectory()) return false;
+      currentDirectory = path.resolve(currentDirectory, segment);
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
+}
+
+function checkUrlTargets(files: string[], targetDistributionDirectory: string): FailureReport[] {
+  const failures: FailureReport[] = [];
+  const urlPattern = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/gi;
+
+  if (files.length === 0) {
+    return [{ file: '(dist)', hits: [{ line: 0, column: 0, snippet: 'no CSS emitted at all' }] }];
+  }
+
+  for (const file of files) {
+    const content = readFileSync(path.resolve(targetDistributionDirectory, file), 'utf8');
+    const hits: Hit[] = [];
+
+    postcss.parse(content).walkDecls((declaration) => {
+      for (const match of declaration.value.matchAll(urlPattern)) {
+        const reference = (match[1] ?? match[2] ?? match[3]).trim();
+        if (reference.toLowerCase().startsWith('data:')) continue;
+
+        if (/^[a-z][a-z\d+.-]*:/i.test(reference) || reference.startsWith('/')) {
+          hits.push(hitFor(declaration));
+          continue;
+        }
+
+        let targetPath = '';
+        try {
+          const fileReference = decodeURIComponent(reference.split(/[?#]/, 1)[0]);
+          targetPath = path.resolve(targetDistributionDirectory, path.dirname(file), fileReference);
+        } catch {
+          hits.push(hitFor(declaration));
+          continue;
+        }
+
+        if (!isExactFileWithin(targetDistributionDirectory, targetPath)) hits.push(hitFor(declaration));
+      }
+    });
+
+    if (hits.length > 0) failures.push({ file, hits });
+  }
+
+  return failures;
+}
+
+function countFontFaces(filePath: string): number {
+  let count = 0;
+  postcss.parse(readFileSync(filePath, 'utf8')).walkAtRules('font-face', () => {
+    count += 1;
+  });
+  return count;
+}
+
+function checkEntryChunkFontFaces(): FailureReport[] {
+  const sidecarFile = 'fonts.css';
+  const entryChunkFile = 'assets/index.css';
+  const sidecarPath = path.resolve(distributionDirectory, sidecarFile);
+  const entryChunkPath = path.resolve(distributionDirectory, entryChunkFile);
+
+  if (!existsSync(sidecarPath)) {
+    return [{ file: sidecarFile, hits: [{ line: 0, column: 0, snippet: 'font sidecar is missing' }] }];
+  }
+  if (!existsSync(entryChunkPath)) {
+    return [{ file: entryChunkFile, hits: [{ line: 0, column: 0, snippet: 'entry-chunk CSS is missing' }] }];
+  }
+
+  const expectedCount = countFontFaces(sidecarPath);
+  const actualCount = countFontFaces(entryChunkPath);
+  if (expectedCount > 0 && actualCount === expectedCount) return [];
+
+  return [
+    {
+      file: entryChunkFile,
+      hits: [
+        {
+          line: 0,
+          column: 0,
+          snippet: `expected ${expectedCount} @font-face rules from fonts.css, found ${actualCount}`,
+        },
+      ],
+    },
+  ];
+}
+
 // --- Run all checks ---------------------------------------------------------
 
-function report(title: string, failures: FailureReport[], hint: string): boolean {
+function report(title: string, failures: FailureReport[], hint: string, rootLabel = 'packages/ui/dist'): boolean {
   if (failures.length === 0) {
     console.log(`✔ ${title}`);
     return true;
@@ -249,7 +359,7 @@ function report(title: string, failures: FailureReport[], hint: string): boolean
   const total = failures.reduce((n, f) => n + f.hits.length, 0);
   console.error(`\n✖ Found ${total} issue(s): ${title}\n`);
   for (const { file, hits } of failures) {
-    console.error(`  packages/ui/dist/${file}`);
+    console.error(`  ${rootLabel}/${file}`);
     for (const { line, column, snippet } of hits) {
       console.error(`    ${line}:${column}  …${snippet}…`);
     }
@@ -265,7 +375,7 @@ const results = [
     'Built CSS: every var() takes a --custom-property name',
     checkVariableFirstArgument(files),
     'The first argument of var() must be a --custom-property name - browsers silently ' +
-      'discard the whole declaration otherwise. See WB-222.',
+      'discard the whole declaration otherwise.',
   ),
   report(
     'Built CSS: every rule sits inside an @layer block',
@@ -292,7 +402,31 @@ const results = [
     'package.json exports must point at real files, and dist CSS must be self-contained - ' +
       'a relative @import breaks silently when a file is copied out of the package.',
   ),
+  report(
+    'Built CSS: every non-data url() resolves inside dist',
+    checkUrlTargets(files, distributionDirectory),
+    'Copy every referenced asset into dist and keep its path relative to the stylesheet.',
+  ),
+  report(
+    'Built CSS: the root entry chunk carries every @font-face rule',
+    checkEntryChunkFontFaces(),
+    'Append the generated font block to dist/assets/index.css so the root JS barrel carries it.',
+  ),
 ];
+
+for (const directory of process.argv.slice(2)) {
+  const targetDistributionDirectory = path.resolve(process.cwd(), directory);
+  const targetFiles = globSync('**/*.css', { cwd: targetDistributionDirectory });
+  const rootLabel = path.relative(path.resolve(packageDirectory, '../..'), targetDistributionDirectory);
+  results.push(
+    report(
+      `Built CSS (${rootLabel}): every non-data url() resolves inside dist`,
+      checkUrlTargets(targetFiles, targetDistributionDirectory),
+      'Copy every referenced asset into dist and keep its path relative to the stylesheet.',
+      rootLabel,
+    ),
+  );
+}
 
 if (results.includes(false)) {
   process.exitCode = 1;

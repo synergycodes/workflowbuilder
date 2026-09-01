@@ -1,7 +1,8 @@
 /// <reference types="vitest/config" />
 import react from '@vitejs/plugin-react';
+import fs from 'node:fs';
 import path from 'node:path';
-import { defineConfig } from 'vite';
+import { type Plugin, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
@@ -51,10 +52,59 @@ const EXTERNAL_PACKAGES = [
 const isExternalPackage = (id: string) =>
   EXTERNAL_PACKAGES.some((packageName) => id === packageName || id.startsWith(`${packageName}/`));
 
+function emitUiFontAssets(): Plugin {
+  const distributionDirectory = path.resolve(import.meta.dirname, 'dist');
+  let buildFailed = false;
+
+  return {
+    name: 'wb-sdk:emit-ui-font-assets',
+    apply: 'build',
+    buildStart() {
+      buildFailed = false;
+    },
+    buildEnd(error) {
+      buildFailed = error !== undefined;
+    },
+    closeBundle() {
+      if (buildFailed) return;
+
+      const uiDistribution = path.resolve(import.meta.dirname, '../ui/dist');
+      const stylesheetPath = path.resolve(distributionDirectory, 'style.css');
+      const fontStylesPath = path.resolve(uiDistribution, 'fonts.css');
+      const assetsDirectory = path.resolve(distributionDirectory, 'assets');
+
+      if (!fs.existsSync(fontStylesPath)) {
+        throw new Error('@workflowbuilder/ui dist is missing fonts.css - build the UI first: `pnpm build:ui`');
+      }
+      if (!fs.existsSync(stylesheetPath)) {
+        throw new Error(
+          `wb-sdk:emit-ui-font-assets: ${stylesheetPath} is missing - ` +
+            'the Vite build emitted no SDK stylesheet to receive the font faces',
+        );
+      }
+
+      const fontStyles = fs.readFileSync(fontStylesPath, 'utf8').replace(/^@layer ui\.base, ui\.component;\s*/, '');
+      const stylesheet = fs
+        .readFileSync(stylesheetPath, 'utf8')
+        .replaceAll(/@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g, '');
+
+      fs.mkdirSync(assetsDirectory, { recursive: true });
+      for (const file of fs.readdirSync(path.resolve(uiDistribution, 'assets'))) {
+        if (!file.endsWith('.woff2')) continue;
+        fs.copyFileSync(path.resolve(uiDistribution, 'assets', file), path.resolve(assetsDirectory, file));
+      }
+
+      fs.writeFileSync(stylesheetPath, stylesheet);
+      fs.appendFileSync(stylesheetPath, `\n${fontStyles}`);
+    },
+  };
+}
+
 export default defineConfig(({ command }) => ({
   plugins: [
     svgr(),
     react(),
+    emitUiFontAssets(),
     dts({
       // Bundle all type declarations into a single dist/index.d.ts file
       // via rollup-plugin-dts (matches the meeting decision to stop
