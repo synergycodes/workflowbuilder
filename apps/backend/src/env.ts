@@ -2,6 +2,13 @@ function envOr(name: string, defaultValue: string): string {
   return process.env[name] ?? defaultValue;
 }
 
+// Empty string counts as unset. Compose passes absent optionals through as
+// `${VAR:-}`, so a bare `?? null` would read '' as a configured value and, for
+// the key below, shadow the fallback.
+function envOptional(name: string): string | null {
+  return process.env[name] || null;
+}
+
 // 127.0.0.1 (not `localhost`) matches the loopback-only docker bindings in
 // apps/backend/docker-compose.yml — see local-dev-binding.decision-log.md
 // for that decision. On some Windows / Node configs `localhost` resolves to
@@ -18,7 +25,10 @@ export const env = {
   TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
   // Null = Turnstile verification disabled (local dev runs unprotected).
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
+  // Any OpenAI-compatible endpoint, including one inside your own network.
+  AI_BASE_URL: envOr('AI_BASE_URL', 'https://openrouter.ai/api/v1'),
   // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
-  OPENROUTER_API_KEY: process.env['OPENROUTER_API_KEY'] ?? null,
+  // OPENROUTER_API_KEY is the former name, still honoured so existing deployments keep working.
+  AI_API_KEY: envOptional('AI_API_KEY') ?? envOptional('OPENROUTER_API_KEY'),
   AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
 };

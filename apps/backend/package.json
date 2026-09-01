@@ -17,8 +17,8 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "^2.0.74",
     "@hono/node-server": "^1.14.0",
-    "@openrouter/ai-sdk-provider": "^2.8.0",
     "@temporalio/client": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
