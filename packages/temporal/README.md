@@ -95,6 +95,10 @@ Keep the export named `runWorkflow`: that is the name the client starts, and a t
 
 Entries are whole profiles rather than partials on purpose. A partial would let you set a timeout and silently drop the retry cap, and what Temporal falls back to is unlimited retries with backoff, which on a permanently failing model call is an unbounded bill. A node type with no entry resolves to `DEFAULT_NODE_ACTIVITY_PROFILE` and nothing else.
 
+Profile **values** are validated as the workflow is built, so a bad duration or a missing retry cap throws with the offending node type named, rather than surfacing later as a failing node that your graph's `errorPolicy` might absorb into a run that closes as completed.
+
+Profile **keys** cannot be validated: the workflow runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled node type is therefore silent, and every node of the type you meant to configure keeps the default profile. The fallback is safe, just not what you asked for, so check the spelling against your registry when a profile appears to have no effect.
+
 ## Client
 
 ```ts

@@ -15,18 +15,30 @@ export type ActivityProfile = {
   retry: { maximumAttempts: number };
 };
 
+// Runtime twin of DurationString, which is erased at compile time. A profile can
+// reach us from JSON or an untyped consumer, so the shape is checked, not assumed.
+const DURATION_PATTERN = /^\d+(?:ms|s|m|h|d)$/;
+
+export function isDurationString(value: unknown): value is DurationString {
+  return typeof value === 'string' && DURATION_PATTERN.test(value);
+}
+
+// Frozen, nested object included: these are shared singletons, and a caller that
+// mutated one would change every node's retry cap for the rest of the process.
+// Spreading them still works, which is the documented way to derive a profile.
+
 // Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
 // cost on partial failures.
-export const DEFAULT_NODE_ACTIVITY_PROFILE: ActivityProfile = {
+export const DEFAULT_NODE_ACTIVITY_PROFILE: ActivityProfile = Object.freeze({
   startToCloseTimeout: '10m',
-  retry: { maximumAttempts: 2 },
-};
+  retry: Object.freeze({ maximumAttempts: 2 }),
+});
 
 // DB activities: fast, idempotent INSERT/UPDATE — short timeout, aggressive retries.
-export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ActivityProfile = {
+export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ActivityProfile = Object.freeze({
   startToCloseTimeout: '30s',
-  retry: { maximumAttempts: 5 },
-};
+  retry: Object.freeze({ maximumAttempts: 5 }),
+});
 
 // Per-node-type overrides keyed by `node.type`; a type with no entry resolves to
 // DEFAULT_NODE_ACTIVITY_PROFILE. Whole profiles, not partials: one that omitted

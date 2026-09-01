@@ -116,14 +116,16 @@ describe('workflowSnapshotSchema', () => {
 });
 
 describe('mapToExecutionModel', () => {
-  it('maps `data.properties` to `config` verbatim — no per-type extraction', () => {
+  it('copies every property the runner does not lift into `config`', () => {
+    // No per-type extraction: the backend knows no product's vocabulary, so anything
+    // that is not a runner-level field passes through untouched.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         {
           id: 'n1',
           data: {
             type: 'product/foo',
-            properties: { foo: 1, bar: 'two', extra: { ui: 'metadata' } },
+            properties: { foo: 1, bar: 'two', extra: { ui: 'metadata' }, label: 'Lifted', errorPolicy: 'continue' },
           },
         },
       ],
@@ -137,6 +139,8 @@ describe('mapToExecutionModel', () => {
         id: 'n1',
         type: 'product/foo',
         config: { foo: 1, bar: 'two', extra: { ui: 'metadata' } },
+        label: 'Lifted',
+        errorPolicy: 'continue',
       },
     ]);
   });
