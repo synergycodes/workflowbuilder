@@ -12,7 +12,7 @@
   },
   "devDependencies": {
     "@phosphor-icons/core": "catalog:",
-    "@svgr/core": "^8.1.0",
+    "@svgr/cli": "^8.1.0",
     "@types/react": "catalog:",
     "react": "catalog:"
   },
