@@ -14,7 +14,7 @@
     "test:watch": "vitest"
   },
   "dependencies": {
-    "@openrouter/ai-sdk-provider": "^2.5.0",
+    "@ai-sdk/openai-compatible": "^2.0.74",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",

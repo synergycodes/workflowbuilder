@@ -26,21 +26,31 @@ Requires Postgres + Temporal running. Start them with `pnpm infra:up`.
 
 ## Environment
 
-See `.env.example`. Required:
+See `.env.example`. Every variable has a working default:
 
-| Var                  | Purpose                            | Default                                              |
-| -------------------- | ---------------------------------- | ---------------------------------------------------- |
-| `OPENROUTER_API_KEY` | AI agent activities (**required**) | —                                                    |
-| `DATABASE_URL`       | Execution events + status          | `postgresql://wb:wb@127.0.0.1:5432/workflow_builder` |
-| `TEMPORAL_ADDRESS`   | Temporal server address            | `127.0.0.1:7233`                                     |
-| `AI_MODEL`           | OpenRouter model ID                | `anthropic/claude-3.5-haiku`                         |
+| Var                | Purpose                               | Default                                              |
+| ------------------ | ------------------------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`     | Execution events + status             | `postgresql://wb:wb@127.0.0.1:5432/workflow_builder` |
+| `TEMPORAL_ADDRESS` | Temporal server address               | `127.0.0.1:7233`                                     |
+| `AI_API_KEY`       | LLM for AI Agent nodes (optional)     | — (AI Agent nodes fail)                              |
+| `AI_BASE_URL`      | Any OpenAI-compatible endpoint        | `https://openrouter.ai/api/v1`                       |
+| `AI_MODEL`         | Model id, as the endpoint spells it   | `mistralai/mistral-small-3.2-24b-instruct`           |
+| `TAVILY_API_KEY`   | AI Agent's web-search tool (optional) | — (tool disabled)                                    |
+
+`AI_API_KEY` is optional by design: the worker boots without it and runs every non-AI node, and
+an AI Agent node that is reached fails with the `ai_not_configured` code rather than taking the
+whole worker down. `OPENROUTER_API_KEY` is the former name of this variable and is still read
+when `AI_API_KEY` is empty.
+
+Point `AI_BASE_URL` at any OpenAI-compatible server — a gateway, or a model hosted inside your
+own network — and no request leaves that network.
 
 ## Structure
 
 ```
 src/
 ├── database.ts            # Raw SQL for exec events + status updates (no Drizzle — avoids backend schema coupling)
-├── env.ts                 # Centralized env validation — fail fast at module load
+├── env.ts                 # Centralized env reading, with the defaults documented above
 └── engines/
     └── temporal/
         ├── worker.ts                      # Worker bootstrap: executors + store, handed to WorkflowBuilderPlugin
