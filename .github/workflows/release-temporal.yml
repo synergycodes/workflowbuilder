@@ -34,9 +34,14 @@ jobs:
       - name: Set up Node.js
         # No `registry-url:` here on purpose — see the note in release-sdk.yml.
         # setup-node's registry-url breaks OIDC by injecting a sentinel token.
+        #
+        # Node 24, not 22: the Trusted Publisher OIDC exchange is performed by the
+        # bundled npm, and only npm 11.x (Node 24) does it natively when no token is
+        # configured. release-sdk.yml was bumped for exactly this reason after the
+        # publish failed on authorization; do not lower it.
         uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: 24
 
       - name: Enable Corepack
         run: npm i -g corepack@latest
