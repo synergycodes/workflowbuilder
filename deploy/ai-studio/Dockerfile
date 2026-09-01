@@ -22,14 +22,27 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
 COPY . .
 
+# @workflowbuilder/temporal is the one workspace dependency of backend/worker that
+# ships built output: its `exports` point at ./dist, and .dockerignore keeps dist out
+# of the build context. It cannot build itself during the runtime install either,
+# because tsup is a devDependency and that install is --prod. So it is built here,
+# with dev dependencies present, and only the result is carried over.
+FROM source AS package-build
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    pnpm install --frozen-lockfile --prefer-offline --filter @workflowbuilder/temporal...
+RUN pnpm build:temporal
+
 # tsx runs TS directly — required anyway for the worker, whose workflow
 # sandbox bundles from TS source on disk at runtime.
 # --prefer-offline (not --offline): offline mode leaks into lifecycle
 # scripts and breaks the icons build, which shells out to npx.
 FROM source AS runtime
+COPY --from=package-build /app/packages/temporal/dist ./packages/temporal/dist
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    # `prepare` runs husky, absent from a --prod install
+    # `prepare` runs husky at the root, and `tsup` in packages/temporal — neither is
+    # available in a --prod install, and the dist copied above is what it would produce
     npm pkg delete scripts.prepare && \
+    (cd packages/temporal && npm pkg delete scripts.prepare) && \
     pnpm install --frozen-lockfile --prefer-offline --prod \
     --filter backend... --filter execution-worker...
 
