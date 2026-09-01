@@ -1,5 +1,5 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Input, Menu, NavButton } from '@workflowbuilder/ui';
+import { Input, Menu, MenuTriggerButton } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -39,6 +39,7 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
   const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
   const setDocumentName = useStore((state) => state.setDocumentName);
   const [editName, setEditName] = useState<boolean>(false);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { t } = useTranslation();
 
@@ -88,10 +89,14 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
         </span>
       )}
       <div className={styles['menu-container']}>
-        <Menu items={items}>
-          <NavButton tooltip={t('tooltips.pickTheProject')}>
+        <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+          <MenuTriggerButton
+            aria-label={t('tooltips.pickTheProject')}
+            isOpen={isMenuOpen}
+            tooltip={t('tooltips.pickTheProject')}
+          >
             <CaretDown />
-          </NavButton>
+          </MenuTriggerButton>
         </Menu>
       </div>
     </div>

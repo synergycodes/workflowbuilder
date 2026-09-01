@@ -1,11 +1,30 @@
-import { NavButton } from '@workflowbuilder/ui';
+import { ArrowRight, House, Plus } from '@phosphor-icons/react';
+import { NAV_BUTTON_SIZES, NavButton } from '@workflowbuilder/ui';
+
+import styles from './nav-button.module.css';
 
 import { ComponentPreview } from './component-preview';
 
 export function NavButtonExample() {
   return (
     <ComponentPreview>
-      <NavButton>Nav button</NavButton>
+      <div className={styles['rows']}>
+        <div className={styles['row']}>
+          <NavButton prefixIcon={<House />}>Square</NavButton>
+          <NavButton variant="round" prefixIcon={<House />}>
+            Round
+          </NavButton>
+          <NavButton aria-label="Plain" variant="plain" prefixIcon={<House />} />
+          <NavButton isSelected prefixIcon={<House />} suffixIcon={<ArrowRight />}>
+            Selected
+          </NavButton>
+        </div>
+        <div className={styles['row']}>
+          {NAV_BUTTON_SIZES.map((size) => (
+            <NavButton key={size} aria-label={`Add (${size})`} size={size} prefixIcon={<Plus />} />
+          ))}
+        </div>
+      </div>
     </ComponentPreview>
   );
 }

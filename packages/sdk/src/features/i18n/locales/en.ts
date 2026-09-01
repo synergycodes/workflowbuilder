@@ -160,7 +160,7 @@ export const en = {
     cantRemoveOnlyOption: "You can't remove the only option",
     addOption: 'Add Option',
     menu: 'Menu',
-    pickTheProject: 'Pick the project',
+    pickTheProject: 'Project actions',
     openPalette: 'Open palette',
     closePalette: 'Close palette',
     openPropertiesBar: 'Open properties bar',

@@ -10,6 +10,8 @@ import { NavButton } from '../button/nav-button/nav-button';
 interface CollapsibleContextProps {
   isExpanded: boolean;
   toggle: () => void;
+  expandLabel: string;
+  collapseLabel: string;
 }
 
 const CollapsibleContext = createContext<CollapsibleContextProps | undefined>(undefined);
@@ -28,9 +30,26 @@ export type CollapsibleProps = {
   isExpanded?: boolean;
   defaultExpanded?: boolean;
   onToggle?: (expanded: boolean) => void;
+  /**
+   * Accessible label for the button when the content is collapsed
+   * @default 'Expand'
+   */
+  expandLabel?: string;
+  /**
+   * Accessible label for the button when the content is expanded
+   * @default 'Collapse'
+   */
+  collapseLabel?: string;
 };
 
-export function Collapsible({ children, isExpanded, defaultExpanded = false, onToggle }: CollapsibleProps) {
+export function Collapsible({
+  children,
+  isExpanded,
+  defaultExpanded = false,
+  onToggle,
+  expandLabel = 'Expand',
+  collapseLabel = 'Collapse',
+}: CollapsibleProps) {
   const isControlled = isExpanded !== undefined;
   const [internalExpanded, setInternalExpanded] = useState(defaultExpanded);
 
@@ -45,7 +64,9 @@ export function Collapsible({ children, isExpanded, defaultExpanded = false, onT
   }, [actualExpanded, isControlled, onToggle]);
 
   return (
-    <CollapsibleContext.Provider value={{ isExpanded: actualExpanded, toggle }}>{children}</CollapsibleContext.Provider>
+    <CollapsibleContext.Provider value={{ isExpanded: actualExpanded, toggle, expandLabel, collapseLabel }}>
+      {children}
+    </CollapsibleContext.Provider>
   );
 }
 
@@ -54,13 +75,13 @@ Collapsible.Button = function CollapsibleButton() {
 
   return (
     <NavButton
+      aria-label={context?.isExpanded ? context.collapseLabel : context?.expandLabel}
       className={clsx(styles['expand-button'], {
         [styles['expanded']]: context?.isExpanded,
       })}
       onClick={context?.toggle}
-    >
-      <CaretUp />
-    </NavButton>
+      prefixIcon={<CaretUp />}
+    />
   );
 };
 

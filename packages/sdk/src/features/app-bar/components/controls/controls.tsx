@@ -1,6 +1,6 @@
 import { DotsThreeVertical } from '@phosphor-icons/react';
-import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
-import { useMemo } from 'react';
+import { Menu, type MenuItemProps, MenuTriggerButton } from '@workflowbuilder/ui';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import styles from '../../app-bar.module.css';
@@ -12,6 +12,7 @@ import { ToggleReadyOnlyMode } from '../toggle-read-only-mode/toggle-read-only-m
 
 export function Controls() {
   const { t } = useTranslation();
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   // eslint-disable-next-line react-hooks/exhaustive-deps
   const items: MenuItemProps[] = useMemo(() => getControlsDotsItems(), [t]);
@@ -24,10 +25,10 @@ export function Controls() {
       </OptionalAppBarControls>
       {items.length > 0 && (
         <div className={styles['menu-container']}>
-          <Menu items={items}>
-            <NavButton tooltip={t('tooltips.menu')}>
+          <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <MenuTriggerButton aria-label={t('tooltips.menu')} isOpen={isMenuOpen} tooltip={t('tooltips.menu')}>
               <DotsThreeVertical />
-            </NavButton>
+            </MenuTriggerButton>
           </Menu>
         </div>
       )}

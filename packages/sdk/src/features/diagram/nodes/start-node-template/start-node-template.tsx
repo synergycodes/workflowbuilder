@@ -1,6 +1,7 @@
 import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -40,6 +41,7 @@ const StartNodeTemplateComponent = memo(
     isValid,
     children,
   }: StartNodeTemplateProps) => {
+    const { t } = useTranslation();
     const isCanvasNode = showHandles;
 
     const handleSourceId = getHandleId({ handleType: 'source' });
@@ -51,7 +53,7 @@ const StartNodeTemplateComponent = memo(
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <Collapsible>
+      <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
         <NodePanel.Root selected={selected} className={styles['content']}>
           <NodePanel.Header>
             <NodeIcon icon={iconElement} />

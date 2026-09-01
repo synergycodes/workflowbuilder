@@ -3,7 +3,7 @@ import type { MenuItemProps } from '@workflowbuilder/ui';
 import { describe, expect, it, vi } from 'vitest';
 
 // Render the menu's `items` inline so we can assert on them without driving the
-// real menu popover. The component also imports Input/NavButton, so the
+// real menu popover. The component also imports Input/MenuTriggerButton, so the
 // mock must expose them too.
 vi.mock('@workflowbuilder/ui', () => ({
   Menu: ({ items }: { items: MenuItemProps[] }) => (
@@ -15,7 +15,7 @@ vi.mock('@workflowbuilder/ui', () => ({
       ))}
     </ul>
   ),
-  NavButton: () => null,
+  MenuTriggerButton: () => null,
   Input: () => null,
 }));
 

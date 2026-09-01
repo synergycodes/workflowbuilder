@@ -1,0 +1,206 @@
+:root {
+  --ax-public-nav-button-background-color-default: var(--wb-components-nav-button-bg-primary-default);
+  --ax-public-nav-button-background-color-hover: var(--wb-components-nav-button-bg-primary-hover);
+  --ax-public-nav-button-background-color-pressed: var(--wb-components-nav-button-bg-primary-pressed);
+  --ax-public-nav-button-background-color-active: var(--wb-components-nav-button-bg-primary-active);
+  --ax-public-nav-button-background-color-focus: var(--wb-components-nav-button-bg-primary-focus);
+  --ax-public-nav-button-background-color-disabled: var(--wb-components-nav-button-bg-primary-disabled);
+  --ax-public-nav-button-color-default: var(--wb-components-nav-button-icon-primary-default);
+  --ax-public-nav-button-color-hover: var(--wb-components-nav-button-icon-primary-hover);
+  --ax-public-nav-button-color-pressed: var(--wb-components-nav-button-icon-primary-pressed);
+  --ax-public-nav-button-color-active: var(--wb-components-nav-button-icon-primary-active);
+  --ax-public-nav-button-color-disabled: var(--wb-components-nav-button-icon-primary-disabled);
+  --ax-public-nav-button-height-xl: var(--wb-size-600);
+  --ax-public-nav-button-height-l: calc(var(--wb-size-500) + var(--wb-size-25));
+  --ax-public-nav-button-height-m: calc(var(--wb-size-400) + var(--wb-size-50));
+  --ax-public-nav-button-height-s: var(--wb-size-400);
+  --ax-public-nav-button-height-xs: calc(var(--wb-size-300) + var(--wb-size-50));
+  --ax-public-nav-button-height-xxs: var(--wb-size-300);
+  --ax-public-nav-button-height-xxxs: calc(var(--wb-size-200) + var(--wb-size-50));
+  --ax-public-nav-button-padding-xl: var(--wb-space-150);
+  --ax-public-nav-button-padding-l: var(--wb-space-137);
+  --ax-public-nav-button-padding-m: var(--wb-space-112);
+  --ax-public-nav-button-padding-s: var(--wb-space-87);
+  --ax-public-nav-button-padding-xs: var(--wb-space-75);
+  --ax-public-nav-button-padding-xxs: var(--wb-space-75);
+  --ax-public-nav-button-padding-xxxs: var(--wb-space-50);
+  --ax-public-nav-button-label-padding-inline-xl: var(--wb-space-150);
+  --ax-public-nav-button-label-padding-inline-l: var(--wb-space-150);
+  --ax-public-nav-button-label-padding-inline-m: var(--wb-space-112);
+  --ax-public-nav-button-label-padding-inline-s: var(--wb-space-87);
+  --ax-public-nav-button-label-padding-inline-xs: var(--wb-space-75);
+  --ax-public-nav-button-label-padding-inline-xxs: var(--wb-space-75);
+  --ax-public-nav-button-label-padding-inline-xxxs: var(--wb-space-50);
+  --ax-public-nav-button-gap-xl: var(--wb-space-100);
+  --ax-public-nav-button-gap-l: var(--wb-space-100);
+  --ax-public-nav-button-gap-m: var(--wb-space-100);
+  --ax-public-nav-button-gap-s: var(--wb-space-100);
+  --ax-public-nav-button-gap-xs: var(--wb-space-100);
+  --ax-public-nav-button-gap-xxs: var(--wb-space-75);
+  --ax-public-nav-button-gap-xxxs: var(--wb-space-75);
+  --ax-public-nav-button-border-radius-xl: var(--wb-radius-100);
+  --ax-public-nav-button-border-radius-l: var(--wb-radius-100);
+  --ax-public-nav-button-border-radius-m: var(--wb-radius-75);
+  --ax-public-nav-button-border-radius-s: var(--wb-radius-50);
+  --ax-public-nav-button-border-radius-xs: var(--wb-radius-50);
+  --ax-public-nav-button-border-radius-xxs: var(--wb-radius-50);
+  --ax-public-nav-button-border-radius-xxxs: var(--wb-radius-50);
+  --ax-public-nav-button-border-radius-round: var(--wb-radius-full);
+  --ax-public-nav-button-icon-size-xl: var(--wb-size-300);
+  --ax-public-nav-button-icon-size-l: calc(var(--wb-size-200) + var(--wb-size-50));
+  --ax-public-nav-button-icon-size-m: calc(var(--wb-size-200) + var(--wb-size-25));
+  --ax-public-nav-button-icon-size-s: calc(var(--wb-size-200) + var(--wb-size-25));
+  --ax-public-nav-button-icon-size-xs: var(--wb-size-200);
+  --ax-public-nav-button-icon-size-xxs: var(--wb-size-150);
+  --ax-public-nav-button-icon-size-xxxs: var(--wb-size-150);
+}
+
+@layer ui.component {
+  .nav-button {
+    box-sizing: border-box;
+    height: var(--nav-button-height);
+    padding-block: var(--nav-button-padding);
+    padding-inline: var(--nav-button-label-padding-inline);
+    gap: var(--nav-button-gap);
+    border-radius: var(--nav-button-border-radius);
+    background-color: var(--nav-button-background-default);
+    color: var(--ax-public-nav-button-color-default);
+
+    &:not(:disabled):hover {
+      background-color: var(--nav-button-background-hover);
+      color: var(--ax-public-nav-button-color-hover);
+    }
+
+    &.selected:not(:disabled) {
+      background-color: var(--nav-button-background-selected);
+      color: var(--ax-public-nav-button-color-pressed);
+    }
+
+    &:not(.selected):not(:disabled):focus-visible {
+      background-color: var(--nav-button-background-focus);
+      color: var(--ax-public-nav-button-color-default);
+    }
+
+    &:not(:disabled):active {
+      background-color: var(--nav-button-background-active);
+      color: var(--ax-public-nav-button-color-active);
+    }
+
+    &:disabled {
+      background-color: var(--nav-button-background-disabled);
+      color: var(--ax-public-nav-button-color-disabled);
+    }
+  }
+
+  .icon-only {
+    width: var(--nav-button-height);
+    padding: var(--nav-button-padding);
+  }
+
+  .icon {
+    composes: icon from '../styles/icon-size.module.css';
+
+    width: var(--nav-button-icon-size);
+    height: var(--nav-button-icon-size);
+  }
+
+  .xl {
+    --nav-button-height: var(--ax-public-nav-button-height-xl);
+    --nav-button-padding: var(--ax-public-nav-button-padding-xl);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-xl);
+    --nav-button-gap: var(--ax-public-nav-button-gap-xl);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-xl);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-xl);
+
+    composes: wb-text-label-xl from global;
+  }
+
+  .l {
+    --nav-button-height: var(--ax-public-nav-button-height-l);
+    --nav-button-padding: var(--ax-public-nav-button-padding-l);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-l);
+    --nav-button-gap: var(--ax-public-nav-button-gap-l);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-l);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-l);
+
+    composes: wb-text-label-l from global;
+  }
+
+  .m {
+    --nav-button-height: var(--ax-public-nav-button-height-m);
+    --nav-button-padding: var(--ax-public-nav-button-padding-m);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-m);
+    --nav-button-gap: var(--ax-public-nav-button-gap-m);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-m);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-m);
+
+    composes: wb-text-label-m from global;
+  }
+
+  .s {
+    --nav-button-height: var(--ax-public-nav-button-height-s);
+    --nav-button-padding: var(--ax-public-nav-button-padding-s);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-s);
+    --nav-button-gap: var(--ax-public-nav-button-gap-s);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-s);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-s);
+
+    composes: wb-text-label-m from global;
+  }
+
+  .xs {
+    --nav-button-height: var(--ax-public-nav-button-height-xs);
+    --nav-button-padding: var(--ax-public-nav-button-padding-xs);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-xs);
+    --nav-button-gap: var(--ax-public-nav-button-gap-xs);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-xs);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-xs);
+
+    composes: wb-text-label-m from global;
+  }
+
+  .xxs {
+    --nav-button-height: var(--ax-public-nav-button-height-xxs);
+    --nav-button-padding: var(--ax-public-nav-button-padding-xxs);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-xxs);
+    --nav-button-gap: var(--ax-public-nav-button-gap-xxs);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-xxs);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-xxs);
+
+    composes: wb-text-label-m from global;
+  }
+
+  .xxxs {
+    --nav-button-height: var(--ax-public-nav-button-height-xxxs);
+    --nav-button-padding: var(--ax-public-nav-button-padding-xxxs);
+    --nav-button-label-padding-inline: var(--ax-public-nav-button-label-padding-inline-xxxs);
+    --nav-button-gap: var(--ax-public-nav-button-gap-xxxs);
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-xxxs);
+    --nav-button-icon-size: var(--ax-public-nav-button-icon-size-xxxs);
+
+    composes: wb-text-label-m from global;
+  }
+
+  .round {
+    --nav-button-border-radius: var(--ax-public-nav-button-border-radius-round);
+  }
+
+  .square,
+  .round {
+    --nav-button-background-default: var(--ax-public-nav-button-background-color-default);
+    --nav-button-background-hover: var(--ax-public-nav-button-background-color-hover);
+    --nav-button-background-selected: var(--ax-public-nav-button-background-color-pressed);
+    --nav-button-background-focus: var(--ax-public-nav-button-background-color-focus);
+    --nav-button-background-active: var(--ax-public-nav-button-background-color-active);
+    --nav-button-background-disabled: var(--ax-public-nav-button-background-color-disabled);
+  }
+
+  .plain {
+    --nav-button-background-default: var(--wb-colors-transparent);
+    --nav-button-background-hover: var(--wb-colors-transparent);
+    --nav-button-background-selected: var(--wb-colors-transparent);
+    --nav-button-background-focus: var(--wb-colors-transparent);
+    --nav-button-background-active: var(--wb-colors-transparent);
+    --nav-button-background-disabled: var(--wb-colors-transparent);
+  }
+}

@@ -1,0 +1,44 @@
+---
+title: Menu Trigger Button
+description: A compact icon button that reflects whether its menu is open.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { MenuTriggerButtonExample } from '../../../../components/ui-examples/menu-trigger-button';
+
+`MenuTriggerButton` is an icon-only NavButton composition for menu triggers.
+Set `isOpen` from the menu state to render the persistent Pressed state.
+
+<MenuTriggerButtonExample client:visible />
+
+## Usage
+
+```tsx
+import { DotsThreeVertical } from '@phosphor-icons/react';
+import { Menu, MenuTriggerButton } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+function Example() {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <Menu items={[{ label: 'Edit', onClick: () => {} }]} open={isOpen} onOpenChange={setIsOpen}>
+      <MenuTriggerButton isOpen={isOpen} aria-label="Open menu">
+        <DotsThreeVertical />
+      </MenuTriggerButton>
+    </Menu>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="menu-trigger-button" />
+
+## CSS variables
+
+It renders a `NavButton`, so its appearance is customized through the
+[NavButton variables](/ui-library/ui-components/nav-button/#css-variables).
+
+<CssVariablesTable slug="menu-trigger-button" />

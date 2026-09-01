@@ -48,6 +48,11 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      * Callback function called when the modal is closed
      */
     onClose?: () => void;
+    /**
+     * Accessible label for the close button
+     * @default 'Close'
+     */
+    closeLabel?: string;
   };
 
 /**
@@ -65,6 +70,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       footerVariant = 'integrated',
       open,
       onClose,
+      closeLabel = 'Close',
       className,
       ...rest
     },
@@ -99,11 +105,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                   )}
                 </div>
               </div>
-              {onClose && (
-                <NavButton onClick={onClose}>
-                  <X />
-                </NavButton>
-              )}
+              {onClose && <NavButton aria-label={closeLabel} onClick={onClose} prefixIcon={<X />} />}
             </div>
 
             {children && <div className={styles['content']}>{children}</div>}
