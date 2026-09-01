@@ -33,6 +33,7 @@ describe('public API surface', () => {
     expect(Object.keys(workflowEntry).sort()).toEqual([
       'DEFAULT_DATABASE_ACTIVITY_PROFILE',
       'DEFAULT_NODE_ACTIVITY_PROFILE',
+      'assertNodeActivityProfiles',
       'createRunWorkflow',
       'createSequencedEventEmitter',
       'resolveNodeActivityOptions',

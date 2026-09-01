@@ -1,6 +1,10 @@
-// A duration Temporal accepts, e.g. '30s', '10m', '1h'. A narrow subset of the
-// format its own `Duration` allows, which is enough for a timeout and keeps
-// @temporalio/* out of the published type surface.
+// A duration Temporal accepts, e.g. '30s', '10m', '1.5h'. Kept as our own type so
+// @temporalio/* stays out of the published type surface.
+//
+// The template literal is looser than what is actually valid: `${number}` also admits
+// '0s', '-5m' and '1e3s', none of which Temporal will schedule. `isDurationString`
+// narrows it to a positive decimal followed by a unit, which is the grammar the error
+// messages and the README describe.
 type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 
 // Timeout and retry shape for a proxied activity.
@@ -15,12 +19,13 @@ export type ActivityProfile = {
   retry: { maximumAttempts: number };
 };
 
-// Runtime twin of DurationString, which is erased at compile time. A profile can
-// reach us from JSON or an untyped consumer, so the shape is checked, not assumed.
-const DURATION_PATTERN = /^\d+(?:ms|s|m|h|d)$/;
+// Decimals are allowed because Temporal's own parser takes them ('1.5h' is 90
+// minutes). Zero is not: the server treats a zero timeout as unset and rejects the
+// command, which wedges the workflow task in a retry loop instead of failing the run.
+const DURATION_PATTERN = /^\d+(?:\.\d+)?(?:ms|s|m|h|d)$/;
 
 export function isDurationString(value: unknown): value is DurationString {
-  return typeof value === 'string' && DURATION_PATTERN.test(value);
+  return typeof value === 'string' && DURATION_PATTERN.test(value) && Number.parseFloat(value) > 0;
 }
 
 // Frozen, nested object included: these are shared singletons, and a caller that

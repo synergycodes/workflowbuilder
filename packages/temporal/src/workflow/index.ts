@@ -18,6 +18,8 @@ export type { Activities } from './activities-interface';
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
 export type { ActivityProfile, NodeActivityProfiles } from './activity-profiles';
 
-// Exported so a consumer can unit-test their own profile map.
-export { resolveNodeActivityOptions } from './node-activity-options';
+// `assertNodeActivityProfiles` is exported so a consumer can run it in their worker
+// setup, outside the sandbox. `createRunWorkflow` also calls it, but that runs on
+// first workflow activation, which is too late to fail a deploy. See the README.
+export { assertNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
 export type { NodeActivityOptions } from './node-activity-options';

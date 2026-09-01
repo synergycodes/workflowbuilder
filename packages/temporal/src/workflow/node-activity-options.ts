@@ -10,20 +10,23 @@ import type { BaseNode } from './core-contract';
 
 export type NodeActivityOptions = ActivityProfile & { summary?: string };
 
-// Called once when the workflow is built, never per node. A malformed profile
-// discovered at scheduling time surfaces as a failing node, which the graph's
-// errorPolicy can absorb into a run that closes as completed. Failing here instead
-// keeps a configuration mistake looking like one.
+// Called once per workflow build, never per node. A malformed profile discovered at
+// scheduling time surfaces as a failing node, which the graph's errorPolicy can absorb
+// into a run that closes as completed.
 //
-// Temporal's own check only asks that some timeout is set, so the duration format
-// and the retry cap are checked here.
+// Call it from worker setup too. `createRunWorkflow` runs inside the sandbox on first
+// activation, so on its own it turns a bad profile into a workflow-task retry loop
+// rather than a failed deploy.
+//
+// Temporal's own check only asks that some timeout is set, so the duration format and
+// the retry cap are checked here.
 export function assertNodeActivityProfiles(profiles: NodeActivityProfiles): void {
   for (const [nodeType, profile] of Object.entries(profiles)) {
     const path = `nodeActivityProfiles[${JSON.stringify(nodeType)}]`;
 
     if (!isDurationString(profile?.startToCloseTimeout)) {
       throw new TypeError(
-        `${path}.startToCloseTimeout must be a duration such as '30s', '10m' or '2h', got ${JSON.stringify(profile?.startToCloseTimeout)}.`,
+        `${path}.startToCloseTimeout must be a positive number followed by ms, s, m, h or d, such as '30s', '10m' or '1.5h'. Zero, negative and exponent notation are rejected. Got ${JSON.stringify(profile?.startToCloseTimeout)}.`,
       );
     }
 
@@ -36,10 +39,11 @@ export function assertNodeActivityProfiles(profiles: NodeActivityProfiles): void
 
 export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
   // `Object.hasOwn`, not a plain lookup: node types are author-supplied, so one
-  // named `constructor` would otherwise resolve off Object.prototype.
-  const profile = Object.hasOwn(profiles, node.type)
-    ? (profiles[node.type] ?? DEFAULT_NODE_ACTIVITY_PROFILE)
-    : DEFAULT_NODE_ACTIVITY_PROFILE;
+  // named `constructor` would otherwise resolve off Object.prototype. An entry whose
+  // value is undefined is not defaulted away here, because assertNodeActivityProfiles
+  // rejects it — defaulting would make this function disagree with the validation a
+  // consumer runs over the same map.
+  const profile = Object.hasOwn(profiles, node.type) ? profiles[node.type] : DEFAULT_NODE_ACTIVITY_PROFILE;
 
   // `retry` copied too: a shallow spread would hand the caller the shared default's
   // nested object.

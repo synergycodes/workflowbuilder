@@ -95,7 +95,20 @@ Keep the export named `runWorkflow`: that is the name the client starts, and a t
 
 Entries are whole profiles rather than partials on purpose. A partial would let you set a timeout and silently drop the retry cap, and what Temporal falls back to is unlimited retries with backoff, which on a permanently failing model call is an unbounded bill. A node type with no entry resolves to `DEFAULT_NODE_ACTIVITY_PROFILE` and nothing else.
 
-Profile **values** are validated as the workflow is built, so a bad duration or a missing retry cap throws with the offending node type named, rather than surfacing later as a failing node that your graph's `errorPolicy` might absorb into a run that closes as completed.
+A `startToCloseTimeout` is a positive number followed by `ms`, `s`, `m`, `h` or `d`. Decimals are fine (`'1.5h'`). Zero, negative values and exponent notation are rejected, even though TypeScript's template literal type admits them: `'0s'` type-checks, and Temporal treats a zero timeout as unset and refuses to schedule the activity.
+
+Profile **values** are checked by `assertNodeActivityProfiles`, and where you call it decides what a bad profile costs you:
+
+```ts
+// worker.ts — outside the sandbox, so this fails the deploy
+import { assertNodeActivityProfiles } from '@workflowbuilder/temporal/workflow';
+
+import { nodeActivityProfiles } from './node-activity-profiles';
+
+assertNodeActivityProfiles(nodeActivityProfiles);
+```
+
+`createRunWorkflow` calls it as well, but that call runs inside Temporal's sandbox on the **first activation of a workflow**, not at `Worker.create` and not at bundling time. On its own it means a worker that starts green and then wedges every run in a workflow-task retry loop, visible in your worker log and in Temporal UI but with no `execution_failed` and no status change in your own database. Calling it in worker setup as well turns the same mistake into a process that refuses to start. Both beat the alternative, which is a profile checked only when a node is scheduled, where the throw reaches your graph's `errorPolicy` and can be absorbed into a run that closes as completed.
 
 Profile **keys** cannot be validated: the workflow runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled node type is therefore silent, and every node of the type you meant to configure keeps the default profile. The fallback is safe, just not what you asked for, so check the spelling against your registry when a profile appears to have no effect.
 
