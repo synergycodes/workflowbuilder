@@ -117,8 +117,7 @@ describe('workflowSnapshotSchema', () => {
 
 describe('mapToExecutionModel', () => {
   it('copies every property the runner does not lift into `config`', () => {
-    // No per-type extraction: the backend knows no product's vocabulary, so anything
-    // that is not a runner-level field passes through untouched.
+    // The backend knows no product's vocabulary; only runner-level fields are lifted.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         {
@@ -259,8 +258,7 @@ describe('mapToExecutionModel', () => {
   });
 
   it('ignores a non-string label rather than forwarding it', () => {
-    // `properties` is `Record<string, unknown>` at the boundary, so a client can
-    // send anything under that key.
+    // `properties` is `Record<string, unknown>` at the boundary.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [{ id: 'n1', data: { type: 'my-product/action', properties: { label: { nested: true } } } }],
       edges: [],

@@ -115,6 +115,17 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 
+### Code comments
+
+Two things earn a comment. Nothing else does.
+
+1. **What the code cannot show.** External behaviour (a zero timeout is treated as unset by the Temporal server), a constraint that lives elsewhere (this runs in the V8 sandbox, so no Node built-ins), a hazard with no visible trace (a node type named `constructor` resolves off `Object.prototype`).
+2. **A decision other developers need, so it does not get lost.** Why the plugin accepts a value it never reads. Why this warns instead of throwing. Why a field is lifted out of `config`.
+
+Even then, keep it to the fewest words that carry the fact. One line is the default, three the hard ceiling. If a comment would run longer, the explanation belongs in the workspace README or a `*.decision-log.md` next to the code, with the comment reduced to a pointer.
+
+Do not comment what the next line does, that a change is correct, where a value came from, or how to use an API the README already shows. A test's name replaces its comment: write the non-obvious context only, never a restatement of the assertion. When a file header and an inline comment would say the same thing, keep the inline one.
+
 ### Referencing future work in code
 
 This repo is public, but ticket IDs (`WB-123`) point to a private ClickUp — for external readers they are dead links. Never put ticket IDs in code comments, READMEs, or anything else that ships. Instead:

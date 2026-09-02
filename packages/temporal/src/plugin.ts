@@ -11,9 +11,8 @@ export type WorkflowBuilderPluginOptions<TNode extends BaseNode> = CreateActivit
   // when creating the Worker so the queue is named in exactly one place.
   taskQueue?: string;
 
-  // The same map handed to `createRunWorkflow`, passed here only so a bad profile
-  // fails `Worker.create` instead of the first workflow activation. Nothing on this
-  // side reads it: the workflow schedules activities, not the worker. See the README.
+  // Never read here. Taken only so a bad profile fails `Worker.create` rather than the
+  // first workflow activation, and so keys can be checked against `executors`.
   nodeActivityProfiles?: NodeActivityProfiles;
 };
 
@@ -52,10 +51,8 @@ export class WorkflowBuilderPlugin<TNode extends BaseNode = BaseNode> extends Si
   }
 }
 
-// A profile keyed by a node type this worker cannot execute is almost always a typo,
-// and the sandbox cannot catch it: the workflow has no access to the registry. Warned
-// rather than thrown, because one workflow bundle may legitimately serve several
-// workers that each register a subset of the node types.
+// The one config mistake the sandbox cannot see, since the workflow has no registry.
+// Warned, not thrown: one bundle may serve workers registering different subsets.
 function warnOnProfilesWithoutExecutor(profiles: NodeActivityProfiles, executors: object): void {
   const unknown = Object.keys(profiles).filter((nodeType) => !Object.hasOwn(executors, nodeType));
   if (unknown.length === 0) return;

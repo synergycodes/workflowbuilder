@@ -28,8 +28,8 @@ export type BaseNode = {
   id: string;
   type: string;
   config: unknown;
-  // Lifted out of `config` by the backend mapper: the Temporal adapter schedules
-  // each node activity with it as the Summary.
+  // Lifted out of `config` by whatever builds the input; the Temporal adapter
+  // schedules each node activity with it as the Summary.
   label?: string;
   errorPolicy?: NodeErrorPolicy;
   role?: NodeRole;

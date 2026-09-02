@@ -10,8 +10,8 @@ function node(overrides: Partial<BaseNode> = {}): BaseNode {
 
 describe('resolveNodeActivityOptions', () => {
   describe('timeouts and retries', () => {
-    // The trap: Temporal's own default is unlimited retries with backoff, so a
-    // resolution bug does not fail loudly, it just spends.
+    // Temporal's own default is unlimited retries with backoff, so a resolution bug
+    // does not fail loudly, it spends.
     it('falls back to the blanket profile for a type with no entry', () => {
       const resolved = resolveNodeActivityOptions(node({ type: 'test/unprofiled' }), {});
 
@@ -35,8 +35,7 @@ describe('resolveNodeActivityOptions', () => {
       const resolved = resolveNodeActivityOptions(node(), {});
 
       expect(resolved).not.toBe(DEFAULT_NODE_ACTIVITY_PROFILE);
-      // The nested object is the one a shallow spread would have shared. Mutating it
-      // used to change the retry cap for every node for the rest of the process.
+      // A shallow spread shared this one, so a mutation changed every node's cap.
       expect(resolved.retry).not.toBe(DEFAULT_NODE_ACTIVITY_PROFILE.retry);
 
       resolved.retry.maximumAttempts = 999;
@@ -57,7 +56,6 @@ describe('resolveNodeActivityOptions', () => {
     it('keeps the exported defaults frozen', () => {
       expect(Object.isFrozen(DEFAULT_NODE_ACTIVITY_PROFILE)).toBe(true);
       expect(Object.isFrozen(DEFAULT_NODE_ACTIVITY_PROFILE.retry)).toBe(true);
-      // The documented way to derive a profile has to keep working on a frozen source.
       expect({ ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30m' as const }).toEqual({
         startToCloseTimeout: '30m',
         retry: { maximumAttempts: 2 },
@@ -65,8 +63,7 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('names the node type when an entry holds undefined', () => {
-      // Without the shared per-entry check this was a bare "cannot read properties of
-      // undefined (reading 'retry')", which names neither the type nor the rule.
+      // Was a bare "cannot read properties of undefined (reading 'retry')".
       const profiles = { 'test/step': undefined } as unknown as NodeActivityProfiles;
 
       expect(() => resolveNodeActivityOptions(node(), profiles)).toThrow(TypeError);
@@ -95,8 +92,7 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('trims the label and drops a blank one', () => {
-      // Enforced here, not only in the reference backend: any consumer can build the
-      // workflow input, and the package is the published unit.
+      // Not only in the reference backend: any consumer can build the workflow input.
       expect(resolveNodeActivityOptions(node({ label: '  Approve  ' }), {}).summary).toBe('Approve');
       expect('summary' in resolveNodeActivityOptions(node({ label: '   ' }), {})).toBe(false);
       expect('summary' in resolveNodeActivityOptions(node({ label: '' }), {})).toBe(false);
@@ -132,10 +128,8 @@ describe('resolveNodeActivityOptions', () => {
 });
 
 describe('assertNodeActivityProfiles', () => {
-  // Why it exists at all: a profile checked at scheduling time throws inside the node
-  // activity, where the graph's errorPolicy can absorb it and close the run as
-  // completed. Exported so worker setup can run it outside the sandbox, where a throw
-  // fails the deploy rather than the first activation.
+  // Left to scheduling time, a throw lands inside the node activity, where the graph's
+  // errorPolicy can absorb it into a completed run.
   it('accepts an empty map and a well-formed profile', () => {
     expect(() => assertNodeActivityProfiles({})).not.toThrow();
     expect(() =>
@@ -144,8 +138,7 @@ describe('assertNodeActivityProfiles', () => {
   });
 
   it('rejects a duration Temporal would not parse, naming the config path', () => {
-    // Temporal's own validator only asks that some timeout is set, so this format
-    // would otherwise reach the scheduling call and fail there.
+    // Temporal's own validator only asks that some timeout is set.
     const profiles = { 'test/step': { startToCloseTimeout: '30 minutes', retry: { maximumAttempts: 2 } } };
 
     expect(() => assertNodeActivityProfiles(profiles as unknown as NodeActivityProfiles)).toThrow(
@@ -164,8 +157,7 @@ describe('assertNodeActivityProfiles', () => {
   });
 
   it('rejects a zero duration, which the server treats as unset', () => {
-    // The worst of the malformed values: the command is refused, so the workflow task
-    // retries forever and the run sits in Running with no terminal event.
+    // The server refuses the command, so the workflow task retries forever.
     for (const startToCloseTimeout of ['0s', '0m', '00h', '0.0s', '0ms']) {
       expect(() =>
         assertNodeActivityProfiles({
@@ -176,8 +168,7 @@ describe('assertNodeActivityProfiles', () => {
   });
 
   it('rejects values the template literal type admits but Temporal does not', () => {
-    // `${number}` covers negatives and exponents, so the runtime narrows deliberately.
-    // The message and the README describe the grammar that survives.
+    // `${number}` covers negatives and exponents; the runtime narrows deliberately.
     for (const startToCloseTimeout of ['-5m', '1e3s', '.5s', '5', 'm']) {
       expect(() =>
         assertNodeActivityProfiles({
@@ -188,8 +179,6 @@ describe('assertNodeActivityProfiles', () => {
   });
 
   it('rejects an entry whose value is undefined rather than defaulting it', () => {
-    // The resolver no longer defaults such an entry either, so a consumer testing their
-    // map through either export gets the same answer.
     const profiles = { 'test/step': undefined };
 
     expect(() => assertNodeActivityProfiles(profiles as unknown as NodeActivityProfiles)).toThrow(/test\/step/);

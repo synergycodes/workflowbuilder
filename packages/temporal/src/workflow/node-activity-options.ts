@@ -1,5 +1,4 @@
-// Pure and Temporal-free, so these checks run in worker setup as well as inside the
-// workflow sandbox. The README says which call site catches what.
+// Pure, so it also runs in worker setup outside the sandbox. See the README.
 import {
   type ActivityProfile,
   DEFAULT_NODE_ACTIVITY_PROFILE,
@@ -10,13 +9,11 @@ import type { BaseNode } from './core-contract';
 
 export type NodeActivityOptions = ActivityProfile & { summary?: string };
 
-// The Summary is copied into every ActivityTaskScheduled event, and the server carries
-// a 400-byte limit it does not enforce on this path yet.
-// (follow-up: summary-size-server-limit)
+// The Summary is copied into every ActivityTaskScheduled event, and the server has an
+// unenforced 400-byte cap. (follow-up: summary-size-server-limit)
 const MAX_SUMMARY_LENGTH = 200;
 
-// One entry. Shared so the resolver and the map-wide assert cannot word the same
-// problem differently.
+// Shared with the map-wide assert so the two cannot word the same problem differently.
 function assertActivityProfile(nodeType: string, profile: ActivityProfile | undefined): void {
   const path = `nodeActivityProfiles[${JSON.stringify(nodeType)}]`;
 
@@ -32,9 +29,8 @@ function assertActivityProfile(nodeType: string, profile: ActivityProfile | unde
   }
 }
 
-// Checked once per map, never per node: a profile that only fails when a node is
-// scheduled reaches the graph's errorPolicy, which can absorb it into a run that closes
-// as completed. See the README for where to call this from.
+// Checked per map, not per node: a profile that only fails once a node is scheduled
+// reaches the graph's errorPolicy, which can absorb it into a completed run.
 export function assertNodeActivityProfiles(profiles: NodeActivityProfiles): void {
   for (const [nodeType, profile] of Object.entries(profiles)) {
     assertActivityProfile(nodeType, profile);
@@ -44,25 +40,20 @@ export function assertNodeActivityProfiles(profiles: NodeActivityProfiles): void
 export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
   let profile = DEFAULT_NODE_ACTIVITY_PROFILE;
 
-  // `Object.hasOwn`, not a plain lookup: node types are author-supplied, so one named
-  // `constructor` would otherwise resolve off Object.prototype.
+  // hasOwn: a node type named `constructor` would resolve off Object.prototype.
   if (Object.hasOwn(profiles, node.type)) {
     profile = profiles[node.type];
-    // Same message the map-wide assert gives. Without it, an entry whose value is
-    // undefined throws a bare property-access error naming neither type nor rule.
+    // Otherwise an entry holding undefined throws naming neither type nor rule.
     assertActivityProfile(node.type, profile);
   }
 
-  // `retry` copied too: a shallow spread would hand the caller the shared default's
-  // nested object.
+  // `retry` too: a shallow spread would share the default's nested object.
   const options: NodeActivityOptions = { ...profile, retry: { ...profile.retry } };
 
-  // Trimmed and clamped here rather than trusted from the caller, because any consumer
-  // can build the workflow input. A blank Summary renders as nothing, where no Summary
-  // falls back to the activity type.
+  // Not trusted from the caller: any consumer can build the workflow input.
   const label = typeof node.label === 'string' ? node.label.trim() : '';
   const summary = label.slice(0, MAX_SUMMARY_LENGTH);
 
-  // Omitted, not `summary: undefined`: that is a different command payload.
+  // A blank Summary renders as nothing; an absent key falls back to the activity type.
   return summary === '' ? options : { ...options, summary };
 }
