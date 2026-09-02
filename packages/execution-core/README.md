@@ -27,7 +27,7 @@ worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, Even
 }
 ```
 
-- `@workflow-builder/execution-core` — full surface: `runGraph`, ports, registry, `resolveExecutor`, template resolver, `NodeExecutionError`. Use from activities, tests, backend adapters.
+- `@workflow-builder/execution-core` — full surface: `runGraph`, ports, registry, `resolveExecutor`, template resolver, the `NodeExecutionError` family. Use from activities, tests, backend adapters.
 - `@workflow-builder/execution-core/workflow` — sandbox-safe subset: `runGraph`, context type, ports only. Use from code running inside Temporal's V8 sandbox (`workflows/*.ts`).
 
 The split exists because Temporal workflows run in a V8 sandbox that lacks `TransformStream`, `fetch`, and other Web APIs pulled in transitively by I/O-heavy executor code. Importing the root barrel from a workflow file would break the sandbox bundle.
@@ -92,7 +92,7 @@ Concrete executors and node configs live in the worker package that consumes the
    }
    ```
 
-   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it.
+   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it. For what to throw when it cannot produce a result, see [Transient vs permanent failures](#transient-vs-permanent-failures).
 
 3. Register it in your worker's `NodeExecutorRegistry<MyNode>`:
 
@@ -106,6 +106,27 @@ Concrete executors and node configs live in the worker package that consumes the
 The registry's mapped type — `{ [K in TNode['type']]: NodeExecutor<Extract<TNode, { type: K }>> }` — gives you full narrowing: each entry's executor sees its variant's config concretely, with no casts.
 
 The registry is a plain object, and `node.type` is an arbitrary string that reaches the runner from whatever authored the diagram. So every lookup keyed by it goes through `Object.hasOwn` rather than a bare index, or a node typed `constructor` resolves `Object.prototype.constructor` and gets it called as its executor. `resolveExecutor` does this for you; anything else you key by `node.type` has to do the same. Building the registry with `Object.create(null)`, or handing the runner a `Map`, removes the hazard at the source rather than at each lookup.
+
+## Transient vs permanent failures
+
+An executor declares at the throw site whether the failure is worth another attempt. The engine adapter reads the declaration and decides whether to retry the node; the runner never infers it from a status code.
+
+| Throw                                      | Meaning                                                                      | Example                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `PermanentNodeExecutionError(code, msg)`   | A retry would fail identically. The node stops on its first attempt.         | Rejected API key, a 400, a config the node can never satisfy. |
+| `TransientNodeExecutionError(code, msg)`   | A later attempt could succeed. Retried under the engine's own policy.        | Timeout, rate limit, 5xx.                                     |
+| `NodeExecutionError(code, msg)` or `Error` | Unclassified. Retried exactly as before — marking is opt-in, never inferred. | Anything you have not made a judgment call about yet.         |
+
+Both classes extend `NodeExecutionError`, so `code` keeps working as it always did, and so does a consumer subclass of either:
+
+```ts
+throw new PermanentNodeExecutionError('bad_api_key', 'Provider rejected the API key');
+throw new TransientNodeExecutionError('rate_limited', 'Provider rate limit hit', { cause: error });
+```
+
+Two things this does **not** do. Marking an error transient does not raise the attempt limit — the engine's retry policy still caps it, so transient buys visibility rather than persistence. And classification is orthogonal to `errorPolicy` below: it decides whether the node is _retried_, while `errorPolicy` decides what the graph does once the node has finally given up.
+
+For a classified failure the `node_failed` payload also carries the attempt the node died on (`attempt`), which is the only place a retry count is visible — the runner cannot observe retries itself, so the count is reported by the adapter. An unclassified failure emits exactly what it always did.
 
 ## Per-node error policy
 

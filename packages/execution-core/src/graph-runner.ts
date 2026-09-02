@@ -1,4 +1,8 @@
-import type { DeadEnd, NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
+import type {
+  DeadEnd,
+  ExecutionErrorPayload,
+  NodeSkipReason,
+} from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   NodeErrorPolicy,
@@ -310,8 +314,10 @@ async function runNode<TNode extends BaseNode>(
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
   } catch (error) {
-    const { message, code } = extractDeepestError(error);
-    const errorPayload = code === undefined ? { message } : { message, code };
+    const { message, code, attempt } = extractDeepestError(error);
+    const errorPayload: ExecutionErrorPayload['error'] = { message };
+    if (code !== undefined) errorPayload.code = code;
+    if (attempt !== undefined) errorPayload.attempt = attempt;
     await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
     return { node, message, code, failed: true };
   }

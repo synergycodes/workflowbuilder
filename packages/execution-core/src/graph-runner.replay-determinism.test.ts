@@ -31,6 +31,7 @@ type Behavior = {
   output?: unknown;
   nextPort?: string;
   throws?: { message: string; code?: string };
+  relays?: { message: string; classification: 'permanent' | 'transient'; code: string; attempt: number };
 };
 
 type EventCall = { type: string; nodeId?: string; payload?: unknown };
@@ -59,6 +60,13 @@ function makePorts(behaviors: Record<string, Behavior>): {
       if (b?.throws) {
         if (b.throws.code !== undefined) throw new NodeExecutionError(b.throws.code, b.throws.message);
         throw new Error(b.throws.message);
+      }
+      if (b?.relays) {
+        const { message, classification, code, attempt } = b.relays;
+        const failure = Object.assign(new Error(message), {
+          details: [{ wbNodeError: 1, classification, code, attempt }],
+        });
+        throw new Error('Activity task failed', { cause: failure });
       }
       return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort };
     },
@@ -273,6 +281,28 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     const nodeFailed = records[0]!.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({ error: { message: 'slow down', code: 'rate_limited' } });
     expect(records[0]!.statuses.at(-1)?.status).toBe('failed');
+  });
+
+  it('classified failure — the attempt count in the payload is stable across runs', async () => {
+    // The attempt is read out of the relayed failure, never counted by the
+    // runner: history hands back the same failure on every replay, so the
+    // emitted payload — including the key order it is serialized in — has to
+    // match byte for byte.
+    const input = makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]);
+
+    const records = await runNTimes(
+      input,
+      {
+        B: { relays: { message: 'LLM call timed out', classification: 'transient', code: 'llm_timeout', attempt: 2 } },
+      },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    const nodeFailed = records[0]!.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
+    expect(nodeFailed?.payload).toEqual({
+      error: { message: 'LLM call timed out', code: 'llm_timeout', attempt: 2 },
+    });
   });
 
   it('stalled cycle — execution_failed event payload is identical across runs', async () => {

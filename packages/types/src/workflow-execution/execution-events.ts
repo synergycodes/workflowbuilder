@@ -74,6 +74,7 @@ export type ExecutionErrorPayload = {
     message: string;
     code?: string;
     details?: unknown;
+    attempt?: number;
   };
 };
 
