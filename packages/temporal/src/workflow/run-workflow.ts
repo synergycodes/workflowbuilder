@@ -16,7 +16,7 @@ import {
   type WorkflowExecutionInput,
   runGraph,
 } from './core-contract';
-import { assertNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
+import { freezeNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
@@ -31,8 +31,7 @@ export type RunWorkflowOptions = {
 // compiles the workflow bundle from the consumer's own workflows module, which the
 // worker-side plugin cannot reach into. See the README for the snippet.
 export function createRunWorkflow(options: RunWorkflowOptions = {}) {
-  const profiles = options.nodeActivityProfiles ?? {};
-  assertNodeActivityProfiles(profiles);
+  const profiles = freezeNodeActivityProfiles(options.nodeActivityProfiles ?? {});
 
   // Proxied per call, not once per module: the options depend on the node.
   const runner: ActivityRunnerPort<BaseNode> = {

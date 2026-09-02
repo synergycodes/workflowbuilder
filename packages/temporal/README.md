@@ -115,11 +115,11 @@ const plugin = new WorkflowBuilderPlugin({ executors, store, nodeActivityProfile
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
-**The two sides are not linked for you.** The workflow bundle is compiled from your own `workflows.ts`, so handing a map to the plugin does not put it in the bundle, and handing it to `createRunWorkflow` does not show it to the worker. Import one constant in both places or they will drift.
+**The two sides are not linked for you.** The workflow bundle is compiled from your own `workflows.ts`, so handing a map to the plugin does not put it in the bundle, and handing it to `createRunWorkflow` does not show it to the worker. Import one constant in both places or they will drift. Nothing detects the drift: the plugin validates the map it is given and checks its keys against your executors, but it cannot see whether that same map reached `createRunWorkflow`. A map passed to the plugin alone gives you a green deploy and every node on the default profile.
 
 Passing it to the plugin is what makes a bad profile fail `Worker.create`, which is to say the deploy. `createRunWorkflow` validates as well, but that call runs inside Temporal's sandbox on the **first activation of a workflow**, not at `Worker.create` and not at bundling time. On its own it means a worker that starts green and then wedges every run in a workflow-task retry loop, visible in your worker log and in Temporal UI but with no `execution_failed` and no status change in your own database. If you would rather not hand the map to the plugin, call `assertNodeActivityProfiles` from `@workflowbuilder/temporal/workflow` in your worker setup instead. It is the same check.
 
-The plugin also warns when a profile is keyed by a node type with no executor registered on that worker, which is the one configuration mistake the sandbox genuinely cannot see. It warns rather than throws, because a single workflow bundle may serve several workers that each register a subset of the node types.
+The plugin also warns when a profile is keyed by a node type with no executor registered on that worker, which is the one configuration mistake the sandbox genuinely cannot see. It warns rather than throws, because a single workflow bundle may serve several workers that each register a subset of the node types. Pass your own `logger` in the plugin options to get that warning as a structured record; without one it goes to `console.warn`, which a worker shipping JSON to a sink is not watching.
 
 Profile **keys** cannot be validated: the workflow runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled node type is therefore silent, and every node of the type you meant to configure keeps the default profile. The fallback is safe, just not what you asked for, so check the spelling against your registry when a profile appears to have no effect.
 
@@ -161,13 +161,15 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 
 ## Default activity profiles
 
-Node activities get 10 minutes and 2 attempts, because a node may call a model. The two database activities get 30 seconds and 5 attempts, because they are fast idempotent writes. Both are exported (`DEFAULT_NODE_ACTIVITY_PROFILE`, `DEFAULT_DATABASE_ACTIVITY_PROFILE`) and pinned by a test, so an upgrade cannot silently change how long your nodes are allowed to run.
+Node activities get 10 minutes and 2 attempts, because a node may call a model. The two database activities get 30 seconds and 5 attempts, because they are fast idempotent writes. Both are exported (`DEFAULT_NODE_ACTIVITY_PROFILE`, `DEFAULT_DATABASE_ACTIVITY_PROFILE`) and pinned by a test, so an upgrade cannot silently change how long your nodes are allowed to run. Both are frozen, and readonly in the types: to tune one, spread it into an entry of your own map rather than assigning to it.
 
-Per-node-type overrides go through `createRunWorkflow` (see `workflows.ts` above). `resolveNodeActivityOptions` is exported from `/workflow` so you can unit-test your own profile map against the same resolution the workflow uses, instead of reading it back out of Event History.
+Per-node-type overrides go through `createRunWorkflow` (see `workflows.ts` above). Two functions are exported from `/workflow` to test a map without reading it back out of Event History: `assertNodeActivityProfiles` for the shape, `resolveNodeActivityOptions` for what a given node ends up scheduled with. Validate before you resolve. `createRunWorkflow` takes a validated snapshot of the map, so the resolver assumes a map that already passed.
 
 ## Node labels in Event History
 
-Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. A node without a label simply gets no summary, where Temporal falls back to showing the activity type. Labels longer than 200 characters are clamped, since the Summary is copied into every `ActivityTaskScheduled` event.
+Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. A node without a label simply gets no summary, where Temporal falls back to showing the activity type.
+
+The label is normalised on the way in: runs of whitespace collapse to single spaces, because Temporal renders the Summary as single-line markdown. It is then clamped to 380 UTF-8 bytes, since the Summary is copied into every `ActivityTaskScheduled` event and the server's `limit.userMetadataSummarySize` caps the serialized payload at 400. The clamp counts bytes and cuts on code-point boundaries, so a label in a non-Latin script gets a shorter summary than an ASCII one of the same length, and an emoji is never cut in half.
 
 Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`, not to this package. The reference backend lifts it out of the editor's `data.properties` alongside `errorPolicy` and `role`; see `mapNode` in `apps/backend/src/domain/mapper/from-integration-data.ts` for the shape. A consumer with their own backend that skips this step will see the identical `executeNode` rows, with nothing in this package able to tell the difference.
 

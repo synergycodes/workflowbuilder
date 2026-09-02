@@ -117,7 +117,6 @@ describe('workflowSnapshotSchema', () => {
 
 describe('mapToExecutionModel', () => {
   it('copies every property the runner does not lift into `config`', () => {
-    // The backend knows no product's vocabulary; only runner-level fields are lifted.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         {
@@ -219,7 +218,6 @@ describe('mapToExecutionModel', () => {
   });
 
   it('lifts the authored label out of `config`', () => {
-    // Lifted for the same reason as errorPolicy and role: an engine reads it.
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
         {
@@ -233,7 +231,6 @@ describe('mapToExecutionModel', () => {
     const result = mapToExecutionModel('wf-1', snapshot);
 
     expect(result.nodes[0]!.label).toBe('Fetch order');
-    // `description` is the other shared property and stays put: no engine reads it.
     expect(result.nodes[0]!.config).toEqual({ description: 'why', foo: 1 });
   });
 

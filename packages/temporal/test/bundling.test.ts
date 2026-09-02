@@ -14,4 +14,12 @@ describe('workflow bundle', () => {
 
     expect(code).toContain('runWorkflow');
   }, 180_000); // Webpack cold start; generous so a slow CI runner does not flake it.
+
+  it('bundles the configured form too, which runs code at module evaluation', async () => {
+    const { code } = await bundleWorkflowCode({
+      workflowsPath: fileURLToPath(new URL('fixtures/workflows-with-profiles.ts', import.meta.url)),
+    });
+
+    expect(code).toContain('runWorkflow');
+  }, 180_000);
 });

@@ -156,11 +156,8 @@ jobs:
         # consumers only when this package is released. A warning, not a failure —
         # a pure refactor legitimately needs no changeset.
         #
-        # Silent until the package is publishable. While it is still `private: true`
-        # there is no released version to be compatible with, so a changeset would
-        # only describe a change against a version nobody installed; see CLAUDE.md.
-        # Keying the guard on `private` rather than a date means the first publish
-        # turns it back on by itself.
+        # Silent while the package is `private: true`, so the first publish turns the
+        # guard back on by itself. See CLAUDE.md for why.
         run: |
           if node -e "process.exit(require('./packages/temporal/package.json').private === true ? 0 : 1)"; then
             echo "@workflowbuilder/temporal is still private; changeset guard skipped."

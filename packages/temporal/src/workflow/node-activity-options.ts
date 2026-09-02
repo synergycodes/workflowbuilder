@@ -9,11 +9,11 @@ import type { BaseNode } from './core-contract';
 
 export type NodeActivityOptions = ActivityProfile & { summary?: string };
 
-// The Summary is copied into every ActivityTaskScheduled event, and the server has an
-// unenforced 400-byte cap. (follow-up: summary-size-server-limit)
-const MAX_SUMMARY_LENGTH = 200;
+// The Summary is copied into every ActivityTaskScheduled event, and the server caps the
+// serialized payload at 400 bytes (limit.userMetadataSummarySize, unenforced today).
+// The margin covers JSON quoting. (follow-up: summary-size-server-limit)
+const MAX_SUMMARY_BYTES = 380;
 
-// Shared with the map-wide assert so the two cannot word the same problem differently.
 function assertActivityProfile(nodeType: string, profile: ActivityProfile | undefined): void {
   const path = `nodeActivityProfiles[${JSON.stringify(nodeType)}]`;
 
@@ -37,22 +37,46 @@ export function assertNodeActivityProfiles(profiles: NodeActivityProfiles): void
   }
 }
 
-export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
-  let profile = DEFAULT_NODE_ACTIVITY_PROFILE;
+// Validated snapshot. Without the copy, a map filled in or edited after
+// `createRunWorkflow` would reach the resolver unchecked.
+export function freezeNodeActivityProfiles(profiles: NodeActivityProfiles): NodeActivityProfiles {
+  assertNodeActivityProfiles(profiles);
 
-  // hasOwn: a node type named `constructor` would resolve off Object.prototype.
-  if (Object.hasOwn(profiles, node.type)) {
-    profile = profiles[node.type];
-    // Otherwise an entry holding undefined throws naming neither type nor rule.
-    assertActivityProfile(node.type, profile);
+  const entries = Object.entries(profiles).map(([nodeType, profile]): [string, ActivityProfile] => [
+    nodeType,
+    Object.freeze({ ...profile, retry: Object.freeze({ ...profile.retry }) }),
+  ]);
+  return Object.freeze(Object.fromEntries(entries));
+}
+
+// Code points, not code units: a UTF-16 slice can split a surrogate pair, and the cap
+// counts bytes. TextEncoder is injected into the workflow sandbox by the worker.
+function clampToSummaryBytes(text: string): string {
+  const encoder = new TextEncoder();
+  let bytes = 0;
+  let clamped = '';
+
+  for (const codePoint of text) {
+    const size = encoder.encode(codePoint).length;
+    if (bytes + size > MAX_SUMMARY_BYTES) break;
+    bytes += size;
+    clamped += codePoint;
   }
 
-  // `retry` too: a shallow spread would share the default's nested object.
+  return clamped;
+}
+
+export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
+  // hasOwn: a node type named `constructor` would resolve off Object.prototype.
+  const profile = Object.hasOwn(profiles, node.type) ? profiles[node.type] : DEFAULT_NODE_ACTIVITY_PROFILE;
+
+  // `retry` too: a shallow spread would share the frozen default's nested object.
   const options: NodeActivityOptions = { ...profile, retry: { ...profile.retry } };
 
-  // Not trusted from the caller: any consumer can build the workflow input.
-  const label = typeof node.label === 'string' ? node.label.trim() : '';
-  const summary = label.slice(0, MAX_SUMMARY_LENGTH);
+  // Not trusted from the caller: any consumer can build the workflow input. Temporal
+  // renders the Summary as single-line markdown, so newlines collapse.
+  const label = typeof node.label === 'string' ? node.label : '';
+  const summary = clampToSummaryBytes(label.replaceAll(/\s+/g, ' ').trim()).trimEnd();
 
   // A blank Summary renders as nothing; an absent key falls back to the activity type.
   return summary === '' ? options : { ...options, summary };

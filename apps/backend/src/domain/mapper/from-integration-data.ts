@@ -26,12 +26,9 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// Three runner-level fields are lifted out of the frontend shape here so `config`
-// stays free of them. `errorPolicy` and `label` are authored in the UI as regular
-// JSONForms properties (via `sharedProperties` in the SDK) and arrive nested in
-// `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
-// which sits alongside the properties rather than inside them. `description` stays in
-// `config`: no engine reads it.
+// Lifts the three fields an engine reads out of `data.properties`, where the SDK's
+// `sharedProperties` put them. `role` comes from `data.isStartNode` instead, which sits
+// beside the properties. `description` stays in `config`: no engine reads it.
 function mapNode(node: FrontendNode): BaseNode {
   const { errorPolicy: rawErrorPolicy, label: rawLabel, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;

@@ -2,7 +2,7 @@ import { SimplePlugin } from '@temporalio/plugin';
 
 import { type CreateActivitiesOptions, createActivities } from './activities';
 import { DEFAULT_TASK_QUEUE } from './constants';
-import type { BaseNode } from './core-contract';
+import type { BaseNode, LoggerPort } from './core-contract';
 import type { NodeActivityProfiles } from './workflow/activity-profiles';
 import { assertNodeActivityProfiles } from './workflow/node-activity-options';
 
@@ -14,6 +14,10 @@ export type WorkflowBuilderPluginOptions<TNode extends BaseNode> = CreateActivit
   // Never read here. Taken only so a bad profile fails `Worker.create` rather than the
   // first workflow activation, and so keys can be checked against `executors`.
   nodeActivityProfiles?: NodeActivityProfiles;
+
+  // Where the profile-key warning goes. Falls back to console, which a worker with a
+  // structured sink would not be watching.
+  logger?: LoggerPort;
 };
 
 // Shows up in users' worker logs and is part of what Temporal reviews, so it changes
@@ -46,19 +50,28 @@ export class WorkflowBuilderPlugin<TNode extends BaseNode = BaseNode> extends Si
 
     if (options.nodeActivityProfiles !== undefined) {
       assertNodeActivityProfiles(options.nodeActivityProfiles);
-      warnOnProfilesWithoutExecutor(options.nodeActivityProfiles, options.executors);
+      warnOnProfilesWithoutExecutor(options.nodeActivityProfiles, options.executors, options.logger);
     }
   }
 }
 
 // The one config mistake the sandbox cannot see, since the workflow has no registry.
 // Warned, not thrown: one bundle may serve workers registering different subsets.
-function warnOnProfilesWithoutExecutor(profiles: NodeActivityProfiles, executors: object): void {
+function warnOnProfilesWithoutExecutor(
+  profiles: NodeActivityProfiles,
+  executors: object,
+  logger: LoggerPort | undefined,
+): void {
   const unknown = Object.keys(profiles).filter((nodeType) => !Object.hasOwn(executors, nodeType));
   if (unknown.length === 0) return;
 
-  console.warn(
-    `[${PLUGIN_NAME}] nodeActivityProfiles has no matching executor for ${unknown.map((type) => JSON.stringify(type)).join(', ')}. ` +
-      `Nodes of those types keep the default profile. Check the spelling against the executors registered on this worker.`,
-  );
+  const message =
+    `nodeActivityProfiles has no matching executor for ${unknown.map((type) => JSON.stringify(type)).join(', ')}. ` +
+    `Nodes of those types keep the default profile. Check the spelling against the executors registered on this worker.`;
+
+  if (logger) {
+    logger.warn(message, { plugin: PLUGIN_NAME, nodeTypes: unknown });
+  } else {
+    console.warn(`[${PLUGIN_NAME}] ${message}`);
+  }
 }

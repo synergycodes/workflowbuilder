@@ -2,6 +2,11 @@
 // not by execution-core or @workflow-builder/types — those layers only know
 // the generic BaseNode shape. A different product would define its own union
 // here and register matching executors.
+import type { BaseNode } from '@workflowbuilder/temporal';
+
+// Intersected with BaseNode so the runner-level fields the backend lifts out of
+// `data.properties` (`label`, `errorPolicy`, `role`) are declared, not just present.
+type ProductNode<TType extends string, TConfig> = BaseNode & { type: TType; config: TConfig };
 
 type TriggerNodeConfig = Record<string, never>;
 
@@ -31,28 +36,12 @@ type DecisionNodeConfig = {
 // Display-only node; the UI reads the upstream output directly, so no runtime config.
 type VisualizeNodeConfig = Record<string, never>;
 
-export type TriggerNode = {
-  id: string;
-  type: 'ai-studio/trigger';
-  config: TriggerNodeConfig;
-};
+export type TriggerNode = ProductNode<'ai-studio/trigger', TriggerNodeConfig>;
 
-export type AiAgentNode = {
-  id: string;
-  type: 'ai-studio/ai-agent';
-  config: AiAgentNodeConfig;
-};
+export type AiAgentNode = ProductNode<'ai-studio/ai-agent', AiAgentNodeConfig>;
 
-export type DecisionNode = {
-  id: string;
-  type: 'ai-studio/decision';
-  config: DecisionNodeConfig;
-};
+export type DecisionNode = ProductNode<'ai-studio/decision', DecisionNodeConfig>;
 
-type VisualizeNode = {
-  id: string;
-  type: 'ai-studio/visualize';
-  config: VisualizeNodeConfig;
-};
+type VisualizeNode = ProductNode<'ai-studio/visualize', VisualizeNodeConfig>;
 
 export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode;

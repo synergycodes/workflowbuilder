@@ -1,9 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { type ExecutionContext, type ExecutionStore, WorkflowBuilderPlugin, createActivities } from '../src/index';
-import type { BaseNode } from '../src/index';
+import type { BaseNode, LogBindings, LoggerPort, WorkflowBuilderPluginOptions } from '../src/index';
 
 type TestNode = (BaseNode & { type: 'test/echo' }) | (BaseNode & { type: 'test/upper' });
+
+function makeLogger(): LoggerPort & { warnings: { message: string; bindings?: LogBindings }[] } {
+  const warnings: { message: string; bindings?: LogBindings }[] = [];
+  const logger: LoggerPort = {
+    debug: () => {},
+    info: () => {},
+    warn: (message, bindings) => warnings.push({ message, bindings }),
+    error: () => {},
+    child: () => logger,
+  };
+  return { ...logger, warnings };
+}
 
 function makeStore(): ExecutionStore & {
   events: unknown[][];
@@ -87,11 +99,11 @@ describe('createActivities', () => {
   });
 });
 
-function makePlugin(taskQueue?: string) {
+function makePlugin(overrides: Partial<WorkflowBuilderPluginOptions<TestNode>> = {}) {
   return new WorkflowBuilderPlugin<TestNode>({
     store: makeStore(),
     executors: { 'test/echo': () => ({ output: null }), 'test/upper': () => ({ output: null }) },
-    taskQueue,
+    ...overrides,
   });
 }
 
@@ -131,17 +143,12 @@ describe('WorkflowBuilderPlugin', () => {
 
   it('defaults the task queue to the shared constant and takes an override', () => {
     expect(makePlugin().taskQueue).toBe('workflow-execution');
-    expect(makePlugin('other-queue').taskQueue).toBe('other-queue');
+    expect(makePlugin({ taskQueue: 'other-queue' }).taskQueue).toBe('other-queue');
   });
 });
 
-function withProfiles(nodeActivityProfiles: unknown) {
-  return () =>
-    new WorkflowBuilderPlugin<TestNode>({
-      store: makeStore(),
-      executors: { 'test/echo': () => ({ output: null }), 'test/upper': () => ({ output: null }) },
-      nodeActivityProfiles: nodeActivityProfiles as never,
-    });
+function withProfiles(nodeActivityProfiles: unknown, logger?: LoggerPort) {
+  return () => makePlugin({ nodeActivityProfiles: nodeActivityProfiles as never, logger });
 }
 
 describe('WorkflowBuilderPlugin node activity profiles', () => {
@@ -177,5 +184,19 @@ describe('WorkflowBuilderPlugin node activity profiles', () => {
 
     expect(warn).not.toHaveBeenCalled();
     warn.mockRestore();
+  });
+
+  it('routes the warning through a supplied logger, leaving console alone', () => {
+    // A worker with a structured sink is not watching the console stream.
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const logger = makeLogger();
+
+    withProfiles({ 'test/typo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } }, logger)();
+
+    expect(consoleWarn).not.toHaveBeenCalled();
+    expect(logger.warnings).toHaveLength(1);
+    expect(logger.warnings[0]?.message).toMatch(/"test\/typo"/);
+    expect(logger.warnings[0]?.bindings).toMatchObject({ nodeTypes: ['test/typo'] });
+    consoleWarn.mockRestore();
   });
 });

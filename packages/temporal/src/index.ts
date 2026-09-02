@@ -22,6 +22,8 @@ export { NodeExecutionError } from './core-contract';
 export type {
   BaseNode,
   ExecutionContext,
+  LogBindings,
+  LoggerPort,
   NodeErrorPolicy,
   NodeExecutionResult,
   NodeExecutor,

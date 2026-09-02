@@ -22,16 +22,23 @@ export function isDurationString(value: unknown): value is DurationString {
   return typeof value === 'string' && DURATION_PATTERN.test(value) && Number.parseFloat(value) > 0;
 }
 
+// Only for the two frozen singletons below. Annotating them `ActivityProfile` would
+// erase the readonly modifiers, so a consumer tuning a default in place would compile
+// and then throw inside the sandbox on first activation.
+type ReadonlyActivityProfile = {
+  readonly startToCloseTimeout: DurationString;
+  readonly retry: { readonly maximumAttempts: number };
+};
+
 // Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
-// cost on partial failures. Both profiles are frozen down to `retry`, because mutating
-// a shared singleton would change every node's cap.
-export const DEFAULT_NODE_ACTIVITY_PROFILE: ActivityProfile = Object.freeze({
+// cost on partial failures.
+export const DEFAULT_NODE_ACTIVITY_PROFILE: ReadonlyActivityProfile = Object.freeze({
   startToCloseTimeout: '10m',
   retry: Object.freeze({ maximumAttempts: 2 }),
 });
 
 // DB activities: fast, idempotent INSERT/UPDATE — short timeout, aggressive retries.
-export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ActivityProfile = Object.freeze({
+export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ReadonlyActivityProfile = Object.freeze({
   startToCloseTimeout: '30s',
   retry: Object.freeze({ maximumAttempts: 5 }),
 });

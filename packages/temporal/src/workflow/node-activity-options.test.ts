@@ -1,12 +1,86 @@
 import { describe, expect, it } from 'vitest';
 
-import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
+import {
+  DEFAULT_DATABASE_ACTIVITY_PROFILE,
+  DEFAULT_NODE_ACTIVITY_PROFILE,
+  type NodeActivityProfiles,
+} from './activity-profiles';
 import type { BaseNode } from './core-contract';
-import { assertNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
+import {
+  assertNodeActivityProfiles,
+  freezeNodeActivityProfiles,
+  resolveNodeActivityOptions,
+} from './node-activity-options';
 
 function node(overrides: Partial<BaseNode> = {}): BaseNode {
   return { id: 'n1', type: 'test/step', config: {}, ...overrides };
 }
+
+const encoder = new TextEncoder();
+
+function byteLength(text: string | undefined): number {
+  return encoder.encode(text).length;
+}
+
+// A lone surrogate encodes to U+FFFD, so a split pair fails the round trip. Stands in
+// for `isWellFormed`, which is ES2024 and outside this package's `lib`.
+function survivesUtf8(text: string | undefined): boolean {
+  return new TextDecoder().decode(encoder.encode(text)) === text;
+}
+
+describe('the shared default profiles', () => {
+  it('refuses an in-place tune at compile time, not only at runtime', () => {
+    // Annotated `ActivityProfile`, the freeze was invisible to TypeScript: tuning a
+    // default compiled clean and threw on first activation inside the sandbox.
+    expect(() => {
+      // @ts-expect-error readonly, which is the point of this test
+      DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts = 3;
+    }).toThrow(TypeError);
+    expect(() => {
+      // @ts-expect-error readonly, which is the point of this test
+      DEFAULT_NODE_ACTIVITY_PROFILE.startToCloseTimeout = '5m';
+    }).toThrow(TypeError);
+    expect(() => {
+      // @ts-expect-error readonly, which is the point of this test
+      DEFAULT_DATABASE_ACTIVITY_PROFILE.retry.maximumAttempts = 3;
+    }).toThrow(TypeError);
+
+    expect(DEFAULT_NODE_ACTIVITY_PROFILE).toEqual({ startToCloseTimeout: '10m', retry: { maximumAttempts: 2 } });
+    expect(DEFAULT_DATABASE_ACTIVITY_PROFILE).toEqual({ startToCloseTimeout: '30s', retry: { maximumAttempts: 5 } });
+  });
+});
+
+describe('freezeNodeActivityProfiles', () => {
+  it('validates once, at the boundary', () => {
+    const broken = { 'test/step': { startToCloseTimeout: '0s', retry: { maximumAttempts: 2 } } };
+
+    expect(() => freezeNodeActivityProfiles(broken as unknown as NodeActivityProfiles)).toThrow(TypeError);
+    expect(() => freezeNodeActivityProfiles({})).not.toThrow();
+  });
+
+  it('ignores an entry added to the caller’s map afterwards', () => {
+    // Scheduling-time validation is not an option: a throw inside executeNode reaches
+    // the graph's errorPolicy, and 'continue' absorbs it into a completed run.
+    const live: Record<string, unknown> = {};
+    const snapshot = freezeNodeActivityProfiles(live as NodeActivityProfiles);
+
+    live['test/step'] = { startToCloseTimeout: 'not a duration', retry: { maximumAttempts: 0 } };
+
+    expect(resolveNodeActivityOptions(node(), snapshot)).toEqual(DEFAULT_NODE_ACTIVITY_PROFILE);
+  });
+
+  it('ignores a field edited on the caller’s profile afterwards', () => {
+    const live = { 'test/step': { startToCloseTimeout: '2m', retry: { maximumAttempts: 4 } } };
+    const snapshot = freezeNodeActivityProfiles(live as NodeActivityProfiles);
+
+    live['test/step'].retry.maximumAttempts = 999;
+
+    expect(resolveNodeActivityOptions(node(), snapshot)).toEqual({
+      startToCloseTimeout: '2m',
+      retry: { maximumAttempts: 4 },
+    });
+  });
+});
 
 describe('resolveNodeActivityOptions', () => {
   describe('timeouts and retries', () => {
@@ -53,23 +127,6 @@ describe('resolveNodeActivityOptions', () => {
       expect(profiles['test/step']!.retry.maximumAttempts).toBe(4);
     });
 
-    it('keeps the exported defaults frozen', () => {
-      expect(Object.isFrozen(DEFAULT_NODE_ACTIVITY_PROFILE)).toBe(true);
-      expect(Object.isFrozen(DEFAULT_NODE_ACTIVITY_PROFILE.retry)).toBe(true);
-      expect({ ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30m' as const }).toEqual({
-        startToCloseTimeout: '30m',
-        retry: { maximumAttempts: 2 },
-      });
-    });
-
-    it('names the node type when an entry holds undefined', () => {
-      // Was a bare "cannot read properties of undefined (reading 'retry')".
-      const profiles = { 'test/step': undefined } as unknown as NodeActivityProfiles;
-
-      expect(() => resolveNodeActivityOptions(node(), profiles)).toThrow(TypeError);
-      expect(() => resolveNodeActivityOptions(node(), profiles)).toThrow(/nodeActivityProfiles\["test\/step"\]/);
-    });
-
     it('ignores an inherited key rather than treating it as a profile', () => {
       const resolved = resolveNodeActivityOptions(node({ type: 'constructor' }), {});
 
@@ -99,12 +156,44 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('clamps a long label, since the Summary is copied into every scheduled event', () => {
-      const long = resolveNodeActivityOptions(node({ label: 'x'.repeat(500) }), {});
-      const atLimit = resolveNodeActivityOptions(node({ label: 'y'.repeat(200) }), {});
+      const long = resolveNodeActivityOptions(node({ label: 'x'.repeat(2000) }), {});
+      const short = resolveNodeActivityOptions(node({ label: 'y'.repeat(120) }), {});
 
-      expect(long.summary).toHaveLength(200);
-      expect(atLimit.summary).toHaveLength(200);
-      expect(atLimit.summary).toBe('y'.repeat(200));
+      expect(byteLength(long.summary)).toBeLessThanOrEqual(400);
+      expect(long.summary).toBe('x'.repeat(long.summary!.length));
+      expect(short.summary).toBe('y'.repeat(120));
+    });
+
+    it('clamps by bytes, not code units, so a CJK label stays under the server cap', () => {
+      // 200 characters of CJK is 600 bytes, which the character clamp let through.
+      const resolved = resolveNodeActivityOptions(node({ label: '漢'.repeat(300) }), {});
+
+      expect(byteLength(resolved.summary)).toBeLessThanOrEqual(400);
+      // Still fills the budget rather than truncating to almost nothing.
+      expect(byteLength(resolved.summary)).toBeGreaterThan(300);
+    });
+
+    it('never cuts a surrogate pair in half', () => {
+      // The clamp lands mid-emoji here, which a UTF-16 slice turns into U+FFFD.
+      const resolved = resolveNodeActivityOptions(node({ label: `a${'😀'.repeat(150)}` }), {});
+
+      expect(survivesUtf8(resolved.summary)).toBe(true);
+      expect(byteLength(resolved.summary)).toBeLessThanOrEqual(400);
+    });
+
+    it('collapses a multi-line label, which Temporal renders as single-line markdown', () => {
+      const resolved = resolveNodeActivityOptions(node({ label: 'Approve\n  the\torder ' }), {});
+
+      expect(resolved.summary).toBe('Approve the order');
+    });
+
+    it('never leaves whitespace at either end, wherever the clamp lands', () => {
+      // Varying word lengths so the cut falls on a space for at least one of them.
+      for (const word of ['a', 'ab', 'abc', 'abcd', 'abcde']) {
+        const resolved = resolveNodeActivityOptions(node({ label: `${word} `.repeat(400) }), {});
+
+        expect(resolved.summary).not.toMatch(/^\s|\s$/);
+      }
     });
 
     it('ignores a label that is not a string', () => {
