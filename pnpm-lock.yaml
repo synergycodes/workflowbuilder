@@ -15,6 +15,9 @@ catalogs:
     '@phosphor-icons/react':
       specifier: ^2.1.7
       version: 2.1.7
+    '@temporalio/activity':
+      specifier: ^1.23.0
+      version: 1.23.0
     '@temporalio/client':
       specifier: ^1.23.0
       version: 1.23.0
@@ -631,6 +634,9 @@ importers:
 
   packages/temporal:
     dependencies:
+      '@temporalio/activity':
+        specifier: 'catalog:'
+        version: 1.23.0
       '@temporalio/client':
         specifier: 'catalog:'
         version: 1.23.0

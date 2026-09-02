@@ -69,6 +69,7 @@
     }
   },
   "devDependencies": {
+    "@temporalio/activity": "catalog:",
     "@temporalio/client": "catalog:",
     "@temporalio/common": "catalog:",
     "@temporalio/plugin": "catalog:",
@@ -90,6 +91,7 @@
   },
   "sideEffects": false,
   "dependencies": {
+    "@temporalio/activity": "catalog:",
     "@temporalio/client": "catalog:",
     "@temporalio/plugin": "catalog:",
     "@temporalio/workflow": "catalog:"
