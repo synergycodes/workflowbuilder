@@ -62,6 +62,8 @@ export function createVisualizeRoutes(
 
     try {
       const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
+      // Unlike the worker's AI agent activity, this route has no outer retry
+      // policy, so the SDK's default retries stay on.
       const result = await generateText({
         model: openrouter.chat(env.AI_MODEL),
         system: FORMAT_PROMPTS[format],
