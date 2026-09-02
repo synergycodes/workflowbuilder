@@ -1,10 +1,6 @@
-// A duration Temporal accepts, e.g. '30s', '10m', '1.5h'. Kept as our own type so
-// @temporalio/* stays out of the published type surface.
-//
-// The template literal is looser than what is actually valid: `${number}` also admits
-// '0s', '-5m' and '1e3s', none of which Temporal will schedule. `isDurationString`
-// narrows it to a positive decimal followed by a unit, which is the grammar the error
-// messages and the README describe.
+// Ours rather than Temporal's, so @temporalio/* stays out of the published types.
+// Looser than what the server accepts: `${number}` also admits '0s', '-5m' and '1e3s'.
+// `isDurationString` narrows it; the README documents the grammar that survives.
 type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 
 // Timeout and retry shape for a proxied activity.

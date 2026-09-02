@@ -14,7 +14,7 @@ export type { ExecutionStore } from './store';
 export { DEFAULT_TASK_QUEUE, RUN_WORKFLOW_NAME, executionWorkflowId } from './constants';
 
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './workflow/activity-profiles';
-export type { ActivityProfile } from './workflow/activity-profiles';
+export type { ActivityProfile, NodeActivityProfiles } from './workflow/activity-profiles';
 
 // Re-exported from the bundled execution core, so a consumer writes executors
 // against this package alone and never installs a second one.

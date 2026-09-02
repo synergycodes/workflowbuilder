@@ -134,3 +134,51 @@ describe('WorkflowBuilderPlugin', () => {
     expect(makePlugin('other-queue').taskQueue).toBe('other-queue');
   });
 });
+
+function withProfiles(nodeActivityProfiles: unknown) {
+  return () =>
+    new WorkflowBuilderPlugin<TestNode>({
+      store: makeStore(),
+      executors: { 'test/echo': () => ({ output: null }), 'test/upper': () => ({ output: null }) },
+      nodeActivityProfiles: nodeActivityProfiles as never,
+    });
+}
+
+describe('WorkflowBuilderPlugin node activity profiles', () => {
+  it('fails Worker.create rather than the first workflow activation', () => {
+    // The whole point of accepting the map here: the same check inside the workflow
+    // runs in the sandbox on first activation, too late to fail a deploy.
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '30 minutes', retry: { maximumAttempts: 2 } } })).toThrow(
+      /nodeActivityProfiles\["test\/echo"\]\.startToCloseTimeout/,
+    );
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '0s', retry: { maximumAttempts: 2 } } })).toThrow(
+      TypeError,
+    );
+  });
+
+  it('accepts a well-formed map, and stays optional', () => {
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })).not.toThrow();
+    // Omitting the option entirely is the path every consumer is on until they need
+    // per-type profiles, so it must not start validating anything.
+    expect(() => makePlugin()).not.toThrow();
+  });
+
+  it('warns about a profile with no executor, which is the one thing the sandbox cannot see', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    withProfiles({ 'test/typo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]?.[0]).toMatch(/"test\/typo"/);
+    warn.mockRestore();
+  });
+
+  it('stays quiet when every profile matches a registered executor', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    withProfiles({ 'test/echo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+});

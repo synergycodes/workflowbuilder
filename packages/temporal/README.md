@@ -97,18 +97,29 @@ Entries are whole profiles rather than partials on purpose. A partial would let 
 
 A `startToCloseTimeout` is a positive number followed by `ms`, `s`, `m`, `h` or `d`. Decimals are fine (`'1.5h'`). Zero, negative values and exponent notation are rejected, even though TypeScript's template literal type admits them: `'0s'` type-checks, and Temporal treats a zero timeout as unset and refuses to schedule the activity.
 
-Profile **values** are checked by `assertNodeActivityProfiles`, and where you call it decides what a bad profile costs you:
+Declare the map once and hand the same constant to both sides. The workflow needs it in order to schedule activities; the plugin needs it only to check it early.
 
 ```ts
-// worker.ts — outside the sandbox, so this fails the deploy
-import { assertNodeActivityProfiles } from '@workflowbuilder/temporal/workflow';
+// node-activity-profiles.ts
+import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal';
 
-import { nodeActivityProfiles } from './node-activity-profiles';
+export const nodeActivityProfiles: NodeActivityProfiles = {
+  'my-product/ai-agent': { startToCloseTimeout: '30m', retry: { maximumAttempts: 3 } },
+  'my-product/decision': { ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30s' },
+};
 
-assertNodeActivityProfiles(nodeActivityProfiles);
+// worker.ts
+const plugin = new WorkflowBuilderPlugin({ executors, store, nodeActivityProfiles });
+
+// workflows.ts
+export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
-`createRunWorkflow` calls it as well, but that call runs inside Temporal's sandbox on the **first activation of a workflow**, not at `Worker.create` and not at bundling time. On its own it means a worker that starts green and then wedges every run in a workflow-task retry loop, visible in your worker log and in Temporal UI but with no `execution_failed` and no status change in your own database. Calling it in worker setup as well turns the same mistake into a process that refuses to start. Both beat the alternative, which is a profile checked only when a node is scheduled, where the throw reaches your graph's `errorPolicy` and can be absorbed into a run that closes as completed.
+**The two sides are not linked for you.** The workflow bundle is compiled from your own `workflows.ts`, so handing a map to the plugin does not put it in the bundle, and handing it to `createRunWorkflow` does not show it to the worker. Import one constant in both places or they will drift.
+
+Passing it to the plugin is what makes a bad profile fail `Worker.create`, which is to say the deploy. `createRunWorkflow` validates as well, but that call runs inside Temporal's sandbox on the **first activation of a workflow**, not at `Worker.create` and not at bundling time. On its own it means a worker that starts green and then wedges every run in a workflow-task retry loop, visible in your worker log and in Temporal UI but with no `execution_failed` and no status change in your own database. If you would rather not hand the map to the plugin, call `assertNodeActivityProfiles` from `@workflowbuilder/temporal/workflow` in your worker setup instead. It is the same check.
+
+The plugin also warns when a profile is keyed by a node type with no executor registered on that worker, which is the one configuration mistake the sandbox genuinely cannot see. It warns rather than throws, because a single workflow bundle may serve several workers that each register a subset of the node types.
 
 Profile **keys** cannot be validated: the workflow runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled node type is therefore silent, and every node of the type you meant to configure keeps the default profile. The fallback is safe, just not what you asked for, so check the spelling against your registry when a profile appears to have no effect.
 
@@ -156,7 +167,9 @@ Per-node-type overrides go through `createRunWorkflow` (see `workflows.ts` above
 
 ## Node labels in Event History
 
-Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. Nothing to configure: the label travels on the node, and a node without one simply gets no summary, where Temporal falls back to showing the activity type.
+Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. A node without a label simply gets no summary, where Temporal falls back to showing the activity type. Labels longer than 200 characters are clamped, since the Summary is copied into every `ActivityTaskScheduled` event.
+
+Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`, not to this package. The reference backend lifts it out of the editor's `data.properties` alongside `errorPolicy` and `role`; see `mapNode` in `apps/backend/src/domain/mapper/from-integration-data.ts` for the shape. A consumer with their own backend that skips this step will see the identical `executeNode` rows, with nothing in this package able to tell the difference.
 
 ## Versioning and replay
 

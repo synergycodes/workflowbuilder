@@ -64,6 +64,15 @@ describe('resolveNodeActivityOptions', () => {
       });
     });
 
+    it('names the node type when an entry holds undefined', () => {
+      // Without the shared per-entry check this was a bare "cannot read properties of
+      // undefined (reading 'retry')", which names neither the type nor the rule.
+      const profiles = { 'test/step': undefined } as unknown as NodeActivityProfiles;
+
+      expect(() => resolveNodeActivityOptions(node(), profiles)).toThrow(TypeError);
+      expect(() => resolveNodeActivityOptions(node(), profiles)).toThrow(/nodeActivityProfiles\["test\/step"\]/);
+    });
+
     it('ignores an inherited key rather than treating it as a profile', () => {
       const resolved = resolveNodeActivityOptions(node({ type: 'constructor' }), {});
 
@@ -91,6 +100,15 @@ describe('resolveNodeActivityOptions', () => {
       expect(resolveNodeActivityOptions(node({ label: '  Approve  ' }), {}).summary).toBe('Approve');
       expect('summary' in resolveNodeActivityOptions(node({ label: '   ' }), {})).toBe(false);
       expect('summary' in resolveNodeActivityOptions(node({ label: '' }), {})).toBe(false);
+    });
+
+    it('clamps a long label, since the Summary is copied into every scheduled event', () => {
+      const long = resolveNodeActivityOptions(node({ label: 'x'.repeat(500) }), {});
+      const atLimit = resolveNodeActivityOptions(node({ label: 'y'.repeat(200) }), {});
+
+      expect(long.summary).toHaveLength(200);
+      expect(atLimit.summary).toHaveLength(200);
+      expect(atLimit.summary).toBe('y'.repeat(200));
     });
 
     it('ignores a label that is not a string', () => {

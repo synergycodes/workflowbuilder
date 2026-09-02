@@ -234,7 +234,7 @@ describe('mapToExecutionModel', () => {
     const result = mapToExecutionModel('wf-1', snapshot);
 
     expect(result.nodes[0]!.label).toBe('Fetch order');
-    // `description` is the other shared property and stays put — no engine reads it.
+    // `description` is the other shared property and stays put: no engine reads it.
     expect(result.nodes[0]!.config).toEqual({ description: 'why', foo: 1 });
   });
 
