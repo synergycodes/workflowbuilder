@@ -46,6 +46,100 @@ curl -s http://localhost:8080/api/health   # {"status":"ok"}
 # open http://localhost:8080, run the "Sales Inquiry Pipeline" template
 ```
 
+## Air-gapped / offline install
+
+The host that runs the stack needs no internet access — but the machine that
+builds the images does. Every `pnpm install` in the Dockerfile runs strictly
+`--offline`; the network is touched only to pull base images, install pnpm
+itself, and `pnpm fetch` the package store. So don't build on the air-gapped
+host — build on a connected machine and ship the images.
+
+The air-gapped host needs exactly one thing preinstalled: Docker Engine with
+the compose plugin (plus ~3 GB of disk for the loaded images).
+
+### 1. Build on a connected machine
+
+```bash
+cd deploy/ai-studio
+docker compose build
+docker compose --profile debug pull --ignore-buildable
+```
+
+If the host is x86 and you build on an ARM Mac, put
+`DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of both commands — `docker save`
+ships exactly what you built (slower under emulation, but correct).
+
+### 2. Pack one tarball
+
+```bash
+docker save -o ai-studio-images.tar \
+  ai-studio-runtime ai-studio-web \
+  postgres:16 temporalio/auto-setup:1.29.6.1 temporalio/ui:2.51.0
+```
+
+The infra tags are the ones pinned in
+[docker-compose.override.yml](docker-compose.override.yml) — check there if
+they've moved. `temporalio/ui` is only needed for
+`--profile debug`; drop it to save ~100 MB.
+
+### 3. Ship to the host
+
+Move two things across the gap (USB drive, scp over the internal network —
+whatever your process allows):
+
+- `ai-studio-images.tar` (~2.5 GB)
+- this directory, `deploy/ai-studio/` (both compose files and `.env.example`;
+  the nginx config is already baked into the `web` image)
+
+### 4. Load and start on the host
+
+```bash
+docker load -i ai-studio-images.tar
+cd ai-studio                      # wherever you copied deploy/ai-studio/ to
+cp .env.example .env              # set AI_API_KEY, AI_BASE_URL — see "What still needs egress"
+docker compose up -d --no-build   # --no-build: use the loaded images, never rebuild here
+```
+
+First boot behaves exactly as in Quick start: the backend applies migrations
+before serving, and the worker crash-loops for ~30s until Temporal finishes
+auto-setup.
+
+### 5. Connect
+
+Only the `web` container publishes a port. The backend, Temporal, and both
+databases stay on the internal Docker network — you reach the API through the
+nginx inside `web`, on the same port as the SPA:
+
+```bash
+# on the host itself
+curl http://localhost:8080/api/health        # {"status":"ok"}
+```
+
+From another machine on the same network, open `http://<host-ip>:8080` in a
+browser (the SPA calls `/api` on its own origin — there is no separate
+backend address to configure). If the host answers locally but not from
+outside, it's the host firewall: allow `WEB_PORT` (default 8080) in. The
+default `WEB_BIND=0.0.0.0` already listens on all interfaces; set
+`WEB_BIND=127.0.0.1` only when a host-level reverse proxy should be the sole
+way in (see "TLS / going public").
+
+### What still needs egress
+
+"Air-gapped" covers the install — nothing above pulls from a registry at
+deploy time. Whether the running stack needs egress is decided by
+`AI_BASE_URL`:
+
+- **Default (OpenRouter)**: the backend and worker need egress to
+  `openrouter.ai:443`. Without it the stack runs and every ordinary node
+  works, but AI Agent nodes and the visualize route fail. On a restricted
+  network, allow-list that host.
+- **Fully inside the gap**: point `AI_BASE_URL` at an OpenAI-compatible
+  endpoint on your own network (see "Pointing at a different LLM" under
+  Configuration) and no LLM traffic leaves it — zero egress.
+
+Leave `TAVILY_API_KEY` empty inside a gap: the AI Agent's web-search tool
+calls `tavily.com`. Agents with web search toggled on still run without it.
+
 ## Spend safety (do not skip)
 
 Two independent controls; both must be in place before the URL goes public:
