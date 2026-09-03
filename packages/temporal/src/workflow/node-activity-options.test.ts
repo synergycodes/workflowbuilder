@@ -6,7 +6,7 @@ import {
   type NodeActivityProfiles,
 } from './activity-profiles';
 import type { BaseNode } from './core-contract';
-import { resolveNodeActivityOptions } from './node-activity-options';
+import { resolveFromValidatedProfiles, resolveNodeActivityOptions } from './node-activity-options';
 
 function node(overrides: Partial<BaseNode> = {}): BaseNode {
   return { id: 'n1', type: 'test/step', config: {}, ...overrides };
@@ -95,6 +95,23 @@ describe('resolveNodeActivityOptions', () => {
       const resolved = resolveNodeActivityOptions(node({ type: 'constructor' }), {});
 
       expect(resolved).toEqual(DEFAULT_NODE_ACTIVITY_PROFILE);
+    });
+
+    it('forwards only the two validated fields, never the rest of a caller\u2019s entry', () => {
+      // Whatever reaches proxyActivities is unvalidated by definition, and a throw from
+      // there lands inside executeNode where errorPolicy can absorb it.
+      const wider = {
+        'test/step': {
+          startToCloseTimeout: '2m',
+          retry: { maximumAttempts: 4, initialInterval: '0s' },
+          scheduleToCloseTimeout: 'nonsense',
+        },
+      } as unknown as NodeActivityProfiles;
+
+      expect(resolveFromValidatedProfiles(node(), wider)).toEqual({
+        startToCloseTimeout: '2m',
+        retry: { maximumAttempts: 4 },
+      });
     });
 
     it('validates the whole map, so a bad entry names itself', () => {

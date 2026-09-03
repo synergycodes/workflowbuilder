@@ -38,8 +38,10 @@ export function resolveFromValidatedProfiles(node: BaseNode, profiles: NodeActiv
   // hasOwn: a node type named `constructor` would resolve off Object.prototype.
   const profile = Object.hasOwn(profiles, node.type) ? profiles[node.type] : DEFAULT_NODE_ACTIVITY_PROFILE;
 
-  // `retry` too: a shallow spread would share the frozen default's nested object.
-  const options: NodeActivityOptions = { ...profile, retry: { ...profile.retry } };
+  const options: NodeActivityOptions = {
+    startToCloseTimeout: profile.startToCloseTimeout,
+    retry: { maximumAttempts: profile.retry.maximumAttempts },
+  };
 
   // Not trusted from the caller: any consumer can build the workflow input. Temporal
   // renders the Summary as single-line markdown, so newlines collapse.

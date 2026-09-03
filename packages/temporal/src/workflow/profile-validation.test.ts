@@ -100,6 +100,46 @@ describe('assertNodeActivityProfiles', () => {
     });
   });
 
+  describe('unknown keys', () => {
+    // The resolver forwards only the two validated fields, so anything else would be
+    // dropped in silence. A map built from configuration gets no excess-property check
+    // from TypeScript either, which is how one arrives here in the first place.
+    it('rejects a key the profile does not carry, naming it', () => {
+      const extra = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, scheduleToCloseTimeout: '1h' },
+      };
+
+      expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/step"\] has unknown key "scheduleToCloseTimeout"/,
+      );
+    });
+
+    it('rejects a key nested under retry, naming the path', () => {
+      const extra = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2, initialInterval: '0s' } },
+      };
+
+      expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/step"\]\.retry has unknown key "initialInterval"/,
+      );
+    });
+
+    it('names every unknown key at once rather than one per run', () => {
+      const extra = {
+        'test/step': {
+          startToCloseTimeout: '10m',
+          retry: { maximumAttempts: 2 },
+          taskQueue: 'x',
+          heartbeatTimeout: '1m',
+        },
+      };
+
+      expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
+        /has unknown keys "taskQueue", "heartbeatTimeout"/,
+      );
+    });
+  });
+
   it('rejects an entry whose value is undefined rather than defaulting it', () => {
     const undefinedEntry = { 'test/step': undefined };
 

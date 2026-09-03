@@ -41,6 +41,21 @@ function assertActivityProfile(nodeType: string, profile: ActivityProfile | unde
       `${path}.retry.maximumAttempts must be a positive integer no greater than ${MAX_RETRY_ATTEMPTS}, got ${JSON.stringify(attempts)}.`,
     );
   }
+
+  assertNoUnknownKeys(path, profile, PROFILE_KEYS);
+  assertNoUnknownKeys(`${path}.retry`, profile.retry, RETRY_KEYS);
+}
+
+const PROFILE_KEYS: ReadonlySet<string> = new Set(['startToCloseTimeout', 'retry']);
+const RETRY_KEYS: ReadonlySet<string> = new Set(['maximumAttempts']);
+
+function assertNoUnknownKeys(path: string, value: object, allowed: ReadonlySet<string>): void {
+  const unknown = Object.keys(value).filter((key) => !allowed.has(key));
+  if (unknown.length === 0) return;
+
+  throw new TypeError(
+    `${path} has unknown ${unknown.length === 1 ? 'key' : 'keys'} ${unknown.map((key) => JSON.stringify(key)).join(', ')}. A profile carries startToCloseTimeout and retry.maximumAttempts, nothing else.`,
+  );
 }
 
 // Checked per map, not per node: a profile that only fails once a node is scheduled
