@@ -27,7 +27,7 @@ describe('assertNodeActivityProfiles', () => {
     it('rejects a duration Temporal would not parse, naming the config path', () => {
       // Temporal's own validator only asks that some timeout is set.
       expect(() => assertNodeActivityProfiles(profiles('30 minutes'))).toThrow(
-        /nodeActivityProfiles\["test\/step"\]\.startToCloseTimeout must be a positive number/,
+        /nodeActivityProfiles\["test\/step"\]\.startToCloseTimeout must be a number followed by ms/,
       );
     });
 
@@ -40,8 +40,31 @@ describe('assertNodeActivityProfiles', () => {
     it('rejects a zero duration, which the server treats as unset', () => {
       // The server refuses the command, so the workflow task retries forever.
       for (const timeout of ['0s', '0m', '00h', '0.0s', '0ms']) {
-        expect(() => assertNodeActivityProfiles(profiles(timeout))).toThrow(/must be a positive number/);
+        expect(() => assertNodeActivityProfiles(profiles(timeout))).toThrow(/must fit a protobuf Duration/);
       }
+    });
+
+    it('rejects a duration that rounds to zero on the wire, like a literal zero', () => {
+      // Temporal converts to a protobuf Duration by rounding to nanoseconds, so
+      // 0.0000001ms is 0.1ns and lands on the same wedged workflow task as '0s'.
+      for (const timeout of ['0.0000001ms', '0.0000009ms']) {
+        expect(() => assertNodeActivityProfiles(profiles(timeout))).toThrow(/must fit a protobuf Duration/);
+      }
+      // One nanosecond, the smallest a Duration carries. Absurd as a timeout, but it
+      // fails loudly at the activity rather than silently at the command.
+      expect(() => assertNodeActivityProfiles(profiles('0.000001ms'))).not.toThrow();
+      expect(() => assertNodeActivityProfiles(profiles('0.5ms'))).not.toThrow();
+    });
+
+    it('rejects a duration that overflows the protobuf Duration', () => {
+      // parseFloat reaches Infinity long before the string does anything sensible.
+      const overflowing = '9'.repeat(400);
+
+      expect(() => assertNodeActivityProfiles(profiles(`${overflowing}d`))).toThrow(/must fit a protobuf Duration/);
+      expect(() => assertNodeActivityProfiles(profiles('3652501d'))).toThrow(/must fit a protobuf Duration/);
+      // The documented ceiling, and a long-waiting activity below it.
+      expect(() => assertNodeActivityProfiles(profiles('3652500d'))).not.toThrow();
+      expect(() => assertNodeActivityProfiles(profiles('365d'))).not.toThrow();
     });
 
     it('rejects values the template literal type admits but Temporal does not', () => {

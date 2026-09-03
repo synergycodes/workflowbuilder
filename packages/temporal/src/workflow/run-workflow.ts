@@ -16,7 +16,7 @@ import {
   type WorkflowExecutionInput,
   runGraph,
 } from './core-contract';
-import { resolveNodeActivityOptions } from './node-activity-options';
+import { resolveFromValidatedProfiles } from './node-activity-options';
 import { freezeNodeActivityProfiles } from './profile-validation';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
@@ -38,7 +38,7 @@ export function createRunWorkflow(options: RunWorkflowOptions = {}) {
   const runner: ActivityRunnerPort<BaseNode> = {
     executeNode: (node, context) => {
       const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(
-        resolveNodeActivityOptions(node, profiles),
+        resolveFromValidatedProfiles(node, profiles),
       );
       return nodeActivities.executeNode(node, context);
     },

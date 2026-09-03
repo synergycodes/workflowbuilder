@@ -96,6 +96,20 @@ describe('resolveNodeActivityOptions', () => {
 
       expect(resolved).toEqual(DEFAULT_NODE_ACTIVITY_PROFILE);
     });
+
+    it('validates the whole map, so a bad entry names itself', () => {
+      // The README points consumers here to check their own map, so the export cannot
+      // assume the snapshot createRunWorkflow builds. It runs the same map-wide assert
+      // a worker runs, which is what keeps the two messages from drifting apart.
+      const undefinedEntry = { 'test/step': undefined } as unknown as NodeActivityProfiles;
+      const badTimeout = { 'test/other': { startToCloseTimeout: '0s', retry: { maximumAttempts: 2 } } };
+
+      expect(() => resolveNodeActivityOptions(node(), undefinedEntry)).toThrow(/nodeActivityProfiles\["test\/step"\]/);
+      // Reported even though this node would never have read that entry.
+      expect(() => resolveNodeActivityOptions(node(), badTimeout as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/other"\]\.startToCloseTimeout/,
+      );
+    });
   });
 
   describe('summary', () => {

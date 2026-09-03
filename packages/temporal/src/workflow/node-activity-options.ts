@@ -1,19 +1,23 @@
 // Pure, so it also runs in worker setup outside the sandbox. See the README.
 import { type ActivityProfile, DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import type { BaseNode } from './core-contract';
+import { assertNodeActivityProfiles } from './profile-validation';
 
 export type NodeActivityOptions = ActivityProfile & { summary?: string };
 
-// The Summary is copied into every ActivityTaskScheduled event, so it stays bounded.
-// Comfortably under the server's 400-byte cap on the serialized payload, whose exact
-// arithmetic a custom payload converter or codec changes anyway.
+const encoder = new TextEncoder();
+
+// Copied into every ActivityTaskScheduled event, so it stays bounded. Bounds the raw
+// string, not the serialized payload the server's cap measures; see the README.
 // (follow-up: temporal-profile-wire-validation)
 const MAX_SUMMARY_BYTES = 300;
 
 // Code points, not code units: a UTF-16 slice can split a surrogate pair, and the cap
 // counts bytes. TextEncoder is injected into the workflow sandbox by the worker.
 function clampToSummaryBytes(text: string): string {
-  const encoder = new TextEncoder();
+  // Every real label takes this path; the loop below costs ~20x more per call.
+  if (encoder.encode(text).length <= MAX_SUMMARY_BYTES) return text;
+
   let bytes = 0;
   let clamped = '';
 
@@ -27,7 +31,10 @@ function clampToSummaryBytes(text: string): string {
   return clamped;
 }
 
-export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
+// Takes the snapshot `createRunWorkflow` already validated and froze, so it re-checks
+// nothing: a throw here would land inside executeNode, the one place the graph's
+// errorPolicy can absorb it into a completed run.
+export function resolveFromValidatedProfiles(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
   // hasOwn: a node type named `constructor` would resolve off Object.prototype.
   const profile = Object.hasOwn(profiles, node.type) ? profiles[node.type] : DEFAULT_NODE_ACTIVITY_PROFILE;
 
@@ -41,4 +48,12 @@ export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivit
 
   // A blank Summary renders as nothing; an absent key falls back to the activity type.
   return summary === '' ? options : { ...options, summary };
+}
+
+// The exported form, for checking a map without reading it back out of Event History.
+// Validates it here so a bad entry names itself, and so the message cannot drift from
+// the one a worker sees.
+export function resolveNodeActivityOptions(node: BaseNode, profiles: NodeActivityProfiles): NodeActivityOptions {
+  assertNodeActivityProfiles(profiles);
+  return resolveFromValidatedProfiles(node, profiles);
 }

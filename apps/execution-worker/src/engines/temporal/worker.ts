@@ -31,7 +31,6 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/visualize': executeVisualize,
   },
   store: withPayloadSizeWarning(database, logger),
-  logger,
 });
 
 // without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS
