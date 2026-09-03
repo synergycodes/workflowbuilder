@@ -50,9 +50,8 @@ describe('public API surface', () => {
 });
 
 describe('default activity profiles', () => {
-  // These are the values the worker has always used. Per-node-type profiles layer on
-  // top; a type without metadata keeps resolving to exactly this, which is pinned in
-  // src/workflow/node-activity-options.test.ts.
+  // Pinned so an upgrade cannot silently change how long a consumer's activities may
+  // run or how often they retry.
   it('keeps node activities at 10 minutes and 2 attempts', () => {
     expect(rootEntry.DEFAULT_NODE_ACTIVITY_PROFILE).toEqual({
       startToCloseTimeout: '10m',

@@ -15,7 +15,7 @@ const MAX_SUMMARY_BYTES = 300;
 // Code points, not code units: a UTF-16 slice can split a surrogate pair, and the cap
 // counts bytes. TextEncoder is injected into the workflow sandbox by the worker.
 function clampToSummaryBytes(text: string): string {
-  // Every real label takes this path; the loop below costs ~20x more per call.
+  // The common path. The loop below encodes per code point, so it costs far more.
   if (encoder.encode(text).length <= MAX_SUMMARY_BYTES) return text;
 
   let bytes = 0;

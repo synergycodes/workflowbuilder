@@ -4,8 +4,8 @@
 // here and register matching executors.
 import type { BaseNode } from '@workflowbuilder/temporal';
 
-// Intersected with BaseNode so the runner-level fields the backend lifts out of
-// `data.properties` (`label`, `errorPolicy`, `role`) are declared, not just present.
+// Intersected with BaseNode so the runner-level fields it carries stay declared here,
+// rather than arriving at runtime on a type that does not mention them.
 type ProductNode<TType extends string, TConfig> = BaseNode & { type: TType; config: TConfig };
 
 type TriggerNodeConfig = Record<string, never>;

@@ -15,8 +15,8 @@ export type WorkflowBuilderPluginOptions<TNode extends BaseNode> = CreateActivit
   // first workflow activation, and so keys can be checked against `executors`.
   nodeActivityProfiles?: NodeActivityProfiles;
 
-  // Where the profile-key warning goes. Falls back to console, which a worker with a
-  // structured sink would not be watching.
+  // Without one, warnings go to console, which a worker shipping JSON to a sink
+  // is not watching.
   logger?: LoggerPort;
 };
 
