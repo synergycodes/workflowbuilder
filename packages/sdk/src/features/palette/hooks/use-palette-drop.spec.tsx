@@ -11,11 +11,11 @@ import { renderHook } from '@testing-library/react';
 import type { NodeAddChange } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { PaletteItem } from '../node/common';
-import type { WorkflowBuilderNode } from '../node/node-data';
-import { NodeType } from '../node/node-types';
-import { resetWorkflowStore, useStore } from '../store/store';
-import { dataFormat } from '../utils/consts';
+import type { PaletteItem } from '../../../node/common';
+import type { WorkflowBuilderNode } from '../../../node/node-data';
+import { NodeType } from '../../../node/node-types';
+import { resetWorkflowStore, useStore } from '../../../store/store';
+import { dataFormat } from '../../../utils/consts';
 import { usePaletteDrop } from './use-palette-drop';
 
 vi.mock('@xyflow/react', () => ({

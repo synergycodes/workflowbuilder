@@ -1,5 +1,4 @@
 import { Accordion } from '@workflowbuilder/ui';
-import type { DragEvent } from 'react';
 
 import styles from './palette-items.module.css';
 
@@ -8,13 +7,12 @@ import type { PaletteGroup, PaletteItem as PaletteItemType } from '../../../../n
 import { PaletteItem } from './palette-item';
 
 type PaletteItemsProps = {
-  onDragStart: (event: DragEvent) => void;
-  onMouseDown: (type: string) => void;
+  onPointerDown: (event: React.PointerEvent<HTMLDivElement>, item: PaletteItemType) => void;
   items: (PaletteItemType | PaletteGroup)[];
   isDisabled?: boolean;
 };
 
-export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = false }: PaletteItemsProps) {
+export function PaletteItems({ items, onPointerDown, isDisabled = false }: PaletteItemsProps) {
   const translateIfPossible = useTranslateIfPossible();
 
   return (
@@ -34,13 +32,7 @@ export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = fal
             >
               <div className={styles['accordion-content']}>
                 {group.groupItems.map((item) => (
-                  <PaletteItem
-                    key={item.type}
-                    item={item}
-                    isDisabled={isDisabled}
-                    onMouseDown={onMouseDown}
-                    onDragStart={onDragStart}
-                  />
+                  <PaletteItem key={item.type} item={item} isDisabled={isDisabled} onPointerDown={onPointerDown} />
                 ))}
               </div>
             </Accordion>
@@ -49,15 +41,7 @@ export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = fal
 
         const item = itemOrGroup as PaletteItemType;
 
-        return (
-          <PaletteItem
-            key={item.type}
-            item={item}
-            isDisabled={isDisabled}
-            onMouseDown={onMouseDown}
-            onDragStart={onDragStart}
-          />
-        );
+        return <PaletteItem key={item.type} item={item} isDisabled={isDisabled} onPointerDown={onPointerDown} />;
       })}
     </div>
   );

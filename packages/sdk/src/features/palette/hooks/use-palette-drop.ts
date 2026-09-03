@@ -2,16 +2,16 @@ import { type XYPosition, useStoreApi } from '@xyflow/react';
 import { type DragEvent, useCallback } from 'react';
 import { useShallow } from 'zustand/shallow';
 
-import { getCustomNodeTemplates } from '../data/node-templates';
-import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
-import type { DraggingItem } from '../node/common';
-import type { BaseNodeProperties } from '../node/node-schema';
-import { NodeType } from '../node/node-types';
-import { useStore } from '../store/store';
-import { dataFormat } from '../utils/consts';
-import { getNodeAddChange } from '../utils/get-node-add-change';
-import { resolveReactFlowNodeType } from '../utils/resolve-react-flow-node-type';
-import { useTranslateIfPossible } from './use-translate-if-possible';
+import { getCustomNodeTemplates } from '../../../data/node-templates';
+import { useTranslateIfPossible } from '../../../hooks/use-translate-if-possible';
+import type { BaseNodeProperties } from '../../../node/node-schema';
+import { NodeType } from '../../../node/node-types';
+import { useStore } from '../../../store/store';
+import { generateId } from '../../../utils/generate-id';
+import { getNodeAddChange } from '../../../utils/get-node-add-change';
+import { resolveReactFlowNodeType } from '../../../utils/resolve-react-flow-node-type';
+import { trackFutureChange } from '../../changes-tracker/stores/use-changes-tracker-store';
+import { getDraggedItemAction, setDraggedItem } from '../stores/use-palette-store';
 
 export function usePaletteDrop() {
   const resetSelectedElements = useStoreApi().getState().resetSelectedElements;
@@ -48,7 +48,7 @@ export function usePaletteDrop() {
 
       const reactFlowNodeType = resolveReactFlowNodeType(type, templateType, getCustomNodeTemplates());
 
-      const newNodeId = crypto.randomUUID();
+      const newNodeId = generateId();
       trackFutureChange('addNode', { nodeType: type });
       resetSelectedElements();
       onNodesChange(getNodeAddChange(reactFlowNodeType, position, data, newNodeId));
@@ -65,13 +65,16 @@ export function usePaletteDrop() {
         y: event.clientY,
       });
 
-      const json = event.dataTransfer?.getData(dataFormat);
-      if (!json) return;
+      const draggedItem = getDraggedItemAction();
 
-      const draggingItem = JSON.parse(json) as DraggingItem;
-      const { type } = draggingItem;
+      if (!draggedItem) {
+        return;
+      }
+
+      const { type } = draggedItem;
 
       dropNode(position, type);
+      setDraggedItem(null);
     },
     [reactFlowInstance, dropNode],
   );
