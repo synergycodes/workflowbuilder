@@ -47,6 +47,9 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   try {
     const result = await generateText({
       model: deps.model,
+      // Temporal's activity retry policy owns retries; SDK retries on top would
+      // multiply model calls (up to 3x per activity attempt).
+      maxRetries: 0,
       system: resolvedPrompt,
       prompt: userPrompt,
       // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
