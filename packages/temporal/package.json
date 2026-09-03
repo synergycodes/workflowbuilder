@@ -70,7 +70,9 @@
   },
   "devDependencies": {
     "@temporalio/client": "catalog:",
+    "@temporalio/common": "catalog:",
     "@temporalio/plugin": "catalog:",
+    "@temporalio/testing": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@types/node": "^22.12.0",

@@ -5,3 +5,6 @@
 apps/icons/src/utils/icons.gen.ts
 # Astro auto-generated content collections + types (gitignored, regenerated on build/dev)
 **/.astro/
+# Recorded Temporal Event Histories. Machine-written, and deliberately kept byte-identical
+# to what `temporal workflow show --output json` emits so the two stay interchangeable.
+packages/temporal/test/replay/histories/
