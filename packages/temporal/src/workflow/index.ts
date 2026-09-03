@@ -18,7 +18,9 @@ export type { Activities } from './activities-interface';
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
 export type { ActivityProfile, NodeActivityProfiles } from './activity-profiles';
 
+export { resolveNodeActivityOptions } from './node-activity-options';
+export type { NodeActivityOptions } from './node-activity-options';
+
 // `assertNodeActivityProfiles` is exported for worker setup: the call inside
 // `createRunWorkflow` runs on first activation, too late to fail a deploy.
-export { assertNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
-export type { NodeActivityOptions } from './node-activity-options';
+export { assertNodeActivityProfiles } from './profile-validation';

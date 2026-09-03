@@ -4,7 +4,7 @@ import { type CreateActivitiesOptions, createActivities } from './activities';
 import { DEFAULT_TASK_QUEUE } from './constants';
 import type { BaseNode, LoggerPort } from './core-contract';
 import type { NodeActivityProfiles } from './workflow/activity-profiles';
-import { assertNodeActivityProfiles } from './workflow/node-activity-options';
+import { assertNodeActivityProfiles, findProfilesWithoutExecutor } from './workflow/profile-validation';
 
 export type WorkflowBuilderPluginOptions<TNode extends BaseNode> = CreateActivitiesOptions<TNode> & {
   // Defaults to DEFAULT_TASK_QUEUE. Read it back off the plugin (`plugin.taskQueue`)
@@ -55,19 +55,19 @@ export class WorkflowBuilderPlugin<TNode extends BaseNode = BaseNode> extends Si
   }
 }
 
-// The one config mistake the sandbox cannot see, since the workflow has no registry.
-// Warned, not thrown: one bundle may serve workers registering different subsets.
 function warnOnProfilesWithoutExecutor(
   profiles: NodeActivityProfiles,
   executors: object,
   logger: LoggerPort | undefined,
 ): void {
-  const unknown = Object.keys(profiles).filter((nodeType) => !Object.hasOwn(executors, nodeType));
+  const unknown = findProfilesWithoutExecutor(profiles, executors);
   if (unknown.length === 0) return;
 
   const message =
     `nodeActivityProfiles has no matching executor for ${unknown.map((type) => JSON.stringify(type)).join(', ')}. ` +
-    `Nodes of those types keep the default profile. Check the spelling against the executors registered on this worker.`;
+    `Nothing uses those profiles. If a key is a typo, the type you meant is running on the default profile, ` +
+    `and a node actually of the misspelled type fails with "No executor registered". ` +
+    `Check the spelling against the executors registered on this worker.`;
 
   if (logger) {
     logger.warn(message, { plugin: PLUGIN_NAME, nodeTypes: unknown });

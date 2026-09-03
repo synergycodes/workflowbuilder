@@ -121,7 +121,22 @@ Passing it to the plugin is what makes a bad profile fail `Worker.create`, which
 
 The plugin also warns when a profile is keyed by a node type with no executor registered on that worker, which is the one configuration mistake the sandbox genuinely cannot see. It warns rather than throws, because a single workflow bundle may serve several workers that each register a subset of the node types. Pass your own `logger` in the plugin options to get that warning as a structured record; without one it goes to `console.warn`, which a worker shipping JSON to a sink is not watching.
 
-Profile **keys** cannot be validated: the workflow runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled node type is therefore silent, and every node of the type you meant to configure keeps the default profile. The fallback is safe, just not what you asked for, so check the spelling against your registry when a profile appears to have no effect.
+Profile **keys** cannot be validated inside the workflow: it runs in Temporal's sandbox and has no access to your executor registry, which lives on the worker. A misspelled key is therefore silent there, and the node type you meant to configure keeps the default profile. A node that really is of the misspelled type is a different story: it gets the custom profile and then fails outright, because no executor is registered for it either. So when a profile appears to have no effect, start with that warning in your worker log.
+
+### What the profile check covers
+
+Every check lives in one place, `src/workflow/profile-validation.ts`. It rejects a map whose entry is missing or `undefined`, whose `startToCloseTimeout` is not a positive `ms` / `s` / `m` / `h` / `d` duration, or whose `retry.maximumAttempts` is not a positive integer that fits Temporal's `int32` field. That last bound matters more than it looks: `4294967296` arrives on the wire as `0`, and Temporal reads `0` as unlimited retries, so an overflowing cap becomes its own opposite.
+
+It deliberately stops short of checking that a value survives Temporal's wire format. Four cases pass this check and fail later:
+
+| Value                               | What happens instead                                                               |
+| ----------------------------------- | ---------------------------------------------------------------------------------- |
+| `'0.0000001ms'`                     | rounds to a zero `Duration`; the server treats it as unset and refuses the command |
+| a duration over 100 characters      | Temporal's parser throws while scheduling the activity                             |
+| `'3652501d'`                        | outside `google.protobuf.Duration`'s range                                         |
+| a summary between 300 and 400 bytes | nothing today; a rejected command once the server enforces its cap                 |
+
+These stay unchecked on purpose. Profiles come from a typed constant in your own source, reviewed like any other code, not from user input, so the values above are adversarial rather than plausible. Covering them would mean reproducing Temporal's duration parser and protobuf framing inside the workflow sandbox, or importing converters their own types mark `@hidden` and `@deprecated`. If you generate profiles from configuration rather than writing them by hand, validate that configuration at its own boundary.
 
 ## Client
 
@@ -169,7 +184,9 @@ Per-node-type overrides go through `createRunWorkflow` (see `workflows.ts` above
 
 Each node activity is scheduled with the node's authored label as its Temporal Summary, so Event History lists the names from your diagram instead of a column of identical `executeNode` rows. A node without a label simply gets no summary, where Temporal falls back to showing the activity type.
 
-The label is normalised on the way in: runs of whitespace collapse to single spaces, because Temporal renders the Summary as single-line markdown. It is then clamped to 380 UTF-8 bytes, since the Summary is copied into every `ActivityTaskScheduled` event and the server's `limit.userMetadataSummarySize` caps the serialized payload at 400. The clamp counts bytes and cuts on code-point boundaries, so a label in a non-Latin script gets a shorter summary than an ASCII one of the same length, and an emoji is never cut in half.
+The label is normalised on the way in: runs of whitespace collapse to single spaces, because Temporal renders the Summary as single-line markdown. It is then clamped to 300 UTF-8 bytes, since the Summary is copied into every `ActivityTaskScheduled` event and an unbounded one grows Event History for the whole life of the run. The clamp counts bytes and cuts on code-point boundaries, so a label in a non-Latin script gets a shorter summary than an ASCII one of the same length, and an emoji is never cut in half.
+
+That budget also sits well under the server's 400-byte `limit.userMetadataSummarySize`, which caps the serialized payload rather than the string and is unenforced today. Its exact arithmetic is not something this package can promise: a custom payload converter or codec changes the payload size, and an encrypting codec grows it, so scale your own limits if you install one.
 
 Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`, not to this package. The reference backend lifts it out of the editor's `data.properties` alongside `errorPolicy` and `role`; see `mapNode` in `apps/backend/src/domain/mapper/from-integration-data.ts` for the shape. A consumer with their own backend that skips this step will see the identical `executeNode` rows, with nothing in this package able to tell the difference.
 

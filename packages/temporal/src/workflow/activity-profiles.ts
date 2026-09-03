@@ -1,6 +1,6 @@
 // Ours, so @temporalio/* stays out of the published types. Looser than the server
-// accepts: `${number}` also admits '0s', '-5m' and '1e3s'. `isDurationString` narrows it.
-type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
+// accepts: `${number}` also admits '0s', '-5m' and '1e3s'. ./profile-validation narrows it.
+export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 
 // Timeout and retry shape for a proxied activity.
 //
@@ -13,14 +13,6 @@ export type ActivityProfile = {
   startToCloseTimeout: DurationString;
   retry: { maximumAttempts: number };
 };
-
-// Temporal parses decimals ('1.5h' is 90 minutes). Zero it treats as unset and rejects
-// the command, wedging the workflow task in a retry loop rather than failing the run.
-const DURATION_PATTERN = /^\d+(?:\.\d+)?(?:ms|s|m|h|d)$/;
-
-export function isDurationString(value: unknown): value is DurationString {
-  return typeof value === 'string' && DURATION_PATTERN.test(value) && Number.parseFloat(value) > 0;
-}
 
 // Only for the two frozen singletons below. Annotating them `ActivityProfile` would
 // erase the readonly modifiers, so a consumer tuning a default in place would compile

@@ -16,7 +16,8 @@ import {
   type WorkflowExecutionInput,
   runGraph,
 } from './core-contract';
-import { freezeNodeActivityProfiles, resolveNodeActivityOptions } from './node-activity-options';
+import { resolveNodeActivityOptions } from './node-activity-options';
+import { freezeNodeActivityProfiles } from './profile-validation';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
