@@ -73,8 +73,8 @@ export function usePaletteDrop() {
 
       const { type } = draggedItem;
 
-      dropNode(position, type);
       setDraggedItem(null);
+      dropNode(position, type);
     },
     [reactFlowInstance, dropNode],
   );

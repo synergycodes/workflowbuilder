@@ -31,7 +31,7 @@ vi.mock('./hooks/use-on-connect', () => ({
   useConnect: () => ({ onConnect: vi.fn(), onConnectStart: vi.fn(), onConnectEnd: vi.fn() }),
 }));
 vi.mock('./edges/temporary-edge/temporary-edge', () => ({ TemporaryEdge: () => null }));
-vi.mock('../../hooks/use-palette-drop', () => ({ usePaletteDrop: () => ({ onDropFromPalette: vi.fn() }) }));
+vi.mock('../palette/hooks/use-palette-drop', () => ({ usePaletteDrop: () => ({ onDropFromPalette: vi.fn() }) }));
 vi.mock('../modals/delete-confirmation/use-delete-confirmation', () => ({
   useDeleteConfirmation: () => ({ openDeleteConfirmationModal: vi.fn() }),
 }));

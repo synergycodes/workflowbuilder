@@ -8,6 +8,12 @@ function fallbackGenerateId(): `${string}-${string}-${string}-${string}-${string
   return `${hexArray.slice(0, 4).join('')}-${hexArray.slice(4, 6).join('')}-${hexArray.slice(6, 8).join('')}-${hexArray.slice(8, 10).join('')}-${hexArray.slice(10, 16).join('')}`;
 }
 
+// `crypto.randomUUID()` exists only in secure contexts (HTTPS or localhost).
+// Opening the dev server from another device over the LAN IP, e.g.
+// http://192.168.1.10:4200 on a phone, is an insecure context: `crypto` is
+// there but `randomUUID` is undefined and the call throws. The fallback builds
+// the same v4 UUID from `crypto.getRandomValues()`, which insecure contexts
+// still provide.
 export function generateId() {
   try {
     return crypto?.randomUUID();
