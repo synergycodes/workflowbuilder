@@ -1,10 +1,6 @@
 import { fileURLToPath } from 'node:url';
 
-// Every workspace's lint-staged.config.mjs re-exports this one, and lint-staged runs
-// each of them with that workspace as the working directory. Prettier looks for
-// .prettierignore relative to the working directory, so from packages/foo it finds
-// nothing and formats files the root .prettierignore says to leave alone. Resolving the
-// path off this module's own location pins it to the root file from every workspace.
+// Workspace configs run from their workspace directory, so pin Prettier to the root ignore file.
 const prettierIgnore = fileURLToPath(new URL('.prettierignore', import.meta.url));
 
 /**
