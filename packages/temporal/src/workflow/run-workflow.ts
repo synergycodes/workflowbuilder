@@ -8,7 +8,7 @@
 import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
 
 import type { Activities } from './activities-interface';
-import { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
+import { DEFAULT_DATABASE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import {
   type ActivityRunnerPort,
   type BaseNode,
@@ -16,19 +16,46 @@ import {
   type WorkflowExecutionInput,
   runGraph,
 } from './core-contract';
+import { resolveFromValidatedProfiles } from './node-activity-options';
+import { freezeNodeActivityProfiles } from './profile-validation';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
 
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
   DEFAULT_DATABASE_ACTIVITY_PROFILE,
 );
 
-const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(DEFAULT_NODE_ACTIVITY_PROFILE);
-
-const runner: ActivityRunnerPort<BaseNode> = {
-  executeNode: (node, context) => nodeActivities.executeNode(node, context),
+export type RunWorkflowOptions = {
+  nodeActivityProfiles?: NodeActivityProfiles;
 };
 
-export async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
+// Profiles arrive here rather than through plugin options because the TypeScript SDK
+// compiles the workflow bundle from the consumer's own workflows module, which the
+// worker-side plugin cannot reach into. See the README for the snippet.
+export function createRunWorkflow(options: RunWorkflowOptions = {}) {
+  const profiles = freezeNodeActivityProfiles(options.nodeActivityProfiles ?? {});
+
+  // Proxied per call, not once per module: the options depend on the node.
+  const runner: ActivityRunnerPort<BaseNode> = {
+    executeNode: (node, context) => {
+      const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(
+        resolveFromValidatedProfiles(node, profiles),
+      );
+      return nodeActivities.executeNode(node, context);
+    },
+  };
+
+  return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
+    return runGraphWith(runner, input);
+  };
+}
+
+// The zero-config workflow, named so Temporal registers it as `runWorkflow`.
+export const runWorkflow = createRunWorkflow();
+
+async function runGraphWith(
+  runner: ActivityRunnerPort<BaseNode>,
+  input: WorkflowExecutionInput<BaseNode>,
+): Promise<void> {
   const events = createSequencedEventEmitter(databaseActivities);
   let outcome: RunGraphOutcome;
 

@@ -20,6 +20,7 @@ export { NodeExecutionError, resolveExecutor } from '../../execution-core/src/in
 
 export type { ExecutionContext } from '../../execution-core/src/execution-context';
 export type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';
+export type { LogBindings, LoggerPort } from '../../execution-core/src/ports/logger.port';
 
 export type {
   BaseNode,

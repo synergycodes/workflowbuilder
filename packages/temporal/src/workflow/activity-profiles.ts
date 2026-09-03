@@ -1,7 +1,6 @@
-// A duration Temporal accepts, e.g. '30s', '10m', '1h'. A narrow subset of the
-// format its own `Duration` allows, which is enough for a timeout and keeps
-// @temporalio/* out of the published type surface.
-type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
+// Ours, so @temporalio/* stays out of the published types. Looser than the server
+// accepts: `${number}` also admits '0s', '-5m' and '1e3s'. ./profile-validation narrows it.
+export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 
 // Timeout and retry shape for a proxied activity.
 //
@@ -15,15 +14,27 @@ export type ActivityProfile = {
   retry: { maximumAttempts: number };
 };
 
-// Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
-// cost on partial failures.
-export const DEFAULT_NODE_ACTIVITY_PROFILE: ActivityProfile = {
-  startToCloseTimeout: '10m',
-  retry: { maximumAttempts: 2 },
+// Only for the two frozen singletons below. Annotating them `ActivityProfile` would
+// erase the readonly modifiers, so a consumer tuning a default in place would compile
+// and then throw inside the sandbox on first activation.
+type ReadonlyActivityProfile = {
+  readonly startToCloseTimeout: DurationString;
+  readonly retry: { readonly maximumAttempts: number };
 };
 
+// Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
+// cost on partial failures.
+export const DEFAULT_NODE_ACTIVITY_PROFILE: ReadonlyActivityProfile = Object.freeze({
+  startToCloseTimeout: '10m',
+  retry: Object.freeze({ maximumAttempts: 2 }),
+});
+
 // DB activities: fast, idempotent INSERT/UPDATE — short timeout, aggressive retries.
-export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ActivityProfile = {
+export const DEFAULT_DATABASE_ACTIVITY_PROFILE: ReadonlyActivityProfile = Object.freeze({
   startToCloseTimeout: '30s',
-  retry: { maximumAttempts: 5 },
-};
+  retry: Object.freeze({ maximumAttempts: 5 }),
+});
+
+// Keyed by `node.type`; no entry means DEFAULT_NODE_ACTIVITY_PROFILE. Whole profiles,
+// not partials: omitting `retry` would inherit Temporal's unlimited-retry default.
+export type NodeActivityProfiles = Readonly<Record<string, ActivityProfile>>;

@@ -33,7 +33,10 @@ describe('public API surface', () => {
     expect(Object.keys(workflowEntry).sort()).toEqual([
       'DEFAULT_DATABASE_ACTIVITY_PROFILE',
       'DEFAULT_NODE_ACTIVITY_PROFILE',
+      'assertNodeActivityProfiles',
+      'createRunWorkflow',
       'createSequencedEventEmitter',
+      'resolveNodeActivityOptions',
       'runWorkflow',
     ]);
   });
@@ -47,9 +50,8 @@ describe('public API surface', () => {
 });
 
 describe('default activity profiles', () => {
-  // These are the values the worker has always used. Per-node-type profiles will
-  // layer on top; a node type without metadata has to keep resolving to exactly
-  // this, never to Temporal's own default of unlimited retries with backoff.
+  // Pinned so an upgrade cannot silently change how long a consumer's activities may
+  // run or how often they retry.
   it('keeps node activities at 10 minutes and 2 attempts', () => {
     expect(rootEntry.DEFAULT_NODE_ACTIVITY_PROFILE).toEqual({
       startToCloseTimeout: '10m',

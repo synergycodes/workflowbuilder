@@ -34,7 +34,7 @@ The split exists because Temporal workflows run in a V8 sandbox that lacks `Tran
 
 ## Generic over the consumer's node union
 
-Everything that touches nodes is parameterized over `TNode extends BaseNode`. `BaseNode` is `{ id; type; config: unknown }` — the only thing the runner needs to know. Each consumer defines its own concrete discriminated union (e.g. `type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode`) and binds it at the registry and port-instantiation sites.
+Everything that touches nodes is parameterized over `TNode extends BaseNode`. `BaseNode` is `{ id; type; config: unknown }` plus three optional runner-level fields — `label`, `errorPolicy` and `role` — which the layer that builds the `WorkflowExecutionInput` lifts out of the authored properties. That is the only thing the runner needs to know. Each consumer defines its own concrete discriminated union (e.g. `type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode`) and binds it at the registry and port-instantiation sites; intersect the variants with `BaseNode` so those three stay declared.
 
 ```ts
 import type { BaseNode } from '@workflow-builder/types/workflow-execution/execution-model';
@@ -105,9 +105,11 @@ Concrete executors and node configs live in the worker package that consumes the
 
 The registry's mapped type — `{ [K in TNode['type']]: NodeExecutor<Extract<TNode, { type: K }>> }` — gives you full narrowing: each entry's executor sees its variant's config concretely, with no casts.
 
+The registry is a plain object, and `node.type` is an arbitrary string that reaches the runner from whatever authored the diagram. So every lookup keyed by it goes through `Object.hasOwn` rather than a bare index, or a node typed `constructor` resolves `Object.prototype.constructor` and gets it called as its executor. `resolveExecutor` does this for you; anything else you key by `node.type` has to do the same. Building the registry with `Object.create(null)`, or handing the runner a `Map`, removes the hazard at the source rather than at each lookup.
+
 ## Per-node error policy
 
-Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
+Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`, as are `label` and `role`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
 
 | Policy         | When the node throws                                                                                                                                                                                                                                                                                    | Use case                                                |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |

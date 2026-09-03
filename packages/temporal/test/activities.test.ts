@@ -1,9 +1,21 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import { type ExecutionContext, type ExecutionStore, WorkflowBuilderPlugin, createActivities } from '../src/index';
-import type { BaseNode } from '../src/index';
+import type { BaseNode, LogBindings, LoggerPort, WorkflowBuilderPluginOptions } from '../src/index';
 
 type TestNode = (BaseNode & { type: 'test/echo' }) | (BaseNode & { type: 'test/upper' });
+
+function makeLogger(): LoggerPort & { warnings: { message: string; bindings?: LogBindings }[] } {
+  const warnings: { message: string; bindings?: LogBindings }[] = [];
+  const logger: LoggerPort = {
+    debug: () => {},
+    info: () => {},
+    warn: (message, bindings) => warnings.push({ message, bindings }),
+    error: () => {},
+    child: () => logger,
+  };
+  return { ...logger, warnings };
+}
 
 function makeStore(): ExecutionStore & {
   events: unknown[][];
@@ -87,11 +99,11 @@ describe('createActivities', () => {
   });
 });
 
-function makePlugin(taskQueue?: string) {
+function makePlugin(overrides: Partial<WorkflowBuilderPluginOptions<TestNode>> = {}) {
   return new WorkflowBuilderPlugin<TestNode>({
     store: makeStore(),
     executors: { 'test/echo': () => ({ output: null }), 'test/upper': () => ({ output: null }) },
-    taskQueue,
+    ...overrides,
   });
 }
 
@@ -131,6 +143,60 @@ describe('WorkflowBuilderPlugin', () => {
 
   it('defaults the task queue to the shared constant and takes an override', () => {
     expect(makePlugin().taskQueue).toBe('workflow-execution');
-    expect(makePlugin('other-queue').taskQueue).toBe('other-queue');
+    expect(makePlugin({ taskQueue: 'other-queue' }).taskQueue).toBe('other-queue');
+  });
+});
+
+function withProfiles(nodeActivityProfiles: unknown, logger?: LoggerPort) {
+  return () => makePlugin({ nodeActivityProfiles: nodeActivityProfiles as never, logger });
+}
+
+describe('WorkflowBuilderPlugin node activity profiles', () => {
+  it('fails Worker.create rather than the first workflow activation', () => {
+    // The same check inside the workflow runs on first activation, too late for a deploy.
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '30 minutes', retry: { maximumAttempts: 2 } } })).toThrow(
+      /nodeActivityProfiles\["test\/echo"\]\.startToCloseTimeout/,
+    );
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '0s', retry: { maximumAttempts: 2 } } })).toThrow(
+      TypeError,
+    );
+  });
+
+  it('accepts a well-formed map, and stays optional', () => {
+    expect(withProfiles({ 'test/echo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })).not.toThrow();
+    expect(() => makePlugin()).not.toThrow();
+  });
+
+  it('warns about a profile with no executor, which is the one thing the sandbox cannot see', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    withProfiles({ 'test/typo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })();
+
+    expect(warn).toHaveBeenCalledOnce();
+    expect(warn.mock.calls[0]?.[0]).toMatch(/"test\/typo"/);
+    warn.mockRestore();
+  });
+
+  it('stays quiet when every profile matches a registered executor', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    withProfiles({ 'test/echo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } })();
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
+  it('routes the warning through a supplied logger, leaving console alone', () => {
+    // A worker with a structured sink is not watching the console stream.
+    const consoleWarn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const logger = makeLogger();
+
+    withProfiles({ 'test/typo': { startToCloseTimeout: '90s', retry: { maximumAttempts: 3 } } }, logger)();
+
+    expect(consoleWarn).not.toHaveBeenCalled();
+    expect(logger.warnings).toHaveLength(1);
+    expect(logger.warnings[0]?.message).toMatch(/"test\/typo"/);
+    expect(logger.warnings[0]?.bindings).toMatchObject({ nodeTypes: ['test/typo'] });
+    consoleWarn.mockRestore();
   });
 });

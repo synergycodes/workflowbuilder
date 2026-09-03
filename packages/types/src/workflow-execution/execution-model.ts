@@ -28,6 +28,9 @@ export type BaseNode = {
   id: string;
   type: string;
   config: unknown;
+  // Lifted out of `config` by whatever builds the input, so an engine can read it
+  // without knowing any product's vocabulary.
+  label?: string;
   errorPolicy?: NodeErrorPolicy;
   role?: NodeRole;
 };

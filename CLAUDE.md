@@ -36,10 +36,12 @@ Long-running processes already emit stable log lines that scripts and agents can
 | Process              | Ready signal                                                                     |
 | -------------------- | -------------------------------------------------------------------------------- |
 | `pnpm dev:demo`      | `VITE vX.Y.Z  ready in NNN ms` and `Local:   http://localhost:4200/`             |
-| `pnpm dev:backend`   | `Backend running on http://127.0.0.1:3001`                                       |
-| `pnpm dev:worker`    | `Execution worker started on task queue: workflow-execution`                     |
+| `pnpm dev:backend`   | `backend listening` (structured: `{"component":"backend","url":"..."}`)          |
+| `pnpm dev:worker`    | `execution worker started` (structured: `{"taskQueue":"workflow-execution"}`)    |
 | `pnpm dev:ai-studio` | All three above interleaved with `[backend]`, `[worker]`, `[ai-studio]` prefixes |
 | `pnpm infra:wait`    | `Temporal ready`                                                                 |
+
+Grep for the message text only, not for a rendered sentence: the backend and worker log through a structured logger, so the fields arrive as JSON after the message and their order is not guaranteed. Both lines are lowercase.
 
 `pnpm preflight --json` returns `{ ok: boolean, checks: [{ name: string, status: 'pass' | 'warn' | 'fail', detail: string }] }` for programmatic inspection. Top-level `ok` is `true` when no check has `status: 'fail'`.
 
@@ -113,6 +115,17 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 
+### Code comments
+
+Two things earn a comment. Nothing else does.
+
+1. **What the code cannot show.** External behaviour (a zero timeout is treated as unset by the Temporal server), a constraint that lives elsewhere (this runs in the V8 sandbox, so no Node built-ins), a hazard with no visible trace (a node type named `constructor` resolves off `Object.prototype`).
+2. **A decision other developers need, so it does not get lost.** Why the plugin accepts a value it never reads. Why this warns instead of throwing. Why a field is lifted out of `config`.
+
+Even then, keep it to the fewest words that carry the fact. One line is the default, three the hard ceiling. If a comment would run longer, the explanation belongs in the workspace README or a `*.decision-log.md` next to the code, with the comment reduced to a pointer.
+
+Do not comment what the next line does, that a change is correct, where a value came from, or how to use an API the README already shows. A test's name replaces its comment: write the non-obvious context only, never a restatement of the assertion. When a file header and an inline comment would say the same thing, keep the inline one.
+
 ### Referencing future work in code
 
 This repo is public, but ticket IDs (`WB-123`) point to a private ClickUp — for external readers they are dead links. Never put ticket IDs in code comments, READMEs, or anything else that ships. Instead:
@@ -156,6 +169,8 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 Three workspaces are set up to publish to npm: `@workflowbuilder/sdk`, `@workflowbuilder/ui` (the component library, built on Base UI) and `@workflowbuilder/temporal` (the Temporal Plugin). **`@workflowbuilder/temporal` is not on npm yet** - it is in development, consumed only inside this repo, and its first publish needs an explicit go-ahead. It is held back by `"private": true` in its `package.json` (publish skips it silently, exit 0) plus the absence of an npm trusted publisher. Do not remove either, and do not push its release tag, until then; see the box at the top of [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Each publishes via its own scoped release tag (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`) and its own workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`) - see `packages/sdk/RELEASE.md`.
 
 **Changesets for bundled execution packages.** `@workflow-builder/execution-core` and `@workflow-builder/types` are private and source-only, and `@workflowbuilder/temporal` bundles both into its `dist` (they reach it through `packages/temporal/src/core-contract.ts`, the one file allowed to import them by relative path). A change in either that alters execution behaviour or the published types therefore needs a changeset for `@workflowbuilder/temporal` - that release is how it reaches consumers. A pure refactor needs none. `pr-check.yml` warns when those paths change without one.
+
+**Until `@workflowbuilder/temporal` reaches npm, do not add changesets for it.** The rule above applies from the first release onward. Today the package is `private: true` at `0.0.0`, so an entry would describe a change against a version nobody ever installed, and wording like "now scheduled with" or "no migration required" reads as nonsense in a first release. One changeset is already queued to seed those release notes - expand that single entry at publish time to describe the package as it ships, instead of accumulating a development diary. Note that `private: true` does not make Changesets skip the package: it blocks publishing, not versioning, and `pnpm changeset status` lists the package either way. So this is a convention, not something the tooling enforces for you. `pr-check.yml` only warns once the package is publishable, so the guard turns itself back on when the first publish drops `private: true`.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
