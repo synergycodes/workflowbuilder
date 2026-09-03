@@ -1,12 +1,4 @@
-// The graph the replay tests run and re-run. Deliberately shaped, not arbitrary:
-// `start` fans out to two nodes that share a wave and then fan back in, so the run
-// exercises the `Promise.all` the replay audit calls out as the one place the runner
-// awaits more than one thing at a time. A straight line would replay green while
-// leaving that path untested.
-//
-// Everything here is deterministic — fixed ids, fixed outputs, no clock, no random —
-// because a recorded history is only worth committing if the same code produces the
-// same history next time.
+// The fan-out/fan-in shape exercises parallel-wave replay; keep the fixture deterministic.
 import type { BaseNode, ExecutionStore, NodeExecutorRegistry, WorkflowDefinition } from '../../src/index';
 
 export type ReplayTestNode = BaseNode & { type: 'test/step' };
@@ -33,9 +25,6 @@ export const REPLAY_TEST_GRAPH: WorkflowDefinition<ReplayTestNode> = {
   ],
 };
 
-// One executor for the single node type. Reads its predecessors' outputs so the run
-// proves data actually flows through the wave, and returns a value derived only from
-// its input.
 export const replayTestExecutors: NodeExecutorRegistry<ReplayTestNode> = {
   'test/step': (node, context) => {
     const upstream = Object.keys(context.nodeOutputs).sort();
@@ -48,8 +37,6 @@ export type RecordingStore = ExecutionStore & {
   statuses: { status: string; errorMessage?: string }[];
 };
 
-// Records what the activities were asked to persist, so a test can assert on the run
-// itself and not only on the shape of its history.
 export function createRecordingStore(): RecordingStore {
   const events: RecordingStore['events'] = [];
   const statuses: RecordingStore['statuses'] = [];
