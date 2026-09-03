@@ -188,8 +188,8 @@ describe('mapToExecutionModel', () => {
     // Only the flagged node carries a role; the runner reads it to pick the
     // entrypoint instead of inferring one from in-degree.
     expect(result.nodes[0]!.role).toBe('start');
-    expect(result.nodes[1]!.role).toBeUndefined();
-    expect(result.nodes[2]!.role).toBeUndefined();
+    expect(result.nodes[1]).not.toHaveProperty('role');
+    expect(result.nodes[2]).not.toHaveProperty('role');
   });
 
   it('gives a legacy start-node kind no role — the flag is the only marker', () => {
@@ -203,7 +203,7 @@ describe('mapToExecutionModel', () => {
 
     const result = mapToExecutionModel('wf-1', snapshot);
 
-    expect(result.nodes[0]!.role).toBeUndefined();
+    expect(result.nodes[0]).not.toHaveProperty('role');
   });
 
   it('keeps the entrypoint flag out of `config`', () => {
@@ -264,6 +264,24 @@ describe('mapToExecutionModel', () => {
     const result = mapToExecutionModel('wf-1', snapshot);
 
     expect(result.nodes[0]).not.toHaveProperty('label');
+  });
+
+  it('drops an errorPolicy the runner does not know instead of leaving it in `config`', () => {
+    // Destructured out of `properties` before it is validated, so an unrecognised
+    // value vanishes rather than reaching an executor as ordinary config.
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'n1', data: { type: 'my-product/action', properties: { errorPolicy: 'retryForever', foo: 1 } } },
+        { id: 'n2', data: { type: 'my-product/action', properties: { foo: 1 } } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]).not.toHaveProperty('errorPolicy');
+    expect(result.nodes[1]).not.toHaveProperty('errorPolicy');
+    expect(result.nodes[0]!.config).toEqual({ foo: 1 });
   });
 
   it('passes unknown node types through unchanged — backend does not know any vocabulary', () => {

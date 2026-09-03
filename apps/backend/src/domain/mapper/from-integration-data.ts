@@ -1,3 +1,5 @@
+import { isDefined, pickBy } from 'remeda';
+
 import {
   type BaseNode,
   NODE_ERROR_POLICIES,
@@ -38,9 +40,7 @@ function mapNode(node: FrontendNode): BaseNode {
     id: node.id,
     type: node.data.type,
     config,
-    ...(label === undefined ? {} : { label }),
-    ...(errorPolicy === undefined ? {} : { errorPolicy }),
-    ...(role === undefined ? {} : { role }),
+    ...pickBy({ label, errorPolicy, role }, isDefined),
   };
 }
 
