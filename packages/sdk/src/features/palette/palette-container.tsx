@@ -12,6 +12,7 @@ import { PaletteHeader } from './components/header/palette-header';
 import { PaletteItems } from './components/items/palette-items';
 import { usePaletteDragAndDrop } from './hooks/use-palette-drag-and-drop';
 import { NodePreviewContainer } from './node-preview-container';
+import { usePaletteStore } from './stores/use-palette-store';
 
 /**
  * Left-side palette listing draggable node types and the template selector.
@@ -29,7 +30,9 @@ export function PaletteContainer() {
   const paletteItems = useStore((state) => state.data);
   const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
 
-  const { draggedItem, zoom, ref, onMouseDown, onDragStart } = usePaletteDragAndDrop(!isReadOnlyMode);
+  const draggedItem = usePaletteStore((state) => state.draggedItem);
+
+  const { zoom, ref, onPointerDown } = usePaletteDragAndDrop(!isReadOnlyMode);
 
   useEffect(() => {
     fetchData();
@@ -42,12 +45,7 @@ export function PaletteContainer() {
       header={<PaletteHeader onClick={() => toggleSidebar()} isSidebarExpanded={isSidebarExpanded} />}
       footer={<PaletteFooter onTemplateClick={openTemplateSelectorModal} />}
     >
-      <PaletteItems
-        items={paletteItems}
-        onMouseDown={onMouseDown}
-        onDragStart={onDragStart}
-        isDisabled={isReadOnlyMode}
-      />
+      <PaletteItems items={paletteItems} onPointerDown={onPointerDown} isDisabled={isReadOnlyMode} />
       {draggedItem && (
         <DraggedItem ref={ref} zoom={zoom}>
           <NodePreviewContainer type={draggedItem.type} />
