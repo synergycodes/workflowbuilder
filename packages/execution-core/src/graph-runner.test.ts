@@ -462,6 +462,29 @@ describe('runGraph — topological scheduling', () => {
     expect(nodeFailed?.payload).toEqual({ error: { message: 'boom' } });
   });
 
+  it('classified failure relayed by an engine — code and attempt land in node_failed payload', async () => {
+    // Past the boundary the class is gone; code and attempt survive as plain data.
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode(node) {
+        if (node.id === 'B') {
+          const failure = Object.assign(new Error('LLM call timed out'), {
+            details: [{ wbNodeError: 1, classification: 'transient', code: 'llm_timeout', attempt: 2 }],
+          });
+          throw new Error('Activity task failed', { cause: failure });
+        }
+        return { output: `out-${node.id}` };
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
+    expect(nodeFailed?.payload).toEqual({
+      error: { message: 'LLM call timed out', code: 'llm_timeout', attempt: 2 },
+    });
+  });
+
   it('wrapped error (Error.cause chain) — surfaces the root cause, not the wrapper', async () => {
     // Pin: the Temporal adapter (and any other middleware that wraps activity
     // throws) presents the runner with an outer Error whose `.message` is a

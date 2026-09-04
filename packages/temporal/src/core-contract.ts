@@ -16,7 +16,15 @@ import type { BaseNode } from '../../types/src/workflow-execution/execution-mode
 //
 // Everything the package needs from the core passes through here, which also keeps the
 // published surface deliberate rather than accidental.
-export { NodeExecutionError, resolveExecutor } from '../../execution-core/src/index';
+export {
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+  classifyNodeError,
+  resolveExecutor,
+} from '../../execution-core/src/index';
+
+export type { NodeErrorEnvelope } from '../../execution-core/src/index';
 
 export type { ExecutionContext } from '../../execution-core/src/execution-context';
 export type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';

@@ -187,6 +187,8 @@ The budget applies to the **raw string**, which is not the same thing the server
 
 Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`, not to this package. If your own layer never sets it you get the identical `executeNode` rows back, and nothing here can tell the difference.
 
+The attempt count is an upper bound rather than a promise. An executor that throws `PermanentNodeExecutionError` — for a rejected API key, say — is not retried at all: the activity adapter marks the failure non-retryable, which Temporal honours regardless of the profile. `TransientNodeExecutionError` says the opposite, that another attempt is worth making, but it does not raise the limit; the profile still caps it. Anything thrown unclassified retries exactly as it always has. Both classes are re-exported from this package, and a classified failure also records its error code and the attempt it died on in the `node_failed` event — see [`execution-core`](../execution-core/README.md#transient-vs-permanent-failures) for when to throw which.
+
 ## Versioning and replay
 
 This package carries two contracts, not one. The API is the ordinary semver surface. The second is replay compatibility: a workflow can sit in Event History for days, and a new version of this package has to be able to replay a history that an older version recorded.

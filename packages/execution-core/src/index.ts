@@ -3,7 +3,13 @@ export type { BaseNode, NodeErrorPolicy } from '@workflow-builder/types/workflow
 export { runGraph } from './graph-runner';
 export type { RunGraphOutcome } from './graph-runner';
 
-export { NodeExecutionError } from './errors';
+export {
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+  classifyNodeError,
+} from './errors';
+export type { NodeErrorClassification, NodeErrorEnvelope } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 

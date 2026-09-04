@@ -1,6 +1,14 @@
 // Worker-side implementations of the three activities the workflow proxies. Runs
 // outside the sandbox, so Node I/O is fine here.
-import { type BaseNode, type NodeExecutorRegistry, resolveExecutor } from './core-contract';
+import { ApplicationFailure, activityInfo } from '@temporalio/activity';
+
+import {
+  type BaseNode,
+  type NodeErrorEnvelope,
+  type NodeExecutorRegistry,
+  classifyNodeError,
+  resolveExecutor,
+} from './core-contract';
 import type { ExecutionStore } from './store';
 import type { Activities } from './workflow/activities-interface';
 
@@ -11,6 +19,38 @@ export type CreateActivitiesOptions<TNode extends BaseNode> = {
   store: ExecutionStore;
 };
 
+// 1 outside an activity context — createActivities is also called directly from tests.
+function currentAttempt(): number {
+  try {
+    return activityInfo().attempt;
+  } catch {
+    return 1;
+  }
+}
+
+// Unclassified: rethrown as-is, so the SDK wraps it exactly as before. Classified:
+// an ApplicationFailure — `nonRetryable` is what the server honours, and the code
+// and attempt ride in `details` because the SDK's own conversion keeps only the
+// message and type. The original stays on `cause` for its stack in Event History.
+export function mapExecutorError(error: unknown, attempt: number): unknown {
+  const classification = classifyNodeError(error);
+  if (classification === undefined) {
+    return error;
+  }
+
+  // classifyNodeError only answers for an Error carrying a string `code`.
+  const classified = error as Error & { code: string };
+  const envelope: NodeErrorEnvelope = { wbNodeError: 1, classification, code: classified.code, attempt };
+
+  return ApplicationFailure.create({
+    message: classified.message,
+    type: classified.name,
+    nonRetryable: classification === 'permanent',
+    details: [envelope],
+    cause: classified,
+  });
+}
+
 // Exported on its own, not just via the plugin, so a consumer with a bespoke worker
 // setup (or a test) can register the same three activities by hand.
 export function createActivities<TNode extends BaseNode>(options: CreateActivitiesOptions<TNode>): Activities<TNode> {
@@ -19,7 +59,12 @@ export function createActivities<TNode extends BaseNode>(options: CreateActiviti
   return {
     async executeNode(node, context) {
       const executor = resolveExecutor(executors, node);
-      return executor(node, context);
+      // Awaited, not returned: a returned promise would reject outside this try.
+      try {
+        return await executor(node, context);
+      } catch (error) {
+        throw mapExecutorError(error, currentAttempt());
+      }
     },
 
     async emitEvent(executionId, sequence, type, payload, nodeId) {

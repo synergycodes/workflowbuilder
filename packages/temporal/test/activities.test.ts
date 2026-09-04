@@ -1,7 +1,17 @@
+import { ApplicationFailure } from '@temporalio/activity';
 import { describe, expect, it, vi } from 'vitest';
 
-import { type ExecutionContext, type ExecutionStore, WorkflowBuilderPlugin, createActivities } from '../src/index';
+import { mapExecutorError } from '../src/activities';
 import type { BaseNode, LogBindings, LoggerPort, WorkflowBuilderPluginOptions } from '../src/index';
+import {
+  type ExecutionContext,
+  type ExecutionStore,
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+  WorkflowBuilderPlugin,
+  createActivities,
+} from '../src/index';
 
 type TestNode = (BaseNode & { type: 'test/echo' }) | (BaseNode & { type: 'test/upper' });
 
@@ -96,6 +106,101 @@ describe('createActivities', () => {
     await activities.updateStatus('exec-1', 'failed', 'boom');
 
     expect(store.statuses).toEqual([['exec-1', 'failed', 'boom']]);
+  });
+});
+
+function activitiesThrowing(error: unknown) {
+  return createActivities<TestNode>({
+    store: makeStore(),
+    executors: {
+      'test/echo': () => {
+        throw error;
+      },
+      'test/upper': () => ({ output: null }),
+    },
+  });
+}
+
+const failing = { id: 'a', type: 'test/echo', config: {} } as const;
+
+describe('executeNode — error classification', () => {
+  it.each([
+    ['a plain Error', new Error('boom')],
+    ['an unclassified NodeExecutionError', new NodeExecutionError('no_branch_matched', 'No branch')],
+  ])('rethrows %s as the very same object', async (_label, thrown) => {
+    // Unclassified throws must reach the SDK's own conversion untouched.
+    await expect(activitiesThrowing(thrown).executeNode(failing, context)).rejects.toBe(thrown);
+  });
+
+  it('maps a permanent error to a non-retryable failure carrying code and attempt', async () => {
+    const thrown = new PermanentNodeExecutionError('bad_api_key', 'Provider rejected the API key');
+
+    const failure = await activitiesThrowing(thrown)
+      .executeNode(failing, context)
+      .catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(ApplicationFailure);
+    expect(failure).toMatchObject({
+      message: 'Provider rejected the API key',
+      type: 'PermanentNodeExecutionError',
+      nonRetryable: true,
+      // No activity context in a direct call, so the attempt falls back to 1.
+      details: [{ wbNodeError: 1, classification: 'permanent', code: 'bad_api_key', attempt: 1 }],
+      cause: thrown,
+    });
+  });
+
+  it('maps a transient error to a retryable failure', async () => {
+    const thrown = new TransientNodeExecutionError('rate_limited', 'Slow down');
+
+    const failure = await activitiesThrowing(thrown)
+      .executeNode(failing, context)
+      .catch((error: unknown) => error);
+
+    expect(failure).toBeInstanceOf(ApplicationFailure);
+    expect(failure).toMatchObject({
+      type: 'TransientNodeExecutionError',
+      nonRetryable: false,
+      details: [{ classification: 'transient', code: 'rate_limited' }],
+    });
+  });
+
+  it('catches a rejected promise, not only a synchronous throw', async () => {
+    const activities = createActivities<TestNode>({
+      store: makeStore(),
+      executors: {
+        'test/echo': () => Promise.reject(new PermanentNodeExecutionError('bad_api_key', 'Rejected')),
+        'test/upper': () => ({ output: null }),
+      },
+    });
+
+    await expect(activities.executeNode(failing, context)).rejects.toBeInstanceOf(ApplicationFailure);
+  });
+});
+
+describe('mapExecutorError', () => {
+  it('reports the attempt it was given', () => {
+    const failure = mapExecutorError(new TransientNodeExecutionError('llm_timeout', 'Timed out'), 2);
+
+    expect(failure).toMatchObject({ details: [{ attempt: 2, classification: 'transient' }] });
+  });
+
+  it('classifies an error from another copy of the class by its shape', () => {
+    // This module sees a bundled copy of the core's classes; `instanceof` cannot decide.
+    const foreign = Object.assign(new Error('Provider rejected the API key'), {
+      name: 'PermanentNodeExecutionError',
+      code: 'bad_api_key',
+      classification: 'permanent',
+    });
+
+    expect(mapExecutorError(foreign, 1)).toMatchObject({
+      nonRetryable: true,
+      details: [{ code: 'bad_api_key', classification: 'permanent' }],
+    });
+  });
+
+  it('passes a non-Error through untouched', () => {
+    expect(mapExecutorError('just a string', 1)).toBe('just a string');
   });
 });
 
