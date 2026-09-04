@@ -26,7 +26,10 @@ export default {
     'apps/icons': {
       entry: ['index.ts', 'src/generate-icons.ts'],
       project: '**/*.{ts,tsx}',
-      ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
+      // svgr is run as a binary from generate-icons.ts, never imported, so knip
+      // cannot see it. Removing it sends the icons build back to fetching svgr
+      // over the network on every run.
+      ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
     },
     'apps/tools': {
       entry: ['src/scripts/*.ts'],
