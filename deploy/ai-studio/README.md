@@ -89,11 +89,14 @@ used before the endpoint became configurable. Leave any of them empty and the
 stack still comes up: every node type runs except AI Agent nodes, which fail
 with `ai_not_configured`.
 
-**Pointing at a different Temporal.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`,
-`TEMPORAL_TLS` and `TEMPORAL_API_KEY` are passed to both the backend and the
-worker, which is all an operated cluster or Temporal Cloud needs. mTLS uses
-`TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH`; those are not in this
-compose because the PEM files have to be mounted into both containers first.
+**Pointing at a different Temporal.** Every `TEMPORAL_*` variable reaches the
+backend and the worker from one shared block in the compose file, so the two
+cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and
+`TEMPORAL_API_KEY` are all an operated cluster or Temporal Cloud needs. For a
+private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
+read-only into both containers at `/etc/workflowbuilder/tls`) and set
+`TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH` to those container paths —
+see [.env.example](.env.example) for the exact lines.
 
 ## Operations
 

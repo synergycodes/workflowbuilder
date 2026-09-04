@@ -1,0 +1,4 @@
+# Mounted read-only into the backend and worker as /etc/workflowbuilder/tls.
+# Certificates and keys dropped here must never reach git.
+*
+!.gitignore
