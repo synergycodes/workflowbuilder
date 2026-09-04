@@ -10,4 +10,5 @@ export default {
   '*.{ts,tsx,js,json,css,astro,md,mdx}': (files) =>
     `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
   '*.{ts,tsx}': [(files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`, () => `tsc --noEmit`],
+  'deploy/ai-studio/Dockerfile': () => 'node tools/check-offline-build.mjs',
 };

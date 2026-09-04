@@ -7,9 +7,10 @@ name: PR Check
 # execution pipeline (execution-core, backend, execution-worker) — whose
 # determinism tests guard Temporal replay safety and so must not be able to
 # regress silently. Plus
-# global format consistency. apps/docs has its own path-filtered workflow
-# (pr-check-docs.yml); demo and ai-studio are not checked here — they're
-# internal and have their own broken-state tolerances.
+# global format consistency and the deploy Dockerfile's air-gap boundary
+# (every RUN after `pnpm fetch` must be --network=none). apps/docs has its
+# own path-filtered workflow (pr-check-docs.yml); demo and ai-studio are not
+# checked here — they're internal and have their own broken-state tolerances.
 
 on:
   pull_request:
@@ -45,6 +46,9 @@ jobs:
 
       - name: Prettier --check
         run: pnpm exec prettier --check "**/*.+(css|ts|tsx|json|md|mdx|astro)" --log-level=warn
+
+      - name: Air-gap boundary of the deploy Dockerfile
+        run: pnpm check:offline-build
 
   sdk:
     name: SDK lint + typecheck + test + build

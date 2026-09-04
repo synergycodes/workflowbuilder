@@ -49,9 +49,16 @@ curl -s http://localhost:8080/api/health   # {"status":"ok"}
 ## Air-gapped / offline install
 
 The host that runs the stack needs no internet access — but the machine that
-builds the images does. Every `pnpm install` in the Dockerfile runs strictly
-`--offline`; the network is touched only to pull base images, install pnpm
-itself, and `pnpm fetch` the package store. So don't build on the air-gapped
+builds the images does. The Dockerfile reaches the network in exactly three
+places: pulling base images, installing pnpm itself, and `pnpm fetch` of the
+package store. Every `RUN` after that fetch is `--network=none`, so BuildKit
+cuts egress for the whole step — installs, lifecycle scripts and build
+commands included (`--offline` alone would only stop pnpm's own resolver). A
+step that needs the network fails every ordinary build, and
+`pnpm check:offline-build` fails if a post-fetch step ever loses the flag.
+That per-step guarantee is the enforceable one: a whole-build
+`docker build --network none` cannot pass, because the pnpm bootstrap and
+`pnpm fetch` need the registry by design. So don't build on the air-gapped
 host — build on a connected machine and ship the images.
 
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
