@@ -15,6 +15,12 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 | `temporal-db` | `postgres:16`                  | Temporal's own state store                      | internal                 |
 | `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                  | `127.0.0.1:8233`         |
 
+The three Temporal rows come from
+[`docker-compose.override.yml`](docker-compose.override.yml), which compose
+applies on top of [`docker-compose.yml`](docker-compose.yml) by default. The base
+file alone has no cluster: the apps connect to whatever `TEMPORAL_ADDRESS` names
+and depend only on `app-db` — see "Pointing at a different Temporal".
+
 Both images build from one Dockerfile (`deploy/ai-studio/Dockerfile`) with the
 repo root as context. Backend and worker share a single image and differ only
 in the compose `command`. Database migrations are applied by the backend at
@@ -92,8 +98,13 @@ with `ai_not_configured`.
 **Pointing at a different Temporal.** Every `TEMPORAL_*` variable reaches the
 backend and the worker from one shared block in the compose file, so the two
 cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and
-`TEMPORAL_API_KEY` are all an operated cluster or Temporal Cloud needs. For a
-private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
+`TEMPORAL_API_KEY` are all an operated cluster or Temporal Cloud needs. Add
+`COMPOSE_FILE=docker-compose.yml` to `.env` at the same time: it leaves the
+override file out, so the bundled cluster is not started and cannot block the
+apps, and `backend` / `worker` depend only on `app-db`. Run
+`docker compose down --remove-orphans` once when switching. The bundled debug
+UI (`--profile debug`) is part of the override and only ever shows the bundled
+cluster — an external cluster has its own UI. For a private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
 read-only into both containers at `/etc/workflowbuilder/tls`) and set
 `TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH` to those container paths —
 see [.env.example](.env.example) for the exact lines.
@@ -115,8 +126,8 @@ volumes is acceptable; there is nothing precious in them.
 emitted**, let in-flight executions finish. Temporal replays a running
 workflow's history against the deployed code, so a run started on the old
 emit sequence diverges when replayed on the new one. Check for active runs in
-the Temporal UI (`--profile debug`), or accept that any still running will
-fail. Deploys that leave the emit sequence alone are unaffected. See
+the Temporal UI (`--profile debug` for the bundled cluster, your cluster's own UI
+otherwise), or accept that any still running will fail. Deploys that leave the emit sequence alone are unaffected. See
 [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
 ## Known limitations (accepted for the lean MVP)

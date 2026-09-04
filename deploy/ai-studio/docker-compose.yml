@@ -1,6 +1,11 @@
 # AI Studio production stack (WB-229). Usage: cp .env.example .env, set
 # AI_API_KEY, then `docker compose up -d --build`. Only `web`
 # publishes a port.
+#
+# This file has no Temporal cluster of its own: the apps connect to whatever
+# TEMPORAL_ADDRESS names. The bundled dev-grade cluster lives in
+# docker-compose.override.yml, which compose applies on top of this file by
+# default; COMPOSE_FILE=docker-compose.yml in .env leaves it out.
 
 name: ai-studio
 
@@ -10,8 +15,7 @@ x-runtime-build: &runtime-build
   target: runtime
 
 # Shared by backend and worker via YAML merge, so the two can never drift apart:
-# the namespace must match or the worker polls a queue nobody submits to. Point
-# these at an operated cluster or Temporal Cloud to retire the bundled one.
+# the namespace must match or the worker polls a queue nobody submits to.
 x-temporal-env: &temporal-env
   TEMPORAL_ADDRESS: ${TEMPORAL_ADDRESS:-temporal:7233}
   TEMPORAL_NAMESPACE: ${TEMPORAL_NAMESPACE:-default}
@@ -43,47 +47,6 @@ services:
       retries: 12
     restart: unless-stopped
 
-  temporal-db:
-    image: postgres:16
-    environment:
-      POSTGRES_DB: temporal
-      POSTGRES_USER: temporal
-      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
-    volumes:
-      - temporal-db-data:/var/lib/postgresql/data
-    healthcheck:
-      test: ['CMD', 'pg_isready', '-U', 'temporal', '-d', 'temporal']
-      interval: 5s
-      timeout: 3s
-      retries: 12
-    restart: unless-stopped
-
-  # auto-setup is dev-grade; sustained load should move to Temporal Cloud
-  # or an operated cluster — the apps only consume TEMPORAL_ADDRESS
-  temporal:
-    image: temporalio/auto-setup:1.29.6.1
-    depends_on:
-      temporal-db:
-        condition: service_healthy
-    environment:
-      DB: postgres12
-      DB_PORT: 5432
-      POSTGRES_USER: temporal
-      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
-      POSTGRES_SEEDS: temporal-db
-    restart: unless-stopped
-
-  temporal-ui:
-    image: temporalio/ui:2.51.0
-    profiles: [debug]
-    depends_on:
-      - temporal
-    environment:
-      TEMPORAL_ADDRESS: temporal:7233
-    ports:
-      - '127.0.0.1:8233:8080'
-    restart: unless-stopped
-
   # applies migrations at boot; on failure exits and `restart` retries
   backend:
     image: ai-studio-runtime
@@ -108,8 +71,6 @@ services:
     depends_on:
       app-db:
         condition: service_healthy
-      temporal:
-        condition: service_started
     healthcheck:
       test:
         [
@@ -145,8 +106,6 @@ services:
       # backend healthy = migrations applied
       backend:
         condition: service_healthy
-      temporal:
-        condition: service_started
     restart: unless-stopped
 
   web:
@@ -166,4 +125,3 @@ services:
 
 volumes:
   app-db-data:
-  temporal-db-data:
