@@ -25,6 +25,7 @@ type NodeBehavior = {
   output?: unknown;
   nextPort?: string;
   throws?: string;
+  waits?: true;
 };
 
 function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
@@ -43,6 +44,7 @@ function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
         contexts[node.id] = { ...context.nodeOutputs };
         const b = behaviors[node.id];
         if (b?.throws) throw new Error(b.throws);
+        if (b?.waits) return { waiting: true };
         return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort };
       },
     },
@@ -1518,5 +1520,26 @@ describe('runGraph — node_started payload', () => {
     // downstream C got B's unredacted output.
     expect(receivedConfigs.B).toEqual({ apiKey: 'sk-live', prompt: 'hello' });
     expect(contexts.C).toEqual({ A: 'out-A', B: { authToken: 'tok-123', text: 'done' } });
+  });
+});
+
+describe('runGraph — waiting results', () => {
+  it('fails the run when the adapter has no awaitResolution, even with errorPolicy continue on the gate', async () => {
+    const runner = makeRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A', 'continue'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    const message = 'Node "A" returned a waiting result, but this engine adapter does not support gates';
+    expect(outcome).toEqual({ status: 'failed', error: { message } });
+    expect(runner.callOrder).toEqual(['A']);
+    // The gate is not a failed node: no node_failed, no absorption into nodeOutputs,
+    // and B is never-reached rather than skipped.
+    expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'node_started', 'execution_failed']);
+    expect(events.statuses).toEqual([{ status: 'failed', errorMessage: message }]);
   });
 });

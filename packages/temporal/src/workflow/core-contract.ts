@@ -11,9 +11,11 @@ export { runGraph } from '../../../execution-core/src/workflow';
 
 export type {
   ActivityRunnerPort,
+  CompletedNodeExecution,
   ExecutionContext,
   NodeExecutionResult,
   RunGraphOutcome,
+  WaitingNodeExecution,
 } from '../../../execution-core/src/workflow';
 
 export type { BaseNode } from '../../../types/src/workflow-execution/execution-model';

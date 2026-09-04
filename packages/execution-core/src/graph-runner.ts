@@ -107,7 +107,8 @@ export async function runGraph<TNode extends BaseNode>(
     // itself waits until the wave has propagated and emitted its skips: siblings
     // that resolved in this same wave still owe their `node_skipped` events, and
     // `execution_failed` has to stay the last event of the run.
-    const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
+    // A runner-level abort (`r.abort`) is fatal regardless of the node's policy.
+    const fatal = results.find((r) => r.failed && (r.abort === true || resolveErrorPolicy(r.node) === 'fail'));
 
     const newlyReady: TNode[] = [];
     const skipped: SkippedNode[] = [];
@@ -117,7 +118,7 @@ export async function runGraph<TNode extends BaseNode>(
         // A fatal node resolves nothing — no output, no propagation — so its
         // successors keep their pending predecessor count and emit no event.
         // Never reached is a different state from deliberately skipped.
-        if (policy === 'fail') continue;
+        if (result.abort === true || policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
         // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
         const errorOutput =
@@ -298,7 +299,8 @@ function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
 
 type NodeRunResult<TNode extends BaseNode> =
   | { node: TNode; output: unknown; nextPort?: string; failed: false }
-  | { node: TNode; message: string; code?: string; failed: true };
+  // `abort` marks a runner-level abort that outranks the node's own errorPolicy.
+  | { node: TNode; message: string; code?: string; failed: true; abort?: true };
 
 async function runNode<TNode extends BaseNode>(
   node: TNode,
@@ -311,6 +313,16 @@ async function runNode<TNode extends BaseNode>(
     const visibleNodeIds = Object.keys(context.nodeOutputs);
     await events.emitEvent(executionId, 'node_started', { config: node.config, visibleNodeIds }, node.id);
     const result = await runner.executeNode(node, context);
+    if (result.waiting) {
+      // A runner-level abort, not a node failure: routed around `errorPolicy`, where
+      // 'continue' would close the run as completed with the gate silently skipped.
+      return {
+        node,
+        message: `Node "${node.id}" returned a waiting result, but this engine adapter does not support gates`,
+        failed: true,
+        abort: true,
+      };
+    }
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
   } catch (error) {

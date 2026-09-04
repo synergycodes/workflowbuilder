@@ -21,6 +21,7 @@ export type { ActivityProfile, NodeActivityProfiles } from './workflow/activity-
 export { NodeExecutionError, PermanentNodeExecutionError, TransientNodeExecutionError } from './core-contract';
 export type {
   BaseNode,
+  CompletedNodeExecution,
   ExecutionContext,
   ExecutionEventType,
   ExecutionStatus,
@@ -30,6 +31,7 @@ export type {
   NodeExecutionResult,
   NodeExecutor,
   NodeExecutorRegistry,
+  WaitingNodeExecution,
   WorkflowDefinition,
   WorkflowEdgeDefinition,
   WorkflowEnginePort,
