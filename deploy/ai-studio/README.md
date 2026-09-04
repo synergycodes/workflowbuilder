@@ -61,6 +61,17 @@ That per-step guarantee is the enforceable one: a whole-build
 `pnpm fetch` need the registry by design. So don't build on the air-gapped
 host — build on a connected machine and ship the images.
 
+Shipping prebuilt images is the one supported air-gapped model. Building
+inside the gap from a customer-side registry mirror is not: there is no
+`.npmrc` to point at a mirror and no mirror procedure, and none is planned as
+long as the image route covers the need. The trade-off is that the bundle is
+platform-specific: the base images are, and so are the native packages pnpm
+selects for the build platform during the image's install (esbuild behind
+`tsx`, swc). The Temporal worker's Rust core is the exception — one package
+carries the binary for every supported platform and picks at runtime — but the
+rest means the images must be built for the destination platform; see the
+platform note under step 1.
+
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
 the compose plugin (plus ~3 GB of disk for the loaded images).
 
@@ -85,9 +96,12 @@ to ship:
 - `docker-compose.yml`, `docker-compose.override.yml`, `.env.example` and an
   empty `tls/` (the nginx config is already baked into the `web` image)
 
-If the host is x86 and you pack on an ARM Mac, put
-`DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of the script — `docker save`
-ships exactly what you built (slower under emulation, but correct).
+Build for the destination platform, not the packing machine's. On an ARM Mac
+packing for an x86 host, put `DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of
+the script: `docker save` ships exactly what you built (slower under emulation,
+but correct), and an image built for the wrong platform fails at container
+start, not at load. The manifest's last column shows the platform of every
+image in the tarball — check it before shipping.
 
 ### 2. Ship to the host
 
