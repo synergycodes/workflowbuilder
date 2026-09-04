@@ -95,6 +95,12 @@ used before the endpoint became configurable. Leave any of them empty and the
 stack still comes up: every node type runs except AI Agent nodes, which fail
 with `ai_not_configured`.
 
+**Upgrading from `OPENROUTER_API_KEY`.** The key is now `AI_API_KEY`, and the
+endpoint and model are no longer built in. In `.env`, rename the key and add
+`AI_BASE_URL` and `AI_MODEL` (the OpenRouter values are in `.env.example`).
+Compose refuses to start while the old name is still set, so a stale `.env`
+fails loudly instead of coming up with AI silently off.
+
 **Pointing at a different Temporal.** Every `TEMPORAL_*` variable reaches the
 backend and the worker from one shared block in the compose file, so the two
 cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and

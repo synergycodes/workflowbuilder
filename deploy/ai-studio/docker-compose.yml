@@ -13,6 +13,11 @@
 
 name: ai-studio
 
+# Fails fast while a pre-rename .env is still in place. OPENROUTER_API_KEY was
+# renamed to AI_API_KEY and is no longer read; without this, a stale .env would
+# come up with AI silently off. The inner :? only fires when the outer :+ does.
+x-retired-openrouter-key: ${OPENROUTER_API_KEY:+${OPENROUTER_API_KEY_RETIRED:?OPENROUTER_API_KEY was renamed to AI_API_KEY - rename it and set AI_BASE_URL and AI_MODEL too, see .env.example}}
+
 x-runtime-build: &runtime-build
   context: ../..
   dockerfile: deploy/ai-studio/Dockerfile
