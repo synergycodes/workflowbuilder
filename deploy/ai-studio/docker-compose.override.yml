@@ -6,7 +6,8 @@
 
 services:
   temporal-db:
-    image: postgres:16
+    # same tag as app-db in docker-compose.yml — bump both
+    image: postgres:16.15
     environment:
       POSTGRES_DB: temporal
       POSTGRES_USER: temporal

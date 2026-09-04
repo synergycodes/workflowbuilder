@@ -64,45 +64,42 @@ host — build on a connected machine and ship the images.
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
 the compose plugin (plus ~3 GB of disk for the loaded images).
 
-### 1. Build on a connected machine
+### 1. Build and pack on a connected machine
 
 ```bash
 cd deploy/ai-studio
-docker compose build
-docker compose --profile debug pull --ignore-buildable
+./pack-offline.sh ../../ai-studio-offline   # any output directory
 ```
 
-If the host is x86 and you build on an ARM Mac, put
-`DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of both commands — `docker save`
+The script builds both images, pulls the infra images and writes one directory
+to ship:
+
+- `ai-studio-images.tar` (~1 GB): `ai-studio-runtime`, `ai-studio-web`,
+  Postgres, Temporal and the Temporal UI (drop `--profile debug` from the
+  script to leave the UI out and save ~100 MB)
+- `ai-studio-images.tar.sha256`: checksum to verify on the host
+- `ai-studio-images.manifest.txt`: `docker image inspect` of every image in
+  the tarball — tags, registry digests, image IDs, platform. The compose files
+  pin tags, not digests, so this file is the record of exactly which builds
+  shipped; keep it with the bundle.
+- `docker-compose.yml`, `docker-compose.override.yml`, `.env.example` and an
+  empty `tls/` (the nginx config is already baked into the `web` image)
+
+If the host is x86 and you pack on an ARM Mac, put
+`DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of the script — `docker save`
 ships exactly what you built (slower under emulation, but correct).
 
-### 2. Pack one tarball
+### 2. Ship to the host
+
+Move the bundle directory across the gap (USB drive, scp over the internal
+network — whatever your process allows).
+
+### 3. Verify, load and start on the host
 
 ```bash
-docker save -o ai-studio-images.tar \
-  ai-studio-runtime ai-studio-web \
-  postgres:16 temporalio/auto-setup:1.29.6.1 temporalio/ui:2.51.0
-```
-
-The infra tags are the ones pinned in
-[docker-compose.override.yml](docker-compose.override.yml) — check there if
-they've moved. `temporalio/ui` is only needed for
-`--profile debug`; drop it to save ~100 MB.
-
-### 3. Ship to the host
-
-Move two things across the gap (USB drive, scp over the internal network —
-whatever your process allows):
-
-- `ai-studio-images.tar` (~2.5 GB)
-- this directory, `deploy/ai-studio/` (both compose files and `.env.example`;
-  the nginx config is already baked into the `web` image)
-
-### 4. Load and start on the host
-
-```bash
+cd ai-studio-offline                          # wherever you copied the bundle to
+shasum -a 256 -c ai-studio-images.tar.sha256  # or: sha256sum -c ai-studio-images.tar.sha256
 docker load -i ai-studio-images.tar
-cd ai-studio                      # wherever you copied deploy/ai-studio/ to
 cp .env.example .env              # set AI_API_KEY, AI_BASE_URL — see "What still needs egress"
 docker compose up -d --no-build   # --no-build: use the loaded images, never rebuild here
 ```
@@ -111,7 +108,7 @@ First boot behaves exactly as in Quick start: the backend applies migrations
 before serving, and the worker crash-loops for ~30s until Temporal finishes
 auto-setup.
 
-### 5. Connect
+### 4. Connect
 
 Only the `web` container publishes a port. The backend, Temporal, and both
 databases stay on the internal Docker network — you reach the API through the
@@ -129,6 +126,18 @@ outside, it's the host firewall: allow `WEB_PORT` (default 8080) in. The
 default `WEB_BIND=0.0.0.0` already listens on all interfaces; set
 `WEB_BIND=127.0.0.1` only when a host-level reverse proxy should be the sole
 way in (see "TLS / going public").
+
+### Image versions
+
+Every image this stack does not build itself is pinned to an exact version
+tag: `node` and `nginx` in [Dockerfile](Dockerfile), Postgres in both compose
+files, Temporal and its UI in
+[docker-compose.override.yml](docker-compose.override.yml). Tags are not
+digests: a base image can be rebuilt under the same tag, which is how it
+receives OS security patches, so two packs made months apart can differ in
+those layers. The manifest the script writes records the digests that actually
+shipped, so a bundle is always traceable to its exact contents. Bump a tag in
+the file that holds it; the Postgres tag appears in both compose files.
 
 ### What still needs egress
 
