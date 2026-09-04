@@ -49,10 +49,13 @@ export const database = {
     // Terminal statuses are immutable: a cancel cleanup landing after the run already
     // wrote `failed` must not flip it to `cancelled`. Matching 0 rows is a silent
     // no-op, which also makes a retried terminal write idempotent.
+    // started_at survives resumes: only the first 'running' stamps it, so a verdict
+    // un-parking a gate does not move the start. Writing 'running' at actual run
+    // start is a separate, still-open fix (follow-up: running-status-at-start).
     await sql`
       UPDATE executions SET
         status = ${status},
-        started_at = CASE WHEN ${status} = 'running' THEN now() ELSE started_at END,
+        started_at = CASE WHEN ${status} = 'running' AND started_at IS NULL THEN now() ELSE started_at END,
         finished_at = CASE WHEN ${isTerminal} THEN now() ELSE finished_at END,
         error_message = ${errorMessage ?? null},
         updated_at = now()
