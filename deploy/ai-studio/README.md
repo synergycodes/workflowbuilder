@@ -156,19 +156,21 @@ the file that holds it; the Postgres tag appears in both compose files.
 ### What still needs egress
 
 "Air-gapped" covers the install — nothing above pulls from a registry at
-deploy time. Whether the running stack needs egress is decided by
-`AI_BASE_URL`:
+deploy time. At runtime the stack has three optional egress paths, each behind
+one setting. Zero egress means all three are closed:
 
-- **Default (OpenRouter)**: the backend and worker need egress to
-  `openrouter.ai:443`. Without it the stack runs and every ordinary node
-  works, but AI Agent nodes and the visualize route fail. On a restricted
-  network, allow-list that host.
-- **Fully inside the gap**: point `AI_BASE_URL` at an OpenAI-compatible
-  endpoint on your own network (see "Pointing at a different LLM" under
-  Configuration) and no LLM traffic leaves it — zero egress.
+| Path                                | Destination                        | Closed when                                                                                                                    |
+| ----------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| LLM calls (backend + worker)        | whatever `AI_BASE_URL` names       | `AI_BASE_URL` points at an OpenAI-compatible endpoint inside your network ("Pointing at a different LLM" under Configuration)  |
+| AI Agent web-search tool (worker)   | `api.tavily.com`, not configurable | `TAVILY_API_KEY` is empty — agents with web search toggled on still run, just without the tool                                 |
+| Turnstile bot check (SPA + backend) | `challenges.cloudflare.com`        | `VITE_TURNSTILE_SITE_KEY` was empty when the `web` image was built and `TURNSTILE_SECRET_KEY` is unset (both the default here) |
 
-Leave `TAVILY_API_KEY` empty inside a gap: the AI Agent's web-search tool
-calls `tavily.com`. Agents with web search toggled on still run without it.
+The SPA itself loads nothing external: Poppins ships inside the SDK's
+stylesheet as inline woff2, so the browser talks only to the `web` container.
+With the default `AI_BASE_URL` (OpenRouter) the one required destination is
+`openrouter.ai:443`; without it the stack runs and every ordinary node works,
+while AI Agent nodes and the visualize route fail. On a restricted network,
+allow-list that host.
 
 ## Spend safety (do not skip)
 
