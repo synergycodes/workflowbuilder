@@ -1,8 +1,20 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// env.ts reads process.env once at module load, so every case needs a fresh module.
+import { env as shape } from './env';
+
+// The keys of `env` are the variable names, so a variable added to env.ts is
+// cleared here without anyone remembering to list it.
+const ENV_NAMES = Object.keys(shape);
+
+// env.ts reads process.env once at module load, so every case needs a fresh module
+// and a clean environment: whatever the runner's shell carries is unset first.
 async function loadEnv(values: Record<string, string>) {
   vi.resetModules();
+  for (const name of ENV_NAMES) {
+    // undefined is Vitest's delete signal, and unstubAllEnvs restores the variable
+    // eslint-disable-next-line unicorn/no-useless-undefined
+    vi.stubEnv(name, undefined);
+  }
   for (const [name, value] of Object.entries(values)) {
     vi.stubEnv(name, value);
   }
@@ -14,11 +26,21 @@ afterEach(() => {
   vi.unstubAllEnvs();
 });
 
+describe('loadEnv', () => {
+  it('ignores variables inherited from the runner', async () => {
+    vi.stubEnv('AI_BASE_URL', 'http://ambient.example/v1');
+
+    const env = await loadEnv({});
+
+    expect(env.AI_BASE_URL).toBeNull();
+  });
+});
+
 describe('AI_API_KEY', () => {
   // The worker used to throw at module load without a key. Booting keyless is the
   // point: a deployment that runs no AI nodes should not need an LLM account.
   it('is null when unset, rather than refusing to load', async () => {
-    const env = await loadEnv({ AI_API_KEY: '' });
+    const env = await loadEnv({});
 
     expect(env.AI_API_KEY).toBeNull();
   });
@@ -33,7 +55,7 @@ describe('AI_API_KEY', () => {
   // applies to any AI_BASE_URL is a credential leak waiting to happen, and there are
   // no external deployments to keep working. Rename the variable in .env instead.
   it('does not read the retired OPENROUTER_API_KEY name', async () => {
-    const env = await loadEnv({ AI_API_KEY: '', OPENROUTER_API_KEY: 'old-key' });
+    const env = await loadEnv({ OPENROUTER_API_KEY: 'old-key' });
 
     expect(env.AI_API_KEY).toBeNull();
   });
@@ -42,7 +64,7 @@ describe('AI_API_KEY', () => {
 describe('AI_BASE_URL and AI_MODEL', () => {
   // No built-in endpoint or model: the OpenRouter values live in .env.example only.
   it('are null when unset', async () => {
-    const env = await loadEnv({ AI_BASE_URL: '', AI_MODEL: '' });
+    const env = await loadEnv({});
 
     expect(env.AI_BASE_URL).toBeNull();
     expect(env.AI_MODEL).toBeNull();
