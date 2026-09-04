@@ -119,6 +119,13 @@ docker compose down                          # stop (volumes survive)
 docker exec ai-studio-app-db-1 pg_dump -U wb workflow_builder > backup.sql
 ```
 
+The public demo is deployed by the `Deploy AI Studio` GitHub Actions workflow:
+it builds and pushes both images to the registry, copies `docker-compose.yml`
+and `docker-compose.override.yml` from the repo to the VM, and runs compose
+there with `RUNTIME_IMAGE` / `WEB_IMAGE` pointing at the tags it just pushed.
+The VM's compose files are that copy — change them in the repo, never on the
+VM. Only `.env` lives on the VM alone.
+
 Workflow data is treated as ephemeral for the public demo — losing the
 volumes is acceptable; there is nothing precious in them.
 

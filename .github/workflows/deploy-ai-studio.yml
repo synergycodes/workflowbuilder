@@ -77,6 +77,9 @@ jobs:
     needs: build-and-push
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
       - name: Log in to Azure
         uses: azure/login@v2
         with:
@@ -84,18 +87,32 @@ jobs:
           tenant-id: ${{ vars.AZURE_TENANT_ID }}
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
+      # The VM runs the repo's compose files, shipped here on every deploy (base64,
+      # so the script stays free of quoting). Compose is run from the project
+      # directory, not with -f: that is what applies docker-compose.override.yml
+      # by default and honours COMPOSE_FILE from the VM's .env.
       - name: Refresh docker compose on Azure VM
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.APP }}:${{ needs.build-and-push.outputs.image_tag }}
         run: |
+          COMPOSE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.yml)
+          OVERRIDE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.override.yml)
+          SCRIPT=$(cat <<EOF
+          set -e
+          cd /app/ai-studio
+          echo "$COMPOSE_B64" | base64 -d > docker-compose.yml
+          echo "$OVERRIDE_B64" | base64 -d > docker-compose.override.yml
+          export RUNTIME_IMAGE="$IMAGE-runtime" WEB_IMAGE="$IMAGE-web"
+          az acr login --name synergycodes
+          docker compose pull
+          docker compose up -d --no-build --force-recreate --remove-orphans
+          echo DEPLOY_SCRIPT_SUCCEEDED
+          EOF
+          )
           OUTPUT=$(az vm run-command invoke \
             --name ${{ vars.AI_STUDIO_VM_NAME }} \
             --resource-group ${{ vars.AI_STUDIO_VM_RG }} \
             --command-id RunShellScript \
-            --scripts '
-              set -e
-              az acr login --name synergycodes
-              docker compose -f /app/ai-studio/docker-compose.yml pull
-              docker compose -f /app/ai-studio/docker-compose.yml up -d --no-build --force-recreate
-              echo DEPLOY_SCRIPT_SUCCEEDED
-            ')
+            --scripts "$SCRIPT")
           echo "$OUTPUT"
           echo "$OUTPUT" | grep -q DEPLOY_SCRIPT_SUCCEEDED

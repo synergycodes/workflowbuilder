@@ -6,6 +6,10 @@
 # TEMPORAL_ADDRESS names. The bundled dev-grade cluster lives in
 # docker-compose.override.yml, which compose applies on top of this file by
 # default; COMPOSE_FILE=docker-compose.yml in .env leaves it out.
+#
+# RUNTIME_IMAGE / WEB_IMAGE name prebuilt images from a registry; unset, the
+# services build locally under the default names. The deploy workflow sets them
+# to the tags it just pushed, so this file is the one the demo VM runs too.
 
 name: ai-studio
 
@@ -49,7 +53,7 @@ services:
 
   # applies migrations at boot; on failure exits and `restart` retries
   backend:
-    image: ai-studio-runtime
+    image: ${RUNTIME_IMAGE:-ai-studio-runtime}
     build: *runtime-build
     command: ['pnpm', '--filter', 'backend', 'start:prod']
     environment:
@@ -87,7 +91,7 @@ services:
 
   # crash-loops until Temporal answers (no usable healthcheck); restart converges it
   worker:
-    image: ai-studio-runtime
+    image: ${RUNTIME_IMAGE:-ai-studio-runtime}
     build: *runtime-build
     command: ['pnpm', '--filter', 'execution-worker', 'start:prod']
     environment:
@@ -109,7 +113,7 @@ services:
     restart: unless-stopped
 
   web:
-    image: ai-studio-web
+    image: ${WEB_IMAGE:-ai-studio-web}
     build:
       context: ../..
       dockerfile: deploy/ai-studio/Dockerfile
