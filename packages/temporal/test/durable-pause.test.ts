@@ -121,9 +121,11 @@ describe('durable pause', () => {
       await handle.executeUpdate(resolveNodeUpdate, {
         args: [{ nodeId: 'gate-a', resolution: { output: 'first' } }],
       });
-      await expect(
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'second' } }] }),
-      ).rejects.toBeInstanceOf(WorkflowUpdateFailedError);
+      const rejection: unknown = await handle
+        .executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'second' } }] })
+        .catch((error: unknown) => error);
+      expect(rejection).toBeInstanceOf(WorkflowUpdateFailedError);
+      expect((rejection as WorkflowUpdateFailedError).cause).toMatchObject({ type: 'verdict_already_delivered' });
       await handle.executeUpdate(resolveNodeUpdate, {
         args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }],
       });
