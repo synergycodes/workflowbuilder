@@ -9,7 +9,7 @@ import type {
 
 import { NodeExecutionError } from './errors';
 import { runGraph } from './graph-runner';
-import type { ActivityRunnerPort } from './ports/activity-runner.port';
+import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { reconstructNodeInputs } from './reconstruct-node-inputs';
@@ -25,6 +25,7 @@ type NodeBehavior = {
   output?: unknown;
   nextPort?: string;
   throws?: string;
+  waits?: true;
 };
 
 function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
@@ -43,10 +44,62 @@ function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
         contexts[node.id] = { ...context.nodeOutputs };
         const b = behaviors[node.id];
         if (b?.throws) throw new Error(b.throws);
+        if (b?.waits) return { waiting: true };
         return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort };
       },
     },
   };
+}
+
+// makeRunner plus an `awaitResolution` port: observe parks via `whenParked`,
+// deliver verdicts via `resolveGate`.
+function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
+  port: ActivityRunnerPort<TestNode>;
+  callOrder: string[];
+  contexts: Record<string, Record<string, unknown>>;
+  parkedIds: () => string[];
+  whenParked: (count: number) => Promise<void>;
+  resolveGate: (nodeId: string, completion: CompletedNodeExecution) => void;
+} {
+  const base = makeRunner(behaviors);
+  const pending = new Map<string, (completion: CompletedNodeExecution) => void>();
+  const watchers: { count: number; notify: () => void }[] = [];
+  return {
+    callOrder: base.callOrder,
+    contexts: base.contexts,
+    port: {
+      executeNode: base.port.executeNode,
+      awaitResolution(nodeId) {
+        return new Promise((resolve) => {
+          pending.set(nodeId, resolve);
+          for (let index = watchers.length - 1; index >= 0; index -= 1) {
+            if (pending.size >= watchers[index].count) {
+              watchers[index].notify();
+              watchers.splice(index, 1);
+            }
+          }
+        });
+      },
+    },
+    parkedIds: () => [...pending.keys()],
+    whenParked(count) {
+      return new Promise((notify) => {
+        if (pending.size >= count) notify();
+        else watchers.push({ count, notify });
+      });
+    },
+    resolveGate(nodeId, completion) {
+      const resolve = pending.get(nodeId);
+      if (!resolve) throw new Error(`no parked gate for ${nodeId}`);
+      pending.delete(nodeId);
+      resolve(completion);
+    },
+  };
+}
+
+// Lets everything already unblocked (verdict continuations, absorbed failures) settle.
+function flush(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
 }
 
 type EventCall = { type: string; nodeId?: string; payload?: unknown };
@@ -54,7 +107,10 @@ type StatusCall = { status: string; errorMessage?: string };
 
 type EmitFailure = { type: string; nodeId?: string; message: string };
 
-function makeEvents(failOn?: EmitFailure): {
+function makeEvents(
+  failOn?: EmitFailure,
+  failStatus?: { status: string; message: string },
+): {
   port: EventEmitterPort;
   events: EventCall[];
   statuses: StatusCall[];
@@ -73,6 +129,9 @@ function makeEvents(failOn?: EmitFailure): {
       },
       async updateStatus(_executionId, status, errorMessage) {
         statuses.push({ status, errorMessage });
+        if (failStatus && failStatus.status === status) {
+          throw new Error(failStatus.message);
+        }
       },
     },
   };
@@ -1518,5 +1577,175 @@ describe('runGraph — node_started payload', () => {
     // downstream C got B's unredacted output.
     expect(receivedConfigs.B).toEqual({ apiKey: 'sk-live', prompt: 'hello' });
     expect(contexts.C).toEqual({ A: 'out-A', B: { authToken: 'tok-123', text: 'done' } });
+  });
+});
+
+describe('runGraph — waiting results', () => {
+  it('fails the run when the adapter has no awaitResolution, even with errorPolicy continue on the gate', async () => {
+    const runner = makeRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A', 'continue'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    const message = 'Node "A" returned a waiting result, but this engine adapter does not support gates';
+    expect(outcome).toEqual({ status: 'failed', error: { message, code: 'waiting_unsupported' } });
+    expect(runner.callOrder).toEqual(['A']);
+    // No node_failed for the gate, and B is never-reached rather than skipped.
+    expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'node_started', 'execution_failed']);
+    expect(events.statuses).toEqual([{ status: 'failed', errorMessage: message }]);
+  });
+
+  it('parks a single gate, resumes it on the verdict, and downstream sees the verdict output', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+    await runner.whenParked(1);
+
+    expect(runner.parkedIds()).toEqual(['A']);
+    expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'node_started', 'node_waiting']);
+    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+    expect(runner.callOrder).toEqual(['A']);
+
+    runner.resolveGate('A', { output: 'approved' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(runner.contexts.B).toEqual({ A: 'approved' });
+    expect(events.events.map((event) => event.type)).toEqual([
+      'execution_started',
+      'node_started',
+      'node_waiting',
+      'node_completed',
+      'node_started',
+      'node_completed',
+      'execution_completed',
+    ]);
+    expect(events.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed' }]);
+  });
+
+  it('routes the verdict through nextPort like any completion', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput(
+        [start('A'), trigger('B'), trigger('C')],
+        [edge('e1', 'A', 'B', 'approved'), edge('e2', 'A', 'C', 'rejected')],
+      ),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: 'no', nextPort: 'rejected' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['A', 'C']);
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'B', reason: 'branch_not_taken' }]);
+  });
+
+  it('two gates in one wave wait concurrently and take their verdicts independently', async () => {
+    const runner = makeGatedRunner({ B: { waits: true }, C: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput(
+        [start('A'), trigger('B'), trigger('C'), trigger('D')],
+        [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
+      ),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(2);
+
+    expect(runner.parkedIds().sort()).toEqual(['B', 'C']);
+    const waitingNodes = events.events.filter((event) => event.type === 'node_waiting').map((event) => event.nodeId);
+    expect(waitingNodes.sort()).toEqual(['B', 'C']);
+    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+
+    runner.resolveGate('C', { output: 'c-verdict' });
+    await flush();
+    expect(runner.callOrder).toEqual(['A', 'B', 'C']);
+    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+
+    runner.resolveGate('B', { output: 'b-verdict' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder.filter((id) => id === 'D')).toHaveLength(1);
+    expect(runner.contexts.D).toEqual({ A: 'out-A', B: 'b-verdict', C: 'c-verdict' });
+    expect(events.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed' }]);
+  });
+
+  it('parks and resumes even when the waiting status write fails', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents(undefined, { status: 'waiting', message: 'db down' });
+
+    const run = runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: 'approved' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    // The failed write was attempted, absorbed, and the counter still reached zero.
+    expect(events.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+  });
+
+  it('a delivered verdict survives a failing running status write', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents(undefined, { status: 'running', message: 'db down' });
+
+    const run = runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: 'approved' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.contexts.B).toEqual({ A: 'approved' });
+    expect(events.events.filter((event) => event.nodeId === 'A').map((event) => event.type)).toEqual([
+      'node_started',
+      'node_waiting',
+      'node_completed',
+    ]);
+  });
+
+  it('a fatal sibling in the same wave fails the run only after the parked gate resolves', async () => {
+    const runner = makeGatedRunner({ B: { waits: true }, C: { throws: 'boom' } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput(
+        [start('A'), trigger('B'), trigger('C'), trigger('D')],
+        [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D')],
+      ),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(1);
+    await flush();
+
+    expect(events.events.map((event) => event.type)).toContain('node_failed');
+    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+
+    runner.resolveGate('B', { output: 'approved' });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'boom' } });
+    expect(runner.callOrder.includes('D')).toBe(false);
+    const types = events.events.map((event) => event.type);
+    expect(types.at(-1)).toBe('execution_failed');
+    expect(types.indexOf('node_completed')).toBeLessThan(types.indexOf('execution_failed'));
+    expect(events.statuses).toEqual([
+      { status: 'waiting' },
+      { status: 'running' },
+      { status: 'failed', errorMessage: 'boom' },
+    ]);
   });
 });

@@ -27,7 +27,11 @@ export {
 export type { NodeErrorEnvelope } from '../../execution-core/src/index';
 
 export type { ExecutionContext } from '../../execution-core/src/execution-context';
-export type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';
+export type {
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from '../../execution-core/src/ports/activity-runner.port';
 export type { LogBindings, LoggerPort } from '../../execution-core/src/ports/logger.port';
 
 export type {
@@ -38,7 +42,12 @@ export type {
 } from '../../types/src/workflow-execution/execution-model';
 
 // Defined on the sandbox-safe side so both halves of the package share one definition.
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './workflow/core-contract';
+export type {
+  ExecutionEventType,
+  ExecutionStatus,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './workflow/core-contract';
 
 // Restated for the same reason as WorkflowExecutionInput: the core's registry module
 // reaches for @workflow-builder/types by package name, and that name would survive

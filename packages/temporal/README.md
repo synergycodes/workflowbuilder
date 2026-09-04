@@ -163,11 +163,11 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 
 ## Entry points
 
-| Import                               | Use it for                                                           |
-| ------------------------------------ | -------------------------------------------------------------------- |
-| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, shared constants, types |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs                                         |
-| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles    |
+| Import                               | Use it for                                                                                  |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, shared constants, types                        |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs                                                                |
+| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
 
@@ -188,6 +188,48 @@ The budget applies to the **raw string**, which is not the same thing the server
 Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`, not to this package. If your own layer never sets it you get the identical `executeNode` rows back, and nothing here can tell the difference.
 
 The attempt count is an upper bound rather than a promise. An executor that throws `PermanentNodeExecutionError` — for a rejected API key, say — is not retried at all: the activity adapter marks the failure non-retryable, which Temporal honours regardless of the profile. `TransientNodeExecutionError` says the opposite, that another attempt is worth making, but it does not raise the limit; the profile still caps it. Anything thrown unclassified retries exactly as it always has. Both classes are re-exported from this package, and a classified failure also records its error code and the attempt it died on in the `node_failed` event — see [`execution-core`](../execution-core/README.md#transient-vs-permanent-failures) for when to throw which.
+
+## Pausing a run for a human
+
+An executor that returns `{ waiting: true }` instead of a completion parks the run at that node. Nothing polls and no timer is set: the workflow stops producing commands, so a parked run costs nothing while it waits and survives worker restarts, redeploys and weeks of idleness. The wave containing the waiting node holds until every node in it has resolved; the rest of that wave keeps running.
+
+```ts
+const plugin = new WorkflowBuilderPlugin({
+  executors: {
+    'my-app/approval': () => ({ waiting: true }),
+    // ...the rest of your executors
+  },
+  store,
+});
+```
+
+While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition.
+
+The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
+
+```ts
+import { executionWorkflowId } from '@workflowbuilder/temporal';
+import { resolveNodeUpdate } from '@workflowbuilder/temporal/workflow';
+
+const handle = client.workflow.getHandle(executionWorkflowId(executionId));
+await handle.executeUpdate(resolveNodeUpdate, {
+  args: [{ nodeId: 'approval-1', resolution: { output: { decision: 'approved' }, nextPort: 'approved' } }],
+});
+```
+
+The `resolution` is the completion the node finishes with, exactly as if its executor had returned it: `output` becomes the node's output for everything downstream, and `nextPort` routes the graph. This package passes it through untouched. What a verdict contains, and who may deliver one, is your application's contract.
+
+Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope carries exactly `output` and an optional `nextPort`, which must not be the reserved `errorRoute`), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (also possible for a verdict racing the parking moment, so treat it as retryable), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
+
+### Wave-barrier limitations (deliberate)
+
+Graph traversal is wave-based with a barrier, and the pause does not restructure it. Three consequences are documented limitations, not bugs:
+
+- successors of an independent parallel branch wait for the wave that contains a waiting node, even when their own inputs are ready;
+- a waiting node in a deeper wave becomes visible only once the earlier waves resolve;
+- a fatal failure in the same wave as a parked node cannot close the run until the verdict arrives, so a person can approve a run that then immediately fails.
+
+Lifting the barrier later is an additive engine change: same events, same update, same statuses.
 
 ## Versioning and replay
 
