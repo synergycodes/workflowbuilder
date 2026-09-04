@@ -16,11 +16,8 @@ export class NodeExecutionError extends Error {
 
 export type NodeErrorClassification = 'permanent' | 'transient';
 
-/**
- * Thrown by an executor for a failure that will fail identically on every
- * retry: a rejected API key, a 400, a config the node can never satisfy.
- * The engine adapter stops the node on its first attempt.
- */
+// Fails identically on every retry (rejected key, a 400, unsatisfiable config);
+// the adapter stops the node on its first attempt.
 export class PermanentNodeExecutionError extends NodeExecutionError {
   readonly classification: NodeErrorClassification = 'permanent';
 
@@ -30,12 +27,8 @@ export class PermanentNodeExecutionError extends NodeExecutionError {
   }
 }
 
-/**
- * Thrown by an executor for a failure a later attempt could survive: a
- * timeout, a rate limit, a 5xx. Retried under the engine's own policy —
- * marking transient does not raise the attempt limit, it only says the
- * error is worth another attempt and makes the count visible.
- */
+// A later attempt could succeed (timeout, 429, 5xx). Retried within the
+// engine's own limit, never past it.
 export class TransientNodeExecutionError extends NodeExecutionError {
   readonly classification: NodeErrorClassification = 'transient';
 
@@ -45,15 +38,9 @@ export class TransientNodeExecutionError extends NodeExecutionError {
   }
 }
 
-/**
- * Classification is read by shape, never with `instanceof`. An executor
- * throws the class compiled into the core's own source, while the adapter
- * that inspects the throw runs against a bundled copy of this module — two
- * distinct class objects, so `instanceof` is always false between them.
- * Requiring `code` alongside `classification` keeps a foreign error that
- * happens to carry a `classification` field from matching, and leaving
- * `name` out of the check lets a consumer subclass keep its own name.
- */
+// By shape, not `instanceof`: the adapter runs against a bundled copy of this
+// module, so the class objects differ. `code` is required too, so a foreign
+// error with a stray `classification` field does not match.
 export function classifyNodeError(error: unknown): NodeErrorClassification | undefined {
   if (!(error instanceof Error)) {
     return undefined;
@@ -67,18 +54,10 @@ export function classifyNodeError(error: unknown): NodeErrorClassification | und
   return classification === 'permanent' || classification === 'transient' ? classification : undefined;
 }
 
-/**
- * What the adapter attaches to the failure it sends across the engine
- * boundary, and the only thing the runner reads back. Engines flatten a
- * thrown error into a message and a type, so the structured parts of a
- * classified throw — the code, and the attempt it died on — survive only
- * as plain data travelling alongside it.
- *
- * `wbNodeError` brands the object (adapters put arbitrary values in the
- * same slot) and versions it: a later shape bumps the number rather than
- * widening this one, so a runner replaying an older history keeps reading
- * exactly the shape it was written with.
- */
+// Travels in the adapter's failure `details`: engines flatten a throw to message
+// and type, so the code and attempt survive only as plain data. `wbNodeError`
+// brands and versions the shape — a later shape bumps the number, so older
+// histories keep replaying against this one.
 export type NodeErrorEnvelope = {
   wbNodeError: 1;
   classification: NodeErrorClassification;
@@ -123,15 +102,10 @@ function readEnvelope(error: Error): NodeErrorEnvelope | undefined {
  *
  * Picks up `code` at the FIRST level that carries one, so a downstream wrap
  * in a generic `Error` does not erase the structured `NodeExecutionError`
- * code emitted by the original throw site. Two levels can carry one: the
- * original error object (in-process runs, where the throw arrives intact)
- * and a `NodeErrorEnvelope` left by an engine adapter (runs that crossed a
- * boundary, where the object did not survive). Both are read, the first
- * one found wins, and the order they are checked in is fixed — the walk
- * has to return the same result for the same input on every replay.
- *
- * `attempt` comes from the envelope alone: nothing inside the runner can
- * observe how many times an adapter retried a node.
+ * code emitted by the original throw site. A `NodeErrorEnvelope` in `details`
+ * (left by an adapter when the object did not survive a boundary) is read the
+ * same way, at a fixed check order so replay sees identical results.
+ * `attempt` comes only from the envelope — the runner cannot observe retries.
  *
  * The walk is bounded by `MAX_CAUSE_DEPTH` so a buggy adapter that builds a
  * cyclic chain (`a.cause = b; b.cause = a`) cannot spin the runner forever.

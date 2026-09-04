@@ -284,10 +284,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
   });
 
   it('classified failure — the attempt count in the payload is stable across runs', async () => {
-    // The attempt is read out of the relayed failure, never counted by the
-    // runner: history hands back the same failure on every replay, so the
-    // emitted payload — including the key order it is serialized in — has to
-    // match byte for byte.
+    // History replays the same failure, so the payload (key order included) must match byte for byte.
     const input = makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]);
 
     const records = await runNTimes(

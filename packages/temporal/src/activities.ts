@@ -19,11 +19,7 @@ export type CreateActivitiesOptions<TNode extends BaseNode> = {
   store: ExecutionStore;
 };
 
-// Exported on its own, not just via the plugin, so a consumer with a bespoke worker
-// setup (or a test) can register the same three activities by hand.
-// Which attempt the activity is on, or 1 when there is no activity context —
-// `createActivities` is also called directly from tests and bespoke setups, and
-// a missing context is not a reason to fail the node.
+// 1 outside an activity context — createActivities is also called directly from tests.
 function currentAttempt(): number {
   try {
     return activityInfo().attempt;
@@ -32,21 +28,10 @@ function currentAttempt(): number {
   }
 }
 
-/**
- * Turns an executor's throw into what Temporal should do about it.
- *
- * An unclassified error is rethrown as the very same object: the SDK then
- * wraps it exactly as it always has, so a node that did not opt into
- * classification retries on the profile's terms and reports what it used to,
- * down to the bytes.
- *
- * A classified error becomes an `ApplicationFailure` instead — `nonRetryable`
- * is the flag the server honours, so a permanent failure stops on this
- * attempt no matter what `maximumAttempts` says. The SDK's own conversion
- * would keep only the message and the type, so the code and the attempt ride
- * along in `details`, which the failure converter does carry across, and the
- * original error stays on `cause` to keep its stack in Event History.
- */
+// Unclassified: rethrown as-is, so the SDK wraps it exactly as before. Classified:
+// an ApplicationFailure — `nonRetryable` is what the server honours, and the code
+// and attempt ride in `details` because the SDK's own conversion keeps only the
+// message and type. The original stays on `cause` for its stack in Event History.
 export function mapExecutorError(error: unknown, attempt: number): unknown {
   const classification = classifyNodeError(error);
   if (classification === undefined) {
@@ -66,14 +51,15 @@ export function mapExecutorError(error: unknown, attempt: number): unknown {
   });
 }
 
+// Exported on its own, not just via the plugin, so a consumer with a bespoke worker
+// setup (or a test) can register the same three activities by hand.
 export function createActivities<TNode extends BaseNode>(options: CreateActivitiesOptions<TNode>): Activities<TNode> {
   const { executors, store } = options;
 
   return {
     async executeNode(node, context) {
       const executor = resolveExecutor(executors, node);
-      // Awaited rather than returned: a returned promise settles outside this
-      // frame, and a rejected one would never reach the catch below.
+      // Awaited, not returned: a returned promise would reject outside this try.
       try {
         return await executor(node, context);
       } catch (error) {

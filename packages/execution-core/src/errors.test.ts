@@ -8,16 +8,12 @@ import {
   extractDeepestError,
 } from './errors';
 
-// The shape an engine adapter leaves on the failure it sends across its
-// boundary. Built by hand rather than imported from the adapter: the runner
-// reads this as plain data, and the test should fail if the contract moves.
+// Built by hand, not imported from the adapter: the test must fail if the contract moves.
 function envelope(overrides: Record<string, unknown> = {}): Record<string, unknown> {
   return { wbNodeError: 1, classification: 'transient', code: 'llm_timeout', attempt: 2, ...overrides };
 }
 
-// What the runner actually catches after a classified throw crossed Temporal:
-// a generic wrapper, the adapter's failure carrying the envelope, then the
-// original error. The class objects are gone by this point — only data survives.
+// What crosses Temporal: wrapper → adapter failure with envelope → original. Only data survives.
 function relayedFailure(details: unknown): Error {
   const failure = Object.assign(new Error('LLM call timed out'), { details });
   return new Error('Activity task failed', { cause: failure });
@@ -39,9 +35,7 @@ describe('classifyNodeError', () => {
   });
 
   it('classifies by shape, so a copy of the class from another bundle still matches', () => {
-    // The adapter inspecting the throw runs against a bundled copy of this
-    // module, so `instanceof` is false against the executor's class. Anything
-    // carrying the two fields has to classify the same way.
+    // The adapter sees a bundled copy of this module, so shape decides, not `instanceof`.
     const foreign = Object.assign(new Error('Rejected key'), {
       name: 'PermanentNodeExecutionError',
       code: 'bad_api_key',
@@ -97,8 +91,7 @@ describe('extractDeepestError — classification envelope', () => {
   });
 
   it('prefers a NodeExecutionError code over an envelope found deeper', () => {
-    // Both sources can only coexist in a hand-built chain, but the walk has to
-    // resolve it the same way every replay: first level wins.
+    // Only a hand-built chain has both sources; the first level must win on every replay.
     const inner = Object.assign(new Error('inner'), { details: [envelope({ code: 'from_envelope' })] });
     const outer = new NodeExecutionError('from_error', 'outer', { cause: inner });
 

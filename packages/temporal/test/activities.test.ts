@@ -128,8 +128,7 @@ describe('executeNode — error classification', () => {
     ['a plain Error', new Error('boom')],
     ['an unclassified NodeExecutionError', new NodeExecutionError('no_branch_matched', 'No branch')],
   ])('rethrows %s as the very same object', async (_label, thrown) => {
-    // The byte-identity guarantee: an executor that never opted in must reach
-    // the SDK's own conversion untouched, exactly as it did before.
+    // Unclassified throws must reach the SDK's own conversion untouched.
     await expect(activitiesThrowing(thrown).executeNode(failing, context)).rejects.toBe(thrown);
   });
 
@@ -187,9 +186,7 @@ describe('mapExecutorError', () => {
   });
 
   it('classifies an error from another copy of the class by its shape', () => {
-    // Executors throw the core's own classes; this module sees a bundled copy,
-    // so the two class objects are never the same and `instanceof` cannot be
-    // what decides this.
+    // This module sees a bundled copy of the core's classes; `instanceof` cannot decide.
     const foreign = Object.assign(new Error('Provider rejected the API key'), {
       name: 'PermanentNodeExecutionError',
       code: 'bad_api_key',

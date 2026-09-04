@@ -463,9 +463,7 @@ describe('runGraph — topological scheduling', () => {
   });
 
   it('classified failure relayed by an engine — code and attempt land in node_failed payload', async () => {
-    // What an engine adapter hands back once a classified throw crossed its
-    // boundary: the class object is gone, the code and the attempt it died on
-    // survive as plain data alongside the failure.
+    // Past the boundary the class is gone; code and attempt survive as plain data.
     const runner: ActivityRunnerPort<TestNode> = {
       async executeNode(node) {
         if (node.id === 'B') {
