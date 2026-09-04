@@ -356,19 +356,33 @@ async function parkUntilResolved(
 ): Promise<CompletedNodeExecution> {
   await events.emitEvent(executionId, 'node_waiting', undefined, nodeId);
   parked.count += 1;
-  if (parked.count === 1) {
-    await events.updateStatus(executionId, 'waiting');
-  }
-  // Awaited here, so the caller's wave slot stays pending and the barrier holds
-  // itself: the wave completes only once every parked node has resolved.
   try {
+    if (parked.count === 1) {
+      await setAdvisoryStatus(events, executionId, 'waiting');
+    }
+    // Awaited here, so the caller's wave slot stays pending and the barrier holds
+    // itself: the wave completes only once every parked node has resolved.
     return await awaitResolution(nodeId);
   } finally {
     // On rejection too: a failure absorbed by 'continue' must not strand the run in 'waiting'.
     parked.count -= 1;
     if (parked.count === 0) {
-      await events.updateStatus(executionId, 'running');
+      await setAdvisoryStatus(events, executionId, 'running');
     }
+  }
+}
+
+// waiting/running are derived, advisory state: a failed write must not cost a park or
+// a delivered verdict. Same rationale as the swallowed node_skipped emit above.
+async function setAdvisoryStatus(
+  events: EventEmitterPort,
+  executionId: string,
+  status: 'waiting' | 'running',
+): Promise<void> {
+  try {
+    await events.updateStatus(executionId, status);
+  } catch {
+    // Swallowed on purpose — see above. No logger inside the workflow sandbox.
   }
 }
 
