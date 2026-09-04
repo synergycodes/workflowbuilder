@@ -15,30 +15,35 @@ afterEach(() => {
 });
 
 describe('AI_API_KEY', () => {
-  it('takes AI_API_KEY when both names are set', async () => {
-    const env = await loadEnv({ AI_API_KEY: 'new-key', OPENROUTER_API_KEY: 'old-key' });
+  it('reads AI_API_KEY', async () => {
+    const env = await loadEnv({ AI_API_KEY: 'key' });
 
-    expect(env.AI_API_KEY).toBe('new-key');
+    expect(env.AI_API_KEY).toBe('key');
   });
 
-  it('falls back to OPENROUTER_API_KEY so existing deployments keep working', async () => {
+  it('reads an empty value as unset', async () => {
+    const env = await loadEnv({ AI_API_KEY: '' });
+
+    expect(env.AI_API_KEY).toBeNull();
+  });
+
+  // The alias was dropped rather than scoped: a provider-named key that silently
+  // applies to any AI_BASE_URL is a credential leak waiting to happen, and there are
+  // no external deployments to keep working. Rename the variable in .env instead.
+  it('does not read the retired OPENROUTER_API_KEY name', async () => {
     const env = await loadEnv({ AI_API_KEY: '', OPENROUTER_API_KEY: 'old-key' });
-
-    expect(env.AI_API_KEY).toBe('old-key');
-  });
-
-  it('reads an empty value as unset on both names', async () => {
-    const env = await loadEnv({ AI_API_KEY: '', OPENROUTER_API_KEY: '' });
 
     expect(env.AI_API_KEY).toBeNull();
   });
 });
 
-describe('AI_BASE_URL', () => {
-  it('defaults to OpenRouter', async () => {
-    const env = await loadEnv({});
+describe('AI_BASE_URL and AI_MODEL', () => {
+  // No built-in endpoint or model: the OpenRouter values live in .env.example only.
+  it('are null when unset', async () => {
+    const env = await loadEnv({ AI_BASE_URL: '', AI_MODEL: '' });
 
-    expect(env.AI_BASE_URL).toBe('https://openrouter.ai/api/v1');
+    expect(env.AI_BASE_URL).toBeNull();
+    expect(env.AI_MODEL).toBeNull();
   });
 
   it('points at any OpenAI-compatible endpoint', async () => {

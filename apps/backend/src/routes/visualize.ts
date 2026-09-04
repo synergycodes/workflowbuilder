@@ -50,7 +50,8 @@ export function createVisualizeRoutes(
       return blocked;
     }
 
-    if (!env.AI_API_KEY) {
+    const { AI_API_KEY: apiKey, AI_BASE_URL: baseURL, AI_MODEL: modelId } = env;
+    if (!apiKey || !baseURL || !modelId) {
       return c.json({ code: 'adapt_disabled', message: 'AI adapt is not configured on this server.' }, 501);
     }
 
@@ -61,9 +62,9 @@ export function createVisualizeRoutes(
     const { content, format } = parsed.data;
 
     try {
-      const provider = createOpenAICompatible({ name: 'ai', baseURL: env.AI_BASE_URL, apiKey: env.AI_API_KEY });
+      const provider = createOpenAICompatible({ name: 'ai', baseURL, apiKey });
       const result = await generateText({
-        model: provider.chatModel(env.AI_MODEL),
+        model: provider.chatModel(modelId),
         system: FORMAT_PROMPTS[format],
         // Low temperature for stable structured output.
         temperature: 0.2,

@@ -2,9 +2,8 @@ function envOr(name: string, defaultValue: string): string {
   return process.env[name] ?? defaultValue;
 }
 
-// Empty string counts as unset. Compose passes absent optionals through as
-// `${VAR:-}`, so a bare `?? null` would read '' as a configured value and, for
-// the key below, shadow the fallback.
+// Empty string counts as unset: compose passes absent optionals through as
+// `${VAR:-}`, and a bare `?? null` would read '' as a configured value.
 function envOptional(name: string): string | null {
   return process.env[name] || null;
 }
@@ -25,14 +24,13 @@ export const env = {
   TEMPORAL_TLS_CA_PATH: envOptional('TEMPORAL_TLS_CA_PATH'),
   TEMPORAL_TLS_CERT_PATH: envOptional('TEMPORAL_TLS_CERT_PATH'),
   TEMPORAL_TLS_KEY_PATH: envOptional('TEMPORAL_TLS_KEY_PATH'),
+  // AI Agent nodes need all three. Any missing one: the worker still boots and runs
+  // every non-AI node; AI Agent nodes fail with `ai_not_configured` when reached.
+  // No built-in endpoint or model — nothing in the code points outside the network.
+  AI_API_KEY: envOptional('AI_API_KEY'),
   // Any OpenAI-compatible endpoint, including one inside your own network.
-  AI_BASE_URL: envOr('AI_BASE_URL', 'https://openrouter.ai/api/v1'),
-  // Null = the worker still boots and runs every non-AI node; AI Agent nodes
-  // fail with `ai_not_configured` when reached. OPENROUTER_API_KEY is the
-  // former name, still honoured so existing deployments keep working.
-  AI_API_KEY: envOptional('AI_API_KEY') ?? envOptional('OPENROUTER_API_KEY'),
-  // Cheap, fast default for the public demo; quality-per-cost over frontier capability.
-  AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
+  AI_BASE_URL: envOptional('AI_BASE_URL'),
+  AI_MODEL: envOptional('AI_MODEL'),
   // Optional. Enables the AI Agent's web-search tool; agents run without it when unset.
   TAVILY_API_KEY: process.env['TAVILY_API_KEY'],
 };

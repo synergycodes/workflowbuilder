@@ -34,17 +34,18 @@ See `.env.example`. Every variable has a working default:
 | `TEMPORAL_ADDRESS`   | Temporal server address               | `127.0.0.1:7233`                                     |
 | `TEMPORAL_NAMESPACE` | Namespace. Must match the backend's   | `default`                                            |
 | `AI_API_KEY`         | LLM for AI Agent nodes (optional)     | — (AI Agent nodes fail)                              |
-| `AI_BASE_URL`        | Any OpenAI-compatible endpoint        | `https://openrouter.ai/api/v1`                       |
-| `AI_MODEL`           | Model id, as the endpoint spells it   | `mistralai/mistral-small-3.2-24b-instruct`           |
+| `AI_BASE_URL`        | Any OpenAI-compatible endpoint        | — (AI Agent nodes fail)                              |
+| `AI_MODEL`           | Model id, as the endpoint spells it   | — (AI Agent nodes fail)                              |
 | `TAVILY_API_KEY`     | AI Agent's web-search tool (optional) | — (tool disabled)                                    |
 
-`AI_API_KEY` is optional by design: the worker boots without it and runs every non-AI node, and
-an AI Agent node that is reached fails with the `ai_not_configured` code rather than taking the
-whole worker down. `OPENROUTER_API_KEY` is the former name of this variable and is still read
-when `AI_API_KEY` is empty.
+The three `AI_*` variables are optional by design: the worker boots without them and runs every
+non-AI node, and an AI Agent node that is reached fails with the `ai_not_configured` code rather
+than taking the whole worker down. `AI_API_KEY` was previously called `OPENROUTER_API_KEY`; the
+old name is no longer read.
 
 Point `AI_BASE_URL` at any OpenAI-compatible server — a gateway, or a model hosted inside your
-own network — and no request leaves that network.
+own network — and no request leaves that network. There is no built-in endpoint or model:
+`.env.example` pre-fills the OpenRouter values the worker used before they became configurable.
 
 The connection to Temporal is env-driven too: `TEMPORAL_TLS`, `TEMPORAL_API_KEY` and the
 `TEMPORAL_TLS_CA_PATH` / `TEMPORAL_TLS_CERT_PATH` / `TEMPORAL_TLS_KEY_PATH` trio cover a hardened

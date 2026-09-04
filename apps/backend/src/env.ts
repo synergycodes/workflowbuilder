@@ -2,9 +2,8 @@ function envOr(name: string, defaultValue: string): string {
   return process.env[name] ?? defaultValue;
 }
 
-// Empty string counts as unset. Compose passes absent optionals through as
-// `${VAR:-}`, so a bare `?? null` would read '' as a configured value and, for
-// the key below, shadow the fallback.
+// Empty string counts as unset: compose passes absent optionals through as
+// `${VAR:-}`, and a bare `?? null` would read '' as a configured value.
 function envOptional(name: string): string | null {
   return process.env[name] || null;
 }
@@ -35,10 +34,11 @@ export const env = {
   TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
   // Null = Turnstile verification disabled (local dev runs unprotected).
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,
+  // AI adapt needs all three; any missing one disables the endpoint (returns 501).
+  // No built-in endpoint or model — nothing in the code points outside the network.
+  // The worker keeps its own copies.
+  AI_API_KEY: envOptional('AI_API_KEY'),
   // Any OpenAI-compatible endpoint, including one inside your own network.
-  AI_BASE_URL: envOr('AI_BASE_URL', 'https://openrouter.ai/api/v1'),
-  // Null = the "AI adapt" endpoint is disabled (returns 501). The worker keeps its own key.
-  // OPENROUTER_API_KEY is the former name, still honoured so existing deployments keep working.
-  AI_API_KEY: envOptional('AI_API_KEY') ?? envOptional('OPENROUTER_API_KEY'),
-  AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
+  AI_BASE_URL: envOptional('AI_BASE_URL'),
+  AI_MODEL: envOptional('AI_MODEL'),
 };

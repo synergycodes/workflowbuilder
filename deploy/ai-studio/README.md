@@ -25,7 +25,7 @@ service or step.
 
 ```bash
 cd deploy/ai-studio
-cp .env.example .env        # set OPENROUTER_API_KEY
+cp .env.example .env        # set AI_API_KEY to enable AI Agent nodes
 docker compose up -d --build
 ```
 
@@ -77,15 +77,17 @@ this compose never publishes them; don't undo that.
 ## Configuration
 
 See [.env.example](.env.example) — every variable is documented there.
-Swapping the LLM is a one-liner: change `AI_MODEL` to any
-[OpenRouter model id](https://openrouter.ai/models) and
-`docker compose up -d worker`.
+Swapping the model is a one-liner: change `AI_MODEL` to any id the endpoint
+understands (for OpenRouter, an [OpenRouter model id](https://openrouter.ai/models))
+and `docker compose up -d worker`.
 
 **Pointing at a different LLM.** `AI_BASE_URL` takes any OpenAI-compatible
 endpoint, so a gateway or a model hosted inside your own network works without
-a code change — set it alongside `AI_API_KEY` and `AI_MODEL`. Leave `AI_API_KEY`
-empty and the stack still comes up: every node type runs except AI Agent nodes,
-which fail with `ai_not_configured`.
+a code change — set it alongside `AI_API_KEY` and `AI_MODEL`. None of the three
+has a built-in default; `.env.example` pre-fills the OpenRouter values the stack
+used before the endpoint became configurable. Leave any of them empty and the
+stack still comes up: every node type runs except AI Agent nodes, which fail
+with `ai_not_configured`.
 
 **Pointing at a different Temporal.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`,
 `TEMPORAL_TLS` and `TEMPORAL_API_KEY` are passed to both the backend and the

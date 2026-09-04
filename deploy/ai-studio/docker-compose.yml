@@ -1,5 +1,5 @@
 # AI Studio production stack (WB-229). Usage: cp .env.example .env, set
-# OPENROUTER_API_KEY, then `docker compose up -d --build`. Only `web`
+# AI_API_KEY, then `docker compose up -d --build`. Only `web`
 # publishes a port.
 
 name: ai-studio
@@ -86,12 +86,10 @@ services:
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
       RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
-      # the backend calls the LLM itself for /api/visualize/adapt. Both key names are
-      # passed through; the app prefers AI_API_KEY and falls back to the older one.
+      # the backend calls the LLM itself for /api/visualize/adapt
       AI_API_KEY: ${AI_API_KEY:-}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      AI_BASE_URL: ${AI_BASE_URL:-https://openrouter.ai/api/v1}
-      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
     depends_on:
       app-db:
         condition: service_healthy
@@ -125,9 +123,8 @@ services:
       TEMPORAL_API_KEY: ${TEMPORAL_API_KEY:-}
       # empty is allowed: the worker starts and runs every node except AI Agent ones
       AI_API_KEY: ${AI_API_KEY:-}
-      OPENROUTER_API_KEY: ${OPENROUTER_API_KEY:-}
-      AI_BASE_URL: ${AI_BASE_URL:-https://openrouter.ai/api/v1}
-      AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
       # optional - empty disables the AI Agent's web search tool
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
     depends_on:

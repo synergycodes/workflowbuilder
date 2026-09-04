@@ -54,3 +54,21 @@ describe('createAiAgentExecutor with a key', () => {
     expect(executor).toBeTypeOf('function');
   });
 });
+
+describe('createAiAgentExecutor with a key but no endpoint or model', () => {
+  // Neither has a built-in default, so they gate the node exactly like the key does.
+  it('fails the node with the same code and names only the missing variables', () => {
+    const executor = createAiAgentExecutor({ apiKey: 'key', baseURL: null, modelId: null });
+
+    try {
+      executor(node, context());
+      expect.unreachable('executor should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(NodeExecutionError);
+      expect((error as NodeExecutionError).code).toBe('ai_not_configured');
+      expect((error as NodeExecutionError).message).toContain('AI_BASE_URL');
+      expect((error as NodeExecutionError).message).toContain('AI_MODEL');
+      expect((error as NodeExecutionError).message).not.toContain('AI_API_KEY');
+    }
+  });
+});

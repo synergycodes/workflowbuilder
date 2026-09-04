@@ -14,8 +14,11 @@ import { logger } from '../../logger';
 import { withPayloadSizeWarning } from '../../store-payload-warning';
 import { buildTemporalConnectionOptions } from './temporal-connection';
 
-if (!env.AI_API_KEY) {
-  logger.warn('no LLM key configured — AI Agent nodes will fail; every other node type runs as usual');
+const missingAiConfig = (['AI_API_KEY', 'AI_BASE_URL', 'AI_MODEL'] as const).filter((name) => !env[name]);
+if (missingAiConfig.length > 0) {
+  logger.warn('AI not configured — AI Agent nodes will fail; every other node type runs as usual', {
+    missing: missingAiConfig,
+  });
 }
 
 const executeAIAgent = createAiAgentExecutor({
