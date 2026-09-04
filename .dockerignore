@@ -43,3 +43,7 @@ deploy/
 **/*.cer
 **/*.p12
 **/*.pfx
+
+# air-gap bundle and image tarballs — a build must never copy them into an image
+**/ai-studio-offline
+**/*.tar
