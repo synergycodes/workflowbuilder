@@ -1,18 +1,27 @@
 // Worker DB access — raw SQL to avoid coupling worker to backend's Drizzle schema.
 import postgres from 'postgres';
 
-import { TERMINAL_EXECUTION_STATUSES } from '@workflow-builder/types/workflow-execution/execution-events';
+import {
+  type ExecutionEventType,
+  type ExecutionStatus,
+  TERMINAL_EXECUTION_STATUSES,
+} from '@workflow-builder/types/workflow-execution/execution-events';
 
 import { env } from './env';
 
 const sql = postgres(env.DATABASE_URL);
 
-// Widened alias: `status` arrives as a plain string, and `.includes` on a
-// literal-union tuple rejects it.
-const TERMINAL_STATUSES: readonly string[] = TERMINAL_EXECUTION_STATUSES;
+// Widened alias: `.includes` on the terminal-only tuple rejects the full status union.
+const TERMINAL_STATUSES: readonly ExecutionStatus[] = TERMINAL_EXECUTION_STATUSES;
 
 export const database = {
-  async emitExecutionEvent(executionId: string, sequence: number, type: string, payload?: unknown, nodeId?: string) {
+  async emitExecutionEvent(
+    executionId: string,
+    sequence: number,
+    type: ExecutionEventType,
+    payload?: unknown,
+    nodeId?: string,
+  ) {
     await sql`
       INSERT INTO execution_events (id, execution_id, sequence, timestamp, type, node_id, path_id, payload_json, tenant_id, created_at)
       VALUES (
@@ -34,7 +43,7 @@ export const database = {
     await sql`SELECT pg_notify('execution_events', ${executionId})`;
   },
 
-  async updateExecutionStatus(executionId: string, status: string, errorMessage?: string) {
+  async updateExecutionStatus(executionId: string, status: ExecutionStatus, errorMessage?: string) {
     const isTerminal = TERMINAL_STATUSES.includes(status);
 
     // Terminal statuses are immutable: a cancel cleanup landing after the run already

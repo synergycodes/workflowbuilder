@@ -38,7 +38,12 @@ export type {
 } from '../../types/src/workflow-execution/execution-model';
 
 // Defined on the sandbox-safe side so both halves of the package share one definition.
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './workflow/core-contract';
+export type {
+  ExecutionEventType,
+  ExecutionStatus,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './workflow/core-contract';
 
 // Restated for the same reason as WorkflowExecutionInput: the core's registry module
 // reaches for @workflow-builder/types by package name, and that name would survive

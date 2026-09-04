@@ -6,6 +6,7 @@
 // compile.
 import { describe, expect, it } from 'vitest';
 
+import type { EventEmitterPort as CoreEventEmitterPort } from '../../execution-core/src/ports/event-emitter.port';
 import type {
   WorkflowEnginePort as CoreWorkflowEnginePort,
   WorkflowExecutionInput as CoreWorkflowExecutionInput,
@@ -21,6 +22,7 @@ import type {
   WorkflowEnginePort,
   WorkflowExecutionInput,
 } from '../src/core-contract';
+import type { EventEmitterPort } from '../src/workflow/core-contract';
 
 type MutuallyAssignable<A, B> = [A] extends [B] ? ([B] extends [A] ? true : never) : never;
 
@@ -40,11 +42,15 @@ const registryMatchesCore: MutuallyAssignable<
   CoreNodeExecutorRegistry<TestNode>
 > = true;
 
+const emitterMatchesCore: MutuallyAssignable<EventEmitterPort, CoreEventEmitterPort> = true;
+
 describe('published contract vs execution-core', () => {
   it('states the same input, engine port and executor registry as the core', () => {
     // The real assertions are the declarations above: if any type drifts, this file
     // stops compiling and `pnpm typecheck` fails. The runtime check just keeps the
     // constants referenced.
-    expect(inputMatchesCore && portMatchesCore && executorMatchesCore && registryMatchesCore).toBe(true);
+    expect(
+      inputMatchesCore && portMatchesCore && executorMatchesCore && registryMatchesCore && emitterMatchesCore,
+    ).toBe(true);
   });
 });

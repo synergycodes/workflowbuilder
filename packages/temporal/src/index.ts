@@ -22,6 +22,8 @@ export { NodeExecutionError, PermanentNodeExecutionError, TransientNodeExecution
 export type {
   BaseNode,
   ExecutionContext,
+  ExecutionEventType,
+  ExecutionStatus,
   LogBindings,
   LoggerPort,
   NodeErrorPolicy,
