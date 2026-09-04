@@ -34,6 +34,32 @@ function eventTypes(store: RecordingStore, nodeId?: string): string[] {
   return store.events.filter((event) => nodeId === undefined || event.nodeId === nodeId).map((event) => event.type);
 }
 
+// node_not_waiting is retryable by contract: a verdict can race the parking
+// activation (see the decision log). Tests deliver verdicts the way callers should.
+async function executeVerdictWithRetry(send: () => Promise<unknown>): Promise<void> {
+  for (let attempt = 1; ; attempt += 1) {
+    try {
+      await send();
+      return;
+    } catch (error) {
+      const racingPark =
+        error instanceof WorkflowUpdateFailedError &&
+        (error.cause as { type?: string } | undefined)?.type === 'node_not_waiting';
+      if (!racingPark || attempt >= 40) throw error;
+      await new Promise((resolve) => setTimeout(resolve, 50));
+    }
+  }
+}
+
+async function expectRejected(update: Promise<unknown>, code: string): Promise<void> {
+  const outcome: unknown = await update.then(
+    () => 'unexpectedly accepted',
+    (error: unknown) => error,
+  );
+  expect(outcome).toBeInstanceOf(WorkflowUpdateFailedError);
+  expect((outcome as WorkflowUpdateFailedError).cause).toMatchObject({ type: code });
+}
+
 describe('durable pause', () => {
   let env: TestWorkflowEnvironment;
   let workflowBundle: { code: string };
@@ -83,7 +109,9 @@ describe('durable pause', () => {
     const handle = await startRun(taskQueue, 'pause-restart-execution', SINGLE_GATE_GRAPH);
 
     const worker1 = await createWorker(taskQueue, store, harness);
-    await worker1.runUntil(waitUntil(() => eventTypes(store, 'gate').includes('node_waiting'), 'the gate to park'));
+    await worker1.runUntil(
+      waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status'),
+    );
 
     // Worker 1 is gone; the run is parked in Event History, visible only as state.
     expect(harness.executed).toEqual(['start', 'gate']);
@@ -91,9 +119,9 @@ describe('durable pause', () => {
 
     const worker2 = await createWorker(taskQueue, store, harness);
     await worker2.runUntil(async () => {
-      await handle.executeUpdate(resolveNodeUpdate, {
-        args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
-      });
+      await executeVerdictWithRetry(() =>
+        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
+      );
       await handle.result();
     });
 
@@ -114,27 +142,57 @@ describe('durable pause', () => {
     const worker = await createWorker(taskQueue, store, harness);
     await worker.runUntil(async () => {
       await waitUntil(
-        () => eventTypes(store).filter((type) => type === 'node_waiting').length === 2,
+        () =>
+          eventTypes(store).filter((type) => type === 'node_waiting').length === 2 &&
+          store.statuses.some((entry) => entry.status === 'waiting'),
         'both gates to park',
       );
 
-      await handle.executeUpdate(resolveNodeUpdate, {
-        args: [{ nodeId: 'gate-a', resolution: { output: 'first' } }],
-      });
+      await executeVerdictWithRetry(() =>
+        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'first' } }] }),
+      );
       const rejection: unknown = await handle
         .executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'second' } }] })
         .catch((error: unknown) => error);
       expect(rejection).toBeInstanceOf(WorkflowUpdateFailedError);
       expect((rejection as WorkflowUpdateFailedError).cause).toMatchObject({ type: 'verdict_already_delivered' });
-      await handle.executeUpdate(resolveNodeUpdate, {
-        args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }],
-      });
+      await executeVerdictWithRetry(() =>
+        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }] }),
+      );
       await handle.result();
     });
 
     expect(harness.inputsSeen.join['gate-a']).toBe('first');
     expect(harness.inputsSeen.join['gate-b']).toBe('b-verdict');
     expect(harness.executed.filter((id) => id === 'join')).toHaveLength(1);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+  }, 120_000);
+
+  it('rejects malformed and misaddressed verdicts before acceptance; the parked run stays resolvable', async () => {
+    const taskQueue = 'pause-validation';
+    const store = createRecordingStore();
+    const harness = createPauseExecutors();
+    const handle = await startRun(taskQueue, 'pause-validation-execution', SINGLE_GATE_GRAPH);
+
+    const worker = await createWorker(taskQueue, store, harness);
+    await worker.runUntil(async () => {
+      await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
+
+      // Rejection classes live in verdict-validation.test.ts; this pins the
+      // end-to-end property: a rejected update leaves the parked run resolvable.
+      await expectRejected(handle.executeUpdate('resolveNode', { args: [] }), 'verdict_malformed');
+      await expectRejected(
+        handle.executeUpdate('resolveNode', { args: [{ nodeId: 'ghost', resolution: { output: 1 } }] }),
+        'verdict_for_unknown_node',
+      );
+
+      await executeVerdictWithRetry(() =>
+        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
+      );
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate', 'after']);
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
   }, 120_000);
 

@@ -15,12 +15,14 @@ verdict carries. This file records the decisions behind the Temporal side of the
   `createRunWorkflow` runs once per module evaluation and returns one function. Per-run
   state beside the port would appear to work only because the sandbox re-evaluates the
   module per activation — an implementation detail, not a contract.
-- **The resolutions map keeps entries forever; that is the first-write-wins.** The map
-  is both the wake-up condition for `condition()` and the record of delivered verdicts:
-  a second Update for the same node is rejected synchronously with
-  `verdict_already_delivered`. Entries are not deleted on consumption. A node is
-  scheduled at most once per run, and deleting the entry would let a second verdict
-  in. If re-runnable nodes ever appear, key the map by attempt, deliberately.
+- **One wait-state map per node: idle (absent) → waiting → resolved.** The map is the wake-up
+  condition for `condition()`, the validator's source of truth, and the
+  first-write-wins record. A `resolved` entry never leaves: deleting it on consumption
+  would let a second verdict in, so a duplicate is rejected synchronously with
+  `verdict_already_delivered`. A `waiting` entry is removed when the wait rejects
+  (cancellation), so a verdict arriving then gets `node_not_waiting`, not a false
+  success. A node is scheduled at most once per run; if re-runnable nodes ever appear,
+  key the map by attempt, deliberately.
 - **Registering the handler unconditionally is additive.** Handler registration writes
   nothing to Event History, and a `condition()` awaited without a deadline creates no
   timer command. The committed gateless history in `test/replay/` pins this.
@@ -30,8 +32,16 @@ verdict carries. This file records the decisions behind the Temporal side of the
   under pnpm's strict layout. Anchoring the annotation to `defineUpdate` keeps the
   declaration inside `@temporalio/workflow`, which is declared. The alternative was
   adding `@temporalio/common` to `dependencies`.
-- **Names.** Update `resolveNode`, input `{ nodeId, resolution }`, rejection code
-  `verdict_already_delivered`. The verdict content is opaque here: `resolution` is a
-  `CompletedNodeExecution` passed to the parked node untouched. Giving it a domain
-  shape belongs to the decision-contract work; validating it belongs to the decision
-  endpoint.
+- **The update validator guards engine integrity; domain validation stays out.** A
+  non-`TemporalFailure` thrown from an update handler fails the workflow task, which
+  retries and redelivers forever: one malformed verdict would wedge a parked run. A
+  validator throw runs before acceptance instead — the update is rejected, the task is
+  safe, nothing reaches history, and replay skips validators. Three invariants only:
+  the update cannot kill the run, success means it landed on a waiting node, a verdict
+  cannot do what an executor could not. Consequence: a verdict racing the parking
+  activation is rejected `node_not_waiting` (updates are processed before workflow
+  code continues); truthful at validation time, and retryable. Verdict meaning and
+  authorship stay with the decision-endpoint and claim work.
+- **Names.** Update `resolveNode`, input `{ nodeId, resolution }`. The verdict content
+  is opaque here: `resolution` is a `CompletedNodeExecution` passed to the parked node
+  untouched. Giving it a domain shape belongs to the decision-contract work.

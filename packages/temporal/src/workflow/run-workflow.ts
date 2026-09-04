@@ -28,6 +28,7 @@ import {
 import { resolveFromValidatedProfiles } from './node-activity-options';
 import { freezeNodeActivityProfiles } from './profile-validation';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
+import { type NodeWaitState, validateVerdict } from './verdict-validation';
 
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
   DEFAULT_DATABASE_ACTIVITY_PROFILE,
@@ -54,14 +55,16 @@ export function createRunWorkflow(options: RunWorkflowOptions = {}) {
 
   return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
     // Per-instance: must stay inside the workflow function (durable-pause.decision-log.md).
-    const resolutions = new Map<string, CompletedNodeExecution>();
+    const waits = new Map<string, NodeWaitState>();
+    const knownNodes = new Set(input.definition.nodes.map((node) => node.id));
 
-    setHandler(resolveNodeUpdate, ({ nodeId, resolution }) => {
-      if (resolutions.has(nodeId)) {
-        throw ApplicationFailure.nonRetryable(`Node "${nodeId}" already has a verdict`, 'verdict_already_delivered');
-      }
-      resolutions.set(nodeId, resolution);
-    });
+    setHandler(
+      resolveNodeUpdate,
+      ({ nodeId, resolution }) => {
+        waits.set(nodeId, { status: 'resolved', resolution });
+      },
+      { validator: (verdict) => validateVerdict(verdict, knownNodes, waits) },
+    );
 
     const runner: ActivityRunnerPort<BaseNode> = {
       // Proxied per call, not once per module: the options depend on the node.
@@ -72,8 +75,16 @@ export function createRunWorkflow(options: RunWorkflowOptions = {}) {
         return nodeActivities.executeNode(node, context);
       },
       awaitResolution: async (nodeId) => {
-        await condition(() => resolutions.has(nodeId));
-        return resolutions.get(nodeId)!;
+        waits.set(nodeId, { status: 'waiting' });
+        try {
+          await condition(() => waits.get(nodeId)?.status === 'resolved');
+          // The condition above only unblocks on 'resolved'.
+          return (waits.get(nodeId) as Extract<NodeWaitState, { status: 'resolved' }>).resolution;
+        } finally {
+          if (waits.get(nodeId)?.status === 'waiting') {
+            waits.delete(nodeId);
+          }
+        }
       },
     };
 
