@@ -14,6 +14,7 @@ import {
 } from '../src/index';
 import { resolveNodeUpdate } from '../src/workflow/index';
 import { type RecordingStore, createRecordingStore } from './fixtures/graph';
+import { executeVerdictWithRetry, waitUntil } from './fixtures/helpers';
 import {
   type PauseHarness,
   type PauseTestNode,
@@ -22,33 +23,8 @@ import {
   createPauseExecutors,
 } from './fixtures/pause-graph';
 
-async function waitUntil(check: () => boolean, what: string, timeoutMs = 30_000): Promise<void> {
-  const deadline = Date.now() + timeoutMs;
-  while (!check()) {
-    if (Date.now() > deadline) throw new Error(`timed out waiting for ${what}`);
-    await new Promise((resolve) => setTimeout(resolve, 50));
-  }
-}
-
 function eventTypes(store: RecordingStore, nodeId?: string): string[] {
   return store.events.filter((event) => nodeId === undefined || event.nodeId === nodeId).map((event) => event.type);
-}
-
-// node_not_waiting is retryable by contract: a verdict can race the parking
-// activation (see the decision log). Tests deliver verdicts the way callers should.
-async function executeVerdictWithRetry(send: () => Promise<unknown>): Promise<void> {
-  for (let attempt = 1; ; attempt += 1) {
-    try {
-      await send();
-      return;
-    } catch (error) {
-      const racingPark =
-        error instanceof WorkflowUpdateFailedError &&
-        (error.cause as { type?: string } | undefined)?.type === 'node_not_waiting';
-      if (!racingPark || attempt >= 40) throw error;
-      await new Promise((resolve) => setTimeout(resolve, 50));
-    }
-  }
 }
 
 async function expectRejected(update: Promise<unknown>, code: string): Promise<void> {
