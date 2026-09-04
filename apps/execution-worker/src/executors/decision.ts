@@ -28,7 +28,8 @@ export function executeDecision(node: DecisionNode, context: ExecutionContext): 
 }
 
 function branchMatches(conditions: DecisionBranchCondition[], context: ExecutionContext): boolean {
-  if (conditions.length === 0) return false;
+  // no conditions = the explicit catch-all the no_branch_matched error instructs authors to add
+  if (conditions.length === 0) return true;
 
   let result = evaluateCondition(conditions[0]!, context);
   for (let index = 1; index < conditions.length; index++) {
