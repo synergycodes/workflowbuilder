@@ -5,15 +5,15 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
 
-| Service       | Image                          | Role                                            | Exposed                  |
-| ------------- | ------------------------------ | ----------------------------------------------- | ------------------------ |
-| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend   | `${WEB_PORT}` (only one) |
-| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                    | internal                 |
-| `worker`      | `ai-studio-runtime`            | Temporal worker, makes the OpenRouter LLM calls | internal                 |
-| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                 | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events           | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                      | internal                 |
-| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                  | `127.0.0.1:8233`         |
+| Service       | Image                          | Role                                          | Exposed                  |
+| ------------- | ------------------------------ | --------------------------------------------- | ------------------------ |
+| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend | `${WEB_PORT}` (only one) |
+| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                  | internal                 |
+| `worker`      | `ai-studio-runtime`            | Temporal worker, makes the LLM calls          | internal                 |
+| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                               | internal                 |
+| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events         | internal                 |
+| `temporal-db` | `postgres:16`                  | Temporal's own state store                    | internal                 |
+| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                | `127.0.0.1:8233`         |
 
 The three Temporal rows come from
 [`docker-compose.override.yml`](docker-compose.override.yml), which compose
@@ -108,7 +108,10 @@ cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and
 `COMPOSE_FILE=docker-compose.yml` to `.env` at the same time: it leaves the
 override file out, so the bundled cluster is not started and cannot block the
 apps, and `backend` / `worker` depend only on `app-db`. Run
-`docker compose down --remove-orphans` once when switching. The bundled debug
+`docker compose down --remove-orphans` once when switching. A contradictory
+`TEMPORAL_*` combination stops the worker at boot (`docker compose logs worker`);
+the backend connects on first use, so it still passes its healthcheck and fails
+on the first Play — check the worker, not `/api/health`. The bundled debug
 UI (`--profile debug`) is part of the override and only ever shows the bundled
 cluster — an external cluster has its own UI. For a private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
 read-only into both containers at `/etc/workflowbuilder/tls`) and set

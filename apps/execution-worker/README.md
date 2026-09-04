@@ -26,7 +26,7 @@ Requires Postgres + Temporal running. Start them with `pnpm infra:up`.
 
 ## Environment
 
-See `.env.example`. Every variable has a working default:
+See `.env.example`. Everything the bundled dev stack needs has a working default; the `AI_*` trio is optional:
 
 | Var                  | Purpose                               | Default                                              |
 | -------------------- | ------------------------------------- | ---------------------------------------------------- |
