@@ -79,11 +79,12 @@ the compose plugin (plus ~3 GB of disk for the loaded images).
 
 ```bash
 cd deploy/ai-studio
-./pack-offline.sh ../../ai-studio-offline   # any output directory
+./pack-offline.sh ~/ai-studio-offline   # any directory outside the checkout
 ```
 
 The script builds both images, pulls the infra images and writes one directory
-to ship:
+to ship. It refuses a directory inside the checkout: the repo root is the image
+build context, so a bundle left there would be copied into the next build.
 
 - `ai-studio-images.tar` (~1 GB): `ai-studio-runtime`, `ai-studio-web`,
   Postgres, Temporal and the Temporal UI (drop `--profile debug` from the
