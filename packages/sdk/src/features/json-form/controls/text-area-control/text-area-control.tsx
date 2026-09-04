@@ -1,14 +1,15 @@
 import { TextArea } from '@workflowbuilder/ui';
 import { useEffect, useState } from 'react';
 
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { TextAreaControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function TextAreaControl(props: TextAreaControlProps) {
-  const { data, handleChange, path, enabled, uischema } = props;
-  const { placeholder, minRows, maxRows, disabled } = uischema;
-  const isDisabled = !enabled || disabled === true;
+  const { data, handleChange, path, uischema } = props;
+  const { placeholder, minRows, maxRows } = uischema;
+  const isEditable = useIsControlEditable(props);
 
   const [inputValue, setInputValue] = useState<string>(data);
 
@@ -27,7 +28,7 @@ function TextAreaControl(props: TextAreaControlProps) {
   return (
     <ControlWrapper {...props}>
       <TextArea
-        disabled={isDisabled}
+        disabled={!isEditable}
         value={inputValue}
         minRows={minRows}
         maxRows={maxRows}
