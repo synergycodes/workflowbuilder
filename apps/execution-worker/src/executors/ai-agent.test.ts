@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ExecutionContext, NodeExecutionError } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  classifyNodeError,
+} from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { createAiAgentExecutor } from './ai-agent';
@@ -41,6 +46,16 @@ describe('createAiAgentExecutor without a key', () => {
       expect(error).toBeInstanceOf(NodeExecutionError);
       expect((error as NodeExecutionError).code).toBe('ai_not_configured');
       expect((error as NodeExecutionError).message).toContain('AI_API_KEY');
+    }
+  });
+
+  it('is permanent, so the engine adapter stops after one attempt', () => {
+    try {
+      executor(node, context());
+      expect.unreachable('executor should have thrown');
+    } catch (error) {
+      expect(error).toBeInstanceOf(PermanentNodeExecutionError);
+      expect(classifyNodeError(error)).toBe('permanent');
     }
   });
 });
