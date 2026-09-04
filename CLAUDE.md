@@ -21,7 +21,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)             |
 | `pnpm build`                 | -    | Build the demo app                                                                      |
 | `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)              |
-| `pnpm check`                 | -    | Lint + typecheck + format + knip                                                        |
+| `pnpm check`                 | -    | Lint + typecheck + format + knip + deploy Dockerfile air-gap guard                      |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 

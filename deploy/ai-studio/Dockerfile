@@ -34,7 +34,7 @@ COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
 COPY . .
-RUN sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
+RUN --network=none sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
 
 # @workflowbuilder/temporal is the one workspace dependency of backend/worker that
 # ships built output: its `exports` point at ./dist, and .dockerignore keeps dist out
@@ -42,21 +42,21 @@ RUN sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
 # because tsup is a devDependency and that install is --prod. So it is built here,
 # with dev dependencies present, and only the result is carried over.
 FROM source AS package-build
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+RUN --network=none --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --offline --filter @workflowbuilder/temporal...
-RUN pnpm build:temporal
+RUN --network=none pnpm build:temporal
 
 # tsx runs TS directly — required anyway for the worker, whose workflow
 # sandbox bundles from TS source on disk at runtime.
 #
-# Every install is strict --offline: past the pnpm bootstrap in `base` and
-# `pnpm fetch` above, no step needs the network — and every ordinary build
-# proves it, because a dependency that sneaks past the lockfile into a
-# mid-install download fails right here instead of quietly keeping the image
-# registry-dependent.
+# Every RUN after `pnpm fetch` is --network=none, so BuildKit cuts egress for
+# the whole step: `--offline` only stops pnpm's own resolver, while lifecycle
+# scripts and build commands would still reach the registry. A step that needs
+# the network fails every ordinary build. `tools/check-offline-build.mjs` fails
+# `pnpm check` if a post-fetch RUN loses the flag.
 FROM source AS runtime
 COPY --from=package-build /app/packages/temporal/dist ./packages/temporal/dist
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+RUN --network=none --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     # `prepare` runs husky at the root, and `tsup` in packages/temporal — neither is
     # available in a --prod install, and the dist copied above is what it would produce
     npm pkg delete scripts.prepare && \
@@ -68,9 +68,9 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 # proxied by the web target's nginx.
 FROM source AS frontend-build
 ARG VITE_BACKEND_URL=
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+RUN --network=none --mount=type=cache,id=pnpm-store,target=/pnpm/store \
     pnpm install --frozen-lockfile --offline --filter @workflow-builder/ai-studio...
-RUN VITE_BACKEND_URL=$VITE_BACKEND_URL pnpm build:ai-studio
+RUN --network=none VITE_BACKEND_URL=$VITE_BACKEND_URL pnpm build:ai-studio
 
 FROM nginx:1.31-alpine AS web
 COPY deploy/ai-studio/nginx/default.conf /etc/nginx/conf.d/default.conf
