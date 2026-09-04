@@ -7,7 +7,7 @@
 
 > **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
 
-Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows defined on the canvas via Temporal + OpenRouter.
+Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows defined on the canvas via Temporal and an OpenAI-compatible LLM endpoint (`AI_BASE_URL`).
 
 ## Architecture
 
@@ -56,7 +56,31 @@ DATABASE_URL=postgresql://wb:wb@127.0.0.1:5432/workflow_builder
 TEMPORAL_ADDRESS=127.0.0.1:7233
 ```
 
-Worker additionally needs `OPENROUTER_API_KEY` and optionally `AI_MODEL`. See [`apps/execution-worker/README.md`](../execution-worker/README.md).
+Both also read `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` — all optional, and each side degrades
+on its own when any of them is missing: the backend's AI adapt endpoint returns 501, and the worker
+runs everything except AI Agent nodes. See [`apps/execution-worker/README.md`](../execution-worker/README.md).
+
+### Connecting to a secured Temporal cluster
+
+The defaults above open a plaintext connection to the bundled dev cluster. Everything about the
+connection is env-driven, so a hardened cluster or Temporal Cloud needs no code change:
+
+| Var                      | Purpose                                                      | Default       |
+| ------------------------ | ------------------------------------------------------------ | ------------- |
+| `TEMPORAL_NAMESPACE`     | Namespace to use. Must match the worker's                    | `default`     |
+| `TEMPORAL_TLS`           | `true` requires TLS, `false` asserts plaintext, empty infers | empty (infer) |
+| `TEMPORAL_API_KEY`       | API key auth (Temporal Cloud). Implies TLS                   | —             |
+| `TEMPORAL_TLS_CA_PATH`   | PEM for a private certificate authority                      | —             |
+| `TEMPORAL_TLS_CERT_PATH` | Client certificate for mTLS. Set with the key                | —             |
+| `TEMPORAL_TLS_KEY_PATH`  | Client private key for mTLS. Set with the certificate        | —             |
+
+Any credential turns TLS on by itself, so `TEMPORAL_TLS` only has to be set to force TLS with no
+credentials, or to assert plaintext. Contradictory combinations — half an mTLS pair, an API key
+together with a client certificate, or credentials alongside `TEMPORAL_TLS=false` — are rejected
+with an explanatory error when the connection opens, rather than being silently ignored.
+
+For Temporal Cloud, set `TEMPORAL_ADDRESS` to `<namespace>.<accountId>.tmprl.cloud:7233`,
+`TEMPORAL_NAMESPACE` to `<namespace>.<accountId>`, and `TEMPORAL_API_KEY` to your key.
 
 ## Scripts
 

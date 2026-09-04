@@ -26,21 +26,38 @@ Requires Postgres + Temporal running. Start them with `pnpm infra:up`.
 
 ## Environment
 
-See `.env.example`. Required:
+See `.env.example`. Everything the bundled dev stack needs has a working default; the `AI_*` trio is optional:
 
-| Var                  | Purpose                            | Default                                              |
-| -------------------- | ---------------------------------- | ---------------------------------------------------- |
-| `OPENROUTER_API_KEY` | AI agent activities (**required**) | —                                                    |
-| `DATABASE_URL`       | Execution events + status          | `postgresql://wb:wb@127.0.0.1:5432/workflow_builder` |
-| `TEMPORAL_ADDRESS`   | Temporal server address            | `127.0.0.1:7233`                                     |
-| `AI_MODEL`           | OpenRouter model ID                | `anthropic/claude-3.5-haiku`                         |
+| Var                  | Purpose                               | Default                                              |
+| -------------------- | ------------------------------------- | ---------------------------------------------------- |
+| `DATABASE_URL`       | Execution events + status             | `postgresql://wb:wb@127.0.0.1:5432/workflow_builder` |
+| `TEMPORAL_ADDRESS`   | Temporal server address               | `127.0.0.1:7233`                                     |
+| `TEMPORAL_NAMESPACE` | Namespace. Must match the backend's   | `default`                                            |
+| `AI_API_KEY`         | LLM for AI Agent nodes (optional)     | — (AI Agent nodes fail)                              |
+| `AI_BASE_URL`        | Any OpenAI-compatible endpoint        | — (AI Agent nodes fail)                              |
+| `AI_MODEL`           | Model id, as the endpoint spells it   | — (AI Agent nodes fail)                              |
+| `TAVILY_API_KEY`     | AI Agent's web-search tool (optional) | — (tool disabled)                                    |
+
+The three `AI_*` variables are optional by design: the worker boots without them and runs every
+non-AI node, and an AI Agent node that is reached fails with the `ai_not_configured` code rather
+than taking the whole worker down. `AI_API_KEY` was previously called `OPENROUTER_API_KEY`; the
+old name is no longer read.
+
+Point `AI_BASE_URL` at any OpenAI-compatible server — a gateway, or a model hosted inside your
+own network — and no request leaves that network. There is no built-in endpoint or model:
+`.env.example` pre-fills the OpenRouter values the worker used before they became configurable.
+
+The connection to Temporal is env-driven too: `TEMPORAL_TLS`, `TEMPORAL_API_KEY` and the
+`TEMPORAL_TLS_CA_PATH` / `TEMPORAL_TLS_CERT_PATH` / `TEMPORAL_TLS_KEY_PATH` trio cover a hardened
+cluster or Temporal Cloud. The backend reads the same variables and must agree on the namespace —
+the full table is in [`apps/backend/README.md`](../backend/README.md#connecting-to-a-secured-temporal-cluster).
 
 ## Structure
 
 ```
 src/
 ├── database.ts            # Raw SQL for exec events + status updates (no Drizzle — avoids backend schema coupling)
-├── env.ts                 # Centralized env validation — fail fast at module load
+├── env.ts                 # Centralized env reading, with the defaults documented above
 └── engines/
     └── temporal/
         ├── worker.ts                      # Worker bootstrap: executors + store, handed to WorkflowBuilderPlugin
@@ -54,9 +71,10 @@ own: one executor per node type and the database as the store port.
 ## Temporal specifics
 
 - **Task queue:** `workflow-execution`, read from `plugin.taskQueue` so the backend and the worker cannot drift apart. Both default to the same constant in the package.
+- **Namespace:** `TEMPORAL_NAMESPACE`, default `default`. Unlike the task queue this is _not_ shared through the plugin, so the two apps have to be configured to agree — a mismatch is silent, the worker simply never sees the backend's submissions.
 - **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID. Also owned by the package.
 - **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. Exported as `DEFAULT_DATABASE_ACTIVITY_PROFILE` and `DEFAULT_NODE_ACTIVITY_PROFILE`.
-- **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps today's behavior — the reference executors have not been classified yet.
+- **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps today's behavior. Of the reference executors, only the AI Agent's `ai_not_configured` is classified (permanent) so far; the rest are still unclassified.
 - **Sandbox constraint:** `workflows.ts` is bundled into V8 with no Web APIs. It may only re-export from `@workflowbuilder/temporal/workflow`, never from the package root.
 - **Editing the package:** the worker imports its built `dist`, so run `pnpm build:temporal` after changing `packages/temporal/src`.
 - **Deploys that change the emitted event set:** drain in-flight runs first. Replaying an old run's history against a new emit sequence diverges — see [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.

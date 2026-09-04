@@ -31,3 +31,6 @@ examples/
 **/.env
 **/.env.*
 !**/.env.example
+
+# certificate material is mounted at runtime — never built into an image
+deploy/ai-studio/tls
