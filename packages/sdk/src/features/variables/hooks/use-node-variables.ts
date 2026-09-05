@@ -64,7 +64,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
     // Variables can’t change while the modal containing them is in use, so we only need to refresh them when they change.
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastUpdateTimestamp, nodeId, lastUpdateTimestamp, excludeTypes, includeTypes, edges.length, nodes.length]);
+  }, [lastUpdateTimestamp, nodeId, excludeTypes, includeTypes, edges.length, nodes.length]);
 
   return useMemo(() => {
     const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];
