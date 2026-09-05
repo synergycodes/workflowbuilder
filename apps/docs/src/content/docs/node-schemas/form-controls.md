@@ -152,6 +152,38 @@ Multi-line variant of `VariableText`. Same `{{...}}` placeholder behaviour.
 { type: 'VariableTextArea', scope: '#/properties/messageBody', minRows: 4 }
 ```
 
+## `VariableDynamic`
+
+Typed input that lets the user **either type a literal value or pick a single upstream variable**. A toggle button in the field switches between the two modes: the variable mode shows a select listing only upstream outputs whose type matches `variableType`, the manual mode shows a widget picked from `variableType`:
+
+| `variableType`         | Manual widget                       | Saved value                                      |
+| ---------------------- | ----------------------------------- | ------------------------------------------------ |
+| `'string'`             | Text input with inline `{{` picker  | trimmed `string`, or `undefined` when empty      |
+| `'number'`             | Text input with numeric validation  | `number`, or `undefined` when not a valid number |
+| `'boolean'`            | True / False select                 | `boolean`, or `undefined` when unset             |
+| `'date'`, `'datetime'` | Date picker (+ time for `datetime`) | ISO 8601 `string`                                |
+
+Unlike `VariableText`, the stored value is either a typed literal or exactly one variable reference — `{{nodes.<id>.<output>}}` for an upstream node output or `{{global.<id>}}` for a global variable. Mixed text is not possible. The reference is always stored as a `string`, even when `variableType` is `'number'` or `'boolean'`. The variable toggle is hidden when no upstream output of a compatible type exists.
+
+| Prop           | Type                                                        | Required | Notes                                                                                                                                                  |
+| -------------- | ----------------------------------------------------------- | -------- | ------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `variableType` | `'string' \| 'number' \| 'boolean' \| 'date' \| 'datetime'` | yes      | Drives the manual widget, the value coercion on blur, and which upstream outputs are suggested (`string` also accepts `number` / `date` / `datetime`). |
+| `placeholder`  | string                                                      | no       | Empty-state hint. Applies to the `string` / `number` widgets only.                                                                                     |
+
+```ts
+// schema.ts
+{
+  retries: { type: 'number' },
+  untilDate: { type: 'string' },
+}
+```
+
+```ts
+// uischema.ts
+{ type: 'VariableDynamic', scope: '#/properties/retries', variableType: 'number' }
+{ type: 'VariableDynamic', scope: '#/properties/untilDate', variableType: 'date' }
+```
+
 ## `MessageOnError`
 
 Inline message that surfaces when a node-level validation error matches the `scope`. Renders nothing if there's no error on that property — useful for context-specific guidance ("A custom error message") next to the affected field.

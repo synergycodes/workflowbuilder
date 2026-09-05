@@ -58,10 +58,6 @@ export function getFlattenedPropertiesFromJsonSchema7(schema: JsonSchema7): Flat
     });
 
     return {
-      response: {
-        type: 'object',
-        label: 'Response',
-      },
       ...fields,
     };
   }

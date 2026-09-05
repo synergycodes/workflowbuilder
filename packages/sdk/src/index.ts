@@ -230,6 +230,7 @@ export {
   EDGE_OFFSET,
   SELF_CONNECTING_EDGE_LABEL_OFFSET,
 } from './features/diagram/edges/edge.consts';
+export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // =============================================================================
 // i18n
