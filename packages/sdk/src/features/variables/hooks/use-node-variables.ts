@@ -5,6 +5,7 @@ import type { VariableType } from '../../../node/node-output-schema';
 import { useStore } from '../../../store/store';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
 import { getSuggestionsFromVariableIndex } from '../stores/core/get-suggestions-node-data/get-suggestions-from-variables-index';
+import { useVariablesSuggestionsStore } from '../stores/use-variable-suggestions-store';
 import { filterSuggestionsByTypes } from '../utils/core/filter-suggestions-by-types';
 import { getAvailableVariablesByNodeId } from '../utils/core/get-available-variables-by-node-id';
 
@@ -23,7 +24,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
   const edges = useStore((store) => store.edges);
-
+  const lastUpdateTimestamp = useVariablesSuggestionsStore((store) => store.lastUpdateTimestamp);
   const { t } = useTranslation();
 
   const globalSuggestionsGroups = useMemo(() => {
@@ -63,7 +64,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
     // Variables can’t change while the modal containing them is in use, so we only need to refresh them when they change.
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [nodeId, edges.length, nodes.length]);
+  }, [lastUpdateTimestamp, nodeId, lastUpdateTimestamp, excludeTypes, includeTypes, edges.length, nodes.length]);
 
   return useMemo(() => {
     const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];

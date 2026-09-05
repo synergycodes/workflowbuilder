@@ -4,6 +4,7 @@ import { devtools } from 'zustand/middleware';
 import type { SuggestionsBySourceHandle, SuggestionsNodeData } from './types';
 
 export type VariablesSuggestionsStore = {
+  lastUpdateTimestamp: number;
   commonByType: {
     [nodeType: string]: SuggestionsBySourceHandle | undefined;
   };
@@ -13,6 +14,7 @@ export type VariablesSuggestionsStore = {
 };
 
 export const emptyVariablesSuggestionsStore: VariablesSuggestionsStore = {
+  lastUpdateTimestamp: 0,
   commonByType: {},
   byNodeId: {},
 };
