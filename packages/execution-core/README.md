@@ -8,7 +8,7 @@ The execution layer is split into hexagonal layers so the workflow engine (Tempo
 
 ```
 backend route  ──▶  WorkflowEnginePort<TNode>  ──┐
-                                                  ├──▶  TemporalEngine  ──▶  Temporal
+                                                  ├──▶  TemporalWorkflowEngine  ──▶  Temporal
                                                   └──▶  (future) InMemoryEngine, BullMQEngine, …
 
 worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort)
@@ -27,14 +27,14 @@ worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, Even
 }
 ```
 
-- `@workflow-builder/execution-core` — full surface: `runGraph`, ports, registry, `resolveExecutor`, template resolver, `NodeExecutionError`. Use from activities, tests, backend adapters.
+- `@workflow-builder/execution-core` — full surface: `runGraph`, ports, registry, `resolveExecutor`, template resolver, the `NodeExecutionError` family. Use from activities, tests, backend adapters.
 - `@workflow-builder/execution-core/workflow` — sandbox-safe subset: `runGraph`, context type, ports only. Use from code running inside Temporal's V8 sandbox (`workflows/*.ts`).
 
 The split exists because Temporal workflows run in a V8 sandbox that lacks `TransformStream`, `fetch`, and other Web APIs pulled in transitively by I/O-heavy executor code. Importing the root barrel from a workflow file would break the sandbox bundle.
 
 ## Generic over the consumer's node union
 
-Everything that touches nodes is parameterized over `TNode extends BaseNode`. `BaseNode` is `{ id; type; config: unknown }` — the only thing the runner needs to know. Each consumer defines its own concrete discriminated union (e.g. `type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode`) and binds it at the registry and port-instantiation sites.
+Everything that touches nodes is parameterized over `TNode extends BaseNode`. `BaseNode` is `{ id; type; config: unknown }` plus three optional runner-level fields — `label`, `errorPolicy` and `role` — which the layer that builds the `WorkflowExecutionInput` lifts out of the authored properties. That is the only thing the runner needs to know. Each consumer defines its own concrete discriminated union (e.g. `type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode`) and binds it at the registry and port-instantiation sites; intersect the variants with `BaseNode` so those three stay declared.
 
 ```ts
 import type { BaseNode } from '@workflow-builder/types/workflow-execution/execution-model';
@@ -57,7 +57,7 @@ src/
 ├── resolve-start-node.ts    # Entry-shape rule: exactly one `role: 'start'` node, no orphans
 ├── execution-context.ts     # Readonly context passed to every node executor
 ├── ports/
-│   ├── workflow-engine.port.ts   # submit(), cancel() — implemented by adapters (TemporalEngine, …)
+│   ├── workflow-engine.port.ts   # submit(), cancel() — implemented by adapters (TemporalWorkflowEngine, …)
 │   ├── activity-runner.port.ts   # executeNode() — implemented by worker via proxyActivities
 │   └── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
@@ -92,7 +92,7 @@ Concrete executors and node configs live in the worker package that consumes the
    }
    ```
 
-   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it.
+   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it. For what to throw when it cannot produce a result, see [Transient vs permanent failures](#transient-vs-permanent-failures).
 
 3. Register it in your worker's `NodeExecutorRegistry<MyNode>`:
 
@@ -105,9 +105,32 @@ Concrete executors and node configs live in the worker package that consumes the
 
 The registry's mapped type — `{ [K in TNode['type']]: NodeExecutor<Extract<TNode, { type: K }>> }` — gives you full narrowing: each entry's executor sees its variant's config concretely, with no casts.
 
+The registry is a plain object, and `node.type` is an arbitrary string that reaches the runner from whatever authored the diagram. So every lookup keyed by it goes through `Object.hasOwn` rather than a bare index, or a node typed `constructor` resolves `Object.prototype.constructor` and gets it called as its executor. `resolveExecutor` does this for you; anything else you key by `node.type` has to do the same. Building the registry with `Object.create(null)`, or handing the runner a `Map`, removes the hazard at the source rather than at each lookup.
+
+## Transient vs permanent failures
+
+An executor declares at the throw site whether the failure is worth another attempt. The engine adapter reads the declaration and decides whether to retry the node; the runner never infers it from a status code.
+
+| Throw                                      | Meaning                                                                      | Example                                                       |
+| ------------------------------------------ | ---------------------------------------------------------------------------- | ------------------------------------------------------------- |
+| `PermanentNodeExecutionError(code, msg)`   | A retry would fail identically. The node stops on its first attempt.         | Rejected API key, a 400, a config the node can never satisfy. |
+| `TransientNodeExecutionError(code, msg)`   | A later attempt could succeed. Retried under the engine's own policy.        | Timeout, rate limit, 5xx.                                     |
+| `NodeExecutionError(code, msg)` or `Error` | Unclassified. Retried exactly as before — marking is opt-in, never inferred. | Anything you have not made a judgment call about yet.         |
+
+Both classes extend `NodeExecutionError`, so `code` keeps working as it always did, and so does a consumer subclass of either:
+
+```ts
+throw new PermanentNodeExecutionError('bad_api_key', 'Provider rejected the API key');
+throw new TransientNodeExecutionError('rate_limited', 'Provider rate limit hit', { cause: error });
+```
+
+Two things this does **not** do. Marking an error transient does not raise the attempt limit — the engine's retry policy still caps it, so transient buys visibility rather than persistence. And classification is orthogonal to `errorPolicy` below: it decides whether the node is _retried_, while `errorPolicy` decides what the graph does once the node has finally given up.
+
+For a classified failure the `node_failed` payload also carries the attempt the node died on (`attempt`), which is the only place a retry count is visible — the runner cannot observe retries itself, so the count is reported by the adapter. An unclassified failure emits exactly what it always did.
+
 ## Per-node error policy
 
-Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
+Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`, as are `label` and `role`). The runner consults it after catching a node error and decides whether to propagate, absorb, or route the failure.
 
 | Policy         | When the node throws                                                                                                                                                                                                                                                                                    | Use case                                                |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------- |
@@ -180,6 +203,12 @@ Failure always wins. An unhandled node failure returns before the terminal check
 
 `Workflow stalled: nodes never became ready` stays a **failure** and keeps its own name. A stall is the scheduler genuinely unable to proceed — a cycle, or a dangling-edge bug — where an incomplete run has finished and simply did not reach everything. Two different conditions, two different words.
 
+## Recorded step inputs and payload redaction
+
+Every `node_started` event records what the step was given: `{ config, visibleNodeIds }` — the node's frozen config plus the ids of every output visible at start (the same wave snapshot the executor receives; executors and templates may read any completed node's output, not just direct predecessors). The output _values_ are deliberately not copied: each is already recorded exactly once, at a lower sequence, in its own `node_completed` event — or `node_failed`, for a failure absorbed by errorPolicy `'continue'`/`'errorRoute'` — so copying them would grow Postgres, Temporal history, and the SSE stream quadratically with graph depth while adding no information. `reconstructNodeInputs(events, nodeId)` joins the ids back to the values and returns `{ config, nodeOutputs }`, a faithful record for diagnosing a failure or replaying a step with corrected input. `variables`, `global`, and `triggerPayload` are not recorded: the first is the server-side secrets bag, and the trigger payload is already frozen on the execution row. Events recorded before inputs were captured carry no payload, which is why `NodeStartedEvent.payload` is optional — `reconstructNodeInputs` returns `undefined` for those.
+
+Every payload — inputs, outputs, errors — passes through `redactSensitive` (`redact.ts`) before it crosses `EventEmitterPort`. Event history is immutable on every surface it lands on (Postgres, SSE, and Temporal's own history via activity args), so secrets must never reach it in the first place; redacting inside the runner, before the emit activity, is what keeps all three surfaces clean. Matching is key-based (`SENSITIVE_KEY_RULES`: `apiKey`, `secret`, `password`, `*token`, …) and replaces the whole subtree under a matched key with `'[REDACTED]'`. The walk is copy-on-write — the unredacted objects continue on into execution — and depth-capped (see replay-audit rule 8). Secrets arriving through _values_ rather than keys (e.g. a resolved `{{variables.x}}` template) are not caught; that belongs to the variables feature (follow-up: value-based-redaction). Encrypting Temporal's own history, where `executeNode` activity args still carry real values, is planned separately (follow-up: temporal-payload-codec).
+
 ## Template references
 
 `resolveTemplate(template, context)` (in `src/templates/`) interpolates `{{namespace.path}}` references against the live `ExecutionContext`. Three forms are supported - **strict by default**, with two opt-in modifiers for missing values:
@@ -199,7 +228,7 @@ Authors typing references in the workflow builder UI: see the [variable picker g
 ## Adding a new workflow engine
 
 1. Implement `WorkflowEnginePort<TNode>` (`submit`, `cancel`).
-2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalEngine` for the new adapter).
+2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalWorkflowEngine` for the new adapter).
 3. Make sure your engine wires `runGraph` (or equivalent traversal) to its activity primitives.
 4. Translate a `{ status: 'failed' }` outcome from `runGraph` into your engine's own failure vocabulary. `runGraph` never throws for node failures — it reports them by return value — so an adapter that ignores the outcome will close failed runs as successful. See `run-workflow.ts` for the Temporal case, which raises `ApplicationFailure.nonRetryable` (only a `TemporalFailure` fails a Workflow Execution; anything else fails the workflow _task_ and retries it forever).
 

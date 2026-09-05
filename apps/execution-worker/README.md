@@ -43,18 +43,22 @@ src/
 ├── env.ts                 # Centralized env validation — fail fast at module load
 └── engines/
     └── temporal/
-        ├── worker.ts                      # Temporal Worker bootstrap + NodeExecutorRegistry
-        ├── activities-interface.ts        # Activity signatures proxied from the workflow sandbox
-        └── workflows/
-            └── run-workflow.ts            # Temporal workflow — delegates to runGraph from execution-core
+        ├── worker.ts                      # Worker bootstrap: executors + store, handed to WorkflowBuilderPlugin
+        └── workflows.ts                   # One-line re-export of runWorkflow for Temporal's bundler
 ```
+
+The workflow itself, the activity contract and the event emitter live in
+[`@workflowbuilder/temporal`](../../packages/temporal/README.md). This app only supplies what is its
+own: one executor per node type and the database as the store port.
 
 ## Temporal specifics
 
-- **Task queue:** `workflow-execution` (must match `TemporalEngine` in the backend).
-- **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID.
-- **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. See [run-workflow.ts](src/engines/temporal/workflows/run-workflow.ts).
-- **Sandbox constraint:** `workflows/*.ts` runs in V8 with no Web APIs — import from `@workflow-builder/execution-core/workflow` (sandbox-safe subset), never from the root barrel.
+- **Task queue:** `workflow-execution`, read from `plugin.taskQueue` so the backend and the worker cannot drift apart. Both default to the same constant in the package.
+- **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID. Also owned by the package.
+- **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. Exported as `DEFAULT_DATABASE_ACTIVITY_PROFILE` and `DEFAULT_NODE_ACTIVITY_PROFILE`.
+- **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps today's behavior — the reference executors have not been classified yet.
+- **Sandbox constraint:** `workflows.ts` is bundled into V8 with no Web APIs. It may only re-export from `@workflowbuilder/temporal/workflow`, never from the package root.
+- **Editing the package:** the worker imports its built `dist`, so run `pnpm build:temporal` after changing `packages/temporal/src`.
 - **Deploys that change the emitted event set:** drain in-flight runs first. Replaying an old run's history against a new emit sequence diverges — see [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
 ## Adding a new engine

@@ -53,6 +53,12 @@ export type BranchesJoinedPayload = {
   mergedPathIds: string[];
 };
 
+export type NodeStartedPayload = {
+  config: unknown;
+  // Ids of the nodes whose outputs were visible when this node started.
+  visibleNodeIds: string[];
+};
+
 export type NodeCompletedPayload = {
   output: unknown;
 };
@@ -68,6 +74,7 @@ export type ExecutionErrorPayload = {
     message: string;
     code?: string;
     details?: unknown;
+    attempt?: number;
   };
 };
 
@@ -106,6 +113,8 @@ export type ExecutionStartedEvent = BaseEvent & {
 
 export type NodeStartedEvent = NodeEvent & {
   type: 'node_started';
+  // Optional: events recorded before inputs were captured have no payload.
+  payload?: NodeStartedPayload;
 };
 
 export type NodeWaitingEvent = NodeEvent & {

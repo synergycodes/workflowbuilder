@@ -1,4 +1,8 @@
-import type { DeadEnd, NodeSkipReason } from '@workflow-builder/types/workflow-execution/execution-events';
+import type {
+  DeadEnd,
+  ExecutionErrorPayload,
+  NodeSkipReason,
+} from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   NodeErrorPolicy,
@@ -10,6 +14,7 @@ import type { ExecutionContext } from './execution-context';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
+import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
 
 // `sourceHandle` reserved for the 'errorRoute' error policy. Edges tagged
@@ -51,8 +56,13 @@ export type RunGraphOutcome =
 export async function runGraph<TNode extends BaseNode>(
   input: WorkflowExecutionInput<TNode>,
   runner: ActivityRunnerPort<TNode>,
-  events: EventEmitterPort,
+  rawEvents: EventEmitterPort,
 ): Promise<RunGraphOutcome> {
+  // Every payload is redacted before it crosses the emit boundary — event history
+  // (DB, SSE, Temporal's own history via activity args) is immutable, so secrets
+  // must never reach it in the first place.
+  const events = withRedactedPayloads(rawEvents);
+
   const adjacency = buildAdjacencyMap(input.definition.nodes, input.definition.edges);
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
@@ -298,13 +308,16 @@ async function runNode<TNode extends BaseNode>(
   executionId: string,
 ): Promise<NodeRunResult<TNode>> {
   try {
-    await events.emitEvent(executionId, 'node_started', undefined, node.id);
+    const visibleNodeIds = Object.keys(context.nodeOutputs);
+    await events.emitEvent(executionId, 'node_started', { config: node.config, visibleNodeIds }, node.id);
     const result = await runner.executeNode(node, context);
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
   } catch (error) {
-    const { message, code } = extractDeepestError(error);
-    const errorPayload = code === undefined ? { message } : { message, code };
+    const { message, code, attempt } = extractDeepestError(error);
+    const errorPayload: ExecutionErrorPayload['error'] = { message };
+    if (code !== undefined) errorPayload.code = code;
+    if (attempt !== undefined) errorPayload.attempt = attempt;
     await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
     return { node, message, code, failed: true };
   }

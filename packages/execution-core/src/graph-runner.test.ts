@@ -12,6 +12,8 @@ import { runGraph } from './graph-runner';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
+import { reconstructNodeInputs } from './reconstruct-node-inputs';
+import { REDACTED } from './redact';
 
 // Generic test node — graph-runner is product-agnostic, so the test stays
 // agnostic too. `type` and `config` are carried through but never read.
@@ -96,6 +98,10 @@ function skipsFrom(events: EventCall[]): { nodeId: string | undefined; reason: u
   return events
     .filter((event) => event.type === 'node_skipped')
     .map((event) => ({ nodeId: event.nodeId, reason: (event.payload as { reason: string }).reason }));
+}
+
+function startedPayload(events: EventCall[], nodeId: string): unknown {
+  return events.find((event) => event.type === 'node_started' && event.nodeId === nodeId)?.payload;
 }
 
 function makeInput(nodes: TestNode[], edges: WorkflowEdgeDefinition[]): WorkflowExecutionInput<TestNode> {
@@ -454,6 +460,29 @@ describe('runGraph — topological scheduling', () => {
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({ error: { message: 'boom' } });
+  });
+
+  it('classified failure relayed by an engine — code and attempt land in node_failed payload', async () => {
+    // Past the boundary the class is gone; code and attempt survive as plain data.
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode(node) {
+        if (node.id === 'B') {
+          const failure = Object.assign(new Error('LLM call timed out'), {
+            details: [{ wbNodeError: 1, classification: 'transient', code: 'llm_timeout', attempt: 2 }],
+          });
+          throw new Error('Activity task failed', { cause: failure });
+        }
+        return { output: `out-${node.id}` };
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner, events.port);
+
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
+    expect(nodeFailed?.payload).toEqual({
+      error: { message: 'LLM call timed out', code: 'llm_timeout', attempt: 2 },
+    });
   });
 
   it('wrapped error (Error.cause chain) — surfaces the root cause, not the wrapper', async () => {
@@ -1394,5 +1423,100 @@ describe('runGraph — incomplete runs (dead ends)', () => {
 
     expect(outcome.status).toBe('failed');
     expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+  });
+});
+
+describe('runGraph — node_started payload', () => {
+  it('records the node config and the ids of the outputs visible at start', async () => {
+    const runner = makeRunner({ A: { output: 'a-result' } });
+    const events = makeEvents();
+
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+
+    expect(startedPayload(events.events, 'A')).toEqual({ config: {}, visibleNodeIds: [] });
+    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(reconstructNodeInputs(events.events, 'B')).toEqual({ config: {}, nodeOutputs: { A: 'a-result' } });
+  });
+
+  it('diamond A→{B,C}→D — concurrent siblings record the wave snapshot, not each other', async () => {
+    const runner = makeRunner();
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('A'), trigger('B'), trigger('C'), trigger('D')],
+        [edge('e1', 'A', 'B'), edge('e2', 'A', 'C'), edge('e3', 'B', 'D'), edge('e4', 'C', 'D')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(startedPayload(events.events, 'B')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(startedPayload(events.events, 'C')).toEqual({ config: {}, visibleNodeIds: ['A'] });
+    expect(startedPayload(events.events, 'D')).toEqual({ config: {}, visibleNodeIds: ['A', 'B', 'C'] });
+    expect(reconstructNodeInputs(events.events, 'D')).toEqual({
+      config: {},
+      nodeOutputs: { A: 'out-A', B: 'out-B', C: 'out-C' },
+    });
+  });
+
+  it("reconstructs the absorbed error output of an upstream 'continue' node from its node_failed event", async () => {
+    const runner = makeRunner({ Boom: { throws: 'boom' } });
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput(
+        [start('S'), trigger('Boom', 'continue'), trigger('D')],
+        [edge('e1', 'S', 'Boom'), edge('e2', 'Boom', 'D')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(startedPayload(events.events, 'D')).toEqual({ config: {}, visibleNodeIds: ['S', 'Boom'] });
+    expect(reconstructNodeInputs(events.events, 'D')).toEqual({
+      config: {},
+      nodeOutputs: { S: 'out-S', Boom: { error: { message: 'boom' } } },
+    });
+  });
+
+  it('redacts recorded payloads while the executor still receives the real values', async () => {
+    const nodeB: TestNode = { id: 'B', type: 'test/node', config: { apiKey: 'sk-live', prompt: 'hello' } };
+    const receivedConfigs: Record<string, unknown> = {};
+    const contexts: Record<string, Record<string, unknown>> = {};
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode(node, context) {
+        receivedConfigs[node.id] = node.config;
+        contexts[node.id] = { ...context.nodeOutputs };
+        return { output: node.id === 'B' ? { authToken: 'tok-123', text: 'done' } : `out-${node.id}` };
+      },
+    };
+    const events = makeEvents();
+
+    await runGraph(
+      makeInput([start('A'), nodeB, trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      runner,
+      events.port,
+    );
+
+    // Recorded history is masked...
+    expect(startedPayload(events.events, 'B')).toEqual({
+      config: { apiKey: REDACTED, prompt: 'hello' },
+      visibleNodeIds: ['A'],
+    });
+    const completedB = events.events.find((event) => event.type === 'node_completed' && event.nodeId === 'B');
+    expect(completedB?.payload).toEqual({ output: { authToken: REDACTED, text: 'done' } });
+
+    // ...and stays masked through reconstruction, which joins ids back to the
+    // recorded (redacted) completion payloads...
+    expect(reconstructNodeInputs(events.events, 'C')).toEqual({
+      config: {},
+      nodeOutputs: { A: 'out-A', B: { authToken: REDACTED, text: 'done' } },
+    });
+
+    // ...while execution saw the real values: B got its config untouched, and
+    // downstream C got B's unredacted output.
+    expect(receivedConfigs.B).toEqual({ apiKey: 'sk-live', prompt: 'hello' });
+    expect(contexts.C).toEqual({ A: 'out-A', B: { authToken: 'tok-123', text: 'done' } });
   });
 });

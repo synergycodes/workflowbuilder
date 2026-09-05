@@ -1,0 +1,99 @@
+{
+  "name": "@workflowbuilder/temporal",
+  "type": "module",
+  "version": "0.0.0",
+  "private": true,
+  "description": "Run Workflow Builder diagrams as durable Temporal Workflow Executions: a Temporal Plugin that registers the node-execution activities, plus the workflow-side runner to re-export from your own workflows module.",
+  "keywords": [
+    "temporal",
+    "temporalio",
+    "durable-execution",
+    "workflow",
+    "workflow-engine",
+    "orchestration",
+    "plugin",
+    "typescript",
+    "workflow-builder"
+  ],
+  "author": "Synergy Codes",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/synergycodes/workflowbuilder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synergycodes/workflowbuilder.git",
+    "directory": "packages/temporal"
+  },
+  "bugs": {
+    "url": "https://github.com/synergycodes/workflowbuilder/issues"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "prepare": "pnpm build",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:watch": "vitest"
+  },
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./client": {
+      "types": "./dist/client/index.d.ts",
+      "import": "./dist/client/index.js"
+    },
+    "./workflow": {
+      "types": "./dist/workflow/index.d.ts",
+      "import": "./dist/workflow/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "peerDependencies": {
+    "@temporalio/worker": "^1.23.0"
+  },
+  "peerDependenciesMeta": {
+    "@temporalio/worker": {
+      "optional": true
+    }
+  },
+  "devDependencies": {
+    "@temporalio/activity": "catalog:",
+    "@temporalio/client": "catalog:",
+    "@temporalio/common": "catalog:",
+    "@temporalio/plugin": "catalog:",
+    "@temporalio/testing": "catalog:",
+    "@temporalio/worker": "catalog:",
+    "@temporalio/workflow": "catalog:",
+    "@types/node": "^22.12.0",
+    "@workflow-builder/execution-core": "workspace:*",
+    "@workflow-builder/types": "workspace:*",
+    "tsup": "^8.3.5",
+    "typescript": "~5.6.3",
+    "vitest": "^3.0.4"
+  },
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=20.0.0"
+  },
+  "sideEffects": false,
+  "dependencies": {
+    "@temporalio/activity": "catalog:",
+    "@temporalio/client": "catalog:",
+    "@temporalio/plugin": "catalog:",
+    "@temporalio/workflow": "catalog:"
+  }
+}

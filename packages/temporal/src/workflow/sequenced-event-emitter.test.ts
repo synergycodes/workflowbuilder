@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import {
-  type ActivityRunnerPort,
-  type BaseNode,
-  type WorkflowExecutionInput,
-  runGraph,
-} from '@workflow-builder/execution-core/workflow';
-
+import { type ActivityRunnerPort, type BaseNode, type WorkflowExecutionInput, runGraph } from './core-contract';
 import { type EventPersistence, createSequencedEventEmitter } from './sequenced-event-emitter';
 
 type TestNode = BaseNode & { type: 'test/node' };

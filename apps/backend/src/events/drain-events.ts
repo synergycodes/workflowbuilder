@@ -21,7 +21,7 @@ export type DrainResult = {
 // Requires rows to become visible in ascending `sequence` order: the cursor only moves
 // forward, so a row committing below it is never selected again and its event is lost.
 // The worker upholds that by serializing its event writes — see
-// `apps/execution-worker/src/engines/temporal/workflows/sequenced-event-emitter.ts`.
+// `packages/temporal/src/workflow/sequenced-event-emitter.ts`.
 // Gaps in the numbering are fine; only reordering is not. See drain-order.test.ts.
 export async function drainEventsSince(
   executionId: string,

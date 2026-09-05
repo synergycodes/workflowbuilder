@@ -19,12 +19,12 @@ Frontend (React)
      ▼                                                  │
  Backend (Hono) ──▶ WorkflowEnginePort ──▶ Temporal ──▶ Worker ──┼── emit event → Postgres
      ▲                 │                                  │      │
-     │                 └─ impl: TemporalEngine            │      └── update status → Postgres
+     │                 └─ impl: TemporalWorkflowEngine    │      └── update status → Postgres
      └── SSE stream (Postgres LISTEN/NOTIFY) ◀────────────┘
 ```
 
 - **Backend** (`apps/backend`) — Hono HTTP server, workflow CRUD, SSE streaming via Postgres LISTEN/NOTIFY. Submits executions through `WorkflowEnginePort`.
-- **Engine adapter** (`apps/backend/src/engine/temporal-engine.ts`) — implements `WorkflowEnginePort` against Temporal. Swap this file to switch engines.
+- **Engine adapter** (`apps/backend/src/engine/index.ts`) — wires `TemporalWorkflowEngine` from [`@workflowbuilder/temporal/client`](../../packages/temporal/README.md), which implements `WorkflowEnginePort` against Temporal. Swap what this file constructs to switch engines.
 - **Worker** (`apps/execution-worker`) — Temporal worker. Activities delegate node execution to `execution-core`. See the [worker README](../execution-worker/README.md).
 - **Domain** (`packages/execution-core`) — pure graph runner + ports + node executors. No Temporal, no HTTP. See the [execution-core README](../../packages/execution-core/README.md).
 - **Frontend** (`apps/ai-studio`) — full AI workflow product. Composes `@workflowbuilder/sdk` directly via JSX, with a slim plugin only for per-node execution markers. Owns Play/Stop controls, log panel, node detail, and execution highlighting.

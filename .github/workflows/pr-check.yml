@@ -2,10 +2,11 @@ name: PR Check
 
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Two things are gated here: the published packages
-# @workflowbuilder/sdk and @workflowbuilder/ui (plus its private
-# @workflowbuilder/ui-tokens build), and the execution pipeline
-# (execution-core, backend, execution-worker) — whose determinism tests guard
-# Temporal replay safety and so must not be able to regress silently. Plus
+# @workflowbuilder/sdk, @workflowbuilder/ui (plus its private
+# @workflowbuilder/ui-tokens build) and @workflowbuilder/temporal, and the
+# execution pipeline (execution-core, backend, execution-worker) — whose
+# determinism tests guard Temporal replay safety and so must not be able to
+# regress silently. Plus
 # global format consistency. apps/docs has its own path-filtered workflow
 # (pr-check-docs.yml); demo and ai-studio are not checked here — they're
 # internal and have their own broken-state tolerances.
@@ -102,6 +103,72 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  temporal:
+    name: Temporal plugin lint + typecheck + test + build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # the changeset guard below diffs against the base branch
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/temporal lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/temporal typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/temporal test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/temporal build
+
+      - name: Verify the published shape
+        # Three subpaths with their own types — exactly where an exports map breaks
+        # quietly, and consumers would be the ones to find out. Versions pinned so a
+        # tool release cannot redden PRs on its own; the esm-only attw profile matches
+        # the package (ESM without CJS is a finding under stricter profiles).
+        working-directory: packages/temporal
+        run: |
+          pnpm dlx publint@0.3.24
+          pnpm dlx @arethetypeswrong/cli@0.18.5 --pack --profile esm-only
+
+      - name: Changeset guard for bundled execution packages
+        # execution-core and types are private and source-only: they are bundled into
+        # @workflowbuilder/temporal's dist, so a behaviour change in either ships to
+        # consumers only when this package is released. A warning, not a failure —
+        # a pure refactor legitimately needs no changeset.
+        #
+        # Silent while the package is `private: true`, so the first publish turns the
+        # guard back on by itself. See CLAUDE.md for why.
+        run: |
+          if node -e "process.exit(require('./packages/temporal/package.json').private === true ? 0 : 1)"; then
+            echo "@workflowbuilder/temporal is still private; changeset guard skipped."
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$CHANGED" | grep -qE '^packages/(execution-core|types)/'; then
+            if ! grep -rlq '@workflowbuilder/temporal' .changeset/*.md 2>/dev/null; then
+              echo "::warning title=Missing changeset::packages/execution-core or packages/types changed with no changeset for @workflowbuilder/temporal. If the change affects execution behaviour or the published types, add one (/wb.changeset)."
+            fi
+          fi
 
   ui:
     name: UI + UI tokens lint + typecheck + test + build
