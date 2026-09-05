@@ -90,6 +90,26 @@ const dynamicDelayProperties: PaletteItem<DelayNodeSchema>['uischema'] = {
   ],
 };
 
+const untilSpecificProperties: PaletteItem<DelayNodeSchema>['uischema'] = {
+  rule: {
+    effect: 'SHOW',
+    condition: {
+      scope: scope('properties.type'),
+      schema: { const: delayTypeOptions.untilSpecific.value },
+    },
+  },
+  type: 'Accordion',
+  label: 'Date/Time',
+  elements: [
+    {
+      type: 'VariableDynamic',
+      scope: scope('properties.untilDate'),
+      label: 'Wait until',
+      variableType: 'date',
+    },
+  ],
+};
+
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
@@ -102,5 +122,6 @@ export const uischema: UISchema = {
     ...(generalInformation ? [generalInformation] : []),
     fixedDelayProperties,
     dynamicDelayProperties,
+    untilSpecificProperties,
   ],
 };

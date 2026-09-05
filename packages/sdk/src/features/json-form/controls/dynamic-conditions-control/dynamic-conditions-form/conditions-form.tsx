@@ -8,9 +8,9 @@ import styles from './conditions-form.module.css';
 import type { DynamicCondition } from '../../../../../features/json-form/types/controls';
 import { closeModal } from '../../../../../features/modals/stores/use-modal-store';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
-import { getConditionErrors } from '../../../../../features/variables/actions/conditions';
 import { variablesTypesToExcludeNonPrimitive } from '../../../../../features/variables/constants';
-import { useAvailableVariables } from '../../../../../features/variables/hooks/use-available-variables';
+import { useNodeVariables } from '../../../../variables/hooks/use-node-variables';
+import { getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
 
 type ConditionsFormProps = {
@@ -37,7 +37,9 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     );
 
     const selection = useSingleSelectedElement();
-    const suggestionGroups = useAvailableVariables(selection?.node?.id, variablesTypesToExcludeNonPrimitive);
+    const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
+      excludeTypes: variablesTypesToExcludeNonPrimitive,
+    });
 
     const formRef = useRef<HTMLFormElement>(null);
 
@@ -86,7 +88,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
     return (
       <form ref={formRef} className={styles['form']} onSubmit={handleConfirm}>
-        <div key={lastIndex} className={styles['controls-container']}>
+        <div key={`${lastIndex}-${totalVariables}`} className={styles['controls-container']}>
           {conditions.map((condition, index) => (
             <ConditionsFormField
               key={index}

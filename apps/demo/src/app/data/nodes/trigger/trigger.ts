@@ -2,6 +2,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type TriggerNodeSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const triggerNode: PaletteItem<TriggerNodeSchema> = {
@@ -12,13 +13,6 @@ export const triggerNode: PaletteItem<TriggerNodeSchema> = {
   isStartNode: true,
   defaultPropertiesData,
   schema,
+  schemaOutput,
   uischema,
-  outputSchema: {
-    type: 'default',
-    properties: {
-      eventType: { type: 'string', label: 'Event Type', description: 'The type of event that started the workflow' },
-      timestamp: { type: 'string', label: 'Timestamp', description: 'ISO 8601 date-time when the trigger fired' },
-      payload: { type: 'object', label: 'Payload', description: 'The raw event data received by the trigger' },
-    },
-  },
 };

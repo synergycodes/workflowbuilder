@@ -16,6 +16,7 @@ import { selectControlRenderer } from './controls/select-control/select-control'
 import { switchControlRenderer } from './controls/switch-control/switch-control';
 import { textAreaControlRenderer } from './controls/text-area-control/text-area-control';
 import { textControlRenderer } from './controls/text-control/text-control';
+import { variableDynamicControlRenderer } from './controls/variable-dynamic-control/variable-dynamic-control';
 import { variableTextAreaControlRenderer } from './controls/variable-text-area-control/variable-text-area-control';
 import { variableTextControlRenderer } from './controls/variable-text-control/variable-text-control';
 import { getCustomCells, getCustomRenderers } from './extension-registry';
@@ -47,6 +48,7 @@ export function JSONForm(props: Props) {
         ajv={workflowBuilderValidator}
         {...rest}
         config={{ readonly }}
+        readonly={readonly}
       />
     </div>
   );
@@ -68,6 +70,7 @@ const builtinRenderers: JsonFormsRendererRegistryEntry[] = [
   dynamicConditionsControlRenderer,
   aiToolsControlRenderer,
   decisionBranchesControlRenderer,
+  variableDynamicControlRenderer,
   variableTextControlRenderer,
   variableTextAreaControlRenderer,
   messageOnErrorControlRenderer,

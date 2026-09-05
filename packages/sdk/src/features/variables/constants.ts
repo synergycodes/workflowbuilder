@@ -1,6 +1,13 @@
-import type { VariableType, VariableTypePrimitive } from '../../node/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
 
-export type LogicalOperator = 'OR' | 'AND';
+export const NODE_ID_FOR_COMMON_NODE_DATA = '<NODE_ID>';
+export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<NODE_LABEL>';
+
+export const LOGICAL_OPERATOR = {
+  OR: 'OR',
+  AND: 'AND',
+} as const;
+export type LogicalOperator = (typeof LOGICAL_OPERATOR)[keyof typeof LOGICAL_OPERATOR];
 
 /**
  * String literal union of comparison operators recognised by the
@@ -50,6 +57,7 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
 
 export const VARIABLE_BRACKETS_START = '{{';
 export const VARIABLE_BRACKETS_END = '}}';
+export const VARIABLE_DELIMITER = ' · ';
 
 /**
  * Reserved key under which the variable-text control looks up the
@@ -72,12 +80,12 @@ export const VARIABLE_GLOBAL_KEY = 'global';
 export const VARIABLE_NODES_KEY = 'nodes';
 
 type VariableTypeOption = {
-  type: VariableTypePrimitive;
-  baseType: VariableTypePrimitive;
+  type: VariableType;
+  baseType: VariableType;
   label: string;
 };
 
-export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeOption> = {
+export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = {
   string: {
     type: 'string',
     baseType: 'string',
@@ -103,20 +111,18 @@ export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeO
     baseType: 'datetime',
     label: 'Datetime',
   },
-  // Possible in future?
-  // email: {
-  //   type: 'email',
-  //   baseType: 'string',
-  //   label: 'Email',
-  // },
-  // url: {
-  //   type: 'url',
-  //   baseType: 'string',
-  //   label: 'URL',
-  // },
+  object: {
+    type: 'object',
+    baseType: 'object',
+    label: 'Object',
+  },
+  array: {
+    type: 'array',
+    baseType: 'array',
+    label: 'Array',
+  },
 };
 
-// Remove filter when other formats will be supported
 export const variableTypesOptions: VariableTypeOption[] = Object.values(variableTypeInfoByType).filter(
   ({ type, baseType }) => type === baseType,
 );
@@ -124,3 +130,28 @@ export const variableTypesOptions: VariableTypeOption[] = Object.values(variable
 export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'array'];
 
 export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
+
+export const variablesTypesNumeric: VariableType[] = ['number'];
+
+/**
+ * Special keywords used to determine source-handle behaviour.
+ *
+ * Source handles may have arbitrary names, but handles containing one of these
+ * keywords are treated specially when processing `bySourceHandle`.
+ *
+ * - `EVERY` (`every`): Values assigned to this handle are additionally attached
+ *   to every branch. `every` values are always forwarded.
+ * - `SUCCESS` (`success`): A branch is considered successful when its source
+ *   handle does not contain the `ERROR` keyword. Successful branches receive
+ *   the values assigned to this handle in addition to their own values.
+ * - `ERROR` (`error`): Values assigned to this handle are additionally attached
+ *   to every branch whose source handle contains the `ERROR` keyword.
+ *
+ * The keywords are matched against the source-handle name, so source handles
+ * can have custom names while still triggering the corresponding behaviour.
+ */
+export const SPECIAL_SOURCE_HANDLE_KEYWORDS = {
+  EVERY: 'every',
+  SUCCESS: 'success',
+  ERROR: 'error',
+} as const;
