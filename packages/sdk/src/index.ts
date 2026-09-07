@@ -230,7 +230,6 @@ export {
   EDGE_OFFSET,
   SELF_CONNECTING_EDGE_LABEL_OFFSET,
 } from './features/diagram/edges/edge.consts';
-export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // =============================================================================
 // i18n
@@ -281,6 +280,9 @@ export { showSnackbar } from './utils/show-snackbar';
 // =============================================================================
 // Variables
 // =============================================================================
+
+// Prefix of a node-output reference (`{{nodes.<nodeId>.<property>}}`).
+export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // The output contract of a node — the shape downstream nodes can reference as
 // variables. Attach it via `NodeData.schemaOutput`. Two forms:
