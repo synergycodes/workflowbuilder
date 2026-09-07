@@ -46,6 +46,8 @@
       box-sizing: content-box;
       width: var(--wb-public-node-port-size);
       height: var(--wb-public-node-port-size);
+      min-width: 0;
+      min-height: 0;
 
       background: var(--wb-public-node-port-background-color);
       border: var(--wb-public-node-port-border-size) solid var(--wb-public-node-port-border-color);

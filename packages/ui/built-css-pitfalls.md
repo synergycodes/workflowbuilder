@@ -99,6 +99,16 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 **Automated?** - Yes. The `publint` package script validates export targets and the broader published package surface.
 
+## Incorrect built handle geometry
+
+**What breaks** - The default canvas port renders larger than its designed 8px outer size when a third-party handle minimum overrides its 4px content size plus 2px border on each side.
+
+**Why it is silent** - With `box-sizing: content-box`, `min-width` and `min-height` constrain the content box, so xyflow's 5px minimum produces a 9px outer size even though the declared width and height remain 4px.
+
+**How to spot it** - Inspect the built base `.react-flow__handle` rule and confirm its width, height, border, and `box-sizing` geometry is accompanied by `min-width: 0` and `min-height: 0`.
+
+**Automated?** - Yes. `Incorrect built handle geometry` validates the complete base handle geometry in each checked dist stylesheet.
+
 ## Missing entry-chunk font faces
 
 **What breaks** - Importing the root JavaScript barrel omits bundled font declarations, so text renders in fallback fonts unless a consumer separately imports `fonts.css`.
