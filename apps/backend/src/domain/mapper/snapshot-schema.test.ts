@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { type DecisionIssueCode, decisionIssueMessage } from '../decision/decision-issues';
 import { mapToExecutionModel } from './from-integration-data';
 import { workflowSnapshotSchema } from './snapshot-schema';
 
@@ -123,9 +124,15 @@ function edge(source: string, target: string, sourceHandle?: string) {
   return { id: `${source}->${target}${sourceHandle ?? ''}`, source, target, sourceHandle };
 }
 
-function issuePaths(snapshot: unknown): string[] {
+function issuesOf(snapshot: unknown): { path: string; message: string }[] {
   const result = workflowSnapshotSchema.safeParse(snapshot);
-  return result.success ? [] : result.error.issues.map((issue) => issue.path.join('.'));
+  return result.success
+    ? []
+    : result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
+}
+
+function issuePaths(snapshot: unknown): string[] {
+  return issuesOf(snapshot).map((issue) => issue.path);
 }
 
 describe('workflowSnapshotSchema: gate contracts', () => {
@@ -234,7 +241,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
     expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
   });
 
-  it.each<{ name: string; snapshot: unknown; path: string }>([
+  it.each<{ name: string; snapshot: unknown; path: string; issue: { code: DecisionIssueCode; value?: string } }>([
     {
       name: 'an explicit source with no edge into the gate',
       snapshot: {
@@ -242,6 +249,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'gate')],
       },
       path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_not_a_predecessor', value: 'b' },
     },
     {
       name: 'an explicit source that is a successor, not a predecessor',
@@ -250,6 +258,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'gate'), edge('gate', 'after')],
       },
       path: 'nodes.1.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_not_a_predecessor', value: 'after' },
     },
     {
       name: 'a rerun-source gate with no predecessor',
@@ -258,6 +267,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('gate', 'after')],
       },
       path: 'nodes.0.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_missing' },
     },
     {
       name: 'a rerun-source gate with several predecessors and no explicit source',
@@ -266,6 +276,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'gate'), edge('b', 'gate')],
       },
       path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_ambiguous' },
     },
     {
       name: 'a rerun-source gate whose implicit source is itself a gate',
@@ -274,6 +285,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'first'), edge('first', 'second')],
       },
       path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_is_a_gate', value: 'first' },
     },
     {
       name: 'a rerun-source gate whose explicit source is itself a gate',
@@ -286,6 +298,7 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'first'), edge('a', 'second'), edge('first', 'second')],
       },
       path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_is_a_gate', value: 'first' },
     },
     {
       name: 'only the broken gate when another gate in the snapshot is fine',
@@ -298,12 +311,12 @@ describe('workflowSnapshotSchema: gate contracts', () => {
         edges: [edge('a', 'g1'), edge('a', 'g2'), edge('g1', 'g2')],
       },
       path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+      issue: { code: 'source_ambiguous' },
     },
-  ])('rejects $name', ({ snapshot, path }) => {
-    const paths = issuePaths(snapshot);
+  ])('rejects $name', ({ snapshot, path, issue }) => {
+    const sourceIssues = issuesOf(snapshot).filter((candidate) => candidate.path.endsWith('proposalSourceNodeId'));
 
-    expect(paths).toContain(path);
-    expect(paths.filter((candidate) => candidate.endsWith('proposalSourceNodeId'))).toEqual([path]);
+    expect(sourceIssues).toEqual([{ path, message: decisionIssueMessage(issue.code, issue.value) }]);
   });
 });
 

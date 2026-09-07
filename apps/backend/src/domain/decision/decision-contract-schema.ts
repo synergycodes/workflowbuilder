@@ -2,6 +2,8 @@ import { z } from 'zod';
 
 import { DECLARABLE_DECISION_EFFECTS } from '@workflow-builder/types/workflow-execution/decision-contract';
 
+import { decisionIssue, decisionIssueMessage } from './decision-issues';
+
 // Mirrors DURATION_PATTERN and the protobuf Duration range in
 // packages/temporal/src/workflow/profile-validation.ts (follow-up: shared-duration-format)
 const DURATION_PATTERN = /^(\d+(?:\.\d+)?)(ms|s|m|h|d)$/;
@@ -16,22 +18,17 @@ function isDurationString(value: string): boolean {
   return milliseconds >= MIN_DURATION_MS && milliseconds <= MAX_DURATION_MS;
 }
 
-const durationSchema = z
-  .string()
-  .refine(
-    isDurationString,
-    "must be a positive duration such as '30s', '24h' or '3d' (a number followed by ms, s, m, h or d)",
-  );
+const durationSchema = z.string().refine(isDurationString, decisionIssueMessage('deadline_format'));
 
 // 'errorRoute' is the handle the runner reserves for the error policy.
 const portSchema = z
   .string()
-  .min(1, 'port must not be empty')
-  .refine((port) => port !== 'errorRoute', "port must not be the reserved 'errorRoute'");
+  .min(1, decisionIssueMessage('port_empty'))
+  .refine((port) => port !== 'errorRoute', decisionIssueMessage('port_reserved'));
 
 const actionBase = {
-  name: z.string().min(1, 'name must not be empty'),
-  label: z.string().min(1, 'label must not be empty'),
+  name: z.string().min(1, decisionIssueMessage('name_empty')),
+  label: z.string().min(1, decisionIssueMessage('label_empty')),
 };
 
 const resumeActionSchema = z.looseObject({
@@ -58,7 +55,9 @@ const decisionActionSchema = z.discriminatedUnion(
   [resumeActionSchema, rejectActionSchema, rerunSourceActionSchema],
   {
     error: (issue) =>
-      issue.code === 'invalid_union' ? `effect must be one of ${DECLARABLE_DECISION_EFFECTS.join(', ')}` : undefined,
+      issue.code === 'invalid_union'
+        ? decisionIssueMessage('unknown_effect', DECLARABLE_DECISION_EFFECTS.join(', '))
+        : undefined,
   },
 );
 
@@ -79,24 +78,20 @@ const formSchema = z
   .superRefine((form, context) => {
     for (const [index, name] of (form.required ?? []).entries()) {
       if (!Object.hasOwn(form.properties, name)) {
-        context.addIssue({
-          code: 'custom',
-          message: `required field '${name}' is not declared in properties`,
-          path: ['required', index],
-        });
+        context.addIssue(decisionIssue('required_field_undeclared', ['required', index], name));
       }
     }
   });
 
 const deadlineSchema = z.looseObject({
   after: durationSchema,
-  policy: z.string().refine((policy) => policy === 'reject', "policy must be 'reject'"),
+  policy: z.string().refine((policy) => policy === 'reject', decisionIssueMessage('deadline_policy')),
 });
 
 export const decisionContractSchema = z
   .looseObject({
     version: z.literal(1),
-    actions: z.array(decisionActionSchema).min(1, 'at least one action is required'),
+    actions: z.array(decisionActionSchema).min(1, decisionIssueMessage('actions_empty')),
     schema: formSchema,
     uiSchema: z.record(z.string(), z.unknown()).optional(),
     proposalSourceNodeId: z.string().optional(),
@@ -108,20 +103,12 @@ export const decisionContractSchema = z
 
     for (const [index, action] of contract.actions.entries()) {
       if (seenNames.has(action.name)) {
-        context.addIssue({
-          code: 'custom',
-          message: `action name '${action.name}' is used more than once`,
-          path: ['actions', index, 'name'],
-        });
+        context.addIssue(decisionIssue('duplicate_action_name', ['actions', index, 'name'], action.name));
       }
       seenNames.add(action.name);
 
       if (firstIndexByEffect.has(action.effect)) {
-        context.addIssue({
-          code: 'custom',
-          message: `only one action may have effect '${action.effect}'`,
-          path: ['actions', index, 'effect'],
-        });
+        context.addIssue(decisionIssue('duplicate_effect', ['actions', index, 'effect'], action.effect));
       } else {
         firstIndexByEffect.set(action.effect, index);
       }
@@ -129,7 +116,7 @@ export const decisionContractSchema = z
 
     const resumeIndex = firstIndexByEffect.get('resume');
     if (resumeIndex === undefined) {
-      context.addIssue({ code: 'custom', message: "an action with effect 'resume' is required", path: ['actions'] });
+      context.addIssue(decisionIssue('resume_required', ['actions']));
       return;
     }
 
@@ -138,10 +125,6 @@ export const decisionContractSchema = z
     const resume = contract.actions[resumeIndex];
     const reject = contract.actions[rejectIndex];
     if (resume.effect === 'resume' && reject.effect === 'reject' && resume.port === reject.port) {
-      context.addIssue({
-        code: 'custom',
-        message: `reject port '${reject.port}' must differ from the resume port`,
-        path: ['actions', rejectIndex, 'port'],
-      });
+      context.addIssue(decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port));
     }
   });

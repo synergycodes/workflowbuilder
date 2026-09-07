@@ -8,6 +8,7 @@
 import { z } from 'zod';
 
 import { decisionContractSchema } from '../decision/decision-contract-schema';
+import { type DecisionIssueCode, decisionIssue } from '../decision/decision-issues';
 import { type UnresolvedSourceReason, resolveProposalSource } from '../decision/proposal-source';
 
 const frontendNodeSchema = z.object({
@@ -30,22 +31,12 @@ const frontendEdgeSchema = z.object({
   sourceHandle: z.string().nullable().optional(),
 });
 
-function describeUnresolvedSource(reason: UnresolvedSourceReason, explicit?: string) {
-  switch (reason) {
-    case 'explicit_source_not_a_predecessor': {
-      return `proposalSourceNodeId '${explicit}' is not a direct predecessor of this node`;
-    }
-    case 'no_predecessor': {
-      return 'a rerun-source action needs a proposal source, but this node has no predecessor';
-    }
-    case 'ambiguous_predecessor': {
-      return 'a rerun-source action needs one proposal source; several predecessors exist, set proposalSourceNodeId';
-    }
-    case 'not_a_gate': {
-      return 'this node carries no decision contract';
-    }
-  }
-}
+const SOURCE_ISSUE_BY_REASON = {
+  not_a_gate: 'source_not_a_gate',
+  explicit_source_not_a_predecessor: 'source_not_a_predecessor',
+  no_predecessor: 'source_missing',
+  ambiguous_predecessor: 'source_ambiguous',
+} as const satisfies Record<UnresolvedSourceReason, DecisionIssueCode>;
 
 export const workflowSnapshotSchema = z
   .object({
@@ -65,20 +56,12 @@ export const workflowSnapshotSchema = z
       const path = ['nodes', index, 'data', 'properties', 'decision', 'proposalSourceNodeId'];
       const resolution = resolveProposalSource(nodes, edges, node.id);
       if (resolution.error !== undefined) {
-        context.addIssue({
-          code: 'custom',
-          message: describeUnresolvedSource(resolution.error, decision.proposalSourceNodeId),
-          path,
-        });
+        context.addIssue(decisionIssue(SOURCE_ISSUE_BY_REASON[resolution.error], path, decision.proposalSourceNodeId));
         continue;
       }
       const sourceIsGate = nodes.some((other) => other.id === resolution.sourceNodeId && other.decision !== undefined);
       if (declaresRerun && sourceIsGate) {
-        context.addIssue({
-          code: 'custom',
-          message: `proposal source '${resolution.sourceNodeId}' is itself a gate and cannot be re-run`,
-          path,
-        });
+        context.addIssue(decisionIssue('source_is_a_gate', path, resolution.sourceNodeId));
       }
     }
   });
