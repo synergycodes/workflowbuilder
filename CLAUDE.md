@@ -110,6 +110,10 @@ UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuil
 
 Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the box. Pointing either app at a secured cluster or Temporal Cloud is env-only (`TEMPORAL_NAMESPACE`, `TEMPORAL_TLS`, `TEMPORAL_API_KEY`, `TEMPORAL_TLS_*_PATH`) - see `apps/backend/README.md` "Connecting to a secured Temporal cluster". `pnpm infra:down` stops everything.
 
+### Migrating a local `.env` after pulling
+
+`OPENROUTER_API_KEY` was renamed to `AI_API_KEY`, and `AI_BASE_URL` is now required alongside `AI_MODEL` for AI Agent nodes (September 2026; no alias, no built-in default). A stale `apps/backend/.env` or `apps/execution-worker/.env` does not fail at boot: the apps start with AI silently off and AI nodes fail with `ai_not_configured`. `pnpm preflight` warns on both files, so run it after pulling and before `pnpm dev:backend`, `pnpm dev:worker` or `pnpm dev:ai-studio`. When it warns, offer the user this migration and apply it only with their go-ahead, since the files hold their key: rename the `OPENROUTER_API_KEY` line to `AI_API_KEY` keeping the value, add `AI_BASE_URL=https://openrouter.ai/api/v1` (or their own OpenAI-compatible endpoint), leave `AI_MODEL` as is. Never print the key value. The deploy stack has its own guard: compose refuses to start while `OPENROUTER_API_KEY` is set.
+
 ## Code Quality
 
 | Tool       | Command                       | Notes                                                                                                   |

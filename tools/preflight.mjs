@@ -5,7 +5,6 @@
 //
 // Named `preflight` rather than `doctor` because `pnpm doctor` is a built-in
 // pnpm command and would shadow a user script of the same name.
-
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import net from 'node:net';
@@ -152,11 +151,37 @@ async function checkServicePort(port, label) {
       };
 }
 
+// Names only; values never leave this function (the files hold API keys).
+function envKeys(relPath) {
+  return new Set(
+    readFileSync(path.join(ROOT, relPath), 'utf8')
+      .split('\n')
+      .map((line) => line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/))
+      .filter((m) => m && m[2].trim() !== '')
+      .map((m) => m[1]),
+  );
+}
+
 async function checkEnvFile(relPath) {
-  const present = existsSync(path.join(ROOT, relPath));
-  return present
-    ? { name: relPath, status: 'pass', detail: 'present' }
-    : { name: relPath, status: 'warn', detail: `missing — copy from ${relPath}.example` };
+  if (!existsSync(path.join(ROOT, relPath))) {
+    return { name: relPath, status: 'warn', detail: `missing — copy from ${relPath}.example` };
+  }
+  const keys = envKeys(relPath);
+  if (keys.has('OPENROUTER_API_KEY')) {
+    return {
+      name: relPath,
+      status: 'warn',
+      detail: 'OPENROUTER_API_KEY is retired — rename it to AI_API_KEY and add AI_BASE_URL (see .env.example)',
+    };
+  }
+  if (keys.has('AI_MODEL') && !(keys.has('AI_API_KEY') && keys.has('AI_BASE_URL'))) {
+    return {
+      name: relPath,
+      status: 'warn',
+      detail: 'AI_MODEL is set but AI_API_KEY or AI_BASE_URL is missing — AI Agent nodes fail with ai_not_configured',
+    };
+  }
+  return { name: relPath, status: 'pass', detail: 'present' };
 }
 
 // ---------- Composition ----------
