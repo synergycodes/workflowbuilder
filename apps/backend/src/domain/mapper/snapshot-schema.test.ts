@@ -115,6 +115,198 @@ describe('workflowSnapshotSchema', () => {
   });
 });
 
+function node(id: string, properties?: Record<string, unknown>) {
+  return { id, data: { type: 'product/any', properties } };
+}
+
+function edge(source: string, target: string, sourceHandle?: string) {
+  return { id: `${source}->${target}${sourceHandle ?? ''}`, source, target, sourceHandle };
+}
+
+function issuePaths(snapshot: unknown): string[] {
+  const result = workflowSnapshotSchema.safeParse(snapshot);
+  return result.success ? [] : result.error.issues.map((issue) => issue.path.join('.'));
+}
+
+describe('workflowSnapshotSchema: gate contracts', () => {
+  const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+  const reRequest = { name: 're-request', label: 'Ask again', effect: 'rerun-source' };
+  const emptyForm = { type: 'object', properties: {} };
+
+  function gate(id: string, decision: Record<string, unknown>) {
+    return {
+      id,
+      data: { type: 'product/any', properties: { decision: { version: 1, schema: emptyForm, ...decision } } },
+    };
+  }
+
+  it('parses a gate and materialises the contract defaults inside properties', () => {
+    const parsed = workflowSnapshotSchema.parse({
+      nodes: [node('src'), gate('gate', { actions: [approve, reRequest] })],
+      edges: [edge('src', 'gate')],
+    });
+
+    expect(parsed.nodes[1]!.data.properties?.decision?.actions).toEqual([
+      { ...approve, port: 'approved' },
+      { ...reRequest, maxIterations: 3 },
+    ]);
+  });
+
+  it('leaves the properties of a node without a contract untouched', () => {
+    const properties = { label: 'Plain', decisionBranches: [{ x: 1 }], meta: { deep: { nested: true } } };
+
+    const parsed = workflowSnapshotSchema.parse({ nodes: [node('n1', properties)], edges: [] });
+
+    expect(parsed.nodes[0]!.data.properties).toEqual(properties);
+  });
+
+  it('points a contract issue at the node index and field', () => {
+    const snapshot = {
+      nodes: [node('src'), gate('gate', { actions: [approve, { ...approve, name: 'approve-2' }] })],
+      edges: [edge('src', 'gate')],
+    };
+
+    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decision.actions.1.effect');
+  });
+
+  it('rejects `decision: null`; absent is the only way to not be a gate', () => {
+    const snapshot = { nodes: [node('n1', { decision: null })], edges: [] };
+
+    expect(issuePaths(snapshot)).toContain('nodes.0.data.properties.decision');
+  });
+
+  it.each<{ name: string; snapshot: unknown }>([
+    {
+      name: 'an explicit source that is a direct predecessor',
+      snapshot: {
+        nodes: [node('a'), node('b'), gate('gate', { actions: [approve], proposalSourceNodeId: 'a' })],
+        edges: [edge('a', 'gate'), edge('b', 'gate')],
+      },
+    },
+    {
+      name: 'a rerun-source gate with exactly one predecessor and no explicit source',
+      snapshot: { nodes: [node('a'), gate('gate', { actions: [approve, reRequest] })], edges: [edge('a', 'gate')] },
+    },
+    {
+      name: 'a rerun-source gate with several predecessors when the explicit source picks one',
+      snapshot: {
+        nodes: [node('a'), node('b'), gate('gate', { actions: [approve, reRequest], proposalSourceNodeId: 'b' })],
+        edges: [edge('a', 'gate'), edge('b', 'gate')],
+      },
+    },
+    {
+      name: 'a rerun-source gate whose single predecessor connects through two handles',
+      snapshot: {
+        nodes: [node('a'), gate('gate', { actions: [approve, reRequest] })],
+        edges: [edge('a', 'gate', 'left'), edge('a', 'gate', 'right')],
+      },
+    },
+    {
+      name: 'a gate without rerun-source and with several predecessors and no explicit source',
+      snapshot: {
+        nodes: [node('a'), node('b'), gate('gate', { actions: [approve] })],
+        edges: [edge('a', 'gate'), edge('b', 'gate')],
+      },
+    },
+    {
+      name: 'a gate without rerun-source whose explicit source is another gate',
+      snapshot: {
+        nodes: [
+          gate('first', { actions: [approve] }),
+          gate('second', { actions: [approve], proposalSourceNodeId: 'first' }),
+        ],
+        edges: [edge('first', 'second')],
+      },
+    },
+    {
+      name: 'two independent gates in one snapshot',
+      snapshot: {
+        nodes: [
+          node('a'),
+          gate('g1', { actions: [approve, reRequest] }),
+          node('b'),
+          gate('g2', { actions: [approve, reRequest] }),
+        ],
+        edges: [edge('a', 'g1'), edge('g1', 'b'), edge('b', 'g2')],
+      },
+    },
+  ])('accepts $name', ({ snapshot }) => {
+    expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
+  });
+
+  it.each<{ name: string; snapshot: unknown; path: string }>([
+    {
+      name: 'an explicit source with no edge into the gate',
+      snapshot: {
+        nodes: [node('a'), node('b'), gate('gate', { actions: [approve], proposalSourceNodeId: 'b' })],
+        edges: [edge('a', 'gate')],
+      },
+      path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'an explicit source that is a successor, not a predecessor',
+      snapshot: {
+        nodes: [node('a'), gate('gate', { actions: [approve], proposalSourceNodeId: 'after' }), node('after')],
+        edges: [edge('a', 'gate'), edge('gate', 'after')],
+      },
+      path: 'nodes.1.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'a rerun-source gate with no predecessor',
+      snapshot: {
+        nodes: [gate('gate', { actions: [approve, reRequest] }), node('after')],
+        edges: [edge('gate', 'after')],
+      },
+      path: 'nodes.0.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'a rerun-source gate with several predecessors and no explicit source',
+      snapshot: {
+        nodes: [node('a'), node('b'), gate('gate', { actions: [approve, reRequest] })],
+        edges: [edge('a', 'gate'), edge('b', 'gate')],
+      },
+      path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'a rerun-source gate whose implicit source is itself a gate',
+      snapshot: {
+        nodes: [node('a'), gate('first', { actions: [approve] }), gate('second', { actions: [approve, reRequest] })],
+        edges: [edge('a', 'first'), edge('first', 'second')],
+      },
+      path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'a rerun-source gate whose explicit source is itself a gate',
+      snapshot: {
+        nodes: [
+          node('a'),
+          gate('first', { actions: [approve] }),
+          gate('second', { actions: [approve, reRequest], proposalSourceNodeId: 'first' }),
+        ],
+        edges: [edge('a', 'first'), edge('a', 'second'), edge('first', 'second')],
+      },
+      path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+    },
+    {
+      name: 'only the broken gate when another gate in the snapshot is fine',
+      snapshot: {
+        nodes: [
+          node('a'),
+          gate('g1', { actions: [approve, reRequest] }),
+          gate('g2', { actions: [approve, reRequest] }),
+        ],
+        edges: [edge('a', 'g1'), edge('a', 'g2'), edge('g1', 'g2')],
+      },
+      path: 'nodes.2.data.properties.decision.proposalSourceNodeId',
+    },
+  ])('rejects $name', ({ snapshot, path }) => {
+    const paths = issuePaths(snapshot);
+
+    expect(paths).toContain(path);
+    expect(paths.filter((candidate) => candidate.endsWith('proposalSourceNodeId'))).toEqual([path]);
+  });
+});
+
 describe('mapToExecutionModel', () => {
   it('copies every property the runner does not lift into `config`', () => {
     const snapshot = workflowSnapshotSchema.parse({
