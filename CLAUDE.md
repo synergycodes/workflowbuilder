@@ -21,7 +21,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)             |
 | `pnpm build`                 | -    | Build the demo app                                                                      |
 | `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)              |
-| `pnpm check`                 | -    | Lint + typecheck + format + knip + deploy Dockerfile air-gap guard                      |
+| `pnpm check`                 | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                             |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 
@@ -117,7 +117,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
 | Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
-| Knip       | Part of `pnpm check`          | Detects unused exports/dependencies                                                                     |
+| Knip       | `pnpm exec knip`              | Detects unused exports/dependencies (not part of `pnpm check`)                                          |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 

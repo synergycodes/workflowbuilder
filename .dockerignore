@@ -9,7 +9,7 @@ node_modules
 **/node_modules
 
 # docker files
-docker-compose*.yml
+**/docker-compose*.yml
 **/Dockerfile*
 
 # build artifacts
@@ -21,7 +21,6 @@ coverage/
 # not needed files
 README.md
 tools/
-!tools/deployment/nginx
 .gitignore
 
 # examples
@@ -31,6 +30,10 @@ examples/
 **/.env
 **/.env.*
 !**/.env.example
+
+# registry auth must not end up in a layer
+**/.npmrc
+**/.yarnrc*
 
 # certificate material is mounted at runtime — never built into an image. The
 # Dockerfile needs one file from deploy/, so the rest stays out of the context:

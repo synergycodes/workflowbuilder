@@ -1,4 +1,4 @@
-# AI Studio production stack (WB-229). Usage: cp .env.example .env, set
+# AI Studio production stack. Usage: cp .env.example .env, set
 # AI_API_KEY, then `docker compose up -d --build`. Only `web`
 # publishes a port.
 #

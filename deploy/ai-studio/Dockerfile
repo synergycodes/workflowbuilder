@@ -9,11 +9,9 @@
 # corepack — this Node's corepack cannot load pnpm 10
 # (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING). Keep in sync with `packageManager`.
 #
-# The cache mount keeps npm's download out of the image layer and lets repeat
-# builds reuse it. It does NOT make this step work without a network: fetching
-# pnpm is the one part of the build that always needs the registry, which is why
-# an air-gapped host loads prebuilt images instead of building — see the README's
-# "Air-gapped / offline install".
+# The cache mount only spares the npm download on rebuilds. This step and `pnpm fetch`
+# are the two that need the registry, which is why an air-gapped host loads prebuilt
+# images instead of building (README "Air-gapped / offline install").
 FROM node:22.12.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm \
     PATH="/pnpm:$PATH" \
@@ -25,14 +23,12 @@ RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
     npm install -g pnpm@10.17.0 --prefer-offline
 WORKDIR /app
 
-# `useNodeVersion` makes pnpm download its own Node from nodejs.org to run lifecycle
-# scripts — pointless when the base image is already that exact version, and fatal
-# with no network. Stripped in the image only, so local dev keeps managed Node;
-# engineStrict plus the root `engines` still reject a mismatched base image.
-# Applied twice because `COPY . .` restores the original file.
+# `useNodeVersion` would make pnpm download Node from nodejs.org for lifecycle scripts:
+# fatal with no network, redundant on this base image (engineStrict still pins it).
+# Stripped in the image only, twice because `COPY . .` restores the file.
 FROM base AS source
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
+RUN --network=none sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
 COPY . .
 RUN --network=none sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
@@ -50,11 +46,9 @@ RUN --network=none pnpm build:temporal
 # tsx runs TS directly — required anyway for the worker, whose workflow
 # sandbox bundles from TS source on disk at runtime.
 #
-# Every RUN after `pnpm fetch` is --network=none, so BuildKit cuts egress for
-# the whole step: `--offline` only stops pnpm's own resolver, while lifecycle
-# scripts and build commands would still reach the registry. A step that needs
-# the network fails every ordinary build. `tools/check-offline-build.mjs` fails
-# `pnpm check` if a post-fetch RUN loses the flag.
+# Every RUN after `pnpm fetch` is --network=none: `--offline` stops only pnpm's
+# resolver, not lifecycle scripts or builds. tools/check-offline-build.mjs
+# enforces it from `pnpm check`.
 #
 # Inherits the whole-lockfile virtual store that `pnpm fetch` materialised (~1.5 GB,
 # docs and release toolchains included). A clean stage fed by `pnpm deploy --prod`
