@@ -1,6 +1,6 @@
 # Deploying AI Studio
 
-Self-contained, portable deployment of the AI Studio stack (WB-229). Runs on
+Self-contained, portable deployment of the AI Studio stack. Runs on
 any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
@@ -11,8 +11,8 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 | `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream; calls the LLM for `/api/visualize/adapt` | internal                 |
 | `worker`      | `ai-studio-runtime`            | Temporal worker, runs the nodes; AI Agent nodes call the LLM           | internal                 |
 | `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                                        | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events                                  | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                                             | internal                 |
+| `app-db`      | `postgres:16.15`               | Workflow snapshots + execution events                                  | internal                 |
+| `temporal-db` | `postgres:16.15`               | Temporal's own state store                                             | internal                 |
 | `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                                         | `127.0.0.1:8233`         |
 
 The three Temporal rows come from
@@ -119,7 +119,7 @@ network — whatever your process allows).
 cd ai-studio-offline                          # wherever you copied the bundle to
 shasum -a 256 -c ai-studio-images.tar.sha256  # or: sha256sum -c ai-studio-images.tar.sha256
 docker load -i ai-studio-images.tar
-cp .env.example .env              # set AI_API_KEY, AI_BASE_URL — see "What still needs egress"
+cp .env.example .env              # set AI_API_KEY, AI_BASE_URL, AI_MODEL — see "What still needs egress"
 docker compose up -d --no-build   # --no-build: use the loaded images, never rebuild here
 ```
 
@@ -148,10 +148,11 @@ way in (see "TLS / going public").
 
 ### Image versions
 
-Every image this stack does not build itself is pinned to an exact version
-tag: `node` and `nginx` in [Dockerfile](Dockerfile), Postgres in both compose
-files, Temporal and its UI in
-[docker-compose.override.yml](docker-compose.override.yml). Tags are not
+Every image this stack does not build itself is pinned to a version tag:
+`node` and `nginx` in [Dockerfile](Dockerfile), Postgres in both compose files,
+Temporal and its UI in
+[docker-compose.override.yml](docker-compose.override.yml). All are exact
+releases except `nginx`, pinned to its 1.31 minor line. Tags are not
 digests: a base image can be rebuilt under the same tag, which is how it
 receives OS security patches, so two packs made months apart can differ in
 those layers. The manifest the script writes records the digests that actually
@@ -164,15 +165,16 @@ the file that holds it; the Postgres tag appears in both compose files.
 deploy time. At runtime the stack has three optional egress paths, each behind
 one setting. Zero egress means all three are closed:
 
-| Path                                | Destination                        | Closed when                                                                                                                    |
-| ----------------------------------- | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| LLM calls (backend + worker)        | whatever `AI_BASE_URL` names       | `AI_BASE_URL` points at an OpenAI-compatible endpoint inside your network ("Pointing at a different LLM" under Configuration)  |
-| AI Agent web-search tool (worker)   | `api.tavily.com`, not configurable | `TAVILY_API_KEY` is empty — agents with web search toggled on still run, just without the tool                                 |
-| Turnstile bot check (SPA + backend) | `challenges.cloudflare.com`        | `VITE_TURNSTILE_SITE_KEY` was empty when the `web` image was built and `TURNSTILE_SECRET_KEY` is unset (both the default here) |
+| Path                                | Destination                        | Closed when                                                                                                                                                                  |
+| ----------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM calls (backend + worker)        | whatever `AI_BASE_URL` names       | `AI_BASE_URL` points at an OpenAI-compatible endpoint inside your network ("Pointing at a different LLM" under Configuration)                                                |
+| AI Agent web-search tool (worker)   | `api.tavily.com`, not configurable | `TAVILY_API_KEY` is empty — agents with web search toggled on still run, just without the tool                                                                               |
+| Turnstile bot check (SPA + backend) | `challenges.cloudflare.com`        | Always, in this deployment: the Dockerfile has no `VITE_TURNSTILE_SITE_KEY` build arg and compose passes no `TURNSTILE_SECRET_KEY`, so neither side ever contacts Cloudflare |
 
-The SPA itself loads nothing external: Poppins ships inside the SDK's
-stylesheet as inline woff2, so the browser talks only to the `web` container.
-With the default `AI_BASE_URL` (OpenRouter) the one required destination is
+The SPA itself loads nothing external: Poppins is bundled with the build and
+served as `/assets/*.woff2` by the `web` container, so the browser talks only
+to that container.
+With the pre-filled `AI_BASE_URL` (OpenRouter) the one required destination is
 `openrouter.ai:443`; without it the stack runs and every ordinary node works,
 while AI Agent nodes and the visualize route fail. On a restricted network,
 allow-list that host.
