@@ -1,3 +1,5 @@
+import type { DecisionContract } from './decision-contract';
+
 // Runner-level decision applied when a node throws.
 // `fail` aborts the whole execution (default); `continue` absorbs the error into
 // `nodeOutputs[id] = { error }` and propagates downstream; `errorRoute` does the
@@ -32,6 +34,8 @@ export type BaseNode = {
   // without knowing any product's vocabulary.
   label?: string;
   errorPolicy?: NodeErrorPolicy;
+  /** Present on a gate: the decision a human takes before the run continues. Nothing detects a gate by `type`. */
+  decision?: DecisionContract;
   role?: NodeRole;
 };
 
