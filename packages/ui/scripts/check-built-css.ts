@@ -17,6 +17,14 @@ const knownLayers = new Set(layerNames);
 const problems: string[] = [];
 const urlPattern = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/gi;
 const sanctionedPrefixes = ['--wb-ds-', '--wb-sdk-', '--wb-public-'];
+const handleGeometry = [
+  ['box-sizing', 'content-box'],
+  ['width', 'var(--wb-public-node-port-size)'],
+  ['height', 'var(--wb-public-node-port-size)'],
+  ['min-width', '0'],
+  ['min-height', '0'],
+  ['border', 'var(--wb-public-node-port-border-size) solid var(--wb-public-node-port-border-color)'],
+] as const;
 
 function isOrderStatement(node: ChildNode | undefined): boolean {
   return (
@@ -91,6 +99,18 @@ for (const { path: directory, ownsLayerContract } of directories) {
       });
     }
     root.walkAtRules('import', (atRule) => add(file, atRule, 'Built CSS import'));
+
+    root.walkRules((rule) => {
+      if (!rule.selectors.some((selector) => selector.endsWith(' .react-flow__handle'))) return;
+
+      const declarations = new Map<string, string>();
+      rule.walkDecls((declaration) => {
+        declarations.set(declaration.prop, declaration.value);
+      });
+      if (handleGeometry.some(([property, value]) => declarations.get(property) !== value)) {
+        add(file, rule, 'Incorrect built handle geometry');
+      }
+    });
 
     root.walkDecls((declaration) => {
       if (/var\((?!\s*--)/.test(declaration.value)) add(file, declaration, 'Malformed var() argument');
