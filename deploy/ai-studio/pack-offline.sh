@@ -23,11 +23,16 @@ esac
 
 cd "$here"
 
-docker compose build
-docker compose --profile debug pull --ignore-buildable
+# A developer's ./.env (Temporal Cloud, registry image names, VITE_BACKEND_URL)
+# would shape the bundle; the host gets .env.example defaults, so build from those.
+compose() { docker compose --env-file /dev/null "$@"; }
+[ -f .env ] && echo "pack-offline: ignoring ./.env — the bundle is built from .env.example defaults" >&2
+
+compose build --pull
+compose --profile debug pull --ignore-buildable
 
 images=()
-while IFS= read -r ref; do images+=("$ref"); done < <(docker compose --profile debug config --images | sort -u)
+while IFS= read -r ref; do images+=("$ref"); done < <(compose --profile debug config --images | sort -u)
 
 docker save -o "$out/ai-studio-images.tar" "${images[@]}"
 (cd "$out" && shasum -a 256 ai-studio-images.tar > ai-studio-images.tar.sha256)

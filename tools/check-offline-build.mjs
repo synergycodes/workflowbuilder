@@ -10,7 +10,8 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const DOCKERFILE = 'deploy/ai-studio/Dockerfile';
-const NETWORK_BOUNDARY = /\bpnpm fetch\b/;
+// The boundary step must be exactly `pnpm fetch`: anything chained onto it runs with network.
+const NETWORK_BOUNDARY = /^RUN(?:\s+--\S+)*\s+pnpm fetch$/i;
 
 // Dockerfile instructions span continuation lines (trailing `\`) and may hold
 // comment lines in between; both are folded into one instruction here.
@@ -20,12 +21,15 @@ function parseInstructions(text) {
   text.split('\n').forEach((raw, index) => {
     const line = raw.trim();
     if (line === '' || line.startsWith('#')) return;
+    // An even run of trailing backslashes is literal, not a continuation.
+    const continues = /(^|[^\\])(\\\\)*\\$/.test(line);
+    const content = continues ? line.slice(0, -1).trim() : line;
     if (current) {
-      current.text += ' ' + line.replace(/\\$/, '').trim();
+      current.text += ' ' + content;
     } else {
-      current = { line: index + 1, text: line.replace(/\\$/, '').trim() };
+      current = { line: index + 1, text: content };
     }
-    if (!line.endsWith('\\')) {
+    if (!continues) {
       instructions.push(current);
       current = null;
     }
@@ -45,11 +49,22 @@ const runs = parseInstructions(dockerfile).filter(({ text }) => /^RUN\b/i.test(t
 
 const boundary = runs.findIndex(({ text }) => NETWORK_BOUNDARY.test(text));
 if (boundary === -1) {
-  console.error(`${DOCKERFILE}: no \`pnpm fetch\` step found; cannot locate the network boundary.`);
+  const chained = runs.find(({ text }) => /\bpnpm fetch\b/.test(text));
+  console.error(
+    chained
+      ? `${DOCKERFILE}: line ${chained.line}: the \`pnpm fetch\` step must run nothing else; chained commands keep network access.`
+      : `${DOCKERFILE}: no \`pnpm fetch\` step found; cannot locate the network boundary.`,
+  );
   process.exit(1);
 }
 
-const leaking = runs.slice(boundary + 1).filter(({ text }) => !/\s--network=none(\s|$)/.test(text));
+// Only the instruction's own flags count; the token inside a shell command means nothing to BuildKit.
+const runFlags = (text) => /^RUN((?:\s+--\S+)*)/i.exec(text)[1].trim().split(/\s+/).filter(Boolean);
+const isolated = (text) => {
+  const network = runFlags(text).filter((flag) => flag.startsWith('--network='));
+  return network.length > 0 && network.every((flag) => flag === '--network=none');
+};
+const leaking = runs.slice(boundary + 1).filter(({ text }) => !isolated(text));
 
 if (leaking.length > 0) {
   console.error(`${DOCKERFILE}: RUN steps after \`pnpm fetch\` without --network=none:`);
