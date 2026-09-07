@@ -1,4 +1,6 @@
 .container {
+  --wb-sdk-connectable-item-inset: calc(0.625rem + 1px);
+
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
