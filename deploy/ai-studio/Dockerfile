@@ -55,6 +55,10 @@ RUN --network=none pnpm build:temporal
 # scripts and build commands would still reach the registry. A step that needs
 # the network fails every ordinary build. `tools/check-offline-build.mjs` fails
 # `pnpm check` if a post-fetch RUN loses the flag.
+#
+# Inherits the whole-lockfile virtual store that `pnpm fetch` materialised (~1.5 GB,
+# docs and release toolchains included). A clean stage fed by `pnpm deploy --prod`
+# would ship only backend + worker (follow-up: slim-runtime-image).
 FROM source AS runtime
 COPY --from=package-build /app/packages/temporal/dist ./packages/temporal/dist
 RUN --network=none --mount=type=cache,id=pnpm-store,target=/pnpm/store \
