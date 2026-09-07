@@ -58,8 +58,12 @@ step that needs the network fails every ordinary build, and
 `pnpm check:offline-build` fails if a post-fetch step ever loses the flag.
 That per-step guarantee is the enforceable one: a whole-build
 `docker build --network none` cannot pass, because the pnpm bootstrap and
-`pnpm fetch` need the registry by design. So don't build on the air-gapped
-host — build on a connected machine and ship the images.
+`pnpm fetch` need the registry by design. The Dockerfile also carries no
+`# syntax=` directive, which would pull the build frontend from Docker Hub as
+an unpinned fourth download; the guard rejects one, and the packing machine
+needs Docker Engine 23 or later for the built-in frontend instead. So don't
+build on the air-gapped host — build on a connected machine and ship the
+images.
 
 Shipping prebuilt images is the one supported air-gapped model. Building
 inside the gap from a customer-side registry mirror is not: there is no
