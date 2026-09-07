@@ -1,8 +1,9 @@
-# syntax=docker/dockerfile:1
-
 # Targets: runtime (backend + worker, command chosen per compose service),
 # web (nginx, SPA + /api proxy). Build context must be the repo root —
 # workspace packages are linked via pnpm `workspace:*`.
+#
+# No `# syntax=` line on purpose: it would pull the build frontend from Docker Hub
+# as an unpinned fourth download. Needs Docker Engine 23+ (built-in BuildKit frontend).
 #
 # Exact Node pin: engineStrict rejects any other version. pnpm via npm, not
 # corepack — this Node's corepack cannot load pnpm 10

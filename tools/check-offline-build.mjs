@@ -1,7 +1,8 @@
 // Guards the air-gap boundary of deploy/ai-studio/Dockerfile: every RUN after
 // `pnpm fetch` must carry --network=none, so BuildKit blocks egress from installs,
 // lifecycle scripts and build commands alike. `--offline` alone only stops pnpm's
-// own resolver. Run with `pnpm check:offline-build`; exits 1 on the first drift.
+// own resolver. A `# syntax=` directive is rejected too: it would pull the build
+// frontend from Docker Hub unpinned. Run with `pnpm check:offline-build`; exits 1 on drift.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -33,9 +34,14 @@ function parseInstructions(text) {
   return instructions;
 }
 
-const runs = parseInstructions(readFileSync(path.join(ROOT, DOCKERFILE), 'utf8')).filter(({ text }) =>
-  /^RUN\b/i.test(text),
-);
+const dockerfile = readFileSync(path.join(ROOT, DOCKERFILE), 'utf8');
+
+if (/^#\s*syntax\s*=/im.test(dockerfile)) {
+  console.error(`${DOCKERFILE}: remove the \`# syntax=\` directive; it downloads the build frontend from Docker Hub.`);
+  process.exit(1);
+}
+
+const runs = parseInstructions(dockerfile).filter(({ text }) => /^RUN\b/i.test(text));
 
 const boundary = runs.findIndex(({ text }) => NETWORK_BOUNDARY.test(text));
 if (boundary === -1) {
