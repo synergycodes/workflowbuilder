@@ -502,4 +502,39 @@ describe('mapToExecutionModel', () => {
 
     expect(result.nodes[0]?.type).toBe('never-seen-before/v3');
   });
+
+  it('lifts a validated decision contract out of `config` onto `decision`', () => {
+    const contract = {
+      version: 1,
+      actions: [{ name: 'approve', label: 'Approve', effect: 'resume' }],
+      schema: { type: 'object', properties: {} },
+    };
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'gate', data: { type: 'product/any', properties: { label: 'Review', foo: 1, decision: contract } } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.decision).toEqual({ ...contract, actions: [{ ...contract.actions[0], port: 'approved' }] });
+    expect(result.nodes[0]!.config).toEqual({ foo: 1 });
+    expect(result.nodes[0]!.label).toBe('Review');
+  });
+
+  it('gives a node without a contract no `decision` key', () => {
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'n1', data: { type: 'product/any', properties: { foo: 1 } } },
+        { id: 'n2', data: { type: 'product/any' } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]).not.toHaveProperty('decision');
+    expect(result.nodes[1]).not.toHaveProperty('decision');
+  });
 });
