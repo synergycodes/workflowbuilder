@@ -268,3 +268,109 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
     expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
   });
 });
+
+// ---- snapshot validation on publish and execute -----------------------------
+//
+// Publish validates the draft before copying it and execute validates the chosen
+// version before submitting; both answer with the same `invalid_snapshot` body.
+// Draft save never validates: a draft is legitimately mid-edit.
+
+function snapshotWithGateActions(actions: unknown[]) {
+  return {
+    nodes: [
+      { id: 'src', data: { type: 'product/any' } },
+      {
+        id: 'gate',
+        data: {
+          type: 'product/any',
+          properties: { decision: { version: 1, actions, schema: { type: 'object', properties: {} } } },
+        },
+      },
+    ],
+    edges: [{ id: 'e1', source: 'src', target: 'gate' }],
+  };
+}
+
+const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+const validGateSnapshot = snapshotWithGateActions([approve]);
+const twoResumesSnapshot = snapshotWithGateActions([approve, { ...approve, name: 'approve-2' }]);
+
+type InvalidSnapshotBody = { code: string; details: { path: (string | number)[] }[] };
+
+function allowAllApp() {
+  return buildApp(allowAll(vi.fn(async () => true)));
+}
+
+function publish(app: ReturnType<typeof buildApp>) {
+  return app.request('/api/workflows/w-1/publish', { method: 'POST' });
+}
+
+function jsonRequest(app: ReturnType<typeof buildApp>, path: string, method: string, body: unknown) {
+  return app.request(path, { method, body: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
+}
+
+describe('createWorkflowsRoutes - snapshot validation on publish', () => {
+  it('rejects a draft with a broken contract and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details.map((detail) => detail.path.join('.'))).toContain(
+      'nodes.1.data.properties.decision.actions.1.effect',
+    );
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('accepts a draft with a valid gate and returns the row', async () => {
+    const published = { ...fakeWorkflow, draftJson: validGateSnapshot, publishedJson: validGateSnapshot };
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validGateSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([published]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+    expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validGateSnapshot });
+  });
+
+  it('still publishes a workflow without a draft, unvalidated', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('answers with the same body execute gives for the same broken snapshot', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+
+    const publishResponse = await publish(allowAllApp());
+    const publishBody = await publishResponse.json();
+    const executeResponse = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(executeResponse.status).toBe(400);
+    expect(await executeResponse.json()).toEqual(publishBody);
+    expect(databaseMock.insert).not.toHaveBeenCalled();
+    expect(engineMock.submit).not.toHaveBeenCalled();
+  });
+});
+
+describe('createWorkflowsRoutes - draft save never validates the snapshot', () => {
+  it('stores a draft with a broken contract', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: twoResumesSnapshot,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});
