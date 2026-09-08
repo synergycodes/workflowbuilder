@@ -63,7 +63,9 @@ runs everything except AI Agent nodes. See [`apps/execution-worker/README.md`](.
 ### Connecting to a secured Temporal cluster
 
 The defaults above open a plaintext connection to the bundled dev cluster. Everything about the
-connection is env-driven, so a hardened cluster or Temporal Cloud needs no code change:
+connection is env-driven, so a hardened cluster or Temporal Cloud needs no code change. The
+variables are read and validated by [`@workflow-builder/temporal-connection`](../../packages/temporal-connection/README.md),
+the same code the worker uses:
 
 | Var                      | Purpose                                                      | Default       |
 | ------------------------ | ------------------------------------------------------------ | ------------- |

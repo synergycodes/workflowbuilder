@@ -220,10 +220,10 @@ jobs:
     name: Execution pipeline lint + typecheck + test
     runs-on: ubuntu-latest
     # No `services:` block: the suites run against in-memory fakes — no Postgres,
-    # no API keys. The one exception is the TLS connection tests in backend and
-    # worker, which start Temporal's dev server themselves (@temporalio/testing
-    # downloads the CLI on first run). If a suite here ever needs infra it cannot
-    # start itself, give it its own job rather than adding services to this one.
+    # no API keys. The one exception is temporal-connection's TLS test, which
+    # starts Temporal's dev server itself (@temporalio/testing downloads the CLI
+    # on first run). If a suite here ever needs infra it cannot start itself,
+    # give it its own job rather than adding services to this one.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -245,10 +245,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
 
       - name: Typecheck
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
 
       - name: Test
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test

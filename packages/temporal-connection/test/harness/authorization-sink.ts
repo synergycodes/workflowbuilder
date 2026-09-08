@@ -3,7 +3,7 @@ import type { AddressInfo } from 'node:net';
 
 import type { PemPair } from './certificates';
 
-export type AuthorizationSink = {
+type AuthorizationSink = {
   address: string;
   /** The `authorization` header of every gRPC call received, in order. */
   authorizations: string[];

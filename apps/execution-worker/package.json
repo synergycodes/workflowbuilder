@@ -18,6 +18,7 @@
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@workflow-builder/execution-core": "workspace:*",
+    "@workflow-builder/temporal-connection": "workspace:*",
     "@workflow-builder/types": "workspace:*",
     "@workflowbuilder/temporal": "workspace:*",
     "ai": "catalog:",
@@ -26,10 +27,7 @@
     "tsx": "^4.19.3"
   },
   "devDependencies": {
-    "@temporalio/client": "catalog:",
-    "@temporalio/testing": "catalog:",
     "@types/node": "^22.12.0",
-    "@workflow-builder/tools": "workspace:*",
     "vitest": "^3.0.4"
   }
 }

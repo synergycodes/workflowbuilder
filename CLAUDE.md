@@ -65,6 +65,7 @@ packages/
   tokens/           - @workflowbuilder/ui-tokens private design-token build (style-dictionary), feeds packages/ui
   execution-core/   - Pure topological graph runner + node executor registry
   temporal/         - @workflowbuilder/temporal published Temporal Plugin (activities + workflow runner); bundles execution-core + types into its dist
+  temporal-connection/ - Private, source-only: TEMPORAL_* env -> validated connection options + namespace, one copy shared by backend and worker
   types/            - Shared TypeScript types
 ```
 
@@ -74,21 +75,23 @@ Where to put a new script: root `tools/` for pure-Node bootstrap (runs before an
 
 Each workspace has its own context. Read the relevant file before extending a workspace.
 
-| Workspace                 | Authoritative docs                                      |
-| ------------------------- | ------------------------------------------------------- |
-| `packages/sdk`            | `packages/sdk/README.md`                                |
-| `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
-| `packages/tokens`         | `packages/tokens/README.md`                             |
-| `packages/execution-core` | `packages/execution-core/README.md`                     |
-| `packages/temporal`       | `packages/temporal/README.md`                           |
-| `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
-| `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
-| `apps/backend`            | `apps/backend/README.md`                                |
-| `apps/execution-worker`   | `apps/execution-worker/README.md`                       |
+| Workspace                      | Authoritative docs                                      |
+| ------------------------------ | ------------------------------------------------------- |
+| `packages/sdk`                 | `packages/sdk/README.md`                                |
+| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
+| `packages/tokens`              | `packages/tokens/README.md`                             |
+| `packages/execution-core`      | `packages/execution-core/README.md`                     |
+| `packages/temporal`            | `packages/temporal/README.md`                           |
+| `packages/temporal-connection` | `packages/temporal-connection/README.md`                |
+| `apps/demo`                    | `apps/demo/CLAUDE.md`                                   |
+| `apps/ai-studio`               | `apps/ai-studio/README.md`                              |
+| `apps/backend`                 | `apps/backend/README.md`                                |
+| `apps/execution-worker`        | `apps/execution-worker/README.md`                       |
 
 ## Types & Aliases
 
 Shared types: `packages/types/` (imported as `@workflow-builder/types/*`).
+Temporal connection config: `packages/temporal-connection/` (imported as `@workflow-builder/temporal-connection`; `temporalConfig()` gives backend and worker their connect options and namespace).
 Icons: `apps/icons/` (imported as `@workflow-builder/icons`).
 SDK: `packages/sdk/` (imported as `@workflowbuilder/sdk`).
 UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuilder/ui/styles.css`, `/index.css`, `/tokens.css`).

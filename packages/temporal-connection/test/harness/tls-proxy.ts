@@ -3,7 +3,7 @@ import { type TlsOptions, createServer } from 'node:tls';
 
 import type { PemPair } from './certificates';
 
-export type TlsProxy = {
+type TlsProxy = {
   /** host:port a Temporal client can dial; the hostname is covered by the server certificate's SAN. */
   address: string;
   /** One entry per failed handshake, whichever side aborted it. */
@@ -11,7 +11,7 @@ export type TlsProxy = {
   close: () => Promise<void>;
 };
 
-export type TlsProxyOptions = {
+type TlsProxyOptions = {
   /** host:port of the plaintext Temporal server behind the proxy. */
   upstream: string;
   server: PemPair;

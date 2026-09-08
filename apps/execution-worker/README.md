@@ -49,15 +49,17 @@ own network — and no request leaves that network. There is no built-in endpoin
 
 The connection to Temporal is env-driven too: `TEMPORAL_TLS`, `TEMPORAL_API_KEY` and the
 `TEMPORAL_TLS_CA_PATH` / `TEMPORAL_TLS_CERT_PATH` / `TEMPORAL_TLS_KEY_PATH` trio cover a hardened
-cluster or Temporal Cloud. The backend reads the same variables and must agree on the namespace —
-the full table is in [`apps/backend/README.md`](../backend/README.md#connecting-to-a-secured-temporal-cluster).
+cluster or Temporal Cloud. Both apps read them through
+[`@workflow-builder/temporal-connection`](../../packages/temporal-connection/README.md), so the rules
+cannot drift, but each environment must still agree on the namespace — the full table is in
+[`apps/backend/README.md`](../backend/README.md#connecting-to-a-secured-temporal-cluster).
 
 ## Structure
 
 ```
 src/
 ├── database.ts            # Raw SQL for exec events + status updates (no Drizzle — avoids backend schema coupling)
-├── env.ts                 # Centralized env reading, with the defaults documented above
+├── env.ts                 # Env reading with the defaults documented above (TEMPORAL_* come from @workflow-builder/temporal-connection)
 └── engines/
     └── temporal/
         ├── worker.ts                      # Worker bootstrap: executors + store, handed to WorkflowBuilderPlugin
@@ -71,7 +73,7 @@ own: one executor per node type and the database as the store port.
 ## Temporal specifics
 
 - **Task queue:** `workflow-execution`, read from `plugin.taskQueue` so the backend and the worker cannot drift apart. Both default to the same constant in the package.
-- **Namespace:** `TEMPORAL_NAMESPACE`, default `default`. Unlike the task queue this is _not_ shared through the plugin, so the two apps have to be configured to agree — a mismatch is silent, the worker simply never sees the backend's submissions.
+- **Namespace:** `TEMPORAL_NAMESPACE`, default `default`. Unlike the task queue this is _not_ shared through the plugin: both apps read it through `@workflow-builder/temporal-connection`, but each environment has to set the same value — a mismatch is silent, the worker simply never sees the backend's submissions.
 - **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID. Also owned by the package.
 - **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. Exported as `DEFAULT_DATABASE_ACTIVITY_PROFILE` and `DEFAULT_NODE_ACTIVITY_PROFILE`.
 - **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps today's behavior. Of the reference executors, only the AI Agent's `ai_not_configured` is classified (permanent) so far; the rest are still unclassified.
