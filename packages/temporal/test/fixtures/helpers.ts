@@ -26,6 +26,15 @@ export async function executeVerdictWithRetry(send: () => Promise<unknown>): Pro
   }
 }
 
+// A rejected update writes nothing to history, so this lists exactly the updates that
+// got past the validator.
+export function acceptedUpdateIds(history: History): string[] {
+  return (history.events ?? []).flatMap((event) => {
+    const id = event.workflowExecutionUpdateAcceptedEventAttributes?.protocolInstanceId;
+    return typeof id === 'string' ? [id] : [];
+  });
+}
+
 export function countScheduledActivities(history: History): Record<string, number> {
   const counts: Record<string, number> = {};
 

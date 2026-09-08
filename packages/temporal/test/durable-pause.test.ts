@@ -1,6 +1,6 @@
 // The task's verify-by on the harness: a run parks at a gate, survives a worker
 // restart, and a resolveNode update resumes it with downstream running exactly once.
-import { WorkflowFailedError, WorkflowUpdateFailedError } from '@temporalio/client';
+import { CancelledFailure, WorkflowFailedError, WorkflowUpdateFailedError } from '@temporalio/client';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { Worker, bundleWorkflowCode } from '@temporalio/worker';
 import { fileURLToPath } from 'node:url';
@@ -14,7 +14,7 @@ import {
 } from '../src/index';
 import { resolveNodeUpdate } from '../src/workflow/index';
 import { type RecordingStore, createRecordingStore } from './fixtures/graph';
-import { executeVerdictWithRetry, waitUntil } from './fixtures/helpers';
+import { acceptedUpdateIds, executeVerdictWithRetry, waitUntil } from './fixtures/helpers';
 import {
   PORT_ROUTED_GRAPH,
   type PauseHarness,
@@ -157,9 +157,15 @@ describe('durable pause', () => {
 
       // Rejection classes live in verdict-validation.test.ts; this pins the
       // end-to-end property: a rejected update leaves the parked run resolvable.
-      await expectRejected(handle.executeUpdate('resolveNode', { args: [] }), 'verdict_malformed');
       await expectRejected(
-        handle.executeUpdate('resolveNode', { args: [{ nodeId: 'ghost', resolution: { output: 1 } }] }),
+        handle.executeUpdate('resolveNode', { args: [], updateId: 'malformed-verdict' }),
+        'verdict_malformed',
+      );
+      await expectRejected(
+        handle.executeUpdate('resolveNode', {
+          args: [{ nodeId: 'ghost', resolution: { output: 1 } }],
+          updateId: 'verdict-for-ghost',
+        }),
         'verdict_for_unknown_node',
       );
 
@@ -171,6 +177,13 @@ describe('durable pause', () => {
 
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+
+    // The same error class would also come back from an accepted handler that threw
+    // later; only history shows the rejections happened before acceptance.
+    const accepted = acceptedUpdateIds(await handle.fetchHistory());
+    expect(accepted).toHaveLength(1);
+    expect(accepted).not.toContain('malformed-verdict');
+    expect(accepted).not.toContain('verdict-for-ghost');
   }, 120_000);
 
   it('a verdict with output: undefined resumes the node, even though the payload converter drops the field', async () => {
@@ -209,8 +222,17 @@ describe('durable pause', () => {
       // cancel that activity before it runs and make the trail racy.
       await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
       await handle.cancel();
-      await expect(handle.result()).rejects.toBeInstanceOf(WorkflowFailedError);
+      // WorkflowFailedError wraps a plain failure too; the cause is what says Cancelled.
+      const failure: unknown = await handle.result().then(
+        () => 'unexpectedly completed',
+        (error: unknown) => error,
+      );
+      expect(failure).toBeInstanceOf(WorkflowFailedError);
+      expect((failure as WorkflowFailedError).cause).toBeInstanceOf(CancelledFailure);
     });
+
+    const history = await handle.fetchHistory();
+    expect(history.events?.at(-1)?.workflowExecutionCanceledEventAttributes).toBeDefined();
 
     const types = eventTypes(store);
     expect(types.at(-1)).toBe('execution_cancelled');
