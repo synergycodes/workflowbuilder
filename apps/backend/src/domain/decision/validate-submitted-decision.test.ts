@@ -77,6 +77,18 @@ describe('validateSubmittedDecision', () => {
     expect(result.decision?.action.name).toBe(call.action);
   });
 
+  // Open point in the decision log: until decided otherwise, edits on a non-resume action
+  // are checked field by field, kept on the decision, and leave the effect alone.
+  it.each<{ call: SubmittedDecision; effect: string }>([
+    { call: { action: 'reject', reason: 'late', edits: { refundAmount: 0 } }, effect: 'reject' },
+    { call: { action: 'ask-again', comment: 'again', edits: { note: 'x' } }, effect: 'rerun-source' },
+  ])('keeps the declared effect $effect and carries the edits of a non-resume submission', ({ call, effect }) => {
+    const result = validateSubmittedDecision(requestWith(), call);
+
+    expect(result.decision?.effect).toBe(effect);
+    expect(result.decision?.edits).toEqual(call.edits);
+  });
+
   it.each<{
     name: string;
     request?: DecisionRequest;
@@ -90,6 +102,13 @@ describe('validateSubmittedDecision', () => {
       call: { action: 'escalate' },
       code: 'unknown_action',
       value: 'escalate',
+      path: ['action'],
+    },
+    {
+      name: "an action addressed by its label instead of its name ('Approve')",
+      call: { action: 'Approve' },
+      code: 'unknown_action',
+      value: 'Approve',
       path: ['action'],
     },
     {
@@ -218,6 +237,15 @@ describe('submittedDecisionSchema', () => {
     });
 
     expect(parsed).toEqual({ action: 'approve', edits: { a: 1 }, reason: 'r', comment: 'c' });
+  });
+
+  it('drops an own __proto__ key in edits instead of making it the prototype', () => {
+    const parsed = submittedDecisionSchema.parse(
+      JSON.parse('{"action":"approve","edits":{"__proto__":{"refundAmount":1}}}'),
+    );
+
+    expect(parsed.edits).toEqual({});
+    expect(Object.getPrototypeOf(parsed.edits)).toBe(Object.prototype);
   });
 
   it.each<{ name: string; body: unknown; path: string }>([

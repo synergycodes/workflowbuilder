@@ -246,6 +246,7 @@ describe('decisionRequestSchema', () => {
       input: request({ schema: { ...refundForm, type: 'array' } }),
       path: 'schema.type',
     },
+    { name: 'no form schema at all', input: request({ schema: undefined }), path: 'schema' },
     {
       name: 'a form schema without properties',
       input: request({ schema: { type: 'object' } }),
