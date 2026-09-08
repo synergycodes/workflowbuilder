@@ -63,7 +63,7 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
 } {
   const base = makeRunner(behaviors);
   const pending = new Map<string, (completion: CompletedNodeExecution) => void>();
-  const watchers: { count: number; notify: () => void }[] = [];
+  const watchers = new Set<{ count: number; notify: () => void }>();
   return {
     callOrder: base.callOrder,
     contexts: base.contexts,
@@ -72,10 +72,10 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
       awaitResolution(nodeId) {
         return new Promise((resolve) => {
           pending.set(nodeId, resolve);
-          for (let index = watchers.length - 1; index >= 0; index -= 1) {
-            if (pending.size >= watchers[index].count) {
-              watchers[index].notify();
-              watchers.splice(index, 1);
+          for (const watcher of watchers) {
+            if (pending.size >= watcher.count) {
+              watchers.delete(watcher);
+              watcher.notify();
             }
           }
         });
@@ -85,7 +85,7 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
     whenParked(count) {
       return new Promise((notify) => {
         if (pending.size >= count) notify();
-        else watchers.push({ count, notify });
+        else watchers.add({ count, notify });
       });
     },
     resolveGate(nodeId, completion) {
