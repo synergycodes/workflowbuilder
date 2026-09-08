@@ -283,7 +283,7 @@ function snapshotWithDecisionActions(actions: unknown[]) {
         id: 'review',
         data: {
           type: 'product/any',
-          properties: { decision: { version: 1, actions, schema: { type: 'object', properties: {} } } },
+          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties: {} } } },
         },
       },
     ],
@@ -310,7 +310,7 @@ function jsonRequest(app: ReturnType<typeof buildApp>, path: string, method: str
 }
 
 describe('createWorkflowsRoutes - snapshot validation on publish', () => {
-  it('rejects a draft with a broken contract and writes nothing', async () => {
+  it('rejects a draft with a broken decision request and writes nothing', async () => {
     databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
 
     const response = await publish(allowAllApp());
@@ -319,12 +319,12 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(response.status).toBe(400);
     expect(body.code).toBe('invalid_snapshot');
     expect(body.details.map((detail) => detail.path.join('.'))).toContain(
-      'nodes.1.data.properties.decision.actions.1.effect',
+      'nodes.1.data.properties.decisionRequest.actions.1.effect',
     );
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
-  it('accepts a draft with a valid decision contract and returns the row', async () => {
+  it('accepts a draft with a valid decision request and returns the row', async () => {
     const published = { ...fakeWorkflow, draftJson: validDecisionSnapshot, publishedJson: validDecisionSnapshot };
     databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validDecisionSnapshot }]));
     databaseMock.update.mockReturnValue(chainResolving([published]));
@@ -363,7 +363,7 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
 });
 
 describe('createWorkflowsRoutes - draft save never validates the snapshot', () => {
-  it('stores a draft with a broken contract', async () => {
+  it('stores a draft with a broken decision request', async () => {
     databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
 
     const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {

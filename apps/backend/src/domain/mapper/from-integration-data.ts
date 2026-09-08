@@ -29,10 +29,10 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
 }
 
 // Lifts what an engine reads out of `data.properties`: `label`, `errorPolicy` (from the SDK's
-// `sharedProperties`) and `decision` (validated and defaulted by the parse, unchecked here).
+// `sharedProperties`) and `decisionRequest` (validated and defaulted by the parse, unchecked here).
 // `role` comes from `data.isStartNode` beside the properties; `description` stays in `config`.
 function mapNode(node: FrontendNode): BaseNode {
-  const { errorPolicy: rawErrorPolicy, label: rawLabel, decision, ...config } = node.data.properties ?? {};
+  const { errorPolicy: rawErrorPolicy, label: rawLabel, decisionRequest, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
   const label = isNonEmptyString(rawLabel) ? rawLabel.trim() : undefined;
   const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
@@ -40,7 +40,7 @@ function mapNode(node: FrontendNode): BaseNode {
     id: node.id,
     type: node.data.type,
     config,
-    ...pickBy({ label, errorPolicy, decision, role }, isDefined),
+    ...pickBy({ label, errorPolicy, decisionRequest, role }, isDefined),
   };
 }
 

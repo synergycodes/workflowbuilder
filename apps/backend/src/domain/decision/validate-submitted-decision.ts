@@ -1,8 +1,8 @@
 import type {
   DecisionAction,
-  DecisionContract,
   DecisionEffect,
-} from '@workflow-builder/types/workflow-execution/decision-contract';
+  DecisionRequest,
+} from '@workflow-builder/types/workflow-execution/decision-request';
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 
@@ -15,7 +15,7 @@ export type SubmittedDecision = {
   comment?: string;
 };
 
-// A submission the contract accepts. The matched action carries the port to route on;
+// A submission the request accepts. The matched action carries the port to route on;
 // `effect` is `resume-with-edits` when a resume came with edits.
 export type Decision = {
   action: DecisionAction;
@@ -44,23 +44,23 @@ function isEmptied(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim().length === 0);
 }
 
-// The contract arrived through the parser, so `schema` has the shape checked there;
+// The request arrived through the parser, so `schema` has the shape checked there;
 // the reads below only narrow what `Record<string, unknown>` hides.
-function formProperties(contract: DecisionContract): Record<string, { readOnly?: unknown }> {
-  return (contract.schema['properties'] ?? {}) as Record<string, { readOnly?: unknown }>;
+function formProperties(request: DecisionRequest): Record<string, { readOnly?: unknown }> {
+  return (request.schema['properties'] ?? {}) as Record<string, { readOnly?: unknown }>;
 }
 
-function requiredFields(contract: DecisionContract): string[] {
-  return (contract.schema['required'] ?? []) as string[];
+function requiredFields(request: DecisionRequest): string[] {
+  return (request.schema['required'] ?? []) as string[];
 }
 
 // Presence and editability only. Whether an edited value fits its declared type is a
 // later concern with its own validator.
 export function validateSubmittedDecision(
-  contract: DecisionContract,
+  request: DecisionRequest,
   submitted: SubmittedDecision,
 ): SubmittedDecisionResult {
-  const action = contract.actions.find((candidate) => candidate.name === submitted.action);
+  const action = request.actions.find((candidate) => candidate.name === submitted.action);
   if (action === undefined) return refuse('unknown_action', submitted.action, ['action']);
 
   if (action.effect === 'reject' && action.reasonRequired && isBlank(submitted.reason)) {
@@ -70,8 +70,8 @@ export function validateSubmittedDecision(
     return refuse('comment_required', action.name, ['comment']);
   }
 
-  const properties = formProperties(contract);
-  const required = new Set(requiredFields(contract));
+  const properties = formProperties(request);
+  const required = new Set(requiredFields(request));
   const edits = submitted.edits ?? {};
   for (const [field, value] of Object.entries(edits)) {
     if (!Object.hasOwn(properties, field)) return refuse('unknown_field', field, ['edits', field]);

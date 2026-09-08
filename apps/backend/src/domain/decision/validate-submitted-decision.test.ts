@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DecisionContract } from '@workflow-builder/types/workflow-execution/decision-contract';
+import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 import { type SubmittedDecision, validateSubmittedDecision } from './validate-submitted-decision';
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
-const reRequest = { name: 're-request', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 } as const;
+const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 } as const;
 
 // As the parser leaves it: defaults present, every action explicit.
-function contractWith(overrides: Partial<DecisionContract> = {}): DecisionContract {
+function requestWith(overrides: Partial<DecisionRequest> = {}): DecisionRequest {
   return {
     version: 1,
-    actions: [approve, reject, reRequest],
+    actions: [approve, reject, askAgain],
     schema: {
       type: 'object',
       properties: {
@@ -30,7 +30,7 @@ function contractWith(overrides: Partial<DecisionContract> = {}): DecisionContra
 }
 
 describe('validateSubmittedDecision', () => {
-  it.each<{ name: string; contract?: DecisionContract; call: SubmittedDecision; effect: string }>([
+  it.each<{ name: string; request?: DecisionRequest; call: SubmittedDecision; effect: string }>([
     { name: 'a resume without edits resumes', call: { action: 'approve' }, effect: 'resume' },
     { name: 'a resume with empty edits resumes', call: { action: 'approve', edits: {} }, effect: 'resume' },
     {
@@ -56,17 +56,17 @@ describe('validateSubmittedDecision', () => {
     { name: 'a reject without a reason when none is required', call: { action: 'reject' }, effect: 'reject' },
     {
       name: 'a reject with a reason when one is required',
-      contract: contractWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
+      request: requestWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
       call: { action: 'reject', reason: 'Amount exceeds policy' },
       effect: 'reject',
     },
     {
       name: 'a rerun with a comment',
-      call: { action: 're-request', comment: 'Use the discounted price' },
+      call: { action: 'ask-again', comment: 'Use the discounted price' },
       effect: 'rerun-source',
     },
-  ])('accepts $name', ({ contract = contractWith(), call, effect }) => {
-    const result = validateSubmittedDecision(contract, call);
+  ])('accepts $name', ({ request = requestWith(), call, effect }) => {
+    const result = validateSubmittedDecision(request, call);
 
     expect(result.error).toBeUndefined();
     expect(result.decision?.effect).toBe(effect);
@@ -75,38 +75,38 @@ describe('validateSubmittedDecision', () => {
 
   it.each<{
     name: string;
-    contract?: DecisionContract;
+    request?: DecisionRequest;
     call: SubmittedDecision;
     code: SubmittedDecisionErrorCode;
     value: string;
     path: string[];
   }>([
     {
-      name: 'an action the contract does not offer',
+      name: 'an action the request does not offer',
       call: { action: 'escalate' },
       code: 'unknown_action',
       value: 'escalate',
       path: ['action'],
     },
     {
-      name: 'a reject on a contract without a reject action',
-      contract: contractWith({ actions: [approve] }),
+      name: 'a reject on a request without a reject action',
+      request: requestWith({ actions: [approve] }),
       call: { action: 'reject', reason: 'no' },
       code: 'unknown_action',
       value: 'reject',
       path: ['action'],
     },
     {
-      name: 'a rerun on a contract without a rerun-source action',
-      contract: contractWith({ actions: [approve, reject] }),
-      call: { action: 're-request', comment: 'again' },
+      name: 'a rerun on a request without a rerun-source action',
+      request: requestWith({ actions: [approve, reject] }),
+      call: { action: 'ask-again', comment: 'again' },
       code: 'unknown_action',
-      value: 're-request',
+      value: 'ask-again',
       path: ['action'],
     },
     {
       name: 'a reject without a reason when one is required',
-      contract: contractWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
+      request: requestWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
       call: { action: 'reject' },
       code: 'reason_required',
       value: 'reject',
@@ -114,7 +114,7 @@ describe('validateSubmittedDecision', () => {
     },
     {
       name: 'a reject with a blank reason when one is required',
-      contract: contractWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
+      request: requestWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
       call: { action: 'reject', reason: '   ' },
       code: 'reason_required',
       value: 'reject',
@@ -122,16 +122,16 @@ describe('validateSubmittedDecision', () => {
     },
     {
       name: 'a rerun without a comment',
-      call: { action: 're-request' },
+      call: { action: 'ask-again' },
       code: 'comment_required',
-      value: 're-request',
+      value: 'ask-again',
       path: ['comment'],
     },
     {
       name: 'a rerun with a whitespace-only comment',
-      call: { action: 're-request', comment: ' \n ' },
+      call: { action: 'ask-again', comment: ' \n ' },
       code: 'comment_required',
-      value: 're-request',
+      value: 'ask-again',
       path: ['comment'],
     },
     {
@@ -176,8 +176,8 @@ describe('validateSubmittedDecision', () => {
       value: 'refundAmount',
       path: ['edits', 'refundAmount'],
     },
-  ])('refuses $name', ({ contract = contractWith(), call, code, value, path }) => {
-    expect(validateSubmittedDecision(contract, call)).toEqual({
+  ])('refuses $name', ({ request = requestWith(), call, code, value, path }) => {
+    expect(validateSubmittedDecision(request, call)).toEqual({
       error: { code, message: submittedDecisionErrorMessage(code, value), path },
     });
   });
@@ -185,7 +185,7 @@ describe('validateSubmittedDecision', () => {
   it('builds the decision from the matched action and what was submitted', () => {
     const submitted = { action: 'approve', edits: { refundAmount: 12 }, comment: 'rounded down' };
 
-    expect(validateSubmittedDecision(contractWith(), submitted).decision).toEqual({
+    expect(validateSubmittedDecision(requestWith(), submitted).decision).toEqual({
       action: approve,
       effect: 'resume-with-edits',
       edits: { refundAmount: 12 },
@@ -194,7 +194,7 @@ describe('validateSubmittedDecision', () => {
   });
 
   it('defaults edits to an empty object when none were submitted', () => {
-    expect(validateSubmittedDecision(contractWith(), { action: 'reject', reason: 'late' }).decision).toEqual({
+    expect(validateSubmittedDecision(requestWith(), { action: 'reject', reason: 'late' }).decision).toEqual({
       action: reject,
       effect: 'reject',
       edits: {},

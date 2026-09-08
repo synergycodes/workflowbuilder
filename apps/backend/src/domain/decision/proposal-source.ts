@@ -2,11 +2,11 @@ import { unique } from 'remeda';
 
 import type { BaseNode, WorkflowEdgeDefinition } from '@workflow-builder/types/workflow-execution/execution-model';
 
-type GraphNode = Pick<BaseNode, 'id' | 'decision'>;
+type GraphNode = Pick<BaseNode, 'id' | 'decisionRequest'>;
 type GraphEdge = Pick<WorkflowEdgeDefinition, 'sourceNodeId' | 'targetNodeId'>;
 
 export type UnresolvedSourceReason =
-  | 'node_without_decision'
+  | 'node_without_decision_request'
   | 'explicit_source_not_a_predecessor'
   | 'no_predecessor'
   | 'ambiguous_predecessor';
@@ -25,10 +25,10 @@ export function resolveProposalSource(
   nodeId: string,
 ): ProposalSourceResolution {
   const node = nodes.find((candidate) => candidate.id === nodeId);
-  if (node?.decision === undefined) return { error: 'node_without_decision' };
+  if (node?.decisionRequest === undefined) return { error: 'node_without_decision_request' };
 
   const predecessors = unique(edges.filter((edge) => edge.targetNodeId === nodeId).map((edge) => edge.sourceNodeId));
-  const explicit = node.decision.proposalSourceNodeId;
+  const explicit = node.decisionRequest.proposalSourceNodeId;
   if (explicit !== undefined) {
     return predecessors.includes(explicit)
       ? { sourceNodeId: explicit }

@@ -1,4 +1,4 @@
-// Every message the decision-contract validation can produce. `{value}` is the one
+// Every message the decision-request validation can produce. `{value}` is the one
 // interpolation slot. Structural failures (wrong type, missing key) keep zod's wording.
 export const DECISION_ISSUE_MESSAGES = {
   actions_empty: 'at least one action is required',
@@ -14,19 +14,19 @@ export const DECISION_ISSUE_MESSAGES = {
   required_field_undeclared: "required field '{value}' is not declared in properties",
   deadline_format: "must be a positive duration such as '30s', '24h' or '3d' (a number followed by ms, s, m, h or d)",
   deadline_policy: "policy must be 'reject'",
-  source_node_without_decision: 'this node carries no decision contract',
+  source_node_without_decision_request: 'this node carries no decision request',
   source_not_a_predecessor: "proposalSourceNodeId '{value}' is not a direct predecessor of this node",
   source_missing: 'a rerun-source action needs a proposal source, but this node has no predecessor',
   source_ambiguous: 'several predecessors; set proposalSourceNodeId to say which one rerun-source re-runs',
-  source_has_decision: "proposal source '{value}' carries its own decision contract and cannot be re-run",
+  source_has_decision_request: "proposal source '{value}' carries its own decision request and cannot be re-run",
 } as const;
 
 export type DecisionIssueCode = keyof typeof DECISION_ISSUE_MESSAGES;
 
-// Every way a submitted decision can be refused against the node's contract. Value
+// Every way a submitted decision can be refused against the node's decision request. Value
 // types are not checked here (follow-up: decision-edit-value-validation)
 export const SUBMITTED_DECISION_ERRORS = {
-  unknown_action: "the contract offers no action named '{value}'",
+  unknown_action: "the decision request offers no action named '{value}'",
   reason_required: "action '{value}' requires a reason",
   comment_required: "action '{value}' requires a comment",
   unknown_field: "field '{value}' is not in the decision schema",

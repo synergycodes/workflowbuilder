@@ -3,15 +3,15 @@ import type { z } from 'zod';
 
 import {
   DECLARABLE_DECISION_EFFECTS,
-  type DecisionContract,
-} from '@workflow-builder/types/workflow-execution/decision-contract';
+  type DecisionRequest,
+} from '@workflow-builder/types/workflow-execution/decision-request';
 
-import { decisionContractSchema } from './decision-contract-schema';
 import { type DecisionIssueCode, decisionIssueMessage } from './decision-issues';
+import { decisionRequestSchema } from './decision-request-schema';
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false };
-const reRequest = { name: 're-request', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 };
+const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 };
 
 const refundForm = {
   type: 'object',
@@ -28,7 +28,7 @@ const refundForm = {
 function workedExample() {
   return {
     version: 1,
-    actions: [approve, reject, reRequest],
+    actions: [approve, reject, askAgain],
     schema: refundForm,
     uiSchema: { type: 'VerticalLayout', elements: [] },
     proposalSourceNodeId: 'source-1',
@@ -36,12 +36,12 @@ function workedExample() {
   };
 }
 
-function contract(overrides: Record<string, unknown> = {}): unknown {
+function request(overrides: Record<string, unknown> = {}): unknown {
   return { ...workedExample(), ...overrides };
 }
 
 function issuesOf(input: unknown): { path: string; message: string }[] {
-  const result = decisionContractSchema.safeParse(input);
+  const result = decisionRequestSchema.safeParse(input);
   return result.success
     ? []
     : result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
@@ -49,35 +49,35 @@ function issuesOf(input: unknown): { path: string; message: string }[] {
 
 const declarableEffects = DECLARABLE_DECISION_EFFECTS.join(', ');
 
-describe('decisionContractSchema', () => {
+describe('decisionRequestSchema', () => {
   it('accepts the refund worked example', () => {
-    expect(decisionContractSchema.safeParse(workedExample()).success).toBe(true);
+    expect(decisionRequestSchema.safeParse(workedExample()).success).toBe(true);
   });
 
-  it('accepts a minimal contract: one resume action and an empty form', () => {
+  it('accepts a minimal request: one resume action and an empty form', () => {
     const minimal = {
       version: 1,
       actions: [{ name: 'ok', label: 'OK', effect: 'resume' }],
       schema: { type: 'object', properties: {} },
     };
 
-    expect(decisionContractSchema.safeParse(minimal).success).toBe(true);
+    expect(decisionRequestSchema.safeParse(minimal).success).toBe(true);
   });
 
   it.each([...DECLARABLE_DECISION_EFFECTS])('accepts a declared %s action', (effect) => {
     const resume = { name: 'ok', label: 'OK', effect: 'resume' };
     const actions = effect === 'resume' ? [resume] : [resume, { name: 'other', label: 'Other', effect }];
 
-    expect(decisionContractSchema.safeParse(contract({ actions })).success).toBe(true);
+    expect(decisionRequestSchema.safeParse(request({ actions })).success).toBe(true);
   });
 
   it('materialises the defaults for port, reasonRequired and maxIterations', () => {
-    const parsed = decisionContractSchema.parse(
-      contract({
+    const parsed = decisionRequestSchema.parse(
+      request({
         actions: [
           { name: 'approve', label: 'Approve', effect: 'resume' },
           { name: 'reject', label: 'Reject', effect: 'reject' },
-          { name: 're-request', label: 'Ask again', effect: 'rerun-source' },
+          { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' },
         ],
       }),
     );
@@ -85,7 +85,7 @@ describe('decisionContractSchema', () => {
     expect(parsed.actions).toEqual([
       { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' },
       { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false },
-      { name: 're-request', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 },
+      { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 },
     ]);
   });
 
@@ -106,7 +106,7 @@ describe('decisionContractSchema', () => {
       deadline: { after: '3d', policy: 'reject', warnAfter: '2d' },
     };
 
-    const parsed = decisionContractSchema.parse(input);
+    const parsed = decisionRequestSchema.parse(input);
 
     expect(parsed).toMatchObject({
       audience: 'finance',
@@ -123,210 +123,210 @@ describe('decisionContractSchema', () => {
   it('accepts an explicit readOnly: false', () => {
     const schema = { type: 'object', properties: { amount: { type: 'number', readOnly: false } } };
 
-    const parsed = decisionContractSchema.parse(contract({ schema }));
+    const parsed = decisionRequestSchema.parse(request({ schema }));
 
     expect(parsed.schema.properties['amount']).toEqual({ type: 'number', readOnly: false });
   });
 
   it.each(['100ms', '30s', '10m', '1.5h', '24h', '3d', '7d'])('accepts a deadline of %s', (after) => {
-    expect(decisionContractSchema.safeParse(contract({ deadline: { after, policy: 'reject' } })).success).toBe(true);
+    expect(decisionRequestSchema.safeParse(request({ deadline: { after, policy: 'reject' } })).success).toBe(true);
   });
 
-  it('accepts a contract without deadline, uiSchema or proposalSourceNodeId', () => {
+  it('accepts a request without deadline, uiSchema or proposalSourceNodeId', () => {
     const { version, actions, schema } = workedExample();
 
-    expect(decisionContractSchema.safeParse({ version, actions, schema }).success).toBe(true);
+    expect(decisionRequestSchema.safeParse({ version, actions, schema }).success).toBe(true);
   });
 
   // `issue` names the dictionary entry expected at `path`; rows without one fail on zod's
   // own structural check.
   it.each<{ name: string; input: unknown; path: string; issue?: { code: DecisionIssueCode; value?: string } }>([
-    { name: 'a version other than 1', input: contract({ version: 2 }), path: 'version' },
+    { name: 'a version other than 1', input: request({ version: 2 }), path: 'version' },
     {
       name: 'an empty action list',
-      input: contract({ actions: [] }),
+      input: request({ actions: [] }),
       path: 'actions',
       issue: { code: 'actions_empty' },
     },
     {
       name: 'a duplicate action name',
-      input: contract({ actions: [approve, { ...reject, name: 'approve' }] }),
+      input: request({ actions: [approve, { ...reject, name: 'approve' }] }),
       path: 'actions.1.name',
       issue: { code: 'duplicate_action_name', value: 'approve' },
     },
     {
       name: 'an effect outside the declarable set',
-      input: contract({ actions: [{ ...approve, effect: 'escalate' }] }),
+      input: request({ actions: [{ ...approve, effect: 'escalate' }] }),
       path: 'actions.0.effect',
       issue: { code: 'unknown_effect', value: declarableEffects },
     },
     {
       name: "a declared 'resume-with-edits'",
-      input: contract({ actions: [approve, { ...reject, effect: 'resume-with-edits' }] }),
+      input: request({ actions: [approve, { ...reject, effect: 'resume-with-edits' }] }),
       path: 'actions.1.effect',
       issue: { code: 'unknown_effect', value: declarableEffects },
     },
     {
       name: 'no resume action',
-      input: contract({ actions: [reject] }),
+      input: request({ actions: [reject] }),
       path: 'actions',
       issue: { code: 'resume_required' },
     },
     {
       name: 'two resume actions',
-      input: contract({ actions: [approve, { ...approve, name: 'approve-2' }] }),
+      input: request({ actions: [approve, { ...approve, name: 'approve-2' }] }),
       path: 'actions.1.effect',
       issue: { code: 'duplicate_effect', value: 'resume' },
     },
     {
       name: 'two reject actions',
-      input: contract({ actions: [approve, reject, { ...reject, name: 'decline' }] }),
+      input: request({ actions: [approve, reject, { ...reject, name: 'decline' }] }),
       path: 'actions.2.effect',
       issue: { code: 'duplicate_effect', value: 'reject' },
     },
     {
       name: 'two rerun-source actions',
-      input: contract({ actions: [approve, reRequest, { ...reRequest, name: 'retry' }] }),
+      input: request({ actions: [approve, askAgain, { ...askAgain, name: 'retry' }] }),
       path: 'actions.2.effect',
       issue: { code: 'duplicate_effect', value: 'rerun-source' },
     },
     {
       name: 'an empty action name',
-      input: contract({ actions: [{ ...approve, name: '' }] }),
+      input: request({ actions: [{ ...approve, name: '' }] }),
       path: 'actions.0.name',
       issue: { code: 'name_empty' },
     },
     {
       name: 'an empty action label',
-      input: contract({ actions: [{ ...approve, label: '' }] }),
+      input: request({ actions: [{ ...approve, label: '' }] }),
       path: 'actions.0.label',
       issue: { code: 'label_empty' },
     },
     {
       name: 'an empty resume port',
-      input: contract({ actions: [{ ...approve, port: '' }] }),
+      input: request({ actions: [{ ...approve, port: '' }] }),
       path: 'actions.0.port',
       issue: { code: 'port_empty' },
     },
     {
       name: "a resume port of 'errorRoute'",
-      input: contract({ actions: [{ ...approve, port: 'errorRoute' }] }),
+      input: request({ actions: [{ ...approve, port: 'errorRoute' }] }),
       path: 'actions.0.port',
       issue: { code: 'port_reserved' },
     },
     {
       name: "a reject port of 'errorRoute'",
-      input: contract({ actions: [approve, { ...reject, port: 'errorRoute' }] }),
+      input: request({ actions: [approve, { ...reject, port: 'errorRoute' }] }),
       path: 'actions.1.port',
       issue: { code: 'port_reserved' },
     },
     {
       name: 'a reject port equal to the resume port',
-      input: contract({ actions: [approve, { ...reject, port: 'approved' }] }),
+      input: request({ actions: [approve, { ...reject, port: 'approved' }] }),
       path: 'actions.1.port',
       issue: { code: 'reject_port_equals_resume_port', value: 'approved' },
     },
     {
       name: 'a non-boolean reasonRequired',
-      input: contract({ actions: [approve, { ...reject, reasonRequired: 'yes' }] }),
+      input: request({ actions: [approve, { ...reject, reasonRequired: 'yes' }] }),
       path: 'actions.1.reasonRequired',
     },
     {
       name: 'maxIterations below 1',
-      input: contract({ actions: [approve, { ...reRequest, maxIterations: 0 }] }),
+      input: request({ actions: [approve, { ...askAgain, maxIterations: 0 }] }),
       path: 'actions.1.maxIterations',
     },
     {
       name: 'a fractional maxIterations',
-      input: contract({ actions: [approve, { ...reRequest, maxIterations: 1.5 }] }),
+      input: request({ actions: [approve, { ...askAgain, maxIterations: 1.5 }] }),
       path: 'actions.1.maxIterations',
     },
     {
       name: "a form schema whose type is not 'object'",
-      input: contract({ schema: { ...refundForm, type: 'array' } }),
+      input: request({ schema: { ...refundForm, type: 'array' } }),
       path: 'schema.type',
     },
     {
       name: 'a form schema without properties',
-      input: contract({ schema: { type: 'object' } }),
+      input: request({ schema: { type: 'object' } }),
       path: 'schema.properties',
     },
     {
       name: 'a form property without a type',
-      input: contract({ schema: { type: 'object', properties: { refundAmount: { title: 'Refund amount' } } } }),
+      input: request({ schema: { type: 'object', properties: { refundAmount: { title: 'Refund amount' } } } }),
       path: 'schema.properties.refundAmount.type',
     },
     {
       name: 'a non-boolean readOnly',
-      input: contract({ schema: { type: 'object', properties: { orderDate: { type: 'string', readOnly: 'true' } } } }),
+      input: request({ schema: { type: 'object', properties: { orderDate: { type: 'string', readOnly: 'true' } } } }),
       path: 'schema.properties.orderDate.readOnly',
     },
     {
       name: 'a non-boolean x-pii',
-      input: contract({ schema: { type: 'object', properties: { email: { type: 'string', 'x-pii': 'yes' } } } }),
+      input: request({ schema: { type: 'object', properties: { email: { type: 'string', 'x-pii': 'yes' } } } }),
       path: 'schema.properties.email.x-pii',
     },
     {
       name: 'a required field that is not declared',
-      input: contract({ schema: { ...refundForm, required: ['discount'] } }),
+      input: request({ schema: { ...refundForm, required: ['discount'] } }),
       path: 'schema.required.0',
       issue: { code: 'required_field_undeclared', value: 'discount' },
     },
     {
       name: 'a required field that exists only on Object.prototype',
-      input: contract({ schema: { ...refundForm, required: ['constructor'] } }),
+      input: request({ schema: { ...refundForm, required: ['constructor'] } }),
       path: 'schema.required.0',
       issue: { code: 'required_field_undeclared', value: 'constructor' },
     },
     {
       name: 'a deadline without a unit',
-      input: contract({ deadline: { after: '3', policy: 'reject' } }),
+      input: request({ deadline: { after: '3', policy: 'reject' } }),
       path: 'deadline.after',
       issue: { code: 'deadline_format' },
     },
     {
       name: 'a deadline of zero',
-      input: contract({ deadline: { after: '0s', policy: 'reject' } }),
+      input: request({ deadline: { after: '0s', policy: 'reject' } }),
       path: 'deadline.after',
       issue: { code: 'deadline_format' },
     },
     {
       name: 'a negative deadline',
-      input: contract({ deadline: { after: '-5m', policy: 'reject' } }),
+      input: request({ deadline: { after: '-5m', policy: 'reject' } }),
       path: 'deadline.after',
       issue: { code: 'deadline_format' },
     },
     {
       name: 'a deadline beyond the protobuf Duration range',
-      input: contract({ deadline: { after: '3652501d', policy: 'reject' } }),
+      input: request({ deadline: { after: '3652501d', policy: 'reject' } }),
       path: 'deadline.after',
       issue: { code: 'deadline_format' },
     },
-    { name: 'a deadline without a policy', input: contract({ deadline: { after: '3d' } }), path: 'deadline.policy' },
+    { name: 'a deadline without a policy', input: request({ deadline: { after: '3d' } }), path: 'deadline.policy' },
     {
       name: "a deadline policy other than 'reject'",
-      input: contract({ deadline: { after: '3d', policy: 'escalate' } }),
+      input: request({ deadline: { after: '3d', policy: 'escalate' } }),
       path: 'deadline.policy',
       issue: { code: 'deadline_policy' },
     },
-    { name: 'a uiSchema that is not an object', input: contract({ uiSchema: 'vertical' }), path: 'uiSchema' },
+    { name: 'a uiSchema that is not an object', input: request({ uiSchema: 'vertical' }), path: 'uiSchema' },
     {
       name: 'a non-string proposalSourceNodeId',
-      input: contract({ proposalSourceNodeId: 42 }),
+      input: request({ proposalSourceNodeId: 42 }),
       path: 'proposalSourceNodeId',
     },
   ])('rejects $name', ({ input, path, issue }) => {
     const issues = issuesOf(input);
     const atPath = issues.filter((candidate) => candidate.path === path);
 
-    expect(decisionContractSchema.safeParse(input).success).toBe(false);
+    expect(decisionRequestSchema.safeParse(input).success).toBe(false);
     expect(atPath.length).toBeGreaterThan(0);
     if (issue !== undefined) {
       expect(atPath.map((candidate) => candidate.message)).toContain(decisionIssueMessage(issue.code, issue.value));
     }
   });
 
-  it('parses into a value assignable to DecisionContract', () => {
-    expectTypeOf<z.infer<typeof decisionContractSchema>>().toMatchTypeOf<DecisionContract>();
+  it('parses into a value assignable to DecisionRequest', () => {
+    expectTypeOf<z.infer<typeof decisionRequestSchema>>().toMatchTypeOf<DecisionRequest>();
   });
 });

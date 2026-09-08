@@ -1,4 +1,4 @@
-import type { DecisionContract } from './decision-contract';
+import type { DecisionRequest } from './decision-request';
 
 // Runner-level decision applied when a node throws.
 // `fail` aborts the whole execution (default); `continue` absorbs the error into
@@ -35,10 +35,10 @@ export type BaseNode = {
   label?: string;
   errorPolicy?: NodeErrorPolicy;
   /**
-   * The decision a human takes at this node before the run continues. This field's
+   * What this node asks a human to decide before the run continues. This field's
    * presence, never `type`, marks a node as one that waits for a decision.
    */
-  decision?: DecisionContract;
+  decisionRequest?: DecisionRequest;
   role?: NodeRole;
 };
 
