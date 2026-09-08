@@ -79,12 +79,12 @@ function connectionOptions(
   }
 
   const certificates: TemporalTlsOptions = {
-    ...(caPath ? { serverRootCACertificate: readPem(readFile, caPath, 'TEMPORAL_TLS_CA_PATH') } : {}),
+    ...(caPath ? { serverRootCACertificate: readPemFile(readFile, caPath, 'TEMPORAL_TLS_CA_PATH') } : {}),
     ...(certPath && keyPath
       ? {
           clientCertPair: {
-            crt: readPem(readFile, certPath, 'TEMPORAL_TLS_CERT_PATH'),
-            key: readPem(readFile, keyPath, 'TEMPORAL_TLS_KEY_PATH'),
+            crt: readPemFile(readFile, certPath, 'TEMPORAL_TLS_CERT_PATH'),
+            key: readPemFile(readFile, keyPath, 'TEMPORAL_TLS_KEY_PATH'),
           },
         }
       : {}),
@@ -110,7 +110,7 @@ function read(env: NodeJS.ProcessEnv): Config {
   };
 }
 
-function readPem(readFile: (path: string) => Uint8Array, path: string, variable: string): Uint8Array {
+function readPemFile(readFile: (path: string) => Uint8Array, path: string, variable: string): Uint8Array {
   try {
     return readFile(path);
   } catch (error) {

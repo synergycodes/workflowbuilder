@@ -1,4 +1,3 @@
-// Builds the AI Agent executor, and decides what happens when the LLM is not configured.
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
 import type { AiConfigResult } from '@workflow-builder/ai-config';
