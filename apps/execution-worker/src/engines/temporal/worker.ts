@@ -3,6 +3,7 @@ import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 
+import { aiConfig } from '@workflow-builder/ai-config';
 import { temporalConfig } from '@workflow-builder/temporal-connection';
 
 import { database } from '../../database';
@@ -15,17 +16,15 @@ import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
 import { withPayloadSizeWarning } from '../../store-payload-warning';
 
-const missingAiConfig = (['AI_API_KEY', 'AI_BASE_URL', 'AI_MODEL'] as const).filter((name) => !env[name]);
-if (missingAiConfig.length > 0) {
+const ai = aiConfig();
+if (!ai.available) {
   logger.warn('AI not configured — AI Agent nodes will fail; every other node type runs as usual', {
-    missing: missingAiConfig,
+    missing: ai.missing,
   });
 }
 
 const executeAIAgent = createAiAgentExecutor({
-  apiKey: env.AI_API_KEY,
-  baseURL: env.AI_BASE_URL,
-  modelId: env.AI_MODEL,
+  ai,
   logger: logger.child({ component: 'ai-agent' }),
   tavilyApiKey: env.TAVILY_API_KEY,
 });

@@ -1,30 +1,25 @@
 // Builds the AI Agent executor, and decides what happens when the LLM is not configured.
 import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 
+import type { AiConfigResult } from '@workflow-builder/ai-config';
 import { type LoggerPort, type NodeExecutor, PermanentNodeExecutionError } from '@workflow-builder/execution-core';
 
 import { executeAiAgent } from '../activities/ai-agent';
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 
 type AiAgentExecutorOptions = {
-  // Each null when not configured. The worker still boots; only this node type
-  // is unavailable, so a graph of Trigger/Decision/Visualize nodes runs fine.
-  apiKey: string | null;
-  baseURL: string | null;
-  modelId: string | null;
+  // Unavailable is allowed: the worker still boots; only this node type is
+  // unavailable, so a graph of Trigger/Decision/Visualize nodes runs fine.
+  ai: AiConfigResult;
   logger?: LoggerPort;
   tavilyApiKey?: string;
 };
 
 export function createAiAgentExecutor(options: AiAgentExecutorOptions): NodeExecutor<AiAgentNode> {
-  const { apiKey, baseURL, modelId, logger, tavilyApiKey } = options;
+  const { ai, logger, tavilyApiKey } = options;
 
-  if (!apiKey || !baseURL || !modelId) {
-    const missing = [
-      ...(apiKey ? [] : ['AI_API_KEY']),
-      ...(baseURL ? [] : ['AI_BASE_URL']),
-      ...(modelId ? [] : ['AI_MODEL']),
-    ].join(', ');
+  if (!ai.available) {
+    const missing = ai.missing.join(', ');
     // Thrown when the node is reached rather than at boot, so missing config
     // costs one failed node instead of the whole worker. Permanent: a retry
     // cannot find configuration that is not there.
@@ -36,6 +31,7 @@ export function createAiAgentExecutor(options: AiAgentExecutorOptions): NodeExec
     };
   }
 
+  const { apiKey, baseURL, modelId } = ai.config;
   const provider = createOpenAICompatible({ name: 'ai', baseURL, apiKey });
   const model = provider.chatModel(modelId);
 

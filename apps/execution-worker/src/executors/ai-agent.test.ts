@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { aiConfig } from '@workflow-builder/ai-config';
 import {
   type ExecutionContext,
   NodeExecutionError,
@@ -27,10 +28,10 @@ const node: AiAgentNode = {
   config: { systemPrompt: 'Summarise the input.' },
 };
 
-const baseOptions = { baseURL: 'https://openrouter.ai/api/v1', modelId: 'some/model' };
+const endpoint = { AI_BASE_URL: 'https://openrouter.ai/api/v1', AI_MODEL: 'some/model' };
 
 describe('createAiAgentExecutor without a key', () => {
-  const executor = createAiAgentExecutor({ ...baseOptions, apiKey: null });
+  const executor = createAiAgentExecutor({ ai: aiConfig(endpoint) });
 
   it('fails the node instead of the worker boot', () => {
     // The factory itself must not throw — that is what lets the worker start and
@@ -64,7 +65,7 @@ describe('createAiAgentExecutor with a key', () => {
   it('builds the executor without calling the endpoint', () => {
     // Construction is eager (the model is built once per worker), so it has to
     // stay free of network I/O — the endpoint may not even be reachable at boot.
-    const executor = createAiAgentExecutor({ ...baseOptions, apiKey: 'test-key' });
+    const executor = createAiAgentExecutor({ ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }) });
 
     expect(executor).toBeTypeOf('function');
   });
@@ -73,7 +74,7 @@ describe('createAiAgentExecutor with a key', () => {
 describe('createAiAgentExecutor with a key but no endpoint or model', () => {
   // Neither has a built-in default, so they gate the node exactly like the key does.
   it('fails the node with the same code and names only the missing variables', () => {
-    const executor = createAiAgentExecutor({ apiKey: 'key', baseURL: null, modelId: null });
+    const executor = createAiAgentExecutor({ ai: aiConfig({ AI_API_KEY: 'key' }) });
 
     try {
       executor(node, context());

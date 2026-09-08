@@ -219,6 +219,9 @@ importers:
       '@temporalio/client':
         specifier: 'catalog:'
         version: 1.23.0
+      '@workflow-builder/ai-config':
+        specifier: workspace:*
+        version: link:../../packages/ai-config
       '@workflow-builder/execution-core':
         specifier: workspace:*
         version: link:../../packages/execution-core
@@ -456,6 +459,9 @@ importers:
       '@temporalio/workflow':
         specifier: 'catalog:'
         version: 1.23.0
+      '@workflow-builder/ai-config':
+        specifier: workspace:*
+        version: link:../../packages/ai-config
       '@workflow-builder/execution-core':
         specifier: workspace:*
         version: link:../../packages/execution-core
@@ -521,6 +527,15 @@ importers:
       remeda:
         specifier: ^2.19.2
         version: 2.20.0
+
+  packages/ai-config:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.12.0
+        version: 22.12.0
+      vitest:
+        specifier: ^3.0.4
+        version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
 
   packages/execution-core:
     dependencies:

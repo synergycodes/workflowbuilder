@@ -48,6 +48,9 @@ export default {
     'packages/execution-core': {
       entry: ['src/index.ts'],
     },
+    'packages/ai-config': {
+      entry: ['src/index.ts'],
+    },
     'packages/temporal-connection': {
       // test/fixtures/tls-probe-workflow.ts is handed to Temporal's bundler by path, so nothing imports it
       entry: ['src/index.ts', 'test/fixtures/tls-probe-workflow.ts'],

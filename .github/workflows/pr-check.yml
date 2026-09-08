@@ -245,10 +245,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
 
       - name: Typecheck
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
 
       - name: Test
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test

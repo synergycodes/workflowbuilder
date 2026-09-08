@@ -56,9 +56,11 @@ DATABASE_URL=postgresql://wb:wb@127.0.0.1:5432/workflow_builder
 TEMPORAL_ADDRESS=127.0.0.1:7233
 ```
 
-Both also read `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` — all optional, and each side degrades
-on its own when any of them is missing: the backend's AI adapt endpoint returns 501, and the worker
-runs everything except AI Agent nodes. See [`apps/execution-worker/README.md`](../execution-worker/README.md).
+Both also read `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` — all three or none, through
+[`@workflow-builder/ai-config`](../../packages/ai-config/README.md), which is the canonical description
+of that contract. Each side degrades on its own when they are missing: the backend's AI adapt endpoint
+returns 501, and the worker runs everything except AI Agent nodes. See
+[`apps/execution-worker/README.md`](../execution-worker/README.md).
 
 ### Connecting to a secured Temporal cluster
 

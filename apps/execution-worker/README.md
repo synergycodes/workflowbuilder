@@ -38,10 +38,11 @@ See `.env.example`. Everything the bundled dev stack needs has a working default
 | `AI_MODEL`           | Model id, as the endpoint spells it   | — (AI Agent nodes fail)                              |
 | `TAVILY_API_KEY`     | AI Agent's web-search tool (optional) | — (tool disabled)                                    |
 
-The three `AI_*` variables are optional by design: the worker boots without them and runs every
-non-AI node, and an AI Agent node that is reached fails with the `ai_not_configured` code rather
-than taking the whole worker down. `AI_API_KEY` was previously called `OPENROUTER_API_KEY`; the
-old name is no longer read.
+The three `AI_*` variables are optional by design, but all-or-nothing — the contract is described
+once in [`@workflow-builder/ai-config`](../../packages/ai-config/README.md), which both apps read
+through. The worker boots without them and runs every non-AI node, and an AI Agent node that is
+reached fails with the `ai_not_configured` code rather than taking the whole worker down.
+`AI_API_KEY` was previously called `OPENROUTER_API_KEY`; the old name is no longer read.
 
 Point `AI_BASE_URL` at any OpenAI-compatible server — a gateway, or a model hosted inside your
 own network — and no request leaves that network. There is no built-in endpoint or model:

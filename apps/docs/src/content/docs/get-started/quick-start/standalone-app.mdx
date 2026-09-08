@@ -154,7 +154,7 @@ Temporal ready
 [ai-studio]    ➜  Local:   http://127.0.0.1:4201/
 ```
 
-Open [http://localhost:4201](http://localhost:4201). Pick the "Sales Inquiry" template, click Play. The Temporal UI at [http://localhost:8233](http://localhost:8233) shows the running execution.
+Open [http://localhost:4201](http://localhost:4201). Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at [http://localhost:8233](http://localhost:8233) shows the running execution.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 

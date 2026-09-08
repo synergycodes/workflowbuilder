@@ -60,6 +60,7 @@ apps/
   icons/            - Icon generation pipeline
   tools/            - @workflow-builder/tools workspace (decision-log collector, lint-staged config)
 packages/
+  ai-config/        - Private, source-only: the AI_API_KEY / AI_BASE_URL / AI_MODEL contract, one copy shared by backend and worker
   sdk/              - @workflowbuilder/sdk public package (WorkflowBuilder compound component, plugin API, components)
   ui/               - @workflowbuilder/ui published component library (Base UI), consumed by sdk/demo/ai-studio
   tokens/           - @workflowbuilder/ui-tokens private design-token build (style-dictionary), feeds packages/ui
@@ -80,6 +81,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | `packages/sdk`                 | `packages/sdk/README.md`                                |
 | `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
 | `packages/tokens`              | `packages/tokens/README.md`                             |
+| `packages/ai-config`           | `packages/ai-config/README.md`                          |
 | `packages/execution-core`      | `packages/execution-core/README.md`                     |
 | `packages/temporal`            | `packages/temporal/README.md`                           |
 | `packages/temporal-connection` | `packages/temporal-connection/README.md`                |
@@ -91,6 +93,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 ## Types & Aliases
 
 Shared types: `packages/types/` (imported as `@workflow-builder/types/*`).
+AI configuration contract: `packages/ai-config/` (imported as `@workflow-builder/ai-config`; `aiConfig()` tells backend and worker whether the LLM is configured and what is missing).
 Temporal connection config: `packages/temporal-connection/` (imported as `@workflow-builder/temporal-connection`; `temporalConfig()` gives backend and worker their connect options and namespace).
 Icons: `apps/icons/` (imported as `@workflow-builder/icons`).
 SDK: `packages/sdk/` (imported as `@workflowbuilder/sdk`).
