@@ -17,7 +17,7 @@ export function aiConfig(env: NodeJS.ProcessEnv = process.env): AiConfigResult {
   const baseURL = value('AI_BASE_URL');
   const modelId = value('AI_MODEL');
 
-  // No built-in endpoint or model: nothing in the code points outside the network.
+  // No built-in endpoint or model: unset means there is no model endpoint to call.
   return apiKey && baseURL && modelId
     ? { available: true, config: { apiKey, baseURL, modelId } }
     : { available: false, missing: AI_VARIABLES.filter((name) => !value(name)) };

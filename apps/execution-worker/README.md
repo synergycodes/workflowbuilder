@@ -45,7 +45,10 @@ reached fails with the `ai_not_configured` code rather than taking the whole wor
 `AI_API_KEY` was previously called `OPENROUTER_API_KEY`; the old name is no longer read.
 
 Point `AI_BASE_URL` at any OpenAI-compatible server — a gateway, or a model hosted inside your
-own network — and no request leaves that network. There is no built-in endpoint or model:
+own network — and model requests stay inside it. That covers the model only: the optional
+web-search tool calls Tavily's API whenever `TAVILY_API_KEY` is set, a node enables web search and
+the model invokes the tool, so leave the key unset if nothing may call out; Temporal and the
+database go wherever `TEMPORAL_ADDRESS` and `DATABASE_URL` point. There is no built-in endpoint or model:
 `.env.example` pre-fills the OpenRouter values the worker used before they became configurable.
 
 The connection to Temporal is env-driven too: `TEMPORAL_TLS`, `TEMPORAL_API_KEY` and the

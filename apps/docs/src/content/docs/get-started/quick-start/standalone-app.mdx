@@ -168,7 +168,7 @@ AI_BASE_URL=https://openrouter.ai/api/v1
 AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
 ```
 
-None of the three has a built-in default — nothing in the code points outside your network. Any OpenAI-compatible endpoint works: set `AI_BASE_URL` to a gateway or to a model hosted inside your own network, `AI_MODEL` to an id that endpoint understands, and no LLM traffic leaves it. If the model id is wrong, the first AI node fails at runtime and the error surfaces in the UI log panel.
+None of the three has a built-in default. Any OpenAI-compatible endpoint works: set `AI_BASE_URL` to a gateway or to a model hosted inside your own network, `AI_MODEL` to an id that endpoint understands, and model requests stay inside it. That covers the model only: the optional web-search tool calls Tavily's API when `TAVILY_API_KEY` is set, so leave it unset if nothing may call out. If the model id is wrong, the first AI node fails at runtime and the error surfaces in the UI log panel.
 
 ### Connect a secured or external Temporal (optional)
 

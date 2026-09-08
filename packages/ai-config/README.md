@@ -12,7 +12,7 @@ Three variables, all or nothing:
 | `AI_BASE_URL` | Any OpenAI-compatible base URL (a hosted gateway or a model inside your own network), without a trailing `/chat/completions` |
 | `AI_MODEL`    | Model id as that endpoint spells it                                                                                          |
 
-- None has a built-in default — nothing in the code points outside your network. Both `.env.example` files pre-fill the OpenRouter values the stack used before the endpoint became configurable.
+- None has a built-in default: with the three unset there is no model endpoint to call. Both `.env.example` files pre-fill the OpenRouter values the stack used before the endpoint became configurable.
 - An empty value counts as unset (compose passes absent optionals through as `${VAR:-}`).
 - `OPENROUTER_API_KEY`, the old name of the key, is not read.
 
@@ -24,7 +24,7 @@ const ai = aiConfig(); // reads process.env when called; never throws
 // { available: false, missing: ['AI_BASE_URL', 'AI_MODEL'] }
 ```
 
-`TAVILY_API_KEY` is not part of this contract. It is a worker-only, independently optional key that enables the AI Agent's web-search tool on nodes that ask for it — see [`apps/execution-worker/README.md`](../../apps/execution-worker/README.md).
+`TAVILY_API_KEY` is not part of this contract. It is a worker-only, independently optional key that enables the AI Agent's web-search tool on nodes that ask for it, and the one other outbound call an AI Agent node can make — an internal `AI_BASE_URL` keeps model requests in your network, but only an unset Tavily key keeps the search from calling out — see [`apps/execution-worker/README.md`](../../apps/execution-worker/README.md).
 
 ## What happens when it is unavailable
 
