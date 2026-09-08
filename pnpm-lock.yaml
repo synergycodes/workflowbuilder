@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@ai-sdk/openai-compatible':
+      specifier: ^2.0.74
+      version: 2.0.74
     '@base-ui/react':
       specifier: 1.7.0
       version: 1.7.0
@@ -42,6 +45,9 @@ catalogs:
     '@xyflow/react':
       specifier: 12.10.0
       version: 12.10.0
+    ai:
+      specifier: ^6.0.168
+      version: 6.0.168
     ajv:
       specifier: ^8.18.0
       version: 8.18.0
@@ -204,18 +210,24 @@ importers:
 
   apps/backend:
     dependencies:
+      '@ai-sdk/openai-compatible':
+        specifier: 'catalog:'
+        version: 2.0.74(zod@4.3.6)
       '@hono/node-server':
         specifier: ^1.14.0
         version: 1.19.14(hono@4.12.14)
-      '@openrouter/ai-sdk-provider':
-        specifier: ^2.8.0
-        version: 2.8.0(ai@6.0.168(zod@4.3.6))(zod@4.3.6)
       '@temporalio/client':
         specifier: 'catalog:'
         version: 1.23.0
+      '@workflow-builder/ai-config':
+        specifier: workspace:*
+        version: link:../../packages/ai-config
       '@workflow-builder/execution-core':
         specifier: workspace:*
         version: link:../../packages/execution-core
+      '@workflow-builder/temporal-connection':
+        specifier: workspace:*
+        version: link:../../packages/temporal-connection
       '@workflow-builder/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -223,7 +235,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/temporal
       ai:
-        specifier: ^6.0.168
+        specifier: 'catalog:'
         version: 6.0.168(zod@4.3.6)
       dotenv:
         specifier: ^17.4.2
@@ -438,18 +450,24 @@ importers:
 
   apps/execution-worker:
     dependencies:
-      '@openrouter/ai-sdk-provider':
-        specifier: ^2.5.0
-        version: 2.8.0(ai@6.0.168(zod@4.3.6))(zod@4.3.6)
+      '@ai-sdk/openai-compatible':
+        specifier: 'catalog:'
+        version: 2.0.74(zod@4.3.6)
       '@temporalio/worker':
         specifier: 'catalog:'
         version: 1.23.0(tslib@2.8.1)
       '@temporalio/workflow':
         specifier: 'catalog:'
         version: 1.23.0
+      '@workflow-builder/ai-config':
+        specifier: workspace:*
+        version: link:../../packages/ai-config
       '@workflow-builder/execution-core':
         specifier: workspace:*
         version: link:../../packages/execution-core
+      '@workflow-builder/temporal-connection':
+        specifier: workspace:*
+        version: link:../../packages/temporal-connection
       '@workflow-builder/types':
         specifier: workspace:*
         version: link:../../packages/types
@@ -457,7 +475,7 @@ importers:
         specifier: workspace:*
         version: link:../../packages/temporal
       ai:
-        specifier: ^6.0.0
+        specifier: 'catalog:'
         version: 6.0.168(zod@4.3.6)
       dotenv:
         specifier: ^17.4.2
@@ -510,6 +528,15 @@ importers:
         specifier: ^2.19.2
         version: 2.20.0
 
+  packages/ai-config:
+    devDependencies:
+      '@types/node':
+        specifier: ^22.12.0
+        version: 22.12.0
+      vitest:
+        specifier: ^3.0.4
+        version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
+
   packages/execution-core:
     dependencies:
       '@workflow-builder/types':
@@ -560,7 +587,7 @@ importers:
         version: 4.1.0
       i18next:
         specifier: ^24.0.0
-        version: 24.2.3(typescript@5.6.3)
+        version: 24.2.3(typescript@5.9.3)
       i18next-browser-languagedetector:
         specifier: ^8.0.0
         version: 8.0.5
@@ -581,7 +608,7 @@ importers:
         version: 19.1.0(react@19.1.0)
       react-i18next:
         specifier: ^15.0.0
-        version: 15.4.1(i18next@24.2.3(typescript@5.6.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.4.1(i18next@24.2.3(typescript@5.9.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-mentions-ts:
         specifier: ^5.4.7
         version: 5.4.7(class-variance-authority@0.7.1)(clsx@2.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwind-merge@3.5.0)
@@ -621,10 +648,10 @@ importers:
         version: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
       vite-plugin-dts:
         specifier: ^4.5.0
-        version: 4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
+        version: 4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
       vite-plugin-svgr:
         specifier: ^4.3.0
-        version: 4.3.0(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
+        version: 4.3.0(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
       vitest:
         specifier: ^3.0.4
         version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
@@ -671,6 +698,33 @@ importers:
       typescript:
         specifier: ~5.6.3
         version: 5.6.3
+      vitest:
+        specifier: ^3.0.4
+        version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
+
+  packages/temporal-connection:
+    devDependencies:
+      '@temporalio/client':
+        specifier: 'catalog:'
+        version: 1.23.0
+      '@temporalio/testing':
+        specifier: 'catalog:'
+        version: 1.23.0(tslib@2.8.1)
+      '@temporalio/worker':
+        specifier: 'catalog:'
+        version: 1.23.0(tslib@2.8.1)
+      '@temporalio/workflow':
+        specifier: 'catalog:'
+        version: 1.23.0
+      '@types/node':
+        specifier: ^22.12.0
+        version: 22.12.0
+      '@types/node-forge':
+        specifier: ^1.3.14
+        version: 1.3.14
+      node-forge:
+        specifier: ^1.4.0
+        version: 1.4.0
       vitest:
         specifier: ^3.0.4
         version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
@@ -773,11 +827,27 @@ packages:
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
 
+  '@ai-sdk/openai-compatible@2.0.74':
+    resolution: {integrity: sha512-HdYUgacC08HjHyzL8Y59bjeOJTcsZWpHYZS0K8T4ChV/zYGktqbktzT0nJuhn3r9lVoMzA9Miw7abGQcdhI2yw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
   '@ai-sdk/provider-utils@4.0.23':
     resolution: {integrity: sha512-z8GlDaCmRSDlqkMF2f4/RFgWxdarvIbyuk+m6WXT1LYgsnGiXRJGTD2Z1+SDl3LqtFuRtGX1aghYvQLoHL/9pg==}
     engines: {node: '>=18'}
     peerDependencies:
       zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider-utils@4.0.50':
+    resolution: {integrity: sha512-YAcB+7M1JhAYsHorTrWyldCyZihjCKr/QRXH2vFrara/+lwqNE7q5KzoucKLZ7ktFiUonhnhFhRoiymsq/2K2Q==}
+    engines: {node: '>=18.17'}
+    peerDependencies:
+      zod: ^3.25.76 || ^4.1.8
+
+  '@ai-sdk/provider@3.0.15':
+    resolution: {integrity: sha512-XeZW1CcDF2GMbH4wejW6xBRI2QCOgnkVYUnxoeDadB1mf85riL2bMUeDoh+6gJ/r4mjNfzUPW8OjLjvwTP0u1Q==}
+    engines: {node: '>=18'}
 
   '@ai-sdk/provider@3.0.8':
     resolution: {integrity: sha512-oGMAgGoQdBXbZqNG0Ze56CHjDZ1IDYOwGYxYjO5KLSlz5HiNQ9udIXsPZ61VWaHGZ5XW/jyjmr6t2xz2jGVwbQ==}
@@ -2306,13 +2376,6 @@ packages:
     resolution: {integrity: sha512-oGB+UxlgWcgQkgwo8GcEGwemoTFt3FIO9ababBmaGwXIoBKZ+GTy0pP185beGg7Llih/NSHSV2XAs1lnznocSg==}
     engines: {node: '>= 8'}
 
-  '@openrouter/ai-sdk-provider@2.8.0':
-    resolution: {integrity: sha512-oDDW/0KMqz4suHVloB9sNv0YyKLGNYf1FTevXH6adDkid5dsmbbcYuiEsbIhpZSZtHa6o5AVjK1jEAfePOLxww==}
-    engines: {node: '>=18'}
-    peerDependencies:
-      ai: ^6.0.0
-      zod: ^3.25.0 || ^4.0.0
-
   '@opentelemetry/api@1.9.0':
     resolution: {integrity: sha512-3giAOQvZiH5F9bMlMiv8+GSPMeqg0dbaeo58/0SlA9sxSqZhnUtxzX9/2FzyhS9sWQf5S0GJE0AKBrFqjpeYcg==}
     engines: {node: '>=8.0.0'}
@@ -3107,6 +3170,9 @@ packages:
 
   '@types/nlcst@2.0.3':
     resolution: {integrity: sha512-vSYNSDe6Ix3q+6Z7ri9lyWqgGhJTmzRjZRqyq15N0Z/1/UnVsno9G/N40NBijoYx2seFDIl0+B2mgAb9mezUCA==}
+
+  '@types/node-forge@1.3.14':
+    resolution: {integrity: sha512-mhVF2BnD4BO+jtOp7z1CdzaK4mbuK0LLQYAvdOLqHTavxFNq4zA1EmYkpnFjP8HOUzedfQkRnp0E2ulSAYSzAw==}
 
   '@types/node@12.20.55':
     resolution: {integrity: sha512-J8xLz7q2OFulZ2cyGTLE1TbbZcjpno7FaN6zdJNrgAdrJ+DZzh/uFR6YrTb4C+nXakvud8Q4+rbhoIWlYQbUFQ==}
@@ -4836,8 +4902,8 @@ packages:
     resolution: {integrity: sha512-mQw+2fkQbALzQ7V0MY0IqdnXNOeTtP4r0lN9z7AAawCXgqea7bDii20AYrIBrFd/Hx0M2Ocz6S111CaFkUcb0Q==}
     engines: {node: '>=0.8.x'}
 
-  eventsource-parser@3.0.6:
-    resolution: {integrity: sha512-Vo1ab+QXPzZ4tCa8SwIHJFaSzy4R6SHf7BY79rFBDf0idraZWAkYrDjDj8uWaSm3S2TK+hJ7/t1CEmZ7jXw+pg==}
+  eventsource-parser@3.1.1:
+    resolution: {integrity: sha512-EKN1vKAMcZ8MlYMpaNuxN6R9yakzH6uajHcHVTqWJzvu5pWw9DyhbP35HH8MVBQ+dZjAfDxk+A8NiR9KWaXiyQ==}
     engines: {node: '>=18.0.0'}
 
   expect-type@1.1.0:
@@ -6247,6 +6313,10 @@ packages:
   node-fetch-native@1.6.7:
     resolution: {integrity: sha512-g9yhqoedzIUm0nTnTqAQvueMPVOuIY16bqgAJJC8XOOubYFNwz6IER9qs0Gq2Xd0+CecCKFjtdDTMA4u4xG06Q==}
 
+  node-forge@1.4.0:
+    resolution: {integrity: sha512-LarFH0+6VfriEhqMMcLX2F7SwSXeWwnEAJEsYm5QKWchiVYVvJyV9v7UDvUv+w5HO23ZpQTXDv/GxdDdMyOuoQ==}
+    engines: {node: '>= 6.13.0'}
+
   node-mock-http@1.0.4:
     resolution: {integrity: sha512-8DY+kFsDkNXy1sJglUfuODx1/opAGJGyrTuFqEoN90oRc2Vk0ZbD4K2qmKXBBEhZQzdKHIVfEJpDU8Ak2NJEvQ==}
 
@@ -7392,10 +7462,6 @@ packages:
   tailwind-merge@3.5.0:
     resolution: {integrity: sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A==}
 
-  tapable@2.3.2:
-    resolution: {integrity: sha512-1MOpMXuhGzGL5TTCZFItxCc0AARf1EZFQkGqMm7ERKj8+Hgr5oLvJOVFcC+lRmR8hCe2S3jC4T5D7Vg/d7/fhA==}
-    engines: {node: '>=6'}
-
   tapable@2.3.3:
     resolution: {integrity: sha512-uxc/zpqFg6x7C8vOE7lh6Lbda8eEL9zmVm/PLeTPBRhh1xCgdWaQ+J1CUieGpIfm2HdtsUpRv+HshiasBMcc6A==}
     engines: {node: '>=6'}
@@ -7647,6 +7713,10 @@ packages:
 
   undici-types@6.20.0:
     resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
+  undici@6.28.0:
+    resolution: {integrity: sha512-LIY910g9TI13YS95lrMFrs8Rm/u/irgHeTWoKCoteeJ04CUJ92eEfj0rVn+7VKMPBpUPiUoBKfhNyLI23EE/KA==}
+    engines: {node: '>=18.17'}
 
   undici@7.24.4:
     resolution: {integrity: sha512-BM/JzwwaRXxrLdElV2Uo6cTLEjhSb3WXboncJamZ15NgUURmvlXvxa6xkwIOILIjPNo9i8ku136ZvWV0Uly8+w==}
@@ -8310,12 +8380,30 @@ snapshots:
       '@vercel/oidc': 3.2.0
       zod: 4.3.6
 
+  '@ai-sdk/openai-compatible@2.0.74(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.15
+      '@ai-sdk/provider-utils': 4.0.50(zod@4.3.6)
+      zod: 4.3.6
+
   '@ai-sdk/provider-utils@4.0.23(zod@4.3.6)':
     dependencies:
       '@ai-sdk/provider': 3.0.8
       '@standard-schema/spec': 1.1.0
-      eventsource-parser: 3.0.6
+      eventsource-parser: 3.1.1
       zod: 4.3.6
+
+  '@ai-sdk/provider-utils@4.0.50(zod@4.3.6)':
+    dependencies:
+      '@ai-sdk/provider': 3.0.15
+      '@standard-schema/spec': 1.1.0
+      eventsource-parser: 3.1.1
+      undici: 6.28.0
+      zod: 4.3.6
+
+  '@ai-sdk/provider@3.0.15':
+    dependencies:
+      json-schema: 0.4.0
 
   '@ai-sdk/provider@3.0.8':
     dependencies:
@@ -10002,11 +10090,6 @@ snapshots:
       '@nodelib/fs.scandir': 2.1.5
       fastq: 1.18.0
 
-  '@openrouter/ai-sdk-provider@2.8.0(ai@6.0.168(zod@4.3.6))(zod@4.3.6)':
-    dependencies:
-      ai: 6.0.168(zod@4.3.6)
-      zod: 4.3.6
-
   '@opentelemetry/api@1.9.0': {}
 
   '@oslojs/encoding@1.1.0': {}
@@ -10348,17 +10431,6 @@ snapshots:
       '@svgr/babel-plugin-transform-react-native-svg': 8.1.0(@babel/core@7.26.7)
       '@svgr/babel-plugin-transform-svg-component': 8.0.0(@babel/core@7.26.7)
 
-  '@svgr/core@8.1.0(typescript@5.6.3)':
-    dependencies:
-      '@babel/core': 7.26.7
-      '@svgr/babel-preset': 8.1.0(@babel/core@7.26.7)
-      camelcase: 6.3.0
-      cosmiconfig: 8.3.6(typescript@5.6.3)
-      snake-case: 3.0.4
-    transitivePeerDependencies:
-      - supports-color
-      - typescript
-
   '@svgr/core@8.1.0(typescript@5.9.3)':
     dependencies:
       '@babel/core': 7.26.7
@@ -10374,16 +10446,6 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
       entities: 4.5.0
-
-  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.6.3))':
-    dependencies:
-      '@babel/core': 7.26.7
-      '@svgr/babel-preset': 8.1.0(@babel/core@7.26.7)
-      '@svgr/core': 8.1.0(typescript@5.6.3)
-      '@svgr/hast-util-to-babel-ast': 8.0.0
-      svg-parser: 2.0.4
-    transitivePeerDependencies:
-      - supports-color
 
   '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.9.3))':
     dependencies:
@@ -10508,6 +10570,31 @@ snapshots:
       '@temporalio/core-bridge': 1.23.0
       '@temporalio/proto': 1.23.0
       '@temporalio/worker': 1.23.0(esbuild@0.27.3)(postcss@8.5.6)(tslib@2.8.1)
+      '@temporalio/workflow': 1.23.0
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@swc/css'
+      - '@swc/helpers'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - lightningcss
+      - postcss
+      - tslib
+      - uglify-js
+      - webpack-cli
+
+  '@temporalio/testing@1.23.0(tslib@2.8.1)':
+    dependencies:
+      '@temporalio/activity': 1.23.0
+      '@temporalio/client': 1.23.0
+      '@temporalio/common': 1.23.0
+      '@temporalio/core-bridge': 1.23.0
+      '@temporalio/proto': 1.23.0
+      '@temporalio/worker': 1.23.0(tslib@2.8.1)
       '@temporalio/workflow': 1.23.0
     transitivePeerDependencies:
       - '@minify-html/node'
@@ -10863,6 +10950,10 @@ snapshots:
     dependencies:
       '@types/unist': 3.0.3
 
+  '@types/node-forge@1.3.14':
+    dependencies:
+      '@types/node': 22.12.0
+
   '@types/node@12.20.55': {}
 
   '@types/node@17.0.45': {}
@@ -11152,6 +11243,19 @@ snapshots:
       path-browserify: 1.0.1
     optionalDependencies:
       typescript: 5.6.3
+
+  '@vue/language-core@2.2.0(typescript@5.9.3)':
+    dependencies:
+      '@volar/language-core': 2.4.28
+      '@vue/compiler-dom': 3.5.33
+      '@vue/compiler-vue2': 2.7.16
+      '@vue/shared': 3.5.33
+      alien-signals: 0.4.14
+      minimatch: 9.0.5
+      muggle-string: 0.4.1
+      path-browserify: 1.0.1
+    optionalDependencies:
+      typescript: 5.9.3
 
   '@vue/shared@3.5.33': {}
 
@@ -12014,15 +12118,6 @@ snapshots:
       '@types/node': 22.12.0
       cosmiconfig: 9.0.1(typescript@5.6.3)
       jiti: 2.6.1
-      typescript: 5.6.3
-
-  cosmiconfig@8.3.6(typescript@5.6.3):
-    dependencies:
-      import-fresh: 3.3.0
-      js-yaml: 4.1.0
-      parse-json: 5.2.0
-      path-type: 4.0.0
-    optionalDependencies:
       typescript: 5.6.3
 
   cosmiconfig@8.3.6(typescript@5.9.3):
@@ -12951,7 +13046,7 @@ snapshots:
 
   events@3.3.0: {}
 
-  eventsource-parser@3.0.6: {}
+  eventsource-parser@3.1.1: {}
 
   expect-type@1.1.0: {}
 
@@ -13590,12 +13685,6 @@ snapshots:
   i18next@23.16.8:
     dependencies:
       '@babel/runtime': 7.29.7
-
-  i18next@24.2.3(typescript@5.6.3):
-    dependencies:
-      '@babel/runtime': 7.27.0
-    optionalDependencies:
-      typescript: 5.6.3
 
   i18next@24.2.3(typescript@5.9.3):
     dependencies:
@@ -14836,6 +14925,8 @@ snapshots:
 
   node-fetch-native@1.6.7: {}
 
+  node-forge@1.4.0: {}
+
   node-mock-http@1.0.4: {}
 
   node-releases@2.0.37: {}
@@ -15350,15 +15441,6 @@ snapshots:
     dependencies:
       react: 19.1.0
       scheduler: 0.26.0
-
-  react-i18next@15.4.1(i18next@24.2.3(typescript@5.6.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
-    dependencies:
-      '@babel/runtime': 7.27.0
-      html-parse-stringify: 3.0.1
-      i18next: 24.2.3(typescript@5.6.3)
-      react: 19.1.0
-    optionalDependencies:
-      react-dom: 19.1.0(react@19.1.0)
 
   react-i18next@15.4.1(i18next@24.2.3(typescript@5.9.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
@@ -16266,8 +16348,6 @@ snapshots:
 
   tailwind-merge@3.5.0: {}
 
-  tapable@2.3.2: {}
-
   tapable@2.3.3: {}
 
   tar@7.5.11:
@@ -16511,6 +16591,8 @@ snapshots:
 
   undici-types@6.20.0: {}
 
+  undici@6.28.0: {}
+
   undici@7.24.4: {}
 
   unified@11.0.5:
@@ -16733,6 +16815,25 @@ snapshots:
       - rollup
       - supports-color
 
+  vite-plugin-dts@4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
+    dependencies:
+      '@microsoft/api-extractor': 7.58.7(@types/node@22.12.0)
+      '@rollup/pluginutils': 5.3.0(rollup@4.57.1)
+      '@volar/typescript': 2.4.28
+      '@vue/language-core': 2.2.0(typescript@5.9.3)
+      compare-versions: 6.1.1
+      debug: 4.4.3
+      kolorist: 1.8.0
+      local-pkg: 1.1.2
+      magic-string: 0.30.21
+      typescript: 5.9.3
+    optionalDependencies:
+      vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
+    transitivePeerDependencies:
+      - '@types/node'
+      - rollup
+      - supports-color
+
   vite-plugin-lib-inject-css@2.2.2(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
       '@ast-grep/napi': 0.36.3
@@ -16748,17 +16849,6 @@ snapshots:
       p-map: 7.0.4
       picocolors: 1.1.1
       vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
-
-  vite-plugin-svgr@4.3.0(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
-    dependencies:
-      '@rollup/pluginutils': 5.3.0(rollup@4.57.1)
-      '@svgr/core': 8.1.0(typescript@5.6.3)
-      '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(typescript@5.6.3))
-      vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
-    transitivePeerDependencies:
-      - rollup
-      - supports-color
-      - typescript
 
   vite-plugin-svgr@4.3.0(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
@@ -16966,7 +17056,7 @@ snapshots:
       minimizer-webpack-plugin: 5.8.0(@swc/core@1.15.26)(webpack@5.110.1(@swc/core@1.15.26))
       neo-async: 2.6.2
       schema-utils: 4.3.3
-      tapable: 2.3.2
+      tapable: 2.3.3
       watchpack: 2.5.2
       webpack-sources: 3.5.1
     transitivePeerDependencies:
@@ -17001,7 +17091,7 @@ snapshots:
       minimizer-webpack-plugin: 5.8.0(@swc/core@1.15.26)(esbuild@0.27.3)(postcss@8.5.6)(webpack@5.110.1(@swc/core@1.15.26)(esbuild@0.27.3)(postcss@8.5.6))
       neo-async: 2.6.2
       schema-utils: 4.3.3
-      tapable: 2.3.2
+      tapable: 2.3.3
       watchpack: 2.5.2
       webpack-sources: 3.5.1
     transitivePeerDependencies:

@@ -1,10 +1,11 @@
-import { createOpenRouter } from '@openrouter/ai-sdk-provider';
+import { createOpenAICompatible } from '@ai-sdk/openai-compatible';
 import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
+import { aiConfig } from '@workflow-builder/ai-config';
+
 import type { AssertAuthorized, AuthVariables } from '../auth';
-import { env } from '../env';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
 import type { TenantVariables } from '../tenant';
@@ -50,9 +51,12 @@ export function createVisualizeRoutes(
       return blocked;
     }
 
-    if (!env.OPENROUTER_API_KEY) {
+    // After authorization and the guard on purpose: an unconfigured server still gates the call.
+    const ai = aiConfig();
+    if (!ai.available) {
       return c.json({ code: 'adapt_disabled', message: 'AI adapt is not configured on this server.' }, 501);
     }
+    const { apiKey, baseURL, modelId } = ai.config;
 
     const parsed = z.safeParse(adaptSchema, await c.req.json());
     if (!parsed.success) {
@@ -61,11 +65,9 @@ export function createVisualizeRoutes(
     const { content, format } = parsed.data;
 
     try {
-      const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
-      // Unlike the worker's AI agent activity, this route has no outer retry
-      // policy, so the SDK's default retries stay on.
+      const provider = createOpenAICompatible({ name: 'ai', baseURL, apiKey });
       const result = await generateText({
-        model: openrouter.chat(env.AI_MODEL),
+        model: provider.chatModel(modelId),
         system: FORMAT_PROMPTS[format],
         // Low temperature for stable structured output.
         temperature: 0.2,

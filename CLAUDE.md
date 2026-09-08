@@ -60,11 +60,13 @@ apps/
   icons/            - Icon generation pipeline
   tools/            - @workflow-builder/tools workspace (decision-log collector, lint-staged config)
 packages/
+  ai-config/        - Private, source-only: the AI_API_KEY / AI_BASE_URL / AI_MODEL contract, one copy shared by backend and worker
   sdk/              - @workflowbuilder/sdk public package (WorkflowBuilder compound component, plugin API, components)
   ui/               - @workflowbuilder/ui published component library (Base UI), consumed by sdk/demo/ai-studio
   tokens/           - @workflowbuilder/ui-tokens private design-token build (style-dictionary), feeds packages/ui
   execution-core/   - Pure topological graph runner + node executor registry
   temporal/         - @workflowbuilder/temporal published Temporal Plugin (activities + workflow runner); bundles execution-core + types into its dist
+  temporal-connection/ - Private, source-only: TEMPORAL_* env -> validated connection options + namespace, one copy shared by backend and worker
   types/            - Shared TypeScript types
 ```
 
@@ -74,21 +76,25 @@ Where to put a new script: root `tools/` for pure-Node bootstrap (runs before an
 
 Each workspace has its own context. Read the relevant file before extending a workspace.
 
-| Workspace                 | Authoritative docs                                      |
-| ------------------------- | ------------------------------------------------------- |
-| `packages/sdk`            | `packages/sdk/README.md`                                |
-| `packages/ui`             | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
-| `packages/tokens`         | `packages/tokens/README.md`                             |
-| `packages/execution-core` | `packages/execution-core/README.md`                     |
-| `packages/temporal`       | `packages/temporal/README.md`                           |
-| `apps/demo`               | `apps/demo/CLAUDE.md`                                   |
-| `apps/ai-studio`          | `apps/ai-studio/README.md`                              |
-| `apps/backend`            | `apps/backend/README.md`                                |
-| `apps/execution-worker`   | `apps/execution-worker/README.md`                       |
+| Workspace                      | Authoritative docs                                      |
+| ------------------------------ | ------------------------------------------------------- |
+| `packages/sdk`                 | `packages/sdk/README.md`                                |
+| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`) |
+| `packages/tokens`              | `packages/tokens/README.md`                             |
+| `packages/ai-config`           | `packages/ai-config/README.md`                          |
+| `packages/execution-core`      | `packages/execution-core/README.md`                     |
+| `packages/temporal`            | `packages/temporal/README.md`                           |
+| `packages/temporal-connection` | `packages/temporal-connection/README.md`                |
+| `apps/demo`                    | `apps/demo/CLAUDE.md`                                   |
+| `apps/ai-studio`               | `apps/ai-studio/README.md`                              |
+| `apps/backend`                 | `apps/backend/README.md`                                |
+| `apps/execution-worker`        | `apps/execution-worker/README.md`                       |
 
 ## Types & Aliases
 
 Shared types: `packages/types/` (imported as `@workflow-builder/types/*`).
+AI configuration contract: `packages/ai-config/` (imported as `@workflow-builder/ai-config`; `aiConfig()` tells backend and worker whether the LLM is configured and what is missing).
+Temporal connection config: `packages/temporal-connection/` (imported as `@workflow-builder/temporal-connection`; `temporalConfig()` gives backend and worker their connect options and namespace).
 Icons: `apps/icons/` (imported as `@workflow-builder/icons`).
 SDK: `packages/sdk/` (imported as `@workflowbuilder/sdk`).
 UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuilder/ui/styles.css`, `/index.css`, `/tokens.css`).
@@ -102,7 +108,7 @@ UI: `packages/ui/` (imported as `@workflowbuilder/ui`; styles via `@workflowbuil
 - Temporal server on `7233` (gRPC)
 - Temporal UI on http://localhost:8233
 
-Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the box. `pnpm infra:down` stops everything.
+Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the box. Pointing either app at a secured cluster or Temporal Cloud is env-only (`TEMPORAL_NAMESPACE`, `TEMPORAL_TLS`, `TEMPORAL_API_KEY`, `TEMPORAL_TLS_*_PATH`) - see `apps/backend/README.md` "Connecting to a secured Temporal cluster". `pnpm infra:down` stops everything.
 
 ## Code Quality
 
