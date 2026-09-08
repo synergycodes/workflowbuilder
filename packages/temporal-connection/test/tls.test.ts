@@ -5,6 +5,7 @@
 import { Client, Connection } from '@temporalio/client';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { NativeConnection, Worker } from '@temporalio/worker';
+import { rmSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -64,6 +65,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await env?.teardown();
+  for (const minted of [trusted, stranger]) {
+    if (minted) rmSync(minted.files.directory, { recursive: true, force: true });
+  }
 });
 
 describe.each(transports)('$name over TLS', ({ connect }) => {

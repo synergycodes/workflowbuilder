@@ -8,8 +8,8 @@ export type PemPair = { cert: string; key: string };
 /** A throwaway CA with one server leaf (SAN localhost / 127.0.0.1 / ::1) and one client leaf. */
 export type TestPki = { ca: PemPair; server: PemPair; client: PemPair };
 
-/** The PEM files a TEMPORAL_TLS_*_PATH-style config can point at. */
-export type TestPkiFiles = { ca: string; clientCert: string; clientKey: string };
+/** The PEM files a TEMPORAL_TLS_*_PATH-style config can point at; `directory` holds them all, for cleanup. */
+export type TestPkiFiles = { directory: string; ca: string; clientCert: string; clientKey: string };
 
 type Issued = { cert: forge.pki.Certificate; key: forge.pki.rsa.PrivateKey; pem: PemPair };
 
@@ -66,6 +66,7 @@ export function createTestPki(name: string): TestPki {
 export function writeTestPki(pki: TestPki, name: string): TestPkiFiles {
   const directory = mkdtempSync(path.join(tmpdir(), `wb-tls-${name}-`));
   const files = {
+    directory,
     ca: path.join(directory, 'ca.pem'),
     clientCert: path.join(directory, 'client.pem'),
     clientKey: path.join(directory, 'client-key.pem'),
