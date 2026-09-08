@@ -8,8 +8,8 @@
 # default; COMPOSE_FILE=docker-compose.yml in .env leaves it out.
 #
 # RUNTIME_IMAGE / WEB_IMAGE name prebuilt images from a registry; unset, the
-# services build locally under the default names. The deploy workflow sets them
-# to the tags it just pushed, so this file is the one the demo VM runs too.
+# services build locally under the default names. The deploy workflow writes the
+# tags it just pushed into the VM's .env, so this file is the one the demo VM runs too.
 
 name: ai-studio
 
