@@ -10,8 +10,8 @@ describe('decisionIssueMessage', () => {
   });
 
   it('keeps replacement patterns in the value verbatim', () => {
-    expect(decisionIssueMessage('source_is_a_gate', '$&-$1')).toBe(
-      "proposal source '$&-$1' is itself a gate and cannot be re-run",
+    expect(decisionIssueMessage('source_has_decision', '$&-$1')).toBe(
+      "proposal source '$&-$1' carries its own decision contract and cannot be re-run",
     );
   });
 

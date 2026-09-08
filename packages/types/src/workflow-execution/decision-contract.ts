@@ -1,5 +1,5 @@
 /**
- * Effects a gate may declare on its actions. `resume-with-edits` is deliberately absent:
+ * Effects a decision contract may declare on its actions. `resume-with-edits` is deliberately absent:
  * it is never declared; the backend derives it when a `resume` call carries edits.
  */
 export const DECLARABLE_DECISION_EFFECTS = ['resume', 'reject', 'rerun-source'] as const;
@@ -12,7 +12,7 @@ export type DecisionEffect = DeclarableDecisionEffect | 'resume-with-edits';
 
 type DecisionActionBase = {
   /**
-   * What a submitted decision names. Unique within the gate. Any string: the client's
+   * What a submitted decision names. Unique within the contract. Any string: the client's
    * vocabulary, not an engine keyword.
    */
   name: string;
@@ -20,14 +20,14 @@ type DecisionActionBase = {
   label: string;
 };
 
-/** Accepts the proposal, edited or not: the run continues on `port`. Exactly one per gate. */
+/** Accepts the proposal, edited or not: the run continues on `port`. Exactly one per contract. */
 export type ResumeDecisionAction = DecisionActionBase & {
   effect: 'resume';
   /** Output handle the run continues on. Defaults to `approved`. Never `errorRoute`. */
   port: string;
 };
 
-/** Rejects the proposal: the run continues on `port`. At most one per gate. */
+/** Rejects the proposal: the run continues on `port`. At most one per contract. */
 export type RejectDecisionAction = DecisionActionBase & {
   effect: 'reject';
   /** Output handle the run continues on. Defaults to `rejected`. Must differ from the resume port. */
@@ -36,7 +36,7 @@ export type RejectDecisionAction = DecisionActionBase & {
   reasonRequired: boolean;
 };
 
-/** Re-runs the proposal source with the decider's comment. At most one per gate. */
+/** Re-runs the proposal source with the decider's comment. At most one per contract. */
 export type RerunSourceDecisionAction = DecisionActionBase & {
   effect: 'rerun-source';
   /** Upper bound on re-runs of the proposal source. Integer of at least 1. Defaults to `3`. */
@@ -50,10 +50,10 @@ export type RerunSourceDecisionAction = DecisionActionBase & {
  */
 export type DecisionAction = ResumeDecisionAction | RejectDecisionAction | RerunSourceDecisionAction;
 
-/** Time limit on a parked gate. */
+/** Time limit on a node waiting for the decision. */
 export type DecisionDeadline = {
   /**
-   * Counted from the moment the gate parks. A number followed by `ms`, `s`, `m`, `h` or `d`,
+   * Counted from the moment the node parks. A number followed by `ms`, `s`, `m`, `h` or `d`,
    * such as `'30s'` or `'3d'`.
    */
   after: string;
@@ -64,8 +64,7 @@ export type DecisionDeadline = {
 /**
  * The human decision a node asks for before the run continues. Authored under
  * `data.properties.decision` in the editor snapshot and lifted to `BaseNode.decision`.
- * Any node type may carry one; a node that does is a gate. Unknown keys at every level
- * are preserved.
+ * Any node type may carry one. Unknown keys at every level are preserved.
  */
 export type DecisionContract = {
   /** Shape version of the contract. A future shape change bumps it. */
@@ -81,9 +80,9 @@ export type DecisionContract = {
   uiSchema?: Record<string, unknown>;
   /**
    * The proposal source: the node whose output the decider judges. Must be a direct
-   * predecessor of the gate; absent means the gate's only predecessor.
+   * predecessor of the deciding node; absent means its only predecessor.
    */
   proposalSourceNodeId?: string;
-  /** Absent means the gate waits forever. */
+  /** Absent means the node waits forever. */
   deadline?: DecisionDeadline;
 };

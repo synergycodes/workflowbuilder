@@ -1,7 +1,7 @@
 // Validates the workflow snapshot at the HTTP boundary structurally only:
 // every node has `id` and `data.type`; every edge has `id`, `source`, `target`.
 // `data.properties` is opaque here except for the reserved `decision` key, which
-// marks a gate and is validated as a contract. The backend does not know any
+// is validated as a decision contract. The backend does not know any
 // product's node vocabulary; per-type validation belongs to whichever worker
 // registers executors for it, and an unknown node type surfaces at runtime as
 // a `node_failed` event with the missing-executor message.
@@ -32,7 +32,7 @@ const frontendEdgeSchema = z.object({
 });
 
 const SOURCE_ISSUE_BY_REASON = {
-  not_a_gate: 'source_not_a_gate',
+  node_without_decision: 'source_node_without_decision',
   explicit_source_not_a_predecessor: 'source_not_a_predecessor',
   no_predecessor: 'source_missing',
   ambiguous_predecessor: 'source_ambiguous',
@@ -59,9 +59,11 @@ export const workflowSnapshotSchema = z
         context.addIssue(decisionIssue(SOURCE_ISSUE_BY_REASON[resolution.error], path, decision.proposalSourceNodeId));
         continue;
       }
-      const sourceIsGate = nodes.some((other) => other.id === resolution.sourceNodeId && other.decision !== undefined);
-      if (declaresRerun && sourceIsGate) {
-        context.addIssue(decisionIssue('source_is_a_gate', path, resolution.sourceNodeId));
+      const sourceHasDecision = nodes.some(
+        (other) => other.id === resolution.sourceNodeId && other.decision !== undefined,
+      );
+      if (declaresRerun && sourceHasDecision) {
+        context.addIssue(decisionIssue('source_has_decision', path, resolution.sourceNodeId));
       }
     }
   });

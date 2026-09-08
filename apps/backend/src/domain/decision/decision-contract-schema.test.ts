@@ -54,7 +54,7 @@ describe('decisionContractSchema', () => {
     expect(decisionContractSchema.safeParse(workedExample()).success).toBe(true);
   });
 
-  it('accepts a minimal gate: one resume action and an empty form', () => {
+  it('accepts a minimal contract: one resume action and an empty form', () => {
     const minimal = {
       version: 1,
       actions: [{ name: 'ok', label: 'OK', effect: 'resume' }],
@@ -132,7 +132,7 @@ describe('decisionContractSchema', () => {
     expect(decisionContractSchema.safeParse(contract({ deadline: { after, policy: 'reject' } })).success).toBe(true);
   });
 
-  it('accepts a gate without deadline, uiSchema or proposalSourceNodeId', () => {
+  it('accepts a contract without deadline, uiSchema or proposalSourceNodeId', () => {
     const { version, actions, schema } = workedExample();
 
     expect(decisionContractSchema.safeParse({ version, actions, schema }).success).toBe(true);

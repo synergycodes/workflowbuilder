@@ -6,7 +6,7 @@ type GraphNode = Pick<BaseNode, 'id' | 'decision'>;
 type GraphEdge = Pick<WorkflowEdgeDefinition, 'sourceNodeId' | 'targetNodeId'>;
 
 export type UnresolvedSourceReason =
-  | 'not_a_gate'
+  | 'node_without_decision'
   | 'explicit_source_not_a_predecessor'
   | 'no_predecessor'
   | 'ambiguous_predecessor';
@@ -22,13 +22,13 @@ export type ProposalSourceResolution =
 export function resolveProposalSource(
   nodes: readonly GraphNode[],
   edges: readonly GraphEdge[],
-  gateId: string,
+  nodeId: string,
 ): ProposalSourceResolution {
-  const gate = nodes.find((node) => node.id === gateId);
-  if (gate?.decision === undefined) return { error: 'not_a_gate' };
+  const node = nodes.find((candidate) => candidate.id === nodeId);
+  if (node?.decision === undefined) return { error: 'node_without_decision' };
 
-  const predecessors = unique(edges.filter((edge) => edge.targetNodeId === gateId).map((edge) => edge.sourceNodeId));
-  const explicit = gate.decision.proposalSourceNodeId;
+  const predecessors = unique(edges.filter((edge) => edge.targetNodeId === nodeId).map((edge) => edge.sourceNodeId));
+  const explicit = node.decision.proposalSourceNodeId;
   if (explicit !== undefined) {
     return predecessors.includes(explicit)
       ? { sourceNodeId: explicit }

@@ -14,11 +14,11 @@ export const DECISION_ISSUE_MESSAGES = {
   required_field_undeclared: "required field '{value}' is not declared in properties",
   deadline_format: "must be a positive duration such as '30s', '24h' or '3d' (a number followed by ms, s, m, h or d)",
   deadline_policy: "policy must be 'reject'",
-  source_not_a_gate: 'this node carries no decision contract',
+  source_node_without_decision: 'this node carries no decision contract',
   source_not_a_predecessor: "proposalSourceNodeId '{value}' is not a direct predecessor of this node",
   source_missing: 'a rerun-source action needs a proposal source, but this node has no predecessor',
   source_ambiguous: 'several predecessors; set proposalSourceNodeId to say which one rerun-source re-runs',
-  source_is_a_gate: "proposal source '{value}' is itself a gate and cannot be re-run",
+  source_has_decision: "proposal source '{value}' carries its own decision contract and cannot be re-run",
 } as const;
 
 export type DecisionIssueCode = keyof typeof DECISION_ISSUE_MESSAGES;

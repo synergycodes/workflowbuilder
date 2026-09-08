@@ -275,25 +275,25 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 // version before submitting; both answer with the same `invalid_snapshot` body.
 // Draft save never validates: a draft is legitimately mid-edit.
 
-function snapshotWithGateActions(actions: unknown[]) {
+function snapshotWithDecisionActions(actions: unknown[]) {
   return {
     nodes: [
       { id: 'src', data: { type: 'product/any' } },
       {
-        id: 'gate',
+        id: 'review',
         data: {
           type: 'product/any',
           properties: { decision: { version: 1, actions, schema: { type: 'object', properties: {} } } },
         },
       },
     ],
-    edges: [{ id: 'e1', source: 'src', target: 'gate' }],
+    edges: [{ id: 'e1', source: 'src', target: 'review' }],
   };
 }
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
-const validGateSnapshot = snapshotWithGateActions([approve]);
-const twoResumesSnapshot = snapshotWithGateActions([approve, { ...approve, name: 'approve-2' }]);
+const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
+const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
 
 type InvalidSnapshotBody = { code: string; details: { path: (string | number)[] }[] };
 
@@ -324,16 +324,16 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
-  it('accepts a draft with a valid gate and returns the row', async () => {
-    const published = { ...fakeWorkflow, draftJson: validGateSnapshot, publishedJson: validGateSnapshot };
-    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validGateSnapshot }]));
+  it('accepts a draft with a valid decision contract and returns the row', async () => {
+    const published = { ...fakeWorkflow, draftJson: validDecisionSnapshot, publishedJson: validDecisionSnapshot };
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validDecisionSnapshot }]));
     databaseMock.update.mockReturnValue(chainResolving([published]));
 
     const response = await publish(allowAllApp());
 
     expect(response.status).toBe(200);
     expect(databaseMock.update).toHaveBeenCalledTimes(1);
-    expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validGateSnapshot });
+    expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validDecisionSnapshot });
   });
 
   it('still publishes a workflow without a draft, unvalidated', async () => {

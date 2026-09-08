@@ -34,7 +34,10 @@ export type BaseNode = {
   // without knowing any product's vocabulary.
   label?: string;
   errorPolicy?: NodeErrorPolicy;
-  /** Present on a gate: the decision a human takes before the run continues. Nothing detects a gate by `type`. */
+  /**
+   * The decision a human takes at this node before the run continues. This field's
+   * presence, never `type`, marks a node as one that waits for a decision.
+   */
   decision?: DecisionContract;
   role?: NodeRole;
 };
