@@ -52,6 +52,18 @@ describe('resolveProposalSource', () => {
     expect(resolveProposalSource(nodes, edges, 'review')).toEqual({ sourceNodeId: 'a' });
   });
 
+  it('does not count a self-loop as a predecessor, explicit or implicit', () => {
+    const explicitSelf = [{ id: 'a' }, { id: 'review', decisionRequest: request('review') }];
+    const implicitSelf = [{ id: 'review', decisionRequest: request() }];
+
+    expect(resolveProposalSource(explicitSelf, [edge('a', 'review'), edge('review', 'review')], 'review')).toEqual({
+      error: 'explicit_source_not_a_predecessor',
+    });
+    expect(resolveProposalSource(implicitSelf, [edge('review', 'review')], 'review')).toEqual({
+      error: 'no_predecessor',
+    });
+  });
+
   it('reports no predecessor when the node has only outgoing edges', () => {
     const nodes = [{ id: 'review', decisionRequest: request() }, { id: 'after' }];
 

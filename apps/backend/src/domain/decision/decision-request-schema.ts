@@ -21,14 +21,18 @@ function isDurationString(value: string): boolean {
 const durationSchema = z.string().refine(isDurationString, decisionIssueMessage('deadline_format'));
 
 // 'errorRoute' is the handle the runner reserves for the error policy.
+function isNotBlank(text: string): boolean {
+  return text.trim().length > 0;
+}
+
 const portSchema = z
   .string()
-  .min(1, decisionIssueMessage('port_empty'))
+  .refine(isNotBlank, decisionIssueMessage('port_empty'))
   .refine((port) => port !== 'errorRoute', decisionIssueMessage('port_reserved'));
 
 const actionBase = {
-  name: z.string().min(1, decisionIssueMessage('name_empty')),
-  label: z.string().min(1, decisionIssueMessage('label_empty')),
+  name: z.string().refine(isNotBlank, decisionIssueMessage('name_empty')),
+  label: z.string().refine(isNotBlank, decisionIssueMessage('label_empty')),
 };
 
 const resumeActionSchema = z.looseObject({
@@ -67,8 +71,7 @@ const formPropertySchema = z.looseObject({
   'x-pii': z.boolean().optional(),
 });
 
-// Shape only. Validating values against the schema needs a JSON Schema validator the
-// backend does not have yet (follow-up: decision-edit-value-validation)
+// Shape only; a JSON Schema validator arrives with the first consumer that checks edited values.
 const formSchema = z
   .looseObject({
     type: z.literal('object'),

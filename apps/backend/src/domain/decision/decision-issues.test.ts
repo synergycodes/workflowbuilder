@@ -22,7 +22,7 @@ describe('decisionIssueMessage', () => {
   it('builds the issue shape a superRefine adds', () => {
     expect(decisionIssue('port_empty', ['actions', 0, 'port'])).toEqual({
       code: 'custom',
-      message: 'port must not be empty',
+      message: 'port must not be blank',
       path: ['actions', 0, 'port'],
     });
   });

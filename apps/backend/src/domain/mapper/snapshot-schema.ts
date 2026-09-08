@@ -1,10 +1,6 @@
-// Validates the workflow snapshot at the HTTP boundary structurally only:
-// every node has `id` and `data.type`; every edge has `id`, `source`, `target`.
-// `data.properties` is opaque here except for the reserved `decisionRequest` key,
-// which is validated as a decision request. The backend does not know any
-// product's node vocabulary; per-type validation belongs to whichever worker
-// registers executors for it, and an unknown node type surfaces at runtime as
-// a `node_failed` event with the missing-executor message.
+// Structural validation of the editor snapshot at the HTTP boundary. `data.properties` is
+// opaque except for the reserved `decisionRequest` key: the backend knows no product's node
+// vocabulary, so an unknown node type fails at runtime as `node_failed`, not here.
 import { z } from 'zod';
 
 import { type DecisionIssueCode, decisionIssue } from '../decision/decision-issues';

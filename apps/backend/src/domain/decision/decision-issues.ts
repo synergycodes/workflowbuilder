@@ -2,17 +2,18 @@
 // interpolation slot. Structural failures (wrong type, missing key) keep zod's wording.
 export const DECISION_ISSUE_MESSAGES = {
   actions_empty: 'at least one action is required',
-  name_empty: 'name must not be empty',
-  label_empty: 'label must not be empty',
+  name_empty: 'name must not be blank',
+  label_empty: 'label must not be blank',
   unknown_effect: 'effect must be one of {value}',
   duplicate_action_name: "action name '{value}' is used more than once",
   duplicate_effect: "only one action may have effect '{value}'",
   resume_required: "an action with effect 'resume' is required",
-  port_empty: 'port must not be empty',
+  port_empty: 'port must not be blank',
   port_reserved: "port must not be the reserved 'errorRoute'",
   reject_port_equals_resume_port: "reject port '{value}' must differ from the resume port",
   required_field_undeclared: "required field '{value}' is not declared in properties",
-  deadline_format: "must be a positive duration such as '30s', '24h' or '3d' (a number followed by ms, s, m, h or d)",
+  deadline_format:
+    "must be a duration such as '30s' or '3d' (number plus ms, s, m, h or d), above zero and at most '3652500d'",
   deadline_policy: "policy must be 'reject'",
   source_node_without_decision_request: 'this node carries no decision request',
   source_not_a_predecessor: "proposalSourceNodeId '{value}' is not a direct predecessor of this node",
@@ -23,8 +24,7 @@ export const DECISION_ISSUE_MESSAGES = {
 
 export type DecisionIssueCode = keyof typeof DECISION_ISSUE_MESSAGES;
 
-// Every way a submitted decision can be refused against the node's decision request. Value
-// types are not checked here (follow-up: decision-edit-value-validation)
+// Every way a submitted decision can be refused against the node's decision request.
 export const SUBMITTED_DECISION_ERRORS = {
   unknown_action: "the decision request offers no action named '{value}'",
   reason_required: "action '{value}' requires a reason",

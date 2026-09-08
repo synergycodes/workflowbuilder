@@ -8,11 +8,11 @@
 
 A run can park at a node until a person decides. The backend needs to know what a decision at that node looks like: the actions offered, the fields the decider sees and may correct, whose output is judged, how long to wait. Products bring their own vocabulary; the engine has a closed set of things it can do; the backend knows no product's node types.
 
-The shape itself is documented on the type (`packages/types/src/workflow-execution/decision-request.ts`) and enforced by `decisionRequestSchema` in `apps/backend/src/domain/decision/`. This log keeps only what the code cannot say.
+The shape itself is documented on the type (`packages/types/src/workflow-execution/decision-request.ts`) and enforced by `decisionRequestSchema` in `apps/backend/src/domain/decision/`. This log keeps only what the code cannot say. A complete example, the refund story from the design workshop, is the `workedExample()` fixture in `decision-request-schema.test.ts`.
 
 ## Decision
 
-1. **Data on the node, not a node kind.** The request lives under the reserved key `data.properties.decisionRequest` and is lifted to `BaseNode.decisionRequest`, as `errorPolicy` is. Its presence is the only marker; nothing detects such a node by `type`. A client adding its own node type never has to teach the backend about it.
+1. **Data on the node, not a node kind.** The request lives under the reserved key `data.properties.decisionRequest` and is lifted to `BaseNode.decisionRequest`, as `errorPolicy` is. Its presence is the only marker; nothing detects such a node by `type`. Present or absent, never `null`: a `null` value is refused, so an editor that clears the request must remove the key. A client adding its own node type never has to teach the backend about it.
 2. **Name and effect are split.** `name` and `label` are the client's words ("Escalate to finance"); `effect` is the engine's closed set. A new business vocabulary is data, not a code change.
 3. **Edit is not an action.** The decider corrects fields and approves. Whether a field may be edited is already said by `readOnly` in the schema; a second switch would be a second source of truth. `resume-with-edits` is therefore derived, never declared.
 4. **JSON Schema for the form**, validated for shape only. The SDK already renders and validates JSON Schema, so the decision form comes for free. A real validator arrives with the first consumer that checks edited values `(follow-up: decision-edit-value-validation)`.
@@ -39,6 +39,7 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 - A draft may store an own `__proto__` key; it goes nowhere but the database, and publish and execute refuse it. Rejecting it at save time was judged not worth touching the draft route.
 - The submission validator returns the first refusal, not a list.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
+- Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
 
 ## Open points
 

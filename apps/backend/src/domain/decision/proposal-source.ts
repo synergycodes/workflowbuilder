@@ -11,8 +11,7 @@ export type UnresolvedSourceReason =
   | 'no_predecessor'
   | 'ambiguous_predecessor';
 
-// `error?: undefined` on the success member lets a caller narrow with a plain
-// `if (resolution.error !== undefined)` while both-set and neither-set stay unrepresentable.
+// Result shape: apps/backend/decision-request.decision-log.md, decision 9.
 export type ProposalSourceResolution =
   | { sourceNodeId: string; error?: undefined }
   | { sourceNodeId?: undefined; error: UnresolvedSourceReason };
@@ -27,7 +26,12 @@ export function resolveProposalSource(
   const node = nodes.find((candidate) => candidate.id === nodeId);
   if (node?.decisionRequest === undefined) return { error: 'node_without_decision_request' };
 
-  const predecessors = unique(edges.filter((edge) => edge.targetNodeId === nodeId).map((edge) => edge.sourceNodeId));
+  // A self-loop is not a predecessor.
+  const predecessors = unique(
+    edges
+      .filter((edge) => edge.targetNodeId === nodeId && edge.sourceNodeId !== nodeId)
+      .map((edge) => edge.sourceNodeId),
+  );
   const explicit = node.decisionRequest.proposalSourceNodeId;
   if (explicit !== undefined) {
     return predecessors.includes(explicit)

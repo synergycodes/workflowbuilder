@@ -60,7 +60,7 @@ function requiredFields(request: DecisionRequest): string[] {
 }
 
 // Presence and editability only. Whether an edited value fits its declared type is a
-// later concern with its own validator.
+// later concern with its own validator (follow-up: decision-edit-value-validation)
 export function validateSubmittedDecision(
   request: DecisionRequest,
   submitted: SubmittedDecision,

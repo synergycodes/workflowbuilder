@@ -191,6 +191,24 @@ describe('decisionRequestSchema', () => {
       issue: { code: 'duplicate_effect', value: 'rerun-source' },
     },
     {
+      name: 'a whitespace-only action name',
+      input: request({ actions: [{ ...approve, name: '  ' }] }),
+      path: 'actions.0.name',
+      issue: { code: 'name_empty' },
+    },
+    {
+      name: 'a whitespace-only action label',
+      input: request({ actions: [{ ...approve, label: ' ' }] }),
+      path: 'actions.0.label',
+      issue: { code: 'label_empty' },
+    },
+    {
+      name: 'a whitespace-only resume port',
+      input: request({ actions: [{ ...approve, port: '\t' }] }),
+      path: 'actions.0.port',
+      issue: { code: 'port_empty' },
+    },
+    {
       name: 'an empty action name',
       input: request({ actions: [{ ...approve, name: '' }] }),
       path: 'actions.0.name',
