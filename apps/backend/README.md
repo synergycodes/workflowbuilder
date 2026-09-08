@@ -29,6 +29,14 @@ Frontend (React)
 - **Domain** (`packages/execution-core`) — pure graph runner + ports + node executors. No Temporal, no HTTP. See the [execution-core README](../../packages/execution-core/README.md).
 - **Frontend** (`apps/ai-studio`) — full AI workflow product. Composes `@workflowbuilder/sdk` directly via JSX, with a slim plugin only for per-node execution markers. Owns Play/Stop controls, log panel, node detail, and execution highlighting.
 
+## Decision request on a node
+
+A node asks a human for a decision by carrying `data.properties.decisionRequest`: the actions offered, the JSON Schema of the form, the node whose output is judged, and an optional deadline. Any node type may carry one; its presence, never `type`, is what makes the run park there. The mapper lifts it to `BaseNode.decisionRequest`, out of `config`.
+
+The request is validated on `POST /:id/publish` and `POST /:id/execute`, never on `PATCH /:id/draft`: a draft is legitimately mid-edit. A broken request answers with the existing `invalid_snapshot` 400, whose `details[].path` points at the node index and field, for example `nodes.1.data.properties.decisionRequest.actions.1.effect`. Every domain message the validation can produce is listed in `src/domain/decision/decision-issues.ts`.
+
+A submitted decision is checked against the request by `validateSubmittedDecision` in `src/domain/decision/`; the decision endpoint that calls it is a separate change. Shape, rules and the reasoning are in [`decision-request.decision-log.md`](./decision-request.decision-log.md).
+
 ## Running individual processes
 
 For debugging, the parts that `pnpm dev:ai-studio` orchestrates can also be run separately:
