@@ -19,6 +19,8 @@ on:
     branches:
       - main
       - release # the release PR is the last stop before a tag, so it gets the same checks
+      # Integration branch for the human-in-the-loop work: feature PRs land there first.
+      - feat/human-in-the-loop
 
 permissions:
   contents: read

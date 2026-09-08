@@ -15,6 +15,7 @@ import {
   type WorkflowExecutionInput,
   executionWorkflowId,
 } from '../../src/index';
+import { countScheduledActivities } from '../fixtures/helpers';
 import { type RecordingStore, createRecordingStore } from '../fixtures/recording-store';
 import { REPLAY_SCENARIOS, type ReplayScenario, type ReplayScenarioNode } from '../fixtures/replay-scenarios';
 
@@ -53,19 +54,6 @@ function historyFile(scenario: ReplayScenario): URL {
 
 function scenarioOf(file: string): ReplayScenario | undefined {
   return REPLAY_SCENARIOS.find((scenario) => file.endsWith(`-${scenario.name}.json`));
-}
-
-function countScheduledActivities(history: History): Record<string, number> {
-  const counts: Record<string, number> = {};
-
-  for (const event of history.events ?? []) {
-    const name = event.activityTaskScheduledEventAttributes?.activityType?.name;
-    if (name) {
-      counts[name] = (counts[name] ?? 0) + 1;
-    }
-  }
-
-  return counts;
 }
 
 describe('replay', () => {
@@ -118,7 +106,7 @@ describe('replay', () => {
           workflowId,
           args: [input],
         });
-        await drive(handle);
+        await drive(handle, store);
       });
 
       history = await env.client.workflow.getHandle(workflowId).fetchHistory();
@@ -135,12 +123,11 @@ describe('replay', () => {
       }
     }, 120_000);
 
-    it(`ends with ${scenario.terminalEvent} and status ${scenario.terminalStatus}`, () => {
+    it(`ends with ${scenario.terminalEvent} and status ${scenario.statuses.at(-1)}`, () => {
       expect(store.events.at(0)?.type).toBe('execution_started');
       expect(store.events.at(-1)?.type).toBe(scenario.terminalEvent);
-      expect(store.statuses).toEqual([
-        { status: scenario.terminalStatus, errorMessage: scenario.terminalErrorMessage },
-      ]);
+      expect(store.statuses.map((entry) => entry.status)).toEqual(scenario.statuses);
+      expect(store.statuses.at(-1)?.errorMessage).toBe(scenario.terminalErrorMessage);
     });
 
     it('emits the events each node owes', () => {
@@ -161,7 +148,7 @@ describe('replay', () => {
       expect(history.events?.at(-1)?.[scenario.closeAttributes]).toBeTruthy();
     });
 
-    it('schedules one activity per node run, one per emitted event, one status write', () => {
+    it('schedules one activity per node run, one per emitted event, one per status write', () => {
       expect(countScheduledActivities(history)).toEqual(scenario.expectedActivities);
     });
 

@@ -11,7 +11,7 @@ import type {
 
 import { extractDeepestError } from './errors';
 import type { ExecutionContext } from './execution-context';
-import type { ActivityRunnerPort } from './ports/activity-runner.port';
+import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
@@ -89,6 +89,7 @@ export async function runGraph<TNode extends BaseNode>(
   let ready: TNode[] = [startNode];
   const nodeOutputs: Record<string, unknown> = {};
   const deadEnds: DeadEnd[] = [];
+  const parked = { count: 0 };
 
   while (ready.length > 0) {
     const context: ExecutionContext = {
@@ -100,14 +101,16 @@ export async function runGraph<TNode extends BaseNode>(
       global: input.global,
     };
 
-    const results = await Promise.all(ready.map((node) => runNode(node, context, runner, events, input.executionId)));
+    const results = await Promise.all(
+      ready.map((node) => runNode(node, context, runner, events, input.executionId, parked)),
+    );
 
     // Fatal failures (policy 'fail') abort the whole execution — pick the first
     // one in deterministic node order, just like the previous behavior. The abort
     // itself waits until the wave has propagated and emitted its skips: siblings
     // that resolved in this same wave still owe their `node_skipped` events, and
     // `execution_failed` has to stay the last event of the run.
-    const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
+    const fatal = results.find((r) => r.failed && (r.abort === true || resolveErrorPolicy(r.node) === 'fail'));
 
     const newlyReady: TNode[] = [];
     const skipped: SkippedNode[] = [];
@@ -117,7 +120,7 @@ export async function runGraph<TNode extends BaseNode>(
         // A fatal node resolves nothing — no output, no propagation — so its
         // successors keep their pending predecessor count and emit no event.
         // Never reached is a different state from deliberately skipped.
-        if (policy === 'fail') continue;
+        if (result.abort === true || policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
         // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
         const errorOutput =
@@ -298,7 +301,8 @@ function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
 
 type NodeRunResult<TNode extends BaseNode> =
   | { node: TNode; output: unknown; nextPort?: string; failed: false }
-  | { node: TNode; message: string; code?: string; failed: true };
+  // `abort` marks a runner-level abort that outranks the node's own errorPolicy.
+  | { node: TNode; message: string; code?: string; failed: true; abort?: true };
 
 async function runNode<TNode extends BaseNode>(
   node: TNode,
@@ -306,11 +310,29 @@ async function runNode<TNode extends BaseNode>(
   runner: ActivityRunnerPort<TNode>,
   events: EventEmitterPort,
   executionId: string,
+  parked: { count: number },
 ): Promise<NodeRunResult<TNode>> {
   try {
     const visibleNodeIds = Object.keys(context.nodeOutputs);
     await events.emitEvent(executionId, 'node_started', { config: node.config, visibleNodeIds }, node.id);
-    const result = await runner.executeNode(node, context);
+    const executed = await runner.executeNode(node, context);
+    let result: CompletedNodeExecution;
+    if (executed.waiting) {
+      if (runner.awaitResolution === undefined) {
+        // A runner-level abort, not a node failure: routed around `errorPolicy`, where
+        // 'continue' would close the run as completed with the gate silently skipped.
+        return {
+          node,
+          message: `Node "${node.id}" returned a waiting result, but this engine adapter does not support gates`,
+          code: 'waiting_unsupported',
+          failed: true,
+          abort: true,
+        };
+      }
+      result = await parkUntilResolved(runner.awaitResolution.bind(runner), node.id, events, executionId, parked);
+    } else {
+      result = executed;
+    }
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
     return { node, output: result.output, nextPort: result.nextPort, failed: false };
   } catch (error) {
@@ -320,6 +342,47 @@ async function runNode<TNode extends BaseNode>(
     if (attempt !== undefined) errorPayload.attempt = attempt;
     await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
     return { node, message, code, failed: true };
+  }
+}
+
+// `parked` is a counter, not a flag: with two gates parked, the first verdict
+// must not flip the run back to 'running'.
+async function parkUntilResolved(
+  awaitResolution: (nodeId: string) => Promise<CompletedNodeExecution>,
+  nodeId: string,
+  events: EventEmitterPort,
+  executionId: string,
+  parked: { count: number },
+): Promise<CompletedNodeExecution> {
+  await events.emitEvent(executionId, 'node_waiting', undefined, nodeId);
+  parked.count += 1;
+  try {
+    if (parked.count === 1) {
+      await setAdvisoryStatus(events, executionId, 'waiting');
+    }
+    // Awaited here, so the caller's wave slot stays pending and the barrier holds
+    // itself: the wave completes only once every parked node has resolved.
+    return await awaitResolution(nodeId);
+  } finally {
+    // On rejection too: a failure absorbed by 'continue' must not strand the run in 'waiting'.
+    parked.count -= 1;
+    if (parked.count === 0) {
+      await setAdvisoryStatus(events, executionId, 'running');
+    }
+  }
+}
+
+// waiting/running are derived, advisory state: a failed write must not cost a park or
+// a delivered verdict. Same rationale as the swallowed node_skipped emit above.
+async function setAdvisoryStatus(
+  events: EventEmitterPort,
+  executionId: string,
+  status: 'waiting' | 'running',
+): Promise<void> {
+  try {
+    await events.updateStatus(executionId, status);
+  } catch {
+    // Swallowed on purpose — see above. No logger inside the workflow sandbox.
   }
 }
 

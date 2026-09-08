@@ -14,5 +14,10 @@ export { NodeExecutionError } from './errors';
 export type { ExecutionContext } from './execution-context';
 
 export type { WorkflowEnginePort, WorkflowExecutionInput } from './ports/workflow-engine.port';
-export type { ActivityRunnerPort, NodeExecutionResult } from './ports/activity-runner.port';
+export type {
+  ActivityRunnerPort,
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';

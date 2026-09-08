@@ -8,12 +8,17 @@ import {
   PermanentNodeExecutionError,
   type WorkflowDefinition,
 } from '../../src/index';
+import { resolveNodeUpdate } from '../../src/workflow/index';
+import { executeVerdictWithRetry, waitUntil } from './helpers';
+import { type PauseTestNode, SINGLE_GATE_GRAPH } from './pause-graph';
+import type { RecordingStore } from './recording-store';
 
 export type ReplayScenarioNode =
   | (BaseNode & { type: 'test/step' })
   | (BaseNode & { type: 'test/fail' })
   | (BaseNode & { type: 'test/route' })
-  | (BaseNode & { type: 'test/block' });
+  | (BaseNode & { type: 'test/block' })
+  | PauseTestNode;
 
 type ActivityCounts = { executeNode: number; emitEvent: number; updateStatus: number };
 
@@ -26,7 +31,8 @@ export type ReplayScenario = {
   name: string;
   graph: WorkflowDefinition<ReplayScenarioNode>;
   terminalEvent: string;
-  terminalStatus: string;
+  // Every status write in order; the last one is the terminal write.
+  statuses: string[];
   terminalErrorMessage?: string;
   closeAttributes: WorkflowCloseAttributes;
   expectedActivities: ActivityCounts;
@@ -34,10 +40,11 @@ export type ReplayScenario = {
   // Every node in the graph needs an entry; one that never ran gets an empty list.
   nodeEvents: Record<string, string[]>;
   // Executors and the driver are built together, per run, so a scenario can share
-  // run-local state between them (the blocked node the cancel scenario releases).
+  // run-local state between them (the blocked node the cancel scenario releases). The
+  // driver also sees the store, which is where a parked run announces it can take a verdict.
   stage(): {
     executors: NodeExecutorRegistry<ReplayScenarioNode>;
-    drive(handle: WorkflowHandle): Promise<void>;
+    drive(handle: WorkflowHandle, store: RecordingStore): Promise<void>;
   };
 };
 
@@ -52,6 +59,7 @@ const executors: NodeExecutorRegistry<ReplayScenarioNode> = {
   'test/block': () => {
     throw new Error('test/block is staged by the cancel-mid-run scenario only');
   },
+  'test/gate': () => ({ waiting: true }),
 };
 
 // How a run ended is asserted from the store and the history, not from the result — but
@@ -86,7 +94,7 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_completed',
-    terminalStatus: 'completed',
+    statuses: ['completed'],
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
     expectedActivities: { executeNode: 4, emitEvent: 10, updateStatus: 1 },
     nodeEvents: {
@@ -117,7 +125,7 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_failed',
-    terminalStatus: 'failed',
+    statuses: ['failed'],
     terminalErrorMessage: 'fails on purpose',
     closeAttributes: 'workflowExecutionFailedEventAttributes',
     expectedActivities: { executeNode: 3, emitEvent: 8, updateStatus: 1 },
@@ -147,7 +155,7 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_incomplete',
-    terminalStatus: 'incomplete',
+    statuses: ['incomplete'],
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
     expectedActivities: { executeNode: 2, emitEvent: 7, updateStatus: 1 },
     nodeEvents: {
@@ -170,7 +178,7 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       edges: [{ id: 'e-start-block', sourceNodeId: 'start', targetNodeId: 'block' }],
     },
     terminalEvent: 'execution_cancelled',
-    terminalStatus: 'cancelled',
+    statuses: ['cancelled'],
     closeAttributes: 'workflowExecutionCanceledEventAttributes',
     expectedActivities: { executeNode: 2, emitEvent: 5, updateStatus: 1 },
     // block is cancelled in flight, so it starts and never completes.
@@ -201,5 +209,31 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
         },
       };
     },
+  },
+  {
+    // start ─▶ gate ─▶ after   The middle node parks the run. The driver waits for the
+    //                          `waiting` status, delivers a verdict and lets the run finish.
+    name: 'parked-decision',
+    graph: SINGLE_GATE_GRAPH,
+    terminalEvent: 'execution_completed',
+    statuses: ['waiting', 'running', 'completed'],
+    closeAttributes: 'workflowExecutionCompletedEventAttributes',
+    // The usual pair per node plus one node_waiting; one status write per transition.
+    expectedActivities: { executeNode: 3, emitEvent: 9, updateStatus: 3 },
+    nodeEvents: {
+      start: ['node_started', 'node_completed'],
+      gate: ['node_started', 'node_waiting', 'node_completed'],
+      after: ['node_started', 'node_completed'],
+    },
+    stage: () => ({
+      executors,
+      drive: async (handle, store) => {
+        await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
+        await executeVerdictWithRetry(() =>
+          handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
+        );
+        await settle(handle);
+      },
+    }),
   },
 ];
