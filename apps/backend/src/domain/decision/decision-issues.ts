@@ -23,9 +23,30 @@ export const DECISION_ISSUE_MESSAGES = {
 
 export type DecisionIssueCode = keyof typeof DECISION_ISSUE_MESSAGES;
 
-export function decisionIssueMessage(code: DecisionIssueCode, value?: string): string {
+// Every way a submitted decision can be refused against the node's contract. Value
+// types are not checked here (follow-up: decision-edit-value-validation)
+export const SUBMITTED_DECISION_ERRORS = {
+  unknown_action: "the contract offers no action named '{value}'",
+  reason_required: "action '{value}' requires a reason",
+  comment_required: "action '{value}' requires a comment",
+  unknown_field: "field '{value}' is not in the decision schema",
+  field_not_editable: "field '{value}' is read-only",
+  required_field_missing: "required field '{value}' must not be emptied",
+} as const;
+
+export type SubmittedDecisionErrorCode = keyof typeof SUBMITTED_DECISION_ERRORS;
+
+function fill(template: string, value: string | undefined): string {
   // A function replacer, so a value containing `$&` or `$1` lands verbatim.
-  return DECISION_ISSUE_MESSAGES[code].replace('{value}', () => value ?? '');
+  return template.replace('{value}', () => value ?? '');
+}
+
+export function decisionIssueMessage(code: DecisionIssueCode, value?: string): string {
+  return fill(DECISION_ISSUE_MESSAGES[code], value);
+}
+
+export function submittedDecisionErrorMessage(code: SubmittedDecisionErrorCode, value?: string): string {
+  return fill(SUBMITTED_DECISION_ERRORS[code], value);
 }
 
 export function decisionIssue(code: DecisionIssueCode, path: PropertyKey[], value?: string) {
