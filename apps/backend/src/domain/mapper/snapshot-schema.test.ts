@@ -562,3 +562,36 @@ describe('mapToExecutionModel', () => {
     expect(result.nodes[1]).not.toHaveProperty('decisionRequest');
   });
 });
+
+function snapshotJson(properties: string) {
+  return JSON.parse(`{"nodes":[{"id":"n1","data":{"type":"product/any","properties":${properties}}}],"edges":[]}`);
+}
+
+describe('workflowSnapshotSchema: own __proto__ keys', () => {
+  it('rejects a well-shaped decision request smuggled through properties.__proto__', () => {
+    const smuggled = snapshotJson(
+      '{"label":"ok","__proto__":{"decisionRequest":{"version":99,"actions":[{"effect":"bogus"}],"schema":"x"}}}',
+    );
+
+    expect(issuesOf(smuggled)).toEqual([
+      { path: 'nodes.0.data.properties.__proto__', message: "the key '__proto__' is not allowed" },
+    ]);
+  });
+
+  it('rejects one inside a decision request instead of inheriting the deadline it smuggles', () => {
+    const poisoned = snapshotJson(
+      '{"decisionRequest":{"version":1,"actions":[{"name":"approve","label":"Approve","effect":"resume"}],' +
+        '"schema":{"type":"object","properties":{}},' +
+        '"__proto__":{"deadline":{"after":"garbage","policy":"nuke"},"uiSchema":"x"}}}',
+    );
+
+    expect(issuePaths(poisoned)).toEqual(['nodes.0.data.properties.decisionRequest.__proto__']);
+  });
+
+  it('answers with an issue, not a throw, when the smuggled request has no actions array', () => {
+    const smuggled = snapshotJson('{"__proto__":{"decisionRequest":{"actions":"x"}}}');
+
+    expect(() => workflowSnapshotSchema.safeParse(smuggled)).not.toThrow();
+    expect(issuePaths(smuggled)).toEqual(['nodes.0.data.properties.__proto__']);
+  });
+});

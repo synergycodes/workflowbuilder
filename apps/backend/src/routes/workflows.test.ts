@@ -374,3 +374,38 @@ describe('createWorkflowsRoutes - draft save never validates the snapshot', () =
     expect(databaseMock.update).toHaveBeenCalledTimes(1);
   });
 });
+
+// ---- own __proto__ keys in a stored draft -------------------------------------
+//
+// A draft is stored as sent, so it can carry an own `__proto__` key. Publish and
+// execute refuse it before the parser could turn it into the snapshot's prototype.
+
+const poisonedDraft = JSON.parse(
+  '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":' +
+    '{"__proto__":{"decisionRequest":{"version":99,"actions":[{"effect":"bogus"}],"schema":"x"}}}}}],"edges":[]}',
+);
+
+describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
+  it('publish answers 400 invalid_snapshot pointing at the key and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details.map((detail) => detail.path.join('.'))).toEqual(['nodes.0.data.properties.__proto__']);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('draft save still stores it; only publish and execute refuse', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: poisonedDraft,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});

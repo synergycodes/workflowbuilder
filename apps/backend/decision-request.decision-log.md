@@ -23,6 +23,8 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 9. **Results carry `error?: undefined`, not an `ok` flag.** `{ value; error?: undefined } | { value?: undefined; error }` reads as plain error handling and the compiler still forbids both-set and neither-set. The flag only repeated what the presence of `error` says.
 10. **Vocabulary.** A node carrying a request is a node; no separate noun names it. The rerun effect is named for what it does, `rerun-source`, never for what the source is. Action names in examples (`approve`, `reject`, `ask-again`) are the client's and await a sync with design.
 
+11. **An own `__proto__` key anywhere in a snapshot is refused before parsing.** `JSON.parse` makes it an ordinary key, and zod's loose objects copy unknown keys with a plain assignment, which for that key swaps the output's prototype: everything under it then reads back as validated, and the mapper would copy an inherited request into a real field on the way to the engine. `workflowSnapshotSchema`, the one boundary raw JSON crosses, is wrapped in a preprocess that rejects the key at its path with the usual `invalid_snapshot` 400.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -34,6 +36,7 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 ## Known gaps
 
 - A workflow with a `null` draft still publishes `null`, unvalidated, as it did before. Changing that is its own decision.
+- A draft may store an own `__proto__` key; it goes nowhere but the database, and publish and execute refuse it. Rejecting it at save time was judged not worth touching the draft route.
 - The submission validator returns the first refusal, not a list.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
 
