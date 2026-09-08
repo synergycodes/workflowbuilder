@@ -5,15 +5,15 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
 
-| Service       | Image                          | Role                                          | Exposed                  |
-| ------------- | ------------------------------ | --------------------------------------------- | ------------------------ |
-| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend | `${WEB_PORT}` (only one) |
-| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                  | internal                 |
-| `worker`      | `ai-studio-runtime`            | Temporal worker, makes the LLM calls          | internal                 |
-| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                               | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events         | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                    | internal                 |
-| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                | `127.0.0.1:8233`         |
+| Service       | Image                          | Role                                                                   | Exposed                  |
+| ------------- | ------------------------------ | ---------------------------------------------------------------------- | ------------------------ |
+| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend                          | `${WEB_PORT}` (only one) |
+| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream; calls the LLM for `/api/visualize/adapt` | internal                 |
+| `worker`      | `ai-studio-runtime`            | Temporal worker, runs the nodes; AI Agent nodes call the LLM           | internal                 |
+| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                                        | internal                 |
+| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events                                  | internal                 |
+| `temporal-db` | `postgres:16`                  | Temporal's own state store                                             | internal                 |
+| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                                         | `127.0.0.1:8233`         |
 
 The three Temporal rows come from
 [`docker-compose.override.yml`](docker-compose.override.yml), which compose
