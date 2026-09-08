@@ -74,7 +74,8 @@ describe('validateSubmittedDecision', () => {
 
     expect(result.error).toBeUndefined();
     expect(result.decision?.effect).toBe(effect);
-    expect(result.decision?.action.name).toBe(call.action);
+    expect(result.decision?.action).toBe(call.action);
+    expect(result.action?.name).toBe(call.action);
   });
 
   // Open point in the decision log: until decided otherwise, edits on a non-resume action
@@ -205,20 +206,23 @@ describe('validateSubmittedDecision', () => {
     });
   });
 
-  it('builds the decision from the matched action and what was submitted', () => {
+  it('records the action by name and returns the matched action beside the decision', () => {
     const submitted = { action: 'approve', edits: { refundAmount: 12 }, comment: 'rounded down' };
 
-    expect(validateSubmittedDecision(requestWith(), submitted).decision).toEqual({
-      action: approve,
+    const result = validateSubmittedDecision(requestWith(), submitted);
+
+    expect(result.decision).toEqual({
+      action: 'approve',
       effect: 'resume-with-edits',
       edits: { refundAmount: 12 },
       comment: 'rounded down',
     });
+    expect(result.action).toEqual(approve);
   });
 
   it('defaults edits to an empty object when none were submitted', () => {
     expect(validateSubmittedDecision(requestWith(), { action: 'reject', reason: 'late' }).decision).toEqual({
-      action: reject,
+      action: 'reject',
       effect: 'reject',
       edits: {},
       reason: 'late',

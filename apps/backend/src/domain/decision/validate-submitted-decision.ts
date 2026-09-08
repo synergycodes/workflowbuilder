@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type {
+  Decision,
   DecisionAction,
   DecisionEffect,
   DecisionRequest,
@@ -20,21 +21,12 @@ export const submittedDecisionSchema = z.object({
 
 export type SubmittedDecision = z.infer<typeof submittedDecisionSchema>;
 
-// A submission the request accepts. The matched action carries the port to route on;
-// `effect` is `resume-with-edits` when a resume came with edits.
-export type Decision = {
-  action: DecisionAction;
-  effect: DecisionEffect;
-  edits: Record<string, unknown>;
-  reason?: string;
-  comment?: string;
-};
-
 export type SubmittedDecisionError = { code: SubmittedDecisionErrorCode; message: string; path?: string[] };
 
+// `action` is the matched action, for routing; the decision itself records only its name.
 export type SubmittedDecisionResult =
-  | { decision: Decision; error?: undefined }
-  | { decision?: undefined; error: SubmittedDecisionError };
+  | { decision: Decision; action: DecisionAction; error?: undefined }
+  | { decision?: undefined; action?: undefined; error: SubmittedDecisionError };
 
 function refuse(code: SubmittedDecisionErrorCode, value: string, path: string[]): SubmittedDecisionResult {
   return { error: { code, message: submittedDecisionErrorMessage(code, value), path } };
@@ -86,5 +78,8 @@ export function validateSubmittedDecision(
 
   const withEdits = Object.keys(edits).length > 0;
   const effect: DecisionEffect = action.effect === 'resume' && withEdits ? 'resume-with-edits' : action.effect;
-  return { decision: { action, effect, edits, reason: submitted.reason, comment: submitted.comment } };
+  return {
+    decision: { action: action.name, effect, edits, reason: submitted.reason, comment: submitted.comment },
+    action,
+  };
 }

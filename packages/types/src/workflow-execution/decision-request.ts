@@ -62,6 +62,19 @@ export type DecisionDeadline = {
 };
 
 /**
+ * A decision the request accepted: what is recorded on the node's completion and audited.
+ * `action` is the name of the chosen action; where it routes stays on the request, so the
+ * port is never written twice. `effect` is `resume-with-edits` when a resume carried edits.
+ */
+export type Decision = {
+  action: string;
+  effect: DecisionEffect;
+  edits: Record<string, unknown>;
+  reason?: string;
+  comment?: string;
+};
+
+/**
  * What a node asks a human to decide before the run continues. Authored under
  * `data.properties.decisionRequest` in the editor snapshot and lifted to `BaseNode.decisionRequest`.
  * Any node type may carry one. Unknown keys at every level are preserved.
