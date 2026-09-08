@@ -23,8 +23,13 @@ esac
 
 cd "$here"
 
-# A developer's ./.env (Temporal Cloud, registry image names, VITE_BACKEND_URL)
-# would shape the bundle; the host gets .env.example defaults, so build from those.
+# A developer's ./.env or exported shell variables (Temporal Cloud, registry image
+# names, COMPOSE_FILE) would shape the bundle; the host gets .env.example defaults,
+# so build from those: skip the file and drop every variable the compose files read.
+unset COMPOSE_FILE COMPOSE_PROFILES COMPOSE_PATH_SEPARATOR
+for name in $(grep -oh '\${[A-Za-z_][A-Za-z0-9_]*' docker-compose.yml docker-compose.override.yml | tr -d '${' | sort -u); do
+  unset "$name"
+done
 compose() { docker compose --env-file /dev/null "$@"; }
 [ -f .env ] && echo "pack-offline: ignoring ./.env — the bundle is built from .env.example defaults" >&2
 

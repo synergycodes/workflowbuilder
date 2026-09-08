@@ -55,7 +55,8 @@ package store. Every `RUN` after that fetch is `--network=none`, so BuildKit
 cuts egress for the whole step — installs, lifecycle scripts and build
 commands included (`--offline` alone would only stop pnpm's own resolver). A
 step that needs the network fails every ordinary build, and
-`pnpm check:offline-build` fails if a post-fetch step ever loses the flag.
+`pnpm check:offline-build` fails if a post-fetch step ever loses the flag or
+adds a download of its own (`ADD <url>`, `COPY --from=<image>`).
 That per-step guarantee is the enforceable one: a whole-build
 `docker build --network none` cannot pass, because the pnpm bootstrap and
 `pnpm fetch` need the registry by design. The Dockerfile also carries no
@@ -77,7 +78,9 @@ rest means the images must be built for the destination platform; see the
 platform note under step 1.
 
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
-the compose plugin (plus ~3 GB of disk for the loaded images).
+the Compose v2 plugin (plus ~3 GB of disk for the loaded images). Compose v1
+cannot parse the nested `${A:+${B:?}}` interpolation that the retired-key
+guard at the top of `docker-compose.yml` relies on.
 
 ### 1. Build and pack on a connected machine
 
