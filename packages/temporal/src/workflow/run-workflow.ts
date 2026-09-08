@@ -5,13 +5,22 @@
 // A plugin cannot register this itself: the TypeScript SDK builds the workflow
 // bundle from a single module, so the consumer re-exports it from their own
 // workflows file. See the package README.
-import { ApplicationFailure, CancellationScope, isCancellation, proxyActivities } from '@temporalio/workflow';
+import {
+  ApplicationFailure,
+  CancellationScope,
+  condition,
+  defineUpdate,
+  isCancellation,
+  proxyActivities,
+  setHandler,
+} from '@temporalio/workflow';
 
 import type { Activities } from './activities-interface';
 import { DEFAULT_DATABASE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import {
   type ActivityRunnerPort,
   type BaseNode,
+  type CompletedNodeExecution,
   type RunGraphOutcome,
   type WorkflowExecutionInput,
   runGraph,
@@ -19,10 +28,20 @@ import {
 import { resolveFromValidatedProfiles } from './node-activity-options';
 import { freezeNodeActivityProfiles } from './profile-validation';
 import { createSequencedEventEmitter } from './sequenced-event-emitter';
+import { type NodeWaitState, validateVerdict } from './verdict-validation';
 
 const databaseActivities = proxyActivities<Pick<Activities, 'emitEvent' | 'updateStatus'>>(
   DEFAULT_DATABASE_ACTIVITY_PROFILE,
 );
+
+export type ResolveNodeUpdateInput = {
+  nodeId: string;
+  resolution: CompletedNodeExecution;
+};
+
+// Update-not-signal and the annotation shape: see durable-pause.decision-log.md.
+export const resolveNodeUpdate: ReturnType<typeof defineUpdate<void, [ResolveNodeUpdateInput]>> =
+  defineUpdate('resolveNode');
 
 export type RunWorkflowOptions = {
   nodeActivityProfiles?: NodeActivityProfiles;
@@ -34,17 +53,41 @@ export type RunWorkflowOptions = {
 export function createRunWorkflow(options: RunWorkflowOptions = {}) {
   const profiles = freezeNodeActivityProfiles(options.nodeActivityProfiles ?? {});
 
-  // Proxied per call, not once per module: the options depend on the node.
-  const runner: ActivityRunnerPort<BaseNode> = {
-    executeNode: (node, context) => {
-      const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(
-        resolveFromValidatedProfiles(node, profiles),
-      );
-      return nodeActivities.executeNode(node, context);
-    },
-  };
-
   return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
+    // Per-instance: must stay inside the workflow function (durable-pause.decision-log.md).
+    const waits = new Map<string, NodeWaitState>();
+    const knownNodes = new Set(input.definition.nodes.map((node) => node.id));
+
+    setHandler(
+      resolveNodeUpdate,
+      ({ nodeId, resolution }) => {
+        waits.set(nodeId, { status: 'resolved', resolution });
+      },
+      { validator: (verdict) => validateVerdict(verdict, knownNodes, waits) },
+    );
+
+    const runner: ActivityRunnerPort<BaseNode> = {
+      // Proxied per call, not once per module: the options depend on the node.
+      executeNode: (node, context) => {
+        const nodeActivities = proxyActivities<Pick<Activities, 'executeNode'>>(
+          resolveFromValidatedProfiles(node, profiles),
+        );
+        return nodeActivities.executeNode(node, context);
+      },
+      awaitResolution: async (nodeId) => {
+        waits.set(nodeId, { status: 'waiting' });
+        try {
+          await condition(() => waits.get(nodeId)?.status === 'resolved');
+          // The condition above only unblocks on 'resolved'.
+          return (waits.get(nodeId) as Extract<NodeWaitState, { status: 'resolved' }>).resolution;
+        } finally {
+          if (waits.get(nodeId)?.status === 'waiting') {
+            waits.delete(nodeId);
+          }
+        }
+      },
+    };
+
     return runGraphWith(runner, input);
   };
 }

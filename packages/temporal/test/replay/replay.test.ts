@@ -22,6 +22,7 @@ import {
   createRecordingStore,
   replayTestExecutors,
 } from '../fixtures/graph';
+import { countScheduledActivities } from '../fixtures/helpers';
 
 const EXECUTION_ID = 'replay-test-execution';
 const TASK_QUEUE = 'replay-test';
@@ -38,19 +39,6 @@ const EXPECTED_ACTIVITY_COUNTS = {
   emitEvent: EXECUTION_BRACKET_EVENTS + NODE_COUNT * EVENTS_PER_NODE,
   updateStatus: 1,
 };
-
-function countScheduledActivities(history: History): Record<string, number> {
-  const counts: Record<string, number> = {};
-
-  for (const event of history.events ?? []) {
-    const name = event.activityTaskScheduledEventAttributes?.activityType?.name;
-    if (name) {
-      counts[name] = (counts[name] ?? 0) + 1;
-    }
-  }
-
-  return counts;
-}
 
 describe('replay', () => {
   let env: TestWorkflowEnvironment;

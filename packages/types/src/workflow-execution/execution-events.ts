@@ -188,4 +188,4 @@ export type ExecutionSnapshot = {
   events: ExecutionEvent[];
 };
 
-export type ExecutionStatus = 'pending' | 'running' | 'cancelling' | TerminalExecutionStatus;
+export type ExecutionStatus = 'pending' | 'running' | 'waiting' | 'cancelling' | TerminalExecutionStatus;

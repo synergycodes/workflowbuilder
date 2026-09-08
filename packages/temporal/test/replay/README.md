@@ -23,12 +23,21 @@ Only (3) survives a change to the runner, which is why (3) is the one that matte
 review time. (2) passes even on a broken change, because the history it checks was
 recorded by the same broken code.
 
-## The graph the harness runs
+## The graphs the harnesses run
 
-`start → (left, right) → join`, defined in `../fixtures/graph.ts`. The fan-out is the
-point: it is the only shape that puts two commands in a single workflow task, which is
-where the runner's `Promise.all` becomes visible to Temporal. A straight line replays
-green while leaving that path untested.
+`replay.test.ts`: `start → (left, right) → join`, defined in `../fixtures/graph.ts`. The
+fan-out is the point: it is the only shape that puts two commands in a single workflow
+task, which is where the runner's `Promise.all` becomes visible to Temporal. A straight
+line replays green while leaving that path untested.
+
+`parked-gate-replay.test.ts`: `start → gate → after`, defined in
+`../fixtures/pause-graph.ts`, run to completion through a real `resolveNode` update. Its
+committed history (`v0-parked-gate.json`) is the durable-pause pin: it carries the
+accepted update, the `node_waiting` emit, the waiting/running status activities and the
+resume, so a change that moves any command on the parked path fails here even when the
+gateless baseline stays green. Since a determinism break surfaces at the first divergent
+command, replaying the full history also stands in for every run still parked mid-history
+when a deploy lands.
 
 ## Recording a history
 
@@ -38,6 +47,10 @@ From the harness, which is what the committed files come from:
 UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
 ```
 
+The flag rewrites every committed history at once. When adding one scenario, scope the
+run to that harness file (`npx vitest run test/replay/<file>`) so the other baselines
+keep guarding the code that recorded them.
+
 Or from a real run against a local stack, which is worth doing for a scenario the harness
 cannot stage. `historyToJSON` writes the same shape, so the two are interchangeable:
 
@@ -45,8 +58,8 @@ cannot stage. `historyToJSON` writes the same shape, so the two are interchangea
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
 ```
 
-Scenarios still worth adding, one file each: a cancellation mid-run, and a node failure
-that goes through the error policy.
+Scenarios still worth adding, one file each: a cancellation mid-run, a node failure that
+goes through the error policy, and two gates parked in one wave.
 
 ## Rules once files live here
 

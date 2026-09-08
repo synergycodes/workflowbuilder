@@ -39,6 +39,7 @@ describe('public API surface', () => {
       'createRunWorkflow',
       'createSequencedEventEmitter',
       'resolveNodeActivityOptions',
+      'resolveNodeUpdate',
       'runWorkflow',
     ]);
   });
