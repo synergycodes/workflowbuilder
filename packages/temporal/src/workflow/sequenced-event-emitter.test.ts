@@ -226,4 +226,27 @@ describe('createSequencedEventEmitter', () => {
     expect(second.recorded.map((entry) => entry.sequence)).toEqual(first.recorded.map((entry) => entry.sequence));
     expect(second.recorded[0]?.sequence).toBe(1);
   });
+
+  it('chains status writes behind pending event writes', async () => {
+    const order: string[] = [];
+    const persistence: EventPersistence = {
+      async emitEvent(_executionId, sequence, type) {
+        // Slow emit: without chaining, the status write below would commit first.
+        for (let turn = 0; turn < 8; turn++) {
+          await Promise.resolve();
+        }
+        order.push(`event:${type}:${sequence}`);
+      },
+      async updateStatus(_executionId, status) {
+        order.push(`status:${status}`);
+      },
+    };
+    const events = createSequencedEventEmitter(persistence);
+
+    const emit = events.emitEvent('exec-1', 'node_waiting', undefined, 'A');
+    const status = events.updateStatus('exec-1', 'waiting');
+    await Promise.all([emit, status]);
+
+    expect(order).toEqual(['event:node_waiting:1', 'status:waiting']);
+  });
 });

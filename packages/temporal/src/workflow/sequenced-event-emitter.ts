@@ -53,8 +53,12 @@ export function createSequencedEventEmitter(persistence: EventPersistence): Even
       // and reaches the error policy.
       return write;
     },
+    // Chained behind pending event writes: status lands in program order, so a
+    // 'waiting' from one gate can never race past a 'running' from another.
     updateStatus(executionId, status, errorMessage) {
-      return persistence.updateStatus(executionId, status, errorMessage);
+      const write = tail.then(() => persistence.updateStatus(executionId, status, errorMessage));
+      tail = write.catch(() => {});
+      return write;
     },
   };
 }

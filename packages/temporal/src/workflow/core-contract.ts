@@ -1,3 +1,4 @@
+import type { ExecutionEventType, ExecutionStatus } from '../../../types/src/workflow-execution/execution-events';
 import type { BaseNode, WorkflowDefinition } from '../../../types/src/workflow-execution/execution-model';
 
 // The sandbox-safe half of the seam described in ../core-contract.ts.
@@ -10,13 +11,15 @@ export { runGraph } from '../../../execution-core/src/workflow';
 
 export type {
   ActivityRunnerPort,
-  EventEmitterPort,
+  CompletedNodeExecution,
   ExecutionContext,
   NodeExecutionResult,
   RunGraphOutcome,
 } from '../../../execution-core/src/workflow';
 
 export type { BaseNode } from '../../../types/src/workflow-execution/execution-model';
+
+export type { ExecutionEventType, ExecutionStatus } from '../../../types/src/workflow-execution/execution-events';
 
 // Restated here rather than re-exported from execution-core's port module, which
 // reaches for @workflow-builder/types by package name — that name survives into the
@@ -36,4 +39,11 @@ export type WorkflowExecutionInput<TNode extends BaseNode> = {
 export interface WorkflowEnginePort<TNode extends BaseNode> {
   submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
   cancel(executionId: string): Promise<void>;
+}
+
+// Restated for the same reason as WorkflowExecutionInput: the core's port module
+// reaches for @workflow-builder/types by package name.
+export interface EventEmitterPort {
+  emitEvent(executionId: string, type: ExecutionEventType, payload?: unknown, nodeId?: string): Promise<void>;
+  updateStatus(executionId: string, status: ExecutionStatus, errorMessage?: string): Promise<void>;
 }
