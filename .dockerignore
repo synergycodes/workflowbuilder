@@ -32,5 +32,14 @@ examples/
 **/.env.*
 !**/.env.example
 
-# certificate material is mounted at runtime — never built into an image
-deploy/ai-studio/tls
+# certificate material is mounted at runtime — never built into an image. The
+# Dockerfile needs one file from deploy/, so the rest stays out of the context:
+# a TEMPORAL_TLS_DIR under deploy/ cannot reach COPY . . whatever it is named.
+deploy/
+!deploy/ai-studio/nginx
+**/*.pem
+**/*.key
+**/*.crt
+**/*.cer
+**/*.p12
+**/*.pfx

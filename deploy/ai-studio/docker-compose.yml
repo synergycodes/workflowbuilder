@@ -36,7 +36,8 @@ x-temporal-env: &temporal-env
   TEMPORAL_TLS_KEY_PATH: ${TEMPORAL_TLS_KEY_PATH:-}
 
 # PEM files for a private CA or mTLS. ./tls ships empty (and git-ignored) so the
-# mount always resolves; plaintext deployments never touch it.
+# mount always resolves; plaintext deployments never touch it. TEMPORAL_TLS_DIR
+# must stay ./tls or leave the checkout — anything else in-repo is build context.
 x-temporal-tls-volumes: &temporal-tls-volumes
   - ${TEMPORAL_TLS_DIR:-./tls}:/etc/workflowbuilder/tls:ro
 

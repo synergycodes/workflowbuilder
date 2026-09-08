@@ -116,7 +116,10 @@ UI (`--profile debug`) is part of the override and only ever shows the bundled
 cluster — an external cluster has its own UI. For a private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
 read-only into both containers at `/etc/workflowbuilder/tls`) and set
 `TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH` to those container paths —
-see [.env.example](.env.example) for the exact lines.
+see [.env.example](.env.example) for the exact lines. `TEMPORAL_TLS_DIR` may
+point at `./tls` or at a directory outside the checkout, nothing else: the
+whole repository is the image build context, so a key placed in any other
+in-repo directory is copied into the runtime image by a local build.
 
 ## Operations
 
