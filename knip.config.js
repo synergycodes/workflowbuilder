@@ -29,7 +29,8 @@ export default {
       ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
     },
     'apps/tools': {
-      entry: ['src/scripts/*.ts'],
+      // tls-test-harness is imported by the backend and worker TLS tests via the package exports
+      entry: ['src/scripts/*.ts', 'src/tls-test-harness/index.ts'],
       project: 'src/**/*.ts',
     },
     'packages/types': {
@@ -49,7 +50,12 @@ export default {
       entry: ['src/index.ts'],
     },
     'apps/execution-worker': {
-      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
+      // test-fixtures/tls-probe-workflow.ts is handed to Temporal's bundler by path, so nothing imports it
+      entry: [
+        'src/engines/temporal/worker.ts',
+        'src/engines/temporal/workflows.ts',
+        'src/engines/temporal/test-fixtures/tls-probe-workflow.ts',
+      ],
       // @temporalio/workflow is never imported by this app's code, but Temporal's
       // workflow bundler resolves it from *here* while compiling workflows.ts (the
       // re-exported runner imports it), so it has to be installed in this workspace.

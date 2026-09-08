@@ -33,7 +33,9 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@temporalio/testing": "catalog:",
     "@types/node": "^22.12.0",
+    "@workflow-builder/tools": "workspace:*",
     "drizzle-kit": "^0.31.0",
     "vitest": "^3.0.4"
   }

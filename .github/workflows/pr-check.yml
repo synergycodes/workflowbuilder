@@ -219,10 +219,11 @@ jobs:
   execution:
     name: Execution pipeline lint + typecheck + test
     runs-on: ubuntu-latest
-    # No `services:` block: all three suites are pure unit tests against
-    # in-memory fakes — no Postgres, no Temporal, no API keys. If a suite here
-    # ever needs real infra, give it its own job rather than adding services
-    # to this one.
+    # No `services:` block: the suites run against in-memory fakes — no Postgres,
+    # no API keys. The one exception is the TLS connection tests in backend and
+    # worker, which start Temporal's dev server themselves (@temporalio/testing
+    # downloads the CLI on first run). If a suite here ever needs infra it cannot
+    # start itself, give it its own job rather than adding services to this one.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
