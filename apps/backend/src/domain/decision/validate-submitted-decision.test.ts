@@ -3,7 +3,11 @@ import { describe, expect, it } from 'vitest';
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
-import { type SubmittedDecision, validateSubmittedDecision } from './validate-submitted-decision';
+import {
+  type SubmittedDecision,
+  submittedDecisionSchema,
+  validateSubmittedDecision,
+} from './validate-submitted-decision';
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
@@ -200,5 +204,33 @@ describe('validateSubmittedDecision', () => {
       edits: {},
       reason: 'late',
     });
+  });
+});
+
+describe('submittedDecisionSchema', () => {
+  it('accepts a full submission and strips keys it does not know', () => {
+    const parsed = submittedDecisionSchema.parse({
+      action: 'approve',
+      edits: { a: 1 },
+      reason: 'r',
+      comment: 'c',
+      extra: true,
+    });
+
+    expect(parsed).toEqual({ action: 'approve', edits: { a: 1 }, reason: 'r', comment: 'c' });
+  });
+
+  it.each<{ name: string; body: unknown; path: string }>([
+    { name: 'edits as an array', body: { action: 'approve', edits: [] }, path: 'edits' },
+    { name: 'edits as a number', body: { action: 'approve', edits: 42 }, path: 'edits' },
+    { name: 'edits as null', body: { action: 'approve', edits: null }, path: 'edits' },
+    { name: 'a non-string reason', body: { action: 'reject', reason: 42 }, path: 'reason' },
+    { name: 'a non-string comment', body: { action: 'ask-again', comment: {} }, path: 'comment' },
+    { name: 'a missing action', body: { edits: {} }, path: 'action' },
+  ])('rejects $name before the rules ever run', ({ body, path }) => {
+    const result = submittedDecisionSchema.safeParse(body);
+
+    expect(result.success).toBe(false);
+    expect(result.success ? [] : result.error.issues.map((issue) => issue.path.join('.'))).toEqual([path]);
   });
 });

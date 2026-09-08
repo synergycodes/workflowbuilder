@@ -1,3 +1,5 @@
+import { z } from 'zod';
+
 import type {
   DecisionAction,
   DecisionEffect,
@@ -6,14 +8,17 @@ import type {
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 
-// What the decider sent, before anything has checked it. Provisional: the decision
-// endpoint owns the public request shape and may rename these.
-export type SubmittedDecision = {
-  action: string;
-  edits?: Record<string, unknown>;
-  reason?: string;
-  comment?: string;
-};
+// The shape of what the decider sent. The caller parses a body with this before calling
+// `validateSubmittedDecision`, which assumes the shape and checks only the rules.
+// Provisional: the decision endpoint owns the public request shape and may rename fields.
+export const submittedDecisionSchema = z.object({
+  action: z.string(),
+  edits: z.record(z.string(), z.unknown()).optional(),
+  reason: z.string().optional(),
+  comment: z.string().optional(),
+});
+
+export type SubmittedDecision = z.infer<typeof submittedDecisionSchema>;
 
 // A submission the request accepts. The matched action carries the port to route on;
 // `effect` is `resume-with-edits` when a resume came with edits.
