@@ -117,7 +117,7 @@ async function checkDocker() {
   const { code } = await runCmd('docker', ['info']);
   return code === 0
     ? { name: 'docker', status: 'pass', detail: 'running' }
-    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Path B)' };
+    : { name: 'docker', status: 'warn', detail: 'not running (only needed for Path C)' };
 }
 
 // App ports may be held by the user's own running dev server, another local

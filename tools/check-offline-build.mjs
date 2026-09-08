@@ -1,8 +1,9 @@
 // Guards the air-gap boundary of deploy/ai-studio/Dockerfile: every RUN after
 // `pnpm fetch` must carry --network=none, so BuildKit blocks egress from installs,
 // lifecycle scripts and build commands alike. `--offline` alone only stops pnpm's
-// own resolver. A `# syntax=` directive is rejected too: it would pull the build
-// frontend from Docker Hub unpinned. Run with `pnpm check:offline-build`; exits 1 on drift.
+// own resolver. After the boundary, `ADD <url>` and `COPY --from=<image>` are rejected
+// too (downloads no RUN flag governs), as is a `# syntax=` directive anywhere: it would
+// pull the build frontend from Docker Hub unpinned. Run with `pnpm check:offline-build`.
 import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -45,11 +46,12 @@ if (/^#\s*syntax\s*=/im.test(dockerfile)) {
   process.exit(1);
 }
 
-const runs = parseInstructions(dockerfile).filter(({ text }) => /^RUN\b/i.test(text));
+const instructions = parseInstructions(dockerfile);
+const isRun = ({ text }) => /^RUN\b/i.test(text);
 
-const boundary = runs.findIndex(({ text }) => NETWORK_BOUNDARY.test(text));
+const boundary = instructions.findIndex(({ text }) => NETWORK_BOUNDARY.test(text));
 if (boundary === -1) {
-  const chained = runs.find(({ text }) => /\bpnpm fetch\b/.test(text));
+  const chained = instructions.find(({ text }) => /\bpnpm fetch\b/.test(text));
   console.error(
     chained
       ? `${DOCKERFILE}: line ${chained.line}: the \`pnpm fetch\` step must run nothing else; chained commands keep network access.`
@@ -59,22 +61,44 @@ if (boundary === -1) {
 }
 
 // Only the instruction's own flags count; the token inside a shell command means nothing to BuildKit.
-const runFlags = (text) => /^RUN((?:\s+--\S+)*)/i.exec(text)[1].trim().split(/\s+/).filter(Boolean);
+const instructionFlags = (text) => /^[A-Z]+((?:\s+--\S+)*)/i.exec(text)[1].trim().split(/\s+/).filter(Boolean);
 const isolated = (text) => {
-  const network = runFlags(text).filter((flag) => flag.startsWith('--network='));
+  const network = instructionFlags(text).filter((flag) => flag.startsWith('--network='));
   return network.length > 0 && network.every((flag) => flag === '--network=none');
 };
-const leaking = runs.slice(boundary + 1).filter(({ text }) => !isolated(text));
+
+// `COPY --from` may name a stage (or its index); anything else is an image to pull.
+const stages = new Set(
+  instructions
+    .map(({ text }) => /^FROM(?:\s+--\S+)*\s+\S+\s+AS\s+(\S+)/i.exec(text)?.[1].toLowerCase())
+    .filter(Boolean),
+);
+const reachesNetwork = ({ text }) => {
+  if (isRun({ text })) return !isolated(text);
+  if (/^ADD\b/i.test(text)) return /(^|\s)(?:[a-z]+:\/\/|git@)/i.test(text.replace(/^ADD/i, ''));
+  if (/^COPY\b/i.test(text)) {
+    const from = instructionFlags(text)
+      .find((flag) => flag.startsWith('--from='))
+      ?.slice('--from='.length);
+    return from !== undefined && !/^\d+$/.test(from) && !stages.has(from.toLowerCase());
+  }
+  return false;
+};
+const leaking = instructions.slice(boundary + 1).filter(reachesNetwork);
 
 if (leaking.length > 0) {
-  console.error(`${DOCKERFILE}: RUN steps after \`pnpm fetch\` without --network=none:`);
+  console.error(
+    `${DOCKERFILE}: steps after \`pnpm fetch\` that may reach the network (RUN without --network=none, ADD <url>, COPY --from=<image>):`,
+  );
   for (const { line, text } of leaking) {
     console.error(`  line ${line}: ${text.slice(0, 80)}${text.length > 80 ? '…' : ''}`);
   }
   process.exit(1);
 }
 
+const runsBefore = instructions.slice(0, boundary + 1).filter(isRun).length;
+const runsAfter = instructions.slice(boundary + 1).filter(isRun).length;
 console.log(
-  `${DOCKERFILE}: ${runs.length - boundary - 1} post-fetch RUN steps are --network=none ` +
-    `(${boundary + 1} steps before the boundary may use the registry).`,
+  `${DOCKERFILE}: ${runsAfter} post-fetch RUN steps are --network=none, no ADD <url> or COPY --from=<image> ` +
+    `(${runsBefore} steps before the boundary may use the registry).`,
 );
