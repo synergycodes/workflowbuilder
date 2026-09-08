@@ -1,4 +1,4 @@
-# AI Studio production stack (WB-229). Usage: cp .env.example .env, set
+# AI Studio production stack. Usage: cp .env.example .env, set
 # AI_API_KEY, then `docker compose up -d --build`. Only `web`
 # publishes a port.
 #
@@ -43,7 +43,8 @@ x-temporal-tls-volumes: &temporal-tls-volumes
 
 services:
   app-db:
-    image: postgres:16
+    # same tag as temporal-db in docker-compose.override.yml — bump both
+    image: postgres:16.15
     environment:
       POSTGRES_DB: workflow_builder
       POSTGRES_USER: wb

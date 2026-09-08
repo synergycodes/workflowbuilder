@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "pnpm dev:demo",
     "preflight": "node tools/preflight.mjs",
+    "check:offline-build": "node tools/check-offline-build.mjs",
     "setup:env": "node tools/setup-env.mjs",
     "dev:demo": "pnpm --filter @workflow-builder/demo dev",
     "dev:ai-studio": "pnpm preflight && pnpm infra:up && pnpm infra:wait && concurrently --kill-others-on-fail -n backend,worker,ai-studio -c blue,magenta,green \"pnpm dev:backend\" \"pnpm dev:worker\" \"pnpm --filter @workflow-builder/ai-studio dev\"",
@@ -28,7 +29,7 @@
     "format": "prettier --write --log-level silent \"**/*.+(css|ts|tsx|json|md|mdx|astro)\"",
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
-    "check": "pnpm lint && pnpm typecheck && pnpm format",
+    "check": "pnpm lint && pnpm typecheck && pnpm format && pnpm check:offline-build",
     "pre-commit": "lint-staged",
     "pre-push": "pnpm format",
     "prepare": "husky"
