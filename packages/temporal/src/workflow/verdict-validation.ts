@@ -23,8 +23,10 @@ export function validateVerdict(
   if (typeof nodeId !== 'string' || nodeId.length === 0) {
     throw malformed('nodeId must be a non-empty string');
   }
-  if (typeof resolution !== 'object' || resolution === null || !('output' in resolution)) {
-    throw malformed('resolution must be an object carrying output');
+  // No `output` key is accepted as `output: undefined`: the default payload converter
+  // is JSON and drops undefined fields before the update reaches the workflow.
+  if (typeof resolution !== 'object' || resolution === null || Array.isArray(resolution)) {
+    throw malformed('resolution must be an object');
   }
   for (const key of Object.keys(resolution)) {
     if (key !== 'output' && key !== 'nextPort') {

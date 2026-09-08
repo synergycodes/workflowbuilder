@@ -16,6 +16,7 @@ import { resolveNodeUpdate } from '../src/workflow/index';
 import { type RecordingStore, createRecordingStore } from './fixtures/graph';
 import { executeVerdictWithRetry, waitUntil } from './fixtures/helpers';
 import {
+  PORT_ROUTED_GRAPH,
   type PauseHarness,
   type PauseTestNode,
   SINGLE_GATE_GRAPH,
@@ -169,6 +170,30 @@ describe('durable pause', () => {
     });
 
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+  }, 120_000);
+
+  it('a verdict with output: undefined resumes the node, even though the payload converter drops the field', async () => {
+    const taskQueue = 'pause-undefined-output';
+    const store = createRecordingStore();
+    const harness = createPauseExecutors();
+    const handle = await startRun(taskQueue, 'pause-undefined-output-execution', PORT_ROUTED_GRAPH);
+
+    const worker = await createWorker(taskQueue, store, harness);
+    await worker.runUntil(async () => {
+      await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
+      await executeVerdictWithRetry(() =>
+        handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved' } }],
+        }),
+      );
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate', 'after']);
+    // The activity context crosses the same converter, so downstream sees no `gate` key at all.
+    expect(harness.inputsSeen.after).toEqual({ start: { visited: 'start' } });
+    expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
   }, 120_000);
 

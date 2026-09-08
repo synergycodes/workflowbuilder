@@ -1,3 +1,4 @@
+import { defaultPayloadConverter } from '@temporalio/common';
 import { ApplicationFailure } from '@temporalio/workflow';
 import { describe, expect, it } from 'vitest';
 
@@ -20,6 +21,16 @@ describe('validateVerdict', () => {
   it('accepts a well-formed verdict for a waiting node', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: 'ok' } })).toBeUndefined();
     expect(rejection({ nodeId: 'gate', resolution: { output: null, nextPort: 'approved' } })).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: { output: undefined } })).toBeUndefined();
+  });
+
+  it('accepts the envelope as the default payload converter delivers it, with output: undefined dropped', () => {
+    const sent = { nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved' } };
+    const delivered: unknown = defaultPayloadConverter.fromPayload(defaultPayloadConverter.toPayload(sent));
+
+    expect(delivered).toEqual({ nodeId: 'gate', resolution: { nextPort: 'approved' } });
+    expect(rejection(delivered)).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: {} })).toBeUndefined();
   });
 
   it('rejects a non-object input', () => {
@@ -34,10 +45,12 @@ describe('validateVerdict', () => {
     expect(rejection({ nodeId: 7, resolution: { output: 1 } })).toBe('verdict_malformed');
   });
 
-  it('rejects a resolution that is missing, null or without output', () => {
+  it('rejects a resolution that is missing, null, a primitive or an array', () => {
     expect(rejection({ nodeId: 'gate' })).toBe('verdict_malformed');
     expect(rejection({ nodeId: 'gate', resolution: null })).toBe('verdict_malformed');
-    expect(rejection({ nodeId: 'gate', resolution: {} })).toBe('verdict_malformed');
+    expect(rejection({ nodeId: 'gate', resolution: 'approved' })).toBe('verdict_malformed');
+    expect(rejection({ nodeId: 'gate', resolution: [] })).toBe('verdict_malformed');
+    expect(rejection({ nodeId: 'gate', resolution: ['approved'] })).toBe('verdict_malformed');
   });
 
   it('rejects envelope keys beyond output and nextPort', () => {

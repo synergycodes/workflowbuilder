@@ -18,6 +18,23 @@ export const SINGLE_GATE_GRAPH: WorkflowDefinition<PauseTestNode> = {
   ],
 };
 
+// start ─▶ gate ─(approved)─▶ after
+//
+// The one edge is port-tagged, so a verdict has to name `nextPort: 'approved'` to reach
+// `after`; the untagged SINGLE_GATE_GRAPH would route there on any verdict.
+export const PORT_ROUTED_GRAPH: WorkflowDefinition<PauseTestNode> = {
+  workflowId: 'port-routed-workflow',
+  nodes: [
+    { id: 'start', type: 'test/step', role: 'start', config: {} },
+    { id: 'gate', type: 'test/gate', config: {} },
+    { id: 'after', type: 'test/step', config: {} },
+  ],
+  edges: [
+    { id: 'e-start-gate', sourceNodeId: 'start', targetNodeId: 'gate' },
+    { id: 'e-gate-after', sourceNodeId: 'gate', targetNodeId: 'after', sourceHandle: 'approved' },
+  ],
+};
+
 // start ─┬─▶ gate-a ──┬─▶ join
 //        └─▶ gate-b ──┘
 export const TWO_GATES_GRAPH: WorkflowDefinition<PauseTestNode> = {
