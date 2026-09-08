@@ -23,7 +23,7 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 9. **Results carry `error?: undefined`, not an `ok` flag.** `{ value; error?: undefined } | { value?: undefined; error }` reads as plain error handling and the compiler still forbids both-set and neither-set. The flag only repeated what the presence of `error` says.
 10. **Vocabulary.** A node carrying a request is a node; no separate noun names it. The rerun effect is named for what it does, `rerun-source`, never for what the source is. Action names in examples (`approve`, `reject`, `ask-again`) are the client's and await a sync with design.
 
-11. **An own `__proto__` key anywhere in a snapshot is refused before parsing.** `JSON.parse` makes it an ordinary key, and zod's loose objects copy unknown keys with a plain assignment, which for that key swaps the output's prototype: everything under it then reads back as validated, and the mapper would copy an inherited request into a real field on the way to the engine. `workflowSnapshotSchema`, the one boundary raw JSON crosses, is wrapped in a preprocess that rejects the key at its path with the usual `invalid_snapshot` 400.
+11. **An own `__proto__` key anywhere in a snapshot is refused before parsing.** `JSON.parse` makes it an ordinary key, and zod's loose objects copy unknown keys with a plain assignment, which for that key swaps the output's prototype: everything under it then reads back as validated, and the mapper would copy an inherited request into a real field on the way to the engine. `workflowSnapshotSchema`, the one parser that preserves unknown keys (loose objects), is wrapped in a preprocess that rejects the key at its path with the usual `invalid_snapshot` 400.
 
 ## Rejected
 

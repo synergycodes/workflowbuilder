@@ -398,7 +398,7 @@ describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
-  it('draft save still stores it; only publish and execute refuse', async () => {
+  it('draft save still stores it', async () => {
     databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
 
     const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {

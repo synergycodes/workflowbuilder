@@ -128,7 +128,7 @@ describe('decisionRequestSchema', () => {
     expect(parsed.schema.properties['amount']).toEqual({ type: 'number', readOnly: false });
   });
 
-  it.each(['100ms', '30s', '10m', '1.5h', '24h', '3d', '7d'])('accepts a deadline of %s', (after) => {
+  it.each(['100ms', '30s', '10m', '1.5h', '24h', '3d', '7d', '3652500d'])('accepts a deadline of %s', (after) => {
     expect(decisionRequestSchema.safeParse(request({ deadline: { after, policy: 'reject' } })).success).toBe(true);
   });
 

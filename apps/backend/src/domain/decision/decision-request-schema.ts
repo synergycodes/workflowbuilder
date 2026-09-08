@@ -20,11 +20,11 @@ function isDurationString(value: string): boolean {
 
 const durationSchema = z.string().refine(isDurationString, decisionIssueMessage('deadline_format'));
 
-// 'errorRoute' is the handle the runner reserves for the error policy.
 function isNotBlank(text: string): boolean {
   return text.trim().length > 0;
 }
 
+// 'errorRoute' is the handle the runner reserves for the error policy.
 const portSchema = z
   .string()
   .refine(isNotBlank, decisionIssueMessage('port_empty'))
@@ -71,7 +71,7 @@ const formPropertySchema = z.looseObject({
   'x-pii': z.boolean().optional(),
 });
 
-// Shape only; a JSON Schema validator arrives with the first consumer that checks edited values.
+// Shape only.
 const formSchema = z
   .looseObject({
     type: z.literal('object'),
@@ -91,6 +91,8 @@ const deadlineSchema = z.looseObject({
   policy: z.string().refine((policy) => policy === 'reject', decisionIssueMessage('deadline_policy')),
 });
 
+// Parses a request already inside a guarded snapshot. Raw JSON goes through
+// `workflowSnapshotSchema`; `mapper/own-proto-key.ts` says why.
 export const decisionRequestSchema = z
   .looseObject({
     version: z.literal(1),

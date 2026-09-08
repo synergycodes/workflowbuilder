@@ -252,6 +252,8 @@ describe('submittedDecisionSchema', () => {
     { name: 'edits as an array', body: { action: 'approve', edits: [] }, path: 'edits' },
     { name: 'edits as a number', body: { action: 'approve', edits: 42 }, path: 'edits' },
     { name: 'edits as null', body: { action: 'approve', edits: null }, path: 'edits' },
+    { name: 'edits as a string', body: { action: 'approve', edits: 'x' }, path: 'edits' },
+    { name: 'a non-string action', body: { action: 42 }, path: 'action' },
     { name: 'a non-string reason', body: { action: 'reject', reason: 42 }, path: 'reason' },
     { name: 'a non-string comment', body: { action: 'ask-again', comment: {} }, path: 'comment' },
     { name: 'a missing action', body: { edits: {} }, path: 'action' },
