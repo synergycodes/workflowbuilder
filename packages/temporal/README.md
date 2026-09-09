@@ -203,7 +203,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition.
+While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
@@ -219,7 +219,7 @@ await handle.executeUpdate(resolveNodeUpdate, {
 
 The `resolution` is the completion the node finishes with, exactly as if its executor had returned it: `output` becomes the node's output for everything downstream, and `nextPort` routes the graph. This package passes it through untouched. What a verdict contains, and who may deliver one, is your application's contract.
 
-Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope is an object carrying at most `output` and `nextPort`; `nextPort` must not be the reserved `errorRoute`, and a missing `output` is read as `undefined`, which is what the default JSON payload converter turns `output: undefined` into), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (also possible for a verdict racing the parking moment, so treat it as retryable), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
+Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope is an object carrying at most `output` and `nextPort`; `nextPort` must not be the reserved `errorRoute`, and a missing `output` is read as `undefined`, which is what the default JSON payload converter turns `output: undefined` into), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (final: it has not parked, or its wait was cancelled), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
 
 ### Wave-barrier limitations (deliberate)
 
