@@ -294,8 +294,7 @@ export type { NodeSchemaOutput } from './node/node-output-schema';
 
 // Every variable a node can reference — global variables plus the outputs of
 // its ancestors — grouped for a picker UI. Optionally narrowed by variable type
-// (`includeTypes` / `excludeTypes`). Recomputes only when node/edge counts
-// change, so it is cheap to call from a modal or properties panel.
+// (`includeTypes` / `excludeTypes`).
 export { useNodeVariables } from './features/variables/hooks/use-node-variables';
 
 // Imperative, non-React counterpart: the variables a single node exposes on one

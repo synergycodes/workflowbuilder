@@ -13,7 +13,7 @@ function VariableTextControl(props: VariableTextControlProps) {
   const { placeholder, variablesTypes, disabled } = uischema;
   const { type } = schema;
   const selection = useSingleSelectedElement();
-  const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
+  const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
     excludeTypes: variablesTypes ? [] : variablesTypesToExcludeInText,
     includeTypes: variablesTypes || (type === 'number' ? variablesTypesNumeric : undefined),
   });
@@ -36,7 +36,7 @@ function VariableTextControl(props: VariableTextControlProps) {
   return (
     <ControlWrapper {...props}>
       <VariableText
-        key={totalVariables}
+        key={variablesKey}
         value={inputValue}
         onChange={setInputValue}
         onBlur={onBlur}

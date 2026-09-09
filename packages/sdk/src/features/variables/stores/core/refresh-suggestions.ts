@@ -36,9 +36,13 @@ function refreshNodesSuggestions(nodes: WorkflowBuilderNode[], initialStore: Var
 }
 
 export function refreshAllSuggestions() {
+  const currentStore = useVariablesSuggestionsStore.getState();
   const { nodes } = useStore.getState();
 
-  refreshNodesSuggestions(nodes, { ...emptyVariablesSuggestionsStore });
+  refreshNodesSuggestions(nodes, {
+    ...emptyVariablesSuggestionsStore,
+    lastUpdateIndex: currentStore.lastUpdateIndex + 1,
+  });
 }
 
 export function refreshNodesIdsSuggestions(nodesIds: string[]) {

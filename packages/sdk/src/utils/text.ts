@@ -42,6 +42,21 @@ export const keyToLabel = (key: string): string => {
     .join(' ');
 };
 
+export const pathToLabel = (path: string): string => {
+  if (!path) {
+    return '';
+  }
+
+  if (path.includes('.')) {
+    const lastKey = path.split('.').at(-1);
+    if (lastKey) {
+      return keyToLabel(lastKey);
+    }
+  }
+
+  return keyToLabel(path);
+};
+
 export const labelToSnakeCase = (label: string) => {
   // Normalization guessing the best strategy
   const labelToUse = label.replaceAll(' ', '_');

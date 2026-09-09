@@ -105,7 +105,7 @@ const untilSpecificProperties: PaletteItem<DelayNodeSchema>['uischema'] = {
       type: 'VariableDynamic',
       scope: scope('properties.untilDate'),
       label: 'Wait until',
-      variableType: 'date',
+      variableType: 'datetime',
     },
   ],
 };

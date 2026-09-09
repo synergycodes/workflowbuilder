@@ -23,13 +23,13 @@ export function Dependencies({ conditions, onClick, disabled = false, hasError }
   }, [conditions]);
 
   const selection = useSingleSelectedElement();
-  const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id);
+  const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id);
 
   return (
     <FormControlWithLabel label="conditions.dependencies">
       <span className={styles['button']} onClick={disabled ? noop : onClick}>
         <VariableText
-          key={totalVariables}
+          key={variablesKey}
           className={styles['list']}
           value={dependencies.join(' ')}
           onChange={noop}

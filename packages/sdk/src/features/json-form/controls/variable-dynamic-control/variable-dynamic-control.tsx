@@ -26,7 +26,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
   const { data, handleChange, path, errors, enabled, uischema } = props;
   const { placeholder, variableType } = uischema;
   const selection = useSingleSelectedElement();
-  const { suggestionGroups, totalVariables } = useNodeVariables(selection?.node?.id, {
+  const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
     excludeTypes: [],
     includeTypes: variableTypesForSuggestions[variableType],
   });
@@ -80,7 +80,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
   return (
     <ControlWrapper {...props}>
       <DynamicTypedVariableOrInput
-        key={totalVariables}
+        key={variablesKey}
         type={variableType}
         value={inputValue}
         onChange={onChange}

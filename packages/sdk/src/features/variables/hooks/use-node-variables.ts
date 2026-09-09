@@ -17,14 +17,17 @@ type Options = {
 type Response = {
   suggestionGroups: VariableSuggestionGroup[];
   totalVariables: number;
+  variablesKey: string;
 };
 
+const NO_TYPES: VariableType[] = []; // module scope
+
 export function useNodeVariables(nodeId: string | undefined, options?: Options): Response {
-  const { excludeTypes = [], includeTypes = [] } = options || {};
+  const { excludeTypes = NO_TYPES, includeTypes = NO_TYPES } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
   const edges = useStore((store) => store.edges);
-  const lastUpdateTimestamp = useVariablesSuggestionsStore((store) => store.lastUpdateTimestamp);
+  const lastUpdateIndex = useVariablesSuggestionsStore((store) => store.lastUpdateIndex);
   const { t } = useTranslation();
 
   const globalSuggestionsGroups = useMemo(() => {
@@ -64,19 +67,29 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
     // Variables can’t change while the modal containing them is in use, so we only need to refresh them when they change.
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastUpdateTimestamp, nodeId, excludeTypes, includeTypes, edges.length, nodes.length]);
+  }, [lastUpdateIndex, nodeId, excludeTypes, includeTypes, edges.length, nodes.length]);
 
   return useMemo(() => {
     const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];
-    const totalVariables = suggestionGroups.reduce((stack: number, group) => {
-      stack += group.suggestions.length;
+    const { totalVariables, variablesKey } = suggestionGroups.reduce(
+      (stack: Omit<Response, 'suggestionGroups'>, group) => {
+        stack.totalVariables += group.suggestions.length;
+        for (const suggestion of group.suggestions) {
+          stack.variablesKey += `-${suggestion.id}`;
+        }
 
-      return stack;
-    }, 0);
+        return stack;
+      },
+      {
+        totalVariables: 0,
+        variablesKey: 'vars',
+      },
+    );
 
     return {
       suggestionGroups,
       totalVariables,
+      variablesKey,
     };
   }, [globalSuggestionsGroups, nodeSuggestionsGroups]);
 }
