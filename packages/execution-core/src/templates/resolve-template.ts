@@ -51,8 +51,6 @@ const OUTER_TEMPLATE_REGEX = /\{\{\s*\w+\.(?:[^}]|\}(?!\}))*\}\}/g;
 const PARSE_REGEX =
   /^\{\{\s*(?<namespace>\w+)\.(?<path>[\w.-]+?)\s*(?:(?<safe>\?)|\|\s*default\s*:\s*'(?<default>[^']*)')?\s*\}\}$/;
 
-// Every failure below is permanent: a retried node receives the same context,
-// so a reference that failed to resolve once fails the same way every time.
 export function resolveTemplate(template: string, context: ExecutionContext): string {
   return template.replaceAll(OUTER_TEMPLATE_REGEX, (match) => {
     const groups = PARSE_REGEX.exec(match)?.groups;

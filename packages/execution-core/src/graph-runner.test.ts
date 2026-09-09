@@ -7,7 +7,7 @@ import type {
   WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
 
-import { NodeExecutionError } from './errors';
+import { NodeExecutionError, PermanentNodeExecutionError } from './errors';
 import { runGraph } from './graph-runner';
 import type { ActivityRunnerPort } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
@@ -493,7 +493,7 @@ describe('runGraph — topological scheduling', () => {
     // ("Malformed template reference: …", LLM rate-limited, DB timeout)
     // behind the same opaque string. The runner must walk the chain.
     const wrapped = new Error('Activity task failed', {
-      cause: new Error('Malformed template reference: {{nodes.foo?bar}}'),
+      cause: new PermanentNodeExecutionError('template_malformed', 'Malformed template reference: {{nodes.foo?bar}}'),
     });
     const runner: ActivityRunnerPort<TestNode> = {
       async executeNode(node) {
@@ -507,7 +507,7 @@ describe('runGraph — topological scheduling', () => {
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({
-      error: { message: 'Malformed template reference: {{nodes.foo?bar}}' },
+      error: { message: 'Malformed template reference: {{nodes.foo?bar}}', code: 'template_malformed' },
     });
     expect(events.statuses.at(-1)?.errorMessage).toBe('Malformed template reference: {{nodes.foo?bar}}');
   });
