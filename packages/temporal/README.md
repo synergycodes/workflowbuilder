@@ -189,6 +189,62 @@ Filling in `node.label` belongs to whatever builds the `WorkflowExecutionInput`,
 
 The attempt count is an upper bound rather than a promise. An executor that throws `PermanentNodeExecutionError` — for a rejected API key, say — is not retried at all: the activity adapter marks the failure non-retryable, which Temporal honours regardless of the profile. `TransientNodeExecutionError` says the opposite, that another attempt is worth making, but it does not raise the limit; the profile still caps it. Anything thrown unclassified retries exactly as it always has. Both classes are re-exported from this package, and a classified failure also records its error code and the attempt it died on in the `node_failed` event — see [`execution-core`](../execution-core/README.md#transient-vs-permanent-failures) for when to throw which.
 
+## What Event History records
+
+Temporal writes every argument you give it into Event History. Replay reads that record back, so nothing can change it later. The record lives while the run is open, then for the namespace's retention period after the run closes.
+
+This package hands Temporal:
+
+- The workflow input. It carries the whole graph definition, so every node's `config` is in the record before the first node runs.
+- The arguments and the return value of every `executeNode` call. The arguments are the node, `variables`, `global`, `triggerPayload`, and the output of every node that finished before the current wave started.
+- The arguments of every `updateStatus` call, including the `errorMessage` of a failed run.
+- The payload of every `emitEvent` call `runGraph` makes. This is the only one that `execution-core` redacts first.
+- The Temporal Summary of every labelled node activity, copied from `node.label`.
+- Every failure: the error's message, type and stack, and the run's own final failure. A classified error also carries a `NodeErrorEnvelope` in `details` and the original error in `cause`.
+
+### Secrets
+
+**Keep secret values out of everything this package hands Temporal. Only `emitEvent` payloads are redacted; nothing stops a secret anywhere else from reaching Event History.**
+
+Anyone who can open the Temporal UI can read the record. On Temporal Cloud, Temporal stores it on its own infrastructure.
+
+**You cannot edit a leaked key out of Event History. You can only delete the whole run. So rotate the key.**
+
+[`execution-core`](../execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
+
+Two rules follow:
+
+- **Keep secrets in the worker's own environment.** The reference worker keeps its model key and its search key there.
+- **If a secret must differ per run or per tenant, read it inside the executor.** Temporal never records what the executor does in its own body. It does record the return value and the message of any error, so keep the secret out of both, and out of the node's `config`, which travels in the workflow input. An executor is a closure: capture the secret in `executors` at worker start, as the reference worker does with its keys.
+
+A Payload Codec encrypts payloads before they leave the process. Pass one as `dataConverter` to `Worker.create` and to the `Client` you hand `TemporalWorkflowEngine`; nothing in this package stands in the way. The plugin ships no codec of its own (follow-up: temporal-payload-codec).
+
+### Payload size and the history budget
+
+Two [server defaults](https://docs.temporal.io/references/dynamic-configuration) bound a run. You can raise or lower them on a self-hosted deployment. On [Temporal Cloud](https://docs.temporal.io/cloud/limits) they are fixed.
+
+| What                                                                  | Warns at | Fails at | Dynamic config        |
+| --------------------------------------------------------------------- | -------- | -------- | --------------------- |
+| One payload set: an activity's input or result, or the workflow input | 512 KB   | 2 MB     | `limit.blobSize.*`    |
+| Event History size, per run                                           | 10 MB    | 50 MB    | `limit.historySize.*` |
+
+A third default, `limit.historyCount.*`, caps a run at 10,240 events (warn) and 51,200 (fail). A chain costs about 18 events per node, so the size limits bind first unless node outputs are tiny. The continue-as-new suggestion Temporal raises at 4 MB or 4,096 events is inert here: this package never calls `continueAsNew`.
+
+Which limit you reach first depends on the size of your node outputs. `runGraph` gives every node the output of every node that finished before the current wave started, not only the output of its direct predecessors. So node 2 receives one output, node 3 receives two, and so on.
+
+Take a chain of N nodes each returning S bytes. The run writes about N(N+3)S ÷ 2 bytes into history. N(N−1)S ÷ 2 of that is `executeNode` arguments. The remaining 2NS is each output written twice more, once as the activity's result and once in its `node_completed` payload. Above about 45 KB per output the arguments reach 2 MB before history reaches 50 MB. Below that size, history goes first. Every call also carries `triggerPayload`, `variables`, `global` and the node itself regardless of S, and a large trigger payload is the usual reason that matters.
+
+At 100 KB per output, the `executeNode` arguments pass 512 KB at node 7. History passes 10 MB at node 13. The arguments pass 2 MB at node 22.
+
+What an oversize payload does depends on which one it is. The worker checks each outbound payload before sending it. Over the warn threshold it logs `[TMPRL1103]` at `WARN` and sends anyway. Over the error limit it logs at `ERROR` and fails the task instead. The error limit comes from the namespace. The warn threshold does not. It is the worker's own 512 KiB default, and only `NativeConnectionOptions.payloadLimits` moves it, not `limit.blobSize.warn`. That option is experimental, so expect it to change.
+
+- **`executeNode` arguments over the limit** fail the Workflow Task. Temporal retries that task, so the run hangs until you deploy a fix.
+- **An `executeNode` return value over the limit** fails the activity attempt. The retry policy re-runs the node, the output is oversize again, and the node fails once the profile's attempts are spent. From there `errorPolicy` decides, as for any other node failure.
+
+`disablePayloadErrorLimit` on the worker skips the check and leaves the limit to the server.
+
+A large model answer is the usual oversize return value. Keep the bulk out of the node's output. Store it where your application already stores blobs, and return only an identifier for it, an S3 key or a row id. The next node then fetches the data itself. This is the claim-check pattern. This package ships no blob store and no fetch helper, so your executor has to do both sides.
+
 ## Versioning and replay
 
 This package carries two contracts, not one. The API is the ordinary semver surface. The second is replay compatibility: a workflow can sit in Event History for days, and a new version of this package has to be able to replay a history that an older version recorded.

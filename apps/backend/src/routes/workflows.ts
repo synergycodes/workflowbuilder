@@ -255,7 +255,7 @@ export function createWorkflowsRoutes(
       executionId: execution.id,
       definition,
       triggerPayload: body.triggerPayload ?? {},
-      variables: {}, // server-side globals (secrets, env) populated here later
+      variables: {},
       global: {},
     });
 

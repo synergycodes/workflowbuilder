@@ -103,6 +103,17 @@ Each judgment is made at the throw site that owns the error. The runner and the 
 
 The provider's own error is attached as `cause`, and `node_failed` reports the deepest non-empty cause's text, so the provider's message reaches the UI as it did before classification. A refused connection is the exception: the SDK reports it as `Cannot connect to API:` with nothing after the colon, because the reason sits in an `AggregateError` it wraps — one entry per address tried. Only messages survive the activity boundary, so the classifier attaches the first entry (`connect ECONNREFUSED ::1:11434`) as the cause instead of the SDK error. The classifier's own message, which names the HTTP status, is one level up and visible only in Temporal's failure record. 409 is permanent on purpose, unlike the AI SDK's own retry default: no chat provider is known to answer 409 for a condition a retry would clear. Two kinds of SDK error stay unclassified and keep the profile's uniform retry: a response the SDK could not parse (a 2xx with a non-JSON body, typically a proxy answering with HTML) and errors raised without any provider response (a malformed tool call from the model, no output generated), which describe model behaviour a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
 
+## The AI agent's tool loop
+
+The reference AI Agent node runs the AI SDK's tool loop inside one activity. The loop stops after `MAX_TOOL_STEPS` steps (`src/activities/ai-agent.ts`). At the cap `generateText` returns normally, so the node completes with whatever the last step produced, possibly empty text, rather than failing. The cap only applies when tools are on, which needs both the node's `webSearch` config flag and a `TAVILY_API_KEY`. Without them the activity makes one model call and there is no loop.
+
+This is deliberate: `runGraph` walks a DAG, so it cannot express a loop whose length the model decides at run time. What it costs:
+
+- **A retry re-runs the whole loop.** Tool calls included, so a tool with side effects can run more than once for one node. `generateText` runs with `maxRetries: 0`, so one activity attempt is exactly one pass. To rule the re-run out, give `ai-studio/ai-agent` its own profile through `createRunWorkflow({ nodeActivityProfiles })`, setting `retry.maximumAttempts: 1`. Every profile also has to declare `startToCloseTimeout`, so pass both. See the package README.
+- **Temporal records nothing until the activity returns.** If the worker dies mid-loop, every finished step is lost, and the whole loop shares the node profile's single `startToCloseTimeout` (see Temporal specifics above).
+
+There is no durable per-step option today. A fixed sequence of model calls can be split into one node per call, each its own activity that Temporal records and resumes on its own. A model-driven loop cannot: a cycle through the start node is rejected before the run starts, and any other cycle fails the run with `Workflow stalled` once the reachable nodes have run. No tool-call node ships, so a durable tool call is an executor you write yourself.
+
 ## Adding a new engine
 
 1. Create `src/engines/<name>/` with:
