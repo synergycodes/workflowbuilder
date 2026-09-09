@@ -17,7 +17,6 @@ const diagram: DiagramModel = {
           icon: 'Lightning',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '5e11be1b-8db6-4a73-9fef-4e0bdf3f4aad',
@@ -35,7 +34,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '91c179cb-71f5-4c14-abdc-24d17480af18',
@@ -53,7 +51,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '2b2942c5-56a2-41c6-bb3d-d653b4c314da',
@@ -71,7 +68,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -94,7 +90,6 @@ const diagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -113,7 +108,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -132,7 +126,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -151,7 +144,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -174,7 +166,6 @@ const diagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -193,7 +184,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -212,7 +202,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
     ],
     edges: [

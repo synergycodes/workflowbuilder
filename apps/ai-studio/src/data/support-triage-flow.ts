@@ -34,7 +34,6 @@ Head of Ops, Brightwave`,
           icon: 'Lightning',
         },
         selected: false,
-        measured: { width: 258, height: 63 },
         dragging: false,
       },
       {
@@ -65,7 +64,6 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
           icon: 'AiAgent',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
       {
@@ -116,7 +114,6 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
           icon: 'ArrowsSplit',
         },
         selected: false,
-        measured: { width: 258, height: 236 },
         dragging: false,
       },
       {
@@ -141,7 +138,6 @@ You handle billing issues. Draft a reply to the customer:
           icon: 'AiAgent',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
       {
@@ -166,7 +162,6 @@ You triage product bugs. Draft a reply to the customer:
           icon: 'AiAgent',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
       {
@@ -190,7 +185,6 @@ You answer how-to and general questions. Draft a friendly reply:
           icon: 'AiAgent',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
       {
@@ -217,7 +211,6 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           icon: 'AiAgent',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
       {
@@ -235,7 +228,6 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           icon: 'Eye',
         },
         selected: false,
-        measured: { width: 258, height: 123 },
         dragging: false,
       },
     ],
