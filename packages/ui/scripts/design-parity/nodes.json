@@ -1,0 +1,8 @@
+{
+  "fileKey": "hfT6zrYS948n8LrEK9y3Wh",
+  "nodes": {
+    "node-shell": { "id": "9859:4113", "description": "Node shell frame (Trigger master, State=Default)" },
+    "port-default": { "id": "2668:3395", "description": "Node / Port, State=Default" },
+    "port-hover": { "id": "2668:3393", "description": "Node / Port, State=Hover" }
+  }
+}

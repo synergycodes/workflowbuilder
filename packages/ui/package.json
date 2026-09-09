@@ -26,10 +26,12 @@
     "url": "https://github.com/synergycodes/workflowbuilder/issues"
   },
   "scripts": {
-    "build": "vite build && pnpm check:built-css && pnpm publint",
+    "build": "vite build && pnpm check:built-css && pnpm check:design-parity && pnpm publint",
     "dev": "vite build --watch",
     "prepare": "pnpm build",
     "check:built-css": "tsx ./scripts/check-built-css.ts",
+    "check:design-parity": "tsx ./scripts/check-design-parity.ts",
+    "design-parity:fetch": "tsx ./scripts/design-parity/fetch-expectations.ts",
     "publint": "publint",
     "lint": "eslint",
     "lint:fix": "eslint --fix",

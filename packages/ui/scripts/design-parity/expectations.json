@@ -1,0 +1,216 @@
+{
+  "fileKey": "hfT6zrYS948n8LrEK9y3Wh",
+  "fileName": "WB 2.0 - UI - Design System",
+  "fileLastModified": "2026-09-08T12:23:45Z",
+  "fetchedAt": "2026-09-09T18:29:14.361Z",
+  "nodes": {
+    "node-shell": {
+      "id": "9859:4113",
+      "description": "Node shell frame (Trigger master, State=Default)",
+      "name": "Frame 26085813",
+      "type": "FRAME",
+      "width": 241,
+      "height": 60,
+      "paddingLeft": 8,
+      "paddingRight": 8,
+      "paddingTop": 8,
+      "paddingBottom": 8,
+      "itemSpacing": 8,
+      "cornerRadius": 12,
+      "strokeWeight": 1,
+      "strokeAlign": "INSIDE",
+      "boundVariables": {
+        "itemSpacing": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:7389:22"
+        },
+        "paddingLeft": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:7389:20"
+        },
+        "paddingTop": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:7389:21"
+        },
+        "paddingRight": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:7389:20"
+        },
+        "paddingBottom": {
+          "type": "VARIABLE_ALIAS",
+          "id": "VariableID:7389:21"
+        },
+        "rectangleCornerRadii": {
+          "RECTANGLE_TOP_LEFT_CORNER_RADIUS": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9114:20"
+          },
+          "RECTANGLE_TOP_RIGHT_CORNER_RADIUS": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9114:20"
+          },
+          "RECTANGLE_BOTTOM_LEFT_CORNER_RADIUS": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9114:20"
+          },
+          "RECTANGLE_BOTTOM_RIGHT_CORNER_RADIUS": {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9114:20"
+          }
+        },
+        "fills": [
+          {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9184:20"
+          }
+        ],
+        "strokes": [
+          {
+            "type": "VARIABLE_ALIAS",
+            "id": "VariableID:9184:25"
+          }
+        ]
+      },
+      "children": [
+        {
+          "name": "Frame 26085816",
+          "type": "FRAME",
+          "width": 225,
+          "height": 44,
+          "strokeWeight": 1,
+          "strokeAlign": "INSIDE",
+          "boundVariables": {
+            "itemSpacing": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:24"
+            }
+          }
+        },
+        {
+          "name": "Node / Content / Placeholder",
+          "type": "INSTANCE",
+          "width": 225,
+          "height": 128,
+          "strokeWeight": 1,
+          "strokeAlign": "INSIDE",
+          "boundVariables": {
+            "itemSpacing": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:24"
+            },
+            "paddingLeft": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:28"
+            },
+            "paddingTop": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:28"
+            },
+            "paddingRight": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:28"
+            },
+            "paddingBottom": {
+              "type": "VARIABLE_ALIAS",
+              "id": "VariableID:7264:28"
+            },
+            "fills": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:763:53144"
+              }
+            ],
+            "strokes": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:17:383"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "port-default": {
+      "id": "2668:3395",
+      "description": "Node / Port, State=Default",
+      "name": "State=Default",
+      "type": "COMPONENT",
+      "width": 8,
+      "height": 8,
+      "paddingLeft": null,
+      "paddingRight": null,
+      "paddingTop": null,
+      "paddingBottom": null,
+      "itemSpacing": null,
+      "cornerRadius": null,
+      "strokeWeight": 1,
+      "strokeAlign": "INSIDE",
+      "boundVariables": {},
+      "children": [
+        {
+          "name": "Ellipse 2008",
+          "type": "ELLIPSE",
+          "width": 8,
+          "height": 8,
+          "strokeWeight": 2,
+          "strokeAlign": "INSIDE",
+          "boundVariables": {
+            "fills": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:9184:29"
+              }
+            ],
+            "strokes": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:9184:31"
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "port-hover": {
+      "id": "2668:3393",
+      "description": "Node / Port, State=Hover",
+      "name": "State=Hover",
+      "type": "COMPONENT",
+      "width": 16,
+      "height": 16,
+      "paddingLeft": null,
+      "paddingRight": null,
+      "paddingTop": null,
+      "paddingBottom": null,
+      "itemSpacing": null,
+      "cornerRadius": null,
+      "strokeWeight": 1,
+      "strokeAlign": "INSIDE",
+      "boundVariables": {},
+      "children": [
+        {
+          "name": "Ellipse 2009",
+          "type": "ELLIPSE",
+          "width": 16,
+          "height": 16,
+          "strokeWeight": 2,
+          "strokeAlign": "INSIDE",
+          "boundVariables": {
+            "fills": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:9184:30"
+              }
+            ],
+            "strokes": [
+              {
+                "type": "VARIABLE_ALIAS",
+                "id": "VariableID:9184:32"
+              }
+            ]
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,57 @@
+[
+  { "name": "node shell width", "node": "node-shell", "figma": "width", "css": [["--wb-public-node-width", 1]] },
+  {
+    "name": "node shell horizontal padding",
+    "node": "node-shell",
+    "figma": "paddingLeft",
+    "css": [["--wb-public-node-padding", 1]]
+  },
+  {
+    "name": "node shell vertical padding",
+    "node": "node-shell",
+    "figma": "paddingTop",
+    "css": [["--wb-public-node-padding", 1]]
+  },
+  {
+    "name": "node shell vertical gap",
+    "node": "node-shell",
+    "figma": "itemSpacing",
+    "css": [["--wb-public-node-gap", 1]]
+  },
+  {
+    "name": "node shell corner radius",
+    "node": "node-shell",
+    "figma": "cornerRadius",
+    "css": [["--wb-public-node-border-radius", 1]]
+  },
+  {
+    "name": "node shell stroke",
+    "node": "node-shell",
+    "figma": "strokeWeight",
+    "css": [["--wb-public-node-border-size", 1]]
+  },
+  {
+    "name": "port default outer size",
+    "node": "port-default",
+    "figma": "width",
+    "css": [
+      ["--wb-public-node-port-size", 1],
+      ["--wb-public-node-port-border-size", 2]
+    ]
+  },
+  {
+    "name": "port hover outer size",
+    "node": "port-hover",
+    "figma": "width",
+    "css": [
+      ["--wb-public-node-port-size-hover", 1],
+      ["--wb-public-node-port-border-size", 2]
+    ]
+  },
+  {
+    "name": "port stroke",
+    "node": "port-default",
+    "figma": "children.0.strokeWeight",
+    "css": [["--wb-public-node-port-border-size", 1]]
+  }
+]
