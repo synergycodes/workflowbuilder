@@ -13,18 +13,19 @@ This document audits every code path reachable from `runGraph` in the sandbox, e
 
 ## Files in the sandbox
 
-The sandbox entry `workflow.ts` re-exports the following. Only `runGraph`, the error module, and the redaction module reach the bundle as runtime code; the rest are types (erased at compile time).
+The sandbox entry `workflow.ts` re-exports the following. Four modules reach the bundle as runtime code: `runGraph`, the start-node resolver, the error module and the redaction module. The rest are types, erased at compile time.
 
-| Source                                             | Kind     | Runtime? |
-| -------------------------------------------------- | -------- | -------- |
-| `packages/execution-core/src/graph-runner.ts`      | function | yes      |
-| `packages/execution-core/src/errors.ts`            | classes  | yes      |
-| `packages/execution-core/src/redact.ts`            | function | yes      |
-| `packages/execution-core/src/execution-context.ts` | type     | no       |
-| `packages/execution-core/src/ports/*.port.ts`      | types    | no       |
-| `packages/types/.../execution-model.ts`            | types    | no       |
+| Source                                              | Kind     | Runtime? |
+| --------------------------------------------------- | -------- | -------- |
+| `packages/execution-core/src/graph-runner.ts`       | function | yes      |
+| `packages/execution-core/src/resolve-start-node.ts` | function | yes      |
+| `packages/execution-core/src/errors.ts`             | classes  | yes      |
+| `packages/execution-core/src/redact.ts`             | function | yes      |
+| `packages/execution-core/src/execution-context.ts`  | type     | no       |
+| `packages/execution-core/src/ports/*.port.ts`       | types    | no       |
+| `packages/types/.../execution-model.ts`             | types    | no       |
 
-The audit therefore focuses on `graph-runner.ts` + `errors.ts` + `redact.ts` (a pure, depth-capped walk over plain objects — no clock, no random, no I/O; see rule 8). Activities and adapters live outside the sandbox — they are covered only as ports the runner calls into.
+The audit therefore focuses on `graph-runner.ts` + `resolve-start-node.ts` + `errors.ts` + `redact.ts` (a pure, depth-capped walk over plain objects — no clock, no random, no I/O; see rule 8). The start-node resolver only filters and maps over `definition.nodes` and reads the caller's in-degree `Map`, so it is deterministic given a deterministic input. Activities and adapters live outside the sandbox — they are covered only as ports the runner calls into.
 
 ## Sources of non-determinism reviewed
 
@@ -45,7 +46,7 @@ The audit therefore focuses on `graph-runner.ts` + `errors.ts` + `redact.ts` (a 
 | `Array.prototype.shift` on BFS queue     | Yes             | ✅ Safe — FIFO order is deterministic given a deterministic push order. The push order in `propagate` comes from iterating `successors` (a `Map` value), which is insertion-deterministic.                                                                                                                                                                                                                |
 | Throwing for control flow                | No              | ✅ Safe — the runner does not throw for control flow; failures are reported by return value (`RunGraphOutcome`), which is fully determined by the input. `NodeExecutionError` is a plain `Error` subclass with no side effects in its constructor.                                                                                                                                                        |
 | External clock / wall time               | No              | ✅ Safe — runner does not read time. `events.emitEvent('execution_started', ...)` etc. are activities; the timestamp is recorded by the activity outside the sandbox.                                                                                                                                                                                                                                     |
-| Iteration over `Object.keys`/`values`    | No              | ✅ Safe — runner uses `Map` for stateful collections; `nodeOutputs` is an object but never iterated for control flow (only `{ ...nodeOutputs }` for context cloning, which preserves order).                                                                                                                                                                                                              |
+| Iteration over `Object.keys`/`values`    | Yes             | ✅ Safe — `Object.keys(context.nodeOutputs)` builds the `visibleNodeIds` payload on `node_started`. Own string keys enumerate in insertion order per ECMA-262, and the runner inserts in `definition.nodes` order, so the array is deterministic. No control flow branches on it, and stateful collections use `Map` instead.                                                                             |
 | Module-level initialization side effects | No              | ✅ Safe — `graph-runner.ts` exports only function declarations; no top-level statements that read environment or instantiate stateful objects.                                                                                                                                                                                                                                                            |
 | `errors.ts` `NodeExecutionError`         | Yes             | ✅ Safe — constructor only calls `super(message, { cause })` and sets `this.name`. No `Date.now()` in the message, no UUID minting, no env reads. The `Permanent`/`Transient` subclasses add a literal field and their own name, nothing else.                                                                                                                                                            |
 | `errors.ts` `classifyNodeError`          | Yes             | ✅ Safe — reads two fields off the error and returns a literal. Shape-based on purpose (`instanceof` cannot work across bundled copies of this module), so it never depends on which copy of the class the value came from.                                                                                                                                                                               |

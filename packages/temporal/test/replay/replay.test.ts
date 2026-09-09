@@ -25,6 +25,7 @@ import {
 
 const EXECUTION_ID = 'replay-test-execution';
 const TASK_QUEUE = 'replay-test';
+const CACHE_DISABLED = 0;
 
 // Regeneration replaces the cross-version baseline; follow ./README.md before enabling it.
 //   UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
@@ -58,18 +59,17 @@ describe('replay', () => {
   let history: History;
   let store: RecordingStore;
 
-  beforeAll(async () => {
-    [workflowBundle, env] = await Promise.all([
-      bundleWorkflowCode({ workflowsPath: fileURLToPath(new URL('../fixtures/workflows.ts', import.meta.url)) }),
-      TestWorkflowEnvironment.createLocal(),
-    ]);
-
-    store = createRecordingStore();
+  async function recordGraphRun(options: {
+    taskQueue: string;
+    executionId: string;
+    maxCachedWorkflows?: number;
+  }): Promise<{ history: History; store: RecordingStore }> {
+    const store = createRecordingStore();
 
     const plugin = new WorkflowBuilderPlugin<ReplayTestNode>({
       store,
       executors: replayTestExecutors,
-      taskQueue: TASK_QUEUE,
+      taskQueue: options.taskQueue,
     });
 
     const worker = await Worker.create({
@@ -78,24 +78,34 @@ describe('replay', () => {
       taskQueue: plugin.taskQueue,
       workflowBundle,
       plugins: [plugin],
+      maxCachedWorkflows: options.maxCachedWorkflows,
     });
 
     const input: WorkflowExecutionInput<ReplayTestNode> = {
       workflowId: REPLAY_TEST_WORKFLOW_ID,
-      executionId: EXECUTION_ID,
+      executionId: options.executionId,
       definition: REPLAY_TEST_GRAPH,
       triggerPayload: {},
       variables: {},
       global: {},
     };
 
-    const workflowId = executionWorkflowId(EXECUTION_ID);
+    const workflowId = executionWorkflowId(options.executionId);
 
     await worker.runUntil(
       env.client.workflow.execute(RUN_WORKFLOW_NAME, { taskQueue: plugin.taskQueue, workflowId, args: [input] }),
     );
 
-    history = await env.client.workflow.getHandle(workflowId).fetchHistory();
+    return { history: await env.client.workflow.getHandle(workflowId).fetchHistory(), store };
+  }
+
+  beforeAll(async () => {
+    [workflowBundle, env] = await Promise.all([
+      bundleWorkflowCode({ workflowsPath: fileURLToPath(new URL('../fixtures/workflows.ts', import.meta.url)) }),
+      TestWorkflowEnvironment.createLocal(),
+    ]);
+
+    ({ history, store } = await recordGraphRun({ taskQueue: TASK_QUEUE, executionId: EXECUTION_ID }));
 
     if (process.env.UPDATE_REPLAY_HISTORIES) {
       await writeFile(COMMITTED_HISTORY, `${historyToJSON(history)}\n`);
@@ -131,4 +141,16 @@ describe('replay', () => {
 
     await expect(Worker.runReplayHistory({ workflowBundle }, recorded)).resolves.toBeUndefined();
   }, 60_000);
+
+  it('repeats no side effect with the workflow cache off', async () => {
+    const cacheOff = await recordGraphRun({
+      taskQueue: 'replay-test-cache-off',
+      executionId: 'replay-test-execution-cache-off',
+      maxCachedWorkflows: CACHE_DISABLED,
+    });
+
+    expect(countScheduledActivities(cacheOff.history)).toEqual(EXPECTED_ACTIVITY_COUNTS);
+    expect(cacheOff.store.events).toEqual(store.events);
+    expect(cacheOff.store.statuses).toEqual(store.statuses);
+  }, 300_000);
 });
