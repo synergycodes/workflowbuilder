@@ -11,13 +11,19 @@
     align-items: flex-start;
     overflow: hidden;
     width: 100%;
+    min-width: 0;
+    contain: inline-size;
 
-    .title {
-      color: var(--wb-public-node-title-color);
+    .title,
+    .subtitle {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       width: 100%;
+    }
+
+    .title {
+      color: var(--wb-public-node-title-color);
     }
 
     .subtitle {

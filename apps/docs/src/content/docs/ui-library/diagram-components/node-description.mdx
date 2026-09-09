@@ -30,6 +30,12 @@ function NodeHeader({ icon, label, description }) {
 }
 ```
 
+## Truncation
+
+Both lines are single-line. Text that does not fit the node width is cut with an ellipsis and the
+full text is available through the element's native tooltip (`title`). The block never widens its
+node: a node keeps the design width and grows in height only through its body content.
+
 ## Props
 
 <PropsTable slug="node-description" />
