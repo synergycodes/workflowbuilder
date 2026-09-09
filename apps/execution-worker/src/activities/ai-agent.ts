@@ -1,9 +1,16 @@
 import { generateText, stepCountIs } from 'ai';
 
-import { type ExecutionContext, type LoggerPort, resolveTemplate } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  type LoggerPort,
+  type NodeExecutionError,
+  classifyNodeError,
+  resolveTemplate,
+} from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { createWebSearchTool } from '../tools/web-search';
+import { classifyProviderError } from './provider-error';
 
 // Bounds the agentic tool loop so a misbehaving model can't run up cost.
 const MAX_TOOL_STEPS = 4;
@@ -58,14 +65,15 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
 
     return { output: { response: result.text } };
   } catch (error) {
+    const failure = classifyProviderError(error);
     // Mirror the `node_failed` SSE payload shape so a log line and the event line up by executionId.
     const message = error instanceof Error ? error.message : String(error);
     deps.logger?.error('llm call failed', {
       workflowId: context.workflowId,
       executionId: context.executionId,
       nodeId: node.id,
-      error: { message },
+      error: { message, ...(classifyNodeError(failure) ? { code: (failure as NodeExecutionError).code } : {}) },
     });
-    throw error;
+    throw failure;
   }
 }
