@@ -65,9 +65,9 @@ export async function runGraph<TNode extends BaseNode>(
   rawEvents: EventEmitterPort,
   versioning: VersioningPort = LATEST_CODE,
 ): Promise<RunGraphOutcome> {
-  // Every payload is redacted before it crosses the emit boundary — event history
-  // (DB, SSE, Temporal's own history via activity args) is immutable, so secrets
-  // must never reach it in the first place.
+  // Every emitted payload is redacted before it crosses the emit boundary — event
+  // history (DB, SSE, Temporal's record of the emitEvent args) is immutable, so
+  // secrets must never reach it in the first place.
   const events = withRedactedPayloads(rawEvents);
 
   const adjacency = buildAdjacencyMap(input.definition.nodes, input.definition.edges);

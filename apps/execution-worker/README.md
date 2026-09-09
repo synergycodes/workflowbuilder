@@ -115,6 +115,17 @@ The model is created with `supportsStructuredOutputs: true`. Without that flag t
 
 The worker forwards the schema untouched and does not validate the answer against it: for a plain JSON Schema the SDK only parses the answer as JSON, so an endpoint that ignores the schema hands the node whatever JSON came back. The model still does not see the schema as authored. The backend stores the snapshot as `jsonb`, which does not keep object key order (Postgres puts shorter keys first), and in strict mode OpenAI generates fields in schema order: the Refund Review preset reaches the model as `orderDate`, `replyDraft`, `refundAmount`, `internalReasoning`, so no field can be pinned first. An answer the SDK cannot parse as JSON fails with `NoObjectGeneratedError`, which is not a provider error, so it stays unclassified. An answer that ends on anything but a `stop` finish, whether truncated (`length`), filtered (`content-filter`), or still calling a tool on the loop's last step (`tool-calls`, from an endpoint that ignores `tool_choice: 'none'`), fails the node as a transient `structured_output_incomplete`, whose message names the finish reason the SDK's own `No output generated.` leaves out.
 
+## The AI agent's tool loop
+
+The reference AI Agent node runs the AI SDK's tool loop inside one activity. The loop stops after `MAX_TOOL_STEPS` steps (`src/activities/ai-agent.ts`). At the cap `generateText` returns normally, so the node completes with whatever the last step produced, possibly empty text, rather than failing. The cap only applies when tools are on, which needs both the node's `webSearch` config flag and a `TAVILY_API_KEY`. Without them the activity makes one model call and there is no loop.
+
+This is deliberate: `runGraph` walks a DAG, so it cannot express a loop whose length the model decides at run time. What it costs:
+
+- **A retry re-runs the whole loop.** Tool calls included, so a tool with side effects can run more than once for one node. `generateText` runs with `maxRetries: 0`, so one activity attempt is exactly one pass. To rule the re-run out, give `ai-studio/ai-agent` its own profile through `createRunWorkflow({ nodeActivityProfiles })`, setting `retry.maximumAttempts: 1`. Every profile also has to declare `startToCloseTimeout`, so pass both. See the package README.
+- **Temporal records nothing until the activity returns.** If the worker dies mid-loop, every finished step is lost, and the whole loop shares the node profile's single `startToCloseTimeout` (see Temporal specifics above).
+
+There is no durable per-step option today. A fixed sequence of model calls can be split into one node per call, each its own activity that Temporal records and resumes on its own. A model-driven loop cannot: a cycle through the start node is rejected before the run starts, and any other cycle fails the run with `Workflow stalled` once the reachable nodes have run. No tool-call node ships, so a durable tool call is an executor you write yourself.
+
 ## Adding a new engine
 
 1. Create `src/engines/<name>/` with:
