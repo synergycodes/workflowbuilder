@@ -240,29 +240,21 @@ describe('resolveTemplate — malformed templates throw loudly', () => {
   });
 });
 
-function thrownBy(template: string, context = makeContext()): unknown {
-  try {
-    resolveTemplate(template, context);
-  } catch (error) {
-    return error;
-  }
-  throw new Error('expected resolveTemplate to throw');
-}
+const resolving = (template: string) => () => resolveTemplate(template, makeContext());
 
 describe('resolveTemplate — failures are permanent', () => {
   it('a malformed reference is a permanent template_malformed failure', () => {
-    const error = thrownBy('{{nodes.foo?bar}}');
-    expect(error).toBeInstanceOf(PermanentNodeExecutionError);
-    expect(error).toMatchObject({ code: 'template_malformed', classification: 'permanent' });
+    expect(resolving('{{nodes.foo?bar}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{nodes.foo?bar}}')).toThrow(expect.objectContaining({ code: 'template_malformed' }));
   });
 
   it('a missing path is a permanent template_unresolved failure', () => {
-    const error = thrownBy('{{nodes.missing}}', makeContext({ nodeOutputs: {} }));
-    expect(error).toBeInstanceOf(PermanentNodeExecutionError);
-    expect(error).toMatchObject({ code: 'template_unresolved', classification: 'permanent' });
+    expect(resolving('{{nodes.missing}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{nodes.missing}}')).toThrow(expect.objectContaining({ code: 'template_unresolved' }));
   });
 
   it('an unknown namespace is a permanent template_unresolved failure', () => {
-    expect(thrownBy('{{unknown.x}}')).toMatchObject({ code: 'template_unresolved', classification: 'permanent' });
+    expect(resolving('{{unknown.x}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{unknown.x}}')).toThrow(expect.objectContaining({ code: 'template_unresolved' }));
   });
 });
