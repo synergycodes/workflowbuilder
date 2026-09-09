@@ -51,8 +51,10 @@ function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
   };
 }
 
+type PendingWait = { resolve: (completion: CompletedNodeExecution) => void; reject: (error: unknown) => void };
+
 // makeRunner plus an `awaitResolution` port: observe parks via `whenParked`,
-// deliver verdicts via `resolveGate`.
+// deliver verdicts via `resolveGate`. Registers synchronously, as the port requires.
 function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
   port: ActivityRunnerPort<TestNode>;
   callOrder: string[];
@@ -60,9 +62,10 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
   parkedIds: () => string[];
   whenParked: (count: number) => Promise<void>;
   resolveGate: (nodeId: string, completion: CompletedNodeExecution) => void;
+  rejectWait: (nodeId: string, error: unknown) => void;
 } {
   const base = makeRunner(behaviors);
-  const pending = new Map<string, (completion: CompletedNodeExecution) => void>();
+  const pending = new Map<string, PendingWait>();
   const watchers = new Set<{ count: number; notify: () => void }>();
   return {
     callOrder: base.callOrder,
@@ -70,8 +73,8 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
     port: {
       executeNode: base.port.executeNode,
       awaitResolution(nodeId) {
-        return new Promise((resolve) => {
-          pending.set(nodeId, resolve);
+        return new Promise((resolve, reject) => {
+          pending.set(nodeId, { resolve, reject });
           for (const watcher of watchers) {
             if (pending.size >= watcher.count) {
               watchers.delete(watcher);
@@ -82,17 +85,25 @@ function makeGatedRunner(behaviors: Record<string, NodeBehavior> = {}): {
       },
     },
     parkedIds: () => [...pending.keys()],
-    whenParked(count) {
-      return new Promise((notify) => {
+    // Registered and announced: the node_waiting emit and the status write have settled too.
+    async whenParked(count) {
+      await new Promise<void>((notify) => {
         if (pending.size >= count) notify();
         else watchers.add({ count, notify });
       });
+      await flush();
     },
     resolveGate(nodeId, completion) {
-      const resolve = pending.get(nodeId);
-      if (!resolve) throw new Error(`no parked gate for ${nodeId}`);
+      const wait = pending.get(nodeId);
+      if (!wait) throw new Error(`no registered wait for ${nodeId}`);
       pending.delete(nodeId);
-      resolve(completion);
+      wait.resolve(completion);
+    },
+    rejectWait(nodeId, error) {
+      const wait = pending.get(nodeId);
+      if (!wait) throw new Error(`no registered wait for ${nodeId}`);
+      pending.delete(nodeId);
+      wait.reject(error);
     },
   };
 }
@@ -1747,5 +1758,78 @@ describe('runGraph — waiting results', () => {
       { status: 'running' },
       { status: 'failed', errorMessage: 'boom' },
     ]);
+  });
+
+  it('registers the wait before announcing it: the node is parked when node_waiting is emitted', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+    const parkedAtAnnouncement: string[][] = [];
+    const observing: EventEmitterPort = {
+      emitEvent(executionId, type, payload, nodeId) {
+        if (type === 'node_waiting') parkedAtAnnouncement.push(runner.parkedIds());
+        return events.port.emitEvent(executionId, type, payload, nodeId);
+      },
+      updateStatus(executionId, status, errorMessage) {
+        if (status === 'waiting') parkedAtAnnouncement.push(runner.parkedIds());
+        return events.port.updateStatus(executionId, status, errorMessage);
+      },
+    };
+
+    const run = runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, observing);
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: 'approved' });
+    await run;
+
+    // Once for the event, once for the status; the node was registered both times.
+    expect(parkedAtAnnouncement).toEqual([['A'], ['A']]);
+  });
+
+  it('an abandoned wait rejecting later is not an unhandled rejection', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents({ type: 'node_waiting', nodeId: 'A', message: 'db down' });
+    const unhandled = vi.fn();
+    process.on('unhandledRejection', unhandled);
+
+    try {
+      const outcome = await runGraph(
+        makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+        runner.port,
+        events.port,
+      );
+
+      expect(outcome).toEqual({ status: 'failed', error: { message: 'db down' } });
+      expect(runner.parkedIds()).toEqual(['A']);
+
+      runner.rejectWait('A', new Error('cancelled after abandonment'));
+      await flush();
+
+      expect(unhandled).not.toHaveBeenCalled();
+    } finally {
+      process.off('unhandledRejection', unhandled);
+    }
+  });
+
+  it('a failed announcement fails the node through errorPolicy and leaves the registration behind', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents({ type: 'node_waiting', nodeId: 'A', message: 'db down' });
+
+    const outcome = await runGraph(
+      makeInput([start('A', 'continue'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(runner.contexts.B).toEqual({ A: { error: { message: 'db down' } } });
+    expect(events.events.filter((event) => event.nodeId === 'A').map((event) => event.type)).toEqual([
+      'node_started',
+      'node_waiting',
+      'node_failed',
+    ]);
+    // The park never counted, so no waiting/running pair was written.
+    expect(events.statuses).toEqual([{ status: 'completed' }]);
+    // Known gap (durable-pause decision log): the registration outlives the failed node.
+    expect(runner.parkedIds()).toEqual(['A']);
   });
 });
