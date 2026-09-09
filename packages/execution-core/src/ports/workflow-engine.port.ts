@@ -5,6 +5,8 @@ export type WorkflowExecutionInput<TNode extends BaseNode> = {
   executionId: string;
   definition: WorkflowDefinition<TNode>;
   triggerPayload: Record<string, unknown>;
+  // Non-secret server-side run config. Everything here reaches Temporal Event History
+  // unredacted. See the `@workflowbuilder/temporal` README, "What Event History records".
   variables: Record<string, unknown>;
   global: Record<string, unknown>;
 };
