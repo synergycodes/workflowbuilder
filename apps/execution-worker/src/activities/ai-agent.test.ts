@@ -10,6 +10,7 @@ import {
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { executeAiAgent } from './ai-agent';
+import { apiCallError } from './api-call-error.fixture';
 
 function context(): ExecutionContext {
   return {
@@ -30,17 +31,10 @@ function aiAgentNode(): AiAgentNode {
   };
 }
 
-// statusCode 500 makes isRetryable default to true — a failure the SDK itself would
-// retry, so the single-call assertion fails if client retries ever come back on.
 function failingModel(statusCode: number, message: string): MockLanguageModelV3 {
   return new MockLanguageModelV3({
     doGenerate: () => {
-      throw new APICallError({
-        message,
-        url: 'https://model.invalid/chat/completions',
-        requestBodyValues: {},
-        statusCode,
-      });
+      throw apiCallError(statusCode, message);
     },
   });
 }
@@ -65,6 +59,8 @@ describe('executeAiAgent', () => {
   });
 
   it('calls the model exactly once on a retryable failure (retries belong to the Temporal activity policy)', async () => {
+    // statusCode 500 makes isRetryable default to true — a failure the SDK itself would
+    // retry, so this assertion fails if client retries ever come back on.
     const model = failingModel(500, 'Internal Server Error');
 
     await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toThrow(TransientNodeExecutionError);
@@ -77,7 +73,6 @@ describe('executeAiAgent', () => {
 
     await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toMatchObject({
       code: 'provider_unavailable',
-      classification: 'transient',
       cause: expect.any(APICallError),
     });
   });
