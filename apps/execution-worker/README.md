@@ -80,10 +80,27 @@ own: one executor per node type and the database as the store port.
 - **Namespace:** `TEMPORAL_NAMESPACE`, default `default`. Unlike the task queue this is _not_ shared through the plugin: both apps read it through `@workflow-builder/temporal-connection`, but each environment has to set the same value — a mismatch is silent, the worker simply never sees the backend's submissions.
 - **Workflow ID:** `execution-<executionId>` — deterministic, lets the backend cancel by execution ID. Also owned by the package.
 - **Activity timeouts:** DB activities get 30s / 5 retries; node activities (may call LLMs) get 10m / 2 retries. Exported as `DEFAULT_DATABASE_ACTIVITY_PROFILE` and `DEFAULT_NODE_ACTIVITY_PROFILE`.
-- **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps today's behavior. Of the reference executors, only the AI Agent's `ai_not_configured` is classified (permanent) so far; the rest are still unclassified.
+- **Retries per failure:** an executor throwing `PermanentNodeExecutionError` stops on its first attempt; `TransientNodeExecutionError` retries within the profile's limit. An unclassified throw keeps the profile's uniform retry. Every failure the reference executors make a judgment on is in the table below.
 - **Sandbox constraint:** `workflows.ts` is bundled into V8 with no Web APIs. It may only re-export from `@workflowbuilder/temporal/workflow`, never from the package root.
 - **Editing the package:** the worker imports its built `dist`, so run `pnpm build:temporal` after changing `packages/temporal/src`.
 - **Deploys that change the emitted event set:** drain in-flight runs first. Replaying an old run's history against a new emit sequence diverges — see [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
+
+### Failure classification
+
+Each judgment is made at the throw site that owns the error. The runner and the adapter never infer a class from a status code, so a consumer's own executors are unaffected by this table.
+
+| Failure                                                        | Class     | Code                                        |
+| -------------------------------------------------------------- | --------- | ------------------------------------------- |
+| AI Agent: provider answered 401 or 403                         | permanent | `provider_auth_rejected`                    |
+| AI Agent: provider answered any other 4xx except 408 and 429   | permanent | `provider_rejected_request`                 |
+| AI Agent: provider answered 429                                | transient | `provider_rate_limited`                     |
+| AI Agent: provider answered 5xx                                | transient | `provider_unavailable`                      |
+| AI Agent: provider answered 408, or the connection failed      | transient | `provider_unreachable`                      |
+| AI Agent: `AI_*` variables missing                             | permanent | `ai_not_configured`                         |
+| AI Agent, Decision: template reference malformed or unresolved | permanent | `template_malformed`, `template_unresolved` |
+| Decision: no branch matched                                    | permanent | `no_branch_matched`                         |
+
+The provider's own error is attached as `cause`, and `node_failed` reports the deepest cause's text, so the provider's message reaches the UI as it did before classification. The classifier's own message, which names the HTTP status, is one level up and visible only in Temporal's failure record. 409 is permanent on purpose, unlike the AI SDK's own retry default: no chat provider is known to answer 409 for a condition a retry would clear. Two kinds of SDK error stay unclassified and keep the profile's uniform retry: a response the SDK could not parse (a 2xx with a non-JSON body, typically a proxy answering with HTML) and errors raised without any provider response (a malformed tool call from the model, no output generated), which describe model behaviour a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
 
 ## Adding a new engine
 

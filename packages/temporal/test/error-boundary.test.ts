@@ -13,6 +13,7 @@ import {
   type NodeExecutorRegistry,
   PermanentNodeExecutionError,
   RUN_WORKFLOW_NAME,
+  TransientNodeExecutionError,
   WorkflowBuilderPlugin,
   type WorkflowDefinition,
   type WorkflowExecutionInput,
@@ -117,13 +118,36 @@ describe('error classification across the activity boundary', () => {
     expect((failure as WorkflowFailedError).cause).toMatchObject({ type: 'ai_not_configured' });
   }, 60_000);
 
-  it('an unclassified throw retries per the profile and is reported exactly as before', async () => {
-    const { store, attempts } = await run(
-      'unclassified',
-      () => new NodeExecutionError('no_branch_matched', 'No branch matched'),
+  it('a transient throw retries per the profile and reports the attempt it died on', async () => {
+    const { store, attempts, failure } = await run(
+      'transient',
+      () =>
+        new TransientNodeExecutionError('provider_unavailable', 'Provider failed to serve the request (HTTP 503)', {
+          cause: new Error('upstream overloaded'),
+        }),
     );
 
     expect(attempts).toBe(DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts);
-    expect(nodeFailedPayload(store)).toEqual({ error: { message: 'No branch matched' } });
+    // The deepest cause's message is what reaches node_failed, so a wrapped provider
+    // error keeps showing the provider's own text next to the code.
+    expect(nodeFailedPayload(store)).toEqual({
+      error: {
+        message: 'upstream overloaded',
+        code: 'provider_unavailable',
+        attempt: DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts,
+      },
+    });
+    expect(store.statuses.at(-1)).toMatchObject({ status: 'failed' });
+    expect((failure as WorkflowFailedError).cause).toMatchObject({ type: 'provider_unavailable' });
+  }, 60_000);
+
+  it('an unclassified throw retries per the profile and is reported exactly as before', async () => {
+    const { store, attempts } = await run(
+      'unclassified',
+      () => new NodeExecutionError('test_unclassified', 'Unclassified failure'),
+    );
+
+    expect(attempts).toBe(DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts);
+    expect(nodeFailedPayload(store)).toEqual({ error: { message: 'Unclassified failure' } });
   }, 60_000);
 });

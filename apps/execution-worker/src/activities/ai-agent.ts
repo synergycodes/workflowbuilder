@@ -1,9 +1,15 @@
 import { generateText, stepCountIs } from 'ai';
 
-import { type ExecutionContext, type LoggerPort, resolveTemplate } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  type LoggerPort,
+  NodeExecutionError,
+  resolveTemplate,
+} from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { createWebSearchTool } from '../tools/web-search';
+import { classifyProviderError } from './provider-error';
 
 // Bounds the agentic tool loop so a misbehaving model can't run up cost.
 const MAX_TOOL_STEPS = 4;
@@ -58,14 +64,16 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
 
     return { output: { response: result.text } };
   } catch (error) {
-    // Mirror the `node_failed` SSE payload shape so a log line and the event line up by executionId.
+    const failure = classifyProviderError(error);
+    // executionId joins this line to its node_failed event. The event carries the
+    // deepest cause, which for a network failure is the socket error, not this text.
     const message = error instanceof Error ? error.message : String(error);
     deps.logger?.error('llm call failed', {
       workflowId: context.workflowId,
       executionId: context.executionId,
       nodeId: node.id,
-      error: { message },
+      error: { message, ...(failure instanceof NodeExecutionError ? { code: failure.code } : {}) },
     });
-    throw error;
+    throw failure;
   }
 }

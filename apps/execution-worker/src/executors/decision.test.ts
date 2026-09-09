@@ -1,6 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
-import { type ExecutionContext, NodeExecutionError } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+} from '@workflow-builder/execution-core';
 
 import type { DecisionNode } from '../domain/ai-studio-nodes';
 import { executeDecision } from './decision';
@@ -59,7 +63,7 @@ describe('executeDecision', () => {
     expect(result.nextPort).toBe('yes');
   });
 
-  it('throws NodeExecutionError with code "no_branch_matched" when nothing matches', () => {
+  it('throws a permanent NodeExecutionError with code "no_branch_matched" when nothing matches', () => {
     const node = decisionNode([
       {
         sourceHandle: 'b1',
@@ -71,15 +75,14 @@ describe('executeDecision', () => {
       },
     ]);
 
-    expect(() => executeDecision(node, context())).toThrowError(NodeExecutionError);
+    const decide = () => executeDecision(node, context());
 
-    try {
-      executeDecision(node, context());
-    } catch (error) {
-      expect(error).toBeInstanceOf(NodeExecutionError);
-      expect((error as NodeExecutionError).code).toBe('no_branch_matched');
-      expect((error as NodeExecutionError).message).toMatch(/no matching branch/i);
-    }
+    expect(decide).toThrow(PermanentNodeExecutionError);
+    expect(decide).toThrow(
+      expect.objectContaining({ code: 'no_branch_matched', message: expect.stringMatching(/no matching branch/i) }),
+    );
+    // A branch with no conditions never matches, so the remediation must not suggest one.
+    expect(decide).toThrow(expect.objectContaining({ message: expect.stringContaining('always true') }));
   });
 
   it('treats a branch with no conditions as non-matching (so callers must throw or use explicit operators)', () => {

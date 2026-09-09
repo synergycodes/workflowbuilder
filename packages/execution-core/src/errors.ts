@@ -119,10 +119,13 @@ const MAX_CAUSE_DEPTH = 16;
 
 export function extractDeepestError(error: unknown): { message: string; code?: string; attempt?: number } {
   let current: unknown = error;
+  let message = '';
   let code: string | undefined;
   let attempt: number | undefined;
 
   for (let depth = 0; depth < MAX_CAUSE_DEPTH && current instanceof Error; depth++) {
+    // The deepest non-empty message wins: a failed fetch ends in an AggregateError with none.
+    if (current.message !== '') message = current.message;
     if (code === undefined && current instanceof NodeExecutionError) {
       code = current.code;
     }
@@ -137,9 +140,7 @@ export function extractDeepestError(error: unknown): { message: string; code?: s
     current = current.cause;
   }
 
-  return {
-    message: current instanceof Error ? current.message : String(current),
-    code,
-    attempt,
-  };
+  if (!(current instanceof Error) && String(current) !== '') message = String(current);
+
+  return { message, code, attempt };
 }
