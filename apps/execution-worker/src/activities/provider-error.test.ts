@@ -1,4 +1,4 @@
-import { APICallError } from 'ai';
+import { APICallError, RetryError } from 'ai';
 import { describe, expect, it } from 'vitest';
 
 import { PermanentNodeExecutionError, TransientNodeExecutionError } from '@workflow-builder/execution-core';
@@ -52,11 +52,22 @@ describe('classifyProviderError', () => {
     });
   });
 
-  it('a provider error without a status code (the request never got an answer) is transient', () => {
+  it('a provider error without a status code (the connection failed) is transient', () => {
     const classified = classifyProviderError(providerError());
 
     expect(classified).toBeInstanceOf(TransientNodeExecutionError);
     expect(classified).toMatchObject({ code: 'provider_unreachable', classification: 'transient' });
+  });
+
+  it('classifies the provider error inside a RetryError, so SDK retries do not hide the status', () => {
+    const original = providerError(401);
+    const wrapped = new RetryError({
+      message: 'Failed after 3 attempts',
+      reason: 'maxRetriesExceeded',
+      errors: [original],
+    });
+
+    expect(classifyProviderError(wrapped)).toMatchObject({ code: 'provider_auth_rejected', cause: original });
   });
 
   it("keeps the provider's own error as the cause, so node_failed still shows the provider's text", () => {

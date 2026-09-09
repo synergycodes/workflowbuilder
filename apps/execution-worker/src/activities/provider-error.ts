@@ -1,4 +1,4 @@
-import { APICallError } from 'ai';
+import { APICallError, RetryError } from 'ai';
 
 import { PermanentNodeExecutionError, TransientNodeExecutionError } from '@workflow-builder/execution-core';
 
@@ -6,13 +6,16 @@ import { PermanentNodeExecutionError, TransientNodeExecutionError } from '@workf
 // site, and nowhere central: the runner and the adapter never read a status.
 // Anything that is not a provider response passes through unclassified.
 export function classifyProviderError(error: unknown): unknown {
-  if (!APICallError.isInstance(error)) return error;
+  // With SDK retries enabled the provider error arrives wrapped in a RetryError;
+  // unwrap it so the status stays readable if maxRetries ever leaves 0.
+  const providerError = RetryError.isInstance(error) ? error.lastError : error;
+  if (!APICallError.isInstance(providerError)) return error;
 
-  const status = error.statusCode;
-  const options = { cause: error };
+  const status = providerError.statusCode;
+  const options = { cause: providerError };
 
   if (status === undefined) {
-    return new TransientNodeExecutionError('provider_unreachable', 'Provider did not answer the request', options);
+    return new TransientNodeExecutionError('provider_unreachable', 'Could not reach the provider', options);
   }
   if (status === 408) {
     return new TransientNodeExecutionError('provider_unreachable', 'Provider timed out (HTTP 408)', options);
