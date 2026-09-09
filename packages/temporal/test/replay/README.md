@@ -7,7 +7,7 @@ between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
 `@temporalio/testing`), runs every scenario in `../fixtures/replay-scenarios.ts`, and then
-does three separate things with what came back:
+does four separate things with what came back:
 
 1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
    `emitEvent` per emitted event, one `updateStatus` for the terminal write. An extra
@@ -20,10 +20,14 @@ does three separate things with what came back:
    never made. It goes through `Worker.runReplayHistories`, so one broken history reports
    alongside the others instead of hiding them. It also insists that every scenario has a
    recording and every recording belongs to a scenario; the version prefix is free.
+4. **Runs every scenario again with the workflow cache off** (`maxCachedWorkflows: 0`), so
+   every workflow task replays from the first event instead of resuming, and re-checks
+   the counts from (1) and what the store received. No sticky queue is used at all in
+   this mode, so a side effect that runs on replay shows up as an extra activity or write.
 
 Only (3) survives a change to the runner, which is why (3) is the one that matters at
-review time. (2) passes even on a broken change, because the history it checks was
-recorded by the same broken code.
+review time. (2) and (4) pass even on a broken change, because the histories they check
+were recorded by the same broken code.
 
 ## The scenarios
 
