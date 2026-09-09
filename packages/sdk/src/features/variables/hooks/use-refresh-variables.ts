@@ -32,7 +32,7 @@ function useRefreshVariables() {
 
   useEffect(() => {
     const wasNodeUpdated = ['dataUpdateNode', 'addNode'].includes(lastChangeName);
-    const wasDiagramReloaded = ['undo', 'redo', 'import'].includes(lastChangeName);
+    const wasDiagramReloaded = ['undo', 'redo', 'paste', 'cut', 'import'].includes(lastChangeName);
 
     const shouldRefreshVariables = wasNodeUpdated || wasDiagramReloaded;
     if (!shouldRefreshVariables) {
