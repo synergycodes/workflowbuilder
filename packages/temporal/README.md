@@ -203,6 +203,10 @@ Pre-1.0 the API surface may still move between minor versions. It is reviewed de
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
 
+## Testing
+
+[`TESTING.md`](TESTING.md) covers what is tested, what is not, and how CI gates it.
+
 ## License
 
 Apache-2.0
