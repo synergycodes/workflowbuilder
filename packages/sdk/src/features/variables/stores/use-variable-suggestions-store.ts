@@ -14,7 +14,7 @@ export type VariablesSuggestionsStore = {
 };
 
 export const emptyVariablesSuggestionsStore: VariablesSuggestionsStore = {
-  lastUpdateIndex: 0,
+  lastUpdateIndex: 1,
   commonByType: {},
   byNodeId: {},
 };

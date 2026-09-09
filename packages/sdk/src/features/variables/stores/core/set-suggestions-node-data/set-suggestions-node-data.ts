@@ -33,7 +33,7 @@ export function setVariablesSuggestionsNodeData(params: Params): VariablesSugges
   if (params.type === SUGGESTION_NODE_TYPE.COMMON) {
     storeToMutate = {
       ...storeToMutate,
-      lastUpdateIndex: 1,
+      lastUpdateIndex: storeToMutate.lastUpdateIndex + 1,
       commonByType: {
         ...storeToMutate.commonByType,
         [params.nodeType]: Object.fromEntries(
@@ -62,7 +62,7 @@ export function setVariablesSuggestionsNodeData(params: Params): VariablesSugges
   } else if (params.type === SUGGESTION_NODE_TYPE.CUSTOM) {
     storeToMutate = {
       ...storeToMutate,
-      lastUpdateIndex: Date.now(),
+      lastUpdateIndex: storeToMutate.lastUpdateIndex + 1,
       byNodeId: {
         ...storeToMutate.byNodeId,
         [params.nodeId]: {

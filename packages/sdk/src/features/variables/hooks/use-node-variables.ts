@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import type { VariableType } from '../../../node/node-output-schema';
 import { useStore } from '../../../store/store';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
+import { VARIABLES_TYPES_EMPTY } from '../constants';
 import { getSuggestionsFromVariableIndex } from '../stores/core/get-suggestions-node-data/get-suggestions-from-variables-index';
 import { useVariablesSuggestionsStore } from '../stores/use-variable-suggestions-store';
 import { filterSuggestionsByTypes } from '../utils/core/filter-suggestions-by-types';
@@ -20,10 +21,8 @@ type Response = {
   variablesKey: string;
 };
 
-const NO_TYPES: VariableType[] = []; // module scope
-
 export function useNodeVariables(nodeId: string | undefined, options?: Options): Response {
-  const { excludeTypes = NO_TYPES, includeTypes = NO_TYPES } = options || {};
+  const { excludeTypes = VARIABLES_TYPES_EMPTY, includeTypes = VARIABLES_TYPES_EMPTY } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
   const nodes = useStore((store) => store.nodes);
   const edges = useStore((store) => store.edges);
@@ -64,10 +63,9 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
       includeTypes,
     });
 
-    // Variables can’t change while the modal containing them is in use, so we only need to refresh them when they change.
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastUpdateIndex, nodeId, excludeTypes, includeTypes, edges.length, nodes.length]);
+  }, [lastUpdateIndex, nodeId, edges.length, nodes.length]);
 
   return useMemo(() => {
     const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];

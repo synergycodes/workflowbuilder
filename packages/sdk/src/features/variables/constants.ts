@@ -127,11 +127,13 @@ export const variableTypesOptions: VariableTypeOption[] = Object.values(variable
   ({ type, baseType }) => type === baseType,
 );
 
-export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'array'];
+export const VARIABLES_TYPES_NOT_PRIMITIVE: VariableType[] = ['object', 'array'];
 
-export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
+export const VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT: VariableType[] = [...VARIABLES_TYPES_NOT_PRIMITIVE, 'boolean'];
 
-export const variablesTypesNumeric: VariableType[] = ['number'];
+export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
+
+export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
 
 /**
  * Special keywords used to determine source-handle behaviour.

@@ -2,7 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useSingleSelectedElement } from '../../../../features/properties-bar/use-single-selected-element';
 import { VariableText } from '../../../../features/variables/components/variable-text/variable-text';
-import { variablesTypesNumeric, variablesTypesToExcludeInText } from '../../../../features/variables/constants';
+import {
+  VARIABLES_TYPES_EMPTY,
+  VARIABLES_TYPES_NUMERIC,
+  VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT,
+} from '../../../../features/variables/constants';
 import { useNodeVariables } from '../../../variables/hooks/use-node-variables';
 import type { VariableTextAreaControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -14,8 +18,8 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
   const { type } = schema;
   const selection = useSingleSelectedElement();
   const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
-    excludeTypes: variablesTypes ? [] : variablesTypesToExcludeInText,
-    includeTypes: variablesTypes || (type === 'number' ? variablesTypesNumeric : undefined),
+    excludeTypes: variablesTypes ? VARIABLES_TYPES_EMPTY : VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT,
+    includeTypes: variablesTypes || (type === 'number' ? VARIABLES_TYPES_NUMERIC : VARIABLES_TYPES_EMPTY),
   });
 
   const isDisabled = !enabled || disabled === true;
