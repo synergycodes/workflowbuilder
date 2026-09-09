@@ -18,12 +18,12 @@ export function executeDecision(node: DecisionNode, context: ExecutionContext): 
     }
   }
 
-  // No silent fallback — surface misconfigured decisions as node_failed.
-  // Authors must design an explicit catch-all branch. Permanent: the same
-  // inputs yield the same non-match on every attempt.
+  // No silent fallback — surface misconfigured decisions as node_failed. A branch
+  // with no conditions never matches, so a catch-all needs an always-true condition
+  // until empty means catch-all (follow-up: decision-empty-branch-catch-all).
   throw new PermanentNodeExecutionError(
     'no_branch_matched',
-    `Decision node has no matching branch (evaluated ${node.config.decisionBranches.length} branch(es)) and no default. Add an explicit catch-all branch with no conditions, or fix the existing conditions to cover every input.`,
+    `Decision node has no matching branch (evaluated ${node.config.decisionBranches.length} branch(es)) and no default. Add a catch-all branch whose condition is always true (for example "isEqual" with the same value on both sides), or fix the existing conditions to cover every input.`,
   );
 }
 

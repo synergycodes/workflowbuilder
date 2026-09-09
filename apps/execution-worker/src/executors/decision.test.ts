@@ -81,6 +81,8 @@ describe('executeDecision', () => {
     expect(decide).toThrow(
       expect.objectContaining({ code: 'no_branch_matched', message: expect.stringMatching(/no matching branch/i) }),
     );
+    // A branch with no conditions never matches, so the remediation must not suggest one.
+    expect(decide).toThrow(expect.objectContaining({ message: expect.stringContaining('always true') }));
   });
 
   it('treats a branch with no conditions as non-matching (so callers must throw or use explicit operators)', () => {
