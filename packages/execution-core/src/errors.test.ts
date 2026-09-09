@@ -118,6 +118,19 @@ describe('extractDeepestError — classification envelope', () => {
     expect(extractDeepestError(failure).attempt).toBeUndefined();
   });
 
+  it('falls back to the nearest non-empty message when the deepest cause has none', () => {
+    // Node's fetch fails with a TypeError whose cause is an AggregateError with an empty message.
+    // eslint-disable-next-line unicorn/error-message -- the empty message is the shape under test
+    const socket = new AggregateError([new Error('connect ECONNREFUSED ::1:11434')]);
+    const provider = new Error('Cannot connect to API: ', { cause: socket });
+    const failure = new NodeExecutionError('provider_unreachable', 'Could not reach the provider', { cause: provider });
+
+    expect(extractDeepestError(failure)).toMatchObject({
+      message: 'Cannot connect to API: ',
+      code: 'provider_unreachable',
+    });
+  });
+
   it('reports no attempt when nothing in the chain carries an envelope', () => {
     expect(extractDeepestError(new Error('boom'))).toEqual({
       message: 'boom',
