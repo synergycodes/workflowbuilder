@@ -6,7 +6,7 @@ A workflow can wait for days, so this is the guard that lets the package be edit
 between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
-`@temporalio/testing`), runs a graph, and then does three separate things with what came
+`@temporalio/testing`), runs a graph, and then does four separate things with what came
 back:
 
 1. **Counts the scheduled activities per type.** One `executeNode` per node, one
@@ -18,6 +18,9 @@ back:
 3. **Replays a committed history from `histories/`.** The cross-version guard. This is
    the one that fails when today's code would issue commands a run recorded on older code
    never made.
+4. **Runs the graph again with the workflow cache off** (`maxCachedWorkflows: 0`), so
+   every workflow task replays from the first event instead of resuming, and re-checks
+   the counts from (1). No sticky queue is used at all in this mode.
 
 Only (3) survives a change to the runner, which is why (3) is the one that matters at
 review time. (2) passes even on a broken change, because the history it checks was
@@ -26,9 +29,9 @@ recorded by the same broken code.
 ## The graph the harness runs
 
 `start → (left, right) → join`, defined in `../fixtures/graph.ts`. The fan-out is the
-point: it is the only shape that puts two commands in a single workflow task, which is
-where the runner's `Promise.all` becomes visible to Temporal. A straight line replays
-green while leaving that path untested.
+point: it is the only shape this runner can be given that puts more than one command in a
+single workflow task, which is where the runner's `Promise.all` becomes visible to
+Temporal. A straight line replays green while leaving that path untested.
 
 ## Recording a history
 
