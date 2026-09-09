@@ -75,15 +75,12 @@ describe('executeDecision', () => {
       },
     ]);
 
-    expect(() => executeDecision(node, context())).toThrowError(NodeExecutionError);
+    const decide = () => executeDecision(node, context());
 
-    try {
-      executeDecision(node, context());
-    } catch (error) {
-      expect(error).toBeInstanceOf(PermanentNodeExecutionError);
-      expect((error as NodeExecutionError).code).toBe('no_branch_matched');
-      expect((error as NodeExecutionError).message).toMatch(/no matching branch/i);
-    }
+    expect(decide).toThrow(PermanentNodeExecutionError);
+    expect(decide).toThrow(
+      expect.objectContaining({ code: 'no_branch_matched', message: expect.stringMatching(/no matching branch/i) }),
+    );
   });
 
   it('treats a branch with no conditions as non-matching (so callers must throw or use explicit operators)', () => {
