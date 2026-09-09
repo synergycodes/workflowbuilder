@@ -53,27 +53,39 @@ export const TWO_GATES_GRAPH: WorkflowDefinition<PauseTestNode> = {
   ],
 };
 
+function noop(): void {}
+
 export type PauseHarness = {
   executors: NodeExecutorRegistry<PauseTestNode>;
   executed: string[];
   inputsSeen: Record<string, Record<string, unknown>>;
+  release: () => void;
 };
 
-export function createPauseExecutors(): PauseHarness {
+// `holdWaiting` keeps the waiting executor in flight until `release()`.
+export function createPauseExecutors(options: { holdWaiting?: boolean } = {}): PauseHarness {
   const executed: string[] = [];
   const inputsSeen: PauseHarness['inputsSeen'] = {};
+  let release: () => void = noop;
+  const held = options.holdWaiting
+    ? new Promise<void>((resolve) => {
+        release = resolve;
+      })
+    : Promise.resolve();
 
   return {
     executed,
     inputsSeen,
+    release: () => release(),
     executors: {
       'test/step': (node, context) => {
         executed.push(node.id);
         inputsSeen[node.id] = { ...context.nodeOutputs };
         return { output: { visited: node.id } };
       },
-      'test/gate': (node) => {
+      'test/gate': async (node) => {
         executed.push(node.id);
+        await held;
         return { waiting: true };
       },
     },
