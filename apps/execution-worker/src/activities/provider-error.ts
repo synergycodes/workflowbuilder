@@ -2,9 +2,6 @@ import { APICallError, RetryError } from 'ai';
 
 import { PermanentNodeExecutionError, TransientNodeExecutionError } from '@workflow-builder/execution-core';
 
-// The judgment for the AI Agent's provider failures lives here, at the throw
-// site, and nowhere central: the runner and the adapter never read a status.
-// Anything that is not a provider response passes through unclassified.
 export function classifyProviderError(error: unknown): unknown {
   // With SDK retries enabled the provider error arrives wrapped in a RetryError;
   // unwrap it so the status stays readable if maxRetries ever leaves 0.

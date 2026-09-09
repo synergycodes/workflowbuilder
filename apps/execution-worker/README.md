@@ -100,7 +100,7 @@ Each judgment is made at the throw site that owns the error. The runner and the 
 | AI Agent, Decision: template reference malformed or unresolved | permanent | `template_malformed`, `template_unresolved` |
 | Decision: no branch matched                                    | permanent | `no_branch_matched`                         |
 
-The HTTP status is in the message and the provider's own error is attached as `cause`, so `node_failed` keeps showing the provider's text as it did before classification. Errors the AI SDK raises without a provider response (a malformed tool call from the model, no output generated) stay unclassified: they describe model behaviour, which a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
+The provider's own error is attached as `cause`, and `node_failed` reports the deepest cause's text, so the provider's message reaches the UI as it did before classification. The classifier's own message, which names the HTTP status, is one level up and visible only in Temporal's failure record. 409 is permanent on purpose, unlike the AI SDK's own retry default: no chat provider is known to answer 409 for a condition a retry would clear. Two kinds of SDK error stay unclassified and keep the profile's uniform retry: a response the SDK could not parse (a 2xx with a non-JSON body, typically a proxy answering with HTML) and errors raised without any provider response (a malformed tool call from the model, no output generated), which describe model behaviour a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
 
 ## Adding a new engine
 
