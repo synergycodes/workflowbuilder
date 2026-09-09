@@ -144,10 +144,10 @@ describe('error classification across the activity boundary', () => {
   it('an unclassified throw retries per the profile and is reported exactly as before', async () => {
     const { store, attempts } = await run(
       'unclassified',
-      () => new NodeExecutionError('no_branch_matched', 'No branch matched'),
+      () => new NodeExecutionError('test_unclassified', 'Unclassified failure'),
     );
 
     expect(attempts).toBe(DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts);
-    expect(nodeFailedPayload(store)).toEqual({ error: { message: 'No branch matched' } });
+    expect(nodeFailedPayload(store)).toEqual({ error: { message: 'Unclassified failure' } });
   }, 60_000);
 });
