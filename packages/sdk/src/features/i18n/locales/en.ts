@@ -138,6 +138,9 @@ export const en = {
     variableNotFound: 'Variable not found.',
     removeVariableWarning: 'Deleting this variable will permanently remove its configuration.',
     removeVariableIsBlocked: 'The variable is used in the following nodes and cannot be deleted.',
+    addVariableToContinue: 'Add a variable to continue',
+    missingMentionNodePrefix: 'Missing node',
+    missingMentionNodeVariablePrefix: 'Missing variable',
   },
   loader: {
     text: 'Loading...',
@@ -181,7 +184,10 @@ export const en = {
     wrongDiagramFormat: 'Wrong diagram format',
     contentCopied: 'Content copied to clipboard',
     variablesListIsEmpty: 'The list of available variables is empty.',
+    variableNameAlreadyExists: 'A variable with this name already exists.',
+    variableWasNotFound: 'This variable was not found.',
     cantEditReadOnlyMode: 'Editing is blocked in read-only mode.',
+    notValidConnection: 'That connection is blocked.',
   },
   workflowsSettings: {
     modalTitle: 'Settings',

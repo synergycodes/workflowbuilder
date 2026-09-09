@@ -7,9 +7,9 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from '../../app-bar.module.css';
 
-import { openModalWorkflowSettings } from '../../../../features/variables/modals/modal-settings';
 import { useStore } from '../../../../store/store';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
+import { openModalWorkflowSettings } from '../../../variables/modals/global/modal-settings';
 
 /**
  * Props accepted by {@link ProjectSelection}. Use this when typing a

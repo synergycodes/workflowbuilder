@@ -16,6 +16,6 @@ export type OutputProperty = {
   description?: string;
 };
 
-export type NodeOutputSchema = {
+export type NodeSchemaOutput = {
   properties: Record<string, OutputProperty>;
 };

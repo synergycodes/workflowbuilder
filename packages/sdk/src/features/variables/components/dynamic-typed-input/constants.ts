@@ -1,26 +1,32 @@
 import type { SelectItem } from '@workflowbuilder/ui';
 
-import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
 
-export const typesForDate: VariableTypePrimitive[] = ['date', 'datetime'];
+export const typesForDate: VariableType[] = ['date', 'datetime'];
 
-export const typesForInput: VariableTypePrimitive[] = ['string', 'number'];
+export const typesForInput: VariableType[] = ['string', 'number'];
+
+export const ITEMS_FOR_BOOLEAN_VALUES = {
+  TRUE: 'true',
+  FALSE: 'false',
+  EMPTY: '',
+} as const;
 
 export const itemsForBoolean: SelectItem[] = [
   {
     type: 'item',
-    label: 'Empty',
-    value: '',
+    label: ' ', // Empty space
+    value: ITEMS_FOR_BOOLEAN_VALUES.EMPTY,
   },
   {
     type: 'item',
     label: 'True',
-    value: 'true',
+    value: ITEMS_FOR_BOOLEAN_VALUES.TRUE,
   },
   {
     type: 'item',
     label: 'False',
-    value: 'false',
+    value: ITEMS_FOR_BOOLEAN_VALUES.FALSE,
   },
 ];
 

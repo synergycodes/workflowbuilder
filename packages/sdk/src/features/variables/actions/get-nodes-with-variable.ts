@@ -1,22 +1,31 @@
 import type { WBIcon } from '@workflow-builder/icons';
 
 import { getStoreNodes } from '../../../store/slices/diagram-slice/actions';
-import { VARIABLE_BRACKETS_START, VARIABLE_GLOBAL_KEY, VARIABLE_NODES_KEY } from '../constants';
+import type { MaybeVariableReference } from '../types';
+import { getVariableReferences } from '../utils/keys/get-variable-references';
 
-type NodeWithVariable = {
+export type NodeWithVariable = {
   id: string;
   icon: WBIcon;
   title?: string;
 };
 
-// This is very expensive operation call it only inside a callback that is trigger by user action
-export function getNodesWithVariable(variableKey: string): NodeWithVariable[] {
-  const isSupportedVariable = [VARIABLE_GLOBAL_KEY, VARIABLE_NODES_KEY].some((key) =>
-    variableKey.startsWith(`${VARIABLE_BRACKETS_START}${key}`),
-  );
+/**
+ * Returns nodes whose properties reference the given variable.
+ *
+ * This is a very expensive operation (stringifies properties of every node), so call it only inside
+ * a callback triggered by a user action - when the variable edit or delete flow is opened.
+ *
+ * The result is used to:
+ * - block changing the type of a variable that is already used, since existing controls would keep a value
+ *   that no longer matches the type (e.g. a number variable switched to string leaves a broken control value)
+ * - block deleting a variable that is still used, and show which nodes contain it
+ */
+export function getNodesWithVariable(maybeReference: MaybeVariableReference): NodeWithVariable[] {
+  const { reference } = getVariableReferences(maybeReference);
 
-  if (!isSupportedVariable) {
-    console.error(`Unsupported variable for getNodesIdsWithVariable: ${variableKey}`);
+  if (!reference) {
+    console.error(`Unsupported variable for getNodesIdsWithVariable: ${maybeReference}`);
 
     return [];
   }
@@ -25,7 +34,7 @@ export function getNodesWithVariable(variableKey: string): NodeWithVariable[] {
 
   const nodesWithVariables = nodes
     .filter((node) => {
-      return JSON.stringify(node.data.properties).includes(variableKey);
+      return JSON.stringify(node.data.properties).includes(reference);
     })
     .map((node) => ({
       id: node.id,
