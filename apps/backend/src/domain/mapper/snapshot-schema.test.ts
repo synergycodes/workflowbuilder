@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { type DecisionIssueCode, decisionIssueMessage } from '../decision/decision-issues';
 import { mapToExecutionModel } from './from-integration-data';
 import { workflowSnapshotSchema } from './snapshot-schema';
 
@@ -112,6 +113,228 @@ describe('workflowSnapshotSchema', () => {
     };
 
     expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
+  });
+});
+
+function node(id: string, properties?: Record<string, unknown>) {
+  return { id, data: { type: 'product/any', properties } };
+}
+
+function edge(source: string, target: string, sourceHandle?: string) {
+  return { id: `${source}->${target}${sourceHandle ?? ''}`, source, target, sourceHandle };
+}
+
+function issuesOf(snapshot: unknown): { path: string; message: string }[] {
+  const result = workflowSnapshotSchema.safeParse(snapshot);
+  return result.success
+    ? []
+    : result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
+}
+
+function issuePaths(snapshot: unknown): string[] {
+  return issuesOf(snapshot).map((issue) => issue.path);
+}
+
+describe('workflowSnapshotSchema: decision requests', () => {
+  const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+  const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
+  const emptyForm = { type: 'object', properties: {} };
+
+  function decisionNode(id: string, decisionRequest: Record<string, unknown>) {
+    return {
+      id,
+      data: {
+        type: 'product/any',
+        properties: { decisionRequest: { version: 1, schema: emptyForm, ...decisionRequest } },
+      },
+    };
+  }
+
+  it('parses a decision request and materialises its defaults inside properties', () => {
+    const parsed = workflowSnapshotSchema.parse({
+      nodes: [node('src'), decisionNode('review', { actions: [approve, askAgain] })],
+      edges: [edge('src', 'review')],
+    });
+
+    expect(parsed.nodes[1]!.data.properties?.decisionRequest?.actions).toEqual([
+      { ...approve, port: 'approved' },
+      { ...askAgain, maxIterations: 3 },
+    ]);
+  });
+
+  it('leaves the properties of a node without a request untouched', () => {
+    const properties = { label: 'Plain', decisionBranches: [{ x: 1 }], meta: { deep: { nested: true } } };
+
+    const parsed = workflowSnapshotSchema.parse({ nodes: [node('n1', properties)], edges: [] });
+
+    expect(parsed.nodes[0]!.data.properties).toEqual(properties);
+  });
+
+  it('points a request issue at the node index and field', () => {
+    const snapshot = {
+      nodes: [node('src'), decisionNode('review', { actions: [approve, { ...approve, name: 'approve-2' }] })],
+      edges: [edge('src', 'review')],
+    };
+
+    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decisionRequest.actions.1.effect');
+  });
+
+  it('rejects `decisionRequest: null`; absent is the only way to carry no request', () => {
+    const snapshot = { nodes: [node('n1', { decisionRequest: null })], edges: [] };
+
+    expect(issuePaths(snapshot)).toContain('nodes.0.data.properties.decisionRequest');
+  });
+
+  it.each<{ name: string; snapshot: unknown }>([
+    {
+      name: 'an explicit source that is a direct predecessor',
+      snapshot: {
+        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve], proposalSourceNodeId: 'a' })],
+        edges: [edge('a', 'review'), edge('b', 'review')],
+      },
+    },
+    {
+      name: 'a rerun-source node with exactly one predecessor and no explicit source',
+      snapshot: {
+        nodes: [node('a'), decisionNode('review', { actions: [approve, askAgain] })],
+        edges: [edge('a', 'review')],
+      },
+    },
+    {
+      name: 'a rerun-source node with several predecessors when the explicit source picks one',
+      snapshot: {
+        nodes: [
+          node('a'),
+          node('b'),
+          decisionNode('review', { actions: [approve, askAgain], proposalSourceNodeId: 'b' }),
+        ],
+        edges: [edge('a', 'review'), edge('b', 'review')],
+      },
+    },
+    {
+      name: 'a rerun-source node whose single predecessor connects through two handles',
+      snapshot: {
+        nodes: [node('a'), decisionNode('review', { actions: [approve, askAgain] })],
+        edges: [edge('a', 'review', 'left'), edge('a', 'review', 'right')],
+      },
+    },
+    {
+      name: 'a node without rerun-source and with several predecessors and no explicit source',
+      snapshot: {
+        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve] })],
+        edges: [edge('a', 'review'), edge('b', 'review')],
+      },
+    },
+    {
+      name: 'a node without rerun-source whose explicit source carries its own decision request',
+      snapshot: {
+        nodes: [
+          decisionNode('first', { actions: [approve] }),
+          decisionNode('second', { actions: [approve], proposalSourceNodeId: 'first' }),
+        ],
+        edges: [edge('first', 'second')],
+      },
+    },
+    {
+      name: 'two independent deciding nodes in one snapshot',
+      snapshot: {
+        nodes: [
+          node('a'),
+          decisionNode('review-1', { actions: [approve, askAgain] }),
+          node('b'),
+          decisionNode('review-2', { actions: [approve, askAgain] }),
+        ],
+        edges: [edge('a', 'review-1'), edge('review-1', 'b'), edge('b', 'review-2')],
+      },
+    },
+  ])('accepts $name', ({ snapshot }) => {
+    expect(workflowSnapshotSchema.safeParse(snapshot).success).toBe(true);
+  });
+
+  it.each<{ name: string; snapshot: unknown; path: string; issue: { code: DecisionIssueCode; value?: string } }>([
+    {
+      name: 'an explicit source with no edge into the deciding node',
+      snapshot: {
+        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve], proposalSourceNodeId: 'b' })],
+        edges: [edge('a', 'review')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_not_a_predecessor', value: 'b' },
+    },
+    {
+      name: 'an explicit source that is a successor, not a predecessor',
+      snapshot: {
+        nodes: [
+          node('a'),
+          decisionNode('review', { actions: [approve], proposalSourceNodeId: 'after' }),
+          node('after'),
+        ],
+        edges: [edge('a', 'review'), edge('review', 'after')],
+      },
+      path: 'nodes.1.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_not_a_predecessor', value: 'after' },
+    },
+    {
+      name: 'a rerun-source node with no predecessor',
+      snapshot: {
+        nodes: [decisionNode('review', { actions: [approve, askAgain] }), node('after')],
+        edges: [edge('review', 'after')],
+      },
+      path: 'nodes.0.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_missing' },
+    },
+    {
+      name: 'a rerun-source node with several predecessors and no explicit source',
+      snapshot: {
+        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve, askAgain] })],
+        edges: [edge('a', 'review'), edge('b', 'review')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_ambiguous' },
+    },
+    {
+      name: 'a rerun-source node whose implicit source carries its own decision request',
+      snapshot: {
+        nodes: [
+          node('a'),
+          decisionNode('first', { actions: [approve] }),
+          decisionNode('second', { actions: [approve, askAgain] }),
+        ],
+        edges: [edge('a', 'first'), edge('first', 'second')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_has_decision_request', value: 'first' },
+    },
+    {
+      name: 'a rerun-source node whose explicit source carries its own decision request',
+      snapshot: {
+        nodes: [
+          node('a'),
+          decisionNode('first', { actions: [approve] }),
+          decisionNode('second', { actions: [approve, askAgain], proposalSourceNodeId: 'first' }),
+        ],
+        edges: [edge('a', 'first'), edge('a', 'second'), edge('first', 'second')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_has_decision_request', value: 'first' },
+    },
+    {
+      name: 'only the broken node when another deciding node in the snapshot is fine',
+      snapshot: {
+        nodes: [
+          node('a'),
+          decisionNode('review-1', { actions: [approve, askAgain] }),
+          decisionNode('review-2', { actions: [approve, askAgain] }),
+        ],
+        edges: [edge('a', 'review-1'), edge('a', 'review-2'), edge('review-1', 'review-2')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_ambiguous' },
+    },
+  ])('rejects $name', ({ snapshot, path, issue }) => {
+    const sourceIssues = issuesOf(snapshot).filter((candidate) => candidate.path.endsWith('proposalSourceNodeId'));
+
+    expect(sourceIssues).toEqual([{ path, message: decisionIssueMessage(issue.code, issue.value) }]);
   });
 });
 
@@ -296,5 +519,79 @@ describe('mapToExecutionModel', () => {
     const result = mapToExecutionModel('wf-1', snapshot);
 
     expect(result.nodes[0]?.type).toBe('never-seen-before/v3');
+  });
+
+  it('lifts a validated decision request out of `config` onto `decisionRequest`', () => {
+    const request = {
+      version: 1,
+      actions: [{ name: 'approve', label: 'Approve', effect: 'resume' }],
+      schema: { type: 'object', properties: {} },
+    };
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        {
+          id: 'review',
+          data: { type: 'product/any', properties: { label: 'Review', foo: 1, decisionRequest: request } },
+        },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.decisionRequest).toEqual({
+      ...request,
+      actions: [{ ...request.actions[0], port: 'approved' }],
+    });
+    expect(result.nodes[0]!.config).toEqual({ foo: 1 });
+    expect(result.nodes[0]!.label).toBe('Review');
+  });
+
+  it('gives a node without a request no `decisionRequest` key', () => {
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'n1', data: { type: 'product/any', properties: { foo: 1 } } },
+        { id: 'n2', data: { type: 'product/any' } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]).not.toHaveProperty('decisionRequest');
+    expect(result.nodes[1]).not.toHaveProperty('decisionRequest');
+  });
+});
+
+function snapshotJson(properties: string) {
+  return JSON.parse(`{"nodes":[{"id":"n1","data":{"type":"product/any","properties":${properties}}}],"edges":[]}`);
+}
+
+describe('workflowSnapshotSchema: own __proto__ keys', () => {
+  it('rejects a well-shaped decision request smuggled through properties.__proto__', () => {
+    const smuggled = snapshotJson(
+      '{"label":"ok","__proto__":{"decisionRequest":{"version":99,"actions":[{"effect":"bogus"}],"schema":"x"}}}',
+    );
+
+    expect(issuesOf(smuggled)).toEqual([
+      { path: 'nodes.0.data.properties.__proto__', message: "the key '__proto__' is not allowed" },
+    ]);
+  });
+
+  it('rejects one inside a decision request instead of inheriting the deadline it smuggles', () => {
+    const poisoned = snapshotJson(
+      '{"decisionRequest":{"version":1,"actions":[{"name":"approve","label":"Approve","effect":"resume"}],' +
+        '"schema":{"type":"object","properties":{}},' +
+        '"__proto__":{"deadline":{"after":"garbage","policy":"nuke"},"uiSchema":"x"}}}',
+    );
+
+    expect(issuePaths(poisoned)).toEqual(['nodes.0.data.properties.decisionRequest.__proto__']);
+  });
+
+  it('answers with an issue, not a throw, when the smuggled request has no actions array', () => {
+    const smuggled = snapshotJson('{"__proto__":{"decisionRequest":{"actions":"x"}}}');
+
+    expect(() => workflowSnapshotSchema.safeParse(smuggled)).not.toThrow();
+    expect(issuePaths(smuggled)).toEqual(['nodes.0.data.properties.__proto__']);
   });
 });
