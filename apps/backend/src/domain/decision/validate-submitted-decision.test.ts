@@ -58,6 +58,7 @@ describe('validateSubmittedDecision', () => {
       effect: 'resume-with-edits',
     },
     { name: 'a reject without a reason when none is required', call: { action: 'reject' }, effect: 'reject' },
+    { name: 'a reject with empty edits', call: { action: 'reject', edits: {} }, effect: 'reject' },
     {
       name: 'a reject with a reason when one is required',
       request: requestWith({ actions: [approve, { ...reject, reasonRequired: true }] }),
@@ -69,6 +70,11 @@ describe('validateSubmittedDecision', () => {
       call: { action: 'ask-again', comment: 'Use the discounted price' },
       effect: 'rerun-source',
     },
+    {
+      name: 'a rerun with empty edits',
+      call: { action: 'ask-again', comment: 'again', edits: {} },
+      effect: 'rerun-source',
+    },
   ])('accepts $name', ({ request = requestWith(), call, effect }) => {
     const result = validateSubmittedDecision(request, call);
 
@@ -76,18 +82,6 @@ describe('validateSubmittedDecision', () => {
     expect(result.decision?.effect).toBe(effect);
     expect(result.decision?.action).toBe(call.action);
     expect(result.action?.name).toBe(call.action);
-  });
-
-  // Open point in the decision log: until decided otherwise, edits on a non-resume action
-  // are checked field by field, kept on the decision, and leave the effect alone.
-  it.each<{ call: SubmittedDecision; effect: string }>([
-    { call: { action: 'reject', reason: 'late', edits: { refundAmount: 0 } }, effect: 'reject' },
-    { call: { action: 'ask-again', comment: 'again', edits: { note: 'x' } }, effect: 'rerun-source' },
-  ])('keeps the declared effect $effect and carries the edits of a non-resume submission', ({ call, effect }) => {
-    const result = validateSubmittedDecision(requestWith(), call);
-
-    expect(result.decision?.effect).toBe(effect);
-    expect(result.decision?.edits).toEqual(call.edits);
   });
 
   it.each<{
@@ -157,6 +151,27 @@ describe('validateSubmittedDecision', () => {
       code: 'comment_required',
       value: 'ask-again',
       path: ['comment'],
+    },
+    {
+      name: 'a reject carrying edits',
+      call: { action: 'reject', reason: 'late', edits: { refundAmount: 0 } },
+      code: 'edits_not_allowed',
+      value: 'reject',
+      path: ['edits'],
+    },
+    {
+      name: 'a rerun carrying edits',
+      call: { action: 'ask-again', comment: 'again', edits: { note: 'x' } },
+      code: 'edits_not_allowed',
+      value: 'ask-again',
+      path: ['edits'],
+    },
+    {
+      name: 'a reject carrying an edit on a read-only field, named for the real problem',
+      call: { action: 'reject', edits: { orderDate: '2026-01-01' } },
+      code: 'edits_not_allowed',
+      value: 'reject',
+      path: ['edits'],
     },
     {
       name: 'an edit on a read-only field',
