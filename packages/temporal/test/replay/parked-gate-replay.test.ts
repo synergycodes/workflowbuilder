@@ -15,7 +15,7 @@ import {
 } from '../../src/index';
 import { resolveNodeUpdate } from '../../src/workflow/index';
 import { type RecordingStore, createRecordingStore } from '../fixtures/graph';
-import { countScheduledActivities, executeVerdictWithRetry, waitUntil } from '../fixtures/helpers';
+import { countScheduledActivities, waitUntil } from '../fixtures/helpers';
 import { type PauseTestNode, SINGLE_GATE_GRAPH, createPauseExecutors } from '../fixtures/pause-graph';
 
 const EXECUTION_ID = 'parked-gate-replay-execution';
@@ -77,9 +77,7 @@ describe('replay — parked gate', () => {
 
     await worker.runUntil(async () => {
       await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
-      );
+      await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] });
       await handle.result();
     });
 

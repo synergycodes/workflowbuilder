@@ -14,7 +14,7 @@ import {
 } from '../src/index';
 import { resolveNodeUpdate } from '../src/workflow/index';
 import { type RecordingStore, createRecordingStore } from './fixtures/graph';
-import { acceptedUpdateIds, executeVerdictWithRetry, waitUntil } from './fixtures/helpers';
+import { acceptedUpdateIds, waitUntil } from './fixtures/helpers';
 import {
   PORT_ROUTED_GRAPH,
   type PauseHarness,
@@ -22,10 +22,16 @@ import {
   SINGLE_GATE_GRAPH,
   TWO_GATES_GRAPH,
   createPauseExecutors,
+  holdAnnouncement,
 } from './fixtures/pause-graph';
 
 function eventTypes(store: RecordingStore, nodeId?: string): string[] {
   return store.events.filter((event) => nodeId === undefined || event.nodeId === nodeId).map((event) => event.type);
+}
+
+// The earliest observable moment; delivering right here is the claim under test.
+function whenAnnounced(store: RecordingStore, nodeId: string): Promise<void> {
+  return waitUntil(() => eventTypes(store, nodeId).includes('node_waiting'), `node_waiting for ${nodeId}`);
 }
 
 async function expectRejected(update: Promise<unknown>, code: string): Promise<void> {
@@ -96,9 +102,7 @@ describe('durable pause', () => {
 
     const worker2 = await createWorker(taskQueue, store, harness);
     await worker2.runUntil(async () => {
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
-      );
+      await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] });
       await handle.result();
     });
 
@@ -118,24 +122,17 @@ describe('durable pause', () => {
 
     const worker = await createWorker(taskQueue, store, harness);
     await worker.runUntil(async () => {
-      await waitUntil(
-        () =>
-          eventTypes(store).filter((type) => type === 'node_waiting').length === 2 &&
-          store.statuses.some((entry) => entry.status === 'waiting'),
-        'both gates to park',
-      );
+      await Promise.all([whenAnnounced(store, 'gate-a'), whenAnnounced(store, 'gate-b')]);
 
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'first' } }] }),
-      );
+      await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'first' } }] });
       const rejection: unknown = await handle
         .executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-a', resolution: { output: 'second' } }] })
         .catch((error: unknown) => error);
       expect(rejection).toBeInstanceOf(WorkflowUpdateFailedError);
       expect((rejection as WorkflowUpdateFailedError).cause).toMatchObject({ type: 'verdict_already_delivered' });
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }] }),
-      );
+      await handle.executeUpdate(resolveNodeUpdate, {
+        args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }],
+      });
       await handle.result();
     });
 
@@ -153,7 +150,7 @@ describe('durable pause', () => {
 
     const worker = await createWorker(taskQueue, store, harness);
     await worker.runUntil(async () => {
-      await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
+      await whenAnnounced(store, 'gate');
 
       // Rejection classes live in verdict-validation.test.ts; this pins the
       // end-to-end property: a rejected update leaves the parked run resolvable.
@@ -169,9 +166,7 @@ describe('durable pause', () => {
         'verdict_for_unknown_node',
       );
 
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
-      );
+      await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] });
       await handle.result();
     });
 
@@ -194,12 +189,10 @@ describe('durable pause', () => {
 
     const worker = await createWorker(taskQueue, store, harness);
     await worker.runUntil(async () => {
-      await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
-      await executeVerdictWithRetry(() =>
-        handle.executeUpdate(resolveNodeUpdate, {
-          args: [{ nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved' } }],
-        }),
-      );
+      await whenAnnounced(store, 'gate');
+      await handle.executeUpdate(resolveNodeUpdate, {
+        args: [{ nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved' } }],
+      });
       await handle.result();
     });
 
@@ -208,6 +201,48 @@ describe('durable pause', () => {
     expect(harness.inputsSeen.after).toEqual({ start: { visited: 'start' } });
     expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+  }, 120_000);
+
+  it('rejects a verdict before the node parks, and accepts one the instant node_waiting is announced', async () => {
+    const taskQueue = 'pause-held';
+    const store = createRecordingStore();
+    const announcement = holdAnnouncement(store, 'gate');
+    const harness = createPauseExecutors({ holdWaiting: true });
+    const handle = await startRun(taskQueue, 'pause-held-execution', SINGLE_GATE_GRAPH);
+
+    const worker = await createWorker(taskQueue, announcement.store, harness);
+    await worker.runUntil(async () => {
+      // Shutdown waits for held activities, so a failed assertion here must still release both.
+      try {
+        await waitUntil(() => eventTypes(store, 'gate').includes('node_started'), 'node_started for the waiting node');
+        await expectRejected(
+          handle.executeUpdate('resolveNode', {
+            args: [{ nodeId: 'gate', resolution: { output: 'too early' } }],
+            updateId: 'verdict-before-parking',
+          }),
+          'node_not_waiting',
+        );
+
+        harness.release();
+        await whenAnnounced(store, 'gate');
+        await handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
+        });
+        // Accepted while the announcing activity is still in flight: the status write comes after it.
+        expect(store.statuses).toEqual([]);
+      } finally {
+        harness.release();
+        announcement.release();
+      }
+
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate', 'after']);
+    expect(harness.inputsSeen.after.gate).toBe('approved');
+    expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(acceptedUpdateIds(await handle.fetchHistory())).not.toContain('verdict-before-parking');
   }, 120_000);
 
   it('cancel while waiting closes the run as cancelled, with no node_failed for the gate', async () => {

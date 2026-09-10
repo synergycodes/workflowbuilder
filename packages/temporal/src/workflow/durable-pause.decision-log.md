@@ -38,10 +38,21 @@ verdict carries. This file records the decisions behind the Temporal side of the
   validator throw runs before acceptance instead — the update is rejected, the task is
   safe, nothing reaches history, and replay skips validators. Three invariants only:
   the update cannot kill the run, success means it landed on a waiting node, a verdict
-  cannot do what an executor could not. Consequence: a verdict racing the parking
-  activation is rejected `node_not_waiting` (updates are processed before workflow
-  code continues); truthful at validation time, and retryable. Verdict meaning and
-  authorship stay with the decision-endpoint and claim work.
+  cannot do what an executor could not. Verdict meaning and authorship stay with the
+  decision-endpoint and claim work.
+- **The wait is registered before it is announced.** `parkUntilResolved` calls
+  `awaitResolution` first, then emits `node_waiting` and writes the status. Both are
+  activities, so a verdict sent on seeing either can never be ahead of the state the
+  validator reads: `node_not_waiting` is a final answer, not a race to retry.
+  Registration is state, not a command, so the committed parked history replays
+  unchanged. The registered promise carries a no-op `catch`: abandoned when the
+  announcement throws, its rejection on cancellation would otherwise fail the workflow
+  task.
+- **Known gap, accepted.** A `node_waiting` emit that fails after every retry leaves the
+  `waiting` entry registered while the node fails through `errorPolicy`; a blind verdict
+  for it would be accepted with no effect. A real outage fails the `node_failed` emit too
+  and ends the run, so the gap needs the database to recover between two consecutive
+  emits.
 - **Names.** Update `resolveNode`, input `{ nodeId, resolution }`. The verdict content
   is opaque here: `resolution` is a `CompletedNodeExecution` passed to the parked node
   untouched. Giving it a domain shape belongs to the decision-contract work.
