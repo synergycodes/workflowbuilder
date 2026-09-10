@@ -23,6 +23,7 @@ export type NodeExecutionResult = CompletedNodeExecution | WaitingNodeExecution;
 export interface ActivityRunnerPort<TNode extends BaseNode> {
   executeNode(node: TNode, context: ExecutionContext): Promise<NodeExecutionResult>;
   // Resolves with the verdict's completion. Engines without gate support omit it;
-  // a waiting result then fails the run.
+  // a waiting result then fails the run. Must record the wait before its first await;
+  // the runner announces it only afterwards.
   awaitResolution?(nodeId: string): Promise<CompletedNodeExecution>;
 }

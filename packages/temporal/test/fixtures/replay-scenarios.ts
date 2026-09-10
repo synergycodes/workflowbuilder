@@ -9,7 +9,7 @@ import {
   type WorkflowDefinition,
 } from '../../src/index';
 import { resolveNodeUpdate } from '../../src/workflow/index';
-import { executeVerdictWithRetry, waitUntil } from './helpers';
+import { waitUntil } from './helpers';
 import { type PauseTestNode, SINGLE_GATE_GRAPH } from './pause-graph';
 import type { RecordingStore } from './recording-store';
 
@@ -228,10 +228,12 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     stage: () => ({
       executors,
       drive: async (handle, store) => {
+        // The status is written after the workflow accepts verdicts for the node, so a
+        // verdict sent now cannot arrive too early.
         await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
-        await executeVerdictWithRetry(() =>
-          handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] }),
-        );
+        await handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
+        });
         await settle(handle);
       },
     }),
