@@ -84,7 +84,7 @@ export function createDecisionRoutes(
     if (waits === 0) return refuse(c, 'node_never_parked', nodeId);
     if (waits !== attempt) return refuse(c, 'attempt_mismatch', undefined, { attempt: waits });
 
-    // (follow-up: decision-rerun-source)
+    // Refused until the engine can re-run a source (follow-up: decision-rerun-source).
     if (!hasNodeResolution(decision) || action.effect === 'rerun-source') {
       return refuse(c, 'effect_not_supported', action.name);
     }

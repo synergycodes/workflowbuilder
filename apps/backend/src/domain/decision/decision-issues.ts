@@ -37,7 +37,7 @@ export const SUBMITTED_DECISION_ERRORS = {
 
 export type SubmittedDecisionErrorCode = keyof typeof SUBMITTED_DECISION_ERRORS;
 
-function fill(template: string, value: string | undefined): string {
+export function fill(template: string, value: string | undefined): string {
   // A function replacer, so a value containing `$&` or `$1` lands verbatim.
   return template.replace('{value}', () => value ?? '');
 }
