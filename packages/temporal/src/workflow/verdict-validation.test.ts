@@ -1,8 +1,9 @@
 import { defaultPayloadConverter } from '@temporalio/common';
 import { ApplicationFailure } from '@temporalio/workflow';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
-import { type NodeWaitState, validateVerdict } from './verdict-validation';
+import type { VerdictRejection } from './core-contract';
+import { type NodeWaitState, VERDICT_REJECTIONS, validateVerdict } from './verdict-validation';
 
 const KNOWN_NODES = new Set(['start', 'gate', 'after']);
 const GATE_WAITING = new Map<string, NodeWaitState>([['gate', { status: 'waiting' }]]);
@@ -18,6 +19,12 @@ function rejection(verdict?: unknown, waits: ReadonlyMap<string, NodeWaitState> 
 }
 
 describe('validateVerdict', () => {
+  it('throws exactly the codes the port declares for the validator', () => {
+    type Thrown = (typeof VERDICT_REJECTIONS)[keyof typeof VERDICT_REJECTIONS]['code'];
+
+    expectTypeOf<Thrown>().toEqualTypeOf<VerdictRejection>();
+  });
+
   it('accepts a well-formed verdict for a waiting node', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: 'ok' } })).toBeUndefined();
     expect(rejection({ nodeId: 'gate', resolution: { output: null, nextPort: 'approved' } })).toBeUndefined();
