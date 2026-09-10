@@ -250,6 +250,15 @@ describe('POST /api/executions/:id/decision - the run', () => {
     expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
   });
 
+  it('the row is checked before the body: a missing row with a bad body is a 404', async () => {
+    program();
+
+    const response = await decide(buildApp(allowAll()), { not: 'a decision' });
+
+    expect(response.status).toBe(404);
+    expect(await codeOf(response)).toBe('execution_not_found');
+  });
+
   it.each([...TERMINAL_EXECUTION_STATUSES, 'cancelling'])(
     '409 execution_not_waiting on a %s run, before the body is even read',
     async (status) => {
@@ -397,6 +406,21 @@ describe('POST /api/executions/:id/decision - the wait instance', () => {
     expect(engineMock.resolveNode).not.toHaveBeenCalled();
   });
 
+  it('the attempt is checked before the effect: a rerun-source naming a stale attempt is a 409', async () => {
+    program(waitingExecution, 1);
+
+    const response = await decide(buildApp(allowAll()), {
+      nodeId: 'review-1',
+      attempt: 2,
+      action: 'ask-again',
+      comment: 'too generous',
+    });
+
+    expect(response.status).toBe(409);
+    expect(await codeOf(response)).toBe('decision_attempt_mismatch');
+    expect(engineMock.resolveNode).not.toHaveBeenCalled();
+  });
+
   it('a decision for the second of two waiting nodes is delivered while the first keeps waiting', async () => {
     program(waitingExecution, 1);
 
@@ -510,6 +534,16 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       expect(await codeOf(response)).toBe('internal_error');
     },
   );
+
+  it('an error the engine throws instead of returning is a backend fault: 500', async () => {
+    program(waitingExecution);
+    engineMock.resolveNode.mockRejectedValue(new Error('connection lost'));
+
+    const response = await decide(buildApp(allowAll()), approveBody);
+
+    expect(response.status).toBe(500);
+    expect(await codeOf(response)).toBe('internal_error');
+  });
 
   it('a stored snapshot that no longer parses is a backend fault: 500', async () => {
     program({ ...waitingExecution, workflowSnapshotJson: { nodes: 'broken' } });
