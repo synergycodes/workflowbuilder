@@ -7,6 +7,11 @@ export const DEFAULT_TASK_QUEUE = 'workflow-execution';
 // because a rename here silently strands every already-started run.
 export const RUN_WORKFLOW_NAME = 'runWorkflow';
 
+// The update a verdict arrives through. The client addresses it by name for the same
+// reason it starts the workflow by name: it must not load workflow code. Pinned by the
+// same test.
+export const RESOLVE_NODE_UPDATE_NAME = 'resolveNode';
+
 // One Temporal Workflow Execution per Workflow Builder execution row. Deterministic,
 // so cancel can address a run knowing only the execution id.
 export function executionWorkflowId(executionId: string): string {

@@ -15,6 +15,7 @@ import {
   setHandler,
 } from '@temporalio/workflow';
 
+import { RESOLVE_NODE_UPDATE_NAME } from '../constants';
 import type { Activities } from './activities-interface';
 import { DEFAULT_DATABASE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import {
@@ -41,7 +42,7 @@ export type ResolveNodeUpdateInput = {
 
 // Update-not-signal and the annotation shape: see durable-pause.decision-log.md.
 export const resolveNodeUpdate: ReturnType<typeof defineUpdate<void, [ResolveNodeUpdateInput]>> =
-  defineUpdate('resolveNode');
+  defineUpdate(RESOLVE_NODE_UPDATE_NAME);
 
 export type RunWorkflowOptions = {
   nodeActivityProfiles?: NodeActivityProfiles;
