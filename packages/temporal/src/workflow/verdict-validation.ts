@@ -7,7 +7,7 @@ export type NodeWaitState = { status: 'waiting' } | { status: 'resolved'; resolu
 
 // Every way a verdict is refused before acceptance: the port's code and the one message
 // for it. `{value}` is the single interpolation slot, as in the backend's dictionaries.
-export const VERDICT_REJECTIONS = {
+export const VERDICT_REJECTION_MESSAGES = {
   not_an_object: { code: 'verdict_malformed', message: 'update input must be a { nodeId, resolution } object' },
   node_id_blank: { code: 'verdict_malformed', message: 'nodeId must be a non-empty string' },
   resolution_not_an_object: { code: 'verdict_malformed', message: 'resolution must be an object' },
@@ -21,8 +21,8 @@ export const VERDICT_REJECTIONS = {
   not_waiting: { code: 'node_not_waiting', message: "node '{value}' is not waiting for a verdict" },
 } as const satisfies Record<string, { code: VerdictRejection; message: string }>;
 
-function reject(key: keyof typeof VERDICT_REJECTIONS, value?: string): ApplicationFailure {
-  const { code, message } = VERDICT_REJECTIONS[key];
+function reject(key: keyof typeof VERDICT_REJECTION_MESSAGES, value?: string): ApplicationFailure {
+  const { code, message } = VERDICT_REJECTION_MESSAGES[key];
   // A function replacer, so a value containing `$&` or `$1` lands verbatim.
   return ApplicationFailure.nonRetryable(
     message.replace('{value}', () => value ?? ''),

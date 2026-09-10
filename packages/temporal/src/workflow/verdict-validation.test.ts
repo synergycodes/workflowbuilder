@@ -3,7 +3,7 @@ import { ApplicationFailure } from '@temporalio/workflow';
 import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type { VerdictRejection } from './core-contract';
-import { type NodeWaitState, VERDICT_REJECTIONS, validateVerdict } from './verdict-validation';
+import { type NodeWaitState, VERDICT_REJECTION_MESSAGES, validateVerdict } from './verdict-validation';
 
 const KNOWN_NODES = new Set(['start', 'gate', 'after']);
 const GATE_WAITING = new Map<string, NodeWaitState>([['gate', { status: 'waiting' }]]);
@@ -20,7 +20,7 @@ function rejection(verdict?: unknown, waits: ReadonlyMap<string, NodeWaitState> 
 
 describe('validateVerdict', () => {
   it('throws exactly the codes the port declares for the validator', () => {
-    type Thrown = (typeof VERDICT_REJECTIONS)[keyof typeof VERDICT_REJECTIONS]['code'];
+    type Thrown = (typeof VERDICT_REJECTION_MESSAGES)[keyof typeof VERDICT_REJECTION_MESSAGES]['code'];
 
     expectTypeOf<Thrown>().toEqualTypeOf<VerdictRejection>();
   });
