@@ -2,7 +2,7 @@ import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type { Decision } from '@workflow-builder/types/workflow-execution/decision-request';
 
-import { type RoutedDecision, type RoutedDecisionAction, toNodeResolution } from './node-resolution';
+import { type RoutedDecision, type RoutedDecisionAction, hasNodeResolution, toNodeResolution } from './node-resolution';
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
@@ -47,6 +47,8 @@ describe('toNodeResolution', () => {
   });
 
   it('has no completion for a rerun-source decision', () => {
+    expect(hasNodeResolution({ action: 'ask-again', effect: 'rerun-source', edits: {}, comment: 'again' })).toBe(false);
+    expect(hasNodeResolution({ action: 'approve', effect: 'resume', edits: {} })).toBe(true);
     expectTypeOf<RoutedDecision['effect']>().toEqualTypeOf<'resume' | 'resume-with-edits' | 'reject'>();
     expectTypeOf<Extract<RoutedDecisionAction, { effect: 'rerun-source' }>>().toEqualTypeOf<never>();
     expectTypeOf<RoutedDecision>().toMatchTypeOf<Decision>();

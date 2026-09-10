@@ -2,9 +2,11 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 
 import type { WorkflowSnapshot } from '../mapper/snapshot-schema';
 
+export type FindDecisionRequestError = 'node_not_found' | 'node_without_decision_request';
+
 export type FindDecisionRequestResult =
   | { request: DecisionRequest; error?: undefined }
-  | { request?: undefined; error: 'node_not_found' | 'node_without_decision_request' };
+  | { request?: undefined; error: FindDecisionRequestError };
 
 export function findDecisionRequest(snapshot: WorkflowSnapshot, nodeId: string): FindDecisionRequestResult {
   const node = snapshot.nodes.find((candidate) => candidate.id === nodeId);
