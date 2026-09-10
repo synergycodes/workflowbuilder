@@ -58,6 +58,7 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
 - A reject whose port has no edge ends the run `incomplete`. The terminal-outcome work closes this; the seam is `toNodeResolution`.
 - A decision records nothing about who decided.
+- The route re-parses the stored snapshot with today's `workflowSnapshotSchema`, and a run can wait for days across deploys. A schema tightened in between makes every parked run whose snapshot no longer parses undecidable: the route answers 500 until the snapshot is migrated or the rule relaxed.
 
 ## Open points, closed 10.09.2026
 
