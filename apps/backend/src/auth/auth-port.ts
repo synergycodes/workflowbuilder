@@ -36,7 +36,8 @@ export type AuthAction =
   | 'workflows:execute'
   | 'executions:read'
   | 'executions:stream'
-  | 'executions:cancel';
+  | 'executions:cancel'
+  | 'executions:decide';
 
 /**
  * Resources passed to `authorize`. The per-row kinds carry an optional
