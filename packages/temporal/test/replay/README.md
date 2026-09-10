@@ -6,47 +6,63 @@ A workflow can wait for days, so this is the guard that lets the package be edit
 between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
-`@temporalio/testing`), runs a graph, and then does three separate things with what came
-back:
+`@temporalio/testing`), runs every scenario in `../fixtures/replay-scenarios.ts`, and then
+does three separate things with what came back:
 
-1. **Counts the scheduled activities per type.** One `executeNode` per node, one
+1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
    `emitEvent` per emitted event, one `updateStatus` for the terminal write. An extra
    activity anywhere in `runGraph` moves one of those numbers.
 2. **Replays the history it just recorded.** Same code, same history — proves the run is
    reproducible under Temporal's own replayer, not only under the re-execution harness in
    `execution-core`.
-3. **Replays a committed history from `histories/`.** The cross-version guard. This is
+3. **Replays every committed history in `histories/`.** The cross-version guard. This is
    the one that fails when today's code would issue commands a run recorded on older code
-   never made.
+   never made. It goes through `Worker.runReplayHistories`, so one broken history reports
+   alongside the others instead of hiding them. It also insists that every scenario has a
+   recording and every recording belongs to a scenario; the version prefix is free.
 
 Only (3) survives a change to the runner, which is why (3) is the one that matters at
 review time. (2) passes even on a broken change, because the history it checks was
 recorded by the same broken code.
 
-## The graph the harness runs
+## The scenarios
 
-`start → (left, right) → join`, defined in `../fixtures/graph.ts`. The fan-out is the
-point: it is the only shape that puts two commands in a single workflow task, which is
-where the runner's `Promise.all` becomes visible to Temporal. A straight line replays
-green while leaving that path untested.
+One file per path through the sandbox code. A change that leaves one path alone can still
+move the commands on another, so all four replay on every run.
+
+| File                        | Graph                            | Path it protects                                                                                                                                                        |
+| --------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `v0-parallel-wave.json`     | `start → (left, right) → join`   | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.             |
+| `v0-fail-policy.json`       | `start → (fail, sibling) → join` | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails. |
+| `v0-incomplete-branch.json` | `start → route ─[yes]→ taken`    | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                          |
+| `v0-cancel-mid-run.json`    | `start → block`                  | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                             |
+
+The cancel scenario parks its executor until the driver has cancelled the run, so the
+recording always catches the activity open. The late completion then meets a closed run,
+which Temporal core logs as one "Activity not found on completion" warning. Expected.
 
 ## Recording a history
 
-From the harness, which is what the committed files come from:
+From the harness, which is what the committed files come from. Name the scenario so the
+others keep guarding what they recorded:
 
 ```bash
-UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+UPDATE_REPLAY_HISTORIES=<scenario> pnpm --filter @workflowbuilder/temporal test
 ```
 
-Or from a real run against a local stack, which is worth doing for a scenario the harness
-cannot stage. `historyToJSON` writes the same shape, so the two are interchangeable:
+`UPDATE_REPLAY_HISTORIES=1` re-records every scenario; see rule 3 before reaching for it.
+Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
+it by name, and describing it in the table above. The harness fails until the file exists.
+
+Or from a real run against a local stack, for a scenario the harness cannot stage.
+`historyToJSON` writes the same shape, so the two are interchangeable. Read the output
+before committing it: the first event carries the whole `WorkflowExecutionInput`,
+including the `variables` and `global` bags, which is where the backend injects secrets.
+The harness recordings carry only empty bags and a synthetic graph.
 
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
 ```
-
-Scenarios still worth adding, one file each: a cancellation mid-run, and a node failure
-that goes through the error policy.
 
 ## Rules once files live here
 
@@ -54,12 +70,15 @@ that goes through the error policy.
    What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
-3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES=1` rewrites the
+3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES` rewrites the
    history from current code, so the cross-version check silently becomes a self-check.
-   Reach for it when adding a scenario, not to make a red test green.
+   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of all
+   four, never for making a red test green.
 
 `v0-` names the pre-release baseline: the package has not published a version yet, so
-these are histories from the code as it stood before the first release.
+these are histories from the code as it stood before the first release. At that release,
+record the same scenarios as `<version>-<scenario>.json` next to these. The `v0-` files
+can then go, since no run outside this repo was ever recorded by pre-release code.
 
 ## What a red cross-version test means
 
