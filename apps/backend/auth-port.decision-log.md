@@ -21,19 +21,20 @@ This decision log records the structural piece (scope L from [`local-dev-binding
 
 ## Actions covered today
 
-| Action              | Resource                             |
-| ------------------- | ------------------------------------ |
-| `workflows:create`  | `{ kind: 'workflows' }`              |
-| `workflows:list`    | `{ kind: 'workflows' }`              |
-| `workflows:read`    | `{ kind: 'workflow', workflowId }`   |
-| `workflows:update`  | `{ kind: 'workflow', workflowId }`   |
-| `workflows:publish` | `{ kind: 'workflow', workflowId }`   |
-| `workflows:execute` | `{ kind: 'workflow', workflowId }`   |
-| `executions:read`   | `{ kind: 'execution', executionId }` |
-| `executions:stream` | `{ kind: 'execution', executionId }` |
-| `executions:cancel` | `{ kind: 'execution', executionId }` |
+| Action              | Resource                                          |
+| ------------------- | ------------------------------------------------- |
+| `workflows:create`  | `{ kind: 'workflows' }`                           |
+| `workflows:list`    | `{ kind: 'workflows' }`                           |
+| `workflows:read`    | `{ kind: 'workflow', workflowId }`                |
+| `workflows:update`  | `{ kind: 'workflow', workflowId }`                |
+| `workflows:publish` | `{ kind: 'workflow', workflowId }`                |
+| `workflows:execute` | `{ kind: 'workflow', workflowId }`                |
+| `executions:read`   | `{ kind: 'execution', executionId }`              |
+| `executions:stream` | `{ kind: 'execution', executionId }`              |
+| `executions:cancel` | `{ kind: 'execution', executionId }`              |
+| `executions:decide` | `{ kind: 'execution', executionId, attributes? }` |
 
-Per-row resource kinds (`workflow`, `execution`) also accept an optional `attributes: Record<string, unknown>`. Routes that already loaded the row can pass it through so ABAC ports do not need to refetch. Pure RBAC ports ignore the field. Routes that load before authorize is wired (see follow-ups on data scoping) will start using it without a breaking change.
+Per-row resource kinds (`workflow`, `execution`) also accept an optional `attributes: Record<string, unknown>`. Routes that already loaded the row can pass it through so ABAC ports do not need to refetch. Pure RBAC ports ignore the field. The decision route is the first to load before it authorizes: `attributes` is `{ workflowId, tenantId, status }`, absent when the row does not exist, and a deny is answered before the 404. Hiding which ids exist depends on the port: it must deny when `attributes` is absent too, or a caller learns that 404 means unknown and 403 means someone else's.
 
 ## Alternative Options Considered
 

@@ -19,6 +19,7 @@ describe('public API surface', () => {
       'DEFAULT_TASK_QUEUE',
       'NodeExecutionError',
       'PermanentNodeExecutionError',
+      'RESOLVE_NODE_UPDATE_NAME',
       'RUN_WORKFLOW_NAME',
       'TransientNodeExecutionError',
       'WorkflowBuilderPlugin',
@@ -49,6 +50,13 @@ describe('public API surface', () => {
     // worker serves.
     expect(rootEntry.RUN_WORKFLOW_NAME in workflowEntry).toBe(true);
     expect(rootEntry.RUN_WORKFLOW_NAME).toBe('runWorkflow');
+  });
+
+  it('names the update the client sends after the one the sandbox handles', () => {
+    // Same failure mode as the workflow name: a verdict addressed to an update no
+    // workflow defines is rejected by the server, and every parked run stays parked.
+    expect(workflowEntry.resolveNodeUpdate.name).toBe(rootEntry.RESOLVE_NODE_UPDATE_NAME);
+    expect(rootEntry.RESOLVE_NODE_UPDATE_NAME).toBe('resolveNode');
   });
 });
 

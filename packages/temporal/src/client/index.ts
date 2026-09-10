@@ -1,13 +1,26 @@
-// Client-side entry point: starting and cancelling runs. Split from the root entry
-// so a backend-only consumer never pulls in @temporalio/worker and its native binary.
+// Client-side entry point: starting and cancelling runs, delivering verdicts. Split from
+// the root entry so a backend-only consumer never pulls in @temporalio/worker and its
+// native binary.
 import { Client, WorkflowNotFoundError } from '@temporalio/client';
 
-import { DEFAULT_TASK_QUEUE, RUN_WORKFLOW_NAME, executionWorkflowId } from '../constants';
-import type { BaseNode, WorkflowEnginePort, WorkflowExecutionInput } from '../core-contract';
+import { DEFAULT_TASK_QUEUE, RESOLVE_NODE_UPDATE_NAME, RUN_WORKFLOW_NAME, executionWorkflowId } from '../constants';
+import type {
+  BaseNode,
+  CompletedNodeExecution,
+  ResolveNodeResult,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from '../core-contract';
 // Type-only, so nothing from the workflow entry reaches this bundle at runtime — the
 // client must not load @temporalio/workflow. It is imported purely to type the start
-// call below; see the note there.
-import type { runWorkflow } from '../workflow/run-workflow';
+// and update calls below; see the note there.
+import type { ResolveNodeUpdateInput, runWorkflow } from '../workflow/run-workflow';
+import { mapResolveNodeError } from './resolve-node-result';
+
+// Without a worker nobody validates an update, and the RPC would wait for the server's
+// own limit. A timed-out update is not durable, yet the server may still hand it to the
+// next worker: the caller resends and may hear verdict_already_delivered.
+const DEFAULT_RESOLVE_TIMEOUT_MS = 10_000;
 
 export type TemporalWorkflowEngineOptions = {
   // A ready client, or a factory awaited once on first use. The factory form keeps
@@ -15,16 +28,20 @@ export type TemporalWorkflowEngineOptions = {
   client: Client | (() => Promise<Client>);
   // Must match the queue the worker serves — default on both sides is DEFAULT_TASK_QUEUE.
   taskQueue?: string;
+  // How long resolveNode waits for the update to be accepted before answering delivery_timeout.
+  resolveTimeoutMs?: number;
 };
 
 export class TemporalWorkflowEngine<TNode extends BaseNode = BaseNode> implements WorkflowEnginePort<TNode> {
   private readonly clientSource: Client | (() => Promise<Client>);
   private readonly taskQueue: string;
+  private readonly resolveTimeoutMs: number;
   private clientPromise: Promise<Client> | undefined;
 
   constructor(options: TemporalWorkflowEngineOptions) {
     this.clientSource = options.client;
     this.taskQueue = options.taskQueue ?? DEFAULT_TASK_QUEUE;
+    this.resolveTimeoutMs = options.resolveTimeoutMs ?? DEFAULT_RESOLVE_TIMEOUT_MS;
   }
 
   async submit(input: WorkflowExecutionInput<TNode>): Promise<void> {
@@ -51,6 +68,28 @@ export class TemporalWorkflowEngine<TNode extends BaseNode = BaseNode> implement
       // Cancel is idempotent from the caller's perspective — "not found" means already gone.
       if (error instanceof WorkflowNotFoundError) return;
       throw error;
+    }
+  }
+
+  async resolveNode(
+    executionId: string,
+    nodeId: string,
+    resolution: CompletedNodeExecution,
+  ): Promise<ResolveNodeResult> {
+    const client = await this.client();
+    const handle = client.workflow.getHandle(executionWorkflowId(executionId));
+    try {
+      // Addressed by name and typed through the sandbox's input type, like `start` above.
+      // The update id stays the SDK's random one: the server deduplicates by id, so a
+      // deterministic id would hand a second decider the first decider's outcome as a success.
+      await client.withDeadline(Date.now() + this.resolveTimeoutMs, () =>
+        handle.executeUpdate<void, [ResolveNodeUpdateInput]>(RESOLVE_NODE_UPDATE_NAME, {
+          args: [{ nodeId, resolution }],
+        }),
+      );
+      return {};
+    } catch (error) {
+      return mapResolveNodeError(error);
     }
   }
 

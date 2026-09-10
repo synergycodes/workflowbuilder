@@ -29,6 +29,7 @@ export const SUBMITTED_DECISION_ERRORS = {
   unknown_action: "the decision request offers no action named '{value}'",
   reason_required: "action '{value}' requires a reason",
   comment_required: "action '{value}' requires a comment",
+  edits_not_allowed: "action '{value}' does not take edits",
   unknown_field: "field '{value}' is not in the decision schema",
   field_not_editable: "field '{value}' is read-only",
   required_field_missing: "required field '{value}' must not be emptied",
@@ -36,7 +37,7 @@ export const SUBMITTED_DECISION_ERRORS = {
 
 export type SubmittedDecisionErrorCode = keyof typeof SUBMITTED_DECISION_ERRORS;
 
-function fill(template: string, value: string | undefined): string {
+export function fill(template: string, value: string | undefined): string {
   // A function replacer, so a value containing `$&` or `$1` lands verbatim.
   return template.replace('{value}', () => value ?? '');
 }

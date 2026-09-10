@@ -53,6 +53,9 @@ verdict carries. This file records the decisions behind the Temporal side of the
   for it would be accepted with no effect. A real outage fails the `node_failed` emit too
   and ends the run, so the gap needs the database to recover between two consecutive
   emits.
+- **The client answers with results, not throws.** `resolveNode` addresses the update by
+  name, bounds the RPC (`resolveTimeoutMs`), and maps the SDK's errors to `{ error: { code } }`
+  with the codes declared once in the core's port; an unknown type is rethrown as a bug.
 - **Names.** Update `resolveNode`, input `{ nodeId, resolution }`. The verdict content
   is opaque here: `resolution` is a `CompletedNodeExecution` passed to the parked node
   untouched. Giving it a domain shape belongs to the decision-contract work.

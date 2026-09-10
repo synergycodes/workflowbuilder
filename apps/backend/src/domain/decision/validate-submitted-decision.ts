@@ -9,9 +9,8 @@ import type {
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 
-// The shape of what the decider sent. The caller parses a body with this before calling
-// `validateSubmittedDecision`, which assumes the shape and checks only the rules.
-// Provisional: the decision endpoint owns the public request shape and may rename fields.
+// Parsed at the endpoint, which extends it with `nodeId` and `attempt`, before
+// `validateSubmittedDecision` checks the rules on the parsed shape.
 export const submittedDecisionSchema = z.object({
   action: z.string(),
   edits: z.record(z.string(), z.unknown()).optional(),
@@ -67,9 +66,14 @@ export function validateSubmittedDecision(
     return refuse('comment_required', action.name, ['comment']);
   }
 
+  // Before the field loop, so the refusal names the edits and not one field.
+  const edits = submitted.edits ?? {};
+  if (action.effect !== 'resume' && Object.keys(edits).length > 0) {
+    return refuse('edits_not_allowed', action.name, ['edits']);
+  }
+
   const properties = formProperties(request);
   const required = new Set(requiredFields(request));
-  const edits = submitted.edits ?? {};
   for (const [field, value] of Object.entries(edits)) {
     if (!Object.hasOwn(properties, field)) return refuse('unknown_field', field, ['edits', field]);
     if (properties[field].readOnly === true) return refuse('field_not_editable', field, ['edits', field]);
