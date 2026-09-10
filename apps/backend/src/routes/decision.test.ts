@@ -484,6 +484,20 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
   });
 
+  it('the engine answer delivery_timeout becomes 503 with Retry-After, sent once, no retry', async () => {
+    program(waitingExecution);
+    engineMock.resolveNode.mockResolvedValue({ error: { code: 'delivery_timeout', message: 'Deadline exceeded' } });
+
+    const response = await decide(buildApp(allowAll()), approveBody);
+
+    expect(response.status).toBe(503);
+    expect(response.headers.get('retry-after')).toBe('5');
+    const body = await bodyOf(response);
+    expect(body.code).toBe('decision_delivery_timeout');
+    expect(body.message).toContain('decision_already_made');
+    expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
+  });
+
   it.each<ResolveNodeRejection>(['verdict_malformed', 'verdict_for_unknown_node'])(
     'the engine answer %s is a backend fault: 500',
     async (code) => {
