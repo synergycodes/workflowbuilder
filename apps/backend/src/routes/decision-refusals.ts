@@ -15,6 +15,7 @@ export const DECISION_REFUSAL_STATUS = {
   decision_already_made: 409,
   decision_attempt_mismatch: 409,
   effect_not_supported: 501,
+  decision_delivery_timeout: 503,
 } as const;
 
 export type DecisionRefusalCode = keyof typeof DECISION_REFUSAL_STATUS;
@@ -43,7 +44,14 @@ export const DECISION_REFUSALS = {
     code: 'effect_not_supported',
     message: "Action '{value}' re-runs the proposal source, which is not supported yet",
   },
-} as const satisfies Record<string, { code: DecisionRefusalCode; message: string }>;
+  // Not durable until accepted, yet the server may still hand it to the next worker.
+  delivery_timeout: {
+    code: 'decision_delivery_timeout',
+    message:
+      'The decision was not confirmed within the deadline and may or may not have landed. Send it again: a decision_already_made answer means it did.',
+    headers: { 'Retry-After': '5' },
+  },
+} as const satisfies Record<string, { code: DecisionRefusalCode; message: string; headers?: Record<string, string> }>;
 
 export type DecisionRefusal = keyof typeof DECISION_REFUSALS;
 
@@ -59,14 +67,16 @@ export const ENGINE_REFUSALS = {
   run_not_found: 'run_gone',
   verdict_for_unknown_node: 'fault',
   verdict_malformed: 'fault',
-  delivery_timeout: 'fault',
+  delivery_timeout: 'delivery_timeout',
 } as const satisfies Record<ResolveNodeRejection, DecisionRefusal | 'fault'>;
 
 export function refuse(c: Context, refusal: DecisionRefusal, value?: string, extra: Record<string, unknown> = {}) {
-  const { code, message } = DECISION_REFUSALS[refusal];
+  const entry = DECISION_REFUSALS[refusal];
+  const headers = 'headers' in entry ? entry.headers : undefined;
   // A function replacer, so a value containing `$&` or `$1` lands verbatim.
   return c.json(
-    { code, message: message.replace('{value}', () => value ?? ''), ...extra },
-    DECISION_REFUSAL_STATUS[code],
+    { code: entry.code, message: entry.message.replace('{value}', () => value ?? ''), ...extra },
+    DECISION_REFUSAL_STATUS[entry.code],
+    headers,
   );
 }
