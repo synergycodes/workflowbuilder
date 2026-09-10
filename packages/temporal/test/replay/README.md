@@ -46,10 +46,10 @@ also logs "Activity failed" and "Workflow failed" from the fail-policy scenario,
 fails a node on purpose. All three are expected; nothing is wrong with a run that has them.
 
 The parked-decision scenario delivers its verdict through a real `resolveNode` update once
-the store has seen the `waiting` status, retrying `node_not_waiting` while the verdict
-races the parking activation. Since a determinism break surfaces at the first divergent
-command, replaying its full history also stands in for every run still parked mid-history
-when a deploy lands.
+the store has seen the `waiting` status, which the workflow writes only after it accepts
+verdicts for the node. Since a determinism break surfaces at the first divergent command,
+replaying its full history also stands in for every run still parked mid-history when a
+deploy lands.
 
 ## Recording a history
 

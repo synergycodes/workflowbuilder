@@ -354,6 +354,10 @@ async function parkUntilResolved(
   executionId: string,
   parked: { count: number },
 ): Promise<CompletedNodeExecution> {
+  // Registered before it is announced, so a verdict sent on seeing node_waiting is never early.
+  const resolution = awaitResolution(nodeId);
+  // Abandoned if the announcement throws; an unhandled rejection would fail the workflow task.
+  resolution.catch(() => {});
   await events.emitEvent(executionId, 'node_waiting', undefined, nodeId);
   parked.count += 1;
   try {
@@ -362,7 +366,7 @@ async function parkUntilResolved(
     }
     // Awaited here, so the caller's wave slot stays pending and the barrier holds
     // itself: the wave completes only once every parked node has resolved.
-    return await awaitResolution(nodeId);
+    return await resolution;
   } finally {
     // On rejection too: a failure absorbed by 'continue' must not strand the run in 'waiting'.
     parked.count -= 1;
