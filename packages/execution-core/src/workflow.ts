@@ -13,7 +13,13 @@ export { NodeExecutionError } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './ports/workflow-engine.port';
+export type {
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  VerdictRejection,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './ports/workflow-engine.port';
 export type {
   ActivityRunnerPort,
   CompletedNodeExecution,
