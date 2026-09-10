@@ -2,6 +2,7 @@ import type { Context } from 'hono';
 
 import type { ResolveNodeRejection } from '@workflow-builder/execution-core/workflow';
 
+import { fill } from '../domain/decision/decision-issues';
 import type { FindDecisionRequestError } from '../domain/decision/find-decision-request';
 
 // Every code the decision endpoint refuses with, and its status. The one place a code is spelled out.
@@ -73,9 +74,8 @@ export const ENGINE_REFUSALS = {
 export function refuse(c: Context, refusal: DecisionRefusal, value?: string, extra: Record<string, unknown> = {}) {
   const entry = DECISION_REFUSALS[refusal];
   const headers = 'headers' in entry ? entry.headers : undefined;
-  // A function replacer, so a value containing `$&` or `$1` lands verbatim.
   return c.json(
-    { code: entry.code, message: entry.message.replace('{value}', () => value ?? ''), ...extra },
+    { code: entry.code, message: fill(entry.message, value), ...extra },
     DECISION_REFUSAL_STATUS[entry.code],
     headers,
   );
