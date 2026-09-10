@@ -4,7 +4,7 @@
 import { type History, historyToJSON } from '@temporalio/common/lib/proto-utils';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { Worker, bundleWorkflowCode } from '@temporalio/worker';
-import { readFile, writeFile } from 'node:fs/promises';
+import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
@@ -14,30 +14,35 @@ import {
   type WorkflowExecutionInput,
   executionWorkflowId,
 } from '../../src/index';
-import {
-  REPLAY_TEST_GRAPH,
-  REPLAY_TEST_WORKFLOW_ID,
-  type RecordingStore,
-  type ReplayTestNode,
-  createRecordingStore,
-  replayTestExecutors,
-} from '../fixtures/graph';
+import { type RecordingStore, createRecordingStore } from '../fixtures/recording-store';
+import { REPLAY_SCENARIOS, type ReplayScenario, type ReplayScenarioNode } from '../fixtures/replay-scenarios';
 
-const EXECUTION_ID = 'replay-test-execution';
 const TASK_QUEUE = 'replay-test';
 
-// Regeneration replaces the cross-version baseline; follow ./README.md before enabling it.
-//   UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
-const COMMITTED_HISTORY = new URL('histories/v0-parallel-wave.json', import.meta.url);
+const HISTORIES_DIR = new URL('histories/', import.meta.url);
 
-const NODE_COUNT = REPLAY_TEST_GRAPH.nodes.length;
-const EVENTS_PER_NODE = 2;
-const EXECUTION_BRACKET_EVENTS = 2;
-const EXPECTED_ACTIVITY_COUNTS = {
-  executeNode: NODE_COUNT,
-  emitEvent: EXECUTION_BRACKET_EVENTS + NODE_COUNT * EVENTS_PER_NODE,
-  updateStatus: 1,
-};
+// Recording replaces a cross-version baseline; follow ./README.md before enabling it.
+//   UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/temporal test
+//   UPDATE_REPLAY_HISTORIES=1                        re-records every scenario
+const requested = process.env.UPDATE_REPLAY_HISTORIES;
+const requestedScenarios = requested === undefined || requested === '1' ? [] : requested.split(',');
+const unknownScenarios = requestedScenarios.filter((name) => !REPLAY_SCENARIOS.some((s) => s.name === name));
+if (unknownScenarios.length > 0) {
+  throw new Error(`UPDATE_REPLAY_HISTORIES names no scenario: ${unknownScenarios.join(', ')}`);
+}
+
+function shouldRecord(scenario: ReplayScenario): boolean {
+  return requested === '1' || requestedScenarios.includes(scenario.name);
+}
+
+// `v0-` names the pre-release baseline; ./README.md says what happens to it at the first release.
+function historyFile(scenario: ReplayScenario): URL {
+  return new URL(`v0-${scenario.name}.json`, HISTORIES_DIR);
+}
+
+function scenarioOf(file: string): ReplayScenario | undefined {
+  return REPLAY_SCENARIOS.find((scenario) => file.endsWith(`-${scenario.name}.json`));
+}
 
 function countScheduledActivities(history: History): Record<string, number> {
   const counts: Record<string, number> = {};
@@ -55,80 +60,105 @@ function countScheduledActivities(history: History): Record<string, number> {
 describe('replay', () => {
   let env: TestWorkflowEnvironment;
   let workflowBundle: { code: string };
-  let history: History;
-  let store: RecordingStore;
 
   beforeAll(async () => {
     [workflowBundle, env] = await Promise.all([
       bundleWorkflowCode({ workflowsPath: fileURLToPath(new URL('../fixtures/workflows.ts', import.meta.url)) }),
       TestWorkflowEnvironment.createLocal(),
     ]);
-
-    store = createRecordingStore();
-
-    const plugin = new WorkflowBuilderPlugin<ReplayTestNode>({
-      store,
-      executors: replayTestExecutors,
-      taskQueue: TASK_QUEUE,
-    });
-
-    const worker = await Worker.create({
-      connection: env.nativeConnection,
-      namespace: env.namespace,
-      taskQueue: plugin.taskQueue,
-      workflowBundle,
-      plugins: [plugin],
-    });
-
-    const input: WorkflowExecutionInput<ReplayTestNode> = {
-      workflowId: REPLAY_TEST_WORKFLOW_ID,
-      executionId: EXECUTION_ID,
-      definition: REPLAY_TEST_GRAPH,
-      triggerPayload: {},
-      variables: {},
-      global: {},
-    };
-
-    const workflowId = executionWorkflowId(EXECUTION_ID);
-
-    await worker.runUntil(
-      env.client.workflow.execute(RUN_WORKFLOW_NAME, { taskQueue: plugin.taskQueue, workflowId, args: [input] }),
-    );
-
-    history = await env.client.workflow.getHandle(workflowId).fetchHistory();
-
-    if (process.env.UPDATE_REPLAY_HISTORIES) {
-      await writeFile(COMMITTED_HISTORY, `${historyToJSON(history)}\n`);
-    }
   }, 300_000);
 
   afterAll(async () => {
     await env?.teardown();
   });
 
-  it('runs the graph to completion through the plugin', () => {
-    expect(store.statuses).toEqual([{ status: 'completed', errorMessage: undefined }]);
-    expect(store.events.at(0)?.type).toBe('execution_started');
-    expect(store.events.at(-1)?.type).toBe('execution_completed');
+  describe.each(REPLAY_SCENARIOS)('$name', (scenario) => {
+    let history: History;
+    let store: RecordingStore;
 
-    for (const node of REPLAY_TEST_GRAPH.nodes) {
-      const forNode = store.events.filter((event) => event.nodeId === node.id);
-      expect(forNode.map((event) => event.type)).toEqual(['node_started', 'node_completed']);
+    beforeAll(async () => {
+      store = createRecordingStore();
+      const { executors, drive } = scenario.stage();
+
+      const plugin = new WorkflowBuilderPlugin<ReplayScenarioNode>({ store, executors, taskQueue: TASK_QUEUE });
+      const worker = await Worker.create({
+        connection: env.nativeConnection,
+        namespace: env.namespace,
+        taskQueue: plugin.taskQueue,
+        workflowBundle,
+        plugins: [plugin],
+      });
+
+      const executionId = `replay-${scenario.name}`;
+      const input: WorkflowExecutionInput<ReplayScenarioNode> = {
+        workflowId: scenario.graph.workflowId,
+        executionId,
+        definition: scenario.graph,
+        triggerPayload: {},
+        variables: {},
+        global: {},
+      };
+
+      const workflowId = executionWorkflowId(executionId);
+
+      await worker.runUntil(async () => {
+        const handle = await env.client.workflow.start(RUN_WORKFLOW_NAME, {
+          taskQueue: plugin.taskQueue,
+          workflowId,
+          args: [input],
+        });
+        await drive(handle);
+      });
+
+      history = await env.client.workflow.getHandle(workflowId).fetchHistory();
+
+      if (shouldRecord(scenario)) {
+        await writeFile(historyFile(scenario), `${historyToJSON(history)}\n`);
+      }
+    }, 120_000);
+
+    it(`ends with ${scenario.terminalEvent} and status ${scenario.terminalStatus}`, () => {
+      expect(store.events.at(0)?.type).toBe('execution_started');
+      expect(store.events.at(-1)?.type).toBe(scenario.terminalEvent);
+      expect(store.statuses).toEqual([expect.objectContaining({ status: scenario.terminalStatus })]);
+    });
+
+    it(`closes the Workflow Execution through ${scenario.closeAttributes}`, () => {
+      expect(history.events?.at(-1)?.[scenario.closeAttributes]).toBeTruthy();
+    });
+
+    it('schedules one activity per node run, one per emitted event, one status write', () => {
+      expect(countScheduledActivities(history)).toEqual(scenario.expectedActivities);
+    });
+
+    it('replays the history it just recorded', async () => {
+      await expect(Worker.runReplayHistory({ workflowBundle }, history)).resolves.toBeUndefined();
+    });
+  });
+
+  it('replays every history recorded before the current code', async () => {
+    // Every scenario needs a recording and every recording needs a scenario. The version
+    // prefix is free, since older versions keep their files next to newer ones.
+    const entries = await readdir(HISTORIES_DIR);
+    const files = entries.filter((file) => file.endsWith('.json')).sort();
+    expect(files.filter((file) => scenarioOf(file) === undefined)).toEqual([]);
+    expect(REPLAY_SCENARIOS.filter((scenario) => !files.some((file) => scenarioOf(file) === scenario))).toEqual([]);
+
+    const histories = await Promise.all(
+      files.map(async (file) => ({
+        workflowId: file,
+        history: JSON.parse(await readFile(new URL(file, HISTORIES_DIR), 'utf8')) as unknown,
+      })),
+    );
+
+    // The plural form, so one broken history cannot hide the rest.
+    const failures: string[] = [];
+    for await (const result of Worker.runReplayHistories({ workflowBundle }, histories)) {
+      if (result.error) {
+        failures.push(`${result.workflowId}: ${result.error.message}`);
+      }
     }
-  });
 
-  it('schedules one activity per node and one per emitted event', () => {
-    expect(countScheduledActivities(history)).toEqual(EXPECTED_ACTIVITY_COUNTS);
-  });
-
-  it('replays the history it just recorded', async () => {
-    await expect(Worker.runReplayHistory({ workflowBundle }, history)).resolves.toBeUndefined();
-  });
-
-  it('replays a history recorded before the current code', async () => {
-    // Replays a pre-current-code history to protect in-flight executions across deploys.
-    const recorded: unknown = JSON.parse(await readFile(COMMITTED_HISTORY, 'utf8'));
-
-    await expect(Worker.runReplayHistory({ workflowBundle }, recorded)).resolves.toBeUndefined();
-  }, 60_000);
+    expect(failures).toEqual([]);
+  }, 120_000);
 });
