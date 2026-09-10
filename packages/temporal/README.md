@@ -149,6 +149,7 @@ const engine = new TemporalWorkflowEngine({
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
 await engine.cancel(executionId);
+const { error } = await engine.resolveNode(executionId, 'approval-1', { output: 'approved', nextPort: 'approved' });
 ```
 
 The engine and the worker default to the same task queue (`workflow-execution`). Override it in both places together, or leave both alone.
@@ -166,7 +167,7 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 | Import                               | Use it for                                                                                  |
 | ------------------------------------ | ------------------------------------------------------------------------------------------- |
 | `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, shared constants, types                        |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs                                                                |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                           |
 | `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
@@ -219,7 +220,7 @@ await handle.executeUpdate(resolveNodeUpdate, {
 
 The `resolution` is the completion the node finishes with, exactly as if its executor had returned it: `output` becomes the node's output for everything downstream, and `nextPort` routes the graph. This package passes it through untouched. What a verdict contains, and who may deliver one, is your application's contract.
 
-Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope is an object carrying at most `output` and `nextPort`; `nextPort` must not be the reserved `errorRoute`, and a missing `output` is read as `undefined`, which is what the default JSON payload converter turns `output: undefined` into), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (final: it has not parked, or its wait was cancelled), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
+Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope is an object carrying at most `output` and `nextPort`; `nextPort` must not be the reserved `errorRoute`, and a missing `output` is read as `undefined`, which is what the default JSON payload converter turns `output: undefined` into), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (final: it has not parked, or its wait was cancelled), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Through `engine.resolveNode` every one of these comes back as `{ error: { code, message } }` instead of a throw, plus `run_not_found` for a closed run and `delivery_timeout` when no worker accepted the update within `resolveTimeoutMs` (default 10 s). A timed-out update may still reach the next worker, so a resend can answer `verdict_already_delivered`; exactly one lands. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
 
 ### Wave-barrier limitations (deliberate)
 

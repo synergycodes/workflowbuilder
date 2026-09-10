@@ -39,7 +39,24 @@ The request is validated on `POST /:id/publish` and `POST /:id/execute`, never o
 
 One key is refused outright, wherever it sits. An own `__proto__` anywhere in the snapshot answers `invalid_snapshot` 400 naming its path: `JSON.parse` turns it into an ordinary key, and a loose object copies unknown keys by assignment, which for that one swaps the parsed output's prototype and hands the engine a request no schema ever saw. The check does not weigh position, so it also refuses a `__proto__` buried inside an opaque node property, where zod never copies keys one by one and the key is inert. A node type that keeps a raw JSON document in `data.properties` therefore cannot carry one.
 
-A submitted decision is checked against the request by `validateSubmittedDecision` in `src/domain/decision/`; the decision endpoint that calls it is a separate change. Shape, rules and the reasoning are in [`decision-request.decision-log.md`](./decision-request.decision-log.md).
+A submitted decision is checked against the request by `validateSubmittedDecision` in `src/domain/decision/` and delivered by the endpoint below. Shape, rules and the reasoning are in [`decision-request.decision-log.md`](./decision-request.decision-log.md).
+
+### Deciding: `POST /api/executions/:id/decision`
+
+Body: `{ nodeId, attempt, action, edits?, reason?, comment? }`. `action` is the `name` of one of the node's actions. `attempt` is how many times the node has parked in this run (its `node_waiting` count; today always 1). Checks run in this order, each answering before the next: row, authorization (`executions:decide` with the row's `{ workflowId, tenantId, status }`; a deny wins over 404), status, body, node, decision, `attempt`, effect, engine. The engine is asked once; nothing is retried. Success: `200 { executionId, nodeId, attempt, action, effect }`. Codes and messages live in `src/routes/decision-refusals.ts`.
+
+| Status | Code                        | When                                                                                                                |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| 400    | `validation_error`          | Body shape                                                                                                          |
+| 400    | `invalid_decision`          | Submission against the request; `details[0].code` is a `SUBMITTED_DECISION_ERRORS` key                              |
+| 404    | `execution_not_found`       |                                                                                                                     |
+| 404    | `node_not_found`            | Not in the run's snapshot                                                                                           |
+| 409    | `execution_not_waiting`     | Terminal or cancelling run, or the engine no longer has it                                                          |
+| 409    | `node_not_waiting`          | No request on the node, never parked, or not waiting now. Final                                                     |
+| 409    | `decision_already_made`     | The first decision won, whoever sent it                                                                             |
+| 409    | `decision_attempt_mismatch` | Body carries the current `attempt`                                                                                  |
+| 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                |
+| 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then means it did |
 
 ## Running individual processes
 
