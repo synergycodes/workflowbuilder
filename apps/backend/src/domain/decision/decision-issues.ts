@@ -29,6 +29,7 @@ export const SUBMITTED_DECISION_ERRORS = {
   unknown_action: "the decision request offers no action named '{value}'",
   reason_required: "action '{value}' requires a reason",
   comment_required: "action '{value}' requires a comment",
+  edits_not_allowed: "action '{value}' does not take edits",
   unknown_field: "field '{value}' is not in the decision schema",
   field_not_editable: "field '{value}' is read-only",
   required_field_missing: "required field '{value}' must not be emptied",
