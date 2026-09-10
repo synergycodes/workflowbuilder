@@ -1,6 +1,7 @@
 // Gate fixtures for the durable-pause tests. Executors record every invocation so
 // the restart scenario can assert "downstream runs exactly once" across workers.
 import type { BaseNode, NodeExecutorRegistry, WorkflowDefinition } from '../../src/index';
+import type { RecordingStore } from './graph';
 
 export type PauseTestNode = (BaseNode & { type: 'test/step' }) | (BaseNode & { type: 'test/gate' });
 
@@ -87,6 +88,28 @@ export function createPauseExecutors(options: { holdWaiting?: boolean } = {}): P
         executed.push(node.id);
         await held;
         return { waiting: true };
+      },
+    },
+  };
+}
+
+export type HeldAnnouncement = { store: RecordingStore; release: () => void };
+
+// Keeps the node_waiting activity in flight after the event is recorded, until `release()`,
+// so a verdict can reach the workflow before that activity has returned.
+export function holdAnnouncement(store: RecordingStore, nodeId: string): HeldAnnouncement {
+  let release: () => void = noop;
+  const held = new Promise<void>((resolve) => {
+    release = resolve;
+  });
+
+  return {
+    release: () => release(),
+    store: {
+      ...store,
+      async emitExecutionEvent(executionId, sequence, type, payload, eventNodeId) {
+        await store.emitExecutionEvent(executionId, sequence, type, payload, eventNodeId);
+        if (type === 'node_waiting' && eventNodeId === nodeId) await held;
       },
     },
   };

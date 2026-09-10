@@ -22,6 +22,7 @@ import {
   SINGLE_GATE_GRAPH,
   TWO_GATES_GRAPH,
   createPauseExecutors,
+  holdAnnouncement,
 } from './fixtures/pause-graph';
 
 function eventTypes(store: RecordingStore, nodeId?: string): string[] {
@@ -205,29 +206,42 @@ describe('durable pause', () => {
   it('rejects a verdict before the node parks, and accepts one the instant node_waiting is announced', async () => {
     const taskQueue = 'pause-held';
     const store = createRecordingStore();
+    const announcement = holdAnnouncement(store, 'gate');
     const harness = createPauseExecutors({ holdWaiting: true });
     const handle = await startRun(taskQueue, 'pause-held-execution', SINGLE_GATE_GRAPH);
 
-    const worker = await createWorker(taskQueue, store, harness);
+    const worker = await createWorker(taskQueue, announcement.store, harness);
     await worker.runUntil(async () => {
-      await waitUntil(() => eventTypes(store, 'gate').includes('node_started'), 'node_started for the waiting node');
-      await expectRejected(
-        handle.executeUpdate('resolveNode', {
-          args: [{ nodeId: 'gate', resolution: { output: 'too early' } }],
-          updateId: 'verdict-before-parking',
-        }),
-        'node_not_waiting',
-      );
+      // Shutdown waits for held activities, so a failed assertion here must still release both.
+      try {
+        await waitUntil(() => eventTypes(store, 'gate').includes('node_started'), 'node_started for the waiting node');
+        await expectRejected(
+          handle.executeUpdate('resolveNode', {
+            args: [{ nodeId: 'gate', resolution: { output: 'too early' } }],
+            updateId: 'verdict-before-parking',
+          }),
+          'node_not_waiting',
+        );
 
-      harness.release();
-      await whenAnnounced(store, 'gate');
-      await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] });
+        harness.release();
+        await whenAnnounced(store, 'gate');
+        await handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
+        });
+        // Accepted while the announcing activity is still in flight: the status write comes after it.
+        expect(store.statuses).toEqual([]);
+      } finally {
+        harness.release();
+        announcement.release();
+      }
+
       await handle.result();
     });
 
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
     expect(harness.inputsSeen.after.gate).toBe('approved');
     expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
     expect(acceptedUpdateIds(await handle.fetchHistory())).not.toContain('verdict-before-parking');
   }, 120_000);
 
