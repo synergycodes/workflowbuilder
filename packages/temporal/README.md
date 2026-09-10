@@ -164,11 +164,11 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 
 ## Entry points
 
-| Import                               | Use it for                                                                                  |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, shared constants, types                        |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                           |
-| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update |
+| Import                               | Use it for                                                                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, the `RUN_WORKFLOW_NAME` and `RESOLVE_NODE_UPDATE_NAME` constants, types |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                                                    |
+| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update                          |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
 
