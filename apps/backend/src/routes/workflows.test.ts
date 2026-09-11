@@ -409,3 +409,62 @@ describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
     expect(databaseMock.update).toHaveBeenCalledTimes(1);
   });
 });
+
+// ---- deeply nested drafts -----------------------------------------------------
+//
+// Nesting depth is the client's to choose and the draft route does not validate, so the
+// scan that runs before parsing meets whatever was stored. It must answer on the contract,
+// never as an unhandled error.
+
+const DEEP = 20_000;
+
+function deepDraft(leaf: string): unknown {
+  return JSON.parse(
+    '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":{"deep":' +
+      '['.repeat(DEEP) +
+      leaf +
+      ']'.repeat(DEEP) +
+      '}}}],"edges":[]}',
+  );
+}
+
+describe('createWorkflowsRoutes - a draft nested deeper than a call stack', () => {
+  it('publishes a clean one', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('') }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses one hiding an own __proto__ key at the bottom, and points at it', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details[0]?.path.slice(0, 5)).toEqual(['nodes', 0, 'data', 'properties', 'deep']);
+    expect(body.details[0]?.path.at(-1)).toBe('__proto__');
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('answers execute the same way', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as InvalidSnapshotBody).code).toBe('invalid_snapshot');
+    expect(engineMock.submit).not.toHaveBeenCalled();
+  });
+});

@@ -16,6 +16,20 @@ describe('findOwnProtoKey', () => {
 
     expect(findOwnProtoKey(cyclic)).toBeUndefined();
   });
+
+  // Depth is the client's to pick and only the 1 MB body limit caps it: 50k levels of
+  // `[` is 100 KB, and a recursive walk died long before that.
+  it('walks a snapshot nested far deeper than a recursive scan could', () => {
+    const depth = 50_000;
+    const nested = (leaf: string): unknown => JSON.parse('['.repeat(depth) + leaf + ']'.repeat(depth));
+
+    expect(findOwnProtoKey(nested(''))).toBeUndefined();
+
+    const found = findOwnProtoKey(nested('{"__proto__":{}}'));
+
+    expect(found?.at(-1)).toBe('__proto__');
+    expect(found).toHaveLength(depth + 1);
+  });
 });
 
 describe('rejectingOwnProtoKey', () => {
