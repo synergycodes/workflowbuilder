@@ -33,6 +33,33 @@ function requestWith(overrides: Partial<DecisionRequest> = {}): DecisionRequest 
   };
 }
 
+// A form the SDK's own field model produces: an object with children and an array of
+// objects. Editability lives on the children, not on the wrapper.
+const nestedRequest = (): DecisionRequest =>
+  requestWith({
+    schema: {
+      type: 'object',
+      properties: {
+        profile: {
+          type: 'object',
+          required: ['nickname'],
+          properties: { id: { type: 'string', readOnly: true }, nickname: { type: 'string' } },
+        },
+        lines: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              sku: { type: 'string', readOnly: true },
+              qty: { type: 'number' },
+              origin: { type: 'object', properties: { warehouse: { type: 'string', readOnly: true } } },
+            },
+          },
+        },
+      },
+    },
+  });
+
 describe('validateSubmittedDecision', () => {
   it.each<{ name: string; request?: DecisionRequest; call: SubmittedDecision; effect: string }>([
     { name: 'a resume without edits resumes', call: { action: 'approve' }, effect: 'resume' },
@@ -55,6 +82,12 @@ describe('validateSubmittedDecision', () => {
     {
       name: 'an optional field may be emptied',
       call: { action: 'approve', edits: { note: '' } },
+      effect: 'resume-with-edits',
+    },
+    {
+      name: 'editable children of an object and of an array item',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: { nickname: 'Ada' }, lines: [{ qty: 3 }] } },
       effect: 'resume-with-edits',
     },
     { name: 'a reject without a reason when none is required', call: { action: 'reject' }, effect: 'reject' },
@@ -200,10 +233,99 @@ describe('validateSubmittedDecision', () => {
       value: 'refundAmount',
       path: ['edits', 'refundAmount'],
     },
+    {
+      name: 'a read-only child rewritten by replacing the object that holds it',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: { id: 'changed' } } },
+      code: 'field_not_editable',
+      value: 'id',
+      path: ['edits', 'profile', 'id'],
+    },
+    {
+      name: "a child the object's own required list names, emptied",
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: { nickname: null } } },
+      code: 'required_field_missing',
+      value: 'nickname',
+      path: ['edits', 'profile', 'nickname'],
+    },
+    {
+      name: 'a child the nested object does not declare',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: { ghost: 1 } } },
+      code: 'unknown_field',
+      value: 'ghost',
+      path: ['edits', 'profile', 'ghost'],
+    },
+    {
+      name: 'a read-only child of an array item, named with its index',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: [{ qty: 2 }, { sku: 'swapped' }] } },
+      code: 'field_not_editable',
+      value: 'sku',
+      path: ['edits', 'lines', '1', 'sku'],
+    },
+    {
+      name: 'a child of an object the form declares but never describes',
+      request: requestWith({ schema: { type: 'object', properties: { opaque: { type: 'object' } } } }),
+      call: { action: 'approve', edits: { opaque: { anything: 1 } } },
+      code: 'unknown_field',
+      value: 'anything',
+      path: ['edits', 'opaque', 'anything'],
+    },
+    {
+      name: 'an element of an array the form declares but never describes',
+      request: requestWith({ schema: { type: 'object', properties: { rows: { type: 'array' } } } }),
+      call: { action: 'approve', edits: { rows: [{ anything: 1 }] } },
+      code: 'unknown_field',
+      value: '0',
+      path: ['edits', 'rows', '0'],
+    },
+    {
+      name: 'any element of an array whose items are read-only, named by its index',
+      request: requestWith({
+        schema: { type: 'object', properties: { rows: { type: 'array', items: { readOnly: true } } } },
+      }),
+      call: { action: 'approve', edits: { rows: ['a', 'b'] } },
+      code: 'field_not_editable',
+      value: '0',
+      path: ['edits', 'rows', '0'],
+    },
+    {
+      name: 'a read-only field three levels down, through an array item',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: [{ qty: 1 }, { origin: { warehouse: 'moved' } }] } },
+      code: 'field_not_editable',
+      value: 'warehouse',
+      path: ['edits', 'lines', '1', 'origin', 'warehouse'],
+    },
+    {
+      name: 'a nested child that exists only on Object.prototype',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: { constructor: 1 } } },
+      code: 'unknown_field',
+      value: 'constructor',
+      path: ['edits', 'profile', 'constructor'],
+    },
   ])('refuses $name', ({ request = requestWith(), call, code, value, path }) => {
     expect(validateSubmittedDecision(request, call)).toEqual({
       error: { code, message: submittedDecisionErrorMessage(code, value), path },
     });
+  });
+
+  // The decision log promises the first refusal, not a list. Submission order decides which.
+  it('reports only the first bad edit, in the order they were submitted', () => {
+    const readOnlyFirst = validateSubmittedDecision(requestWith(), {
+      action: 'approve',
+      edits: { orderDate: '2026-01-01', discount: 10 },
+    });
+    const unknownFirst = validateSubmittedDecision(requestWith(), {
+      action: 'approve',
+      edits: { discount: 10, orderDate: '2026-01-01' },
+    });
+
+    expect(readOnlyFirst.error).toMatchObject({ code: 'field_not_editable', path: ['edits', 'orderDate'] });
+    expect(unknownFirst.error).toMatchObject({ code: 'unknown_field', path: ['edits', 'discount'] });
   });
 
   it('records the action by name and returns the matched action beside the decision', () => {

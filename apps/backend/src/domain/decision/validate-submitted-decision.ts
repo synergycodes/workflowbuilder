@@ -41,14 +41,67 @@ function isEmptied(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && value.trim().length === 0);
 }
 
-// The request arrived through the parser, so `schema` has the shape checked there;
-// the reads below only narrow what `Record<string, unknown>` hides.
-function formProperties(request: DecisionRequest): Record<string, { readOnly?: unknown }> {
-  return (request.schema['properties'] ?? {}) as Record<string, { readOnly?: unknown }>;
+// The request arrived through the parser, so `schema` has the shape checked there; the
+// reads below only narrow what `Record<string, unknown>` hides.
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
 }
 
-function requiredFields(request: DecisionRequest): string[] {
-  return (request.schema['required'] ?? []) as string[];
+type EditedChild = { key: string; value: unknown; declared: Record<string, unknown> | undefined };
+
+// What an edited value's children are and which schema declares each. Undefined for a leaf,
+// which has none. An array's elements are all declared by `items`, so an index carries no
+// rules of its own; a level the form does not describe inline declares nothing at all.
+function childrenOf(
+  schema: Record<string, unknown>,
+  edited: unknown,
+): { children: EditedChild[]; required: Set<string> } | undefined {
+  const fields = asObject(edited);
+  if (fields !== undefined) {
+    const properties = asObject(schema['properties']) ?? {};
+    const names = schema['required'];
+    return {
+      children: Object.entries(fields).map(([key, value]) => ({
+        key,
+        value,
+        declared: Object.hasOwn(properties, key) ? (asObject(properties[key]) ?? {}) : undefined,
+      })),
+      required: new Set(Array.isArray(names) ? (names as string[]) : []),
+    };
+  }
+
+  if (!Array.isArray(edited)) return undefined;
+  const items = asObject(schema['items']);
+  return {
+    children: edited.map((value, index) => ({ key: `${index}`, value, declared: items })),
+    required: new Set<string>(),
+  };
+}
+
+// Every level the form declares, not just the outermost one: a `readOnly` child would
+// otherwise be rewritten by replacing the object that holds it
+// (follow-up: decision-edit-schema-composition).
+function validateEdits(
+  schema: Record<string, unknown>,
+  edited: unknown,
+  path: string[],
+): SubmittedDecisionResult | undefined {
+  const level = childrenOf(schema, edited);
+  if (level === undefined) return undefined;
+
+  for (const { key, value, declared } of level.children) {
+    const here = [...path, key];
+    if (declared === undefined) return refuse('unknown_field', key, here);
+    if (declared['readOnly'] === true) return refuse('field_not_editable', key, here);
+    if (level.required.has(key) && isEmptied(value)) return refuse('required_field_missing', key, here);
+
+    const refused = validateEdits(declared, value, here);
+    if (refused !== undefined) return refused;
+  }
+
+  return undefined;
 }
 
 // Presence and editability only. Whether an edited value fits its declared type is a
@@ -67,14 +120,9 @@ export function validateSubmittedDecision(
     return refuse('comment_required', action.name, ['comment']);
   }
 
-  const properties = formProperties(request);
-  const required = new Set(requiredFields(request));
   const edits = submitted.edits ?? {};
-  for (const [field, value] of Object.entries(edits)) {
-    if (!Object.hasOwn(properties, field)) return refuse('unknown_field', field, ['edits', field]);
-    if (properties[field].readOnly === true) return refuse('field_not_editable', field, ['edits', field]);
-    if (required.has(field) && isEmptied(value)) return refuse('required_field_missing', field, ['edits', field]);
-  }
+  const refused = validateEdits(request.schema, edits, ['edits']);
+  if (refused !== undefined) return refused;
 
   const withEdits = Object.keys(edits).length > 0;
   const effect: DecisionEffect = action.effect === 'resume' && withEdits ? 'resume-with-edits' : action.effect;

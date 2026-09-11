@@ -39,6 +39,7 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 - A workflow with a `null` draft still publishes `null`, unvalidated, as it did before. Changing that is its own decision.
 - A draft may store an own `__proto__` key; it goes nowhere but the database, and publish and execute refuse it. Rejecting it at save time was judged not worth touching the draft route.
 - The submission validator returns the first refusal, not a list.
+- It checks editability and presence at every level the form describes inline, following `properties` and `items`. A level reached only through `$ref` or a composition keyword describes nothing there, so an edit into it is refused as an unknown field rather than checked `(follow-up: decision-edit-schema-composition)`.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
 - Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
 
