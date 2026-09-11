@@ -35,8 +35,9 @@ export type BaseNode = {
   label?: string;
   errorPolicy?: NodeErrorPolicy;
   /**
-   * What this node asks a human to decide before the run continues. This field's
-   * presence, never `type`, marks a node as one that waits for a decision.
+   * What this node asks a human to decide before the run continues. The backend and the
+   * decision endpoint find it by this field, never by `type`. The runner does not read it:
+   * a run stops where a node's executor returns a waiting result.
    */
   decisionRequest?: DecisionRequest;
   role?: NodeRole;
