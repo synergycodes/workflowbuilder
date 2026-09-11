@@ -6,7 +6,7 @@ import { z } from 'zod';
 import { type DecisionIssueCode, decisionIssue } from '../decision/decision-issues';
 import { decisionRequestSchema } from '../decision/decision-request-schema';
 import { type UnresolvedSourceReason, resolveProposalSource } from '../decision/proposal-source';
-import { rejectingOwnProtoKey } from './own-proto-key';
+import { rejectingOwnProtoKey } from '../schema/own-proto-key';
 
 const frontendNodeSchema = z.object({
   id: z.string(),

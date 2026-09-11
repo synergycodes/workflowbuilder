@@ -371,3 +371,36 @@ describe('decisionRequestSchema', () => {
     expectTypeOf<z.infer<typeof decisionRequestSchema>>().toMatchTypeOf<DecisionRequest>();
   });
 });
+
+// Every level of a request is a loose object, and a loose object copies an unknown key by
+// assignment, which for this one swaps the parsed output's prototype. The schema guards
+// itself rather than relying on the snapshot it is usually nested in.
+describe('decisionRequestSchema: own __proto__ keys, parsed on its own', () => {
+  const action = '{"name":"approve","label":"Approve","effect":"resume"}';
+  const form = '{"type":"object","properties":{}}';
+
+  it.each([
+    {
+      where: 'at the request level',
+      json: `{"version":1,"actions":[${action}],"schema":${form},"__proto__":{"deadline":{"after":"nonsense"}}}`,
+      path: '__proto__',
+    },
+    {
+      where: 'inside an action',
+      json: `{"version":1,"actions":[{"name":"a","label":"A","effect":"resume","__proto__":{"port":"stolen"}}],"schema":${form}}`,
+      path: 'actions.0.__proto__',
+    },
+    {
+      where: 'inside the form schema',
+      json: `{"version":1,"actions":[${action}],"schema":{"type":"object","properties":{},"__proto__":{"required":["x"]}}}`,
+      path: 'schema.__proto__',
+    },
+    {
+      where: 'inside a form property',
+      json: `{"version":1,"actions":[${action}],"schema":{"type":"object","properties":{"amount":{"type":"number","__proto__":{"readOnly":true}}}}}`,
+      path: 'schema.properties.amount.__proto__',
+    },
+  ])('refuses one $where', ({ json, path }) => {
+    expect(issuesOf(JSON.parse(json))).toEqual([{ path, message: "the key '__proto__' is not allowed" }]);
+  });
+});

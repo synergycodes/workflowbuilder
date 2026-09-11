@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import { DECLARABLE_DECISION_EFFECTS } from '@workflow-builder/types/workflow-execution/decision-request';
 
+import { rejectingOwnProtoKey } from '../schema/own-proto-key';
 import { decisionIssue, decisionIssueMessage } from './decision-issues';
 
 // Mirrors DURATION_PATTERN and the protobuf Duration range in
@@ -91,45 +92,50 @@ const deadlineSchema = z.looseObject({
   policy: z.string().refine((policy) => policy === 'reject', decisionIssueMessage('deadline_policy')),
 });
 
-// Parses a request already inside a guarded snapshot. Raw JSON goes through
-// `workflowSnapshotSchema`; `mapper/own-proto-key.ts` says why.
-export const decisionRequestSchema = z
-  .looseObject({
-    version: z.literal(1),
-    actions: z.array(decisionActionSchema).min(1, decisionIssueMessage('actions_empty')),
-    schema: formSchema,
-    uiSchema: z.record(z.string(), z.unknown()).optional(),
-    proposalSourceNodeId: z.string().optional(),
-    deadline: deadlineSchema.optional(),
-  })
-  .superRefine((request, context) => {
-    const seenNames = new Set<string>();
-    const firstIndexByEffect = new Map<string, number>();
+// Guarded on its own, not only through `workflowSnapshotSchema`: every level below is a
+// loose object, so a caller parsing raw JSON with this export would inherit a request no
+// schema checked. `../schema/own-proto-key.ts` says why a loose object needs that.
+export const decisionRequestSchema = rejectingOwnProtoKey(
+  z
+    .looseObject({
+      version: z.literal(1),
+      actions: z.array(decisionActionSchema).min(1, decisionIssueMessage('actions_empty')),
+      schema: formSchema,
+      uiSchema: z.record(z.string(), z.unknown()).optional(),
+      proposalSourceNodeId: z.string().optional(),
+      deadline: deadlineSchema.optional(),
+    })
+    .superRefine((request, context) => {
+      const seenNames = new Set<string>();
+      const firstIndexByEffect = new Map<string, number>();
 
-    for (const [index, action] of request.actions.entries()) {
-      if (seenNames.has(action.name)) {
-        context.addIssue(decisionIssue('duplicate_action_name', ['actions', index, 'name'], action.name));
+      for (const [index, action] of request.actions.entries()) {
+        if (seenNames.has(action.name)) {
+          context.addIssue(decisionIssue('duplicate_action_name', ['actions', index, 'name'], action.name));
+        }
+        seenNames.add(action.name);
+
+        if (firstIndexByEffect.has(action.effect)) {
+          context.addIssue(decisionIssue('duplicate_effect', ['actions', index, 'effect'], action.effect));
+        } else {
+          firstIndexByEffect.set(action.effect, index);
+        }
       }
-      seenNames.add(action.name);
 
-      if (firstIndexByEffect.has(action.effect)) {
-        context.addIssue(decisionIssue('duplicate_effect', ['actions', index, 'effect'], action.effect));
-      } else {
-        firstIndexByEffect.set(action.effect, index);
+      const resumeIndex = firstIndexByEffect.get('resume');
+      if (resumeIndex === undefined) {
+        context.addIssue(decisionIssue('resume_required', ['actions']));
+        return;
       }
-    }
 
-    const resumeIndex = firstIndexByEffect.get('resume');
-    if (resumeIndex === undefined) {
-      context.addIssue(decisionIssue('resume_required', ['actions']));
-      return;
-    }
-
-    const rejectIndex = firstIndexByEffect.get('reject');
-    if (rejectIndex === undefined) return;
-    const resume = request.actions[resumeIndex];
-    const reject = request.actions[rejectIndex];
-    if (resume.effect === 'resume' && reject.effect === 'reject' && resume.port === reject.port) {
-      context.addIssue(decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port));
-    }
-  });
+      const rejectIndex = firstIndexByEffect.get('reject');
+      if (rejectIndex === undefined) return;
+      const resume = request.actions[resumeIndex];
+      const reject = request.actions[rejectIndex];
+      if (resume.effect === 'resume' && reject.effect === 'reject' && resume.port === reject.port) {
+        context.addIssue(
+          decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port),
+        );
+      }
+    }),
+);

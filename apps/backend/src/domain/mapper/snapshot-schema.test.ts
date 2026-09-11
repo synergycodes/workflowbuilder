@@ -366,6 +366,24 @@ describe('mapToExecutionModel', () => {
     ]);
   });
 
+  // `workflowSnapshotSchema` refuses an own `__proto__`, so this reaches the mapper only if
+  // that guard is bypassed. The mapper is exported, so it can be.
+  it('ignores properties that are only inherited, however they got there', () => {
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [{ id: 'n1', data: { type: 'product/foo', properties: { own: 1 } } }],
+      edges: [],
+    });
+    Object.setPrototypeOf(snapshot.nodes[0]?.data.properties ?? {}, {
+      decisionRequest: { version: 99, actions: [] },
+      label: 'Inherited',
+      errorPolicy: 'continue',
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes).toEqual([{ id: 'n1', type: 'product/foo', config: { own: 1 } }]);
+  });
+
   it('defaults `config` to `{}` when properties are absent', () => {
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [{ id: 'n1', data: { type: 'product/empty' } }],
