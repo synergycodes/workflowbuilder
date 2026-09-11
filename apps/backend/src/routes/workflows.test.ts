@@ -275,7 +275,7 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 // version before submitting; both answer with the same `invalid_snapshot` body.
 // Draft save never validates: a draft is legitimately mid-edit.
 
-function snapshotWithDecisionActions(actions: unknown[]) {
+function snapshotWithDecisionActions(actions: unknown[], properties: Record<string, unknown> = {}) {
   return {
     nodes: [
       { id: 'src', data: { type: 'product/any' } },
@@ -283,7 +283,7 @@ function snapshotWithDecisionActions(actions: unknown[]) {
         id: 'review',
         data: {
           type: 'product/any',
-          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties: {} } } },
+          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties } } },
         },
       },
     ],
@@ -334,6 +334,21 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(response.status).toBe(200);
     expect(databaseMock.update).toHaveBeenCalledTimes(1);
     expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validDecisionSnapshot });
+  });
+
+  it('accepts a form whose properties carry no type, as JSON Schema allows', async () => {
+    const draftJson = snapshotWithDecisionActions([approve], {
+      status: { enum: ['open', 'closed'] },
+      amount: { $ref: '#/$defs/money' },
+      nickname: { type: ['string', 'null'] },
+    });
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, publishedJson: draftJson }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
   });
 
   it('still publishes a workflow without a draft, unvalidated', async () => {

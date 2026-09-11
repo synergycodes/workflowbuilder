@@ -66,7 +66,7 @@ const decisionActionSchema = z.discriminatedUnion(
 );
 
 const formPropertySchema = z.looseObject({
-  type: z.string(),
+  type: z.union([z.string(), z.array(z.string())]).optional(),
   readOnly: z.boolean().optional(),
   'x-pii': z.boolean().optional(),
 });

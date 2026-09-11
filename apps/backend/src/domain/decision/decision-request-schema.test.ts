@@ -64,6 +64,23 @@ describe('decisionRequestSchema', () => {
     expect(decisionRequestSchema.safeParse(minimal).success).toBe(true);
   });
 
+  // Shapes JsonForms 3.5.1 generates a control for. The parser reads none of their
+  // keywords, so each has to reach the renderer exactly as authored.
+  it.each([
+    { shape: 'a list of type names', property: { type: ['string', 'null'] } },
+    { shape: 'enum alone', property: { enum: ['open', 'closed'] } },
+    { shape: 'a local $ref', property: { $ref: '#/$defs/money' } },
+    { shape: 'anyOf alone', property: { anyOf: [{ type: 'string' }, { type: 'number' }] } },
+    { shape: 'readOnly beside no type', property: { enum: ['open'], readOnly: true, 'x-pii': true } },
+  ])('accepts a form property declared with $shape, untouched', ({ property }) => {
+    const parsed = decisionRequestSchema.safeParse(
+      request({ schema: { type: 'object', properties: { field: property } } }),
+    );
+
+    expect(parsed.success).toBe(true);
+    expect(parsed.success ? parsed.data.schema['properties'] : undefined).toEqual({ field: property });
+  });
+
   it.each([...DECLARABLE_DECISION_EFFECTS])('accepts a declared %s action', (effect) => {
     const resume = { name: 'ok', label: 'OK', effect: 'resume' };
     const actions = effect === 'resume' ? [resume] : [resume, { name: 'other', label: 'Other', effect }];
@@ -271,8 +288,13 @@ describe('decisionRequestSchema', () => {
       path: 'schema.properties',
     },
     {
-      name: 'a form property without a type',
-      input: request({ schema: { type: 'object', properties: { refundAmount: { title: 'Refund amount' } } } }),
+      name: 'a form property whose type is neither a name nor a list of names',
+      input: request({ schema: { type: 'object', properties: { refundAmount: { type: 7 } } } }),
+      path: 'schema.properties.refundAmount.type',
+    },
+    {
+      name: 'a form property whose type list holds something other than a name',
+      input: request({ schema: { type: 'object', properties: { refundAmount: { type: ['string', 7] } } } }),
       path: 'schema.properties.refundAmount.type',
     },
     {
