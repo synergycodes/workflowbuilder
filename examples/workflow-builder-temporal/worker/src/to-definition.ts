@@ -1,7 +1,7 @@
 import type { WorkflowDefinition, WorkflowEdgeDefinition } from '@workflowbuilder/temporal';
 
+import type { DiagramSnapshot, SnapshotEdge, SnapshotNode } from '../../shared/protocol';
 import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
-import type { DiagramSnapshot, SnapshotEdge, SnapshotNode } from './protocol';
 
 // The editor's snapshot is React Flow data; the plugin wants `{ id, type, config }` per node
 // and `{ sourceNodeId, targetNodeId }` per edge. This is the only glue in the sample.

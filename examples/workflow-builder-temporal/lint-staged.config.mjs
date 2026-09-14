@@ -3,5 +3,9 @@
  */
 export default {
   '*.{ts,tsx,js,json,css,astro,md,mdx}': (files) => `prettier --write --log-level=silent ${files.join(' ')}`,
-  '*.{ts,tsx}': [(files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`, () => `tsc --noEmit`],
+  '*.{ts,tsx}': [
+    (files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`,
+    () => 'tsc --noEmit -p worker/tsconfig.json',
+    () => 'tsc --noEmit -p editor/tsconfig.json',
+  ],
 };

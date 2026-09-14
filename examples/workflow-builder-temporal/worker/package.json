@@ -1,5 +1,5 @@
 {
-  "name": "workflow-builder-temporal-sample",
+  "name": "workflow-builder-temporal-sample-worker",
   "private": true,
   "version": "0.0.0",
   "type": "module",

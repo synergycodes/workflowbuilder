@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { RunEvent } from '../../../src/protocol';
+import type { RunEvent } from '../../../shared/protocol';
 
 export type NodeRunStatus = 'running' | 'completed' | 'failed' | 'skipped';
 export type RunPhase = 'idle' | 'starting' | 'running' | 'completed' | 'incomplete' | 'failed' | 'cancelled' | 'error';
