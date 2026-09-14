@@ -479,6 +479,26 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     });
   });
 
+  // Postgres accepts a non-canonical uuid and answers with the canonical row, so the url
+  // spelling and the row id can differ; the engine's workflow name is case-sensitive.
+  it('delivers to the id the row carries, not the spelling the url used', async () => {
+    const canonical = 'a0eebc99-9c0b-4ef8-bb6d-6bb9bd380a11';
+    program({ ...waitingExecution, id: canonical });
+
+    const response = await buildApp(allowAll()).request(`/api/executions/${canonical.toUpperCase()}/decision`, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(approveBody),
+    });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ executionId: canonical });
+    expect(engineMock.resolveNode).toHaveBeenCalledWith(canonical, 'review-1', {
+      output: approvedDecision,
+      nextPort: 'approved',
+    });
+  });
+
   it('a reject with no reason, none required, resumes on the reject port', async () => {
     program(waitingExecution);
 

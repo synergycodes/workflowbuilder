@@ -48,7 +48,7 @@ export function createDecisionRoutes(
     const resource: AuthResource = execution
       ? {
           kind: 'execution',
-          executionId,
+          executionId: execution.id,
           attributes: { workflowId: execution.workflowId, tenantId: execution.tenantId, status: execution.status },
         }
       : { kind: 'execution', executionId };
@@ -56,6 +56,10 @@ export function createDecisionRoutes(
 
     if (!execution) return refuse(c, 'execution_not_found');
     if (NOT_DECIDABLE_STATUSES.has(execution.status)) return refuse(c, 'execution_not_waiting');
+
+    // Postgres answers a non-canonical uuid with the canonical row, so the two can differ.
+    // Every id below is the row's: the engine builds a case-sensitive workflow name from it.
+    const { id: resolvedId } = execution;
 
     const parsedBody = z.safeParse(decisionBodySchema, await c.req.json());
     if (!parsedBody.success) {
@@ -66,10 +70,10 @@ export function createDecisionRoutes(
     const parsedSnapshot = z.safeParse(workflowSnapshotSchema, execution.workflowSnapshotJson);
     if (!parsedSnapshot.success) {
       logger.error('stored snapshot no longer parses', {
-        executionId,
+        executionId: resolvedId,
         error: { issues: formatValidationDetails(parsedSnapshot.error) },
       });
-      throw new Error(`stored snapshot of execution ${executionId} no longer parses`);
+      throw new Error(`stored snapshot of execution ${resolvedId} no longer parses`);
     }
     const found = findDecisionRequest(parsedSnapshot.data, nodeId);
     if (found.error !== undefined) return refuse(c, LOOKUP_REFUSALS[found.error], nodeId);
@@ -80,7 +84,7 @@ export function createDecisionRoutes(
     }
     const { decision, action } = validated;
 
-    const waits = await countNodeWaits(executionId, nodeId);
+    const waits = await countNodeWaits(resolvedId, nodeId);
     if (waits === 0) return refuse(c, 'node_never_parked', nodeId);
     if (waits !== attempt) return refuse(c, 'attempt_mismatch', undefined, { attempt: waits });
 
@@ -89,7 +93,7 @@ export function createDecisionRoutes(
       return refuse(c, 'effect_not_supported', action.name);
     }
 
-    const result = await getWorkflowEngine().resolveNode(executionId, nodeId, toNodeResolution(decision, action));
+    const result = await getWorkflowEngine().resolveNode(resolvedId, nodeId, toNodeResolution(decision, action));
     if (result.error !== undefined) {
       const outcome = ENGINE_REFUSALS[result.error.code];
       if (outcome === 'fault') {
@@ -100,8 +104,14 @@ export function createDecisionRoutes(
       return refuse(c, outcome, nodeId);
     }
 
-    logger.info('decision delivered', { executionId, nodeId, attempt, action: action.name, effect: decision.effect });
-    return c.json({ executionId, nodeId, attempt, action: action.name, effect: decision.effect });
+    logger.info('decision delivered', {
+      executionId: resolvedId,
+      nodeId,
+      attempt,
+      action: action.name,
+      effect: decision.effect,
+    });
+    return c.json({ executionId: resolvedId, nodeId, attempt, action: action.name, effect: decision.effect });
   });
 
   return routes;
