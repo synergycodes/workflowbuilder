@@ -40,8 +40,8 @@ function toEdge(edge: SnapshotEdge): WorkflowEdgeDefinition {
     id: edge.id,
     sourceNodeId: edge.source,
     targetNodeId: edge.target,
-    // The editor names its default output handle "source". The runner consults handles only
-    // when a node names a port, so for these nodes the handle is carried, never read.
+    // The runner fires an edge only when its handle equals the port the source named. The
+    // decision node names a branch handle; the others name none, so their "source" is never read.
     ...(edge.sourceHandle ? { sourceHandle: edge.sourceHandle } : {}),
   };
 }
