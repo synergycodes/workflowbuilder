@@ -2,7 +2,7 @@ import { type ExecutionContext, PermanentNodeExecutionError } from '@workflowbui
 
 import type { SampleComparisonOperator, SampleCondition, SampleDecisionBranch } from './nodes';
 
-export type OperandContext = Pick<ExecutionContext, 'triggerPayload' | 'nodeOutputs'>;
+type OperandContext = Pick<ExecutionContext, 'triggerPayload' | 'nodeOutputs'>;
 
 const REFERENCE = /\{\{([^}]*)\}\}/g;
 const PATH = /^\s*(nodes|trigger)\.([\w-]+(?:\.[\w-]+)*)\s*$/;
@@ -23,7 +23,7 @@ export function pickBranch(branches: SampleDecisionBranch[], context: OperandCon
   return winner;
 }
 
-export function conditionsHold(conditions: SampleCondition[], context: OperandContext): boolean {
+function conditionsHold(conditions: SampleCondition[], context: OperandContext): boolean {
   let result = true;
 
   for (const [index, condition] of conditions.entries()) {
@@ -43,7 +43,7 @@ export function conditionsHold(conditions: SampleCondition[], context: OperandCo
   return result;
 }
 
-export function resolveOperand(operand: string, context: OperandContext): string {
+function resolveOperand(operand: string, context: OperandContext): string {
   return operand.replaceAll(REFERENCE, (reference, body: string) => {
     const match = PATH.exec(body);
     if (!match) {

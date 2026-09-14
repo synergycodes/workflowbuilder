@@ -8,11 +8,8 @@ import type { RunEvent, RunRequest, RunResponse } from './protocol';
 import type { RunStore } from './store';
 import { snapshotToDefinition } from './to-definition';
 
-// Only `submit` is needed here, so a fake in tests stays one method wide.
-export type RunSubmitter = Pick<WorkflowEnginePort<SampleNode>, 'submit'>;
-
 export type BridgeOptions = {
-  engine: RunSubmitter;
+  engine: WorkflowEnginePort<SampleNode>;
   store: RunStore;
   port: number;
 };
@@ -46,7 +43,11 @@ export function startBridge({ engine, store, port }: BridgeOptions): Server {
   return server;
 }
 
-async function startRun(request: IncomingMessage, response: ServerResponse, engine: RunSubmitter): Promise<void> {
+async function startRun(
+  request: IncomingMessage,
+  response: ServerResponse,
+  engine: WorkflowEnginePort<SampleNode>,
+): Promise<void> {
   const body = JSON.parse(await readBody(request)) as Partial<RunRequest>;
   if (!Array.isArray(body.nodes) || !Array.isArray(body.edges)) {
     throw new TypeError('The body must be a diagram snapshot: { nodes: [], edges: [], triggerPayload?: {} }.');
