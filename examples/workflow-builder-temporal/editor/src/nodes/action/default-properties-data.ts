@@ -7,4 +7,5 @@ export const defaultPropertiesData: Required<NodeDataProperties<ActionNodeSchema
   description: 'Performs a task',
   status: 'active',
   message: '',
+  simulateOutage: false,
 };

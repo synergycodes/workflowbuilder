@@ -1,20 +1,20 @@
 import { getStoreDataForIntegration } from '@workflowbuilder/sdk';
 
+import { drawAmount } from '../../../src/amount';
 import type { RunEvent, RunRequest, RunResponse } from '../../../src/protocol';
 import { applyRunEvent, isRunOver, runErrored, runStarted, runStarting, useRunStore } from './run-store';
 
-// What the trigger node hands downstream. Change `amount` to 50 and the condition node
-// reports `matched: false`.
-const TRIGGER_PAYLOAD = { amount: 250, customer: 'Ada' };
-
 let stream: EventSource | undefined;
 
-export async function runFromCanvas(): Promise<void> {
+export async function runFromCanvas(forcedAmount?: number): Promise<void> {
   stream?.close();
   runStarting();
 
+  // The decision node routes on this. Left to chance, about half the runs take each branch.
+  const amount = forcedAmount ?? drawAmount();
+
   const { nodes, edges } = getStoreDataForIntegration();
-  const request: RunRequest = { nodes, edges, triggerPayload: TRIGGER_PAYLOAD };
+  const request: RunRequest = { nodes, edges, triggerPayload: { amount, customer: 'Ada' } };
 
   let response: Response;
   try {
@@ -35,7 +35,7 @@ export async function runFromCanvas(): Promise<void> {
   }
 
   const { executionId, temporalUiUrl } = (await response.json()) as RunResponse;
-  runStarted(executionId, temporalUiUrl);
+  runStarted(executionId, temporalUiUrl, amount);
 
   stream = new EventSource(`/api/runs/${executionId}/events`);
   stream.addEventListener('message', (message) => {

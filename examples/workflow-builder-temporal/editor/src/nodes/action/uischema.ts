@@ -27,5 +27,10 @@ export const uischema: UISchema = {
       placeholder: 'What should this action do?',
       minRows: 4,
     },
+    {
+      type: 'Switch',
+      scope: scope('properties.simulateOutage'),
+      label: 'Simulate an outage on the first attempt',
+    },
   ],
 };
