@@ -4,13 +4,13 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { drawAmount, parseAmount } from './amount';
+import { drawAmount } from './amount';
 import { TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE, WORKFLOW_ID, temporalUiUrl } from './config';
 import type { DiagramSnapshot } from './protocol';
 import { snapshotToDefinition } from './to-definition';
 
-const forcedAmount = parseAmount(process.argv[2]);
-const amount = forcedAmount ?? drawAmount();
+// The decision node routes on this. Left to chance, about half the runs take each branch.
+const amount = drawAmount();
 
 const snapshot = JSON.parse(await readFile(new URL('diagram.json', import.meta.url), 'utf8')) as DiagramSnapshot;
 const definition = snapshotToDefinition(snapshot, WORKFLOW_ID);
@@ -31,7 +31,7 @@ await engine.submit({
   global: {},
 });
 
-console.log(`amount ${amount}${forcedAmount === undefined ? ' (random; force one with: npm run workflow -- 50)' : ''}`);
+console.log(`amount ${amount}`);
 console.log(`started ${executionWorkflowId(executionId)}`);
 console.log(`watch it: ${temporalUiUrl(executionId)}`);
 

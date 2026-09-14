@@ -6,12 +6,12 @@ import { applyRunEvent, isRunOver, runErrored, runStarted, runStarting, useRunSt
 
 let stream: EventSource | undefined;
 
-export async function runFromCanvas(forcedAmount?: number): Promise<void> {
+export async function runFromCanvas(): Promise<void> {
   stream?.close();
   runStarting();
 
   // The decision node routes on this. Left to chance, about half the runs take each branch.
-  const amount = forcedAmount ?? drawAmount();
+  const amount = drawAmount();
 
   const { nodes, edges } = getStoreDataForIntegration();
   const request: RunRequest = { nodes, edges, triggerPayload: { amount, customer: 'Ada' } };
