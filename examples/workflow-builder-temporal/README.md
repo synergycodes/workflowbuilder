@@ -4,7 +4,7 @@ Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workfl
 
 This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
 
-![Nodes lighting up in the editor while Temporal runs the flow](docs/editor-run.png)
+![A finished run in the editor: green on every node Temporal executed, grey on the branch it skipped](docs/editor-run.png)
 
 ## What runs where
 
