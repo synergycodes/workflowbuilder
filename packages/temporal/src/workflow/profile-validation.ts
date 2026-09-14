@@ -42,11 +42,15 @@ function assertActivityProfile(nodeType: string, profile: ActivityProfile | unde
     );
   }
 
+  if (profile.taskQueue !== undefined && (typeof profile.taskQueue !== 'string' || profile.taskQueue === '')) {
+    throw new TypeError(`${path}.taskQueue must be a non-empty string, got ${JSON.stringify(profile.taskQueue)}.`);
+  }
+
   assertNoUnknownKeys(path, profile, PROFILE_KEYS);
   assertNoUnknownKeys(`${path}.retry`, profile.retry, RETRY_KEYS);
 }
 
-const PROFILE_KEYS: ReadonlySet<string> = new Set(['startToCloseTimeout', 'retry']);
+const PROFILE_KEYS: ReadonlySet<string> = new Set(['startToCloseTimeout', 'retry', 'taskQueue']);
 const RETRY_KEYS: ReadonlySet<string> = new Set(['maximumAttempts']);
 
 function assertNoUnknownKeys(path: string, value: object, allowed: ReadonlySet<string>): void {
@@ -54,7 +58,7 @@ function assertNoUnknownKeys(path: string, value: object, allowed: ReadonlySet<s
   if (unknown.length === 0) return;
 
   throw new TypeError(
-    `${path} has unknown ${unknown.length === 1 ? 'key' : 'keys'} ${unknown.map((key) => JSON.stringify(key)).join(', ')}. A profile carries startToCloseTimeout and retry.maximumAttempts, nothing else.`,
+    `${path} has unknown ${unknown.length === 1 ? 'key' : 'keys'} ${unknown.map((key) => JSON.stringify(key)).join(', ')}. A profile carries startToCloseTimeout, retry.maximumAttempts and an optional taskQueue, nothing else.`,
   );
 }
 
@@ -82,4 +86,17 @@ export function freezeNodeActivityProfiles(profiles: NodeActivityProfiles): Node
 // Returned rather than thrown: one bundle may serve workers registering different subsets.
 export function findProfilesWithoutExecutor(profiles: NodeActivityProfiles, executors: object): string[] {
   return Object.keys(profiles).filter((nodeType) => !Object.hasOwn(executors, nodeType));
+}
+
+// Same shape as findProfilesWithoutExecutor: only checkable worker-side, since a
+// profile's taskQueue is routing metadata the sandbox never sees. `polledTaskQueues`
+// is whatever queues this call knows are actually polled (e.g. this worker's own plus
+// any others it is told about) — a node routed elsewhere silently never runs.
+export function findProfilesWithUnpolledTaskQueue(
+  profiles: NodeActivityProfiles,
+  polledTaskQueues: ReadonlySet<string>,
+): string[] {
+  return Object.entries(profiles)
+    .filter(([, profile]) => profile.taskQueue !== undefined && !polledTaskQueues.has(profile.taskQueue))
+    .map(([nodeType]) => nodeType);
 }

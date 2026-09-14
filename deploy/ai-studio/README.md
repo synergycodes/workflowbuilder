@@ -5,21 +5,36 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
 
-| Service       | Image                          | Role                                            | Exposed                  |
-| ------------- | ------------------------------ | ----------------------------------------------- | ------------------------ |
-| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend   | `${WEB_PORT}` (only one) |
-| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                    | internal                 |
-| `worker`      | `ai-studio-runtime`            | Temporal worker, makes the OpenRouter LLM calls | internal                 |
-| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                 | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events           | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                      | internal                 |
-| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                  | `127.0.0.1:8233`         |
+| Service              | Image                          | Role                                                                   | Exposed                  |
+| -------------------- | ------------------------------ | ---------------------------------------------------------------------- | ------------------------ |
+| `web`                | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend                          | `${WEB_PORT}` (only one) |
+| `backend`            | `ai-studio-runtime`            | Hono REST + SSE event stream                                           | internal                 |
+| `worker`             | `ai-studio-runtime`            | Temporal worker, makes the OpenRouter LLM calls                        | internal                 |
+| `worker-specialized` | `ai-studio-runtime`            | Activity-only worker for node types routed to `SPECIALIZED_TASK_QUEUE` | internal                 |
+| `temporal`           | `temporalio/auto-setup` pinned | Workflow engine                                                        | internal                 |
+| `app-db`             | `postgres:16`                  | Workflow snapshots + execution events                                  | internal                 |
+| `temporal-db`        | `postgres:16`                  | Temporal's own state store                                             | internal                 |
+| `temporal-ui`        | `temporalio/ui` pinned         | Debug only (`--profile debug`)                                         | `127.0.0.1:8233`         |
 
 Both images build from one Dockerfile (`deploy/ai-studio/Dockerfile`) with the
-repo root as context. Backend and worker share a single image and differ only
-in the compose `command`. Database migrations are applied by the backend at
-boot (drizzle-orm's programmatic migrator) — there is no separate migration
-service or step.
+repo root as context. Backend, worker and worker-specialized share a single
+image and differ only in the compose `command`. Database migrations are
+applied by the backend at boot (drizzle-orm's programmatic migrator) — there
+is no separate migration service or step.
+
+`worker-specialized` polls its own task queue and registers only the node
+type(s) meant to run on it (see `apps/execution-worker/README.md` § "Per-node-type
+task queue routing"). It only executes anything once a node's activity profile
+sets `taskQueue: 'workflow-execution-specialized'` (or your own
+`SPECIALIZED_TASK_QUEUE`); until then it idles, polling a queue nothing is scheduled to.
+
+### Running the specialized worker standalone
+
+```bash
+pnpm --filter execution-worker start:specialized   # needs infra up + SPECIALIZED_TASK_QUEUE set
+```
+
+Or in compose alone: `docker compose up -d worker-specialized`.
 
 ## Quick start
 
