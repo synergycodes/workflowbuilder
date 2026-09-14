@@ -1,4 +1,4 @@
-import { type EdgeProps, getSmoothStepPath, useReactFlow } from '@xyflow/react';
+import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -6,7 +6,7 @@ import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EdgeLabel } from '../edge-label-renderer/edge-label-renderer';
 import { EDGE_CURVE_RADIUS, EDGE_OFFSET, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
-import { SelfConnectingEdge } from '../self-connecting-edge/self-connecting-edge';
+import { SelfConnectingEdge, useSelfLoopNodeHeight } from '../self-connecting-edge/self-connecting-edge';
 import { useLabelEdgeHover } from './use-label-edge-hover';
 
 /**
@@ -34,7 +34,7 @@ export function LabelEdge({
   source,
   target,
 }: EdgeProps<WorkflowBuilderEdge>) {
-  const { getNode } = useReactFlow();
+  const nodeHeight = useSelfLoopNodeHeight(source, target);
   const { style, hovered, onMouseEnter, onMouseLeave } = useLabelEdgeHover({
     id,
     isSelected: selected,
@@ -65,8 +65,6 @@ export function LabelEdge({
   };
 
   if (source === target) {
-    const sourceNode = getNode(source);
-    const nodeHeight = sourceNode?.height ?? 0;
     const selfConnectingLabelY = sourceY - (nodeHeight + SELF_CONNECTING_EDGE_LABEL_OFFSET);
 
     return (
@@ -83,6 +81,7 @@ export function LabelEdge({
           target={target}
           sourcePosition={sourcePosition}
           targetPosition={targetPosition}
+          nodeHeight={nodeHeight}
         />
         <EdgeLabel {...labelProps} labelX={labelX} labelY={selfConnectingLabelY} />
       </>

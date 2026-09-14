@@ -1,14 +1,37 @@
 import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
-import type { EdgeProps } from '@xyflow/react';
+import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
+  /**
+   * Height of the source node, used to size the loop. Omit it to read the
+   * measured height from the React Flow store (the edge then has to render
+   * inside React Flow, which is where edges live anyway). Pass a value when
+   * a sibling element must stay in lockstep with the loop, as
+   * {@link LabelEdge} does for its label.
+   */
   nodeHeight?: number;
   hovered: boolean;
 };
+
+/**
+ * Measured height of the source node of a self-loop, or `0` for a regular
+ * edge and for a node React Flow has not measured yet. Subscribes to the
+ * React Flow store, so the loop follows the node when it grows or shrinks.
+ *
+ * @category Hooks
+ */
+export function useSelfLoopNodeHeight(source: string, target: string) {
+  return useReactFlowStore((state) => {
+    if (source !== target) return 0;
+    const node = state.nodeLookup.get(source);
+    // xyflow writes measured.height on every remeasure; height only when a resize sets attributes.
+    return node?.measured?.height ?? node?.height ?? 0;
+  });
+}
 
 type Point = {
   x: number;
@@ -59,15 +82,18 @@ export function SelfConnectingEdge({
   targetY,
   selected,
   hovered,
-  nodeHeight = 0,
+  source,
+  target,
+  nodeHeight,
 }: SelfConnectingEdgeProps) {
+  const measuredNodeHeight = useSelfLoopNodeHeight(source, target);
   const edgeState: EdgeState = selected ? 'selected' : 'default';
   const style = useEdgeStyle({ state: edgeState, isHovered: hovered });
 
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
     { x: targetX, y: targetY },
-    nodeHeight,
+    nodeHeight ?? measuredNodeHeight,
     EDGE_CURVE_RADIUS,
   );
 
