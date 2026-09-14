@@ -4,9 +4,13 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
+import { drawAmount, parseAmount } from './amount';
 import { TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE, WORKFLOW_ID, temporalUiUrl } from './config';
 import type { DiagramSnapshot } from './protocol';
 import { snapshotToDefinition } from './to-definition';
+
+const forcedAmount = parseAmount(process.argv[2]);
+const amount = forcedAmount ?? drawAmount();
 
 const snapshot = JSON.parse(await readFile(new URL('diagram.json', import.meta.url), 'utf8')) as DiagramSnapshot;
 const definition = snapshotToDefinition(snapshot, WORKFLOW_ID);
@@ -22,11 +26,12 @@ await engine.submit({
   workflowId: WORKFLOW_ID,
   executionId,
   definition,
-  triggerPayload: { amount: 250, customer: 'Ada' },
+  triggerPayload: { amount, customer: 'Ada' },
   variables: {},
   global: {},
 });
 
+console.log(`amount ${amount}${forcedAmount === undefined ? ' (random; force one with: npm run workflow -- 50)' : ''}`);
 console.log(`started ${executionWorkflowId(executionId)}`);
 console.log(`watch it: ${temporalUiUrl(executionId)}`);
 

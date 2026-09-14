@@ -3,7 +3,7 @@
     {
       "id": "trigger-1",
       "type": "node",
-      "position": { "x": 80, "y": 176 },
+      "position": { "x": 80, "y": 200 },
       "data": {
         "type": "trigger",
         "icon": "Lightning",
@@ -18,7 +18,7 @@
     {
       "id": "action-1",
       "type": "node",
-      "position": { "x": 440, "y": 176 },
+      "position": { "x": 440, "y": 200 },
       "data": {
         "type": "action",
         "icon": "PlayCircle",
@@ -26,22 +26,75 @@
           "label": "Send email",
           "description": "Notify the customer",
           "status": "active",
-          "message": "Thanks for reaching out - we are on it!"
+          "message": "Thanks for reaching out - we are on it!",
+          "simulateOutage": true
         }
       }
     },
     {
-      "id": "condition-1",
-      "type": "node",
-      "position": { "x": 800, "y": 176 },
+      "id": "decision-1",
+      "type": "decision-node",
+      "position": { "x": 800, "y": 120 },
       "data": {
-        "type": "condition",
-        "icon": "Faders",
+        "type": "decision",
+        "icon": "ArrowsSplit",
         "properties": {
           "label": "Needs review?",
-          "description": "Checks the amount",
+          "description": "Routes by amount",
           "status": "active",
-          "condition": "amount > 100"
+          "decisionBranches": [
+            {
+              "id": "branch-review",
+              "sourceHandle": "source:inner:review",
+              "label": "Needs review",
+              "conditions": [
+                {
+                  "x": "{{nodes.trigger-1.amount}}",
+                  "comparisonOperator": "isGreaterThan",
+                  "y": "100",
+                  "logicalOperator": "AND"
+                }
+              ]
+            },
+            {
+              "id": "branch-otherwise",
+              "sourceHandle": "source:inner:otherwise",
+              "label": "Otherwise",
+              "conditions": []
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "action-2",
+      "type": "node",
+      "position": { "x": 1200, "y": 40 },
+      "data": {
+        "type": "action",
+        "icon": "PlayCircle",
+        "properties": {
+          "label": "Escalate to a human",
+          "description": "Large amounts get a second pair of eyes",
+          "status": "active",
+          "message": "Flagged for manual review",
+          "simulateOutage": false
+        }
+      }
+    },
+    {
+      "id": "action-3",
+      "type": "node",
+      "position": { "x": 1200, "y": 360 },
+      "data": {
+        "type": "action",
+        "icon": "PlayCircle",
+        "properties": {
+          "label": "Auto-approve",
+          "description": "Small amounts go straight through",
+          "status": "active",
+          "message": "Approved automatically",
+          "simulateOutage": false
         }
       }
     }
@@ -56,10 +109,26 @@
       "type": "labelEdge"
     },
     {
-      "id": "edge-action-condition",
+      "id": "edge-action-decision",
       "source": "action-1",
       "sourceHandle": "source",
-      "target": "condition-1",
+      "target": "decision-1",
+      "targetHandle": "target",
+      "type": "labelEdge"
+    },
+    {
+      "id": "edge-decision-review",
+      "source": "decision-1",
+      "sourceHandle": "source:inner:review",
+      "target": "action-2",
+      "targetHandle": "target",
+      "type": "labelEdge"
+    },
+    {
+      "id": "edge-decision-otherwise",
+      "source": "decision-1",
+      "sourceHandle": "source:inner:otherwise",
+      "target": "action-3",
       "targetHandle": "target",
       "type": "labelEdge"
     }

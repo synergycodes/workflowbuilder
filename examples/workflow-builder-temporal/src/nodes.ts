@@ -5,12 +5,18 @@ import type { BaseNode } from '@workflowbuilder/temporal';
 type SharedConfig = { description?: string; status?: string };
 
 export type TriggerNode = BaseNode & { type: 'trigger'; config: SharedConfig };
-export type ActionNode = BaseNode & { type: 'action'; config: SharedConfig & { message?: string } };
-export type ConditionNode = BaseNode & { type: 'condition'; config: SharedConfig & { condition?: string } };
+export type ActionNode = BaseNode & {
+  type: 'action';
+  config: SharedConfig & { message?: string; simulateOutage?: boolean };
+};
+export type DecisionNode = BaseNode & {
+  type: 'decision';
+  config: SharedConfig & { decisionBranches?: SampleDecisionBranch[] };
+};
 
-export type SampleNode = TriggerNode | ActionNode | ConditionNode;
+export type SampleNode = TriggerNode | ActionNode | DecisionNode;
 
-export const SAMPLE_NODE_TYPES = ['trigger', 'action', 'condition'] as const satisfies readonly SampleNode['type'][];
+export const SAMPLE_NODE_TYPES = ['trigger', 'action', 'decision'] as const satisfies readonly SampleNode['type'][];
 
 // The SDK does not export its DecisionBranch type, so the worker declares the shape it reads.
 export type SampleComparisonOperator =

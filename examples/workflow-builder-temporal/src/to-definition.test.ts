@@ -62,3 +62,35 @@ test('rejects a diagram with no start node', () => {
   const noStart: DiagramSnapshot = { nodes: [{ id: 'a', data: { type: 'action' } }], edges: [] };
   assert.throws(() => snapshotToDefinition(noStart, 'wf'), /no start node/);
 });
+
+test("keeps a decision node's branches in config so the executor can read them", () => {
+  const decisionBranches = [
+    {
+      id: 'branch-review',
+      sourceHandle: 'source:inner:review',
+      label: 'Needs review',
+      conditions: [
+        { x: '{{nodes.trigger-1.amount}}', comparisonOperator: 'isGreaterThan', y: '100', logicalOperator: 'AND' },
+      ],
+    },
+    { id: 'branch-otherwise', sourceHandle: 'source:inner:otherwise', label: 'Otherwise', conditions: [] },
+  ];
+
+  const definition = snapshotToDefinition(
+    {
+      nodes: [
+        ...snapshot.nodes,
+        { id: 'decision-1', data: { type: 'decision', properties: { label: 'Needs review?', decisionBranches } } },
+      ],
+      edges: [],
+    },
+    'wf',
+  );
+
+  assert.deepEqual(definition.nodes[2], {
+    id: 'decision-1',
+    type: 'decision',
+    label: 'Needs review?',
+    config: { decisionBranches },
+  });
+});
