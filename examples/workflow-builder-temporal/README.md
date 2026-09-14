@@ -38,6 +38,10 @@ New request (trigger)
 - The Temporal CLI: install it from <https://docs.temporal.io/cli#install> (`brew install temporal` on macOS).
 - Nothing else. No Docker, no database, no API keys.
 
+`@workflowbuilder/temporal` is still in preview and not on npm, so `worker/` installs it from a
+packed build committed under [`worker/vendor/`](worker/vendor/README.md). The steps below need
+nothing extra; when the package ships, the dependency becomes an ordinary npm range.
+
 ## Run it
 
 Fetch just this folder:

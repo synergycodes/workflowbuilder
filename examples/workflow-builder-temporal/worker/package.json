@@ -18,7 +18,7 @@
     "@temporalio/activity": "1.23.0",
     "@temporalio/client": "1.23.0",
     "@temporalio/worker": "1.23.0",
-    "@workflowbuilder/temporal": "^0.1.0"
+    "@workflowbuilder/temporal": "file:vendor/workflowbuilder-temporal-0.0.0.tgz"
   },
   "devDependencies": {
     "@types/node": "^22.12.0",
