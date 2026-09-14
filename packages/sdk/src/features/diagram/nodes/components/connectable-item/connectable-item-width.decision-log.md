@@ -30,8 +30,9 @@ Two problems surfaced while moving the node shell to the DS 2.0 geometry (width 
   the border box and the terms inflate the cap: at 241px the old rule allows 219px while only 201px
   are available inside a section, so a long label could overflow its section by 18px.
 
-The design system does not specify a width for these items (register: node geometry gaps). Any cap
-is therefore a provisional implementation decision, to be revisited when the design provides one.
+The design system does not specify a width for these rows. Any cap is therefore a provisional
+implementation decision, to be revisited when the design publishes one
+(follow-up: connectable-item-design-width).
 
 ## Decision
 
@@ -63,6 +64,6 @@ adds horizontal padding without declaring it lets its rows exceed the visible wi
   actually offers.
 - The variable makes the nesting explicit and reviewable per container instead of encoding it in a
   single global multiplier.
-- Provisional until the design specifies the item width; recorded as a decision made without a
-  design in the DS 2.0 divergence register. The design's node body matrix (row padding 8px,
-  radius 4px) is a separate follow-up and does not change this derivation.
+- Provisional until the design specifies the row width (follow-up: connectable-item-design-width).
+  The design's node body matrix (row padding 8px, radius 4px) is a separate change and does not
+  alter this derivation.

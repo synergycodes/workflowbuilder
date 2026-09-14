@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-Decision branch rows and AI tool rows derive their width cap from the node shell and their container insets, so long labels keep the full available width after the node shell spacing change instead of truncating early.
+Decision branch rows and AI tool rows cap their width to the space their section actually offers, so long labels truncate at the section edge instead of overflowing it.
