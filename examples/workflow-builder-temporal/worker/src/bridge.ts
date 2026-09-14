@@ -2,9 +2,9 @@ import type { WorkflowEnginePort } from '@workflowbuilder/temporal';
 import { randomUUID } from 'node:crypto';
 import { type IncomingMessage, type Server, type ServerResponse, createServer } from 'node:http';
 
+import type { RunEvent, RunRequest, RunResponse } from '../../shared/protocol';
 import { WORKFLOW_ID, temporalUiUrl } from './config';
 import type { SampleNode } from './nodes';
-import type { RunEvent, RunRequest, RunResponse } from './protocol';
 import type { RunStore } from './store';
 import { snapshotToDefinition } from './to-definition';
 

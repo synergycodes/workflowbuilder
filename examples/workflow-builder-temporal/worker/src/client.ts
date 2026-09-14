@@ -4,15 +4,17 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { drawAmount } from './amount';
+import { drawAmount } from '../../shared/amount';
+import type { DiagramSnapshot } from '../../shared/protocol';
 import { TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE, WORKFLOW_ID, temporalUiUrl } from './config';
-import type { DiagramSnapshot } from './protocol';
 import { snapshotToDefinition } from './to-definition';
 
 // The decision node routes on this. Left to chance, about half the runs take each branch.
 const amount = drawAmount();
 
-const snapshot = JSON.parse(await readFile(new URL('diagram.json', import.meta.url), 'utf8')) as DiagramSnapshot;
+const snapshot = JSON.parse(
+  await readFile(new URL('../../shared/diagram.json', import.meta.url), 'utf8'),
+) as DiagramSnapshot;
 const definition = snapshotToDefinition(snapshot, WORKFLOW_ID);
 
 const client = new Client({

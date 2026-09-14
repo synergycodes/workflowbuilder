@@ -1,7 +1,7 @@
 import { getStoreDataForIntegration } from '@workflowbuilder/sdk';
 
-import { drawAmount } from '../../../src/amount';
-import type { RunEvent, RunRequest, RunResponse } from '../../../src/protocol';
+import { drawAmount } from '../../../shared/amount';
+import type { RunEvent, RunRequest, RunResponse } from '../../../shared/protocol';
 import { applyRunEvent, isRunOver, runErrored, runStarted, runStarting, useRunStore } from './run-store';
 
 let stream: EventSource | undefined;

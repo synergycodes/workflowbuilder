@@ -13,8 +13,14 @@ editor (browser, optional)  --POST canvas snapshot-->  worker + bridge (npm star
         ^                                                     |  executors: trigger, action, decision
         +----------- SSE: node events ------------------------+  store: prints events, streams them to the editor
 
-npm run workflow  ---- reads src/diagram.json, starts one run, waits for it ---->  Temporal
+npm run workflow  ---- reads shared/diagram.json, starts one run, waits for it ---->  Temporal
 ```
+
+Three folders:
+
+- `shared/` is what the two processes agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the coin flip (`amount.ts`).
+- `worker/` is the Node side: the Temporal Worker with the plugin, the bridge the editor talks to, and the CLI client.
+- `editor/` is the optional browser app.
 
 The diagram:
 
@@ -50,6 +56,7 @@ temporal server start-dev
 Terminal 2, the Worker:
 
 ```bash
+cd worker
 npm install
 npm start
 ```
@@ -62,7 +69,7 @@ bridge listening on http://127.0.0.1:3210
 ```
 
 Terminal 3, one run of the diagram. Each run draws an amount between 1 and 200, and the decision node
-routes on it, so about half the runs take each branch:
+routes on it, so about half the runs take each branch. Also from `worker/`:
 
 ```bash
 npm run workflow
@@ -116,7 +123,7 @@ The pruned branch leaves no trace here: there is an Activity for `Escalate to a 
 
 ## Optional: run it from the canvas
 
-Keep terminals 1 and 2 running. The editor posts the canvas to the worker's bridge and reads events back from it.
+Keep terminals 1 and 2 running. The editor posts the canvas to the worker's bridge and reads events back from it. From the sample folder:
 
 ```bash
 cd editor
@@ -128,32 +135,24 @@ Open the printed URL (Vite defaults to <http://localhost:5173>). The editor open
 
 Then change things. Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette.
 
-The editor keeps your edits in `localStorage` and saves again when the page closes, so editing `src/diagram.json` afterwards appears to do nothing. To go back to the file, run this in the browser console and let the page reload:
-
-```js
-addEventListener('beforeunload', (event) => event.stopImmediatePropagation(), { capture: true });
-localStorage.removeItem('workflowBuilderDiagram');
-location.reload();
-```
-
 ## How it works
 
 Six places carry the whole integration. Each has a comment where the reason is not visible in the code.
 
-1. [`src/workflows.ts`](src/workflows.ts) re-exports `runWorkflow`. Temporal bundles workflow code from one module, so a plugin cannot register its workflow for you; the re-export is how the bundle picks it up.
-2. [`src/worker.ts`](src/worker.ts) creates `WorkflowBuilderPlugin({ executors, store })` and hands it to `Worker.create`. The plugin contributes the activities that execute a graph. Connection, task queue, and shutdown stay yours.
-3. [`src/executors.ts`](src/executors.ts) is one function per node type. Executors run inside the plugin's `executeNode` Activity, which is why `action` can read Temporal's attempt number and why throwing `TransientNodeExecutionError` gets it retried while `PermanentNodeExecutionError` does not.
-4. [`src/evaluate-branches.ts`](src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions all hold wins, and a branch with no conditions always holds, so it belongs last. (The reference worker in the Workflow Builder repository never matches an empty branch; this sample prefers the rule you can read off the canvas.)
-5. [`src/store.ts`](src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same.
-6. [`src/to-definition.ts`](src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. The plugin knows nothing about React Flow; this file is the only glue.
+1. [`worker/src/workflows.ts`](worker/src/workflows.ts) re-exports `runWorkflow`. Temporal bundles workflow code from one module, so a plugin cannot register its workflow for you; the re-export is how the bundle picks it up.
+2. [`worker/src/worker.ts`](worker/src/worker.ts) creates `WorkflowBuilderPlugin({ executors, store })` and hands it to `Worker.create`. The plugin contributes the activities that execute a graph. Connection, task queue, and shutdown stay yours.
+3. [`worker/src/executors.ts`](worker/src/executors.ts) is one function per node type. Executors run inside the plugin's `executeNode` Activity, which is why `action` can read Temporal's attempt number and why throwing `TransientNodeExecutionError` gets it retried while `PermanentNodeExecutionError` does not.
+4. [`worker/src/evaluate-branches.ts`](worker/src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions all hold wins, and a branch with no conditions always holds, so it belongs last. (The reference worker in the Workflow Builder repository never matches an empty branch; this sample prefers the rule you can read off the canvas.)
+5. [`worker/src/store.ts`](worker/src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same.
+6. [`worker/src/to-definition.ts`](worker/src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. The plugin knows nothing about React Flow; this file is the only glue.
 
-[`src/client.ts`](src/client.ts) starts a run through `TemporalWorkflowEngine` from `@workflowbuilder/temporal/client` and then waits on an ordinary Temporal workflow handle. [`src/bridge.ts`](src/bridge.ts) does the same for the editor over HTTP and streams the store's events back as Server-Sent Events.
+[`worker/src/client.ts`](worker/src/client.ts) starts a run through `TemporalWorkflowEngine` from `@workflowbuilder/temporal/client` and then waits on an ordinary Temporal workflow handle. [`worker/src/bridge.ts`](worker/src/bridge.ts) does the same for the editor over HTTP and streams the store's events back as Server-Sent Events.
 
 ## Make it yours
 
-- **Add a node type.** Add a palette item under `editor/src/nodes/` and register it in `editor/src/nodes/index.ts`; add a variant to `SampleNode` in `src/nodes.ts` and an executor in `src/executors.ts`. TypeScript refuses to compile until the executor exists.
-- **Tune retries per node type.** Replace the re-export in `src/workflows.ts` with `createRunWorkflow({ nodeActivityProfiles })` and pass the same map to the plugin. The plugin README explains why both sides need it.
-- **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `src/config.ts`. TLS and API keys go on the two connections in `src/worker.ts` and `src/client.ts`.
+- **Add a node type.** Add a palette item under `editor/src/nodes/` and register it in `editor/src/nodes/index.ts`; add a variant to `SampleNode` in `worker/src/nodes.ts` and an executor in `worker/src/executors.ts`. TypeScript refuses to compile until the executor exists.
+- **Tune retries per node type.** Replace the re-export in `worker/src/workflows.ts` with `createRunWorkflow({ nodeActivityProfiles })` and pass the same map to the plugin. The plugin README explains why both sides need it.
+- **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the two connections in `worker/src/worker.ts` and `worker/src/client.ts`.
 - **Toggle the outage.** Every Action has a _Simulate an outage on the first attempt_ switch. Turn it on for `Auto-approve` and that node retries too.
 - **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Keep the branch with no conditions last, or it swallows every run.
 - **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`.

@@ -1,6 +1,6 @@
 import type { ExecutionStore } from '@workflowbuilder/temporal';
 
-import type { RunEvent } from './protocol';
+import type { RunEvent } from '../../shared/protocol';
 
 type Listener = (event: RunEvent) => void;
 
