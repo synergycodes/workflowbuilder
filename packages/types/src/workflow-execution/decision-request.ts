@@ -92,8 +92,10 @@ export type DecisionRequest = {
   /** JsonForms UI schema for the decision form. Passed through; never read by the backend. */
   uiSchema?: Record<string, unknown>;
   /**
-   * The proposal source: the node whose output the decider judges. Must be a direct
-   * predecessor of the deciding node; absent means its only predecessor.
+   * The proposal source: the node whose output the decider judges. When set it must be a
+   * direct predecessor of the deciding node; when absent it is the node's single direct
+   * predecessor. Publishing refuses a request whose source does not resolve, so a published
+   * decision always names one node to judge.
    */
   proposalSourceNodeId?: string;
   /** Absent means the node waits forever. */

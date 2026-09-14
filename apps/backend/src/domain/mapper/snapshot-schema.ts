@@ -52,7 +52,6 @@ export const workflowSnapshotSchema = rejectingOwnProtoKey(
         const request = node.data.properties?.decisionRequest;
         if (request === undefined) continue;
         const declaresRerun = request.actions.some((action) => action.effect === 'rerun-source');
-        if (request.proposalSourceNodeId === undefined && !declaresRerun) continue;
 
         const path = ['nodes', index, 'data', 'properties', 'decisionRequest', 'proposalSourceNodeId'];
         const resolution = resolveProposalSource(nodes, edges, node.id);

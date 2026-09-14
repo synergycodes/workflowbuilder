@@ -219,20 +219,14 @@ describe('workflowSnapshotSchema: decision requests', () => {
       },
     },
     {
-      name: 'a node without rerun-source and with several predecessors and no explicit source',
-      snapshot: {
-        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve] })],
-        edges: [edge('a', 'review'), edge('b', 'review')],
-      },
-    },
-    {
       name: 'a node without rerun-source whose explicit source carries its own decision request',
       snapshot: {
         nodes: [
+          node('a'),
           decisionNode('first', { actions: [approve] }),
           decisionNode('second', { actions: [approve], proposalSourceNodeId: 'first' }),
         ],
-        edges: [edge('first', 'second')],
+        edges: [edge('a', 'first'), edge('first', 'second')],
       },
     },
     {
@@ -304,6 +298,21 @@ describe('workflowSnapshotSchema: decision requests', () => {
       },
       path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
       issue: { code: 'source_has_decision_request', value: 'first' },
+    },
+    {
+      name: 'a node with no predecessor, so its proposal source cannot be resolved',
+      snapshot: { nodes: [decisionNode('review', { actions: [approve] })], edges: [] },
+      path: 'nodes.0.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_missing' },
+    },
+    {
+      name: 'a node with several predecessors and no explicit source',
+      snapshot: {
+        nodes: [node('a'), node('b'), decisionNode('review', { actions: [approve] })],
+        edges: [edge('a', 'review'), edge('b', 'review')],
+      },
+      path: 'nodes.2.data.properties.decisionRequest.proposalSourceNodeId',
+      issue: { code: 'source_ambiguous' },
     },
     {
       name: 'a rerun-source node whose explicit source carries its own decision request',
@@ -547,22 +556,23 @@ describe('mapToExecutionModel', () => {
     };
     const snapshot = workflowSnapshotSchema.parse({
       nodes: [
+        { id: 'a', data: { type: 'product/any' } },
         {
           id: 'review',
           data: { type: 'product/any', properties: { label: 'Review', foo: 1, decisionRequest: request } },
         },
       ],
-      edges: [],
+      edges: [{ id: 'e1', source: 'a', target: 'review' }],
     });
 
     const result = mapToExecutionModel('wf-1', snapshot);
 
-    expect(result.nodes[0]!.decisionRequest).toEqual({
+    expect(result.nodes[1]!.decisionRequest).toEqual({
       ...request,
       actions: [{ ...request.actions[0], port: 'approved' }],
     });
-    expect(result.nodes[0]!.config).toEqual({ foo: 1 });
-    expect(result.nodes[0]!.label).toBe('Review');
+    expect(result.nodes[1]!.config).toEqual({ foo: 1 });
+    expect(result.nodes[1]!.label).toBe('Review');
   });
 
   it('gives a node without a request no `decisionRequest` key', () => {
