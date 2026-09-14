@@ -120,6 +120,7 @@
       "id": "edge-decision-review",
       "source": "decision-1",
       "sourceHandle": "source:inner:review",
+      "zIndex": 1001,
       "target": "action-2",
       "targetHandle": "target",
       "type": "labelEdge"
@@ -128,6 +129,7 @@
       "id": "edge-decision-otherwise",
       "source": "decision-1",
       "sourceHandle": "source:inner:otherwise",
+      "zIndex": 1001,
       "target": "action-3",
       "targetHandle": "target",
       "type": "labelEdge"

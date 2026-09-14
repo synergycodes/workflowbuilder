@@ -7,6 +7,7 @@ export const schema = {
     ...sharedProperties,
     status: { type: 'string', options: Object.values(statusOptions) },
     message: { type: 'string' },
+    simulateOutage: { type: 'boolean' },
   },
 } satisfies NodeSchema;
 

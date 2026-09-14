@@ -7,6 +7,7 @@ export type RunPhase = 'idle' | 'starting' | 'running' | 'completed' | 'incomple
 
 export type RunState = {
   phase: RunPhase;
+  amount?: number;
   executionId?: string;
   temporalUiUrl?: string;
   message?: string;
@@ -21,8 +22,8 @@ export function runStarting(): void {
   useRunStore.setState({ ...IDLE, phase: 'starting' }, true);
 }
 
-export function runStarted(executionId: string, temporalUiUrl: string): void {
-  useRunStore.setState({ phase: 'running', executionId, temporalUiUrl });
+export function runStarted(executionId: string, temporalUiUrl: string, amount: number): void {
+  useRunStore.setState({ phase: 'running', executionId, temporalUiUrl, amount });
 }
 
 export function runErrored(message: string): void {
