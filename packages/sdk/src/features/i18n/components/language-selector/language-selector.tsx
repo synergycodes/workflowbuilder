@@ -27,9 +27,10 @@ export function LanguageSelector() {
       languages.map(({ code, label }) => ({
         label,
         icon: <Icon name="FlagBanner" />,
+        selected: code === currentLanguage.code,
         onClick: () => i18n.changeLanguage(code),
       })),
-    [i18n],
+    [i18n, currentLanguage.code],
   );
 
   return (

@@ -6,8 +6,21 @@ import { describe, expect, it, vi } from 'vitest';
 const i18nState = { language: 'en', resolvedLanguage: 'en', changeLanguage: vi.fn() };
 
 // Render the Menu's trigger (children) so the displayed language code is queryable.
+type MenuItemLike = { label?: string; selected?: boolean };
+
 vi.mock('@workflowbuilder/ui', () => ({
-  Menu: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
+  Menu: ({ children, items }: { children?: ReactNode; items: MenuItemLike[] }) => (
+    <div>
+      {children}
+      <ul>
+        {items.map((item) => (
+          <li key={item.label} data-selected={item.selected ? '' : undefined}>
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ),
   NavButton: ({ 'aria-label': ariaLabel, children }: { 'aria-label'?: string; children?: ReactNode }) => (
     <button type="button" aria-label={ariaLabel}>
       {children}
@@ -44,5 +57,15 @@ describe('LanguageSelector — label reflects the resolved language', () => {
     render(<LanguageSelector />);
 
     expect(screen.getByText('EN')).toBeTruthy();
+  });
+
+  it('marks the current language as the selected menu item', () => {
+    i18nState.language = 'pl';
+    i18nState.resolvedLanguage = 'pl';
+
+    render(<LanguageSelector />);
+
+    expect(Object.hasOwn(screen.getByText('Polski').dataset, 'selected')).toBe(true);
+    expect(Object.hasOwn(screen.getByText('English').dataset, 'selected')).toBe(false);
   });
 });

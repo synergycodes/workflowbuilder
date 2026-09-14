@@ -9,7 +9,9 @@ import { MenuExample } from '../../../../components/ui-examples/menu';
 
 A `Menu` renders a dropdown list of actions anchored to a trigger element. Each
 entry is a regular item or a separator, and items can be marked as destructive
-for actions such as delete.
+for actions such as delete. A menu that offers a choice (for example a language
+switcher) marks the current entry with `selected`; the menu then renders as a
+radio group and highlights that entry.
 
 <MenuExample client:visible />
 
@@ -32,6 +34,19 @@ function Example() {
     </Menu>
   );
 }
+```
+
+A menu with a current choice:
+
+```tsx
+<Menu
+  items={[
+    { label: 'English', selected: true, onClick: () => setLanguage('en') },
+    { label: 'Polski', selected: false, onClick: () => setLanguage('pl') },
+  ]}
+>
+  <Button variant="secondary">EN</Button>
+</Menu>
 ```
 
 ## Props
