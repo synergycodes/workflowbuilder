@@ -105,9 +105,9 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 **Why it is silent** - With `box-sizing: content-box`, `min-width` and `min-height` constrain the content box, so xyflow's 5px minimum produces a 9px outer size even though the declared width and height remain 4px.
 
-**How to spot it** - Inspect the built base `.react-flow__handle` rule and confirm its width, height, border, and `box-sizing` geometry is accompanied by `min-width: 0` and `min-height: 0`.
+**How to spot it** - Inspect the built base `.react-flow__handle` rule and confirm its width, height, border, and `box-sizing` geometry is accompanied by `min-width: 0` and `min-height: 0`. In a running app, `offsetWidth` of a resting `.react-flow__handle` must read 8 at any zoom.
 
-**Automated?** - Yes. `Incorrect built handle geometry` validates the complete base handle geometry in each checked dist stylesheet.
+**Automated?** - No. A dist check existed briefly and was dropped: it matched every rule ending in ` .react-flow__handle`, so any later state rule on the bare handle would have failed it without touching geometry, and exact-string matching against minified output was fragile. The source rule carries a comment; the geometry is covered by the manual pass.
 
 ## Missing entry-chunk font faces
 

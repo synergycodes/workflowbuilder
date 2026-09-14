@@ -73,11 +73,10 @@
 
     /* State rules repeat the base rule's content-box opt-out: the build
        injects border-box per rule, so an undeclared box-sizing here would
-       shrink the handle in exactly these states. The target port needs its
-       own rule: React Flow captures the pointer on the dragged handle, so
-       :hover never reaches the node under the cursor while connecting. */
+       shrink the handle in exactly these states. */
+    /* .connectingto is assigned by proximity (connectionRadius), so :hover cannot cover the target. */
     :global(.connectingfrom),
-    :global(.connectingto) {
+    :global(.connectingto.valid) {
       box-sizing: content-box;
       background: var(--wb-public-node-port-background-color-hover);
       border-color: var(--wb-public-node-port-border-color-hover);
