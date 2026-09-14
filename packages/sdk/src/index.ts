@@ -135,7 +135,10 @@ export type { DiagramContainerProps } from './features/diagram/diagram';
 export { EnhancedBaseEdge } from './features/diagram/edges/enhanced-base-edge/enhanced-base-edge';
 export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-label-renderer';
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
-export { SelfConnectingEdge } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
+export {
+  SelfConnectingEdge,
+  useSelfLoopNodeHeight,
+} from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
 export { ProjectSelection } from './features/app-bar/components/project-selection/project-selection';

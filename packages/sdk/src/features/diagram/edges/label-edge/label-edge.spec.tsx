@@ -63,11 +63,20 @@ describe('LabelEdge', () => {
   });
 
   it('falls back to the explicit node height when no measurement exists', () => {
-    nodeLookup.set('node-1', { height: 40 });
+    nodeLookup.set('node-1', { measured: {}, height: 40 });
 
     render(<LabelEdge {...selfConnectingEdgeProps} />);
 
     expect(screen.getByTestId('edge-label').dataset.labelY).toBe('160');
+  });
+
+  it('does not read the node lookup for a regular edge', () => {
+    const get = vi.spyOn(nodeLookup, 'get');
+
+    render(<LabelEdge {...selfConnectingEdgeProps} target="node-2" />);
+
+    expect(get).not.toHaveBeenCalled();
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('0');
   });
 
   it('treats an unknown source node as zero height', () => {
