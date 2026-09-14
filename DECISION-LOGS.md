@@ -22,4 +22,6 @@
 - _15.05.2026_: [AuthPort seam for backend authn/authz](./apps/backend/auth-port.decision-log.md)
 - _03.06.2026_: [TenantContextPort — multi-tenant identity seam for the reference backend](./apps/backend/tenant-context-port.decision-log.md)
 - _07.08.2026_: [Keep the postcss box-sizing plugin over lint-based or selector-based alternatives](./packages/ui/postcss-box-sizing.decision-log.md)
+- _24.08.2026_: [`incomplete` as a third terminal state, distinct from `failed` and from a stall](./packages/execution-core/terminal-states.decision-log.md)
 - _31.08.2026_: [Ship common font faces inline and the rest as assets](./packages/ui/font-assets.decision-log.md)
+- _07.09.2026_: [Derive the ConnectableItem width from the real container insets](./packages/sdk/src/features/diagram/nodes/components/connectable-item/connectable-item-width.decision-log.md)
