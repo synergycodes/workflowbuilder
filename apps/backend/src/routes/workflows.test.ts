@@ -270,10 +270,7 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 });
 
 // ---- snapshot validation on publish and execute -----------------------------
-//
-// Publish validates the draft before copying it and execute validates the chosen
-// version before submitting; both answer with the same `invalid_snapshot` body.
-// Draft save never validates: a draft is legitimately mid-edit.
+// Never on draft save: a draft is legitimately mid-edit.
 
 function snapshotWithDecisionActions(actions: unknown[], properties: Record<string, unknown> = {}) {
   return {
@@ -361,8 +358,15 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(databaseMock.update).toHaveBeenCalledTimes(1);
   });
 
-  it('answers with the same body execute gives for the same broken snapshot', async () => {
-    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+  // The falsy scalars used to short-circuit execute into published_version_missing while
+  // publish went on to validate them; only null means "no version".
+  it.each([
+    { name: 'a broken decision request', draftJson: twoResumesSnapshot },
+    { name: 'an empty string', draftJson: '' },
+    { name: 'zero', draftJson: 0 },
+    { name: 'false', draftJson: false },
+  ])('answers with the same body execute gives for $name', async ({ draftJson }) => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
 
     const publishResponse = await publish(allowAllApp());
     const publishBody = await publishResponse.json();
@@ -391,9 +395,7 @@ describe('createWorkflowsRoutes - draft save never validates the snapshot', () =
 });
 
 // ---- own __proto__ keys in a stored draft -------------------------------------
-//
-// A draft is stored as sent, so it can carry an own `__proto__` key. Publish and
-// execute refuse it before the parser could turn it into the snapshot's prototype.
+// A draft is stored as sent, so it can carry one.
 
 const poisonedDraft = JSON.parse(
   '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":' +
@@ -426,10 +428,7 @@ describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
 });
 
 // ---- deeply nested drafts -----------------------------------------------------
-//
-// Nesting depth is the client's to choose and the draft route does not validate, so the
-// scan that runs before parsing meets whatever was stored. It must answer on the contract,
-// never as an unhandled error.
+// Depth is the client's to choose, and only the body limit caps it.
 
 const DEEP = 20_000;
 

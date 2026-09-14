@@ -196,7 +196,7 @@ export function createWorkflowsRoutes(
 
     const snapshotJson = body.sourceVersion === 'published' ? workflow.publishedJson : workflow.draftJson;
 
-    if (!snapshotJson) {
+    if (snapshotJson === null) {
       return c.json({ code: 'published_version_missing', message: `No ${body.sourceVersion} version available` }, 400);
     }
 
