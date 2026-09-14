@@ -12,6 +12,9 @@ export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 export type ActivityProfile = {
   startToCloseTimeout: DurationString;
   retry: { maximumAttempts: number };
+  // Routes this node type's activities to a non-default queue, e.g. a specialized
+  // worker with its own image/tools. Absent means the plugin's own task queue.
+  taskQueue?: string;
 };
 
 // Only for the two frozen singletons below. Annotating them `ActivityProfile` would
@@ -20,6 +23,7 @@ export type ActivityProfile = {
 type ReadonlyActivityProfile = {
   readonly startToCloseTimeout: DurationString;
   readonly retry: { readonly maximumAttempts: number };
+  readonly taskQueue?: string;
 };
 
 // Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
