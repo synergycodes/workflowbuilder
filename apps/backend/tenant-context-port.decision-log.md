@@ -2,7 +2,7 @@
 
 ### Proposed by: Kacper Cierzniewski
 
-### Proposed: 21.05.2026 — Landed: 03.06.2026 (`fa5999dd`)
+### Date: 21.05.2026 (proposed; landed 03.06.2026 in `fa5999dd`)
 
 > This is the **decision** (why this shape, what was rejected, what it does and does not protect). The **how-to-wire-it** lives in [`multi-tenancy.md`](./multi-tenancy.md) — that document tracks the code and is the source of truth for current signatures and per-seam status. If a snippet here ever disagrees with the code, the code wins.
 

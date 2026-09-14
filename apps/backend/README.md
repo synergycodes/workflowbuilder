@@ -29,6 +29,18 @@ Frontend (React)
 - **Domain** (`packages/execution-core`) — pure graph runner + ports + node executors. No Temporal, no HTTP. See the [execution-core README](../../packages/execution-core/README.md).
 - **Frontend** (`apps/ai-studio`) — full AI workflow product. Composes `@workflowbuilder/sdk` directly via JSX, with a slim plugin only for per-node execution markers. Owns Play/Stop controls, log panel, node detail, and execution highlighting.
 
+## Decision request on a node
+
+A node asks a human for a decision by carrying `data.properties.decisionRequest`: the actions offered, the JSON Schema of the form, the node whose output is judged, and an optional deadline. Any node type may carry one: the backend and the decision endpoint find the request by this field, never by `type`. The mapper lifts it to `BaseNode.decisionRequest`, out of `config`.
+
+The runner does not read the field, deliberately: it learns no product's vocabulary, so a run stops where a node's executor returns a waiting result. A request on a node that never parks therefore validates, reaches the worker and asks nobody anything. The node whose executor does nothing but park is its own task, listed under what this change leaves out.
+
+The request is validated on `POST /:id/publish` and `POST /:id/execute`, never on `PATCH /:id/draft`: a draft is legitimately mid-edit. A broken request answers with the existing `invalid_snapshot` 400, whose `details[].path` points at the node index and field, for example `nodes.1.data.properties.decisionRequest.actions.1.effect`. Structural issues come first; the graph rules (proposal source, predecessors) run once the structure parses, so a second round of issues can follow a fix. Every domain message the validation can produce is listed in `src/domain/decision/decision-issues.ts`. Each such detail also carries `domainCode`, its key in that dictionary, and `params` with the value the message interpolates, so a client branches and translates on the identifier and never on the wording; `code` stays zod's own.
+
+One key is refused outright, wherever it sits. An own `__proto__` anywhere in the snapshot answers `invalid_snapshot` 400 naming its path: `JSON.parse` turns it into an ordinary key, and a loose object copies unknown keys by assignment, which for that one swaps the parsed output's prototype and hands the engine a request no schema ever saw. The check does not weigh position, so it also refuses a `__proto__` buried inside an opaque node property, where zod never copies keys one by one and the key is inert. A node type that keeps a raw JSON document in `data.properties` therefore cannot carry one.
+
+A submitted decision is checked against the request by `validateSubmittedDecision` in `src/domain/decision/`; the decision endpoint that calls it is a separate change. Shape, rules and the reasoning are in [`decision-request.decision-log.md`](./decision-request.decision-log.md).
+
 ## Running individual processes
 
 For debugging, the parts that `pnpm dev:ai-studio` orchestrates can also be run separately:

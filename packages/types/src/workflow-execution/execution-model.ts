@@ -1,3 +1,5 @@
+import type { DecisionRequest } from './decision-request';
+
 // Runner-level decision applied when a node throws.
 // `fail` aborts the whole execution (default); `continue` absorbs the error into
 // `nodeOutputs[id] = { error }` and propagates downstream; `errorRoute` does the
@@ -32,6 +34,12 @@ export type BaseNode = {
   // without knowing any product's vocabulary.
   label?: string;
   errorPolicy?: NodeErrorPolicy;
+  /**
+   * What this node asks a human to decide before the run continues. The backend and the
+   * decision endpoint find it by this field, never by `type`. The runner does not read it:
+   * a run stops where a node's executor returns a waiting result.
+   */
+  decisionRequest?: DecisionRequest;
   role?: NodeRole;
 };
 
