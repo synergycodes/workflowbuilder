@@ -3,17 +3,20 @@ import { z } from 'zod';
 
 import type { SourceVersion } from '@workflow-builder/types/workflow-execution/api';
 
+import { decisionIssueOf } from '../domain/decision/decision-issues';
 import { type WorkflowSnapshot, workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { logger as backendLogger } from '../logger';
 
 const logger = backendLogger.child({ component: 'snapshot-validation' });
 
+// `code` is zod's; a domain issue adds `domainCode` and `params` so a client never keys on `message`.
 export function formatValidationDetails(error: z.ZodError) {
-  return error.issues.map((issue) => ({
-    path: issue.path,
-    message: issue.message,
-    code: issue.code,
-  }));
+  return error.issues.map((issue) => {
+    const detail = { path: issue.path, message: issue.message, code: issue.code };
+    const domain = decisionIssueOf(issue);
+    if (domain === undefined) return detail;
+    return { ...detail, domainCode: domain.issue, params: domain.value === undefined ? {} : { value: domain.value } };
+  });
 }
 
 export type SnapshotParse =

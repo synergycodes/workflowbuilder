@@ -3,7 +3,7 @@ import { z } from 'zod';
 import { DECLARABLE_DECISION_EFFECTS } from '@workflow-builder/types/workflow-execution/decision-request';
 
 import { rejectingOwnProtoKey } from '../schema/own-proto-key';
-import { decisionIssue, decisionIssueMessage } from './decision-issues';
+import { decisionIssue, decisionRefinement } from './decision-issues';
 
 // Mirrors DURATION_PATTERN and the protobuf Duration range in
 // packages/temporal/src/workflow/profile-validation.ts (follow-up: shared-duration-format)
@@ -19,7 +19,7 @@ function isDurationString(value: string): boolean {
   return milliseconds >= MIN_DURATION_MS && milliseconds <= MAX_DURATION_MS;
 }
 
-const durationSchema = z.string().refine(isDurationString, decisionIssueMessage('deadline_format'));
+const durationSchema = z.string().refine(isDurationString, decisionRefinement('deadline_format'));
 
 function isNotBlank(text: string): boolean {
   return text.trim().length > 0;
@@ -28,12 +28,12 @@ function isNotBlank(text: string): boolean {
 // 'errorRoute' is the handle the runner reserves for the error policy.
 const portSchema = z
   .string()
-  .refine(isNotBlank, decisionIssueMessage('port_empty'))
-  .refine((port) => port !== 'errorRoute', decisionIssueMessage('port_reserved'));
+  .refine(isNotBlank, decisionRefinement('port_empty'))
+  .refine((port) => port !== 'errorRoute', decisionRefinement('port_reserved'));
 
 const actionBase = {
-  name: z.string().refine(isNotBlank, decisionIssueMessage('name_empty')),
-  label: z.string().refine(isNotBlank, decisionIssueMessage('label_empty')),
+  name: z.string().refine(isNotBlank, decisionRefinement('name_empty')),
+  label: z.string().refine(isNotBlank, decisionRefinement('label_empty')),
 };
 
 const resumeActionSchema = z.looseObject({
@@ -55,15 +55,22 @@ const rerunSourceActionSchema = z.looseObject({
   maxIterations: z.int().min(1).default(3),
 });
 
-const decisionActionSchema = z.discriminatedUnion(
-  'effect',
-  [resumeActionSchema, rejectActionSchema, rerunSourceActionSchema],
-  {
-    error: (issue) =>
-      issue.code === 'invalid_union'
-        ? decisionIssueMessage('unknown_effect', DECLARABLE_DECISION_EFFECTS.join(', '))
-        : undefined,
-  },
+// The effect picks the member that parses the rest, so it is checked on its own first: a
+// union that finds no member cannot name what was wrong, and a client needs the name.
+const declaredEffect = z.unknown().superRefine((action, context) => {
+  if (typeof action !== 'object' || action === null || Array.isArray(action)) return;
+  const effect = (action as { effect?: unknown }).effect;
+  if (typeof effect === 'string' && (DECLARABLE_DECISION_EFFECTS as readonly string[]).includes(effect)) return;
+  // Aborting, as the union's own failure was: the request-level rules must not go on to
+  // report a missing resume action for an action that never parsed.
+  context.addIssue({
+    ...decisionIssue('unknown_effect', ['effect'], DECLARABLE_DECISION_EFFECTS.join(', ')),
+    continue: false,
+  });
+});
+
+const decisionActionSchema = declaredEffect.pipe(
+  z.discriminatedUnion('effect', [resumeActionSchema, rejectActionSchema, rerunSourceActionSchema]),
 );
 
 const formPropertySchema = z.looseObject({
@@ -89,7 +96,7 @@ const formSchema = z
 
 const deadlineSchema = z.looseObject({
   after: durationSchema,
-  policy: z.string().refine((policy) => policy === 'reject', decisionIssueMessage('deadline_policy')),
+  policy: z.string().refine((policy) => policy === 'reject', decisionRefinement('deadline_policy')),
 });
 
 // Guarded on its own, not only through `workflowSnapshotSchema`: every level below is a
@@ -99,7 +106,9 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
   z
     .looseObject({
       version: z.literal(1),
-      actions: z.array(decisionActionSchema).min(1, decisionIssueMessage('actions_empty')),
+      actions: z
+        .array(decisionActionSchema)
+        .refine((actions) => actions.length > 0, decisionRefinement('actions_empty')),
       schema: formSchema,
       uiSchema: z.record(z.string(), z.unknown()).optional(),
       proposalSourceNodeId: z.string().optional(),

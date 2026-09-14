@@ -6,7 +6,7 @@ import {
   type DecisionRequest,
 } from '@workflow-builder/types/workflow-execution/decision-request';
 
-import { type DecisionIssueCode, decisionIssueMessage } from './decision-issues';
+import { type DecisionIssueCode, decisionIssueMessage, decisionIssueOf } from './decision-issues';
 import { decisionRequestSchema } from './decision-request-schema';
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
@@ -40,11 +40,15 @@ function request(overrides: Record<string, unknown> = {}): unknown {
   return { ...workedExample(), ...overrides };
 }
 
-function issuesOf(input: unknown): { path: string; message: string }[] {
+function issuesOf(input: unknown): { path: string; message: string; domain?: { issue: string; value?: string } }[] {
   const result = decisionRequestSchema.safeParse(input);
   return result.success
     ? []
-    : result.error.issues.map((issue) => ({ path: issue.path.join('.'), message: issue.message }));
+    : result.error.issues.map((issue) => ({
+        path: issue.path.join('.'),
+        message: issue.message,
+        domain: decisionIssueOf(issue),
+      }));
 }
 
 const declarableEffects = DECLARABLE_DECISION_EFFECTS.join(', ');
@@ -364,7 +368,20 @@ describe('decisionRequestSchema', () => {
     expect(atPath.length).toBeGreaterThan(0);
     if (issue !== undefined) {
       expect(atPath.map((candidate) => candidate.message)).toContain(decisionIssueMessage(issue.code, issue.value));
+      // The identifier, not the wording, is what a client keys on.
+      expect(atPath.map((candidate) => candidate.domain)).toContainEqual(
+        issue.value === undefined ? { issue: issue.code } : { issue: issue.code, value: issue.value },
+      );
     }
+  });
+
+  // The effect check aborts the action the way the union's own failure did; a second issue
+  // about a missing resume action for an action that never parsed would only mislead.
+  it('reports an unknown effect once, without a missing-resume issue riding along', () => {
+    const issues = issuesOf(request({ actions: [{ name: 'a', label: 'A', effect: 'zzz' }] }));
+
+    expect(issues.map((issue) => issue.path)).toEqual(['actions.0.effect']);
+    expect(issues[0]?.domain).toEqual({ issue: 'unknown_effect', value: declarableEffects });
   });
 
   it('parses into a value assignable to DecisionRequest', () => {

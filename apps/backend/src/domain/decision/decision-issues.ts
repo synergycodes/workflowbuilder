@@ -49,6 +49,32 @@ export function submittedDecisionErrorMessage(code: SubmittedDecisionErrorCode, 
   return fill(SUBMITTED_DECISION_ERRORS[code], value);
 }
 
+// Rides on the zod issue as `params` and is read back by the HTTP serializer, so a client
+// branches and translates on the identifier and never on the wording of `message`.
+export type DecisionIssueParams = { issue: DecisionIssueCode; value?: string };
+
+function decisionIssueParams(code: DecisionIssueCode, value: string | undefined): DecisionIssueParams {
+  return value === undefined ? { issue: code } : { issue: code, value };
+}
+
 export function decisionIssue(code: DecisionIssueCode, path: PropertyKey[], value?: string) {
-  return { code: 'custom' as const, message: decisionIssueMessage(code, value), path };
+  return {
+    code: 'custom' as const,
+    message: decisionIssueMessage(code, value),
+    path,
+    params: decisionIssueParams(code, value),
+  };
+}
+
+// The same issue, shaped as the options a `.refine` takes.
+export function decisionRefinement(code: DecisionIssueCode, value?: string) {
+  return { error: decisionIssueMessage(code, value), params: decisionIssueParams(code, value) };
+}
+
+export function decisionIssueOf(issue: unknown): DecisionIssueParams | undefined {
+  const params = typeof issue === 'object' && issue !== null ? (issue as { params?: unknown }).params : undefined;
+  if (typeof params !== 'object' || params === null) return undefined;
+  const { issue: code, value } = params as { issue?: unknown; value?: unknown };
+  if (typeof code !== 'string' || !Object.hasOwn(DECISION_ISSUE_MESSAGES, code)) return undefined;
+  return decisionIssueParams(code as DecisionIssueCode, typeof value === 'string' ? value : undefined);
 }

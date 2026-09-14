@@ -292,7 +292,10 @@ const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
 const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
 const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
 
-type InvalidSnapshotBody = { code: string; details: { path: (string | number)[] }[] };
+type InvalidSnapshotBody = {
+  code: string;
+  details: { path: (string | number)[]; code?: string; domainCode?: string; params?: Record<string, string> }[];
+};
 
 function allowAllApp() {
   return buildApp(allowAll(vi.fn(async () => true)));
@@ -315,9 +318,11 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
 
     expect(response.status).toBe(400);
     expect(body.code).toBe('invalid_snapshot');
-    expect(body.details.map((detail) => detail.path.join('.'))).toContain(
-      'nodes.1.data.properties.decisionRequest.actions.1.effect',
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.effect',
     );
+    // Beside zod's `code` and the English message, the identifier a client keys on and its value.
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_effect', params: { value: 'resume' } });
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
