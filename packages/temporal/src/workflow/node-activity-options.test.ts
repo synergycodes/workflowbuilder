@@ -129,6 +129,40 @@ describe('resolveNodeActivityOptions', () => {
     });
   });
 
+  describe('taskQueue', () => {
+    it('forwards taskQueue when the profile carries one', () => {
+      const profiles: NodeActivityProfiles = {
+        'test/step': { startToCloseTimeout: '2m', retry: { maximumAttempts: 4 }, taskQueue: 'specialized' },
+      };
+
+      expect(resolveNodeActivityOptions(node(), profiles)).toEqual({
+        startToCloseTimeout: '2m',
+        retry: { maximumAttempts: 4 },
+        taskQueue: 'specialized',
+      });
+    });
+
+    it('omits the key entirely when the profile has none, not taskQueue: undefined', () => {
+      const resolved = resolveNodeActivityOptions(node(), {});
+
+      expect('taskQueue' in resolved).toBe(false);
+    });
+
+    it('is pure routing metadata: identical graph-relevant fields whether taskQueue is set or not', () => {
+      // The workflow sandbox must not branch on taskQueue — it only reaches proxyActivities.
+      const base = resolveNodeActivityOptions(node(), {
+        'test/step': { startToCloseTimeout: '2m', retry: { maximumAttempts: 4 } },
+      });
+      const routed = resolveNodeActivityOptions(node(), {
+        'test/step': { startToCloseTimeout: '2m', retry: { maximumAttempts: 4 }, taskQueue: 'specialized' },
+      });
+
+      expect(routed.startToCloseTimeout).toBe(base.startToCloseTimeout);
+      expect(routed.retry).toEqual(base.retry);
+      expect(routed.summary).toBe(base.summary);
+    });
+  });
+
   describe('summary', () => {
     it('carries the node label so Event History reads like the diagram', () => {
       const resolved = resolveNodeActivityOptions(node({ label: 'Fetch order' }), {});

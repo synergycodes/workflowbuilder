@@ -44,12 +44,27 @@ src/
 └── engines/
     └── temporal/
         ├── worker.ts                      # Worker bootstrap: executors + store, handed to WorkflowBuilderPlugin
+        ├── specialized-worker.ts          # Activity-only worker for a taskQueue-routed subset of node types
         └── workflows.ts                   # One-line re-export of runWorkflow for Temporal's bundler
 ```
 
 The workflow itself, the activity contract and the event emitter live in
 [`@workflowbuilder/temporal`](../../packages/temporal/README.md). This app only supplies what is its
 own: one executor per node type and the database as the store port.
+
+## Per-node-type task queue routing
+
+A node type's activity profile can carry `taskQueue`, which pins it to a queue other
+than the default (`plugin.taskQueue`). `worker.ts` keeps polling the default queue for
+everything else; `specialized-worker.ts` is a second, activity-only entrypoint (no
+`workflowsPath` — Temporal supports activity-only workers) that polls
+`SPECIALIZED_TASK_QUEUE` and registers only the node type(s) routed there. Run it with
+`pnpm --filter execution-worker start:specialized`, or as the `worker-specialized`
+compose service (see `deploy/ai-studio/README.md`).
+
+This is a deployment-only change: `runGraph` and the graph model never see a taskQueue,
+they only affect which worker process a node's `executeNode` activity is scheduled on.
+A profile with no `taskQueue` behaves exactly as before.
 
 ## Temporal specifics
 
