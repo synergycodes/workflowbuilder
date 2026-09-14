@@ -9,14 +9,10 @@ export type RunStore = ExecutionStore & {
   history(executionId: string): RunEvent[];
 };
 
-export type RunStoreOptions = {
-  log?: (line: string) => void;
-};
-
 // The plugin decides what is emitted and in which order; this is where it lands. Here: the
 // terminal, plus anyone subscribed (the bridge's event streams). A real application writes
 // rows here instead. The port is the same.
-export function createRunStore({ log = console.log }: RunStoreOptions = {}): RunStore {
+export function createRunStore(): RunStore {
   const histories = new Map<string, RunEvent[]>();
   const listeners = new Map<string, Set<Listener>>();
 
@@ -36,12 +32,12 @@ export function createRunStore({ log = console.log }: RunStoreOptions = {}): Run
     async emitExecutionEvent(executionId, sequence, type, payload, nodeId) {
       const where = nodeId ? ` (${nodeId})` : '';
       const what = payload === undefined ? '' : ` ${JSON.stringify(payload)}`;
-      log(`[${executionId.slice(0, 8)}] #${String(sequence).padStart(2, ' ')} ${type}${where}${what}`);
+      console.log(`[${executionId.slice(0, 8)}] #${String(sequence).padStart(2, ' ')} ${type}${where}${what}`);
       publish(executionId, { kind: 'event', sequence, type, nodeId, payload });
     },
 
     async updateExecutionStatus(executionId, status, errorMessage) {
-      log(`[${executionId.slice(0, 8)}] status ${status}${errorMessage ? `: ${errorMessage}` : ''}`);
+      console.log(`[${executionId.slice(0, 8)}] status ${status}${errorMessage ? `: ${errorMessage}` : ''}`);
       publish(executionId, { kind: 'status', status, errorMessage });
     },
 
