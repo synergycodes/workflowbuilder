@@ -45,11 +45,12 @@ export const DECISION_REFUSALS = {
     code: 'effect_not_supported',
     message: "Action '{value}' re-runs the proposal source, which is not supported yet",
   },
-  // Not durable until accepted, yet the server may still hand it to the next worker.
+  // The deadline says nothing about the decision's fate, and nothing here tells two
+  // senders apart, so the resend answer names the wait and not the sender.
   delivery_timeout: {
     code: 'decision_delivery_timeout',
     message:
-      'The decision was not confirmed within the deadline and may or may not have landed. Send it again: a decision_already_made answer means it did.',
+      'The decision was not confirmed within the deadline and may or may not have landed. Send it again: a decision_already_made answer means some decision won this wait, not necessarily yours.',
     headers: { 'Retry-After': '5' },
   },
 } as const satisfies Record<string, { code: DecisionRefusalCode; message: string; headers?: Record<string, string> }>;

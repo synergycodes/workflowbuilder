@@ -45,18 +45,18 @@ A submitted decision is checked against the request by `validateSubmittedDecisio
 
 Body: `{ nodeId, attempt, action, edits?, reason?, comment? }`. `action` is the `name` of one of the node's actions. `attempt` is how many times the node has parked in this run (its `node_waiting` count; today always 1). Checks run in this order, each answering before the next: row, authorization (`executions:decide` with the row's `{ workflowId, tenantId, status }`; a deny wins over 404), status, body, node, decision, `attempt`, effect, engine. The engine is asked once; nothing is retried. Success: `200 { executionId, nodeId, attempt, action, effect }`. Codes and messages live in `src/routes/decision-refusals.ts`.
 
-| Status | Code                        | When                                                                                                                |
-| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| 400    | `validation_error`          | Body shape                                                                                                          |
-| 400    | `invalid_decision`          | Submission against the request; `details[0].code` is a `SUBMITTED_DECISION_ERRORS` key                              |
-| 404    | `execution_not_found`       |                                                                                                                     |
-| 404    | `node_not_found`            | Not in the run's snapshot                                                                                           |
-| 409    | `execution_not_waiting`     | Terminal or cancelling run, or the engine no longer has it                                                          |
-| 409    | `node_not_waiting`          | No request on the node, never parked, or not waiting now. Final                                                     |
-| 409    | `decision_already_made`     | The first decision won, whoever sent it                                                                             |
-| 409    | `decision_attempt_mismatch` | Body carries the current `attempt`                                                                                  |
-| 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                |
-| 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then means it did |
+| Status | Code                        | When                                                                                                                                  |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `validation_error`          | Body shape                                                                                                                            |
+| 400    | `invalid_decision`          | Submission against the request; `details[0].code` is a `SUBMITTED_DECISION_ERRORS` key                                                |
+| 404    | `execution_not_found`       |                                                                                                                                       |
+| 404    | `node_not_found`            | Not in the run's snapshot                                                                                                             |
+| 409    | `execution_not_waiting`     | Terminal or cancelling run, or the engine no longer has it                                                                            |
+| 409    | `node_not_waiting`          | No request on the node, never parked, or not waiting now. Final                                                                       |
+| 409    | `decision_already_made`     | The first decision won, whoever sent it                                                                                               |
+| 409    | `decision_attempt_mismatch` | Body carries the current `attempt`                                                                                                    |
+| 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                                  |
+| 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then names the wait, not the sender |
 
 ## Running individual processes
 

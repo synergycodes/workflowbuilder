@@ -18,8 +18,8 @@ import type { ResolveNodeUpdateInput, runWorkflow } from '../workflow/run-workfl
 import { mapResolveNodeError } from './resolve-node-result';
 
 // Without a worker nobody validates an update, and the RPC would wait for the server's
-// own limit. A timed-out update is not durable, yet the server may still hand it to the
-// next worker: the caller resends and may hear verdict_already_delivered.
+// own limit. The deadline settles nothing about the update: it may already be accepted,
+// or reach the next worker later, so a resend may hear verdict_already_delivered.
 const DEFAULT_RESOLVE_TIMEOUT_MS = 10_000;
 
 export type TemporalWorkflowEngineOptions = {
