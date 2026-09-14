@@ -56,6 +56,8 @@ export function createRunWorkflow(options: RunWorkflowOptions = {}) {
 
   return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
     // Per-instance: must stay inside the workflow function (durable-pause.decision-log.md).
+    // Keyed by node id: a node is scheduled once per run. A rerun that re-parks one needs
+    // the key to carry the attempt (follow-up: decision-attempt-in-engine).
     const waits = new Map<string, NodeWaitState>();
     const knownNodes = new Set(input.definition.nodes.map((node) => node.id));
 

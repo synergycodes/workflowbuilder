@@ -84,6 +84,9 @@ export function createDecisionRoutes(
     }
     const { decision, action } = validated;
 
+    // Not atomic with delivery, and safe only because a node parks at most once per run.
+    // A rerun re-parks it, and then the wait instance must reach the engine, which keys
+    // its waits by node id alone (follow-up: decision-attempt-in-engine).
     const waits = await countNodeWaits(resolvedId, nodeId);
     if (waits === 0) return refuse(c, 'node_never_parked', nodeId);
     if (waits !== attempt) return refuse(c, 'attempt_mismatch', undefined, { attempt: waits });
