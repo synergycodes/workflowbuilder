@@ -12,7 +12,6 @@
     "start": "tsx src/worker.ts",
     "start.watch": "tsx watch src/worker.ts",
     "workflow": "tsx src/client.ts",
-    "test": "tsx --test src/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
