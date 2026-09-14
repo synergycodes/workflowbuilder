@@ -76,6 +76,10 @@
   background: #6b7280;
 }
 
+.react-flow__node:has(.run-marker--skipped) {
+  opacity: 0.5;
+}
+
 @keyframes run-marker-spin {
   to {
     transform: rotate(360deg);
