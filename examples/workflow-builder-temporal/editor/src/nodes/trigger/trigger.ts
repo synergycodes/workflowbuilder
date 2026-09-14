@@ -12,4 +12,13 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
+  // What the run's trigger payload carries. Listed so a decision node's condition editor
+  // offers these fields in its variable picker.
+  outputSchema: {
+    type: 'default',
+    properties: {
+      amount: { type: 'number', label: 'Amount', description: 'Value of the request' },
+      customer: { type: 'string', label: 'Customer', description: 'Who sent it' },
+    },
+  },
 };

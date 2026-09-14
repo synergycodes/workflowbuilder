@@ -1,9 +1,9 @@
 import type { UISchema } from '@workflowbuilder/sdk';
 import { getScope, globalControls } from '@workflowbuilder/sdk';
 
-import type { ConditionNodeSchema } from './schema';
+import type { DecisionNodeSchema } from './schema';
 
-const scope = getScope<ConditionNodeSchema>;
+const scope = getScope<DecisionNodeSchema>;
 
 const generalInformation: UISchema = {
   type: 'Accordion',
@@ -20,11 +20,6 @@ export const uischema: UISchema = {
   elements: [
     ...globalControls,
     generalInformation,
-    {
-      type: 'Text',
-      scope: scope('properties.condition'),
-      label: 'Condition',
-      placeholder: 'e.g. amount > 100',
-    },
+    { type: 'DecisionBranches', scope: scope('properties.decisionBranches') },
   ],
 };
