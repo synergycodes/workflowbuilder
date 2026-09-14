@@ -35,6 +35,33 @@ See `.env.example`. Required:
 | `TEMPORAL_ADDRESS`   | Temporal server address            | `127.0.0.1:7233`                                     |
 | `AI_MODEL`           | OpenRouter model ID                | `anthropic/claude-3.5-haiku`                         |
 
+Optional, per-provider direct-routing keys — none is declared here or in `env.ts`; each is read
+directly by its own `@ai-sdk/<x>` package only when an `ai-agent` node selects that `provider`
+explicitly (or `'auto'` infers it from the model-id prefix). Presence is checked with
+`Boolean(process.env.<VAR>)`; the key value itself is never read, stored, or logged by this app.
+
+| Provider     | Env var                        |
+| ------------ | ------------------------------ |
+| `openai`     | `OPENAI_API_KEY`               |
+| `anthropic`  | `ANTHROPIC_API_KEY`            |
+| `google`     | `GOOGLE_GENERATIVE_AI_API_KEY` |
+| `xai`        | `XAI_API_KEY`                  |
+| `mistral`    | `MISTRAL_API_KEY`              |
+| `cohere`     | `COHERE_API_KEY`               |
+| `deepseek`   | `DEEPSEEK_API_KEY`             |
+| `moonshotai` | `MOONSHOT_API_KEY`             |
+| `groq`       | `GROQ_API_KEY`                 |
+| `togetherai` | `TOGETHER_API_KEY`             |
+| `fireworks`  | `FIREWORKS_API_KEY`            |
+| `perplexity` | `PERPLEXITY_API_KEY`           |
+| `cerebras`   | `CEREBRAS_API_KEY`             |
+| `deepinfra`  | `DEEPINFRA_API_KEY`            |
+
+An `ai-agent` node's `model`/`provider` config fields fall back to `env.AI_MODEL`/`'auto'` when
+unset (`apps/execution-worker/src/model-provider.ts`). `provider` accepts free text for a value
+not yet in this table — that currently fails at execution with a clear error until support (a
+table row plus its `@ai-sdk/<x>` dependency) is added.
+
 ## Structure
 
 ```

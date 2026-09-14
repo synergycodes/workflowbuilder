@@ -13,6 +13,8 @@ type TriggerNodeConfig = Record<string, never>;
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
   webSearch?: boolean; // needs TAVILY_API_KEY to take effect
+  model?: string; // unset inherits env.AI_MODEL
+  provider?: string; // 'auto' | 'openrouter' | known provider id | free text; unset behaves as 'auto'
 };
 
 export type DecisionBranchCondition = {

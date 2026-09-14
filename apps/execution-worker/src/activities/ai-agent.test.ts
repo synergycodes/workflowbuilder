@@ -1,10 +1,11 @@
 import { APICallError } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { ExecutionContext } from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
+import type { OpenRouterClient } from '../model-provider';
 import { executeAiAgent } from './ai-agent';
 
 function context(): ExecutionContext {
@@ -62,5 +63,67 @@ describe('executeAiAgent', () => {
     await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toThrow(APICallError);
 
     expect(model.doGenerateCalls).toHaveLength(1);
+  });
+});
+
+function mockModel(text: string) {
+  return new MockLanguageModelV3({
+    doGenerate: {
+      content: [{ type: 'text', text }],
+      finishReason: { unified: 'stop', raw: undefined },
+      usage: {
+        inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+        outputTokens: { total: undefined, text: undefined, reasoning: undefined },
+      },
+      warnings: [],
+    },
+  });
+}
+
+function fakeOpenrouter(chat: (id: string) => unknown): OpenRouterClient {
+  return { chat: vi.fn(chat) } as unknown as OpenRouterClient;
+}
+
+describe('executeAiAgent model/provider fallback chain', () => {
+  it("uses node.config.model over deps.defaultModel when resolving via 'auto'/openrouter", async () => {
+    const chat = vi.fn(() => mockModel('ok'));
+    const openrouter = fakeOpenrouter(chat);
+    const node: AiAgentNode = {
+      id: 'agent1',
+      type: 'ai-studio/ai-agent',
+      config: { systemPrompt: 'p', model: 'node-model' },
+    };
+
+    await executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' });
+
+    expect(chat).toHaveBeenCalledWith('node-model');
+  });
+
+  it('falls back to deps.defaultModel when node.config.model is unset', async () => {
+    const chat = vi.fn(() => mockModel('ok'));
+    const openrouter = fakeOpenrouter(chat);
+    const node: AiAgentNode = {
+      id: 'agent1',
+      type: 'ai-studio/ai-agent',
+      config: { systemPrompt: 'p' },
+    };
+
+    await executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' });
+
+    expect(chat).toHaveBeenCalledWith('env-model');
+  });
+
+  it('throws when node.config.provider selects a known provider whose API key is missing', async () => {
+    const openrouter = fakeOpenrouter(() => mockModel('unused'));
+    delete process.env['OPENAI_API_KEY'];
+    const node: AiAgentNode = {
+      id: 'agent1',
+      type: 'ai-studio/ai-agent',
+      config: { systemPrompt: 'p', model: 'gpt-4o-mini', provider: 'openai' },
+    };
+
+    await expect(executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' })).rejects.toThrow(
+      'OPENAI_API_KEY',
+    );
   });
 });

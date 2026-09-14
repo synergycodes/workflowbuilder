@@ -7,4 +7,5 @@ export const defaultPropertiesData: NodeDataProperties<AiAgentSchema> = {
   description: '',
   systemPrompt: '',
   webSearch: false,
+  provider: 'auto',
 };

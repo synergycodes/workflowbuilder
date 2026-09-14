@@ -27,5 +27,16 @@ export const uischema: UISchema = {
       scope: scope('properties.webSearch'),
       label: 'Web search (let the agent look things up)',
     },
+    {
+      type: 'Text',
+      scope: scope('properties.model'),
+      label: 'Model',
+      placeholder: 'Inherit workflow/deployment default',
+    },
+    {
+      type: 'Select',
+      scope: scope('properties.provider'),
+      label: 'Provider',
+    },
   ],
 };
