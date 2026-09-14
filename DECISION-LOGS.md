@@ -24,4 +24,6 @@
 - _07.08.2026_: [Keep the postcss box-sizing plugin over lint-based or selector-based alternatives](./packages/ui/postcss-box-sizing.decision-log.md)
 - _24.08.2026_: [`incomplete` as a third terminal state, distinct from `failed` and from a stall](./packages/execution-core/terminal-states.decision-log.md)
 - _31.08.2026_: [Ship common font faces inline and the rest as assets](./packages/ui/font-assets.decision-log.md)
+- _07.09.2026 (shape), 08.09.2026 (names)_: [Decision request as versioned data on a node](./apps/backend/decision-request.decision-log.md)
 - _07.09.2026 (revised 14.09.2026, 15.09.2026 and 16.09.2026)_: [Derive the ConnectableItem width from the real container insets](./packages/sdk/src/features/diagram/nodes/components/connectable-item/connectable-item-width.decision-log.md)
+- _08.09.2026_: [Durable pause, the Temporal side of the human-in-the-loop seam](./packages/temporal/src/workflow/durable-pause.decision-log.md)

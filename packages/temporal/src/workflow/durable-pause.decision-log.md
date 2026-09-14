@@ -1,4 +1,8 @@
-# Durable pause (HITL seam) — decision log
+### Title: Durable pause, the Temporal side of the human-in-the-loop seam
+
+### Proposed by: Piotr Błaszczyk
+
+### Date: 08.09.2026
 
 Context: a node executor can return `{ waiting: true }`; the graph runner parks that
 wave slot on `ActivityRunnerPort.awaitResolution` and resumes with the completion the
