@@ -6,16 +6,6 @@
   font-size: 0.875rem;
 }
 
-.run-amount {
-  width: 5.5rem;
-  padding: 0.5rem 0.625rem;
-  border: 0.0625rem solid rgb(0 0 0 / 20%);
-  border-radius: 0.5rem;
-  background: transparent;
-  color: inherit;
-  font: inherit;
-}
-
 .run-button {
   display: inline-flex;
   align-items: center;
