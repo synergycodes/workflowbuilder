@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 
 import styles from './palette-container.module.css';
-import './variables.css';
 
 import { Sidebar } from '../../components/sidebar/sidebar';
 import { useStore } from '../../store/store';
@@ -50,7 +49,7 @@ export function PaletteContainer() {
       />
       {draggedItem && (
         <DraggedItem ref={ref} zoom={zoom}>
-          <NodePreviewContainer type={draggedItem.type} />
+          <NodePreviewContainer type={draggedItem.type} selected />
         </DraggedItem>
       )}
     </Sidebar>

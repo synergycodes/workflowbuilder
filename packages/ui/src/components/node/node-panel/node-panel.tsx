@@ -7,6 +7,12 @@ import nodeStyles from './node-panel.module.css';
 type Props = {
   /** Whether the node panel is selected */
   selected: boolean;
+  /**
+   * Renders the node in its disabled state (muted surface, text and icon,
+   * no hover). Used for node types that cannot be added right now, for
+   * example palette entries in read-only mode.
+   */
+  disabled?: boolean;
   /** The content of the node panel */
   children?: React.ReactNode;
   /** css className of the node panel */
@@ -64,7 +70,7 @@ const Handles = memo(function Handles({
   return <>{isVisible && children}</>;
 });
 
-const Root = memo(function Root({ selected, children, className }: Props) {
+const Root = memo(function Root({ selected, disabled = false, children, className }: Props) {
   const { headerComponent, contentComponent, handlesComponent, handlesAlignment, hasHandles } = useMemo(() => {
     const childrenArray = Children.toArray(children);
 
@@ -91,6 +97,7 @@ const Root = memo(function Root({ selected, children, className }: Props) {
       <div
         className={clsx(nodeStyles['container'], {
           [nodeStyles['selected']]: selected,
+          [nodeStyles['disabled']]: disabled,
         })}
       >
         <div

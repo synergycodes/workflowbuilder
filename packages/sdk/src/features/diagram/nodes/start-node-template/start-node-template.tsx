@@ -22,6 +22,8 @@ type StartNodeTemplateProps = {
   description: string;
   data?: NodeData;
   selected?: boolean;
+  /** Render the Node Disabled variant (palette entries that cannot be added). */
+  disabled?: boolean;
   layoutDirection?: LayoutDirection;
   isConnecting?: boolean;
   showHandles?: boolean;
@@ -37,6 +39,7 @@ const StartNodeTemplateComponent = memo(
     description,
     layoutDirection = 'RIGHT',
     selected = false,
+    disabled = false,
     showHandles = true,
     isValid,
     children,
@@ -54,10 +57,10 @@ const StartNodeTemplateComponent = memo(
 
     return (
       <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
-        <NodePanel.Root selected={selected} className={styles['content']}>
+        <NodePanel.Root selected={selected} disabled={disabled} className={styles['content']}>
           <NodePanel.Header>
-            <NodeIcon icon={iconElement} />
-            <NodeDescription label={label} description={description} />
+            <NodeIcon icon={iconElement} disabled={disabled} />
+            <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
