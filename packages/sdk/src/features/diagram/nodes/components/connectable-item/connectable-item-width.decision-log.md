@@ -67,3 +67,11 @@ adds horizontal padding without declaring it lets its rows exceed the visible wi
 - Provisional until the design specifies the row width (follow-up: connectable-item-design-width).
   The design's node body matrix (row padding 8px, radius 4px) is a separate change and does not
   alter this derivation.
+
+## Update 14.09.2026
+
+Design confirmed the body matrix (DR-143): section padding and gap 8px, row padding 8px, row radius 4px,
+section radius 8px (`canvas/node/content-radius`). With the section inset now `8 + 1`, the derived row width
+is `241 - 2 x (8 + 1) - 2 x (8 + 1) = 205px` in both Decision and AI Agent. The formula is unchanged; only
+the inset value moved. Row padding, row radius, section padding and gap bind to primitives
+(`space/100`, `radius/50`) with `missing token` markers until design publishes the `node.body.*` roles.

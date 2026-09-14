@@ -1,11 +1,11 @@
 .container {
-  --wb-sdk-connectable-item-inset: calc(0.625rem + 1px);
+  --wb-sdk-connectable-item-inset: calc(var(--wb-ds-space-100) + 1px);
 
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  border-radius: 0.5rem;
-  padding: 0.625rem;
+  gap: var(--wb-ds-space-100); /* missing token */
+  border-radius: var(--wb-ds-canvas-node-content-radius);
+  padding: var(--wb-ds-space-100); /* missing token */
   border: 1px solid var(--wb-ds-ui-stroke-default);
   color: var(--wb-ds-ui-text-default);
 
