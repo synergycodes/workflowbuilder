@@ -23,7 +23,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Lightning',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -42,7 +41,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -61,7 +59,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -80,7 +77,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ArrowsSplit',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -99,7 +95,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '801b6f56-05d9-4639-b426-ef171741a408',
@@ -121,7 +116,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -140,7 +134,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'c87efe62-6394-43c2-8714-96c0dc19a407',
@@ -158,7 +151,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '3bfaad20-c0b8-4a90-bf8b-04c3eec2ce31',
@@ -176,7 +168,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '8b356b4a-5959-48ff-9374-cd07dc9522f6',
@@ -194,7 +185,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ArrowsSplit',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'abac90c2-af48-458e-8e0c-48a505d0826e',
@@ -216,7 +206,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
       {
@@ -235,7 +224,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '263e749c-dfaa-4aed-af11-c7ad161aee54',
@@ -253,7 +241,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ArrowsSplit',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'caae31f8-9bf6-4488-addf-d1b80842e1f7',
@@ -271,7 +258,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PaperPlaneRight',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'c125ce95-d5f4-4a93-a9de-407e45016d8d',
@@ -289,7 +275,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PaperPlaneRight',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
         dragging: false,
       },
     ],
