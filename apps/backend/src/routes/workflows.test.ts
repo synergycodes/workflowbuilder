@@ -268,3 +268,222 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
     expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
   });
 });
+
+// ---- snapshot validation on publish and execute -----------------------------
+// Never on draft save: a draft is legitimately mid-edit.
+
+function snapshotWithDecisionActions(actions: unknown[], properties: Record<string, unknown> = {}) {
+  return {
+    nodes: [
+      { id: 'src', data: { type: 'product/any' } },
+      {
+        id: 'review',
+        data: {
+          type: 'product/any',
+          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties } } },
+        },
+      },
+    ],
+    edges: [{ id: 'e1', source: 'src', target: 'review' }],
+  };
+}
+
+const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
+const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
+
+type InvalidSnapshotBody = {
+  code: string;
+  details: { path: (string | number)[]; code?: string; domainCode?: string; params?: Record<string, string> }[];
+};
+
+function allowAllApp() {
+  return buildApp(allowAll(vi.fn(async () => true)));
+}
+
+function publish(app: ReturnType<typeof buildApp>) {
+  return app.request('/api/workflows/w-1/publish', { method: 'POST' });
+}
+
+function jsonRequest(app: ReturnType<typeof buildApp>, path: string, method: string, body: unknown) {
+  return app.request(path, { method, body: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
+}
+
+describe('createWorkflowsRoutes - snapshot validation on publish', () => {
+  it('rejects a draft with a broken decision request and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.effect',
+    );
+    // Beside zod's `code` and the English message, the identifier a client keys on and its value.
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_effect', params: { value: 'resume' } });
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('accepts a draft with a valid decision request and returns the row', async () => {
+    const published = { ...fakeWorkflow, draftJson: validDecisionSnapshot, publishedJson: validDecisionSnapshot };
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validDecisionSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([published]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+    expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validDecisionSnapshot });
+  });
+
+  it('accepts a form whose properties carry no type, as JSON Schema allows', async () => {
+    const draftJson = snapshotWithDecisionActions([approve], {
+      status: { enum: ['open', 'closed'] },
+      amount: { $ref: '#/$defs/money' },
+      nickname: { type: ['string', 'null'] },
+    });
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, publishedJson: draftJson }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('still publishes a workflow without a draft, unvalidated', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  // The falsy scalars used to short-circuit execute into published_version_missing while
+  // publish went on to validate them; only null means "no version".
+  it.each([
+    { name: 'a broken decision request', draftJson: twoResumesSnapshot },
+    { name: 'an empty string', draftJson: '' },
+    { name: 'zero', draftJson: 0 },
+    { name: 'false', draftJson: false },
+  ])('answers with the same body execute gives for $name', async ({ draftJson }) => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
+
+    const publishResponse = await publish(allowAllApp());
+    const publishBody = await publishResponse.json();
+    const executeResponse = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(executeResponse.status).toBe(400);
+    expect(await executeResponse.json()).toEqual(publishBody);
+    expect(databaseMock.insert).not.toHaveBeenCalled();
+    expect(engineMock.submit).not.toHaveBeenCalled();
+  });
+});
+
+describe('createWorkflowsRoutes - draft save never validates the snapshot', () => {
+  it('stores a draft with a broken decision request', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: twoResumesSnapshot,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---- own __proto__ keys in a stored draft -------------------------------------
+// A draft is stored as sent, so it can carry one.
+
+const poisonedDraft = JSON.parse(
+  '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":' +
+    '{"__proto__":{"decisionRequest":{"version":99,"actions":[{"effect":"bogus"}],"schema":"x"}}}}}],"edges":[]}',
+);
+
+describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
+  it('publish answers 400 invalid_snapshot pointing at the key and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details.map((detail) => detail.path.join('.'))).toEqual(['nodes.0.data.properties.__proto__']);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('draft save still stores it', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: poisonedDraft,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---- deeply nested drafts -----------------------------------------------------
+// Depth is the client's to choose, and only the body limit caps it.
+
+const DEEP = 20_000;
+
+function deepDraft(leaf: string): unknown {
+  return JSON.parse(
+    '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":{"deep":' +
+      '['.repeat(DEEP) +
+      leaf +
+      ']'.repeat(DEEP) +
+      '}}}],"edges":[]}',
+  );
+}
+
+describe('createWorkflowsRoutes - a draft nested deeper than a call stack', () => {
+  it('publishes a clean one', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('') }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses one hiding an own __proto__ key at the bottom, and points at it', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details[0]?.path.slice(0, 5)).toEqual(['nodes', 0, 'data', 'properties', 'deep']);
+    expect(body.details[0]?.path.at(-1)).toBe('__proto__');
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('answers execute the same way', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as InvalidSnapshotBody).code).toBe('invalid_snapshot');
+    expect(engineMock.submit).not.toHaveBeenCalled();
+  });
+});

@@ -1591,6 +1591,34 @@ describe('runGraph — node_started payload', () => {
 });
 
 describe('runGraph — waiting results', () => {
+  // The runner reads no `decisionRequest`, deliberately: it learns no product's vocabulary.
+  // The field's public JSDoc and the backend README say so; this holds them to it.
+  it('runs a node carrying a decisionRequest like any other: only a waiting result parks', async () => {
+    const deciding: TestNode = {
+      id: 'B',
+      type: 'test/node',
+      config: {},
+      decisionRequest: {
+        version: 1,
+        actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' }],
+        schema: { type: 'object', properties: {} },
+      },
+    };
+    const { port, callOrder } = makeRunner();
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), deciding, trigger('C')], [edge('e1', 'A', 'B'), edge('e2', 'B', 'C')]),
+      port,
+      events.port,
+    );
+
+    expect(outcome.status).toBe('completed');
+    expect(callOrder).toEqual(['A', 'B', 'C']);
+    expect(events.events.map((event) => event.type)).not.toContain('node_waiting');
+    expect(events.statuses.map((status) => status.status)).not.toContain('waiting');
+  });
+
   it('fails the run when the adapter has no awaitResolution, even with errorPolicy continue on the gate', async () => {
     const runner = makeRunner({ A: { waits: true } });
     const events = makeEvents();
