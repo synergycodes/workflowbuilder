@@ -30,6 +30,10 @@ export function runErrored(message: string): void {
   useRunStore.setState({ phase: 'error', message });
 }
 
+export function runCleared(): void {
+  useRunStore.setState(IDLE, true);
+}
+
 const TERMINAL_PHASES: ReadonlySet<string> = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
 
 const NODE_STATUS_BY_EVENT: Record<string, NodeRunStatus> = {

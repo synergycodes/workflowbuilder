@@ -135,6 +135,8 @@ Open the printed URL (Vite defaults to <http://localhost:5173>). The editor open
 
 Then change things. Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette.
 
+The editor keeps your canvas in the browser between visits. **Reset diagram** puts back the diagram in [`shared/diagram.json`](shared/diagram.json), which is also the one `npm run workflow` submits.
+
 ## How it works
 
 Six places carry the whole integration. Each has a comment where the reason is not visible in the code.

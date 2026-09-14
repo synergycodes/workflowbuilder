@@ -2,15 +2,18 @@ import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflo
 
 import '@workflowbuilder/sdk/style.css';
 
-import { initialEdges, initialNodes } from './diagram';
+import { defaultDiagram } from './diagram';
 import { executionPlugin } from './execution/plugin';
 import { nodeTypes } from './nodes';
+import { resetPlugin } from './reset/plugin';
 
 // A trigger starts the workflow, so nothing can connect into it.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => targetNode.data.type !== 'trigger';
 
 // Plugin initializers run once on first mount; the array must be a stable reference.
-const plugins = [executionPlugin];
+const plugins = [executionPlugin, resetPlugin];
+
+const { nodes: initialNodes, edges: initialEdges } = defaultDiagram();
 
 export function App() {
   return (
