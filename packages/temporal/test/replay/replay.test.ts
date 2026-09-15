@@ -25,7 +25,13 @@ const HISTORIES_DIR = new URL('histories/', import.meta.url);
 //   UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/temporal test
 //   UPDATE_REPLAY_HISTORIES=1                        re-records every scenario
 const requested = process.env.UPDATE_REPLAY_HISTORIES;
-const requestedScenarios = requested === undefined || requested === '1' ? [] : requested.split(',');
+const requestedScenarios =
+  requested === undefined || requested === '1'
+    ? []
+    : requested
+        .split(',')
+        .map((name) => name.trim())
+        .filter(Boolean);
 const unknownScenarios = requestedScenarios.filter((name) => !REPLAY_SCENARIOS.some((s) => s.name === name));
 if (unknownScenarios.length > 0) {
   throw new Error(`UPDATE_REPLAY_HISTORIES names no scenario: ${unknownScenarios.join(', ')}`);
@@ -35,9 +41,13 @@ function shouldRecord(scenario: ReplayScenario): boolean {
   return requested === '1' || requestedScenarios.includes(scenario.name);
 }
 
-// `v0-` names the pre-release baseline; ./README.md says what happens to it at the first release.
+// The prefix files a recording under the version that recorded it, so older versions keep
+// their histories next to newer ones. `v0` is the pre-release baseline; ./README.md says
+// when to record under a released version instead.
+const RECORD_PREFIX = process.env.REPLAY_HISTORY_VERSION ?? 'v0';
+
 function historyFile(scenario: ReplayScenario): URL {
-  return new URL(`v0-${scenario.name}.json`, HISTORIES_DIR);
+  return new URL(`${RECORD_PREFIX}-${scenario.name}.json`, HISTORIES_DIR);
 }
 
 function scenarioOf(file: string): ReplayScenario | undefined {
@@ -120,7 +130,23 @@ describe('replay', () => {
     it(`ends with ${scenario.terminalEvent} and status ${scenario.terminalStatus}`, () => {
       expect(store.events.at(0)?.type).toBe('execution_started');
       expect(store.events.at(-1)?.type).toBe(scenario.terminalEvent);
-      expect(store.statuses).toEqual([expect.objectContaining({ status: scenario.terminalStatus })]);
+      expect(store.statuses).toEqual([
+        { status: scenario.terminalStatus, errorMessage: scenario.terminalErrorMessage },
+      ]);
+    });
+
+    it('emits the events each node owes', () => {
+      // Seeded from the graph, so a node that emitted nothing is asserted as [] rather than
+      // passing by being absent, and grouping keeps the check off sibling completion order.
+      const byNode: Record<string, string[]> = Object.fromEntries(scenario.graph.nodes.map((node) => [node.id, []]));
+
+      for (const event of store.events) {
+        if (event.nodeId !== undefined) {
+          byNode[event.nodeId]?.push(event.type);
+        }
+      }
+
+      expect(byNode).toEqual(scenario.nodeEvents);
     });
 
     it(`closes the Workflow Execution through ${scenario.closeAttributes}`, () => {
@@ -137,6 +163,13 @@ describe('replay', () => {
   });
 
   it('replays every history recorded before the current code', async () => {
+    // `scenarioOf` matches on suffix, so a name ending in `-<other name>` would let the
+    // shorter scenario claim the longer one's file and blame the wrong scenario on failure.
+    const nested = REPLAY_SCENARIOS.filter((scenario) =>
+      REPLAY_SCENARIOS.some((other) => other !== scenario && scenario.name.endsWith(`-${other.name}`)),
+    );
+    expect(nested.map((scenario) => scenario.name)).toEqual([]);
+
     // Every scenario needs a recording and every recording needs a scenario. The version
     // prefix is free, since older versions keep their files next to newer ones.
     const entries = await readdir(HISTORIES_DIR);

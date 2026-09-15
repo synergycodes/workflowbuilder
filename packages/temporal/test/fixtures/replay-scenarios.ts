@@ -1,6 +1,6 @@
 // One scenario per path through the sandbox code; each gets its own committed history
 // under ../replay/histories/. ../replay/README.md says what each protects.
-import type { WorkflowHandle } from '@temporalio/client';
+import { WorkflowFailedError, type WorkflowHandle } from '@temporalio/client';
 
 import {
   type BaseNode,
@@ -27,8 +27,12 @@ export type ReplayScenario = {
   graph: WorkflowDefinition<ReplayScenarioNode>;
   terminalEvent: string;
   terminalStatus: string;
+  terminalErrorMessage?: string;
   closeAttributes: WorkflowCloseAttributes;
   expectedActivities: ActivityCounts;
+  // Keyed by node id, so the assertion does not depend on the order siblings finish in.
+  // Every node in the graph needs an entry; one that never ran gets an empty list.
+  nodeEvents: Record<string, string[]>;
   // Executors and the driver are built together, per run, so a scenario can share
   // run-local state between them (the blocked node the cancel scenario releases).
   stage(): {
@@ -50,11 +54,14 @@ const executors: NodeExecutorRegistry<ReplayScenarioNode> = {
   },
 };
 
+// How a run ended is asserted from the store and the history, not from the result — but
+// only the run's own failure is swallowed, so a client or connection fault surfaces here
+// instead of as a puzzling assertion later. A cancelled run also arrives as this class.
 async function settle(handle: WorkflowHandle): Promise<void> {
   try {
     await handle.result();
-  } catch {
-    // How a run ended is asserted from the store and the history, not from the result.
+  } catch (error) {
+    if (!(error instanceof WorkflowFailedError)) throw error;
   }
 }
 
@@ -82,6 +89,12 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     terminalStatus: 'completed',
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
     expectedActivities: { executeNode: 4, emitEvent: 10, updateStatus: 1 },
+    nodeEvents: {
+      start: ['node_started', 'node_completed'],
+      left: ['node_started', 'node_completed'],
+      right: ['node_started', 'node_completed'],
+      join: ['node_started', 'node_completed'],
+    },
     stage: () => ({ executors, drive: settle }),
   },
   {
@@ -105,8 +118,16 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     },
     terminalEvent: 'execution_failed',
     terminalStatus: 'failed',
+    terminalErrorMessage: 'fails on purpose',
     closeAttributes: 'workflowExecutionFailedEventAttributes',
     expectedActivities: { executeNode: 3, emitEvent: 8, updateStatus: 1 },
+    // join is never reached under the fail policy, so it owes no event at all.
+    nodeEvents: {
+      start: ['node_started', 'node_completed'],
+      fail: ['node_started', 'node_failed'],
+      sibling: ['node_started', 'node_completed'],
+      join: [],
+    },
     stage: () => ({ executors, drive: settle }),
   },
   {
@@ -129,6 +150,11 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     terminalStatus: 'incomplete',
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
     expectedActivities: { executeNode: 2, emitEvent: 7, updateStatus: 1 },
+    nodeEvents: {
+      start: ['node_started', 'node_completed'],
+      route: ['node_started', 'node_completed'],
+      taken: ['node_skipped'],
+    },
     stage: () => ({ executors, drive: settle }),
   },
   {
@@ -147,6 +173,8 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     terminalStatus: 'cancelled',
     closeAttributes: 'workflowExecutionCanceledEventAttributes',
     expectedActivities: { executeNode: 2, emitEvent: 5, updateStatus: 1 },
+    // block is cancelled in flight, so it starts and never completes.
+    nodeEvents: { start: ['node_started', 'node_completed'], block: ['node_started'] },
     stage: () => {
       let reached!: () => void;
       let release!: () => void;

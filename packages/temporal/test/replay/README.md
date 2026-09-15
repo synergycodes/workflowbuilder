@@ -28,7 +28,7 @@ recorded by the same broken code.
 ## The scenarios
 
 One file per path through the sandbox code. A change that leaves one path alone can still
-move the commands on another, so all four replay on every run.
+move the commands on another, so every scenario replays on every run.
 
 | File                        | Graph                            | Path it protects                                                                                                                                                        |
 | --------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -39,7 +39,9 @@ move the commands on another, so all four replay on every run.
 
 The cancel scenario parks its executor until the driver has cancelled the run, so the
 recording always catches the activity open. The late completion then meets a closed run,
-which Temporal core logs as one "Activity not found on completion" warning. Expected.
+which Temporal core logs as one "Activity not found on completion" warning. A green run
+also logs "Activity failed" and "Workflow failed" from the fail-policy scenario, which
+fails a node on purpose. All three are expected; nothing is wrong with a run that has them.
 
 ## Recording a history
 
@@ -47,12 +49,14 @@ From the harness, which is what the committed files come from. Name the scenario
 others keep guarding what they recorded:
 
 ```bash
-UPDATE_REPLAY_HISTORIES=<scenario> pnpm --filter @workflowbuilder/temporal test
+UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/temporal test
 ```
 
 `UPDATE_REPLAY_HISTORIES=1` re-records every scenario; see rule 3 before reaching for it.
 Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
 it by name, and describing it in the table above. The harness fails until the file exists.
+Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says otherwise;
+the last section covers when to set it.
 
 Or from a real run against a local stack, for a scenario the harness cannot stage.
 `historyToJSON` writes the same shape, so the two are interchangeable. Read the output
@@ -72,13 +76,21 @@ temporal workflow show --workflow-id execution-<id> --output json > histories/<v
    New behaviour gets a new file next to the old ones.
 3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES` rewrites the
    history from current code, so the cross-version check silently becomes a self-check.
-   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of all
-   four, never for making a red test green.
+   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of
+   every scenario, never for making a red test green.
 
 `v0-` names the pre-release baseline: the package has not published a version yet, so
 these are histories from the code as it stood before the first release. At that release,
-record the same scenarios as `<version>-<scenario>.json` next to these. The `v0-` files
-can then go, since no run outside this repo was ever recorded by pre-release code.
+record every scenario again under the released version:
+
+```bash
+REPLAY_HISTORY_VERSION=1.0.0 UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+```
+
+That writes `1.0.0-<scenario>.json` next to the `v0-` files and leaves them untouched, so
+check the new set replays before deleting the old one. The `v0-` files can go, since no
+run outside this repo was ever recorded by pre-release code. Every release after that adds
+its own set the same way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
