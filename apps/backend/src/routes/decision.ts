@@ -63,7 +63,7 @@ export function createDecisionRoutes(
 
     const parsedBody = z.safeParse(decisionBodySchema, await c.req.json());
     if (!parsedBody.success) {
-      return refuse(c, 'body_invalid', undefined, { details: formatValidationDetails(parsedBody.error) });
+      return refuse(c, 'body_invalid', { extra: { details: formatValidationDetails(parsedBody.error) } });
     }
     const { nodeId, attempt, ...submitted } = parsedBody.data;
 
@@ -76,11 +76,11 @@ export function createDecisionRoutes(
       throw new Error(`stored snapshot of execution ${resolvedId} no longer parses`);
     }
     const found = findDecisionRequest(parsedSnapshot.data, nodeId);
-    if (found.error !== undefined) return refuse(c, LOOKUP_REFUSALS[found.error], nodeId);
+    if (found.error !== undefined) return refuse(c, LOOKUP_REFUSALS[found.error], { value: nodeId });
 
     const validated = validateSubmittedDecision(found.request, submitted);
     if (validated.error !== undefined) {
-      return refuse(c, 'decision_invalid', undefined, { details: [validated.error] });
+      return refuse(c, 'decision_invalid', { extra: { details: [validated.error] } });
     }
     const { decision, action } = validated;
 
@@ -88,12 +88,12 @@ export function createDecisionRoutes(
     // A rerun re-parks it, and then the wait instance must reach the engine, which keys
     // its waits by node id alone (follow-up: decision-attempt-in-engine).
     const waits = await countNodeWaits(resolvedId, nodeId);
-    if (waits === 0) return refuse(c, 'node_never_parked', nodeId);
-    if (waits !== attempt) return refuse(c, 'attempt_mismatch', undefined, { attempt: waits });
+    if (waits === 0) return refuse(c, 'node_never_parked', { value: nodeId });
+    if (waits !== attempt) return refuse(c, 'attempt_mismatch', { extra: { attempt: waits } });
 
     // Refused until the engine can re-run a source (follow-up: decision-rerun-source).
     if (!hasNodeResolution(decision) || action.effect === 'rerun-source') {
-      return refuse(c, 'effect_not_supported', action.name);
+      return refuse(c, 'effect_not_supported', { value: action.name });
     }
 
     const result = await getWorkflowEngine().resolveNode(resolvedId, nodeId, toNodeResolution(decision, action));
@@ -104,7 +104,7 @@ export function createDecisionRoutes(
           `engine refused the completion for node '${nodeId}': ${result.error.code}: ${result.error.message}`,
         );
       }
-      return refuse(c, outcome, nodeId);
+      return refuse(c, outcome, { value: nodeId });
     }
 
     logger.info('decision delivered', {

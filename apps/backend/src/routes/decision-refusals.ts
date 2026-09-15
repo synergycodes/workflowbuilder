@@ -72,7 +72,11 @@ export const ENGINE_REFUSALS = {
   delivery_timeout: 'delivery_timeout',
 } as const satisfies Record<ResolveNodeRejection, DecisionRefusal | 'fault'>;
 
-export function refuse(c: Context, refusal: DecisionRefusal, value?: string, extra: Record<string, unknown> = {}) {
+export function refuse(
+  c: Context,
+  refusal: DecisionRefusal,
+  { value, extra }: { value?: string; extra?: Record<string, unknown> } = {},
+) {
   const entry = DECISION_REFUSALS[refusal];
   const headers = 'headers' in entry ? entry.headers : undefined;
   return c.json(

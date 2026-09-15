@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest';
 import { DECISION_REFUSALS, DECISION_REFUSAL_STATUS, type DecisionRefusal, refuse } from './decision-refusals';
 
 async function answer(refusal: DecisionRefusal, value?: string, extra?: Record<string, unknown>) {
-  const app = new Hono().get('/', (c) => refuse(c, refusal, value, extra));
+  const app = new Hono().get('/', (c) => refuse(c, refusal, { value, extra }));
   const response = await app.request('/');
   return {
     status: response.status,
