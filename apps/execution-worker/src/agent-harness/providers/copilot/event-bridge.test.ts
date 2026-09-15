@@ -279,10 +279,15 @@ describe('mapCopilotEvent', () => {
     expect(out).toEqual([{ type: 'system', content: '⚙️ Compacting context…' }]);
   });
 
+  test('assistant.turn_start → assistant_turn_boundary chunk (marks a new turn so the accumulator resets)', () => {
+    const context = makeContext();
+    const out = mapCopilotEvent(event_('assistant.turn_start', { turnId: 't1' }), context);
+    expect(out).toEqual([{ type: 'assistant_turn_boundary' }]);
+  });
+
   test('unhandled event types yield no chunks', () => {
     const context = makeContext();
     expect(mapCopilotEvent(event_('session.idle', {}), context)).toEqual([]);
-    expect(mapCopilotEvent(event_('assistant.turn_start', { turnId: 't1' }), context)).toEqual([]);
     expect(mapCopilotEvent(event_('user.message', {}), context)).toEqual([]);
   });
 });

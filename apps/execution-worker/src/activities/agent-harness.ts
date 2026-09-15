@@ -416,6 +416,12 @@ function accumulateChunk(
     case 'assistant': {
       return responseText + chunk.content;
     }
+    case 'assistant_turn_boundary': {
+      // A new turn starts (e.g. after a tool call): only the LAST turn's
+      // text is the final answer — a planning preamble before a tool call
+      // must not survive concatenated onto the summary that follows it.
+      return '';
+    }
     case 'system': {
       warnings.push(chunk.content);
       return responseText;

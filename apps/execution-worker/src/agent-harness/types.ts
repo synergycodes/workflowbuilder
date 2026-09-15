@@ -149,6 +149,15 @@ export type MessageChunk =
     }
   | { type: 'system'; content: string }
   | { type: 'thinking'; content: string }
+  /**
+   * Marks the start of a new assistant turn (e.g. a planning preamble before
+   * a tool call, followed by a separate turn for the final summary). Emitted
+   * so consumers can tell "final answer" apart from prior turns' text —
+   * without it, a multi-turn agentic session's turns get silently
+   * concatenated into one undifferentiated blob. See `agent-harness.ts`'s
+   * `accumulateChunk`, which resets the running response text on this chunk.
+   */
+  | { type: 'assistant_turn_boundary' }
   | {
       type: 'result';
       sessionId?: string;

@@ -128,6 +128,22 @@ describe('executeAgentHarness', () => {
     expect(result.output.warnings).toEqual(['a warning']);
   });
 
+  test("discards a prior turn's text on assistant_turn_boundary, keeping only the final turn's response", async () => {
+    const provider = new FakeProvider([
+      { type: 'assistant', content: "I'll inspect the working directory, then create plan.md." },
+      { type: 'tool', toolName: 'writeFile' },
+      { type: 'assistant_turn_boundary' },
+      { type: 'assistant', content: 'Created plan.md with three rate-limiting approaches.' },
+      { type: 'result', sessionId: 's1' },
+    ]);
+
+    const result = await executeAgentHarness(makeNode(), makeContext(), {
+      getProvider: () => provider,
+    });
+
+    expect(result.output.response).toBe('Created plan.md with three rate-limiting approaches.');
+  });
+
   test('resolves {{namespace.path}} references in the prompt before sending it to the provider', async () => {
     const provider = new FakeProvider([{ type: 'assistant', content: 'ok' }]);
 

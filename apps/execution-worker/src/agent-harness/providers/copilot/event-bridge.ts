@@ -121,9 +121,10 @@ export function normalizeCopilotUsage(raw?: { inputTokens?: number; outputTokens
  *     streaming is covered by `*_delta` events. If deltas were somehow
  *     absent, `bridgeSession` has a safety-net using sendAndWait's return.
  *   - `session.idle` — internal signal; sendAndWait resolves on it
- *   - turn_start/turn_end, streaming_delta, intent, compaction_complete,
- *     task_complete, context_changed, title_changed, etc. — internal
- *     housekeeping, no user-facing chunk
+ *   - turn_end, streaming_delta, intent, compaction_complete, task_complete,
+ *     context_changed, title_changed, etc. — internal housekeeping, no
+ *     user-facing chunk. `turn_start` IS mapped (see below) so the response
+ *     accumulator can tell turns apart.
  */
 export interface EventMapperContext {
   /** Populated by tool.execution_start, read by tool.execution_complete. */
@@ -201,6 +202,9 @@ export function mapCopilotEvent(event: SessionEvent, context: EventMapperContext
       const message = event.data.message || 'Copilot session error';
       context.markErrored(message);
       return [];
+    }
+    case 'assistant.turn_start': {
+      return [{ type: 'assistant_turn_boundary' }];
     }
     case 'session.compaction_start': {
       return [{ type: 'system', content: '⚙️ Compacting context…' }];
