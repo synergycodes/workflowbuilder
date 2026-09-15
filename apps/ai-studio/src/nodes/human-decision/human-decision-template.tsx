@@ -49,7 +49,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       const isCanvasNode = showHandles;
 
       return (
-        <NodePanel.Root selected={selected} className={styles['node']}>
+        <NodePanel.Root selected={selected}>
           <NodePanel.Header>
             <NodeIcon icon={iconElement} />
             <NodeDescription label={label} description={description} />

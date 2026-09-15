@@ -38,7 +38,7 @@ const diagram: DiagramModel = {
           isStartNode: true,
           properties: {
             label: 'Refund Request',
-            description: 'A customer asks for their money back.',
+            description: 'A customer asks for a refund.',
             inputPrompt: `Subject: Refund for a duplicate charge
 
 Hi, on 2026-09-02 I was charged $49 twice for my Pro plan (order #48213). Could you refund the extra charge? I would also like to know whether this will happen again next month.
@@ -59,7 +59,7 @@ Head of Ops, Brightwave`,
           segments: [],
           properties: {
             label: 'Draft the Refund Reply',
-            description: 'Proposes the refund amount and drafts the reply a person reviews.',
+            description: 'Proposes a refund and drafts the reply.',
             systemPrompt: `${REFUND_CONTEXT}
 
 Read the customer's message. Decide the refund amount under the policy and draft the reply.
@@ -84,7 +84,7 @@ Return exactly this format:
           segments: [],
           properties: {
             label: 'Review Refund',
-            description: 'A person approves the proposed refund or turns it down.',
+            description: 'A person approves or rejects it.',
             decisionRequest: refundReviewRequest,
           },
           type: humanDecisionNodeType,
@@ -94,12 +94,12 @@ Return exactly this format:
       {
         id: 'send-1',
         type: 'node',
-        position: { x: 1050, y: 150 },
+        position: { x: 1100, y: 200 },
         data: {
           segments: [],
           properties: {
             label: 'Send the Confirmation',
-            description: 'Writes the confirmation the customer receives once the refund is approved.',
+            description: 'Writes the confirmation to the customer.',
             systemPrompt: `${REFUND_CONTEXT}
 
 A person approved the refund. The context holds the drafted reply and the decision record.
@@ -116,12 +116,12 @@ and one sentence on preventing a repeat. Under 100 words, signed "Lumen Support"
       {
         id: 'done-1',
         type: 'node',
-        position: { x: 1400, y: 150 },
+        position: { x: 1450, y: 200 },
         data: {
           segments: [],
           properties: {
             label: 'Confirmation',
-            description: 'The message as the customer receives it.',
+            description: 'What the customer receives.',
             mode: 'markdown',
           },
           type: 'ai-studio/visualize',
@@ -131,12 +131,12 @@ and one sentence on preventing a repeat. Under 100 words, signed "Lumen Support"
       {
         id: 'rejected-1',
         type: 'node',
-        position: { x: 1050, y: 450 },
+        position: { x: 1100, y: 600 },
         data: {
           segments: [],
           properties: {
             label: 'Rejected',
-            description: 'The decision record when the refund is turned down.',
+            description: 'The decision record.',
             mode: 'json',
           },
           type: 'ai-studio/visualize',

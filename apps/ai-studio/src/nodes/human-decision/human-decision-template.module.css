@@ -1,9 +1,3 @@
-.node {
-  > div {
-    min-width: max-content;
-  }
-}
-
 .actions {
   display: flex;
   gap: 0.5rem;
