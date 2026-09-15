@@ -81,7 +81,8 @@ the same code the worker uses:
 Any credential turns TLS on by itself, so `TEMPORAL_TLS` only has to be set to force TLS with no
 credentials, or to assert plaintext. Contradictory combinations — half an mTLS pair, an API key
 together with a client certificate, or credentials alongside `TEMPORAL_TLS=false` — are rejected
-with an explanatory error when the connection opens, rather than being silently ignored.
+with an explanatory error at startup, rather than being silently ignored. The connection itself is
+opened on the first run, so booting does not require Temporal to be reachable.
 
 For Temporal Cloud, set `TEMPORAL_ADDRESS` to `<namespace>.<accountId>.tmprl.cloud:7233`,
 `TEMPORAL_NAMESPACE` to `<namespace>.<accountId>`, and `TEMPORAL_API_KEY` to your key.

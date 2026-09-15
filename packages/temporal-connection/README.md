@@ -4,7 +4,7 @@ Private, source-only. Turns the `TEMPORAL_*` environment variables into everythi
 
 Two consumers hand the result straight to their SDK: `apps/backend/src/engine/index.ts` (`@temporalio/client`) and `apps/execution-worker/src/engines/temporal/worker.ts` (`@temporalio/worker`). Change a rule here and both apps follow; a rule that only one of them should have does not belong here.
 
-Nothing is validated at import time. `temporalConfig` reads `process.env` (or the environment it is given) when called and throws on a bad combination, so each app calls it where it wants the failure surfaced — the backend in its first-connection factory, the worker before it starts polling.
+Nothing is validated when this package is imported. `temporalConfig` reads `process.env` (or the environment it is given) when called and throws on a bad combination. Both apps call it as they start, before serving or polling, so a bad combination stops the process instead of surfacing on the first run. Reading it costs nothing at run time: the certificate files are read with it, and Temporal does not have to be reachable.
 
 ```ts
 import { temporalConfig } from '@workflow-builder/temporal-connection';

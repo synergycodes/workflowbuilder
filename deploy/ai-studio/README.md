@@ -126,9 +126,8 @@ cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and
 override file out, so the bundled cluster is not started and cannot block the
 apps, and `backend` / `worker` depend only on `app-db`. Run
 `docker compose down --remove-orphans` once when switching. A contradictory
-`TEMPORAL_*` combination stops the worker at boot (`docker compose logs worker`);
-the backend connects on first use, so it still passes its healthcheck and fails
-on the first Play — check the worker, not `/api/health`. The bundled debug
+`TEMPORAL_*` combination stops both apps at boot with an explanatory error
+(`docker compose logs backend worker`). The bundled debug
 UI (`--profile debug`) is part of the override and only ever shows the bundled
 cluster — an external cluster has its own UI. For a private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
 read-only into both containers at `/etc/workflowbuilder/tls`) and set
