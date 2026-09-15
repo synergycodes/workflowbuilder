@@ -223,6 +223,8 @@ A modifier triggers **only when the resolved value is strictly `undefined`** - t
 
 The strict default is deliberate: a typo in a prompt template should fail the run, not silently leak a broken token into an LLM. The opt-in modifiers exist for fields where the absence of a value is a legitimate runtime state (an optional trigger field, an output that only exists on one branch of a decision).
 
+Both failures are thrown as `PermanentNodeExecutionError` (codes `template_malformed` and `template_unresolved`), so the engine does not retry the node: a retried node receives the same context, and a reference that failed once fails identically every time.
+
 Authors typing references in the workflow builder UI: see the [variable picker guide](https://www.workflowbuilder.io/docs/guides/use-variable-picker/).
 
 ## Adding a new workflow engine
