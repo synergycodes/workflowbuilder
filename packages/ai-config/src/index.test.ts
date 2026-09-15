@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { aiConfig } from './index';
+import { aiConfig, retiredAiVariables } from './index';
 
 const complete = {
   AI_API_KEY: 'sk-or-v1-key',
@@ -58,6 +58,30 @@ describe('aiConfig', () => {
     vi.stubEnv('AI_MODEL', complete.AI_MODEL);
     try {
       expect(aiConfig()).toMatchObject({ available: true, config: { apiKey: 'from-process-env' } });
+    } finally {
+      vi.unstubAllEnvs();
+    }
+  });
+});
+
+describe('retiredAiVariables', () => {
+  it('names a retired variable that is still set', () => {
+    expect(retiredAiVariables({ OPENROUTER_API_KEY: 'old-key' })).toEqual(['OPENROUTER_API_KEY']);
+  });
+
+  it('is empty when no retired variable is set', () => {
+    expect(retiredAiVariables(complete)).toEqual([]);
+  });
+
+  // same rule as the contract's own variables: compose writes an absent one as ''
+  it('treats an empty string like an unset variable', () => {
+    expect(retiredAiVariables({ OPENROUTER_API_KEY: '' })).toEqual([]);
+  });
+
+  it('reads process.env when no environment is given', () => {
+    vi.stubEnv('OPENROUTER_API_KEY', 'old-key');
+    try {
+      expect(retiredAiVariables()).toEqual(['OPENROUTER_API_KEY']);
     } finally {
       vi.unstubAllEnvs();
     }

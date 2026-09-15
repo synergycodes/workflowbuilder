@@ -3,7 +3,7 @@ import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import { aiConfig } from '@workflow-builder/ai-config';
+import { aiConfig, retiredAiVariables } from '@workflow-builder/ai-config';
 
 import type { AssertAuthorized, AuthVariables } from '../auth';
 import { logger as backendLogger } from '../logger';
@@ -54,6 +54,13 @@ export function createVisualizeRoutes(
     // After authorization and the guard on purpose: an unconfigured server still gates the call.
     const ai = aiConfig();
     if (!ai.available) {
+      // `retired` names a variable that is set and no longer read — the reason a key
+      // that used to work now yields a 501. Only the name is logged, never the value.
+      const retired = retiredAiVariables();
+      logger.warn('adapt requested while AI is not configured', {
+        missing: ai.missing,
+        ...(retired.length > 0 ? { retired } : {}),
+      });
       return c.json({ code: 'adapt_disabled', message: 'AI adapt is not configured on this server.' }, 501);
     }
     const { apiKey, baseURL, modelId } = ai.config;

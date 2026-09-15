@@ -3,7 +3,7 @@ import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
 import 'dotenv/config';
 import { fileURLToPath } from 'node:url';
 
-import { aiConfig } from '@workflow-builder/ai-config';
+import { aiConfig, retiredAiVariables } from '@workflow-builder/ai-config';
 import { temporalConfig } from '@workflow-builder/temporal-connection';
 
 import { database } from '../../database';
@@ -18,8 +18,12 @@ import { withPayloadSizeWarning } from '../../store-payload-warning';
 
 const ai = aiConfig();
 if (!ai.available) {
+  // `retired` names a variable that is set and no longer read — the reason a key that
+  // used to work is now ignored. Only the name is logged, never the value.
+  const retired = retiredAiVariables();
   logger.warn('AI not configured — AI Agent nodes will fail; every other node type runs as usual', {
     missing: ai.missing,
+    ...(retired.length > 0 ? { retired } : {}),
   });
 }
 

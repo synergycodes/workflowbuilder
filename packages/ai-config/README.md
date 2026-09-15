@@ -14,7 +14,7 @@ Three variables, all or nothing:
 
 - None has a built-in default: with the three unset there is no model endpoint to call. Both `.env.example` files pre-fill the OpenRouter values the stack used before the endpoint became configurable.
 - An empty value counts as unset (compose passes absent optionals through as `${VAR:-}`).
-- `OPENROUTER_API_KEY`, the old name of the key, is not read.
+- `OPENROUTER_API_KEY`, the old name of the key, is not read. `retiredAiVariables()` reports whether it is still set, so an app can say why a key that used to work is ignored; the value is never read.
 
 ```ts
 import { aiConfig } from '@workflow-builder/ai-config';
@@ -22,6 +22,8 @@ import { aiConfig } from '@workflow-builder/ai-config';
 const ai = aiConfig(); // reads process.env when called; never throws
 // { available: true, config: { apiKey, baseURL, modelId } }
 // { available: false, missing: ['AI_BASE_URL', 'AI_MODEL'] }
+
+retiredAiVariables(); // ['OPENROUTER_API_KEY'] while the old name is still set, else []
 ```
 
 `TAVILY_API_KEY` is not part of this contract. It is a worker-only, independently optional key that enables the AI Agent's web-search tool on nodes that ask for it, and the one other outbound call an AI Agent node can make — an internal `AI_BASE_URL` keeps model requests in your network, but only an unset Tavily key keeps the search from calling out — see [`apps/execution-worker/README.md`](../../apps/execution-worker/README.md).
@@ -32,5 +34,7 @@ Deliberately not decided here. Each app reacts in its own way so that a missing 
 
 - **Backend** — `POST /api/visualize/adapt` answers `501 adapt_disabled`, after authorization and the execution guard have run (`apps/backend/src/routes/visualize.ts`).
 - **Worker** — boots, logs a warning naming the missing variables, and runs every node type. An AI Agent node that a run reaches fails with the permanent `ai_not_configured` code and the same names (`apps/execution-worker/src/executors/ai-agent.ts`).
+
+Both warnings also name any retired variable still present, which is what tells an operator that yesterday's key is being ignored rather than misread.
 
 Logging, provider lifetime and retries also stay in the apps. Sharing the parser keeps the two readings of the rule identical; it cannot make two independently configured processes agree on the values — set the variables in both `.env` files.

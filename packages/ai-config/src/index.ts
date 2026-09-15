@@ -1,6 +1,12 @@
 const AI_VARIABLES = ['AI_API_KEY', 'AI_BASE_URL', 'AI_MODEL'] as const;
 
+// Names this contract dropped. Still set somewhere, they are dead weight the
+// operator cannot see: the app reads none of them.
+const RETIRED_AI_VARIABLES = ['OPENROUTER_API_KEY'] as const;
+
 export type AiVariable = (typeof AI_VARIABLES)[number];
+
+export type RetiredAiVariable = (typeof RETIRED_AI_VARIABLES)[number];
 
 export type AiConfig = { apiKey: string; baseURL: string; modelId: string };
 
@@ -21,4 +27,10 @@ export function aiConfig(env: NodeJS.ProcessEnv = process.env): AiConfigResult {
   return apiKey && baseURL && modelId
     ? { available: true, config: { apiKey, baseURL, modelId } }
     : { available: false, missing: AI_VARIABLES.filter((name) => !value(name)) };
+}
+
+// Which retired names an environment still carries, so an app can say why a key that
+// used to work is ignored. The value is never read, only whether one is present.
+export function retiredAiVariables(env: NodeJS.ProcessEnv = process.env): RetiredAiVariable[] {
+  return RETIRED_AI_VARIABLES.filter((name) => Boolean(env[name]));
 }
