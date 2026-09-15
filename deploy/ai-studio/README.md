@@ -95,11 +95,28 @@ used before the endpoint became configurable. Leave any of them empty and the
 stack still comes up: every node type runs except AI Agent nodes, which fail
 with `ai_not_configured`.
 
-**Upgrading from `OPENROUTER_API_KEY`.** The key is now `AI_API_KEY`, and the
-endpoint and model are no longer built in. In `.env`, rename the key and add
-`AI_BASE_URL` and `AI_MODEL` (the OpenRouter values are in `.env.example`).
-Compose refuses to start while the old name is still set, so a stale `.env`
-fails loudly instead of coming up with AI silently off.
+<a id="before-deploying-this-version"></a>
+
+**Before deploying this version.** The key is now `AI_API_KEY`, and the endpoint
+and model are no longer built in, so a `.env` written for an earlier version
+needs three lines before this one is deployed:
+
+```bash
+AI_API_KEY=<the value that was OPENROUTER_API_KEY>
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
+```
+
+Renaming only the key is not enough: the stack comes up with every AI Agent
+node failing `ai_not_configured`, because the endpoint and the model have no
+built-in defaults any more. The deploy workflow refuses to run while
+`OPENROUTER_API_KEY` is still set, before it writes anything to the VM, so a
+stale `.env` stops the deploy instead of coming up with AI silently off. An
+operator deploying by hand can run the same check:
+
+```bash
+grep -E '^OPENROUTER_API_KEY=.+' .env    # a hit means .env still needs the rename
+```
 
 **Pointing at a different Temporal.** Every `TEMPORAL_*` variable reaches the
 backend and the worker from one shared block in the compose file, so the two
@@ -135,7 +152,10 @@ The public demo is deployed by the `Deploy AI Studio` GitHub Actions workflow:
 it builds and pushes both images to the registry, copies `docker-compose.yml`
 and `docker-compose.override.yml` from the repo to the VM, writes the tags it
 just pushed into the VM's `.env` as `RUNTIME_IMAGE` / `WEB_IMAGE`, and runs
-compose there. Because the tags live in `.env`, every later compose command on
+compose there. A first deploy of this version onto a VM whose `.env` still
+carries `OPENROUTER_API_KEY` stops before writing anything — see [Before
+deploying this version](#before-deploying-this-version).
+Because the tags live in `.env`, every later compose command on
 the VM (`docker compose up -d worker` after a model change, `--profile debug`)
 resolves the deployed images, not the local `ai-studio-*` build names. The VM's
 compose files are that copy — change them in the repo, never on the VM. Only

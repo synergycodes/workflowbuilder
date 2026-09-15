@@ -6,8 +6,8 @@ name: PR Check
 # @workflowbuilder/ui-tokens build) and @workflowbuilder/temporal, and the
 # execution pipeline (execution-core, backend, execution-worker) — whose
 # determinism tests guard Temporal replay safety and so must not be able to
-# regress silently. Plus
-# global format consistency. apps/docs has its own path-filtered workflow
+# regress silently. Plus the deploy compose files, which ship to the demo VM on
+# every deploy, and global format consistency. apps/docs has its own path-filtered workflow
 # (pr-check-docs.yml); demo and ai-studio are not checked here — they're
 # internal and have their own broken-state tolerances.
 
@@ -169,6 +169,34 @@ jobs:
               echo "::warning title=Missing changeset::packages/execution-core or packages/types changed with no changeset for @workflowbuilder/temporal. If the change affects execution behaviour or the published types, add one (/wb.changeset)."
             fi
           fi
+
+  deploy-compose:
+    name: Deploy compose files parse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Parse both compose modes on the runner's Compose and on the oldest supported one
+        # These files reach the demo VM on every deploy, so a parse error is only
+        # discovered there, with the stack already down. 2.21 is the floor: it
+        # interpolates a nested `${A:+${B:?}}` default eagerly where newer
+        # compose-go is lazy, so a file that parses on the runner can still fail
+        # on a VM. Both modes are covered because COMPOSE_FILE in the VM's .env
+        # decides whether the override file is applied at all.
+        working-directory: deploy/ai-studio
+        run: |
+          cp .env.example .env
+          # An empty COMPOSE_FILE is not the same as an unset one — compose then
+          # reads the working directory as a file — so the default mode runs with
+          # the variable absent and `-e` forwards it only once it is exported.
+          parse() {
+            docker compose config --quiet
+            docker run --rm -v "$PWD:/w" -w /w -e COMPOSE_FILE docker:24.0.5-cli docker compose config --quiet
+          }
+          parse
+          export COMPOSE_FILE=docker-compose.yml
+          parse
 
   ui:
     name: UI + UI tokens lint + typecheck + test + build

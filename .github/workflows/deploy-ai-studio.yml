@@ -92,6 +92,11 @@ jobs:
       # directory, not with -f: that is what applies docker-compose.override.yml
       # by default and honours COMPOSE_FILE from the VM's .env.
       #
+      # The retired-key check runs before anything is written, so a refused deploy
+      # leaves the VM exactly as it was. It lives here rather than in the compose
+      # file because Compose 2.21 and older evaluate a nested `${A:+${B:?}}` guard
+      # eagerly and fail on every command, key set or not.
+      #
       # The image tags are written into that .env rather than exported: an export
       # dies with this shell, and the next `docker compose up -d worker` on the VM
       # would fall back to the local ai-studio-* names. Only the two image lines
@@ -105,11 +110,15 @@ jobs:
           SCRIPT=$(cat <<EOF
           set -e
           cd /app/ai-studio
+          if [ -f .env ] && grep -Eq '^OPENROUTER_API_KEY=.+' .env; then
+            echo "OPENROUTER_API_KEY is still set in the VM's .env. It was renamed to AI_API_KEY and is no longer read; rename it and set AI_BASE_URL and AI_MODEL too (values in deploy/ai-studio/.env.example), then deploy again."
+            exit 1
+          fi
           echo "$COMPOSE_B64" | base64 -d > docker-compose.yml
           echo "$OVERRIDE_B64" | base64 -d > docker-compose.override.yml
           touch .env
           { grep -vE '^(RUNTIME_IMAGE|WEB_IMAGE)=' .env || true; printf 'RUNTIME_IMAGE=%s\nWEB_IMAGE=%s\n' "$IMAGE-runtime" "$IMAGE-web"; } > .env.tmp
-          chmod --reference=.env .env.tmp && mv .env.tmp .env
+          chmod --reference=.env .env.tmp && chown --reference=.env .env.tmp && mv .env.tmp .env
           az acr login --name synergycodes
           docker compose pull
           docker compose up -d --no-build --force-recreate --remove-orphans
