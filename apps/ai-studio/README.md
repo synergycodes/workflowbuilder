@@ -11,8 +11,9 @@ Reference frontend for the Workflow Builder AI Studio product. Consumes `@workfl
 A complete, runnable AI workflow product built on top of the Workflow Builder SDK. It demonstrates:
 
 - Connecting to the reference Hono backend over HTTP + Server-Sent Events
-- AI Studio–specific node types (`ai-studio/trigger`, `ai-studio/ai-agent`, `ai-studio/decision`)
-- Live execution UI: Play/Stop controls, log panel, per-node status markers, edge highlighting, node-detail overlay
+- AI Studio–specific node types (`ai-studio/trigger`, `ai-studio/ai-agent`, `ai-studio/decision`, `ai-studio/human-decision`, `ai-studio/visualize`)
+- A run that stops for a person: `ai-studio/human-decision` parks the run (its executor returns `{ waiting: true }`) until `POST /api/executions/:id/decision` delivers a decision; the "Refund Review" template shows the loop. The node renders through its own template, keyed by the palette type in `nodeTemplates`, with one output handle per action of its `decisionRequest` that carries a port.
+- Live execution UI: Play/Stop controls, log panel, per-node status markers (including a waiting marker), edge highlighting, node-detail overlay
 
 This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothing else.
 
