@@ -3,11 +3,11 @@ import { generateText } from 'ai';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import type { AssertAuthorized, AuthVariables } from '../auth';
+import type { AssertAuthorized } from '../auth';
 import { env } from '../env';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
-import type { TenantVariables } from '../tenant';
+import type { BackendEnv } from './backend-env';
 
 const logger = backendLogger.child({ component: 'visualize-route' });
 
@@ -37,10 +37,8 @@ Rules:
   text: `Return the content as clean, readable plain text. Output ONLY the text.`,
 };
 
-export function createVisualizeRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createVisualizeRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
 
   routes.post('/adapt', async (c) => {
     await assertAuthorized(c, 'workflows:execute', { kind: 'workflows' });

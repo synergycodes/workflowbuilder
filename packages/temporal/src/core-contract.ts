@@ -19,6 +19,7 @@ import type { BaseNode } from '../../types/src/workflow-execution/execution-mode
 export {
   NodeExecutionError,
   PermanentNodeExecutionError,
+  RESOLVE_NODE_REJECTIONS,
   TransientNodeExecutionError,
   classifyNodeError,
   resolveExecutor,
@@ -45,6 +46,8 @@ export type {
 export type {
   ExecutionEventType,
   ExecutionStatus,
+  ResolveNodeRejection,
+  ResolveNodeResult,
   WorkflowEnginePort,
   WorkflowExecutionInput,
 } from './workflow/core-contract';

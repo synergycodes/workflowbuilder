@@ -10,7 +10,8 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from '../auth';
-import { type TenantContext, type TenantVariables, createTenantMiddleware } from '../tenant';
+import { type TenantContext, createTenantMiddleware } from '../tenant';
+import type { BackendEnv } from './backend-env';
 import { createWorkflowsRoutes } from './workflows';
 
 // ---- module mocks -----------------------------------------------------------
@@ -99,7 +100,7 @@ function denyAll(): AuthPort {
 // `c.var.tenant`. `tenant` is what the configured TenantContextPort resolves
 // to (null = single-tenant reference default).
 function buildAppWithTenant(port: AuthPort, tenant: TenantContext | null) {
-  const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+  const app = new Hono<BackendEnv>();
   app.use('*', createAuthMiddleware(port));
   app.use('*', createTenantMiddleware({ resolve: vi.fn(async () => tenant) }));
   app.route('/api/workflows', createWorkflowsRoutes(makeAssertAuthorized(port)));
