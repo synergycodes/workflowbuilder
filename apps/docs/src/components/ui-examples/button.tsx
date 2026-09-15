@@ -5,14 +5,8 @@ import styles from './button.module.css';
 
 import { ComponentPreview } from './component-preview';
 
-const SOLID_VARIANTS = ['primary', 'secondary', 'critical', 'success', 'warning'] as const;
-const GHOST_VARIANTS = [
-  'ghost-primary',
-  'ghost-secondary',
-  'ghost-critical',
-  'ghost-success',
-  'ghost-warning',
-] as const;
+const SOLID_VARIANTS = ['primary', 'secondary', 'critical', 'success'] as const;
+const GHOST_VARIANTS = ['ghost-primary', 'ghost-secondary', 'ghost-critical', 'ghost-success'] as const;
 
 export function ButtonExample() {
   return (

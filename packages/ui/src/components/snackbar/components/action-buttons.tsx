@@ -20,7 +20,7 @@ export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onCl
     [SnackbarType.DEFAULT]: 'primary',
     [SnackbarType.ERROR]: 'critical',
     [SnackbarType.INFO]: 'primary',
-    [SnackbarType.WARNING]: 'warning',
+    [SnackbarType.WARNING]: 'secondary',
     [SnackbarType.SUCCESS]: 'success',
   };
 
