@@ -88,8 +88,8 @@ type GetStoreDataParams = {
  * persistable payload to the host — e.g. inside a `props`-strategy
  * `onDataSave` callback or before posting to a custom backend.
  *
- * Dynamic, runtime-only values (selection, measured node sizes, computed
- * avoid-edge points, …) are stripped by default; pass
+ * Dynamic, runtime-only values (selection, measured node sizes, the dragging
+ * flag, computed avoid-edge points, …) are stripped by default; pass
  * `shouldSkipDynamicValues: false` if you specifically need the live values.
  *
  * @category Store

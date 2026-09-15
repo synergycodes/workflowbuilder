@@ -20,7 +20,6 @@ const diagram: DiagramModel = {
           icon: 'Lightning',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'research-1',
@@ -51,7 +50,6 @@ Only state things you found via search. If a claim isn't supported by a result, 
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'visualize-1',
@@ -68,7 +66,6 @@ Only state things you found via search. If a claim isn't supported by a result, 
           icon: 'Eye',
         },
         selected: false,
-        dragging: false,
       },
     ],
     edges: [
