@@ -1,0 +1,7 @@
+node_modules
+dist
+*.local
+*.tgz
+# The plugin is not on npm yet, so the worker installs it from a packed build kept in the
+# repository. This exception goes away when it ships; see worker/vendor/README.md.
+!/worker/vendor/*.tgz

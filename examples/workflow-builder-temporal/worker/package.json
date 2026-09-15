@@ -1,0 +1,28 @@
+{
+  "name": "workflow-builder-temporal-sample-worker",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "Run a diagram drawn in the Workflow Builder editor as a durable Temporal Workflow Execution.",
+  "license": "Apache-2.0",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start": "tsx src/worker.ts",
+    "start.watch": "tsx watch src/worker.ts",
+    "workflow": "tsx src/client.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@temporalio/activity": "1.23.0",
+    "@temporalio/client": "1.23.0",
+    "@temporalio/worker": "1.23.0",
+    "@workflowbuilder/temporal": "file:vendor/workflowbuilder-temporal-0.0.0.tgz"
+  },
+  "devDependencies": {
+    "@types/node": "^22.12.0",
+    "tsx": "^4.19.0",
+    "typescript": "~5.6.3"
+  }
+}
