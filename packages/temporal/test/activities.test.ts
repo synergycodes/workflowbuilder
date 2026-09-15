@@ -126,7 +126,7 @@ const failing = { id: 'a', type: 'test/echo', config: {} } as const;
 describe('executeNode — error classification', () => {
   it.each([
     ['a plain Error', new Error('boom')],
-    ['an unclassified NodeExecutionError', new NodeExecutionError('no_branch_matched', 'No branch')],
+    ['an unclassified NodeExecutionError', new NodeExecutionError('test_unclassified', 'Unclassified failure')],
   ])('rethrows %s as the very same object', async (_label, thrown) => {
     // Unclassified throws must reach the SDK's own conversion untouched.
     await expect(activitiesThrowing(thrown).executeNode(failing, context)).rejects.toBe(thrown);

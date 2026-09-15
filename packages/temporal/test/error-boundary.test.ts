@@ -128,7 +128,7 @@ describe('error classification across the activity boundary', () => {
     );
 
     expect(attempts).toBe(DEFAULT_NODE_ACTIVITY_PROFILE.retry.maximumAttempts);
-    // The deepest cause's message is what reaches node_failed, so a wrapped provider
+    // The deepest non-empty cause message is what reaches node_failed, so a wrapped provider
     // error keeps showing the provider's own text next to the code.
     expect(nodeFailedPayload(store)).toEqual({
       error: {

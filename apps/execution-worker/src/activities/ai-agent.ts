@@ -65,8 +65,7 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     return { output: { response: result.text } };
   } catch (error) {
     const failure = classifyProviderError(error);
-    // executionId joins this line to its node_failed event. The event carries the
-    // deepest cause, which for a network failure is the socket error, not this text.
+    // executionId joins this line to its node_failed event.
     const message = error instanceof Error ? error.message : String(error);
     deps.logger?.error('llm call failed', {
       workflowId: context.workflowId,

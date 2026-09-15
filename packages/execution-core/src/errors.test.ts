@@ -29,7 +29,7 @@ describe('classifyNodeError', () => {
   });
 
   it('leaves the base NodeExecutionError and a plain Error unclassified', () => {
-    expect(classifyNodeError(new NodeExecutionError('no_branch_matched', 'No branch'))).toBeUndefined();
+    expect(classifyNodeError(new NodeExecutionError('test_unclassified', 'Unclassified failure'))).toBeUndefined();
     expect(classifyNodeError(new Error('boom'))).toBeUndefined();
     expect(classifyNodeError('not an error')).toBeUndefined();
   });
@@ -119,7 +119,9 @@ describe('extractDeepestError — classification envelope', () => {
   });
 
   it('falls back to the nearest non-empty message when the deepest cause has none', () => {
-    // Node's fetch fails with a TypeError whose cause is an AggregateError with an empty message.
+    // The dangling colon is correct here, not a defect: an AggregateError crosses an
+    // adapter boundary without its entries, so a throw site that still holds them picks
+    // one itself (see connectionFailureCause in the execution worker).
     // eslint-disable-next-line unicorn/error-message -- the empty message is the shape under test
     const socket = new AggregateError([new Error('connect ECONNREFUSED ::1:11434')]);
     const provider = new Error('Cannot connect to API: ', { cause: socket });

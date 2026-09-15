@@ -91,7 +91,7 @@ function readEnvelope(error: Error): NodeErrorEnvelope | undefined {
 }
 
 /**
- * Walks the ES2022 `Error.cause` chain to the deepest cause and returns its
+ * Walks the ES2022 `Error.cause` chain and returns the deepest non-empty
  * message. Adapters that wrap activity throws (Temporal's `ActivityFailure`
  * is the canonical example) expose a generic top-level message
  * ("Activity task failed") while keeping the real reason one or two levels

@@ -12,7 +12,9 @@ export function classifyProviderError(error: unknown): unknown {
   const options = { cause: providerError };
 
   if (status === undefined) {
-    return new TransientNodeExecutionError('provider_unreachable', 'Could not reach the provider', options);
+    return new TransientNodeExecutionError('provider_unreachable', 'Could not reach the provider', {
+      cause: connectionFailureCause(providerError),
+    });
   }
   if (status === 408) {
     return new TransientNodeExecutionError('provider_unreachable', 'Provider timed out (HTTP 408)', options);
@@ -42,4 +44,16 @@ export function classifyProviderError(error: unknown): unknown {
     );
   }
   return error;
+}
+
+// A refused connection reaches the SDK as an AggregateError with no message of its
+// own — one entry per address tried — so APICallError renders it as "Cannot connect
+// to API: ". Only messages cross the activity boundary, so the entry is picked here,
+// at the throw site, while the array still exists.
+function connectionFailureCause(error: APICallError): unknown {
+  const { cause } = error;
+  if (!(cause instanceof AggregateError) || cause.message !== '') return error;
+
+  const entries: unknown[] = cause.errors;
+  return entries.find((entry) => entry instanceof Error && entry.message !== '') ?? error;
 }
