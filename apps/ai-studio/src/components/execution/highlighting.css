@@ -11,8 +11,10 @@ html[data-theme='dark'] {
 
 :root {
   --ai-studio-status-color--completed: var(--ax-txt-success-default);
+  --ai-studio-status-color--waiting: var(--ax-txt-info-default);
   --ai-studio-status-color--failed: var(--ax-txt-error-default);
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
+  --ai-studio-status-bg--waiting: color-mix(in srgb, var(--ai-studio-status-color--waiting), transparent 85%);
   --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
