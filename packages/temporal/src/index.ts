@@ -11,7 +11,7 @@ export type { CreateActivitiesOptions } from './activities';
 
 export type { ExecutionStore } from './store';
 
-export { DEFAULT_TASK_QUEUE, RUN_WORKFLOW_NAME, executionWorkflowId } from './constants';
+export { DEFAULT_TASK_QUEUE, RESOLVE_NODE_UPDATE_NAME, RUN_WORKFLOW_NAME, executionWorkflowId } from './constants';
 
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './workflow/activity-profiles';
 export type { ActivityProfile, NodeActivityProfiles } from './workflow/activity-profiles';
@@ -31,6 +31,8 @@ export type {
   NodeExecutionResult,
   NodeExecutor,
   NodeExecutorRegistry,
+  ResolveNodeRejection,
+  ResolveNodeResult,
   WaitingNodeExecution,
   WorkflowDefinition,
   WorkflowEdgeDefinition,

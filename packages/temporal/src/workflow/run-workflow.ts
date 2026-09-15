@@ -15,6 +15,7 @@ import {
   setHandler,
 } from '@temporalio/workflow';
 
+import { RESOLVE_NODE_UPDATE_NAME } from '../constants';
 import type { Activities } from './activities-interface';
 import { DEFAULT_DATABASE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import {
@@ -41,7 +42,7 @@ export type ResolveNodeUpdateInput = {
 
 // Update-not-signal and the annotation shape: see durable-pause.decision-log.md.
 export const resolveNodeUpdate: ReturnType<typeof defineUpdate<void, [ResolveNodeUpdateInput]>> =
-  defineUpdate('resolveNode');
+  defineUpdate(RESOLVE_NODE_UPDATE_NAME);
 
 export type RunWorkflowOptions = {
   nodeActivityProfiles?: NodeActivityProfiles;
@@ -55,6 +56,8 @@ export function createRunWorkflow(options: RunWorkflowOptions = {}) {
 
   return async function runWorkflow(input: WorkflowExecutionInput<BaseNode>): Promise<void> {
     // Per-instance: must stay inside the workflow function (durable-pause.decision-log.md).
+    // Keyed by node id: a node is scheduled once per run. A rerun that re-parks one needs
+    // the key to carry the attempt (follow-up: decision-attempt-in-engine).
     const waits = new Map<string, NodeWaitState>();
     const knownNodes = new Set(input.definition.nodes.map((node) => node.id));
 
