@@ -42,6 +42,7 @@ export function resolveFromValidatedProfiles(node: BaseNode, profiles: NodeActiv
     startToCloseTimeout: profile.startToCloseTimeout,
     retry: { maximumAttempts: profile.retry.maximumAttempts },
     ...(profile.taskQueue === undefined ? {} : { taskQueue: profile.taskQueue }),
+    ...(profile.heartbeatTimeout === undefined ? {} : { heartbeatTimeout: profile.heartbeatTimeout }),
   };
 
   // Not trusted from the caller: any consumer can build the workflow input. Temporal

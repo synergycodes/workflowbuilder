@@ -163,6 +163,26 @@ describe('resolveNodeActivityOptions', () => {
     });
   });
 
+  describe('heartbeatTimeout', () => {
+    it('forwards heartbeatTimeout when the profile carries one', () => {
+      const profiles: NodeActivityProfiles = {
+        'test/step': { startToCloseTimeout: '45m', retry: { maximumAttempts: 1 }, heartbeatTimeout: '5s' },
+      };
+
+      expect(resolveNodeActivityOptions(node(), profiles)).toEqual({
+        startToCloseTimeout: '45m',
+        retry: { maximumAttempts: 1 },
+        heartbeatTimeout: '5s',
+      });
+    });
+
+    it('omits the key entirely when the profile has none, not heartbeatTimeout: undefined', () => {
+      const resolved = resolveNodeActivityOptions(node(), {});
+
+      expect('heartbeatTimeout' in resolved).toBe(false);
+    });
+  });
+
   describe('summary', () => {
     it('carries the node label so Event History reads like the diagram', () => {
       const resolved = resolveNodeActivityOptions(node({ label: 'Fetch order' }), {});

@@ -131,12 +131,51 @@ describe('assertNodeActivityProfiles', () => {
           startToCloseTimeout: '10m',
           retry: { maximumAttempts: 2 },
           scheduleToCloseTimeout: '1h',
-          heartbeatTimeout: '1m',
+          scheduleToStartTimeout: '1m',
         },
       };
 
       expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
-        /has unknown keys "scheduleToCloseTimeout", "heartbeatTimeout"/,
+        /has unknown keys "scheduleToCloseTimeout", "scheduleToStartTimeout"/,
+      );
+    });
+  });
+
+  describe('heartbeatTimeout', () => {
+    it('accepts a profile with a valid heartbeatTimeout', () => {
+      const withHeartbeat = {
+        'test/step': { startToCloseTimeout: '45m', retry: { maximumAttempts: 1 }, heartbeatTimeout: '5s' },
+      };
+
+      expect(() => assertNodeActivityProfiles(withHeartbeat as unknown as NodeActivityProfiles)).not.toThrow();
+    });
+
+    it('accepts a profile with no heartbeatTimeout, unchanged from before', () => {
+      expect(() => assertNodeActivityProfiles(profiles('10m'))).not.toThrow();
+    });
+
+    it('rejects a heartbeatTimeout Temporal would not parse, naming the config path', () => {
+      const invalid = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, heartbeatTimeout: '5 seconds' },
+      };
+
+      expect(() => assertNodeActivityProfiles(invalid as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/step"\]\.heartbeatTimeout must be a number followed by ms/,
+      );
+    });
+
+    it('still rejects a genuinely unknown key alongside a valid heartbeatTimeout', () => {
+      const extra = {
+        'test/step': {
+          startToCloseTimeout: '10m',
+          retry: { maximumAttempts: 2 },
+          heartbeatTimeout: '5s',
+          scheduleToCloseTimeout: '1h',
+        },
+      };
+
+      expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
+        /has unknown key "scheduleToCloseTimeout"/,
       );
     });
   });

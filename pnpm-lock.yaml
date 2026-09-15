@@ -483,9 +483,15 @@ importers:
       '@ai-sdk/xai':
         specifier: ^3.0.132
         version: 3.0.132(zod@4.3.6)
+      '@github/copilot-sdk':
+        specifier: ^1.0.13
+        version: 1.0.13
       '@openrouter/ai-sdk-provider':
         specifier: ^2.5.0
         version: 2.8.0(ai@6.0.168(zod@4.3.6))(zod@4.3.6)
+      '@temporalio/activity':
+        specifier: 'catalog:'
+        version: 1.23.0
       '@temporalio/worker':
         specifier: 'catalog:'
         version: 1.23.0(tslib@2.8.1)
@@ -605,7 +611,7 @@ importers:
         version: 4.1.0
       i18next:
         specifier: ^24.0.0
-        version: 24.2.3(typescript@5.9.3)
+        version: 24.2.3(typescript@5.6.3)
       i18next-browser-languagedetector:
         specifier: ^8.0.0
         version: 8.0.5
@@ -626,7 +632,7 @@ importers:
         version: 19.1.0(react@19.1.0)
       react-i18next:
         specifier: ^15.0.0
-        version: 15.4.1(i18next@24.2.3(typescript@5.9.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
+        version: 15.4.1(i18next@24.2.3(typescript@5.6.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
       react-mentions-ts:
         specifier: ^5.4.7
         version: 5.4.7(class-variance-authority@0.7.1)(clsx@2.1.1)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)(tailwind-merge@3.5.0)
@@ -666,10 +672,10 @@ importers:
         version: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
       vite-plugin-dts:
         specifier: ^4.5.0
-        version: 4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
+        version: 4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
       vite-plugin-svgr:
         specifier: ^4.3.0
-        version: 4.3.0(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
+        version: 4.3.0(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4))
       vitest:
         specifier: ^3.0.4
         version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
@@ -2039,6 +2045,50 @@ packages:
   '@gerrit0/mini-shiki@3.23.0':
     resolution: {integrity: sha512-bEMORlG0cqdjVyCEuU0cDQbORWX+kYCeo0kV1lbxF5bt4r7SID2l9bqsxJEM0zndaxpOUT7riCyIVEuqq/Ynxg==}
 
+  '@github/copilot-sdk-darwin-arm64@1.0.13':
+    resolution: {integrity: sha512-AvBV5dzjNWpGwgoCnttrETnt7rLI4pTFQsRSM7GU5TK+YqShauffdMU06Bn/d+IDX2fj1Z4ThH7yl/gHCDvoNQ==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@github/copilot-sdk-darwin-x64@1.0.13':
+    resolution: {integrity: sha512-ZNQmTnHwk8bO/E514k0sFBsuCVNpFj8jMH4jeLncASQM4RRdOqYhXlYLW7H/ts7ANjdfMJjJY29NUqzEWaADOA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@github/copilot-sdk-linux-arm64@1.0.13':
+    resolution: {integrity: sha512-km1jvveDwlJbht8luFyBurz0wUxPHSzdkZRMJEJgVHYfMn03gi0gdnZ6fC6JWgkiffNZpukSxRPJmPfRobw6Aw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@github/copilot-sdk-linux-x64@1.0.13':
+    resolution: {integrity: sha512-4AbzC8Nb1dWYQ1uxbHGAh0ZAoOJeL3Ms1oe3byZLn8ENP1PfoyD8DJZUSsyXGYHxL7oLJyUqd3wyt18ifIg8iw==}
+    cpu: [x64]
+    os: [linux]
+
+  '@github/copilot-sdk-linuxmusl-arm64@1.0.13':
+    resolution: {integrity: sha512-pCUjly1nXcNpYDZNnKrglFIFejbb+QDkloilldu+0tTbSzb8gEmVsbGwpfwyZXfNQf5Je5FFjsOfQR9PXH1NDQ==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@github/copilot-sdk-linuxmusl-x64@1.0.13':
+    resolution: {integrity: sha512-y5RmqAbKSYHt+OwQdILIiiMSibXdd7/0kO7kFoTZCN2gn2eGRA8wJbXlf6KZh+yYgWSJGUL8677LDJd3WnIHbA==}
+    cpu: [x64]
+    os: [linux]
+
+  '@github/copilot-sdk-win32-arm64@1.0.13':
+    resolution: {integrity: sha512-azISXh4pEVfX0hPzu58wZTYg3tdWG4L1nNpiRa/wdBxhcovbxw+eZVkI4C6FZMx0tiNYFkqWzVTV7oKskNybcw==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@github/copilot-sdk-win32-x64@1.0.13':
+    resolution: {integrity: sha512-lvS7kMbuuxydBQxPDHCkuUwbC858Rvcz3Q3vv0mxnLKuWJ75lAcqERefqA2p4beaPdez+ifZOA5heUT0rx3GnA==}
+    cpu: [x64]
+    os: [win32]
+
+  '@github/copilot-sdk@1.0.13':
+    resolution: {integrity: sha512-/j6/tGc9HOtcupuYFloOKk0fpScdpy65EVF1LKg2Z2VQOojCGPgBGkhgVGVDaqW7UB6TV2qbQZa9rKJimJ0wWQ==}
+    engines: {node: ^20.19.0 || >=22.12.0}
+
   '@grpc/grpc-js@1.14.3':
     resolution: {integrity: sha512-Iq8QQQ/7X3Sac15oB6p0FmUg/klxQvXLeileoqrTRGJYLV+/9tubbr9ipz0GKHjmXVsgFPo/+W+2cA8eNcR+XA==}
     engines: {node: '>=12.10.0'}
@@ -2401,6 +2451,106 @@ packages:
     engines: {node: '>=10.0'}
     peerDependencies:
       tslib: '2'
+
+  '@koromix/koffi-android-arm64@3.3.0':
+    resolution: {integrity: sha512-lHXE2mq+uG6CVeX1iepn2ATcAWMZPagr+J0ICYge7wTMDYc5pPRQMq0Rr/16775i6QlUqQqpk8c5Gu66+u3gGA==}
+    cpu: [arm64]
+    os: [android]
+
+  '@koromix/koffi-android-x64@3.3.0':
+    resolution: {integrity: sha512-7EeVK/KS9XNbOsUfy0B3uuSjPQZenjJ35y9QSi6R6eK4Fv0oGvREQaBzIJRJwonxp7sJfGObnwnQTnKTVK2DWA==}
+    cpu: [x64]
+    os: [android]
+
+  '@koromix/koffi-darwin-arm64@3.3.0':
+    resolution: {integrity: sha512-2R9bihYmYFyRP98wRG2m5WQVKMONf7DoPJI8RkGCOUB2afOXJEVXFepiSKxBZGPml8i1USwAxMUwkzbJ5uMG1A==}
+    cpu: [arm64]
+    os: [darwin]
+
+  '@koromix/koffi-darwin-x64@3.3.0':
+    resolution: {integrity: sha512-OecYCQfzhUx+XyAtatIHlk0jIz87wKNjtYvwlwgMwgaGQwO/TxFeReNo+s3167Rh1a9c8rUIOjq1jfzAPBxbKA==}
+    cpu: [x64]
+    os: [darwin]
+
+  '@koromix/koffi-freebsd-arm64@3.3.0':
+    resolution: {integrity: sha512-6ytHzV1DuyxTP5LtFmQ3imBk71j/F/Nb0Hcwhjcn35esnknm5rQbgRl6tNRldrkGnM4GIAJpsagooUBh1xAzYg==}
+    cpu: [arm64]
+    os: [freebsd]
+
+  '@koromix/koffi-freebsd-ia32@3.3.0':
+    resolution: {integrity: sha512-hINo5z1Iz2u3Rx3oHfzcmi5A03gYAoYf4nCJJYaY0bb5IuGdIC7noQTyyI9YxfyTJgoqw3wKFWWYtvsAmEo9Hw==}
+    cpu: [ia32]
+    os: [freebsd]
+
+  '@koromix/koffi-freebsd-x64@3.3.0':
+    resolution: {integrity: sha512-7XQYAZh828nW6+y3IdyUNdo2VbVHL5ZC8Qb+yqHrlDjTjVXSyGYZJHAyJZ5c7eSTTKBhtIMTX238rIsdexxrog==}
+    cpu: [x64]
+    os: [freebsd]
+
+  '@koromix/koffi-linux-arm64@3.3.0':
+    resolution: {integrity: sha512-Eo/+wGeawGICzJkUlkzi/KerAJ6U1L/Hf7cnJKH7aGgCOY5RRnjUqXs/eL+UDpRcFHzGeUn+Fq+8q2VxYxvAfw==}
+    cpu: [arm64]
+    os: [linux]
+
+  '@koromix/koffi-linux-arm@3.3.0':
+    resolution: {integrity: sha512-NbahRKKKFkHoFN/ZpLY+w4F6eYSqV4KMN40PmjZ1xQjG/XjYb6PIYgE41c7/acAPxOYqujrcaI3B4BAgWYm5/A==}
+    cpu: [arm]
+    os: [linux]
+
+  '@koromix/koffi-linux-ia32@3.3.0':
+    resolution: {integrity: sha512-u9tKuj42RFWJU8ZgZqcBhkFCkIZE/SE6oR1ljpukttJUhOVuaf/lmsWxyOxiVu3U8T1gtD658FlLgrbMVIn6aQ==}
+    cpu: [ia32]
+    os: [linux]
+
+  '@koromix/koffi-linux-loong64@3.3.0':
+    resolution: {integrity: sha512-2hKlNZ6OXkTUp6fcueZcP0sQ6yhpdfANg9/mWxDKzT1o8qIj4qJD7UcZLCcRIC8JXiP8JQwZBtlPuyXIqofDQg==}
+    cpu: [loong64]
+    os: [linux]
+
+  '@koromix/koffi-linux-ppc64@3.3.0':
+    resolution: {integrity: sha512-bIVAoHgzyRN7xs529BK7rF3BbZUTJgIr0t/wvBvAgaIpreKsdZ/QWxhedKRbTN7ljlDHkPZFmu5XcCjb/vqUag==}
+    cpu: [ppc64]
+    os: [linux]
+
+  '@koromix/koffi-linux-riscv64@3.3.0':
+    resolution: {integrity: sha512-2niYAe+TBXbvf7yog/aiHiDUrKQn+RkMSH5x3ZYo65OQyII1CY3Jk2kP3Pe735gq0LzIYJsDuGMW+02ighSadQ==}
+    cpu: [riscv64]
+    os: [linux]
+
+  '@koromix/koffi-linux-x64@3.3.0':
+    resolution: {integrity: sha512-apU8ZMOrOh1eqMP/Pp0sDZ/WY6A4r6JWph26h63VM9nZ+5KCTYuPgojfoLPNvrfI/bn1PY3+bpXKRhZHI3gxbQ==}
+    cpu: [x64]
+    os: [linux]
+
+  '@koromix/koffi-openbsd-arm64@3.3.0':
+    resolution: {integrity: sha512-iTyHMCSSs+X579sWJv7XVFMp9gOfROI8IUEwp09YxJpGvmiSoipI0J7kytFuFq6dyuwO0Ymy4JdlmKnCM0qkxg==}
+    cpu: [arm64]
+    os: [openbsd]
+
+  '@koromix/koffi-openbsd-ia32@3.3.0':
+    resolution: {integrity: sha512-xCvMV+4VNHjTxgVPEsBzU0k8dlA7aoFO5QjRF9lVU/NzGhUedlYvFgaF6IWsGOoWEaNt9hgP4KK/wxMbm9v8EQ==}
+    cpu: [ia32]
+    os: [openbsd]
+
+  '@koromix/koffi-openbsd-x64@3.3.0':
+    resolution: {integrity: sha512-xItIwx1elM8k1pTudEfuV/1U2gQ06+rFfxCVXrZkyWYYGTzmA5To00f8garJFR+E9gbjQJbn8QDFvWMI+i2sMA==}
+    cpu: [x64]
+    os: [openbsd]
+
+  '@koromix/koffi-win32-arm64@3.3.0':
+    resolution: {integrity: sha512-fD41LgKBx5i1YlJDuds4tRHAaG5vV55tvagzJwKFDR/5BDeaFvH9QFMUMDoNl2LkmVyeug0dIElHr/oxejh3IA==}
+    cpu: [arm64]
+    os: [win32]
+
+  '@koromix/koffi-win32-ia32@3.3.0':
+    resolution: {integrity: sha512-BfDbDVEuQwPZOvWXawc3JT/7i9cN7QHYotgo014jjXb9pNv46Ykhb0RRglkcHg+SdytW/7pxYn18YwcQP6LLvQ==}
+    cpu: [ia32]
+    os: [win32]
+
+  '@koromix/koffi-win32-x64@3.3.0':
+    resolution: {integrity: sha512-D+ORp73rTmvGVfq01+4uBmgVZqrPqU9N9xCZCfexaCDlVk0WQsaqid1dGsi6eScJuHt4Cp8s1i5/4CsecxFTKQ==}
+    cpu: [x64]
+    os: [win32]
 
   '@manypkg/find-root@1.1.0':
     resolution: {integrity: sha512-mki5uBvhHzO8kYYix/WRy2WX8S3B5wdVSc9D6KcU5lQNglP2yt58/VfLuAK49glRXChosY8ap2oJ1qgma3GUVA==}
@@ -5874,6 +6024,9 @@ packages:
       '@types/node': '>=18'
       typescript: '>=5.0.4'
 
+  koffi@3.3.0:
+    resolution: {integrity: sha512-UeyQtptuPeCP0BqKD+Q8ftTQhIUBHO7bXyK9DVIaW9hJSg0BrICm4K5N8Qtn7zKk20sb5vpnES9KBqVksM2kpQ==}
+
   kolorist@1.8.0:
     resolution: {integrity: sha512-Y+60/zizpJ3HRH8DCss+q95yr6145JXZo46OTpFvDZWLfRCE4qChOyk1b26nMaNpfHHgxagk9dXT5OP0Tfe+dQ==}
 
@@ -8183,6 +8336,10 @@ packages:
     resolution: {integrity: sha512-C+r0eKJUIfiDIfwJhria30+TYWPtuHJXHtI7J0YlOmKAo7ogxP20T0zxB7HZQIFhIyvoBPwWskjxrvAtfjyZfA==}
     engines: {node: '>=14.0.0'}
 
+  vscode-jsonrpc@8.2.1:
+    resolution: {integrity: sha512-kdjOSJ2lLIn7r1rtrMbbNCHjyMPfRnowdKjBQ+mGq6NAW5QY2bEZC/khaC5OR8svbbjvLEaIXkOq45e2X9BIbQ==}
+    engines: {node: '>=14.0.0'}
+
   vscode-languageserver-protocol@3.17.5:
     resolution: {integrity: sha512-mb1bvRJN8SVznADSGWM9u/b07H7Ecg0I3OgXDuLdn307rl/J3A9YD6/eYOssqhecL27hK1IPZAsaqh00i/Jljg==}
 
@@ -9782,6 +9939,45 @@ snapshots:
       '@shikijs/types': 3.23.0
       '@shikijs/vscode-textmate': 10.0.2
 
+  '@github/copilot-sdk-darwin-arm64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-darwin-x64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-linux-arm64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-linux-x64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-linuxmusl-arm64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-linuxmusl-x64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-win32-arm64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk-win32-x64@1.0.13':
+    optional: true
+
+  '@github/copilot-sdk@1.0.13':
+    dependencies:
+      koffi: 3.3.0
+      vscode-jsonrpc: 8.2.1
+      zod: 4.3.6
+    optionalDependencies:
+      '@github/copilot-sdk-darwin-arm64': 1.0.13
+      '@github/copilot-sdk-darwin-x64': 1.0.13
+      '@github/copilot-sdk-linux-arm64': 1.0.13
+      '@github/copilot-sdk-linux-x64': 1.0.13
+      '@github/copilot-sdk-linuxmusl-arm64': 1.0.13
+      '@github/copilot-sdk-linuxmusl-x64': 1.0.13
+      '@github/copilot-sdk-win32-arm64': 1.0.13
+      '@github/copilot-sdk-win32-x64': 1.0.13
+
   '@grpc/grpc-js@1.14.3':
     dependencies:
       '@grpc/proto-loader': 0.8.0
@@ -10143,6 +10339,66 @@ snapshots:
       '@jsonjoy.com/buffers': 17.67.0(tslib@2.8.1)
       '@jsonjoy.com/codegen': 17.67.0(tslib@2.8.1)
       tslib: 2.8.1
+
+  '@koromix/koffi-android-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-android-x64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-darwin-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-darwin-x64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-freebsd-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-freebsd-ia32@3.3.0':
+    optional: true
+
+  '@koromix/koffi-freebsd-x64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-arm@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-ia32@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-loong64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-ppc64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-riscv64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-linux-x64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-openbsd-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-openbsd-ia32@3.3.0':
+    optional: true
+
+  '@koromix/koffi-openbsd-x64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-win32-arm64@3.3.0':
+    optional: true
+
+  '@koromix/koffi-win32-ia32@3.3.0':
+    optional: true
+
+  '@koromix/koffi-win32-x64@3.3.0':
+    optional: true
 
   '@manypkg/find-root@1.1.0':
     dependencies:
@@ -10605,6 +10861,17 @@ snapshots:
       '@svgr/babel-plugin-transform-react-native-svg': 8.1.0(@babel/core@7.26.7)
       '@svgr/babel-plugin-transform-svg-component': 8.0.0(@babel/core@7.26.7)
 
+  '@svgr/core@8.1.0(typescript@5.6.3)':
+    dependencies:
+      '@babel/core': 7.26.7
+      '@svgr/babel-preset': 8.1.0(@babel/core@7.26.7)
+      camelcase: 6.3.0
+      cosmiconfig: 8.3.6(typescript@5.6.3)
+      snake-case: 3.0.4
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
   '@svgr/core@8.1.0(typescript@5.9.3)':
     dependencies:
       '@babel/core': 7.26.7
@@ -10620,6 +10887,16 @@ snapshots:
     dependencies:
       '@babel/types': 7.29.0
       entities: 4.5.0
+
+  '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.6.3))':
+    dependencies:
+      '@babel/core': 7.26.7
+      '@svgr/babel-preset': 8.1.0(@babel/core@7.26.7)
+      '@svgr/core': 8.1.0(typescript@5.6.3)
+      '@svgr/hast-util-to-babel-ast': 8.0.0
+      svg-parser: 2.0.4
+    transitivePeerDependencies:
+      - supports-color
 
   '@svgr/plugin-jsx@8.1.0(@svgr/core@8.1.0(typescript@5.9.3))':
     dependencies:
@@ -11388,19 +11665,6 @@ snapshots:
       path-browserify: 1.0.1
     optionalDependencies:
       typescript: 5.6.3
-
-  '@vue/language-core@2.2.0(typescript@5.9.3)':
-    dependencies:
-      '@volar/language-core': 2.4.28
-      '@vue/compiler-dom': 3.5.33
-      '@vue/compiler-vue2': 2.7.16
-      '@vue/shared': 3.5.33
-      alien-signals: 0.4.14
-      minimatch: 9.0.5
-      muggle-string: 0.4.1
-      path-browserify: 1.0.1
-    optionalDependencies:
-      typescript: 5.9.3
 
   '@vue/shared@3.5.33': {}
 
@@ -12256,6 +12520,15 @@ snapshots:
       '@types/node': 22.12.0
       cosmiconfig: 9.0.1(typescript@5.6.3)
       jiti: 2.6.1
+      typescript: 5.6.3
+
+  cosmiconfig@8.3.6(typescript@5.6.3):
+    dependencies:
+      import-fresh: 3.3.0
+      js-yaml: 4.1.0
+      parse-json: 5.2.0
+      path-type: 4.0.0
+    optionalDependencies:
       typescript: 5.6.3
 
   cosmiconfig@8.3.6(typescript@5.9.3):
@@ -13826,6 +14099,12 @@ snapshots:
     dependencies:
       '@babel/runtime': 7.29.7
 
+  i18next@24.2.3(typescript@5.6.3):
+    dependencies:
+      '@babel/runtime': 7.27.0
+    optionalDependencies:
+      typescript: 5.6.3
+
   i18next@24.2.3(typescript@5.9.3):
     dependencies:
       '@babel/runtime': 7.27.0
@@ -14272,6 +14551,29 @@ snapshots:
       typescript: 5.6.3
       zod: 3.23.8
       zod-validation-error: 3.4.1(zod@3.23.8)
+
+  koffi@3.3.0:
+    optionalDependencies:
+      '@koromix/koffi-android-arm64': 3.3.0
+      '@koromix/koffi-android-x64': 3.3.0
+      '@koromix/koffi-darwin-arm64': 3.3.0
+      '@koromix/koffi-darwin-x64': 3.3.0
+      '@koromix/koffi-freebsd-arm64': 3.3.0
+      '@koromix/koffi-freebsd-ia32': 3.3.0
+      '@koromix/koffi-freebsd-x64': 3.3.0
+      '@koromix/koffi-linux-arm': 3.3.0
+      '@koromix/koffi-linux-arm64': 3.3.0
+      '@koromix/koffi-linux-ia32': 3.3.0
+      '@koromix/koffi-linux-loong64': 3.3.0
+      '@koromix/koffi-linux-ppc64': 3.3.0
+      '@koromix/koffi-linux-riscv64': 3.3.0
+      '@koromix/koffi-linux-x64': 3.3.0
+      '@koromix/koffi-openbsd-arm64': 3.3.0
+      '@koromix/koffi-openbsd-ia32': 3.3.0
+      '@koromix/koffi-openbsd-x64': 3.3.0
+      '@koromix/koffi-win32-arm64': 3.3.0
+      '@koromix/koffi-win32-ia32': 3.3.0
+      '@koromix/koffi-win32-x64': 3.3.0
 
   kolorist@1.8.0: {}
 
@@ -15579,6 +15881,15 @@ snapshots:
     dependencies:
       react: 19.1.0
       scheduler: 0.26.0
+
+  react-i18next@15.4.1(i18next@24.2.3(typescript@5.6.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
+    dependencies:
+      '@babel/runtime': 7.27.0
+      html-parse-stringify: 3.0.1
+      i18next: 24.2.3(typescript@5.6.3)
+      react: 19.1.0
+    optionalDependencies:
+      react-dom: 19.1.0(react@19.1.0)
 
   react-i18next@15.4.1(i18next@24.2.3(typescript@5.9.3))(react-dom@19.1.0(react@19.1.0))(react@19.1.0):
     dependencies:
@@ -16955,25 +17266,6 @@ snapshots:
       - rollup
       - supports-color
 
-  vite-plugin-dts@4.5.4(@types/node@22.12.0)(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
-    dependencies:
-      '@microsoft/api-extractor': 7.58.7(@types/node@22.12.0)
-      '@rollup/pluginutils': 5.3.0(rollup@4.57.1)
-      '@volar/typescript': 2.4.28
-      '@vue/language-core': 2.2.0(typescript@5.9.3)
-      compare-versions: 6.1.1
-      debug: 4.4.3
-      kolorist: 1.8.0
-      local-pkg: 1.1.2
-      magic-string: 0.30.21
-      typescript: 5.9.3
-    optionalDependencies:
-      vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
-    transitivePeerDependencies:
-      - '@types/node'
-      - rollup
-      - supports-color
-
   vite-plugin-lib-inject-css@2.2.2(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
       '@ast-grep/napi': 0.36.3
@@ -16989,6 +17281,17 @@ snapshots:
       p-map: 7.0.4
       picocolors: 1.1.1
       vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
+
+  vite-plugin-svgr@4.3.0(rollup@4.57.1)(typescript@5.6.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
+    dependencies:
+      '@rollup/pluginutils': 5.3.0(rollup@4.57.1)
+      '@svgr/core': 8.1.0(typescript@5.6.3)
+      '@svgr/plugin-jsx': 8.1.0(@svgr/core@8.1.0(typescript@5.6.3))
+      vite: 6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
+    transitivePeerDependencies:
+      - rollup
+      - supports-color
+      - typescript
 
   vite-plugin-svgr@4.3.0(rollup@4.57.1)(typescript@5.9.3)(vite@6.4.1(@types/node@22.12.0)(jiti@2.6.1)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)):
     dependencies:
@@ -17142,6 +17445,8 @@ snapshots:
       vscode-uri: 3.1.0
 
   vscode-jsonrpc@8.2.0: {}
+
+  vscode-jsonrpc@8.2.1: {}
 
   vscode-languageserver-protocol@3.17.5:
     dependencies:

@@ -62,6 +62,36 @@ unset (`apps/execution-worker/src/model-provider.ts`). `provider` accepts free t
 not yet in this table — that currently fails at execution with a clear error until support (a
 table row plus its `@ai-sdk/<x>` dependency) is added.
 
+## `ai-studio/agent-harness` node
+
+Delegates a workflow step to an external autonomous coding-agent CLI (v1: GitHub Copilot
+only), as opposed to `ai-studio/ai-agent`'s single bounded LLM call. It is longer-running
+(minutes, not seconds), side-effecting (may write files in a working directory), and
+shells out to an external CLI/SDK rather than calling a model API directly. See
+[`src/agent-harness/README.md`](./src/agent-harness/README.md) for the provider
+architecture (ported from [coleam00/Archon](https://github.com/coleam00/Archon), MIT).
+
+**Env vars** (both optional):
+
+| Var                    | Purpose                                               | Default                                                    |
+| ---------------------- | ----------------------------------------------------- | ---------------------------------------------------------- |
+| `COPILOT_GITHUB_TOKEN` | GitHub token used to authenticate the `copilot` CLI   | Falls back to the ambient `copilot login` session if unset |
+| `COPILOT_CLI_PATH`     | Overrides binary resolution (skips the `PATH` lookup) | Resolved via `PATH`                                        |
+
+**Activity profile** (`'ai-studio/agent-harness'` in `engines/temporal/worker.ts`):
+
+| Field                   | Value   | Why                                                                                                                            |
+| ----------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| `startToCloseTimeout`   | `'45m'` | The CLI can run a genuinely long agentic task.                                                                                 |
+| `retry.maximumAttempts` | `1`     | Zero automatic retries — this is a side-effecting node; retrying it could re-run mutations.                                    |
+| `heartbeatTimeout`      | `'5s'`  | Without heartbeating, Temporal cancellation is not detected promptly (see `packages/temporal/README.md` § "heartbeatTimeout"). |
+
+**Operational constraints:**
+
+- No retries. A failed run is a failed run; re-triggering the workflow is the user's decision, not the platform's.
+- Cancellation is handled by the SDK, not a manual process-group kill: the activity aborts the run via the Copilot SDK's own `session.abort()`/`client.stop()`, which cleanly terminates the underlying subprocess tree. This was verified empirically (zero orphaned `copilot` processes across repeated cancellation tests) — no `spawn(detached)+process.kill(-pid)` workaround was needed, unlike Archon's own implementation which targets a different (Bun-compiled) binary shape.
+- **`idle_timeout` is in milliseconds, not seconds.** A value of `300` means 300ms, not 5 minutes — for 5 minutes, set `idle_timeout: 300000`. This has bitten someone during E2E testing already (a `300` intended as "5 minutes" produced an almost-instant timeout); the UI label ("Idle timeout (ms)") is correct, but easy to misread under time pressure.
+
 ## Structure
 
 ```
