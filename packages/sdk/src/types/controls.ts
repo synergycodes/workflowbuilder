@@ -1,13 +1,15 @@
 import type { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
 import type { InputProps, TextAreaProps } from '@workflowbuilder/ui';
 
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import type { ComparisonOperator, LogicalOperator } from '../features/variables/constants';
 import type { FieldSchema } from '../node/node-schema';
 import type { UISchemaRule } from './rules';
 import type { UISchemaControlElement } from './uischema';
 import type { Override } from './utils';
 
-type ControlProps<D, T extends UISchemaControlElement> = Override<
+export type WBControlProps<D, T extends UISchemaControlElement> = Override<
   BaseControlProps,
   {
     data: D;
@@ -23,7 +25,7 @@ export type TextControlElement = Override<
     inputType?: string;
   } & Pick<InputProps, 'placeholder'>
 >;
-export type TextControlProps = ControlProps<string, TextControlElement>;
+export type TextControlProps = WBControlProps<string, TextControlElement>;
 
 export type SwitchControlElement = Override<
   BaseControlElement,
@@ -31,7 +33,7 @@ export type SwitchControlElement = Override<
     type: 'Switch';
   }
 >;
-export type SwitchControlProps = ControlProps<boolean, SwitchControlElement>;
+export type SwitchControlProps = WBControlProps<boolean, SwitchControlElement>;
 
 export type TextAreaControlElement = Override<
   BaseControlElement,
@@ -39,7 +41,7 @@ export type TextAreaControlElement = Override<
     type: 'TextArea';
   } & Pick<TextAreaProps, 'placeholder' | 'minRows' | 'maxRows'>
 >;
-export type TextAreaControlProps = ControlProps<string, TextAreaControlElement>;
+export type TextAreaControlProps = WBControlProps<string, TextAreaControlElement>;
 
 /**
  * One row in a dynamic-conditions control — two operands (`x`, `y`), a
@@ -72,7 +74,7 @@ export type DynamicConditionsControlElement = Override<
   }
 >;
 
-export type DynamicConditionsControlProps = ControlProps<DynamicCondition[], DynamicConditionsControlElement>;
+export type DynamicConditionsControlProps = WBControlProps<DynamicCondition[], DynamicConditionsControlElement>;
 
 export type DecisionBranchesControlElement = Override<
   BaseControlElement,
@@ -81,7 +83,7 @@ export type DecisionBranchesControlElement = Override<
   }
 >;
 
-export type DecisionBranchesControlProps = ControlProps<DecisionBranch[], DecisionBranchesControlElement>;
+export type DecisionBranchesControlProps = WBControlProps<DecisionBranch[], DecisionBranchesControlElement>;
 
 export type SelectControlElement = Override<
   BaseControlElement,
@@ -89,7 +91,7 @@ export type SelectControlElement = Override<
     type: 'Select';
   }
 >;
-export type SelectControlProps = ControlProps<string, SelectControlElement>;
+export type SelectControlProps = WBControlProps<string, SelectControlElement>;
 
 export type DatePickerControlElement = Override<
   BaseControlElement,
@@ -97,7 +99,7 @@ export type DatePickerControlElement = Override<
     type: 'DatePicker';
   }
 >;
-export type DatePickerControlProps = ControlProps<Date, DatePickerControlElement>;
+export type DatePickerControlProps = WBControlProps<Date, DatePickerControlElement>;
 
 export type BaseControlProps = Override<
   JsonFormsControlProps,
@@ -117,17 +119,19 @@ export type VariableTextControlElement = Override<
   BaseControlElement,
   {
     type: 'VariableText';
+    variablesTypes?: VariableType[];
   } & Pick<InputProps, 'placeholder'>
 >;
-export type VariableTextControlProps = ControlProps<string, VariableTextControlElement>;
+export type VariableTextControlProps = WBControlProps<string, VariableTextControlElement>;
 
 export type VariableTextAreaControlElement = Override<
   BaseControlElement,
   {
     type: 'VariableTextArea';
+    variablesTypes?: VariableType[];
   } & Pick<TextAreaProps, 'placeholder' | 'minRows'>
 >;
-export type VariableTextAreaControlProps = ControlProps<string, VariableTextAreaControlElement>;
+export type VariableTextAreaControlProps = WBControlProps<string, VariableTextAreaControlElement>;
 
 export type MessageOnErrorControlElement = Override<
   BaseControlElement,
@@ -138,9 +142,9 @@ export type MessageOnErrorControlElement = Override<
     variant?: 'info' | 'warning' | 'error';
   }
 >;
-export type MessageOnErrorProps = ControlProps<string, MessageOnErrorControlElement>;
+export type MessageOnErrorProps = WBControlProps<string, MessageOnErrorControlElement>;
 
-type BaseControlElement = Override<ControlElement, { rule?: UISchemaRule; disabled?: boolean }>;
+export type BaseControlElement = Override<ControlElement, { rule?: UISchemaRule; disabled?: boolean }>;
 
 // Re-exported for use in NodeDataProperties-based types
 

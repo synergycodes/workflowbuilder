@@ -1,46 +1,59 @@
-import { NavButton } from '@workflowbuilder/ui';
+import { NavButton, Tooltip } from '@workflowbuilder/ui';
+import clsx from 'clsx';
 import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
+import type { VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
 
 import styles from './dynamic-typed-variable-or-input.module.css';
 
-import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
-import { getIsSingleVariable } from '../../actions/get-is-single-variable';
+import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
+import { getIsStringVariableReference } from '../../utils/keys/get-is-string-variable-reference';
 import { DynamicTypedInput } from '../dynamic-typed-input/dynamic-typed-input';
 import { VariableSelect } from '../variable-select/variable-select';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
 
-type DynamicTypedVariableOrInput = {
+type Props = {
   className?: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   value?: string;
   type?: VariableTypePrimitive;
+  placeholder?: string;
   isError?: boolean;
   isDisabled?: boolean;
   suggestionGroups: VariableSuggestionGroup[];
 };
 
+type DynamicControlType = 'manual' | 'variable';
+
 export function DynamicTypedVariableOrInput({
   className,
   value = '',
   onChange,
+  onBlur,
+  placeholder,
   isError,
   type,
   isDisabled,
   suggestionGroups = [],
-}: DynamicTypedVariableOrInput) {
+}: Props) {
   const { t } = useTranslation();
-  const [mode, setMode] = useState<'manual' | 'variable'>(getIsSingleVariable(value) ? 'variable' : 'manual');
+  const translateIfPossible = useTranslateIfPossible();
+  const [mode, setMode] = useState<DynamicControlType>(getIsStringVariableReference(value) ? 'variable' : 'manual');
 
   const handleToggleMode = useCallback(() => {
+    const newMode = mode === 'variable' ? 'manual' : 'variable';
+    setMode(newMode);
+
     onChange('');
-    setMode((previous) => {
-      return previous === 'variable' ? 'manual' : 'variable';
-    });
-  }, [onChange]);
+
+    if (onBlur) {
+      onBlur('');
+    }
+  }, [mode, onBlur, onChange]);
 
   const suggestionGroupsForType = useMemo(() => {
     if (!type) {
@@ -56,11 +69,17 @@ export function DynamicTypedVariableOrInput({
         className={className}
         value={value}
         onChange={onChange}
+        onBlur={onBlur}
         variant="text"
         suggestionGroups={suggestionGroupsForType}
         hasError={isError}
         endAdornment={
-          <NavButton className={styles['button-toggle']} tooltip={t('variables.typeValue')} onClick={handleToggleMode}>
+          <NavButton
+            className={clsx(styles['button-toggle'], 'right-adornment')}
+            tooltip={t('variables.typeValue')}
+            onClick={handleToggleMode}
+            disabled={isDisabled}
+          >
             <Icon name="PencilSimple" />
           </NavButton>
         }
@@ -70,9 +89,11 @@ export function DynamicTypedVariableOrInput({
 
   return (
     <DynamicTypedInput
-      className={className}
+      className={clsx(styles['container'], className)}
       onChange={onChange}
+      onBlur={onBlur}
       value={value}
+      placeholder={translateIfPossible(placeholder)}
       isError={isError}
       type={type}
       disabled={isDisabled}
@@ -80,11 +101,16 @@ export function DynamicTypedVariableOrInput({
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
           <NavButton
-            className={styles['button-toggle']}
-            tooltip={t('variables.pickVariable')}
+            className={clsx(styles['button-toggle'], 'right-adornment')}
             onClick={handleToggleMode}
+            disabled={isDisabled}
           >
-            <Icon name="BracketsCurly" />
+            <Tooltip>
+              <Tooltip.Trigger>
+                <Icon name="BracketsCurly" />
+              </Tooltip.Trigger>
+              <Tooltip.Content>{t('variables.pickVariable')}</Tooltip.Content>
+            </Tooltip>
           </NavButton>
         ) : undefined
       }

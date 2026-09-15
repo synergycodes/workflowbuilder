@@ -102,6 +102,9 @@ export const pl = {
     variableNotFound: 'Nie znaleziono zmiennej.',
     removeVariableWarning: 'Usunięcie tej zmiennej trwale usunie jej konfigurację.',
     removeVariableIsBlocked: 'Ta zmienna jest używana w następujących węzłach i nie może zostać usunięta.',
+    addVariableToContinue: 'Dodaj zmienną aby kontynuować',
+    missingMentionNodePrefix: 'Brak węzła',
+    missingMentionNodeVariablePrefix: 'Brak zmiennej',
   },
   loader: {
     text: 'Ładowanie...',
@@ -145,7 +148,10 @@ export const pl = {
     wrongDiagramFormat: 'Nieprawidłowy format diagramu',
     contentCopied: 'Treść skopiowana do schowka',
     variablesListIsEmpty: 'Lista dostępnych zmiennych jest pusta.',
+    variableNameAlreadyExists: 'Zmienna o tej nazwie już istnieje.',
+    variableWasNotFound: 'Nie znaleziono tej zmiennej.',
     cantEditReadOnlyMode: 'Edycja jest zablokowana w trybie tylko do odczytu.',
+    notValidConnection: 'To połączenie jest zablokowane.',
   },
   aiTools: {
     title: 'Narzędzia agenta AI',
