@@ -19,7 +19,7 @@ import {
   type WorkflowExecutionInput,
   executionWorkflowId,
 } from '../src/index';
-import { type RecordingStore, createRecordingStore } from './fixtures/graph';
+import { type RecordingStore, createRecordingStore } from './fixtures/recording-store';
 
 type BoundaryNode = (BaseNode & { type: 'test/step' }) | (BaseNode & { type: 'test/fail' });
 
