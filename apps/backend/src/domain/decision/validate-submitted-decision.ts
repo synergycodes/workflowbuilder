@@ -9,9 +9,8 @@ import type {
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 
-// The shape of what the decider sent. The caller parses a body with this before calling
-// `validateSubmittedDecision`, which assumes the shape and checks only the rules.
-// Provisional: the decision endpoint owns the public request shape and may rename fields.
+// Parsed at the endpoint, which extends it with `nodeId` and `attempt`, before
+// `validateSubmittedDecision` checks the rules on the parsed shape.
 export const submittedDecisionSchema = z.object({
   action: z.string(),
   edits: z.record(z.string(), z.unknown()).optional(),
@@ -120,7 +119,12 @@ export function validateSubmittedDecision(
     return refuse('comment_required', action.name, ['comment']);
   }
 
+  // Before the walk, so the refusal names the edits and not one field.
   const edits = submitted.edits ?? {};
+  if (action.effect !== 'resume' && Object.keys(edits).length > 0) {
+    return refuse('edits_not_allowed', action.name, ['edits']);
+  }
+
   const refused = validateEdits(request.schema, edits, ['edits']);
   if (refused !== undefined) return refused;
 

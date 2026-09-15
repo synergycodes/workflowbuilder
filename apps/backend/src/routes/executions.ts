@@ -8,7 +8,7 @@ import {
   type TerminalExecutionEventType,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
-import type { AssertAuthorized, AuthVariables } from '../auth';
+import type { AssertAuthorized } from '../auth';
 import { database } from '../db/client';
 import { executions } from '../db/schema';
 import { getWorkflowEngine } from '../engine';
@@ -17,16 +17,14 @@ import { subscribe } from '../events/execution-event-bus';
 import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events-after';
 import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
-import type { TenantVariables } from '../tenant';
+import type { BackendEnv } from './backend-env';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
 const TERMINAL_STATUSES = new Set<string>(TERMINAL_EXECUTION_STATUSES);
 
-export function createExecutionsRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
 
   routes.get('/:id', async (c) => {
     const executionId = c.req.param('id');

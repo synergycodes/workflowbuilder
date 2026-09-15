@@ -2,14 +2,14 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import type { AssertAuthorized, AuthVariables } from '../auth';
+import type { AssertAuthorized } from '../auth';
 import { database } from '../db/client';
 import { executions, workflows } from '../db/schema';
 import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
 import { getWorkflowEngine } from '../engine';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
-import type { TenantVariables } from '../tenant';
+import type { BackendEnv } from './backend-env';
 import { formatValidationDetails, parseSnapshot } from './snapshot-validation';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
@@ -28,10 +28,8 @@ const executeSchema = z.object({
   triggerPayload: z.record(z.string(), z.unknown()).optional(),
 });
 
-export function createWorkflowsRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
 
   routes.post('/', async (c) => {
     await assertAuthorized(c, 'workflows:create', { kind: 'workflows' });
