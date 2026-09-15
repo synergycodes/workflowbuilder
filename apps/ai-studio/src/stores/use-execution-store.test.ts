@@ -77,16 +77,39 @@ describe('use-execution-store: a node waiting for a person', () => {
     expect(nodeState('human-1')).toEqual({ status: 'waiting' });
   });
 
-  it('a snapshot whose status write was skipped still shows the run waiting, because the events say so', () => {
+  it('a snapshot whose row still says pending shows the run waiting, because the events say so', () => {
     const events = [
       event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
       event({ type: 'node_started', nodeId: 'human-1' }),
       event({ type: 'node_waiting', nodeId: 'human-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'running', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
 
     expect(useExecutionStore.getState().status).toBe('waiting');
+  });
+
+  it('a snapshot of a run that already resolved its wait shows running, whatever the row says', () => {
+    const events = [
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'node_waiting', nodeId: 'human-1' }),
+      event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }),
+      event({ type: 'node_started', nodeId: 'send-1' }),
+    ];
+
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
+
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it('node_waiting delivered twice for one node does not drift the run status', () => {
+    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    expect(useExecutionStore.getState().status).toBe('waiting');
+
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(useExecutionStore.getState().status).toBe('running');
   });
 
   it('a snapshot replayed after a reload rebuilds the waiting node and the run status', () => {

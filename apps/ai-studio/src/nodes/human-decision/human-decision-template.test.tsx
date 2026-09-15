@@ -117,6 +117,7 @@ describe('HumanDecisionNodeTemplate', () => {
     );
 
     expect(container.textContent).toContain('Human decision');
+    expect(container.textContent).not.toContain('Decision');
     expect(handles(container, 'source')).toHaveLength(0);
     expect(handles(container, 'target').map((handle) => handle.dataset['handleid'])).toEqual(['target']);
   });
