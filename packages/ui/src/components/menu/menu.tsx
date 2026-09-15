@@ -61,6 +61,15 @@ export const Menu = memo(
   ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {
     const { side, align } = placementToSideAlign(placement);
     const { sideOffset, alignOffset } = offsetToBaseUI(offset, align);
+    const hasSelection = items.some((item) => item.selected !== undefined);
+    const selectedValue = items.find((item) => item.selected)?.label ?? null;
+    const renderedItems = items.map((item, index) =>
+      item.type === 'separator' ? (
+        <Separator key={index} />
+      ) : (
+        <MenuItem key={item.label} {...item} radio={hasSelection} size={size} />
+      ),
+    );
 
     return (
       <MenuBase.Root
@@ -77,12 +86,10 @@ export const Menu = memo(
             className={clsx(listBoxStyles['popup'])}
           >
             <MenuBase.Popup className={listBoxStyles['list-box']}>
-              {items.map((item, index) =>
-                item.type === 'separator' ? (
-                  <Separator key={index} />
-                ) : (
-                  <MenuItem key={item.label} {...item} size={size} />
-                ),
+              {hasSelection ? (
+                <MenuBase.RadioGroup value={selectedValue}>{renderedItems}</MenuBase.RadioGroup>
+              ) : (
+                renderedItems
               )}
             </MenuBase.Popup>
           </MenuBase.Positioner>
