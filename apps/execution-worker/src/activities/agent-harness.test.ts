@@ -32,6 +32,9 @@ const FAKE_CAPABILITIES: ProviderCapabilities = {
 
 /** Fake IAgentProvider driven by a hand-written async generator — no real CLI/SDK. */
 class FakeProvider implements IAgentProvider {
+  /** Captures the exact prompt string `executeAgentHarness` sent, for assertion in tests. */
+  public receivedPrompt: string | undefined;
+
   constructor(private readonly chunks: MessageChunk[] | (() => AsyncGenerator<MessageChunk>)) {}
 
   getType(): string {
@@ -42,7 +45,8 @@ class FakeProvider implements IAgentProvider {
     return FAKE_CAPABILITIES;
   }
 
-  async *sendQuery(): AsyncGenerator<MessageChunk> {
+  async *sendQuery(prompt: string): AsyncGenerator<MessageChunk> {
+    this.receivedPrompt = prompt;
     if (typeof this.chunks === 'function') {
       yield* this.chunks();
       return;
@@ -122,6 +126,32 @@ describe('executeAgentHarness', () => {
     expect(result.output.response).toBe('Hello world');
     expect(result.output.tokens).toEqual({ input: 10, output: 5 });
     expect(result.output.warnings).toEqual(['a warning']);
+  });
+
+  test('resolves {{namespace.path}} references in the prompt before sending it to the provider', async () => {
+    const provider = new FakeProvider([{ type: 'assistant', content: 'ok' }]);
+
+    await executeAgentHarness(
+      makeNode({ prompt: 'Classify: {{trigger.inputPrompt}}' }),
+      makeContext({ triggerPayload: { inputPrompt: 'Charged twice, need a refund.' } }),
+      { getProvider: () => provider },
+    );
+
+    expect(provider.receivedPrompt).toContain('Charged twice, need a refund.');
+    expect(provider.receivedPrompt).not.toContain('{{trigger.inputPrompt}}');
+  });
+
+  test('prepends upstream node outputs to the prompt, matching ai-agent.ts parity, even without an explicit reference', async () => {
+    const provider = new FakeProvider([{ type: 'assistant', content: 'ok' }]);
+
+    await executeAgentHarness(
+      makeNode({ prompt: 'Classify the ticket above.' }),
+      makeContext({ nodeOutputs: { 'trigger-1': { response: 'Charged twice, need a refund.' } } }),
+      { getProvider: () => provider },
+    );
+
+    expect(provider.receivedPrompt).toContain('Charged twice, need a refund.');
+    expect(provider.receivedPrompt).toContain('Classify the ticket above.');
   });
 
   test('classifies a FATAL provider error as a permanent (non-retryable) error', async () => {

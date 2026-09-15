@@ -36,7 +36,12 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { promisify } from 'node:util';
 
-import { type ExecutionContext, type LoggerPort, NodeExecutionError } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  type LoggerPort,
+  NodeExecutionError,
+  resolveTemplate,
+} from '@workflow-builder/execution-core';
 
 import type { ResolvedCredential } from '../agent-harness/credentials/delivery';
 import { deliverCredential } from '../agent-harness/credentials/delivery';
@@ -266,9 +271,33 @@ export async function executeAgentHarness(
       }
     }
 
+    // Parity with `ai-agent.ts`: resolve `{{namespace.path}}` references, then
+    // prepend upstream node outputs so a prompt with no explicit reference
+    // still receives trigger/upstream content (mirrors ai-agent's fallback
+    // `userPrompt` — see ai-agent.ts for the twin of this block).
+    const resolvedPrompt = resolveTemplate(node.config.prompt, context);
+    const previousOutputs = Object.entries(context.nodeOutputs);
+    const contextBlock =
+      previousOutputs.length > 0
+        ? `Context from previous steps:\n\n${previousOutputs
+            .map(([nodeId, output]) => {
+              const text =
+                typeof output === 'string'
+                  ? output
+                  : typeof output === 'object' &&
+                      output !== null &&
+                      typeof (output as Record<string, unknown>)['response'] === 'string'
+                    ? ((output as Record<string, unknown>)['response'] as string)
+                    : JSON.stringify(output);
+              return `[${nodeId}]:\n${text}`;
+            })
+            .join('\n\n')}\n\n---\n\n`
+        : '';
+    const finalPrompt = `${contextBlock}${resolvedPrompt}`;
+
     // Fail fast rather than relying on the idle timeout (default 30 min) to
     // eventually notice nothing was ever sent to the provider.
-    if (node.config.prompt.trim() === '') {
+    if (finalPrompt.trim() === '') {
       throw toHostNodeExecutionError('FATAL', 'agent_harness.empty_prompt', `Node '${node.id}' has an empty prompt.`);
     }
 
@@ -288,7 +317,7 @@ export async function executeAgentHarness(
 
     const backgroundTasks = createBackgroundTaskTracker();
 
-    const stream = provider.sendQuery(node.config.prompt, cwd, undefined, {
+    const stream = provider.sendQuery(finalPrompt, cwd, undefined, {
       abortSignal: abortController.signal,
       nodeConfig: node.config,
       env: credentialEnv,
