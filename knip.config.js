@@ -48,6 +48,17 @@ export default {
     'packages/execution-core': {
       entry: ['src/index.ts'],
     },
+    'packages/ai-config': {
+      entry: ['src/index.ts'],
+    },
+    'packages/temporal-connection': {
+      // test/fixtures/tls-probe-workflow.ts is handed to Temporal's bundler by path, so nothing imports it
+      entry: ['src/index.ts', 'test/fixtures/tls-probe-workflow.ts'],
+      project: ['src/**/*.ts', 'test/**/*.ts'],
+      // Never imported here, but Temporal's workflow bundler resolves it from this
+      // workspace while compiling the test fixture.
+      ignoreDependencies: ['@temporalio/workflow'],
+    },
     'apps/execution-worker': {
       entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
       // @temporalio/workflow is never imported by this app's code, but Temporal's

@@ -5,15 +5,21 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
 
-| Service       | Image                          | Role                                            | Exposed                  |
-| ------------- | ------------------------------ | ----------------------------------------------- | ------------------------ |
-| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend   | `${WEB_PORT}` (only one) |
-| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream                    | internal                 |
-| `worker`      | `ai-studio-runtime`            | Temporal worker, makes the OpenRouter LLM calls | internal                 |
-| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                 | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events           | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                      | internal                 |
-| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                  | `127.0.0.1:8233`         |
+| Service       | Image                          | Role                                                                   | Exposed                  |
+| ------------- | ------------------------------ | ---------------------------------------------------------------------- | ------------------------ |
+| `web`         | `ai-studio-web` (nginx)        | Serves the SPA, proxies `/api` to the backend                          | `${WEB_PORT}` (only one) |
+| `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream; calls the LLM for `/api/visualize/adapt` | internal                 |
+| `worker`      | `ai-studio-runtime`            | Temporal worker, runs the nodes; AI Agent nodes call the LLM           | internal                 |
+| `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                                        | internal                 |
+| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events                                  | internal                 |
+| `temporal-db` | `postgres:16`                  | Temporal's own state store                                             | internal                 |
+| `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                                         | `127.0.0.1:8233`         |
+
+The three Temporal rows come from
+[`docker-compose.override.yml`](docker-compose.override.yml), which compose
+applies on top of [`docker-compose.yml`](docker-compose.yml) by default. The base
+file alone has no cluster: the apps connect to whatever `TEMPORAL_ADDRESS` names
+and depend only on `app-db` — see "Pointing at a different Temporal".
 
 Both images build from one Dockerfile (`deploy/ai-studio/Dockerfile`) with the
 repo root as context. Backend and worker share a single image and differ only
@@ -25,7 +31,7 @@ service or step.
 
 ```bash
 cd deploy/ai-studio
-cp .env.example .env        # set OPENROUTER_API_KEY
+cp .env.example .env        # set AI_API_KEY to enable AI Agent nodes
 docker compose up -d --build
 ```
 
@@ -77,9 +83,59 @@ this compose never publishes them; don't undo that.
 ## Configuration
 
 See [.env.example](.env.example) — every variable is documented there.
-Swapping the LLM is a one-liner: change `AI_MODEL` to any
-[OpenRouter model id](https://openrouter.ai/models) and
-`docker compose up -d worker`.
+Swapping the model is a one-liner: change `AI_MODEL` to any id the endpoint
+understands (for OpenRouter, an [OpenRouter model id](https://openrouter.ai/models))
+and `docker compose up -d worker`.
+
+**Pointing at a different LLM.** `AI_BASE_URL` takes any OpenAI-compatible
+endpoint, so a gateway or a model hosted inside your own network works without
+a code change — set it alongside `AI_API_KEY` and `AI_MODEL`. None of the three
+has a built-in default; `.env.example` pre-fills the OpenRouter values the stack
+used before the endpoint became configurable. Leave any of them empty and the
+stack still comes up: every node type runs except AI Agent nodes, which fail
+with `ai_not_configured`.
+
+<a id="before-deploying-this-version"></a>
+
+**Before deploying this version.** The key is now `AI_API_KEY`, and the endpoint
+and model are no longer built in, so a `.env` written for an earlier version
+needs three lines before this one is deployed:
+
+```bash
+AI_API_KEY=<the value that was OPENROUTER_API_KEY>
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
+```
+
+Renaming only the key is not enough: the stack comes up with every AI Agent
+node failing `ai_not_configured`, because the endpoint and the model have no
+built-in defaults any more. The deploy workflow refuses to run while
+`OPENROUTER_API_KEY` is still set, before it writes anything to the VM, so a
+stale `.env` stops the deploy instead of coming up with AI silently off. An
+operator deploying by hand can run the same check:
+
+```bash
+grep -E '^OPENROUTER_API_KEY=.+' .env    # a hit means .env still needs the rename
+```
+
+**Pointing at a different Temporal.** Every `TEMPORAL_*` variable reaches the
+backend and the worker from one shared block in the compose file, so the two
+cannot disagree. `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, `TEMPORAL_TLS` and
+`TEMPORAL_API_KEY` are all an operated cluster or Temporal Cloud needs. Add
+`COMPOSE_FILE=docker-compose.yml` to `.env` at the same time: it leaves the
+override file out, so the bundled cluster is not started and cannot block the
+apps, and `backend` / `worker` depend only on `app-db`. Run
+`docker compose down --remove-orphans` once when switching. A contradictory
+`TEMPORAL_*` combination stops both apps at boot with an explanatory error
+(`docker compose logs backend worker`). The bundled debug
+UI (`--profile debug`) is part of the override and only ever shows the bundled
+cluster — an external cluster has its own UI. For a private CA or mTLS, drop the PEM files into [`tls/`](tls/) (git-ignored, mounted
+read-only into both containers at `/etc/workflowbuilder/tls`) and set
+`TEMPORAL_TLS_CA_PATH` / `_CERT_PATH` / `_KEY_PATH` to those container paths —
+see [.env.example](.env.example) for the exact lines. `TEMPORAL_TLS_DIR` may
+point at `./tls` or at a directory outside the checkout, nothing else: the
+whole repository is the image build context, so a key placed in any other
+in-repo directory is copied into the runtime image by a local build.
 
 ## Operations
 
@@ -91,6 +147,19 @@ docker compose down                          # stop (volumes survive)
 docker exec ai-studio-app-db-1 pg_dump -U wb workflow_builder > backup.sql
 ```
 
+The public demo is deployed by the `Deploy AI Studio` GitHub Actions workflow:
+it builds and pushes both images to the registry, copies `docker-compose.yml`
+and `docker-compose.override.yml` from the repo to the VM, writes the tags it
+just pushed into the VM's `.env` as `RUNTIME_IMAGE` / `WEB_IMAGE`, and runs
+compose there. A first deploy of this version onto a VM whose `.env` still
+carries `OPENROUTER_API_KEY` stops before writing anything — see [Before
+deploying this version](#before-deploying-this-version).
+Because the tags live in `.env`, every later compose command on
+the VM (`docker compose up -d worker` after a model change, `--profile debug`)
+resolves the deployed images, not the local `ai-studio-*` build names. The VM's
+compose files are that copy — change them in the repo, never on the VM. Only
+`.env` lives on the VM alone; the deploy replaces just its two image lines.
+
 Workflow data is treated as ephemeral for the public demo — losing the
 volumes is acceptable; there is nothing precious in them.
 
@@ -98,8 +167,8 @@ volumes is acceptable; there is nothing precious in them.
 emitted**, let in-flight executions finish. Temporal replays a running
 workflow's history against the deployed code, so a run started on the old
 emit sequence diverges when replayed on the new one. Check for active runs in
-the Temporal UI (`--profile debug`), or accept that any still running will
-fail. Deploys that leave the emit sequence alone are unaffected. See
+the Temporal UI (`--profile debug` for the bundled cluster, your cluster's own UI
+otherwise), or accept that any still running will fail. Deploys that leave the emit sequence alone are unaffected. See
 [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
 ## Known limitations (accepted for the lean MVP)
@@ -110,6 +179,7 @@ fail. Deploys that leave the emit sequence alone are unaffected. See
 - **Single backend replica.** The rate limiter is process-local. Scaling out
   needs a shared store (Redis) — deferred to the scale-ready task.
 - **`temporalio/auto-setup` is dev-grade.** Fine for a demo; move to Temporal
-  Cloud or an operated cluster for sustained load.
+  Cloud or an operated cluster for sustained load. That move is configuration
+  only — see "Pointing at a different Temporal" above.
 - **Anyone-can-edit demo content.** Visitors share one workspace; data is
   wiped whenever you decide to recreate the volumes.

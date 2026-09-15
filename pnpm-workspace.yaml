@@ -29,6 +29,11 @@ catalog:
   '@temporalio/testing': ^1.23.0
   '@temporalio/worker': ^1.23.0
   '@temporalio/workflow': ^1.23.0
+  # AI SDK. The provider major is tied to the `ai` major — v2 speaks to `ai` v6,
+  # v3 to `ai` v7 — so the two only move together, and the backend and the worker
+  # have to agree or they build the same model against different request shapes.
+  'ai': ^6.0.168
+  '@ai-sdk/openai-compatible': ^2.0.74
 
 useNodeVersion: 22.12.0
 engineStrict: true
