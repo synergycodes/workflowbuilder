@@ -3,13 +3,21 @@ import { generateText, stepCountIs } from 'ai';
 import { type ExecutionContext, type LoggerPort, resolveTemplate } from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
+import type { OpenRouterClient } from '../model-provider';
+import { resolveModel } from '../model-provider';
 import { createWebSearchTool } from '../tools/web-search';
 
 // Bounds the agentic tool loop so a misbehaving model can't run up cost.
 const MAX_TOOL_STEPS = 4;
 
 type AiAgentDeps = {
-  model: Parameters<typeof generateText>[0]['model'];
+  // A fixed model bypasses per-node resolution entirely (used by tests).
+  // A default model id/provider plus an OpenRouter client resolves per node,
+  // via node.config.model/provider falling back to these defaults.
+  model?: Parameters<typeof generateText>[0]['model'];
+  defaultModel?: string;
+  defaultProvider?: string;
+  openrouter?: OpenRouterClient;
   logger?: LoggerPort;
   tavilyApiKey?: string;
 };
@@ -44,9 +52,17 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   const webSearchEnabled = node.config.webSearch === true && Boolean(deps.tavilyApiKey);
   const tools = webSearchEnabled ? { webSearch: createWebSearchTool(deps.tavilyApiKey!) } : undefined;
 
+  const model =
+    deps.model ??
+    (await resolveModel(
+      node.config.model ?? deps.defaultModel!,
+      node.config.provider ?? deps.defaultProvider ?? 'auto',
+      deps.openrouter!,
+    ));
+
   try {
     const result = await generateText({
-      model: deps.model,
+      model,
       // Temporal's activity retry policy owns retries; SDK retries on top would
       // multiply model calls (up to 3x per activity attempt).
       maxRetries: 0,

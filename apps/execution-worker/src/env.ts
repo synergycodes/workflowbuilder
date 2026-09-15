@@ -21,4 +21,11 @@ export const env = {
   AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
   // Optional. Enables the AI Agent's web-search tool; agents run without it when unset.
   TAVILY_API_KEY: process.env['TAVILY_API_KEY'],
+  // Optional. GitHub token for the Copilot CLI agent-harness provider; unset disables it.
+  COPILOT_GITHUB_TOKEN: process.env['COPILOT_GITHUB_TOKEN'],
+  // Optional. Overrides the resolved `copilot` CLI binary path.
+  COPILOT_CLI_PATH: process.env['COPILOT_CLI_PATH'],
+  // Polled only by the specialized worker (see engines/temporal/specialized-worker.ts).
+  // A distinct queue name, not the plugin's own, so routing a node here is opt-in per type.
+  SPECIALIZED_TASK_QUEUE: envOr('SPECIALIZED_TASK_QUEUE', 'workflow-execution-specialized'),
 };

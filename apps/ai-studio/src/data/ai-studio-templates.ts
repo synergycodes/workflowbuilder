@@ -1,5 +1,6 @@
 import type { TemplateModel } from '@workflowbuilder/sdk';
 
+import { agentHarnessFlow } from './agent-harness-flow';
 import { aiDebateFlow } from './ai-debate-flow';
 import { contentRepurposerFlow } from './content-repurposer-flow';
 import { meetingNotesFlow } from './meeting-notes-flow';
@@ -12,4 +13,5 @@ export const aiStudioTemplates: TemplateModel[] = [
   contentRepurposerFlow,
   meetingNotesFlow,
   researchFlow,
+  agentHarnessFlow,
 ];

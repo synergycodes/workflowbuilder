@@ -95,6 +95,25 @@ Keep the export named `runWorkflow`: that is the name the client starts, and a t
 
 Entries are whole profiles rather than partials on purpose. A partial would let you set a timeout and silently drop the retry cap, and what Temporal falls back to is unlimited retries with backoff, which on a permanently failing model call is an unbounded bill. A node type with no entry resolves to `DEFAULT_NODE_ACTIVITY_PROFILE` and nothing else.
 
+A profile can also carry `taskQueue`, routing that node type's activities to a worker other than the one running the workflow — a small pool with its own Docker image and tools, while every other node type keeps running on the default queue. Nothing else about the workflow changes: `runGraph` and the graph model never see it, it only decides which worker process picks up the `executeNode` command. Without a `taskQueue`, a profile behaves exactly as it did before this field existed.
+
+```ts
+export const nodeActivityProfiles: NodeActivityProfiles = {
+  // Needs a coding-agent CLI installed — its own image, its own worker.
+  'my-product/coding-agent': {
+    startToCloseTimeout: '30m',
+    retry: { maximumAttempts: 2 },
+    taskQueue: 'coding-agent-pool',
+  },
+};
+```
+
+A worker for that queue is a second, activity-only `Worker.create` call (no `workflowsPath` — Temporal supports activity-only workers) registering just that node type's executor. See `apps/execution-worker/README.md` § "Per-node-type task queue routing" for a full example.
+
+A profile can also carry `heartbeatTimeout`, the same `DurationString` grammar as `startToCloseTimeout`. It sets Temporal's own heartbeat-timeout mechanism: the activity must call `Context.current().heartbeat()` more often than this interval or Temporal fails it early, which detects a stalled or crashed activity faster than `startToCloseTimeout` alone would. Set it for any long-running activity that heartbeats — most don't need it and can leave it unset (no heartbeat monitoring). It also matters for cancellation: `handle.cancel()` on a workflow only reaches an in-flight activity when the activity itself is heartbeating and checking `Context.current().cancelled`; without a `heartbeatTimeout`, Temporal has no way to notice a heartbeat has stopped arriving, so a cancel signal can go unnoticed until the activity finishes on its own. `apps/execution-worker`'s `ai-studio/agent-harness` profile pairs `heartbeatTimeout: '5s'` with a 1s heartbeat interval in the activity; that combination brought empirically measured cancellation latency down to roughly 3-3.5s wall-clock (well under the 5s timeout), from ~30s with no heartbeat wired at all.
+
+A `taskQueue` routed to a queue nobody polls fails silently at the workflow level: the activity is scheduled and simply never picked up. Checking that is only possible worker-side, against whichever queues a deployment knows it runs — `findProfilesWithUnpolledTaskQueue(profiles, polledTaskQueues)` from `/workflow` is the same shape as `findProfilesWithoutExecutor`, for the same reason: the sandbox has no registry to check it against itself.
+
 A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`. Decimals are fine (`'1.5h'`). It has to fit a protobuf `Duration`, so anything under one nanosecond or over `'3652500d'` is out. Zero, negative values and exponent notation are rejected even though TypeScript's template literal type admits them: `'0s'` type-checks, and Temporal treats a zero timeout as unset and refuses to schedule the activity.
 
 This grammar is narrower than Temporal's own, which parses durations with the `ms` package and also takes `'30 minutes'` or `'1 week'`. One documented form is deliberate. If you think in the wider grammar, convert before the value reaches this map.
