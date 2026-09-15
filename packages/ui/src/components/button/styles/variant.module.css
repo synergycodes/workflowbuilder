@@ -39,7 +39,7 @@
   --wb-public-button-ghost-primary-background-color-focus: var(--wb-ds-components-button-ghost-primary-focus);
   --wb-public-button-ghost-primary-background-color-disabled: var(--wb-ds-components-button-ghost-primary-disabled);
   --wb-public-button-ghost-primary-border-color: var(--wb-ds-components-button-ghost-primary-stroke-default);
-  --wb-public-button-ghost-primary-color: var(--wb-ds-ui-text-action-default);
+  --wb-public-button-ghost-primary-color: var(--wb-ds-components-button-ghost-primary-text-default);
   --wb-public-button-ghost-primary-color-disabled: var(--wb-ds-ui-text-action-disabled);
 
   --wb-public-button-ghost-secondary-background-color: var(--wb-ds-colors-transparent);
@@ -61,7 +61,7 @@
   --wb-public-button-ghost-critical-background-color-focus: var(--wb-ds-components-button-ghost-critical-focus);
   --wb-public-button-ghost-critical-background-color-disabled: var(--wb-ds-components-button-ghost-critical-disabled);
   --wb-public-button-ghost-critical-border-color: var(--wb-ds-components-button-ghost-critical-stroke-default);
-  --wb-public-button-ghost-critical-color: var(--wb-ds-ui-text-critical-default);
+  --wb-public-button-ghost-critical-color: var(--wb-ds-components-button-ghost-critical-text-default);
   --wb-public-button-ghost-critical-color-disabled: var(--wb-ds-ui-text-critical-disabled);
 
   --wb-public-button-ghost-success-background-color: var(--wb-ds-components-button-ghost-success-default);
@@ -70,7 +70,7 @@
   --wb-public-button-ghost-success-background-color-focus: var(--wb-ds-components-button-ghost-success-focus);
   --wb-public-button-ghost-success-background-color-disabled: var(--wb-ds-components-button-ghost-success-disabled);
   --wb-public-button-ghost-success-border-color: var(--wb-ds-components-button-ghost-success-stroke-default);
-  --wb-public-button-ghost-success-color: var(--wb-ds-ui-text-success-default);
+  --wb-public-button-ghost-success-color: var(--wb-ds-components-button-ghost-success-text-default);
   --wb-public-button-ghost-success-color-disabled: var(--wb-ds-ui-text-success-disabled);
 }
 
