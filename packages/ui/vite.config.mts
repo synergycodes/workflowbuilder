@@ -136,7 +136,7 @@ export default defineConfig({
     libInjectCss(),
     // A stray *.spec.mts in the ts program stalls this build for 15+ minutes
     // with no output - keep every spec shape excluded.
-    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}'] }),
+    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}', 'vitest.setup.ts'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),
     ...(process.env.BUNDLE_STATS ? bundleStatsPlugins() : []),

@@ -8,6 +8,6 @@
       "@ui/*": ["./src/*"]
     }
   },
-  "include": ["src", "types.d.ts"],
+  "include": ["src", "types.d.ts", "vitest.setup.ts"],
   "exclude": ["node_modules", "dist"]
 }
