@@ -7,7 +7,7 @@ import {
   TERMINAL_EXECUTION_STATUSES,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
-import type { AssertAuthorized, AuthResource, AuthVariables } from '../auth';
+import type { AssertAuthorized, AuthResource } from '../auth';
 import { database } from '../db/client';
 import { executions } from '../db/schema';
 import { findDecisionRequest } from '../domain/decision/find-decision-request';
@@ -17,7 +17,7 @@ import { workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { getWorkflowEngine } from '../engine';
 import { countNodeWaits } from '../events/count-node-waits';
 import { logger as backendLogger } from '../logger';
-import type { TenantVariables } from '../tenant';
+import type { BackendEnv } from './backend-env';
 import { ENGINE_REFUSALS, LOOKUP_REFUSALS, refuse } from './decision-refusals';
 import { formatValidationDetails } from './snapshot-validation';
 
@@ -35,10 +35,8 @@ const decisionBodySchema = submittedDecisionSchema.extend({
   attempt: z.int().min(1),
 });
 
-export function createDecisionRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createDecisionRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
 
   routes.post('/:id/decision', async (c) => {
     const executionId = c.req.param('id');
