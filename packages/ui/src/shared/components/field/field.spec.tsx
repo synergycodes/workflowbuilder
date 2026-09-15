@@ -5,12 +5,6 @@ import { Input } from '../../../components/input/input';
 import { TextArea } from '../../../components/text-area/text-area';
 import { Field } from './field';
 
-declare global {
-  // eslint-disable-next-line no-var
-  var IS_REACT_ACT_ENVIRONMENT: boolean;
-}
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
 describe('Field', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
