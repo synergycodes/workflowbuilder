@@ -87,7 +87,9 @@ export const Menu = memo(
           >
             <MenuBase.Popup className={listBoxStyles['list-box']}>
               {hasSelection ? (
-                <MenuBase.RadioGroup value={selectedValue}>{renderedItems}</MenuBase.RadioGroup>
+                <MenuBase.RadioGroup value={selectedValue} className={listBoxStyles['group']}>
+                  {renderedItems}
+                </MenuBase.RadioGroup>
               ) : (
                 renderedItems
               )}

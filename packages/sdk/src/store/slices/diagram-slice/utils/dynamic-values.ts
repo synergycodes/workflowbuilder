@@ -1,7 +1,7 @@
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
 
 export const skipDynamicValuesInNodes = (nodes: WorkflowBuilderNode[]): WorkflowBuilderNode[] => {
-  return nodes.map(({ measured: _measured, ...node }) => ({
+  return nodes.map(({ measured: _measured, dragging: _dragging, ...node }) => ({
     ...node,
     selected: false,
   }));

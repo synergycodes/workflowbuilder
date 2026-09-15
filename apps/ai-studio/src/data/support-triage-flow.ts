@@ -34,7 +34,6 @@ Head of Ops, Brightwave`,
           icon: 'Lightning',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'classify-1',
@@ -64,7 +63,6 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'decision-1',
@@ -114,7 +112,6 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
           icon: 'ArrowsSplit',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'billing-1',
@@ -138,7 +135,6 @@ You handle billing issues. Draft a reply to the customer:
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'bug-1',
@@ -162,7 +158,6 @@ You triage product bugs. Draft a reply to the customer:
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'general-1',
@@ -185,7 +180,6 @@ You answer how-to and general questions. Draft a friendly reply:
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'qa-1',
@@ -211,7 +205,6 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           icon: 'AiAgent',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'visualize-1',
@@ -228,7 +221,6 @@ If not, output "⚠️ NEEDS REVISION" followed by specific, actionable fixes.`,
           icon: 'Eye',
         },
         selected: false,
-        dragging: false,
       },
     ],
     edges: [
