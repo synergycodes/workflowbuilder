@@ -16,7 +16,6 @@ import { withPayloadSizeWarning } from '../../store-payload-warning';
 const { createOpenRouter } = await import('@openrouter/ai-sdk-provider');
 
 const openrouter = createOpenRouter({ apiKey: env.OPENROUTER_API_KEY });
-const model = openrouter.chat(env.AI_MODEL);
 
 const aiAgentLogger = logger.child({ component: 'ai-agent' });
 
@@ -27,7 +26,12 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/trigger': executeTrigger,
     'ai-studio/decision': executeDecision,
     'ai-studio/ai-agent': (node, context) =>
-      executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
+      executeAiAgent(node, context, {
+        openrouter,
+        defaultModel: env.AI_MODEL,
+        logger: aiAgentLogger,
+        tavilyApiKey: env.TAVILY_API_KEY,
+      }),
     'ai-studio/visualize': executeVisualize,
   },
   store: withPayloadSizeWarning(database, logger),

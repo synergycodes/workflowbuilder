@@ -116,6 +116,22 @@ services:
       AI_MODEL: ${AI_MODEL:-mistralai/mistral-small-3.2-24b-instruct}
       # optional - empty disables the AI Agent's web search tool
       TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      # optional - per-provider direct-routing keys for the `ai-agent` node's
+      # `provider` field; each is only read when that provider is selected
+      OPENAI_API_KEY: ${OPENAI_API_KEY:-}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      GOOGLE_GENERATIVE_AI_API_KEY: ${GOOGLE_GENERATIVE_AI_API_KEY:-}
+      XAI_API_KEY: ${XAI_API_KEY:-}
+      MISTRAL_API_KEY: ${MISTRAL_API_KEY:-}
+      COHERE_API_KEY: ${COHERE_API_KEY:-}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY:-}
+      MOONSHOT_API_KEY: ${MOONSHOT_API_KEY:-}
+      GROQ_API_KEY: ${GROQ_API_KEY:-}
+      TOGETHER_API_KEY: ${TOGETHER_API_KEY:-}
+      FIREWORKS_API_KEY: ${FIREWORKS_API_KEY:-}
+      PERPLEXITY_API_KEY: ${PERPLEXITY_API_KEY:-}
+      CEREBRAS_API_KEY: ${CEREBRAS_API_KEY:-}
+      DEEPINFRA_API_KEY: ${DEEPINFRA_API_KEY:-}
     depends_on:
       app-db:
         condition: service_healthy
