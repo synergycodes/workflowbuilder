@@ -15,6 +15,6 @@ const { connection, namespace } = temporalConfig();
 // namespace:  TEMPORAL_NAMESPACE, 'default' when unset
 ```
 
-Tests: `src/index.test.ts` is the validation matrix. `test/tls.test.ts` drives the built options through a real TLS handshake on both SDK transports (grpc-js and the worker's native core) against a Temporal dev server behind a TLS-terminating proxy (`test/harness/`), with certificates minted per run — private CA, mutual TLS, untrusted server CA, wrong client certificate, an API key inside the TLS session, and work in a non-default namespace. Handing the connection options to both SDKs' connect calls there is the compile-time proof that the contract fits both.
+Tests: `src/index.test.ts` is the validation matrix. `test/tls.test.ts` drives the built options through a real TLS handshake on both SDK transports (grpc-js and the worker's native core) against a Temporal dev server behind a TLS-terminating proxy (`test/harness/`), with certificates minted per run — private CA, mutual TLS, untrusted server CA, wrong client certificate, an API key inside the TLS session, and work in a non-default namespace. The plaintext default is covered against the dev server directly, with no proxy, alongside the same server refusing a client that demands TLS. Handing the connection options to both SDKs' connect calls there is the compile-time proof that the contract fits both.
 
 This module is engine plumbing, not part of the execution model, so it is neither in `execution-core` nor in the published `@workflowbuilder/temporal` API.

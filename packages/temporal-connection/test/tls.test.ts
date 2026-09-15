@@ -146,6 +146,28 @@ describe.each(transports)('$name over TLS', ({ connect }) => {
   }, 60_000);
 });
 
+// The local-dev default, which no proxy is involved in: straight to the plaintext dev
+// server. The unit tests pin the option shape for an unconfigured environment; these pin
+// that the shape actually connects, and that demanding TLS from the same server does not.
+describe.each(transports)('$name without TLS', ({ connect }) => {
+  it.each([
+    ['nothing is configured', {}],
+    ['TEMPORAL_TLS=false asserts plaintext', { TEMPORAL_TLS: 'false' }],
+  ])(
+    'connects to a plaintext server when %s',
+    async (_label, variables) => {
+      const connection = await connect(env.address, variables);
+
+      await connection.close();
+    },
+    60_000,
+  );
+
+  it('is refused by that same server once TEMPORAL_TLS demands TLS', async () => {
+    await expect(connect(env.address, { TEMPORAL_TLS: 'true' })).rejects.toThrow();
+  }, 60_000);
+});
+
 describe('work in a non-default namespace over a private CA', () => {
   it('a client starts a workflow that lands in the configured namespace', async () => {
     const proxy = await startTlsProxy({ upstream: env.address, server: trusted.pki.server });
