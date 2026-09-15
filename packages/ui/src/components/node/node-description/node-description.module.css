@@ -1,6 +1,8 @@
 :root {
   --wb-public-node-title-color: var(--wb-ds-ui-text-default);
   --wb-public-node-title-subtitle: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-node-title-color-disabled: var(--wb-ds-canvas-node-text-disabled);
+  --wb-public-node-subtitle-color-disabled: var(--wb-ds-canvas-node-text-disabled);
 }
 
 @layer ui.component {
@@ -28,6 +30,16 @@
 
     .subtitle {
       color: var(--wb-public-node-title-subtitle);
+    }
+
+    &.disabled {
+      .title {
+        color: var(--wb-public-node-title-color-disabled);
+      }
+
+      .subtitle {
+        color: var(--wb-public-node-subtitle-color-disabled);
+      }
     }
   }
 }

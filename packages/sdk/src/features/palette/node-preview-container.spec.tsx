@@ -15,7 +15,11 @@ vi.mock('../diagram/nodes/start-node-template/start-node-template', () => ({
   StartNodeTemplate: () => null,
 }));
 vi.mock('../diagram/nodes/workflow-node-template/workflow-node-template', () => ({
-  WorkflowNodeTemplate: (props: WorkflowNodeTemplateProps) => <div data-testid="built-in-template">{props.label}</div>,
+  WorkflowNodeTemplate: (props: WorkflowNodeTemplateProps) => (
+    <div data-testid="built-in-template" data-selected={props.selected} data-disabled={props.disabled}>
+      {props.label}
+    </div>
+  ),
 }));
 
 let mockNodeDefinition: PaletteItem | undefined;
@@ -76,6 +80,14 @@ describe('NodePreviewContainer', () => {
 
     expect(screen.getByTestId('built-in-template')).toBeDefined();
     expect(screen.queryByTestId('custom-template')).toBeNull();
+  });
+
+  it('passes the selected and disabled node states to the template', () => {
+    render(<NodePreviewContainer type="multi-port" selected disabled />);
+
+    const element = screen.getByTestId('built-in-template');
+    expect(element.dataset.selected).toBe('true');
+    expect(element.dataset.disabled).toBe('true');
   });
 
   it('renders nothing when the palette type is unknown', () => {
