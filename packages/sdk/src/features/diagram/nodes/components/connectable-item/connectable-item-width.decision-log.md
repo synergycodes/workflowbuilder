@@ -2,7 +2,7 @@
 
 ### Proposed by: Jan Librowski
 
-### Date: 07.09.2026
+### Date: 07.09.2026 (revised 14.09.2026 and 15.09.2026)
 
 ## Context
 
@@ -48,12 +48,16 @@ max-width: calc(
 `--wb-sdk-connectable-item-inset` is the horizontal inset (one side) added by the container that
 wraps the items. It defaults to `0rem` and each wrapping container declares its own value:
 
-- `NodeSection` sets it to its padding plus border width, so Decision branches inside a section get
-  `241 - 2 x (8 + 1) - 2 x (10 + 1) = 201px` (with the previous 258px shell: 218px).
-- The AI template wraps its tool rows in `NodeInfoWrapper` (padding 0.625rem plus a 1px border
-  per side), which therefore declares the same inset, so tool rows get
-  `241 - 2 x (8 + 1) - 2 x (10 + 1) = 201px` as well. The default `0rem` applies only to a
-  container that adds no horizontal padding.
+- `NodeSection` sets it to its padding plus border width. Section padding is the design role
+  `canvas/node/body-h-pad` (8px), so Decision branches inside a section get
+  `241 - 2 x (8 + 1) - 2 x (8 + 1) = 205px`.
+- The AI template wraps its tool rows in `NodeInfoWrapper` (the same body padding plus a 1px border
+  per side), which therefore declares the same inset, so tool rows get 205px as well. The default
+  `0rem` applies only to a container that adds no horizontal padding.
+
+Row padding, gap and radius themselves bind to `canvas/node/row-*`, section padding, gap and radius
+to `canvas/node/body-*`; design confirmed that matrix (8 / 8 / 8 / 8, row radius 4) on 09.09.2026 and
+published the roles in the 15.09.2026 export.
 
 The variable is not cumulative: a wrapper declares the inset it adds itself, and a container that
 adds horizontal padding without declaring it lets its rows exceed the visible width by that padding.
@@ -64,21 +68,12 @@ adds horizontal padding without declaring it lets its rows exceed the visible wi
   actually offers.
 - The variable makes the nesting explicit and reviewable per container instead of encoding it in a
   single global multiplier.
-- Provisional until the design specifies the row width (follow-up: connectable-item-design-width).
-  The design's node body matrix (row padding 8px, radius 4px) is a separate change and does not
-  alter this derivation.
+- The row width itself has no design value; the cap stays a derived, provisional number
+  (follow-up: connectable-item-design-width).
 
-## Update 14.09.2026
+## Status
 
-Design confirmed the body matrix (DR-143): section padding and gap 8px, row padding 8px, row radius 4px,
-section radius 8px (`canvas/node/content-radius`). With the section inset now `8 + 1`, the derived row width
-is `241 - 2 x (8 + 1) - 2 x (8 + 1) = 205px` in both Decision and AI Agent. The formula is unchanged; only
-the inset value moved. Row padding, row radius, section padding and gap bind to primitives
-(`space/100`, `radius/50`) with `missing token` markers until design publishes the `node.body.*` roles.
-
-## Update 15.09.2026
-
-The export now carries the roles `canvas/node/body-{h-pad,v-pad,gap,radius}` and
-`canvas/node/row-{h-pad,v-pad,gap,radius}` (design changelog 1.1.9). Sections and rows bind to them;
-the provisional primitives and their markers are gone. Values are unchanged (8 / 8 / 8 / 8, row radius 4),
-so the derived width stays 205px.
+Accepted. Revised 14.09.2026 (body matrix 8 / 8 / 4 applied, derived width 201 → 205px) and
+15.09.2026 (sections and rows bind to the `body-*` and `row-*` roles from the export; provisional
+primitives and their markers removed). Open: a design value for the row width
+(follow-up: connectable-item-design-width).

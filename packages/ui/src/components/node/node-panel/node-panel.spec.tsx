@@ -1,17 +1,28 @@
 import { act } from 'react';
-import { createRoot } from 'react-dom/client';
-import { afterEach, describe, expect, it } from 'vitest';
+import { type Root, createRoot } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import { NodePanel } from './node-panel';
 
-const containers: HTMLDivElement[] = [];
+(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
+
+let container: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  container = document.createElement('div');
+  document.body.append(container);
+  root = createRoot(container);
+});
+
+afterEach(() => {
+  act(() => root.unmount());
+  container.remove();
+});
 
 function renderRoot(props: { selected: boolean; disabled?: boolean }) {
-  const container = document.createElement('div');
-  document.body.append(container);
-  containers.push(container);
   act(() => {
-    createRoot(container).render(
+    root.render(
       <NodePanel.Root {...props}>
         <NodePanel.Header>header</NodePanel.Header>
       </NodePanel.Root>,
@@ -19,10 +30,6 @@ function renderRoot(props: { selected: boolean; disabled?: boolean }) {
   });
   return container.firstElementChild!.firstElementChild as HTMLElement;
 }
-
-afterEach(() => {
-  for (const container of containers.splice(0)) container.remove();
-});
 
 describe('NodePanel.Root states', () => {
   it('marks the shell as selected', () => {

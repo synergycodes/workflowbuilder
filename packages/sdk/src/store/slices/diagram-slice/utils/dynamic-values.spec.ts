@@ -4,12 +4,13 @@ import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/
 import { skipDynamicValuesInEdges, skipDynamicValuesInNodes } from './dynamic-values';
 
 describe('skipDynamicValuesInNodes', () => {
-  it('drops measured sizes and selection while keeping the rest of the node', () => {
+  it('drops measured sizes, dragging and selection while keeping the rest of the node', () => {
     const node = {
       id: 'node-1',
       type: 'node',
       position: { x: 10, y: 20 },
       selected: true,
+      dragging: true,
       measured: { width: 258, height: 64 },
       data: { label: 'Node' },
     } as unknown as WorkflowBuilderNode;
@@ -17,6 +18,7 @@ describe('skipDynamicValuesInNodes', () => {
     const [result] = skipDynamicValuesInNodes([node]);
 
     expect(result).not.toHaveProperty('measured');
+    expect(result).not.toHaveProperty('dragging');
     expect(result.selected).toBe(false);
     expect(result).toMatchObject({ id: 'node-1', type: 'node', position: { x: 10, y: 20 }, data: { label: 'Node' } });
     expect(node.measured).toEqual({ width: 258, height: 64 });

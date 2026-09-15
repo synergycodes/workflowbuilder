@@ -72,7 +72,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'd6adcc9c-3146-46fd-9b0f-af78e94ad04d',
@@ -132,7 +131,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'da28f8fe-c3a0-44c0-8213-c7c88d62164e',
@@ -184,7 +182,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'f1a5e5cb-58fa-4379-a45e-437553153b5f',
@@ -206,7 +203,6 @@ const diagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        dragging: false,
       },
     ],
     edges: [

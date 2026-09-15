@@ -45,4 +45,14 @@
       transform: scaleY(0.96);
     }
   }
+
+  /* A Base UI RadioGroup wraps the items in its own div[role="group"], which
+     would otherwise swallow the popup's column gap. */
+  .group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    gap: var(--wb-public-list-box-gap);
+  }
 }

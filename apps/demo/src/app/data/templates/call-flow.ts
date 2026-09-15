@@ -85,7 +85,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'b2a4b7a7-1900-4218-aea4-902de2e4eb51',
@@ -137,7 +136,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'f1d785cc-1715-4b27-97e4-59347f08e660',
@@ -189,7 +187,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '18562830-da0b-443e-a859-79cb95473f59',
@@ -224,7 +221,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '6ab2c9e2-7e1e-4061-83ea-83a88aa246eb',
@@ -242,7 +238,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'feb863db-de51-4aee-8746-f9e02d993cb7',
@@ -260,7 +255,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '456f755a-a1fe-4e18-a850-802cf28b4cf5',
@@ -295,7 +289,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '53f8322b-96ef-4775-824a-020f02cccd20',
@@ -313,7 +306,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
     ],
     edges: [

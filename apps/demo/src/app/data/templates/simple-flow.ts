@@ -23,7 +23,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Lightning',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'da47caa9-c695-47bb-be52-b30bb8a6be6d',
@@ -41,7 +40,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '47375954-4e4a-4567-b7d3-c70c3921e1dd',
@@ -59,7 +57,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'e7ecd597-55ca-4bba-9d32-d0c51173046d',
@@ -77,7 +74,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'ArrowsSplit',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '798dbba1-d356-4fcd-8ba2-90e75f4912f9',
@@ -116,7 +112,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: 'fd7745bf-4562-447f-a65c-2581b6a77eac',
@@ -206,7 +201,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'Timer',
         },
         selected: false,
-        dragging: false,
       },
       {
         id: '33bfbf0d-f0eb-452e-aeba-f330bb9badec',
@@ -275,7 +269,6 @@ const defaultDiagram: DiagramModel = {
           icon: 'PaperPlaneRight',
         },
         selected: false,
-        dragging: false,
       },
     ],
     edges: [
