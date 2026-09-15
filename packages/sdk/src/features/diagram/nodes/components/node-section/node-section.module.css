@@ -1,7 +1,7 @@
 :root {
-  --wb-sdk-node-section-gap: 0.75rem;
-  --wb-sdk-node-section-padding: 0.625rem;
-  --wb-sdk-node-section-border-radius: 0.5rem;
+  --wb-sdk-node-section-gap: var(--wb-ds-space-100); /* missing token */
+  --wb-sdk-node-section-padding: var(--wb-ds-space-100); /* missing token */
+  --wb-sdk-node-section-border-radius: var(--wb-ds-canvas-node-content-radius);
   --wb-sdk-node-section-border-color: var(--wb-ds-ui-stroke-default);
   --wb-sdk-node-section-border-width: 0.0625rem;
 }
