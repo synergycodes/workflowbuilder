@@ -1,10 +1,11 @@
 :root {
-  --wb-sdk-connectable-item-horizontal-padding: var(--wb-ds-space-100); /* missing token */
-  --wb-sdk-connectable-item-vertical-padding: var(--wb-ds-space-100); /* missing token */
+  --wb-sdk-connectable-item-horizontal-padding: var(--wb-ds-canvas-node-row-h-pad);
+  --wb-sdk-connectable-item-vertical-padding: var(--wb-ds-canvas-node-row-v-pad);
+  --wb-sdk-connectable-item-gap: var(--wb-ds-canvas-node-row-gap);
   --wb-sdk-connectable-item-background: var(--wb-ds-ui-bg-inset);
   --wb-sdk-connectable-item-border-width: 0.0625rem;
   --wb-sdk-connectable-item-border-color: var(--wb-ds-components-text-field-stroke-default);
-  --wb-sdk-connectable-item-border-radius: var(--wb-ds-radius-50); /* missing token */
+  --wb-sdk-connectable-item-border-radius: var(--wb-ds-canvas-node-row-radius);
   --wb-sdk-connectable-item-inset: 0rem;
 }
 
@@ -42,5 +43,5 @@
 }
 
 .connectable-item--right {
-  gap: var(--wb-sdk-connectable-item-horizontal-padding);
+  gap: var(--wb-sdk-connectable-item-gap);
 }
