@@ -75,3 +75,10 @@ section radius 8px (`canvas/node/content-radius`). With the section inset now `8
 is `241 - 2 x (8 + 1) - 2 x (8 + 1) = 205px` in both Decision and AI Agent. The formula is unchanged; only
 the inset value moved. Row padding, row radius, section padding and gap bind to primitives
 (`space/100`, `radius/50`) with `missing token` markers until design publishes the `node.body.*` roles.
+
+## Update 15.09.2026
+
+The export now carries the roles `canvas/node/body-{h-pad,v-pad,gap,radius}` and
+`canvas/node/row-{h-pad,v-pad,gap,radius}` (design changelog 1.1.9). Sections and rows bind to them;
+the provisional primitives and their markers are gone. Values are unchanged (8 / 8 / 8 / 8, row radius 4),
+so the derived width stays 205px.

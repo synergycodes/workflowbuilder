@@ -1,11 +1,11 @@
 .container {
-  --wb-sdk-connectable-item-inset: calc(var(--wb-ds-space-100) + 1px);
+  --wb-sdk-connectable-item-inset: calc(var(--wb-ds-canvas-node-body-h-pad) + 1px);
 
   display: flex;
   flex-direction: column;
-  gap: var(--wb-ds-space-100); /* missing token */
-  border-radius: var(--wb-ds-canvas-node-content-radius);
-  padding: var(--wb-ds-space-100); /* missing token */
+  gap: var(--wb-ds-canvas-node-body-gap);
+  border-radius: var(--wb-ds-canvas-node-body-radius);
+  padding: var(--wb-ds-canvas-node-body-v-pad) var(--wb-ds-canvas-node-body-h-pad);
   border: 1px solid var(--wb-ds-ui-stroke-default);
   color: var(--wb-ds-ui-text-default);
 
