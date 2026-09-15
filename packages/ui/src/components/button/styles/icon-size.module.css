@@ -1,8 +1,8 @@
 :root {
   --wb-public-icon-size-xl: var(--wb-ds-size-300);
-  --wb-public-icon-size-l: 1.25rem /* missing token */;
-  --wb-public-icon-size-m: 1.125rem /* missing token */;
-  --wb-public-icon-size-s: 1.125rem /* missing token */;
+  --wb-public-icon-size-l: var(--wb-ds-size-250);
+  --wb-public-icon-size-m: var(--wb-ds-size-225);
+  --wb-public-icon-size-s: var(--wb-ds-size-225);
   --wb-public-icon-size-xs: var(--wb-ds-size-200);
 }
 
