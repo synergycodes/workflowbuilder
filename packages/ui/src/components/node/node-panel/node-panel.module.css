@@ -1,10 +1,10 @@
 :root {
-  --wb-public-node-width: 16.125rem;
+  --wb-public-node-width: 241px;
   --wb-public-node-height: 100%;
   --wb-public-node-border-size: 0.0625rem;
 
-  --wb-public-node-padding: var(--wb-ds-space-100);
-  --wb-public-node-gap: var(--wb-ds-space-100);
+  --wb-public-node-padding: var(--wb-ds-canvas-node-head-h-pad);
+  --wb-public-node-gap: var(--wb-ds-canvas-node-head-gap);
   --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
 
   --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
