@@ -43,5 +43,11 @@
 }
 
 .connectable-item--right {
+  /* Node / Row is "fill" in the design: the row takes the section width and only
+     the label truncates. The derived cap above stays for the horizontal branch row
+     of the DOWN layout, which has no design master. */
+  width: 100%;
+  min-width: 0;
+  max-width: none;
   gap: var(--wb-sdk-connectable-item-gap);
 }

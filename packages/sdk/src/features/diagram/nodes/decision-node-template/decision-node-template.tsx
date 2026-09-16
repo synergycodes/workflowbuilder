@@ -1,5 +1,6 @@
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
+import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 
 import { Icon } from '@workflow-builder/icons';
@@ -55,7 +56,11 @@ export const DecisionNodeTemplate = memo(
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <NodePanel.Root selected={selected} disabled={disabled} className={styles['decision-node']}>
+      <NodePanel.Root
+        selected={selected}
+        disabled={disabled}
+        className={clsx(styles['decision-node'], { [styles['decision-node--down']]: layoutDirection === 'DOWN' })}
+      >
         <NodePanel.Header>
           <NodeIcon icon={iconElement} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />

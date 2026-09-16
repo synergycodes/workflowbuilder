@@ -8,6 +8,7 @@ import { LabelEdge } from './label-edge';
 const { nodeLookup } = vi.hoisted(() => ({ nodeLookup: new Map<string, unknown>() }));
 
 vi.mock('@xyflow/react', () => ({
+  Position: { Top: 'top', Right: 'right', Bottom: 'bottom', Left: 'left' },
   getSmoothStepPath: () => ['M 0 0', 0, 0],
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
 }));
@@ -58,8 +59,8 @@ describe('LabelEdge', () => {
 
     const { container } = render(<LabelEdge {...selfConnectingEdgeProps} />);
 
-    expect(container.querySelector('[data-edge-id="self-loop"]')?.getAttribute('d')).toContain('Q 125 120 109 120');
-    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('120');
+    expect(container.querySelector('[data-edge-id="self-loop"]')?.getAttribute('d')).toContain('Q 125 212 109 212');
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('212');
   });
 
   it('falls back to the explicit node height when no measurement exists', () => {
@@ -67,7 +68,7 @@ describe('LabelEdge', () => {
 
     render(<LabelEdge {...selfConnectingEdgeProps} />);
 
-    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('160');
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('232');
   });
 
   it('does not read the node lookup for a regular edge', () => {
@@ -82,6 +83,6 @@ describe('LabelEdge', () => {
   it('treats an unknown source node as zero height', () => {
     render(<LabelEdge {...selfConnectingEdgeProps} />);
 
-    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('200');
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('252');
   });
 });

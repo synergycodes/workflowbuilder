@@ -1,5 +1,5 @@
 :root {
-  --wb-sdk-branches-container-gap: 0.25rem;
+  --wb-sdk-branches-container-gap: var(--wb-ds-canvas-node-body-gap);
 }
 
 .branches-container {
