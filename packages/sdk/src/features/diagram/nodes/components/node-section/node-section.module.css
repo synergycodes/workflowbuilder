@@ -1,7 +1,8 @@
 :root {
-  --wb-sdk-node-section-gap: var(--wb-ds-space-100); /* missing token */
-  --wb-sdk-node-section-padding: var(--wb-ds-space-100); /* missing token */
-  --wb-sdk-node-section-border-radius: var(--wb-ds-canvas-node-content-radius);
+  --wb-sdk-node-section-gap: var(--wb-ds-canvas-node-body-gap);
+  --wb-sdk-node-section-padding: var(--wb-ds-canvas-node-body-h-pad);
+  --wb-sdk-node-section-vertical-padding: var(--wb-ds-canvas-node-body-v-pad);
+  --wb-sdk-node-section-border-radius: var(--wb-ds-canvas-node-body-radius);
   --wb-sdk-node-section-border-color: var(--wb-ds-ui-stroke-default);
   --wb-sdk-node-section-border-width: 0.0625rem;
 }
@@ -13,7 +14,7 @@
   flex-direction: column;
   gap: var(--wb-sdk-node-section-gap);
   border-radius: var(--wb-sdk-node-section-border-radius);
-  padding: var(--wb-sdk-node-section-padding);
+  padding: var(--wb-sdk-node-section-vertical-padding) var(--wb-sdk-node-section-padding);
   border: var(--wb-sdk-node-section-border-width) solid var(--wb-sdk-node-section-border-color);
   color: var(--wb-ds-ui-text-default);
 

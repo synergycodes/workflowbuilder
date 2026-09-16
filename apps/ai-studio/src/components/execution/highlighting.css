@@ -19,15 +19,15 @@ html[data-theme='dark'] {
   --ai-studio-node-shadow-color--completed: var(--ai-studio-edge-color--active);
   --ai-studio-node-shadow-color--failed: var(--wb-ds-colors-red-400);
 
-  --ai-studio-node-shadow--active: var(--wb-ds-shadow-canvas-focus-node-x) var(--wb-ds-shadow-canvas-focus-node-y)
-    var(--wb-ds-shadow-canvas-focus-node-blur) var(--wb-ds-shadow-canvas-focus-node-spread)
-    var(--ai-studio-node-shadow-color--active);
+  --ai-studio-node-shadow--active: var(--wb-ds-shadow-canvas-focus-ring-node-x)
+    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
+    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--active);
 
-  --ai-studio-node-shadow--completed: var(--wb-ds-shadow-canvas-focus-node-x) var(--wb-ds-shadow-canvas-focus-node-y)
-    var(--wb-ds-shadow-canvas-focus-node-blur) var(--wb-ds-shadow-canvas-focus-node-spread)
-    var(--ai-studio-node-shadow-color--completed);
+  --ai-studio-node-shadow--completed: var(--wb-ds-shadow-canvas-focus-ring-node-x)
+    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
+    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--completed);
 
-  --ai-studio-node-shadow--failed: var(--wb-ds-shadow-canvas-focus-node-x) var(--wb-ds-shadow-canvas-focus-node-y)
-    var(--wb-ds-shadow-canvas-focus-node-blur) var(--wb-ds-shadow-canvas-focus-node-spread)
-    var(--ai-studio-node-shadow-color--failed);
+  --ai-studio-node-shadow--failed: var(--wb-ds-shadow-canvas-focus-ring-node-x)
+    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
+    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--failed);
 }
