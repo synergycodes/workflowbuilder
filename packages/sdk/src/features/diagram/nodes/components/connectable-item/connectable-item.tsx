@@ -22,7 +22,9 @@ export function ConnectableItem({ handleId, label, canHaveBottomHandle = true }:
         [styles['connectable-item--right']]: layoutDirection === 'RIGHT',
       })}
     >
-      <div className={styles['label']}>{label}</div>
+      <div className={styles['label']} title={label}>
+        {label}
+      </div>
       <div className={clsx(styles['handle-container'], { [styles['vertical']]: isVertical })}>
         <Handle id={handleId} position={position} type="source" />
       </div>
