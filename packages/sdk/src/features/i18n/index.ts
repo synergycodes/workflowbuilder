@@ -5,6 +5,7 @@ import { initReactI18next } from 'react-i18next';
 import { withOptionalComponentPluginsTranslation } from '../plugins-core/adapters/adapter-i18n';
 import { en } from './locales/en';
 import { pl } from './locales/pl';
+import { zh } from './locales/zh-cn';
 
 export const defaultNS = 'translation';
 
@@ -15,6 +16,9 @@ const resources = {
   pl: {
     translation: pl,
   } as const,
+  zh: {
+    translation: zh,
+  } as const,
 };
 
 i18n
@@ -23,12 +27,11 @@ i18n
   .init({
     resources: withOptionalComponentPluginsTranslation(resources),
     defaultNS,
-    fallbackLng: 'en',
+    fallbackLng: 'zh',
     interpolation: {
       escapeValue: false,
     },
     returnNull: false,
-    load: 'languageOnly',
     detection: {
       order: ['localStorage', 'navigator'],
       caches: ['localStorage'],
