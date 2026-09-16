@@ -2,7 +2,7 @@
 
 Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workflow Execution: every node becomes an Activity, retries and history come from Temporal, and the canvas shows each node's status live.
 
-This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
+This sample wires the [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
 
 ![A finished run in the editor: green on every node Temporal executed, grey on the branch it skipped](docs/editor-run.png)
 
@@ -55,6 +55,24 @@ Terminal 1, a local Temporal server:
 
 ```bash
 temporal server start-dev
+```
+
+If something already holds 7233 or 8233 — another Temporal you started earlier — run this one
+elsewhere:
+
+```bash
+temporal server start-dev --port 7234 --ui-port 8234
+```
+
+and put the addresses in front of both npm commands below, which
+[`worker/src/config.ts`](worker/src/config.ts) reads:
+
+```bash
+# terminal 2
+TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm start
+
+# terminal 3
+TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm run workflow
 ```
 
 Terminal 2, the Worker:
@@ -165,7 +183,7 @@ Six places carry the whole integration. Each has a comment where the reason is n
 
 ## Learn more
 
-- [`@workflowbuilder/temporal` on npm](https://www.npmjs.com/package/@workflowbuilder/temporal): profiles, node labels in Event History, versioning and replay.
+- [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal): profiles, node labels in Event History, versioning and replay.
 - [Workflow Builder documentation](https://www.workflowbuilder.io/docs/overview/)
 - [Temporal TypeScript SDK](https://docs.temporal.io/develop/typescript)
 
