@@ -83,14 +83,18 @@ describe('use-execution-store: a node waiting for a person', () => {
     expect(useExecutionStore.getState().status).toBe('running');
   });
 
-  it('a terminal event closes a waiting run, whatever the nodes say', () => {
+  it.each(terminalCases)('%s closes a waiting run and settles the nodes still in flight', (type, status) => {
     applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    applyEvent(event({ type: 'node_completed', nodeId: 'trigger-1', payload: { output: { input: 'refund' } } }));
     applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_started', nodeId: 'agent-1' }));
 
-    applyEvent(event({ type: 'execution_cancelled', payload: {} }));
+    applyEvent(terminalEvent(type));
 
-    expect(useExecutionStore.getState().status).toBe('cancelled');
-    expect(nodeState('human-1')).toEqual({ status: 'waiting' });
+    expect(useExecutionStore.getState().status).toBe(status);
+    expect(nodeState('human-1')).toEqual({ status: 'idle' });
+    expect(nodeState('agent-1')).toEqual({ status: 'idle' });
+    expect(nodeState('trigger-1')).toEqual({ status: 'completed', output: { input: 'refund' } });
   });
 
   it('a snapshot whose row still says pending shows the run waiting, because the events say so', () => {

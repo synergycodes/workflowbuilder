@@ -114,6 +114,18 @@ function deriveRunStatus(current: ExecutionStore['status'], nodeStates: Record<s
 
 function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, NodeExecutionState>) {
   switch (event.type) {
+    // A cancel records no node_failed for a parked node, so its hourglass would outlive the run.
+    case 'execution_completed':
+    case 'execution_incomplete':
+    case 'execution_failed':
+    case 'execution_cancelled': {
+      for (const [nodeId, state] of Object.entries(states)) {
+        if (state.status === 'running' || state.status === 'waiting') {
+          states[nodeId] = { status: 'idle' };
+        }
+      }
+      break;
+    }
     case 'node_started': {
       states[event.nodeId] = { status: 'running' };
       break;
