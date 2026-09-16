@@ -30,6 +30,12 @@ describe('NodeDescription', () => {
     expect(subtitle.getAttribute('title')).toBe('Sends the ticket to the right responder.');
   });
 
+  it('marks the block as disabled', () => {
+    act(() => root.render(<NodeDescription label="Start" disabled />));
+
+    expect(container.firstElementChild?.className).toMatch(/disabled/);
+  });
+
   it('renders no tooltip attribute when there is no description', () => {
     act(() => root.render(<NodeDescription label="Start" />));
 

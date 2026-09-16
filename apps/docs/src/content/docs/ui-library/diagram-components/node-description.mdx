@@ -36,6 +36,11 @@ Both lines are single-line. Text that does not fit the node width is cut with an
 full text is available through the element's native tooltip (`title`). The block never widens its
 node: a node keeps the design width and grows in height only through its body content.
 
+## Disabled
+
+`disabled` mutes both lines with the Node Disabled text color. The node templates pass it
+down together with `NodePanel.Root` and `NodeIcon`, so a whole node switches state at once.
+
 ## Props
 
 <PropsTable slug="node-description" />

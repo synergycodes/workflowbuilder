@@ -63,6 +63,12 @@ function WorkflowNode({ id, icon, label, description, selected, isValid, showHan
 }
 ```
 
+## States
+
+`selected` draws the active outline and shadow. `disabled` renders the Node Disabled
+variant: muted surface, title, subtitle and icon, and no hover reaction. The palette uses
+it for node types that cannot be added at the moment, for example in read-only mode.
+
 ## Parts
 
 | Part                | Props                                                                                                 | Description                                                                       |
