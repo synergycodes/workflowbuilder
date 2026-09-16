@@ -4,9 +4,13 @@ import { Icon } from '@workflow-builder/icons';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EdgeLabel } from '../edge-label-renderer/edge-label-renderer';
-import { EDGE_CURVE_RADIUS, EDGE_OFFSET, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
+import { EDGE_CURVE_RADIUS, EDGE_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
-import { SelfConnectingEdge, useSelfLoopNodeHeight } from '../self-connecting-edge/self-connecting-edge';
+import {
+  SelfConnectingEdge,
+  getSelfLoopHeight,
+  useSelfLoopNodeHeight,
+} from '../self-connecting-edge/self-connecting-edge';
 import { useLabelEdgeHover } from './use-label-edge-hover';
 
 /**
@@ -65,7 +69,7 @@ export function LabelEdge({
   };
 
   if (source === target) {
-    const selfConnectingLabelY = sourceY - (nodeHeight + SELF_CONNECTING_EDGE_LABEL_OFFSET);
+    const selfConnectingLabelY = sourceY - getSelfLoopHeight(nodeHeight, sourcePosition);
 
     return (
       <>

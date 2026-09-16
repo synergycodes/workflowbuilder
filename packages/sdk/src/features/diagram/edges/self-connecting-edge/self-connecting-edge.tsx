@@ -1,5 +1,5 @@
 import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
-import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
+import { type EdgeProps, Position, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
@@ -33,13 +33,27 @@ export function useSelfLoopNodeHeight(source: string, target: string) {
   });
 }
 
+/**
+ * Vertical distance from the source port to the apex of a self-loop, so that
+ * the apex sits {@link SELF_CONNECTING_EDGE_LABEL_OFFSET} above the node's top
+ * edge whatever the node height. Ports sit mid-height in the horizontal layout
+ * and on the bottom edge in the vertical one. xyflow anchors a bottom port on
+ * its outer edge, so in that layout the apex lands half a port lower.
+ *
+ * @category Utilities
+ */
+export function getSelfLoopHeight(nodeHeight: number, sourcePosition?: Position) {
+  const portToTopEdge =
+    sourcePosition === Position.Bottom ? nodeHeight : sourcePosition === Position.Top ? 0 : nodeHeight / 2;
+  return portToTopEdge + SELF_CONNECTING_EDGE_LABEL_OFFSET;
+}
+
 type Point = {
   x: number;
   y: number;
 };
 
-function createSelfConnectingPath(source: Point, target: Point, nodeHeight: number, radius: number) {
-  const loopHeight = nodeHeight + SELF_CONNECTING_EDGE_LABEL_OFFSET;
+function createSelfConnectingPath(source: Point, target: Point, loopHeight: number, radius: number) {
   const horizontalOffset = 25;
 
   const points = {
@@ -84,6 +98,7 @@ export function SelfConnectingEdge({
   hovered,
   source,
   target,
+  sourcePosition,
   nodeHeight,
 }: SelfConnectingEdgeProps) {
   const measuredNodeHeight = useSelfLoopNodeHeight(source, target);
@@ -93,7 +108,7 @@ export function SelfConnectingEdge({
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
     { x: targetX, y: targetY },
-    nodeHeight ?? measuredNodeHeight,
+    getSelfLoopHeight(nodeHeight ?? measuredNodeHeight, sourcePosition),
     EDGE_CURVE_RADIUS,
   );
 

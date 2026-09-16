@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import type { EdgeProps } from '@xyflow/react';
+import { type EdgeProps, Position } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
@@ -8,6 +8,7 @@ import { SelfConnectingEdge } from './self-connecting-edge';
 const { nodeLookup } = vi.hoisted(() => ({ nodeLookup: new Map<string, unknown>() }));
 
 vi.mock('@xyflow/react', () => ({
+  Position: { Top: 'top', Right: 'right', Bottom: 'bottom', Left: 'left' },
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
 }));
 
@@ -49,7 +50,15 @@ describe('SelfConnectingEdge', () => {
 
     const { container } = render(<SelfConnectingEdge {...loopProps} />);
 
-    expect(loopApexY(container)).toBe(300 - (80 + 100));
+    expect(loopApexY(container)).toBe(300 - (80 / 2 + 48));
+  });
+
+  it('measures the offset from the top edge when the source port sits on the bottom edge', () => {
+    nodeLookup.set('node-1', { measured: { height: 80 } });
+
+    const { container } = render(<SelfConnectingEdge {...loopProps} sourcePosition={Position.Bottom} />);
+
+    expect(loopApexY(container)).toBe(300 - (80 + 48));
   });
 
   it('prefers an explicit nodeHeight over the store', () => {
@@ -57,6 +66,6 @@ describe('SelfConnectingEdge', () => {
 
     const { container } = render(<SelfConnectingEdge {...loopProps} nodeHeight={20} />);
 
-    expect(loopApexY(container)).toBe(300 - (20 + 100));
+    expect(loopApexY(container)).toBe(300 - (20 / 2 + 48));
   });
 });

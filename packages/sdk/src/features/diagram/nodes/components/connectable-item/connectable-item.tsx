@@ -22,6 +22,7 @@ export function ConnectableItem({ handleId, label, canHaveBottomHandle = true }:
         [styles['connectable-item--right']]: layoutDirection === 'RIGHT',
       })}
     >
+      {/* Native title until the DS Tooltip takes over (follow-up: node-text-ds-tooltip). */}
       <div className={styles['label']} title={label}>
         {label}
       </div>

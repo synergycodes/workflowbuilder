@@ -36,6 +36,10 @@ Both lines are single-line. Text that does not fit the node width is cut with an
 full text is available through the element's native tooltip (`title`). The block never widens its
 node: a node keeps the design width and grows in height only through its body content.
 
+That last property comes from `contain: inline-size`, so the block contributes nothing to its
+parent's width. Render it inside an ancestor with a definite inline size (`NodePanel.Header` inside
+the 241px shell qualifies); in an `inline-flex` or `fit-content` wrapper it collapses to zero width.
+
 ## Disabled
 
 `disabled` mutes both lines with the Node Disabled text color. The node templates pass it

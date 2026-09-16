@@ -8,7 +8,7 @@ import { setCustomPaletteNodes } from '../../../data/palette';
 import type { WorkflowBuilderNode } from '../../../node/node-data';
 import { mockNodeDelay } from '../../../utils/validation/get-node-errors.mock';
 import { resetWorkflowStore, useStore } from '../../store';
-import { refreshNodesErrorsIfNeeded } from './actions';
+import { getStoreDataForIntegration, refreshNodesErrorsIfNeeded } from './actions';
 
 // Mirrors the definition the consumer's palette would supply for `delay` nodes;
 // `description` is required, so a node missing it must surface a validation error.
@@ -84,5 +84,49 @@ describe('refreshNodesErrorsIfNeeded', () => {
     refreshNodesErrorsIfNeeded();
 
     expect(useStore.getState().nodes).toBe(before);
+  });
+});
+
+describe('getStoreDataForIntegration', () => {
+  beforeEach(() => {
+    resetWorkflowStore();
+    useStore.setState({
+      nodes: [
+        {
+          ...mockNodeDelay,
+          selected: true,
+          dragging: true,
+          measured: { width: 241, height: 64 },
+        } as WorkflowBuilderNode,
+      ],
+      edges: [
+        {
+          id: 'edge-1',
+          source: 'a',
+          target: 'b',
+          selected: true,
+          data: { routerPointsFromAvoidNodes: [{ x: 1, y: 2 }], layoutPoints: [{ x: 3, y: 4 }] },
+        } as never,
+      ],
+    });
+  });
+
+  it('strips runtime-only values by default', () => {
+    const { nodes, edges } = getStoreDataForIntegration();
+
+    expect(nodes[0]).not.toHaveProperty('measured');
+    expect(nodes[0]).not.toHaveProperty('dragging');
+    expect(nodes[0].selected).toBe(false);
+    expect(edges[0].selected).toBe(false);
+    expect(edges[0].data).toMatchObject({ routerPointsFromAvoidNodes: [], layoutPoints: [] });
+  });
+
+  it('returns the live store objects when asked to keep dynamic values', () => {
+    const state = useStore.getState();
+    const { nodes, edges } = getStoreDataForIntegration({ shouldSkipDynamicValues: false });
+
+    expect(nodes).toBe(state.nodes);
+    expect(edges).toBe(state.edges);
+    expect(nodes[0]).toHaveProperty('measured');
   });
 });

@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-Decision branch rows and AI tool rows show the full label in a tooltip when the text is truncated.
+Decision branch rows and AI tool rows expose the full label as a native tooltip (`title`), so a clipped row stays readable.
