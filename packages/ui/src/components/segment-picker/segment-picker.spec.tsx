@@ -3,8 +3,6 @@ import { type Root, createRoot } from 'react-dom/client';
 
 import { SegmentPicker } from './segment-picker';
 
-(globalThis as typeof globalThis & { IS_REACT_ACT_ENVIRONMENT: boolean }).IS_REACT_ACT_ENVIRONMENT = true;
-
 let container: HTMLDivElement;
 let root: Root;
 
