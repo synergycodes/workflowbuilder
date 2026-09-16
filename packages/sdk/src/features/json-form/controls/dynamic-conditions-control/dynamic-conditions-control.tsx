@@ -8,6 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './dynamic-conditions-control.module.css';
 
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { DynamicCondition, DynamicConditionsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { Dependencies } from './dependencies/dependencies';
@@ -15,8 +16,8 @@ import { ConditionModalFooter } from './dynamic-condition-modal-footer/condition
 import { ConditionsForm, type ConditionsFormHandle } from './dynamic-conditions-form/conditions-form';
 
 function DynamicConditionsControl(props: DynamicConditionsControlProps) {
-  const { data = [], handleChange, path, enabled, uischema } = props;
-  const isDisabled = !enabled || uischema.disabled === true;
+  const { data = [], handleChange, path } = props;
+  const isEditable = useIsControlEditable(props);
   const formRef = useRef<ConditionsFormHandle>(null);
 
   const { t } = useTranslation(undefined, { keyPrefix: 'conditions' });
@@ -44,11 +45,11 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
     <div className={styles['container']}>
       <div className={styles['header']}>
         <span className={clsx('ax-public-h10', styles['title'])}>{t('title')}</span>
-        <NavButton size="small" onClick={openEditorModal} tooltip={t('title')} disabled={isDisabled}>
+        <NavButton size="small" onClick={openEditorModal} tooltip={t('title')} disabled={!isEditable}>
           <Icon name="FrameCorners" size="small" />
         </NavButton>
       </div>
-      <Dependencies conditions={data} onClick={openEditorModal} disabled={isDisabled} />
+      <Dependencies conditions={data} onClick={openEditorModal} disabled={!isEditable} />
       <span className={styles['tag']}>{t('totalNumber', { count: data.length })}</span>
     </div>
   );

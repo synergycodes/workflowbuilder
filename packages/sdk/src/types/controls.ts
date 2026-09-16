@@ -99,10 +99,23 @@ export type DatePickerControlElement = Override<
 >;
 export type DatePickerControlProps = ControlProps<Date, DatePickerControlElement>;
 
+/**
+ * Configuration options available to all UI schema elements.
+ *
+ * @see https://jsonforms.io/docs/integrations/react#config
+ */
+export type BaseControlConfig = {
+  /**
+   * Whether all renderers should render the control in a disabled state.
+   */
+  readonly?: boolean;
+};
+
 export type BaseControlProps = Override<
   JsonFormsControlProps,
   {
     uischema: UISchemaControlElement;
+    config?: BaseControlConfig;
   }
 >;
 

@@ -3,13 +3,14 @@ import { Select, type SelectBaseProps } from '@workflowbuilder/ui';
 import { Icon } from '@workflow-builder/icons';
 
 import type { PrimitiveFieldSchema } from '../../../../node/node-schema';
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { SelectControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function SelectControl(props: SelectControlProps) {
-  const { data, handleChange, path, enabled, schema, uischema } = props;
-  const isDisabled = !enabled || uischema.disabled === true;
+  const { data, handleChange, path, schema } = props;
+  const isEditable = useIsControlEditable(props);
 
   const items = (schema as PrimitiveFieldSchema).options?.map((option) =>
     option.type === 'separator' || !option.icon
@@ -29,7 +30,7 @@ function SelectControl(props: SelectControlProps) {
       <Select
         value={data ?? null}
         items={items ?? []}
-        disabled={isDisabled}
+        disabled={!isEditable}
         onChange={onChange}
         placeholder={schema.placeholder}
       />

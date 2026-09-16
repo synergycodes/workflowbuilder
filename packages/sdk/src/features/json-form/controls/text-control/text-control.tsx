@@ -1,16 +1,16 @@
 import { Input } from '@workflowbuilder/ui';
 import { useEffect, useState } from 'react';
 
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { TextControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function TextControl(props: TextControlProps) {
-  const { schema, uischema, enabled, data, required, errors, path, handleChange } = props;
-
+  const { schema, uischema, data, required, errors, path, handleChange } = props;
   const { type } = schema;
-  const { placeholder, disabled } = uischema;
-  const isDisabled = !enabled || disabled === true;
+  const { placeholder } = uischema;
+  const isEditable = useIsControlEditable(props);
 
   const isNumberInput = type === 'number';
   const hasErrors = errors.length > 0;
@@ -52,7 +52,7 @@ function TextControl(props: TextControlProps) {
         onChange={onChange}
         onBlur={onBlur}
         error={hasErrors}
-        disabled={isDisabled}
+        disabled={!isEditable}
         placeholder={placeholder}
       />
     </ControlWrapper>
