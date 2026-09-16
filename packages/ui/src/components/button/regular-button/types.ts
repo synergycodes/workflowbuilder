@@ -7,12 +7,10 @@ export const BUTTON_VARIANTS = [
   'secondary',
   'critical',
   'success',
-  'warning',
   'ghost-primary',
   'ghost-secondary',
   'ghost-critical',
   'ghost-success',
-  'ghost-warning',
 ] as const;
 
 export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];

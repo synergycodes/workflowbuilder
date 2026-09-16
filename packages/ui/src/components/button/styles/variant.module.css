@@ -33,14 +33,6 @@
   --wb-public-button-success-color: var(--wb-ds-ui-text-onaccent-default);
   --wb-public-button-success-color-disabled: var(--wb-ds-ui-text-disabled);
 
-  --wb-public-button-warning-background: var(--wb-ds-components-button-solid-warning-default);
-  --wb-public-button-warning-background-hover: var(--wb-ds-components-button-solid-warning-hover);
-  --wb-public-button-warning-background-active: var(--wb-ds-components-button-solid-warning-active);
-  --wb-public-button-warning-background-focus: var(--wb-ds-components-button-solid-warning-focus);
-  --wb-public-button-warning-background-disabled: var(--wb-ds-components-button-solid-disabled);
-  --wb-public-button-warning-color: var(--wb-ds-ui-text-onaccent-default);
-  --wb-public-button-warning-color-disabled: var(--wb-ds-ui-text-disabled);
-
   --wb-public-button-ghost-primary-background-color: var(--wb-ds-components-button-ghost-primary-default);
   --wb-public-button-ghost-primary-background-color-hover: var(--wb-ds-components-button-ghost-primary-hover);
   --wb-public-button-ghost-primary-background-color-active: var(--wb-ds-components-button-ghost-primary-active);
@@ -80,15 +72,6 @@
   --wb-public-button-ghost-success-border-color: var(--wb-ds-components-button-ghost-success-stroke-default);
   --wb-public-button-ghost-success-color: var(--wb-ds-ui-text-success-default);
   --wb-public-button-ghost-success-color-disabled: var(--wb-ds-ui-text-success-disabled);
-
-  --wb-public-button-ghost-warning-background-color: var(--wb-ds-components-button-ghost-warning-default);
-  --wb-public-button-ghost-warning-background-color-hover: var(--wb-ds-components-button-ghost-warning-hover);
-  --wb-public-button-ghost-warning-background-color-active: var(--wb-ds-components-button-ghost-warning-active);
-  --wb-public-button-ghost-warning-background-color-focus: var(--wb-ds-components-button-ghost-warning-focus);
-  --wb-public-button-ghost-warning-background-color-disabled: var(--wb-ds-components-button-ghost-warning-disabled);
-  --wb-public-button-ghost-warning-border-color: var(--wb-ds-components-button-ghost-warning-stroke-default);
-  --wb-public-button-ghost-warning-color: var(--wb-ds-ui-text-warning-default);
-  --wb-public-button-ghost-warning-color-disabled: var(--wb-ds-ui-text-warning-disabled);
 }
 
 @layer ui.component {
@@ -132,21 +115,10 @@
     --button-color-disabled: var(--wb-public-button-success-color-disabled);
   }
 
-  .warning {
-    --button-background: var(--wb-public-button-warning-background);
-    --button-background-hover: var(--wb-public-button-warning-background-hover);
-    --button-background-active: var(--wb-public-button-warning-background-active);
-    --button-background-focus: var(--wb-public-button-warning-background-focus);
-    --button-background-disabled: var(--wb-public-button-warning-background-disabled);
-    --button-color: var(--wb-public-button-warning-color);
-    --button-color-disabled: var(--wb-public-button-warning-color-disabled);
-  }
-
   .primary,
   .secondary,
   .critical,
-  .success,
-  .warning {
+  .success {
     background-color: var(--button-background);
     color: var(--button-color);
 
@@ -228,26 +200,10 @@
     --button-color-disabled: var(--wb-public-button-ghost-success-color-disabled);
   }
 
-  .ghost-warning {
-    --button-background: var(--wb-public-button-ghost-warning-background-color);
-    --button-background-hover: var(--wb-public-button-ghost-warning-background-color-hover);
-    --button-background-active: var(--wb-public-button-ghost-warning-background-color-active);
-    --button-background-focus: var(--wb-public-button-ghost-warning-background-color-focus);
-    --button-background-disabled: var(--wb-public-button-ghost-warning-background-color-disabled);
-    --button-border-color: var(--wb-public-button-ghost-warning-border-color);
-    --button-border-color-hover: var(--wb-public-button-ghost-warning-border-color);
-    --button-border-color-active: var(--wb-public-button-ghost-warning-border-color);
-    --button-border-color-focus: var(--wb-public-button-ghost-warning-border-color);
-    --button-border-color-disabled: var(--wb-public-button-ghost-warning-border-color);
-    --button-color: var(--wb-public-button-ghost-warning-color);
-    --button-color-disabled: var(--wb-public-button-ghost-warning-color-disabled);
-  }
-
   .ghost-primary,
   .ghost-secondary,
   .ghost-critical,
-  .ghost-success,
-  .ghost-warning {
+  .ghost-success {
     --button-border-color-current: var(--button-border-color);
 
     background-color: var(--button-background);

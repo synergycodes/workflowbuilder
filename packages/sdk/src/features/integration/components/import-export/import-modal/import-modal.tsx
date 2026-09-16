@@ -70,7 +70,7 @@ export function ImportModal() {
       <div className={styles['actions']}>
         {warnings.length > 0 && errors.length === 0 && (
           <Button
-            variant="warning"
+            variant="secondary"
             prefixIcon={<Icon name="DownloadSimple" />}
             onClick={() => handleImport({ shouldIgnoreWarnings: true })}
           >
