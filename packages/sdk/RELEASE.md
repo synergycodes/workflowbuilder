@@ -4,14 +4,49 @@ Maintainer-only procedure. Consumer docs live in [`README.md`](./README.md). Hig
 
 The flow is **A+ (Changesets + commitlint + release branch + tag-triggered CI publish)** — adapted from [synergycodes/ng-diagram](https://github.com/synergycodes/ng-diagram) (defensive pre-publish checks, npm-view idempotency) plus Changesets for automated version/CHANGELOG management.
 
-This repo publishes **two** packages: `@workflowbuilder/sdk` and `@workflowbuilder/ui`. Each has its own **scoped** release tag and its own workflow:
+This repo is set up to publish **three** packages: `@workflowbuilder/sdk`, `@workflowbuilder/ui` and `@workflowbuilder/temporal` (the last one is not on npm yet, see the box below). Each has its own **scoped** release tag and its own workflow:
 
-| Package                | Tag format                   | Workflow                            |
-| ---------------------- | ---------------------------- | ----------------------------------- |
-| `@workflowbuilder/sdk` | `@workflowbuilder/sdk@X.Y.Z` | `.github/workflows/release-sdk.yml` |
-| `@workflowbuilder/ui`  | `@workflowbuilder/ui@X.Y.Z`  | `.github/workflows/release-ui.yml`  |
+| Package                     | Tag format                        | Workflow                                 | Status                        |
+| --------------------------- | --------------------------------- | ---------------------------------------- | ----------------------------- |
+| `@workflowbuilder/sdk`      | `@workflowbuilder/sdk@X.Y.Z`      | `.github/workflows/release-sdk.yml`      | published                     |
+| `@workflowbuilder/ui`       | `@workflowbuilder/ui@X.Y.Z`       | `.github/workflows/release-ui.yml`       | published                     |
+| `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | **not published - see below** |
 
-The steps below describe the SDK; the UI release is identical with the UI tag/workflow/package path substituted. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the two packages don't collide.)
+> ### 🚫 Do not publish `@workflowbuilder/temporal` yet
+>
+> The package is **in development and consumed only inside this repo**. Nothing on npm carries this
+> name yet, and the first publish needs an explicit go-ahead (it is part of the Temporal partner
+> submission, so the public API is reviewed before it ships, not after).
+>
+> **The way it would slip out by accident:** it is a normal public package with a changeset in
+> `.changeset/`, so a release cut for the SDK carries it along. `pnpm changeset version` bumps it
+> together with everything else, `pnpm changeset tag` creates its tag together with everything else,
+> and one `git push --tags` publishes it. Nobody has to intend it.
+>
+> **What is guarding it right now:**
+>
+> 1. **`"private": true` in `packages/temporal/package.json`.** This is the hard stop, and it is worth
+>    knowing exactly how it behaves: `pnpm --filter @workflowbuilder/temporal publish` reports
+>    _"There are no new packages that should be published"_ and **exits 0**. It skips silently rather
+>    than failing, so the release workflow goes green and even creates a GitHub Release while nothing
+>    reaches npm. Verified by dry run. Changesets still bumps the version and writes the CHANGELOG
+>    (private packages are versioned, just not published), so a changeset for it is never orphaned.
+> 2. **No npm trusted publisher is registered for it** (§ One-time setup, step 2). Second line of
+>    defence: even without the private flag, the publish step would fail on OIDC. Registering it "to
+>    have it ready" removes exactly the guard that is protecting you.
+> 3. **Push tags one at a time, by name.** Never `git push --tags` while this package is in this state.
+>    See § 4 below. If `changeset tag` created a `@workflowbuilder/temporal@X.Y.Z` tag locally, delete
+>    it before pushing: `git tag -d @workflowbuilder/temporal@X.Y.Z`. The version bump and CHANGELOG
+>    entry on `release` are harmless on their own; only the pushed tag starts a release.
+>
+> **When the go-ahead comes**, in this order: remove `"private": true`, register the npm trusted
+> publisher, then follow the normal flow. Miss the first step and the release "succeeds" without
+> publishing anything, which is a confusing hour to debug. Remove this box in the same PR so it cannot
+> go stale.
+
+The steps below describe the SDK; the other releases are identical with their tag/workflow/package path substituted. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the packages don't collide.)
+
+`@workflowbuilder/temporal` has one extra consideration the other two do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version. See `packages/temporal/README.md` § "Versioning and replay".
 
 ## Mental model
 
@@ -38,7 +73,7 @@ release  ───────────────●───────�
    - Publisher: **GitHub Actions**
    - Organization or user: `synergycodes`
    - Repository: `workflowbuilder`
-   - Workflow filename: `release-sdk.yml` for `@workflowbuilder/sdk`, `release-ui.yml` for `@workflowbuilder/ui`
+   - Workflow filename: `release-sdk.yml` for `@workflowbuilder/sdk`, `release-ui.yml` for `@workflowbuilder/ui`, `release-temporal.yml` for `@workflowbuilder/temporal`
    - Environment name: _(leave empty)_
 
    The workflows already have `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a scoped tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit.
@@ -198,13 +233,43 @@ Merge `release/vX.Y.Z` into `release` (merge commit gives cleaner blame; pick on
 
 ### 4. Tag the merge commit
 
-After the merge lands on `release`:
+One release PR can bump more than one package: `pnpm changeset version` bumps everything that had a
+changeset. Each bumped package needs **its own tag**, and a package whose tag is never pushed silently
+stays off npm while its version on `release` says otherwise. Let Changesets work out the list rather
+than typing it from memory:
 
 ```bash
 git checkout release && git pull
-git tag @workflowbuilder/sdk@X.Y.Z   # scoped; matches packages/sdk/package.json exactly
+pnpm changeset tag   # creates <package>@<version> for every package whose version is new
+git tag -l --points-at HEAD   # read what it made before pushing anything
+```
+
+The tags it prints are exactly the format the workflows listen for. Now push them **one at a time, by
+name**, so you choose what publishes:
+
+```bash
 git push origin @workflowbuilder/sdk@X.Y.Z
-# For the UI package: git tag @workflowbuilder/ui@X.Y.Z && git push origin @workflowbuilder/ui@X.Y.Z
+git push origin @workflowbuilder/ui@X.Y.Z      # only if UI was bumped too
+```
+
+Multiple tags on one commit is normal and expected: each tag triggers only its own workflow, and they
+run in parallel. Nothing about tagging one package interferes with another.
+
+> **Do not `git push --tags`.** It pushes every local tag, including ones you did not mean to release
+> (today that means `@workflowbuilder/temporal`, see the box at the top of this file). Pushing by name
+> keeps the decision explicit. Delete any tag you are not releasing: `git tag -d <tag>`.
+
+> **Do not create the tag through the GitHub UI** ("Releases" → "Draft a new release" → "Create new
+> tag"). That screen creates the tag **and** a GitHub Release in one step, while the workflow creates
+> its own Release with notes extracted from the CHANGELOG. You end up with a hand-made empty Release
+> that the workflow then has to fight with. Tag from the CLI.
+
+`changeset tag` skips packages whose version is already tagged, so re-running it after a partial
+release is safe. If you would rather tag by hand, the format is `<package name>@<version>`, matching
+that package's `package.json` exactly:
+
+```bash
+git tag @workflowbuilder/sdk@X.Y.Z && git push origin @workflowbuilder/sdk@X.Y.Z
 ```
 
 ### 5. CI publishes automatically

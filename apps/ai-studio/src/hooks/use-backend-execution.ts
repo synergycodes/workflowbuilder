@@ -59,8 +59,11 @@ export function useBackendExecution() {
   const cancel = useCallback(async () => {
     if (!executionId) return;
 
-    disconnectRef.current?.();
-
+    // The stream stays open on purpose. Cancelling is asynchronous: the backend only
+    // asks Temporal to cancel, and the worker emits `execution_cancelled` a moment
+    // later. That event is what moves the UI to 'cancelled', and the adapter closes
+    // the EventSource once it sees it. Disconnecting here dropped the event, so the
+    // panel stayed in 'running' forever with no terminal log line.
     await fetch(`${BACKEND_URL}/api/executions/${executionId}`, {
       method: 'DELETE',
     });

@@ -1,0 +1,20 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "types": ["node"],
+    "target": "es2022",
+    "module": "es2022",
+    // src/core-contract.ts reaches into the sibling source-only packages by relative
+    // path (see the comment there), so the compilation root has to span them.
+    "rootDir": "../..",
+    // execution-core's own files import @workflow-builder/types by package name.
+    // Left alone, that name survives into the emitted .d.ts as an import of a package
+    // that is not published. Mapping it to the source keeps it a project file, which
+    // is what gets it inlined.
+    "paths": {
+      "@workflow-builder/types/*": ["../types/src/*.ts"]
+    }
+  },
+  "include": ["src", "test", "tsup.config.ts"]
+}

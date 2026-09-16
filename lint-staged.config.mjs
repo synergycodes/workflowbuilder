@@ -10,7 +10,7 @@ const prettierIgnore = fileURLToPath(new URL('./.prettierignore', import.meta.ur
  */
 export default {
   '*.{ts,tsx,js,json,css,astro,md,mdx}': (files) =>
-    `prettier --write --log-level=silent --ignore-path ${prettierIgnore} ${files.join(' ')}`,
+    `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
   '*.{ts,tsx}': [(files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`, () => `tsc --noEmit`],
   '*.css': (files) => `stylelint ${files.join(' ')}`,
 };

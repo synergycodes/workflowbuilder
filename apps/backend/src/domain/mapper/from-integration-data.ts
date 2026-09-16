@@ -1,3 +1,5 @@
+import { isDefined, pickBy } from 'remeda';
+
 import {
   type BaseNode,
   NODE_ERROR_POLICIES,
@@ -26,22 +28,24 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// Two runner-level fields are lifted out of the frontend shape here so `config`
-// stays free of them. `errorPolicy` is authored in the UI as a regular JSONForms
-// property (via `sharedProperties` in the SDK) and arrives nested in
-// `data.properties`. `role` comes from the editor's `data.isStartNode` flag,
-// which sits alongside the properties rather than inside them.
+// Lifts the three fields an engine reads out of `data.properties`, where the SDK's
+// `sharedProperties` put them. `role` comes from `data.isStartNode` instead, which sits
+// beside the properties. `description` stays in `config`: no engine reads it.
 function mapNode(node: FrontendNode): BaseNode {
-  const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
+  const { errorPolicy: rawErrorPolicy, label: rawLabel, ...config } = node.data.properties ?? {};
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
+  const label = isNonEmptyString(rawLabel) ? rawLabel.trim() : undefined;
   const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,
     config,
-    ...(errorPolicy === undefined ? {} : { errorPolicy }),
-    ...(role === undefined ? {} : { role }),
+    ...pickBy({ label, errorPolicy, role }, isDefined),
   };
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isErrorPolicy(value: unknown): value is NodeErrorPolicy {

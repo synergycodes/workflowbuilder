@@ -197,30 +197,31 @@ Temporal ready
 [ai-studio]    ➜  Local:   http://127.0.0.1:4201/
 ```
 
-Open `http://localhost:4201`. Pick the "Sales Inquiry" template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
+Open `http://localhost:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 
 #### Connect a real LLM (optional)
 
-AI Studio works with stub responses out of the box. To use a real model, add to both `apps/backend/.env` and `apps/execution-worker/.env`:
+The stack starts without an LLM: Trigger, Decision and Visualize nodes run as usual, and an AI Agent node fails with `ai_not_configured` when the run reaches it. AI nodes need three variables in both `apps/backend/.env` and `apps/execution-worker/.env`. The files `pnpm setup:env` created already carry an endpoint and a model for [OpenRouter](https://openrouter.ai), so only the key is missing:
 
 ```env
-OPENROUTER_API_KEY=sk-or-v1-...
-AI_MODEL=anthropic/claude-3.5-haiku
+AI_API_KEY=sk-or-v1-...
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
 ```
 
-If the key is missing the worker fails to start with `OPENROUTER_API_KEY is required`. If the model id is wrong the first AI node fails at runtime and the error surfaces in the UI log panel.
+None of the three has a built-in default. Any OpenAI-compatible endpoint works: set `AI_BASE_URL` to a gateway or to a model hosted inside your own network, `AI_MODEL` to an id that endpoint understands, and model requests stay inside it. That covers the model only: the optional web-search tool calls Tavily's API when `TAVILY_API_KEY` is set, so leave it unset if nothing may call out. If the model id is wrong, the first AI node fails at runtime and the error surfaces in the UI log panel.
 
 ### Troubleshooting
 
-| Symptom                                                                 | Cause                                                                 | Fix                                                                              |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                        | `pnpm preflight` shows the conflict. Stop the other process or change the port   |
-| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                    | `pnpm -F backend db:migrate`                                                     |
-| Worker exits with `OPENROUTER_API_KEY is required`                      | Real LLM env var missing                                              | Set it in `apps/execution-worker/.env`. Optional unless you want a real LLM call |
-| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal | Fix the errors or ignore them temporarily                                        |
-| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                            | `rm -rf node_modules/.vite` and rerun                                            |
+| Symptom                                                                 | Cause                                                                        | Fix                                                                            |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                               | `pnpm preflight` shows the conflict. Stop the other process or change the port |
+| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                           | `pnpm -F backend db:migrate`                                                   |
+| AI Agent node fails with `ai_not_configured`                            | LLM not configured — the worker starts anyway, only AI nodes are unavailable | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env` |
+| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal        | Fix the errors or ignore them temporarily                                      |
+| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                                   | `rm -rf node_modules/.vite` and rerun                                          |
 
 For the full command reference, see the table in [`CLAUDE.md`](./CLAUDE.md) or the documentation site.
 

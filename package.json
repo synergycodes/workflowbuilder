@@ -20,6 +20,7 @@
     "build:ai-studio": "pnpm --filter @workflow-builder/ai-studio build",
     "build:ui": "pnpm --filter @workflowbuilder/ui-tokens build && pnpm --filter @workflowbuilder/ui build",
     "build:lib": "pnpm build:ui && pnpm --filter @workflowbuilder/sdk build:lib",
+    "build:temporal": "pnpm --filter @workflowbuilder/temporal build",
     "build:docs": "pnpm --filter @workflow-builder/docs build",
     "preview-build": "pnpm --filter @workflow-builder/demo preview-build",
     "lint": "pnpm -r lint",

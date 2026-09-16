@@ -2,12 +2,13 @@ name: PR Check
 
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Two things are gated here: the published packages
-# @workflowbuilder/sdk and @workflowbuilder/ui (plus its private
-# @workflowbuilder/ui-tokens build), and the execution pipeline
-# (execution-core, backend, execution-worker) — whose determinism tests guard
-# Temporal replay safety and so must not be able to regress silently. Plus
-# global format consistency. apps/docs has its own path-filtered workflow
-# (pr-check-docs.yml); demo and ai-studio are not built here — they're
+# @workflowbuilder/sdk, @workflowbuilder/ui (plus its private
+# @workflowbuilder/ui-tokens build) and @workflowbuilder/temporal, and the
+# execution pipeline (execution-core, backend, execution-worker) — whose
+# determinism tests guard Temporal replay safety and so must not be able to
+# regress silently. Plus the deploy compose files, which ship to the demo VM on
+# every deploy, and global format consistency. apps/docs has its own path-filtered workflow
+# (pr-check-docs.yml); demo and ai-studio are not built or type-checked here — they're
 # internal and have their own broken-state tolerances — but their CSS goes
 # through the style lint below like every other workspace's.
 
@@ -104,6 +105,100 @@ jobs:
       - name: Build
         run: npm run build
 
+  temporal:
+    name: Temporal plugin lint + typecheck + test + build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # the changeset guard below diffs against the base branch
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/temporal lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/temporal typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/temporal test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/temporal build
+
+      - name: Verify the published shape
+        # Three subpaths with their own types — exactly where an exports map breaks
+        # quietly, and consumers would be the ones to find out. Versions pinned so a
+        # tool release cannot redden PRs on its own; the esm-only attw profile matches
+        # the package (ESM without CJS is a finding under stricter profiles).
+        working-directory: packages/temporal
+        run: |
+          pnpm dlx publint@0.3.24
+          pnpm dlx @arethetypeswrong/cli@0.18.5 --pack --profile esm-only
+
+      - name: Changeset guard for bundled execution packages
+        # execution-core and types are private and source-only: they are bundled into
+        # @workflowbuilder/temporal's dist, so a behaviour change in either ships to
+        # consumers only when this package is released. A warning, not a failure —
+        # a pure refactor legitimately needs no changeset.
+        #
+        # Silent while the package is `private: true`, so the first publish turns the
+        # guard back on by itself. See CLAUDE.md for why.
+        run: |
+          if node -e "process.exit(require('./packages/temporal/package.json').private === true ? 0 : 1)"; then
+            echo "@workflowbuilder/temporal is still private; changeset guard skipped."
+            exit 0
+          fi
+          CHANGED=$(git diff --name-only "origin/${{ github.base_ref }}...HEAD")
+          if echo "$CHANGED" | grep -qE '^packages/(execution-core|types)/'; then
+            if ! grep -rlq '@workflowbuilder/temporal' .changeset/*.md 2>/dev/null; then
+              echo "::warning title=Missing changeset::packages/execution-core or packages/types changed with no changeset for @workflowbuilder/temporal. If the change affects execution behaviour or the published types, add one (/wb.changeset)."
+            fi
+          fi
+
+  deploy-compose:
+    name: Deploy compose files parse
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Parse both compose modes on the runner's Compose and on the oldest supported one
+        # These files reach the demo VM on every deploy, so a parse error is only
+        # discovered there, with the stack already down. 2.21 is the floor: it
+        # interpolates a nested `${A:+${B:?}}` default eagerly where newer
+        # compose-go is lazy, so a file that parses on the runner can still fail
+        # on a VM. Both modes are covered because COMPOSE_FILE in the VM's .env
+        # decides whether the override file is applied at all.
+        working-directory: deploy/ai-studio
+        run: |
+          cp .env.example .env
+          # An empty COMPOSE_FILE is not the same as an unset one — compose then
+          # reads the working directory as a file — so the default mode runs with
+          # the variable absent and `-e` forwards it only once it is exported.
+          parse() {
+            docker compose config --quiet
+            docker run --rm -v "$PWD:/w" -w /w -e COMPOSE_FILE docker:24.0.5-cli docker compose config --quiet
+          }
+          parse
+          export COMPOSE_FILE=docker-compose.yml
+          parse
+
   ui:
     name: UI + UI tokens lint + typecheck + test + build
     runs-on: ubuntu-latest
@@ -156,10 +251,11 @@ jobs:
   execution:
     name: Execution pipeline lint + typecheck + test
     runs-on: ubuntu-latest
-    # No `services:` block: all three suites are pure unit tests against
-    # in-memory fakes — no Postgres, no Temporal, no API keys. If a suite here
-    # ever needs real infra, give it its own job rather than adding services
-    # to this one.
+    # No `services:` block: the suites run against in-memory fakes — no Postgres,
+    # no API keys. The one exception is temporal-connection's TLS test, which
+    # starts Temporal's dev server itself (@temporalio/testing downloads the CLI
+    # on first run). If a suite here ever needs infra it cannot start itself,
+    # give it its own job rather than adding services to this one.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -181,10 +277,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker lint
 
       - name: Typecheck
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker typecheck
 
       - name: Test
-        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
+        run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
