@@ -1,5 +1,4 @@
 import clsx from 'clsx';
-import type { DragEvent } from 'react';
 
 import styles from './palette-item.module.css';
 
@@ -8,12 +7,11 @@ import { NodePreviewContainer } from '../../node-preview-container';
 
 type PaletteItemProps = {
   item: PaletteItemType;
-  onDragStart: (event: DragEvent) => void;
-  onMouseDown: (type: string) => void;
+  onPointerDown: (event: React.PointerEvent<HTMLDivElement>, item: PaletteItemType) => void;
   isDisabled?: boolean;
 };
 
-export function PaletteItem({ item, onDragStart, onMouseDown, isDisabled = false }: PaletteItemProps) {
+export function PaletteItem({ item, onPointerDown, isDisabled = false }: PaletteItemProps) {
   return (
     <div
       key={item.type}
@@ -21,8 +19,7 @@ export function PaletteItem({ item, onDragStart, onMouseDown, isDisabled = false
       className={clsx(styles['item'], {
         [styles['disabled']]: isDisabled,
       })}
-      onMouseDown={() => onMouseDown(item.type)}
-      onDragStart={onDragStart}
+      onPointerDown={(event) => onPointerDown(event, item)}
     >
       <NodePreviewContainer type={item.type} />
     </div>

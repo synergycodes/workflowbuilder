@@ -96,10 +96,6 @@ export type ChildrenProps = {
 
 export type ZoomLevelFormatterFn = (zoomLevel: number) => number | string;
 
-export type DraggingItem = {
-  type: string;
-};
-
 export function isNodeType(type: ItemType): type is NodeType {
   return Object.values(NodeType).includes(type as NodeType);
 }
