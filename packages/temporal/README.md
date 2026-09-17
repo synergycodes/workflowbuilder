@@ -9,7 +9,7 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Changelog:** <https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/CHANGELOG.md>
 - **Issues:** <https://github.com/synergycodes/workflowbuilder/issues>
 - **Live demo:** <https://app.workflowbuilder.io/>
-- **Requires:** Node.js 20 or newer, ESM. Built against the `^1.23` line of the Temporal TypeScript SDK.
+- **Requires:** Node.js 20.3 or newer, ESM. Tested against the `1.23` line of the Temporal TypeScript SDK.
 - **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
 
 Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
@@ -25,24 +25,12 @@ What it owns and what stays yours:
 ## Install
 
 ```bash
-npm install @workflowbuilder/temporal
+npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow
 ```
 
-On the worker side you also need Temporal's worker package, which stays yours because it
-owns the process:
+The `@temporalio/*` packages are peer dependencies, as in Temporal's own plugins, and **all of them have to be one version**. Temporal's packages pin each other exactly, and the activity context lives in module scope: a second copy of `@temporalio/activity` next to the worker's own makes `activityInfo()` come back empty at run time instead of failing at install. Listing the four explicitly, at the version your worker uses, is what keeps a package manager from resolving a newer one for this package alone. `@temporalio/plugin` is the one Temporal package this module brings along itself.
 
-```bash
-npm install @temporalio/worker
-```
-
-Everything else this package imports at run time (`@temporalio/client`, `workflow`,
-`plugin`) comes with it, following the same pattern as Temporal's own plugins.
-
-**Keep `@temporalio/worker` on the same version line as this package's Temporal
-dependencies.** The SDK packages are released together and reference each other across
-package boundaries, and the workflow sandbox in particular has to agree with the worker
-running it. This package tracks one SDK line at a time; the version it was built against
-is in its `dependencies`.
+A backend that only starts and cancels runs needs `@temporalio/client` alone; `@temporalio/worker` is an optional peer for exactly that reason. This release is tested against the `1.23` line.
 
 ## Worker
 
@@ -148,6 +136,8 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 | `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles    |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
+
+Also exported, for the pieces the quick start does not touch: `DEFAULT_NODE_ACTIVITY_PROFILE` and `DEFAULT_DATABASE_ACTIVITY_PROFILE` are what every activity gets unless a profile says otherwise; `assertNodeActivityProfiles` and `resolveNodeActivityOptions` check a profile map in worker setup, before the sandbox would; `PermanentNodeExecutionError` and `TransientNodeExecutionError` (both extending `NodeExecutionError`) let an executor say whether a failure deserves another attempt. The rules behind profiles are in [activity-profiles.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/activity-profiles.md); how node labels reach Event History is in [event-history-labels.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/event-history-labels.md).
 
 ## Versioning and replay
 

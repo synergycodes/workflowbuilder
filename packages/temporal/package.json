@@ -60,7 +60,10 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@temporalio/worker": "^1.23.0"
+    "@temporalio/activity": "catalog:",
+    "@temporalio/client": "catalog:",
+    "@temporalio/worker": "catalog:",
+    "@temporalio/workflow": "catalog:"
   },
   "peerDependenciesMeta": {
     "@temporalio/worker": {
@@ -86,13 +89,10 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.3.0"
   },
   "sideEffects": false,
   "dependencies": {
-    "@temporalio/activity": "catalog:",
-    "@temporalio/client": "catalog:",
-    "@temporalio/plugin": "catalog:",
-    "@temporalio/workflow": "catalog:"
+    "@temporalio/plugin": "catalog:"
   }
 }
