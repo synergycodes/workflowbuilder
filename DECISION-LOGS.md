@@ -17,3 +17,4 @@
 - _06.05.2026_: [Make execution-core generic over the consumer's node union](./packages/execution-core/generic-execution-core.decision-log.md)
 - _15.05.2026_: [AuthPort seam for backend authn/authz](./apps/backend/auth-port.decision-log.md)
 - _24.08.2026_: [`incomplete` as a third terminal state, distinct from `failed` and from a stall](./packages/execution-core/terminal-states.decision-log.md)
+- _17.09.2026_: [AI agent tool loop runs inside one Temporal Activity](./apps/execution-worker/src/activities/ai-agent-tool-loop-activity.decision-log.md)
