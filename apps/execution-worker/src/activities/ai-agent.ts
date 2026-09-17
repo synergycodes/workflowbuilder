@@ -11,7 +11,7 @@ import type { AiAgentNode } from '../domain/ai-studio-nodes';
 import { createWebSearchTool } from '../tools/web-search';
 import { classifyProviderError } from './provider-error';
 
-// Bounds the agentic tool loop so a misbehaving model can't run up cost.
+// The whole loop runs in one Activity, so a retry repeats every step: ./ai-agent-tool-loop-activity.decision-log.md
 const MAX_TOOL_STEPS = 4;
 
 type AiAgentDeps = {
