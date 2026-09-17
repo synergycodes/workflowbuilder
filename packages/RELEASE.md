@@ -71,7 +71,7 @@ Applies to `@workflowbuilder/ui` and `@workflowbuilder/temporal` today, and to a
 The whole sequence:
 
 1. **Make the package publishable on `main`** in an ordinary PR: drop `"private": true`, check that `package.json` has `publishConfig.access: public`, `files`, `repository.directory` and `license`, that `LICENSE` and `CHANGELOG.md` sit next to it, and that `CHANGELOG.md` contains nothing but the `# Changelog` heading (see "Reformat the generated CHANGELOG section" for why). Every README link that leaves the package directory has to be an absolute GitHub URL: npm renders the README, and a relative `../` link is dead there.
-2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` has a written `## [2.0.0]` and five minor changesets, so its first publish is `2.1.0`). Fold the hand-written notes into the generated section rather than shipping two.
+2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` has a written `## [2.0.0]` and five minor changesets, so its first publish is `2.1.0`). Fold the hand-written notes into the generated section rather than shipping two. For `@workflowbuilder/temporal` the same PR replaces the `v0-` replay baseline: record the histories under the new version as § Release procedure step 1 describes, then delete the `v0-*.json` files once the new set replays.
 3. **Publish from the release head**, logged in to npm (`npm login`) as a member of the `workflowbuilder` org with 2FA enabled:
 
    ```bash
@@ -107,7 +107,7 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
    One package per changeset file. Name two only when they are meant to ship together: `release:version` cannot apply one side of such a file, and it refuses with the file name.
 
-   **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (see `remove-nodeid-from-handles.md`).
+   **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (for the pattern: `git show 79b6efdf:.changeset/remove-nodeid-from-handles.md`, consumed in SDK 2.0.1).
 
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
 
@@ -140,9 +140,19 @@ The script prints what it will bump and what it will leave alone, then runs `cha
 - Bumps `packages/<pkg>/package.json` (so `2.0.0 → 2.1.0` if any minor changeset, `2.0.0 → 2.0.1` if only patches, `2.0.0 → 3.0.0` if any major).
 - Regenerates `packages/<pkg>/CHANGELOG.md` with one section per consumed changeset, in raw Changesets format. Reformat it into Keep a Changelog style before committing (see "Reformat the generated CHANGELOG section" below).
 - Deletes the consumed `.changeset/*.md` files. Changesets that name other packages stay where they are.
-- Touches `pnpm-lock.yaml` if needed.
+- Leaves `pnpm-lock.yaml` alone: every internal dependency is `workspace:*`, which carries no version.
 
 It refuses to run anywhere but a `release-*` branch (the branch is hyphenated because the `release` branch occupies the `release/` ref namespace), when `<pkg>` is private or unknown, when `<pkg>` has no pending changeset, when a changeset names both a released and a skipped package (split it, or release both), and when a package `<pkg>` bundles has pending changesets of its own (today: the SDK bundles `@workflowbuilder/ui`; release both, or pass `--allow-unreleased-bundled` knowingly). To release two packages in one go, name both: `pnpm release:version sdk ui`.
+
+**`@workflowbuilder/temporal` only.** Record the replay histories under the version the script just set, then check that everything, old and new, still replays:
+
+```bash
+VERSION=$(node -p "require('./packages/temporal/package.json').version")
+REPLAY_HISTORY_VERSION=$VERSION UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+pnpm --filter @workflowbuilder/temporal test
+```
+
+The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The one exception is the `v0-` baseline at the first release, which no run outside this repo was ever recorded by, so it goes once the new set is green. The rules are in `packages/temporal/test/replay/README.md`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -192,7 +202,7 @@ awk -v v="$VERSION" '/^## /{h=$2; sub(/^\[/,"",h); sub(/\]$/,"",h); flag=(h==v);
 
 It should print the `### Added` / `### Fixed` bullets for this version and nothing else.
 
-Then commit the version bump, reformatted CHANGELOG, and changeset deletions together:
+Then commit the version bump, reformatted CHANGELOG and changeset deletions (and, for `@workflowbuilder/temporal`, the recorded histories) together:
 
 ```bash
 git add -A
@@ -209,6 +219,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
+- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, plus the `v0-*.json` deletions at the first release
 - Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.
@@ -223,7 +234,7 @@ pnpm publish --dry-run --no-git-checks
 
 Inspect the dry-run output. For the SDK the tarball should contain:
 
-- `package.json` with `catalog:` references replaced by real versions. (`workspace:*` deps live in `devDependencies` only and are stripped by `pnpm publish`.)
+- `package.json` with `catalog:` references replaced by real versions. (`workspace:*` deps live in `devDependencies` only; `pnpm publish` rewrites each to the sibling's version number, and consumers never install devDependencies.)
 - `dist/index.js`, `dist/index.d.ts`, `dist/style.css`.
 - The lazy icon chunks (~1500 `dist/*.js` files).
 - `README.md`, `LICENSE`, `CHANGELOG.md`.

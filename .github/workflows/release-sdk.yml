@@ -122,7 +122,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "@workflowbuilder/sdk ${{ github.ref_name }}"
+          name: ${{ github.ref_name }}
           body: ${{ steps.notes.outputs.notes }}
           draft: false
           prerelease: false

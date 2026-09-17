@@ -12,7 +12,7 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Requires:** Node.js 20.3 or newer, ESM. Tested against the `1.23` line of the Temporal TypeScript SDK.
 - **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
 
-Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
+Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. Each node activity carries the node's label as its Summary, so Event History reads like the diagram. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
 
 What it owns and what stays yours:
 
@@ -101,6 +101,21 @@ Keep the export named `runWorkflow`: that is the name the client starts. Entries
 
 **Use one constant on both sides.** The plugin validates the map at `Worker.create`, so a bad profile fails the deploy. `createRunWorkflow` alone validates only on the first workflow activation, and a map handed to the plugin but not to `createRunWorkflow` gives you a green deploy with every node on the default profile.
 
+### Failures and retries
+
+A node activity gets the attempts its profile allows. An executor can settle the question itself:
+
+```ts
+import { PermanentNodeExecutionError, TransientNodeExecutionError } from '@workflowbuilder/temporal';
+
+// A rejected API key, a 400, a template that cannot render: another attempt changes nothing.
+throw new PermanentNodeExecutionError('auth_rejected', 'API key rejected');
+// A timeout, a 429, a 5xx: worth another attempt, within the profile's cap.
+throw new TransientNodeExecutionError('rate_limited', 'Rate limited');
+```
+
+A permanent failure is not retried at all. A transient one retries up to the profile's `maximumAttempts`, and so does anything thrown unclassified. The error code and the attempt it died on land in the `node_failed` event.
+
 ## Client
 
 ```ts
@@ -149,7 +164,7 @@ This package carries two contracts, not one. The API is the ordinary semver surf
 | minor   | additions only           | histories still replay; new behaviour sits behind `patched()`       |
 | major   | breaking changes allowed | replay may break, and the release notes say to drain in-flight runs |
 
-Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally.
+Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions.
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
 

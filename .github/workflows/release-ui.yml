@@ -3,7 +3,7 @@ name: Release UI
 # Triggers on scoped tags `@workflowbuilder/ui@X.Y.Z` matching the version in
 # packages/ui/package.json. Mirrors release-sdk.yml. Maintainer pushes the tag
 # after merging the version-bump PR (which ran `pnpm release:version <pkg>`). See
-# packages/RELEASE.md (the release flow is shared between both packages).
+# packages/RELEASE.md (the release flow is shared between all published packages).
 #
 # One-time npm setup: @workflowbuilder/ui needs its own GitHub Actions trusted
 # publisher registered on npmjs.com pointing at THIS workflow file

@@ -160,17 +160,17 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ## Common Slash Commands
 
-| Command                            | What it does                                                                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `/wb.create-app <name>`            | Scaffold a new SDK-consuming frontend app under `apps/<name>/` — interactive (port, plugins/nodes/templates to seed from demo)        |
-| `/wb.create-node <name>`           | Scaffold a new UI node type — asks for target app (default `demo`)                                                                    |
-| `/wb.create-plugin <name>`         | Scaffold a new SDK plugin — asks for target app (default `demo`)                                                                      |
-| `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                |
-| `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                   |
-| `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                               |
-| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                     |
-| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                           |
-| `/wb.changeset <bump> "<summary>"` | Add a changeset for SDK changes (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**` |
+| Command                            | What it does                                                                                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/wb.create-app <name>`            | Scaffold a new SDK-consuming frontend app under `apps/<name>/` — interactive (port, plugins/nodes/templates to seed from demo)                                                            |
+| `/wb.create-node <name>`           | Scaffold a new UI node type — asks for target app (default `demo`)                                                                                                                        |
+| `/wb.create-plugin <name>`         | Scaffold a new SDK plugin — asks for target app (default `demo`)                                                                                                                          |
+| `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                                                                    |
+| `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                                                                       |
+| `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                                                                                   |
+| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                                                                         |
+| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                                                                               |
+| `/wb.changeset <bump> "<summary>"` | Add a changeset for a published package (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**`, `packages/ui/**` or `packages/temporal/**` |
 
 ### Releasing the `@workflowbuilder/*` packages
 
@@ -182,7 +182,7 @@ Three workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuil
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
-**Daily SDK change:**
+**Daily change to a published package** (the SDK below; `ui` and `temporal` follow the same steps with their own paths):
 
 1. Edit `packages/sdk/**`, run tests/typecheck locally.
 2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments). Keep it to 1-2 plain sentences: the consumer-visible change plus any migration note - changesets become the public CHANGELOG, so no rationale, investigation history, or noise (that belongs in the commit message and PR).
@@ -205,7 +205,7 @@ Three workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuil
 
 Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/RELEASE.md` § "Why these decisions".
 
-`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay".
+`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay". Each release of it records the replay histories under the new version inside the release PR (`packages/RELEASE.md` § "Release procedure").
 
 Canonical procedure with edge cases and rollback: [`packages/RELEASE.md`](packages/RELEASE.md).
 
