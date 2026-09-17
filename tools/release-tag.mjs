@@ -13,7 +13,16 @@ import path from 'node:path';
 import process from 'node:process';
 import { createInterface } from 'node:readline/promises';
 
-import { ROOT, fail, fullName, parseCommandLine, run, shortName, workspacePackages } from './release-shared.mjs';
+import {
+  ROOT,
+  changelogHasVersion,
+  fail,
+  fullName,
+  parseCommandLine,
+  run,
+  shortName,
+  workspacePackages,
+} from './release-shared.mjs';
 
 const USAGE = 'Usage: pnpm release:tag <package> [--dry-run] [--yes]';
 const git = (gitArguments, options) => run('git', gitArguments, options);
@@ -72,16 +81,15 @@ check(
   'commit or stash first',
 );
 
-const tagExists = gitOut('tag', '-l', tag) !== '' || gitOut('ls-remote', '--tags', 'origin', `refs/tags/${tag}`) !== '';
+// An unreadable origin must not pass for "no such tag": pushing an existing tag exits 0 and starts nothing.
+const remoteTag = git(['ls-remote', '--tags', 'origin', `refs/tags/${tag}`]);
+if (remoteTag.status !== 0) fail('Could not read tags from origin. Check the connection and re-run.');
+const tagExists = gitOut('tag', '-l', tag) !== '' || remoteTag.stdout.trim() !== '';
 check(!tagExists, `tag ${tag} does not exist yet`, 'it already exists locally or on origin');
 
 check(existsSync(path.join(ROOT, workflow)), `${workflow} exists`, 'no workflow listens for this tag');
 
-// The workflow builds the GitHub Release body from this section. Both heading styles count:
-// the bare `## 1.2.3` Changesets writes and the `## [1.2.3] - date` the maintainer rewrites it to.
-const escapedVersion = version.replaceAll(/[.*+?^${}()|[\]\\]/g, String.raw`\$&`);
-const heading = new RegExp(`^## \\[?${escapedVersion}\\]?([ -]|$)`, 'm');
-const hasNotes = existsSync(changelog) && heading.test(readFileSync(changelog, 'utf8'));
+const hasNotes = existsSync(changelog) && changelogHasVersion(readFileSync(changelog, 'utf8'), version);
 check(hasNotes, `CHANGELOG.md has a section for ${version}`, 'the GitHub Release would have no notes');
 
 // Informational only. The workflow is idempotent: a version already on npm (the hand-made
@@ -111,10 +119,24 @@ if (!flags.yes && !(await confirm(`Create and push ${tag}? This ${consequence}. 
 }
 
 if (git(['tag', tag]).status !== 0) fail(`git tag ${tag} failed.`);
-if (git(['push', 'origin', `refs/tags/${tag}`], { stdio: 'inherit' }).status !== 0) {
-  git(['tag', '-d', tag]);
-  fail(`git push failed. Local tag ${tag} removed; nothing published.`);
+// --no-verify: the repo's pre-push hook runs `prettier --write` over the whole tree, which has no
+// place in the middle of a release. The clean-tree check above already ran.
+const push = git(['push', '--no-verify', 'origin', `refs/tags/${tag}`], { stdio: 'inherit' });
+
+// Read the result back from origin instead of trusting the exit code: a dropped connection can
+// fail the push after the server accepted the ref, and then the release workflow is already running.
+const landed = git(['ls-remote', '--tags', 'origin', `refs/tags/${tag}`]);
+if (landed.status !== 0) {
+  fail(
+    `Could not read origin after the push (git push exit ${push.status}). Check the tag on GitHub before re-running; the local tag ${tag} is kept.`,
+  );
 }
+if (landed.stdout.trim() === '') {
+  git(['tag', '-d', tag]);
+  fail(`${tag} is not on origin (git push exit ${push.status}). Local tag removed; nothing published.`);
+}
+if (push.status !== 0)
+  console.log(`⚠️  git push reported an error, but ${tag} is on origin: the release workflow is running.`);
 
 console.log(`\n🚀 Pushed ${tag}.`);
 const remote = gitOut('remote', 'get-url', 'origin').match(/github\.com[:/](.+?)(?:\.git)?$/);

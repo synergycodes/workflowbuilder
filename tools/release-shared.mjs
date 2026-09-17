@@ -43,6 +43,20 @@ export function parseCommandLine(options, usage) {
 export const fullName = (name) => (name.startsWith('@') ? name : SCOPE + name);
 export const shortName = (name) => (name.startsWith(SCOPE) ? name.slice(SCOPE.length) : name);
 
+// The GitHub Release body is the CHANGELOG section for the version, and release:tag refuses
+// without one. A heading counts when its version token, brackets stripped, equals the
+// version exactly: `## 1.2.3` and `## [1.2.3] - 2026-06-16` do, `## 1.2.3-beta.1` does not.
+// The awk in .github/workflows/release-*.yml applies the same rule.
+export function changelogHasVersion(markdown, version) {
+  return markdown.split('\n').some((line) => headingVersion(line) === version);
+}
+
+function headingVersion(line) {
+  if (!line.startsWith('## ')) return;
+  const token = line.slice(3).trim().split(/\s+/)[0] ?? '';
+  return token.replace(/^\[/, '').replace(/\]$/, '');
+}
+
 // Every workspace package as pnpm sees it: name, version, path, private.
 export function workspacePackages() {
   const { status, stdout, stderr } = run('pnpm', ['-r', 'ls', '--json', '--depth', '-1']);

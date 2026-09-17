@@ -2,7 +2,6 @@
 // Cross-platform replacement for `cp` so the same command works on macOS,
 // Linux, and Windows (cmd / PowerShell). Idempotent: never overwrites an
 // existing `.env` — that file may already hold real secrets.
-
 import { copyFileSync, existsSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
@@ -18,7 +17,7 @@ const TARGETS = [
 let anyError = false;
 for (const { example, dest } of TARGETS) {
   const examplePath = path.join(ROOT, example);
-  const destPath = path.join(ROOT, dest);
+  const destinationPath = path.join(ROOT, dest);
 
   if (!existsSync(examplePath)) {
     process.stderr.write(`✗ ${example} missing — cannot create ${dest}\n`);
@@ -26,12 +25,12 @@ for (const { example, dest } of TARGETS) {
     continue;
   }
 
-  if (existsSync(destPath)) {
+  if (existsSync(destinationPath)) {
     process.stdout.write(`• ${dest} already exists, leaving it alone\n`);
     continue;
   }
 
-  copyFileSync(examplePath, destPath);
+  copyFileSync(examplePath, destinationPath);
   process.stdout.write(`✓ created ${dest} from ${example}\n`);
 }
 

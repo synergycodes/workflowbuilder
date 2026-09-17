@@ -7,6 +7,8 @@
 //   pnpm release:version temporal              bump @workflowbuilder/temporal
 //   pnpm release:version sdk ui                bump both, as one release
 //   pnpm release:version temporal --dry-run    print the plan, change nothing
+//   pnpm release:version sdk --allow-unreleased-bundled
+//                                              ship the SDK although UI, compiled into it, has pending changesets
 //
 // Full procedure: packages/RELEASE.md.
 import { readFileSync, rmSync } from 'node:fs';
@@ -17,14 +19,18 @@ import process from 'node:process';
 
 import { ROOT, fail, fullName, parseCommandLine, run, shortName, workspacePackages } from './release-shared.mjs';
 
-const USAGE = 'Usage: pnpm release:version <package> [<package>…] [--dry-run]';
+const USAGE = 'Usage: pnpm release:version <package> [<package>…] [--dry-run] [--allow-unreleased-bundled]';
+// Packages compiled into another package's dist. A change in the bundled one reaches consumers
+// with the next release of the bundling one, whether or not the bundled one was released.
+const BUNDLES = { '@workflowbuilder/sdk': ['@workflowbuilder/ui'] };
 const CHANGESET_PACKAGE = createRequire(import.meta.url).resolve('@changesets/cli/package.json');
 const changeset = (changesetArguments, options) =>
   run(process.execPath, [path.join(path.dirname(CHANGESET_PACKAGE), 'bin.js'), ...changesetArguments], options);
 
 // ---------- Arguments ----------
 
-const { values: flags, positionals } = parseCommandLine({ 'dry-run': { type: 'boolean' } }, USAGE);
+const options = { 'dry-run': { type: 'boolean' }, 'allow-unreleased-bundled': { type: 'boolean' } };
+const { values: flags, positionals } = parseCommandLine(options, USAGE);
 if (positionals.length === 0) fail(USAGE);
 const dryRun = flags['dry-run'] === true;
 const targets = [...new Set(positionals.map(fullName))];
@@ -41,22 +47,54 @@ const ignore = publishableNames.filter((name) => !targets.includes(name));
 
 // ---------- Guards ----------
 
-// A version bump belongs on a release branch, never directly on main or release.
-const branch = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']).stdout.trim();
-if (!dryRun && ['main', 'release'].includes(branch)) {
-  fail(`You are on ${branch}. Cut a release branch first: git checkout -b release/${shortName(targets[0])}-X.Y.Z`);
+// A version bump belongs on a `release-<pkg>-X.Y.Z` branch, never on main or release. The name
+// is hyphenated because the `release` branch occupies the `release/` ref namespace.
+const branchResult = run('git', ['rev-parse', '--abbrev-ref', 'HEAD']);
+if (branchResult.status !== 0) fail('Could not read the current branch. Run this inside the repository.');
+const branch = branchResult.stdout.trim();
+if (!dryRun && !branch.startsWith('release-')) {
+  fail(`You are on ${branch}. Cut a release branch first: git checkout -b release-${shortName(targets[0])}-X.Y.Z`);
 }
 
 // What Changesets would do right now. `--output` is the only way to get that as JSON.
 const planFile = path.join(os.tmpdir(), `wb-release-plan-${process.pid}.json`);
 const status = changeset(['status', '--output', planFile]);
 if (status.status !== 0) fail(`changeset status failed:\n${status.stderr}`);
-const plan = JSON.parse(readFileSync(planFile, 'utf8')).releases.filter((r) => r.changesets.length > 0);
+const plan = JSON.parse(readFileSync(planFile, 'utf8'));
 rmSync(planFile, { force: true });
-const pendingFor = (name) => plan.find((r) => r.name === name);
+const releases = plan.releases.filter((r) => r.changesets.length > 0);
+const pendingFor = (name) => releases.find((r) => r.name === name);
 
 const idle = targets.filter((name) => !pendingFor(name));
 if (idle.length > 0) fail(`No pending changesets for ${idle.join(', ')}. Nothing to release.`);
+
+// A changeset that names a released and a skipped package cannot be applied halfway. Changesets
+// refuses it only after the plan is printed, so refuse it here, with the file name.
+for (const changeset of plan.changesets) {
+  const named = changeset.releases.map((r) => r.name);
+  const releasing = named.filter((name) => targets.includes(name));
+  const staying = named.filter((name) => ignore.includes(name));
+  if (releasing.length > 0 && staying.length > 0) {
+    const both = [...releasing, ...staying].map(shortName).join(' ');
+    fail(
+      `.changeset/${changeset.id}.md names ${releasing.join(', ')} (releasing) and ${staying.join(', ')} (staying). ` +
+        `Split it into one file per package, or release both: pnpm release:version ${both}`,
+    );
+  }
+}
+
+// Pending changesets of a bundled package would ship inside the bundling one with no changelog entry.
+for (const target of targets) {
+  for (const bundled of BUNDLES[target] ?? []) {
+    const pending = pendingFor(bundled);
+    if (!pending || targets.includes(bundled) || flags['allow-unreleased-bundled']) continue;
+    fail(
+      `${target} compiles ${bundled} into its dist, and ${bundled} has ${pending.changesets.length} pending changeset(s) ` +
+        `that would ship inside it with no changelog entry. Release both (pnpm release:version ${shortName(target)} ${shortName(bundled)}) ` +
+        'or pass --allow-unreleased-bundled to ship anyway.',
+    );
+  }
+}
 
 // ---------- Plan ----------
 

@@ -2,7 +2,7 @@ name: Release Temporal
 
 # Triggers on scoped tags `@workflowbuilder/temporal@X.Y.Z` matching the version in
 # packages/temporal/package.json. Mirrors release-ui.yml. Maintainer pushes the tag
-# after merging the version-bump PR (which ran `pnpm changeset version`). See
+# after merging the version-bump PR (which ran `pnpm release:version <pkg>`). See
 # packages/RELEASE.md (the release flow is shared between all published packages).
 #
 # One-time npm setup: @workflowbuilder/temporal needs its own GitHub Actions trusted
@@ -112,7 +112,10 @@ jobs:
         id: notes
         run: |
           VERSION=$(node -p "require('./packages/temporal/package.json').version")
-          NOTES=$(awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/temporal/CHANGELOG.md)
+          # The heading's version token, brackets stripped, must equal $VERSION exactly:
+          # `## [X.Y.Z] - date` and `## X.Y.Z` match, `## X.Y.Z-beta.1` does not.
+          # tools/release-shared.mjs applies the same rule before the tag is pushed.
+          NOTES=$(awk -v v="$VERSION" '/^## /{h=$2; sub(/^\[/,"",h); sub(/\]$/,"",h); flag=(h==v); next} flag' packages/temporal/CHANGELOG.md)
           {
             echo "notes<<EOF"
             echo "$NOTES"
