@@ -61,7 +61,7 @@ the last section covers when to set it.
 Or from a real run against a local stack, for a scenario the harness cannot stage.
 `historyToJSON` writes the same shape, so the two are interchangeable. Read the output
 before committing it: the first event carries the whole `WorkflowExecutionInput`,
-including the `variables` and `global` bags, which is where the backend injects secrets.
+including the `variables` and `global` bags. Keep secrets out of both; anything there is recorded verbatim.
 The harness recordings carry only empty bags and a synthetic graph.
 
 ```bash
