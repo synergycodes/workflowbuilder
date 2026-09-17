@@ -1,0 +1,28 @@
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.actions--vertical {
+  flex-direction: column;
+}
+
+.action {
+  composes: ax-public-p11 from global;
+
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  padding: 0.625rem 0.75rem;
+  background-color: var(--ax-ui-bg-tertiary-default);
+  border: 0.0625rem solid var(--ax-input-stroke-primary-default);
+  border-radius: 0.375rem;
+}
+
+.action-label {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

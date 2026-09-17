@@ -8,6 +8,7 @@ import { database } from '../../database';
 import type { AiStudioNode } from '../../domain/ai-studio-nodes';
 import { env } from '../../env';
 import { executeDecision } from '../../executors/decision';
+import { executeHumanDecision } from '../../executors/human-decision';
 import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
@@ -29,6 +30,7 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/ai-agent': (node, context) =>
       executeAiAgent(node, context, { model, logger: aiAgentLogger, tavilyApiKey: env.TAVILY_API_KEY }),
     'ai-studio/visualize': executeVisualize,
+    'ai-studio/human-decision': executeHumanDecision,
   },
   store: withPayloadSizeWarning(database, logger),
 });

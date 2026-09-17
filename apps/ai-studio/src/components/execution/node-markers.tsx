@@ -31,6 +31,11 @@ export function ExecutionNodeMarkers({ props }: Props) {
           <Spinner />
         </span>
       )}
+      {nodeState.status === 'waiting' && (
+        <span className={`${styles['icon']} ${styles['icon--waiting']}`}>
+          <Icon name="HourglassMedium" />
+        </span>
+      )}
       {nodeState.status === 'completed' && (
         <span className={`${styles['icon']} ${styles['icon--completed']}`}>
           <Icon name="FlagBannerFold" />

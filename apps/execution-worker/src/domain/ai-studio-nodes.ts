@@ -36,6 +36,9 @@ type DecisionNodeConfig = {
 // Display-only node; the UI reads the upstream output directly, so no runtime config.
 type VisualizeNodeConfig = Record<string, never>;
 
+// What to ask a person travels on BaseNode.decisionRequest, lifted off config by the backend.
+type HumanDecisionNodeConfig = Record<string, never>;
+
 export type TriggerNode = ProductNode<'ai-studio/trigger', TriggerNodeConfig>;
 
 export type AiAgentNode = ProductNode<'ai-studio/ai-agent', AiAgentNodeConfig>;
@@ -44,4 +47,6 @@ export type DecisionNode = ProductNode<'ai-studio/decision', DecisionNodeConfig>
 
 type VisualizeNode = ProductNode<'ai-studio/visualize', VisualizeNodeConfig>;
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode;
+export type HumanDecisionNode = ProductNode<'ai-studio/human-decision', HumanDecisionNodeConfig>;
+
+export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode | HumanDecisionNode;
