@@ -267,6 +267,7 @@ Using `pnpm workspaces`, Workflow Builder is split into runnable apps under `app
 - [`packages/sdk`](./packages/sdk/README.md) - `@workflowbuilder/sdk`, the embeddable React library (public API, types, build)
 - [`packages/types`](./packages/types) - `@workflow-builder/types`, shared TypeScript types used by the SDK and the bundled backend/worker
 - [`packages/execution-core`](./packages/execution-core/README.md) - Pure domain layer (ports, graph runner, node executors) shared by the bundled backend and worker
+- [`packages/ui`](./packages/ui/README.md) - `@workflowbuilder/ui`, the component library (Base UI) the SDK is built on, published on its own
 - [`packages/temporal`](./packages/temporal/README.md) - `@workflowbuilder/temporal`, the Temporal Plugin that runs diagrams as durable Workflow Executions (bundles `execution-core` and `types`)
 - [`apps/demo`](./apps/demo/README.md) - Reference SPA that consumes the SDK with the full plugin set (also the source of truth for example node types, templates, and plugins)
 - [`apps/docs`](./apps/docs/README.md) - Documentation site

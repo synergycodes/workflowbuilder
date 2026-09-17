@@ -1,7 +1,8 @@
 // Enforces Conventional Commits on every commit in the monorepo.
 // `.husky/commit-msg` calls `pnpm exec commitlint --edit "$1"` on each `git commit`.
 // Format: <type>(<scope>): <subject> — e.g. `fix(sdk): zustand store identity leak in useStore`.
-// Table of types and their semver bump impact: packages/RELEASE.md.
+// The type list lives in the root CLAUDE.md ("Commit format is enforced"). Version bumps come
+// from changesets, not from the commit type: packages/RELEASE.md.
 
 export default {
   extends: ['@commitlint/config-conventional'],

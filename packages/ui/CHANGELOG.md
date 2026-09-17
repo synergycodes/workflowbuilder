@@ -1,7 +1,6 @@
 # Changelog
 
-All notable changes to `@workflowbuilder/ui` are documented in this file.
-The format is based on [Keep a Changelog](https://keepachangelog.com/).
+## [2.0.0]
 
 > **Moved from `@synergycodes/overflow-ui`.** This library was previously
 > published as
@@ -11,8 +10,6 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/).
 > `@workflowbuilder/ui` name. The library's prior history lives in the old
 > package's
 > [changelog](https://github.com/synergycodes/overflow-ui/blob/main/packages/ui/CHANGELOG.md).
-
-## [2.0.0]
 
 First release of `@workflowbuilder/ui`: an accessible, themeable React
 component library built on [Base UI](https://base-ui.com/), plus diagram

@@ -72,7 +72,7 @@ packages/
   types/            - Shared TypeScript types
 ```
 
-Where to put a new script: root `tools/` for pure-Node bootstrap (runs before any workspace is built); `apps/tools/` for tooling that needs TypeScript or workspace deps.
+Where to put a new script: root `tools/` for plain Node scripts that run with `node` and no build step (bootstrap checks and the maintainer release commands; root devDependencies such as Changesets are fine); `apps/tools/` for tooling that needs TypeScript or workspace packages. `tools/` is outside the pnpm workspace, so `pr-check.yml` lints, formats and tests it with dedicated steps (`pnpm test:tools`).
 
 ## Per-workspace docs
 
@@ -197,8 +197,8 @@ Three workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuil
 
 **Release moment** (maintainer, not Claude):
 
-1. On `main`, `pnpm release:version <pkg> --dry-run` shows the version the pending changesets add up to. Cut `release/<pkg>-X.Y.Z` and run `pnpm release:version <pkg>`. It bumps only `packages/<pkg>/package.json`, regenerates its `CHANGELOG.md` (reformat it into Keep a Changelog style before committing, see [`packages/RELEASE.md`](packages/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes only the changesets that named `<pkg>`.
-2. Open PR `release/<pkg>-X.Y.Z` → `release`, review the diff, merge.
+1. On `main`, `pnpm release:version <pkg> --dry-run` shows the version the pending changesets add up to. Cut `release-<pkg>-X.Y.Z` and run `pnpm release:version <pkg>`. It bumps only `packages/<pkg>/package.json`, regenerates its `CHANGELOG.md` (reformat it into Keep a Changelog style before committing, see [`packages/RELEASE.md`](packages/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes only the changesets that named `<pkg>`.
+2. Open PR `release-<pkg>-X.Y.Z` → `release`, review the diff, merge.
 3. On the tip of `release`: `pnpm release:tag <pkg>`. It checks the state, asks, then creates and pushes `@workflowbuilder/<pkg>@X.Y.Z`.
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.

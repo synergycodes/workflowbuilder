@@ -21,6 +21,8 @@ Both scripts live in `tools/` and accept the short name (`sdk`, `ui`, `temporal`
 
 `@workflowbuilder/temporal` has one extra consideration the other two do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version. See `packages/temporal/README.md` § "Versioning and replay".
 
+`@workflowbuilder/sdk` has the same shape with `@workflowbuilder/ui`: the UI is compiled into the SDK bundle (it is not among the SDK's externals or dependencies), so a UI change reaches SDK consumers with the next SDK release whether or not the UI itself was released. `release:version` stops when you release the SDK while the UI has pending changesets, and `pr-check.yml` warns when `packages/ui` changes without a changeset for the SDK.
+
 ## Mental model
 
 ```
@@ -64,10 +66,12 @@ release  ───────────────●───────�
 
 ## First release of a new package
 
-Applies to `@workflowbuilder/ui` and `@workflowbuilder/temporal` today, and to any package added later. npm cannot register a trusted publisher for a name that does not exist yet, so the first version is published from a maintainer's machine and everything after it goes through CI. The whole sequence:
+Applies to `@workflowbuilder/ui` and `@workflowbuilder/temporal` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
+
+The whole sequence:
 
 1. **Make the package publishable on `main`** in an ordinary PR: drop `"private": true`, check that `package.json` has `publishConfig.access: public`, `files`, `repository.directory` and `license`, that `LICENSE` and `CHANGELOG.md` sit next to it, and that `CHANGELOG.md` contains nothing but the `# Changelog` heading (see "Reformat the generated CHANGELOG section" for why). Every README link that leaves the package directory has to be an absolute GitHub URL: npm renders the README, and a relative `../` link is dead there.
-2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge.
+2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` has a written `## [2.0.0]` and five minor changesets, so its first publish is `2.1.0`). Fold the hand-written notes into the generated section rather than shipping two.
 3. **Publish from the release head**, logged in to npm (`npm login`) as a member of the `workflowbuilder` org with 2FA enabled:
 
    ```bash
@@ -101,6 +105,8 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
    Skip the changeset only for changes that do not affect the published `dist/` (e.g. internal tests, lint config, comments).
 
+   One package per changeset file. Name two only when they are meant to ship together: `release:version` cannot apply one side of such a file, and it refuses with the file name.
+
    **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (see `remove-nodeid-from-handles.md`).
 
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
@@ -124,7 +130,7 @@ Steps 1–6 are the human-driven path; step 7 is fully automated.
 git checkout main && git pull
 pnpm install --frozen-lockfile
 pnpm release:version <pkg> --dry-run   # prints the version the pending changesets add up to
-git checkout -b release/<pkg>-X.Y.Z
+git checkout -b release-<pkg>-X.Y.Z
 pnpm release:version <pkg>
 ```
 
@@ -136,7 +142,7 @@ The script prints what it will bump and what it will leave alone, then runs `cha
 - Deletes the consumed `.changeset/*.md` files. Changesets that name other packages stay where they are.
 - Touches `pnpm-lock.yaml` if needed.
 
-It refuses to run on `main` or `release`, when `<pkg>` is private or unknown, and when `<pkg>` has no pending changeset. To release two packages in one go, name both: `pnpm release:version sdk ui`.
+It refuses to run anywhere but a `release-*` branch (the branch is hyphenated because the `release` branch occupies the `release/` ref namespace), when `<pkg>` is private or unknown, when `<pkg>` has no pending changeset, when a changeset names both a released and a skipped package (split it, or release both), and when a package `<pkg>` bundles has pending changesets of its own (today: the SDK bundles `@workflowbuilder/ui`; release both, or pass `--allow-unreleased-bundled` knowingly). To release two packages in one go, name both: `pnpm release:version sdk ui`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -177,11 +183,11 @@ becomes:
 - Re-measure node internals when `layoutDirection` changes.
 ```
 
-After reformatting, confirm the release-notes extraction is clean. The extractor in `.github/workflows/release-<pkg>.yml` matches both the bracketed heading and a bare `## X.Y.Z`, so run it locally to see exactly what the GitHub Release body will contain:
+After reformatting, confirm the release-notes extraction is clean. The extractor in `.github/workflows/release-<pkg>.yml` takes the heading's version token, strips the brackets and requires an exact match, so `## [X.Y.Z] - date` and `## X.Y.Z` both count and `## X.Y.Z-beta.1` never passes for `X.Y.Z`. `release:tag` applies the same rule before it pushes. Run the extractor locally to see exactly what the GitHub Release body will contain:
 
 ```bash
 VERSION=$(node -p "require('./packages/<pkg>/package.json').version")
-awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/<pkg>/CHANGELOG.md
+awk -v v="$VERSION" '/^## /{h=$2; sub(/^\[/,"",h); sub(/\]$/,"",h); flag=(h==v); next} flag' packages/<pkg>/CHANGELOG.md
 ```
 
 It should print the `### Added` / `### Fixed` bullets for this version and nothing else.
@@ -191,10 +197,10 @@ Then commit the version bump, reformatted CHANGELOG, and changeset deletions tog
 ```bash
 git add -A
 git commit -m "chore(<pkg>): release X.Y.Z"
-git push -u origin release/<pkg>-X.Y.Z
+git push -u origin release-<pkg>-X.Y.Z
 ```
 
-Open a PR `release/<pkg>-X.Y.Z → release`.
+Open a PR `release-<pkg>-X.Y.Z → release`.
 
 ### 2. Pre-merge verification
 
@@ -203,7 +209,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
-- `pnpm-lock.yaml`: small workspace dep update if a tracked package was bumped. Private packages are skipped by Changesets, but the three published ones are tracked. Bumping `@workflowbuilder/ui` updates consumers that depend on it via `workspace:*`
+- Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.
 
@@ -227,7 +233,9 @@ For `@workflowbuilder/temporal`: `dist/index.js`, `dist/client/index.js`, `dist/
 
 ### 3. Merge the release PR
 
-Merge `release/<pkg>-X.Y.Z` into `release` (merge commit gives cleaner blame; pick one strategy and stick with it).
+Merge `release-<pkg>-X.Y.Z` into `release` (merge commit gives cleaner blame; pick one strategy and stick with it).
+
+Pushing to `release` also deploys the public docs site: `deploy-docs.yml` runs on every push to that branch, and a revert is another push. Whatever `apps/docs` holds on `main` at that moment goes live with the release.
 
 ### 4. Tag the merge commit
 
@@ -236,7 +244,7 @@ git checkout release && git pull
 pnpm release:tag <pkg>          # --dry-run to only see the checks
 ```
 
-The script refuses unless HEAD is the tip of `origin/release` with a clean tree, `packages/<pkg>/package.json` names a version that has a `## [X.Y.Z]` section in the CHANGELOG and no tag yet, and `.github/workflows/release-<pkg>.yml` exists. It tells you whether the version is already on npm (then the workflow only creates the GitHub Release), asks for confirmation, creates `@workflowbuilder/<pkg>@X.Y.Z` and pushes that one tag by name. A release PR that bumped two packages gets two runs of the script; the tags sit on the same commit and trigger their own workflows in parallel.
+The script refuses unless HEAD is the tip of `origin/release` with a clean tree, `packages/<pkg>/package.json` names a version that has a `## [X.Y.Z]` section in the CHANGELOG and no tag yet, and `.github/workflows/release-<pkg>.yml` exists. It tells you whether the version is already on npm (then the workflow only creates the GitHub Release), asks for confirmation, creates `@workflowbuilder/<pkg>@X.Y.Z` and pushes that one tag by name. The push runs with `--no-verify`, because the repo's `pre-push` hook formats the whole tree, and the script reads the tag back from origin before it reports anything. A release PR that bumped two packages gets two runs of the script; the tags sit on the same commit and trigger their own workflows in parallel.
 
 By hand, the equivalent is:
 
@@ -311,18 +319,20 @@ A published version cannot be overwritten on npm. Options when something went wr
 
 ## Troubleshooting CI failures
 
-| Symptom                                                                 | Cause                                                                                                             | Fix                                                                                                                                                          |
-| ----------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm error code E401` / `OIDC token exchange failed` in publish step    | Trusted publisher not configured, or workflow filename / repo / org in the npm config doesn't match this workflow | On npmjs.com, verify the trusted publisher entry points at `synergycodes/workflowbuilder` with workflow filename `release-<pkg>.yml` and no environment name |
-| `id-token` permission errors                                            | Job/workflow lost `id-token: write` (e.g. someone edited the workflow)                                            | Restore `permissions: id-token: write` at the workflow level                                                                                                 |
-| `Tag version (X.Y.Z) does not match package.json version (Y.Y.Y)`       | Pushed tag before merging the release PR, or tagged the wrong commit                                              | Delete tag (see Rollback), merge release PR first, re-tag                                                                                                    |
-| The same error on a `workflow_dispatch` run                             | On a manual run `GITHUB_REF_NAME` is a branch name, so the check can never pass                                   | Expected. The workflows publish from tags only; re-run the failed tag run instead                                                                            |
-| `404 Not Found - PUT https://registry.npmjs.org/@workflowbuilder/<pkg>` | npm org doesn't exist or you're not a maintainer                                                                  | Create the `workflowbuilder` org or get added as maintainer                                                                                                  |
-| Build fails: workspace dep resolution                                   | Probably stale `pnpm-lock.yaml` after rename                                                                      | Run `pnpm install` locally, commit lockfile, re-tag                                                                                                          |
-| Lint / typecheck / test step fails                                      | Code that landed on release doesn't pass checks                                                                   | Fix on main via PR, redo the release PR, re-tag at the new HEAD                                                                                              |
-| Workflow says "already on npm — skipping publish"                       | Re-pushed tag after successful publish, or the hand-made first publish                                            | Expected. No-op. CI still creates the GitHub Release.                                                                                                        |
-| Release PR bumps a package you did not name                             | `changeset version` was run directly                                                                              | Redo the branch with `pnpm release:version <pkg>`                                                                                                            |
-| `release:version` says "no pending changesets"                          | Nothing consumer-visible landed for that package since its last release                                           | Nothing to release. If a change is missing its changeset, add one on `main` first                                                                            |
+| Symptom                                                                             | Cause                                                                                                             | Fix                                                                                                                                                          |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm error code E401` / `OIDC token exchange failed` in publish step                | Trusted publisher not configured, or workflow filename / repo / org in the npm config doesn't match this workflow | On npmjs.com, verify the trusted publisher entry points at `synergycodes/workflowbuilder` with workflow filename `release-<pkg>.yml` and no environment name |
+| `id-token` permission errors                                                        | Job/workflow lost `id-token: write` (e.g. someone edited the workflow)                                            | Restore `permissions: id-token: write` at the workflow level                                                                                                 |
+| `Tag version (X.Y.Z) does not match package.json version (Y.Y.Y)`                   | Pushed tag before merging the release PR, or tagged the wrong commit                                              | Delete tag (see Rollback), merge release PR first, re-tag                                                                                                    |
+| The same error on a `workflow_dispatch` run                                         | On a manual run `GITHUB_REF_NAME` is a branch name, so the check can never pass                                   | Expected. The workflows publish from tags only; re-run the failed tag run instead                                                                            |
+| `404 Not Found - PUT https://registry.npmjs.org/@workflowbuilder/<pkg>`             | npm org doesn't exist or you're not a maintainer                                                                  | Create the `workflowbuilder` org or get added as maintainer                                                                                                  |
+| Build fails: workspace dep resolution                                               | Probably stale `pnpm-lock.yaml` after rename                                                                      | Run `pnpm install` locally, commit lockfile, re-tag                                                                                                          |
+| Lint / typecheck / test step fails                                                  | Code that landed on release doesn't pass checks                                                                   | Fix on main via PR, redo the release PR, re-tag at the new HEAD                                                                                              |
+| Workflow says "already on npm — skipping publish"                                   | Re-pushed tag after successful publish, or the hand-made first publish                                            | Expected. No-op. CI still creates the GitHub Release.                                                                                                        |
+| Release PR bumps a package you did not name                                         | `changeset version` was run directly                                                                              | Redo the branch with `pnpm release:version <pkg>`                                                                                                            |
+| `release:version` says "no pending changesets"                                      | Nothing consumer-visible landed for that package since its last release                                           | Nothing to release. If a change is missing its changeset, add one on `main` first                                                                            |
+| `release:version` names a changeset file that "names X (releasing) and Y (staying)" | One changeset covers a released and a skipped package; Changesets cannot apply half of it                         | Split the file into one per package, or release both packages in this PR                                                                                     |
+| `release:version` says the SDK "compiles @workflowbuilder/ui into its dist"         | The UI has pending changesets that would ship inside the SDK with no changelog entry                              | Release both (`pnpm release:version sdk ui`), or pass `--allow-unreleased-bundled` if shipping them silently is the intent                                   |
 
 ## Why these decisions
 
@@ -332,7 +342,7 @@ A published version cannot be overwritten on npm. Options when something went wr
 
 - **Scoped tag format `@workflowbuilder/<pkg>@X.Y.Z`.** The repo publishes more than one package, so each release tag is scoped to its package. This lets them be released independently without tag collisions, and lets each workflow trigger on its own tag pattern. The earlier single-package `v*` scheme (an ng-diagram convention for single-package monorepos) was retired when `@workflowbuilder/ui` became publishable. Historical `v*` tags stay untouched in git history — the change is forward-only.
 
-- **Per-package versioning through `--ignore`, with `privatePackages` instead of an `ignore` list.** Changesets refuses the CLI `--ignore` flag while the config carries an `ignore` list, and the only packages that list ever held were private ones. `privatePackages: { version: false, tag: false }` in `.changeset/config.json` skips every private package the same way and frees `--ignore` for `release:version`. A package becomes releasable the moment `private: true` is dropped, with no config edit.
+- **Per-package versioning through `--ignore`, with `privatePackages` instead of an `ignore` list.** Changesets refuses the CLI `--ignore` flag while the config carries an `ignore` list, and the list held nine of the twelve private packages. `privatePackages: { version: false, tag: false }` in `.changeset/config.json` skips all twelve (`tag: false` is the default, spelled out), which also keeps `changeset add` from offering packages nobody can release, and frees `--ignore` for `release:version`. A package becomes releasable the moment `private: true` is dropped, with no config edit.
 
 - **`release:tag` instead of `changeset tag`.** One tag, by name, after checks that the commit is really the release head and the CHANGELOG has the notes. `changeset tag` was written for repos that publish everything at once and tags whatever is untagged.
 
