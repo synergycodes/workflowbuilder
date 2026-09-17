@@ -61,7 +61,7 @@ describe('decisionRequestSchema', () => {
   it('accepts a minimal request: one resume action and an empty form', () => {
     const minimal = {
       version: 1,
-      actions: [{ name: 'ok', label: 'OK', effect: 'resume' }],
+      actions: [{ name: 'ok', label: 'OK', effect: 'resume', port: 'ok' }],
       schema: { type: 'object', properties: {} },
     };
 
@@ -86,28 +86,24 @@ describe('decisionRequestSchema', () => {
   });
 
   it.each([...DECLARABLE_DECISION_EFFECTS])('accepts a declared %s action', (effect) => {
-    const resume = { name: 'ok', label: 'OK', effect: 'resume' };
-    const actions = effect === 'resume' ? [resume] : [resume, { name: 'other', label: 'Other', effect }];
+    const byEffect = { resume: approve, reject, 'rerun-source': askAgain };
+    const actions = effect === 'resume' ? [approve] : [approve, byEffect[effect]];
 
     expect(decisionRequestSchema.safeParse(request({ actions })).success).toBe(true);
   });
 
-  it('materialises the defaults for port, reasonRequired and maxIterations', () => {
+  it('materialises the defaults for reasonRequired and maxIterations', () => {
     const parsed = decisionRequestSchema.parse(
       request({
         actions: [
-          { name: 'approve', label: 'Approve', effect: 'resume' },
-          { name: 'reject', label: 'Reject', effect: 'reject' },
+          approve,
+          { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected' },
           { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' },
         ],
       }),
     );
 
-    expect(parsed.actions).toEqual([
-      { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' },
-      { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false },
-      { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 },
-    ]);
+    expect(parsed.actions).toEqual([approve, reject, askAgain]);
   });
 
   it('keeps unknown keys at every level', () => {
@@ -248,6 +244,27 @@ describe('decisionRequestSchema', () => {
       issue: { code: 'port_empty' },
     },
     {
+      name: 'a resume action without a port',
+      input: request({ actions: [{ name: 'approve', label: 'Approve', effect: 'resume' }] }),
+      path: 'actions.0.port',
+    },
+    {
+      name: 'a reject action without a port',
+      input: request({ actions: [approve, { name: 'reject', label: 'Reject', effect: 'reject' }] }),
+      path: 'actions.1.port',
+    },
+    {
+      name: 'a resume port of null',
+      input: request({ actions: [{ ...approve, port: null }] }),
+      path: 'actions.0.port',
+    },
+    {
+      name: 'a rerun-source action with a port',
+      input: request({ actions: [approve, { ...askAgain, port: 'again' }] }),
+      path: 'actions.1.port',
+      issue: { code: 'port_not_allowed' },
+    },
+    {
       name: "a resume port of 'errorRoute'",
       input: request({ actions: [{ ...approve, port: 'errorRoute' }] }),
       path: 'actions.0.port',
@@ -366,7 +383,9 @@ describe('decisionRequestSchema', () => {
 
     expect(decisionRequestSchema.safeParse(input).success).toBe(false);
     expect(atPath.length).toBeGreaterThan(0);
-    if (issue !== undefined) {
+    if (issue === undefined) {
+      expect(atPath.every((candidate) => candidate.domain === undefined)).toBe(true);
+    } else {
       expect(atPath.map((candidate) => candidate.message)).toContain(decisionIssueMessage(issue.code, issue.value));
       // The identifier, not the wording, is what a client keys on.
       expect(atPath.map((candidate) => candidate.domain)).toContainEqual(
@@ -377,6 +396,21 @@ describe('decisionRequestSchema', () => {
 
   // The effect check aborts the action the way the union's own failure did; a second issue
   // about a missing resume action for an action that never parsed would only mislead.
+  // Two absent ports would compare equal, so the request-level rule must not run on them.
+  it('reports each missing port on its own, without a port-equality issue riding along', () => {
+    const issues = issuesOf(
+      request({
+        actions: [
+          { name: 'approve', label: 'Approve', effect: 'resume' },
+          { name: 'reject', label: 'Reject', effect: 'reject' },
+        ],
+      }),
+    );
+
+    expect(issues.map((issue) => issue.path)).toEqual(['actions.0.port', 'actions.1.port']);
+    expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
+  });
+
   it('reports an unknown effect once, without a missing-resume issue riding along', () => {
     const issues = issuesOf(request({ actions: [{ name: 'a', label: 'A', effect: 'zzz' }] }));
 
@@ -393,7 +427,7 @@ describe('decisionRequestSchema', () => {
 // assignment, which for this one swaps the parsed output's prototype. The schema guards
 // itself rather than relying on the snapshot it is usually nested in.
 describe('decisionRequestSchema: own __proto__ keys, parsed on its own', () => {
-  const action = '{"name":"approve","label":"Approve","effect":"resume"}';
+  const action = '{"name":"approve","label":"Approve","effect":"resume","port":"approved"}';
   const form = '{"type":"object","properties":{}}';
 
   it.each([

@@ -25,7 +25,8 @@ function isNotBlank(text: string): boolean {
   return text.trim().length > 0;
 }
 
-// 'errorRoute' is the handle the runner reserves for the error policy.
+// A port is the id of a handle on one canvas, so it has no default. 'errorRoute' is the
+// handle the runner reserves for the error policy.
 const portSchema = z
   .string()
   .refine(isNotBlank, decisionRefinement('port_empty'))
@@ -39,21 +40,25 @@ const actionBase = {
 const resumeActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('resume'),
-  port: portSchema.default('approved'),
+  port: portSchema,
 });
 
 const rejectActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('reject'),
-  port: portSchema.default('rejected'),
+  port: portSchema,
   reasonRequired: z.boolean().default(false),
 });
 
-const rerunSourceActionSchema = z.looseObject({
-  ...actionBase,
-  effect: z.literal('rerun-source'),
-  maxIterations: z.int().min(1).default(3),
-});
+const rerunSourceActionSchema = z
+  .looseObject({
+    ...actionBase,
+    effect: z.literal('rerun-source'),
+    maxIterations: z.int().min(1).default(3),
+  })
+  .superRefine((action, context) => {
+    if (Object.hasOwn(action, 'port')) context.addIssue(decisionIssue('port_not_allowed', ['port']));
+  });
 
 // The effect picks the member that parses the rest, so it is checked on its own first: a
 // union that finds no member cannot name what was wrong, and a client needs the name.

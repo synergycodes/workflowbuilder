@@ -110,8 +110,8 @@ const refundForm = {
   },
   required: ['refundAmount'],
 };
-const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
-const reject = { name: 'reject', label: 'Reject', effect: 'reject' };
+const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
+const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected' };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
 
 // source-1 feeds two deciding nodes. review-1 offers all three effects and takes a reject

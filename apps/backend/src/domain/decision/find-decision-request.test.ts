@@ -3,8 +3,8 @@ import { describe, expect, it } from 'vitest';
 import { workflowSnapshotSchema } from '../mapper/snapshot-schema';
 import { findDecisionRequest } from './find-decision-request';
 
-const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
-const reject = { name: 'reject', label: 'Reject', effect: 'reject' };
+const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
+const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected' };
 
 const snapshot = workflowSnapshotSchema.parse({
   nodes: [
@@ -24,14 +24,11 @@ const snapshot = workflowSnapshotSchema.parse({
 });
 
 describe('findDecisionRequest', () => {
-  it('finds the request of the node, with the parser defaults on its actions', () => {
+  it('finds the request of the node as the parser leaves it', () => {
     const found = findDecisionRequest(snapshot, 'review-1');
 
     expect(found.error).toBeUndefined();
-    expect(found.request?.actions).toEqual([
-      { ...approve, port: 'approved' },
-      { ...reject, port: 'rejected', reasonRequired: false },
-    ]);
+    expect(found.request?.actions).toEqual([approve, { ...reject, reasonRequired: false }]);
   });
 
   it('tells a missing node from a node that carries no request', () => {
