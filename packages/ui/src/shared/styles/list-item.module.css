@@ -5,6 +5,9 @@
   --wb-public-list-item-color-selected: var(--wb-ds-ui-text-default);
   --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
+  --wb-public-list-item-background-color-disabled: var(--wb-ds-ui-bg-inset);
+  --wb-public-list-item-color-disabled: var(--wb-ds-ui-text-disabled);
+
   --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
   --wb-public-list-item-outline-size: var(--wb-ds-shadow-ui-focus-element-spread);
@@ -67,8 +70,8 @@
     }
 
     &[data-disabled] {
-      color: var(--wb-public-input-color-disabled);
-      background-color: transparent;
+      color: var(--wb-public-list-item-color-disabled);
+      background-color: var(--wb-public-list-item-background-color-disabled);
       cursor: auto;
     }
 
