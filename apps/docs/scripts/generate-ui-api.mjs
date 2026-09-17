@@ -215,21 +215,43 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
     // Follow first-party prop types only; both declaration forms count.
     if (target && (target.kind === 2_097_152 || target.kind === 256)) {
       collectProps(target, byId, accumulator, context);
+    } else if (!target && context) {
+      context.warnings.push(
+        `"${context.slug}": props of ${typeNode.name} are missing from the table - export the type so TypeDoc emits it`,
+      );
     }
     return accumulator;
   }
-  // Partial<X> / Omit<X, …> would silently drop every prop of X.
-  if (typeNode.type === 'reference' && typeNode.typeArguments?.length && context) {
-    const firstParty = typeNode.typeArguments.find(
-      (argument) => argument.type === 'reference' && typeof argument.target === 'number' && byId.get(argument.target),
-    );
-    if (firstParty) {
+  if (typeNode.type === 'reference' && typeNode.typeArguments?.length) {
+    const [source, keys] = typeNode.typeArguments;
+    const sourceIsFirstParty =
+      source && source.type === 'reference' && typeof source.target === 'number' && byId.get(source.target);
+    if (sourceIsFirstParty && (typeNode.name === 'Omit' || typeNode.name === 'Pick' || typeNode.name === 'Partial')) {
+      const named = collectProps(byId.get(source.target), byId, new Map(), context);
+      const listed = new Set(literalNames(keys));
+      for (const [name, property] of named) {
+        const keep = typeNode.name === 'Pick' ? listed.has(name) : !listed.has(name);
+        if (!keep) continue;
+        const optional = typeNode.name === 'Partial' ? { ...property, required: false } : property;
+        if (!accumulator.has(name)) accumulator.set(name, optional);
+      }
+      return accumulator;
+    }
+    if (sourceIsFirstParty && context) {
       context.warnings.push(
-        `"${context.slug}": props of ${firstParty.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
+        `"${context.slug}": props of ${source.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
       );
     }
   }
   return accumulator;
+}
+
+// String literals a utility type was given, e.g. the 'children' in Omit<X, 'children'>.
+function literalNames(typeNode) {
+  if (!typeNode) return [];
+  if (typeNode.type === 'literal' && typeof typeNode.value === 'string') return [typeNode.value];
+  if (typeNode.type === 'union') return typeNode.types.flatMap((member) => literalNames(member));
+  return [];
 }
 
 function addProperty(child, byId, accumulator) {
