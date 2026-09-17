@@ -23,5 +23,7 @@ When the package reaches npm:
 4. Drop the `!/worker/vendor/*.tgz` exception from the sample's `.gitignore`.
 5. Swap the two plugin links in the sample README — the opening paragraph and the Learn more list —
    from this repository back to the npm page, and delete the preview note above "Run it".
+6. Remove `draft: true` from the docs guide's frontmatter
+   (`apps/docs/src/content/docs/guides/temporal.mdx`) so the page is built and published.
 
 (follow-up: temporal-sample-npm-dependency)
