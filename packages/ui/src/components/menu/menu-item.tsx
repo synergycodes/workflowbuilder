@@ -1,4 +1,5 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
+import { Check } from '@phosphor-icons/react';
 import clsx from 'clsx';
 
 import listItemSize from '@ui/shared/styles/list-item-size.module.css';
@@ -32,6 +33,9 @@ export function MenuItem({
       <MenuBase.RadioItem value={label} disabled={disabled} className={className} closeOnClick onClick={onClick}>
         {icon}
         {label}
+        <MenuBase.RadioItemIndicator className={listItemStyles['indicator']}>
+          <Check weight="bold" />
+        </MenuBase.RadioItemIndicator>
       </MenuBase.RadioItem>
     );
   }

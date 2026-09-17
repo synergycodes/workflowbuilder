@@ -5,8 +5,12 @@
   --wb-public-list-item-color-selected: var(--wb-ds-ui-text-default);
   --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
+  --wb-public-list-item-icon-color: var(--wb-ds-ui-icon-subtle-default);
+  --wb-public-list-item-indicator-color: var(--wb-ds-ui-icon-action-default);
+
   --wb-public-list-item-background-color-disabled: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-list-item-icon-color-disabled: var(--wb-ds-ui-icon-disabled);
 
   --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
@@ -73,6 +77,10 @@
       color: var(--wb-public-list-item-color-disabled);
       background-color: var(--wb-public-list-item-background-color-disabled);
       cursor: auto;
+
+      svg {
+        color: var(--wb-public-list-item-icon-color-disabled);
+      }
     }
 
     &.destructive {
@@ -84,12 +92,26 @@
       &[data-highlighted] {
         background-color: var(--wb-public-list-item-background-color-hover-destructive);
       }
+
+      svg {
+        color: inherit;
+      }
     }
 
     svg {
       width: 1rem;
       height: 1rem;
       min-width: 1rem;
+      color: var(--wb-public-list-item-icon-color);
+    }
+
+    .indicator {
+      display: flex;
+      margin-left: auto;
+
+      svg {
+        color: var(--wb-public-list-item-indicator-color);
+      }
     }
   }
 }
