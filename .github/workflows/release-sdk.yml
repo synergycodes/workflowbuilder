@@ -4,7 +4,7 @@ name: Release SDK
 # packages/sdk/package.json. Scoped tags let this repo publish more than one
 # package (see release-ui.yml for @workflowbuilder/ui). Maintainer pushes the
 # tag after merging the version-bump PR (which ran `pnpm changeset version`).
-# See packages/sdk/RELEASE.md.
+# See packages/RELEASE.md.
 
 on:
   push:
