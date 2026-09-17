@@ -96,6 +96,10 @@
   color: var(--wb-ds-ui-text-subtle-default);
 }
 
+.badge--node_waiting {
+  color: var(--ai-studio-status-color--waiting);
+}
+
 .badge--execution_incomplete {
   color: var(--ai-studio-status-color--incomplete);
 }
@@ -163,6 +167,11 @@
 .status--completed {
   color: var(--ai-studio-status-color--completed);
   background: var(--ai-studio-status-bg--completed);
+}
+
+.status--waiting {
+  color: var(--ai-studio-status-color--waiting);
+  background: var(--ai-studio-status-bg--waiting);
 }
 
 .status--incomplete {

@@ -11,6 +11,7 @@ import type { AiStudioNode } from '../../domain/ai-studio-nodes';
 import { env } from '../../env';
 import { createAiAgentExecutor } from '../../executors/ai-agent';
 import { executeDecision } from '../../executors/decision';
+import { executeHumanDecision } from '../../executors/human-decision';
 import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
@@ -41,6 +42,7 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/decision': executeDecision,
     'ai-studio/ai-agent': executeAIAgent,
     'ai-studio/visualize': executeVisualize,
+    'ai-studio/human-decision': executeHumanDecision,
   },
   store: withPayloadSizeWarning(database, logger),
 });
