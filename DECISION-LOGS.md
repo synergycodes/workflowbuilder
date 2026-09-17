@@ -27,4 +27,5 @@
 - _07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape)_: [Decision request as versioned data on a node](./apps/backend/decision-request.decision-log.md)
 - _07.09.2026 (revised 14.09.2026, 15.09.2026 and 16.09.2026)_: [Derive the ConnectableItem width from the real container insets](./packages/sdk/src/features/diagram/nodes/components/connectable-item/connectable-item-width.decision-log.md)
 - _08.09.2026 (pause), 21.09.2026 (outcome)_: [Durable pause, the Temporal side of the human-in-the-loop seam](./packages/temporal/src/workflow/durable-pause.decision-log.md)
+- _17.09.2026_: [AI agent tool loop runs inside one Temporal Activity](./apps/execution-worker/src/activities/ai-agent-tool-loop-activity.decision-log.md)
 - _01.10.2026_: [One model for the built-in interface: state, actions, builtInControls, …Content, …MenuItem](./packages/sdk/src/features/ui-extensions/ui-extensions.decision-log.md)
