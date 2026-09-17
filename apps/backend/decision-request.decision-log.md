@@ -67,7 +67,7 @@ A whitespace-only `reason` counts as missing, and "emptied" means `undefined`, `
 
 ## Not in this change
 
-Further request fields (condition, four-eyes, several decisions), identity and `x-pii` masking, the pending-decision resource, the rerun loop, the deadline timer, authoring the request in the editor `(follow-up: decision-request-properties-ui)`, and the node that actually parks. The runner learns no product's vocabulary by design, so a run stops where a node's executor returns a waiting result, never because a field is present. The node type whose executor does only that, and therefore waits without side effects of its own, is its own task `(follow-up: human-decision-node)`.
+Further request fields (condition, four-eyes, several decisions), identity and `x-pii` masking, the pending-decision resource, the rerun loop, the deadline timer, authoring the request in the editor `(follow-up: decision-request-properties-ui)`, and the node that actually parks. The runner learns no product's vocabulary by design, so a run stops where a node's executor returns a waiting result, never because a field is present. The node type whose executor does only that, and therefore waits without side effects of its own, was its own task; it shipped as `apps/execution-worker/src/executors/human-decision.ts`.
 
 ## Status
 

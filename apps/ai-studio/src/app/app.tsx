@@ -12,10 +12,15 @@ import { ExecutionLogPanel } from '../components/execution/log-panel';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
+import { humanDecisionNodeType } from '../nodes/human-decision';
+import { HumanDecisionNodeTemplate } from '../nodes/human-decision/human-decision-template';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 
 const flagship = supportTriageFlow.value;
+
+// Module-level: `nodeTemplates` must keep the same reference across renders.
+const nodeTemplates = { [humanDecisionNodeType]: HumanDecisionNodeTemplate };
 
 // A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
@@ -30,6 +35,7 @@ export function App() {
       initialNodes={flagship.diagram.nodes}
       initialEdges={flagship.diagram.edges}
       nodeTypes={aiStudioNodeTypes}
+      nodeTemplates={nodeTemplates}
       diagramTemplates={aiStudioTemplates}
       isValidConnection={isValidConnection}
       plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}

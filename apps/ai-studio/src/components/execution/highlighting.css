@@ -9,9 +9,11 @@ html[data-theme='dark'] {
 }
 
 :root {
+  --ai-studio-status-color--waiting: var(--wb-ds-ui-text-info-default);
   --ai-studio-status-color--incomplete: var(--wb-ds-ui-text-warning-default);
   --ai-studio-status-color--failed: var(--wb-ds-ui-text-critical-default);
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
+  --ai-studio-status-bg--waiting: color-mix(in srgb, var(--ai-studio-status-color--waiting), transparent 85%);
   --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
