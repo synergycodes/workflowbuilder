@@ -6,7 +6,7 @@
 
 ## Context
 
-The AI agent node (`ai-agent.ts`, this directory) can call a web search tool. The AI SDK drives that as an agentic loop: the model asks for a search, the worker runs it, the result goes back to the model, and the model either asks again or answers. `generateText` runs the whole cycle internally, capped at four steps (`stopWhen: stepCountIs(MAX_TOOL_STEPS)`).
+The AI agent node (`ai-agent.ts`, this directory) can call a web search tool. The AI SDK drives that as an agentic loop: the model asks for a search, the worker runs it, the result goes back to the model, and the model either asks again or answers. `generateText` runs the whole cycle internally, capped at four steps (`stopWhen: stepCountIs(MAX_TOOL_STEPS)`). The loop exists only when tools are on, which needs both the node's `webSearch` flag and a `TAVILY_API_KEY`; without them the executor makes one model call. At the cap `generateText` returns normally, so the node completes with whatever the last step produced, possibly empty text, rather than failing.
 
 `@workflowbuilder/temporal` schedules exactly one `executeNode` Activity per node, so the entire loop — every model call and every search — runs inside that one Activity. Temporal's integration guide allows this, but its rule of thumb is "Activities as close to the tool call as possible", and a reviewer will ask why the loop is not split. This log is the answer; the code alone cannot show it.
 
@@ -20,7 +20,7 @@ Keep the loop inside the node's single Activity.
 
 ## What it costs
 
-An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed. Three caps already bound the bill:
+An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed, so a worker that dies mid-loop loses every finished step the same way. Three caps already bound the bill:
 
 | Cap                  | Where                                    | Effect                                                        |
 | -------------------- | ---------------------------------------- | ------------------------------------------------------------- |
@@ -28,7 +28,7 @@ An Activity retry starts the executor from scratch. Every model call and every s
 | `maxRetries: 0`      | the `generateText` call in `ai-agent.ts` | The AI SDK never retries on its own; Temporal owns retries    |
 | `maximumAttempts: 2` | `DEFAULT_NODE_ACTIVITY_PROFILE` (plugin) | At most two attempts per node unless a profile says otherwise |
 
-Worst case per node is therefore eight model generations and eight searches. The loop also has to fit the node profile's `startToCloseTimeout`, 10 minutes by default; a deployment that needs more room declares a profile for `ai-studio/ai-agent` through `createRunWorkflow({ nodeActivityProfiles })` and hands the same map to the plugin.
+Worst case per node is therefore eight model generations and eight searches. The loop also has to fit the node profile's `startToCloseTimeout`, 10 minutes by default; a deployment that needs more room declares a profile for `ai-studio/ai-agent` through `createRunWorkflow({ nodeActivityProfiles })` and hands the same map to the plugin. The same profile is where a deployment rules the re-run out altogether: `retry.maximumAttempts: 1` makes the first attempt the whole budget.
 
 Failure classification (`provider-error.ts`) applies to the loop as a whole, because `generateText` throws once for the whole cycle: a 401 on the third step is permanent and stops the node; a 429 anywhere in the loop retries the whole node.
 
@@ -37,6 +37,8 @@ Failure classification (`provider-error.ts`) applies to the loop as a whole, bec
 - **One Activity per tool call, loop driven from the workflow** — rejected for now. The workflow would own the conversation state and a per-node Activity sequence that `runGraph` does not model, and every intermediate message would land in Event History. It is the right shape once a tool has side effects, not before.
 - **Child workflow per agent node** — rejected. Same history growth plus a second workflow type to version and replay; nothing here needs its own cancellation or timeout scope.
 - **Heartbeat details as a checkpoint inside the Activity** — rejected. Resuming a partial model conversation from `heartbeatDetails` means rebuilding the SDK's loop by hand, which is the first alternative in disguise.
+
+None of this applies to a fixed sequence of model calls: split it into one node per call and each becomes its own Activity that Temporal records and resumes. Only a loop whose length the model decides at run time has to stay inside one node, because the graph cannot express it: a cycle reachable from the start fails the run with `Workflow stalled`.
 
 ## When to revisit
 
