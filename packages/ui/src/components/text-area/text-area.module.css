@@ -3,7 +3,7 @@
   --wb-public-textarea-color-disabled: var(--wb-ds-ui-text-ghost-default);
   --wb-public-textarea-placeholder-color: var(--wb-ds-ui-text-ghost-default);
   --wb-public-textarea-root-background-color: var(--wb-ds-ui-bg-base);
-  --wb-public-textarea-root-background-color-disabled: var(--wb-ds-ui-bg-fill-disabled);
+  --wb-public-textarea-root-background-color-disabled: var(--wb-ds-ui-bg-inset);
   --wb-public-textarea-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
   --wb-public-textarea-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
   --wb-public-textarea-root-border-color: var(--wb-ds-components-text-field-stroke-default);

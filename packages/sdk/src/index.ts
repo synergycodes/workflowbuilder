@@ -137,8 +137,7 @@ export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-lab
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
 export {
   SelfConnectingEdge,
-  getSelfLoopHeight,
-  useSelfLoopNodeHeight,
+  useSelfLoopApexY,
 } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';

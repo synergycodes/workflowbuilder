@@ -41,9 +41,7 @@
 @layer ui.component {
   .container {
     display: flex;
-    width: calc(
-      var(--wb-public-snackbar-width) + 2 * var(--wb-ds-space-200) + 2 * var(--wb-public-snackbar-border-size)
-    );
+    width: var(--wb-public-snackbar-width);
     border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-default-border);
     border-radius: var(--wb-public-snackbar-border-radius);
     background: var(--wb-public-snackbar-default-background);

@@ -2,15 +2,13 @@
   --wb-sdk-connectable-item-horizontal-padding: var(--wb-ds-canvas-node-row-h-pad);
   --wb-sdk-connectable-item-vertical-padding: var(--wb-ds-canvas-node-row-v-pad);
   --wb-sdk-connectable-item-gap: var(--wb-ds-canvas-node-row-gap);
-  --wb-sdk-connectable-item-background: var(--wb-ds-ui-bg-inset);
-  --wb-sdk-connectable-item-border-width: 0.0625rem;
-  --wb-sdk-connectable-item-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-sdk-connectable-item-background: var(--wb-ds-canvas-node-bg-content-default);
   --wb-sdk-connectable-item-border-radius: var(--wb-ds-canvas-node-row-radius);
   --wb-sdk-connectable-item-inset: 0rem;
 }
 
 .connectable-item {
-  composes: wb-text-node-s from global;
+  composes: wb-text-body-s-emphasized from global;
 
   position: relative;
   display: flex;
@@ -20,7 +18,6 @@
   );
   padding: var(--wb-sdk-connectable-item-vertical-padding) var(--wb-sdk-connectable-item-horizontal-padding);
   background-color: var(--wb-sdk-connectable-item-background);
-  border: var(--wb-sdk-connectable-item-border-width) solid var(--wb-sdk-connectable-item-border-color);
   border-radius: var(--wb-sdk-connectable-item-border-radius);
   justify-content: space-between;
 

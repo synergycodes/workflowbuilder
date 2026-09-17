@@ -1,11 +1,11 @@
 :root {
-  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-background-color-selected: var(--wb-ds-ui-bg-selected);
   --wb-public-list-item-background-color-selected-hover: var(--wb-ds-ui-bg-selected-hover);
   --wb-public-list-item-color-selected: var(--wb-ds-ui-text-default);
   --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
-  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
   --wb-public-list-item-outline-size: var(--wb-ds-shadow-ui-focus-element-spread);
 

@@ -14,8 +14,9 @@ export const EDGE_OFFSET = 20;
 export const EDGE_CURVE_RADIUS = 16;
 
 /**
- * Vertical distance (px) between the source node's top edge and the
- * apex of a self-connecting edge's loop, independent of the node height.
+ * Vertical distance (px) between the source node's top edge and the apex of a
+ * self-connecting edge's loop. The apex is derived from the node's own top edge,
+ * so the offset holds for any node height and wherever the node puts its ports.
  * Also drives where the edge's label sits on a self-connecting edge.
  *
  * @category Constants

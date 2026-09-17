@@ -15,21 +15,23 @@
     justify-content: center;
 
     &.extra-large {
-      width: calc(2.5rem + 2 * var(--wb-public-avatar-border-size));
-      height: calc(2.5rem + 2 * var(--wb-public-avatar-border-size));
+      width: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.large {
-      width: calc(2rem + 2 * var(--wb-public-avatar-border-size));
-      height: calc(2rem + 2 * var(--wb-public-avatar-border-size));
+      width: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.medium {
+      /* missing token: the design library only defines Avatar L and XL */
       width: calc(1.5rem + 2 * var(--wb-public-avatar-border-size));
       height: calc(1.5rem + 2 * var(--wb-public-avatar-border-size));
     }
 
     &.small {
+      /* missing token: the design library only defines Avatar L and XL */
       width: calc(1.125rem + 2 * var(--wb-public-avatar-border-size));
       height: calc(1.125rem + 2 * var(--wb-public-avatar-border-size));
     }

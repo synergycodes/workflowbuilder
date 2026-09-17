@@ -1,51 +1,30 @@
 import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
-import { type EdgeProps, Position, useStore as useReactFlowStore } from '@xyflow/react';
+import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
-  /**
-   * Height of the source node, used to size the loop. Omit it to read the
-   * measured height from the React Flow store (the edge then has to render
-   * inside React Flow, which is where edges live anyway). Pass a value when
-   * a sibling element must stay in lockstep with the loop, as
-   * {@link LabelEdge} does for its label.
-   */
-  nodeHeight?: number;
   hovered: boolean;
 };
 
 /**
- * Measured height of the source node of a self-loop, or `0` for a regular
- * edge and for a node React Flow has not measured yet. Subscribes to the
- * React Flow store, so the loop follows the node when it grows or shrinks.
+ * Y coordinate a self-loop peaks at: {@link SELF_CONNECTING_EDGE_LABEL_OFFSET}
+ * above the top edge of the source node, whatever the node height and wherever
+ * its ports sit. Returns `null` for a regular edge and for a node React Flow
+ * has not placed yet, so a caller can fall back to the port position.
+ * Subscribes to the React Flow store, so the loop follows the node as it moves
+ * or grows.
  *
  * @category Hooks
  */
-export function useSelfLoopNodeHeight(source: string, target: string) {
+export function useSelfLoopApexY(source: string, target: string) {
   return useReactFlowStore((state) => {
-    if (source !== target) return 0;
-    const node = state.nodeLookup.get(source);
-    // xyflow writes measured.height on every remeasure; height only when a resize sets attributes.
-    return node?.measured?.height ?? node?.height ?? 0;
+    if (source !== target) return null;
+    const top = state.nodeLookup.get(source)?.internals.positionAbsolute.y;
+    return top === undefined ? null : top - SELF_CONNECTING_EDGE_LABEL_OFFSET;
   });
-}
-
-/**
- * Vertical distance from the source port to the apex of a self-loop, so that
- * the apex sits {@link SELF_CONNECTING_EDGE_LABEL_OFFSET} above the node's top
- * edge whatever the node height. Ports sit mid-height in the horizontal layout
- * and on the bottom edge in the vertical one. xyflow anchors a bottom port on
- * its outer edge, so in that layout the apex lands half a port lower.
- *
- * @category Utilities
- */
-export function getSelfLoopHeight(nodeHeight: number, sourcePosition?: Position) {
-  const portToTopEdge =
-    sourcePosition === Position.Bottom ? nodeHeight : sourcePosition === Position.Top ? 0 : nodeHeight / 2;
-  return portToTopEdge + SELF_CONNECTING_EDGE_LABEL_OFFSET;
 }
 
 type Point = {
@@ -98,17 +77,15 @@ export function SelfConnectingEdge({
   hovered,
   source,
   target,
-  sourcePosition,
-  nodeHeight,
 }: SelfConnectingEdgeProps) {
-  const measuredNodeHeight = useSelfLoopNodeHeight(source, target);
+  const apexY = useSelfLoopApexY(source, target);
   const edgeState: EdgeState = selected ? 'selected' : 'default';
   const style = useEdgeStyle({ state: edgeState, isHovered: hovered });
 
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
     { x: targetX, y: targetY },
-    getSelfLoopHeight(nodeHeight ?? measuredNodeHeight, sourcePosition),
+    sourceY - (apexY ?? sourceY - SELF_CONNECTING_EDGE_LABEL_OFFSET),
     EDGE_CURVE_RADIUS,
   );
 

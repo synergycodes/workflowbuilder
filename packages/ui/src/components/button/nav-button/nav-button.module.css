@@ -26,11 +26,11 @@
   --wb-public-nav-button-padding-xxxs: var(--wb-ds-space-50);
   --wb-public-nav-button-label-padding-inline-xl: var(--wb-ds-space-150);
   --wb-public-nav-button-label-padding-inline-l: var(--wb-ds-space-150);
-  --wb-public-nav-button-label-padding-inline-m: var(--wb-ds-space-112);
-  --wb-public-nav-button-label-padding-inline-s: var(--wb-ds-space-87);
-  --wb-public-nav-button-label-padding-inline-xs: var(--wb-ds-space-75);
+  --wb-public-nav-button-label-padding-inline-m: var(--wb-ds-space-150);
+  --wb-public-nav-button-label-padding-inline-s: var(--wb-ds-space-125);
+  --wb-public-nav-button-label-padding-inline-xs: var(--wb-ds-space-100);
   --wb-public-nav-button-label-padding-inline-xxs: var(--wb-ds-space-75);
-  --wb-public-nav-button-label-padding-inline-xxxs: var(--wb-ds-space-50);
+  --wb-public-nav-button-label-padding-inline-xxxs: var(--wb-ds-space-75);
   --wb-public-nav-button-gap-xl: var(--wb-ds-space-100);
   --wb-public-nav-button-gap-l: var(--wb-ds-space-100);
   --wb-public-nav-button-gap-m: var(--wb-ds-space-100);

@@ -16,6 +16,13 @@
       color: var(--wb-public-input-root-color-critical);
     }
 
+    &:disabled,
+    &[data-disabled] {
+      background-color: var(--wb-public-input-root-background-color-disabled);
+      color: var(--wb-public-input-root-color-disabled);
+      cursor: auto;
+    }
+
     &.container--placeholder {
       opacity: 0.5;
     }

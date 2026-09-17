@@ -4,13 +4,9 @@ import { Icon } from '@workflow-builder/icons';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EdgeLabel } from '../edge-label-renderer/edge-label-renderer';
-import { EDGE_CURVE_RADIUS, EDGE_OFFSET } from '../edge.consts';
+import { EDGE_CURVE_RADIUS, EDGE_OFFSET, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
-import {
-  SelfConnectingEdge,
-  getSelfLoopHeight,
-  useSelfLoopNodeHeight,
-} from '../self-connecting-edge/self-connecting-edge';
+import { SelfConnectingEdge, useSelfLoopApexY } from '../self-connecting-edge/self-connecting-edge';
 import { useLabelEdgeHover } from './use-label-edge-hover';
 
 /**
@@ -38,7 +34,7 @@ export function LabelEdge({
   source,
   target,
 }: EdgeProps<WorkflowBuilderEdge>) {
-  const nodeHeight = useSelfLoopNodeHeight(source, target);
+  const selfLoopApexY = useSelfLoopApexY(source, target);
   const { style, hovered, onMouseEnter, onMouseLeave } = useLabelEdgeHover({
     id,
     isSelected: selected,
@@ -69,7 +65,7 @@ export function LabelEdge({
   };
 
   if (source === target) {
-    const selfConnectingLabelY = sourceY - getSelfLoopHeight(nodeHeight, sourcePosition);
+    const selfConnectingLabelY = selfLoopApexY ?? sourceY - SELF_CONNECTING_EDGE_LABEL_OFFSET;
 
     return (
       <>
@@ -85,7 +81,6 @@ export function LabelEdge({
           target={target}
           sourcePosition={sourcePosition}
           targetPosition={targetPosition}
-          nodeHeight={nodeHeight}
         />
         <EdgeLabel {...labelProps} labelX={labelX} labelY={selfConnectingLabelY} />
       </>
