@@ -50,15 +50,13 @@ const rejectActionSchema = z.looseObject({
   reasonRequired: z.boolean().default(false),
 });
 
-const rerunSourceActionSchema = z
-  .looseObject({
-    ...actionBase,
-    effect: z.literal('rerun-source'),
-    maxIterations: z.int().min(1).default(3),
-  })
-  .superRefine((action, context) => {
-    if (Object.hasOwn(action, 'port')) context.addIssue(decisionIssue('port_not_allowed', ['port']));
-  });
+const rerunSourceActionSchema = z.looseObject({
+  ...actionBase,
+  effect: z.literal('rerun-source'),
+  maxIterations: z.int().min(1).default(3),
+  // Refused on the field, not the object, so the issue survives a structural failure beside it.
+  port: z.unknown().refine((port) => port === undefined, decisionRefinement('port_not_allowed')),
+});
 
 // The effect picks the member that parses the rest, so it is checked on its own first: a
 // union that finds no member cannot name what was wrong, and a client needs the name.

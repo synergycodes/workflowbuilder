@@ -411,6 +411,23 @@ describe('decisionRequestSchema', () => {
     expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
   });
 
+  it('reports a stray rerun-source port beside a structural failure of the same action', () => {
+    const issues = issuesOf(
+      request({ actions: [approve, { label: 'Ask again', effect: 'rerun-source', port: 'again' }] }),
+    );
+
+    expect(issues.map((issue) => issue.path).sort()).toEqual(['actions.1.name', 'actions.1.port']);
+    expect(issues.map((issue) => issue.domain)).toContainEqual({ issue: 'port_not_allowed' });
+  });
+
+  it('keeps the request-level rules running after a stray rerun-source port', () => {
+    const issues = issuesOf(request({ actions: [approve, { ...askAgain, name: 'approve', port: 'again' }] }));
+
+    expect(issues.map((issue) => issue.domain)).toEqual(
+      expect.arrayContaining([{ issue: 'port_not_allowed' }, { issue: 'duplicate_action_name', value: 'approve' }]),
+    );
+  });
+
   // The effect check aborts the action the way the union's own failure did; a second issue
   // about a missing resume action for an action that never parsed would only mislead.
   it('reports an unknown effect once, without a missing-resume issue riding along', () => {
