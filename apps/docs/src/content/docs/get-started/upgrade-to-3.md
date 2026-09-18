@@ -11,8 +11,9 @@ defaults upgrades by bumping the version. An editor that overrides CSS custom pr
 uses `@workflowbuilder/ui` components directly, or styles the built-in ones needs the steps
 below.
 
-`@workflowbuilder/ui` is published for the first time in this release, as `3.0.0`, so its
-version matches the SDK. Until now it reached consumers only bundled inside the SDK.
+`@workflowbuilder/ui` is published for the first time in this release, as `1.0.0`. Until
+now it reached consumers only bundled inside the SDK, so its version line starts here and
+is independent of the SDK's.
 
 ## What replaced the bundled library
 
