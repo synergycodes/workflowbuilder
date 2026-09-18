@@ -110,8 +110,9 @@ const refundForm = {
   },
   required: ['refundAmount'],
 };
-const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
-const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected' };
+// Not the strings the former defaults produced: the nextPort assertions must prove the port came from the request.
+const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'source:inner:approved' };
+const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'source:inner:rejected' };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
 
 // source-1 feeds two deciding nodes. review-1 offers all three effects and takes a reject
@@ -147,7 +148,7 @@ const snapshot = {
   edges: [
     { id: 'e1', source: 'source-1', target: 'review-1' },
     { id: 'e2', source: 'source-1', target: 'review-2' },
-    { id: 'e3', source: 'review-1', target: 'after-1', sourceHandle: 'approved' },
+    { id: 'e3', source: 'review-1', target: 'after-1', sourceHandle: 'source:inner:approved' },
   ],
 };
 
@@ -430,7 +431,7 @@ describe('POST /api/executions/:id/decision - the wait instance', () => {
     expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
     expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-2', {
       output: { action: 'approve', effect: 'resume', edits: {} },
-      nextPort: 'approved',
+      nextPort: 'source:inner:approved',
     });
   });
 });
@@ -475,7 +476,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     });
     expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-1', {
       output: approvedDecision,
-      nextPort: 'approved',
+      nextPort: 'source:inner:approved',
     });
   });
 
@@ -495,7 +496,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(await response.json()).toMatchObject({ executionId: canonical });
     expect(engineMock.resolveNode).toHaveBeenCalledWith(canonical, 'review-1', {
       output: approvedDecision,
-      nextPort: 'approved',
+      nextPort: 'source:inner:approved',
     });
   });
 
@@ -509,7 +510,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(body.effect).toBe('reject');
     expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-1', {
       output: { action: 'reject', effect: 'reject', edits: {} },
-      nextPort: 'rejected',
+      nextPort: 'source:inner:rejected',
     });
   });
 
