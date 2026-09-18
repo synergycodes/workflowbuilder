@@ -8,6 +8,9 @@ export type ExecutionContext = {
    * unredacted. See the `@workflowbuilder/temporal` README, "What Event History records".
    */
   readonly variables: Record<string, unknown>;
-  // Global variables defined manually in the builder
+  /**
+   * Global variables defined manually in the builder. Same route as `variables`: everything
+   * here reaches Temporal Event History unredacted, so it is no place for a secret either.
+   */
   readonly global: Record<string, unknown>;
 };

@@ -208,16 +208,17 @@ This package hands Temporal:
 
 Anyone who can open the Temporal UI can read the record. On Temporal Cloud, Temporal stores it on its own infrastructure.
 
-**You cannot edit a leaked key out of Event History. You can only delete the whole run. So rotate the key.**
+**You cannot edit a leaked key out of Event History. You can only delete the whole run, and that leaves whatever your own store holds for it: the event payloads `emitEvent` wrote, the trigger payload, the definition. So rotate the key.**
 
 [`execution-core`](../execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
 
-Two rules follow:
+Three rules follow:
 
 - **Keep secrets in the worker's own environment.** The reference worker keeps its model key and its search key there.
-- **If a secret must differ per run or per tenant, read it inside the executor.** Temporal never records what the executor does in its own body. It does record the return value and the message of any error, so keep the secret out of both, and out of the node's `config`, which travels in the workflow input. An executor is a closure: capture the secret in `executors` at worker start, as the reference worker does with its keys.
+- **One secret for the whole installation: capture it at worker start.** An executor is a closure, so capture the value when you build `executors`, as the reference worker does with its keys.
+- **A secret that differs per run or per tenant: capture a resolver, not a value.** A closure built at worker start sees the same value on every call. The executor's second argument is the `ExecutionContext`; key the lookup on `context.executionId` or on a non-secret discriminator your backend puts in `variables`, and resolve the secret inside the executor. Temporal never records what the executor does in its own body. It does record the return value and, for any error, the message, type, stack and `cause`, so keep the secret out of all of them, and out of the node's `config`, which travels in the workflow input.
 
-A Payload Codec encrypts payloads before they leave the process. Pass one as `dataConverter` to `Worker.create` and to the `Client` you hand `TemporalWorkflowEngine`; nothing in this package stands in the way. The plugin ships no codec of its own (follow-up: temporal-payload-codec).
+A Payload Codec encrypts payloads before they leave the process. A codec is one part of a data converter, so pass `dataConverter: { payloadCodecs: [codec] }` to `Worker.create`, and the same object to the `Client` you hand `TemporalWorkflowEngine`; nothing in this package stands in the way. The plugin ships no codec of its own (follow-up: temporal-payload-codec).
 
 ### Payload size and the history budget
 
@@ -238,7 +239,7 @@ At 100 KB per output, the `executeNode` arguments pass 512 KB at node 7. History
 
 What an oversize payload does depends on which one it is. The worker checks each outbound payload before sending it. Over the warn threshold it logs `[TMPRL1103]` at `WARN` and sends anyway. Over the error limit it logs at `ERROR` and fails the task instead. The error limit comes from the namespace. The warn threshold does not. It is the worker's own 512 KiB default, and only `NativeConnectionOptions.payloadLimits` moves it, not `limit.blobSize.warn`. That option is experimental, so expect it to change.
 
-- **`executeNode` arguments over the limit** fail the Workflow Task. Temporal retries that task, so the run hangs until you deploy a fix.
+- **`executeNode` arguments over the limit** fail the Workflow Task. Temporal retries that task forever, so the run hangs, and a deploy does not free it: on replay the arguments are rebuilt from node outputs already in history, so no executor change can shrink them. Terminate the run. On a self-hosted deployment, raising `limit.blobSize.error` on the server and restarting the worker is the alternative.
 - **An `executeNode` return value over the limit** fails the activity attempt. The retry policy re-runs the node, the output is oversize again, and the node fails once the profile's attempts are spent. From there `errorPolicy` decides, as for any other node failure.
 
 `disablePayloadErrorLimit` on the worker skips the check and leaves the limit to the server.
