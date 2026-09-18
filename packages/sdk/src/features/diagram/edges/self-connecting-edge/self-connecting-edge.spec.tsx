@@ -1,5 +1,5 @@
 import { render } from '@testing-library/react';
-import { type EdgeProps, Position } from '@xyflow/react';
+import type { EdgeProps } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
@@ -8,7 +8,6 @@ import { SelfConnectingEdge } from './self-connecting-edge';
 const { nodeLookup } = vi.hoisted(() => ({ nodeLookup: new Map<string, unknown>() }));
 
 vi.mock('@xyflow/react', () => ({
-  Position: { Top: 'top', Right: 'right', Bottom: 'bottom', Left: 'left' },
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
 }));
 
@@ -44,28 +43,38 @@ beforeEach(() => {
   nodeLookup.clear();
 });
 
+function placeNode(top: number) {
+  nodeLookup.set('node-1', { internals: { positionAbsolute: { y: top } } });
+}
+
 describe('SelfConnectingEdge', () => {
-  it('reads the measured source height when nodeHeight is omitted', () => {
-    nodeLookup.set('node-1', { measured: { height: 80 } });
+  it('peaks a fixed offset above the node top edge, whatever the node height', () => {
+    placeNode(268);
 
     const { container } = render(<SelfConnectingEdge {...loopProps} />);
 
-    expect(loopApexY(container)).toBe(300 - (80 / 2 + 48));
+    expect(loopApexY(container)).toBe(268 - 48);
   });
 
-  it('measures the offset from the top edge when the source port sits on the bottom edge', () => {
-    nodeLookup.set('node-1', { measured: { height: 80 } });
+  it('keeps that offset for a tall node whose port sits far below the top edge', () => {
+    placeNode(78);
 
-    const { container } = render(<SelfConnectingEdge {...loopProps} sourcePosition={Position.Bottom} />);
+    const { container } = render(<SelfConnectingEdge {...loopProps} />);
 
-    expect(loopApexY(container)).toBe(300 - (80 + 48));
+    expect(loopApexY(container)).toBe(78 - 48);
   });
 
-  it('prefers an explicit nodeHeight over the store', () => {
-    nodeLookup.set('node-1', { measured: { height: 80 } });
+  it('falls back to the port position for a node React Flow has not placed yet', () => {
+    const { container } = render(<SelfConnectingEdge {...loopProps} />);
 
-    const { container } = render(<SelfConnectingEdge {...loopProps} nodeHeight={20} />);
+    expect(loopApexY(container)).toBe(300 - 48);
+  });
 
-    expect(loopApexY(container)).toBe(300 - (20 / 2 + 48));
+  it('does not read the node lookup for a regular edge', () => {
+    const get = vi.spyOn(nodeLookup, 'get');
+
+    render(<SelfConnectingEdge {...loopProps} target="node-2" />);
+
+    expect(get).not.toHaveBeenCalled();
   });
 });

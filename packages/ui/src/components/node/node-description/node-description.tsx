@@ -17,7 +17,7 @@ export function NodeDescription({ label, description, disabled = false, classNam
       <span className={clsx('wb-text-title-s-emphasized', styles['title'])} title={label}>
         {label}
       </span>
-      <span className={clsx('wb-text-node-s', styles['subtitle'])} title={description}>
+      <span className={clsx('wb-text-label-s', styles['subtitle'])} title={description}>
         {description}
       </span>
     </div>

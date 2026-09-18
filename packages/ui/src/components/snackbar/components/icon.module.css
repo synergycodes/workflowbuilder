@@ -1,6 +1,7 @@
 @layer ui.component {
   .container {
     display: flex;
+    align-self: flex-start;
     padding-top: var(--wb-ds-space-25);
 
     &.center {

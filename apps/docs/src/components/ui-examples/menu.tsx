@@ -10,7 +10,7 @@ export function MenuExample() {
           { label: 'Edit', onClick: () => {} },
           { label: 'Duplicate', onClick: () => {} },
           { type: 'separator' },
-          { label: 'Delete', destructive: true, onClick: () => {} },
+          { label: 'Delete', tone: 'critical', onClick: () => {} },
         ]}
       >
         <Button variant="secondary">Open menu</Button>

@@ -7,6 +7,7 @@ import type { FieldState } from '../../types/field';
 type FieldRenderProps = {
   controlId: string | undefined;
   describedBy: string | undefined;
+  required: true | undefined;
 };
 
 type FieldProps = {
@@ -27,7 +28,7 @@ export function Field({ ariaDescribedBy, children, disabled, helperText, id, isR
   const controlId = id ?? generatedId;
   const helperId = hasHelper ? `${controlId}-helper` : undefined;
   const describedBy = [ariaDescribedBy, helperId].filter(Boolean).join(' ') || undefined;
-  const control = children({ controlId, describedBy });
+  const control = children({ controlId, describedBy, required: isRequired || undefined });
 
   return (
     <div className={styles['field']} data-state={state} data-disabled={disabled || undefined}>

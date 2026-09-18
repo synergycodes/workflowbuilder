@@ -15,7 +15,7 @@ export function MenuTriggerButtonExample() {
         items={[
           { label: 'Edit', onClick: () => {} },
           { label: 'Duplicate', onClick: () => {} },
-          { label: 'Delete', destructive: true, onClick: () => {} },
+          { label: 'Delete', tone: 'critical', onClick: () => {} },
         ]}
       >
         <MenuTriggerButton isOpen={isOpen} aria-label="Open menu">

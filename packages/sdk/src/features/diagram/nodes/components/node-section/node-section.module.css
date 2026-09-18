@@ -3,7 +3,7 @@
   --wb-sdk-node-section-padding: var(--wb-ds-canvas-node-body-h-pad);
   --wb-sdk-node-section-vertical-padding: var(--wb-ds-canvas-node-body-v-pad);
   --wb-sdk-node-section-border-radius: var(--wb-ds-canvas-node-body-radius);
-  --wb-sdk-node-section-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-sdk-node-section-border-color: var(--wb-ds-canvas-node-stroke-default);
   --wb-sdk-node-section-border-width: 0.0625rem;
 }
 

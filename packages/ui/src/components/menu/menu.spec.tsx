@@ -26,7 +26,7 @@ function renderMenu(items: Parameters<typeof Menu>[0]['items']) {
 
 describe('Menu selection', () => {
   it('renders plain menu items when no item defines selected', () => {
-    renderMenu([{ label: 'Edit' }, { label: 'Delete', destructive: true }]);
+    renderMenu([{ label: 'Edit' }, { label: 'Delete', tone: 'critical' }]);
 
     expect(document.querySelectorAll('[role="menuitem"]')).toHaveLength(2);
     expect(document.querySelector('[role="menuitemradio"]')).toBeNull();

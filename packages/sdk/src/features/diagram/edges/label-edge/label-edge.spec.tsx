@@ -54,21 +54,21 @@ beforeEach(() => {
 });
 
 describe('LabelEdge', () => {
-  it('uses the measured source height for self-loop geometry and label placement', () => {
-    nodeLookup.set('node-1', { measured: { height: 80 } });
+  it('puts the label on the loop apex, a fixed offset above the node top edge', () => {
+    nodeLookup.set('node-1', { internals: { positionAbsolute: { y: 268 } } });
 
     const { container } = render(<LabelEdge {...selfConnectingEdgeProps} />);
 
-    expect(container.querySelector('[data-edge-id="self-loop"]')?.getAttribute('d')).toContain('Q 125 212 109 212');
-    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('212');
+    expect(container.querySelector('[data-edge-id="self-loop"]')?.getAttribute('d')).toContain('220');
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('220');
   });
 
-  it('falls back to the explicit node height when no measurement exists', () => {
-    nodeLookup.set('node-1', { measured: {}, height: 40 });
+  it('keeps label and loop together on a tall node', () => {
+    nodeLookup.set('node-1', { internals: { positionAbsolute: { y: 78 } } });
 
     render(<LabelEdge {...selfConnectingEdgeProps} />);
 
-    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('232');
+    expect(screen.getByTestId('edge-label').dataset.labelY).toBe('30');
   });
 
   it('does not read the node lookup for a regular edge', () => {
@@ -80,7 +80,7 @@ describe('LabelEdge', () => {
     expect(screen.getByTestId('edge-label').dataset.labelY).toBe('0');
   });
 
-  it('treats an unknown source node as zero height', () => {
+  it('falls back to the port position for a node React Flow has not placed yet', () => {
     render(<LabelEdge {...selfConnectingEdgeProps} />);
 
     expect(screen.getByTestId('edge-label').dataset.labelY).toBe('252');

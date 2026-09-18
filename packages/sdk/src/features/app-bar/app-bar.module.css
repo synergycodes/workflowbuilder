@@ -61,6 +61,7 @@
 .folder-name {
   color: var(--wb-sdk-app-bar-folder-name-color);
   composes: wb-text-body-m from global;
+  white-space: nowrap;
 }
 
 .title {

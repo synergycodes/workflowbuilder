@@ -13,7 +13,7 @@
 .control {
   position: relative;
   border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
-  border-radius: var(--wb-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-m);
   color: var(--wb-public-input-root-color);
   transition: all var(--wb-public-transition);
 
@@ -40,7 +40,7 @@
   display: block;
   width: 100%;
   margin: 0;
-  padding: var(--wb-public-input-padding-medium);
+  padding: var(--wb-public-input-padding-m);
   border: none;
   background: transparent;
   color: unset;
@@ -68,7 +68,7 @@
  */
 .highlighter {
   composes: wb-text-label-m from global;
-  padding: var(--wb-public-input-padding-medium);
+  padding: var(--wb-public-input-padding-m);
   border: none;
   background: transparent;
   color: transparent;
@@ -105,7 +105,7 @@
   flex-direction: column;
   overflow: hidden;
   border: 1px solid var(--wb-sdk-variable-text-suggestion-border);
-  border-radius: var(--wb-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-m);
   background: var(--wb-sdk-variable-text-suggestion-bg);
   box-shadow: 0 4px 12px var(--wb-ds-shadow-ui-color);
 }
