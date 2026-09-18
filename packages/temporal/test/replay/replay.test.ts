@@ -18,6 +18,7 @@ import { type RecordingStore, createRecordingStore } from '../fixtures/recording
 import { REPLAY_SCENARIOS, type ReplayScenario, type ReplayScenarioNode } from '../fixtures/replay-scenarios';
 
 const TASK_QUEUE = 'replay-test';
+const CACHE_DISABLED = 0;
 
 const HISTORIES_DIR = new URL('histories/', import.meta.url);
 
@@ -67,9 +68,63 @@ function countScheduledActivities(history: History): Record<string, number> {
   return counts;
 }
 
+// Seeded from the graph, so a node that emitted nothing is asserted as [] rather than
+// passing by being absent, and grouping keeps the check off sibling completion order.
+function eventTypesByNode(scenario: ReplayScenario, store: RecordingStore): Record<string, string[]> {
+  const byNode: Record<string, string[]> = Object.fromEntries(scenario.graph.nodes.map((node) => [node.id, []]));
+
+  for (const event of store.events) {
+    if (event.nodeId !== undefined) {
+      byNode[event.nodeId]?.push(event.type);
+    }
+  }
+
+  return byNode;
+}
+
 describe('replay', () => {
   let env: TestWorkflowEnvironment;
   let workflowBundle: { code: string };
+
+  async function runScenario(
+    scenario: ReplayScenario,
+    options: { executionId: string; taskQueue: string; maxCachedWorkflows?: number },
+  ): Promise<{ history: History; store: RecordingStore }> {
+    const store = createRecordingStore();
+    const { executors, drive } = scenario.stage();
+
+    const plugin = new WorkflowBuilderPlugin<ReplayScenarioNode>({ store, executors, taskQueue: options.taskQueue });
+    const worker = await Worker.create({
+      connection: env.nativeConnection,
+      namespace: env.namespace,
+      taskQueue: plugin.taskQueue,
+      workflowBundle,
+      plugins: [plugin],
+      ...(options.maxCachedWorkflows === undefined ? {} : { maxCachedWorkflows: options.maxCachedWorkflows }),
+    });
+
+    const input: WorkflowExecutionInput<ReplayScenarioNode> = {
+      workflowId: scenario.graph.workflowId,
+      executionId: options.executionId,
+      definition: scenario.graph,
+      triggerPayload: {},
+      variables: {},
+      global: {},
+    };
+
+    const workflowId = executionWorkflowId(options.executionId);
+
+    await worker.runUntil(async () => {
+      const handle = await env.client.workflow.start(RUN_WORKFLOW_NAME, {
+        taskQueue: plugin.taskQueue,
+        workflowId,
+        args: [input],
+      });
+      await drive(handle);
+    });
+
+    return { history: await env.client.workflow.getHandle(workflowId).fetchHistory(), store };
+  }
 
   beforeAll(async () => {
     [workflowBundle, env] = await Promise.all([
@@ -87,40 +142,10 @@ describe('replay', () => {
     let store: RecordingStore;
 
     beforeAll(async () => {
-      store = createRecordingStore();
-      const { executors, drive } = scenario.stage();
-
-      const plugin = new WorkflowBuilderPlugin<ReplayScenarioNode>({ store, executors, taskQueue: TASK_QUEUE });
-      const worker = await Worker.create({
-        connection: env.nativeConnection,
-        namespace: env.namespace,
-        taskQueue: plugin.taskQueue,
-        workflowBundle,
-        plugins: [plugin],
-      });
-
-      const executionId = `replay-${scenario.name}`;
-      const input: WorkflowExecutionInput<ReplayScenarioNode> = {
-        workflowId: scenario.graph.workflowId,
-        executionId,
-        definition: scenario.graph,
-        triggerPayload: {},
-        variables: {},
-        global: {},
-      };
-
-      const workflowId = executionWorkflowId(executionId);
-
-      await worker.runUntil(async () => {
-        const handle = await env.client.workflow.start(RUN_WORKFLOW_NAME, {
-          taskQueue: plugin.taskQueue,
-          workflowId,
-          args: [input],
-        });
-        await drive(handle);
-      });
-
-      history = await env.client.workflow.getHandle(workflowId).fetchHistory();
+      ({ history, store } = await runScenario(scenario, {
+        executionId: `replay-${scenario.name}`,
+        taskQueue: TASK_QUEUE,
+      }));
 
       if (shouldRecord(scenario)) {
         await writeFile(historyFile(scenario), `${historyToJSON(history)}\n`);
@@ -136,17 +161,7 @@ describe('replay', () => {
     });
 
     it('emits the events each node owes', () => {
-      // Seeded from the graph, so a node that emitted nothing is asserted as [] rather than
-      // passing by being absent, and grouping keeps the check off sibling completion order.
-      const byNode: Record<string, string[]> = Object.fromEntries(scenario.graph.nodes.map((node) => [node.id, []]));
-
-      for (const event of store.events) {
-        if (event.nodeId !== undefined) {
-          byNode[event.nodeId]?.push(event.type);
-        }
-      }
-
-      expect(byNode).toEqual(scenario.nodeEvents);
+      expect(eventTypesByNode(scenario, store)).toEqual(scenario.nodeEvents);
     });
 
     it(`closes the Workflow Execution through ${scenario.closeAttributes}`, () => {
@@ -160,6 +175,21 @@ describe('replay', () => {
     it('replays the history it just recorded', async () => {
       await expect(Worker.runReplayHistory({ workflowBundle }, history)).resolves.toBeUndefined();
     });
+
+    it('repeats no side effect with the workflow cache off', async () => {
+      // Every workflow task replays from the first event instead of resuming, so a side
+      // effect that runs on replay shows up as an extra activity or an extra store write.
+      const cacheOff = await runScenario(scenario, {
+        executionId: `replay-${scenario.name}-cache-off`,
+        taskQueue: 'replay-test-cache-off',
+        maxCachedWorkflows: CACHE_DISABLED,
+      });
+
+      expect(countScheduledActivities(cacheOff.history)).toEqual(scenario.expectedActivities);
+      expect(cacheOff.store.events).toHaveLength(store.events.length);
+      expect(eventTypesByNode(scenario, cacheOff.store)).toEqual(scenario.nodeEvents);
+      expect(cacheOff.store.statuses).toEqual(store.statuses);
+    }, 120_000);
   });
 
   it('replays every history recorded before the current code', async () => {
