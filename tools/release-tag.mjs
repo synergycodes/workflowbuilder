@@ -26,7 +26,12 @@ import {
 
 const USAGE = 'Usage: pnpm release:tag <package> [--dry-run] [--yes]';
 const git = (gitArguments, options) => run('git', gitArguments, options);
-const gitOut = (...gitArguments) => git(gitArguments).stdout.trim();
+// A git failure stops the script. Read as an empty string it would pass for "clean tree" or "no tag".
+const gitOut = (...gitArguments) => {
+  const result = git(gitArguments);
+  if (result.status !== 0) fail(`git ${gitArguments.join(' ')} failed:\n${result.stderr.trim()}`);
+  return result.stdout.trim();
+};
 
 // Each check prints its own line. Any failure means no tag.
 let failures = 0;
@@ -94,13 +99,31 @@ check(hasNotes, `CHANGELOG.md has a section for ${version}`, 'the GitHub Release
 
 // Informational only. The workflow is idempotent: a version already on npm (the hand-made
 // first publish, or a re-run) gets its GitHub Release and no second publish.
+// npm answers three ways: the version (published), nothing (package exists, version does not), or an
+// error. Only E404 in the error means "no such package"; anything else means npm could not be asked.
 const view = run('npm', ['view', tag, 'version']);
-const onNpm = view.status === 0 && view.stdout.trim() !== '';
-console.log(
-  onNpm
-    ? `ℹ️  ${tag} is already on npm: the workflow will skip publish and only create the GitHub Release.`
-    : `ℹ️  ${tag} is not on npm: the workflow will publish it.`,
-);
+const npmState =
+  view.status === 0
+    ? view.stdout.trim() === ''
+      ? 'absent'
+      : 'published'
+    : view.stderr.includes('E404')
+      ? 'absent'
+      : 'unknown';
+const onNpm = npmState === 'published';
+if (npmState === 'published')
+  console.log(`ℹ️  ${tag} is already on npm: the workflow will skip publish and only create the GitHub Release.`);
+if (npmState === 'absent') console.log(`ℹ️  ${tag} is not on npm: the workflow will publish it.`);
+if (npmState === 'unknown') {
+  const reason =
+    view.stderr
+      .trim()
+      .split('\n')
+      .find((line) => line.includes('npm error')) ?? view.stderr.trim().split('\n')[0];
+  console.log(
+    `⚠️  Could not check npm (${reason}). The workflow decides at run time: it publishes unless ${tag} is already there.`,
+  );
+}
 
 if (failures > 0) fail('Not tagging.');
 
@@ -139,6 +162,8 @@ if (push.status !== 0)
   console.log(`⚠️  git push reported an error, but ${tag} is on origin: the release workflow is running.`);
 
 console.log(`\n🚀 Pushed ${tag}.`);
-const remote = gitOut('remote', 'get-url', 'origin').match(/github\.com[:/](.+?)(?:\.git)?$/);
+const remote = git(['remote', 'get-url', 'origin'])
+  .stdout.trim()
+  .match(/github\.com[:/](.+?)(?:\.git)?$/);
 if (remote) console.log(`Watch: https://github.com/${remote[1]}/actions/workflows/release-${short}.yml`);
 console.log('When it is green: git checkout main && git pull && git merge release && git push origin main');

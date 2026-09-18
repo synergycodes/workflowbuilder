@@ -23,6 +23,8 @@ const USAGE = 'Usage: pnpm release:version <package> [<package>…] [--dry-run] 
 // Packages compiled into another package's dist. A change in the bundled one reaches consumers
 // with the next release of the bundling one, whether or not the bundled one was released.
 const BUNDLES = { '@workflowbuilder/sdk': ['@workflowbuilder/ui'] };
+// Packages with a replay contract: each release records the replay histories under its version.
+const RECORDS_REPLAY_HISTORIES = new Set(['@workflowbuilder/temporal']);
 const CHANGESET_PACKAGE = createRequire(import.meta.url).resolve('@changesets/cli/package.json');
 const changeset = (changesetArguments, options) =>
   run(process.execPath, [path.join(path.dirname(CHANGESET_PACKAGE), 'bin.js'), ...changesetArguments], options);
@@ -134,6 +136,14 @@ const commitMessage =
 
 console.log('\nDone. Next steps:');
 for (const r of released) {
+  if (RECORDS_REPLAY_HISTORIES.has(r.name)) {
+    console.log(`  - Record the replay histories under ${r.version}, then check that everything still replays:`);
+    console.log(`      REPLAY_HISTORY_VERSION=${r.version} UPDATE_REPLAY_HISTORIES=1 pnpm --filter ${r.name} test`);
+    console.log(`      pnpm --filter ${r.name} test`);
+    console.log(
+      `    (${r.directory}/test/replay/README.md; at the first release the v0-*.json files go once the new set is green)`,
+    );
+  }
   console.log(`  - Rewrite the new section in ${r.directory}/CHANGELOG.md into Keep a Changelog form`);
   console.log('    (packages/RELEASE.md § "Reformat the generated CHANGELOG section").');
 }
