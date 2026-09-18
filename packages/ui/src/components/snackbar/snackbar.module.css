@@ -49,6 +49,7 @@
 
     .content {
       display: flex;
+      align-items: center;
       gap: var(--wb-public-snackbar-content-gap);
       width: 100%;
       min-width: 0;
