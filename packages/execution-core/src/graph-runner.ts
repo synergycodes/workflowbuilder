@@ -58,9 +58,9 @@ export async function runGraph<TNode extends BaseNode>(
   runner: ActivityRunnerPort<TNode>,
   rawEvents: EventEmitterPort,
 ): Promise<RunGraphOutcome> {
-  // Every payload is redacted before it crosses the emit boundary — event history
-  // (DB, SSE, Temporal's own history via activity args) is immutable, so secrets
-  // must never reach it in the first place.
+  // Every emitted payload is redacted before it crosses the emit boundary — event
+  // history (DB, SSE, Temporal's record of the emitEvent args) is immutable, so
+  // secrets must never reach it in the first place.
   const events = withRedactedPayloads(rawEvents);
 
   const adjacency = buildAdjacencyMap(input.definition.nodes, input.definition.edges);
@@ -161,8 +161,9 @@ export async function runGraph<TNode extends BaseNode>(
   }
 
   // Sanity check: any node still 'pending' with unresolved predecessors never became reachable.
-  // Catches cycles reachable from an entrypoint and dangling-edge bugs that would otherwise
-  // surface as a successful completion with parts of the graph never run.
+  // Catches every cycle that avoids the start node (resolveStartNode rejects the rest) and
+  // dangling-edge bugs that would otherwise surface as a successful completion with parts of
+  // the graph never run.
   const stalled: string[] = [];
   for (const [id, pending] of state.pendingPredecessors) {
     if (pending > 0 && state.status.get(id) === 'pending') stalled.push(id);

@@ -59,10 +59,11 @@ Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says othe
 the last section covers when to set it.
 
 Or from a real run against a local stack, for a scenario the harness cannot stage.
-`historyToJSON` writes the same shape, so the two are interchangeable. Read the output
-before committing it: the first event carries the whole `WorkflowExecutionInput`,
-including the `variables` and `global` bags, which is where the backend injects secrets.
-The harness recordings carry only empty bags and a synthetic graph.
+`historyToJSON` writes the same shape, so the two are interchangeable. Read the whole output
+before committing it. The first event carries the `WorkflowExecutionInput`, including the
+`variables` and `global` bags, and a recording from a real run also carries every `executeNode`
+argument set and result, every node's `config`, and the text of every error. All of it is
+recorded verbatim. The harness recordings carry only empty bags and a synthetic graph.
 
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
