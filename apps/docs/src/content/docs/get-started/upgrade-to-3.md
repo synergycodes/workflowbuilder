@@ -60,8 +60,9 @@ overridden name against the component sections below.
 
 ## Design tokens
 
-The token export was rebuilt, not renamed. Of the 668 tokens in 2.3.0, 150 keep their name
-under the new prefix, 518 have no direct counterpart, and 418 roles are new. The
+The token export was rebuilt, not renamed. Of the 658 custom properties 2.3.0 published,
+150 keep their name under the new prefix, 508 have no direct counterpart, and 419 roles are
+new. The
 [design tokens page](/ui-library/design-tokens/) documents the current set.
 
 Only the primitive colour scales carry over by name. Everything else moved from a
