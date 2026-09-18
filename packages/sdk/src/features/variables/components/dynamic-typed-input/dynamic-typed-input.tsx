@@ -105,7 +105,7 @@ export function DynamicTypedInput({
   if (variableTypeInfo.type === 'number') {
     const isValidRegularNumber = getIsStringNumber(value);
     const isValidVariableNumber = getIsStringVariableReferenceStart(value);
-    const isInvalidNumberValue = !(isValidRegularNumber || isValidVariableNumber);
+    const isInvalidNumberValue = value !== '' && !(isValidRegularNumber || isValidVariableNumber);
 
     return (
       <Input

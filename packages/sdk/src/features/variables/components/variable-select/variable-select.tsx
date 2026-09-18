@@ -12,9 +12,10 @@ import type { VariableTextProps } from '../variable-text/variable-text.types';
 
 type Props = VariableTextProps & {
   endAdornment?: React.ReactNode;
+  isDisabled?: boolean;
 };
 
-export function VariableSelect({ onChange, onBlur, endAdornment, ...props }: Props) {
+export function VariableSelect({ onChange, onBlur, endAdornment, isDisabled = false, ...props }: Props) {
   const { t } = useTranslation();
 
   // We use ref because state mutates the onBlur which prop drill isn't updated in time
@@ -57,7 +58,11 @@ export function VariableSelect({ onChange, onBlur, endAdornment, ...props }: Pro
         onChange={handleOnChange}
         onBlur={handleOnBlur}
         mentionProps={{ ...props.mentionProps, appendSpaceOnAdd: false, trigger: '' }}
-        mentionsInputProps={{ ...props.mentionsInputProps, placeholder: t('variables.clickToPickVariable') }}
+        mentionsInputProps={{
+          ...props.mentionsInputProps,
+          disabled: isDisabled,
+          placeholder: t('variables.clickToPickVariable'),
+        }}
       />
       {endAdornment && <span className={clsx(styles['adornment'], 'right-adornment')}>{endAdornment}</span>}
     </div>

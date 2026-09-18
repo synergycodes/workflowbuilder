@@ -102,6 +102,10 @@ export function VariableText({
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
 
   const handleClose = useCallback(() => {
+    if (document.activeElement instanceof HTMLElement) {
+      document.activeElement.blur();
+    }
+
     setKey(crypto.randomUUID());
   }, []);
 

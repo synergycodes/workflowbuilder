@@ -65,7 +65,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
 
     // .length is critical here for performance.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [lastUpdateIndex, nodeId, edges.length, nodes.length]);
+  }, [lastUpdateIndex, nodeId, edges.length, nodes.length, excludeTypes, includeTypes]);
 
   return useMemo(() => {
     const suggestionGroups = [...globalSuggestionsGroups, ...nodeSuggestionsGroups];

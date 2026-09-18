@@ -71,6 +71,7 @@ export function DynamicTypedVariableOrInput({
         onChange={onChange}
         onBlur={onBlur}
         variant="text"
+        isDisabled={isDisabled}
         suggestionGroups={suggestionGroupsForType}
         hasError={isError}
         endAdornment={
@@ -93,7 +94,7 @@ export function DynamicTypedVariableOrInput({
       onChange={onChange}
       onBlur={onBlur}
       value={value}
-      placeholder={translateIfPossible(placeholder)}
+      placeholder={translateIfPossible(placeholder) || placeholder}
       isError={isError}
       type={type}
       disabled={isDisabled}
