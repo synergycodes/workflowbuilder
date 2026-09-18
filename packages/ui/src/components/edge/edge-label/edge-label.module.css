@@ -49,8 +49,13 @@
 
     &.temporary,
     &.selected {
-      border-width: var(--wb-public-edge-label-border-size-selected);
       border-color: var(--wb-public-edge-label-border-color-selected);
+
+      /* The extra weight is drawn inward, like the master's INSIDE stroke, so
+         the label keeps the size it has in every other state. */
+      box-shadow: inset 0 0 0
+        calc(var(--wb-public-edge-label-border-size-selected) - var(--wb-public-edge-label-border-size))
+        var(--wb-public-edge-label-border-color-selected);
     }
 
     &.disabled {
