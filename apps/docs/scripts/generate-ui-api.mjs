@@ -226,9 +226,16 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
     const [source, keys] = typeNode.typeArguments;
     const sourceIsFirstParty =
       source && source.type === 'reference' && typeof source.target === 'number' && byId.get(source.target);
-    if (sourceIsFirstParty && (typeNode.name === 'Omit' || typeNode.name === 'Pick' || typeNode.name === 'Partial')) {
-      const named = collectProps(byId.get(source.target), byId, new Map(), context);
+    if (typeNode.name === 'Omit' || typeNode.name === 'Pick' || typeNode.name === 'Partial') {
+      const named = collectProps(source, byId, new Map(), context);
       const listed = new Set(literalNames(keys));
+      if (keys && listed.size === 0 && context) {
+        context.warnings.push(
+          `"${context.slug}": the keys of ${typeNode.name}<...> are not string literals, so the table ${
+            typeNode.name === 'Pick' ? 'keeps nothing' : 'drops nothing'
+          } - inline the keys or extend the generator`,
+        );
+      }
       for (const [name, property] of named) {
         const keep = typeNode.name === 'Pick' ? listed.has(name) : !listed.has(name);
         if (!keep) continue;

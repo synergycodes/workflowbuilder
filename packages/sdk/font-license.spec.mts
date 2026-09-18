@@ -37,6 +37,13 @@ describe('ui font assets', () => {
     ]);
   });
 
+  it('fails when the ui assets carry no licence file', () => {
+    const uiAssets = makeDirectory();
+    fs.writeFileSync(path.resolve(uiAssets, 'poppins-latin-400.woff2'), 'font');
+
+    expect(() => copyUiFontAssets(uiAssets, path.resolve(makeDirectory(), 'assets'))).toThrow(/OFL-\*/);
+  });
+
   it('writes the copies into a distribution directory that does not exist yet', () => {
     const uiAssets = makeDirectory();
     fs.writeFileSync(path.resolve(uiAssets, 'OFL-inter.txt'), 'SIL OPEN FONT LICENSE Version 1.1');

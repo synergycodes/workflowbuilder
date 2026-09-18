@@ -12,19 +12,19 @@ type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
 /**
  * Y coordinate a self-loop peaks at: {@link SELF_CONNECTING_EDGE_LABEL_OFFSET}
  * above the top edge of the source node, whatever the node height and wherever
- * its ports sit. Returns `null` for a regular edge and for a node React Flow
- * has not placed yet, so a caller can fall back to the port position.
+ * its ports sit. Falls back to the same offset above `sourceY` for a node React
+ * Flow has not placed yet, so the loop and its label always read one value.
  * Subscribes to the React Flow store, so the loop follows the node as it moves
  * or grows.
  *
  * @category Hooks
  */
-export function useSelfLoopApexY(source: string, target: string) {
-  return useReactFlowStore((state) => {
-    if (source !== target) return null;
-    const top = state.nodeLookup.get(source)?.internals.positionAbsolute.y;
-    return top === undefined ? null : top - SELF_CONNECTING_EDGE_LABEL_OFFSET;
-  });
+export function useSelfLoopApexY(source: string, target: string, sourceY: number) {
+  const top = useReactFlowStore((state) =>
+    source === target ? state.nodeLookup.get(source)?.internals.positionAbsolute.y : undefined,
+  );
+
+  return (top ?? sourceY) - SELF_CONNECTING_EDGE_LABEL_OFFSET;
 }
 
 type Point = {
@@ -78,14 +78,14 @@ export function SelfConnectingEdge({
   source,
   target,
 }: SelfConnectingEdgeProps) {
-  const apexY = useSelfLoopApexY(source, target);
+  const apexY = useSelfLoopApexY(source, target, sourceY);
   const edgeState: EdgeState = selected ? 'selected' : 'default';
   const style = useEdgeStyle({ state: edgeState, isHovered: hovered });
 
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
     { x: targetX, y: targetY },
-    sourceY - (apexY ?? sourceY - SELF_CONNECTING_EDGE_LABEL_OFFSET),
+    sourceY - apexY,
     EDGE_CURVE_RADIUS,
   );
 

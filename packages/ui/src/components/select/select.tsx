@@ -131,7 +131,7 @@ export function Select({
       state={fieldState}
       disabled={disabled}
     >
-      {({ controlId, describedBy }) => (
+      {({ controlId, describedBy, required: isFieldRequired }) => (
         <div className={style['container']}>
           <SelectBase.Root
             value={value}
@@ -146,6 +146,7 @@ export function Select({
             <SelectBase.Trigger
               id={controlId}
               aria-describedby={describedBy}
+              aria-required={isFieldRequired}
               aria-invalid={fieldState === 'critical' || undefined}
               className={triggerClassName}
               render={<SelectButton />}

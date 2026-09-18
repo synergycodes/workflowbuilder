@@ -19,5 +19,11 @@ export function copyUiFontAssets(uiAssetsDirectory: string, assetsDirectory: str
     fs.copyFileSync(path.resolve(uiAssetsDirectory, file), path.resolve(assetsDirectory, file));
   }
 
+  // The `OFL-` prefix is a second copy of a convention `packages/ui` owns; a rename
+  // there would otherwise republish the fonts with no licence beside them.
+  if (!copied.some((file) => file.startsWith('OFL-'))) {
+    throw new Error(`wb-sdk:emit-ui-font-assets: no OFL-* licence file found in ${uiAssetsDirectory}`);
+  }
+
   return copied;
 }

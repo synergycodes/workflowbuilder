@@ -269,6 +269,17 @@ shares a treatment with the pointer-down state.
 | `ax-public-edge-label-small`       | `wb-text-label-m`                                                                                             |
 | `ax-public-edge-label-extra-small` | `wb-text-label-s`                                                                                             |
 
+### Removed public properties
+
+Most removals are covered by the renames above: a family that changed variant name or size
+suffix is listed with its replacement. Three properties go away with no counterpart:
+
+| Removed                                | What to do                                                                                                                                                                               |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--wb-public-segment-picker-padding`   | `SegmentPicker` no longer pads its container, matching every variant of the design master. Space between segments comes from `--wb-public-segment-picker-gap`.                           |
+| `--wb-public-modal-close-button-color` | The close control is a `NavButton` now and takes its colour from the button's own properties.                                                                                            |
+| `--wb-public-textarea-root-color`      | Split by state: `--wb-public-textarea-color` for the value, `--wb-public-textarea-placeholder-color` for the placeholder and `--wb-public-textarea-color-disabled` for a disabled field. |
+
 ## Fonts
 
 Poppins latin 400 and 600 are inlined in the stylesheet; every other weight, Inter and the

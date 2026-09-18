@@ -174,7 +174,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
 
   return (
     <Field id={id} label={label} helperText={helperText} isRequired={isRequired} state={state} disabled={disabled}>
-      {({ controlId, describedBy }) => (
+      {({ controlId, describedBy, required }) => (
         <Popover.Root
           open={disabled || readOnly ? false : open}
           onOpenChange={(nextOpen) => {
@@ -189,6 +189,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
             ref={ref}
             id={controlId}
             aria-describedby={describedBy}
+            aria-required={required}
             type="button"
             disabled={disabled}
             aria-label={ariaLabel}
