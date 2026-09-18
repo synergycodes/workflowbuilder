@@ -1,3 +1,5 @@
+import type { JsonSchema7 } from '@jsonforms/core';
+
 export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date';
 
 export type VariableType = VariableTypePrimitive | 'object' | 'array';
@@ -12,7 +14,7 @@ export function getVariableTypeIfPrimitive(type: VariableType): VariableTypePrim
 
 export type OutputProperty = {
   type: VariableType;
-  label: string;
+  label?: string;
   description?: string;
 };
 
@@ -21,31 +23,47 @@ export const OUTPUT_SCHEMA_TYPE = {
   VARIANT: 'variant',
 } as const;
 
-export type OutputPropertiesIndex = Record<string, OutputProperty>;
+export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
 
-export type OutputVariant = {
-  variantRule:
-    | undefined
-    | {
-        dataPropertyName: string;
-        dataPropertyValue: string;
+export type PropertiesBySourceHandle = {
+  [sourceHandle: string]: JsonSchema7 | undefined;
+  every?: JsonSchema7;
+};
+
+export type OutputVariant =
+  | {
+      variantRule:
+        | undefined
+        | {
+            onlyIfPropertyNameEquals: { path: string; value: string | number };
+          };
+      bySourceHandle: PropertiesBySourceHandle;
+    }
+  | {
+      variantRule: {
+        onlyIfPropertyNameEquals: { path: string; value: string | number };
+        fromValueOfPropertyPath: string;
+        toSourceHandles: string[];
       };
-  properties: OutputPropertiesIndex;
-};
+    }
+  | {
+      variantRule: {
+        fromValueOfPropertyPath: string;
+        toSourceHandles: string[];
+      };
+    };
 
-export type NodeOutputSchemaDefault = {
+export type NodeSchemaOutputDefault = {
   type: 'default';
-  properties: OutputPropertiesIndex;
+  bySourceHandle: PropertiesBySourceHandle;
 };
 
-export type NodeOutputSchemaVariant = {
+export type NodeSchemaOutputVariant = {
   /*
-        Variants may be set dynamically by the node configuration.
-      */
+    Predefined variant depending on the value of a property. 
+  */
   type: 'variant';
-  variants: {
-    [variantName: string]: OutputVariant | undefined;
-  };
+  variants: OutputVariant[];
 };
 
-export type NodeOutputSchema = NodeOutputSchemaDefault | NodeOutputSchemaVariant;
+export type NodeSchemaOutput = NodeSchemaOutputDefault | NodeSchemaOutputVariant;
