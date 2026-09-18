@@ -18,14 +18,14 @@ export function MenuItem({
   icon,
   label,
   disabled,
-  destructive,
+  tone = 'default',
   selected: _selected,
   radio,
   size = 'medium',
   onClick,
 }: Props) {
   const className = clsx(listItemStyles['list-item'], listItemSize[size], {
-    [listItemStyles['destructive']]: destructive,
+    [listItemStyles['critical']]: tone === 'critical',
   });
 
   if (radio) {
