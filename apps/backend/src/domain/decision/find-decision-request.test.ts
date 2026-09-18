@@ -24,7 +24,7 @@ const snapshot = workflowSnapshotSchema.parse({
 });
 
 describe('findDecisionRequest', () => {
-  it('finds the request of the node as the parser leaves it', () => {
+  it('finds the request of the node, with reasonRequired materialised', () => {
     const found = findDecisionRequest(snapshot, 'review-1');
 
     expect(found.error).toBeUndefined();

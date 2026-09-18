@@ -357,7 +357,8 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     const detail = body.details.find(
       (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.port',
     );
-    expect(detail).toMatchObject({ code: 'custom', domainCode: 'port_not_allowed', params: {} });
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'port_not_allowed' });
+    expect(detail?.params).toEqual({});
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 

@@ -86,10 +86,12 @@ describe('decisionRequestSchema', () => {
   });
 
   it.each([...DECLARABLE_DECISION_EFFECTS])('accepts a declared %s action', (effect) => {
-    const byEffect = { resume: approve, reject, 'rerun-source': askAgain };
-    const actions = effect === 'resume' ? [approve] : [approve, byEffect[effect]];
+    const declared = { resume: approve, reject, 'rerun-source': askAgain }[effect];
+    const actions = effect === 'resume' ? [declared] : [approve, declared];
 
-    expect(decisionRequestSchema.safeParse(request({ actions })).success).toBe(true);
+    const parsed = decisionRequestSchema.parse(request({ actions }));
+
+    expect(parsed.actions.at(-1)?.effect).toBe(effect);
   });
 
   it('materialises the defaults for reasonRequired and maxIterations', () => {
@@ -394,8 +396,6 @@ describe('decisionRequestSchema', () => {
     }
   });
 
-  // The effect check aborts the action the way the union's own failure did; a second issue
-  // about a missing resume action for an action that never parsed would only mislead.
   // Two absent ports would compare equal, so the request-level rule must not run on them.
   it('reports each missing port on its own, without a port-equality issue riding along', () => {
     const issues = issuesOf(
@@ -411,6 +411,8 @@ describe('decisionRequestSchema', () => {
     expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
   });
 
+  // The effect check aborts the action the way the union's own failure did; a second issue
+  // about a missing resume action for an action that never parsed would only mislead.
   it('reports an unknown effect once, without a missing-resume issue riding along', () => {
     const issues = issuesOf(request({ actions: [{ name: 'a', label: 'A', effect: 'zzz' }] }));
 
