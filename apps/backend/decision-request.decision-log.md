@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports)
 
 ## Context
 
@@ -18,7 +18,7 @@ The shape itself is documented on the type (`packages/types/src/workflow-executi
 4. **JSON Schema for the form**, validated for shape only. The SDK already renders and validates JSON Schema, so the decision form comes for free. A real validator arrives with the first consumer that checks edited values `(follow-up: decision-edit-value-validation)`. Shape only means: an object with a `properties` map, `required` naming declared fields, and `readOnly`, `x-pii` and `type` well-typed where present. `type` is optional, as JSON Schema makes it and as JsonForms renders without it. Every other keyword passes through unread.
 5. **Validated on publish and execute, never on draft save.** A draft is legitimately mid-edit; validating it would lose the author's work on every autosave. Both routes go through one `parseSnapshot` helper and the existing `invalid_snapshot` 400, so they cannot drift. Each domain issue in `details` carries `domainCode` and `params` beside zod's `code` and the English `message`, so a client keys on the identifier and the wording stays free to change.
 6. **One definition of the proposal source.** `resolveProposalSource` is the only place that says which node's output a decision judges. The pending-decision resource and the rerun loop must call it rather than re-derive the rule. Publishing refuses a request whose source does not resolve: a published decision with nothing to judge is not what the author meant, and with no predecessor at all the node is an orphan the runner fails anyway. Only the rule that the source must not carry its own request stays tied to `rerun-source`, the one effect that re-runs it. A resolved source can still yield no proposal at decision time, when that branch was skipped, so the pending-decision resource keeps its no-proposal path.
-7. **Read requests through the parser, never from raw JSON.** Only the parsed form carries the defaults (`port`, `reasonRequired`, `maxIterations`). The stored snapshot stays raw.
+7. **Read requests through the parser, never from raw JSON.** Only the parsed form carries the defaults (`reasonRequired`, `maxIterations`). The stored snapshot stays raw.
 8. **Three names for the lifecycle.** `DecisionRequest` is what the node asks. `SubmittedDecision` is what the decider sends, still unchecked. `Decision` is what validation accepts and what is recorded on the node's completion and audited; it names the chosen action and carries the effect, edits, reason and comment. The matched `DecisionAction` is returned beside it for routing, never inside it, so the port and label live once, on the request. The shape of a submission is parsed with `submittedDecisionSchema` at the endpoint; `validateSubmittedDecision` assumes it and checks only the rules. The field is not called `decision` because it holds the question, not the answer, and not `decisionContract` because that reads as configuration rather than as a request to a person.
 9. **Results carry `error?: undefined`, not an `ok` flag.** `{ value; error?: undefined } | { value?: undefined; error }` reads as plain error handling and the compiler still forbids both-set and neither-set. The flag only repeated what the presence of `error` says.
 10. **Vocabulary.** A node carrying a request is a node; no separate noun names it. The rerun effect is named for what it does, `rerun-source`, never for what the source is. Action names in examples (`approve`, `reject`, `ask-again`) are the client's and await a sync with design.
@@ -37,6 +37,12 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 17. **`rerun-source` is 501** until the engine can re-run a source; the LLM budget guard and rate limit move there with the verb `(follow-up: decision-rerun-source)`.
 18. **`node_not_waiting` is final** because the runner registers the wait before announcing it. **`delivery_timeout` is 503 with a hedged message** because an update nobody accepted is not durable, yet the server may still hand it to the next worker.
 
+## Explicit ports (17.09.2026)
+
+19. **A port is never defaulted.** It is the id of an output handle on one canvas, so no value chosen without that canvas can be right, as with `deadline.policy`. The former defaults `approved` and `rejected` let a request publish with no handle to draw an edge from, and the run ended `incomplete` after the person had decided. `rerun-source` refuses a port from the other side: it does not route, so a handle for it would never fire.
+20. **A missing port is a structural issue**, like any other missing key: zod's wording, no domain code. The editor always writes ports, so no interface ever shows it.
+21. This was the first tightening of the snapshot schema since the decision route began re-parsing stored snapshots: a run parked with a port-less action would answer 500 until its snapshot named one. Accepted, because the feature lived on its branch with no run in flight.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -48,6 +54,7 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - Persisting the first submission only to turn one 409 into a 200.
 - Requiring `executions.status === 'waiting'`: it would lock the route to a best-effort write.
 - Retrying `node_not_waiting`: the race was fixed at its root, in the runner's order of registering and announcing.
+- A default port elsewhere: in the template it would be a handle id outside the SDK's shape, kept in two places; in the backend it would teach the backend the editor's handle format.
 
 ## Known gaps
 
