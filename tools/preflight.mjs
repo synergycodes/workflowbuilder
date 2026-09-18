@@ -5,7 +5,6 @@
 //
 // Named `preflight` rather than `doctor` because `pnpm doctor` is a built-in
 // pnpm command and would shadow a user script of the same name.
-
 import { spawn } from 'node:child_process';
 import { existsSync, readFileSync } from 'node:fs';
 import net from 'node:net';
@@ -31,26 +30,28 @@ const PKG = JSON.parse(readFileSync(path.join(ROOT, 'package.json'), 'utf8'));
 // pre-release tails like "22.12.0-rc.1". Strips a leading range prefix, drops
 // any "-prerelease" tail, and falls back to 0 for unparseable segments so a
 // malformed input never throws — it just compares structurally.
-function semverGte(current, required) {
-  const normalize = (v) =>
-    String(v ?? '0')
-      .replace(/^[\^~>=v]+/, '')
-      .split('-')[0]
-      .split('.')
-      .map((p) => Number.parseInt(p, 10) || 0);
-  const [ca = 0, cb = 0, cc = 0] = normalize(current);
-  const [ra = 0, rb = 0, rc = 0] = normalize(required);
-  if (ca !== ra) return ca > ra;
-  if (cb !== rb) return cb > rb;
-  return cc >= rc;
+function normalizeVersion(v) {
+  return String(v ?? '0')
+    .replace(/^[\^~>=v]+/, '')
+    .split('-')[0]
+    .split('.')
+    .map((p) => Number.parseInt(p, 10) || 0);
 }
 
-function runCmd(cmd, args, timeoutMs = 3000) {
+function semverGte(current, required) {
+  const [currentMajor = 0, currentMinor = 0, currentPatch = 0] = normalizeVersion(current);
+  const [requiredMajor = 0, requiredMinor = 0, requiredPatch = 0] = normalizeVersion(required);
+  if (currentMajor !== requiredMajor) return currentMajor > requiredMajor;
+  if (currentMinor !== requiredMinor) return currentMinor > requiredMinor;
+  return currentPatch >= requiredPatch;
+}
+
+function runCmd(cmd, commandArguments, timeoutMs = 3000) {
   return new Promise((resolve) => {
     // shell: true on Windows so PATHEXT resolves `.cmd` / `.bat` shims
     // (pnpm ships as pnpm.cmd). Args here are fixed strings, so this is
     // not a shell-injection vector.
-    const child = spawn(cmd, args, {
+    const child = spawn(cmd, commandArguments, {
       stdio: ['ignore', 'pipe', 'ignore'],
       shell: process.platform === 'win32',
     });
@@ -152,11 +153,11 @@ async function checkServicePort(port, label) {
       };
 }
 
-async function checkEnvFile(relPath) {
-  const present = existsSync(path.join(ROOT, relPath));
+async function checkEnvFile(relativePath) {
+  const present = existsSync(path.join(ROOT, relativePath));
   return present
-    ? { name: relPath, status: 'pass', detail: 'present' }
-    : { name: relPath, status: 'warn', detail: `missing — copy from ${relPath}.example` };
+    ? { name: relativePath, status: 'pass', detail: 'present' }
+    : { name: relativePath, status: 'warn', detail: `missing — copy from ${relativePath}.example` };
 }
 
 // ---------- Composition ----------

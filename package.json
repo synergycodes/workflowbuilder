@@ -29,6 +29,9 @@
     "typecheck": "pnpm -r typecheck",
     "test": "pnpm -r test",
     "check": "pnpm lint && pnpm typecheck && pnpm format",
+    "release:version": "node tools/release-version.mjs",
+    "release:tag": "node tools/release-tag.mjs",
+    "test:tools": "node --test \"tools/*.test.mjs\"",
     "pre-commit": "lint-staged",
     "pre-push": "pnpm format",
     "prepare": "husky"

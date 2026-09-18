@@ -1,4 +1,4 @@
-// Pure, so it also runs in worker setup outside the sandbox. See the README.
+// Pure, so it also runs in worker setup outside the sandbox. See activity-profiles.md.
 import { type ActivityProfile, DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from './activity-profiles';
 import type { BaseNode } from './core-contract';
 import { assertNodeActivityProfiles } from './profile-validation';
@@ -8,7 +8,7 @@ export type NodeActivityOptions = ActivityProfile & { summary?: string };
 const encoder = new TextEncoder();
 
 // Copied into every ActivityTaskScheduled event, so it stays bounded. Bounds the raw
-// string, not the serialized payload the server's cap measures; see the README.
+// string, not the serialized payload the server's cap measures; see event-history-labels.md.
 // (follow-up: temporal-profile-wire-validation)
 const MAX_SUMMARY_BYTES = 300;
 
