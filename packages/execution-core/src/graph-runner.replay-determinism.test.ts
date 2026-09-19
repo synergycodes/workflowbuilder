@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { ExecutionOutcome } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   WorkflowDefinition,
@@ -30,12 +31,13 @@ type TestNode = BaseNode & { type: 'test/node' };
 type Behavior = {
   output?: unknown;
   nextPort?: string;
+  outcome?: ExecutionOutcome;
   throws?: { message: string; code?: string };
   relays?: { message: string; classification: 'permanent' | 'transient'; code: string; attempt: number };
 };
 
 type EventCall = { type: string; nodeId?: string; payload?: unknown };
-type StatusCall = { status: string; errorMessage?: string };
+type StatusCall = { status: string; errorMessage?: string; outcome?: ExecutionOutcome };
 
 type RunRecord = {
   activityCallOrder: string[];
@@ -68,7 +70,7 @@ function makePorts(behaviors: Record<string, Behavior>): {
         });
         throw new Error('Activity task failed', { cause: failure });
       }
-      return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort };
+      return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort, outcome: b?.outcome };
     },
   };
 
@@ -76,8 +78,8 @@ function makePorts(behaviors: Record<string, Behavior>): {
     async emitEvent(_executionId, type, payload, nodeId) {
       record.events.push({ type, nodeId, payload });
     },
-    async updateStatus(_executionId, status, errorMessage) {
-      record.statuses.push({ status, errorMessage });
+    async updateStatus(_executionId, status, errorMessage, outcome) {
+      record.statuses.push({ status, errorMessage, outcome });
     },
   };
 
@@ -267,6 +269,33 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
       },
     });
     expect(records[0]!.statuses.at(-1)?.status).toBe('incomplete');
+  });
+
+  it('outcomes: the terminal completed payload is identical across runs', async () => {
+    // The first declared outcome is the run's. A Set, or a pick by completion order, would
+    // let the recorded node flip between runs without changing any other recorded call.
+    const input = makeInput([start('S'), trigger('D1'), trigger('D2')], [edge('e1', 'S', 'D1'), edge('e2', 'S', 'D2')]);
+
+    const records = await runNTimes(
+      input,
+      {
+        D1: { output: 'd1', nextPort: 'gone-1', outcome: { value: 'rejected', resolvedBy: 'human' } },
+        D2: { output: 'd2', nextPort: 'gone-2', outcome: { value: 'escalated', resolvedBy: 'policy' } },
+      },
+      RUNS,
+    );
+    expectAllRunsIdentical(records);
+
+    expect(records[0]!.events.at(-1)).toEqual({
+      type: 'execution_completed',
+      nodeId: undefined,
+      payload: { outcome: { value: 'rejected', resolvedBy: 'human', nodeId: 'D1' } },
+    });
+    expect(records[0]!.statuses.at(-1)).toEqual({
+      status: 'completed',
+      errorMessage: undefined,
+      outcome: { value: 'rejected', resolvedBy: 'human' },
+    });
   });
 
   it('node failure — failure path is deterministic too (same error code, same event sequence)', async () => {

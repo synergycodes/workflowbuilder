@@ -1,13 +1,17 @@
+import type { ExecutionOutcome } from '@workflow-builder/types/workflow-execution/execution-events';
 import type { BaseNode } from '@workflow-builder/types/workflow-execution/execution-model';
 
 import type { ExecutionContext } from '../execution-context';
 
 export type CompletedNodeExecution = {
   output: unknown;
-  // Naming a port promises a live route: if no outgoing edge goes live for it, the run
-  // ends incomplete with `{ nodeId, port }`. Falsy ('' or a smuggled null) means "no
+  // Naming a port promises a live route: no live edge for it ends the run incomplete with
+  // `{ nodeId, port }`, unless `outcome` is set. Falsy ('' or a smuggled null) means "no
   // port", mirroring the router. 'errorRoute' is reserved for the error policy.
   nextPort?: string;
+  // A run-level result this completion settles. Its port may then light no edge: a
+  // deliberate end, not a dead end. Read for presence only; falsy means none.
+  outcome?: ExecutionOutcome;
   // Never present — discriminates the union.
   waiting?: never;
 };
