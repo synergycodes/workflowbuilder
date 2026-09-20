@@ -69,7 +69,7 @@ release  ───────────────●───────�
 
 1. **npm organization access.** Get added as a maintainer on the `workflowbuilder` npm organization (or create it the first time at <https://www.npmjs.com/settings/workflowbuilder>). The org name has no hyphen, matching the scope `@workflowbuilder/sdk`.
 
-2. **Configure the npm Trusted Publisher (once per package).** Authentication is OIDC. No `NPM_TOKEN` is used or stored. Each package needs its own trusted publisher pointing at its own workflow file. On the package's `…/access` page (or for a not-yet-published package: org settings → "Packages" → "Add trusted publisher"), add:
+2. **Configure the npm Trusted Publisher (once per package).** Authentication is OIDC. No `NPM_TOKEN` is used or stored. Each package needs its own trusted publisher pointing at its own workflow file. On the package's `…/access` page, add:
    - Publisher: **GitHub Actions**
    - Organization or user: `synergycodes`
    - Repository: `workflowbuilder`
@@ -77,6 +77,8 @@ release  ───────────────●───────�
    - Environment name: _(leave empty)_
 
    The workflows already have `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a scoped tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit.
+
+   A package that has never been published has no settings page, so its first version is published by hand from a maintainer account and the trusted publisher is registered afterwards.
 
 3. **Create the `release` branch** (first time only):
 
