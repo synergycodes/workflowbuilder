@@ -31,8 +31,23 @@ describe('validateVerdict', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: undefined } })).toBeUndefined();
   });
 
+  it('accepts an outcome carrying exactly value and resolvedBy, with or without a port', () => {
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
+    expect(rejection({ nodeId: 'gate', resolution: { output: 'no', nextPort: 'rejected', outcome } })).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: { output: 'no', outcome } })).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: { outcome } })).toBeUndefined();
+  });
+
+  it('leaves output opaque: an outcome-shaped key inside it is not read', () => {
+    expect(rejection({ nodeId: 'gate', resolution: { output: { outcome: 'x' } } })).toBeUndefined();
+  });
+
+  it('accepts whitespace-only outcome strings: blankness is domain validation, not shape', () => {
+    expect(rejection({ nodeId: 'gate', resolution: { outcome: { value: ' ', resolvedBy: ' ' } } })).toBeUndefined();
+  });
+
   it('accepts the envelope as the default payload converter delivers it, with output: undefined dropped', () => {
-    const sent = { nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved' } };
+    const sent = { nodeId: 'gate', resolution: { output: undefined, nextPort: 'approved', outcome: undefined } };
     const delivered: unknown = defaultPayloadConverter.fromPayload(defaultPayloadConverter.toPayload(sent));
 
     expect(delivered).toEqual({ nodeId: 'gate', resolution: { nextPort: 'approved' } });
@@ -60,9 +75,32 @@ describe('validateVerdict', () => {
     expect(rejection({ nodeId: 'gate', resolution: ['approved'] })).toBe('verdict_malformed');
   });
 
-  it('rejects envelope keys beyond output and nextPort', () => {
+  it('rejects envelope keys beyond output, nextPort and outcome', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: 1, nexPort: 'typo' } })).toBe('verdict_malformed');
     expect(rejection({ nodeId: 'gate', resolution: { output: 1, waiting: true } })).toBe('verdict_malformed');
+    expect(rejection({ nodeId: 'gate', resolution: { output: 1, outcomes: {} } })).toBe('verdict_malformed');
+  });
+
+  it.each<[string, unknown]>([
+    ['a string', 'rejected'],
+    ['null', null],
+    ['an array', ['rejected', 'human']],
+    ['an empty object', {}],
+    ['a missing resolvedBy', { value: 'rejected' }],
+    ['a missing value', { resolvedBy: 'human' }],
+    ['a blank value', { value: '', resolvedBy: 'human' }],
+    ['a blank resolvedBy', { value: 'rejected', resolvedBy: '' }],
+    ['a non-string value', { value: 1, resolvedBy: 'human' }],
+    ['a non-string resolvedBy', { value: 'rejected', resolvedBy: true }],
+    ['an extra key', { value: 'rejected', resolvedBy: 'human', nodeId: 'gate' }],
+  ])('rejects an outcome that is %s', (_shape, outcome) => {
+    expect(rejection({ nodeId: 'gate', resolution: { output: 1, outcome } })).toBe('verdict_malformed');
+  });
+
+  it('names the outcome rule in its message', () => {
+    expect(() => validateVerdict({ nodeId: 'gate', resolution: { outcome: {} } }, KNOWN_NODES, GATE_WAITING)).toThrow(
+      VERDICT_REJECTION_MESSAGES.outcome_invalid.message,
+    );
   });
 
   it('rejects a nextPort that is empty, non-string or the reserved errorRoute', () => {

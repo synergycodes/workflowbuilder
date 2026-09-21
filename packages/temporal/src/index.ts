@@ -24,6 +24,7 @@ export type {
   CompletedNodeExecution,
   ExecutionContext,
   ExecutionEventType,
+  ExecutionOutcome,
   ExecutionStatus,
   LogBindings,
   LoggerPort,

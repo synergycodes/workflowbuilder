@@ -9,9 +9,8 @@
     // path (see the comment there), so the compilation root has to span them.
     "rootDir": "../..",
     // execution-core's own files import @workflow-builder/types by package name.
-    // Left alone, that name survives into the emitted .d.ts as an import of a package
-    // that is not published. Mapping it to the source keeps it a project file, which
-    // is what gets it inlined.
+    // Mapping it to the source satisfies tsc. The d.ts bundler still keeps the package
+    // name, so src/workflow/core-contract.ts restates every core type that names one.
     "paths": {
       "@workflow-builder/types/*": ["../types/src/*.ts"]
     }
