@@ -18,7 +18,9 @@ import { type RecordingStore, createRecordingStore } from '../fixtures/recording
 import { REPLAY_SCENARIOS, type ReplayScenario, type ReplayScenarioNode } from '../fixtures/replay-scenarios';
 
 const TASK_QUEUE = 'replay-test';
-const CACHE_DISABLED = 0;
+// Its own queue, so a worker left polling from the first run cannot pick up a task from
+// the cache-off run and serve it with the cache on.
+const CACHE_OFF_TASK_QUEUE = 'replay-test-cache-off';
 
 const HISTORIES_DIR = new URL('histories/', import.meta.url);
 
@@ -100,7 +102,7 @@ describe('replay', () => {
       taskQueue: plugin.taskQueue,
       workflowBundle,
       plugins: [plugin],
-      ...(options.maxCachedWorkflows === undefined ? {} : { maxCachedWorkflows: options.maxCachedWorkflows }),
+      maxCachedWorkflows: options.maxCachedWorkflows,
     });
 
     const input: WorkflowExecutionInput<ReplayScenarioNode> = {
@@ -177,16 +179,16 @@ describe('replay', () => {
     });
 
     it('repeats no side effect with the workflow cache off', async () => {
-      // Every workflow task replays from the first event instead of resuming, so a side
-      // effect that runs on replay shows up as an extra activity or an extra store write.
+      // Every workflow task replays from the first event instead of resuming; see ./README.md.
       const cacheOff = await runScenario(scenario, {
         executionId: `replay-${scenario.name}-cache-off`,
-        taskQueue: 'replay-test-cache-off',
-        maxCachedWorkflows: CACHE_DISABLED,
+        taskQueue: CACHE_OFF_TASK_QUEUE,
+        maxCachedWorkflows: 0,
       });
 
       expect(countScheduledActivities(cacheOff.history)).toEqual(scenario.expectedActivities);
-      expect(cacheOff.store.events).toHaveLength(store.events.length);
+      // Numbers, not just the count: a repeat that also skips a write keeps the length.
+      expect(cacheOff.store.events.map((event) => event.sequence)).toEqual(store.events.map((event) => event.sequence));
       expect(eventTypesByNode(scenario, cacheOff.store)).toEqual(scenario.nodeEvents);
       expect(cacheOff.store.statuses).toEqual(store.statuses);
     }, 120_000);

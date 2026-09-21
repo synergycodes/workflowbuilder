@@ -62,6 +62,11 @@ jobs:
       - name: Test
         run: pnpm --filter @workflowbuilder/temporal test
 
+      # execution-core is bundled into this package's dist, so a runner regression has to
+      # fail the tag too — pr-check only gates pull requests into main.
+      - name: Test execution-core
+        run: pnpm --filter @workflow-builder/execution-core test
+
       - name: Build
         run: pnpm --filter @workflowbuilder/temporal build
 

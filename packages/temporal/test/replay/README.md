@@ -7,7 +7,9 @@ between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
 `@temporalio/testing`), runs every scenario in `../fixtures/replay-scenarios.ts`, and then
-does four separate things with what came back:
+does four separate things. The first three read what came back from that run. The fourth
+runs every scenario a second time under a different worker configuration, so the file
+performs two live executions per scenario:
 
 1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
    `emitEvent` per emitted event, one `updateStatus` for the terminal write. An extra
@@ -25,9 +27,14 @@ does four separate things with what came back:
    the counts from (1) and what the store received. No sticky queue is used at all in
    this mode, so a side effect that runs on replay shows up as an extra activity or write.
 
-Only (3) survives a change to the runner, which is why (3) is the one that matters at
-review time. (2) and (4) pass even on a broken change, because the histories they check
-were recorded by the same broken code.
+(3) is the only check that can catch a break against code that is already deployed, because
+it is the only one comparing the current code to a recording it did not make. (2) cannot:
+the history it replays was recorded by the same code moments earlier.
+
+(4) is not in that bucket. It re-runs the scenario live and checks two of its four
+assertions against hand-written fixture expectations, and it is the only check that
+exercises the uncached path at all. What it cannot see is a cross-version break, since it
+only ever runs the current code.
 
 ## The scenarios
 
