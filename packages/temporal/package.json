@@ -1,7 +1,7 @@
 {
   "name": "@workflowbuilder/temporal",
   "type": "module",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Run Workflow Builder diagrams as durable Temporal Workflow Executions: a Temporal Plugin that registers the node-execution activities, plus the workflow-side runner to re-export from your own workflows module.",
   "keywords": [
     "temporal",
