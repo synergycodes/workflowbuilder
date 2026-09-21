@@ -60,6 +60,17 @@ The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiat
 | 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                                  |
 | 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then names the wait, not the sender |
 
+## Listing executions: `GET /api/executions`
+
+Newest first, filtered and paged. Query: `status` (one `ExecutionStatus`), `workflowId` (a UUID), `limit` (default 50, capped at 200; a larger value is clamped, not refused), `cursor` (opaque, taken from the previous page's `nextCursor`). Success: `200 { items, nextCursor }`, `nextCursor` is `null` on the last page. Items carry summary fields only (`id`, `workflowId`, `sourceVersion`, `status`, `startedAt`, `finishedAt`, `createdAt`): no snapshot, no trigger payload, no outputs. Authorization is `executions:list` on `{ kind: 'executions' }`, checked before the query string is read. With a tenant context the list holds the caller's rows plus untenanted rows, the stream route's rule applied as a filter; without one, every row. Paging is keyset on `(created_at, id)`, so a run submitted between two requests lands on top and never shifts or repeats the next page; a cursor minted under one filter stays valid under another.
+
+| Status | Code                  | When                                                        |
+| ------ | --------------------- | ----------------------------------------------------------- |
+| 400    | `invalid_status`      | Not an `ExecutionStatus`; a typo never yields an empty list |
+| 400    | `invalid_workflow_id` | Not a UUID                                                  |
+| 400    | `invalid_limit`       | Not a positive integer                                      |
+| 400    | `invalid_cursor`      | Not a token this route minted                               |
+
 ## Running individual processes
 
 For debugging, the parts that `pnpm dev:ai-studio` orchestrates can also be run separately:
