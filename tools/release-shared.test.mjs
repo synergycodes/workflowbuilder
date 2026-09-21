@@ -61,9 +61,8 @@ test('a changelog without the heading has no section', () => {
   assert.equal(changelogHasNotes('# Changelog\n', '1.2.3'), false);
 });
 
-test('npm view answers: published, absent (empty or E404), unknown (anything else)', () => {
+test('npm view answers: published (exit 0), absent (E404), unknown (anything else)', () => {
   assert.equal(npmVersionState({ status: 0, stdout: '1.2.3\n', stderr: '' }), 'published');
-  assert.equal(npmVersionState({ status: 0, stdout: '', stderr: '' }), 'absent');
   assert.equal(
     npmVersionState({ status: 1, stdout: '', stderr: 'npm error code E404\nnpm error 404 Not Found' }),
     'absent',

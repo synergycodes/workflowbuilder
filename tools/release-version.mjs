@@ -59,10 +59,11 @@ if (!dryRun && !branch.startsWith('release-')) {
 }
 
 // The release commit is `git add -A`, so anything already sitting in the tree would ride along.
-const dirty = run('git', ['status', '--porcelain', '--untracked-files=no']);
+// Untracked files count: `git add -A` adds them, so the check must see them too.
+const dirty = run('git', ['status', '--porcelain']);
 if (dirty.status !== 0) fail('Could not read the working tree state.');
 if (!dryRun && dirty.stdout.trim() !== '') {
-  fail('Working tree has uncommitted changes. Commit or stash first: the release commit is `git add -A`.');
+  fail('Working tree is not clean. Commit, stash or remove untracked files first: the release commit is `git add -A`.');
 }
 
 // What Changesets would do right now. `--output` is the only way to get that as JSON.

@@ -103,8 +103,8 @@ its own set the same way, and rule 2 keeps the earlier ones where they are.
 exists anywhere, so nothing is stranded and no deploy is at risk. Red means one thing,
 and it is a design signal rather than an incident: a command reached a path that was
 supposed to be left alone. Read the change first. If the new command genuinely belongs
-on that path, re-record the history and say so in the commit message. `patched()` is not
-needed and no major is due.
+on that path, re-record the history (`REPLAY_HISTORY_OVERWRITE=1`, since the file exists) and
+say so in the commit message. `patched()` is not needed and no major is due.
 
 **After the first release**, the same red is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or

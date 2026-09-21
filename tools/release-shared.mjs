@@ -75,10 +75,11 @@ function headingVersion(line) {
   return token.replace(/^\[/, '').replace(/\]$/, '');
 }
 
-// What `npm view <pkg>@<version> version` said. E404 is npm's answer for both "no such package"
-// and "no such version"; any other failure means npm could not be asked, which is not "absent".
-export function npmVersionState({ status, stdout, stderr }) {
-  if (status === 0) return stdout.trim() === '' ? 'absent' : 'published';
+// What `npm view <pkg>@<version> version` said. Exit 0 means the version exists; E404 is npm's
+// answer for both "no such package" and "no such version"; any other failure means npm could not
+// be asked, which is not "absent". The release workflows apply the same three-way rule.
+export function npmVersionState({ status, stderr }) {
+  if (status === 0) return 'published';
   return stderr.includes('E404') ? 'absent' : 'unknown';
 }
 

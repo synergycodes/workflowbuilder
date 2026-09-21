@@ -8,7 +8,7 @@
 //   pnpm release:tag temporal --yes        skip the confirmation prompt
 //
 // Run from a checkout of `release`. Full procedure: packages/RELEASE.md.
-import { existsSync, readFileSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { createInterface } from 'node:readline/promises';
@@ -94,7 +94,11 @@ if (remoteTag.status !== 0) fail('Could not read tags from origin. Check the con
 const tagExists = gitOut('tag', '-l', tag) !== '' || remoteTag.stdout.trim() !== '';
 check(!tagExists, `tag ${tag} does not exist yet`, 'it already exists locally or on origin');
 
-check(existsSync(path.join(ROOT, workflow)), `${workflow} exists`, 'no workflow listens for this tag');
+check(
+  git(['cat-file', '-e', `HEAD:${workflow}`]).status === 0,
+  `${workflow} exists at HEAD`,
+  'no workflow listens for this tag on the tagged commit',
+);
 
 // Read from the commit that will carry the tag, not from the disk: an untracked CHANGELOG passes
 // the clean-tree check above and would leave the tagged commit with no notes to publish.

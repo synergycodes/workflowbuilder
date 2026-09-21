@@ -239,7 +239,7 @@ Inspect the dry-run output. For the SDK the tarball should contain:
 - `README.md`, `LICENSE`, `CHANGELOG.md`.
 - **No** `src/`, `node_modules/`, `tsconfig*.json`, `vite.config.*`, decision logs, or test files.
 
-For `@workflowbuilder/temporal`: `dist/index.js`, `dist/client/index.js`, `dist/workflow/index.js` with their `.d.ts` and `.map` files, `README.md`, `LICENSE`, `CHANGELOG.md`, and `dependencies` on `@temporalio/*` resolved to real ranges. The same **no** list applies.
+For `@workflowbuilder/temporal`: `dist/index.js`, `dist/client/index.js`, `dist/workflow/index.js` with their `.d.ts` and `.map` files, `README.md`, `LICENSE`, `CHANGELOG.md`, and `peerDependencies` on `@temporalio/*` resolved to real ranges (there is no `dependencies` section). The same **no** list applies.
 
 ### 3. Merge the release PR
 
