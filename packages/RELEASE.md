@@ -245,7 +245,7 @@ For `@workflowbuilder/temporal`: `dist/index.js`, `dist/client/index.js`, `dist/
 
 Merge `release-<pkg>-X.Y.Z` into `release` (merge commit gives cleaner blame; pick one strategy and stick with it).
 
-Pushing to `release` also deploys the public docs site: `deploy-docs.yml` runs on every push to that branch, and a revert is another push. What goes live is `apps/docs` as it stands on the merged `release` head: the snapshot of `main` from when the release branch was cut, not `main` as it stands at merge time.
+Merging into `release` deploys nothing else: the public docs site goes out by hand (step 8), once what it describes is on npm. Until then the live site stays as it was.
 
 ### 4. Tag the merge commit
 
@@ -308,6 +308,16 @@ npm view @workflowbuilder/<pkg>@X.Y.Z
 ```
 
 Both should show the new version. The npm page (<https://www.npmjs.com/package/@workflowbuilder/sdk>, and likewise for the others) updates within a minute.
+
+### 8. Deploy the docs site, once it describes what is on npm
+
+`deploy-docs.yml` never runs on push. It runs only by hand (`workflow_dispatch`) and builds `apps/docs` from the branch you pick; its first step refuses a production deploy from any branch but `release`, because `main` runs ahead of npm between releases (API waiting in changesets, packages not published yet). Run it when the site on `release` matches what consumers can install: typically after an SDK or UI release, or when a docs-only change has reached `release`. A release of a package the site has no pages for needs no deploy.
+
+```bash
+gh workflow run deploy-docs.yml --ref release
+```
+
+The same from the browser: Actions → "Deploy docs" → "Run workflow" → branch `release`. What goes live is `apps/docs` as it stands on `release`: the snapshot of `main` from when the last release branch was cut, not `main` as it stands today. To take something back, revert it on `release` and run the workflow again.
 
 ## Rollback
 
