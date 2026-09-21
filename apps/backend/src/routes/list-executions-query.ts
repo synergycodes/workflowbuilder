@@ -43,26 +43,27 @@ export function parseListExecutionsQuery(raw: {
   limit?: string;
   cursor?: string;
 }): ParsedListExecutionsQuery {
-  if (raw.status !== undefined && !EXECUTION_STATUSES.has(raw.status)) {
+  // `?status=` is an unset form field, not a typo: an empty value counts as absent.
+  if (raw.status && !EXECUTION_STATUSES.has(raw.status)) {
     return { ok: false, code: 'invalid_status', message: 'Unknown execution status' };
   }
-  if (raw.workflowId !== undefined && !UUID_PATTERN.test(raw.workflowId)) {
+  if (raw.workflowId && !UUID_PATTERN.test(raw.workflowId)) {
     return { ok: false, code: 'invalid_workflow_id', message: 'workflowId must be a UUID' };
   }
-  if (raw.limit !== undefined && (!/^\d+$/.test(raw.limit) || Number(raw.limit) < 1)) {
+  if (raw.limit && (!/^\d+$/.test(raw.limit) || Number(raw.limit) < 1)) {
     return { ok: false, code: 'invalid_limit', message: 'limit must be a positive integer' };
   }
-  const cursor = raw.cursor === undefined ? undefined : decodeCursor(raw.cursor);
-  if (raw.cursor !== undefined && cursor === undefined) {
+  const cursor = raw.cursor ? decodeCursor(raw.cursor) : undefined;
+  if (raw.cursor && cursor === undefined) {
     return { ok: false, code: 'invalid_cursor', message: 'Malformed cursor' };
   }
 
   return {
     ok: true,
     query: {
-      status: raw.status as ExecutionStatus | undefined,
-      workflowId: raw.workflowId,
-      limit: raw.limit === undefined ? DEFAULT_LIMIT : Math.min(Number(raw.limit), MAX_LIMIT),
+      status: (raw.status || undefined) as ExecutionStatus | undefined,
+      workflowId: raw.workflowId || undefined,
+      limit: raw.limit ? Math.min(Number(raw.limit), MAX_LIMIT) : DEFAULT_LIMIT,
       cursor,
     },
   };
@@ -78,8 +79,10 @@ export function decodeCursor(token: string): Cursor | undefined {
   const parts = Buffer.from(token, 'base64url').toString('utf8').split('|');
   if (parts.length !== 2) return;
   const [createdAt, id] = parts as [string, string];
+  // Four-digit year at or after the epoch: toISOString also round-trips signed and year-0 forms Postgres rejects.
   const time = Date.parse(createdAt);
-  if (Number.isNaN(time) || new Date(time).toISOString() !== createdAt) return;
+  if (!/^\d{4}-/.test(createdAt) || Number.isNaN(time) || time < 0 || new Date(time).toISOString() !== createdAt)
+    return;
   if (!UUID_PATTERN.test(id)) return;
   return { createdAt, id };
 }
