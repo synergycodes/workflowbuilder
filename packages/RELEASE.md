@@ -152,7 +152,7 @@ REPLAY_HISTORY_VERSION=$VERSION UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflo
 pnpm --filter @workflowbuilder/temporal test
 ```
 
-The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The one exception is the `v0-` baseline at the first release, which no run outside this repo was ever recorded by, so it goes once the new set is green. The rules are in `packages/temporal/test/replay/README.md`.
+The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists, so a forgotten `REPLAY_HISTORY_VERSION` fails instead of silently rewriting the previous set. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The one exception is the `v0-` baseline at the first release, which no run outside this repo was ever recorded by, so it goes once the new set is green. The rules are in `packages/temporal/test/replay/README.md`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -245,7 +245,7 @@ For `@workflowbuilder/temporal`: `dist/index.js`, `dist/client/index.js`, `dist/
 
 Merge `release-<pkg>-X.Y.Z` into `release` (merge commit gives cleaner blame; pick one strategy and stick with it).
 
-Pushing to `release` also deploys the public docs site: `deploy-docs.yml` runs on every push to that branch, and a revert is another push. Whatever `apps/docs` holds on `main` at that moment goes live with the release.
+Pushing to `release` also deploys the public docs site: `deploy-docs.yml` runs on every push to that branch, and a revert is another push. What goes live is `apps/docs` as it stands on the merged `release` head: the snapshot of `main` from when the release branch was cut, not `main` as it stands at merge time.
 
 ### 4. Tag the merge commit
 
