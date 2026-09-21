@@ -120,10 +120,8 @@ jobs:
     name: Temporal sample typecheck + build
     runs-on: ubuntu-latest
     # Two npm projects, neither in the pnpm workspace, so this job needs no pnpm and no
-    # workspace install. The worker resolves @workflowbuilder/temporal from the packed
-    # build committed under worker/vendor/ until the package reaches npm; a refreshed
-    # tarball that breaks the sample fails here. There are no tests to run: the sample
-    # demonstrates the plugin rather than testing it.
+    # workspace install: the worker installs @workflowbuilder/temporal from npm like any consumer.
+    # There are no tests to run: the sample demonstrates the plugin rather than testing it.
     steps:
       - name: Checkout code
         uses: actions/checkout@v4

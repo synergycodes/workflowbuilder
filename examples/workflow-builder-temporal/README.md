@@ -2,7 +2,7 @@
 
 Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workflow Execution: every node becomes an Activity, retries and history come from Temporal, and the canvas shows each node's status live.
 
-This sample wires the [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
+This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
 
 ![A finished run in the editor: green on every node Temporal executed, grey on the branch it skipped](docs/editor-run.png)
 
@@ -37,10 +37,6 @@ New request (trigger)
 - Node.js 22 (20 works).
 - The Temporal CLI: install it from <https://docs.temporal.io/cli#install> (`brew install temporal` on macOS).
 - Nothing else. No Docker, no database, no API keys.
-
-`@workflowbuilder/temporal` is still in preview and not on npm, so `worker/` installs it from a
-packed build committed under [`worker/vendor/`](worker/vendor/README.md). The steps below need
-nothing extra; when the package ships, the dependency becomes an ordinary npm range.
 
 ## Run it
 
@@ -183,7 +179,7 @@ Six places carry the whole integration. Each has a comment where the reason is n
 
 ## Learn more
 
-- [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal): profiles, node labels in Event History, versioning and replay.
+- [`@workflowbuilder/temporal` on npm](https://www.npmjs.com/package/@workflowbuilder/temporal): profiles, node labels in Event History, versioning and replay.
 - [Workflow Builder documentation](https://www.workflowbuilder.io/docs/overview/)
 - [Temporal TypeScript SDK](https://docs.temporal.io/develop/typescript)
 
