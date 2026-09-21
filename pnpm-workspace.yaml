@@ -23,7 +23,10 @@ catalog:
   # peer on this range, so the repo keeps one version across the package and both reference
   # apps. What we publish is the caret range; what we test is the exact version the lockfile
   # resolves it to, so bumping this catalog entry is a deliberate change of the tested line.
-  # Bump together.
+  # Bump together. packages/temporal must not list its peers as devDependencies as well:
+  # pnpm would count the peer as satisfied by the devDependency and the `--prod` install in
+  # deploy/ai-studio/Dockerfile would then strip it, leaving the built dist with no
+  # @temporalio/* to import (CLAUDE.md, "Releasing").
   '@temporalio/activity': ^1.23.0
   '@temporalio/client': ^1.23.0
   '@temporalio/common': ^1.23.0
