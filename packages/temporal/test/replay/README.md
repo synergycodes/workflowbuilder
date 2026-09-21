@@ -56,7 +56,9 @@ UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/t
 Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
 it by name, and describing it in the table above. The harness fails until the file exists.
 Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says otherwise;
-the last section covers when to set it.
+the last section covers when to set it. An existing file is never overwritten: the harness
+fails and names it, so a release recorded without the version variable does not rewrite
+the previous set. `REPLAY_HISTORY_OVERWRITE=1` is the explicit way to re-baseline.
 
 Or from a real run against a local stack, for a scenario the harness cannot stage.
 `historyToJSON` writes the same shape, so the two are interchangeable. Read the output
@@ -74,33 +76,35 @@ temporal workflow show --workflow-id execution-<id> --output json > histories/<v
    What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
-3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES` rewrites the
-   history from current code, so the cross-version check silently becomes a self-check.
-   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of
-   every scenario, never for making a red test green.
+3. Regenerating a file resets what it guards. Rewriting a history from current code turns
+   the cross-version check into a self-check, which is why the harness refuses to overwrite
+   without `REPLAY_HISTORY_OVERWRITE=1`. Record by scenario name when adding one; `=1` with
+   the overwrite flag is for a deliberate re-baseline of every scenario, never for making a
+   red test green.
 
-`v0-` names the pre-release baseline: the package has not published a version yet, so
-these are histories from the code as it stood before the first release. At that release,
-record every scenario again under the released version:
+`v0-` names the pre-release baseline: histories from the code as it stood before the
+package published its first version. Every release records every scenario again under the
+version it ships, in the release PR right after `pnpm release:version temporal`:
 
 ```bash
-REPLAY_HISTORY_VERSION=1.0.0 UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+REPLAY_HISTORY_VERSION=<version> UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+pnpm --filter @workflowbuilder/temporal test
 ```
 
-That writes `1.0.0-<scenario>.json` next to the `v0-` files and leaves them untouched, so
-check the new set replays before deleting the old one. The `v0-` files can go, since no
+The first run writes `<version>-<scenario>.json` next to the earlier files and leaves them
+untouched; the second replays everything, so check the new set is green before deleting
+anything. The `v0-` files can go, since no
 run outside this repo was ever recorded by pre-release code. Every release after that adds
 its own set the same way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Before the first release**, which is where the package is today: `private: true`, no
-published version, no consumer outside this repo. No run recorded by an older build
+**Before the first release**: no published version and no consumer outside this repo. No run recorded by an older build
 exists anywhere, so nothing is stranded and no deploy is at risk. Red means one thing,
 and it is a design signal rather than an incident: a command reached a path that was
 supposed to be left alone. Read the change first. If the new command genuinely belongs
-on that path, re-record the history and say so in the commit message. `patched()` is not
-needed and no major is due.
+on that path, re-record the history (`REPLAY_HISTORY_OVERWRITE=1`, since the file exists) and
+say so in the commit message. `patched()` is not needed and no major is due.
 
 **After the first release**, the same red is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or

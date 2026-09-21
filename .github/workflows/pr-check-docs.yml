@@ -12,6 +12,7 @@ on:
   pull_request:
     branches:
       - main
+      - release # merging into release is what deploys the docs site
     paths:
       - 'apps/docs/**'
       - 'packages/ui/**'

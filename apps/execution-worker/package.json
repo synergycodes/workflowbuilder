@@ -15,6 +15,7 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "catalog:",
+    "@temporalio/plugin": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
     "@workflow-builder/ai-config": "workspace:*",
