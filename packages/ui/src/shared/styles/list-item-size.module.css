@@ -1,0 +1,31 @@
+:root {
+  --ax-public-list-item-padding-large: var(--ax-token-spacing-dropdown-item-l-v-pad)
+    var(--ax-token-spacing-dropdown-item-l-h-pad);
+  --ax-public-list-item-padding-medium: var(--ax-token-spacing-dropdown-item-m-v-pad)
+    var(--ax-token-spacing-dropdown-item-m-h-pad);
+  --ax-public-list-item-padding-small: var(--ax-token-spacing-dropdown-item-s-v-pad)
+    var(--ax-token-spacing-dropdown-item-s-h-pad);
+  --ax-public-list-item-gap-small: var(--ax-token-spacing-dropdown-item-s-gap);
+  --ax-public-list-item-gap-medium: var(--ax-token-spacing-dropdown-item-m-gap);
+  --ax-public-list-item-gap-large: var(--ax-token-spacing-dropdown-item-l-gap);
+}
+
+@layer ui.component {
+  .large {
+    composes: ax-public-p9 from global;
+    padding: var(--ax-public-list-item-padding-large);
+    gap: var(--ax-public-list-item-gap-large);
+  }
+
+  .medium {
+    composes: ax-public-p10 from global;
+    padding: var(--ax-public-list-item-padding-medium);
+    gap: var(--ax-public-list-item-gap-medium);
+  }
+
+  .small {
+    composes: ax-public-p10 from global;
+    padding: var(--ax-public-list-item-padding-small);
+    gap: var(--ax-public-list-item-gap-small);
+  }
+}

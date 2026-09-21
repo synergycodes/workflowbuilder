@@ -1,0 +1,16 @@
+:root {
+  --ax-public-label-button-padding-xx-small: var(--ax-token-spacing-button-xxs-v-pad-1)
+    var(--ax-token-spacing-button-xxs-h-pad-1);
+  --ax-public-label-button-padding-xxx-small: var(--ax-token-spacing-button-xxxs-v-pad-1)
+    var(--ax-token-spacing-button-xxxs-h-pad-1);
+}
+
+@layer ui.component {
+  .xx-small {
+    padding: var(--ax-public-label-button-padding-xx-small);
+  }
+
+  .xxx-small {
+    padding: var(--ax-public-label-button-padding-xxx-small);
+  }
+}

@@ -16,6 +16,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 300 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'New Support Ticket',
             description: 'A support ticket arrives in the shared inbox.',
@@ -107,7 +108,8 @@ Use the exact lowercase keyword on the Type line - it drives downstream routing.
                 id: 'branch-general',
                 sourceHandle: 'source:inner:general',
                 label: 'How-to / Other',
-                conditions: [],
+                // A branch with no conditions never matches; an always-true condition is the catch-all.
+                conditions: [{ x: 'always', y: 'always', comparisonOperator: 'isEqual', logicalOperator: 'AND' }],
               },
             ],
           },

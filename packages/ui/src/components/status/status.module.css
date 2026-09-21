@@ -1,0 +1,33 @@
+:root {
+  --ax-public-status-right: var(--ax-primitive-even-12) /* missing token */;
+  --ax-public-status-size: var(--ax-primitive-even-20) /* missing token */;
+  --ax-public-status-icon-size: var(--ax-primitive-even-12) /* missing token */;
+  --ax-public-status-invalid-color: var(--ax-colors-orange-100) /* missing token */;
+  --ax-public-status-invalid-background-color: var(--ax-colors-orange-400) /* missing token */;
+}
+
+@layer ui.component {
+  .status-container {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    position: absolute;
+    right: var(--ax-public-status-right);
+    top: 0;
+    transform: translateY(-50%);
+    height: var(--ax-public-status-size);
+    aspect-ratio: 1 / 1;
+    border-radius: 50%;
+
+    svg {
+      height: var(--ax-public-status-icon-size);
+      aspect-ratio: 1 / 1;
+      fill: currentColor;
+    }
+
+    &.status-container--invalid {
+      color: var(--ax-public-status-invalid-color);
+      background: var(--ax-public-status-invalid-background-color);
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import { useEdgeStyle } from '@synergycodes/overflow-ui';
+import { useEdgeStyle } from '@workflowbuilder/ui';
 import { type ConnectionLineComponentProps, getSmoothStepPath } from '@xyflow/react';
 
 import { EDGE_CURVE_RADIUS, EDGE_OFFSET } from '../edge.consts';

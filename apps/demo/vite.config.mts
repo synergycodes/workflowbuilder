@@ -16,7 +16,6 @@ import {
 export default defineConfig(({ mode }) => {
   const isProduction = mode === 'production';
   const isAnalyze = process.env.ANALYZE === 'true';
-  const shouldUseLocalOverflowUI = process.env.LOCAL_OVERFLOW_UI === 'true';
 
   const plugins: PluginOption[] = [];
 
@@ -52,12 +51,6 @@ export default defineConfig(({ mode }) => {
     plugins,
     resolve: {
       alias: [
-        ...(shouldUseLocalOverflowUI
-          ? Object.entries(getLocalOverflowUIAliases()).map(([find, replacement]) => ({
-              find,
-              replacement,
-            }))
-          : []),
         {
           find: /^@workflowbuilder\/sdk\/style\.css$/,
           replacement: path.resolve(sdkDirectory, 'src/index.css'),
@@ -65,14 +58,6 @@ export default defineConfig(({ mode }) => {
         {
           find: /^@workflowbuilder\/sdk$/,
           replacement: path.resolve(sdkDirectory, 'src/index.ts'),
-        },
-        // overflow-ui doesn't expose ./dist/index.css via package.json exports
-        {
-          find: 'overflow-ui-css',
-          replacement: path.resolve(
-            sdkDirectory,
-            'node_modules/@synergycodes/overflow-ui/dist/index.css',
-          ),
         },
         // SDK source files use @/ to refer to their own root (packages/sdk/src/...).
         // Demo files do not use @/ (they import via @workflowbuilder/sdk subpaths),
@@ -95,15 +80,6 @@ export default defineConfig(({ mode }) => {
     },
   };
 });
-
-function getLocalOverflowUIAliases(): Record<string, string> {
-  const distribution = path.resolve(import.meta.dirname, '../../../overflow-ui/packages/ui/dist');
-
-  return {
-    '@synergycodes/overflow-ui/tokens.css': path.join(distribution, 'tokens.css'),
-    '@synergycodes/overflow-ui': path.join(distribution, 'overflow-ui.js'),
-  };
-}
 
 type EnvMode = 'demo' | 'production' | 'development' | 'staging';
 const fileReplacementsMap: Record<EnvMode, FileReplacement[]> = {

@@ -10,6 +10,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 300 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'The Question',
             description: 'A decision to stress-test from both sides.',

@@ -10,6 +10,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 300 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'Research Topic',
             description: 'The question to research on the web.',

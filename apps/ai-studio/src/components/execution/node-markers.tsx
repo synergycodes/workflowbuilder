@@ -17,7 +17,8 @@ export function ExecutionNodeMarkers({ props }: Props) {
 
   if (!nodeState || nodeState.status === 'idle') return null;
 
-  const isClickable = nodeState.status === 'completed' || nodeState.status === 'failed';
+  const isClickable =
+    nodeState.status === 'completed' || nodeState.status === 'failed' || nodeState.status === 'skipped';
 
   // The click also selects the node on the canvas, which drives the log highlight.
   return (
@@ -38,6 +39,11 @@ export function ExecutionNodeMarkers({ props }: Props) {
       {nodeState.status === 'failed' && (
         <span className={`${styles['icon']} ${styles['icon--failed']}`}>
           <Icon name="WarningDiamond" />
+        </span>
+      )}
+      {nodeState.status === 'skipped' && (
+        <span className={`${styles['icon']} ${styles['icon--skipped']}`}>
+          <Icon name="SkipForward" />
         </span>
       )}
     </div>

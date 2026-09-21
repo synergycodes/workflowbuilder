@@ -10,6 +10,11 @@ const frontendNodeSchema = z.object({
   id: z.string(),
   data: z.object({
     type: z.string(),
+    // The editor's entrypoint flag. Declared here because zod strips whatever
+    // it is not told about, and the runner needs it to pick the node a run
+    // starts from. The editor's node kind (`start-node`, `node`, ...) is a
+    // rendering detail and deliberately not read here.
+    isStartNode: z.boolean().optional(),
     properties: z.record(z.string(), z.unknown()).optional(),
   }),
 });

@@ -1,4 +1,4 @@
-import { DatePicker, Input, Select } from '@synergycodes/overflow-ui';
+import { DatePicker, Input, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -129,7 +129,7 @@ export function DynamicTypedInput({
 
             onChange(date.toISOString());
           }}
-          valueFormat={'DD-MM-YYYY'}
+          valueFormat={'dd-MM-yyyy'}
           placeholder={placeholder || 'DD-MM-YYYY'}
           error={isError}
           disabled={disabled}
@@ -153,7 +153,7 @@ export function DynamicTypedInput({
             onChange(date.toISOString());
             setTime(getTimeFromDateIfValid(date.toISOString()));
           }}
-          valueFormat="DD-MM-YYYY"
+          valueFormat="dd-MM-yyyy"
           placeholder="DD-MM-YYYY"
           // Uncomment to see times in value
           // valueFormat="DD-MM-YYYY HH:mm"

@@ -251,8 +251,8 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    *
    * @example
    * ```ts
-   * const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targetNode }) =>
-   *   !(sourceNode.data.type === 'start' && targetNode.data.type === 'start');
+   * // A start node is the workflow entry point, so it can never be a connection target.
+   * const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
    * ```
    */
   isValidConnection?: WorkflowBuilderIsValidConnection;

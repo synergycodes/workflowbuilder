@@ -1,4 +1,4 @@
-import { SnackbarType } from '@synergycodes/overflow-ui';
+import { SnackbarType } from '@workflowbuilder/ui';
 
 import type { OnSaveParams } from '../../../types/integration';
 import { showSnackbar } from '../../../utils/show-snackbar';

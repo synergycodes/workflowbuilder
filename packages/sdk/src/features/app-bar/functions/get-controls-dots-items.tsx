@@ -1,4 +1,4 @@
-import type { MenuItemProps } from '@synergycodes/overflow-ui';
+import type { MenuItemProps } from '@workflowbuilder/ui';
 import i18n from 'i18next';
 
 import { Icon } from '@workflow-builder/icons';

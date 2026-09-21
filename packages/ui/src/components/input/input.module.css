@@ -1,0 +1,26 @@
+@layer ui.component {
+  .input {
+    border: none;
+    background: transparent;
+    padding: 0;
+    color: unset;
+    width: 100%;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+
+    &:focus-visible {
+      outline: none;
+    }
+
+    &:disabled {
+      color: var(--ax-public-input-color-disabled);
+    }
+
+    &::placeholder {
+      color: unset;
+      opacity: 0.5;
+    }
+  }
+}

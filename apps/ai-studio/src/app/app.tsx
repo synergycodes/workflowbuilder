@@ -1,4 +1,4 @@
-import { WorkflowBuilder } from '@workflowbuilder/sdk';
+import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
 
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
@@ -17,6 +17,9 @@ import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 
 const flagship = supportTriageFlow.value;
 
+// A start node is where the run begins, so it can never be a connection target.
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
+
 export function App() {
   return (
     <WorkflowBuilder.Root
@@ -28,6 +31,7 @@ export function App() {
       initialEdges={flagship.diagram.edges}
       nodeTypes={aiStudioNodeTypes}
       diagramTemplates={aiStudioTemplates}
+      isValidConnection={isValidConnection}
       plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}
     >
       <WorkflowBuilder.DefaultLayout />

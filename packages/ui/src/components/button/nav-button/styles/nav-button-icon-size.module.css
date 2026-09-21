@@ -1,0 +1,20 @@
+:root {
+  --ax-public-icon-size-xx-small: 0.75rem /* missing token */;
+  --ax-public-icon-size-xxx-small: 0.75rem /* missing token */;
+}
+
+@layer ui.component {
+  .xx-small {
+    svg {
+      width: var(--ax-public-icon-size-xx-small);
+      height: var(--ax-public-icon-size-xx-small);
+    }
+  }
+
+  .xxx-small {
+    svg {
+      width: var(--ax-public-icon-size-xxx-small);
+      height: var(--ax-public-icon-size-xxx-small);
+    }
+  }
+}

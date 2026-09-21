@@ -1,0 +1,14 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "lib": ["ES2022"],
+    "types": ["node"]
+  },
+  // Build tooling program, separate from the component program so TypeScript
+  // tools reading tsconfig.json (TypeDoc, vite-plugin-dts, IDEs) never pull
+  // build files in. *.spec.mts stays out - a vitest-importing spec in a ts
+  // program stalls tsc for minutes.
+  "include": ["postcss-box-sizing.mts", "postcss-layer-root-defaults.mts", "combine-css-bundle.mts", "scripts"],
+  "exclude": ["node_modules", "dist", "**/*.spec.mts"]
+}

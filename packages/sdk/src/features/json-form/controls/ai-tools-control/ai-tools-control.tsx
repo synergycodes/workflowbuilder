@@ -1,5 +1,5 @@
 import { PlusCircle, Trash } from '@phosphor-icons/react';
-import { Button, NavButton } from '@synergycodes/overflow-ui';
+import { Button, NavButton } from '@workflowbuilder/ui';
 import { type ComponentProps, useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 

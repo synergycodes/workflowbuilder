@@ -1,0 +1,16 @@
+:root {
+  --ax-public-list-item-separator-border-size: 0.0625rem;
+  --ax-public-list-item-separator-background-color: var(--ax-ui-separator-primary-default);
+}
+
+@layer ui.component {
+  .separator {
+    border-top: var(--ax-public-list-item-separator-border-size) solid
+      var(--ax-public-list-item-separator-background-color);
+    width: 100%;
+    margin: 0;
+    border-bottom: none;
+    border-left: none;
+    border-right: none;
+  }
+}

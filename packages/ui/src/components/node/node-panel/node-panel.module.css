@@ -1,0 +1,74 @@
+:root {
+  --ax-public-node-width: 16.125rem;
+  --ax-public-node-height: 100%;
+  --ax-public-node-border-size: 0.0625rem;
+
+  --ax-public-node-padding: var(--ax-token-spacing-node-head-v-pad);
+  --ax-public-node-gap: var(--ax-token-spacing-node-head-gap);
+  --ax-public-node-border-radius: var(--ax-token-radius-node-head);
+
+  --ax-public-node-border-color: var(--ax-node-stroke-primary-default);
+  --ax-public-node-background-color: var(--ax-node-bg-primary-default);
+  --ax-public-node-hover-background-color: var(--ax-node-bg-primary-default);
+  --ax-public-node-border-hover-color: var(--ax-node-stroke-primary-hover);
+
+  --ax-public-node-border-color-selected: var(--ax-node-stroke-primary-hover);
+  --ax-public-node-box-shadow-selected: var(--ax-token-shadow-focus-node-active-x)
+    var(--ax-token-shadow-focus-node-active-y) var(--ax-token-shadow-focus-node-active-blur)
+    var(--ax-token-shadow-focus-node-active-spread) var(--ax-focus-ring-node-active);
+}
+
+@layer ui.component {
+  .node-panel-wrapper:hover .container {
+    background: var(--ax-public-node-hover-background-color);
+    border-color: var(--ax-public-node-border-hover-color);
+  }
+
+  .container {
+    display: flex;
+    width: var(--ax-public-node-width);
+    height: var(--ax-public-node-height);
+    padding: var(--ax-public-node-padding);
+    gap: var(--ax-public-node-gap);
+    align-items: center;
+    flex-direction: column;
+
+    border-radius: var(--ax-public-node-border-radius);
+    border: var(--ax-public-node-border-size) solid var(--ax-public-node-border-color);
+    background: var(--ax-public-node-background-color);
+
+    &.selected {
+      border-color: var(--ax-public-node-border-color-selected);
+      box-shadow: var(--ax-public-node-box-shadow-selected);
+    }
+
+    &:not(:hover) {
+      transition:
+        border-color var(--wb-transition),
+        box-shadow var(--wb-transition);
+    }
+
+    .header-wrapper {
+      width: 100%;
+    }
+
+    .header-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .header-container,
+    .content-container {
+      width: 100%;
+    }
+
+    .header-container,
+    .content-container,
+    .handles-container {
+      &:empty {
+        display: none;
+      }
+    }
+  }
+}

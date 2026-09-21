@@ -1,0 +1,45 @@
+import { mergeProps } from '@base-ui/react/merge-props';
+import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
+import { ReactElement, cloneElement, forwardRef, isValidElement } from 'react';
+
+import { TOOLTIP_CLOSE_DELAY, TOOLTIP_OPEN_DELAY } from './tooltip-context';
+
+/**
+ * Tooltips trigger is the the element that toggles the tooltip
+ */
+export const TooltipTrigger = forwardRef<
+  HTMLElement,
+  React.HTMLProps<HTMLElement> & {
+    /**
+     * `asChild` allows the user to pass any element as the anchor
+     */
+    asChild?: boolean;
+  }
+>(function TooltipTrigger({ children, asChild = false, ...props }, propertyRef) {
+  return (
+    <BaseTooltip.Trigger
+      ref={propertyRef as React.Ref<HTMLButtonElement>}
+      delay={TOOLTIP_OPEN_DELAY}
+      closeDelay={TOOLTIP_CLOSE_DELAY}
+      closeOnClick={false}
+      render={(triggerProps, state) => {
+        const dataState = state.open ? 'open' : 'closed';
+
+        if (asChild && isValidElement(children)) {
+          const childElement = children as ReactElement<Record<string, unknown>>;
+          // A plain spread would let a child's handlers replace Base UI's and break the tooltip.
+          return cloneElement(childElement, {
+            ...mergeProps(triggerProps, props as Record<string, unknown>, childElement.props ?? {}),
+            'data-state': dataState,
+          });
+        }
+
+        return (
+          <div {...mergeProps(triggerProps, props as Record<string, unknown>)} data-state={dataState}>
+            {children}
+          </div>
+        );
+      }}
+    />
+  );
+});

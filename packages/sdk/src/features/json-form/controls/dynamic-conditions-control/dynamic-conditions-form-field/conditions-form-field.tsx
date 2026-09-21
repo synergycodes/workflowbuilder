@@ -1,4 +1,4 @@
-import { NavButton, SegmentPicker, Select } from '@synergycodes/overflow-ui';
+import { NavButton, SegmentPicker, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';

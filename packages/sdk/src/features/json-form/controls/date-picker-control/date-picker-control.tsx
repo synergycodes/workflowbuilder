@@ -1,4 +1,4 @@
-import { DatePicker, type DatePickerProps } from '@synergycodes/overflow-ui';
+import { DatePicker, type DatePickerProps } from '@workflowbuilder/ui';
 
 import type { DatePickerControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';

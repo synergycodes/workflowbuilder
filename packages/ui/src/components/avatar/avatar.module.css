@@ -1,0 +1,43 @@
+:root {
+  --ax-public-avatar-border-color: var(--ax-input-stroke-primary-default); /* missing token */
+  --ax-public-avatar-background-color: var(--ax-colors-blue-500); /* missing token */
+  --ax-public-avatar-border-size: 0.0625rem;
+}
+
+@layer ui.component {
+  .container {
+    border: var(--ax-public-avatar-border-size) solid var(--ax-public-avatar-border-color);
+    background-color: var(--ax-public-avatar-background-color);
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.extra-large {
+      width: calc(2.5rem + 2 * var(--ax-public-avatar-border-size));
+      height: calc(2.5rem + 2 * var(--ax-public-avatar-border-size));
+    }
+
+    &.large {
+      width: calc(2rem + 2 * var(--ax-public-avatar-border-size));
+      height: calc(2rem + 2 * var(--ax-public-avatar-border-size));
+    }
+
+    &.medium {
+      width: calc(1.5rem + 2 * var(--ax-public-avatar-border-size));
+      height: calc(1.5rem + 2 * var(--ax-public-avatar-border-size));
+    }
+
+    &.small {
+      width: calc(1.125rem + 2 * var(--ax-public-avatar-border-size));
+      height: calc(1.125rem + 2 * var(--ax-public-avatar-border-size));
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

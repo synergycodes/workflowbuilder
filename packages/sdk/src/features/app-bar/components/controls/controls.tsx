@@ -1,5 +1,5 @@
 import { DotsThreeVertical } from '@phosphor-icons/react';
-import { Menu, type MenuItemProps, NavButton } from '@synergycodes/overflow-ui';
+import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 

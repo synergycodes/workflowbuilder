@@ -13,6 +13,7 @@ const diagram: DiagramModel = {
           segments: [],
           properties: { label: 'Incoming Call', description: 'Trigger', dataSource: 'Time-based Trigger' },
           type: 'trigger',
+          isStartNode: true,
           icon: 'Lightning',
         },
         selected: false,

@@ -1,0 +1,54 @@
+---
+title: NodeAsPortWrapper
+description: Stretches a node's target handle to the whole node while a link is being dragged.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+
+`NodeAsPortWrapper` makes a whole node act as a connection drop target while a
+link is being dragged, so the user doesn't have to aim at a small handle.
+Mechanically it stretches the invisible hit area of the node's **existing
+target handle** (`<Handle type="target" />` from `@xyflow/react`) to the
+node's full size - the wrapped node must render such a handle, or the wrapper
+does nothing. Connections still complete on the handle; only its hit area
+grows.
+
+It only applies while both `isConnecting` is `true` and the node is hovered,
+so it stays inert during normal interaction. Pass the position the incoming
+connection should attach to via `targetPortPosition`, and nudge the hit area
+with the optional `offset`. The wrapper adds no visual highlight of its own -
+it exposes the node's measured size and position as CSS variables (see below)
+so an overlay can align with it.
+
+## Usage
+
+In the SDK, the node container wraps its template in `NodeAsPortWrapper`, driven
+by whether a connection is currently being dragged in the store. The template
+renders the target `Handle` the wrapper relies on.
+
+```tsx
+import { NodeAsPortWrapper } from '@workflowbuilder/ui';
+import type { NodeProps } from '@xyflow/react';
+
+function NodeContainer({ id, data, selected }: NodeProps) {
+  const isConnecting = useStore((store) => !!store.connectionBeingDragged);
+  const targetPortPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
+
+  return (
+    <NodeAsPortWrapper isConnecting={isConnecting} targetPortPosition={targetPortPosition}>
+      <WorkflowNodeTemplate id={id} data={data} selected={selected} /* ... */ />
+    </NodeAsPortWrapper>
+  );
+}
+```
+
+## Props
+
+`NodeAsPortWrapper` also accepts `children` (the node to wrap).
+
+<PropsTable slug="node-as-port-wrapper" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-as-port-wrapper" />

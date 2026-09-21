@@ -1,0 +1,14 @@
+:root {
+  --ax-public-input-color-disabled: var(--ax-txt-quaternary-default);
+
+  --ax-public-input-root-color: var(--ax-txt-secondary-default);
+  --ax-public-input-root-border-color: var(--ax-input-stroke-primary-default);
+  --ax-public-input-root-border-color-focus: var(--ax-input-stroke-primary-focus);
+  --ax-public-input-root-border-size: 0.0625rem;
+
+  --ax-public-input-root-background-color-error: var(--ax-input-bg-primary-error);
+  --ax-public-input-root-border-color-error: var(--ax-input-stroke-primary-error);
+  --ax-public-input-root-color-error: var(--ax-txt-error-default);
+
+  --ax-public-input-root-color-disabled: var(--ax-txt-quaternary-default);
+}

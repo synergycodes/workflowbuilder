@@ -97,11 +97,11 @@ Text-only elements that don't bind to a property. Use them when the property pan
 
 Plain text label — uses the editor's default body styling.
 
-| Prop       | Type     | Required | Notes                                                                                          |
-| ---------- | -------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `text`     | string   | yes      | The label text.                                                                                |
-| `required` | boolean  | no       | Append a `*` to indicate the following section contains required fields.                       |
-| `size`     | ItemSize | no       | Visual size — `'small'`, `'medium'` (default), `'large'`. Type re-exported from `overflow-ui`. |
+| Prop       | Type     | Required | Notes                                                                                                  |
+| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `text`     | string   | yes      | The label text.                                                                                        |
+| `required` | boolean  | no       | Append a `*` to indicate the following section contains required fields.                               |
+| `size`     | ItemSize | no       | Visual size — `'small'`, `'medium'` (default), `'large'`. Type re-exported from `@workflowbuilder/ui`. |
 
 ```ts
 { type: 'Label', text: 'Connection details' }

@@ -1,13 +1,15 @@
 name: Release SDK
 
-# Triggers on tags `vX.Y.Z` matching the version in packages/sdk/package.json.
-# Maintainer pushes the tag after merging the version-bump PR (which ran
-# `pnpm changeset version`). See packages/sdk/RELEASE.md.
+# Triggers on scoped tags `@workflowbuilder/sdk@X.Y.Z` matching the version in
+# packages/sdk/package.json. Scoped tags let this repo publish more than one
+# package (see release-ui.yml for @workflowbuilder/ui). Maintainer pushes the
+# tag after merging the version-bump PR (which ran `pnpm release:version <pkg>`).
+# See packages/RELEASE.md.
 
 on:
   push:
     tags:
-      - "v*"
+      - "@workflowbuilder/sdk@*"
   workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
 
 permissions:
@@ -62,10 +64,12 @@ jobs:
         run: pnpm --filter @workflowbuilder/sdk build:lib
 
       - name: Verify version matches tag
-        # Tag refs/tags/vX.Y.Z must match packages/sdk/package.json version.
-        # Catches push of wrong tag (typo, pushed before version-bump PR merged).
+        # Tag `@workflowbuilder/sdk@X.Y.Z` must match packages/sdk/package.json
+        # version. ${GITHUB_REF_NAME##*@} strips everything up to the last `@`,
+        # leaving X.Y.Z. Catches push of wrong tag (typo, pushed before the
+        # version-bump PR merged).
         run: |
-          TAG_VERSION="${GITHUB_REF_NAME#v}"
+          TAG_VERSION="${GITHUB_REF_NAME##*@}"
           PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
           if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
             echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
@@ -80,12 +84,29 @@ jobs:
         id: check-version
         run: |
           PKG_VERSION=$(node -p "require('./packages/sdk/package.json').version")
-          if npm view "@workflowbuilder/sdk@$PKG_VERSION" version 2>/dev/null; then
+          # E404 is npm's only answer that means "not there". Any other failure means npm could not be
+          # asked, and guessing "not published" would send the job into a doomed publish.
+          if OUT=$(npm view "@workflowbuilder/sdk@$PKG_VERSION" version 2>&1); then
             echo "already_published=true" >> "$GITHUB_OUTPUT"
             echo "::notice::@workflowbuilder/sdk@$PKG_VERSION already on npm — skipping publish step."
-          else
+          elif printf '%s' "$OUT" | grep -q 'E404'; then
             echo "already_published=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::npm could not be queried for @workflowbuilder/sdk@$PKG_VERSION: $OUT"
+            exit 1
           fi
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        # Before the publish on purpose: a missing or empty section fails here, while nothing has
+        # reached npm yet. release:tag applies the same rule (tools/release-shared.mjs).
+        run: |
+          NOTES=$(pnpm -s release:notes sdk)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
 
       - name: Publish to npm
         # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
@@ -98,26 +119,11 @@ jobs:
         if: steps.check-version.outputs.already_published == 'false'
         run: pnpm --filter @workflowbuilder/sdk publish --no-git-checks --access public --provenance
 
-      - name: Extract release notes from CHANGELOG
-        id: notes
-        # Pulls the section for the current version out of CHANGELOG.md
-        # so the GitHub Release body matches what consumers see on npm.
-        run: |
-          VERSION=$(node -p "require('./packages/sdk/package.json').version")
-          # Matches either a bracketed Keep-a-Changelog heading
-          # (`## [X.Y.Z] - 2026-06-16`) or a bare Changesets heading (`## X.Y.Z`).
-          NOTES=$(awk -v v="$VERSION" '$0 ~ ("^## \\[?" v "\\]?([ -]|$)"){flag=1;next}/^## /{flag=0}flag' packages/sdk/CHANGELOG.md)
-          {
-            echo "notes<<EOF"
-            echo "$NOTES"
-            echo "EOF"
-          } >> "$GITHUB_OUTPUT"
-
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
-          name: "@workflowbuilder/sdk ${{ github.ref_name }}"
+          name: ${{ github.ref_name }}
           body: ${{ steps.notes.outputs.notes }}
           draft: false
           prerelease: false

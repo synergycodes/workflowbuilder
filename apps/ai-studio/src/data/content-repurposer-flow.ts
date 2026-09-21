@@ -10,6 +10,7 @@ const diagram: DiagramModel = {
         position: { x: 0, y: 320 },
         data: {
           segments: [],
+          isStartNode: true,
           properties: {
             label: 'Source Content',
             description: 'One piece of long-form content to repurpose.',

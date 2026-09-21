@@ -1,0 +1,74 @@
+:root {
+  --ax-public-radio-border-color: var(--ax-ui-stroke-secondary-default);
+  --ax-public-radio-bg: var(--ax-ui-bg-primary-default);
+  --ax-public-radio-checked-bg: var(--ax-ui-bg-tertiary-selected);
+  --ax-public-radio-dot-color: var(--ax-colors-gray-100); /* missing token */
+
+  --ax-public-radio-focus-border-color: var(--ax-txt-primary-default);
+
+  --ax-public-radio-disabled-border-color: var(--ax-ui-stroke-secondary-default);
+  --ax-public-radio-disabled-bg: var(--ax-ui-bg-tertiary-default);
+  --ax-public-radio-disabled-dot-color: var(--ax-nav-button-icon-primary-disabled);
+  --ax-public-radio-border-radius: var(--ax-token-radius-radiobutton);
+}
+
+@layer ui.component {
+  .wrapper {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+  }
+
+  .radio {
+    appearance: none;
+    position: relative;
+    margin: 0;
+    border: 0.0625rem solid var(--ax-public-radio-border-color);
+    border-radius: var(--ax-public-radio-border-radius);
+    background-color: var(--ax-public-radio-bg);
+    cursor: pointer;
+    vertical-align: middle;
+    transition: all var(--ax-public-transition);
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: var(--ax-public-radio-dot-size-small);
+      height: var(--ax-public-radio-dot-size-small);
+      border-radius: 50%;
+      background-color: var(--ax-public-radio-dot-color);
+      opacity: 0;
+    }
+
+    &:checked {
+      border-color: var(--ax-public-radio-checked-bg);
+      background-color: var(--ax-public-radio-checked-bg);
+
+      &::after {
+        opacity: 1;
+      }
+    }
+
+    &:focus-visible {
+      outline: none;
+      box-shadow: 0 0 0 2px var(--ax-public-radio-focus-border-color);
+    }
+
+    &:disabled {
+      cursor: not-allowed;
+      background-color: var(--ax-public-radio-disabled-bg);
+      border-color: var(--ax-public-radio-disabled-border-color);
+
+      &:checked {
+        background-color: var(--ax-public-radio-disabled-bg);
+
+        &::after {
+          background-color: var(--ax-public-radio-disabled-dot-color);
+        }
+      }
+    }
+  }
+}

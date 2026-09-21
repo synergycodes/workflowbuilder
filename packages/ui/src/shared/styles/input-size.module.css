@@ -1,0 +1,33 @@
+:root {
+  --ax-public-input-padding-large: var(--ax-token-spacing-input-l-v-pad) var(--ax-token-spacing-input-l-h-pad);
+  --ax-public-input-padding-medium: var(--ax-token-spacing-input-m-v-pad) var(--ax-token-spacing-input-m-h-pad);
+  --ax-public-input-padding-small: var(--ax-token-spacing-input-s-v-pad) var(--ax-token-spacing-input-s-h-pad);
+
+  --ax-public-input-border-radius-large: var(--ax-token-radius-input-l);
+  --ax-public-input-border-radius-medium: var(--ax-token-radius-input-m);
+  --ax-public-input-border-radius-small: var(--ax-token-radius-input-s);
+
+  --ax-public-input-gap-large: var(--ax-token-spacing-input-l-gap);
+  --ax-public-input-gap-medium: var(--ax-token-spacing-input-m-gap);
+  --ax-public-input-gap-small: var(--ax-token-spacing-input-s-gap);
+}
+
+@layer ui.component {
+  .large {
+    padding: var(--ax-public-input-padding-large);
+    border-radius: var(--ax-public-input-border-radius-large);
+    gap: var(--ax-public-input-gap-large);
+  }
+
+  .medium {
+    padding: var(--ax-public-input-padding-medium);
+    border-radius: var(--ax-public-input-border-radius-medium);
+    gap: var(--ax-public-input-gap-medium);
+  }
+
+  .small {
+    padding: var(--ax-public-input-padding-small);
+    border-radius: var(--ax-public-input-border-radius-small);
+    gap: var(--ax-public-input-gap-small);
+  }
+}

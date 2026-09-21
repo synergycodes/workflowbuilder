@@ -1,4 +1,4 @@
-import { Button, SnackbarType } from '@synergycodes/overflow-ui';
+import { Button, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';

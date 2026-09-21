@@ -1,5 +1,5 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Input, Menu, NavButton } from '@synergycodes/overflow-ui';
+import { Input, Menu, NavButton } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 

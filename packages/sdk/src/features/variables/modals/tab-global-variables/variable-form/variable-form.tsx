@@ -1,4 +1,4 @@
-import { Input, Select, type SelectItem, TextArea } from '@synergycodes/overflow-ui';
+import { Input, Select, type SelectItem, TextArea } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';

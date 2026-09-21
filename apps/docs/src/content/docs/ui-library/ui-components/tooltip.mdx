@@ -1,0 +1,40 @@
+---
+title: Tooltip
+description: Informative text shown when users hover, focus, or tap an element.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { TooltipExample } from '../../../../components/ui-examples/tooltip';
+
+Tooltips display informative text when users hover over, focus on, or tap an
+element. The component is compound: a `Tooltip` wraps a `TooltipTrigger` (the
+anchor) and a `TooltipContent` (the popup), which supports a default and a blue
+color variant.
+
+<TooltipExample client:visible />
+
+## Usage
+
+```tsx
+import { Button, Tooltip, TooltipContent, TooltipTrigger } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Tooltip placement="top">
+      <TooltipTrigger asChild>
+        <Button variant="secondary">Hover for tooltip</Button>
+      </TooltipTrigger>
+      <TooltipContent tooltipType="default">Default tooltip</TooltipContent>
+    </Tooltip>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="tooltip" />
+
+## CSS variables
+
+<CssVariablesTable slug="tooltip" />

@@ -1,0 +1,61 @@
+# The bundled dev-grade Temporal cluster, plus the start-order edges that make the
+# apps wait for it. Compose merges this over docker-compose.yml automatically, so
+# a plain `docker compose up` runs everything locally. To use an operated cluster
+# or Temporal Cloud instead, set COMPOSE_FILE=docker-compose.yml in .env: this
+# file is then skipped, nothing here starts, and the apps depend only on app-db.
+
+services:
+  temporal-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: temporal
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: ${TEMPORAL_DB_PASSWORD:-temporal}
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD', 'pg_isready', '-U', 'temporal', '-d', 'temporal']
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+  # auto-setup is dev-grade; sustained load should move to Temporal Cloud or an
+  # operated cluster — the apps only consume TEMPORAL_ADDRESS
+  temporal:
+    image: temporalio/auto-setup:1.29.6.1
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    environment:
+      DB: postgres12
+      DB_PORT: 5432
+      POSTGRES_USER: temporal
+      POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
+      POSTGRES_SEEDS: temporal-db
+    restart: unless-stopped
+
+  # Inspects this bundled cluster only. An external cluster comes with its own UI.
+  temporal-ui:
+    image: temporalio/ui:2.51.0
+    profiles: [debug]
+    depends_on:
+      - temporal
+    environment:
+      TEMPORAL_ADDRESS: temporal:7233
+    ports:
+      - '127.0.0.1:8233:8080'
+    restart: unless-stopped
+
+  backend:
+    depends_on:
+      temporal:
+        condition: service_started
+
+  worker:
+    depends_on:
+      temporal:
+        condition: service_started
+
+volumes:
+  temporal-db-data:

@@ -3,7 +3,12 @@ packages:
   - './packages/*'
 
 catalog:
+  # Exact-pinned: the keep-mounted modal relies on Base UI's transition
+  # lifecycle, and this range ships to consumers. Bump = visual pass over
+  # overlay transitions.
+  '@base-ui/react': 1.7.0
   '@phosphor-icons/core': ^2.1.1
+  '@phosphor-icons/react': ^2.1.7
   '@xyflow/react': 12.10.0
   # Exact-pinned (no caret): React 19 hard-requires react and react-dom to be
   # the SAME version — a mismatch throws React error #527. A caret let `react`
@@ -11,7 +16,30 @@ catalog:
   'react': 19.1.0
   '@types/react': 19.1.8
   'react-dom': 19.1.0
+  # Must match react - bump together.
+  'react-is': 19.1.0
   'ajv': ^8.18.0
+  # Temporal SDK. @workflowbuilder/temporal declares every @temporalio/* package it uses as a
+  # peer on this range, so the repo keeps one version across the package and both reference
+  # apps. What we publish is the caret range; what we test is the exact version the lockfile
+  # resolves it to, so bumping this catalog entry is a deliberate change of the tested line.
+  # Bump together. packages/temporal must not list the peers its dist imports as devDependencies
+  # as well: pnpm would count the peer as satisfied by the devDependency and the `--prod` install
+  # in deploy/ai-studio/Dockerfile would then strip it, leaving the built dist with no
+  # @temporalio/* to import (CLAUDE.md, "Releasing"). @temporalio/worker is the exception: dist
+  # never imports it, so it stays a test-only devDependency next to its optional peer entry.
+  '@temporalio/activity': ^1.23.0
+  '@temporalio/client': ^1.23.0
+  '@temporalio/common': ^1.23.0
+  '@temporalio/plugin': ^1.23.0
+  '@temporalio/testing': ^1.23.0
+  '@temporalio/worker': ^1.23.0
+  '@temporalio/workflow': ^1.23.0
+  # AI SDK. The provider major is tied to the `ai` major — v2 speaks to `ai` v6,
+  # v3 to `ai` v7 — so the two only move together, and the backend and the worker
+  # have to agree or they build the same model against different request shapes.
+  'ai': ^6.0.168
+  '@ai-sdk/openai-compatible': ^2.0.74
 
 useNodeVersion: 22.12.0
 engineStrict: true

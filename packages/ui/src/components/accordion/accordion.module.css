@@ -1,0 +1,23 @@
+@layer ui.component {
+  .accordion {
+    display: flex;
+    flex-direction: column;
+
+    > hr {
+      margin: 1.25rem 0 0.25rem 0;
+      align-self: center;
+    }
+
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .inner-content {
+      padding: 12px 0;
+    }
+  }
+}

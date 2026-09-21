@@ -1,0 +1,62 @@
+---
+title: Switch
+description: A toggle between two states, such as on and off.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { IconSwitchExample, SwitchExample } from '../../../../components/ui-examples/switch';
+
+A `Switch` lets users toggle between two states, such as on and off. It is
+typically used for settings or preferences and gives immediate visual feedback.
+
+<SwitchExample client:visible />
+
+## Usage
+
+```tsx
+import { Switch } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <Switch checked={checked} onChange={(next) => setChecked(next)} />;
+}
+```
+
+## Props
+
+<PropsTable slug="switch" />
+
+## CSS variables
+
+<CssVariablesTable slug="switch" />
+
+## Icon switch
+
+`IconSwitch` is a `Switch` variant that swaps a track icon and a thumb icon
+based on the checked state, for representing on/off states with icons instead
+of a bare thumb.
+
+<IconSwitchExample client:visible />
+
+### Usage
+
+```tsx
+import { Moon, Sun } from '@phosphor-icons/react';
+import { IconSwitch } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+function Example() {
+  const [checked, setChecked] = useState(false);
+  return <IconSwitch checked={checked} icon={<Sun />} IconChecked={<Moon />} onChange={(next) => setChecked(next)} />;
+}
+```
+
+### Props
+
+<PropsTable slug="icon-switch" />
+
+### CSS variables
+
+<CssVariablesTable slug="icon-switch" />

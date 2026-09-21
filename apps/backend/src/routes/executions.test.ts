@@ -144,7 +144,7 @@ describe('createExecutionsRoutes - authorize is called with the right shape per 
     const app = buildApp(port);
 
     databaseMock.select.mockReturnValue(chainResolving([execution]));
-    databaseMock.update.mockReturnValue(chainResolving([]));
+    databaseMock.update.mockReturnValue(chainResolving([{ id: 'e-1' }]));
 
     await app.request(path, { method });
 
@@ -259,5 +259,136 @@ describe('createExecutionsRoutes - stream tenant cross-check', () => {
     const response = await app.request('/api/executions/e-1/stream');
 
     expect(response.status).toBe(200);
+  });
+});
+
+// ---- snapshot-window race ----------------------------------------------------
+//
+// The worker commits the terminal event and the terminal status as two separate
+// activities, so the route's executions-row read can lag its events read. The
+// stream must trust the last event, not the stale row: otherwise the snapshot
+// says "running", the drainer is seeded past the terminal row, no NOTIFY is
+// coming (updateStatus does not notify), and the connection heartbeats forever.
+
+function makeEventRow(sequence: number, type: string) {
+  return {
+    id: `ev-${sequence}`,
+    executionId: 'e-1',
+    sequence,
+    timestamp: new Date(0),
+    type,
+    nodeId: null,
+    pathId: null,
+    payloadJson: null,
+    tenantId: null,
+    createdAt: new Date(0),
+  };
+}
+
+function snapshotFrom(body: string): { status: string; lastSequence: number } {
+  const dataLine = body.split('\n').find((line) => line.startsWith('data:'));
+  return JSON.parse(dataLine!.slice('data:'.length)) as { status: string; lastSequence: number };
+}
+
+describe('createExecutionsRoutes - stream snapshot-window race', () => {
+  it('stale pending row with a committed terminal event - snapshot carries the derived status and the stream closes', async () => {
+    const app = buildApp(allowStream());
+    // Row read returns the stale pre-terminal status; the events read already
+    // contains the terminal event the worker committed in between.
+    databaseMock.select.mockReturnValueOnce(chainResolving([pendingExecution]));
+    databaseMock.select.mockReturnValue(
+      chainResolving([makeEventRow(1, 'execution_started'), makeEventRow(2, 'execution_completed')]),
+    );
+
+    const response = await app.request('/api/executions/e-1/stream');
+    // Pre-fix this text() never resolves: the handler holds the stream open on
+    // heartbeats forever, so a test timeout here is the regression signal.
+    const body = await response.text();
+
+    const snapshot = snapshotFrom(body);
+    expect(snapshot.status).toBe('completed');
+    expect(snapshot.lastSequence).toBe(2);
+    expect(subscribeMock).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    { type: 'execution_completed', status: 'completed' },
+    { type: 'execution_incomplete', status: 'incomplete' },
+    { type: 'execution_failed', status: 'failed' },
+    { type: 'execution_cancelled', status: 'cancelled' },
+  ])('a trailing $type derives snapshot status $status', async ({ type, status }) => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValueOnce(chainResolving([pendingExecution]));
+    databaseMock.select.mockReturnValue(chainResolving([makeEventRow(1, type)]));
+
+    const response = await app.request('/api/executions/e-1/stream');
+    const body = await response.text();
+
+    expect(snapshotFrom(body).status).toBe(status);
+    expect(subscribeMock).not.toHaveBeenCalled();
+  });
+
+  it('a non-terminal last event does not flip the status - the live path still drains to terminal', async () => {
+    const app = buildApp(allowStream());
+    subscribeMock.mockResolvedValue(() => {});
+    // Call order: executions row, snapshot events fetch, catch-up drain fetch.
+    databaseMock.select.mockReturnValueOnce(chainResolving([pendingExecution]));
+    databaseMock.select.mockReturnValueOnce(chainResolving([makeEventRow(1, 'execution_started')]));
+    databaseMock.select.mockReturnValue(chainResolving([makeEventRow(2, 'execution_completed')]));
+
+    const response = await app.request('/api/executions/e-1/stream');
+    const body = await response.text();
+
+    // Negative half: 'execution_started' must not read as terminal.
+    expect(snapshotFrom(body).status).toBe('pending');
+    // The catch-up drain still delivered the post-snapshot terminal event and
+    // ended the stream (drainer.done resolves the hold-open promise).
+    expect(body).toContain('execution_completed');
+    expect(subscribeMock).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---- cancel race -------------------------------------------------------------
+//
+// The pre-check 409 reads the row, but the enforcement is the UPDATE's WHERE:
+// a worker committing a terminal status between the two must not be overwritten
+// to 'cancelling' - nothing ever writes a run out of that status again.
+
+describe('createExecutionsRoutes - cancel enforcement in the UPDATE', () => {
+  it('DELETE races a terminal write - guarded UPDATE matches 0 rows, 409, engine untouched', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([pendingExecution]));
+    databaseMock.update.mockReturnValue(chainResolving([]));
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({
+      code: 'execution_not_cancellable',
+      message: 'Execution already finished',
+    });
+    expect(engineMock.cancel).not.toHaveBeenCalled();
+  });
+
+  it('DELETE wins the race - 200 cancelling and engine.cancel fires', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([pendingExecution]));
+    databaseMock.update.mockReturnValue(chainResolving([{ id: 'e-1' }]));
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id: 'e-1', status: 'cancelling' });
+    expect(engineMock.cancel).toHaveBeenCalledWith('e-1');
+  });
+
+  it('DELETE on a terminal row - 409 from the pre-check, no UPDATE issued', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([terminalExecution]));
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(response.status).toBe(409);
+    expect(databaseMock.update).not.toHaveBeenCalled();
   });
 });

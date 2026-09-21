@@ -1,4 +1,4 @@
-import { type EdgeState, useEdgeStyle } from '@synergycodes/overflow-ui';
+import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
 import { useStore } from '../../../../store/store';

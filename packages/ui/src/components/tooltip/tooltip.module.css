@@ -1,0 +1,35 @@
+:root {
+  --ax-public-tooltip-default-background: var(--ax-tooltip-bg-default);
+  --ax-public-tooltip-blue-background: var(--ax-tooltip-bg-blue);
+  --ax-public-tooltip-padding: var(--ax-token-spacing-tooltip-v-pad) var(--ax-token-spacing-tooltip-h-pad);
+  --ax-public-tooltip-radius-size: var(--ax-token-radius-tooltip);
+  --ax-public-tooltip-text-color: var(--ax-txt-tooltip-bw);
+  --ax-public-tooltip-blue-text-color: var(--ax-txt-tooltip-blue);
+}
+
+@layer ui.component {
+  .container {
+    --tooltip-background: var(--ax-public-tooltip-default-background);
+    --tooltip-text-color: var(--ax-public-tooltip-text-color);
+
+    padding: var(--ax-public-tooltip-padding);
+    border-radius: var(--ax-public-tooltip-radius-size);
+    width: max-content;
+    max-width: 33vw;
+    z-index: 100;
+    color: var(--tooltip-text-color);
+    background-color: var(--tooltip-background);
+  }
+
+  .container[data-tooltip-type='blue'] {
+    --tooltip-background: var(--ax-public-tooltip-blue-background);
+    --tooltip-text-color: var(--ax-public-tooltip-blue-text-color);
+  }
+
+  .arrow {
+    width: 10px;
+    height: 4px;
+    background-color: var(--tooltip-background);
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+  }
+}

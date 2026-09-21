@@ -32,7 +32,7 @@ export type NodeDefinition<T extends NodeSchema> = {
   /** describes the output properties this node produces, used by the variable picker */
   outputSchema?: NodeOutputSchema;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
-  Pick<NodeData, 'type' | 'icon' | 'templateType'>;
+  Pick<NodeData, 'type' | 'icon' | 'templateType' | 'isStartNode'>;
 
 /**
  * Per-node data attached to every {@link WorkflowBuilderNode}. The `properties`
@@ -48,6 +48,14 @@ export type NodeDefinition<T extends NodeSchema> = {
 export type NodeData<T = BaseNodeProperties & Record<string, unknown>> = {
   segments?: []; // TODO: Add segments back, it's a placeholder suggestion where to hold segments data
   templateType?: NodeType;
+  /**
+   * Marks this node as the workflow's entry point. Declared on the palette
+   * item ({@link NodeDefinition.isStartNode}) and copied into the node's
+   * `data` when it is dropped on the canvas; execution integrations read it
+   * to decide where a run begins. Rendering is unaffected — the visual
+   * template is still selected by `NodeDefinition.templateType`.
+   */
+  isStartNode?: boolean;
   properties: T;
   icon: IconType;
   type: string;

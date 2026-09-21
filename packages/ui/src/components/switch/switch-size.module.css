@@ -1,0 +1,97 @@
+/* public variables */
+:root {
+  --ax-public-switch-width-medium: 1.875rem;
+  --ax-public-switch-height-medium: 1.25rem;
+  --ax-public-switch-thumb-padding-medium: 0.1875rem;
+
+  --ax-public-switch-width-small: 1.75rem;
+  --ax-public-switch-height-small: 1.125rem;
+  --ax-public-switch-thumb-padding-small: 0.1875rem;
+
+  --ax-public-switch-width-extra-small: 1.625rem;
+  --ax-public-switch-height-extra-small: 1rem;
+  --ax-public-switch-thumb-padding-extra-small: 0.1875rem;
+}
+
+/* private calculations */
+:root {
+  --ax-switch-thumb-size-medium: calc(
+    var(--ax-public-switch-height-medium) - 2 * var(--ax-public-switch-thumb-padding-medium)
+  );
+
+  --ax-switch-thumb-size-small: calc(
+    var(--ax-public-switch-height-small) - 2 * var(--ax-public-switch-thumb-padding-small)
+  );
+
+  --ax-switch-thumb-size-extra-small: calc(
+    var(--ax-public-switch-height-extra-small) - 2 * var(--ax-public-switch-thumb-padding-extra-small)
+  );
+}
+
+@layer ui.base {
+  .medium {
+    width: var(--ax-public-switch-width-medium);
+    height: var(--ax-public-switch-height-medium);
+
+    & .thumb {
+      width: var(--ax-switch-thumb-size-medium);
+      height: var(--ax-switch-thumb-size-medium);
+      left: var(--ax-public-switch-thumb-padding-medium);
+    }
+
+    &[data-checked] {
+      .thumb {
+        transform: translateX(
+          calc(
+            var(--ax-public-switch-width-medium) - var(--ax-switch-thumb-size-medium) - 2 *
+              var(--ax-public-switch-thumb-padding-medium) - var(--ax-public-switch-border-size)
+          )
+        );
+      }
+    }
+  }
+
+  .small {
+    width: var(--ax-public-switch-width-small);
+    height: var(--ax-public-switch-height-small);
+
+    .thumb {
+      width: var(--ax-switch-thumb-size-small);
+      height: var(--ax-switch-thumb-size-small);
+      left: var(--ax-public-switch-thumb-padding-small);
+    }
+
+    &[data-checked] {
+      .thumb {
+        transform: translateX(
+          calc(
+            var(--ax-public-switch-width-small) - var(--ax-switch-thumb-size-small) - 2 *
+              var(--ax-public-switch-thumb-padding-small) - var(--ax-public-switch-border-size)
+          )
+        );
+      }
+    }
+  }
+
+  .extra-small {
+    width: var(--ax-public-switch-width-extra-small);
+    height: var(--ax-public-switch-height-extra-small);
+
+    .thumb {
+      width: var(--ax-switch-thumb-size-extra-small);
+      height: var(--ax-switch-thumb-size-extra-small);
+      left: var(--ax-public-switch-thumb-padding-extra-small);
+    }
+
+    &[data-checked] {
+      .thumb {
+        transform: translateX(
+          calc(
+            var(--ax-public-switch-width-extra-small) - var(--ax-switch-thumb-size-extra-small) - 2 *
+              var(--ax-public-switch-thumb-padding-extra-small) - var(--ax-public-switch-border-size)
+          )
+        );
+      }
+    }
+  }
+}

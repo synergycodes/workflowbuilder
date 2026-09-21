@@ -23,4 +23,4 @@ Provide the font yourself (via `@font-face`, `@fontsource/<font>`, etc.) — the
 
 ## Other tokens
 
-The SDK exposes a small surface of `--wb-*` variables (background, scrollbar, transitions) plus the larger `--ax-*` design-token set re-exported from `@synergycodes/overflow-ui`. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
+The SDK exposes a small surface of `--wb-*` variables (background, scrollbar, transitions) plus the larger `--ax-*` design-token set re-exported from `@workflowbuilder/ui`. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.

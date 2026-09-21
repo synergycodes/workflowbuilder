@@ -1,0 +1,33 @@
+---
+title: Nav Button
+description: A compact, type-safe navigation button with a selected state.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NavButtonExample } from '../../../../components/ui-examples/nav-button';
+
+`NavButton` is a compact, type-safe navigation button. Like `Button`, it
+automatically selects the correct type (label, icon, or icon + label) based on
+the structure of its `children`, and it adds an `isSelected` state for marking
+the active item.
+
+<NavButtonExample client:visible />
+
+## Usage
+
+```tsx
+import { NavButton } from '@workflowbuilder/ui';
+
+function Example() {
+  return <NavButton isSelected>Overview</NavButton>;
+}
+```
+
+## Props
+
+<PropsTable slug="nav-button" />
+
+## CSS variables
+
+<CssVariablesTable slug="nav-button" />

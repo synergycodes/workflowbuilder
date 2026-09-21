@@ -245,8 +245,8 @@ Today the runtime treats every non-empty resolution of `onDataSave` as "the save
 ```tsx
 import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
 
-const isValidConnection: WorkflowBuilderIsValidConnection = ({ sourceNode, targetNode }) =>
-  !(sourceNode.data.type === 'start' && targetNode.data.type === 'start');
+// A start node is the workflow entry point, so it can never be a connection target.
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 <WorkflowBuilder.Root isValidConnection={isValidConnection} />;
 ```

@@ -5,8 +5,8 @@
   height: 2.5rem;
 }
 
-.date-picker,
 .container--select {
+  position: relative;
   border-radius: var(--ax-public-input-border-radius-medium);
 
   > div > button {
@@ -15,27 +15,14 @@
   }
 }
 
+.date-picker {
+  border-radius: var(--ax-public-input-border-radius-medium);
+  min-height: 2.5rem;
+  text-align: left;
+}
+
 .date-with-reset-container {
   position: relative;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.reset-button {
-  position: absolute;
-  top: var(--ax-token-spacing-input-m-v-pad);
-  right: var(--ax-token-spacing-input-m-h-pad);
-  cursor: pointer;
-}
-
-.container--select {
-  position: relative;
-
-  > select {
-    min-height: 41px;
-  }
 }
 
 .adornment--select {

@@ -1,6 +1,6 @@
 // Library entry point for @workflowbuilder/sdk.
 // Built by packages/sdk/vite.config.mts into dist/ as a distributable npm package.
-// Bundles all required CSS (app + xyflow + overflow-ui) into style.css.
+// Bundles all required CSS (app + xyflow + @workflowbuilder/ui) into style.css.
 import './index.css';
 
 import './bootstrap';

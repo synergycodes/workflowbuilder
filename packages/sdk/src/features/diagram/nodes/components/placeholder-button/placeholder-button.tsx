@@ -1,5 +1,5 @@
 import { PlusCircle } from '@phosphor-icons/react';
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 
 import styles from './placeholder-button.module.css';
 

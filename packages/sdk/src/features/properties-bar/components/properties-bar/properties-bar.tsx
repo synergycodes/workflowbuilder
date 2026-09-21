@@ -1,4 +1,4 @@
-import { Button, SegmentPicker } from '@synergycodes/overflow-ui';
+import { Button, SegmentPicker } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
 import styles from './properties-bar.module.css';

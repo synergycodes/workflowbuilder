@@ -1,4 +1,4 @@
-import { Input } from '@synergycodes/overflow-ui';
+import { Input } from '@workflowbuilder/ui';
 import { useEffect, useState } from 'react';
 
 import styles from './edge-properties.module.css';
