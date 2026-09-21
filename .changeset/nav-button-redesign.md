@@ -3,7 +3,7 @@
 '@workflowbuilder/sdk': minor
 ---
 
-`NavButton` is rebuilt on the Design System 2.0 specification: it takes `size`, `variant` (`square`, `round`, `plain`), `prefixIcon`, `suffixIcon` and `children` instead of inferring a subtype from the children structure, and the selected state no longer shares a treatment with the pointer-down state. `MenuTriggerButton` is new.
+`NavButton` is rebuilt on the Design System 2.0 specification: it takes `size`, `variant` (`square`, `round`, `plain`), `prefixIcon`, `suffixIcon` and `children` instead of inferring a subtype from the children structure, and the selected state no longer shares a treatment with the pointer-down state. `Menu.TriggerButton` is new: an icon-only trigger that shows the pressed state while its `Menu` is open.
 
 Breaking changes:
 

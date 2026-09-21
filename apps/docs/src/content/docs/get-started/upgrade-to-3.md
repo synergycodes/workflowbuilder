@@ -253,7 +253,7 @@ and `children`. An icon passed as `children` is now rendered as label content, s
 shares a treatment with the pointer-down state.
 
 `SegmentPicker` keeps its API but adopts the new slots, so an icon passed as
-`SegmentPicker.Item` children must move to an explicit icon slot. `MenuTriggerButton` is new.
+`SegmentPicker.Item` children must move to an explicit icon slot. `Menu.TriggerButton` is new: an icon-only trigger that shows the pressed state while its `Menu` is open.
 
 ### Typography classes
 
