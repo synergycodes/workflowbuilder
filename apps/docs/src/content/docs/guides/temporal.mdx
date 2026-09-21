@@ -3,7 +3,6 @@ title: Using Workflow Builder with Temporal
 description: Run a workflow drawn on the canvas as a durable Temporal Workflow Execution — plugin setup in a worker, the runWorkflow re-export, and the path from a drawing to Event History.
 sidebar:
   order: 6
-draft: true
 ---
 
 A diagram authored on the canvas becomes one Temporal Workflow Execution. Each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal rather than from code you write. This guide builds that integration from an empty folder: a Temporal Worker running the [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal) plugin, then an editor whose Run button executes whatever is on the canvas.
@@ -52,14 +51,14 @@ mkdir worker editor shared
 ```bash
 cd worker
 npm init -y && npm pkg set type=module
-npm install @workflowbuilder/temporal @temporalio/worker @temporalio/client @temporalio/activity
+npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
 npm install -D tsx typescript @types/node
 ```
 
-The plugin depends on Temporal's client, workflow and plugin packages itself. `@temporalio/worker` stays yours, because it owns the process.
+Every `@temporalio/*` package is a peer dependency, so the version is yours to pick rather than the plugin's. `@temporalio/worker` is the only optional one: a backend that just starts and cancels runs never loads it.
 
 :::caution
-Keep every `@temporalio/*` package on one version line. The SDK packages are released together and reference each other across package boundaries, and the workflow sandbox in particular has to agree with the worker running it.
+Keep every `@temporalio/*` package on one version line. Temporal's packages pin each other exactly, and the activity context lives in module scope: a second copy of `@temporalio/activity` beside the worker's own makes `activityInfo()` come back empty at run time instead of failing at install.
 :::
 
 Add the scripts you will use:
