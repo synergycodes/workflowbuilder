@@ -62,6 +62,7 @@
   "peerDependencies": {
     "@temporalio/activity": "catalog:",
     "@temporalio/client": "catalog:",
+    "@temporalio/plugin": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:"
   },
@@ -91,8 +92,5 @@
   "engines": {
     "node": ">=20.3.0"
   },
-  "sideEffects": false,
-  "dependencies": {
-    "@temporalio/plugin": "catalog:"
-  }
+  "sideEffects": false
 }

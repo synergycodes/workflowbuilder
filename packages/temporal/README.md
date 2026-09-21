@@ -25,12 +25,12 @@ What it owns and what stays yours:
 ## Install
 
 ```bash
-npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow
+npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
 ```
 
-The `@temporalio/*` packages are peer dependencies, as in Temporal's own plugins, and **all of them have to be one version**. Temporal's packages pin each other exactly, and the activity context lives in module scope: a second copy of `@temporalio/activity` next to the worker's own makes `activityInfo()` come back empty at run time instead of failing at install. Listing the four explicitly, at the version your worker uses, is what keeps a package manager from resolving a newer one for this package alone. `@temporalio/plugin` is the one Temporal package this module brings along itself.
+The `@temporalio/*` packages are peer dependencies, as in Temporal's own plugins, and **all of them have to be one version**. Temporal's packages pin each other exactly, and the activity context lives in module scope: a second copy of `@temporalio/activity` next to the worker's own makes `activityInfo()` come back empty at run time instead of failing at install. Listing them explicitly, at the version your worker uses, is what keeps a package manager from resolving a newer one for this package alone.
 
-A backend that only starts and cancels runs needs `@temporalio/client` alone; `@temporalio/worker` is an optional peer for exactly that reason. This release is tested against the `1.23` line.
+A backend that only starts and cancels runs uses `@temporalio/client` at run time, but declare the other peers too, at the same version, so the package manager does not pick its own. `@temporalio/worker` is the one it may leave out, and it is an optional peer for exactly that reason. This release is tested against the `1.23` line.
 
 ## Worker
 

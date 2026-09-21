@@ -56,7 +56,9 @@ UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/t
 Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
 it by name, and describing it in the table above. The harness fails until the file exists.
 Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says otherwise;
-the last section covers when to set it.
+the last section covers when to set it. An existing file is never overwritten: the harness
+fails and names it, so a release recorded without the version variable does not rewrite
+the previous set. `REPLAY_HISTORY_OVERWRITE=1` is the explicit way to re-baseline.
 
 Or from a real run against a local stack, for a scenario the harness cannot stage.
 `historyToJSON` writes the same shape, so the two are interchangeable. Read the output
@@ -74,10 +76,11 @@ temporal workflow show --workflow-id execution-<id> --output json > histories/<v
    What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
-3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES` rewrites the
-   history from current code, so the cross-version check silently becomes a self-check.
-   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of
-   every scenario, never for making a red test green.
+3. Regenerating a file resets what it guards. Rewriting a history from current code turns
+   the cross-version check into a self-check, which is why the harness refuses to overwrite
+   without `REPLAY_HISTORY_OVERWRITE=1`. Record by scenario name when adding one; `=1` with
+   the overwrite flag is for a deliberate re-baseline of every scenario, never for making a
+   red test green.
 
 `v0-` names the pre-release baseline: histories from the code as it stood before the
 package published its first version. Every release records every scenario again under the

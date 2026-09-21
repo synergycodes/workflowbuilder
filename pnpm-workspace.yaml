@@ -19,9 +19,10 @@ catalog:
   # Must match react - bump together.
   'react-is': 19.1.0
   'ajv': ^8.18.0
-  # Temporal SDK. @workflowbuilder/temporal declares activity/client/workflow/worker as
-  # peers (plugin as a dependency) on this range, so the repo keeps one version across the
-  # package and both reference apps and the peer range we publish is what we test against.
+  # Temporal SDK. @workflowbuilder/temporal declares every @temporalio/* package it uses as a
+  # peer on this range, so the repo keeps one version across the package and both reference
+  # apps. What we publish is the caret range; what we test is the exact version the lockfile
+  # resolves it to, so bumping this catalog entry is a deliberate change of the tested line.
   # Bump together.
   '@temporalio/activity': ^1.23.0
   '@temporalio/client': ^1.23.0
