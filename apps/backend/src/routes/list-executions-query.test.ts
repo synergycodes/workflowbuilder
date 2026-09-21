@@ -35,7 +35,7 @@ describe('parseListExecutionsQuery', () => {
     expect(parseListExecutionsQuery({ limit })).toEqual({ ok: true, query: { limit: expected } });
   });
 
-  it.each(['0', '-1', 'abc', '1.5', ''])('limit=%j -> invalid_limit', (limit) => {
+  it.each(['0', '-1', 'abc', '1.5'])('limit=%j -> invalid_limit', (limit) => {
     expect(parseListExecutionsQuery({ limit })).toMatchObject({ ok: false, code: 'invalid_limit' });
   });
 
@@ -49,7 +49,7 @@ describe('parseListExecutionsQuery', () => {
     );
   });
 
-  it.each(['waitting', 'WAITING', '', 'constructor'])('status=%j -> invalid_status, never an empty list', (status) => {
+  it.each(['waitting', 'WAITING', 'constructor'])('status=%j -> invalid_status, never an empty list', (status) => {
     expect(parseListExecutionsQuery({ status })).toMatchObject({ ok: false, code: 'invalid_status' });
   });
 
@@ -57,12 +57,19 @@ describe('parseListExecutionsQuery', () => {
     expect(parseListExecutionsQuery({ workflowId })).toEqual({ ok: true, query: { limit: DEFAULT_LIMIT, workflowId } });
   });
 
-  it.each(['nope', '', '0b6e7d9c-4b1a-4c2e-9a3f'])(
+  it.each(['nope', '0b6e7d9c-4b1a-4c2e-9a3f'])(
     'workflowId=%j -> invalid_workflow_id, not a Postgres 22P02',
     (workflowId) => {
       expect(parseListExecutionsQuery({ workflowId })).toMatchObject({ ok: false, code: 'invalid_workflow_id' });
     },
   );
+
+  it('empty values are absent filters, not errors (an unset form field)', () => {
+    expect(parseListExecutionsQuery({ status: '', workflowId: '', limit: '', cursor: '' })).toEqual({
+      ok: true,
+      query: { limit: DEFAULT_LIMIT },
+    });
+  });
 
   it('a valid cursor is decoded into the query', () => {
     expect(parseListExecutionsQuery({ cursor: token })).toEqual({
@@ -96,6 +103,13 @@ describe('cursor', () => {
     { name: 'non-canonical timestamp (no millis)', cursor: base64url(`2026-09-18T10:00:00Z|${ID}`) },
     { name: 'non-canonical timestamp (offset)', cursor: base64url(`2026-09-18T12:00:00.123+02:00|${ID}`) },
     { name: 'id not a uuid', cursor: base64url(`${ISO}|e-1`) },
+    {
+      name: 'signed extended year (round-trips in JS, rejected by Postgres)',
+      cursor: base64url(`+010000-01-01T00:00:00.000Z|${ID}`),
+    },
+    { name: 'negative extended year', cursor: base64url(`-000001-01-01T00:00:00.000Z|${ID}`) },
+    { name: 'year zero', cursor: base64url(`0000-01-01T00:00:00.000Z|${ID}`) },
+    { name: 'before the epoch', cursor: base64url(`1969-12-31T23:59:59.999Z|${ID}`) },
     { name: 'a base64 character appended (decodes to a stray byte)', cursor: `${token}A` },
   ])('$name -> undefined', ({ cursor }) => {
     expect(decodeCursor(cursor)).toBeUndefined();
