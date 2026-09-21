@@ -2,8 +2,6 @@ import { MagnifyingGlass } from '@phosphor-icons/react';
 import { Input } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
-import styles from './form-fields.module.css';
-
 import { ComponentPreview } from './component-preview';
 
 export function InputExample() {
@@ -13,7 +11,7 @@ export function InputExample() {
 
   return (
     <ComponentPreview>
-      <div className={styles['example-stack']}>
+      <ComponentPreview.Stack>
         <Input
           size="l"
           label="Search"
@@ -44,7 +42,7 @@ export function InputExample() {
           onChange={(event) => setDisplayName(event.target.value)}
         />
         <Input label="Identifier" size="xs" state="read-only" value="Read-only value" />
-      </div>
+      </ComponentPreview.Stack>
     </ComponentPreview>
   );
 }

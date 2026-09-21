@@ -1,8 +1,6 @@
 import { Plus, X } from '@phosphor-icons/react';
 import { Button } from '@workflowbuilder/ui';
 
-import styles from './button.module.css';
-
 import { ComponentPreview } from './component-preview';
 
 const SOLID_VARIANTS = ['primary', 'secondary', 'critical', 'success'] as const;
@@ -11,27 +9,27 @@ const GHOST_VARIANTS = ['ghost-primary', 'ghost-secondary', 'ghost-critical', 'g
 export function ButtonExample() {
   return (
     <ComponentPreview>
-      <div className={styles['example']}>
-        <div className={styles['row']}>
+      <ComponentPreview.Stack>
+        <ComponentPreview.Row>
           {SOLID_VARIANTS.map((variant) => (
             <Button key={variant} variant={variant} size="m">
               {variant}
             </Button>
           ))}
-        </div>
-        <div className={styles['row']}>
+        </ComponentPreview.Row>
+        <ComponentPreview.Row>
           {GHOST_VARIANTS.map((variant) => (
             <Button key={variant} variant={variant} size="m">
               {variant}
             </Button>
           ))}
-        </div>
-        <div className={styles['row']}>
+        </ComponentPreview.Row>
+        <ComponentPreview.Row>
           <Button shape="square" prefixIcon={<Plus />} aria-label="Add" />
           <Button shape="round" prefixIcon={<X />} aria-label="Close" />
           <Button isLoading>Loading</Button>
-        </div>
-      </div>
+        </ComponentPreview.Row>
+      </ComponentPreview.Stack>
     </ComponentPreview>
   );
 }
