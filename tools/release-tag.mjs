@@ -15,10 +15,12 @@ import { createInterface } from 'node:readline/promises';
 
 import {
   ROOT,
-  changelogHasVersion,
+  changelogHasNotes,
   fail,
   fullName,
+  npmVersionState,
   parseCommandLine,
+  remoteRefSha,
   run,
   shortName,
   workspacePackages,
@@ -66,7 +68,7 @@ if (workspacePackage.private === true) fail(`${name} is private, so it is never 
 const { version } = JSON.parse(readFileSync(path.join(workspacePackage.path, 'package.json'), 'utf8'));
 const tag = `${name}@${version}`;
 const workflow = `.github/workflows/release-${short}.yml`;
-const changelog = path.join(workspacePackage.path, 'CHANGELOG.md');
+const changelog = path.relative(ROOT, path.join(workspacePackage.path, 'CHANGELOG.md')).split(path.sep).join('/');
 
 // ---------- Checks ----------
 
@@ -94,22 +96,18 @@ check(!tagExists, `tag ${tag} does not exist yet`, 'it already exists locally or
 
 check(existsSync(path.join(ROOT, workflow)), `${workflow} exists`, 'no workflow listens for this tag');
 
-const hasNotes = existsSync(changelog) && changelogHasVersion(readFileSync(changelog, 'utf8'), version);
-check(hasNotes, `CHANGELOG.md has a section for ${version}`, 'the GitHub Release would have no notes');
+// Read from the commit that will carry the tag, not from the disk: an untracked CHANGELOG passes
+// the clean-tree check above and would leave the tagged commit with no notes to publish.
+const changelogAtHead = git(['show', `HEAD:${changelog}`]);
+const hasNotes = changelogAtHead.status === 0 && changelogHasNotes(changelogAtHead.stdout, version);
+check(hasNotes, `${changelog} at HEAD has notes for ${version}`, 'no section, or a heading with nothing under it');
 
 // Informational only. The workflow is idempotent: a version already on npm (the hand-made
 // first publish, or a re-run) gets its GitHub Release and no second publish.
 // npm answers three ways: the version (published), nothing (package exists, version does not), or an
 // error. Only E404 in the error means "no such package"; anything else means npm could not be asked.
 const view = run('npm', ['view', tag, 'version']);
-const npmState =
-  view.status === 0
-    ? view.stdout.trim() === ''
-      ? 'absent'
-      : 'published'
-    : view.stderr.includes('E404')
-      ? 'absent'
-      : 'unknown';
+const npmState = npmVersionState(view);
 const onNpm = npmState === 'published';
 if (npmState === 'published')
   console.log(`ℹ️  ${tag} is already on npm: the workflow will skip publish and only create the GitHub Release.`);
@@ -154,12 +152,21 @@ if (landed.status !== 0) {
     `Could not read origin after the push (git push exit ${push.status}). Check the tag on GitHub before re-running; the local tag ${tag} is kept.`,
   );
 }
-if (landed.stdout.trim() === '') {
+const landedSha = remoteRefSha(landed.stdout);
+if (landedSha === undefined) {
   git(['tag', '-d', tag]);
   fail(`${tag} is not on origin (git push exit ${push.status}). Local tag removed; nothing published.`);
 }
+// On origin is not enough: between the pre-check and the push someone else may have pushed the same
+// name onto another commit. Then our push was rejected and it is their release that is running.
+if (landedSha !== head) {
+  fail(
+    `${tag} on origin points at ${landedSha.slice(0, 8)}, not at HEAD ${head.slice(0, 8)} (git push exit ${push.status}). ` +
+      `Someone else pushed this tag; nothing of yours was released. The local tag is kept: inspect it, then git tag -d ${tag}.`,
+  );
+}
 if (push.status !== 0)
-  console.log(`⚠️  git push reported an error, but ${tag} is on origin: the release workflow is running.`);
+  console.log(`⚠️  git push reported an error, but ${tag} is on origin at HEAD: the release workflow is running.`);
 
 console.log(`\n🚀 Pushed ${tag}.`);
 const remote = git(['remote', 'get-url', 'origin'])

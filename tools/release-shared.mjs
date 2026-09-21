@@ -1,5 +1,6 @@
-// Shared by release-version.mjs and release-tag.mjs. Nothing here is release logic,
-// only the plumbing both scripts need: stop with a message, run a command, name a package.
+// Shared by the release scripts (release-version, release-tag, release-notes): the plumbing all
+// of them need, plus the two rules the release workflows depend on: which CHANGELOG section
+// belongs to a version, and what an `npm view` answer means.
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import process from 'node:process';
@@ -43,12 +44,29 @@ export function parseCommandLine(options, usage) {
 export const fullName = (name) => (name.startsWith('@') ? name : SCOPE + name);
 export const shortName = (name) => (name.startsWith(SCOPE) ? name.slice(SCOPE.length) : name);
 
-// The GitHub Release body is the CHANGELOG section for the version, and release:tag refuses
-// without one. A heading counts when its version token, brackets stripped, equals the
-// version exactly: `## 1.2.3` and `## [1.2.3] - 2026-06-16` do, `## 1.2.3-beta.1` does not.
-// The awk in .github/workflows/release-*.yml applies the same rule.
-export function changelogHasVersion(markdown, version) {
-  return markdown.split('\n').some((line) => headingVersion(line) === version);
+// Every workspace package as pnpm sees it: name, version, path, private.
+export function workspacePackages() {
+  const { status, stdout, stderr } = run('pnpm', ['-r', 'ls', '--json', '--depth', '-1']);
+  if (status !== 0) fail(`pnpm -r ls failed:\n${stderr}`);
+  return JSON.parse(stdout);
+}
+
+// The GitHub Release body is the CHANGELOG section for the version: everything between the
+// heading whose version token, brackets stripped, equals the version exactly, and the next
+// `## ` heading. `## 1.2.3` and `## [1.2.3] - 2026-06-16` count, `## 1.2.3-beta.1` does not.
+// Undefined when there is no such heading; an empty string when the heading has no body.
+export function changelogSection(markdown, version) {
+  const lines = markdown.split('\n');
+  const start = lines.findIndex((line) => headingVersion(line) === version);
+  if (start === -1) return;
+  const rest = lines.slice(start + 1);
+  const end = rest.findIndex((line) => line.startsWith('## '));
+  return (end === -1 ? rest : rest.slice(0, end)).join('\n').trim();
+}
+
+// A release needs notes, so the heading alone does not count.
+export function changelogHasNotes(markdown, version) {
+  return (changelogSection(markdown, version) ?? '') !== '';
 }
 
 function headingVersion(line) {
@@ -57,9 +75,16 @@ function headingVersion(line) {
   return token.replace(/^\[/, '').replace(/\]$/, '');
 }
 
-// Every workspace package as pnpm sees it: name, version, path, private.
-export function workspacePackages() {
-  const { status, stdout, stderr } = run('pnpm', ['-r', 'ls', '--json', '--depth', '-1']);
-  if (status !== 0) fail(`pnpm -r ls failed:\n${stderr}`);
-  return JSON.parse(stdout);
+// What `npm view <pkg>@<version> version` said. E404 is npm's answer for both "no such package"
+// and "no such version"; any other failure means npm could not be asked, which is not "absent".
+export function npmVersionState({ status, stdout, stderr }) {
+  if (status === 0) return stdout.trim() === '' ? 'absent' : 'published';
+  return stderr.includes('E404') ? 'absent' : 'unknown';
+}
+
+// `git ls-remote --tags origin refs/tags/<tag>` prints `<sha>\trefs/tags/<tag>`. For a lightweight
+// tag the sha is the commit itself; an annotated tag would need `refs/tags/<tag>^{}` to get there.
+export function remoteRefSha(lsRemoteOutput) {
+  const line = lsRemoteOutput.trim().split('\n')[0] ?? '';
+  return line === '' ? undefined : line.split(/\s+/)[0];
 }

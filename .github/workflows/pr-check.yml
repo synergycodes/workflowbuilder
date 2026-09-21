@@ -15,6 +15,7 @@ on:
   pull_request:
     branches:
       - main
+      - release # the release PR is the last stop before a tag, so it gets the same checks
 
 permissions:
   contents: read
@@ -172,7 +173,14 @@ jobs:
           BASE="origin/${{ github.base_ref }}"
           CHANGED=$(git diff --name-only "$BASE...HEAD")
           ADDED_CHANGESETS=$(git diff --name-only --diff-filter=A "$BASE...HEAD" -- '.changeset/*.md')
-          added_changeset_for() { [ -n "$ADDED_CHANGESETS" ] && grep -lq -- "$1" $ADDED_CHANGESETS; }
+          # Only the front matter (between the two `---` lines) names packages; a package mentioned in
+          # the summary text does not count.
+          added_changeset_for() {
+            for file in $ADDED_CHANGESETS; do
+              awk 'NR==1 && /^---/ {f=1; next} f && /^---/ {exit} f' "$file" | grep -q -- "$1" && return 0
+            done
+            return 1
+          }
           if echo "$CHANGED" | grep -qE '^packages/(execution-core|types)/' && ! added_changeset_for '@workflowbuilder/temporal'; then
             echo "::warning title=Missing changeset::packages/execution-core or packages/types changed with no new changeset for @workflowbuilder/temporal. If the change affects execution behaviour or the published types, add one (/wb.changeset)."
           fi

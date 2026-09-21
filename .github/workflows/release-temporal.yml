@@ -96,31 +96,34 @@ jobs:
         id: check-version
         run: |
           PKG_VERSION=$(node -p "require('./packages/temporal/package.json').version")
-          if npm view "@workflowbuilder/temporal@$PKG_VERSION" version 2>/dev/null; then
+          # E404 is npm's only answer that means "not there". Any other failure means npm could not be
+          # asked, and guessing "not published" would send the job into a doomed publish.
+          if OUT=$(npm view "@workflowbuilder/temporal@$PKG_VERSION" version 2>&1); then
             echo "already_published=true" >> "$GITHUB_OUTPUT"
             echo "::notice::@workflowbuilder/temporal@$PKG_VERSION already on npm — skipping publish step."
-          else
+          elif printf '%s' "$OUT" | grep -q 'E404'; then
             echo "already_published=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::npm could not be queried for @workflowbuilder/temporal@$PKG_VERSION: $OUT"
+            exit 1
           fi
-
-      - name: Publish to npm
-        # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
-        if: steps.check-version.outputs.already_published == 'false'
-        run: pnpm --filter @workflowbuilder/temporal publish --no-git-checks --access public --provenance
 
       - name: Extract release notes from CHANGELOG
         id: notes
+        # Before the publish on purpose: a missing or empty section fails here, while nothing has
+        # reached npm yet. release:tag applies the same rule (tools/release-shared.mjs).
         run: |
-          VERSION=$(node -p "require('./packages/temporal/package.json').version")
-          # The heading's version token, brackets stripped, must equal $VERSION exactly:
-          # `## [X.Y.Z] - date` and `## X.Y.Z` match, `## X.Y.Z-beta.1` does not.
-          # tools/release-shared.mjs applies the same rule before the tag is pushed.
-          NOTES=$(awk -v v="$VERSION" '/^## /{h=$2; sub(/^\[/,"",h); sub(/\]$/,"",h); flag=(h==v); next} flag' packages/temporal/CHANGELOG.md)
+          NOTES=$(pnpm -s release:notes temporal)
           {
             echo "notes<<EOF"
             echo "$NOTES"
             echo "EOF"
           } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm
+        # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
+        if: steps.check-version.outputs.already_published == 'false'
+        run: pnpm --filter @workflowbuilder/temporal publish --no-git-checks --access public --provenance
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2

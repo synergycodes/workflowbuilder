@@ -58,6 +58,13 @@ if (!dryRun && !branch.startsWith('release-')) {
   fail(`You are on ${branch}. Cut a release branch first: git checkout -b release-${shortName(targets[0])}-X.Y.Z`);
 }
 
+// The release commit is `git add -A`, so anything already sitting in the tree would ride along.
+const dirty = run('git', ['status', '--porcelain', '--untracked-files=no']);
+if (dirty.status !== 0) fail('Could not read the working tree state.');
+if (!dryRun && dirty.stdout.trim() !== '') {
+  fail('Working tree has uncommitted changes. Commit or stash first: the release commit is `git add -A`.');
+}
+
 // What Changesets would do right now. `--output` is the only way to get that as JSON.
 const planFile = path.join(os.tmpdir(), `wb-release-plan-${process.pid}.json`);
 const status = changeset(['status', '--output', planFile]);
@@ -67,8 +74,12 @@ rmSync(planFile, { force: true });
 const releases = plan.releases.filter((r) => r.changesets.length > 0);
 const pendingFor = (name) => releases.find((r) => r.name === name);
 
-const idle = targets.filter((name) => !pendingFor(name));
-if (idle.length > 0) fail(`No pending changesets for ${idle.join(', ')}. Nothing to release.`);
+// A `none` changeset is legal and changes no version, so "has a changeset" is not "has a release".
+const idle = targets.filter((name) => {
+  const pending = pendingFor(name);
+  return !pending || pending.newVersion === pending.oldVersion;
+});
+if (idle.length > 0) fail(`No version-changing changesets for ${idle.join(', ')}. Nothing to release.`);
 
 // A changeset that names a released and a skipped package cannot be applied halfway. Changesets
 // refuses it only after the plan is printed, so refuse it here, with the file name.
@@ -127,6 +138,12 @@ if (changeset(['version', ...ignoreFlags], { stdio: 'inherit' }).status !== 0) {
 const released = targets.map((name) => {
   const directory = publishable.find((p) => p.name === name).path;
   const { version } = JSON.parse(readFileSync(path.join(directory, 'package.json'), 'utf8'));
+  const planned = pendingFor(name).newVersion;
+  if (version !== planned) {
+    fail(
+      `${name} is at ${version} after versioning, but the plan said ${planned}. Nothing is committed; inspect git diff.`,
+    );
+  }
   return { name, short: shortName(name), directory: path.relative(ROOT, directory), version };
 });
 const commitMessage =

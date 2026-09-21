@@ -62,7 +62,7 @@ release  ───────────────●───────�
    git push -u origin release
    ```
 
-   Branch protection (recommended once it stabilizes): require PR from `main` only, require status checks (typecheck + tests) before merge.
+   Branch protection (recommended once it stabilizes): require PR from `main` only, require status checks before merge (`pr-check.yml` runs on PRs into `release` as well as `main`).
 
 ## First release of a new package
 
@@ -142,7 +142,7 @@ The script prints what it will bump and what it will leave alone, then runs `cha
 - Deletes the consumed `.changeset/*.md` files. Changesets that name other packages stay where they are.
 - Leaves `pnpm-lock.yaml` alone: every internal dependency is `workspace:*`, which carries no version.
 
-It refuses to run anywhere but a `release-*` branch (the branch is hyphenated because the `release` branch occupies the `release/` ref namespace), when `<pkg>` is private or unknown, when `<pkg>` has no pending changeset, when a changeset names both a released and a skipped package (split it, or release both), and when a package `<pkg>` bundles has pending changesets of its own (today: the SDK bundles `@workflowbuilder/ui`; release both, or pass `--allow-unreleased-bundled` knowingly). To release two packages in one go, name both: `pnpm release:version sdk ui`.
+It refuses to run anywhere but a `release-*` branch (hyphenated because the `release` branch occupies the `release/` ref namespace), on a tree with uncommitted changes (the release commit is `git add -A`), when `<pkg>` is private or unknown, when `<pkg>` has no changeset that changes its version (a `none` changeset does not count), when a changeset names both a released and a skipped package (split it, or release both), and when a package `<pkg>` bundles has pending changesets of its own (today: the SDK bundles `@workflowbuilder/ui`; release both, or pass `--allow-unreleased-bundled` knowingly). After the bump it checks that the version on disk is the one the plan announced. `--dry-run` skips the branch and tree checks on purpose: that is how you look at the plan before cutting the branch. To release two packages in one go, name both: `pnpm release:version sdk ui`.
 
 **`@workflowbuilder/temporal` only.** Record the replay histories under the version the script just set, then check that everything, old and new, still replays:
 
@@ -193,14 +193,13 @@ becomes:
 - Re-measure node internals when `layoutDirection` changes.
 ```
 
-After reformatting, confirm the release-notes extraction is clean. The extractor in `.github/workflows/release-<pkg>.yml` takes the heading's version token, strips the brackets and requires an exact match, so `## [X.Y.Z] - date` and `## X.Y.Z` both count and `## X.Y.Z-beta.1` never passes for `X.Y.Z`. `release:tag` applies the same rule before it pushes. Run the extractor locally to see exactly what the GitHub Release body will contain:
+After reformatting, confirm the release notes:
 
 ```bash
-VERSION=$(node -p "require('./packages/<pkg>/package.json').version")
-awk -v v="$VERSION" '/^## /{h=$2; sub(/^\[/,"",h); sub(/\]$/,"",h); flag=(h==v); next} flag' packages/<pkg>/CHANGELOG.md
+pnpm release:notes <pkg>
 ```
 
-It should print the `### Added` / `### Fixed` bullets for this version and nothing else.
+It prints exactly what the GitHub Release body will contain, with the same code the release workflow runs, and fails when the section is missing or has nothing under its heading. The heading's version token, brackets stripped, must equal the version exactly, so `## [X.Y.Z] - date` and `## X.Y.Z` both count and `## X.Y.Z-beta.1` never passes for `X.Y.Z`. `release:tag` applies the same rule to the CHANGELOG committed at HEAD before it pushes. The output should be the `### Added` / `### Fixed` bullets for this version and nothing else.
 
 Then commit the version bump, reformatted CHANGELOG and changeset deletions (and, for `@workflowbuilder/temporal`, the recorded histories) together:
 
@@ -255,7 +254,7 @@ git checkout release && git pull
 pnpm release:tag <pkg>          # --dry-run to only see the checks
 ```
 
-The script refuses unless HEAD is the tip of `origin/release` with a clean tree, `packages/<pkg>/package.json` names a version that has a `## [X.Y.Z]` section in the CHANGELOG and no tag yet, and `.github/workflows/release-<pkg>.yml` exists. It tells you whether the version is already on npm (then the workflow only creates the GitHub Release), asks for confirmation, creates `@workflowbuilder/<pkg>@X.Y.Z` and pushes that one tag by name. The push runs with `--no-verify`, because the repo's `pre-push` hook formats the whole tree, and the script reads the tag back from origin before it reports anything. A release PR that bumped two packages gets two runs of the script; the tags sit on the same commit and trigger their own workflows in parallel.
+The script refuses unless HEAD is the tip of `origin/release` with a clean tree, `packages/<pkg>/package.json` names a version that has notes under a `## [X.Y.Z]` heading in the CHANGELOG committed at HEAD (an untracked file does not count) and no tag yet, and `.github/workflows/release-<pkg>.yml` exists. It tells you whether the version is already on npm (then the workflow only creates the GitHub Release), asks for confirmation, creates `@workflowbuilder/<pkg>@X.Y.Z` and pushes that one tag by name. The push runs with `--no-verify`, because the repo's `pre-push` hook formats the whole tree. Afterwards the script reads the tag back from origin and checks that it points at your HEAD before it reports anything: a tag of the same name that someone else pushed in the meantime is reported as theirs, not as your release. A release PR that bumped two packages gets two runs of the script; the tags sit on the same commit and trigger their own workflows in parallel.
 
 By hand, the equivalent is:
 
@@ -282,9 +281,10 @@ The workflow `.github/workflows/release-<pkg>.yml`:
 2. Runs lint + typecheck + test on the package (defensive — if any fails, no publish).
 3. Builds the package. `@workflowbuilder/temporal` additionally runs `publint` and `@arethetypeswrong/cli` on the packed tarball.
 4. Verifies the tag version matches `packages/<pkg>/package.json` (catches "pushed wrong tag").
-5. Checks if `@workflowbuilder/<pkg>@X.Y.Z` is already on npm (idempotency — re-pushing tag won't fail).
-6. Runs `pnpm publish --no-git-checks --access public --provenance`.
-7. Extracts the CHANGELOG section for this version and creates a GitHub Release with those notes.
+5. Checks if `@workflowbuilder/<pkg>@X.Y.Z` is already on npm (idempotency — re-pushing tag won't fail). Only npm's `E404` counts as "not there"; a registry that cannot be reached fails the run instead of sending it into a publish.
+6. Extracts the CHANGELOG section for this version (`pnpm release:notes <pkg>`). A missing or empty section stops the run here, before anything reaches npm.
+7. Runs `pnpm publish --no-git-checks --access public --provenance`.
+8. Creates a GitHub Release with those notes.
 
 Monitor at <https://github.com/synergycodes/workflowbuilder/actions>. If the workflow fails, see Troubleshooting below.
 
@@ -341,7 +341,7 @@ A published version cannot be overwritten on npm. Options when something went wr
 | Lint / typecheck / test step fails                                                  | Code that landed on release doesn't pass checks                                                                   | Fix on main via PR, redo the release PR, re-tag at the new HEAD                                                                                              |
 | Workflow says "already on npm — skipping publish"                                   | Re-pushed tag after successful publish, or the hand-made first publish                                            | Expected. No-op. CI still creates the GitHub Release.                                                                                                        |
 | Release PR bumps a package you did not name                                         | `changeset version` was run directly                                                                              | Redo the branch with `pnpm release:version <pkg>`                                                                                                            |
-| `release:version` says "no pending changesets"                                      | Nothing consumer-visible landed for that package since its last release                                           | Nothing to release. If a change is missing its changeset, add one on `main` first                                                                            |
+| `release:version` says "no version-changing changesets"                             | Nothing consumer-visible landed for that package since its last release                                           | Nothing to release. If a change is missing its changeset, add one on `main` first                                                                            |
 | `release:version` names a changeset file that "names X (releasing) and Y (staying)" | One changeset covers a released and a skipped package; Changesets cannot apply half of it                         | Split the file into one per package, or release both packages in this PR                                                                                     |
 | `release:version` says the SDK "compiles @workflowbuilder/ui into its dist"         | The UI has pending changesets that would ship inside the SDK with no changelog entry                              | Release both (`pnpm release:version sdk ui`), or pass `--allow-unreleased-bundled` if shipping them silently is the intent                                   |
 
