@@ -2,6 +2,7 @@ import { eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
+import type { Decision } from '@workflow-builder/types/workflow-execution/decision-request';
 import {
   type ExecutionStatus,
   TERMINAL_EXECUTION_STATUSES,
@@ -29,6 +30,8 @@ const NOT_DECIDABLE_STATUSES = new Set<string>([
   ...TERMINAL_EXECUTION_STATUSES,
   'cancelling' satisfies ExecutionStatus,
 ]);
+
+const HUMAN_INITIATOR = 'human';
 
 const decisionBodySchema = submittedDecisionSchema.extend({
   nodeId: z.string().min(1),
@@ -80,7 +83,8 @@ export function createDecisionRoutes(assertAuthorized: AssertAuthorized): Hono<B
     if (validated.error !== undefined) {
       return refuse(c, 'decision_invalid', { extra: { details: [validated.error] } });
     }
-    const { decision, action } = validated;
+    const { action } = validated;
+    const decision: Decision = { ...validated.decision, resolvedBy: HUMAN_INITIATOR };
 
     // Not atomic with delivery, and safe only because a node parks at most once per run.
     // A rerun re-parks it, and then the wait instance must reach the engine, which keys

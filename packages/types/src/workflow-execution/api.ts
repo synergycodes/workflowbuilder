@@ -52,6 +52,8 @@ export type GetExecutionResponse = {
   workflowId: string;
   sourceVersion: SourceVersion;
   status: ExecutionStatus;
+  outcome: string | null;
+  resolvedBy: string | null;
   startedAt: string | null;
   finishedAt: string | null;
   createdAt: string;

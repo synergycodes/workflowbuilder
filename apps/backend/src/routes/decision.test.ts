@@ -167,7 +167,12 @@ const waitingExecution = {
 };
 
 const approveBody = { nodeId: 'review-1', attempt: 1, action: 'approve', edits: { refundAmount: 120 } };
-const approvedDecision = { action: 'approve', effect: 'resume-with-edits', edits: { refundAmount: 120 } };
+const approvedDecision = {
+  action: 'approve',
+  effect: 'resume-with-edits',
+  edits: { refundAmount: 120 },
+  resolvedBy: 'human',
+};
 
 beforeEach(() => {
   vi.clearAllMocks();
@@ -429,7 +434,7 @@ describe('POST /api/executions/:id/decision - the wait instance', () => {
     expect(response.status).toBe(200);
     expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
     expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-2', {
-      output: { action: 'approve', effect: 'resume', edits: {} },
+      output: { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' },
       nextPort: 'approved',
     });
   });
@@ -499,7 +504,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     });
   });
 
-  it('a reject with no reason, none required, resumes on the reject port', async () => {
+  it('a reject with no reason, none required, routes on the reject port and declares the rejection outcome', async () => {
     program(waitingExecution);
 
     const response = await decide(buildApp(allowAll()), { nodeId: 'review-1', attempt: 1, action: 'reject' });
@@ -508,9 +513,28 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     const body = await bodyOf(response);
     expect(body.effect).toBe('reject');
     expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-1', {
-      output: { action: 'reject', effect: 'reject', edits: {} },
+      output: { action: 'reject', effect: 'reject', edits: {}, resolvedBy: 'human' },
       nextPort: 'rejected',
+      outcome: { value: 'rejected', resolvedBy: 'human' },
     });
+  });
+
+  it('stamps the initiator itself: a body claiming one is stripped, and an approve declares no outcome', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { ...approveBody, resolvedBy: 'timer' });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      executionId: 'e-1',
+      nodeId: 'review-1',
+      attempt: 1,
+      action: 'approve',
+      effect: 'resume-with-edits',
+    });
+    const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[2];
+    expect(completion).toEqual({ output: approvedDecision, nextPort: 'approved' });
+    expect(completion).not.toHaveProperty('outcome');
   });
 
   it.each<{ code: ResolveNodeRejection; status: number; answer: string }>([
