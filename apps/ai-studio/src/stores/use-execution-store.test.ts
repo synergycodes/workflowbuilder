@@ -7,6 +7,7 @@ import {
   type TerminalExecutionEventType,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
+import { executionEvent as event, lastSequence } from './execution-event.fixture';
 import {
   applyEvent,
   applySnapshot,
@@ -14,16 +15,6 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from './use-execution-store';
-
-let sequence = 0;
-
-// `Omit` over the union keeps only the shared keys, so `nodeId` has to be admitted by hand.
-function event(
-  partial: Omit<ExecutionEvent, 'executionId' | 'sequence' | 'timestamp'> & { nodeId?: string },
-): ExecutionEvent {
-  sequence += 1;
-  return { executionId: 'exec-1', sequence, timestamp: '2026-09-15T12:00:00.000Z', ...partial } as ExecutionEvent;
-}
 
 const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
 
@@ -40,7 +31,6 @@ const terminalCases = Object.entries(TERMINAL_EVENT_TO_STATUS) as [TerminalExecu
 
 describe('use-execution-store: a node waiting for a person', () => {
   beforeEach(() => {
-    sequence = 0;
     resetExecution();
     setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
   });
@@ -107,7 +97,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_waiting', nodeId: 'human-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('waiting');
   });
@@ -120,7 +110,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_started', nodeId: 'send-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('running');
   });
@@ -144,7 +134,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_waiting', nodeId: 'human-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
 
     const state = useExecutionStore.getState();
     expect(state.status).toBe('waiting');
@@ -178,7 +168,7 @@ describe('use-execution-store: a node waiting for a person', () => {
         terminalEvent(type),
       ];
 
-      applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: sequence, events });
+      applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
 
       expect(useExecutionStore.getState().status).toBe(status);
     },
