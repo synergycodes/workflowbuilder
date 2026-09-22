@@ -28,17 +28,13 @@ export type { BaseNode } from '../../../types/src/workflow-execution/execution-m
 export type {
   ExecutionEventType,
   ExecutionOutcome,
+  ExecutionOutcomeRecord,
   ExecutionStatus,
 } from '../../../types/src/workflow-execution/execution-events';
 
-// Restated here rather than re-exported from execution-core's port module, which
-// reaches for @workflow-builder/types by package name — that name survives into the
-// emitted .d.ts and breaks types for consumers, since the package is not published.
-// Restating it in terms of the relatively-imported types keeps dist self-contained.
-// `test/core-contract.test.ts` fails to compile if this ever drifts from the core.
-// The rule is reachability: no type an entry point exports may name that package. The core
-// re-exports above (`RunGraphOutcome`, `ActivityRunnerPort`) do name it and stay safe only
-// while no entry exports them. Nothing checks dist for it yet (follow-up: temporal-dist-dts-guard).
+// Restated, not re-exported: the core names `@workflow-builder/types`, a package never published,
+// and that name would survive into the emitted .d.ts. Every type reachable from an entry point is
+// restated; `test/core-contract.test.ts` pins drift, nothing checks dist yet (follow-up: temporal-dist-dts-guard).
 export type WorkflowExecutionInput<TNode extends BaseNode> = {
   workflowId: string;
   executionId: string;

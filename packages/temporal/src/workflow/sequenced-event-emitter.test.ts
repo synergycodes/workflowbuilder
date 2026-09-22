@@ -272,6 +272,5 @@ describe('createSequencedEventEmitter', () => {
       ['event', 'execution_completed', 1],
       ['status', 'exec-1', 'completed', undefined, outcome],
     ]);
-    expect(order[1]?.[4]).toBe(outcome);
   });
 });

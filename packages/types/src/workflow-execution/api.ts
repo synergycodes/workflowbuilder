@@ -52,6 +52,7 @@ export type GetExecutionResponse = {
   workflowId: string;
   sourceVersion: SourceVersion;
   status: ExecutionStatus;
+  /** The row's columns: `outcome` is `ExecutionOutcome.value`; the declaring node is only in the `execution_completed` payload. */
   outcome: string | null;
   resolvedBy: string | null;
   startedAt: string | null;

@@ -105,7 +105,6 @@ describe('createActivities', () => {
 
     await activities.updateStatus('exec-1', 'failed', 'boom');
 
-    // Four arguments always: the outcome slot travels as undefined when there is none.
     expect(store.statuses).toEqual([['exec-1', 'failed', 'boom', undefined]]);
   });
 

@@ -42,6 +42,7 @@ export type {
   CompletedNodeExecution,
   ExecutionEventType,
   ExecutionOutcome,
+  ExecutionOutcomeRecord,
   ExecutionStatus,
   NodeExecutionResult,
   ResolveNodeRejection,

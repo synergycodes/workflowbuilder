@@ -100,13 +100,13 @@ export function createDecisionRoutes(assertAuthorized: AssertAuthorized): Hono<B
 
     const result = await getWorkflowEngine().resolveNode(resolvedId, nodeId, toNodeResolution(decision, action));
     if (result.error !== undefined) {
-      const outcome = ENGINE_REFUSALS[result.error.code];
-      if (outcome === 'fault') {
+      const refusal = ENGINE_REFUSALS[result.error.code];
+      if (refusal === 'fault') {
         throw new Error(
           `engine refused the completion for node '${nodeId}': ${result.error.code}: ${result.error.message}`,
         );
       }
-      return refuse(c, outcome, { value: nodeId });
+      return refuse(c, refusal, { value: nodeId });
     }
 
     logger.info('decision delivered', {

@@ -23,5 +23,5 @@
 - _21.05.2026 (proposed; landed 03.06.2026 in `fa5999dd`)_: [TenantContextPort — multi-tenant identity seam for the reference backend](./apps/backend/tenant-context-port.decision-log.md)
 - _07.08.2026_: [Keep the postcss box-sizing plugin over lint-based or selector-based alternatives](./packages/ui/postcss-box-sizing.decision-log.md)
 - _24.08.2026_: [`incomplete` as a third terminal state, distinct from `failed` and from a stall](./packages/execution-core/terminal-states.decision-log.md)
-- _07.09.2026 (shape), 08.09.2026 (names)_: [Decision request as versioned data on a node](./apps/backend/decision-request.decision-log.md)
-- _08.09.2026_: [Durable pause, the Temporal side of the human-in-the-loop seam](./packages/temporal/src/workflow/durable-pause.decision-log.md)
+- _07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome)_: [Decision request as versioned data on a node](./apps/backend/decision-request.decision-log.md)
+- _08.09.2026 (pause), 21.09.2026 (outcome)_: [Durable pause, the Temporal side of the human-in-the-loop seam](./packages/temporal/src/workflow/durable-pause.decision-log.md)

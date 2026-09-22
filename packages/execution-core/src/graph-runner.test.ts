@@ -1582,7 +1582,7 @@ describe('runGraph: outcomes', () => {
     expect(skipsFrom(events.events)).toEqual([{ nodeId: 'B', reason: 'branch_not_taken' }]);
   });
 
-  it('a run without an outcome emits and writes exactly what it did before', async () => {
+  it('a run without an outcome closes completed with no outcome in the event or the status write', async () => {
     const runner = makeRunner();
     const events = makeEvents();
 
@@ -1673,6 +1673,7 @@ describe('runGraph: outcomes', () => {
     ['a bare string', 'rejected'],
     ['a missing resolvedBy', { value: 'rejected' }],
     ['a blank resolvedBy', { value: 'rejected', resolvedBy: '' }],
+    ['whitespace-only strings', { value: ' ', resolvedBy: '\t\n' }],
   ])('a shapeless outcome smuggled through unvalidated config is no outcome: %s', async (_shape, smuggled) => {
     const runner = makeRunner({
       D: { output: 'no', nextPort: 'rejected', outcome: smuggled as ExecutionOutcome },

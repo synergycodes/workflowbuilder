@@ -1,10 +1,5 @@
-// Guards the types src/workflow/core-contract.ts restates instead of re-exporting (see
-// the comment there). They are the shape the reference backend hands to Temporal and
-// the graph runner consumes, so a drift between this package and execution-core would
-// be a runtime mismatch that no other test would catch. Assignability is checked in
-// both directions, so a required member added or removed on either side fails to
-// compile. An optional member or parameter slips through that check, so every restated
-// object also has a `keyof` pin and every method a `Parameters` pin.
+// Pins the types src/workflow/core-contract.ts restates against execution-core, so a drift
+// between the two fails to compile instead of surfacing as a runtime mismatch.
 import { describe, expect, it } from 'vitest';
 
 import type {
@@ -52,6 +47,13 @@ const registryMatchesCore: MutuallyAssignable<
 > = true;
 
 const emitterMatchesCore: MutuallyAssignable<EventEmitterPort, CoreEventEmitterPort> = true;
+
+// Optional members slip through assignability in both directions; the key sets do not.
+const enginePortKeysMatchCore: MutuallyAssignable<
+  keyof WorkflowEnginePort<BaseNode>,
+  keyof CoreWorkflowEnginePort<BaseNode>
+> = true;
+const emitterKeysMatchCore: MutuallyAssignable<keyof EventEmitterPort, keyof CoreEventEmitterPort> = true;
 
 // Optional trailing parameters are mutually assignable whatever their count, so the pin
 // above cannot see one added on one side only; the parameter tuples can.
@@ -103,6 +105,8 @@ describe('published contract vs execution-core', () => {
         executorMatchesCore &&
         registryMatchesCore &&
         emitterMatchesCore &&
+        enginePortKeysMatchCore &&
+        emitterKeysMatchCore &&
         emitterStatusParamsMatchCore &&
         emitterEmitParamsMatchCore &&
         enginePortParamsMatchCore &&

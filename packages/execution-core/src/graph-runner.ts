@@ -142,11 +142,9 @@ export async function runGraph<TNode extends BaseNode>(
       state.status.set(result.node.id, 'completed');
       const deadEnd = propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
       const declared = declaredOutcome(result.outcome);
+      // A declared result makes an unrouted port a deliberate end, so no dead end is recorded.
       if (declared) {
-        // A declared result makes an unrouted port a deliberate end, so no dead end is recorded.
-        if (outcome === undefined) {
-          outcome = { value: declared.value, resolvedBy: declared.resolvedBy, nodeId: result.node.id };
-        }
+        outcome ??= { ...declared, nodeId: result.node.id };
       } else if (deadEnd) {
         deadEnds.push(deadEnd);
       }
@@ -414,14 +412,16 @@ function resolveErrorPolicy(node: BaseNode): NodeErrorPolicy {
   return node.errorPolicy ?? 'fail';
 }
 
-// Shape only, never the value: a shapeless outcome from unvalidated config counts as none, so
-// it cannot hide a dead end behind an empty result.
-function declaredOutcome(candidate: ExecutionOutcome | undefined): ExecutionOutcome | undefined {
+// Shape only, never the meaning: a shapeless or blank outcome from unvalidated config counts as
+// none, so it cannot hide a dead end behind an empty result.
+function declaredOutcome(candidate: unknown): ExecutionOutcome | undefined {
   if (typeof candidate !== 'object' || candidate === null) return undefined;
-  const { value, resolvedBy } = candidate;
-  const wellFormed =
-    typeof value === 'string' && value.length > 0 && typeof resolvedBy === 'string' && resolvedBy.length > 0;
-  return wellFormed ? candidate : undefined;
+  const { value, resolvedBy } = candidate as Partial<Record<keyof ExecutionOutcome, unknown>>;
+  return isFilled(value) && isFilled(resolvedBy) ? { value, resolvedBy } : undefined;
+}
+
+function isFilled(text: unknown): text is string {
+  return typeof text === 'string' && text.trim().length > 0;
 }
 
 // Edge liveness rules:

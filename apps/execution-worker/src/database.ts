@@ -64,8 +64,8 @@ export const database = {
         started_at = CASE WHEN ${status} = 'running' AND started_at IS NULL THEN now() ELSE started_at END,
         finished_at = CASE WHEN ${isTerminal} THEN now() ELSE finished_at END,
         error_message = ${errorMessage ?? null},
-        outcome = ${outcome?.value ?? null},
-        resolved_by = ${outcome?.resolvedBy ?? null},
+        outcome = COALESCE(${outcome?.value ?? null}, outcome),
+        resolved_by = COALESCE(${outcome?.resolvedBy ?? null}, resolved_by),
         updated_at = now()
       WHERE id = ${executionId}
         AND status NOT IN ${sql([...TERMINAL_EXECUTION_STATUSES])}

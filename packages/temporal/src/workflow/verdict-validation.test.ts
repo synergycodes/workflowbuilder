@@ -42,8 +42,14 @@ describe('validateVerdict', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: { outcome: 'x' } } })).toBeUndefined();
   });
 
-  it('accepts whitespace-only outcome strings: blankness is domain validation, not shape', () => {
-    expect(rejection({ nodeId: 'gate', resolution: { outcome: { value: ' ', resolvedBy: ' ' } } })).toBeUndefined();
+  it('refuses whitespace-only outcome strings: a blank value is no value', () => {
+    expect(() =>
+      validateVerdict(
+        { nodeId: 'gate', resolution: { outcome: { value: ' ', resolvedBy: ' ' } } },
+        KNOWN_NODES,
+        GATE_WAITING,
+      ),
+    ).toThrow(VERDICT_REJECTION_MESSAGES.outcome_invalid.message);
   });
 
   it('accepts the envelope as the default payload converter delivers it, with output: undefined dropped', () => {

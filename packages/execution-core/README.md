@@ -187,7 +187,7 @@ A run is **incomplete** when a node returned a non-empty `nextPort` and no outgo
 
 It is deliberately **not** a failure. Nothing threw, so the engine closes the run normally — the Temporal adapter returns rather than raising an `ApplicationFailure`, and the Workflow Execution shows as Completed. What changes is the run's own status, so an operator can tell "the graph ran" from "the graph ran everything it was supposed to".
 
-| Shape                                                          | Outcome                                                                                           |
+| Shape                                                          | Run status                                                                                        |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
 | A decision routes to a handle no edge carries                  | **incomplete**                                                                                    |
 | A completion carrying an `outcome` routes to an unwired handle | completed, the first such outcome recorded, successors `node_skipped` — see [Outcomes](#outcomes) |
@@ -206,11 +206,11 @@ Failure always wins. An unhandled node failure returns before the terminal check
 
 ## Outcomes
 
-A completion may declare the run's business result: `outcome: { value, resolvedBy }`, both open strings. The runner reads it for presence only; meaning is the application's. The reference backend writes `{ value: 'rejected', resolvedBy: 'human' }` when a person rejects at a decision node.
+A completion may declare the run's business result: `outcome: { value, resolvedBy }`, both open strings. The runner checks its shape only; meaning is the application's. The reference backend writes `{ value: 'rejected', resolvedBy: 'human' }` when a person rejects at a decision node.
 
-`nextPort` says where the graph goes, `outcome` says what the run means, and the two are independent. A completion with an outcome may leave its port unrouted on purpose: no dead end, the successors are skipped, run `completed`. With the edge drawn the graph continues and the outcome is recorded all the same. A run keeps the first outcome declared, in scheduling order (wave by wave, then the predecessor's edge order); `failed` and `incomplete` still win over `completed` and drop it.
+`nextPort` says where the graph goes, `outcome` says what the run means, and the two are independent. A completion with an outcome may leave its port unrouted on purpose: no dead end, the successors are skipped, run `completed`. With the edge drawn the graph continues and the outcome is recorded all the same. A run keeps the first outcome declared, in scheduling order (wave by wave, then the predecessor's edge order); `failed` and `incomplete` still win over `completed` and drop it. Every declaration makes its own unrouted port a deliberate end, but only the first is recorded, so a later one leaves no trace in the result or in `deadEnds`.
 
-On `completed`, `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }` and `updateStatus` receives `{ value, resolvedBy }` as its fourth argument; without an outcome nothing changes. The runner checks the shape only: an object with non-empty `value` and `resolvedBy`. Anything else counts as no outcome, so a shapeless one cannot hide a dead end; for verdicts the Temporal adapter's validator refuses it earlier.
+On `completed`, `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }` and `updateStatus` receives `{ value, resolvedBy }` as its fourth argument; without an outcome nothing changes. The runner checks the shape only: an object whose `value` and `resolvedBy` are non-blank strings, other keys ignored. Anything else counts as no outcome, so a shapeless one cannot hide a dead end. The Temporal adapter's validator is stricter at the update boundary: it refuses an outcome carrying any other key, as it refuses every unknown key of the envelope.
 
 ## Recorded step inputs and payload redaction
 

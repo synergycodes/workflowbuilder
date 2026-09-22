@@ -84,5 +84,9 @@ function isOutcome(candidate: unknown): boolean {
   const keys = Object.keys(candidate);
   if (keys.length !== 2 || !keys.includes('value') || !keys.includes('resolvedBy')) return false;
   const { value, resolvedBy } = candidate as { value: unknown; resolvedBy: unknown };
-  return typeof value === 'string' && value.length > 0 && typeof resolvedBy === 'string' && resolvedBy.length > 0;
+  return isFilled(value) && isFilled(resolvedBy);
+}
+
+function isFilled(text: unknown): text is string {
+  return typeof text === 'string' && text.trim().length > 0;
 }

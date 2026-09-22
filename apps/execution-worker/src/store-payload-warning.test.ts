@@ -67,6 +67,5 @@ describe('withPayloadSizeWarning', () => {
       ['exec-1', 'failed', 'boom', undefined],
       ['exec-1', 'completed', undefined, outcome],
     ]);
-    expect(store.updateExecutionStatus.mock.calls[1]?.[3]).toBe(outcome);
   });
 });

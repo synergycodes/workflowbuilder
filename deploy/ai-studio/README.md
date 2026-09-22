@@ -102,6 +102,13 @@ the Temporal UI (`--profile debug`), or accept that any still running will
 fail. Deploys that leave the emit sequence alone are unaffected. See
 [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
+**A release that widens what the worker accepts from the backend** (a new key on a
+decision, as `outcome` was) wants the reverse: workers before the backend. This stack
+cannot express it, since the backend is the migrator and the worker waits for it to be
+healthy, so `docker compose up -d --build` recreates the backend first. Until the worker
+is recreated, seconds later, a rejection answers 500. Accepted for the reference
+deployment; the worker README ("Temporal specifics") has the reasoning.
+
 ## Known limitations (accepted for the lean MVP)
 
 - **No login.** The API is open (`WB_AUTH_PORT=allow-all`); anyone with the

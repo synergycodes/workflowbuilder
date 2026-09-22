@@ -25,6 +25,7 @@ export type {
   ExecutionContext,
   ExecutionEventType,
   ExecutionOutcome,
+  ExecutionOutcomeRecord,
   ExecutionStatus,
   LogBindings,
   LoggerPort,
