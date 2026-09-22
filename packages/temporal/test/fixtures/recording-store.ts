@@ -1,8 +1,8 @@
-import type { ExecutionStore } from '../../src/index';
+import type { ExecutionOutcome, ExecutionStore } from '../../src/index';
 
 export type RecordingStore = ExecutionStore & {
   events: { sequence: number; type: string; nodeId?: string; payload?: unknown }[];
-  statuses: { status: string; errorMessage?: string }[];
+  statuses: { status: string; errorMessage?: string; outcome?: ExecutionOutcome }[];
 };
 
 export function createRecordingStore(): RecordingStore {
@@ -15,8 +15,8 @@ export function createRecordingStore(): RecordingStore {
     async emitExecutionEvent(_executionId, sequence, type, payload, nodeId) {
       events.push({ sequence, type, nodeId, payload });
     },
-    async updateExecutionStatus(_executionId, status, errorMessage) {
-      statuses.push({ status, errorMessage });
+    async updateExecutionStatus(_executionId, status, errorMessage, outcome) {
+      statuses.push({ status, errorMessage, outcome });
     },
   };
 }

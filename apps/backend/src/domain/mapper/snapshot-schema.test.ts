@@ -162,6 +162,24 @@ describe('workflowSnapshotSchema: decision requests', () => {
     ]);
   });
 
+  it('accepts a request whose reject port has no edge: publish never requires a rejection path', () => {
+    const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected' };
+    const snapshot = {
+      nodes: [
+        node('src'),
+        decisionNode('review', { actions: [{ ...approve, port: 'approved' }, reject] }),
+        node('next'),
+      ],
+      edges: [edge('src', 'review'), edge('review', 'next', 'approved')],
+    };
+
+    expect(issuePaths(snapshot)).toEqual([]);
+    const definition = mapToExecutionModel('wf-1', workflowSnapshotSchema.parse(snapshot));
+    expect(definition.edges.filter((candidate) => candidate.sourceNodeId === 'review')).toEqual([
+      expect.objectContaining({ targetNodeId: 'next', sourceHandle: 'approved' }),
+    ]);
+  });
+
   it('leaves the properties of a node without a request untouched', () => {
     const properties = { label: 'Plain', decisionBranches: [{ x: 1 }], meta: { deep: { nested: true } } };
 

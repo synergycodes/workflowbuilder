@@ -249,4 +249,28 @@ describe('createSequencedEventEmitter', () => {
 
     expect(order).toEqual(['event:node_waiting:1', 'status:waiting']);
   });
+
+  it('hands the outcome of a status write to persistence untouched, behind the pending emit', async () => {
+    const order: unknown[][] = [];
+    const persistence: EventPersistence = {
+      async emitEvent(_executionId, sequence, type) {
+        await Promise.resolve();
+        order.push(['event', type, sequence]);
+      },
+      async updateStatus(...received) {
+        order.push(['status', ...received]);
+      },
+    };
+    const events = createSequencedEventEmitter(persistence);
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
+
+    const emit = events.emitEvent('exec-1', 'execution_completed', { outcome });
+    const status = events.updateStatus('exec-1', 'completed', undefined, outcome);
+    await Promise.all([emit, status]);
+
+    expect(order).toEqual([
+      ['event', 'execution_completed', 1],
+      ['status', 'exec-1', 'completed', undefined, outcome],
+    ]);
+  });
 });

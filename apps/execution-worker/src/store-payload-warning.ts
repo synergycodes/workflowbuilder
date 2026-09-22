@@ -24,8 +24,8 @@ export function withPayloadSizeWarning(store: ExecutionStore, log: typeof Logger
       await store.emitExecutionEvent(executionId, sequence, type, payload, nodeId);
     },
 
-    updateExecutionStatus(executionId, status, errorMessage) {
-      return store.updateExecutionStatus(executionId, status, errorMessage);
+    updateExecutionStatus(executionId, status, errorMessage, outcome) {
+      return store.updateExecutionStatus(executionId, status, errorMessage, outcome);
     },
   };
 }

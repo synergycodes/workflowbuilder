@@ -20,6 +20,7 @@ describe('humanDecisionPaletteItem', () => {
       edits: {},
       reason: '',
       comment: '',
+      resolvedBy: 'human',
     } satisfies Required<Decision>;
     const { outputSchema } = humanDecisionPaletteItem;
 

@@ -108,6 +108,8 @@ const terminalExecution = {
   workflowId: 'w-1',
   sourceVersion: 'draft',
   status: 'completed',
+  outcome: null,
+  resolvedBy: null,
   startedAt: null,
   finishedAt: new Date(0),
   createdAt: new Date(0),
@@ -391,5 +393,22 @@ describe('createExecutionsRoutes - cancel enforcement in the UPDATE', () => {
 
     expect(response.status).toBe(409);
     expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+});
+
+describe('createExecutionsRoutes - GET /:id body', () => {
+  it('returns the outcome and its initiator from the row, null while the run has none', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+
+    databaseMock.select.mockReturnValueOnce(
+      chainResolving([{ ...terminalExecution, outcome: 'rejected', resolvedBy: 'human' }]),
+    );
+    const rejected = await app.request('/api/executions/e-1');
+    expect(rejected.status).toBe(200);
+    expect(await rejected.json()).toMatchObject({ status: 'completed', outcome: 'rejected', resolvedBy: 'human' });
+
+    databaseMock.select.mockReturnValueOnce(chainResolving([terminalExecution]));
+    const plain = await app.request('/api/executions/e-1');
+    expect(await plain.json()).toMatchObject({ status: 'completed', outcome: null, resolvedBy: null });
   });
 });

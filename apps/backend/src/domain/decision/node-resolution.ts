@@ -13,9 +13,15 @@ export function hasNodeResolution(decision: Decision): decision is RoutedDecisio
   return decision.effect !== 'rerun-source';
 }
 
+const REJECTED_OUTCOME = 'rejected';
+
 export function toNodeResolution(decision: RoutedDecision, action: RoutedDecisionAction): CompletedNodeExecution {
   if (action.port === 'errorRoute') {
     throw new Error(`action '${action.name}' routes to the reserved 'errorRoute' port`);
   }
-  return { output: decision, nextPort: action.port };
+  const completion: CompletedNodeExecution = { output: decision, nextPort: action.port };
+  if (action.effect === 'reject') {
+    completion.outcome = { value: REJECTED_OUTCOME, resolvedBy: decision.resolvedBy };
+  }
+  return completion;
 }
