@@ -289,9 +289,10 @@ function snapshotWithDecisionActions(actions: unknown[], properties: Record<stri
   };
 }
 
-const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
 const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
 const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
+const portlessResumeSnapshot = snapshotWithDecisionActions([{ name: 'approve', label: 'Approve', effect: 'resume' }]);
 
 type InvalidSnapshotBody = {
   code: string;
@@ -324,6 +325,40 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     );
     // Beside zod's `code` and the English message, the identifier a client keys on and its value.
     expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_effect', params: { value: 'resume' } });
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses a resume action without a port as a structural issue at the port, and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: portlessResumeSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.0.port',
+    );
+    expect(detail).toMatchObject({ code: 'invalid_type' });
+    expect(detail).not.toHaveProperty('domainCode');
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses a rerun-source action that carries a port, naming the port', async () => {
+    const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', port: 'again' };
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: snapshotWithDecisionActions([approve, askAgain]) }]),
+    );
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.port',
+    );
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'port_not_allowed' });
+    expect(detail?.params).toEqual({});
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
@@ -368,6 +403,7 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
   // publish went on to validate them; only null means "no version".
   it.each([
     { name: 'a broken decision request', draftJson: twoResumesSnapshot },
+    { name: 'a decision request without a port', draftJson: portlessResumeSnapshot },
     { name: 'an empty string', draftJson: '' },
     { name: 'zero', draftJson: 0 },
     { name: 'false', draftJson: false },
