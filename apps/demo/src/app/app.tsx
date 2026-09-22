@@ -5,6 +5,8 @@ import type {
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderReactFlowProps,
 } from '@workflowbuilder/sdk';
+import { showSnackbar } from '@workflowbuilder/sdk';
+import { SnackbarType } from '@workflowbuilder/ui';
 
 import '@workflowbuilder/sdk/style.css';
 
@@ -36,7 +38,18 @@ const edgeTemplates = {
 } satisfies WorkflowBuilderEdgeTemplates;
 
 // A start node is where the run begins, so it can never be a connection target.
-const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => {
+  if (targetNode.data.isStartNode) {
+    showSnackbar({
+      title: 'notValidConnection',
+      variant: SnackbarType.WARNING,
+    });
+
+    return false;
+  }
+
+  return true;
+};
 
 // Advanced escape hatch: forward extra ReactFlow props (SDK-owned props can't be set here).
 const reactFlowProps = {

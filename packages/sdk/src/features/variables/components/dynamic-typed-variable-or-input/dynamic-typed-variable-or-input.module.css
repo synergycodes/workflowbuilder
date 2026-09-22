@@ -1,4 +1,15 @@
 .button-toggle {
   padding: 0;
   margin: 0;
+
+  > div {
+    display: inline-flex;
+  }
+}
+
+.container:global(.base--error),
+.container:has([class*='control--error']) {
+  .button-toggle {
+    color: var(--ax-public-input-root-color-error);
+  }
 }
