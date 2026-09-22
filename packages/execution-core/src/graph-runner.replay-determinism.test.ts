@@ -137,6 +137,11 @@ function expectAllRunsIdentical(records: RunRecord[]): void {
   }
 }
 
+function visibleNodeIds(record: RunRecord, nodeId: string): string[] {
+  const started = record.events.find((event) => event.type === 'node_started' && event.nodeId === nodeId);
+  return (started?.payload as { visibleNodeIds: string[] }).visibleNodeIds;
+}
+
 const RUNS = 10;
 
 describe('runGraph — replay determinism (re-execution equivalence)', () => {
@@ -162,7 +167,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     expectAllRunsIdentical(records);
 
     // Activity call order within a wave is the iteration order of `ready`,
-    // which is built from definition.nodes — deterministic.
+    // which `propagate` builds from definition.edges — deterministic.
     expect(records[0]!.activityCallOrder).toEqual(['A', 'B', 'C']);
   });
 
@@ -193,7 +198,7 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
   it('node_skipped — several skips in one wave keep the same order and reasons', async () => {
     // The one event a skipped node ever emits, so its position and payload are all a
     // replay has to compare. Emission order comes from `propagate`'s breadth-first walk
-    // over the dead subtree, seeded from `definition.nodes` order — a switch to a Set
+    // over the dead subtree, seeded from `definition.edges` order — a switch to a Set
     // or an emit-as-you-go inside the wave would re-order these without changing
     // anything else the runner records.
     const input = makeInput(
@@ -338,5 +343,31 @@ describe('runGraph — replay determinism (re-execution equivalence)', () => {
     const records = await runNTimes(input, {}, RUNS);
     expectAllRunsIdentical(records);
     expect(records[0]!.activityCallOrder.at(-1)).toBe('C');
+  });
+
+  it('two waves to a join — visibleNodeIds follows edge order, not definition.nodes order', async () => {
+    // `nodes` lists B before A while the edges reach A first, so an insertion order taken
+    // from `definition.nodes` would spell the expectation below ['S', 'B', 'A'].
+    const input = makeInput(
+      [start('S'), trigger('B'), trigger('A'), trigger('J')],
+      [edge('e1', 'S', 'A'), edge('e2', 'S', 'B'), edge('e3', 'A', 'J'), edge('e4', 'B', 'J')],
+    );
+
+    const records = await runNTimes(input, {}, RUNS);
+    expectAllRunsIdentical(records);
+    expect(visibleNodeIds(records[0]!, 'J')).toEqual(['S', 'A', 'B']);
+  });
+
+  it('integer-like node ids — Object.keys puts them ahead of the rest, every run', async () => {
+    // A node id is an unconstrained string, so '2' and '10' are legal. Object.keys hoists
+    // them out of insertion order, ascending numerically, ahead of every other key.
+    const input = makeInput(
+      [start('S'), trigger('10'), trigger('2'), trigger('J')],
+      [edge('e1', 'S', '10'), edge('e2', 'S', '2'), edge('e3', '10', 'J'), edge('e4', '2', 'J')],
+    );
+
+    const records = await runNTimes(input, {}, RUNS);
+    expectAllRunsIdentical(records);
+    expect(visibleNodeIds(records[0]!, 'J')).toEqual(['2', '10', 'S']);
   });
 });

@@ -41,6 +41,7 @@
   "files": [
     "dist",
     "README.md",
+    "TESTING.md",
     "LICENSE",
     "CHANGELOG.md"
   ],

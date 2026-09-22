@@ -139,11 +139,12 @@ export async function runGraph<TNode extends BaseNode>(
 
     // Emitted once the whole wave has propagated, so a skip reads as a consequence of
     // the wave that pruned it rather than arriving mid-wave. Order is a pure function of
-    // the definition: `results` follows `ready`, which follows `definition.nodes`, and
-    // `propagate` walks the dead subtree breadth-first from there — nothing wall-clock or
-    // completion-order dependent, so a replay reproduces it. An exhausted `emitEvent` is
-    // swallowed rather than failing the run: the event is advisory, so a node that was
-    // never going to execute must not be able to abort a run that is otherwise healthy.
+    // the definition: `results` follows `ready`, which comes from the adjacency map built
+    // over `definition.edges`, and `propagate` walks the dead subtree breadth-first from
+    // there — nothing wall-clock or completion-order dependent, so a replay reproduces it.
+    // An exhausted `emitEvent` is swallowed rather than failing the run: the event is
+    // advisory, so a node that was never going to execute must not be able to abort a run
+    // that is otherwise healthy.
     for (const node of skipped) {
       try {
         await events.emitEvent(input.executionId, 'node_skipped', { reason: node.reason }, node.id);
