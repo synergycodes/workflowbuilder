@@ -12,7 +12,7 @@ import { applyConnectionLost, applyEvent, applySnapshot } from '../stores/use-ex
 
 const TERMINAL_TYPES: ReadonlySet<ExecutionEventType> = new Set(TERMINAL_EXECUTION_EVENT_TYPES);
 const TERMINAL_STATUSES: ReadonlySet<ExecutionStatus> = new Set(TERMINAL_EXECUTION_STATUSES);
-const MAX_RETRIES = 5;
+export const MAX_RETRIES = 5;
 
 export function connectExecutionStream(executionId: string, streamUrl: string): () => void {
   const url = `${BACKEND_URL}${streamUrl}`;
@@ -45,7 +45,10 @@ export function connectExecutionStream(executionId: string, streamUrl: string): 
   });
 
   eventSource.addEventListener('error', () => {
-    if (++retries > MAX_RETRIES) {
+    // CLOSED = refused by the server, no browser retry (a blip stays CONNECTING and retries alone).
+    // The run id stays persisted for Stop to resolve; a stale one needs a probe once anything else
+    // sends it to the server while disconnected (follow-up: stale-execution-id-probe).
+    if (eventSource.readyState === EventSource.CLOSED || ++retries > MAX_RETRIES) {
       eventSource.close();
       applyConnectionLost();
     }
