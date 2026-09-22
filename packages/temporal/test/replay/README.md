@@ -6,60 +6,79 @@ A workflow can wait for days, so this is the guard that lets the package be edit
 between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
-`@temporalio/testing`), runs a graph, and then does three separate things with what came
-back:
+`@temporalio/testing`), runs every scenario in `../fixtures/replay-scenarios.ts`, and then
+does three separate things with what came back:
 
-1. **Counts the scheduled activities per type.** One `executeNode` per node, one
-   `emitEvent` per emitted event, one `updateStatus` for the terminal write. An extra
-   activity anywhere in `runGraph` moves one of those numbers.
+1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
+   `emitEvent` per emitted event, one `updateStatus` per status write (the terminal one; a
+   parked run adds the `waiting` and `running` writes). An extra activity anywhere in
+   `runGraph` moves one of those numbers.
 2. **Replays the history it just recorded.** Same code, same history — proves the run is
    reproducible under Temporal's own replayer, not only under the re-execution harness in
    `execution-core`.
-3. **Replays a committed history from `histories/`.** The cross-version guard. This is
+3. **Replays every committed history in `histories/`.** The cross-version guard. This is
    the one that fails when today's code would issue commands a run recorded on older code
-   never made.
+   never made. It goes through `Worker.runReplayHistories`, so one broken history reports
+   alongside the others instead of hiding them. It also insists that every scenario has a
+   recording and every recording belongs to a scenario; the version prefix is free.
 
 Only (3) survives a change to the runner, which is why (3) is the one that matters at
 review time. (2) passes even on a broken change, because the history it checks was
 recorded by the same broken code.
 
-## The graphs the harnesses run
+## The scenarios
 
-`replay.test.ts`: `start → (left, right) → join`, defined in `../fixtures/graph.ts`. The
-fan-out is the point: it is the only shape that puts two commands in a single workflow
-task, which is where the runner's `Promise.all` becomes visible to Temporal. A straight
-line replays green while leaving that path untested.
+One file per path through the sandbox code. A change that leaves one path alone can still
+move the commands on another, so every scenario replays on every run.
 
-`parked-gate-replay.test.ts`: `start → gate → after`, defined in
-`../fixtures/pause-graph.ts`, run to completion through a real `resolveNode` update. Its
-committed history (`v0-parked-gate.json`) is the durable-pause pin: it carries the
-accepted update, the `node_waiting` emit, the waiting/running status activities and the
-resume, so a change that moves any command on the parked path fails here even when the
-gateless baseline stays green. Since a determinism break surfaces at the first divergent
-command, replaying the full history also stands in for every run still parked mid-history
-when a deploy lands.
+| File                               | Graph                            | Path it protects                                                                                                                                                                                                                             |
+| ---------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<version>-parallel-wave.json`     | `start → (left, right) → join`   | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.                                                                                  |
+| `<version>-fail-policy.json`       | `start → (fail, sibling) → join` | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails.                                                                      |
+| `<version>-incomplete-branch.json` | `start → route ─[yes]→ taken`    | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                                                                                               |
+| `<version>-cancel-mid-run.json`    | `start → block`                  | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                                                                                                  |
+| `<version>-parked-decision.json`   | `start → gate → after`           | A node that parks the run and a verdict that resumes it: the accepted `resolveNode` update, the `node_waiting` emit, the `waiting`/`running` status writes and the resume. The other scenarios stay green when a command moves on this path. |
+
+The cancel scenario parks its executor until the driver has cancelled the run, so the
+recording always catches the activity open. The late completion then meets a closed run,
+which Temporal core logs as one "Activity not found on completion" warning. A green run
+also logs "Activity failed" and "Workflow failed" from the fail-policy scenario, which
+fails a node on purpose. All three are expected; nothing is wrong with a run that has them.
+
+The parked-decision scenario delivers its verdict through a real `resolveNode` update once
+the store has seen the `waiting` status, which the workflow writes only after it accepts
+verdicts for the node. Since a determinism break surfaces at the first divergent command,
+replaying its full history also stands in for every run still parked mid-history when a
+deploy lands.
 
 ## Recording a history
 
-From the harness, which is what the committed files come from:
+From the harness, which is what the committed files come from. Name the scenario so the
+others keep guarding what they recorded:
 
 ```bash
-UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/temporal test
 ```
 
-The flag rewrites every committed history at once. When adding one scenario, scope the
-run to that harness file (`npx vitest run test/replay/<file>`) so the other baselines
-keep guarding the code that recorded them.
+`UPDATE_REPLAY_HISTORIES=1` re-records every scenario; see rule 3 before reaching for it.
+Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
+it by name, and describing it in the table above. The harness fails until the file exists.
+Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says otherwise;
+the last section covers when to set it. An existing file is never overwritten: the harness
+fails and names it, so a release recorded without the version variable does not rewrite
+the previous set. `REPLAY_HISTORY_OVERWRITE=1` is the explicit way to re-baseline.
 
-Or from a real run against a local stack, which is worth doing for a scenario the harness
-cannot stage. `historyToJSON` writes the same shape, so the two are interchangeable:
+Or from a real run against a local stack, for a scenario the harness cannot stage.
+`historyToJSON` writes the same shape, so the two are interchangeable. Read the output
+before committing it: the first event carries the whole `WorkflowExecutionInput`,
+including the `variables` and `global` bags, which is where the backend injects secrets.
+The harness recordings carry only empty bags and a synthetic graph.
 
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
 ```
 
-Scenarios still worth adding, one file each: a cancellation mid-run, a node failure that
-goes through the error policy, and two gates parked in one wave.
+A scenario still worth adding: two nodes parked in one wave, resolved one after the other.
 
 ## Rules once files live here
 
@@ -67,22 +86,39 @@ goes through the error policy, and two gates parked in one wave.
    What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
-3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES=1` rewrites the
-   history from current code, so the cross-version check silently becomes a self-check.
-   Reach for it when adding a scenario, not to make a red test green.
+3. Regenerating a file resets what it guards. Rewriting a history from current code turns
+   the cross-version check into a self-check, which is why the harness refuses to overwrite
+   without `REPLAY_HISTORY_OVERWRITE=1`. Record by scenario name when adding one; `=1` with
+   the overwrite flag is for a deliberate re-baseline of every scenario, never for making a
+   red test green.
 
-`v0-` names the pre-release baseline: the package has not published a version yet, so
-these are histories from the code as it stood before the first release.
+`v0-` was the pre-release baseline, recorded before the package published its first
+version; those files went with the 0.1.0 release, so a recording that lands under `v0-`
+today means the version variable was forgotten. The one exception is
+`v0-parked-decision.json`: the parked path has not shipped, so its pre-release recording
+stays until the release that ships it records the scenario under that version. Every
+release records every scenario again under the version it ships, in the release PR right
+after `pnpm release:version temporal`:
+
+```bash
+REPLAY_HISTORY_VERSION=<version> UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+pnpm --filter @workflowbuilder/temporal test
+```
+
+The first run writes `<version>-<scenario>.json` next to the earlier files and leaves them
+untouched; the second replays everything, old sets included. Each release adds its own set
+this way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Before the first release**, which is where the package is today: `private: true`, no
-published version, no consumer outside this repo. No run recorded by an older build
+**Before the first release**: no published version and no consumer outside this repo. No run recorded by an older build
 exists anywhere, so nothing is stranded and no deploy is at risk. Red means one thing,
 and it is a design signal rather than an incident: a command reached a path that was
 supposed to be left alone. Read the change first. If the new command genuinely belongs
-on that path, re-record the history and say so in the commit message. `patched()` is not
-needed and no major is due.
+on that path, re-record the history (`REPLAY_HISTORY_OVERWRITE=1`, since the file exists) and
+say so in the commit message. `patched()` is not needed and no major is due. The same holds
+for a path that has not shipped yet, which is what a `v0-` recording marks today:
+`v0-parked-decision.json` may be re-recorded until the parked path is released.
 
 **After the first release**, the same red is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or

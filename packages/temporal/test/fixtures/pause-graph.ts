@@ -1,7 +1,7 @@
 // Gate fixtures for the durable-pause tests. Executors record every invocation so
 // the restart scenario can assert "downstream runs exactly once" across workers.
 import type { BaseNode, NodeExecutorRegistry, WorkflowDefinition } from '../../src/index';
-import type { RecordingStore } from './graph';
+import type { RecordingStore } from './recording-store';
 
 export type PauseTestNode = (BaseNode & { type: 'test/step' }) | (BaseNode & { type: 'test/gate' });
 

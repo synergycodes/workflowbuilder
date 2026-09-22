@@ -17,7 +17,10 @@ import {
 
 let sequence = 0;
 
-function event(partial: Omit<ExecutionEvent, 'executionId' | 'sequence' | 'timestamp'>): ExecutionEvent {
+// `Omit` over the union keeps only the shared keys, so `nodeId` has to be admitted by hand.
+function event(
+  partial: Omit<ExecutionEvent, 'executionId' | 'sequence' | 'timestamp'> & { nodeId?: string },
+): ExecutionEvent {
   sequence += 1;
   return { executionId: 'exec-1', sequence, timestamp: '2026-09-15T12:00:00.000Z', ...partial } as ExecutionEvent;
 }

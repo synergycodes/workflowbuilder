@@ -8,7 +8,7 @@ import type {
   WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
 
-import { NodeExecutionError } from './errors';
+import { NodeExecutionError, PermanentNodeExecutionError } from './errors';
 import { runGraph } from './graph-runner';
 import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
@@ -488,14 +488,13 @@ describe('runGraph — topological scheduling', () => {
   });
 
   it('NodeExecutionError thrown by an executor — code propagated into node_failed payload', async () => {
-    // Decision executor throws NodeExecutionError with a structured code when
-    // no branch matches. The runner's catch must forward that code into the
+    // The runner's catch must forward an executor's structured code into the
     // node_failed event's error payload (the existing ExecutionErrorPayload
     // already declares `code?: string` — this test pins down that wiring).
     const runner: ActivityRunnerPort<TestNode> = {
       async executeNode(node) {
         if (node.id === 'D') {
-          throw new NodeExecutionError('no_branch_matched', 'Decision node has no matching branch');
+          throw new NodeExecutionError('test_unclassified', 'Unclassified failure');
         }
         return { output: `out-${node.id}` };
       },
@@ -506,13 +505,13 @@ describe('runGraph — topological scheduling', () => {
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'D');
     expect(nodeFailed?.payload).toEqual({
-      error: { message: 'Decision node has no matching branch', code: 'no_branch_matched' },
+      error: { message: 'Unclassified failure', code: 'test_unclassified' },
     });
 
     expect(events.events.some((event) => event.type === 'execution_failed')).toBe(true);
     expect(events.statuses.at(-1)).toEqual({
       status: 'failed',
-      errorMessage: 'Decision node has no matching branch',
+      errorMessage: 'Unclassified failure',
     });
   });
 
@@ -565,7 +564,7 @@ describe('runGraph — topological scheduling', () => {
     // ("Malformed template reference: …", LLM rate-limited, DB timeout)
     // behind the same opaque string. The runner must walk the chain.
     const wrapped = new Error('Activity task failed', {
-      cause: new Error('Malformed template reference: {{nodes.foo?bar}}'),
+      cause: new PermanentNodeExecutionError('template_malformed', 'Malformed template reference: {{nodes.foo?bar}}'),
     });
     const runner: ActivityRunnerPort<TestNode> = {
       async executeNode(node) {
@@ -579,7 +578,7 @@ describe('runGraph — topological scheduling', () => {
 
     const nodeFailed = events.events.find((event) => event.type === 'node_failed' && event.nodeId === 'B');
     expect(nodeFailed?.payload).toEqual({
-      error: { message: 'Malformed template reference: {{nodes.foo?bar}}' },
+      error: { message: 'Malformed template reference: {{nodes.foo?bar}}', code: 'template_malformed' },
     });
     expect(events.statuses.at(-1)?.errorMessage).toBe('Malformed template reference: {{nodes.foo?bar}}');
   });

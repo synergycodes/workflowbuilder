@@ -12,7 +12,6 @@ import {
   type WorkflowDefinition,
   executionWorkflowId,
 } from '../src/index';
-import { type RecordingStore, createRecordingStore } from './fixtures/graph';
 import { waitUntil } from './fixtures/helpers';
 import {
   type PauseHarness,
@@ -21,6 +20,7 @@ import {
   TWO_GATES_GRAPH,
   createPauseExecutors,
 } from './fixtures/pause-graph';
+import { type RecordingStore, createRecordingStore } from './fixtures/recording-store';
 
 function whenAnnounced(store: RecordingStore, nodeId: string): Promise<void> {
   return waitUntil(

@@ -13,7 +13,6 @@ import {
   executionWorkflowId,
 } from '../src/index';
 import { resolveNodeUpdate } from '../src/workflow/index';
-import { type RecordingStore, createRecordingStore } from './fixtures/graph';
 import { acceptedUpdateIds, waitUntil } from './fixtures/helpers';
 import {
   PORT_ROUTED_GRAPH,
@@ -24,6 +23,7 @@ import {
   createPauseExecutors,
   holdAnnouncement,
 } from './fixtures/pause-graph';
+import { type RecordingStore, createRecordingStore } from './fixtures/recording-store';
 
 function eventTypes(store: RecordingStore, nodeId?: string): string[] {
   return store.events.filter((event) => nodeId === undefined || event.nodeId === nodeId).map((event) => event.type);
