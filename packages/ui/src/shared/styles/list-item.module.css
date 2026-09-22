@@ -1,25 +1,24 @@
 :root {
-  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-background-color-selected: var(--wb-ds-ui-bg-selected);
   --wb-public-list-item-background-color-selected-hover: var(--wb-ds-ui-bg-selected-hover);
   --wb-public-list-item-color-selected: var(--wb-ds-ui-text-default);
   --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
-  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-fill-hover);
+  --wb-public-list-item-icon-color: var(--wb-ds-ui-icon-subtle-default);
+  --wb-public-list-item-indicator-color: var(--wb-ds-ui-icon-action-default);
+
+  --wb-public-list-item-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-list-item-icon-color-disabled: var(--wb-ds-ui-icon-disabled);
+
+  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-inset);
   --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
   --wb-public-list-item-outline-size: var(--wb-ds-shadow-ui-focus-element-spread);
 
-  --wb-public-list-item-color-destructive: var(--wb-ds-ui-text-critical-default);
-  --wb-public-list-item-background-color-destructive: var(--wb-ds-colors-red-400-10);
-  --wb-public-list-item-background-color-hover-destructive: var(--wb-ds-colors-red-400-20);
+  --wb-public-list-item-color-critical: var(--wb-ds-ui-text-critical-default);
+  --wb-public-list-item-color-critical-disabled: var(--wb-ds-ui-text-critical-disabled);
+  --wb-public-list-item-icon-color-critical: var(--wb-ds-ui-icon-critical-default);
   --wb-public-list-border-radius: var(--wb-ds-radius-75);
-}
-
-@layer ui.base {
-  html[data-theme='dark'] {
-    --wb-public-list-item-background-color-destructive: var(--wb-ds-colors-red-400-30);
-    --wb-public-list-item-background-color-hover-destructive: var(--wb-ds-colors-red-400-50);
-  }
 }
 
 @layer ui.component {
@@ -67,19 +66,28 @@
     }
 
     &[data-disabled] {
-      color: var(--wb-public-input-color-disabled);
+      color: var(--wb-public-list-item-color-disabled);
       background-color: transparent;
       cursor: auto;
+
+      svg {
+        color: var(--wb-public-list-item-icon-color-disabled);
+      }
     }
 
-    &.destructive {
-      color: var(--wb-public-list-item-color-destructive);
-      background-color: var(--wb-public-list-item-background-color-destructive);
+    &.critical {
+      color: var(--wb-public-list-item-color-critical);
 
-      &:hover,
-      &:focus-visible,
-      &[data-highlighted] {
-        background-color: var(--wb-public-list-item-background-color-hover-destructive);
+      svg {
+        color: var(--wb-public-list-item-icon-color-critical);
+      }
+
+      &[data-disabled] {
+        color: var(--wb-public-list-item-color-critical-disabled);
+
+        svg {
+          color: var(--wb-public-list-item-icon-color-disabled);
+        }
       }
     }
 
@@ -87,6 +95,16 @@
       width: 1rem;
       height: 1rem;
       min-width: 1rem;
+      color: var(--wb-public-list-item-icon-color);
+    }
+
+    .indicator {
+      display: flex;
+      margin-left: auto;
+
+      svg {
+        color: var(--wb-public-list-item-indicator-color);
+      }
     }
   }
 }

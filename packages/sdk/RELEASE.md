@@ -69,7 +69,7 @@ release  ───────────────●───────�
 
 1. **npm organization access.** Get added as a maintainer on the `workflowbuilder` npm organization (or create it the first time at <https://www.npmjs.com/settings/workflowbuilder>). The org name has no hyphen, matching the scope `@workflowbuilder/sdk`.
 
-2. **Configure the npm Trusted Publisher (once per package).** Authentication is OIDC. No `NPM_TOKEN` is used or stored. Each package needs its own trusted publisher pointing at its own workflow file. On the package's `…/access` page (or for a not-yet-published package: org settings → "Packages" → "Add trusted publisher"), add:
+2. **Configure the npm Trusted Publisher (once per package).** Authentication is OIDC. No `NPM_TOKEN` is used or stored. Each package needs its own trusted publisher pointing at its own workflow file. On the package's `…/access` page, add:
    - Publisher: **GitHub Actions**
    - Organization or user: `synergycodes`
    - Repository: `workflowbuilder`
@@ -77,6 +77,8 @@ release  ───────────────●───────�
    - Environment name: _(leave empty)_
 
    The workflows already have `permissions: id-token: write`, so once the trusted publisher is registered, `pnpm publish` on a scoped tag push exchanges the GitHub OIDC token for a short-lived npm credential. Provenance attestation is enabled via the `--provenance` flag, so each published version links back to the exact workflow run and commit.
+
+   A package that has never been published has no settings page, so its first version is published by hand from a maintainer account and the trusted publisher is registered afterwards.
 
 3. **Create the `release` branch** (first time only):
 
@@ -103,7 +105,9 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
    Skip the changeset only for changes that do not affect the published `dist/` (e.g. internal tests, lint config, comments).
 
-   **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (see `remove-nodeid-from-handles.md`).
+   **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: every `major` changeset must carry a `Breaking changes:` list with migration steps (see `font-assets.md`).
+
+   **Write against the last published version, not against the branch.** A reader of the CHANGELOG upgrades from the released version straight to the next one, and never sees the intermediate states a long-lived branch passed through. Describe the net change and give migration steps only for names that were actually published. When a later commit on the same branch supersedes an earlier one, rewrite or delete the earlier changeset instead of adding a second entry, so one change produces one CHANGELOG bullet.
 
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
 

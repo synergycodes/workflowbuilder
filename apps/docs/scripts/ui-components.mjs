@@ -30,12 +30,8 @@ export const COMPONENTS = [
     ],
   },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
-  {
-    slug: 'menu-trigger-button',
-    name: 'MenuTriggerButton',
-    propsType: 'MenuTriggerButtonProps',
-    dir: 'button/menu-trigger-button',
-  },
+  // Documented on the Menu page; styled through the NavButton variables.
+  { slug: 'menu-trigger-button', name: 'Menu.TriggerButton', propsType: 'MenuTriggerButtonProps', dir: null },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
     slug: 'nav-button',

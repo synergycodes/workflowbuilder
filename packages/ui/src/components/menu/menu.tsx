@@ -2,11 +2,13 @@ import { Menu as MenuBase } from '@base-ui/react/menu';
 import { Separator } from '@ui/components/separator/separator';
 import { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
-import { ReactElement, memo } from 'react';
+import { ReactElement, memo, useState } from 'react';
 
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
 
 import { MenuItem } from './menu-item';
+import { MenuOpenContext } from './menu-open-context';
+import { MenuTriggerButton } from './menu-trigger-button';
 import { type OffsetOptions, type Placement, offsetToBaseUI, placementToSideAlign } from './placement';
 import { MenuItemProps } from './types';
 
@@ -53,12 +55,15 @@ export type MenuProps = {
   /**
    * The trigger element that will open the menu when clicked.
    * This element will be wrapped in a button with appropriate ARIA attributes.
+   * `Menu.TriggerButton` renders an icon-only trigger that follows the open state.
    */
   children?: ReactElement;
 };
 
-export const Menu = memo(
+const MenuRoot = memo(
   ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {
+    const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+    const isOpen = open ?? uncontrolledOpen;
     const { side, align } = placementToSideAlign(placement);
     const { sideOffset, alignOffset } = offsetToBaseUI(offset, align);
     const hasSelection = items.some((item) => item.selected !== undefined);
@@ -74,9 +79,14 @@ export const Menu = memo(
     return (
       <MenuBase.Root
         open={open}
-        onOpenChange={onOpenChange ? (nextOpen, eventDetails) => onOpenChange(nextOpen, eventDetails.event) : undefined}
+        onOpenChange={(nextOpen, eventDetails) => {
+          setUncontrolledOpen(nextOpen);
+          onOpenChange?.(nextOpen, eventDetails.event);
+        }}
       >
-        {children && <MenuBase.Trigger render={children} />}
+        <MenuOpenContext.Provider value={isOpen}>
+          {children && <MenuBase.Trigger render={children} />}
+        </MenuOpenContext.Provider>
         <MenuBase.Portal>
           <MenuBase.Positioner
             side={side}
@@ -100,3 +110,5 @@ export const Menu = memo(
     );
   },
 );
+
+export const Menu = Object.assign(MenuRoot, { TriggerButton: MenuTriggerButton });

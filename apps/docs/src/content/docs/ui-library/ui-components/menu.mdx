@@ -5,11 +5,12 @@ description: A dropdown list of actions anchored to a trigger element.
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
-import { MenuExample } from '../../../../components/ui-examples/menu';
+import { MenuExample, MenuTriggerButtonExample } from '../../../../components/ui-examples/menu';
 
 A `Menu` renders a dropdown list of actions anchored to a trigger element. Each
-entry is a regular item or a separator, and items can be marked as destructive
-for actions such as delete. A menu that offers a choice (for example a language
+entry is a regular item or a separator, and an item can take `tone="critical"`
+for a destructive action such as delete: the label and icon carry the critical
+colour while the row keeps the background every other row has. A menu that offers a choice (for example a language
 switcher) marks the current entry with `selected`; the menu then renders as a
 radio group and highlights that entry.
 
@@ -27,7 +28,7 @@ function Example() {
         { label: 'Edit', onClick: () => {} },
         { label: 'Duplicate', onClick: () => {} },
         { type: 'separator' },
-        { label: 'Delete', destructive: true, onClick: () => {} },
+        { label: 'Delete', tone: 'critical', onClick: () => {} },
       ]}
     >
       <Button variant="secondary">Open menu</Button>
@@ -49,9 +50,39 @@ A menu with a current choice:
 </Menu>
 ```
 
+## Menu Trigger Button
+
+`Menu.TriggerButton` is the icon-only trigger for a menu: a `NavButton` that
+stays in its pressed state for as long as the menu is open. It reads the open
+state from the enclosing `Menu`, so it needs no state of its own.
+
+<MenuTriggerButtonExample client:visible />
+
+```tsx
+import { DotsThreeVertical } from '@phosphor-icons/react';
+import { Menu } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <Menu items={[{ label: 'Edit', onClick: () => {} }]}>
+      <Menu.TriggerButton aria-label="Open menu">
+        <DotsThreeVertical />
+      </Menu.TriggerButton>
+    </Menu>
+  );
+}
+```
+
+It renders a `NavButton`, so its appearance is customized through the
+[NavButton variables](/ui-library/ui-components/nav-button/#css-variables).
+
 ## Props
 
 <PropsTable slug="menu" />
+
+### Menu.TriggerButton
+
+<PropsTable slug="menu-trigger-button" />
 
 ## CSS variables
 

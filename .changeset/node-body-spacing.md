@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-Decision branch rows, AI tool rows and their sections follow the design body spacing: 8px padding and gap, 4px row radius and 8px section radius (previously 12/10px, 6px and 8px). Row width derived from the node shell is now 205px.
+Node sections and the rows inside them (Decision branches, AI tool rows) follow the design library: 8px padding and gap everywhere, 4px row radius and 8px section radius, where before the rows used 12/10px padding and a 6px radius. Padding, gap and radius bind to the `canvas/node/body-*` and `canvas/node/row-*` roles instead of raw spacing primitives. A row carries the content background (`canvas/node/bg-content-default`) and its label renders at Body/S Emphasized; the border a row used to draw is gone, and only the section and the AI tools wrapper outline, with `canvas/node/stroke-default`.

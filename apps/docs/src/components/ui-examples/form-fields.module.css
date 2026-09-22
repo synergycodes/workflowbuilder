@@ -1,9 +1,0 @@
-.example-stack {
-  display: flex;
-  flex-direction: column;
-  gap: var(--wb-ds-space-100);
-}
-
-.example-wrap {
-  flex-flow: row wrap;
-}

@@ -4,10 +4,12 @@
   --wb-public-field-font-size: var(--wb-ds-font-size-150);
   --wb-public-field-font-weight: 400;
   --wb-public-field-line-height: var(--wb-ds-size-200);
-  --wb-public-field-label-color: var(--wb-ds-ui-text-default);
+  --wb-public-field-label-color: var(--wb-ds-ui-text-subtle-default);
   --wb-public-field-helper-color: var(--wb-ds-ui-text-subtle-default);
-  --wb-public-field-critical-color: var(--wb-ds-components-text-field-stroke-critical);
-  --wb-public-field-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-field-critical-color: var(--wb-ds-ui-text-critical-default);
+  --wb-public-field-success-color: var(--wb-ds-ui-text-success-default);
+  --wb-public-field-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-field-required-color-disabled: var(--wb-ds-ui-text-ghost-default);
 }
 
 @layer ui.component {
@@ -45,7 +47,15 @@
     color: var(--wb-public-field-critical-color);
   }
 
-  .field[data-disabled] :is(.label, .helper, .required) {
+  .field[data-state='success']:not([data-disabled]) .helper {
+    color: var(--wb-public-field-success-color);
+  }
+
+  .field[data-disabled] :is(.label, .helper) {
     color: var(--wb-public-field-color-disabled);
+  }
+
+  .field[data-disabled] .required {
+    color: var(--wb-public-field-required-color-disabled);
   }
 }

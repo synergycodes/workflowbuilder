@@ -1,10 +1,10 @@
 :root {
   --wb-public-input-color: var(--wb-ds-ui-text-default);
   --wb-public-input-color-disabled: var(--wb-ds-ui-text-ghost-default);
-  --wb-public-input-placeholder-color: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-input-placeholder-color: var(--wb-ds-ui-text-subtle-default);
 
   --wb-public-input-root-background-color: var(--wb-ds-ui-bg-base);
-  --wb-public-input-root-background-color-disabled: var(--wb-ds-ui-bg-fill-disabled);
+  --wb-public-input-root-background-color-disabled: var(--wb-ds-ui-bg-inset);
   --wb-public-input-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
   --wb-public-input-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
   --wb-public-input-root-border-color: var(--wb-ds-components-text-field-stroke-default);

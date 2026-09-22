@@ -6,6 +6,8 @@ import { type Plugin, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
+import { copyUiFontAssets } from './font-assets.mjs';
+
 // Packages that must NOT be bundled into the SDK build. Two reasons:
 // 1. Singleton hazards — i18next translation registry, zustand store
 //    identity, immer's `setAutoFreeze` + draft `instanceof`, JsonForms
@@ -88,11 +90,7 @@ function emitUiFontAssets(): Plugin {
         .readFileSync(stylesheetPath, 'utf8')
         .replaceAll(/@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g, '');
 
-      fs.mkdirSync(assetsDirectory, { recursive: true });
-      for (const file of fs.readdirSync(path.resolve(uiDistribution, 'assets'))) {
-        if (!file.endsWith('.woff2')) continue;
-        fs.copyFileSync(path.resolve(uiDistribution, 'assets', file), path.resolve(assetsDirectory, file));
-      }
+      copyUiFontAssets(path.resolve(uiDistribution, 'assets'), assetsDirectory);
 
       fs.writeFileSync(stylesheetPath, stylesheet);
       fs.appendFileSync(stylesheetPath, `\n${fontStyles}`);

@@ -10,7 +10,7 @@ export const NAV_BUTTON_VARIANTS = ['square', 'round', 'plain'] as const;
 
 export type NavButtonVariant = (typeof NAV_BUTTON_VARIANTS)[number];
 
-type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
+export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
   /** @default 'm' */
   size?: NavButtonSize;
   isSelected?: boolean;

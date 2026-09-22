@@ -1,5 +1,5 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Input, Menu, MenuTriggerButton } from '@workflowbuilder/ui';
+import { Input, Menu } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -90,13 +90,9 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
       )}
       <div className={styles['menu-container']}>
         <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <MenuTriggerButton
-            aria-label={t('tooltips.pickTheProject')}
-            isOpen={isMenuOpen}
-            tooltip={t('tooltips.pickTheProject')}
-          >
+          <Menu.TriggerButton aria-label={t('tooltips.pickTheProject')} tooltip={t('tooltips.pickTheProject')}>
             <CaretDown />
-          </MenuTriggerButton>
+          </Menu.TriggerButton>
         </Menu>
       </div>
     </div>

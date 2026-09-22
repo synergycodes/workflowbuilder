@@ -4,7 +4,8 @@
   --wb-public-select-button-border-color: var(--wb-ds-components-text-field-stroke-default);
   --wb-public-select-button-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
   --wb-public-select-button-focus-ring-color: var(--wb-ds-shadow-ui-focus);
-  --wb-public-select-button-color-disabled: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-select-button-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-select-button-background-color-disabled: var(--wb-ds-ui-bg-inset);
 
   --wb-public-select-button-background-color-error: var(--wb-ds-components-text-field-bg-primary-critical);
   --wb-public-select-button-border-color-error: var(--wb-ds-components-text-field-stroke-critical);
@@ -51,6 +52,7 @@
     }
 
     &:disabled {
+      background-color: var(--wb-public-select-button-background-color-disabled);
       color: var(--wb-public-select-button-color-disabled);
       cursor: auto;
     }

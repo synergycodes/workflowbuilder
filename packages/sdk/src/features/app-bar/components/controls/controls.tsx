@@ -1,5 +1,5 @@
 import { DotsThreeVertical } from '@phosphor-icons/react';
-import { Menu, type MenuItemProps, MenuTriggerButton } from '@workflowbuilder/ui';
+import { Menu, type MenuItemProps } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -26,9 +26,9 @@ export function Controls() {
       {items.length > 0 && (
         <div className={styles['menu-container']}>
           <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <MenuTriggerButton aria-label={t('tooltips.menu')} isOpen={isMenuOpen} tooltip={t('tooltips.menu')}>
+            <Menu.TriggerButton aria-label={t('tooltips.menu')} tooltip={t('tooltips.menu')}>
               <DotsThreeVertical />
-            </MenuTriggerButton>
+            </Menu.TriggerButton>
           </Menu>
         </div>
       )}

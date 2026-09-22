@@ -1,8 +1,6 @@
 import { TextArea } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
-import styles from './form-fields.module.css';
-
 import { ComponentPreview } from './component-preview';
 
 export function TextAreaExample() {
@@ -11,7 +9,7 @@ export function TextAreaExample() {
 
   return (
     <ComponentPreview>
-      <div className={`${styles['example-stack']} ${styles['example-wrap']}`}>
+      <ComponentPreview.Row>
         <TextArea
           size="l"
           label="Description"
@@ -32,7 +30,7 @@ export function TextAreaExample() {
           onChange={(event) => setSummary(event.target.value)}
         />
         <TextArea label="Notes" size="s" state="read-only" value="Read-only value" />
-      </div>
+      </ComponentPreview.Row>
     </ComponentPreview>
   );
 }
