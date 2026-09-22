@@ -28,8 +28,6 @@ const BUILT_IN_TEMPLATES: NodeTemplateRegistry = {
 };
 
 type NodeStateProps = {
-  /** Drag preview: the Node Active state (outline and ring). */
-  selected?: boolean;
   /** Unavailable palette entry: the Node Disabled state. */
   disabled?: boolean;
 };
@@ -38,7 +36,7 @@ type NodePreviewContainerProps = NodeStateProps & {
   type: string;
 };
 
-export function NodePreviewContainer({ type, selected, disabled }: NodePreviewContainerProps) {
+export function NodePreviewContainer({ type, disabled }: NodePreviewContainerProps) {
   const getNodeDefinition = useStore((state) => state.getNodeDefinition);
 
   const nodeDefinition = getNodeDefinition(type);
@@ -46,14 +44,14 @@ export function NodePreviewContainer({ type, selected, disabled }: NodePreviewCo
     return;
   }
 
-  return <NodePreview nodeDefinition={nodeDefinition} selected={selected} disabled={disabled} />;
+  return <NodePreview nodeDefinition={nodeDefinition} disabled={disabled} />;
 }
 
 type NodePreviewProps = NodeStateProps & {
   nodeDefinition: PaletteItem;
 };
 
-function NodePreview({ nodeDefinition, selected, disabled }: NodePreviewProps) {
+function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
   const { type, icon, label, description, templateType = NodeType.Node } = nodeDefinition;
 
   const translateIfPossible = useTranslateIfPossible();
@@ -71,7 +69,7 @@ function NodePreview({ nodeDefinition, selected, disabled }: NodePreviewProps) {
       label={nodeLabel}
       description={nodeDescription}
       showHandles={false}
-      selected={selected}
+      selected={false}
       disabled={disabled}
       id={''}
     />

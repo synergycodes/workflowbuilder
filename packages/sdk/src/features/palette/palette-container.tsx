@@ -49,7 +49,7 @@ export function PaletteContainer() {
       />
       {draggedItem && (
         <DraggedItem ref={ref} zoom={zoom}>
-          <NodePreviewContainer type={draggedItem.type} selected />
+          <NodePreviewContainer type={draggedItem.type} />
         </DraggedItem>
       )}
     </Sidebar>

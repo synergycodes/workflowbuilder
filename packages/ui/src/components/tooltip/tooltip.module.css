@@ -8,6 +8,10 @@
 }
 
 @layer ui.component {
+  .positioner {
+    z-index: 10000;
+  }
+
   .container {
     --tooltip-background: var(--wb-public-tooltip-default-background);
     --tooltip-text-color: var(--wb-public-tooltip-text-color);
@@ -16,7 +20,6 @@
     border-radius: var(--wb-public-tooltip-radius-size);
     width: max-content;
     max-width: 33vw;
-    z-index: 100;
     color: var(--tooltip-text-color);
     background-color: var(--tooltip-background);
   }

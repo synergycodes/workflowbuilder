@@ -26,6 +26,7 @@ export const TooltipContent = forwardRef<
   return (
     <BaseTooltip.Portal>
       <BaseTooltip.Positioner
+        className={styles['positioner']}
         side={side}
         align={align}
         sideOffset={TOOLTIP_OFFSET}
