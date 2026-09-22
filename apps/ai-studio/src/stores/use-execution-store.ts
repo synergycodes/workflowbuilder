@@ -3,6 +3,7 @@ import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import type {
   ExecutionEvent,
+  ExecutionOutcomeRecord,
   ExecutionSnapshot,
   ExecutionStatus,
 } from '@workflow-builder/types/workflow-execution/execution-events';
@@ -18,6 +19,7 @@ export type NodeExecutionState = {
 type ExecutionStore = {
   executionId: string | undefined;
   status: ExecutionStatus | 'idle' | 'disconnected';
+  outcome: ExecutionOutcomeRecord | undefined;
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
@@ -27,6 +29,7 @@ type ExecutionStore = {
 const emptyStore: ExecutionStore = {
   executionId: undefined,
   status: 'idle',
+  outcome: undefined,
   streamUrl: undefined,
   nodeStates: {},
   events: [],
@@ -52,6 +55,7 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
   useExecutionStore.setState({
     executionId,
     status: 'pending',
+    outcome: undefined,
     streamUrl,
     nodeStates: {},
     events: [],
@@ -68,15 +72,18 @@ export function applyConnectionLost() {
 export function applySnapshot(snapshot: ExecutionSnapshot) {
   const nodeStates: Record<string, NodeExecutionState> = {};
   let status: ExecutionStore['status'] = snapshot.status;
+  let outcome: ExecutionOutcomeRecord | undefined;
 
   for (const event of snapshot.events) {
     applyEventToNodeStates(event, nodeStates);
     status = nextRunStatus(status, event, nodeStates);
+    outcome = outcomeOf(event) ?? outcome;
   }
 
   useExecutionStore.setState({
     executionId: snapshot.executionId,
     status,
+    outcome,
     nodeStates,
     events: snapshot.events,
   });
@@ -91,8 +98,13 @@ export function applyEvent(event: ExecutionEvent) {
       nodeStates,
       events: [...state.events, event],
       status: nextRunStatus(state.status, event, nodeStates),
+      outcome: outcomeOf(event) ?? state.outcome,
     };
   });
+}
+
+function outcomeOf(event: ExecutionEvent): ExecutionOutcomeRecord | undefined {
+  return event.type === 'execution_completed' ? event.payload?.outcome : undefined;
 }
 
 function nextRunStatus(

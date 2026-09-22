@@ -50,6 +50,12 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 
       break;
     }
+    case 'execution_completed': {
+      const outcome = event.payload?.outcome;
+      if (outcome) detail = `${outcome.value} · resolved by ${outcome.resolvedBy} · ${outcome.nodeId}`;
+
+      break;
+    }
     case 'execution_incomplete': {
       detail = event.payload.deadEnds
         .map(({ nodeId, port }) => `${nodeId} routed to "${port}" — nothing connected to that handle`)
