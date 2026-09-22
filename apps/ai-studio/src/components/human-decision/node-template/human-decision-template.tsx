@@ -7,7 +7,7 @@ import { memo, useMemo } from 'react';
 
 import styles from './human-decision-template.module.css';
 
-import type { HumanDecisionSchema } from './schema';
+import type { HumanDecisionSchema } from '../../../nodes/human-decision/schema';
 
 type HumanDecisionProperties = NodeDataProperties<HumanDecisionSchema>;
 

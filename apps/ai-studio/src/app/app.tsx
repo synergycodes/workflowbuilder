@@ -9,11 +9,11 @@ import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
+import { HumanDecisionNodeTemplate } from '../components/human-decision/node-template/human-decision-template';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { humanDecisionNodeType } from '../nodes/human-decision';
-import { HumanDecisionNodeTemplate } from '../nodes/human-decision/human-decision-template';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 

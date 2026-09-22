@@ -3,7 +3,7 @@ import { type ReactNode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { defaultDecisionRequest } from './default-properties-data';
+import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
 import { HumanDecisionNodeTemplate } from './human-decision-template';
 
 // The slot is observed through a marker element; the real one renders its children unchanged.
