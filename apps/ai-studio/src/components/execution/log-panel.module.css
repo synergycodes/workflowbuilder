@@ -174,7 +174,8 @@
   background: var(--ai-studio-status-bg--waiting);
 }
 
-.status--incomplete {
+.status--incomplete,
+.status--disconnected {
   color: var(--ai-studio-status-color--incomplete);
   background: var(--ai-studio-status-bg--incomplete);
 }
@@ -184,7 +185,8 @@
   background: var(--ai-studio-status-bg--failed);
 }
 
-.status--cancelled {
+.status--cancelled,
+.status--cancelling {
   opacity: 0.5;
 }
 
