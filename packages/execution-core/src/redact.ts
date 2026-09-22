@@ -9,10 +9,9 @@ import type { EventEmitterPort } from './ports/event-emitter.port';
 // shared across sibling nodes — mutating here would feed '[REDACTED]' into
 // execution itself.
 //
-// Matching is key-based only. Secrets arriving through VALUES (e.g. a resolved
-// `{{variables.x}}` template) are not caught — that belongs to the variables
-// feature (follow-up: value-based-redaction). Encrypting Temporal's own event
-// history, where activity args land unredacted, is planned separately
+// Matching is key-based only. A secret arriving as a VALUE rather than under a
+// matched key is not caught (follow-up: value-based-redaction). Encrypting Temporal's
+// own event history, where executeNode args land unredacted, is planned separately
 // (follow-up: temporal-payload-codec).
 export const REDACTED = '[REDACTED]';
 
