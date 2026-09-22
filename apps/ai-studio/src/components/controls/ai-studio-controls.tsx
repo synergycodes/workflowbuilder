@@ -7,10 +7,12 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
+import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
   const shouldShowControls = useHasStartNode();
+  const isStopUnreachable = useExecutionStore((state) => state.isStopUnreachable);
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
@@ -27,8 +29,12 @@ export function AiStudioControls() {
     }
   }, [executeFromCanvas]);
 
-  const isRunning = status === 'pending' || status === 'running' || status === 'waiting';
+  const isRunning = isRunAlive(status);
   const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
+  // A Stop that never landed, or one the server never resolves, would leave the user waiting forever.
+  const hasAskedToStop = isStopUnreachable || status === 'cancelling';
+  const isDoneOrStuck = isDone || hasAskedToStop;
+  const resetTooltip = !isDone && hasAskedToStop ? 'Clear — the run may still be running on the server' : 'Reset';
 
   return (
     <div
@@ -46,8 +52,8 @@ export function AiStudioControls() {
             <Icon name="Play" />
           </NavButton>
         )}
-        {isDone && (
-          <NavButton onClick={reset} tooltip="Reset">
+        {isDoneOrStuck && (
+          <NavButton onClick={reset} tooltip={resetTooltip}>
             <Icon name="ArrowCounterClockwise" />
           </NavButton>
         )}

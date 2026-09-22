@@ -1,10 +1,11 @@
 import { create } from 'zustand';
 import { createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import type {
-  ExecutionEvent,
-  ExecutionSnapshot,
-  ExecutionStatus,
+import {
+  type ExecutionEvent,
+  type ExecutionSnapshot,
+  type ExecutionStatus,
+  TERMINAL_EXECUTION_STATUSES,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
 type NodeExecutionStatus = 'idle' | 'running' | 'waiting' | 'completed' | 'failed' | 'skipped';
@@ -15,13 +16,16 @@ export type NodeExecutionState = {
   error?: { message: string; code?: string };
 };
 
+export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
+
 type ExecutionStore = {
   executionId: string | undefined;
-  status: ExecutionStatus | 'idle' | 'disconnected';
+  status: RunStatus;
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
   isLogCollapsed: boolean;
+  isStopUnreachable: boolean;
 };
 
 const emptyStore: ExecutionStore = {
@@ -31,14 +35,33 @@ const emptyStore: ExecutionStore = {
   nodeStates: {},
   events: [],
   isLogCollapsed: false,
+  isStopUnreachable: false,
 };
+
+type PersistedRun = Pick<ExecutionStore, 'executionId' | 'streamUrl' | 'status' | 'isLogCollapsed'>;
+
+const persistedDefaults: PersistedRun = {
+  executionId: undefined,
+  streamUrl: undefined,
+  status: 'idle',
+  isLogCollapsed: false,
+};
+
+const TERMINAL_STATUSES: ReadonlySet<string> = new Set(TERMINAL_EXECUTION_STATUSES);
 
 export const useExecutionStore = create<ExecutionStore>()(
   devtools(
     persist(() => ({ ...emptyStore }), {
-      name: 'ai-studio:execution-log',
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
+      name: 'ai-studio:execution',
+      version: 1,
+      storage: createJSONStorage(() => localStorage),
+      // A finished run is dropped on purpose: a reload after one starts on an idle canvas.
+      partialize: ({ executionId, streamUrl, status, isLogCollapsed }): PersistedRun =>
+        !isRunAlive(status) || !executionId || !streamUrl
+          ? { ...persistedDefaults, isLogCollapsed }
+          : { executionId, streamUrl, status, isLogCollapsed },
+      // Without migrate, zustand drops the whole entry on a version mismatch.
+      migrate: (persisted) => ({ ...persistedDefaults, ...(persisted as Partial<PersistedRun>) }),
     }),
     { name: 'aiStudioExecutionStore' },
   ),
@@ -46,6 +69,11 @@ export const useExecutionStore = create<ExecutionStore>()(
 
 export function resetExecution() {
   useExecutionStore.setState((state) => ({ ...emptyStore, isLogCollapsed: state.isLogCollapsed }));
+}
+
+// `disconnected` counts: a lost stream says nothing about the run on the server.
+export function isRunAlive(status: RunStatus): boolean {
+  return status !== 'idle' && !TERMINAL_STATUSES.has(status);
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
@@ -56,11 +84,21 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     nodeStates: {},
     events: [],
     isLogCollapsed: false,
+    isStopUnreachable: false,
   });
 }
 
 export function applyConnectionLost() {
   useExecutionStore.setState({ status: 'disconnected' });
+}
+
+// Not persisted on purpose: a reload re-derives it from the next Stop.
+export function applyStopUnreachable() {
+  useExecutionStore.setState({ isStopUnreachable: true });
+}
+
+export function clearStopUnreachable() {
+  useExecutionStore.setState({ isStopUnreachable: false });
 }
 
 // Replayed through the same rule as live events, so a reload shows what live showed. The row's
@@ -79,6 +117,7 @@ export function applySnapshot(snapshot: ExecutionSnapshot) {
     status,
     nodeStates,
     events: snapshot.events,
+    isStopUnreachable: false,
   });
 }
 
@@ -91,6 +130,7 @@ export function applyEvent(event: ExecutionEvent) {
       nodeStates,
       events: [...state.events, event],
       status: nextRunStatus(state.status, event, nodeStates),
+      isStopUnreachable: false,
     };
   });
 }
