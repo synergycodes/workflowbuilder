@@ -45,6 +45,8 @@ A submitted decision is checked against the request by `validateSubmittedDecisio
 
 Body: `{ nodeId, attempt, action, edits?, reason?, comment? }`. `action` is the `name` of one of the node's actions. `attempt` is how many times the node has parked in this run (its `node_waiting` count; today always 1). Checks run in this order, each answering before the next: row, authorization (`executions:decide` with the row's `{ workflowId, tenantId, status }`; a deny wins over 404), status, body, node, decision, `attempt`, effect, engine. The engine is asked once; nothing is retried. Success: `200 { executionId, nodeId, attempt, action, effect }`. Codes and messages live in `src/routes/decision-refusals.ts`.
 
+The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiator is ignored. A `reject` also declares the run's outcome, edge or no edge: the run closes `completed` unless another branch ends it `incomplete` or `failed`, `GET /api/executions/:id` answers `outcome: 'rejected'` and `resolvedBy: 'human'` (`null` otherwise), and `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }`. Publish requires no edge on a reject port.
+
 | Status | Code                        | When                                                                                                                                  |
 | ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
 | 400    | `validation_error`          | Body shape                                                                                                                            |

@@ -1,10 +1,11 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, expectTypeOf, it } from 'vitest';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
 import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
 import {
   type SubmittedDecision,
+  type SubmittedDecisionResult,
   submittedDecisionSchema,
   validateSubmittedDecision,
 } from './validate-submitted-decision';
@@ -355,6 +356,13 @@ describe('validateSubmittedDecision', () => {
       comment: 'rounded down',
     });
     expect(result.action).toEqual(approve);
+  });
+
+  it('leaves the initiator to the route: a judged decision carries no resolvedBy', () => {
+    const result = validateSubmittedDecision(requestWith(), { action: 'approve' });
+
+    expect(result.decision).not.toHaveProperty('resolvedBy');
+    expectTypeOf<NonNullable<SubmittedDecisionResult['decision']>>().not.toHaveProperty('resolvedBy');
   });
 
   it('defaults edits to an empty object when none were submitted', () => {

@@ -69,6 +69,7 @@ export type DecisionDeadline = {
  * A decision the request accepted: what is recorded on the node's completion and audited.
  * `action` is the name of the chosen action; where it routes stays on the request, so the
  * port is never written twice. `effect` is `resume-with-edits` when a resume carried edits.
+ * `resolvedBy` names who settled it, `human` when the decision endpoint did.
  */
 export type Decision = {
   action: string;
@@ -76,6 +77,7 @@ export type Decision = {
   edits: Record<string, unknown>;
   reason?: string;
   comment?: string;
+  resolvedBy: string;
 };
 
 /**

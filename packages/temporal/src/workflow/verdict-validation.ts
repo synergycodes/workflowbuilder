@@ -16,6 +16,10 @@ export const VERDICT_REJECTION_MESSAGES = {
     code: 'verdict_malformed',
     message: "nextPort must be a non-empty string other than the reserved 'errorRoute'",
   },
+  outcome_invalid: {
+    code: 'verdict_malformed',
+    message: 'outcome must be an object carrying exactly value and resolvedBy, both non-empty strings',
+  },
   unknown_node: { code: 'verdict_for_unknown_node', message: "no node '{value}' in this run" },
   already_delivered: { code: 'verdict_already_delivered', message: "node '{value}' already has a verdict" },
   not_waiting: { code: 'node_not_waiting', message: "node '{value}' is not waiting for a verdict" },
@@ -50,13 +54,16 @@ export function validateVerdict(
     throw reject('resolution_not_an_object');
   }
   for (const key of Object.keys(resolution)) {
-    if (key !== 'output' && key !== 'nextPort') {
+    if (key !== 'output' && key !== 'nextPort' && key !== 'outcome') {
       throw reject('unknown_resolution_key', key);
     }
   }
-  const { nextPort } = resolution as { nextPort?: unknown };
+  const { nextPort, outcome } = resolution as { nextPort?: unknown; outcome?: unknown };
   if (nextPort !== undefined && (typeof nextPort !== 'string' || nextPort.length === 0 || nextPort === 'errorRoute')) {
     throw reject('next_port_invalid');
+  }
+  if (outcome !== undefined && !isOutcome(outcome)) {
+    throw reject('outcome_invalid');
   }
   if (!knownNodes.has(nodeId)) {
     throw reject('unknown_node', nodeId);
@@ -68,4 +75,18 @@ export function validateVerdict(
   if (state === undefined) {
     throw reject('not_waiting', nodeId);
   }
+}
+
+// Shape only: the runner reads the outcome for presence and copies these two fields. What
+// a value means is the backend's business.
+function isOutcome(candidate: unknown): boolean {
+  if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return false;
+  const keys = Object.keys(candidate);
+  if (keys.length !== 2 || !keys.includes('value') || !keys.includes('resolvedBy')) return false;
+  const { value, resolvedBy } = candidate as { value: unknown; resolvedBy: unknown };
+  return isFilled(value) && isFilled(resolvedBy);
+}
+
+function isFilled(text: unknown): text is string {
+  return typeof text === 'string' && text.trim().length > 0;
 }

@@ -165,6 +165,13 @@ describe('durable pause', () => {
         }),
         'verdict_for_unknown_node',
       );
+      await expectRejected(
+        handle.executeUpdate('resolveNode', {
+          args: [{ nodeId: 'gate', resolution: { output: 1, outcome: { value: 'rejected' } } }],
+          updateId: 'verdict-half-outcome',
+        }),
+        'verdict_malformed',
+      );
 
       await handle.executeUpdate(resolveNodeUpdate, { args: [{ nodeId: 'gate', resolution: { output: 'approved' } }] });
       await handle.result();
@@ -179,6 +186,7 @@ describe('durable pause', () => {
     expect(accepted).toHaveLength(1);
     expect(accepted).not.toContain('malformed-verdict');
     expect(accepted).not.toContain('verdict-for-ghost');
+    expect(accepted).not.toContain('verdict-half-outcome');
   }, 120_000);
 
   it('a verdict with output: undefined resumes the node, even though the payload converter drops the field', async () => {
@@ -274,5 +282,59 @@ describe('durable pause', () => {
     expect(types.indexOf('node_waiting')).toBeLessThan(types.indexOf('execution_cancelled'));
     expect(types).not.toContain('node_failed');
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'cancelled']);
+  }, 120_000);
+
+  it('a verdict carrying an outcome closes the run completed and records it, even on an unrouted port', async () => {
+    const taskQueue = 'pause-outcome';
+    const store = createRecordingStore();
+    const harness = createPauseExecutors();
+    const handle = await startRun(taskQueue, 'pause-outcome-execution', PORT_ROUTED_GRAPH);
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
+
+    const worker = await createWorker(taskQueue, store, harness);
+    await worker.runUntil(async () => {
+      await whenAnnounced(store, 'gate');
+      await handle.executeUpdate(resolveNodeUpdate, {
+        args: [{ nodeId: 'gate', resolution: { output: { action: 'reject' }, nextPort: 'rejected', outcome } }],
+      });
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate']);
+    expect(store.events.filter((event) => event.nodeId === 'after')).toEqual([
+      expect.objectContaining({ type: 'node_skipped', payload: { reason: 'branch_not_taken' } }),
+    ]);
+    expect(store.events.at(-1)).toEqual({
+      sequence: expect.any(Number),
+      type: 'execution_completed',
+      nodeId: undefined,
+      payload: { outcome: { ...outcome, nodeId: 'gate' } },
+    });
+    expect(store.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed', outcome }]);
+  }, 120_000);
+
+  it('the same verdict without an outcome still ends the run incomplete', async () => {
+    const taskQueue = 'pause-no-outcome';
+    const store = createRecordingStore();
+    const harness = createPauseExecutors();
+    const handle = await startRun(taskQueue, 'pause-no-outcome-execution', PORT_ROUTED_GRAPH);
+
+    const worker = await createWorker(taskQueue, store, harness);
+    await worker.runUntil(async () => {
+      await whenAnnounced(store, 'gate');
+      await handle.executeUpdate(resolveNodeUpdate, {
+        args: [{ nodeId: 'gate', resolution: { output: { action: 'reject' }, nextPort: 'rejected' } }],
+      });
+      // Not a failure: the Workflow Execution closes as Completed and the run's own status says incomplete.
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate']);
+    expect(store.events.at(-1)).toMatchObject({
+      type: 'execution_incomplete',
+      payload: { deadEnds: [{ nodeId: 'gate', port: 'rejected' }] },
+    });
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'incomplete']);
+    expect(store.statuses.at(-1)?.outcome).toBeUndefined();
   }, 120_000);
 });

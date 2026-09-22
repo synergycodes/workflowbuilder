@@ -92,7 +92,7 @@ Concrete executors and node configs live in the worker package that consumes the
    }
    ```
 
-   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it. For what to throw when it cannot produce a result, see [Transient vs permanent failures](#transient-vs-permanent-failures).
+   An executor that returns `nextPort` promises a live route — see [Incomplete runs](#incomplete-runs) for what happens when nothing is wired to it, and [Outcomes](#outcomes) for the one completion that may leave its port unrouted on purpose. For what to throw when it cannot produce a result, see [Transient vs permanent failures](#transient-vs-permanent-failures).
 
 3. Register it in your worker's `NodeExecutorRegistry<MyNode>`:
 
@@ -187,21 +187,30 @@ A run is **incomplete** when a node returned a non-empty `nextPort` and no outgo
 
 It is deliberately **not** a failure. Nothing threw, so the engine closes the run normally — the Temporal adapter returns rather than raising an `ApplicationFailure`, and the Workflow Execution shows as Completed. What changes is the run's own status, so an operator can tell "the graph ran" from "the graph ran everything it was supposed to".
 
-| Shape                                                       | Outcome                                                                   |
-| ----------------------------------------------------------- | ------------------------------------------------------------------------- |
-| A decision routes to a handle no edge carries               | **incomplete**                                                            |
-| A decision node with no outgoing edges at all               | **incomplete**                                                            |
-| An `'errorRoute'` failure with no `'errorRoute'` edge       | **incomplete**                                                            |
-| A plain leaf (returns no `nextPort`)                        | completed                                                                 |
-| A leaf whose `nextPort` is `''` (or otherwise falsy)        | completed — falsy means "no port", same as the router                     |
-| A decision routes to a wired handle; other branches pruned  | completed, others `node_skipped`                                          |
-| A successful node whose only outgoing edges are error edges | completed — `nextPort` is undefined, so the success path is simply a leaf |
-| A `'continue'` failure on a leaf                            | completed                                                                 |
-| Nodes that never became ready (a cycle)                     | **failed** — see below                                                    |
+| Shape                                                          | Run status                                                                                        |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| A decision routes to a handle no edge carries                  | **incomplete**                                                                                    |
+| A completion carrying an `outcome` routes to an unwired handle | completed, the first such outcome recorded, successors `node_skipped` — see [Outcomes](#outcomes) |
+| A decision node with no outgoing edges at all                  | **incomplete**                                                                                    |
+| An `'errorRoute'` failure with no `'errorRoute'` edge          | **incomplete**                                                                                    |
+| A plain leaf (returns no `nextPort`)                           | completed                                                                                         |
+| A leaf whose `nextPort` is `''` (or otherwise falsy)           | completed — falsy means "no port", same as the router                                             |
+| A decision routes to a wired handle; other branches pruned     | completed, others `node_skipped`                                                                  |
+| A successful node whose only outgoing edges are error edges    | completed — `nextPort` is undefined, so the success path is simply a leaf                         |
+| A `'continue'` failure on a leaf                               | completed                                                                                         |
+| Nodes that never became ready (a cycle)                        | **failed** — see below                                                                            |
 
 Failure always wins. An unhandled node failure returns before the terminal check, and the stall check runs ahead of it, so a run reports incomplete only where it would otherwise have reported completed.
 
 `Workflow stalled: nodes never became ready` stays a **failure** and keeps its own name. A stall is the scheduler genuinely unable to proceed — a cycle, or a dangling-edge bug — where an incomplete run has finished and simply did not reach everything. Two different conditions, two different words.
+
+## Outcomes
+
+A completion may declare the run's business result: `outcome: { value, resolvedBy }`, both open strings. The runner checks its shape only; meaning is the application's. The reference backend writes `{ value: 'rejected', resolvedBy: 'human' }` when a person rejects at a decision node.
+
+`nextPort` says where the graph goes, `outcome` says what the run means, and the two are independent. A completion with an outcome may leave its port unrouted on purpose: no dead end, the successors are skipped, run `completed`. With the edge drawn the graph continues and the outcome is recorded all the same. A run keeps the first outcome declared, in scheduling order (wave by wave, then the predecessor's edge order); `failed` and `incomplete` still win over `completed` and drop it. Every declaration makes its own unrouted port a deliberate end, but only the first is recorded, so a later one leaves no trace in the result or in `deadEnds`.
+
+On `completed`, `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }` and `updateStatus` receives `{ value, resolvedBy }` as its fourth argument; without an outcome nothing changes. The runner checks the shape only: an object whose `value` and `resolvedBy` are non-blank strings, other keys ignored. Anything else counts as no outcome, so a shapeless one cannot hide a dead end. The Temporal adapter's validator is stricter at the update boundary: it refuses an outcome carrying any other key, as it refuses every unknown key of the envelope.
 
 ## Recorded step inputs and payload redaction
 

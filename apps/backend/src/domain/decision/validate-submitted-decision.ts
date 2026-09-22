@@ -23,8 +23,9 @@ export type SubmittedDecision = z.infer<typeof submittedDecisionSchema>;
 export type SubmittedDecisionError = { code: SubmittedDecisionErrorCode; message: string; path?: string[] };
 
 // `action` is the matched action, for routing; the decision itself records only its name.
+// The initiator is the route's to add: only it knows who called.
 export type SubmittedDecisionResult =
-  | { decision: Decision; action: DecisionAction; error?: undefined }
+  | { decision: Omit<Decision, 'resolvedBy'>; action: DecisionAction; error?: undefined }
   | { decision?: undefined; action?: undefined; error: SubmittedDecisionError };
 
 function refuse(code: SubmittedDecisionErrorCode, value: string, path: string[]): SubmittedDecisionResult {

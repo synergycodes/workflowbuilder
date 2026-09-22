@@ -9,14 +9,17 @@ const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejec
 
 describe('toNodeResolution', () => {
   it.each<{ decision: RoutedDecision; action: RoutedDecisionAction; port: string }>([
-    { decision: { action: 'approve', effect: 'resume', edits: {} }, action: approve, port: 'approved' },
     {
-      decision: { action: 'approve', effect: 'resume-with-edits', edits: { refundAmount: 120 } },
+      decision: { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' },
       action: approve,
       port: 'approved',
     },
-    { decision: { action: 'reject', effect: 'reject', edits: {}, reason: 'late' }, action: reject, port: 'rejected' },
-  ])('routes a $decision.effect decision on the action port', ({ decision, action, port }) => {
+    {
+      decision: { action: 'approve', effect: 'resume-with-edits', edits: { refundAmount: 120 }, resolvedBy: 'human' },
+      action: approve,
+      port: 'approved',
+    },
+  ])('routes a $decision.effect decision on the action port and declares no outcome', ({ decision, action, port }) => {
     const completion = toNodeResolution(decision, action);
 
     expect(completion.nextPort).toBe(port);
@@ -24,8 +27,39 @@ describe('toNodeResolution', () => {
     expect(Object.keys(completion)).toEqual(['output', 'nextPort']);
   });
 
+  it('routes a reject on its port and declares the rejection as the run outcome', () => {
+    const decision: RoutedDecision = {
+      action: 'reject',
+      effect: 'reject',
+      edits: {},
+      reason: 'late',
+      resolvedBy: 'human',
+    };
+
+    const completion = toNodeResolution(decision, reject);
+
+    expect(Object.keys(completion)).toEqual(['output', 'nextPort', 'outcome']);
+    expect(completion.output).toBe(decision);
+    expect(completion.nextPort).toBe('rejected');
+    expect(completion.outcome).toEqual({ value: 'rejected', resolvedBy: 'human' });
+  });
+
+  it("copies the decision's initiator onto the outcome, whatever it is", () => {
+    const completion = toNodeResolution(
+      { action: 'reject', effect: 'reject', edits: {}, resolvedBy: 'policy' },
+      reject,
+    );
+
+    expect(completion.outcome?.resolvedBy).toBe('policy');
+  });
+
   it('hands the decision over as it is, with no key added or removed', () => {
-    const decision: RoutedDecision = { action: 'approve', effect: 'resume-with-edits', edits: { refundAmount: 120 } };
+    const decision: RoutedDecision = {
+      action: 'approve',
+      effect: 'resume-with-edits',
+      edits: { refundAmount: 120 },
+      resolvedBy: 'human',
+    };
     const before = structuredClone(decision);
 
     const completion = toNodeResolution(decision, approve);
@@ -35,20 +69,34 @@ describe('toNodeResolution', () => {
   });
 
   it('routes a reject on its port even when no reason was given', () => {
-    const completion = toNodeResolution({ action: 'reject', effect: 'reject', edits: {} }, reject);
+    const decision: RoutedDecision = { action: 'reject', effect: 'reject', edits: {}, resolvedBy: 'human' };
 
-    expect(completion).toEqual({ output: { action: 'reject', effect: 'reject', edits: {} }, nextPort: 'rejected' });
+    const completion = toNodeResolution(decision, reject);
+
+    expect(completion).toEqual({
+      output: decision,
+      nextPort: 'rejected',
+      outcome: { value: 'rejected', resolvedBy: 'human' },
+    });
   });
 
   it('refuses the reserved errorRoute port, which the request parser already forbids', () => {
-    const decision: RoutedDecision = { action: 'approve', effect: 'resume', edits: {} };
+    const decision: RoutedDecision = { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' };
 
     expect(() => toNodeResolution(decision, { ...approve, port: 'errorRoute' })).toThrow("reserved 'errorRoute'");
   });
 
   it('has no completion for a rerun-source decision', () => {
-    expect(hasNodeResolution({ action: 'ask-again', effect: 'rerun-source', edits: {}, comment: 'again' })).toBe(false);
-    expect(hasNodeResolution({ action: 'approve', effect: 'resume', edits: {} })).toBe(true);
+    expect(
+      hasNodeResolution({
+        action: 'ask-again',
+        effect: 'rerun-source',
+        edits: {},
+        comment: 'again',
+        resolvedBy: 'human',
+      }),
+    ).toBe(false);
+    expect(hasNodeResolution({ action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' })).toBe(true);
     expectTypeOf<RoutedDecision['effect']>().toEqualTypeOf<'resume' | 'resume-with-edits' | 'reject'>();
     expectTypeOf<Extract<RoutedDecisionAction, { effect: 'rerun-source' }>>().toEqualTypeOf<never>();
     expectTypeOf<RoutedDecision>().toMatchTypeOf<Decision>();

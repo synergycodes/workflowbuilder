@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '../../execution-core/src/execution-context';
-import type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';
 import type { BaseNode } from '../../types/src/workflow-execution/execution-model';
+import type { NodeExecutionResult } from './workflow/core-contract';
 
 // The single seam between this published package and the private, source-only
 // workspace packages it is built on.
@@ -28,11 +28,6 @@ export {
 export type { NodeErrorEnvelope } from '../../execution-core/src/index';
 
 export type { ExecutionContext } from '../../execution-core/src/execution-context';
-export type {
-  CompletedNodeExecution,
-  NodeExecutionResult,
-  WaitingNodeExecution,
-} from '../../execution-core/src/ports/activity-runner.port';
 export type { LogBindings, LoggerPort } from '../../execution-core/src/ports/logger.port';
 
 export type {
@@ -44,10 +39,15 @@ export type {
 
 // Defined on the sandbox-safe side so both halves of the package share one definition.
 export type {
+  CompletedNodeExecution,
   ExecutionEventType,
+  ExecutionOutcome,
+  ExecutionOutcomeRecord,
   ExecutionStatus,
+  NodeExecutionResult,
   ResolveNodeRejection,
   ResolveNodeResult,
+  WaitingNodeExecution,
   WorkflowEnginePort,
   WorkflowExecutionInput,
 } from './workflow/core-contract';

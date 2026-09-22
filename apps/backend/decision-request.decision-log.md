@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome)
 
 ## Context
 
@@ -43,6 +43,12 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 20. **A missing port is a structural issue**, like any other missing key: zod's wording, no domain code. The editor always writes ports, so no interface ever shows it. A structural failure on an action suspends the request-level rules for that round; a domain issue does not. That is why the `rerun-source` port is refused on the field: its issue survives a structural failure beside it, while the request-level rules wait for the action to parse.
 21. This was the first tightening of the snapshot schema since the decision route began re-parsing stored snapshots: a run parked with a port-less action, or with a `rerun-source` action carrying a `port` (the loose object used to keep it), would answer 500 until its snapshot was fixed. Accepted, because the feature lived on its branch with no run in flight.
 
+## The outcome of a rejection (21.09.2026)
+
+22. **A rejection is the run's result, not a status.** The run closes `completed`, in our status and in Temporal's, unless another branch ends it `incomplete` or `failed`; `outcome` (`rejected`) and `resolvedBy` (`human`) are nullable open strings on the row, never a fifth terminal status or an enum. `toNodeResolution` declares the outcome on every `reject`, edge or no edge: it says what the run's result was, not that an edge was missing. The runner reads it for presence only, so `rejected` is written here and nowhere else.
+23. **A reject port with no edge is a deliberate end.** The runner records no dead end for a completion with an outcome. Publish requires no edge there, a test pins it, and a future rule wiring every handle must keep the exception.
+24. **The route stamps the initiator.** The validator judges the body against the request and returns the decision without `resolvedBy`; the route adds `human`, since only it knows who called, and the schema strips an initiator sent in the body. Identity will be stamped at the same line; a deadline that decides writes its own inside the workflow. Note what the initiator reaches: the row's `resolved_by` (readable by any `executions:read` caller), the `execution_completed` payload, and the node's `output`, which downstream nodes read and the node's `outputSchema` declares. None is on the `x-pii` path `(follow-up: decision-initiator-identity-exposure)`.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -64,8 +70,6 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - It checks editability and presence at every level the form describes inline, following `properties` and `items`. A level reached only through `$ref` or a composition keyword describes nothing there, so an edit into it is refused as an unknown field rather than checked `(follow-up: decision-edit-schema-composition)`.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
 - Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
-- A reject whose port has no edge ends the run `incomplete`. The terminal-outcome work closes this; the seam is `toNodeResolution`.
-- A decision records nothing about who decided.
 - The route re-parses the stored snapshot with today's `workflowSnapshotSchema`, and a run can wait for days across deploys. A schema tightened in between makes every parked run whose snapshot no longer parses undecidable: the route answers 500 until the snapshot is migrated or the rule relaxed.
 
 ## Open points, closed 10.09.2026
