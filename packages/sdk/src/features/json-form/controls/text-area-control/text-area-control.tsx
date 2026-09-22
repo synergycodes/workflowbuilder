@@ -6,7 +6,7 @@ import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function TextAreaControl(props: TextAreaControlProps) {
-  const { data, handleChange, path, enabled, uischema } = props;
+  const { data, handleChange, path, enabled, uischema, errors } = props;
   const { placeholder, minRows, maxRows, disabled } = uischema;
   const isDisabled = !enabled || disabled === true;
 
@@ -35,6 +35,7 @@ function TextAreaControl(props: TextAreaControlProps) {
         onChange={onChange}
         onBlur={onBlur}
         size="medium"
+        error={errors.length > 0}
       />
     </ControlWrapper>
   );
