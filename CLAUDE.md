@@ -6,22 +6,24 @@ Visual workflow editor SDK (React) with a reference backend and Temporal-based e
 
 Three onboarding paths (A installs from npm; B, C run the repo locally). README "Get started" covers all three. Path A ("Embed the SDK") installs `@workflowbuilder/sdk` from npm; the README has install + a minimal snippet, and the full guide lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
 
-| Command                      | Path | What it does                                                                            |
-| ---------------------------- | ---- | --------------------------------------------------------------------------------------- |
-| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents             |
-| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                                        |
-| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker                     |
-| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations out-of-band (backend also auto-migrates on boot)               |
-| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)                 |
-| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                                    |
-| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                                           |
-| `pnpm infra:down`            | C    | Stop the Docker stack                                                                   |
-| `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                           |
-| `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two) |
-| `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)             |
-| `pnpm build`                 | -    | Build the demo app                                                                      |
-| `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)              |
-| `pnpm check`                 | -    | Lint + typecheck + format + knip                                                        |
+| Command                      | Path | What it does                                                                                             |
+| ---------------------------- | ---- | -------------------------------------------------------------------------------------------------------- |
+| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents                              |
+| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                                                         |
+| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker                                      |
+| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations out-of-band (backend also auto-migrates on boot)                                |
+| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)                                  |
+| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                                                     |
+| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                                                            |
+| `pnpm infra:down`            | C    | Stop the Docker stack                                                                                    |
+| `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                                            |
+| `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two)                  |
+| `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
+| `pnpm build`                 | -    | Build the demo app                                                                                       |
+| `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
+| `pnpm check`                 | -    | Lint + typecheck + format + knip                                                                         |
+| `pnpm release:version <pkg>` | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
+| `pnpm release:tag <pkg>`     | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 
@@ -70,25 +72,25 @@ packages/
   types/            - Shared TypeScript types
 ```
 
-Where to put a new script: root `tools/` for pure-Node bootstrap (runs before any workspace is built); `apps/tools/` for tooling that needs TypeScript or workspace deps.
+Where to put a new script: root `tools/` for plain Node scripts that run with `node` and no build step (bootstrap checks and the maintainer release commands; root devDependencies such as Changesets are fine); `apps/tools/` for tooling that needs TypeScript or workspace packages. `tools/` is outside the pnpm workspace, so `pr-check.yml` lints, formats and tests it with dedicated steps (`pnpm test:tools`).
 
 ## Per-workspace docs
 
 Each workspace has its own context. Read the relevant file before extending a workspace.
 
-| Workspace                      | Authoritative docs                                                                           |
-| ------------------------------ | -------------------------------------------------------------------------------------------- |
-| `packages/sdk`                 | `packages/sdk/README.md`                                                                     |
-| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`, `packages/ui/built-css-pitfalls.md`) |
-| `packages/tokens`              | `packages/tokens/README.md`                                                                  |
-| `packages/ai-config`           | `packages/ai-config/README.md`                                                               |
-| `packages/execution-core`      | `packages/execution-core/README.md`                                                          |
-| `packages/temporal`            | `packages/temporal/README.md`                                                                |
-| `packages/temporal-connection` | `packages/temporal-connection/README.md`                                                     |
-| `apps/demo`                    | `apps/demo/CLAUDE.md`                                                                        |
-| `apps/ai-studio`               | `apps/ai-studio/README.md`                                                                   |
-| `apps/backend`                 | `apps/backend/README.md`                                                                     |
-| `apps/execution-worker`        | `apps/execution-worker/README.md`                                                            |
+| Workspace                      | Authoritative docs                                                                                                      |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `packages/sdk`                 | `packages/sdk/README.md`                                                                                                |
+| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`, `packages/ui/built-css-pitfalls.md`)                            |
+| `packages/tokens`              | `packages/tokens/README.md`                                                                                             |
+| `packages/ai-config`           | `packages/ai-config/README.md`                                                                                          |
+| `packages/execution-core`      | `packages/execution-core/README.md`                                                                                     |
+| `packages/temporal`            | `packages/temporal/README.md` (+ `packages/temporal/activity-profiles.md`, `packages/temporal/event-history-labels.md`) |
+| `packages/temporal-connection` | `packages/temporal-connection/README.md`                                                                                |
+| `apps/demo`                    | `apps/demo/CLAUDE.md`                                                                                                   |
+| `apps/ai-studio`               | `apps/ai-studio/README.md`                                                                                              |
+| `apps/backend`                 | `apps/backend/README.md`                                                                                                |
+| `apps/execution-worker`        | `apps/execution-worker/README.md`                                                                                       |
 
 ## Types & Aliases
 
@@ -117,7 +119,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
 | Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
-| Knip       | `pnpm exec knip`              | Detects unused exports/dependencies (not part of `pnpm check` or CI)                                    |
+| Knip       | `pnpm knip`                   | Detects unused exports/dependencies. Run by hand: not part of `pnpm check` or CI                        |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 
@@ -158,29 +160,31 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 
 ## Common Slash Commands
 
-| Command                            | What it does                                                                                                                          |
-| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `/wb.create-app <name>`            | Scaffold a new SDK-consuming frontend app under `apps/<name>/` — interactive (port, plugins/nodes/templates to seed from demo)        |
-| `/wb.create-node <name>`           | Scaffold a new UI node type — asks for target app (default `demo`)                                                                    |
-| `/wb.create-plugin <name>`         | Scaffold a new SDK plugin — asks for target app (default `demo`)                                                                      |
-| `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                |
-| `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                   |
-| `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                               |
-| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                     |
-| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                           |
-| `/wb.changeset <bump> "<summary>"` | Add a changeset for SDK changes (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**` |
+| Command                            | What it does                                                                                                                                                                              |
+| ---------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `/wb.create-app <name>`            | Scaffold a new SDK-consuming frontend app under `apps/<name>/` — interactive (port, plugins/nodes/templates to seed from demo)                                                            |
+| `/wb.create-node <name>`           | Scaffold a new UI node type — asks for target app (default `demo`)                                                                                                                        |
+| `/wb.create-plugin <name>`         | Scaffold a new SDK plugin — asks for target app (default `demo`)                                                                                                                          |
+| `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                                                                    |
+| `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                                                                       |
+| `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                                                                                   |
+| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                                                                         |
+| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                                                                               |
+| `/wb.changeset <bump> "<summary>"` | Add a changeset for a published package (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**`, `packages/ui/**` or `packages/temporal/**` |
 
-### Releasing `@workflowbuilder/sdk`
+### Releasing the `@workflowbuilder/*` packages
 
-Three workspaces are set up to publish to npm: `@workflowbuilder/sdk`, `@workflowbuilder/ui` (the component library, built on Base UI) and `@workflowbuilder/temporal` (the Temporal Plugin). **`@workflowbuilder/temporal` is not on npm yet** - it is in development, consumed only inside this repo, and its first publish needs an explicit go-ahead. It is held back by `"private": true` in its `package.json` (publish skips it silently, exit 0) plus the absence of an npm trusted publisher. Do not remove either, and do not push its release tag, until then; see the box at the top of [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md). Everything else under `apps/` and `packages/` is private - including `@workflowbuilder/ui-tokens` - so Changesets skips it automatically; the internal `@workflow-builder/*` packages are additionally listed under `ignore` in `.changeset/config.json` (note `@workflowbuilder/ui-tokens` is not in that list - it relies on `private: true`). Each publishes via its own scoped release tag (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`) and its own workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`) - see `packages/sdk/RELEASE.md`.
+Three workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuilder/ui` (the component library, built on Base UI) and `@workflowbuilder/temporal` (the Temporal Plugin). The last two are publishable but not on npm yet. Their first version is published by hand, because npm cannot register a trusted publisher for a package that does not exist; see [`packages/RELEASE.md`](packages/RELEASE.md) § "First release of a new package". Everything else under `apps/` and `packages/` is `private: true`, and Changesets skips it through `privatePackages` in `.changeset/config.json`. There is no `ignore` list on purpose: Changesets refuses the CLI `--ignore` flag while one exists, and `pnpm release:version` depends on that flag. Each package publishes via its own scoped release tag (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`) and its own workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`), and each is released on its own: `pnpm release:version <pkg>` consumes only that package's changesets, `pnpm release:tag <pkg>` pushes only that package's tag. Never run bare `pnpm changeset version` or `pnpm changeset tag`. See `packages/RELEASE.md`.
+
+**`@workflowbuilder/temporal` declares every `@temporalio/*` package its `dist` imports as a peer and lists none of those in its own `devDependencies`.** pnpm installs a missing peer as an ordinary dependency of the package, and that survives the `--prod` install in `deploy/ai-studio/Dockerfile`. A peer that is also a devDependency counts as satisfied, `--prod` then removes it, and the production image fails at import time while every local install works and pnpm prints no warning. The packages the tests alone use (`@temporalio/common`, `@temporalio/testing`, `@temporalio/worker`) belong in its devDependencies. `@temporalio/worker` is also an optional peer, because a consumer that runs a Worker supplies it, but nothing in `dist` imports it, so `--prod` dropping it costs nothing.
 
 **Changesets for bundled execution packages.** `@workflow-builder/execution-core` and `@workflow-builder/types` are private and source-only, and `@workflowbuilder/temporal` bundles both into its `dist` (they reach it through `packages/temporal/src/core-contract.ts`, the one file allowed to import them by relative path). A change in either that alters execution behaviour or the published types therefore needs a changeset for `@workflowbuilder/temporal` - that release is how it reaches consumers. A pure refactor needs none. `pr-check.yml` warns when those paths change without one.
 
-**Until `@workflowbuilder/temporal` reaches npm, do not add changesets for it.** The rule above applies from the first release onward. Today the package is `private: true` at `0.0.0`, so an entry would describe a change against a version nobody ever installed, and wording like "now scheduled with" or "no migration required" reads as nonsense in a first release. One changeset is already queued to seed those release notes - expand that single entry at publish time to describe the package as it ships, instead of accumulating a development diary. Note that `private: true` does not make Changesets skip the package: it blocks publishing, not versioning, and `pnpm changeset status` lists the package either way. So this is a convention, not something the tooling enforces for you. `pr-check.yml` only warns once the package is publishable, so the guard turns itself back on when the first publish drops `private: true`.
+**Changesets for `@workflowbuilder/temporal` follow the SDK rules.** One changeset (`.changeset/temporal-plugin-package.md`) is queued to seed the first release notes; the release PR that consumes it rewrites the generated section to describe the package as it ships. `pr-check.yml` warns when `packages/execution-core` or `packages/types` change without a changeset for it.
 
 **Commit format is enforced.** Every commit goes through `commitlint` via the `commit-msg` husky hook — Conventional Commits format only (`<type>(<scope>): <subject>`, types from `feat / fix / perf / refactor / docs / test / chore / build / ci / style / revert`). Bad messages are rejected before they land in git history.
 
-**Daily SDK change:**
+**Daily change to a published package** (the SDK below; `ui` and `temporal` follow the same steps with their own paths):
 
 1. Edit `packages/sdk/**`, run tests/typecheck locally.
 2. **Add a changeset** with `/wb.changeset <patch|minor|major> "<summary>"`. Required for any consumer-visible change. Skip only for changes that don't ship in `dist/` (e.g. `eslint.config.mjs`, internal tests, source-only comments). Keep it to 1-2 plain sentences: the consumer-visible change plus any migration note - changesets become the public CHANGELOG, so no rationale, investigation history, or noise (that belongs in the commit message and PR).
@@ -195,17 +199,17 @@ Three workspaces are set up to publish to npm: `@workflowbuilder/sdk`, `@workflo
 
 **Release moment** (maintainer, not Claude):
 
-1. Open PR `release/vX.Y.Z` → `release`. In the branch, run `pnpm changeset version` — bumps `packages/sdk/package.json`, regenerates `packages/sdk/CHANGELOG.md` (then reformat it into Keep a Changelog style before committing, see [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes consumed `.changeset/*.md`.
-2. Review the diff, merge the PR into `release`.
-3. Tag the merge commit on `release`: `git tag vX.Y.Z && git push origin vX.Y.Z`.
+1. On `main`, `pnpm release:version <pkg> --dry-run` shows the version the pending changesets add up to. Cut `release-<pkg>-X.Y.Z` and run `pnpm release:version <pkg>`. It bumps only `packages/<pkg>/package.json`, regenerates its `CHANGELOG.md` (reformat it into Keep a Changelog style before committing, see [`packages/RELEASE.md`](packages/RELEASE.md) § "Reformat the generated CHANGELOG section"), deletes only the changesets that named `<pkg>`.
+2. Open PR `release-<pkg>-X.Y.Z` → `release`, review the diff, merge.
+3. On the tip of `release`: `pnpm release:tag <pkg>`. It checks the state, asks, then creates and pushes `@workflowbuilder/<pkg>@X.Y.Z`.
 4. GitHub Action triggered by the tag runs lint + typecheck + test + `pnpm publish --provenance` (authenticated via npm Trusted Publisher / OIDC, no `NPM_TOKEN` stored anywhere) + creates a GitHub Release.
 5. Sync back: `git checkout main && git merge release && git push` so main picks up the bumped version + clean `.changeset/`.
 
-Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/sdk/RELEASE.md` § "Why these decisions".
+Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/RELEASE.md` § "Why these decisions".
 
-`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay".
+`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay". Each release of it records the replay histories under the new version inside the release PR (`packages/RELEASE.md` § "Release procedure").
 
-Canonical procedure with edge cases and rollback: [`packages/sdk/RELEASE.md`](packages/sdk/RELEASE.md).
+Canonical procedure with edge cases and rollback: [`packages/RELEASE.md`](packages/RELEASE.md).
 
 ### Maintaining `/wb.*` skills
 

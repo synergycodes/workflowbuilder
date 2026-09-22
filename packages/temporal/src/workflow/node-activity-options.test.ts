@@ -115,7 +115,7 @@ describe('resolveNodeActivityOptions', () => {
     });
 
     it('validates the whole map, so a bad entry names itself', () => {
-      // The README points consumers here to check their own map, so the export cannot
+      // activity-profiles.md points consumers here to check their own map, so the export cannot
       // assume the snapshot createRunWorkflow builds. It runs the same map-wide assert
       // a worker runs, which is what keeps the two messages from drifting apart.
       const undefinedEntry = { 'test/step': undefined } as unknown as NodeActivityProfiles;

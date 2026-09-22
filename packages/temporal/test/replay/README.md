@@ -30,12 +30,12 @@ recorded by the same broken code.
 One file per path through the sandbox code. A change that leaves one path alone can still
 move the commands on another, so every scenario replays on every run.
 
-| File                        | Graph                            | Path it protects                                                                                                                                                        |
-| --------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `v0-parallel-wave.json`     | `start → (left, right) → join`   | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.             |
-| `v0-fail-policy.json`       | `start → (fail, sibling) → join` | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails. |
-| `v0-incomplete-branch.json` | `start → route ─[yes]→ taken`    | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                          |
-| `v0-cancel-mid-run.json`    | `start → block`                  | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                             |
+| File                               | Graph                            | Path it protects                                                                                                                                                        |
+| ---------------------------------- | -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<version>-parallel-wave.json`     | `start → (left, right) → join`   | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.             |
+| `<version>-fail-policy.json`       | `start → (fail, sibling) → join` | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails. |
+| `<version>-incomplete-branch.json` | `start → route ─[yes]→ taken`    | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                          |
+| `<version>-cancel-mid-run.json`    | `start → block`                  | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                             |
 
 The cancel scenario parks its executor until the driver has cancelled the run, so the
 recording always catches the activity open. The late completion then meets a closed run,
@@ -56,7 +56,9 @@ UPDATE_REPLAY_HISTORIES=<scenario>[,<scenario>] pnpm --filter @workflowbuilder/t
 Adding a scenario means adding an entry to `../fixtures/replay-scenarios.ts`, recording
 it by name, and describing it in the table above. The harness fails until the file exists.
 Recordings land under the `v0-` prefix unless `REPLAY_HISTORY_VERSION` says otherwise;
-the last section covers when to set it.
+the last section covers when to set it. An existing file is never overwritten: the harness
+fails and names it, so a release recorded without the version variable does not rewrite
+the previous set. `REPLAY_HISTORY_OVERWRITE=1` is the explicit way to re-baseline.
 
 Or from a real run against a local stack, for a scenario the harness cannot stage.
 `historyToJSON` writes the same shape, so the two are interchangeable. Read the output
@@ -74,33 +76,34 @@ temporal workflow show --workflow-id execution-<id> --output json > histories/<v
    What to do about it depends on whether the package has shipped; see the next section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
-3. Regenerating a file resets what it guards. `UPDATE_REPLAY_HISTORIES` rewrites the
-   history from current code, so the cross-version check silently becomes a self-check.
-   Record by scenario name when adding one; `=1` is for a deliberate re-baseline of
-   every scenario, never for making a red test green.
+3. Regenerating a file resets what it guards. Rewriting a history from current code turns
+   the cross-version check into a self-check, which is why the harness refuses to overwrite
+   without `REPLAY_HISTORY_OVERWRITE=1`. Record by scenario name when adding one; `=1` with
+   the overwrite flag is for a deliberate re-baseline of every scenario, never for making a
+   red test green.
 
-`v0-` names the pre-release baseline: the package has not published a version yet, so
-these are histories from the code as it stood before the first release. At that release,
-record every scenario again under the released version:
+`v0-` was the pre-release baseline, recorded before the package published its first
+version; those files went with the 0.1.0 release, so a recording that lands under `v0-`
+today means the version variable was forgotten. Every release records every scenario again
+under the version it ships, in the release PR right after `pnpm release:version temporal`:
 
 ```bash
-REPLAY_HISTORY_VERSION=1.0.0 UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+REPLAY_HISTORY_VERSION=<version> UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
+pnpm --filter @workflowbuilder/temporal test
 ```
 
-That writes `1.0.0-<scenario>.json` next to the `v0-` files and leaves them untouched, so
-check the new set replays before deleting the old one. The `v0-` files can go, since no
-run outside this repo was ever recorded by pre-release code. Every release after that adds
-its own set the same way, and rule 2 keeps the earlier ones where they are.
+The first run writes `<version>-<scenario>.json` next to the earlier files and leaves them
+untouched; the second replays everything, old sets included. Each release adds its own set
+this way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Before the first release**, which is where the package is today: `private: true`, no
-published version, no consumer outside this repo. No run recorded by an older build
+**Before the first release**: no published version and no consumer outside this repo. No run recorded by an older build
 exists anywhere, so nothing is stranded and no deploy is at risk. Red means one thing,
 and it is a design signal rather than an incident: a command reached a path that was
 supposed to be left alone. Read the change first. If the new command genuinely belongs
-on that path, re-record the history and say so in the commit message. `patched()` is not
-needed and no major is due.
+on that path, re-record the history (`REPLAY_HISTORY_OVERWRITE=1`, since the file exists) and
+say so in the commit message. `patched()` is not needed and no major is due.
 
 **After the first release**, the same red is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or

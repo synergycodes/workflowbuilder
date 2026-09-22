@@ -1,8 +1,7 @@
 {
   "name": "@workflowbuilder/temporal",
   "type": "module",
-  "version": "0.0.0",
-  "private": true,
+  "version": "0.1.0",
   "description": "Run Workflow Builder diagrams as durable Temporal Workflow Executions: a Temporal Plugin that registers the node-execution activities, plus the workflow-side runner to re-export from your own workflows module.",
   "keywords": [
     "temporal",
@@ -61,7 +60,11 @@
     "./package.json": "./package.json"
   },
   "peerDependencies": {
-    "@temporalio/worker": "^1.23.0"
+    "@temporalio/activity": "catalog:",
+    "@temporalio/client": "catalog:",
+    "@temporalio/plugin": "catalog:",
+    "@temporalio/worker": "catalog:",
+    "@temporalio/workflow": "catalog:"
   },
   "peerDependenciesMeta": {
     "@temporalio/worker": {
@@ -69,13 +72,9 @@
     }
   },
   "devDependencies": {
-    "@temporalio/activity": "catalog:",
-    "@temporalio/client": "catalog:",
     "@temporalio/common": "catalog:",
-    "@temporalio/plugin": "catalog:",
     "@temporalio/testing": "catalog:",
     "@temporalio/worker": "catalog:",
-    "@temporalio/workflow": "catalog:",
     "@types/node": "^22.12.0",
     "@workflow-builder/execution-core": "workspace:*",
     "@workflow-builder/types": "workspace:*",
@@ -87,13 +86,7 @@
     "access": "public"
   },
   "engines": {
-    "node": ">=20.0.0"
+    "node": ">=20.3.0"
   },
-  "sideEffects": false,
-  "dependencies": {
-    "@temporalio/activity": "catalog:",
-    "@temporalio/client": "catalog:",
-    "@temporalio/plugin": "catalog:",
-    "@temporalio/workflow": "catalog:"
-  }
+  "sideEffects": false
 }

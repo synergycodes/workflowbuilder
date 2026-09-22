@@ -4,6 +4,7 @@
 import { type History, historyToJSON } from '@temporalio/common/lib/proto-utils';
 import { TestWorkflowEnvironment } from '@temporalio/testing';
 import { Worker, bundleWorkflowCode } from '@temporalio/worker';
+import { existsSync } from 'node:fs';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
@@ -123,7 +124,14 @@ describe('replay', () => {
       history = await env.client.workflow.getHandle(workflowId).fetchHistory();
 
       if (shouldRecord(scenario)) {
-        await writeFile(historyFile(scenario), `${historyToJSON(history)}\n`);
+        const target = historyFile(scenario);
+        // Overwriting resets what a recording guards (rule 3 in ./README.md), so a re-baseline has to say so.
+        if (existsSync(target) && process.env.REPLAY_HISTORY_OVERWRITE !== '1') {
+          throw new Error(
+            `${fileURLToPath(target)} already exists. Set REPLAY_HISTORY_VERSION to the new version, or REPLAY_HISTORY_OVERWRITE=1 to re-baseline it.`,
+          );
+        }
+        await writeFile(target, `${historyToJSON(history)}\n`);
       }
     }, 120_000);
 

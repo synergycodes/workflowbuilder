@@ -13,4 +13,9 @@ export default {
     `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
   '*.{ts,tsx}': [(files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`, () => `tsc --noEmit`],
   '*.css': (files) => `stylelint ${files.join(' ')}`,
+  // Outside the pnpm workspace, so nothing else formats or lints these. No tsc: they are plain Node.
+  'tools/**/*.mjs': [
+    (files) => `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
+    (files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`,
+  ],
 };
