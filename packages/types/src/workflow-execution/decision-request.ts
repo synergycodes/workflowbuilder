@@ -49,7 +49,8 @@ export type RerunSourceDecisionAction = DecisionActionBase & {
 /**
  * One action the decider can take, discriminated on `effect`. `reasonRequired` and
  * `maxIterations` may be omitted in authored JSON; the backend parser materialises their
- * defaults, so a parsed request always carries them. A port is always authored.
+ * defaults, so a parsed request always carries them. The port of a `resume` or `reject` action is
+ * always authored, never defaulted.
  */
 export type DecisionAction = ResumeDecisionAction | RejectDecisionAction | RerunSourceDecisionAction;
 

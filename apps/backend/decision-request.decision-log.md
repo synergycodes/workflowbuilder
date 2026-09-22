@@ -40,8 +40,8 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 ## Explicit ports (17.09.2026)
 
 19. **A port is never defaulted.** It is the id of an output handle on one canvas, so no value chosen without that canvas can be right, as with `deadline.policy`. The former defaults `approved` and `rejected` let a request publish with no handle to draw an edge from, and the run ended `incomplete` after the person had decided. `rerun-source` refuses a port from the other side: it does not route, so a handle for it would never fire.
-20. **A missing port is a structural issue**, like any other missing key: zod's wording, no domain code. The editor always writes ports, so no interface ever shows it.
-21. This was the first tightening of the snapshot schema since the decision route began re-parsing stored snapshots: a run parked with a port-less action would answer 500 until its snapshot named one. Accepted, because the feature lived on its branch with no run in flight.
+20. **A missing port is a structural issue**, like any other missing key: zod's wording, no domain code. The editor always writes ports, so no interface ever shows it. A structural failure on an action suspends the request-level rules for that round; a domain issue does not. That is why the `rerun-source` port is refused on the field: its issue survives a structural failure beside it, while the request-level rules wait for the action to parse.
+21. This was the first tightening of the snapshot schema since the decision route began re-parsing stored snapshots: a run parked with a port-less action, or with a `rerun-source` action carrying a `port` (the loose object used to keep it), would answer 500 until its snapshot was fixed. Accepted, because the feature lived on its branch with no run in flight.
 
 ## Rejected
 
