@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, expectTypeOf, it, vi } from 'vitest';
 
+import type { ExecutionOutcome } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
   BaseNode,
   NodeErrorPolicy,
@@ -24,6 +25,7 @@ type TestNode = BaseNode & { type: 'test/node' };
 type NodeBehavior = {
   output?: unknown;
   nextPort?: string;
+  outcome?: ExecutionOutcome;
   throws?: string;
   waits?: true;
 };
@@ -45,7 +47,7 @@ function makeRunner(behaviors: Record<string, NodeBehavior> = {}): {
         const b = behaviors[node.id];
         if (b?.throws) throw new Error(b.throws);
         if (b?.waits) return { waiting: true };
-        return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort };
+        return { output: b?.output ?? `out-${node.id}`, nextPort: b?.nextPort, outcome: b?.outcome };
       },
     },
   };
@@ -114,7 +116,7 @@ function flush(): Promise<void> {
 }
 
 type EventCall = { type: string; nodeId?: string; payload?: unknown };
-type StatusCall = { status: string; errorMessage?: string };
+type StatusCall = { status: string; errorMessage?: string; outcome?: ExecutionOutcome };
 
 type EmitFailure = { type: string; nodeId?: string; message: string };
 
@@ -138,8 +140,8 @@ function makeEvents(
           throw new Error(failOn.message);
         }
       },
-      async updateStatus(_executionId, status, errorMessage) {
-        statuses.push({ status, errorMessage });
+      async updateStatus(_executionId, status, errorMessage, outcome) {
+        statuses.push({ status, errorMessage, outcome });
         if (failStatus && failStatus.status === status) {
           throw new Error(failStatus.message);
         }
@@ -1493,6 +1495,230 @@ describe('runGraph — incomplete runs (dead ends)', () => {
 
     expect(outcome.status).toBe('failed');
     expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+  });
+});
+
+describe('runGraph: outcomes', () => {
+  const rejected = { value: 'rejected', resolvedBy: 'human' };
+
+  it('a completion with an outcome may leave its port unrouted: the run completes and records it', async () => {
+    const runner = makeRunner({ D: { output: 'no', nextPort: 'rejected', outcome: rejected } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('D'), trigger('B')], [edge('e1', 'D', 'B', 'approved')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['D']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'D' } });
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'B', reason: 'branch_not_taken' }]);
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+    expect(events.events.at(-1)).toEqual({
+      type: 'execution_completed',
+      nodeId: undefined,
+      payload: { outcome: { ...rejected, nodeId: 'D' } },
+    });
+    expect(events.statuses.at(-1)).toEqual({ status: 'completed', errorMessage: undefined, outcome: rejected });
+  });
+
+  it('the same completion without an outcome is still a dead end', async () => {
+    const runner = makeRunner({ D: { output: 'no', nextPort: 'rejected' } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('D'), trigger('B')], [edge('e1', 'D', 'B', 'approved')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'rejected' }] });
+    expect(events.statuses.at(-1)?.outcome).toBeUndefined();
+  });
+
+  it('arrives through the resolution port like any completion', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B', 'approved')]),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: 'no', nextPort: 'rejected', outcome: rejected });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'A' } });
+    expect(runner.callOrder).toEqual(['A']);
+    expect(events.events.filter((event) => event.nodeId === 'A').map((event) => event.type)).toEqual([
+      'node_started',
+      'node_waiting',
+      'node_completed',
+    ]);
+    expect(events.statuses).toEqual([
+      { status: 'waiting' },
+      { status: 'running' },
+      { status: 'completed', outcome: rejected },
+    ]);
+  });
+
+  it('records the outcome even when the port is routed', async () => {
+    const runner = makeRunner({ D: { output: 'no', nextPort: 'rejected', outcome: rejected } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput(
+        [start('D'), trigger('B'), trigger('C')],
+        [edge('e1', 'D', 'B', 'approved'), edge('e2', 'D', 'C', 'rejected')],
+      ),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['D', 'C']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'D' } });
+    expect(skipsFrom(events.events)).toEqual([{ nodeId: 'B', reason: 'branch_not_taken' }]);
+  });
+
+  it('a run without an outcome closes completed with no outcome in the event or the status write', async () => {
+    const runner = makeRunner();
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('A')], []), runner.port, events.port);
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(events.events.at(-1)).toEqual({ type: 'execution_completed', nodeId: undefined, payload: undefined });
+    expect(events.statuses.at(-1)).toEqual({ status: 'completed' });
+    expect(events.statuses.at(-1)?.outcome).toBeUndefined();
+  });
+
+  it("two outcomes in one wave: the first in the predecessor's edge order is the run's, not the first node", async () => {
+    const escalated = { value: 'escalated', resolvedBy: 'policy' };
+    const runner = makeRunner({
+      D1: { output: 'first', nextPort: 'gone-1', outcome: rejected },
+      D2: { output: 'second', nextPort: 'gone-2', outcome: escalated },
+    });
+    const events = makeEvents();
+
+    // Edges listed in the opposite order to the nodes, so the two orders give different answers.
+    const outcome = await runGraph(
+      makeInput([start('S'), trigger('D1'), trigger('D2')], [edge('e1', 'S', 'D2'), edge('e2', 'S', 'D1')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['S', 'D2', 'D1']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...escalated, nodeId: 'D2' } });
+    expect(events.statuses.at(-1)?.outcome).toEqual(escalated);
+    expect(events.events.some((event) => event.type === 'execution_incomplete')).toBe(false);
+    const completed = events.events.filter((event) => event.type === 'node_completed').map((event) => event.payload);
+    expect(completed).toEqual([{ output: 'out-S' }, { output: 'second' }, { output: 'first' }]);
+  });
+
+  it('an outcome on a completion that names no port is recorded too, and the graph routes as usual', async () => {
+    const runner = makeRunner({ A: { output: 'done', outcome: rejected } });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'A' } });
+  });
+
+  it('an unrelated dead end still ends the run incomplete, and no outcome is recorded', async () => {
+    const runner = makeRunner({
+      D: { output: 'no', nextPort: 'rejected', outcome: rejected },
+      X: { output: 'x', nextPort: 'gone' },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('S'), trigger('D'), trigger('X')], [edge('e1', 'S', 'D'), edge('e2', 'S', 'X')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'X', port: 'gone' }] });
+    expect(events.events.some((event) => event.type === 'execution_completed')).toBe(false);
+    expect(events.statuses.at(-1)).toEqual({ status: 'incomplete' });
+    expect(events.statuses.at(-1)?.outcome).toBeUndefined();
+  });
+
+  it('a fatal failure after an outcome fails the run, and the outcome goes with it', async () => {
+    const runner = makeRunner({
+      A: { output: 'no', nextPort: 'rejected', outcome: rejected },
+      F: { throws: 'boom' },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('F')], [edge('e1', 'A', 'F', 'rejected')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'boom' } });
+    expect(events.events.some((event) => event.type === 'execution_completed')).toBe(false);
+  });
+
+  it.each<[string, unknown]>([
+    ['null', null],
+    ['an empty object', {}],
+    ['a bare string', 'rejected'],
+    ['a missing resolvedBy', { value: 'rejected' }],
+    ['a blank resolvedBy', { value: 'rejected', resolvedBy: '' }],
+    ['whitespace-only strings', { value: ' ', resolvedBy: '\t\n' }],
+  ])('a shapeless outcome smuggled through unvalidated config is no outcome: %s', async (_shape, smuggled) => {
+    const runner = makeRunner({
+      D: { output: 'no', nextPort: 'rejected', outcome: smuggled as ExecutionOutcome },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
+
+    expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'rejected' }] });
+    expect(events.statuses.at(-1)?.outcome).toBeUndefined();
+  });
+
+  it("outcomes in successive waves: the earlier wave is the run's", async () => {
+    const runner = makeRunner({
+      A: { output: 'first', outcome: rejected },
+      B: { output: 'second', nextPort: 'gone', outcome: { value: 'escalated', resolvedBy: 'policy' } },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'A' } });
+  });
+
+  it('two parked nodes resolved in reverse order: scheduling order still picks the winner', async () => {
+    const escalated = { value: 'escalated', resolvedBy: 'policy' };
+    const runner = makeGatedRunner({ B: { waits: true }, C: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput([start('S'), trigger('B'), trigger('C')], [edge('e1', 'S', 'B'), edge('e2', 'S', 'C')]),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(2);
+    runner.resolveGate('C', { output: 'c', nextPort: 'gone-c', outcome: escalated });
+    runner.resolveGate('B', { output: 'b', nextPort: 'gone-b', outcome: rejected });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'B' } });
   });
 });
 

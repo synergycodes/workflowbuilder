@@ -5,7 +5,7 @@
 // ascending per execution — a store that can enforce uniqueness on
 // (executionId, sequence) will reject a duplicate from an activity retry, which is
 // how at-least-once delivery stays idempotent.
-import type { ExecutionEventType, ExecutionStatus } from './core-contract';
+import type { ExecutionEventType, ExecutionOutcome, ExecutionStatus } from './core-contract';
 
 export interface ExecutionStore {
   emitExecutionEvent(
@@ -15,5 +15,11 @@ export interface ExecutionStore {
     payload?: unknown,
     nodeId?: string,
   ): Promise<void>;
-  updateExecutionStatus(executionId: string, status: ExecutionStatus, errorMessage?: string): Promise<void>;
+  /** `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result. */
+  updateExecutionStatus(
+    executionId: string,
+    status: ExecutionStatus,
+    errorMessage?: string,
+    outcome?: ExecutionOutcome,
+  ): Promise<void>;
 }

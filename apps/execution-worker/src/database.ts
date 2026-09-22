@@ -3,6 +3,7 @@ import postgres from 'postgres';
 
 import {
   type ExecutionEventType,
+  type ExecutionOutcome,
   type ExecutionStatus,
   TERMINAL_EXECUTION_STATUSES,
 } from '@workflow-builder/types/workflow-execution/execution-events';
@@ -43,7 +44,12 @@ export const database = {
     await sql`SELECT pg_notify('execution_events', ${executionId})`;
   },
 
-  async updateExecutionStatus(executionId: string, status: ExecutionStatus, errorMessage?: string) {
+  async updateExecutionStatus(
+    executionId: string,
+    status: ExecutionStatus,
+    errorMessage?: string,
+    outcome?: ExecutionOutcome,
+  ) {
     const isTerminal = TERMINAL_STATUSES.includes(status);
 
     // Terminal statuses are immutable: a cancel cleanup landing after the run already
@@ -58,6 +64,8 @@ export const database = {
         started_at = CASE WHEN ${status} = 'running' AND started_at IS NULL THEN now() ELSE started_at END,
         finished_at = CASE WHEN ${isTerminal} THEN now() ELSE finished_at END,
         error_message = ${errorMessage ?? null},
+        outcome = COALESCE(${outcome?.value ?? null}, outcome),
+        resolved_by = COALESCE(${outcome?.resolvedBy ?? null}, resolved_by),
         updated_at = now()
       WHERE id = ${executionId}
         AND status NOT IN ${sql([...TERMINAL_EXECUTION_STATUSES])}

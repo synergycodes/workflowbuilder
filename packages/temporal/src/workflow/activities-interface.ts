@@ -4,6 +4,7 @@ import type {
   BaseNode,
   ExecutionContext,
   ExecutionEventType,
+  ExecutionOutcome,
   ExecutionStatus,
   NodeExecutionResult,
 } from './core-contract';
@@ -17,5 +18,10 @@ export type Activities<TNode extends BaseNode = BaseNode> = {
     payload?: unknown,
     nodeId?: string,
   ): Promise<void>;
-  updateStatus(executionId: string, status: ExecutionStatus, errorMessage?: string): Promise<void>;
+  updateStatus(
+    executionId: string,
+    status: ExecutionStatus,
+    errorMessage?: string,
+    outcome?: ExecutionOutcome,
+  ): Promise<void>;
 };

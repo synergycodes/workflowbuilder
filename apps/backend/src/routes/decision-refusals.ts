@@ -62,7 +62,8 @@ export const LOOKUP_REFUSALS = {
   node_without_decision_request: 'node_without_request',
 } as const satisfies Record<FindDecisionRequestError, DecisionRefusal>;
 
-// The route built the envelope, so a fault can only be its own bug: it surfaces as 500.
+// The route built the envelope, so a fault is its own bug, or a worker whose validator predates a key
+// the route now sends (worker README, deploy order): it surfaces as 500.
 export const ENGINE_REFUSALS = {
   node_not_waiting: 'node_not_waiting',
   verdict_already_delivered: 'decision_already_made',

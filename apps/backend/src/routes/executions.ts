@@ -42,6 +42,8 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
       workflowId: execution.workflowId,
       sourceVersion: execution.sourceVersion,
       status: execution.status,
+      outcome: execution.outcome,
+      resolvedBy: execution.resolvedBy,
       startedAt: execution.startedAt,
       finishedAt: execution.finishedAt,
       createdAt: execution.createdAt,
