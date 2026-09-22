@@ -37,8 +37,11 @@
       background-color: var(--wb-public-list-item-background-color);
     }
 
-    &:focus-visible,
     &[data-highlighted] {
+      background-color: var(--wb-public-list-item-background-color-focus);
+    }
+
+    &:focus-visible {
       outline: none;
       box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
         var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-public-list-item-outline-size)

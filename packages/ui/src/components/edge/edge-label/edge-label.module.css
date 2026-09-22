@@ -51,11 +51,10 @@
     &.selected {
       border-color: var(--wb-public-edge-label-border-color-selected);
 
-      /* The extra weight is drawn inward, like the master's INSIDE stroke, so
-         the label keeps the size it has in every other state. */
-      box-shadow: inset 0 0 0
-        calc(var(--wb-public-edge-label-border-size-selected) - var(--wb-public-edge-label-border-size))
+      /* One stroke: border plus inset shadow leaves an anti-aliased seam at canvas zooms other than 1. */
+      outline: var(--wb-public-edge-label-border-size-selected) var(--wb-public-edge-label-border-style)
         var(--wb-public-edge-label-border-color-selected);
+      outline-offset: calc(-1 * var(--wb-public-edge-label-border-size-selected));
     }
 
     &.disabled {

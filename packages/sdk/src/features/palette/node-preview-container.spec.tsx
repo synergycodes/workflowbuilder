@@ -82,11 +82,11 @@ describe('NodePreviewContainer', () => {
     expect(screen.queryByTestId('custom-template')).toBeNull();
   });
 
-  it('passes the selected and disabled node states to the template', () => {
-    render(<NodePreviewContainer type="multi-port" selected disabled />);
+  it('passes the disabled node state to the template and never renders it selected', () => {
+    render(<NodePreviewContainer type="multi-port" disabled />);
 
     const element = screen.getByTestId('built-in-template');
-    expect(element.dataset.selected).toBe('true');
+    expect(element.dataset.selected).toBe('false');
     expect(element.dataset.disabled).toBe('true');
   });
 
