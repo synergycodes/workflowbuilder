@@ -1,12 +1,13 @@
 import { Switch } from '@workflowbuilder/ui';
 
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { SwitchControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function SwitchControl(props: SwitchControlProps) {
-  const { data, handleChange, path, enabled, uischema } = props;
-  const isDisabled = !enabled || uischema.disabled === true;
+  const { data, handleChange, path } = props;
+  const isEditable = useIsControlEditable(props);
 
   function onChange(checked: boolean) {
     handleChange(path, checked);
@@ -14,7 +15,7 @@ function SwitchControl(props: SwitchControlProps) {
 
   return (
     <ControlWrapper {...props}>
-      <Switch disabled={isDisabled} size="medium" checked={data ?? false} onChange={onChange} />
+      <Switch disabled={!isEditable} size="medium" checked={data ?? false} onChange={onChange} />
     </ControlWrapper>
   );
 }

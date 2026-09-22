@@ -4,18 +4,18 @@ import { useSingleSelectedElement } from '../../../../features/properties-bar/us
 import { VariableText } from '../../../../features/variables/components/variable-text/variable-text';
 import { variablesTypesToExcludeInText } from '../../../../features/variables/constants';
 import { useAvailableVariables } from '../../../../features/variables/hooks/use-available-variables';
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { VariableTextAreaControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextAreaControl(props: VariableTextAreaControlProps) {
-  const { data, handleChange, path, errors, enabled, uischema } = props;
-  const { placeholder, disabled } = uischema;
+  const { data, handleChange, path, errors, uischema } = props;
+  const { placeholder } = uischema;
+  const isEditable = useIsControlEditable(props);
   const selection = useSingleSelectedElement();
   // TODO: add param to pick what type of variables are available
   const suggestionGroups = useAvailableVariables(selection?.node?.id, variablesTypesToExcludeInText);
-
-  const isDisabled = !enabled || disabled === true;
 
   const [inputValue, setInputValue] = useState(data ?? '');
 
@@ -35,7 +35,7 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
         variant="text-area"
         suggestionGroups={suggestionGroups}
         hasError={errors.length > 0}
-        mentionsInputProps={{ disabled: isDisabled, placeholder, onBlur }}
+        mentionsInputProps={{ disabled: !isEditable, placeholder, onBlur }}
       />
     </ControlWrapper>
   );

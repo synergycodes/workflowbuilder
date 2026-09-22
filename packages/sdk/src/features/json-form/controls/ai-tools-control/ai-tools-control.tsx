@@ -9,15 +9,19 @@ import styles from './ai-tools-control.module.css';
 
 import { FormControlWithLabel } from '../../../../components/form/form-control-with-label/form-control-with-label';
 import { closeModal } from '../../../modals/stores/use-modal-store';
+import { useIsControlEditable } from '../../hooks/use-is-control-editable';
 import type { AiAgentTool, AiToolsControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { createAiTool, hasAnyValue } from './create-ai-tool';
 import { openAddToolModal } from './open-add-tool-modal';
 import { toolOptions } from './select-options';
 
-function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiToolsControlProps) {
+function AiToolsControl(props: AiToolsControlProps) {
+  const { path, handleChange, data } = props;
+  const isEditable = useIsControlEditable(props);
+
   const { t } = useTranslation(undefined, { keyPrefix: 'aiTools' });
-  const isDisabled = !enabled || uischema.disabled === true;
+
   const handleSubmit = useCallback(
     (change: AiAgentTool) => {
       if (hasAnyValue(change)) {
@@ -61,7 +65,7 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           variant: 'secondary',
           className: styles['selected-tool-button'],
           onClick: () => openEditorModal(toolData),
-          disabled: isDisabled,
+          disabled: !isEditable,
         };
 
         return (
@@ -75,14 +79,14 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
               ) : (
                 <Button {...sharedButtonProps}>{label}</Button>
               )}
-              <NavButton onClick={() => onRemoveTool(toolData.id)} disabled={isDisabled}>
+              <NavButton onClick={() => onRemoveTool(toolData.id)} disabled={!isEditable}>
                 <Trash weight="bold" />
               </NavButton>
             </div>
           </FormControlWithLabel>
         );
       })}
-      <Button variant="primary" onClick={(_) => openEditorModal()} disabled={isDisabled}>
+      <Button variant="primary" onClick={(_) => openEditorModal()} disabled={!isEditable}>
         <PlusCircle />
         {t('addToolSlot')}
       </Button>
