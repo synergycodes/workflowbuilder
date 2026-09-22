@@ -144,7 +144,12 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
       if (rejectIndex === undefined) return;
       const resume = request.actions[resumeIndex];
       const reject = request.actions[rejectIndex];
-      if (resume.effect === 'resume' && reject.effect === 'reject' && resume.port === reject.port) {
+      if (
+        resume.effect === 'resume' &&
+        reject.effect === 'reject' &&
+        resume.port === reject.port &&
+        isNotBlank(reject.port)
+      ) {
         context.addIssue(
           decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port),
         );

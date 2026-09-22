@@ -411,6 +411,20 @@ describe('decisionRequestSchema', () => {
     expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
   });
 
+  it('reports two blank ports as two empty-port issues, without a port-equality issue riding along', () => {
+    const issues = issuesOf(
+      request({
+        actions: [
+          { ...approve, port: ' ' },
+          { ...reject, port: ' ' },
+        ],
+      }),
+    );
+
+    expect(issues.map((issue) => issue.path)).toEqual(['actions.0.port', 'actions.1.port']);
+    expect(issues.map((issue) => issue.domain)).toEqual([{ issue: 'port_empty' }, { issue: 'port_empty' }]);
+  });
+
   it('reports a stray rerun-source port beside a structural failure of the same action', () => {
     const issues = issuesOf(
       request({ actions: [approve, { label: 'Ask again', effect: 'rerun-source', port: 'again' }] }),
