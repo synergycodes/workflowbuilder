@@ -136,7 +136,7 @@ function issuePaths(snapshot: unknown): string[] {
 }
 
 describe('workflowSnapshotSchema: decision requests', () => {
-  const approve = { name: 'approve', label: 'Approve', effect: 'resume' };
+  const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
   const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
   const emptyForm = { type: 'object', properties: {} };
 
@@ -150,14 +150,14 @@ describe('workflowSnapshotSchema: decision requests', () => {
     };
   }
 
-  it('parses a decision request and materialises its defaults inside properties', () => {
+  it('parses a decision request inside properties and materialises the rerun default', () => {
     const parsed = workflowSnapshotSchema.parse({
       nodes: [node('src'), decisionNode('review', { actions: [approve, askAgain] })],
       edges: [edge('src', 'review')],
     });
 
     expect(parsed.nodes[1]!.data.properties?.decisionRequest?.actions).toEqual([
-      { ...approve, port: 'approved' },
+      approve,
       { ...askAgain, maxIterations: 3 },
     ]);
   });
@@ -551,7 +551,10 @@ describe('mapToExecutionModel', () => {
   it('lifts a validated decision request out of `config` onto `decisionRequest`', () => {
     const request = {
       version: 1,
-      actions: [{ name: 'approve', label: 'Approve', effect: 'resume' }],
+      actions: [
+        { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' },
+        { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' },
+      ],
       schema: { type: 'object', properties: {} },
     };
     const snapshot = workflowSnapshotSchema.parse({
@@ -569,7 +572,7 @@ describe('mapToExecutionModel', () => {
 
     expect(result.nodes[1]!.decisionRequest).toEqual({
       ...request,
-      actions: [{ ...request.actions[0], port: 'approved' }],
+      actions: [request.actions[0], { ...request.actions[1], maxIterations: 3 }],
     });
     expect(result.nodes[1]!.config).toEqual({ foo: 1 });
     expect(result.nodes[1]!.label).toBe('Review');
@@ -608,7 +611,7 @@ describe('workflowSnapshotSchema: own __proto__ keys', () => {
 
   it('rejects one inside a decision request instead of inheriting the deadline it smuggles', () => {
     const poisoned = snapshotJson(
-      '{"decisionRequest":{"version":1,"actions":[{"name":"approve","label":"Approve","effect":"resume"}],' +
+      '{"decisionRequest":{"version":1,"actions":[{"name":"approve","label":"Approve","effect":"resume","port":"approved"}],' +
         '"schema":{"type":"object","properties":{}},' +
         '"__proto__":{"deadline":{"after":"garbage","policy":"nuke"},"uiSchema":"x"}}}',
     );

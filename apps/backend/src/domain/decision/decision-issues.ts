@@ -10,6 +10,7 @@ export const DECISION_ISSUE_MESSAGES = {
   resume_required: "an action with effect 'resume' is required",
   port_empty: 'port must not be blank',
   port_reserved: "port must not be the reserved 'errorRoute'",
+  port_not_allowed: 'a rerun-source action does not route and takes no port',
   reject_port_equals_resume_port: "reject port '{value}' must differ from the resume port",
   required_field_undeclared: "required field '{value}' is not declared in properties",
   deadline_format:

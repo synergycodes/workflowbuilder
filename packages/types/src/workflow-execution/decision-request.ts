@@ -23,20 +23,23 @@ type DecisionActionBase = {
 /** Accepts the proposal, edited or not: the run continues on `port`. Exactly one per request. */
 export type ResumeDecisionAction = DecisionActionBase & {
   effect: 'resume';
-  /** Output handle the run continues on. Defaults to `approved`. Never `errorRoute`. */
+  /** Required: the id of the output handle the run continues on. Never `errorRoute`. */
   port: string;
 };
 
 /** Rejects the proposal: the run continues on `port`. At most one per request. */
 export type RejectDecisionAction = DecisionActionBase & {
   effect: 'reject';
-  /** Output handle the run continues on. Defaults to `rejected`. Must differ from the resume port. */
+  /** Required: the id of the output handle the run continues on. Must differ from the resume port. */
   port: string;
   /** Whether the decider must give a reason. Defaults to `false`. */
   reasonRequired: boolean;
 };
 
-/** Re-runs the proposal source with the decider's comment. At most one per request. */
+/**
+ * Re-runs the proposal source with the decider's comment. At most one per request. Takes no
+ * `port`: it does not route.
+ */
 export type RerunSourceDecisionAction = DecisionActionBase & {
   effect: 'rerun-source';
   /** Upper bound on re-runs of the proposal source. Integer of at least 1. Defaults to `3`. */
@@ -44,9 +47,10 @@ export type RerunSourceDecisionAction = DecisionActionBase & {
 };
 
 /**
- * One action the decider can take, discriminated on `effect`. `port`, `reasonRequired` and
+ * One action the decider can take, discriminated on `effect`. `reasonRequired` and
  * `maxIterations` may be omitted in authored JSON; the backend parser materialises their
- * defaults, so a parsed request always carries them.
+ * defaults, so a parsed request always carries them. The port of a `resume` or `reject` action is
+ * always authored, never defaulted.
  */
 export type DecisionAction = ResumeDecisionAction | RejectDecisionAction | RerunSourceDecisionAction;
 
