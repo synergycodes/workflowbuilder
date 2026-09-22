@@ -25,7 +25,8 @@ function isNotBlank(text: string): boolean {
   return text.trim().length > 0;
 }
 
-// 'errorRoute' is the handle the runner reserves for the error policy.
+// A port is the id of a handle on one canvas, so it has no default. 'errorRoute' is the
+// handle the runner reserves for the error policy.
 const portSchema = z
   .string()
   .refine(isNotBlank, decisionRefinement('port_empty'))
@@ -39,13 +40,13 @@ const actionBase = {
 const resumeActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('resume'),
-  port: portSchema.default('approved'),
+  port: portSchema,
 });
 
 const rejectActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('reject'),
-  port: portSchema.default('rejected'),
+  port: portSchema,
   reasonRequired: z.boolean().default(false),
 });
 
@@ -53,6 +54,8 @@ const rerunSourceActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('rerun-source'),
   maxIterations: z.int().min(1).default(3),
+  // Refused on the field, not the object, so the issue survives a structural failure beside it.
+  port: z.unknown().refine((port) => port === undefined, decisionRefinement('port_not_allowed')),
 });
 
 // The effect picks the member that parses the rest, so it is checked on its own first: a
@@ -141,7 +144,12 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
       if (rejectIndex === undefined) return;
       const resume = request.actions[resumeIndex];
       const reject = request.actions[rejectIndex];
-      if (resume.effect === 'resume' && reject.effect === 'reject' && resume.port === reject.port) {
+      if (
+        resume.effect === 'resume' &&
+        reject.effect === 'reject' &&
+        resume.port === reject.port &&
+        isNotBlank(reject.port)
+      ) {
         context.addIssue(
           decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port),
         );
