@@ -36,9 +36,9 @@ export type {
 // emitted .d.ts and breaks types for consumers, since the package is not published.
 // Restating it in terms of the relatively-imported types keeps dist self-contained.
 // `test/core-contract.test.ts` fails to compile if this ever drifts from the core.
-// tsconfig `paths` satisfies tsc, but the d.ts bundler keeps the package name, so every
-// core type that names a @workflow-builder/types type is restated here
-// (follow-up: temporal-core-contract-reexport).
+// The rule is reachability: no type an entry point exports may name that package. The core
+// re-exports above (`RunGraphOutcome`, `ActivityRunnerPort`) do name it and stay safe only
+// while no entry exports them. Nothing checks dist for it yet (follow-up: temporal-dist-dts-guard).
 export type WorkflowExecutionInput<TNode extends BaseNode> = {
   workflowId: string;
   executionId: string;

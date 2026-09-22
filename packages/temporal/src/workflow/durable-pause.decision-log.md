@@ -65,17 +65,18 @@ verdict carries. This file records the decisions behind the Temporal side of the
   untouched. Giving it a domain shape belongs to the decision-contract work.
 - **The outcome rides on the completion.** A resolution may carry
   `outcome: { value, resolvedBy }`; the runner records it on `execution_completed` and
-  hands it to the store with the terminal status. On the completion, because the deadline
-  that will one day decide builds its completion inside the workflow, with no backend to
-  ask. The validator checks shape only (exactly `value` and `resolvedBy`, both non-empty
+  hands it to the store with the terminal status. It rides on the completion because the
+  deadline that will one day decide builds its completion inside the workflow, with no
+  backend to ask. The validator checks shape only (exactly `value` and `resolvedBy`, both non-empty
   strings); meaning is the backend's. No command added or moved: the histories replay
   unchanged.
 - **The completion shapes are restated in the seam.** `CompletedNodeExecution` now refers
   to a type from `@workflow-builder/types`, a package that is never published. Re-exported
   straight from the core, it pulled an import of that package into the type declarations
-  this package ships, which no consumer could resolve. Typecheck did not notice: the path
-  mapping in tsconfig resolves the name for the compiler, while the declaration bundler
-  writes it out as it stands. Every core type that mentions that package is therefore
-  restated in `core-contract.ts`, and the pins in `test/core-contract.test.ts` compare
-  field names and parameter lists as well, because plain assignability lets an optional
-  field or parameter drift unnoticed.
+  this package ships, which no consumer could resolve. Typecheck did not notice: the
+  workspace link resolves the name for the compiler, while the declaration bundler writes
+  it out as it stands (the `paths` mapping in the package's tsconfig changed neither and
+  was removed). The rule is reachability from an entry point, so the types that entry
+  points reach are restated in `core-contract.ts`, and the pins in
+  `test/core-contract.test.ts` compare field names and parameter lists as well, because
+  plain assignability lets an optional field or parameter drift unnoticed.

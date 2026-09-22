@@ -3,8 +3,8 @@
 // the graph runner consumes, so a drift between this package and execution-core would
 // be a runtime mismatch that no other test would catch. Assignability is checked in
 // both directions, so a required member added or removed on either side fails to
-// compile. An optional member or parameter slips through that check; the `keyof` and
-// `Parameters` pins below are what catch those.
+// compile. An optional member or parameter slips through that check, so every restated
+// object also has a `keyof` pin and every method a `Parameters` pin.
 import { describe, expect, it } from 'vitest';
 
 import type {
@@ -59,6 +59,31 @@ const emitterStatusParamsMatchCore: MutuallyAssignable<
   Parameters<EventEmitterPort['updateStatus']>,
   Parameters<CoreEventEmitterPort['updateStatus']>
 > = true;
+const emitterEmitParamsMatchCore: MutuallyAssignable<
+  Parameters<EventEmitterPort['emitEvent']>,
+  Parameters<CoreEventEmitterPort['emitEvent']>
+> = true;
+const enginePortParamsMatchCore: MutuallyAssignable<
+  [
+    Parameters<WorkflowEnginePort<BaseNode>['submit']>,
+    Parameters<WorkflowEnginePort<BaseNode>['cancel']>,
+    Parameters<WorkflowEnginePort<BaseNode>['resolveNode']>,
+  ],
+  [
+    Parameters<CoreWorkflowEnginePort<BaseNode>['submit']>,
+    Parameters<CoreWorkflowEnginePort<BaseNode>['cancel']>,
+    Parameters<CoreWorkflowEnginePort<BaseNode>['resolveNode']>,
+  ]
+> = true;
+const executorParamsMatchCore: MutuallyAssignable<
+  Parameters<NodeExecutor<TestNode>>,
+  Parameters<CoreNodeExecutor<TestNode>>
+> = true;
+const inputKeysMatchCore: MutuallyAssignable<
+  keyof WorkflowExecutionInput<BaseNode>,
+  keyof CoreWorkflowExecutionInput<BaseNode>
+> = true;
+const waitingKeysMatchCore: MutuallyAssignable<keyof WaitingNodeExecution, keyof CoreWaitingNodeExecution> = true;
 
 // The `keyof` pin catches an optional field present on one side only, which the object pin misses.
 const completionMatchesCore: MutuallyAssignable<CompletedNodeExecution, CoreCompletedNodeExecution> = true;
@@ -79,6 +104,11 @@ describe('published contract vs execution-core', () => {
         registryMatchesCore &&
         emitterMatchesCore &&
         emitterStatusParamsMatchCore &&
+        emitterEmitParamsMatchCore &&
+        enginePortParamsMatchCore &&
+        executorParamsMatchCore &&
+        inputKeysMatchCore &&
+        waitingKeysMatchCore &&
         completionMatchesCore &&
         completionKeysMatchCore &&
         waitingMatchesCore &&

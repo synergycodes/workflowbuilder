@@ -1667,15 +1667,57 @@ describe('runGraph: outcomes', () => {
     expect(events.events.some((event) => event.type === 'execution_completed')).toBe(false);
   });
 
-  it('a null outcome smuggled through unvalidated config is no outcome', async () => {
+  it.each<[string, unknown]>([
+    ['null', null],
+    ['an empty object', {}],
+    ['a bare string', 'rejected'],
+    ['a missing resolvedBy', { value: 'rejected' }],
+    ['a blank resolvedBy', { value: 'rejected', resolvedBy: '' }],
+  ])('a shapeless outcome smuggled through unvalidated config is no outcome: %s', async (_shape, smuggled) => {
     const runner = makeRunner({
-      D: { output: 'no', nextPort: 'rejected', outcome: null as unknown as ExecutionOutcome },
+      D: { output: 'no', nextPort: 'rejected', outcome: smuggled as ExecutionOutcome },
     });
     const events = makeEvents();
 
     const outcome = await runGraph(makeInput([start('D')], []), runner.port, events.port);
 
     expect(outcome).toEqual({ status: 'incomplete', deadEnds: [{ nodeId: 'D', port: 'rejected' }] });
+    expect(events.statuses.at(-1)?.outcome).toBeUndefined();
+  });
+
+  it("outcomes in successive waves: the earlier wave is the run's", async () => {
+    const runner = makeRunner({
+      A: { output: 'first', outcome: rejected },
+      B: { output: 'second', nextPort: 'gone', outcome: { value: 'escalated', resolvedBy: 'policy' } },
+    });
+    const events = makeEvents();
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'A' } });
+  });
+
+  it('two parked nodes resolved in reverse order: scheduling order still picks the winner', async () => {
+    const escalated = { value: 'escalated', resolvedBy: 'policy' };
+    const runner = makeGatedRunner({ B: { waits: true }, C: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput([start('S'), trigger('B'), trigger('C')], [edge('e1', 'S', 'B'), edge('e2', 'S', 'C')]),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(2);
+    runner.resolveGate('C', { output: 'c', nextPort: 'gone-c', outcome: escalated });
+    runner.resolveGate('B', { output: 'b', nextPort: 'gone-b', outcome: rejected });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed', outcome: { ...rejected, nodeId: 'B' } });
   });
 });
 

@@ -7,13 +7,7 @@
     "module": "es2022",
     // src/core-contract.ts reaches into the sibling source-only packages by relative
     // path (see the comment there), so the compilation root has to span them.
-    "rootDir": "../..",
-    // execution-core's own files import @workflow-builder/types by package name.
-    // Mapping it to the source satisfies tsc. The d.ts bundler still keeps the package
-    // name, so src/workflow/core-contract.ts restates every core type that names one.
-    "paths": {
-      "@workflow-builder/types/*": ["../types/src/*.ts"]
-    }
+    "rootDir": "../.."
   },
   "include": ["src", "test", "tsup.config.ts"]
 }

@@ -15,7 +15,7 @@ export interface ExecutionStore {
     payload?: unknown,
     nodeId?: string,
   ): Promise<void>;
-  // `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result.
+  /** `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result. */
   updateExecutionStatus(
     executionId: string,
     status: ExecutionStatus,

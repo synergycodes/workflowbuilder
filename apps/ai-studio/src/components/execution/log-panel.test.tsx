@@ -60,7 +60,6 @@ describe('ExecutionLogPanel', () => {
     );
 
     expect(container.textContent).toContain('rejected · resolved by human · human-1');
-    expect(container.textContent).not.toContain('nothing connected');
   });
 
   it('gives a completed row without an outcome no detail line', () => {

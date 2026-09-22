@@ -36,9 +36,8 @@ const RESERVED_ERROR_HANDLE = 'errorRoute';
 // and still yields `{ status: 'completed' }` — only an unhandled node failure, a stall,
 // or a malformed start (missing, duplicated, or with orphaned nodes alongside it) fails
 // the run. 'incomplete' means every route the graph took was followed to its end, but at
-// least one of them led nowhere — see `deadEnds`. 'completed' may carry `outcome`: the first
-// business result a completion declared, in scheduling order (wave by wave, then the
-// predecessor's edge order); a later one is not recorded at run level.
+// least one of them led nowhere — see `deadEnds`. 'completed' may carry the first outcome a
+// completion declared (README, "Outcomes").
 export type RunGraphOutcome =
   | { status: 'completed'; outcome?: ExecutionOutcomeRecord }
   | { status: 'incomplete'; deadEnds: DeadEnd[] }
@@ -142,10 +141,11 @@ export async function runGraph<TNode extends BaseNode>(
       nodeOutputs[result.node.id] = result.output;
       state.status.set(result.node.id, 'completed');
       const deadEnd = propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
-      if (result.outcome) {
+      const declared = declaredOutcome(result.outcome);
+      if (declared) {
         // A declared result makes an unrouted port a deliberate end, so no dead end is recorded.
         if (outcome === undefined) {
-          outcome = { value: result.outcome.value, resolvedBy: result.outcome.resolvedBy, nodeId: result.node.id };
+          outcome = { value: declared.value, resolvedBy: declared.resolvedBy, nodeId: result.node.id };
         }
       } else if (deadEnd) {
         deadEnds.push(deadEnd);
@@ -412,6 +412,16 @@ async function setAdvisoryStatus(
 
 function resolveErrorPolicy(node: BaseNode): NodeErrorPolicy {
   return node.errorPolicy ?? 'fail';
+}
+
+// Shape only, never the value: a shapeless outcome from unvalidated config counts as none, so
+// it cannot hide a dead end behind an empty result.
+function declaredOutcome(candidate: ExecutionOutcome | undefined): ExecutionOutcome | undefined {
+  if (typeof candidate !== 'object' || candidate === null) return undefined;
+  const { value, resolvedBy } = candidate;
+  const wellFormed =
+    typeof value === 'string' && value.length > 0 && typeof resolvedBy === 'string' && resolvedBy.length > 0;
+  return wellFormed ? candidate : undefined;
 }
 
 // Edge liveness rules:

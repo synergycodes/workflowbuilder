@@ -9,8 +9,9 @@ export type CompletedNodeExecution = {
   // `{ nodeId, port }`, unless `outcome` is set. Falsy ('' or a smuggled null) means "no
   // port", mirroring the router. 'errorRoute' is reserved for the error policy.
   nextPort?: string;
-  // A run-level result this completion settles. Its port may then light no edge: a
-  // deliberate end, not a dead end. Read for presence only; falsy means none.
+  // A run-level result this completion declares; the run keeps the first one declared. Its port
+  // may then light no edge: a deliberate end, not a dead end. An object with non-empty `value`
+  // and `resolvedBy`; anything else counts as none.
   outcome?: ExecutionOutcome;
   // Never present — discriminates the union.
   waiting?: never;
