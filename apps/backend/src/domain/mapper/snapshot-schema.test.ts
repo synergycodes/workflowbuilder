@@ -551,7 +551,10 @@ describe('mapToExecutionModel', () => {
   it('lifts a validated decision request out of `config` onto `decisionRequest`', () => {
     const request = {
       version: 1,
-      actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' }],
+      actions: [
+        { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' },
+        { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' },
+      ],
       schema: { type: 'object', properties: {} },
     };
     const snapshot = workflowSnapshotSchema.parse({
@@ -567,7 +570,10 @@ describe('mapToExecutionModel', () => {
 
     const result = mapToExecutionModel('wf-1', snapshot);
 
-    expect(result.nodes[1]!.decisionRequest).toEqual(request);
+    expect(result.nodes[1]!.decisionRequest).toEqual({
+      ...request,
+      actions: [request.actions[0], { ...request.actions[1], maxIterations: 3 }],
+    });
     expect(result.nodes[1]!.config).toEqual({ foo: 1 });
     expect(result.nodes[1]!.label).toBe('Review');
   });
