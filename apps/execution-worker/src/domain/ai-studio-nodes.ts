@@ -3,6 +3,7 @@
 // the generic BaseNode shape. A different product would define its own union
 // here and register matching executors.
 import type { BaseNode } from '@workflowbuilder/temporal';
+import type { JSONSchema7 } from 'ai';
 
 // Intersected with BaseNode so the runner-level fields it carries stay declared here,
 // rather than arriving at runtime on a type that does not mention them.
@@ -13,6 +14,7 @@ type TriggerNodeConfig = Record<string, never>;
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
   webSearch?: boolean; // needs TAVILY_API_KEY to take effect
+  outputSchema?: JSONSchema7; // the answer becomes an object matching it; absent means free text under `response`
 };
 
 export type DecisionBranchCondition = {

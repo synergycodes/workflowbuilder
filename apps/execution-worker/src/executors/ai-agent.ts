@@ -31,7 +31,9 @@ export function createAiAgentExecutor(options: AiAgentExecutorOptions): NodeExec
   }
 
   const { apiKey, baseURL, modelId } = ai.config;
-  const provider = createOpenAICompatible({ name: 'ai', baseURL, apiKey });
+  // supportsStructuredOutputs: true sends a node's output schema to the model as a json_schema response
+  // format. Off, the provider drops the schema, sends plain JSON mode and only records a warning.
+  const provider = createOpenAICompatible({ name: 'ai', baseURL, apiKey, supportsStructuredOutputs: true });
   const model = provider.chatModel(modelId);
 
   return (node, context) => executeAiAgent(node, context, { model, logger, tavilyApiKey });

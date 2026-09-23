@@ -104,6 +104,14 @@ Each judgment is made at the throw site that owns the error. The runner and the 
 
 The provider's own error is attached as `cause`, and `node_failed` reports the deepest non-empty cause's text, so the provider's message reaches the UI as it did before classification. A refused connection is the exception: the SDK reports it as `Cannot connect to API:` with nothing after the colon, because the reason sits in an `AggregateError` it wraps — one entry per address tried. Only messages survive the activity boundary, so the classifier attaches the first entry (`connect ECONNREFUSED ::1:11434`) as the cause instead of the SDK error. The classifier's own message, which names the HTTP status, is one level up and visible only in Temporal's failure record. 409 is permanent on purpose, unlike the AI SDK's own retry default: no chat provider is known to answer 409 for a condition a retry would clear. Two kinds of SDK error stay unclassified and keep the profile's uniform retry: a response the SDK could not parse (a 2xx with a non-JSON body, typically a proxy answering with HTML) and errors raised without any provider response (a malformed tool call from the model, no output generated), which describe model behaviour a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
 
+### Structured output
+
+An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor then asks the model for an answer matching it and the node's output is that object, with no `response` key beside it. Without the key the node keeps returning `{ response: text }`. Web search runs in either mode.
+
+The model is created with `supportsStructuredOutputs: true`. Without that flag the OpenAI-compatible provider drops the schema, sends plain JSON mode and only records a warning, so the keys would come from the model's guess. The provider's strict mode is on by default, which means the schema has to list every property in `required` and set `additionalProperties: false`; a provider that refuses the schema answers 4xx, and the table above makes that permanent. The endpoint has to support the `json_schema` response format at all. OpenRouter honours it only on models that advertise structured outputs, so check the model before a demo.
+
+The schema is forwarded untouched: nothing here validates its content or the answer against it beyond what the SDK does. An answer the SDK cannot parse into JSON, and a tool loop that hits its step cap without a final answer, stay unclassified, as the paragraph above explains.
+
 ## Adding a new engine
 
 1. Create `src/engines/<name>/` with:

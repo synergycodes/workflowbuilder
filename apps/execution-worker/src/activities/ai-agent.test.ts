@@ -1,4 +1,4 @@
-import { APICallError } from 'ai';
+import { APICallError, type JSONSchema7 } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
 import { describe, expect, it } from 'vitest';
 
@@ -23,12 +23,33 @@ function context(): ExecutionContext {
   };
 }
 
-function aiAgentNode(): AiAgentNode {
+function aiAgentNode(config: Partial<AiAgentNode['config']> = {}): AiAgentNode {
   return {
     id: 'agent1',
     type: 'ai-studio/ai-agent',
-    config: { systemPrompt: 'You are a test agent.' },
+    config: { systemPrompt: 'You are a test agent.', ...config },
   };
+}
+
+const refundSchema: JSONSchema7 = {
+  type: 'object',
+  properties: { refundAmount: { type: 'number' }, orderDate: { type: 'string' } },
+  required: ['refundAmount', 'orderDate'],
+  additionalProperties: false,
+};
+
+function answeringModel(text: string): MockLanguageModelV3 {
+  return new MockLanguageModelV3({
+    doGenerate: {
+      content: [{ type: 'text', text }],
+      finishReason: { unified: 'stop', raw: undefined },
+      usage: {
+        inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+        outputTokens: { total: undefined, text: undefined, reasoning: undefined },
+      },
+      warnings: [],
+    },
+  });
 }
 
 function failingModel(statusCode: number, message: string): MockLanguageModelV3 {
@@ -41,17 +62,7 @@ function failingModel(statusCode: number, message: string): MockLanguageModelV3 
 
 describe('executeAiAgent', () => {
   it('returns the model text as the node output', async () => {
-    const model = new MockLanguageModelV3({
-      doGenerate: {
-        content: [{ type: 'text', text: 'final answer' }],
-        finishReason: { unified: 'stop', raw: undefined },
-        usage: {
-          inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
-          outputTokens: { total: undefined, text: undefined, reasoning: undefined },
-        },
-        warnings: [],
-      },
-    });
+    const model = answeringModel('final answer');
 
     const result = await executeAiAgent(aiAgentNode(), context(), { model });
 
@@ -83,6 +94,53 @@ describe('executeAiAgent', () => {
     await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toBeInstanceOf(
       PermanentNodeExecutionError,
     );
+  });
+
+  it('treats an explicit null output schema as absent, as a hand-edited snapshot may carry one', async () => {
+    const node = aiAgentNode({ outputSchema: null as unknown as JSONSchema7 });
+    const model = answeringModel('final answer');
+
+    const result = await executeAiAgent(node, context(), { model });
+
+    expect(result).toEqual({ output: { response: 'final answer' } });
+    expect(model.doGenerateCalls[0]?.responseFormat?.type).not.toBe('json');
+  });
+
+  it('returns the object the model produced as the node output when the config declares an output schema', async () => {
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    const result = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    expect(result).toEqual({ output: { refundAmount: 49, orderDate: '2026-09-02' } });
+  });
+
+  it('passes the declared schema to the model untouched, as the JSON response format', async () => {
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    expect(model.doGenerateCalls[0]?.responseFormat).toEqual({ type: 'json', schema: refundSchema });
+  });
+
+  it('keeps the web-search tool on the call beside the structured output', async () => {
+    const node = aiAgentNode({ webSearch: true, outputSchema: refundSchema });
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    await executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' });
+
+    const call = model.doGenerateCalls[0];
+    expect(call?.tools?.map((tool) => tool.name)).toEqual(['webSearch']);
+    expect(call?.responseFormat?.type).toBe('json');
+  });
+
+  it('fails permanently when the provider rejects the declared schema', async () => {
+    const node = aiAgentNode({ outputSchema: refundSchema });
+    const model = failingModel(400, 'Invalid schema for response_format');
+
+    await expect(executeAiAgent(node, context(), { model })).rejects.toMatchObject({
+      code: 'provider_rejected_request',
+      classification: 'permanent',
+    });
   });
 
   it('rethrows an error that is not a provider response unchanged', async () => {

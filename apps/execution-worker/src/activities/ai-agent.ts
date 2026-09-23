@@ -1,4 +1,4 @@
-import { generateText, stepCountIs } from 'ai';
+import { Output, generateText, jsonSchema, stepCountIs } from 'ai';
 
 import {
   type ExecutionContext,
@@ -50,19 +50,27 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   const webSearchEnabled = node.config.webSearch === true && Boolean(deps.tavilyApiKey);
   const tools = webSearchEnabled ? { webSearch: createWebSearchTool(deps.tavilyApiKey!) } : undefined;
 
-  try {
-    const result = await generateText({
-      model: deps.model,
-      // Temporal's activity retry policy owns retries; SDK retries on top would
-      // multiply model calls (up to 3x per activity attempt).
-      maxRetries: 0,
-      system: resolvedPrompt,
-      prompt: userPrompt,
-      // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
-      ...(tools ? { tools, stopWhen: stepCountIs(MAX_TOOL_STEPS) } : {}),
-    });
+  const call = {
+    model: deps.model,
+    // Temporal's activity retry policy owns retries; SDK retries on top would
+    // multiply model calls (up to 3x per activity attempt).
+    maxRetries: 0,
+    system: resolvedPrompt,
+    prompt: userPrompt,
+    // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
+    ...(tools ? { tools, stopWhen: stepCountIs(MAX_TOOL_STEPS) } : {}),
+  };
 
-    return { output: { response: result.text } };
+  try {
+    const { outputSchema } = node.config;
+    if (outputSchema == null) {
+      const result = await generateText(call);
+      return { output: { response: result.text } };
+    }
+
+    // The schema goes to the provider as-is: its shape is the author's, the provider enforces it.
+    const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
+    return { output: result.output };
   } catch (error) {
     const failure = classifyProviderError(error);
     // executionId joins this line to its node_failed event.
