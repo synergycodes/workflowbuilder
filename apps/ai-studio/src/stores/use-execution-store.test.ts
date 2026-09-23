@@ -12,11 +12,15 @@ import {
   applyEvent,
   applySnapshot,
   resetExecution,
+  saveDecisionDraft,
   setExecutionStarted,
   useExecutionStore,
+  waitKey,
 } from './use-execution-store';
 
 const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
+
+const drafts = () => useExecutionStore.getState().decisionDrafts;
 
 const terminalPayload: { [T in TerminalExecutionEventType]: Extract<ExecutionEvent, { type: T }>['payload'] } = {
   execution_completed: undefined,
@@ -173,4 +177,39 @@ describe('use-execution-store: a node waiting for a person', () => {
       expect(useExecutionStore.getState().status).toBe(status);
     },
   );
+});
+
+describe('use-execution-store: decision drafts', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('merges what is saved for one wait and keeps the waits apart', () => {
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft({ ...wait, attempt: 2 }, { reason: 'Second wait' });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ values: { refundAmount: 120 }, reason: 'Checked' });
+    expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reason: 'Second wait' });
+  });
+
+  it('drops a draft saved for a run that is no longer the current one', () => {
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+
+    expect(drafts()).toEqual({});
+  });
+
+  it('starts a new run and a reset without drafts', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    expect(drafts()).toEqual({});
+
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    resetExecution();
+    expect(drafts()).toEqual({});
+  });
 });

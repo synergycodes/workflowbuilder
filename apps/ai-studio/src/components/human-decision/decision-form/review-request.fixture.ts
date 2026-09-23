@@ -1,6 +1,6 @@
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-// A request with every field kind the form knows: editable number, read-only string, editable string, unsupported array.
+// A request with every field kind the form knows, and one it does not (the array).
 export const reviewRequest = {
   version: 1,
   actions: [
@@ -13,6 +13,8 @@ export const reviewRequest = {
       refundAmount: { type: 'number', title: 'Refund amount' },
       orderDate: { type: 'string', readOnly: true },
       replyDraft: { type: 'string', title: 'Reply draft' },
+      itemCount: { type: 'integer', title: 'Item count' },
+      expedite: { type: 'boolean', title: 'Expedite' },
       tags: { type: 'array' },
     },
     required: ['refundAmount'],

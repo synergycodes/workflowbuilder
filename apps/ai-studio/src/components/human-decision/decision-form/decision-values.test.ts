@@ -1,10 +1,9 @@
 import { describe, expect, it } from 'vitest';
 
-import { fieldsOf } from './decision-fields';
-import { editsOf, initialValues } from './decision-values';
+import { editsOf, proposedValues, withEdits } from './decision-values';
 import { reviewRequest } from './review-request.fixture';
 
-const fields = fieldsOf(reviewRequest);
+const { schema } = reviewRequest;
 const proposal = {
   refundAmount: 80,
   orderDate: '2026-09-01',
@@ -12,78 +11,76 @@ const proposal = {
   internalReasoning: 'hidden',
 };
 
-describe('initialValues', () => {
-  it('shows the schema keys of an object proposal as text and ignores the rest', () => {
-    const values = initialValues(proposal, fields);
-
-    expect(values).toEqual({
-      refundAmount: '80',
+describe('proposedValues', () => {
+  it('takes the declared fields from the proposal and leaves an undeclared one out', () => {
+    expect(proposedValues(proposal, schema)).toEqual({
+      refundAmount: 80,
       orderDate: '2026-09-01',
       replyDraft: 'Dear customer',
-      tags: undefined,
     });
-    expect(Object.keys(values)).not.toContain('internalReasoning');
   });
 
-  it('shows a number that arrived as a string, which a model output may well do', () => {
-    expect(initialValues({ refundAmount: '80' }, fields)['refundAmount']).toBe('80');
+  it('omits a declared field the proposal does not carry, so a required one reads as missing', () => {
+    expect(Object.keys(proposedValues({ orderDate: '2026-09-01' }, schema))).toEqual(['orderDate']);
   });
 
   it.each([
     ['a string proposal', 'Refund amount: 80'],
     ['undefined', undefined],
     ['an array', [80]],
-  ])('leaves every field empty for %s', (_name, output) => {
-    expect(initialValues(output, fields)).toEqual({
-      refundAmount: '',
-      orderDate: '',
-      replyDraft: '',
-      tags: undefined,
-    });
+  ])('is empty for %s', (_name, output) => {
+    expect(proposedValues(output, schema)).toEqual({});
   });
 });
 
 describe('editsOf', () => {
-  const initial = initialValues({ ...proposal, tags: ['a'] }, fields);
+  const proposed = proposedValues(proposal, schema);
 
   it('is empty when nothing changed', () => {
-    expect(editsOf(initial, { ...initial }, fields)).toEqual({});
+    expect(editsOf(proposed, { ...proposed }, schema)).toEqual({});
   });
 
-  it('carries a changed editable field, parsed to its declared type', () => {
-    expect(editsOf(initial, { ...initial, refundAmount: '120.5' }, fields)).toEqual({ refundAmount: 120.5 });
-  });
-
-  it('reports nothing while the box holds an unfinished decimal, and the value once it is finished', () => {
-    expect(editsOf(initial, { ...initial, refundAmount: '80.' }, fields)).toEqual({});
-    expect(editsOf(initial, { ...initial, refundAmount: '80.5' }, fields)).toEqual({ refundAmount: 80.5 });
-  });
-
-  it('never carries a read-only field, even when the value differs', () => {
-    expect(editsOf(initial, { ...initial, orderDate: '2000-01-01' }, fields)).toEqual({});
-  });
-
-  it('never carries an unsupported field', () => {
-    expect(editsOf(initial, { ...initial, tags: ['b'] }, fields)).toEqual({});
-  });
-
-  it('sends an emptied editable field as null', () => {
-    expect(editsOf(initial, { ...initial, refundAmount: '' }, fields)).toEqual({ refundAmount: null });
-    expect(editsOf(initial, { ...initial, replyDraft: '  ' }, fields)).toEqual({ replyDraft: null });
-  });
-
-  it('carries a value typed into a field that started empty', () => {
-    const empty = initialValues(undefined, fields);
-
-    expect(editsOf(empty, { ...empty, refundAmount: '120', replyDraft: 'Dear' }, fields)).toEqual({
+  it('carries every declared editable field that changed', () => {
+    expect(editsOf(proposed, { ...proposed, refundAmount: 120, replyDraft: 'Refunded' }, schema)).toEqual({
       refundAmount: 120,
-      replyDraft: 'Dear',
+      replyDraft: 'Refunded',
     });
   });
 
-  it('does not report a field that was empty and stays empty', () => {
-    const empty = initialValues(undefined, fields);
+  it('never carries a read-only field, even when the value differs', () => {
+    expect(editsOf(proposed, { ...proposed, orderDate: '2000-01-01' }, schema)).toEqual({});
+  });
 
-    expect(editsOf(empty, { ...empty }, fields)).toEqual({});
+  it('never carries a field the form does not declare', () => {
+    expect(editsOf(proposed, { ...proposed, internalReasoning: 'changed' }, schema)).toEqual({});
+  });
+
+  it('sends an emptied editable field as null', () => {
+    expect(editsOf(proposed, { ...proposed, refundAmount: undefined }, schema)).toEqual({ refundAmount: null });
+  });
+
+  it('carries a value typed into a field that started empty', () => {
+    expect(editsOf({}, { refundAmount: 120 }, schema)).toEqual({ refundAmount: 120 });
+  });
+});
+
+describe('withEdits', () => {
+  const proposed = proposedValues(proposal, schema);
+
+  it('applies the edits over the proposal', () => {
+    expect(withEdits(proposed, { refundAmount: 120 })).toEqual({ ...proposed, refundAmount: 120 });
+  });
+
+  it('leaves an emptied field without a value', () => {
+    expect(withEdits(proposed, { replyDraft: null })).not.toHaveProperty('replyDraft');
+  });
+
+  it('undoes editsOf: the values it settles are the ones the person left', () => {
+    const current = { ...proposed, refundAmount: 120, replyDraft: undefined };
+
+    expect(withEdits(proposed, editsOf(proposed, current, schema))).toEqual({
+      refundAmount: 120,
+      orderDate: '2026-09-01',
+    });
   });
 });

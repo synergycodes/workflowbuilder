@@ -1,38 +1,60 @@
-import { FormControlWithLabel } from '@workflowbuilder/sdk';
-import { useState } from 'react';
+import type { JsonSchema } from '@workflowbuilder/sdk';
+import { useRef, useState } from 'react';
 
 import styles from './decision-form.module.css';
 
-import { DecisionFieldInput } from './decision-field-input';
-import type { DecisionField } from './decision-fields';
-import type { DecisionValues } from './decision-values';
+import type { DecisionInput, SubmitDecisionResult } from '../../../adapters/submit-decision';
+import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
+import type { DecisionDraft } from '../../../stores/use-execution-store';
+import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
+import type { OfferedActions } from './decision-actions';
+import { editsOf } from './decision-values';
+import { DecisionVerdict } from './decision-verdict';
 
 type Props = {
-  fields: DecisionField[];
-  initialValues: DecisionValues;
+  schema: JsonSchema;
+  actions: OfferedActions;
+  /** Where the fields start when there is no draft, and what the edits are measured against. */
+  proposal: Record<string, unknown>;
+  draft: DecisionDraft | undefined;
+  saveDraft: (change: DecisionDraft) => void;
+  decide: (input: DecisionInput) => Promise<SubmitDecisionResult>;
 };
 
-// Owns the person's values. The control remounts it (React `key`) when the node or the wait changes: that is the reset.
-export function DecisionForm({ fields, initialValues }: Props) {
-  const [values, setValues] = useState(initialValues);
+// The control remounts it (React `key`) for each wait, so it starts from that wait's draft, or from the proposal.
+export function DecisionForm({ schema, actions, proposal, draft, saveDraft, decide }: Props) {
+  const fields = useRef<EditorFormHandle>(null);
+  const [hasFieldErrors, setHasFieldErrors] = useState(false);
+  const { isBusy, message, submit } = useDecisionSubmit(decide);
+  const reason = draft?.reason ?? '';
 
-  if (fields.length === 0) {
-    return <p className={styles['empty']}>This request has no fields to review.</p>;
-  }
+  const approve = () => {
+    const snapshot = fields.current?.snapshot();
+    if (snapshot && !snapshot.hasErrors) {
+      void submit({ action: actions.resume.name, edits: editsOf(proposal, snapshot.data, schema) });
+    }
+  };
 
   return (
     <div className={styles['form']} data-decision-form>
-      {fields.map((field) => (
-        <div key={field.key} data-decision-field={field.key}>
-          <FormControlWithLabel label={field.label} required={field.required}>
-            <DecisionFieldInput
-              field={field}
-              value={values[field.key]}
-              onChange={(value) => setValues((current) => ({ ...current, [field.key]: value }))}
-            />
-          </FormControlWithLabel>
-        </div>
-      ))}
+      <EditorForm
+        ref={fields}
+        schema={schema}
+        initialData={draft?.values ?? proposal}
+        readOnly={isBusy}
+        onValidityChange={setHasFieldErrors}
+        onUnmount={(values) => saveDraft({ values })}
+      />
+      <DecisionVerdict
+        actions={actions}
+        reason={reason}
+        hasFieldErrors={hasFieldErrors}
+        isBusy={isBusy}
+        message={message}
+        onReasonChange={(next) => saveDraft({ reason: next })}
+        onApprove={approve}
+        onReject={(reject) => void submit({ action: reject.name, reason })}
+      />
     </div>
   );
 }

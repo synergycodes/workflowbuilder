@@ -1,11 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
-
 import { executionEvent as event } from '../stores/execution-event.fixture';
-import { attemptOf, proposalSourceIdOf } from './use-pending-decision';
-
-const reviewRequest = { version: 1, actions: [], schema: {} } satisfies DecisionRequest;
+import { attemptOf, proposalSourceIdOf } from './use-node-decision';
 
 describe('attemptOf', () => {
   it('is zero when the node never parked', () => {
@@ -31,22 +27,22 @@ describe('proposalSourceIdOf', () => {
   ];
 
   it('prefers a declared proposalSourceNodeId', () => {
-    expect(proposalSourceIdOf({ ...reviewRequest, proposalSourceNodeId: 'other-1' }, edges, 'human-1')).toBe('other-1');
+    expect(proposalSourceIdOf('other-1', edges, 'human-1')).toBe('other-1');
   });
 
   it('falls back to the source of the single incoming edge', () => {
-    expect(proposalSourceIdOf(reviewRequest, edges, 'human-1')).toBe('draft-1');
+    expect(proposalSourceIdOf(undefined, edges, 'human-1')).toBe('draft-1');
   });
 
   it('counts one source once when two edges come from the same node', () => {
     const twoHandles = [...edges, { source: 'draft-1', target: 'human-1' }];
-    expect(proposalSourceIdOf(reviewRequest, twoHandles, 'human-1')).toBe('draft-1');
+    expect(proposalSourceIdOf(undefined, twoHandles, 'human-1')).toBe('draft-1');
   });
 
   it.each([
     ['no incoming edge', []],
     ['two different sources', [...edges, { source: 'draft-2', target: 'human-1' }]],
   ])('is undefined with %s', (_name, candidates) => {
-    expect(proposalSourceIdOf(reviewRequest, candidates, 'human-1')).toBeUndefined();
+    expect(proposalSourceIdOf(undefined, candidates, 'human-1')).toBeUndefined();
   });
 });

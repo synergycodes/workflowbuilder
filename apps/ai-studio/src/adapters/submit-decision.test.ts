@@ -2,9 +2,11 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 // The real receiver, through the backend's own node_modules, as decision-request-contract.test.ts does.
 import { submittedDecisionSchema } from '../../../backend/src/domain/decision/validate-submitted-decision';
-import { type DecisionBody, submitDecision } from './submit-decision';
+import { type DecisionInput, submitDecision } from './submit-decision';
 
-const base = { nodeId: 'human-1', attempt: 1, action: 'approve' };
+const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+const addressed = { nodeId: 'human-1', attempt: 1 };
+const approve = { action: 'approve' };
 
 function answer(status: number, payload: unknown, headers: Record<string, string> = {}) {
   return new Response(JSON.stringify(payload), {
@@ -22,9 +24,9 @@ function stubFetch(response: Response | Error) {
   return fetchMock;
 }
 
-async function sentBody(input: DecisionBody) {
+async function sentBody(input: DecisionInput) {
   const fetchMock = stubFetch(answer(200, { effect: 'resume' }));
-  await submitDecision('exec-1', input);
+  await submitDecision(wait, input);
   const [, init] = fetchMock.mock.calls[0] as [string, RequestInit];
   return JSON.parse(init.body as string) as Record<string, unknown>;
 }
@@ -34,26 +36,27 @@ describe('the body submitDecision sends', () => {
     vi.unstubAllGlobals();
   });
 
-  it('carries exactly nodeId, attempt and action when there is nothing else to say', async () => {
-    expect(Object.keys(await sentBody({ ...base, edits: {}, reason: '   ' }))).toEqual(['nodeId', 'attempt', 'action']);
+  it('carries exactly the node, the wait and the action when there is nothing else to say', async () => {
+    expect(await sentBody({ ...approve, edits: {}, reason: '   ' })).toEqual({ ...addressed, ...approve });
   });
 
   it('adds edits only when non-empty and reason only when non-blank', async () => {
-    expect(await sentBody({ ...base, edits: { refundAmount: 120 } })).toEqual({
-      ...base,
+    expect(await sentBody({ ...approve, edits: { refundAmount: 120 } })).toEqual({
+      ...addressed,
+      ...approve,
       edits: { refundAmount: 120 },
     });
-    expect(await sentBody({ ...base, action: 'reject', reason: 'Too high' })).toEqual({
-      ...base,
+    expect(await sentBody({ action: 'reject', reason: 'Too high' })).toEqual({
+      ...addressed,
       action: 'reject',
       reason: 'Too high',
     });
   });
 
   it.each([
-    ['approve without edits', base],
-    ['approve with edits', { ...base, edits: { refundAmount: 120, replyDraft: null } }],
-    ['reject with a reason', { ...base, action: 'reject', reason: 'Too high' }],
+    ['approve without edits', approve],
+    ['approve with edits', { ...approve, edits: { refundAmount: 120, replyDraft: null } }],
+    ['reject with a reason', { action: 'reject', reason: 'Too high' }],
   ])('%s parses with the backend submittedDecisionSchema', async (_name, input) => {
     const body = await sentBody(input);
     const parsed = submittedDecisionSchema.safeParse(body);
@@ -72,7 +75,7 @@ describe('submitDecision', () => {
   it('posts to the execution decision route and reads the effect', async () => {
     const fetchMock = stubFetch(answer(200, { effect: 'resume-with-edits' }));
 
-    const result = await submitDecision('exec-1', { ...base, edits: { refundAmount: 120 } });
+    const result = await submitDecision(wait, { ...approve, edits: { refundAmount: 120 } });
 
     expect(result).toEqual({ ok: true, effect: 'resume-with-edits' });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
@@ -89,7 +92,7 @@ describe('submitDecision', () => {
       }),
     );
 
-    expect(await submitDecision('exec-1', base)).toEqual({
+    expect(await submitDecision(wait, approve)).toEqual({
       ok: false,
       status: 409,
       code: 'decision_attempt_mismatch',
@@ -101,7 +104,7 @@ describe('submitDecision', () => {
   it('reads Retry-After from a 503', async () => {
     stubFetch(answer(503, { code: 'decision_delivery_timeout', message: 'Send it again' }, { 'Retry-After': '5' }));
 
-    expect(await submitDecision('exec-1', base)).toMatchObject({
+    expect(await submitDecision(wait, approve)).toMatchObject({
       ok: false,
       status: 503,
       code: 'decision_delivery_timeout',
@@ -118,7 +121,7 @@ describe('submitDecision', () => {
       }),
     );
 
-    expect(await submitDecision('exec-1', base)).toMatchObject({
+    expect(await submitDecision(wait, approve)).toMatchObject({
       ok: false,
       status: 400,
       code: 'invalid_decision',
@@ -129,7 +132,7 @@ describe('submitDecision', () => {
   it('falls back to the HTTP status when the body is not the refusal envelope', async () => {
     stubFetch(new Response('gateway', { status: 502, statusText: 'Bad Gateway' }));
 
-    expect(await submitDecision('exec-1', base)).toEqual({
+    expect(await submitDecision(wait, approve)).toEqual({
       ok: false,
       status: 502,
       code: 'http_502',
@@ -140,7 +143,7 @@ describe('submitDecision', () => {
   it('reports a failed request as a network error', async () => {
     stubFetch(new TypeError('Failed to fetch'));
 
-    expect(await submitDecision('exec-1', base)).toEqual({
+    expect(await submitDecision(wait, approve)).toEqual({
       ok: false,
       status: 0,
       code: 'network_error',

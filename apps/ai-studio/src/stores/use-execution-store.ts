@@ -15,6 +15,12 @@ export type NodeExecutionState = {
   error?: { message: string; code?: string };
 };
 
+/** One wait of a decision node: the run, the node, and which time the node parked in it. */
+export type DecisionWait = { executionId: string; nodeId: string; attempt: number };
+
+/** What a person has entered for a wait and not yet sent. */
+export type DecisionDraft = { values?: Record<string, unknown>; reason?: string };
+
 type ExecutionStore = {
   executionId: string | undefined;
   status: ExecutionStatus | 'idle' | 'disconnected';
@@ -22,6 +28,8 @@ type ExecutionStore = {
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
   isLogCollapsed: boolean;
+  /** By {@link waitKey}. */
+  decisionDrafts: Record<string, DecisionDraft>;
 };
 
 const emptyStore: ExecutionStore = {
@@ -31,6 +39,7 @@ const emptyStore: ExecutionStore = {
   nodeStates: {},
   events: [],
   isLogCollapsed: false,
+  decisionDrafts: {},
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
@@ -56,7 +65,22 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     nodeStates: {},
     events: [],
     isLogCollapsed: false,
+    decisionDrafts: {},
   });
+}
+
+export function waitKey({ executionId, nodeId, attempt }: DecisionWait): string {
+  return `${executionId}:${nodeId}:${attempt}`;
+}
+
+export function saveDecisionDraft(wait: DecisionWait, change: DecisionDraft) {
+  const key = waitKey(wait);
+  useExecutionStore.setState((state) =>
+    // A form that closes after its run was replaced leaves nothing in the new one.
+    state.executionId === wait.executionId
+      ? { decisionDrafts: { ...state.decisionDrafts, [key]: { ...state.decisionDrafts[key], ...change } } }
+      : state,
+  );
 }
 
 export function applyConnectionLost() {

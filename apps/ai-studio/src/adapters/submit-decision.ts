@@ -1,12 +1,10 @@
 import { BACKEND_URL } from '../config';
+import type { DecisionWait } from '../stores/use-execution-store';
+import { hasText } from '../utils/has-text';
+import { isPlainObject } from '../utils/is-plain-object';
 
-export type DecisionBody = {
-  nodeId: string;
-  attempt: number;
-  action: string;
-  edits?: Record<string, unknown>;
-  reason?: string;
-};
+/** The decision itself, apart from the wait it answers. */
+export type DecisionInput = { action: string; edits?: Record<string, unknown>; reason?: string };
 
 export type SubmitDecisionResult =
   | { ok: true; effect: string }
@@ -24,21 +22,20 @@ export type SubmitDecisionResult =
     };
 
 // Drops an empty `edits` and a blank `reason`, so the body carries only what the route reads.
-function decisionBody(input: DecisionBody): DecisionBody {
-  const { nodeId, attempt, action, edits, reason } = input;
+function decisionBody({ nodeId, attempt }: DecisionWait, { action, edits, reason }: DecisionInput) {
   return {
     nodeId,
     attempt,
     action,
     ...(edits !== undefined && Object.keys(edits).length > 0 ? { edits } : {}),
-    ...(reason !== undefined && reason.trim().length > 0 ? { reason } : {}),
+    ...(hasText(reason) ? { reason } : {}),
   };
 }
 
 async function readJson(response: Response): Promise<Record<string, unknown>> {
   try {
     const parsed: unknown = await response.json();
-    return typeof parsed === 'object' && parsed !== null ? (parsed as Record<string, unknown>) : {};
+    return isPlainObject(parsed) ? parsed : {};
   } catch {
     return {};
   }
@@ -52,17 +49,17 @@ function firstDetailMessage(details: unknown): string | undefined {
   if (!Array.isArray(details) || details.length === 0) {
     return undefined;
   }
-  const first = details[0] as { message?: unknown } | undefined;
-  return stringOf(first?.message);
+  const first = details[0];
+  return isPlainObject(first) ? stringOf(first['message']) : undefined;
 }
 
-export async function submitDecision(executionId: string, body: DecisionBody): Promise<SubmitDecisionResult> {
+export async function submitDecision(wait: DecisionWait, input: DecisionInput): Promise<SubmitDecisionResult> {
   let response: Response;
   try {
-    response = await fetch(`${BACKEND_URL}/api/executions/${executionId}/decision`, {
+    response = await fetch(`${BACKEND_URL}/api/executions/${wait.executionId}/decision`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(decisionBody(body)),
+      body: JSON.stringify(decisionBody(wait, input)),
     });
   } catch (error) {
     return {

@@ -1,27 +1,50 @@
 import { rankWith, uiTypeIs, useSingleSelectedElement, withJsonFormsControlProps } from '@workflowbuilder/sdk';
 import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/sdk';
 
-import { usePendingDecision } from '../../../hooks/use-pending-decision';
-import { fieldsOf, isDecisionRequest } from './decision-fields';
+import { submitDecision } from '../../../adapters/submit-decision';
+import { useNodeDecision } from '../../../hooks/use-node-decision';
+import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
 import { DecisionForm } from './decision-form';
-import { initialValues } from './decision-values';
+import { readDecisionOutcome } from './decision-outcome';
+import { DecisionRecord } from './decision-record';
+import { readDecisionRequest } from './decision-request';
+import { proposedValues, withEdits } from './decision-values';
 
 // Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored.
-export function DecisionFormControl({ data }: ControlProps) {
+function DecisionFormControl({ data }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
-  const request = isDecisionRequest(data) ? data : undefined;
-  const pending = usePendingDecision(nodeId, request);
+  const request = readDecisionRequest(data);
+  const decision = useNodeDecision(nodeId, request?.proposalSourceNodeId);
 
-  if (nodeId === undefined || request === undefined || !pending.isWaiting) {
+  if (request === undefined || decision.phase === 'none') {
     return null;
   }
 
-  const fields = fieldsOf(request);
+  const { schema, actions } = request;
+  const { wait } = decision;
+  const proposal = proposedValues(decision.proposal, schema);
+
+  if (decision.phase === 'decided') {
+    const outcome = readDecisionOutcome(decision.output);
+    return outcome === undefined ? null : (
+      <DecisionRecord
+        key={waitKey(wait)}
+        schema={schema}
+        values={withEdits(proposal, outcome.edits)}
+        reason={outcome.reason}
+      />
+    );
+  }
+
   return (
     <DecisionForm
-      key={`${pending.executionId}:${nodeId}:${pending.attempt}`}
-      fields={fields}
-      initialValues={initialValues(pending.proposal, fields)}
+      key={waitKey(wait)}
+      schema={schema}
+      actions={actions}
+      proposal={proposal}
+      draft={decision.draft}
+      saveDraft={(change) => saveDecisionDraft(wait, change)}
+      decide={(input) => submitDecision(wait, input)}
     />
   );
 }
