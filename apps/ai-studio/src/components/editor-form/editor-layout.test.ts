@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { editorLayout } from './editor-layout';
+import { editableFields, editorLayout } from './editor-layout';
 
 describe('editorLayout', () => {
   it('lays out one editor control per field, labelled by its title or its key, and leaves out an array', () => {
@@ -35,5 +35,29 @@ describe('editorLayout', () => {
     const [element] = editorLayout({ type: 'object', properties: { 'a/b~c': { type: 'string' } } }).elements;
 
     expect(element.scope).toBe('#/properties/a~1b~0c');
+  });
+});
+
+describe('editableFields', () => {
+  it('names the shown fields that are not read-only', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        amount: { type: 'number' },
+        orderDate: { type: 'string', readOnly: true },
+        count: { type: 'integer' },
+        tags: { type: 'array' },
+        urgent: { type: 'boolean' },
+      },
+    };
+
+    expect([...editableFields(schema)]).toEqual(['amount', 'urgent']);
+  });
+
+  it('does not take a type named after an Object.prototype member for one it shows', () => {
+    const schema = { type: 'object', properties: { odd: { type: 'constructor' } } };
+
+    expect(editableFields(schema).size).toBe(0);
+    expect(editorLayout(schema).elements).toEqual([]);
   });
 });

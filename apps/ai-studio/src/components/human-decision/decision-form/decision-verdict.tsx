@@ -9,7 +9,7 @@ import type { OfferedActions, RejectOffer } from './decision-actions';
 type Props = {
   actions: OfferedActions;
   reason: string;
-  hasFieldErrors: boolean;
+  isApproveBlocked: boolean;
   isBusy: boolean;
   message: string | undefined;
   onReasonChange: (reason: string) => void;
@@ -21,7 +21,7 @@ type Props = {
 export function DecisionVerdict({
   actions: { resume, reject },
   reason,
-  hasFieldErrors,
+  isApproveBlocked,
   isBusy,
   message,
   onReasonChange,
@@ -55,7 +55,7 @@ export function DecisionVerdict({
             {reject.label}
           </Button>
         )}
-        <Button variant="primary" disabled={isBusy || hasFieldErrors} onClick={onApprove}>
+        <Button variant="primary" disabled={isBusy || isApproveBlocked} onClick={onApprove}>
           {resume.label}
         </Button>
       </div>

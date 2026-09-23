@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { editsOf, proposedValues, withEdits } from './decision-values';
+import { blocksApproval, editsOf, proposedValues, withEdits } from './decision-values';
 import { reviewRequest } from './review-request.fixture';
 
 const { schema } = reviewRequest;
@@ -51,6 +51,16 @@ describe('editsOf', () => {
     expect(editsOf(proposed, { ...proposed, orderDate: '2000-01-01' }, schema)).toEqual({});
   });
 
+  it('never carries a field the form does not show, even as a new but equal object after a reconnect', () => {
+    const withTags = { ...proposed, tags: ['vip'] };
+
+    expect(editsOf(withTags, { ...withTags, tags: ['vip'] }, schema)).toEqual({});
+  });
+
+  it('never carries a field of a type the form leaves out, even when its value differs', () => {
+    expect(editsOf({ ...proposed, itemCount: 3 }, { ...proposed, itemCount: 4 }, schema)).toEqual({});
+  });
+
   it('never carries a field the form does not declare', () => {
     expect(editsOf(proposed, { ...proposed, internalReasoning: 'changed' }, schema)).toEqual({});
   });
@@ -82,5 +92,23 @@ describe('withEdits', () => {
       refundAmount: 120,
       orderDate: '2026-09-01',
     });
+  });
+});
+
+describe('blocksApproval', () => {
+  it('holds the decision back for a fault in a field the person can edit', () => {
+    expect(blocksApproval(new Set(['refundAmount']), schema)).toBe(true);
+  });
+
+  it.each([
+    ['a read-only field', 'orderDate'],
+    ['a field of a type the form leaves out', 'itemCount'],
+    ['a field the form does not declare', 'internalReasoning'],
+  ])('lets it through for a fault in %s', (_name, field) => {
+    expect(blocksApproval(new Set([field]), schema)).toBe(false);
+  });
+
+  it('lets it through when nothing is at fault', () => {
+    expect(blocksApproval(new Set(), schema)).toBe(false);
   });
 });

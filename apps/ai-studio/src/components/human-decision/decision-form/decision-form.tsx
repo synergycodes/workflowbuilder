@@ -8,7 +8,7 @@ import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
 import type { DecisionDraft } from '../../../stores/use-execution-store';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
 import type { OfferedActions } from './decision-actions';
-import { editsOf } from './decision-values';
+import { blocksApproval, editsOf } from './decision-values';
 import { DecisionVerdict } from './decision-verdict';
 
 type Props = {
@@ -24,13 +24,13 @@ type Props = {
 // The control remounts it (React `key`) for each wait, so it starts from that wait's draft, or from the proposal.
 export function DecisionForm({ schema, actions, proposal, draft, saveDraft, decide }: Props) {
   const fields = useRef<EditorFormHandle>(null);
-  const [hasFieldErrors, setHasFieldErrors] = useState(false);
+  const [isApproveBlocked, setIsApproveBlocked] = useState(false);
   const { isBusy, message, submit } = useDecisionSubmit(decide);
   const reason = draft?.reason ?? '';
 
   const approve = () => {
     const snapshot = fields.current?.snapshot();
-    if (snapshot && !snapshot.hasErrors) {
+    if (snapshot && !blocksApproval(snapshot.invalidFields, schema)) {
       void submit({ action: actions.resume.name, edits: editsOf(proposal, snapshot.data, schema) });
     }
   };
@@ -42,13 +42,13 @@ export function DecisionForm({ schema, actions, proposal, draft, saveDraft, deci
         schema={schema}
         initialData={draft?.values ?? proposal}
         readOnly={isBusy}
-        onValidityChange={setHasFieldErrors}
+        onInvalidFieldsChange={(invalidFields) => setIsApproveBlocked(blocksApproval(invalidFields, schema))}
         onUnmount={(values) => saveDraft({ values })}
       />
       <DecisionVerdict
         actions={actions}
         reason={reason}
-        hasFieldErrors={hasFieldErrors}
+        isApproveBlocked={isApproveBlocked}
         isBusy={isBusy}
         message={message}
         onReasonChange={(next) => saveDraft({ reason: next })}

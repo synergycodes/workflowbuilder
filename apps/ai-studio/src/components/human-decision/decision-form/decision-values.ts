@@ -1,4 +1,5 @@
 import { isPlainObject } from '../../../utils/is-plain-object';
+import { editableFields } from '../../editor-form/editor-layout';
 import { schemaFields } from '../../editor-form/form-schema';
 
 /** The proposal's values for the fields the form declares. A hidden field is not declared, so it is not here. */
@@ -18,13 +19,18 @@ export function editsOf(
   schema: unknown,
 ): Record<string, unknown> {
   const edits: Record<string, unknown> = {};
-  for (const [key, field] of schemaFields(schema)) {
-    if (field['readOnly'] === true || Object.is(current[key], proposed[key])) {
-      continue;
+  for (const key of editableFields(schema)) {
+    if (!Object.is(current[key], proposed[key])) {
+      edits[key] = current[key] === undefined ? null : current[key];
     }
-    edits[key] = current[key] === undefined ? null : current[key];
   }
   return edits;
+}
+
+// Only a fault the person can correct holds the decision back; the backend checks the fields it receives.
+export function blocksApproval(invalidFields: ReadonlySet<string>, schema: unknown): boolean {
+  const editable = editableFields(schema);
+  return [...invalidFields].some((field) => editable.has(field));
 }
 
 /** The values a decision settled: the proposal with the edits applied, an emptied field left without a value. */

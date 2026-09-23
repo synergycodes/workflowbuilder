@@ -4,10 +4,11 @@ import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useMemo,
 
 import { isPlainObject } from '../../utils/is-plain-object';
 import { editorLayout } from './editor-layout';
+import { invalidFieldsOf } from './form-schema';
 
 type Middleware = NonNullable<ComponentProps<typeof JsonForms>['middleware']>;
 
-type EditorFormSnapshot = { data: Record<string, unknown>; hasErrors: boolean };
+type EditorFormSnapshot = { data: Record<string, unknown>; invalidFields: ReadonlySet<string> };
 
 export type EditorFormHandle = { snapshot: () => EditorFormSnapshot };
 
@@ -17,7 +18,8 @@ type Props = {
   readOnly?: boolean;
   /** Fixed for the life of the form: a change of validation mode resets it, like a new `data`. */
   validate?: boolean;
-  onValidityChange?: (hasErrors: boolean) => void;
+  /** Receives the top-level fields the schema finds fault with, once JsonForms reports the change. */
+  onInvalidFieldsChange?: (invalidFields: ReadonlySet<string>) => void;
   /** Receives the data the form holds as it unmounts, including a change the debounced report has not sent yet. */
   onUnmount?: (data: Record<string, unknown>) => void;
   ref?: Ref<EditorFormHandle>;
@@ -32,7 +34,7 @@ export function EditorForm({
   initialData,
   readOnly = false,
   validate = true,
-  onValidityChange,
+  onInvalidFieldsChange,
   onUnmount,
   ref,
 }: Props) {
@@ -41,11 +43,14 @@ export function EditorForm({
   const [startingData] = useState(initialData);
   const layout = useMemo(() => editorLayout(schema), [schema]);
   // JsonForms reports changes debounced; the middleware sees each one as it happens.
-  const latest = useRef<EditorFormSnapshot>({ data: initialData, hasErrors: false });
+  const latest = useRef<EditorFormSnapshot>({ data: initialData, invalidFields: new Set() });
 
   const track: Middleware = (state, action, reduce) => {
     const next = reduce(state, action);
-    latest.current = { data: isPlainObject(next.data) ? next.data : {}, hasErrors: (next.errors?.length ?? 0) > 0 };
+    latest.current = {
+      data: isPlainObject(next.data) ? next.data : {},
+      invalidFields: invalidFieldsOf(next.errors),
+    };
     return next;
   };
 
@@ -64,11 +69,9 @@ export function EditorForm({
       cells={cells}
       ajv={core?.ajv}
       readonly={readOnly}
-      // Checks the whole schema: an error in a field the layout does not show has no visible cause
-      // (follow-up: decision-form-validate-shown-fields).
       validationMode={validate ? 'ValidateAndShow' : 'NoValidation'}
       middleware={track}
-      onChange={({ errors }) => onValidityChange?.((errors?.length ?? 0) > 0)}
+      onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
     />
   );
 }

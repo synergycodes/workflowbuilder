@@ -1,4 +1,4 @@
-import { type ComponentProps, act } from 'react';
+import { type ComponentProps, StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -11,6 +11,7 @@ import { uischema as nodeUischema } from '../../../nodes/human-decision/uischema
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import {
   applyEvent,
+  applySnapshot,
   resetExecution,
   setExecutionStarted,
   useExecutionStore,
@@ -64,6 +65,15 @@ function parkHumanOne(output: unknown = draftOutput) {
   });
 }
 
+// A reconnected stream replays the run as a snapshot, so every output arrives as a new object.
+function reconnect() {
+  const { executionId, events } = useExecutionStore.getState();
+  const replayed = structuredClone(events);
+  act(() =>
+    applySnapshot({ executionId: executionId!, status: 'waiting', lastSequence: replayed.length, events: replayed }),
+  );
+}
+
 function decideHumanOne(output: unknown) {
   act(() => applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output } })));
 }
@@ -102,17 +112,21 @@ describe('the decision form in the properties panel', () => {
   let root: ReturnType<typeof createRoot>;
   let nodeChanges: unknown[];
 
-  const render = (decisionRequest: unknown = reviewRequest) => {
+  const render = (decisionRequest: unknown = reviewRequest, readonly = false) => {
     // JsonForms reports a change after its debounce even from an unmounted form, so each test keeps its own list.
     const changes = nodeChanges;
     act(() =>
       root.render(
-        <JSONForm
-          schema={nodeSchema}
-          uischema={nodeUischema as ComponentProps<typeof JSONForm>['uischema']}
-          data={{ label: 'Review Refund', description: '', decisionRequest }}
-          onChange={({ data }) => changes.push(data)}
-        />,
+        // The app runs in StrictMode, which mounts every effect twice; the drafts and the unmount report depend on it.
+        <StrictMode>
+          <JSONForm
+            schema={nodeSchema}
+            uischema={nodeUischema as ComponentProps<typeof JSONForm>['uischema']}
+            data={{ label: 'Review Refund', description: '', decisionRequest }}
+            readonly={readonly}
+            onChange={({ data }) => changes.push(data)}
+          />
+        </StrictMode>,
       ),
     );
   };
@@ -179,6 +193,19 @@ describe('the decision form in the properties panel', () => {
       expect(form()).toBeNull();
     });
 
+    it('lets the person decide while the canvas is read-only, as it is for the whole run', async () => {
+      render(reviewRequest, true);
+      parkHumanOne();
+
+      expect(fieldOf('Title')?.disabled).toBe(true);
+      expect(fieldOf('Refund amount')?.disabled).toBe(false);
+
+      commit(fieldOf('Refund amount')!, '120');
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
     it('still lets the person decide when the request declares no fields', async () => {
       parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
@@ -243,6 +270,20 @@ describe('the decision form in the properties panel', () => {
       await click(button('Approve'));
 
       expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('sends no edit for a field it does not show when the stream reconnects, also after a visit elsewhere', async () => {
+      parkHumanOne({ ...draftOutput, tags: ['vip'] });
+      reconnect();
+
+      selection.nodeId = 'draft-1';
+      render();
+      reconnect();
+      selection.nodeId = 'human-1';
+      render();
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
     });
 
     it('keeps a separate draft for each waiting node', () => {
@@ -351,6 +392,33 @@ describe('the decision form in the properties panel', () => {
       await settle();
 
       expect(button('Approve').disabled).toBe(false);
+    });
+
+    it('does not block on a read-only field the proposal filled wrongly, which the person cannot correct', async () => {
+      parkHumanOne({ ...draftOutput, orderDate: null });
+      await settle();
+
+      expect(button('Approve').disabled).toBe(false);
+
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
+    });
+
+    it.each([
+      ['a field the form does not show', 'tags'],
+      ['a read-only field', 'orderDate'],
+    ])('does not block when the proposal leaves out %s that the schema requires', async (_name, required) => {
+      const schema = { ...reviewRequest.schema, required: ['refundAmount', required] };
+      render({ ...reviewRequest, schema });
+      parkHumanOne(Object.fromEntries(Object.entries(draftOutput).filter(([key]) => key !== required)));
+      await settle();
+
+      expect(button('Approve').disabled).toBe(false);
+
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
     });
   });
 
