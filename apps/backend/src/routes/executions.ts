@@ -41,6 +41,13 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     }
     const { query } = parsed;
 
+    // A resolved context with no id is a broken adapter, not single-tenant mode: `?? null` would
+    // read as "no tenant" and drop the scope clause, returning every tenant's rows.
+    const tenantId: string | undefined = c.var.tenant?.tenantId;
+    if (c.var.tenant && tenantId === undefined) {
+      return c.json({ code: 'tenant_required', message: 'Tenant context required' }, 400);
+    }
+
     const rows = await database
       .select({
         id: executions.id,
@@ -52,7 +59,7 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
         createdAt: executions.createdAt,
       })
       .from(executions)
-      .where(listExecutionsWhere(query, c.var.tenant?.tenantId ?? null))
+      .where(listExecutionsWhere(query, tenantId ?? null))
       .orderBy(...LIST_ORDER)
       .limit(query.limit + 1);
 

@@ -15,7 +15,7 @@ import {
 import { type TenantContext, createTenantMiddleware } from '../tenant';
 import type { BackendEnv } from './backend-env';
 import { createExecutionsRoutes } from './executions';
-import { decodeCursor } from './list-executions-query';
+import { decodeCursor, encodeCursor } from './list-executions-query';
 
 // ---- module mocks -----------------------------------------------------------
 //
@@ -546,6 +546,45 @@ describe('createExecutionsRoutes - list', () => {
     await app.request('/api/executions');
 
     expect(captured.where).toBeUndefined();
+  });
+
+  // An adapter outside TypeScript can return what TenantContext forbids. Failing open here
+  // would hand one tenant every other tenant's rows, so the list refuses what the stream 404s on.
+  it('a resolved tenant with no id -> 400 tenant_required and no select', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: undefined } as unknown as TenantContext);
+
+    const response = await app.request('/api/executions');
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'tenant_required' });
+    expect(databaseMock.select).not.toHaveBeenCalled();
+  });
+
+  it('an empty tenant id is a tenant, not a missing one: it still scopes the WHERE', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: '' });
+    const captured = captureSelect([]);
+
+    await app.request('/api/executions');
+
+    const rendered = dialect.sqlToQuery(captured.where!);
+    expect(rendered.sql).toBe('("executions"."tenant_id" = $1 or "executions"."tenant_id" is null)');
+    expect(rendered.params).toEqual(['']);
+  });
+
+  // list-executions-query.test.ts covers the predicate; this covers the wiring that feeds it,
+  // which no other test exercises with a cursor the route would actually accept.
+  it('a valid cursor reaches the WHERE as the keyset predicate', async () => {
+    const app = buildApp(allowStream());
+    const captured = captureSelect([]);
+    const cursor = encodeCursor({ createdAt: listedExecution.createdAt, id: listedExecution.id });
+
+    await app.request(`/api/executions?cursor=${cursor}`);
+
+    const rendered = dialect.sqlToQuery(captured.where!);
+    expect(rendered.sql).toBe(
+      `(date_trunc('milliseconds', "executions"."created_at"), "executions"."id") < ($1::timestamptz, $2::uuid)`,
+    );
+    expect(rendered.params).toEqual(['2026-09-18T10:00:00.123Z', listedExecution.id]);
   });
 
   it.each([
