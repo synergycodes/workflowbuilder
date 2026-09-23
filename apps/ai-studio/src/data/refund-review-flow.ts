@@ -14,6 +14,7 @@ Style: empathetic, concise, no promises the team cannot keep.`;
 
 // The palette preset with the refund form on top: the amount and the reply may be corrected, the order
 // date may not, and the reasoning stays with the team, so it is not a field of the form at all.
+// Only the confirmation prompt keeps it out of the reply to the customer.
 export const refundReviewRequest = {
   ...defaultDecisionRequest,
   schema: {
