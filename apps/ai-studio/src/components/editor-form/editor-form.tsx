@@ -4,6 +4,7 @@ import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useMemo,
 
 import { isPlainObject } from '../../utils/is-plain-object';
 import { editorLayout } from './editor-layout';
+import { FormBoundary } from './form-boundary';
 import { invalidFieldsOf } from './form-schema';
 
 type Middleware = NonNullable<ComponentProps<typeof JsonForms>['middleware']>;
@@ -20,6 +21,8 @@ type Props = {
   validate?: boolean;
   /** Receives the top-level fields the schema finds fault with, once JsonForms reports the change. */
   onInvalidFieldsChange?: (invalidFields: ReadonlySet<string>) => void;
+  /** Called when the schema cannot be compiled: the form shows a notice in place of its fields. */
+  onFail?: () => void;
   /** Receives the data the form holds as it unmounts, including a change the debounced report has not sent yet. */
   onUnmount?: (data: Record<string, unknown>) => void;
   ref?: Ref<EditorFormHandle>;
@@ -35,6 +38,7 @@ export function EditorForm({
   readOnly = false,
   validate = true,
   onInvalidFieldsChange,
+  onFail,
   onUnmount,
   ref,
 }: Props) {
@@ -61,17 +65,22 @@ export function EditorForm({
   useEffect(() => () => onUnmountRef.current?.(latest.current.data), []);
 
   return (
-    <JsonForms
-      schema={schema}
-      uischema={layout}
-      data={startingData}
-      renderers={renderers ?? []}
-      cells={cells}
-      ajv={core?.ajv}
-      readonly={readOnly}
-      validationMode={validate ? 'ValidateAndShow' : 'NoValidation'}
-      middleware={track}
-      onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
-    />
+    <FormBoundary
+      fallback={<p role="alert">This form cannot be shown: its schema could not be compiled.</p>}
+      onError={onFail}
+    >
+      <JsonForms
+        schema={schema}
+        uischema={layout}
+        data={startingData}
+        renderers={renderers ?? []}
+        cells={cells}
+        ajv={core?.ajv}
+        readonly={readOnly}
+        validationMode={validate ? 'ValidateAndShow' : 'NoValidation'}
+        middleware={track}
+        onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
+      />
+    </FormBoundary>
   );
 }

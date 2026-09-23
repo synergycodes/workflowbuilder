@@ -206,6 +206,24 @@ describe('the decision form in the properties panel', () => {
       expect(sentEdits()).toEqual({ refundAmount: 120 });
     });
 
+    it('keeps the page and the reject when the request schema cannot be compiled', async () => {
+      // Valid in JavaScript, but not under the `u` flag the SDK validator compiles patterns with.
+      const schema = {
+        type: 'object',
+        properties: { note: { type: 'string', title: 'Note', pattern: String.raw`^ORD\-\d+$` } },
+      };
+      render({ ...reviewRequest, schema });
+      parkHumanOne({ note: 'ORD-1' });
+
+      expect(fieldOf('Title')).toBeDefined();
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain('cannot be shown');
+      expect(button('Approve').disabled).toBe(true);
+
+      await click(button('Reject'));
+
+      expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'reject', reason: '' });
+    });
+
     it('still lets the person decide when the request declares no fields', async () => {
       parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });

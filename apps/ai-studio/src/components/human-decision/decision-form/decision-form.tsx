@@ -43,6 +43,7 @@ export function DecisionForm({ schema, actions, proposal, draft, saveDraft, deci
         initialData={draft?.values ?? proposal}
         readOnly={isBusy}
         onInvalidFieldsChange={(invalidFields) => setIsApproveBlocked(blocksApproval(invalidFields, schema))}
+        onFail={() => setIsApproveBlocked(true)}
         onUnmount={(values) => saveDraft({ values })}
       />
       <DecisionVerdict
