@@ -1,5 +1,5 @@
-import { hasText } from '../../../utils/has-text';
-import { isPlainObject } from '../../../utils/is-plain-object';
+import { hasText } from '../has-text';
+import { isPlainObject } from '../is-plain-object';
 
 type Offer = { name: string; label: string };
 

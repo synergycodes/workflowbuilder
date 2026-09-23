@@ -6,9 +6,9 @@ import styles from './decision-form.module.css';
 import type { DecisionInput, SubmitDecisionResult } from '../../../adapters/submit-decision';
 import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
 import type { DecisionDraft } from '../../../stores/use-execution-store';
+import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
+import { blocksApproval, editsOf } from '../../../utils/human-decision/decision-values';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
-import type { OfferedActions } from './decision-actions';
-import { blocksApproval, editsOf } from './decision-values';
 import { DecisionVerdict } from './decision-verdict';
 
 type Props = {

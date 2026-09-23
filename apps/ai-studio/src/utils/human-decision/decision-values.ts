@@ -1,6 +1,6 @@
-import { isPlainObject } from '../../../utils/is-plain-object';
-import { editableFields } from '../../editor-form/editor-layout';
-import { schemaFields } from '../../editor-form/form-schema';
+import { editableFields } from '../editor-form/editor-layout';
+import { schemaFields } from '../editor-form/form-schema';
+import { isPlainObject } from '../is-plain-object';
 
 /** The proposal's values for the fields the form declares. A hidden field is not declared, so it is not here. */
 export function proposedValues(proposal: unknown, schema: unknown): Record<string, unknown> {

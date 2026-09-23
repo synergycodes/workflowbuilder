@@ -1,5 +1,5 @@
-import { hasText } from '../../../utils/has-text';
-import { isPlainObject } from '../../../utils/is-plain-object';
+import { hasText } from '../has-text';
+import { isPlainObject } from '../is-plain-object';
 
 /** What the person decided, read back from the node's completion. */
 type DecisionOutcome = { edits: Record<string, unknown>; reason: string | undefined };

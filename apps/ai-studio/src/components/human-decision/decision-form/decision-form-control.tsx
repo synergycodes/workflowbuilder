@@ -4,11 +4,11 @@ import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/
 import { submitDecision } from '../../../adapters/submit-decision';
 import { useNodeDecision } from '../../../hooks/use-node-decision';
 import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
+import { readDecisionOutcome } from '../../../utils/human-decision/decision-outcome';
+import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
+import { proposedValues, withEdits } from '../../../utils/human-decision/decision-values';
 import { DecisionForm } from './decision-form';
-import { readDecisionOutcome } from './decision-outcome';
 import { DecisionRecord } from './decision-record';
-import { readDecisionRequest } from './decision-request';
-import { proposedValues, withEdits } from './decision-values';
 
 // Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored.
 function DecisionFormControl({ data }: ControlProps) {

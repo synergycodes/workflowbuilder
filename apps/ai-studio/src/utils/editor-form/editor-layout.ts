@@ -1,4 +1,4 @@
-import { hasText } from '../../utils/has-text';
+import { hasText } from '../has-text';
 import { encodePointerSegment, schemaFields } from './form-schema';
 
 type EditorControl = { type: 'Text' | 'TextArea' | 'Switch'; scope: string; label: string };

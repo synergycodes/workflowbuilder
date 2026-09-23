@@ -1,6 +1,6 @@
 import type { JsonSchema } from '@workflowbuilder/sdk';
 
-import { isPlainObject } from '../../utils/is-plain-object';
+import { isPlainObject } from '../is-plain-object';
 
 /** A form schema the editor can render: an object whose `properties` are the fields. */
 export function isFormSchema(value: unknown): value is JsonSchema {

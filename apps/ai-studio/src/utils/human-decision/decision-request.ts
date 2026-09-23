@@ -1,7 +1,7 @@
 import type { JsonSchema } from '@workflowbuilder/sdk';
 
-import { isPlainObject } from '../../../utils/is-plain-object';
-import { isFormSchema } from '../../editor-form/form-schema';
+import { isFormSchema } from '../editor-form/form-schema';
+import { isPlainObject } from '../is-plain-object';
 import { type OfferedActions, offeredActions } from './decision-actions';
 
 /** What the form takes from the node's authored request. */

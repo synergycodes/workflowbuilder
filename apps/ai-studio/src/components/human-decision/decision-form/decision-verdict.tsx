@@ -4,7 +4,7 @@ import { Button, TextArea } from '@workflowbuilder/ui';
 import styles from './decision-verdict.module.css';
 
 import { hasText } from '../../../utils/has-text';
-import type { OfferedActions, RejectOffer } from './decision-actions';
+import type { OfferedActions, RejectOffer } from '../../../utils/human-decision/decision-actions';
 
 type Props = {
   actions: OfferedActions;

@@ -2,10 +2,10 @@ import { JsonForms, useJsonForms } from '@workflowbuilder/sdk';
 import type { JsonSchema } from '@workflowbuilder/sdk';
 import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
 
+import { editorLayout } from '../../utils/editor-form/editor-layout';
+import { invalidFieldsOf } from '../../utils/editor-form/form-schema';
 import { isPlainObject } from '../../utils/is-plain-object';
-import { editorLayout } from './editor-layout';
 import { FormBoundary } from './form-boundary';
-import { invalidFieldsOf } from './form-schema';
 
 type Middleware = NonNullable<ComponentProps<typeof JsonForms>['middleware']>;
 

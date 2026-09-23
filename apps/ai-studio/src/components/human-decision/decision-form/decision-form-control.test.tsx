@@ -16,8 +16,8 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../../../stores/use-execution-store';
+import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
 import { decisionFormRenderer } from './decision-form-control';
-import { reviewRequest } from './review-request.fixture';
 
 // The sidebar renders for the single selected node; the test moves the selection by hand.
 const selection: { nodeId: string | undefined } = { nodeId: 'human-1' };
