@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
+import { refundReviewOutputSchema } from '../nodes/ai-agent/response-options';
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
 import { aiStudioTemplates } from './ai-studio-templates';
@@ -67,6 +68,10 @@ describe('refundReviewFlow', () => {
 });
 
 describe('the draft the person reviews', () => {
+  it('seeds the shared refund review schema, the one the Response dropdown offers', () => {
+    expect(draft.data.properties['outputSchema']).toBe(refundReviewOutputSchema);
+  });
+
   it('is declared on the AI node as an output schema with a title on every field', () => {
     expect(draftFields).toEqual(['refundAmount', 'orderDate', 'replyDraft', 'internalReasoning']);
     for (const field of draftFields) {

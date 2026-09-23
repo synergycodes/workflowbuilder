@@ -2,6 +2,7 @@ import type { DiagramModel, TemplateModel } from '@workflowbuilder/sdk';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
+import { refundReviewOutputSchema } from '../nodes/ai-agent/response-options';
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
 
@@ -10,27 +11,6 @@ const REFUND_CONTEXT = `You work in customer support for Lumen, a SaaS analytics
 Refund policy: a duplicate charge is refunded in full; an unused month on the Pro plan ($49 / month)
 is refunded pro rata; refunds go back to the original card within 5 to 10 business days.
 Style: empathetic, concise, no promises the team cannot keep.`;
-
-// What the AI fills in. Strict structured outputs want every field required and no extra keys.
-const refundDraftSchema = {
-  type: 'object',
-  properties: {
-    refundAmount: { type: 'number', title: 'Refund amount', description: 'In USD, under the refund policy.' },
-    orderDate: { type: 'string', title: 'Order date', description: 'YYYY-MM-DD, as given in the message.' },
-    replyDraft: {
-      type: 'string',
-      title: 'Reply draft',
-      description: 'The body of the reply to the customer, no subject line: under 120 words, signed "Lumen Support".',
-    },
-    internalReasoning: {
-      type: 'string',
-      title: 'Internal reasoning',
-      description: 'Why this amount, for the team. Never sent to the customer.',
-    },
-  },
-  required: ['refundAmount', 'orderDate', 'replyDraft', 'internalReasoning'],
-  additionalProperties: false,
-};
 
 // The palette preset with the refund form on top: the amount and the reply may be corrected, the order
 // date may not, and the reasoning stays with the team, so it is not a field of the form at all.
@@ -87,7 +67,7 @@ Head of Ops, Brightwave`,
 Read the customer's message. Decide the refund amount under the policy, take the order date from the
 message, and draft the reply. Keep your reasoning about the policy for the team, not for the customer.`,
             webSearch: false,
-            outputSchema: refundDraftSchema,
+            outputSchema: refundReviewOutputSchema,
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
