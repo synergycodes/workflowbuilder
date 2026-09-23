@@ -14,7 +14,7 @@ type TriggerNodeConfig = Record<string, never>;
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
   webSearch?: boolean; // needs TAVILY_API_KEY to take effect
-  outputSchema?: JSONSchema7; // the answer becomes an object matching it; absent means free text under `response`
+  outputSchema?: JSONSchema7; // the shape asked of the model, not checked on its answer; absent means free text under `response`
 };
 
 export type DecisionBranchCondition = {

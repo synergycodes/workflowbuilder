@@ -68,7 +68,7 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
       return { output: { response: result.text } };
     }
 
-    // The schema goes to the provider as-is: its shape is the author's, the provider enforces it.
+    // Forwarded as-is and not validated here: only an endpoint that honours json_schema enforces the shape.
     const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
     // The SDK parses only a `stop` finish; otherwise it throws `No output generated.` without the reason.
     // Unclassified on purpose, so it keeps the node profile's uniform retry.
