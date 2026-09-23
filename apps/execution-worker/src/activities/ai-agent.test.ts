@@ -137,7 +137,7 @@ describe('executeAiAgent', () => {
     const result = await executeAiAgent(node, context(), { model });
 
     expect(result).toEqual({ output: { response: 'final answer' } });
-    expect(model.doGenerateCalls[0]?.responseFormat?.type).not.toBe('json');
+    expect(model.doGenerateCalls[0]?.responseFormat).toBeUndefined();
   });
 
   it('returns the object the model produced as the node output when the config declares an output schema', async () => {
@@ -153,7 +153,9 @@ describe('executeAiAgent', () => {
 
     await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
 
-    expect(model.doGenerateCalls[0]?.responseFormat).toEqual({ type: 'json', schema: refundSchema });
+    const format = model.doGenerateCalls[0]?.responseFormat;
+    expect(format).toEqual({ type: 'json', schema: refundSchema });
+    expect(format?.type === 'json' && format.schema).toBe(refundSchema);
   });
 
   it('keeps the web-search tool on the call beside the structured output', async () => {
@@ -236,7 +238,7 @@ describe('executeAiAgent', () => {
     });
   });
 
-  it('fails permanently when the provider rejects the declared schema', async () => {
+  it('classifies a 4xx on the structured call like any other: permanent', async () => {
     const node = aiAgentNode({ outputSchema: refundSchema });
     const model = failingModel(400, 'Invalid schema for response_format');
 

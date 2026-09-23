@@ -12,13 +12,8 @@ const { nodes, edges } = refundReviewFlow.value.diagram;
 const human = nodes.find((node) => node.id === 'human-1')!;
 const draft = nodes.find((node) => node.id === 'draft-1')!;
 
-type FormSchema = {
-  properties: Record<string, { title?: unknown }>;
-  required?: string[];
-  additionalProperties?: unknown;
-};
-const draftSchema = draft.data.properties['outputSchema'] as FormSchema | undefined;
-const draftFields = Object.keys(draftSchema?.properties ?? {});
+const draftProperties: Record<string, { title?: unknown }> = refundReviewOutputSchema.properties;
+const draftFields = Object.keys(draftProperties);
 const formProperties: Record<string, { title?: unknown }> = refundReviewRequest.schema.properties;
 const edgesInto = (nodeId: string) => edges.filter((edge) => edge.target === nodeId);
 const edgesOutOf = (nodeId: string) => edges.filter((edge) => edge.source === nodeId);
@@ -75,19 +70,19 @@ describe('the draft the person reviews', () => {
   it('is declared on the AI node as an output schema with a title on every field', () => {
     expect(draftFields).toEqual(['refundAmount', 'orderDate', 'replyDraft', 'internalReasoning']);
     for (const field of draftFields) {
-      expect(typeof draftSchema?.properties[field]?.title, field).toBe('string');
+      expect(typeof draftProperties[field]?.title, field).toBe('string');
     }
   });
 
   it("meets the provider's strict mode: every field required, no extra keys", () => {
-    expect([...(draftSchema?.required ?? [])].sort()).toEqual([...draftFields].sort());
-    expect(draftSchema?.additionalProperties).toBe(false);
+    expect([...refundReviewOutputSchema.required].sort()).toEqual([...draftFields].sort());
+    expect(refundReviewOutputSchema.additionalProperties).toBe(false);
   });
 
-  it('shows the decision form every draft field except internalReasoning, under the same titles', () => {
+  it('puts every draft field except internalReasoning on the decision form, under the same titles', () => {
     expect(Object.keys(formProperties)).toEqual(['refundAmount', 'orderDate', 'replyDraft']);
     for (const [field, declared] of Object.entries(formProperties)) {
-      expect(declared.title, field).toBe(draftSchema?.properties[field]?.title);
+      expect(declared.title, field).toBe(draftProperties[field]?.title);
     }
   });
 });
