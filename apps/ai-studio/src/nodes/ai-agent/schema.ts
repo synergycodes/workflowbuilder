@@ -11,6 +11,8 @@ export const schema = {
     webSearch: {
       type: 'boolean',
     },
+    // JSON Schema of this node's output; the worker forwards it to the model unchanged.
+    outputSchema: { type: 'object', properties: {} },
   },
 } satisfies NodeSchema;
 
