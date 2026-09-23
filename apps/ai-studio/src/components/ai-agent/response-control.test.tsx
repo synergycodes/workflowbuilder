@@ -31,7 +31,13 @@ describe('ResponseControl', () => {
     act(() =>
       root.render(
         <ResponseControl
-          {...({ data, handleChange, path: 'outputSchema', enabled, label: 'Response' } as unknown as ControlProps)}
+          {...({
+            data,
+            handleChange,
+            path: 'outputSchema',
+            enabled,
+            label: 'Response format',
+          } as unknown as ControlProps)}
         />,
       ),
     );
@@ -68,7 +74,7 @@ describe('ResponseControl', () => {
   it('shows plain text for a node without an output schema', () => {
     render();
 
-    expect(container.textContent).toContain('Response');
+    expect(container.textContent).toContain('Response format');
     expect(container.textContent).toContain('Plain text');
   });
 

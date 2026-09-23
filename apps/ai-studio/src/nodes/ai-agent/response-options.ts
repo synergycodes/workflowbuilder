@@ -1,6 +1,6 @@
 import type { SelectItem } from '@workflowbuilder/ui';
 
-// What the AI fills in for Refund Review. Strict structured outputs want every field required and no extra keys.
+// Strict structured outputs want every field required and no extra keys.
 export const refundReviewOutputSchema = {
   type: 'object',
   properties: {
@@ -21,7 +21,9 @@ export const refundReviewOutputSchema = {
   additionalProperties: false,
 };
 
-export type ResponseOption = 'text' | 'refund-review';
+type OutputSchema = typeof refundReviewOutputSchema;
+
+type ResponseOption = 'text' | 'refund-review';
 
 export const responseOptions: SelectItem[] = [
   { value: 'text', label: 'Plain text' },
@@ -36,6 +38,6 @@ export function responseOptionOf(outputSchema: unknown): ResponseOption {
   return isSameSchema(outputSchema, refundReviewOutputSchema) ? 'refund-review' : 'text';
 }
 
-export function outputSchemaFor(option: unknown): typeof refundReviewOutputSchema | undefined {
+export function outputSchemaFor(option: unknown): OutputSchema | undefined {
   return option === 'refund-review' ? refundReviewOutputSchema : undefined;
 }

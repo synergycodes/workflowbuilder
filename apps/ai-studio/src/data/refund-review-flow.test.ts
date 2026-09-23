@@ -63,7 +63,7 @@ describe('refundReviewFlow', () => {
 });
 
 describe('the draft the person reviews', () => {
-  it('seeds the shared refund review schema, the one the Response dropdown offers', () => {
+  it('seeds the shared refund review schema, the one the Response format dropdown offers', () => {
     expect(draft.data.properties['outputSchema']).toBe(refundReviewOutputSchema);
   });
 

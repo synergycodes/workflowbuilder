@@ -22,7 +22,12 @@ export const uischema: UISchema = {
       minRows: 5,
       maxRows: 14,
     },
-    { type: 'ResponseSelect', scope: scope('properties.outputSchema'), label: 'Response' } as unknown as UISchema,
+    // The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
+    {
+      type: 'ResponseSelect',
+      scope: scope('properties.outputSchema'),
+      label: 'Response format',
+    } as unknown as UISchema,
     {
       type: 'Switch',
       scope: scope('properties.webSearch'),
