@@ -7,10 +7,12 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
+import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
   const shouldShowControls = useHasStartNode();
+  useRunLocksCanvas();
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();

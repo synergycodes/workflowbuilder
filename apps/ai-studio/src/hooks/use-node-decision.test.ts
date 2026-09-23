@@ -34,6 +34,12 @@ describe('proposalSourceIdOf', () => {
     expect(proposalSourceIdOf(undefined, edges, 'human-1')).toBe('draft-1');
   });
 
+  it('does not count a self-loop as a predecessor, as the backend does not', () => {
+    expect(proposalSourceIdOf(undefined, [...edges, { source: 'human-1', target: 'human-1' }], 'human-1')).toBe(
+      'draft-1',
+    );
+  });
+
   it('counts one source once when two edges come from the same node', () => {
     const twoHandles = [...edges, { source: 'draft-1', target: 'human-1' }];
     expect(proposalSourceIdOf(undefined, twoHandles, 'human-1')).toBe('draft-1');

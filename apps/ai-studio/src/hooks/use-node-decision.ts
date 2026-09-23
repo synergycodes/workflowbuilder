@@ -22,7 +22,7 @@ export function attemptOf(events: ExecutionEvent[], nodeId: string): number {
   return events.filter((event) => event.type === 'node_waiting' && event.nodeId === nodeId).length;
 }
 
-// The same rule the backend applies at execute: the declared source, else the single direct predecessor.
+// The rule the backend applies at execute, on the same graph: the canvas is read-only while it shows a run.
 export function proposalSourceIdOf(
   declared: string | undefined,
   edges: EdgeLike[],
@@ -31,7 +31,8 @@ export function proposalSourceIdOf(
   if (declared !== undefined) {
     return declared;
   }
-  const sources = new Set(edges.filter((edge) => edge.target === nodeId).map((edge) => edge.source));
+  const incoming = edges.filter((edge) => edge.target === nodeId && edge.source !== nodeId);
+  const sources = new Set(incoming.map((edge) => edge.source));
   return sources.size === 1 ? [...sources][0] : undefined;
 }
 

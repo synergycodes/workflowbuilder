@@ -1,3 +1,4 @@
+import { useStore } from '@workflowbuilder/sdk';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -30,6 +31,7 @@ describe('AiStudioControls', () => {
 
   beforeEach(() => {
     resetExecution();
+    useStore.getState().setToggleReadOnlyMode(false);
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -56,5 +58,16 @@ describe('AiStudioControls', () => {
     setRunStatus('completed');
 
     expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
+  });
+
+  it('keeps the canvas read-only while it shows a run, ended or not, and gives it back on reset', () => {
+    setRunStatus('waiting');
+    expect(useStore.getState().isReadOnlyMode).toBe(true);
+
+    setRunStatus('completed');
+    expect(useStore.getState().isReadOnlyMode).toBe(true);
+
+    act(() => resetExecution());
+    expect(useStore.getState().isReadOnlyMode).toBe(false);
   });
 });
