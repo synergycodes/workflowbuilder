@@ -1,9 +1,10 @@
-import { APICallError, type JSONSchema7 } from 'ai';
+import { APICallError, type FinishReason, type JSONSchema7 } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
 import { describe, expect, it } from 'vitest';
 
 import {
   type ExecutionContext,
+  NodeExecutionError,
   PermanentNodeExecutionError,
   TransientNodeExecutionError,
 } from '@workflow-builder/execution-core';
@@ -38,11 +39,11 @@ const refundSchema: JSONSchema7 = {
   additionalProperties: false,
 };
 
-function answeringModel(text: string): MockLanguageModelV3 {
+function answeringModel(text: string, finishReason: FinishReason = 'stop'): MockLanguageModelV3 {
   return new MockLanguageModelV3({
     doGenerate: {
       content: [{ type: 'text', text }],
-      finishReason: { unified: 'stop', raw: undefined },
+      finishReason: { unified: finishReason, raw: undefined },
       usage: {
         inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
         outputTokens: { total: undefined, text: undefined, reasoning: undefined },
@@ -131,6 +132,30 @@ describe('executeAiAgent', () => {
     const call = model.doGenerateCalls[0];
     expect(call?.tools?.map((tool) => tool.name)).toEqual(['webSearch']);
     expect(call?.responseFormat?.type).toBe('json');
+  });
+
+  it.each(['length', 'content-filter'] as const)(
+    'names the finish reason when a structured answer ends with %s, and leaves the failure unclassified',
+    async (finishReason) => {
+      const model = answeringModel('{"refundAmount":4', finishReason);
+
+      const failure = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model }).catch(
+        (error: unknown) => error,
+      );
+
+      expect(failure).toBeInstanceOf(NodeExecutionError);
+      expect(failure).toMatchObject({ code: 'structured_output_incomplete' });
+      expect((failure as Error).message).toContain(`finish reason: ${finishReason}`);
+      expect(failure).not.toHaveProperty('classification');
+    },
+  );
+
+  it('returns the partial text of a truncated answer when the node has no output schema', async () => {
+    const model = answeringModel('The refund is', 'length');
+
+    const result = await executeAiAgent(aiAgentNode(), context(), { model });
+
+    expect(result).toEqual({ output: { response: 'The refund is' } });
   });
 
   it('fails permanently when the provider rejects the declared schema', async () => {

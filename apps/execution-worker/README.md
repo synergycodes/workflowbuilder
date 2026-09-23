@@ -110,7 +110,7 @@ An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor th
 
 The model is created with `supportsStructuredOutputs: true`. Without that flag the OpenAI-compatible provider drops the schema, sends plain JSON mode and only records a warning, so the keys would come from the model's guess. The provider's strict mode is on by default, which means the schema has to list every property in `required` and set `additionalProperties: false`; a provider that refuses the schema answers 4xx, and the table above makes that permanent. The endpoint has to support the `json_schema` response format at all. OpenRouter honours it only on models that advertise structured outputs, so check the model before a demo.
 
-The schema is forwarded untouched: nothing here validates its content or the answer against it beyond what the SDK does. An answer the SDK cannot parse into JSON, and a tool loop that hits its step cap without a final answer, stay unclassified, as the paragraph above explains.
+The schema is forwarded untouched: nothing here validates its content or the answer against it beyond what the SDK does. An answer the SDK cannot parse into JSON stays unclassified, as the paragraph above explains. So does an answer that ends on anything but a `stop` finish: truncated (`length`), filtered (`content-filter`), or a tool loop that hits its step cap (`tool-calls`). The node then fails with `structured_output_incomplete` and names the finish reason, which the SDK's own `No output generated.` leaves out.
 
 ## Adding a new engine
 

@@ -70,6 +70,14 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
 
     // The schema goes to the provider as-is: its shape is the author's, the provider enforces it.
     const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
+    // The SDK parses only a `stop` finish; otherwise it throws `No output generated.` without the reason.
+    // Unclassified on purpose, so it keeps the node profile's uniform retry.
+    if (result.finishReason !== 'stop') {
+      throw new NodeExecutionError(
+        'structured_output_incomplete',
+        `The model stopped before a structured answer (finish reason: ${result.finishReason})`,
+      );
+    }
     return { output: result.output };
   } catch (error) {
     const failure = classifyProviderError(error);
