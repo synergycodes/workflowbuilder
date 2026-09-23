@@ -1,6 +1,6 @@
-import { APICallError, type FinishReason, type JSONSchema7 } from 'ai';
+import { APICallError, type FinishReason, type JSONSchema7, NoObjectGeneratedError } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
-import { describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type ExecutionContext,
@@ -39,16 +39,49 @@ const refundSchema: JSONSchema7 = {
   additionalProperties: false,
 };
 
+const usage = {
+  inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+  outputTokens: { total: undefined, text: undefined, reasoning: undefined },
+};
+
 function answeringModel(text: string, finishReason: FinishReason = 'stop'): MockLanguageModelV3 {
   return new MockLanguageModelV3({
     doGenerate: {
       content: [{ type: 'text', text }],
       finishReason: { unified: finishReason, raw: undefined },
-      usage: {
-        inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
-        outputTokens: { total: undefined, text: undefined, reasoning: undefined },
-      },
+      usage,
       warnings: [],
+    },
+  });
+}
+
+// Calls webSearch on each of the first `searches` steps, then answers `text`.
+function searchingModel(searches: number, text: string): MockLanguageModelV3 {
+  let step = 0;
+  return new MockLanguageModelV3({
+    doGenerate: async () => {
+      step += 1;
+      if (step <= searches) {
+        return {
+          content: [
+            {
+              type: 'tool-call',
+              toolCallId: `search-${step}`,
+              toolName: 'webSearch',
+              input: '{"query":"refund policy"}',
+            },
+          ],
+          finishReason: { unified: 'tool-calls', raw: undefined },
+          usage,
+          warnings: [],
+        };
+      }
+      return {
+        content: [{ type: 'text', text }],
+        finishReason: { unified: 'stop', raw: undefined },
+        usage,
+        warnings: [],
+      };
     },
   });
 }
@@ -156,6 +189,51 @@ describe('executeAiAgent', () => {
     const result = await executeAiAgent(aiAgentNode(), context(), { model });
 
     expect(result).toEqual({ output: { response: 'The refund is' } });
+  });
+
+  it('rethrows an answer the SDK could not parse as JSON unchanged, so the profile keeps its uniform retry', async () => {
+    const model = answeringModel('Sure, the refund is 49 USD.');
+
+    const failure = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model }).catch(
+      (error: unknown) => error,
+    );
+
+    expect(NoObjectGeneratedError.isInstance(failure)).toBe(true);
+    expect(failure).not.toHaveProperty('classification');
+  });
+
+  it('returns an answer that does not match the schema as it came: the endpoint, not the worker, enforces the shape', async () => {
+    const model = answeringModel('{"refundAmount":"forty-nine"}');
+
+    const result = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    expect(result).toEqual({ output: { refundAmount: 'forty-nine' } });
+  });
+
+  describe('with web search and an output schema', () => {
+    const node = aiAgentNode({ webSearch: true, outputSchema: refundSchema });
+
+    beforeEach(() => vi.stubGlobal('fetch', async () => Response.json({ answer: '30-day refunds.' })));
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('parses the answer that follows a search', async () => {
+      const model = searchingModel(1, '{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+      const result = await executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' });
+
+      expect(model.doGenerateCalls).toHaveLength(2);
+      expect(result).toEqual({ output: { refundAmount: 49, orderDate: '2026-09-02' } });
+    });
+
+    it('names tool-calls as the finish reason when the loop hits its step cap still searching', async () => {
+      const model = searchingModel(Number.POSITIVE_INFINITY, 'never reached');
+
+      await expect(executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' })).rejects.toMatchObject({
+        code: 'structured_output_incomplete',
+        message: expect.stringContaining('finish reason: tool-calls'),
+      });
+      expect(model.doGenerateCalls).toHaveLength(4);
+    });
   });
 
   it('fails permanently when the provider rejects the declared schema', async () => {
