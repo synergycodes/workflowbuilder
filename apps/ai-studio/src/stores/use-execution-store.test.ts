@@ -13,6 +13,7 @@ import {
   applySnapshot,
   resetExecution,
   saveDecisionDraft,
+  saveDecisionSend,
   setExecutionStarted,
   useExecutionStore,
   waitKey,
@@ -21,6 +22,7 @@ import {
 const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
 
 const drafts = () => useExecutionStore.getState().decisionDrafts;
+const sends = () => useExecutionStore.getState().decisionSends;
 
 const terminalPayload: { [T in TerminalExecutionEventType]: Extract<ExecutionEvent, { type: T }>['payload'] } = {
   execution_completed: undefined,
@@ -196,6 +198,14 @@ describe('use-execution-store: decision drafts', () => {
     expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reason: 'Second wait' });
   });
 
+  it('keeps the drafts when a snapshot replays the same run', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ reason: 'Checked' });
+  });
+
   it('drops a draft saved for a run that is no longer the current one', () => {
     setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
     saveDecisionDraft(wait, { values: { refundAmount: 120 } });
@@ -211,5 +221,31 @@ describe('use-execution-store: decision drafts', () => {
     saveDecisionDraft(wait, { reason: 'Checked' });
     resetExecution();
     expect(drafts()).toEqual({});
+  });
+});
+
+describe('use-execution-store: decision sends', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('keeps where the decision for each wait stands', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    saveDecisionSend({ ...wait, attempt: 2 }, { status: 'refused', message: 'Refused.' });
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()[waitKey(wait)]).toEqual({ status: 'accepted' });
+    expect(sends()[waitKey({ ...wait, attempt: 2 })]).toEqual({ status: 'refused', message: 'Refused.' });
+  });
+
+  it('drops an answer that arrives for a run that is no longer the current one, and starts a run without any', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()).toEqual({});
   });
 });

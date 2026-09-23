@@ -1,3 +1,9 @@
 [class^='_json-form-container_'] textarea {
   font-family: ui-monospace, monospace;
 }
+
+/* The monospace is for the node's own fields, such as prompts; the decider reads prose. */
+[class^='_json-form-container_'] [data-decision-form] textarea,
+[class^='_json-form-container_'] [data-decision-record] textarea {
+  font-family: inherit;
+}

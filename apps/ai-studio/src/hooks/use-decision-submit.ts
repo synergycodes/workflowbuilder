@@ -1,6 +1,5 @@
-import { useState } from 'react';
-
-import type { DecisionInput, SubmitDecisionResult } from '../adapters/submit-decision';
+import { type DecisionInput, type SubmitDecisionResult, submitDecision } from '../adapters/submit-decision';
+import { type DecisionWait, saveDecisionSend, useExecutionStore, waitKey } from '../stores/use-execution-store';
 
 function refusalMessage(result: Extract<SubmitDecisionResult, { ok: false }>): string {
   return [
@@ -10,38 +9,38 @@ function refusalMessage(result: Extract<SubmitDecisionResult, { ok: false }>): s
     result.retryAfterSeconds === undefined ? undefined : `Try again in ${result.retryAfterSeconds} s.`,
   ]
     .filter((part) => part !== undefined)
+    .map((part) => (part.endsWith('.') ? part : `${part}.`))
     .join(' ');
 }
 
 /**
- * Sends a decision and turns the answer into what the form shows. An accepted decision is final, so the form stays
- * busy until the run moves the node on and the panel shows the decision instead; a refusal leaves it usable and says why.
+ * Sends the decision for a wait and keeps where it stands in the store, so a person who leaves the node and comes back
+ * finds it still on its way, accepted or refused. An accepted decision keeps the form busy until the run records it and
+ * the panel shows the decision instead; a refusal frees the form and says why.
  */
-export function useDecisionSubmit(decide: (input: DecisionInput) => Promise<SubmitDecisionResult>) {
-  const [isBusy, setIsBusy] = useState(false);
-  const [message, setMessage] = useState<string>();
+export function useDecisionSubmit(wait: DecisionWait) {
+  const send = useExecutionStore((state) => state.decisionSends[waitKey(wait)]);
 
   const submit = async (input: DecisionInput) => {
-    setIsBusy(true);
-    setMessage(undefined);
+    saveDecisionSend(wait, { status: 'sending' });
 
     let result: SubmitDecisionResult;
     try {
-      result = await decide(input);
+      result = await submitDecision(wait, input);
     } catch (error) {
       // The adapter answers with a result instead of throwing; a throw would be its bug, not a dead form.
-      setMessage(error instanceof Error ? error.message : 'The decision could not be sent.');
-      setIsBusy(false);
+      const message = error instanceof Error ? error.message : 'The decision could not be sent.';
+      saveDecisionSend(wait, { status: 'refused', message });
       return;
     }
 
-    if (result.ok) {
-      return;
-    }
-
-    setMessage(refusalMessage(result));
-    setIsBusy(false);
+    saveDecisionSend(wait, result.ok ? { status: 'accepted' } : { status: 'refused', message: refusalMessage(result) });
   };
 
-  return { isBusy, message, submit };
+  return {
+    isBusy: send?.status === 'sending' || send?.status === 'accepted',
+    isAccepted: send?.status === 'accepted',
+    message: send?.status === 'refused' ? send.message : undefined,
+    submit,
+  };
 }

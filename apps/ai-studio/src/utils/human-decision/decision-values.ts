@@ -12,7 +12,8 @@ export function proposedValues(proposal: unknown, schema: unknown): Record<strin
   );
 }
 
-// An emptied field travels as null: the backend reads null as "emptied", and a dropped key would keep the old value.
+// An emptied field travels as null, or as '' from a text area; the backend reads both as emptied, and a dropped key
+// would keep the old value.
 export function editsOf(
   proposed: Record<string, unknown>,
   current: Record<string, unknown>,

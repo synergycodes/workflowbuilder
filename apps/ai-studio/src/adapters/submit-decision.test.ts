@@ -1,7 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-// The real receiver, through the backend's own node_modules, as decision-request-contract.test.ts does.
+// The backend's schema for the decision itself, which the route extends with nodeId and attempt; read through
+// the backend's own node_modules, as decision-request-contract.test.ts does.
 import { submittedDecisionSchema } from '../../../backend/src/domain/decision/validate-submitted-decision';
+import { BACKEND_URL } from '../config';
 import { type DecisionInput, submitDecision } from './submit-decision';
 
 const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
@@ -58,12 +60,11 @@ describe('the body submitDecision sends', () => {
     ['approve with edits', { ...approve, edits: { refundAmount: 120, replyDraft: null } }],
     ['reject with a reason', { action: 'reject', reason: 'Too high' }],
   ])('%s parses with the backend submittedDecisionSchema', async (_name, input) => {
-    const body = await sentBody(input);
-    const parsed = submittedDecisionSchema.safeParse(body);
+    const { nodeId, attempt, ...decision } = await sentBody(input);
+    const parsed = submittedDecisionSchema.strict().safeParse(decision);
 
     expect(parsed.success, JSON.stringify(parsed.success ? null : parsed.error.issues)).toBe(true);
-    expect(typeof body['nodeId']).toBe('string');
-    expect(Number.isInteger(body['attempt']) && Number(body['attempt']) >= 1).toBe(true);
+    expect({ nodeId, attempt }).toEqual(addressed);
   });
 });
 
@@ -77,9 +78,9 @@ describe('submitDecision', () => {
 
     const result = await submitDecision(wait, { ...approve, edits: { refundAmount: 120 } });
 
-    expect(result).toEqual({ ok: true, effect: 'resume-with-edits' });
+    expect(result).toEqual({ ok: true });
     const [url, init] = fetchMock.mock.calls[0] as [string, RequestInit];
-    expect(url).toBe('http://127.0.0.1:3001/api/executions/exec-1/decision');
+    expect(url).toBe(`${BACKEND_URL}/api/executions/exec-1/decision`);
     expect(init.method).toBe('POST');
   });
 
@@ -129,15 +130,21 @@ describe('submitDecision', () => {
     });
   });
 
-  it('falls back to the HTTP status when the body is not the refusal envelope', async () => {
-    stubFetch(new Response('gateway', { status: 502, statusText: 'Bad Gateway' }));
+  it('says what happened when a proxy answers without the refusal envelope or a status text', async () => {
+    stubFetch(new Response('<html>gateway</html>', { status: 502 }));
 
     expect(await submitDecision(wait, approve)).toEqual({
       ok: false,
       status: 502,
       code: 'http_502',
-      message: 'Bad Gateway',
+      message: 'The backend answered HTTP 502 without saying why.',
     });
+  });
+
+  it('does not take a success page from somewhere else for an accepted decision', async () => {
+    stubFetch(new Response('<html>app</html>', { status: 200 }));
+
+    expect(await submitDecision(wait, approve)).toMatchObject({ ok: false, status: 200 });
   });
 
   it('reports a failed request as a network error', async () => {

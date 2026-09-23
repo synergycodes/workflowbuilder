@@ -9,7 +9,7 @@ type EdgeLike = { source: string; target: string };
 type DecisionRun = {
   wait: DecisionWait;
   /** The output of the proposal source: what the person judges. */
-  proposal: unknown;
+  sourceOutput: unknown;
 };
 
 /** Where a decision node stands in the current run: nothing to show, waiting for a person, or decided. */
@@ -42,7 +42,7 @@ export function useNodeDecision(nodeId: string | undefined, proposalSourceNodeId
   const attempt = useExecutionStore((state) => (nodeId === undefined ? 0 : attemptOf(state.events, nodeId)));
   const edges = useStore((state) => state.edges);
   const sourceId = nodeId === undefined ? undefined : proposalSourceIdOf(proposalSourceNodeId, edges, nodeId);
-  const proposal = useExecutionStore((state) =>
+  const sourceOutput = useExecutionStore((state) =>
     sourceId === undefined ? undefined : state.nodeStates[sourceId]?.output,
   );
   const wait = executionId === undefined || nodeId === undefined ? undefined : { executionId, nodeId, attempt };
@@ -52,7 +52,7 @@ export function useNodeDecision(nodeId: string | undefined, proposalSourceNodeId
   if (nodeState === undefined || wait === undefined || attempt < 1) {
     return { phase: 'none' };
   }
-  const run = { wait, proposal };
+  const run = { wait, sourceOutput };
   if (nodeState.status === 'waiting') {
     return { phase: 'waiting', draft, ...run };
   }

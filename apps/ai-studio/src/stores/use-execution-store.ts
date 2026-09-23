@@ -21,6 +21,9 @@ export type DecisionWait = { executionId: string; nodeId: string; attempt: numbe
 /** What a person has entered for a wait and not yet sent. */
 export type DecisionDraft = { values?: Record<string, unknown>; reason?: string };
 
+/** Where the decision sent for a wait stands until the run records it. */
+type DecisionSend = { status: 'sending' } | { status: 'accepted' } | { status: 'refused'; message: string };
+
 type ExecutionStore = {
   executionId: string | undefined;
   status: ExecutionStatus | 'idle' | 'disconnected';
@@ -30,6 +33,8 @@ type ExecutionStore = {
   isLogCollapsed: boolean;
   /** By {@link waitKey}. */
   decisionDrafts: Record<string, DecisionDraft>;
+  /** By {@link waitKey}. */
+  decisionSends: Record<string, DecisionSend>;
 };
 
 const emptyStore: ExecutionStore = {
@@ -40,6 +45,7 @@ const emptyStore: ExecutionStore = {
   events: [],
   isLogCollapsed: false,
   decisionDrafts: {},
+  decisionSends: {},
 };
 
 export const useExecutionStore = create<ExecutionStore>()(
@@ -66,6 +72,7 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     events: [],
     isLogCollapsed: false,
     decisionDrafts: {},
+    decisionSends: {},
   });
 }
 
@@ -73,14 +80,21 @@ export function waitKey({ executionId, nodeId, attempt }: DecisionWait): string 
   return `${executionId}:${nodeId}:${attempt}`;
 }
 
-export function saveDecisionDraft(wait: DecisionWait, change: DecisionDraft) {
-  const key = waitKey(wait);
+// A form that closes, or an answer that arrives, after its run was replaced leaves nothing in the new one.
+function updateWait(wait: DecisionWait, update: (state: ExecutionStore, key: string) => Partial<ExecutionStore>) {
   useExecutionStore.setState((state) =>
-    // A form that closes after its run was replaced leaves nothing in the new one.
-    state.executionId === wait.executionId
-      ? { decisionDrafts: { ...state.decisionDrafts, [key]: { ...state.decisionDrafts[key], ...change } } }
-      : state,
+    state.executionId === wait.executionId ? update(state, waitKey(wait)) : state,
   );
+}
+
+export function saveDecisionDraft(wait: DecisionWait, change: DecisionDraft) {
+  updateWait(wait, (state, key) => ({
+    decisionDrafts: { ...state.decisionDrafts, [key]: { ...state.decisionDrafts[key], ...change } },
+  }));
+}
+
+export function saveDecisionSend(wait: DecisionWait, send: DecisionSend) {
+  updateWait(wait, (state, key) => ({ decisionSends: { ...state.decisionSends, [key]: send } }));
 }
 
 export function applyConnectionLost() {

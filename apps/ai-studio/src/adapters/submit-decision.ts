@@ -7,7 +7,7 @@ import { isPlainObject } from '../utils/is-plain-object';
 export type DecisionInput = { action: string; edits?: Record<string, unknown>; reason?: string };
 
 export type SubmitDecisionResult =
-  | { ok: true; effect: string }
+  | { ok: true }
   | {
       ok: false;
       status: number;
@@ -21,7 +21,7 @@ export type SubmitDecisionResult =
       detail?: string;
     };
 
-// Drops an empty `edits` and a blank `reason`, so the body carries only what the route reads.
+// A blank reason would be recorded as given, and an empty `edits` is left out to keep the body minimal.
 function decisionBody({ nodeId, attempt }: DecisionWait, { action, edits, reason }: DecisionInput) {
   return {
     nodeId,
@@ -71,8 +71,9 @@ export async function submitDecision(wait: DecisionWait, input: DecisionInput): 
   }
 
   const payload = await readJson(response);
-  if (response.ok) {
-    return { ok: true, effect: stringOf(payload['effect']) ?? 'unknown' };
+  // The route names the effect of every decision it accepts; a success without one was answered on its behalf.
+  if (response.ok && stringOf(payload['effect']) !== undefined) {
+    return { ok: true };
   }
 
   const retryAfter = Number(response.headers.get('Retry-After'));
@@ -82,7 +83,7 @@ export async function submitDecision(wait: DecisionWait, input: DecisionInput): 
     ok: false,
     status: response.status,
     code: stringOf(payload['code']) ?? `http_${response.status}`,
-    message: stringOf(payload['message']) ?? response.statusText,
+    message: stringOf(payload['message']) ?? `The backend answered HTTP ${response.status} without saying why.`,
     ...(Number.isFinite(retryAfter) && retryAfter > 0 ? { retryAfterSeconds: retryAfter } : {}),
     ...(typeof currentAttempt === 'number' ? { currentAttempt } : {}),
     ...(detail === undefined ? {} : { detail }),

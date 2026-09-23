@@ -1,6 +1,8 @@
 import { JsonForms, useJsonForms } from '@workflowbuilder/sdk';
 import type { JsonSchema } from '@workflowbuilder/sdk';
-import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useMemo, useRef, useState } from 'react';
+import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useRef, useState } from 'react';
+
+import styles from './editor-form.module.css';
 
 import { editorLayout } from '../../utils/editor-form/editor-layout';
 import { invalidFieldsOf } from '../../utils/editor-form/form-schema';
@@ -8,6 +10,8 @@ import { isPlainObject } from '../../utils/is-plain-object';
 import { FormBoundary } from './form-boundary';
 
 type Middleware = NonNullable<ComponentProps<typeof JsonForms>['middleware']>;
+
+type ValidationMode = NonNullable<ComponentProps<typeof JsonForms>['validationMode']>;
 
 type EditorFormSnapshot = { data: Record<string, unknown>; invalidFields: ReadonlySet<string> };
 
@@ -17,7 +21,6 @@ type Props = {
   schema: JsonSchema;
   initialData: Record<string, unknown>;
   readOnly?: boolean;
-  /** Fixed for the life of the form: a change of validation mode resets it, like a new `data`. */
   validate?: boolean;
   /** Receives the top-level fields the schema finds fault with, once JsonForms reports the change. */
   onInvalidFieldsChange?: (invalidFields: ReadonlySet<string>) => void;
@@ -30,7 +33,8 @@ type Props = {
 
 /**
  * A schema and its data rendered with the editor's own controls and validator, for data that is not a node's
- * properties. Mounted inside the properties form, whose renderers it borrows.
+ * properties. Mounted inside the properties form, whose renderers it borrows. Everything but `readOnly` and the
+ * callbacks is read once, when the form mounts.
  */
 export function EditorForm({
   schema,
@@ -43,9 +47,11 @@ export function EditorForm({
   ref,
 }: Props) {
   const { renderers, cells, core } = useJsonForms();
-  // A new `data`, `schema` or `uischema` object resets JsonForms to that data, so each holds for the life of the form.
-  const [startingData] = useState(initialData);
-  const layout = useMemo(() => editorLayout(schema), [schema]);
+  // JsonForms resets to `data` when `data`, `schema`, `uischema` or `validationMode` changes, so all hold from mount.
+  const [fixed] = useState(() => {
+    const validationMode: ValidationMode = validate ? 'ValidateAndShow' : 'NoValidation';
+    return { schema, data: initialData, layout: editorLayout(schema), validationMode };
+  });
   // JsonForms reports changes debounced; the middleware sees each one as it happens.
   const latest = useRef<EditorFormSnapshot>({ data: initialData, invalidFields: new Set() });
 
@@ -65,22 +71,24 @@ export function EditorForm({
   useEffect(() => () => onUnmountRef.current?.(latest.current.data), []);
 
   return (
-    <FormBoundary
-      fallback={<p role="alert">This form cannot be shown: its schema could not be compiled.</p>}
-      onError={onFail}
-    >
-      <JsonForms
-        schema={schema}
-        uischema={layout}
-        data={startingData}
-        renderers={renderers ?? []}
-        cells={cells}
-        ajv={core?.ajv}
-        readonly={readOnly}
-        validationMode={validate ? 'ValidateAndShow' : 'NoValidation'}
-        middleware={track}
-        onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
-      />
-    </FormBoundary>
+    <div className={styles['fields']}>
+      <FormBoundary
+        fallback={<p role="alert">This form cannot be shown: its schema could not be compiled.</p>}
+        onError={onFail}
+      >
+        <JsonForms
+          schema={fixed.schema}
+          uischema={fixed.layout}
+          data={fixed.data}
+          renderers={renderers ?? []}
+          cells={cells}
+          ajv={core?.ajv}
+          readonly={readOnly}
+          validationMode={fixed.validationMode}
+          middleware={track}
+          onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
+        />
+      </FormBoundary>
+    </div>
   );
 }

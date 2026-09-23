@@ -1,7 +1,6 @@
 import { rankWith, uiTypeIs, useSingleSelectedElement, withJsonFormsControlProps } from '@workflowbuilder/sdk';
 import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/sdk';
 
-import { submitDecision } from '../../../adapters/submit-decision';
 import { useNodeDecision } from '../../../hooks/use-node-decision';
 import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
 import { readDecisionOutcome } from '../../../utils/human-decision/decision-outcome';
@@ -22,7 +21,7 @@ function DecisionFormControl({ data }: ControlProps) {
 
   const { schema, actions } = request;
   const { wait } = decision;
-  const proposal = proposedValues(decision.proposal, schema);
+  const proposal = proposedValues(decision.sourceOutput, schema);
 
   if (decision.phase === 'decided') {
     const outcome = readDecisionOutcome(decision.output);
@@ -44,7 +43,7 @@ function DecisionFormControl({ data }: ControlProps) {
       proposal={proposal}
       draft={decision.draft}
       saveDraft={(change) => saveDecisionDraft(wait, change)}
-      decide={(input) => submitDecision(wait, input)}
+      wait={wait}
     />
   );
 }

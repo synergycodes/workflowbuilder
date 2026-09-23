@@ -27,6 +27,12 @@ describe('offeredActions', () => {
     expect(offeredActions(actions)).toEqual({ resume: { name: 'approve', label: 'Approve' }, reject: undefined });
   });
 
+  it('finds the resume and the reject wherever the request lists them', () => {
+    const rerun = { name: 'redraft', label: 'Ask again', effect: 'rerun-source' };
+
+    expect(offeredActions([rerun, reject, approve])).toEqual(offeredActions([approve, reject]));
+  });
+
   it('falls back to the action name when the label is blank', () => {
     expect(offeredActions([{ ...approve, label: '  ' }])?.resume.label).toBe('approve');
   });

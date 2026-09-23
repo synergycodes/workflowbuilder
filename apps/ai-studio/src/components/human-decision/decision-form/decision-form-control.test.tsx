@@ -5,7 +5,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // The editor's real form, so the decision form runs with the controls and validator the panel gives it.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { JSONForm } from '../../../../../../packages/sdk/src/features/json-form/json-form';
-import { submitDecision } from '../../../adapters/submit-decision';
+import { workflowBuilderValidator } from '../../../../../../packages/sdk/src/utils/validation/workflow-builder-validator';
+import { type SubmitDecisionResult, submitDecision } from '../../../adapters/submit-decision';
 import { schema as nodeSchema } from '../../../nodes/human-decision/schema';
 import { uischema as nodeUischema } from '../../../nodes/human-decision/uischema';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
@@ -111,10 +112,12 @@ describe('the decision form in the properties panel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
   let nodeChanges: unknown[];
+  let renderedRequests: unknown[];
 
   const render = (decisionRequest: unknown = reviewRequest, readonly = false) => {
     // JsonForms reports a change after its debounce even from an unmounted form, so each test keeps its own list.
     const changes = nodeChanges;
+    renderedRequests.push(decisionRequest);
     act(() =>
       root.render(
         // The app runs in StrictMode, which mounts every effect twice; the drafts and the unmount report depend on it.
@@ -135,8 +138,9 @@ describe('the decision form in the properties panel', () => {
     resetExecution();
     selection.nodeId = 'human-1';
     nodeChanges = [];
+    renderedRequests = [];
     submit.mockReset();
-    submit.mockResolvedValue({ ok: true, effect: 'resume' });
+    submit.mockResolvedValue({ ok: true });
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -144,9 +148,14 @@ describe('the decision form in the properties panel', () => {
     render();
   });
 
-  afterEach(() => {
+  afterEach(async () => {
+    await settle();
     act(() => root.unmount());
     container.remove();
+    // The form never writes the node: whatever node data the panel reports is a request the test rendered.
+    for (const data of nodeChanges) {
+      expect(renderedRequests).toContainEqual((data as { decisionRequest: unknown }).decisionRequest);
+    }
   });
 
   const form = () => container.querySelector('[data-decision-form]');
@@ -158,7 +167,7 @@ describe('the decision form in the properties panel', () => {
   const fieldOf = (label: string) =>
     labelled(label)?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ?? undefined;
   const valueOf = (label: string) => labelled(label)?.querySelector('p')?.textContent ?? undefined;
-  const hasError = (label: string) => labelled(label)?.querySelector('.base--error') !== null;
+  const hasError = (label: string) => labelled(label)!.querySelector('.base--error') !== null;
   const button = (label: string) =>
     [...container.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === label)!;
 
@@ -224,6 +233,80 @@ describe('the decision form in the properties panel', () => {
       expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'reject', reason: '' });
     });
 
+    it('takes the proposal from a declared source over the incoming edge', () => {
+      render({ ...reviewRequest, proposalSourceNodeId: 'draft-2' });
+      act(() =>
+        applyEvent(event({ type: 'node_completed', nodeId: 'draft-2', payload: { output: { refundAmount: 15 } } })),
+      );
+      parkHumanOne();
+
+      expect(fieldOf('Refund amount')?.value).toBe('15');
+    });
+
+    it('checks the fields with the validator the editor hands it, which runs without eval', () => {
+      const compile = vi.spyOn(workflowBuilderValidator, 'compile');
+
+      parkHumanOne();
+
+      expect(compile).toHaveBeenCalledWith(reviewRequest.schema);
+      compile.mockRestore();
+    });
+
+    it('leaves out a field JsonForms cannot address, and still edits one whose key it escapes', async () => {
+      const properties = {
+        'a/b': { type: 'string', title: 'Slash' },
+        'a.b': { type: 'string', title: 'Dot' },
+        'x~~y': { type: 'string', title: 'Tildes' },
+        constructor: { type: 'string', title: 'Constructor' },
+      };
+      render({ ...reviewRequest, schema: { type: 'object', properties } });
+      parkHumanOne({ 'a/b': 'one', 'a.b': 'two', 'x~~y': 'three', constructor: 'four' });
+
+      expect(labelled('Dot')).toBeUndefined();
+      expect(labelled('Tildes')).toBeUndefined();
+      expect(labelled('Constructor')).toBeUndefined();
+      expect(fieldOf('Slash')?.value).toBe('one');
+
+      commit(fieldOf('Slash')!, 'changed');
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ 'a/b': 'changed' });
+    });
+
+    it('shows and edits an optional field that structured output types with null', async () => {
+      const schema = {
+        type: 'object',
+        properties: { note: { type: ['string', 'null'], title: 'Note' } },
+        required: ['note'],
+      };
+      render({ ...reviewRequest, schema });
+      parkHumanOne({ note: 'Call back' });
+
+      expect(fieldOf('Note')?.value).toBe('Call back');
+
+      commit(fieldOf('Note')!, 'Refunded');
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ note: 'Refunded' });
+    });
+
+    it('does not hold back an optional field the model left null', async () => {
+      const schema = {
+        type: 'object',
+        properties: { note: { type: ['string', 'null'], title: 'Note' } },
+        required: ['note'],
+      };
+      render({ ...reviewRequest, schema });
+      parkHumanOne({ note: null });
+      await settle();
+
+      expect(button('Approve').disabled).toBe(false);
+
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
+    });
+
     it('still lets the person decide when the request declares no fields', async () => {
       parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
@@ -269,6 +352,15 @@ describe('the decision form in the properties panel', () => {
       expect(fieldOf('Refund amount')?.value).toBe('120');
       await click(button('Approve'));
       expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('keeps what the person typed when the request arrives as a new but equal object', () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '120');
+
+      render(structuredClone(reviewRequest));
+
+      expect(fieldOf('Refund amount')?.value).toBe('120');
     });
 
     it('keeps what was typed while the panel shows another node, and measures the edits against the proposal', async () => {
@@ -380,6 +472,9 @@ describe('the decision form in the properties panel', () => {
         actions: [reviewRequest.actions[0], { ...reviewRequest.actions[1], reasonRequired: true }],
       });
 
+      expect(button('Reject').disabled).toBe(true);
+
+      commit(fieldOf('Reason')!, '   ');
       expect(button('Reject').disabled).toBe(true);
 
       commit(fieldOf('Reason')!, 'Outside the policy');
@@ -496,6 +591,41 @@ describe('the decision form in the properties panel', () => {
 
       expect(fieldOf('Refund amount')?.disabled).toBe(true);
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
+      expect(fieldOf('Reason')?.disabled).toBe(true);
+      expect(button('Reject').disabled).toBe(true);
+    });
+
+    it('keeps a decision on its way when the person leaves and comes back, so a second one cannot be sent', async () => {
+      parkHumanOne();
+      submit.mockReturnValue(new Promise(() => {}));
+      await click(button('Approve'));
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render();
+
+      expect(button('Approve').disabled).toBe(true);
+      expect(button('Reject').disabled).toBe(true);
+      expect(submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows a refusal that arrived while the person was on another node', async () => {
+      parkHumanOne();
+      let answer!: (result: SubmitDecisionResult) => void;
+      submit.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+      await click(button('Approve'));
+
+      selection.nodeId = 'draft-1';
+      render();
+      await act(async () =>
+        answer({ ok: false, status: 409, code: 'decision_already_made', message: 'Someone decided' }),
+      );
+      selection.nodeId = 'human-1';
+      render();
+
+      expect(container.querySelector('[role="alert"]')?.textContent).toBe('Someone decided.');
+      expect(button('Approve').disabled).toBe(false);
     });
 
     it('shows what the backend refused and keeps the values', async () => {
@@ -518,13 +648,17 @@ describe('the decision form in the properties panel', () => {
       expect(button('Approve').disabled).toBe(false);
     });
 
-    it('keeps the buttons down once a decision was accepted, until the run shows it', async () => {
+    it('keeps the buttons down once a decision was accepted, and says so should the run be slow to show it', async () => {
       parkHumanOne();
 
       await click(button('Approve'));
 
       expect(button('Approve').disabled).toBe(true);
       expect(container.querySelector('[role="alert"]')).toBeNull();
+      // Its style keeps the line hidden for its first second, so a healthy stack never shows it.
+      expect(container.querySelector('[role="status"]')?.textContent).toBe(
+        'Sent. Waiting for the run to record the decision.',
+      );
     });
   });
 

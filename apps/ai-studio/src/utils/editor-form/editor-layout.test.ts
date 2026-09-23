@@ -31,6 +31,23 @@ describe('editorLayout', () => {
     expect(elements.map((element) => element.type)).toEqual(['Switch']);
   });
 
+  it('shows an optional string or boolean that structured output types with null, but not a nullable number', () => {
+    const { elements } = editorLayout({
+      type: 'object',
+      properties: {
+        note: { type: ['string', 'null'] },
+        urgent: { type: ['null', 'boolean'] },
+        amount: { type: ['number', 'null'] },
+        either: { type: ['string', 'number'] },
+      },
+    });
+
+    expect(elements.map((element) => [element.label, element.type])).toEqual([
+      ['note', 'TextArea'],
+      ['urgent', 'Switch'],
+    ]);
+  });
+
   it('escapes a key that JSON Pointer reserves', () => {
     const [element] = editorLayout({ type: 'object', properties: { 'a/b~c': { type: 'string' } } }).elements;
 

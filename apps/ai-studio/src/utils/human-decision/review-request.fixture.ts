@@ -1,6 +1,6 @@
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-// A request with every field kind the form knows, and one it does not (the array).
+// Every type the form shows (number, string, boolean) and two it leaves out (integer, array).
 export const reviewRequest = {
   version: 1,
   actions: [

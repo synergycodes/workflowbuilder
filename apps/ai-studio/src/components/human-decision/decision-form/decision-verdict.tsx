@@ -11,6 +11,7 @@ type Props = {
   reason: string;
   isApproveBlocked: boolean;
   isBusy: boolean;
+  isAccepted: boolean;
   message: string | undefined;
   onReasonChange: (reason: string) => void;
   onApprove: () => void;
@@ -23,6 +24,7 @@ export function DecisionVerdict({
   reason,
   isApproveBlocked,
   isBusy,
+  isAccepted,
   message,
   onReasonChange,
   onApprove,
@@ -49,12 +51,19 @@ export function DecisionVerdict({
           {message}
         </p>
       )}
+      {isAccepted && (
+        <p role="status" className={styles['pending']}>
+          Sent. Waiting for the run to record the decision.
+        </p>
+      )}
       <div className={styles['buttons']}>
         {reject && (
           <Button variant="ghost-destructive" disabled={isBusy || reasonMissing} onClick={() => onReject(reject)}>
             {reject.label}
           </Button>
         )}
+        {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
+            the first tap after a correction is lost (follow-up: decision-form-blocked-button-a11y). */}
         <Button variant="primary" disabled={isBusy || isApproveBlocked} onClick={onApprove}>
           {resume.label}
         </Button>

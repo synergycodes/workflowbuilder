@@ -4,6 +4,7 @@ import { useEffect } from 'react';
 import { useExecutionStore } from '../stores/use-execution-store';
 
 /** From the start of a run until Reset the canvas is read-only, so it stays the graph the run executes. */
+// The SDK app-bar menu's Import does not check read-only yet (follow-up: sdk-import-read-only).
 export function useRunLocksCanvas() {
   const showsRun = useExecutionStore((state) => state.executionId !== undefined);
   const { setReadOnly } = useWorkflowBuilderActions();

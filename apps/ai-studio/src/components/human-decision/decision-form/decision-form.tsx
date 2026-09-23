@@ -3,9 +3,8 @@ import { useRef, useState } from 'react';
 
 import styles from './decision-form.module.css';
 
-import type { DecisionInput, SubmitDecisionResult } from '../../../adapters/submit-decision';
 import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
-import type { DecisionDraft } from '../../../stores/use-execution-store';
+import type { DecisionDraft, DecisionWait } from '../../../stores/use-execution-store';
 import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
 import { blocksApproval, editsOf } from '../../../utils/human-decision/decision-values';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
@@ -18,14 +17,14 @@ type Props = {
   proposal: Record<string, unknown>;
   draft: DecisionDraft | undefined;
   saveDraft: (change: DecisionDraft) => void;
-  decide: (input: DecisionInput) => Promise<SubmitDecisionResult>;
+  wait: DecisionWait;
 };
 
 // The control remounts it (React `key`) for each wait, so it starts from that wait's draft, or from the proposal.
-export function DecisionForm({ schema, actions, proposal, draft, saveDraft, decide }: Props) {
+export function DecisionForm({ schema, actions, proposal, draft, saveDraft, wait }: Props) {
   const fields = useRef<EditorFormHandle>(null);
   const [isApproveBlocked, setIsApproveBlocked] = useState(false);
-  const { isBusy, message, submit } = useDecisionSubmit(decide);
+  const { isBusy, isAccepted, message, submit } = useDecisionSubmit(wait);
   const reason = draft?.reason ?? '';
 
   const approve = () => {
@@ -51,6 +50,7 @@ export function DecisionForm({ schema, actions, proposal, draft, saveDraft, deci
         reason={reason}
         isApproveBlocked={isApproveBlocked}
         isBusy={isBusy}
+        isAccepted={isAccepted}
         message={message}
         onReasonChange={(next) => saveDraft({ reason: next })}
         onApprove={approve}

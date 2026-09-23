@@ -13,3 +13,15 @@
 .message {
   margin: 0;
 }
+
+/* On a healthy stack the record replaces the form first, so the line shows only when the run is slow to record it. */
+.pending {
+  margin: 0;
+  animation: appear 0s 1s both;
+}
+
+@keyframes appear {
+  from {
+    visibility: hidden;
+  }
+}
