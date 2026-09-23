@@ -16,8 +16,14 @@ describe('responseOptionOf', () => {
     expect(responseOptionOf(null)).toBe('text');
   });
 
-  it('is the refund review preset when a schema is present', () => {
+  it('is the refund review preset for that schema, also for a copy of it', () => {
     expect(responseOptionOf(refundReviewOutputSchema)).toBe('refund-review');
+    expect(responseOptionOf(structuredClone(refundReviewOutputSchema))).toBe('refund-review');
+  });
+
+  it('is plain text for a schema that is not the preset', () => {
+    expect(responseOptionOf({})).toBe('text');
+    expect(responseOptionOf({ type: 'object', properties: { score: { type: 'number' } } })).toBe('text');
   });
 });
 

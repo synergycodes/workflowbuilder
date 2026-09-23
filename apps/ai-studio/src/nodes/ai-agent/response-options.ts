@@ -28,9 +28,12 @@ export const responseOptions: SelectItem[] = [
   { value: 'refund-review', label: 'Structured: refund review' },
 ];
 
+// String equality, not identity: a preset that went through a JSON round trip (import, paste) still matches.
+const isSameSchema = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
+
 // Read off the data on purpose: a stored mode could disagree with the schema that is actually on the node.
 export function responseOptionOf(outputSchema: unknown): ResponseOption {
-  return outputSchema == null ? 'text' : 'refund-review';
+  return isSameSchema(outputSchema, refundReviewOutputSchema) ? 'refund-review' : 'text';
 }
 
 export function outputSchemaFor(option: unknown): typeof refundReviewOutputSchema | undefined {

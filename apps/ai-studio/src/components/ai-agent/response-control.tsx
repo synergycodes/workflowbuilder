@@ -7,8 +7,11 @@ import { outputSchemaFor, responseOptionOf, responseOptions } from '../../nodes/
 
 // Edits the node's `outputSchema` as a choice between presets; the schema itself is never typed here.
 export function ResponseControl({ data, handleChange, path, enabled, label }: ControlProps) {
+  // Base UI reports a click on the selected item as a change; writing the same value would still add an undo step.
   const onChange: SelectBaseProps['onChange'] = (_event, value) => {
-    handleChange(path, outputSchemaFor(value));
+    const outputSchema = outputSchemaFor(value);
+    if (outputSchema === data) return;
+    handleChange(path, outputSchema);
   };
 
   return (

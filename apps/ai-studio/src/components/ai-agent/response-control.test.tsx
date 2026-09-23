@@ -83,6 +83,7 @@ describe('ResponseControl', () => {
 
     choose('Structured: refund review');
 
+    expect(handleChange).toHaveBeenCalledTimes(1);
     expect(handleChange).toHaveBeenCalledWith('outputSchema', refundReviewOutputSchema);
   });
 
@@ -91,7 +92,43 @@ describe('ResponseControl', () => {
 
     choose('Plain text');
 
-    expect(handleChange.mock.lastCall).toEqual(['outputSchema', undefined]);
+    expect(handleChange).toHaveBeenCalledTimes(1);
+    expect(handleChange).toHaveBeenCalledWith('outputSchema', undefined);
+  });
+
+  it('writes nothing when the selected option is chosen again', () => {
+    render({ data: refundReviewOutputSchema });
+
+    choose('Structured: refund review');
+
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing when plain text is chosen again on a node without a schema', () => {
+    render();
+
+    choose('Plain text');
+
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  describe('with a schema that is not the preset', () => {
+    const otherSchema = { type: 'object', properties: { score: { type: 'number' } } };
+
+    it('shows plain text', () => {
+      render({ data: otherSchema });
+
+      expect(trigger()?.textContent).toContain('Plain text');
+    });
+
+    it('clears the schema when plain text is chosen', () => {
+      render({ data: otherSchema });
+
+      choose('Plain text');
+
+      expect(handleChange).toHaveBeenCalledTimes(1);
+      expect(handleChange).toHaveBeenCalledWith('outputSchema', undefined);
+    });
   });
 
   it('is disabled when the form is read-only', () => {
