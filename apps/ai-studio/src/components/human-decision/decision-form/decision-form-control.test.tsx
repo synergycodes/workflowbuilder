@@ -102,6 +102,15 @@ function sentEdits() {
   return submit.mock.calls[0]?.[1]?.edits;
 }
 
+// The reject dialog renders in a portal on the page, outside the panel.
+function dialog() {
+  return document.querySelector<HTMLElement>('[role="dialog"]');
+}
+
+function reasonField() {
+  return dialog()?.querySelector('textarea') ?? undefined;
+}
+
 async function click(element: Element) {
   await act(async () => {
     element.dispatchEvent(new MouseEvent('click', { bubbles: true }));
@@ -173,8 +182,9 @@ describe.each([
     labelled(label)?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ?? undefined;
   const valueOf = (label: string) => labelled(label)?.querySelector('p')?.textContent ?? undefined;
   const hasError = (label: string) => labelled(label)!.querySelector('.base--error') !== null;
-  const button = (label: string) =>
-    [...container.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === label)!;
+  const button = (label: string, within: ParentNode = container) =>
+    [...within.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === label)!;
+  const dialogButton = (label: string) => button(label, dialog()!);
 
   describe('what it shows', () => {
     it('renders nothing until the node waits, then the fields the request declares', () => {
@@ -233,7 +243,8 @@ describe.each([
       expect(container.querySelector('[role="alert"]')?.textContent).toContain('cannot be shown here');
       expect(button('Approve').disabled).toBe(true);
 
-      await click(button('Reject'));
+      await click(button('Reject…'));
+      await click(dialogButton('Confirm Rejection'));
 
       expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'reject', reason: '' });
     });
@@ -321,7 +332,7 @@ describe.each([
       parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
 
-      expect(button('Reject')).toBeDefined();
+      expect(button('Reject…')).toBeDefined();
 
       await click(button('Approve'));
 
@@ -334,7 +345,7 @@ describe.each([
 
       const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
 
-      expect(buttons).toEqual(['Reject', 'Approve']);
+      expect(buttons).toEqual(['Reject…', 'Approve']);
     });
   });
 
@@ -376,7 +387,9 @@ describe.each([
     it('keeps what was typed while the panel shows another node, and measures the edits against the proposal', async () => {
       parkHumanOne();
       commit(fieldOf('Refund amount')!, '120');
-      commit(fieldOf('Reason')!, 'Checked with the customer');
+      await click(button('Reject…'));
+      commit(reasonField()!, 'Checked with the customer');
+      await click(dialogButton('Cancel'));
 
       selection.nodeId = 'draft-1';
       render();
@@ -385,7 +398,9 @@ describe.each([
       selection.nodeId = 'human-1';
       render();
       expect(fieldOf('Refund amount')?.value).toBe('120');
-      expect(fieldOf('Reason')?.value).toBe('Checked with the customer');
+      await click(button('Reject…'));
+      expect(reasonField()?.value).toBe('Checked with the customer');
+      await click(dialogButton('Cancel'));
 
       await click(button('Approve'));
 
@@ -475,22 +490,24 @@ describe.each([
       expect(submit).not.toHaveBeenCalled();
     });
 
-    it('blocks the reject until a required reason is given', async () => {
+    it('opens the reject for a required reason, and confirms it only once the reason is given', async () => {
       parkHumanOne();
       render({
         ...reviewRequest,
         actions: [reviewRequest.actions[0], { ...reviewRequest.actions[1], reasonRequired: true }],
       });
 
-      expect(button('Reject').disabled).toBe(true);
+      expect(button('Reject…').disabled).toBe(false);
+      await click(button('Reject…'));
+      expect(dialogButton('Confirm Rejection').disabled).toBe(true);
 
-      commit(fieldOf('Reason')!, '   ');
-      expect(button('Reject').disabled).toBe(true);
+      commit(reasonField()!, '   ');
+      expect(dialogButton('Confirm Rejection').disabled).toBe(true);
 
-      commit(fieldOf('Reason')!, 'Outside the policy');
+      commit(reasonField()!, 'Outside the policy');
 
-      expect(button('Reject').disabled).toBe(false);
-      await click(button('Reject'));
+      expect(dialogButton('Confirm Rejection').disabled).toBe(false);
+      await click(dialogButton('Confirm Rejection'));
       expect(submit).toHaveBeenCalledTimes(1);
     });
 
@@ -502,7 +519,7 @@ describe.each([
 
       expect(hasError('Refund amount')).toBe(true);
       expect(button('Approve').disabled).toBe(true);
-      expect(button('Reject').disabled).toBe(false);
+      expect(button('Reject…').disabled).toBe(false);
     });
 
     it('blocks the approve from the start when the proposal leaves a required field out', async () => {
@@ -583,14 +600,31 @@ describe.each([
       expect(sentEdits()).toEqual({ expedite: true });
     });
 
-    it('sends a reject with its reason and without edits', async () => {
+    it('asks for the reason in a dialog instead of the panel, and sends nothing on Cancel', async () => {
+      parkHumanOne();
+      expect(fieldOf('Rejection reason')).toBeUndefined();
+      expect(dialog()).toBeNull();
+
+      await click(button('Reject…'));
+      expect(labelled('Rejection reason')).toBeUndefined();
+      expect(dialog()?.textContent).toContain('Rejection reason');
+      commit(reasonField()!, 'Not sure yet');
+      await click(dialogButton('Cancel'));
+
+      expect(dialog()).toBeNull();
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('sends a reject with its reason and without edits, and closes the dialog', async () => {
       parkHumanOne();
       commit(fieldOf('Refund amount')!, '120');
-      commit(fieldOf('Reason')!, 'Outside the policy');
+      await click(button('Reject…'));
+      commit(reasonField()!, 'Outside the policy');
 
-      await click(button('Reject'));
+      await click(dialogButton('Confirm Rejection'));
 
       expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'reject', reason: 'Outside the policy' });
+      expect(dialog()).toBeNull();
     });
 
     it('locks the fields while the decision is on its way, so nothing typed then is lost', async () => {
@@ -601,8 +635,7 @@ describe.each([
 
       expect(fieldOf('Refund amount')?.disabled).toBe(true);
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
-      expect(fieldOf('Reason')?.disabled).toBe(true);
-      expect(button('Reject').disabled).toBe(true);
+      expect(button('Reject…').disabled).toBe(true);
     });
 
     it('keeps a decision on its way when the person leaves and comes back, so a second one cannot be sent', async () => {
@@ -616,7 +649,7 @@ describe.each([
       render();
 
       expect(button('Approve').disabled).toBe(true);
-      expect(button('Reject').disabled).toBe(true);
+      expect(button('Reject…').disabled).toBe(true);
       expect(submit).toHaveBeenCalledTimes(1);
     });
 

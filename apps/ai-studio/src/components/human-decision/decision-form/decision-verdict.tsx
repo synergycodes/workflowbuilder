@@ -1,10 +1,10 @@
-import { FormControlWithLabel } from '@workflowbuilder/sdk';
-import { Button, TextArea } from '@workflowbuilder/ui';
+import { Button } from '@workflowbuilder/ui';
+import { useState } from 'react';
 
 import styles from './decision-verdict.module.css';
 
-import { hasText } from '../../../utils/has-text';
 import type { OfferedActions, RejectOffer } from '../../../utils/human-decision/decision-actions';
+import { RejectDialog } from './reject-dialog';
 
 type Props = {
   actions: OfferedActions;
@@ -18,7 +18,7 @@ type Props = {
   onReject: (reject: RejectOffer) => void;
 };
 
-/** The verdict half of the form: the reason the decider may give, and the actions they may take. */
+/** The verdict half of the form: the actions the decider may take, a rejection asking for its reason first. */
 export function DecisionVerdict({
   actions: { resume, reject },
   reason,
@@ -30,22 +30,10 @@ export function DecisionVerdict({
   onApprove,
   onReject,
 }: Props) {
-  const reasonMissing = reject?.reasonRequired === true && !hasText(reason);
+  const [isRejecting, setIsRejecting] = useState(false);
 
   return (
     <div className={styles['verdict']}>
-      {reject && (
-        <FormControlWithLabel label="Reason" required={reject.reasonRequired}>
-          <TextArea
-            value={reason}
-            minRows={1}
-            maxRows={4}
-            disabled={isBusy}
-            error={reasonMissing}
-            onChange={(event) => onReasonChange(event.target.value)}
-          />
-        </FormControlWithLabel>
-      )}
       {message && (
         <p role="alert" className={styles['message']}>
           {message}
@@ -58,8 +46,8 @@ export function DecisionVerdict({
       )}
       <div className={styles['buttons']}>
         {reject && (
-          <Button variant="ghost-destructive" disabled={isBusy || reasonMissing} onClick={() => onReject(reject)}>
-            {reject.label}
+          <Button variant="ghost-destructive" disabled={isBusy} onClick={() => setIsRejecting(true)}>
+            {`${reject.label}…`}
           </Button>
         )}
         {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
@@ -68,6 +56,19 @@ export function DecisionVerdict({
           {resume.label}
         </Button>
       </div>
+      {reject && (
+        <RejectDialog
+          reject={reject}
+          open={isRejecting}
+          reason={reason}
+          onReasonChange={onReasonChange}
+          onCancel={() => setIsRejecting(false)}
+          onConfirm={() => {
+            setIsRejecting(false);
+            onReject(reject);
+          }}
+        />
+      )}
     </div>
   );
 }

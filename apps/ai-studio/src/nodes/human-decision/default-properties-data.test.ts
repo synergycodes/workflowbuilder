@@ -18,9 +18,10 @@ describe('defaultDecisionRequest', () => {
     expect(ports).not.toContain('errorRoute');
   });
 
-  it('is a version 1 request: one resume, one reject, no rerun, an empty form, no proposal source', () => {
+  it('is a version 1 request: one resume, one reject that needs a reason, no rerun, an empty form, no proposal source', () => {
     expect(defaultDecisionRequest.version).toBe(1);
     expect(defaultDecisionRequest.actions.map((action) => action.effect)).toEqual(['resume', 'reject']);
+    expect(defaultDecisionRequest.actions[1]).toMatchObject({ effect: 'reject', reasonRequired: true });
     expect(defaultDecisionRequest.schema).toEqual({ type: 'object', properties: {} });
     expect(defaultDecisionRequest).not.toHaveProperty('proposalSourceNodeId');
     expect(defaultDecisionRequest).not.toHaveProperty('deadline');
