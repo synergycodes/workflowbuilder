@@ -13,11 +13,12 @@ const CONTROL_BY_TYPE = new Map<string, EditorControl['type']>([
   ['boolean', 'Switch'],
 ]);
 
-// JsonForms joins data paths with dots and decodes one `~0` per segment; lodash's `set` refuses these names.
 const UNSETTABLE_KEYS: ReadonlySet<string> = new Set(['constructor', 'prototype', '__proto__']);
 
+// JsonForms reads '' as the whole form, joins data paths with dots and decodes one `~0` per segment; lodash reads
+// brackets as a path and refuses to set the names above.
 function isAddressable(key: string): boolean {
-  return !key.includes('.') && key.split('~').length <= 2 && !UNSETTABLE_KEYS.has(key);
+  return key !== '' && !/[.[\]]/.test(key) && key.split('~').length <= 2 && !UNSETTABLE_KEYS.has(key);
 }
 
 // Structured output types an optional field as `[type, 'null']`. The text area and the switch hand over their own

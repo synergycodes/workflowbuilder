@@ -108,11 +108,11 @@ async function click(element: Element) {
   });
 }
 
-// Development mounts every effect twice, so each form writes a draft as it mounts; a production build does not.
+// StrictMode mounts every effect twice, so each form writes a draft as it mounts; a production build does not.
 // Each mode hides regressions the other one catches.
 describe.each([
   ['in development', StrictMode],
-  ['in a production build', Fragment],
+  ['without StrictMode, as a production build mounts', Fragment],
 ])('the decision form in the properties panel, %s', (_mode, Mode) => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -263,6 +263,9 @@ describe.each([
         'a.b': { type: 'string', title: 'Dot' },
         'x~~y': { type: 'string', title: 'Tildes' },
         constructor: { type: 'string', title: 'Constructor' },
+        // Neither has a value, so JsonForms reads the empty key as the whole form and lodash the bracket as a path.
+        '': { type: 'string', title: 'Empty' },
+        'a[0]': { type: 'string', title: 'Bracket' },
       };
       render({ ...reviewRequest, schema: { type: 'object', properties } });
       parkHumanOne({ 'a/b': 'one', 'a.b': 'two', 'x~~y': 'three', constructor: 'four' });
@@ -270,6 +273,8 @@ describe.each([
       expect(labelled('Dot')).toBeUndefined();
       expect(labelled('Tildes')).toBeUndefined();
       expect(labelled('Constructor')).toBeUndefined();
+      expect(labelled('Empty')).toBeUndefined();
+      expect(labelled('Bracket')).toBeUndefined();
       expect(fieldOf('Slash')?.value).toBe('one');
 
       commit(fieldOf('Slash')!, 'changed');

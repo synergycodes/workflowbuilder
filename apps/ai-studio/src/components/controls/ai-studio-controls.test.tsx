@@ -48,7 +48,10 @@ describe('AiStudioControls', () => {
   const icons = () => [...container.querySelectorAll<HTMLElement>('[data-icon]')].map((icon) => icon.dataset['icon']);
   const isVisible = () => container.firstElementChild!.className.includes('container--visible');
 
-  it('offers Stop while the run waits for a decision, the same as while it runs', () => {
+  it('offers Stop while the run waits for a decision, the same as while it starts or runs', () => {
+    setRunStatus('pending');
+    expect(icons()).toEqual(['Stop']);
+
     setRunStatus('running');
     expect(icons()).toEqual(['Stop']);
 
@@ -75,6 +78,8 @@ describe('AiStudioControls', () => {
   });
 
   it('stays visible while it shows a run, even on a graph that lost its start node', () => {
+    expect(isVisible()).toBe(true);
+
     graph.hasStartNode = false;
     setRunStatus('completed');
     expect(isVisible()).toBe(true);

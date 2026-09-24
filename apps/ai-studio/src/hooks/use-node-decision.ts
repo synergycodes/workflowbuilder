@@ -23,7 +23,7 @@ export function attemptOf(events: ExecutionEvent[], nodeId: string): number {
 }
 
 // The backend's rule at execute: the declared source, else the one predecessor other than the node itself. It reads
-// the canvas, which useRunLocksCanvas keeps as the run's graph.
+// the canvas, which is read-only while a run is shown (see useRunLocksCanvas for the exceptions).
 export function proposalSourceIdOf(
   declared: string | undefined,
   edges: EdgeLike[],

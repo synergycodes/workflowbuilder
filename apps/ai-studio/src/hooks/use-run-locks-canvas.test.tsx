@@ -47,6 +47,15 @@ describe('useRunLocksCanvas', () => {
     expect(isReadOnly()).toBe(false);
   });
 
+  it('locks each new run, even after the read-only switch lifted the lock during the one before', () => {
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    expect(isReadOnly()).toBe(false);
+
+    act(() => setExecutionStarted('exec-2', '/api/executions/exec-2/stream'));
+    expect(isReadOnly()).toBe(true);
+  });
+
   it('locks the canvas for a run restored from its snapshot', () => {
     act(() => applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] }));
 
