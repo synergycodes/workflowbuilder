@@ -1,0 +1,529 @@
+---
+title: Using Workflow Builder with Temporal
+description: Run a diagram from the canvas as a durable Temporal Workflow Execution — the plugin in a worker, the runWorkflow re-export, and a run in Event History.
+sidebar:
+  label: Run on Temporal
+  order: 6
+---
+
+import { Image } from 'astro:assets';
+
+import editorRunImg from '@/assets/temporal-editor-run.png';
+
+A diagram authored on the canvas becomes one Temporal Workflow Execution. Each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal rather than from code you write. This guide walks through that integration file by file and proves it with one run. The whole thing is a folder you can download, so none of it has to be typed out.
+
+## How it fits together
+
+Three processes, plus the editor when you want one. The [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal) plugin lives in the worker; the browser never talks to Temporal.
+
+| Process           | What it does                                                                        | Start it with                   |
+| ----------------- | ----------------------------------------------------------------------------------- | ------------------------------- |
+| Temporal server   | Durable state, Event History, retries                                               | `temporal server start-dev`     |
+| Worker and bridge | Runs the plugin with your executors and your store, and hosts the editor's endpoint | `npm start` in `worker/`        |
+| Client script     | Runs the diagram that ships with the sample once, then waits for it                 | `npm run workflow` in `worker/` |
+| Editor, optional  | Posts the canvas to the bridge, paints node status from the event stream            | `npm run dev` in `editor/`      |
+
+The client script and the editor run the same five-node diagram. One action fails on its first attempt on purpose, so the retry is real, and the decision node sends each run down one branch and prunes the other. The amount is drawn fresh per run, so the grey node below swaps sides.
+
+<Image
+  src={editorRunImg}
+  alt="A finished run in the editor: a check on every node Temporal executed, grey on the branch it skipped"
+/>
+
+The split the plugin draws is worth holding on to, because it is what makes the rest predictable:
+
+| The plugin owns                                      | You own                                                  |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| How a graph executes: traversal, waves, error policy | What each node does: one executor function per node type |
+| Event ordering and sequence numbering                | Where events and statuses are persisted: the store port  |
+| The activity contract and its default timeouts       | Connection, credentials, deployment                      |
+
+## Requirements
+
+- [Node.js](https://nodejs.org/) 20.3 or newer.
+- The [Temporal CLI](https://docs.temporal.io/cli#install). On macOS, `brew install temporal`.
+- Nothing else. No Docker, no database, no API keys. The download step shells out to git, so that has to be on your path.
+
+The sample installs `@workflowbuilder/temporal` 0.1.0, `@workflowbuilder/sdk` 2.3.0 and the Temporal TypeScript SDK 1.23.0, with both lockfiles committed.
+
+## 1. The worker
+
+### Install
+
+The sample already declares these and you install them in step 2. This is the list itself, so you can see what the plugin expects in a worker of your own:
+
+```bash
+npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
+```
+
+Every `@temporalio/*` package is a peer dependency, and all of them have to sit on one version. The [package README](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal#install) describes what happens when they do not, because the symptom arrives at run time rather than at install.
+
+### workflows.ts, the one line that matters
+
+`worker/src/workflows.ts`
+
+```ts
+// Temporal compiles the workflow bundle from this one module, so a plugin cannot register a
+// workflow on your behalf. Re-exporting it is how the bundle picks it up.
+export { runWorkflow } from '@workflowbuilder/temporal/workflow';
+```
+
+That one line is required, and it is the piece most integrations trip over. The TypeScript SDK builds the workflow bundle from a single module, so a plugin cannot register a workflow on your behalf: setting `workflowsPath` itself would take that slot away from you. Re-exporting from your own workflows module is how the bundle picks it up. Temporal's own AI SDK plugin works the same way.
+
+One rule governs this file. Import only from `@workflowbuilder/temporal/workflow`, never from the package root. Everything reachable from here is compiled into Temporal's V8 sandbox, where Node built-ins, the worker package and the client package do not exist.
+
+### The node types
+
+The nodes are yours, and the plugin never looks inside them. Declare the union the worker knows how to run.
+
+`worker/src/nodes.ts`
+
+```ts
+import type { BaseNode } from '@workflowbuilder/temporal';
+
+// One variant per palette item in the editor. `config` is what the properties panel
+// saved, minus the label, which the mapper lifts onto the node itself.
+type SharedConfig = { description?: string; status?: string };
+
+export type TriggerNode = BaseNode & { type: 'trigger'; config: SharedConfig };
+export type ActionNode = BaseNode & {
+  type: 'action';
+  config: SharedConfig & { message?: string; simulateOutage?: boolean };
+};
+export type DecisionNode = BaseNode & {
+  type: 'decision';
+  config: SharedConfig & { decisionBranches?: SampleDecisionBranch[] };
+};
+
+export type SampleNode = TriggerNode | ActionNode | DecisionNode;
+```
+
+The rest of that file declares the branch shape the decision node reads and a type guard the mapper uses.
+
+### The executors
+
+One function per node type. This is where what your nodes actually do lives.
+
+`worker/src/executors.ts`
+
+```ts
+import { Context } from '@temporalio/activity';
+import { type NodeExecutorRegistry, TransientNodeExecutionError } from '@workflowbuilder/temporal';
+
+import { pickBranch } from './evaluate-branches';
+import type { SampleNode } from './nodes';
+
+export const executors: NodeExecutorRegistry<SampleNode> = {
+  trigger: (_node, context) => ({ output: context.triggerPayload }),
+
+  action: (node) => {
+    // Executors run inside the plugin's executeNode Activity, so Temporal's activity context
+    // is available. Failing the first attempt on purpose makes the retry that follows visible
+    // in Event History; the retry itself is Temporal's, not this code's.
+    const { attempt } = Context.current().info;
+    if (node.config.simulateOutage === true && attempt === 1) {
+      throw new TransientNodeExecutionError(
+        'mail_server_busy',
+        'Simulated outage on the first attempt. Temporal retries this activity.',
+      );
+    }
+    return { output: { delivered: true, attempt, message: node.config.message ?? '' } };
+  },
+
+  decision: (node, context) => {
+    const branch = pickBranch(node.config.decisionBranches ?? [], context);
+    return { output: { branch: branch.label, sourceHandle: branch.sourceHandle }, nextPort: branch.sourceHandle };
+  },
+};
+```
+
+Two things are worth pointing out. Executors run inside the plugin's `executeNode` Activity, so Temporal's activity context is available and the action can read which attempt it is on. And the registry is a mapped type over your node union, so a missing or misspelled node type is a type error rather than a run-time surprise.
+
+The decision executor returns the handle of the branch it picked as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches and marks the rest skipped. Evaluating the conditions is `pickBranch`, the sample's own code rather than the plugin's.
+
+An executor can also settle whether another attempt is worth making, by throwing `TransientNodeExecutionError` or `PermanentNodeExecutionError` instead of an ordinary error. See [Failures and retries](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal#failures-and-retries).
+
+### The store
+
+The plugin decides what is emitted and in what order. Where it lands is yours. The port is two methods.
+
+`worker/src/store.ts`
+
+```ts
+import type { ExecutionStore } from '@workflowbuilder/temporal';
+
+// Activities are at-least-once: a retried emit carries the same sequence, so a store that keys
+// rows on (executionId, sequence) drops the duplicate and stays idempotent.
+export function createRunStore(): ExecutionStore {
+  return {
+    async emitExecutionEvent(executionId, sequence, type, payload, nodeId) {
+      const where = nodeId ? ` (${nodeId})` : '';
+      const what = payload === undefined ? '' : ` ${JSON.stringify(payload)}`;
+      console.log(`[${executionId.slice(0, 8)}] #${String(sequence).padStart(2, ' ')} ${type}${where}${what}`);
+    },
+
+    async updateExecutionStatus(executionId, status, errorMessage) {
+      console.log(`[${executionId.slice(0, 8)}] status ${status}${errorMessage ? `: ${errorMessage}` : ''}`);
+    },
+  };
+}
+```
+
+In an application these calls write rows instead, and the port is the same. The sample's version additionally keeps each run's events and lets the bridge subscribe to them, which is how they reach the canvas: the bridge's need, not the integration's.
+
+### Wiring the plugin
+
+`worker/src/worker.ts`
+
+```ts
+import { Client, Connection } from '@temporalio/client';
+import { NativeConnection, Worker } from '@temporalio/worker';
+import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
+import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { fileURLToPath } from 'node:url';
+
+import { startBridge } from './bridge';
+import { BRIDGE_PORT, TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE } from './config';
+import { executors } from './executors';
+import { createRunStore } from './store';
+
+const store = createRunStore();
+
+// The plugin owns how a graph executes. What each node does (`executors`) and where events
+// land (`store`) are this file's, and that is the whole split.
+const plugin = new WorkflowBuilderPlugin({ executors, store });
+
+const worker = await Worker.create({
+  connection: await NativeConnection.connect({ address: TEMPORAL_ADDRESS }),
+  namespace: TEMPORAL_NAMESPACE,
+  taskQueue: plugin.taskQueue,
+  workflowsPath: fileURLToPath(new URL('workflows.ts', import.meta.url)),
+  plugins: [plugin],
+});
+
+// The editor never talks to Temporal itself. It posts a canvas snapshot here and reads the
+// store's events back, so the browser needs one origin and no Temporal client.
+const engine = new TemporalWorkflowEngine({
+  client: async () =>
+    new Client({ connection: await Connection.connect({ address: TEMPORAL_ADDRESS }), namespace: TEMPORAL_NAMESPACE }),
+});
+const bridge = startBridge({ engine, store, port: BRIDGE_PORT });
+
+console.log(`worker polling task queue "${plugin.taskQueue}" on ${TEMPORAL_ADDRESS}`);
+await worker.run();
+bridge.close();
+```
+
+`plugin.taskQueue` is read back rather than typed out, so the worker cannot disagree with itself. It defaults to `workflow-execution`; override it and the client engine needs the same override, because that one defaults on its own. `config.ts` supplies the address and the namespace from the environment, and starts the bridge on port 3210. Moving that port takes two edits, since the editor's Vite proxy names it too.
+
+## 2. Run it once
+
+Fetch the sample:
+
+```bash
+npx degit synergycodes/workflowbuilder/examples/workflow-builder-temporal workflow-builder-temporal
+cd workflow-builder-temporal
+```
+
+That folder is the sample root, and every path below is relative to it.
+
+Terminal 1, a local Temporal server:
+
+```bash
+temporal server start-dev
+```
+
+It serves gRPC on port 7233 and the Web UI on [http://localhost:8233](http://localhost:8233). If something already holds those ports, the sample's README shows how to move it.
+
+Terminal 2, the worker:
+
+```bash
+cd worker
+npm install
+npm start
+```
+
+```
+worker polling task queue "workflow-execution" on 127.0.0.1:7233
+bridge listening on http://127.0.0.1:3210
+```
+
+Terminal 3 runs the diagram once. The client reads the diagram that ships with the sample and maps it with the same function the canvas uses in step 4.
+
+`worker/src/client.ts`
+
+```ts
+import { Client, Connection } from '@temporalio/client';
+import { executionWorkflowId } from '@workflowbuilder/temporal';
+import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { randomUUID } from 'node:crypto';
+import { readFile } from 'node:fs/promises';
+
+import { drawAmount } from '../../shared/amount';
+import type { DiagramSnapshot } from '../../shared/protocol';
+import { TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE, WORKFLOW_ID, temporalUiUrl } from './config';
+import { snapshotToDefinition } from './to-definition';
+
+// The decision node routes on this. Left to chance, about half the runs take each branch.
+const amount = drawAmount();
+
+const snapshot = JSON.parse(
+  await readFile(new URL('../../shared/diagram.json', import.meta.url), 'utf8'),
+) as DiagramSnapshot;
+const definition = snapshotToDefinition(snapshot, WORKFLOW_ID);
+
+const client = new Client({
+  connection: await Connection.connect({ address: TEMPORAL_ADDRESS }),
+  namespace: TEMPORAL_NAMESPACE,
+});
+const engine = new TemporalWorkflowEngine({ client });
+
+const executionId = randomUUID();
+await engine.submit({
+  workflowId: WORKFLOW_ID,
+  executionId,
+  definition,
+  triggerPayload: { amount, customer: 'Ada' },
+  variables: {},
+  global: {},
+});
+
+console.log(`amount ${amount}`);
+console.log(`started ${executionWorkflowId(executionId)}`);
+console.log(`watch it: ${temporalUiUrl(executionId)}`);
+
+// The engine starts the run by name and returns at once. Waiting for the outcome is ordinary
+// Temporal client code, so the sample shows it as such.
+const handle = client.workflow.getHandle(executionWorkflowId(executionId));
+await handle.result();
+console.log('run completed');
+```
+
+The sample's version wraps that wait in the error handling this leaves out: it reports a failed run, sets a non-zero exit code and closes the connection.
+
+What `submit` receives is plain data, whoever built it:
+
+```ts
+const definition: WorkflowDefinition<SampleNode> = {
+  workflowId: 'workflow-builder-temporal-sample',
+  nodes: [
+    {
+      id: 'trigger-1',
+      type: 'trigger',
+      label: 'New request',
+      role: 'start',
+      config: { description: 'Workflow entry point', status: 'active' },
+    },
+    {
+      id: 'action-1',
+      type: 'action',
+      label: 'Send email',
+      config: {
+        description: 'Notify the customer',
+        status: 'active',
+        message: 'Thanks for reaching out - we are on it!',
+        simulateOutage: true,
+      },
+    },
+    // decision-1, action-2 and action-3 have the same shape.
+  ],
+  edges: [{ id: 'edge-trigger-action', sourceNodeId: 'trigger-1', targetNodeId: 'action-1', sourceHandle: 'source' }],
+};
+```
+
+In terminal 3, from the sample's `worker/` folder:
+
+```bash
+npm run workflow
+```
+
+Expected:
+
+```
+amount 130
+started execution-878ca8cc-44f8-44a9-a1a9-bb80faa12c76
+watch it: http://localhost:8233/namespaces/default/workflows/execution-878ca8cc-44f8-44a9-a1a9-bb80faa12c76
+run completed
+```
+
+And in terminal 2, the store printing this run's eleven events and a closing status line. Temporal's own `Activity failed` warning for the first attempt appears among them, stack trace included: the failed attempt being logged before the retry, not something to fix. Four lines carry the story:
+
+```
+[878ca8cc] # 5 node_completed (action-1) {"output":{"delivered":true,"attempt":2,"message":"Thanks for reaching out - we are on it!"}}
+[878ca8cc] # 7 node_completed (decision-1) {"output":{"branch":"Needs review","sourceHandle":"source:inner:review"}}
+[878ca8cc] # 8 node_skipped (action-3) {"reason":"branch_not_taken"}
+[878ca8cc] status completed
+```
+
+Only `Send email` carries `"attempt":2`. It is the node with the outage switch on, and nothing in the executor retried it: Temporal did. The amount decides the branch, so run it again and the skipped node is the other one.
+
+## 3. What Event History shows
+
+Open the `watch it:` link. The whole run is one Workflow Execution, with a Workflow Id of `execution-` followed by the execution id the client generated. Event History arrives collapsed: switch it to **All** and open the `Activity Task Started` row for `Send email`.
+
+Each node is an Activity of type `executeNode`, scheduled with the node's authored label as its Temporal [Summary](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/event-history-labels.md), so the history lists `New request`, `Send email` and `Needs review?` instead of a column of identical rows. A node with no label gets no summary, and Temporal shows the activity type instead. The label itself comes from the mapper in step 4.
+
+Interleaved with those are `emitEvent` and `updateStatus` activities. Those are your store port being called through Temporal, which is what makes event delivery survive a worker restart.
+
+The branch not taken is recorded but never executed. In the run above the decision chose `Needs review`, so Event History has an `executeNode` Activity for `Escalate to a human` and none for `Auto-approve`. The skip still reaches the history, as the `emitEvent` activity carrying `node_skipped`. A run under the threshold swaps the pair.
+
+The retry deserves a closer look, because Event History does not record it the way people expect. There is no failed-activity event for the first attempt. Instead the `ActivityTaskStarted` event for `Send email` carries `attempt: 2`, and the failure that caused it is attached to that same event as `lastFailure`. Its message is the one the executor threw, its type is `TransientNodeExecutionError`, and the code `mail_server_busy` sits in the failure details together with the attempt it died on.
+
+The policy that allowed it is the plugin's default node profile, visible on the scheduled event as a `startToCloseTimeout` of 600 seconds and `maximumAttempts` of 2. Ten minutes and two attempts is the default because a node may call a model. To give some node types their own, see [Going further](#going-further).
+
+## 4. Run it from the canvas
+
+Now the drawing. The editor posts the canvas to the worker, and the worker maps it into the same definition the client submitted.
+
+### From snapshot to definition
+
+The editor speaks React Flow. The plugin wants nodes of `{ id, type, config }` and edges of `{ sourceNodeId, targetNodeId }`. This file is the only glue, and the plugin knows nothing about React Flow.
+
+`worker/src/to-definition.ts`
+
+```ts
+import type { WorkflowDefinition, WorkflowEdgeDefinition } from '@workflowbuilder/temporal';
+
+import type { DiagramSnapshot, SnapshotEdge, SnapshotNode } from '../../shared/protocol';
+import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
+
+// The editor's snapshot is React Flow data; the plugin wants `{ id, type, config }` per node
+// and `{ sourceNodeId, targetNodeId }` per edge. This is the only glue in the sample.
+export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: string): WorkflowDefinition<SampleNode> {
+  // Newer editors stamp `isStartNode` on the entry node. The 2.3.0 editor this sample ships
+  // does not, so the trigger type stands in when no node carries the flag.
+  const flagged = snapshot.nodes.some((node) => node.data.isStartNode === true);
+  const isStart = (node: SnapshotNode) => (flagged ? node.data.isStartNode === true : node.data.type === 'trigger');
+
+  const nodes = snapshot.nodes.map((node) => toNode(node, isStart(node)));
+  if (!nodes.some((node) => node.role === 'start')) {
+    throw new Error('The diagram has no start node. Add a trigger node, or flag one node with isStartNode.');
+  }
+
+  return { workflowId, nodes, edges: snapshot.edges.map(toEdge) };
+}
+
+function toNode(node: SnapshotNode, isStart: boolean): SampleNode {
+  const { type } = node.data;
+  if (!isSampleNodeType(type)) {
+    throw new Error(`Unknown node type "${type}". This worker has executors for: ${SAMPLE_NODE_TYPES.join(', ')}.`);
+  }
+
+  const { label, ...config } = node.data.properties ?? {};
+  return {
+    id: node.id,
+    type,
+    config,
+    ...(typeof label === 'string' && label.trim() !== '' ? { label: label.trim() } : {}),
+    ...(isStart ? { role: 'start' as const } : {}),
+  } as SampleNode;
+}
+
+function toEdge(edge: SnapshotEdge): WorkflowEdgeDefinition {
+  return {
+    id: edge.id,
+    sourceNodeId: edge.source,
+    targetNodeId: edge.target,
+    // The runner fires an edge only when its handle equals the port the source named. The
+    // decision node names a branch handle; the others name none, so their "source" is never read.
+    ...(edge.sourceHandle ? { sourceHandle: edge.sourceHandle } : {}),
+  };
+}
+```
+
+The label is lifted out of `properties` onto the node itself, which is what becomes the Summary in Event History. Everything else in `properties` becomes `config`, which is what the executor reads. `isSampleNodeType` is the guard over the union in `nodes.ts`, so a palette item nobody wrote an executor for is refused here rather than deep inside a run.
+
+### The bridge
+
+`worker/src/bridge.ts` is a small `node:http` server inside the worker process, with two routes. `POST /api/runs` maps the posted snapshot, submits it through the same `TemporalWorkflowEngine` the client script used, and answers with the execution id and a Temporal UI link. `GET /api/runs/:id/events` replays what the store already holds for that run and streams the rest as Server-Sent Events. The browser stays on one origin because Vite proxies `/api` to it, and needs no Temporal client, no address and no credentials; the wire types both sides import live in `shared/protocol.ts`.
+
+### The Run button
+
+Everything the Run button needs is an SDK plugin: one piece of state, one call, two decorators. See [Build a plugin](/guides/build-a-plugin/) for the pattern.
+
+`editor/src/execution/run.ts`
+
+```ts
+const { nodes, edges } = getStoreDataForIntegration();
+const request: RunRequest = { nodes, edges, triggerPayload: { amount, customer: 'Ada' } };
+
+const response = await fetch('/api/runs', {
+  method: 'POST',
+  headers: { 'Content-Type': 'application/json' },
+  body: JSON.stringify(request),
+});
+
+const { executionId } = (await response.json()) as RunResponse;
+
+const stream = new EventSource(`/api/runs/${executionId}/events`);
+stream.addEventListener('message', (message) => {
+  applyRunEvent(JSON.parse(String(message.data)) as RunEvent);
+});
+```
+
+That is the middle of `runFromCanvas`, with the error branches left out. `getStoreDataForIntegration` is the SDK's canvas snapshot, so the button always submits what is on screen right now, edits included. Each event that arrives flips one node's marker, and the response also carries the link the **Temporal UI** button opens.
+
+`editor/src/execution/plugin.ts`
+
+```ts
+import { registerComponentDecorator } from '@workflowbuilder/sdk';
+
+import './execution.css';
+
+import { NodeRunMarker } from './node-markers';
+import { RunButton } from './run-button';
+
+export function executionPlugin(): void {
+  registerComponentDecorator('OptionalAppBarControls', {
+    content: RunButton,
+    place: 'before',
+    name: 'run-on-temporal',
+  });
+  registerComponentDecorator('OptionalNodeContent', { content: NodeRunMarker, place: 'after', name: 'run-markers' });
+}
+```
+
+Two decorators are the whole UI: the button in the app bar, a marker inside every node. The palette items are ordinary custom nodes, and [Add a custom node](/guides/add-a-custom-node/) covers their anatomy. What matters here is that the property names in a node's schema are exactly the `config` keys its executor reads, which is why `message` and `simulateOutage` appear on both sides.
+
+### Draw it and run it
+
+Keep terminals 1 and 2 running. In terminal 3, which is still in `worker/`:
+
+```bash
+cd ../editor
+npm install
+npm run dev
+```
+
+Open the printed URL. The editor opens with the same five-node diagram. It remembers your canvas between visits; **Reset diagram** puts the shipped one back. Click **Run on Temporal**: each node shows a spinner while its Activity runs, then a check. `Send email` spins through both attempts, because a retry emits no event of its own and the node stays in the state its last event put it in. The branch that was not taken turns grey, and the **Temporal UI** link opens that run's history.
+
+Then change something: edit a message, turn the outage switch on for another action, or edit the decision's branches. Run it again. Nothing is deployed in between, because the diagram is data.
+
+## Going further
+
+- **Per-node-type timeouts and retries.** Replace the re-export in `workflows.ts` with `createRunWorkflow` and a profiles map, and hand the same constant to the plugin as well: a map given only to the plugin leaves every node on the default, and the deploy still goes green. See [Activity profiles](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/activity-profiles.md).
+- **Pausing for a human.** Temporal parks a workflow for free while it waits for a Signal or an Update. The plugin's `runWorkflow` does not expose that yet, so today an executor waits inside its Activity until a verdict lands in your store, under a node profile whose timeout covers the wait. The default allows ten minutes.
+- **Temporal Cloud.** Address, namespace, TLS and API keys go on the three connections you own: the worker's `NativeConnection`, the `Connection` behind the bridge's engine, and the one in `client.ts`. Nothing in the plugin changes.
+- **A real store.** Swap the terminal for your database. Nothing else moves.
+- **Versioning.** A workflow can sit in Event History for days, so the package promises that a patch or minor release still replays a history an older version recorded. Read [Versioning and replay](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal#versioning-and-replay) before upgrading in production.
+
+## Troubleshooting
+
+| Symptom                                                       | Cause                                                        | Fix                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------ | ----------------------------------------------------------------- |
+| A run is refused with `Unknown node type "x"`                 | A palette type with no executor                              | Add it to the node union and the executor registry                |
+| A run is refused with `The diagram has no start node`         | No trigger on the canvas                                     | Add a trigger node                                                |
+| Worker logs a warning about a profile with no executor        | A profile keyed by a node type this worker does not register | Correct the key, or ignore it if another worker handles that type |
+| A node spins and never settles                                | Retries emit no events                                       | Expected; watch attempts in Event History                         |
+| Workflow tasks retry forever with nothing in your store       | Workflow code and worker disagree, usually an SDK mismatch   | Put every `@temporalio/*` package on one version line and restart |
+| Nodes appear in Event History as identical `executeNode` rows | Nodes have no label                                          | Make sure the mapper lifts `label` out of the properties          |
+| A run fails with `no_branch_matched`                          | Every branch carries conditions and none of them held        | Leave the last branch without conditions, so it always matches    |
+
+## See also
+
+- [The runnable sample](https://github.com/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-temporal). Every file quoted here in full, plus the bridge and the editor.
+- [`@workflowbuilder/temporal`](https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal). Activity profiles, node labels in Event History, versioning and replay.
+- [Add a custom node](/guides/add-a-custom-node/). The four-file anatomy of a palette item.
+- [Build a plugin](/guides/build-a-plugin/). The decorator API the Run button uses.
+- [Use Variable Picker](/guides/use-variable-picker/). How a condition references an upstream node's output, as the decision does.
+- [Standalone](/get-started/quick-start/standalone-app/). Run the full reference stack, Temporal included, from the repository.
