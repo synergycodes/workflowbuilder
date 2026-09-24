@@ -106,9 +106,9 @@ describe('createAiAgentExecutor against the endpoint', () => {
     const result = await executor({ ...node, config: { ...node.config, outputSchema } }, context());
 
     expect(bodies).toHaveLength(1);
-    expect(bodies[0]?.['response_format']).toMatchObject({
+    expect(bodies[0]?.['response_format']).toEqual({
       type: 'json_schema',
-      json_schema: { strict: true, schema: outputSchema },
+      json_schema: { name: 'response', strict: true, schema: outputSchema },
     });
     expect(result).toEqual({ output: { refundAmount: 49 } });
   });

@@ -169,6 +169,16 @@ describe('executeAiAgent', () => {
     expect(call?.responseFormat?.type).toBe('json');
   });
 
+  it('keeps the web-search tool on a plain-text call', async () => {
+    const model = answeringModel('final answer');
+
+    await executeAiAgent(aiAgentNode({ webSearch: true }), context(), { model, tavilyApiKey: 'tavily-key' });
+
+    const call = model.doGenerateCalls[0];
+    expect(call?.tools?.map((tool) => tool.name)).toEqual(['webSearch']);
+    expect(call?.responseFormat).toBeUndefined();
+  });
+
   it.each(['length', 'content-filter'] as const)(
     'names the finish reason when a structured answer ends with %s, and leaves the failure unclassified',
     async (finishReason) => {
