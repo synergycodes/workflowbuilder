@@ -33,7 +33,7 @@ export const responseOptions: SelectItem[] = [
 // Never chosen, only shown: a schema no preset matches must not read as Plain text.
 export const customResponseOption: SelectItem = { value: 'custom', label: 'Structured: custom schema', disabled: true };
 
-// String equality, not identity: a preset that went through a JSON round trip (import, paste) still matches.
+// String equality, not identity: a preset that went through a JSON round trip (reload, import) still matches.
 const isSameSchema = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 // Read off the data on purpose: a stored mode could disagree with the schema that is actually on the node.

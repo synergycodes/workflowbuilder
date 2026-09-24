@@ -11,7 +11,7 @@ export const schema = {
     webSearch: {
       type: 'boolean',
     },
-    // JSON Schema of this node's output; the worker forwards it to the model unchanged.
+    // The JSON Schema asked of the model. Unrelated to the palette item's `outputSchema`, the editor's variables.
     outputSchema: { type: 'object', properties: {} },
   },
 } satisfies NodeSchema;
