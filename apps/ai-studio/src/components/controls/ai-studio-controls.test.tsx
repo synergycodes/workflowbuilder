@@ -4,16 +4,19 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution/execution-events';
 
+import styles from './ai-studio-controls.module.css';
+
 import { BACKEND_URL } from '../../config';
 import {
   applyConnectionLost,
   applySnapshot,
-  applyStopUnreachable,
+  applyStopRequested,
   resetExecution,
   setExecutionStarted,
   useExecutionStore,
 } from '../../stores/use-execution-store';
-import { installFakeEventSource } from '../../test/fake-event-source';
+import { cancelledEvent, snapshotFrame } from '../../test/execution-history';
+import { installFakeEventSource, latestStream, openStreams } from '../../test/fake-event-source';
 import { jsonResponse } from '../../test/json-response';
 import { AiStudioControls } from './ai-studio-controls';
 
@@ -22,7 +25,8 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
 });
 
-vi.mock('../../hooks/use-has-start-node', () => ({ useHasStartNode: () => true }));
+const startNode = vi.hoisted(() => ({ exists: true }));
+vi.mock('../../hooks/use-has-start-node', () => ({ useHasStartNode: () => startNode.exists }));
 
 declare global {
   // eslint-disable-next-line no-var
@@ -31,7 +35,7 @@ declare global {
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 function setRunStatus(status: ExecutionStatus) {
-  act(() => applySnapshot({ executionId: 'exec-1', status, lastSequence: 0, events: [] }));
+  act(() => applySnapshot(snapshotFrame(status, [])));
 }
 
 describe('AiStudioControls', () => {
@@ -44,6 +48,7 @@ describe('AiStudioControls', () => {
     fetchMock = vi.fn(async () => jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
+    startNode.exists = true;
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -66,6 +71,23 @@ describe('AiStudioControls', () => {
   const clickStop = () => clickIcon('Stop');
   const clickReset = () => clickIcon('ArrowCounterClockwise');
 
+  const labelOf = (name: string) =>
+    container.querySelector(`[data-icon="${name}"]`)?.closest('button')?.getAttribute('aria-label');
+
+  const isVisible = () => container.firstElementChild?.classList.contains(styles['container--visible']!);
+
+  const deleteStartNode = () => {
+    startNode.exists = false;
+    act(() => root.render(<AiStudioControls />));
+  };
+
+  it('names Play and Stop after their action', () => {
+    expect(labelOf('Play')).toBe('Execute (backend)');
+
+    setRunStatus('running');
+    expect(labelOf('Stop')).toBe('Cancel execution');
+  });
+
   it('offers Stop while the run waits for a decision, the same as while it runs', () => {
     setRunStatus('running');
     expect(icons()).toEqual(['Stop']);
@@ -75,7 +97,7 @@ describe('AiStudioControls', () => {
   });
 
   it('adds Reset once a cancel is in flight: a cancel the server never resolves would trap the user', () => {
-    setRunStatus('cancelling');
+    act(() => applySnapshot(snapshotFrame('cancelling')));
 
     expect(icons()).toEqual(['Stop', 'ArrowCounterClockwise']);
   });
@@ -107,10 +129,10 @@ describe('AiStudioControls', () => {
     expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
   });
 
-  it('adds Reset alongside Stop once a Stop attempt could not reach the server: the user is never trapped', () => {
+  it('adds Reset alongside Stop once a Stop was asked for after a lost stream: the user is never trapped', () => {
     setRunStatus('waiting');
     act(() => applyConnectionLost());
-    act(() => applyStopUnreachable());
+    act(() => applyStopRequested());
 
     expect(icons()).toEqual(['Stop', 'ArrowCounterClockwise']);
   });
@@ -119,7 +141,7 @@ describe('AiStudioControls', () => {
     act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
     setRunStatus('waiting');
     act(() => applyConnectionLost());
-    act(() => applyStopUnreachable());
+    act(() => applyStopRequested());
 
     await clickReset();
 
@@ -127,13 +149,87 @@ describe('AiStudioControls', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('drops the Reset escape once a snapshot arrives again: the server answered', () => {
+  it('keeps the Reset escape when a snapshot arrives again: an answering server has not ended the run', () => {
     setRunStatus('waiting');
     act(() => applyConnectionLost());
-    act(() => applyStopUnreachable());
+    act(() => applyStopRequested());
 
+    act(() => applySnapshot(snapshotFrame('waiting')));
+
+    expect(icons()).toEqual(['Stop', 'ArrowCounterClockwise']);
+  });
+
+  it('names Reset as abandoning the run once a Stop was asked for on a live run', () => {
     setRunStatus('waiting');
+    act(() => applyStopRequested());
 
-    expect(icons()).toEqual(['Stop']);
+    expect(labelOf('ArrowCounterClockwise')).toContain('may still be running');
+  });
+
+  it('names Reset plainly once the run has ended, even after a Stop was asked for', () => {
+    setRunStatus('waiting');
+    act(() => applyStopRequested());
+    setRunStatus('completed');
+
+    expect(labelOf('ArrowCounterClockwise')).toBe('Reset');
+  });
+
+  describe('without a start node', () => {
+    it('hides the controls while there is no run', () => {
+      expect(isVisible()).toBe(true);
+      deleteStartNode();
+
+      expect(isVisible()).toBe(false);
+    });
+
+    it('keeps Stop reachable for a live run, and offers no Play', () => {
+      setRunStatus('waiting');
+      deleteStartNode();
+
+      expect(isVisible()).toBe(true);
+      expect(icons()).toEqual(['Stop']);
+    });
+
+    it('offers Reset, and no Play, once the run has ended', () => {
+      setRunStatus('completed');
+      deleteStartNode();
+
+      expect(isVisible()).toBe(true);
+      expect(icons()).toEqual(['ArrowCounterClockwise']);
+    });
+  });
+
+  describe('after Stop', () => {
+    beforeEach(() => {
+      act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+      act(() => applySnapshot(snapshotFrame('waiting')));
+    });
+
+    it('an accepted cancel offers Stop and Reset while cancelling, then Play and Reset once cancelled', async () => {
+      await clickStop();
+      act(() => latestStream().emit(snapshotFrame('cancelling')));
+
+      expect(useExecutionStore.getState()).toMatchObject({ status: 'cancelling', isStopRequested: true });
+      expect(icons()).toEqual(['Stop', 'ArrowCounterClockwise']);
+
+      act(() => latestStream().emit(cancelledEvent));
+
+      expect(useExecutionStore.getState().status).toBe('cancelled');
+      expect(openStreams()).toHaveLength(0);
+      expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
+    });
+
+    it.each([
+      [200, { id: 'exec-1', status: 'cancelling' }],
+      [409, { code: 'execution_not_cancellable', message: 'Execution already finished' }],
+    ])('a %i whose fresh stream is refused keeps the run and offers Stop and Reset', async (status, body) => {
+      fetchMock.mockImplementation(async () => jsonResponse(status, body));
+
+      await clickStop();
+      act(() => latestStream().refuse());
+
+      expect(useExecutionStore.getState()).toMatchObject({ status: 'disconnected', executionId: 'exec-1' });
+      expect(icons()).toEqual(['Stop', 'ArrowCounterClockwise']);
+    });
   });
 });

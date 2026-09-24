@@ -2,8 +2,12 @@ import { StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
+
 import { BACKEND_URL } from '../config';
 import { type RunStatus, resetExecution, setExecutionStarted, useExecutionStore } from '../stores/use-execution-store';
+import { deferred } from '../test/deferred';
+import { cancelledEvent, parkedRunHistory, snapshotFrame } from '../test/execution-history';
 import { FakeEventSource, installFakeEventSource, latestStream, openStreams } from '../test/fake-event-source';
 import { jsonResponse, unparsableResponse } from '../test/json-response';
 import { useBackendExecution } from './use-backend-execution';
@@ -46,47 +50,48 @@ function mountHook() {
 
 const STREAM_URL = '/api/executions/exec-1/stream';
 
-function doNothing() {
-  // Placeholder until a pending fetch captures the real resolver.
-}
-
 // The hydrated store a reload leaves behind before anything mounts.
 function rememberRun(status: RunStatus) {
   useExecutionStore.setState({ executionId: 'exec-1', streamUrl: STREAM_URL, status });
 }
 
-const startedEvent = {
-  executionId: 'exec-1',
-  sequence: 1,
-  timestamp: '2026-09-15T12:00:00.000Z',
-  type: 'execution_started',
-  payload: { workflowId: 'wf-1' },
-};
+class RejectingEventSource {
+  constructor() {
+    throw new SyntaxError("Failed to construct 'EventSource': The URL is invalid.");
+  }
+}
 
-const waitingEvent = {
-  executionId: 'exec-1',
-  sequence: 2,
-  timestamp: '2026-09-15T12:00:01.000Z',
-  type: 'node_waiting',
-  nodeId: 'human-1',
-};
+// The parked run, resumed elsewhere and finished before Stop reached the server.
+const completedRunHistory: ExecutionEvent[] = [
+  ...parkedRunHistory,
+  {
+    executionId: 'exec-1',
+    timestamp: '2026-09-15T12:00:05.000Z',
+    sequence: 4,
+    type: 'node_completed',
+    nodeId: 'human-1',
+    payload: { output: {} },
+  },
+  { executionId: 'exec-1', timestamp: '2026-09-15T12:00:06.000Z', sequence: 5, type: 'execution_completed' },
+];
+
+let unmount: (() => void) | undefined;
+
+beforeEach(() => {
+  installFakeEventSource();
+  resetExecution();
+  hook = undefined;
+});
+
+afterEach(() => {
+  unmount?.();
+  unmount = undefined;
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 describe('useBackendExecution: a reload while a run is in flight', () => {
-  let unmount: (() => void) | undefined;
-
-  beforeEach(() => {
-    installFakeEventSource();
-    resetExecution();
-    hook = undefined;
-  });
-
-  afterEach(() => {
-    unmount?.();
-    unmount = undefined;
-    vi.unstubAllGlobals();
-  });
-
-  it('reopens exactly one stream on the remembered URL, StrictMode double mount included', () => {
+  it('keeps one stream open on the remembered URL after the StrictMode double mount', () => {
     rememberRun('waiting');
     unmount = mountHook();
 
@@ -106,15 +111,7 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
     rememberRun('waiting');
     unmount = mountHook();
 
-    act(() =>
-      latestStream().emit({
-        type: 'execution_snapshot',
-        executionId: 'exec-1',
-        status: 'waiting',
-        lastSequence: 2,
-        events: [startedEvent, waitingEvent],
-      }),
-    );
+    act(() => latestStream().emit(snapshotFrame('waiting')));
 
     expect(useExecutionStore.getState().nodeStates['human-1']).toEqual({ status: 'waiting' });
     expect(useExecutionStore.getState().status).toBe('waiting');
@@ -140,6 +137,33 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
     expect(FakeEventSource.instances).toHaveLength(0);
   });
 
+  it('forgets a remembered alive status that carries no run id', () => {
+    useExecutionStore.setState({ status: 'waiting' });
+    unmount = mountHook();
+
+    expect(useExecutionStore.getState().status).toBe('idle');
+    expect(FakeEventSource.instances).toHaveLength(0);
+  });
+
+  it('forgets a remembered run whose stream URL is not on the backend stream path', () => {
+    useExecutionStore.setState({ executionId: 'exec-1', streamUrl: '//evil.example/x', status: 'waiting' });
+    unmount = mountHook();
+
+    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
+    expect(FakeEventSource.instances).toHaveLength(0);
+  });
+
+  it('forgets a remembered run whose stream the browser refuses to construct, and stays mounted', () => {
+    vi.stubGlobal('EventSource', RejectingEventSource);
+    rememberRun('waiting');
+
+    expect(() => {
+      unmount = mountHook();
+    }).not.toThrow();
+    expect(useExecutionStore.getState().status).toBe('idle');
+    expect(api().status).toBe('idle');
+  });
+
   it('closes the reopened stream when the controls unmount', () => {
     rememberRun('waiting');
     unmount = mountHook();
@@ -152,7 +176,6 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
 });
 
 describe('useBackendExecution: what Stop does with the server answer', () => {
-  let unmount: (() => void) | undefined;
   let fetchMock: ReturnType<typeof vi.fn>;
 
   function serverAnswersDelete(status: number, body: unknown) {
@@ -160,17 +183,12 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     vi.stubGlobal('fetch', fetchMock);
   }
 
-  beforeEach(() => {
-    installFakeEventSource();
-    resetExecution();
-    hook = undefined;
-  });
-
-  afterEach(() => {
-    unmount?.();
-    unmount = undefined;
-    vi.unstubAllGlobals();
-  });
+  function serverHoldsDelete() {
+    const answer = deferred<Response>();
+    fetchMock = vi.fn(() => answer.promise);
+    vi.stubGlobal('fetch', fetchMock);
+    return answer;
+  }
 
   it('a run the server no longer has is forgotten: idle canvas, no stream left open', async () => {
     rememberRun('disconnected');
@@ -200,17 +218,25 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     expect(openStreams()).toHaveLength(1);
     expect(latestStream()).not.toBe(streamBefore);
 
-    act(() =>
-      latestStream().emit({
-        type: 'execution_snapshot',
-        executionId: 'exec-1',
-        status: 'completed',
-        lastSequence: 0,
-        events: [],
-      }),
-    );
+    act(() => latestStream().emit(snapshotFrame('completed')));
 
     expect(useExecutionStore.getState().status).toBe('completed');
+  });
+
+  it('a Stop refused because the run completed ends on completed, keeping the run and the Stop request', async () => {
+    rememberRun('disconnected');
+    unmount = mountHook();
+    serverAnswersDelete(409, { code: 'execution_not_cancellable', message: 'Execution already finished' });
+
+    await act(() => api().cancel());
+    act(() => latestStream().emit(snapshotFrame('completed', completedRunHistory)));
+
+    expect(useExecutionStore.getState()).toMatchObject({
+      status: 'completed',
+      executionId: 'exec-1',
+      isStopRequested: true,
+    });
+    expect(openStreams()).toHaveLength(0);
   });
 
   it('a cancel the server accepted is followed over a fresh stream, never two at once', async () => {
@@ -224,28 +250,36 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     expect(streamBefore.closed).toBe(true);
     expect(openStreams()).toHaveLength(1);
 
-    act(() =>
-      latestStream().emit({
-        type: 'execution_snapshot',
-        executionId: 'exec-1',
-        status: 'cancelling',
-        lastSequence: 0,
-        events: [],
-      }),
-    );
+    act(() => latestStream().emit(snapshotFrame('cancelling')));
 
     expect(useExecutionStore.getState().status).toBe('cancelling');
   });
 
-  it('an accepted cancel proves the server reachable and clears a stale unreachable flag', async () => {
+  it('Stop marks the request before the server answers', () => {
     rememberRun('waiting');
     unmount = mountHook();
-    useExecutionStore.setState({ isStopUnreachable: true });
-    serverAnswersDelete(200, { id: 'exec-1', status: 'cancelling' });
+    serverHoldsDelete();
 
-    await act(() => api().cancel());
+    void api().cancel();
 
-    expect(useExecutionStore.getState().isStopUnreachable).toBe(false);
+    expect(fetchMock).toHaveBeenCalled();
+    expect(useExecutionStore.getState().isStopRequested).toBe(true);
+  });
+
+  it('a run that ended over the old stream while Stop was in flight is not reopened', async () => {
+    rememberRun('waiting');
+    unmount = mountHook();
+    const streamBefore = latestStream();
+    const deleteAnswer = serverHoldsDelete();
+
+    const cancelPromise = act(() => api().cancel());
+    act(() => streamBefore.emit(cancelledEvent));
+    deleteAnswer.resolve(jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
+    await cancelPromise;
+
+    expect(useExecutionStore.getState().status).toBe('cancelled');
+    expect(latestStream()).toBe(streamBefore);
+    expect(openStreams()).toHaveLength(0);
   });
 
   it('Stop with nothing remembered asks the server nothing', async () => {
@@ -257,7 +291,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it('a request that never reaches the server leaves the run remembered and flags it unreachable', async () => {
+  it('a request that never reaches the server leaves the run remembered and the request marked', async () => {
     rememberRun('disconnected');
     unmount = mountHook();
     const streamBefore = latestStream();
@@ -270,31 +304,22 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     await act(() => api().cancel());
 
     expect(useExecutionStore.getState().status).toBe('disconnected');
-    expect(useExecutionStore.getState().isStopUnreachable).toBe(true);
+    expect(useExecutionStore.getState().isStopRequested).toBe(true);
     expect(latestStream()).toBe(streamBefore);
     expect(streamBefore.closed).toBe(false);
     expect(consoleErrorSpy).toHaveBeenCalled();
-
-    consoleErrorSpy.mockRestore();
   });
 
   it('a Stop answer arriving after a newer run started does not reopen a stream for the old one', async () => {
     useExecutionStore.setState({ executionId: 'exec-1', streamUrl: STREAM_URL, status: 'idle' });
     unmount = mountHook();
-    let resolveDelete: (response: Response) => void = doNothing;
-    fetchMock = vi.fn(
-      () =>
-        new Promise<Response>((resolve) => {
-          resolveDelete = resolve;
-        }),
-    );
-    vi.stubGlobal('fetch', fetchMock);
+    const deleteAnswer = serverHoldsDelete();
 
     const cancelPromise = act(() => api().cancel());
     act(() => {
       setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
     });
-    resolveDelete(jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
+    deleteAnswer.resolve(jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
     await cancelPromise;
 
     expect(useExecutionStore.getState().executionId).toBe('exec-2');
@@ -315,10 +340,10 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     await act(() => api().cancel());
 
     expect(useExecutionStore.getState().executionId).toBe('exec-1');
-    expect(useExecutionStore.getState().isStopUnreachable).toBe(true);
+    expect(useExecutionStore.getState().isStopRequested).toBe(true);
   });
 
-  it('a 404 the owner changed during does not flag the newer run as unreachable', async () => {
+  it('a 404 the owner changed during neither forgets nor marks the newer run', async () => {
     rememberRun('waiting');
     unmount = mountHook();
     // The owner has to change while the body is being read, and a real Response offers no hook for that.
@@ -327,7 +352,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
       status: 404,
       json: async () => {
         setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
-        return { message: 'Not Found' };
+        return { code: 'execution_not_found', message: 'Execution not found' };
       },
     } as Response;
     fetchMock = vi.fn(async () => bodyThatStartsANewRun);
@@ -336,25 +361,36 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     await act(() => api().cancel());
 
     expect(useExecutionStore.getState().executionId).toBe('exec-2');
-    expect(useExecutionStore.getState().isStopUnreachable).toBe(false);
+    expect(useExecutionStore.getState().isStopRequested).toBe(false);
+  });
+
+  it('a Stop that fails after Reset leaves the clean canvas unmarked', async () => {
+    rememberRun('waiting');
+    unmount = mountHook();
+    const deleteAnswer = serverHoldsDelete();
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    const cancelPromise = act(() => api().cancel());
+    act(() => api().reset());
+    deleteAnswer.reject(new Error('connection refused'));
+    await cancelPromise;
+
+    expect(useExecutionStore.getState()).toMatchObject({
+      status: 'idle',
+      executionId: undefined,
+      isStopRequested: false,
+    });
   });
 
   it('a Stop answered after the controls unmounted opens no stream nobody is left to close', async () => {
     rememberRun('waiting');
     unmount = mountHook();
-    let resolveDelete: (response: Response) => void = doNothing;
-    fetchMock = vi.fn(
-      () =>
-        new Promise<Response>((resolve) => {
-          resolveDelete = resolve;
-        }),
-    );
-    vi.stubGlobal('fetch', fetchMock);
+    const deleteAnswer = serverHoldsDelete();
 
     const cancelPromise = api().cancel();
     unmount();
     unmount = undefined;
-    resolveDelete(jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
+    deleteAnswer.resolve(jsonResponse(200, { id: 'exec-1', status: 'cancelling' }));
     await act(async () => {
       await cancelPromise;
     });
@@ -375,33 +411,39 @@ function serverAcceptsExecute() {
 }
 
 describe('useBackendExecution: starting a run from the canvas', () => {
-  let unmount: (() => void) | undefined;
-
-  beforeEach(() => {
-    installFakeEventSource();
-    resetExecution();
-    hook = undefined;
-  });
-
-  afterEach(() => {
-    unmount?.();
-    unmount = undefined;
-    vi.unstubAllGlobals();
-  });
-
-  it('a new run replaces the stream a reload reopened, never joins it', async () => {
+  it('a new run closes the stream a reload reopened before the server answers, and never joins it', async () => {
     rememberRun('waiting');
     unmount = mountHook();
     const reconnected = latestStream();
     serverAcceptsExecute();
 
     await act(async () => {
-      await api().executeFromCanvas([], []);
+      const run = api().executeFromCanvas([], []);
+      expect(reconnected.closed).toBe(true);
+      await run;
     });
 
     expect(reconnected.closed).toBe(true);
     expect(openStreams()).toHaveLength(1);
     expect(latestStream().url).toBe(`${BACKEND_URL}/api/executions/exec-2/stream`);
+  });
+
+  it("a new run starts without the previous run's Stop request", async () => {
+    rememberRun('waiting');
+    unmount = mountHook();
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => jsonResponse(500, { message: 'Internal Server Error' })),
+    );
+    await act(() => api().cancel());
+    expect(useExecutionStore.getState().isStopRequested).toBe(true);
+    serverAcceptsExecute();
+
+    await act(async () => {
+      await api().executeFromCanvas([], []);
+    });
+
+    expect(useExecutionStore.getState()).toMatchObject({ executionId: 'exec-2', isStopRequested: false });
   });
 
   it('a workflow that will not save opens no stream and leaves the canvas idle', async () => {

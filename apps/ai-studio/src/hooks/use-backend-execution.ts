@@ -4,13 +4,14 @@ import { connectExecutionStream } from '../adapters/execution-stream-adapter';
 import { BACKEND_URL } from '../config';
 import { getTurnstileToken } from '../security/turnstile';
 import {
-  applyStopUnreachable,
-  clearStopUnreachable,
+  applyStopRequested,
   isRunAlive,
   resetExecution,
   setExecutionStarted,
   useExecutionStore,
 } from '../stores/use-execution-store';
+
+const STREAM_PATH_PREFIX = '/api/executions/';
 
 // A proxy 404 is not JSON, and only the backend's own code means the server forgot the run.
 async function isExecutionNotFound(response: Response): Promise<boolean> {
@@ -35,8 +36,17 @@ export function useBackendExecution() {
   useEffect(() => {
     isUnmountedRef.current = false;
     const persisted = useExecutionStore.getState();
-    if (persisted.executionId && persisted.streamUrl && isRunAlive(persisted.status)) {
-      openStream(persisted.executionId, persisted.streamUrl);
+    // Anything on the origin can write this entry, and an EventSource it rejects would unmount the root.
+    if (isRunAlive(persisted.status)) {
+      if (persisted.executionId && persisted.streamUrl?.startsWith(STREAM_PATH_PREFIX)) {
+        try {
+          openStream(persisted.executionId, persisted.streamUrl);
+        } catch {
+          resetExecution();
+        }
+      } else {
+        resetExecution();
+      }
     }
     return () => {
       isUnmountedRef.current = true;
@@ -101,42 +111,30 @@ export function useBackendExecution() {
 
   const cancel = useCallback(async () => {
     if (!executionId) return;
+    applyStopRequested();
 
-    let response: Response | undefined;
+    let response: Response;
     try {
       response = await fetch(`${BACKEND_URL}/api/executions/${executionId}`, {
         method: 'DELETE',
       });
     } catch (error) {
       console.error('Stop request failed:', error);
+      return;
     }
 
     // A Reset or a new run while the request was in flight owns the store now.
     if (useExecutionStore.getState().executionId !== executionId) return;
 
-    if (!response) {
-      applyStopUnreachable();
-      return;
-    }
-
-    clearStopUnreachable();
-
     if (response.ok || response.status === 409) {
-      if (streamUrl) openStream(executionId, streamUrl);
+      // The run may have ended over the old stream while the request was in flight.
+      if (streamUrl && isRunAlive(useExecutionStore.getState().status)) openStream(executionId, streamUrl);
       return;
     }
 
-    if (response.status === 404) {
-      const isForgotten = await isExecutionNotFound(response);
-      // Reading the body reopened the window the check above closed.
-      if (useExecutionStore.getState().executionId !== executionId) return;
-      if (isForgotten) {
-        reset();
-        return;
-      }
-    }
-
-    applyStopUnreachable();
+    if (response.status !== 404 || !(await isExecutionNotFound(response))) return;
+    // Reading the body reopened the window the check above closed.
+    if (useExecutionStore.getState().executionId === executionId) reset();
   }, [executionId, streamUrl, openStream, reset]);
 
   return { executeFromCanvas, cancel, reset, status, executionId };

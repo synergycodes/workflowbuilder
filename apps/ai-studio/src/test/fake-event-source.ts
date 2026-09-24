@@ -14,7 +14,6 @@ export class FakeEventSource extends EventTarget {
     FakeEventSource.instances.push(this);
   }
 
-  // Derived, not a second flag: readyState is the real object's only truth about being closed.
   get closed() {
     return this.readyState === FakeEventSource.CLOSED;
   }
