@@ -1,8 +1,13 @@
-import type { ControlProps } from '@workflowbuilder/sdk';
+import { useStore } from '@workflowbuilder/sdk';
+import type { ControlProps, PaletteItem } from '@workflowbuilder/sdk';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+// The editor's real panel, so the control runs with the tester, validator and store AI Studio gives it.
+import { registerCustomRenderers } from '../../../../../packages/sdk/src/features/json-form/extension-registry';
+import { NodeProperties } from '../../../../../packages/sdk/src/features/properties-bar/components/node-properties/node-properties';
+import { aiAgentPaletteItem } from '../../nodes/ai-agent';
 import { uischema } from '../../nodes/ai-agent/uischema';
 import { refundReviewOutputSchema } from '../../utils/ai-agent/response-options';
 import { ResponseControl, responseControlRenderer } from './response-control';
@@ -12,6 +17,8 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+registerCustomRenderers([responseControlRenderer]);
 
 // Base UI opens and selects on the pointer sequence, not on `click` alone.
 const click = (element: Element) =>
@@ -170,8 +177,98 @@ describe('ResponseControl', () => {
     });
   });
 
-  it('is disabled when the form is read-only', () => {
+  it('is disabled when enabled is false', () => {
     render({ enabled: false });
+
+    const button = trigger();
+    expect(button?.disabled === true || button?.getAttribute('aria-disabled') === 'true').toBe(true);
+  });
+});
+
+const storedProperties = () => useStore.getState().nodes[0]?.data.properties;
+
+// JsonForms reports a change after a short debounce; the node data follows that report.
+const settle = () =>
+  act(async () => {
+    await new Promise((resolve) => setTimeout(resolve, 20));
+  });
+
+describe('the Response format in the properties panel', () => {
+  let container: HTMLDivElement;
+  let root: ReturnType<typeof createRoot>;
+
+  const renderPanel = (properties: Record<string, unknown>, isReadOnlyMode = false) => {
+    const node = {
+      id: 'draft-1',
+      position: { x: 0, y: 0 },
+      data: {
+        type: aiAgentPaletteItem.type,
+        icon: aiAgentPaletteItem.icon,
+        properties: { ...aiAgentPaletteItem.defaultPropertiesData, ...properties },
+      },
+    };
+    act(() => useStore.setState({ data: [aiAgentPaletteItem as PaletteItem], nodes: [node], isReadOnlyMode }));
+    act(() => root.render(<NodeProperties node={node} />));
+  };
+
+  const trigger = () => container.querySelector<HTMLButtonElement>('[role="combobox"]');
+
+  const choose = async (label: string) => {
+    click(trigger()!);
+    const option = [...document.querySelectorAll<HTMLElement>('[role="option"]')].find((candidate) =>
+      candidate.textContent?.includes(label),
+    );
+    click(option!);
+    await settle();
+  };
+
+  beforeEach(() => {
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+  });
+
+  afterEach(async () => {
+    await settle();
+    act(() => root.unmount());
+    container.remove();
+    useStore.setState({ data: [], nodes: [], isReadOnlyMode: false });
+  });
+
+  it('renders the node uischema element with this control', () => {
+    renderPanel({});
+
+    expect(trigger()?.textContent).toContain('Plain text');
+  });
+
+  it('writes the preset to the node, and the node schema accepts it', async () => {
+    renderPanel({});
+
+    await choose('Structured: refund review');
+
+    expect(storedProperties()?.['outputSchema']).toEqual(refundReviewOutputSchema);
+    expect(storedProperties()?.errors).toEqual([]);
+  });
+
+  it('removes the key from the node when plain text is chosen', async () => {
+    renderPanel({ outputSchema: refundReviewOutputSchema });
+
+    await choose('Plain text');
+
+    expect(storedProperties()).not.toHaveProperty('outputSchema');
+  });
+
+  it('leaves the node untouched when the preset is chosen again on a copy of it', async () => {
+    renderPanel({ outputSchema: structuredClone(refundReviewOutputSchema) });
+    const nodes = useStore.getState().nodes;
+
+    await choose('Structured: refund review');
+
+    expect(useStore.getState().nodes).toBe(nodes);
+  });
+
+  it('is disabled in read-only mode', () => {
+    renderPanel({}, true);
 
     const button = trigger();
     expect(button?.disabled === true || button?.getAttribute('aria-disabled') === 'true').toBe(true);
