@@ -47,6 +47,39 @@ function stubEndpoint(content: string) {
   return bodies;
 }
 
+// Answers every request with a web search until one carries tool_choice none, then with `answer`.
+function stubSearchingEndpoint(answer: string) {
+  const bodies: Record<string, unknown>[] = [];
+  vi.stubGlobal('fetch', async (url: unknown, init: RequestInit) => {
+    if (String(url).startsWith('https://api.tavily.com')) {
+      return Response.json({ answer: 'Duplicate charges are refunded in full.' });
+    }
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    bodies.push(body);
+    const answers = body['tool_choice'] === 'none';
+    const toolCall = {
+      id: `call-${bodies.length}`,
+      type: 'function',
+      function: { name: 'webSearch', arguments: '{}' },
+    };
+    return Response.json({
+      id: 'chat',
+      object: 'chat.completion',
+      created: 0,
+      model: 'some/model',
+      choices: [
+        {
+          index: 0,
+          message: answers ? { role: 'assistant', content: answer } : { role: 'assistant', tool_calls: [toolCall] },
+          finish_reason: answers ? 'stop' : 'tool_calls',
+        },
+      ],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+    });
+  });
+  return bodies;
+}
+
 describe('createAiAgentExecutor without a key', () => {
   const executor = createAiAgentExecutor({ ai: aiConfig(endpoint) });
 
@@ -110,6 +143,25 @@ describe('createAiAgentExecutor against the endpoint', () => {
       type: 'json_schema',
       json_schema: { name: 'response', strict: true, schema: outputSchema },
     });
+    expect(result).toEqual({ output: { refundAmount: 49 } });
+  });
+
+  it('sends tool_choice none on the last step of the search loop, so a structured node still answers', async () => {
+    const bodies = stubSearchingEndpoint('{"refundAmount":49}');
+    const searching = createAiAgentExecutor({
+      ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }),
+      tavilyApiKey: 'tavily-key',
+    });
+    const outputSchema: JSONSchema7 = {
+      type: 'object',
+      properties: { refundAmount: { type: 'number' } },
+      required: ['refundAmount'],
+      additionalProperties: false,
+    };
+
+    const result = await searching({ ...node, config: { ...node.config, webSearch: true, outputSchema } }, context());
+
+    expect(bodies.map((body) => body['tool_choice'])).toEqual(['auto', 'auto', 'auto', 'none']);
     expect(result).toEqual({ output: { refundAmount: 49 } });
   });
 

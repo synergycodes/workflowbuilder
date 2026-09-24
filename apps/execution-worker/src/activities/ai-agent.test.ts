@@ -250,7 +250,15 @@ describe('executeAiAgent', () => {
       expect(result).toEqual({ output: { refundAmount: 49, orderDate: '2026-09-02' } });
     });
 
-    it('names tool-calls as the finish reason when the loop hits its step cap still searching', async () => {
+    it('turns the tools off on the last step of the loop', async () => {
+      const model = searchingModel(Number.POSITIVE_INFINITY, 'never reached');
+
+      await expect(executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' })).rejects.toThrow();
+
+      expect(model.doGenerateCalls.map((call) => call.toolChoice?.type)).toEqual(['auto', 'auto', 'auto', 'none']);
+    });
+
+    it('names tool-calls as the finish reason when the model searches even on the last step', async () => {
       const model = searchingModel(Number.POSITIVE_INFINITY, 'never reached');
 
       await expect(executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' })).rejects.toMatchObject({

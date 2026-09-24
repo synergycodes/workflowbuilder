@@ -75,7 +75,15 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     system: resolvedPrompt,
     prompt: userPrompt,
     // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
-    ...(tools ? { tools, stopWhen: stepCountIs(MAX_TOOL_STEPS) } : {}),
+    ...(tools
+      ? {
+          tools,
+          stopWhen: stepCountIs(MAX_TOOL_STEPS),
+          // The last allowed step may not call a tool, so the loop ends on an answer.
+          prepareStep: ({ stepNumber }: { stepNumber: number }) =>
+            stepNumber === MAX_TOOL_STEPS - 1 ? { toolChoice: 'none' as const } : undefined,
+        }
+      : {}),
   };
 
   try {
