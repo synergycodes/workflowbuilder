@@ -11,8 +11,10 @@ import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store'
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
-  const shouldShowControls = useHasStartNode();
-  const isStopUnreachable = useExecutionStore((state) => state.isStopUnreachable);
+  const hasStartNode = useHasStartNode();
+  // A run outlives its trigger node, so Stop and Reset stay reachable after it is deleted.
+  const shouldShowControls = hasStartNode || status !== 'idle';
+  const isStopRequested = useExecutionStore((state) => state.isStopRequested);
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
@@ -30,11 +32,12 @@ export function AiStudioControls() {
   }, [executeFromCanvas]);
 
   const isRunning = isRunAlive(status);
-  const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
-  // A Stop that never landed, or one the server never resolves, would leave the user waiting forever.
-  const hasAskedToStop = isStopUnreachable || status === 'cancelling';
+  const isDone = status !== 'idle' && !isRunning;
+  // Any Stop may never resolve, so asking is enough to offer Reset; `cancelling` covers one asked before a reload.
+  const hasAskedToStop = isStopRequested || status === 'cancelling';
   const isDoneOrStuck = isDone || hasAskedToStop;
-  const resetTooltip = !isDone && hasAskedToStop ? 'Clear — the run may still be running on the server' : 'Reset';
+  const resetTooltip =
+    !isDone && hasAskedToStop ? 'Reset without cancelling: the run may still be running on the server' : 'Reset';
 
   return (
     <div
@@ -50,15 +53,14 @@ export function AiStudioControls() {
             tooltip="Cancel execution"
             prefixIcon={<Icon name="Stop" />}
           />
-        ) : (
+        ) : hasStartNode ? (
           <NavButton
             aria-label="Execute (backend)"
             onClick={handleExecute}
             tooltip="Execute (backend)"
-            disabled={isRunning}
             prefixIcon={<Icon name="Play" />}
           />
-        )}
+        ) : null}
         {isDoneOrStuck && (
           <NavButton
             aria-label={resetTooltip}
