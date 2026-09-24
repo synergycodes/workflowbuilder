@@ -15,7 +15,8 @@ A complete, runnable AI workflow product built on top of the Workflow Builder SD
 - A run that stops for a person: `ai-studio/human-decision` parks the run (its executor returns `{ waiting: true }`) until `POST /api/executions/:id/decision` delivers a decision; the "Refund Review" template shows the loop. The node renders through its own template, keyed by the palette type in `nodeTemplates`, with one output handle per action of its `decisionRequest` that carries a port.
 - A rejection ends the run as a result, not a dead end: the run closes `completed`, the log panel names the outcome and who settled it, and the reject handle needs no edge. The node's output carries `resolvedBy` beside the other decision fields. The run's pill stays `completed` on purpose, a rejection being a result and not a failure; whether the panel marks it visually is for the design pass.
 - The person decides in the node's properties sidebar: the editor's own form over `decisionRequest.schema`, filled from the proposal source's output, with read-only fields disabled and only the changed editable fields sent as `edits`. From the moment the backend starts a run until Reset the canvas is read-only, so the form reads the graph the run executes; `use-run-locks-canvas.ts` lists the exceptions.
-- Live execution UI: Play/Stop controls, log panel, per-node status markers (including a waiting marker), edge highlighting, node-detail overlay
+- Live execution UI: Run/Stop controls, log panel, per-node status markers (including a waiting marker), edge highlighting, node-detail overlay
+- A run survives a reload or a closed tab: its id, stream URL and status live in `localStorage` under `ai-studio:execution`, and on mount `useBackendExecution` reopens the stream while the run may still be alive, so the snapshot rebuilds markers and log. A run the client saw finish is stored as idle; one that finished while the tab was closed shows once more, then goes idle. [Stopping and resetting a run](#stopping-and-resetting-a-run) covers Stop, Reset and the limits.
 
 This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothing else.
 
@@ -27,3 +28,25 @@ This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothi
 | Backend      | None (pure SPA)             | Required (Hono + Temporal)                               |
 | Plugin model | Plugins decorate the editor | Direct JSX composition; one slim plugin for node markers |
 | Dev port     | 4200                        | 4201                                                     |
+
+## Stopping and resetting a run
+
+Stop sends `DELETE /api/executions/:id`. The controls offer it for every status in which the server may still hold the run: `pending`, `running`, `waiting`, `cancelling` and `disconnected`. They offer Reset once the run has ended, and beside Stop as soon as Stop is clicked, because a cancel the server accepts can still never finish. Until the run ends, that Reset is labelled "Reset without cancelling: the run may still be running on the server". The controls stay on screen while a run exists, even after its trigger node is deleted, and show Run only when the canvas has a start node. From the click on Run until the backend answers, Stop shows disabled and Reset stays hidden, so a second start cannot follow.
+
+| Answer to Stop                         | What the client does                                                                                       |
+| -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| `200` or `409`                         | Reopens the stream unless the run already ended over the old one. The snapshot shows where the run stands. |
+| `404` with `code: execution_not_found` | Forgets the run.                                                                                           |
+| Anything else, or no answer            | Keeps the run. Reset stays available.                                                                      |
+
+The client keeps the Stop request in memory only. After a reload, one more Stop brings Reset back, and a run the server reports as `cancelling` brings it back without one.
+
+Reset clears the client only. It closes the stream and forgets the run, and never cancels the run on the server.
+
+`disconnected` means the client lost the stream, not that the run ended, and a reload tries the stream again. A refused stream shows `disconnected` at once, because the browser never retries one. That covers any non-200 answer and a wrong MIME type, a proxy's `502` included. After a network error the browser retries on its own, and the client gives up with `disconnected` after five failed retries.
+
+Known limits:
+
+- Tabs share one entry. Each tab writes its own run and the log panel's collapsed state over it on every change: Run, Reset, a log toggle, a live event. A reload then shows whichever run was written last, or none, and a live run replaced this way keeps going on the server.
+- A remembered run the server no longer knows, after a fresh database for example, shows `disconnected` and Stop on every visit until the server answers a Stop with `404` and the client forgets the run. The client does not check the id on mount.
+- Storage is best effort. A failed write, with storage full or disabled, leaves the live run alone, and a reload then finds whatever was written last.
