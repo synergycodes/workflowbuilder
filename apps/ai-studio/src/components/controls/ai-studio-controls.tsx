@@ -7,10 +7,14 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
+import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
-  const shouldShowControls = useHasStartNode();
+  const hasStartNode = useHasStartNode();
+  // A run outlives its trigger node, so Stop and Reset stay reachable after it is deleted.
+  const shouldShowControls = hasStartNode || status !== 'idle';
+  const isStopRequested = useExecutionStore((state) => state.isStopRequested);
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
@@ -27,8 +31,13 @@ export function AiStudioControls() {
     }
   }, [executeFromCanvas]);
 
-  const isRunning = status === 'pending' || status === 'running' || status === 'waiting';
-  const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
+  const isRunning = isRunAlive(status);
+  const isDone = status !== 'idle' && !isRunning;
+  // Any Stop may never resolve, so asking is enough to offer Reset; `cancelling` covers one asked before a reload.
+  const hasAskedToStop = isStopRequested || status === 'cancelling';
+  const isDoneOrStuck = isDone || hasAskedToStop;
+  const resetTooltip =
+    !isDone && hasAskedToStop ? 'Reset without cancelling: the run may still be running on the server' : 'Reset';
 
   return (
     <div
@@ -38,16 +47,16 @@ export function AiStudioControls() {
     >
       <div className={styles['panel']}>
         {isRunning ? (
-          <NavButton onClick={cancel} tooltip="Cancel execution">
+          <NavButton onClick={cancel} tooltip="Cancel execution" aria-label="Cancel execution">
             <Icon name="Stop" />
           </NavButton>
-        ) : (
-          <NavButton onClick={handleExecute} tooltip="Execute (backend)" disabled={isRunning}>
+        ) : hasStartNode ? (
+          <NavButton onClick={handleExecute} tooltip="Execute (backend)" aria-label="Execute (backend)">
             <Icon name="Play" />
           </NavButton>
-        )}
-        {isDone && (
-          <NavButton onClick={reset} tooltip="Reset">
+        ) : null}
+        {isDoneOrStuck && (
+          <NavButton onClick={reset} tooltip={resetTooltip} aria-label={resetTooltip}>
             <Icon name="ArrowCounterClockwise" />
           </NavButton>
         )}
