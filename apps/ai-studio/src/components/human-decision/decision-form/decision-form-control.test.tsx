@@ -14,6 +14,7 @@ import {
   applyEvent,
   applySnapshot,
   resetExecution,
+  saveDecisionSend,
   setExecutionStarted,
   useExecutionStore,
 } from '../../../stores/use-execution-store';
@@ -625,6 +626,29 @@ describe.each([
 
       expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'reject', reason: 'Outside the policy' });
       expect(dialog()).toBeNull();
+    });
+
+    it('sends one reject when Confirm Rejection is pressed twice as the dialog closes', async () => {
+      parkHumanOne();
+      await click(button('Reject…'));
+      const confirm = dialogButton('Confirm Rejection');
+
+      await act(async () => {
+        confirm.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+        confirm.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+      });
+
+      expect(submit).toHaveBeenCalledTimes(1);
+    });
+
+    it('shows Confirm Rejection disabled while a decision for the wait is on its way', async () => {
+      parkHumanOne();
+      await click(button('Reject…'));
+      expect(dialogButton('Confirm Rejection').disabled).toBe(false);
+
+      act(() => saveDecisionSend(humanOneWait, { status: 'sending' }));
+
+      expect(dialogButton('Confirm Rejection').disabled).toBe(true);
     });
 
     it('locks the fields while the decision is on its way, so nothing typed then is lost', async () => {

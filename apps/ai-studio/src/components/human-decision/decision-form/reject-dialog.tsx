@@ -9,6 +9,7 @@ import type { RejectOffer } from '../../../utils/human-decision/decision-actions
 type Props = {
   reject: RejectOffer;
   open: boolean;
+  isBusy: boolean;
   reason: string;
   onReasonChange: (reason: string) => void;
   onCancel: () => void;
@@ -16,7 +17,7 @@ type Props = {
 };
 
 /** Asks for the reason before a rejection is sent. What was typed stays in the draft when the person cancels. */
-export function RejectDialog({ reject, open, reason, onReasonChange, onCancel, onConfirm }: Props) {
+export function RejectDialog({ reject, open, isBusy, reason, onReasonChange, onCancel, onConfirm }: Props) {
   const reasonMissing = reject.reasonRequired === true && !hasText(reason);
 
   return (
@@ -29,7 +30,7 @@ export function RejectDialog({ reject, open, reason, onReasonChange, onCancel, o
           <Button variant="secondary" onClick={onCancel}>
             Cancel
           </Button>
-          <Button variant="error" disabled={reasonMissing} onClick={onConfirm}>
+          <Button variant="error" disabled={reasonMissing || isBusy} onClick={onConfirm}>
             Confirm Rejection
           </Button>
         </div>
@@ -38,7 +39,7 @@ export function RejectDialog({ reject, open, reason, onReasonChange, onCancel, o
       <FormControlWithLabel label="Rejection reason" required={reject.reasonRequired} className={styles['field']}>
         <TextArea
           value={reason}
-          placeholder="Explain why this refund is being rejected…"
+          placeholder="Explain why the proposal is being rejected…"
           minRows={3}
           maxRows={8}
           error={reasonMissing}

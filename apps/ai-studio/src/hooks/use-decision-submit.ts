@@ -13,6 +13,10 @@ function refusalMessage(result: Extract<SubmitDecisionResult, { ok: false }>): s
     .join(' ');
 }
 
+function holdsTheForm(send: { status: string } | undefined): boolean {
+  return send?.status === 'sending' || send?.status === 'accepted';
+}
+
 /**
  * Sends the decision for a wait and keeps where it stands in the store, so a person who leaves the node and comes back
  * finds it still on its way, accepted or refused. An accepted decision keeps the form busy until the run records it and
@@ -22,6 +26,10 @@ export function useDecisionSubmit(wait: DecisionWait) {
   const send = useExecutionStore((state) => state.decisionSends[waitKey(wait)]);
 
   const submit = async (input: DecisionInput) => {
+    // Read from the store, not the render: a second press in the same frame would be refused and hide the acceptance.
+    if (holdsTheForm(useExecutionStore.getState().decisionSends[waitKey(wait)])) {
+      return;
+    }
     saveDecisionSend(wait, { status: 'sending' });
 
     let result: SubmitDecisionResult;
@@ -38,7 +46,7 @@ export function useDecisionSubmit(wait: DecisionWait) {
   };
 
   return {
-    isBusy: send?.status === 'sending' || send?.status === 'accepted',
+    isBusy: holdsTheForm(send),
     isAccepted: send?.status === 'accepted',
     message: send?.status === 'refused' ? send.message : undefined,
     submit,

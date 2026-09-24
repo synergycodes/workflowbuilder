@@ -43,9 +43,12 @@ describe('AiStudioControls', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   const icons = () => [...container.querySelectorAll<HTMLElement>('[data-icon]')].map((icon) => icon.dataset['icon']);
+  const play = () => container.querySelector('[data-icon="Play"]')!.closest('button')!;
   const isVisible = () => container.firstElementChild!.className.includes('container--visible');
 
   it('offers Stop while the run waits for a decision, the same as while it starts or runs', () => {
@@ -57,6 +60,36 @@ describe('AiStudioControls', () => {
 
     setRunStatus('waiting');
     expect(icons()).toEqual(['Stop']);
+  });
+
+  it('offers Stop as soon as Run is pressed, so a second start cannot follow before the backend answers', async () => {
+    const request = vi.fn(() => new Promise<Response>(() => {}));
+    vi.stubGlobal('fetch', request);
+    setRunStatus('completed');
+    expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
+    expect(play().textContent).toBe('Run');
+
+    await act(async () => play().click());
+
+    expect(icons()).toEqual(['Stop']);
+    const stop = container.querySelector('[data-icon="Stop"]')!.closest('button')!;
+    expect(stop.textContent).toBe('Stop');
+    expect(stop.disabled).toBe(true);
+    await act(async () => stop.click());
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers Run again after a start the backend refused', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => Response.json({ message: 'Unavailable' }, { status: 503 })),
+    );
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await act(async () => play().click());
+
+    expect(logged).toHaveBeenCalled();
+    expect(icons()).toEqual(['Play']);
   });
 
   it('offers Play and Reset once the run has ended', () => {

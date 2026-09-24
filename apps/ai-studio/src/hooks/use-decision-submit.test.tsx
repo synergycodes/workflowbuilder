@@ -67,6 +67,33 @@ describe('useDecisionSubmit', () => {
     expect(state().message).toBeUndefined();
   });
 
+  it('sends once however often it is pressed while the decision is on its way or accepted', async () => {
+    let answer!: (result: SubmitDecisionResult) => void;
+    decide.mockReturnValue(new Promise((resolve) => (answer = resolve)));
+    const state = renderSubmit();
+
+    await act(async () => {
+      void state().submit({ action: 'approve' });
+      void state().submit({ action: 'reject' });
+    });
+    await act(async () => answer({ ok: true }));
+    await send(state);
+
+    expect(decide).toHaveBeenCalledTimes(1);
+    expect(state().isAccepted).toBe(true);
+  });
+
+  it('sends again after a refusal', async () => {
+    decide.mockResolvedValueOnce(refusal({})).mockResolvedValueOnce({ ok: true });
+    const state = renderSubmit();
+
+    await send(state);
+    await send(state);
+
+    expect(decide).toHaveBeenCalledTimes(2);
+    expect(state().isAccepted).toBe(true);
+  });
+
   it('frees the form after a refusal and names the wait it now has to answer', async () => {
     decide.mockResolvedValue(
       refusal({

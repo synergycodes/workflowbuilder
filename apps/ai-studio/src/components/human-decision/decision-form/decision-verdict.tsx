@@ -60,6 +60,7 @@ export function DecisionVerdict({
         <RejectDialog
           reject={reject}
           open={isRejecting}
+          isBusy={isBusy}
           reason={reason}
           onReasonChange={onReasonChange}
           onCancel={() => setIsRejecting(false)}
