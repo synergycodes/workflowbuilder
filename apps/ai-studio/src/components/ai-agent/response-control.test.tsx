@@ -141,13 +141,13 @@ describe('ResponseControl', () => {
     expect(handleChange).not.toHaveBeenCalled();
   });
 
-  it('lists only the presets for a node on a preset', () => {
+  it('lists the custom schema entry on a node on a preset too, so the list never changes length', () => {
     render({ data: refundReviewOutputSchema });
 
     click(trigger()!);
 
     const labels = [...document.querySelectorAll('[role="option"]')].map((option) => option.textContent);
-    expect(labels).toEqual(['Plain text', 'Structured: refund review']);
+    expect(labels).toEqual(['Plain text', 'Structured: refund review', 'Structured: custom schema']);
   });
 
   describe('with a schema no preset matches', () => {
@@ -186,6 +186,17 @@ describe('ResponseControl', () => {
 });
 
 const storedProperties = () => useStore.getState().nodes[0]?.data.properties;
+const propertiesOf = (id: string) => useStore.getState().nodes.find((node) => node.id === id)?.data.properties;
+
+const aiAgentNode = (id: string, properties: Record<string, unknown>) => ({
+  id,
+  position: { x: 0, y: 0 },
+  data: {
+    type: aiAgentPaletteItem.type,
+    icon: aiAgentPaletteItem.icon,
+    properties: { ...aiAgentPaletteItem.defaultPropertiesData, ...properties },
+  },
+});
 
 // JsonForms reports a change after a short debounce; the node data follows that report.
 const settle = () =>
@@ -198,20 +209,14 @@ describe('the Response format in the properties panel', () => {
   let root: ReturnType<typeof createRoot>;
 
   const renderPanel = (properties: Record<string, unknown>, isReadOnlyMode = false) => {
-    const node = {
-      id: 'draft-1',
-      position: { x: 0, y: 0 },
-      data: {
-        type: aiAgentPaletteItem.type,
-        icon: aiAgentPaletteItem.icon,
-        properties: { ...aiAgentPaletteItem.defaultPropertiesData, ...properties },
-      },
-    };
+    const node = aiAgentNode('draft-1', properties);
     act(() => useStore.setState({ data: [aiAgentPaletteItem as PaletteItem], nodes: [node], isReadOnlyMode }));
     act(() => root.render(<NodeProperties node={node} />));
   };
 
   const trigger = () => container.querySelector<HTMLButtonElement>('[role="combobox"]');
+  // Clicking another node on the canvas closes the list, so the node switch meets it still mounted.
+  const openList = () => click(trigger()!);
 
   const choose = async (label: string) => {
     click(trigger()!);
@@ -272,5 +277,47 @@ describe('the Response format in the properties panel', () => {
 
     const button = trigger();
     expect(button?.disabled === true || button?.getAttribute('aria-disabled') === 'true').toBe(true);
+  });
+
+  describe('beside a node whose schema no preset matches', () => {
+    const custom = aiAgentNode('custom-1', { outputSchema: { type: 'object', properties: { score: {} } } });
+    const preset = aiAgentNode('preset-1', { outputSchema: refundReviewOutputSchema });
+    const text = aiAgentNode('text-1', {});
+
+    // The properties bar renders NodeProperties without a key, so selecting another node reuses the control.
+    const select = (node: typeof custom) => act(() => root.render(<NodeProperties node={node} />));
+
+    beforeEach(() => {
+      act(() => useStore.setState({ data: [aiAgentPaletteItem as PaletteItem], nodes: [custom, preset, text] }));
+    });
+
+    it('keeps the preset chosen on the custom node', async () => {
+      select(custom);
+
+      await choose('Structured: refund review');
+
+      expect(propertiesOf('custom-1')?.['outputSchema']).toEqual(refundReviewOutputSchema);
+    });
+
+    it('leaves the next node alone when the panel switches away from the custom node with its list open', async () => {
+      select(custom);
+      openList();
+
+      select(preset);
+      await settle();
+
+      expect(propertiesOf('preset-1')?.['outputSchema']).toBe(refundReviewOutputSchema);
+    });
+
+    it('writes no schema onto a plain-text node shown after a preset node and the custom one with its list open', async () => {
+      select(preset);
+      select(custom);
+      openList();
+
+      select(text);
+      await settle();
+
+      expect(propertiesOf('text-1')).not.toHaveProperty('outputSchema');
+    });
   });
 });
