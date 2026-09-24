@@ -5,6 +5,7 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
 import { refundReviewOutputSchema } from '../utils/ai-agent/response-options';
+import { editableFields } from '../utils/editor-form/editor-layout';
 import { aiStudioTemplates } from './ai-studio-templates';
 import { refundReviewFlow, refundReviewRequest } from './refund-review-flow';
 
@@ -77,6 +78,11 @@ describe('the draft the person reviews', () => {
   it("meets the provider's strict mode at the top level: every field required, no extra keys", () => {
     expect([...refundReviewOutputSchema.required].sort()).toEqual([...draftFields].sort());
     expect(refundReviewOutputSchema.additionalProperties).toBe(false);
+  });
+
+  // The confirmation sends the reply the person approves, so it has to stay a field they can correct.
+  it('lets the person correct the amount and the reply, not the order date', () => {
+    expect([...editableFields(refundReviewRequest.schema)]).toEqual(['refundAmount', 'replyDraft']);
   });
 
   it('puts every draft field except internalReasoning on the decision form, under the same titles and types', () => {
