@@ -4,7 +4,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   type ExecutionContext,
-  NodeExecutionError,
   PermanentNodeExecutionError,
   TransientNodeExecutionError,
 } from '@workflow-builder/execution-core';
@@ -180,7 +179,7 @@ describe('executeAiAgent', () => {
   });
 
   it.each(['length', 'content-filter'] as const)(
-    'names the finish reason when a structured answer ends with %s, and leaves the failure unclassified',
+    'names the finish reason when a structured answer ends with %s, as a transient failure',
     async (finishReason) => {
       const model = answeringModel('{"refundAmount":4', finishReason);
 
@@ -188,10 +187,8 @@ describe('executeAiAgent', () => {
         (error: unknown) => error,
       );
 
-      expect(failure).toBeInstanceOf(NodeExecutionError);
-      expect(failure).toMatchObject({ code: 'structured_output_incomplete' });
+      expect(failure).toMatchObject({ code: 'structured_output_incomplete', classification: 'transient' });
       expect((failure as Error).message).toContain(`finish reason: ${finishReason}`);
-      expect(failure).not.toHaveProperty('classification');
     },
   );
 

@@ -4,6 +4,7 @@ import {
   type ExecutionContext,
   type LoggerPort,
   NodeExecutionError,
+  TransientNodeExecutionError,
   resolveTemplate,
 } from '@workflow-builder/execution-core';
 
@@ -71,9 +72,9 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     // Forwarded as-is and not validated here: only an endpoint that honours json_schema enforces the shape.
     const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
     // The SDK parses only a `stop` finish; otherwise it throws `No output generated.` without the reason.
-    // Unclassified on purpose, so it keeps the node profile's uniform retry.
+    // Transient gets the same attempts as unclassified, and its code reaches `node_failed`.
     if (result.finishReason !== 'stop') {
-      throw new NodeExecutionError(
+      throw new TransientNodeExecutionError(
         'structured_output_incomplete',
         `The model stopped before a structured answer (finish reason: ${result.finishReason})`,
       );
