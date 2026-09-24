@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { outputSchemaFor, refundReviewOutputSchema, responseOptionOf, responseOptions } from './response-options';
 
 describe('responseOptions', () => {
-  it('offers plain text first, as the default, then the refund review preset', () => {
+  it('lists plain text first, then the refund review preset', () => {
     expect(responseOptions.map((option) => option.label)).toEqual(['Plain text', 'Structured: refund review']);
   });
 });
