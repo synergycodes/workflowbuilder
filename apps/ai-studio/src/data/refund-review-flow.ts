@@ -2,9 +2,9 @@ import type { DiagramModel, TemplateModel } from '@workflowbuilder/sdk';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-import { refundReviewOutputSchema } from '../nodes/ai-agent/response-options';
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
+import { refundReviewOutputSchema } from '../utils/ai-agent/response-options';
 
 const REFUND_CONTEXT = `You work in customer support for Lumen, a SaaS analytics product.
 

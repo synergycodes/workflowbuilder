@@ -3,7 +3,7 @@ import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/
 import { Select } from '@workflowbuilder/ui';
 import type { SelectBaseProps } from '@workflowbuilder/ui';
 
-import { outputSchemaFor, responseOptionOf, responseOptions } from '../../nodes/ai-agent/response-options';
+import { outputSchemaFor, responseOptionOf, responseOptions } from '../../utils/ai-agent/response-options';
 
 // Edits the node's `outputSchema` as a choice between presets; the schema itself is never typed here.
 export function ResponseControl({ data, handleChange, path, enabled, label }: ControlProps) {

@@ -3,8 +3,8 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { refundReviewOutputSchema } from '../../nodes/ai-agent/response-options';
 import { uischema } from '../../nodes/ai-agent/uischema';
+import { refundReviewOutputSchema } from '../../utils/ai-agent/response-options';
 import { ResponseControl, responseControlRenderer } from './response-control';
 
 declare global {

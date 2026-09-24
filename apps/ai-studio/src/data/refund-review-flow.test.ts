@@ -2,9 +2,9 @@ import { describe, expect, it } from 'vitest';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-import { refundReviewOutputSchema } from '../nodes/ai-agent/response-options';
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
+import { refundReviewOutputSchema } from '../utils/ai-agent/response-options';
 import { aiStudioTemplates } from './ai-studio-templates';
 import { refundReviewFlow, refundReviewRequest } from './refund-review-flow';
 
