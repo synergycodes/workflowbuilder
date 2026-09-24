@@ -165,6 +165,19 @@ describe('createAiAgentExecutor against the endpoint', () => {
     expect(result).toEqual({ output: { refundAmount: 49 } });
   });
 
+  it('sends tool_choice none on the last step of a plain-text search loop and returns the answer', async () => {
+    const bodies = stubSearchingEndpoint('Duplicate charges are refunded in full.');
+    const searching = createAiAgentExecutor({
+      ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }),
+      tavilyApiKey: 'tavily-key',
+    });
+
+    const result = await searching({ ...node, config: { ...node.config, webSearch: true } }, context());
+
+    expect(bodies.map((body) => body['tool_choice'])).toEqual(['auto', 'auto', 'auto', 'none']);
+    expect(result).toEqual({ output: { response: 'Duplicate charges are refunded in full.' } });
+  });
+
   it('asks for no response format when the node has no output schema', async () => {
     const bodies = stubEndpoint('A short summary.');
 

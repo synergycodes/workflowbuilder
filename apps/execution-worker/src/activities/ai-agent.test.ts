@@ -144,6 +144,7 @@ describe('executeAiAgent', () => {
     ['a string', 'refund review'],
     ['an array', [refundSchema]],
     ['a schema of another type', { type: 'string' }],
+    ['a boolean', false],
   ])('fails %s as an output schema, before calling the model', async (_kind, outputSchema) => {
     const model = answeringModel('{}');
     const node = aiAgentNode({ outputSchema: outputSchema as unknown as JSONSchema7 });
