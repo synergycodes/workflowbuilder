@@ -1,7 +1,7 @@
 import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
-// Opaque here: the backend parses the request, and the properties panel never renders it.
+// Opaque to the editor: the backend parses the request, and the decision form reads it with its own reader.
 export const schema = {
   type: 'object',
   properties: {

@@ -8,6 +8,7 @@ import {
   type TerminalExecutionEventType,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
+import { executionEvent as event, lastSequence } from './execution-event.fixture';
 import {
   type RunStatus,
   applyConnectionLost,
@@ -16,9 +17,12 @@ import {
   applyStopRequested,
   isRunAlive,
   resetExecution,
+  saveDecisionDraft,
+  saveDecisionSend,
   setExecutionStarted,
   setLogCollapsed,
   useExecutionStore,
+  waitKey,
 } from './use-execution-store';
 
 const STORAGE_KEY = 'ai-studio:execution';
@@ -28,17 +32,10 @@ const stored = () => {
   return raw ? (JSON.parse(raw) as { state: Record<string, unknown>; version: number }) : null;
 };
 
-let sequence = 0;
-
-// `Omit` over the union keeps only the shared keys, so `nodeId` has to be admitted by hand.
-function event(
-  partial: Omit<ExecutionEvent, 'executionId' | 'sequence' | 'timestamp'> & { nodeId?: string },
-): ExecutionEvent {
-  sequence += 1;
-  return { executionId: 'exec-1', sequence, timestamp: '2026-09-15T12:00:00.000Z', ...partial } as ExecutionEvent;
-}
-
 const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
+
+const drafts = () => useExecutionStore.getState().decisionDrafts;
+const sends = () => useExecutionStore.getState().decisionSends;
 
 const terminalPayload: { [T in TerminalExecutionEventType]: Extract<ExecutionEvent, { type: T }>['payload'] } = {
   execution_completed: undefined,
@@ -52,7 +49,6 @@ const terminalEvent = (type: TerminalExecutionEventType) => event({ type, payloa
 const terminalCases = Object.entries(TERMINAL_EVENT_TO_STATUS) as [TerminalExecutionEventType, ExecutionStatus][];
 
 beforeEach(() => {
-  sequence = 0;
   resetExecution();
   localStorage.clear();
 });
@@ -128,7 +124,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_waiting', nodeId: 'human-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('waiting');
   });
@@ -141,7 +137,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_started', nodeId: 'send-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('running');
   });
@@ -165,7 +161,7 @@ describe('use-execution-store: a node waiting for a person', () => {
       event({ type: 'node_waiting', nodeId: 'human-1' }),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
 
     const state = useExecutionStore.getState();
     expect(state.status).toBe('waiting');
@@ -199,11 +195,80 @@ describe('use-execution-store: a node waiting for a person', () => {
         terminalEvent(type),
       ];
 
-      applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: sequence, events });
+      applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
 
       expect(useExecutionStore.getState().status).toBe(status);
     },
   );
+});
+
+describe('use-execution-store: decision drafts', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('merges what is saved for one wait and keeps the waits apart', () => {
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft({ ...wait, attempt: 2 }, { reason: 'Second wait' });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ values: { refundAmount: 120 }, reason: 'Checked' });
+    expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reason: 'Second wait' });
+  });
+
+  it('keeps the drafts when a snapshot replays the same run', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ reason: 'Checked' });
+  });
+
+  it('drops a draft saved for a run that is no longer the current one', () => {
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+
+    expect(drafts()).toEqual({});
+  });
+
+  it('starts a new run and a reset without drafts', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    expect(drafts()).toEqual({});
+
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    resetExecution();
+    expect(drafts()).toEqual({});
+  });
+});
+
+describe('use-execution-store: decision sends', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('keeps where the decision for each wait stands', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    saveDecisionSend({ ...wait, attempt: 2 }, { status: 'refused', message: 'Refused.' });
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()[waitKey(wait)]).toEqual({ status: 'accepted' });
+    expect(sends()[waitKey({ ...wait, attempt: 2 })]).toEqual({ status: 'refused', message: 'Refused.' });
+  });
+
+  it('drops an answer that arrives for a run that is no longer the current one, and starts a run without any', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()).toEqual({});
+  });
 });
 
 const startedHistory = () => [
@@ -240,7 +305,7 @@ describe('use-execution-store: facts only the row carries', () => {
   it('a cancelling row whose history already ends in execution_cancelled ends cancelled', () => {
     const events = [...startedHistory(), terminalEvent('execution_cancelled')];
 
-    applySnapshot({ executionId: 'exec-1', status: 'cancelling', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'cancelling', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('cancelled');
   });
@@ -280,7 +345,7 @@ describe('use-execution-store: facts only the row carries', () => {
       terminalEvent('execution_completed'),
     ];
 
-    applySnapshot({ executionId: 'exec-1', status: 'completed', lastSequence: sequence, events });
+    applySnapshot({ executionId: 'exec-1', status: 'completed', lastSequence: lastSequence(), events });
 
     expect(useExecutionStore.getState().status).toBe('completed');
     expect(useExecutionStore.getState().nodeStates).toEqual({

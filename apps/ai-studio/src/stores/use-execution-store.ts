@@ -18,6 +18,15 @@ export type NodeExecutionState = {
 
 export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
 
+/** One wait of a decision node: the run, the node, and which time the node parked in it. */
+export type DecisionWait = { executionId: string; nodeId: string; attempt: number };
+
+/** What a person has entered for a wait and not yet sent. */
+export type DecisionDraft = { values?: Record<string, unknown>; reason?: string };
+
+/** Where the decision sent for a wait stands until the run records it. */
+type DecisionSend = { status: 'sending' } | { status: 'accepted' } | { status: 'refused'; message: string };
+
 type ExecutionStore = {
   executionId: string | undefined;
   status: RunStatus;
@@ -26,6 +35,10 @@ type ExecutionStore = {
   events: ExecutionEvent[];
   isLogCollapsed: boolean;
   isStopRequested: boolean;
+  /** By {@link waitKey}. */
+  decisionDrafts: Record<string, DecisionDraft>;
+  /** By {@link waitKey}. */
+  decisionSends: Record<string, DecisionSend>;
 };
 
 const emptyStore: ExecutionStore = {
@@ -36,6 +49,8 @@ const emptyStore: ExecutionStore = {
   events: [],
   isLogCollapsed: false,
   isStopRequested: false,
+  decisionDrafts: {},
+  decisionSends: {},
 };
 
 type PersistedSlice = Pick<ExecutionStore, 'executionId' | 'streamUrl' | 'status' | 'isLogCollapsed'>;
@@ -103,7 +118,30 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     events: [],
     isLogCollapsed: false,
     isStopRequested: false,
+    decisionDrafts: {},
+    decisionSends: {},
   });
+}
+
+export function waitKey({ executionId, nodeId, attempt }: DecisionWait): string {
+  return `${executionId}:${nodeId}:${attempt}`;
+}
+
+// A form that closes, or an answer that arrives, after its run was replaced leaves nothing in the new one.
+function updateWait(wait: DecisionWait, update: (state: ExecutionStore, key: string) => Partial<ExecutionStore>) {
+  useExecutionStore.setState((state) =>
+    state.executionId === wait.executionId ? update(state, waitKey(wait)) : state,
+  );
+}
+
+export function saveDecisionDraft(wait: DecisionWait, change: DecisionDraft) {
+  updateWait(wait, (state, key) => ({
+    decisionDrafts: { ...state.decisionDrafts, [key]: { ...state.decisionDrafts[key], ...change } },
+  }));
+}
+
+export function saveDecisionSend(wait: DecisionWait, send: DecisionSend) {
+  updateWait(wait, (state, key) => ({ decisionSends: { ...state.decisionSends, [key]: send } }));
 }
 
 // Keeps the run id for Stop; any other caller must probe it first (follow-up: stale-execution-id-probe).

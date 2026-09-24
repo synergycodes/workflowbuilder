@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
 
+import { executionEvent as event } from '../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../stores/use-execution-store';
 import { ExecutionLogPanel } from './log-panel';
 
@@ -18,19 +19,11 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-let sequence = 0;
-
-function event(partial: Omit<ExecutionEvent, 'executionId' | 'sequence' | 'timestamp'>): ExecutionEvent {
-  sequence += 1;
-  return { executionId: 'exec-1', sequence, timestamp: '2026-09-15T12:00:00.000Z', ...partial } as ExecutionEvent;
-}
-
 describe('ExecutionLogPanel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
-    sequence = 0;
     resetExecution();
     setExecutionStarted('exec-1', '/stream');
     container = document.createElement('div');
