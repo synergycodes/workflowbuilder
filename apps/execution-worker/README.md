@@ -98,6 +98,7 @@ Each judgment is made at the throw site that owns the error. The runner and the 
 | AI Agent: provider answered 5xx                                | transient | `provider_unavailable`                      |
 | AI Agent: provider answered 408, or the connection failed      | transient | `provider_unreachable`                      |
 | AI Agent: structured answer ended on anything but `stop`       | transient | `structured_output_incomplete`              |
+| AI Agent: `outputSchema` is not a JSON Schema of type `object` | permanent | `output_schema_invalid`                     |
 | AI Agent: `AI_*` variables missing                             | permanent | `ai_not_configured`                         |
 | AI Agent, Decision: template reference malformed or unresolved | permanent | `template_malformed`, `template_unresolved` |
 | Decision: no branch matched                                    | permanent | `no_branch_matched`                         |
@@ -107,7 +108,7 @@ The provider's own error is attached as `cause`, and `node_failed` reports the d
 
 ## AI Agent structured output
 
-An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor then asks the model for an answer matching it and the node's output is the parsed answer, with no `response` key beside it. Without the key the node keeps returning `{ response: text }`. Web search runs in either mode.
+An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor then asks the model for an answer matching it and the node's output is the parsed answer, with no `response` key beside it. Without the key the node keeps returning `{ response: text }`. Web search runs in either mode. A value without `type: 'object'` at its root fails the node as a permanent `output_schema_invalid` before any model call. A top-level `response` or `input` string is best avoided: an AI Agent downstream reads that one field as the whole output and drops the rest.
 
 The model is created with `supportsStructuredOutputs: true`. Without that flag the OpenAI-compatible provider drops the schema, sends plain JSON mode and only records a warning, so the keys would come from the model's guess. The provider sends `strict: true` by default. OpenAI's strict mode requires the schema to list every property in `required` and set `additionalProperties: false`; an endpoint that refuses the schema answers 4xx, which [Failure classification](#failure-classification) makes permanent. The endpoint has to support the `json_schema` response format at all. OpenRouter's documentation says it honours it only on models that advertise structured outputs, so check the model before a demo.
 

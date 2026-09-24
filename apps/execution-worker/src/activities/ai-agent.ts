@@ -4,6 +4,7 @@ import {
   type ExecutionContext,
   type LoggerPort,
   NodeExecutionError,
+  PermanentNodeExecutionError,
   TransientNodeExecutionError,
   resolveTemplate,
 } from '@workflow-builder/execution-core';
@@ -21,7 +22,22 @@ type AiAgentDeps = {
   tavilyApiKey?: string;
 };
 
+// The backend passes node config through unvalidated; strict mode needs an object at the schema root.
+function isObjectSchema(value: unknown): boolean {
+  return (
+    typeof value === 'object' && value !== null && !Array.isArray(value) && 'type' in value && value.type === 'object'
+  );
+}
+
 export async function executeAiAgent(node: AiAgentNode, context: ExecutionContext, deps: AiAgentDeps) {
+  const { outputSchema } = node.config;
+  if (outputSchema != null && !isObjectSchema(outputSchema)) {
+    throw new PermanentNodeExecutionError(
+      'output_schema_invalid',
+      'outputSchema must be a JSON Schema of type "object"',
+    );
+  }
+
   const resolvedPrompt = resolveTemplate(node.config.systemPrompt, context);
 
   const previousOutputs = Object.entries(context.nodeOutputs);
@@ -63,13 +79,12 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   };
 
   try {
-    const { outputSchema } = node.config;
     if (outputSchema == null) {
       const result = await generateText(call);
       return { output: { response: result.text } };
     }
 
-    // Forwarded as-is and not validated here: only an endpoint that honours json_schema enforces the shape.
+    // Forwarded as-is, and the answer is not validated: only an endpoint that honours json_schema enforces the shape.
     const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
     // The SDK parses only a `stop` finish; otherwise it throws `No output generated.` without the reason.
     // Transient gets the same attempts as unclassified, and its code reaches `node_failed`.

@@ -139,6 +139,22 @@ describe('executeAiAgent', () => {
     expect(model.doGenerateCalls[0]?.responseFormat).toBeUndefined();
   });
 
+  it.each([
+    ['an empty object', {}],
+    ['a string', 'refund review'],
+    ['an array', [refundSchema]],
+    ['a schema of another type', { type: 'string' }],
+  ])('fails %s as an output schema, before calling the model', async (_kind, outputSchema) => {
+    const model = answeringModel('{}');
+    const node = aiAgentNode({ outputSchema: outputSchema as unknown as JSONSchema7 });
+
+    await expect(executeAiAgent(node, context(), { model })).rejects.toMatchObject({
+      code: 'output_schema_invalid',
+      classification: 'permanent',
+    });
+    expect(model.doGenerateCalls).toHaveLength(0);
+  });
+
   it('returns the object the model produced as the node output when the config declares an output schema', async () => {
     const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
 
