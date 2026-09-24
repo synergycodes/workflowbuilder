@@ -101,11 +101,12 @@ message, and draft the reply. Keep your reasoning about the policy for the team,
             systemPrompt: `${REFUND_CONTEXT}
 
 A person approved the refund. The context holds the draft (refundAmount, orderDate, replyDraft,
-internalReasoning) and the decision record. If the decision carries edits (for example a corrected
-refundAmount), the edited values win over the draft. internalReasoning is for the team: leave it out.
+internalReasoning) and the decision record, whose edits hold every field the person corrected. An
+edited value wins over the draft. internalReasoning is for the team: leave it out.
 
-Write the final confirmation to the customer: the amount refunded, where and when it arrives,
-and one sentence on preventing a repeat. Under 100 words, signed "Lumen Support".`,
+Send replyDraft to the customer as the confirmation, keeping its wording. Change it only where the
+amount it names differs from the approved refundAmount, and keep it signed "Lumen Support".
+Answer with the message alone.`,
             webSearch: false,
           },
           type: 'ai-studio/ai-agent',
