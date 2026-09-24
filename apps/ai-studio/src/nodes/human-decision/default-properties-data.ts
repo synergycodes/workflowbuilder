@@ -19,7 +19,7 @@ export const defaultDecisionRequest = {
       label: 'Reject',
       effect: 'reject',
       port: getHandleId({ handleType: 'source', innerId: 'rejected' }),
-      reasonRequired: false,
+      reasonRequired: true,
     },
   ],
   schema: { type: 'object', properties: {} },

@@ -15,5 +15,7 @@ export const uischema: UISchema = {
       label: 'Title',
       placeholder: 'Node Title...',
     },
+    // The run-time decision form. The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
+    { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
   ],
 };

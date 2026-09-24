@@ -1,3 +1,4 @@
+import { useStore } from '@workflowbuilder/sdk';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -49,6 +50,7 @@ describe('AiStudioControls', () => {
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
     startNode.exists = true;
+    useStore.getState().setToggleReadOnlyMode(false);
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -59,6 +61,7 @@ describe('AiStudioControls', () => {
     act(() => root.unmount());
     container.remove();
     vi.unstubAllGlobals();
+    vi.restoreAllMocks();
   });
 
   const icons = () => [...container.querySelectorAll<HTMLElement>('[data-icon]')].map((icon) => icon.dataset['icon']);
@@ -71,8 +74,9 @@ describe('AiStudioControls', () => {
   const clickStop = () => clickIcon('Stop');
   const clickReset = () => clickIcon('ArrowCounterClockwise');
 
-  const labelOf = (name: string) =>
-    container.querySelector(`[data-icon="${name}"]`)?.closest('button')?.getAttribute('aria-label');
+  const buttonOf = (name: string) => container.querySelector(`[data-icon="${name}"]`)?.closest('button');
+
+  const labelOf = (name: string) => buttonOf(name)?.getAttribute('aria-label');
 
   const isVisible = () => container.firstElementChild?.classList.contains(styles['container--visible']!);
 
@@ -81,19 +85,49 @@ describe('AiStudioControls', () => {
     act(() => root.render(<AiStudioControls />));
   };
 
-  it('names Play and Stop after their action', () => {
-    expect(labelOf('Play')).toBe('Execute (backend)');
+  // The words on Run and Stop are their names; an aria-label would replace what a person reads.
+  it('names Run and Stop by the words on them', () => {
+    expect(buttonOf('Play')?.textContent).toBe('Run');
+    expect(labelOf('Play')).toBeNull();
 
     setRunStatus('running');
-    expect(labelOf('Stop')).toBe('Cancel execution');
+    expect(buttonOf('Stop')?.textContent).toBe('Stop');
+    expect(labelOf('Stop')).toBeNull();
   });
 
-  it('offers Stop while the run waits for a decision, the same as while it runs', () => {
+  it('offers Stop while the run waits for a decision, the same as while it starts or runs', () => {
+    setRunStatus('pending');
+    expect(icons()).toEqual(['Stop']);
+
     setRunStatus('running');
     expect(icons()).toEqual(['Stop']);
 
     setRunStatus('waiting');
     expect(icons()).toEqual(['Stop']);
+  });
+
+  it('offers Stop as soon as Run is pressed, so a second start cannot follow before the backend answers', async () => {
+    const request = vi.fn(() => new Promise<Response>(() => {}));
+    vi.stubGlobal('fetch', request);
+    setRunStatus('completed');
+    expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
+
+    await clickIcon('Play');
+
+    expect(icons()).toEqual(['Stop']);
+    expect(buttonOf('Stop')?.disabled).toBe(true);
+    await clickStop();
+    expect(request).toHaveBeenCalledTimes(1);
+  });
+
+  it('offers Run again after a start the backend refused', async () => {
+    fetchMock.mockImplementation(async () => jsonResponse(503, { message: 'Unavailable' }));
+    const logged = vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await clickIcon('Play');
+
+    expect(logged).toHaveBeenCalled();
+    expect(icons()).toEqual(['Play']);
   });
 
   it('adds Reset once a cancel is in flight: a cancel the server never resolves would trap the user', () => {
@@ -172,6 +206,17 @@ describe('AiStudioControls', () => {
     setRunStatus('completed');
 
     expect(labelOf('ArrowCounterClockwise')).toBe('Reset');
+  });
+
+  it('keeps the canvas read-only while it shows a run, ended or not, and gives it back on reset', () => {
+    setRunStatus('waiting');
+    expect(useStore.getState().isReadOnlyMode).toBe(true);
+
+    setRunStatus('completed');
+    expect(useStore.getState().isReadOnlyMode).toBe(true);
+
+    act(() => resetExecution());
+    expect(useStore.getState().isReadOnlyMode).toBe(false);
   });
 
   describe('without a start node', () => {
