@@ -165,7 +165,6 @@ describe('createAiAgentExecutor against the endpoint', () => {
     expect(result).toEqual({ output: { refundAmount: 49 } });
   });
 
-  // The flag is set once per worker, so it must not reach nodes that answer in text.
   it('asks for no response format when the node has no output schema', async () => {
     const bodies = stubEndpoint('A short summary.');
 

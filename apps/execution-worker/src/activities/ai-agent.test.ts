@@ -130,7 +130,7 @@ describe('executeAiAgent', () => {
   });
 
   it('treats an explicit null output schema as absent, as a hand-edited snapshot may carry one', async () => {
-    const node = aiAgentNode({ outputSchema: null as unknown as JSONSchema7 });
+    const node = aiAgentNode({ outputSchema: null });
     const model = answeringModel('final answer');
 
     const result = await executeAiAgent(node, context(), { model });
