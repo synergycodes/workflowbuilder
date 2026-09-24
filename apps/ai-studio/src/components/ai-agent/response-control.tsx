@@ -3,20 +3,27 @@ import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/
 import { Select } from '@workflowbuilder/ui';
 import type { SelectBaseProps } from '@workflowbuilder/ui';
 
-import { outputSchemaFor, responseOptionOf, responseOptions } from '../../utils/ai-agent/response-options';
+import {
+  customResponseOption,
+  outputSchemaFor,
+  responseOptionOf,
+  responseOptions,
+} from '../../utils/ai-agent/response-options';
 
 // Edits the node's `outputSchema` as a choice between presets; the schema itself is never typed here.
 export function ResponseControl({ data, handleChange, path, enabled, label }: ControlProps) {
-  // Base UI reports a click on the selected item as a change; writing the same value would still add an undo step.
+  const current = responseOptionOf(data);
+  const items = current === 'custom' ? [...responseOptions, customResponseOption] : responseOptions;
+
+  // Base UI reports a click on the selected item as a change.
   const onChange: SelectBaseProps['onChange'] = (_event, value) => {
-    const outputSchema = outputSchemaFor(value);
-    if (outputSchema === data) return;
-    handleChange(path, outputSchema);
+    if (value === current) return;
+    handleChange(path, outputSchemaFor(value));
   };
 
   return (
     <FormControlWithLabel label={label}>
-      <Select value={responseOptionOf(data)} items={responseOptions} disabled={!enabled} onChange={onChange} />
+      <Select value={current} items={items} disabled={!enabled} onChange={onChange} />
     </FormControlWithLabel>
   );
 }

@@ -21,9 +21,9 @@ describe('responseOptionOf', () => {
     expect(responseOptionOf(structuredClone(refundReviewOutputSchema))).toBe('refund-review');
   });
 
-  it('is plain text for a schema that is not the preset', () => {
-    expect(responseOptionOf({})).toBe('text');
-    expect(responseOptionOf({ type: 'object', properties: { score: { type: 'number' } } })).toBe('text');
+  it('is a custom schema for a schema no preset matches', () => {
+    expect(responseOptionOf({})).toBe('custom');
+    expect(responseOptionOf({ type: 'object', properties: { score: { type: 'number' } } })).toBe('custom');
   });
 });
 

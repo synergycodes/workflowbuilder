@@ -118,13 +118,46 @@ describe('ResponseControl', () => {
     expect(handleChange).not.toHaveBeenCalled();
   });
 
-  describe('with a schema that is not the preset', () => {
+  it('writes nothing when plain text is chosen again on a node with a null schema', () => {
+    render({ data: null });
+
+    choose('Plain text');
+
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  it('writes nothing when the preset is chosen again on a copy of it', () => {
+    render({ data: structuredClone(refundReviewOutputSchema) });
+
+    choose('Structured: refund review');
+
+    expect(handleChange).not.toHaveBeenCalled();
+  });
+
+  it('lists only the presets for a node on a preset', () => {
+    render({ data: refundReviewOutputSchema });
+
+    click(trigger()!);
+
+    const labels = [...document.querySelectorAll('[role="option"]')].map((option) => option.textContent);
+    expect(labels).toEqual(['Plain text', 'Structured: refund review']);
+  });
+
+  describe('with a schema no preset matches', () => {
     const otherSchema = { type: 'object', properties: { score: { type: 'number' } } };
 
-    it('shows plain text', () => {
+    it('shows it as a custom schema, not as plain text', () => {
       render({ data: otherSchema });
 
-      expect(trigger()?.textContent).toContain('Plain text');
+      expect(trigger()?.textContent).toContain('Structured: custom schema');
+    });
+
+    it('cannot choose the custom schema entry', () => {
+      render({ data: otherSchema });
+
+      choose('Structured: custom schema');
+
+      expect(handleChange).not.toHaveBeenCalled();
     });
 
     it('clears the schema when plain text is chosen', () => {

@@ -23,19 +23,23 @@ export const refundReviewOutputSchema = {
 
 type OutputSchema = typeof refundReviewOutputSchema;
 
-type ResponseOption = 'text' | 'refund-review';
+type ResponseOption = 'text' | 'refund-review' | 'custom';
 
 export const responseOptions: SelectItem[] = [
   { value: 'text', label: 'Plain text' },
   { value: 'refund-review', label: 'Structured: refund review' },
 ];
 
+// Never chosen, only shown: a schema no preset matches must not read as Plain text.
+export const customResponseOption: SelectItem = { value: 'custom', label: 'Structured: custom schema', disabled: true };
+
 // String equality, not identity: a preset that went through a JSON round trip (import, paste) still matches.
 const isSameSchema = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b);
 
 // Read off the data on purpose: a stored mode could disagree with the schema that is actually on the node.
 export function responseOptionOf(outputSchema: unknown): ResponseOption {
-  return isSameSchema(outputSchema, refundReviewOutputSchema) ? 'refund-review' : 'text';
+  if (outputSchema == null) return 'text';
+  return isSameSchema(outputSchema, refundReviewOutputSchema) ? 'refund-review' : 'custom';
 }
 
 export function outputSchemaFor(option: unknown): OutputSchema | undefined {
