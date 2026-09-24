@@ -27,11 +27,18 @@ const BUILT_IN_TEMPLATES: NodeTemplateRegistry = {
   [NodeType.DecisionNode]: DecisionNodeTemplate,
 };
 
-type NodePreviewContainerProps = {
+type NodeStateProps = {
+  /** Drag preview: the Node Active state (outline and ring). */
+  selected?: boolean;
+  /** Unavailable palette entry: the Node Disabled state. */
+  disabled?: boolean;
+};
+
+type NodePreviewContainerProps = NodeStateProps & {
   type: string;
 };
 
-export function NodePreviewContainer({ type }: NodePreviewContainerProps) {
+export function NodePreviewContainer({ type, selected, disabled }: NodePreviewContainerProps) {
   const getNodeDefinition = useStore((state) => state.getNodeDefinition);
 
   const nodeDefinition = getNodeDefinition(type);
@@ -39,14 +46,14 @@ export function NodePreviewContainer({ type }: NodePreviewContainerProps) {
     return;
   }
 
-  return <NodePreview nodeDefinition={nodeDefinition} />;
+  return <NodePreview nodeDefinition={nodeDefinition} selected={selected} disabled={disabled} />;
 }
 
-type NodePreviewProps = {
+type NodePreviewProps = NodeStateProps & {
   nodeDefinition: PaletteItem;
 };
 
-function NodePreview({ nodeDefinition }: NodePreviewProps) {
+function NodePreview({ nodeDefinition, selected, disabled }: NodePreviewProps) {
   const { type, icon, label, description, templateType = NodeType.Node } = nodeDefinition;
 
   const translateIfPossible = useTranslateIfPossible();
@@ -58,5 +65,15 @@ function NodePreview({ nodeDefinition }: NodePreviewProps) {
   const templateKey = resolveReactFlowNodeType(type, templateType, custom);
   const TemplateComponent = custom[templateKey] ?? BUILT_IN_TEMPLATES[templateKey] ?? BUILT_IN_TEMPLATES[NodeType.Node];
 
-  return <TemplateComponent icon={icon} label={nodeLabel} description={nodeDescription} showHandles={false} id={''} />;
+  return (
+    <TemplateComponent
+      icon={icon}
+      label={nodeLabel}
+      description={nodeDescription}
+      showHandles={false}
+      selected={selected}
+      disabled={disabled}
+      id={''}
+    />
+  );
 }

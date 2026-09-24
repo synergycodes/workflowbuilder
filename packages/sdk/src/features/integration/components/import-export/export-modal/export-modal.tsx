@@ -32,8 +32,7 @@ export function ExportModal() {
     <div className={styles['container']}>
       <SyntaxHighlighterLazy value={storeData} onChange={noop} isDisabled />
       <div className={styles['actions']}>
-        <Button variant="primary" onClick={handleCopy}>
-          <Icon name="Copy" />
+        <Button variant="primary" prefixIcon={<Icon name="Copy" />} onClick={handleCopy}>
           {t('tooltips.copy')}
         </Button>
       </div>

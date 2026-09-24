@@ -123,7 +123,7 @@ export const pl = {
     cantRemoveOnlyOption: 'Nie możesz usunąć jedynej opcji',
     addOption: 'Dodaj opcję',
     menu: 'Menu',
-    pickTheProject: 'Wybierz projekt',
+    pickTheProject: 'Akcje projektu',
     openPalette: 'Otwórz paletę',
     closePalette: 'Zamknij paletę',
     openPropertiesBar: 'Otwórz panel właściwości',
@@ -160,6 +160,7 @@ export const pl = {
     label: 'Tytuł',
   },
   conditions: {
+    add: 'Dodaj warunek',
     title: 'Edytor Warunków',
     subtitle: 'Zdefiniuj Reguły Warunkowe',
     cancel: 'Anuluj',

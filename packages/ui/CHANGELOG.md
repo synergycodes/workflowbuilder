@@ -1,20 +1,19 @@
 # Changelog
 
-## [2.0.0]
-
-> **Moved from `@synergycodes/overflow-ui`.** This library was previously
-> published as
-> [`@synergycodes/overflow-ui`](https://www.npmjs.com/package/@synergycodes/overflow-ui).
-> It moved into the Workflow Builder monorepo, was rebuilt on
-> [Base UI](https://base-ui.com/), and is released as `2.0.0` under the
-> `@workflowbuilder/ui` name. The library's prior history lives in the old
-> package's
-> [changelog](https://github.com/synergycodes/overflow-ui/blob/main/packages/ui/CHANGELOG.md).
+## [1.0.0]
 
 First release of `@workflowbuilder/ui`: an accessible, themeable React
 component library built on [Base UI](https://base-ui.com/), plus diagram
 building blocks (node and edge parts). It is the styled layer behind the
 Workflow Builder SDK.
+
+All notable changes to `@workflowbuilder/ui` are documented in this file. The
+format is based on [Keep a Changelog](https://keepachangelog.com/). The library
+was previously published as
+[`@synergycodes/overflow-ui`](https://www.npmjs.com/package/@synergycodes/overflow-ui);
+it moved into the Workflow Builder monorepo and was rebuilt on Base UI. Its
+prior history lives in the old package's
+[changelog](https://github.com/synergycodes/overflow-ui/blob/main/packages/ui/CHANGELOG.md).
 
 ### Highlights
 
@@ -58,4 +57,4 @@ Floating UI stack is gone), so several public APIs changed:
 - **shape** prop (Button / SegmentPicker): the type is `'default' | 'circle'`
   (pass `'default'`, not `''`).
 
-[2.0.0]: https://www.npmjs.com/package/@workflowbuilder/ui/v/2.0.0
+[1.0.0]: https://www.npmjs.com/package/@workflowbuilder/ui/v/1.0.0

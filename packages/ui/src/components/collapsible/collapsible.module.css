@@ -1,5 +1,5 @@
 :root {
-  --ax-public-collapsible-transition-duration: 0.2s;
+  --wb-public-collapsible-transition-duration: 0.2s;
 }
 
 @layer ui.component {
@@ -7,7 +7,7 @@
     z-index: 10;
 
     svg {
-      transition: transform var(--ax-public-collapsible-transition-duration) ease;
+      transition: transform var(--wb-public-collapsible-transition-duration) ease;
     }
 
     &.expanded {
@@ -21,7 +21,7 @@
     display: grid;
     grid-template-rows: 0fr;
     overflow: hidden;
-    transition: grid-template-rows var(--ax-public-collapsible-transition-duration) ease;
+    transition: grid-template-rows var(--wb-public-collapsible-transition-duration) ease;
 
     &.expanded {
       overflow: unset;

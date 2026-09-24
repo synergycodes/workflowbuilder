@@ -9,10 +9,10 @@
   }
 
   .title {
-    color: var(--ax-public-snackbar-title-color);
+    color: var(--wb-public-snackbar-title-color);
   }
 
   .subtitle {
-    color: var(--ax-public-snackbar-subtitle-color);
+    color: var(--wb-public-snackbar-subtitle-color);
   }
 }

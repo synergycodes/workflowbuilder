@@ -7,11 +7,8 @@ import CssVariablesTable from '../../../../components/api/css-variables-table.as
 import PropsTable from '../../../../components/api/props-table.astro';
 import { ButtonExample } from '../../../../components/ui-examples/button';
 
-`Button` is a flexible, type-safe component that automatically selects the
-correct type (label, icon, or icon + label) based on the structure of its
-`children`. A single string renders a label button, a single React element
-renders an icon button, and a string combined with icons renders an icon-label
-button.
+`Button` renders its label from `children` and accepts optional `prefixIcon` and
+`suffixIcon` props. Use the `square` or `round` shape for icon-only buttons.
 
 <ButtonExample client:visible />
 

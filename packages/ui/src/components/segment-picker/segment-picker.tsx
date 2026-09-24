@@ -1,27 +1,44 @@
-import { Shape } from '@ui/components/button/types';
-import { Size } from '@ui/shared/types/size';
+import type { NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
+import type { Shape } from '@ui/components/button/types';
+import type { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
-import { ForwardRefExoticComponent, MouseEvent, ReactElement, forwardRef, useState } from 'react';
+import {
+  type ForwardRefExoticComponent,
+  type MouseEvent,
+  type ReactElement,
+  type RefAttributes,
+  forwardRef,
+  useState,
+} from 'react';
 
 import borderRadiusStyles from './border-radius-size.module.css';
 import styles from './segment-picker.module.css';
 
-import { Item, SegmentPickerItemProps } from './item/segment-picker-item';
+import { Item, type SegmentPickerItemProps } from './item/segment-picker-item';
 import { SegmentPickerContext } from './utils/context';
 import { getValidShape } from './utils/get-valid-shape';
 
+const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
+  'extra-large': 'xl',
+  large: 'l',
+  medium: 'm',
+  small: 's',
+  'extra-small': 'xs',
+  'xx-small': 'xxs',
+  'xxx-small': 'xxxs',
+};
+
+const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<Shape, Exclude<NavButtonVariant, 'plain'>> = {
+  default: 'square',
+  circle: 'round',
+};
+
 export type SegmentPickerPropsBase = {
   children: ReactElement<SegmentPickerItemProps, typeof Item>[];
-  /**
-   * Size variant of the SegmentPicker and its items.
-   * @default 'medium'
-   */
+  /** @default 'medium' */
   size?: Size;
   /**
-   * Controls the shape of the SegmentPicker and its items.
-   * (default) - Items stretch to fill the container equally.
-   * 'circle' - Items fit tightly around their content to maintain a circular shape.
-   * Only supported when items contain icons only.
+   * Circle is supported only when every item contains an icon without a label.
    * @default 'default'
    */
   shape?: Shape;
@@ -30,22 +47,18 @@ export type SegmentPickerPropsBase = {
 };
 
 export type ControlledSegmentPickerProps = {
-  /** The currently selected value (controlled mode). */
   value: string;
-  /** Must not be used in controlled mode. */
   defaultValue?: never;
 } & SegmentPickerPropsBase;
 
 export type UncontrolledSegmentPickerProps = {
-  /** The initial selected value (uncontrolled mode). */
   defaultValue: string;
-  /** Must not be used in uncontrolled mode. */
   value?: never;
 } & SegmentPickerPropsBase;
 
 export type SegmentPickerProps = ControlledSegmentPickerProps | UncontrolledSegmentPickerProps;
 
-type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & React.RefAttributes<HTMLDivElement>> & {
+type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & RefAttributes<HTMLDivElement>> & {
   Item: typeof Item;
 };
 
@@ -54,10 +67,11 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
     const validShape = getValidShape(shape, children);
     const isControlled = value !== undefined;
     const [internalValue, setInternalValue] = useState<string | undefined>(defaultValue);
-
     const selectedValue = isControlled ? value : internalValue;
 
     const handleSelect = (event: MouseEvent<HTMLButtonElement>, newValue: string) => {
+      if (newValue === selectedValue) return;
+
       if (!isControlled) {
         setInternalValue(newValue);
       }
@@ -69,8 +83,9 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
         value={{
           selectedValue,
           onSelect: handleSelect,
-          size,
+          size: NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE[size],
           shape: validShape,
+          navVariant: NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE[validShape],
         }}
       >
         <div ref={ref} className={clsx(styles['container'], styles[validShape], borderRadiusStyles[size], className)}>

@@ -6,6 +6,8 @@
 
 > **Status: archival.** This log describes the factory-based public API (`createWorkflowBuilder({...})`) that was the SDK entry point as of 22.04.2026. Superseded by `refactor/wb-root-context` — `createWorkflowBuilder`, `Editor`, `WorkflowBuilderConfig`, `WorkflowBuilderInstance(Props)`, and `defineNodeTemplate` are all gone; the entry point is now `<WorkflowBuilder.Root>`. References below describe the world as of the decision date and are intentionally not rewritten — see current SDK exports in `packages/sdk/src/index.ts` for the post-refactor surface.
 
+> **CSS namespace note:** `--wb-background-color` references below preserve the historical name. The supported control is now `--wb-public-background-color`.
+
 ## Context
 
 Phase 1 of the SDK work shipped `@workflowbuilder/sdk` as a thin facade over `apps/frontend`: the SDK's `src/index.ts` barrel just re-exported `Editor` and `createWorkflowBuilder` from the frontend via `@workflow-builder/frontend/app/*` tsconfig paths and Vite aliases. That worked as a distribution shell but left a mess underneath — "frontend" was simultaneously an SPA and the canonical source of the editor component, and the SDK looked like it was what it wasn't.

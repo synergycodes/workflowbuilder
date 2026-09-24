@@ -81,7 +81,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | Workspace                      | Authoritative docs                                                                                                      |
 | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
 | `packages/sdk`                 | `packages/sdk/README.md`                                                                                                |
-| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`)                                                                 |
+| `packages/ui`                  | `packages/ui/README.md` (+ `packages/ui/css-layers.md`, `packages/ui/built-css-pitfalls.md`)                            |
 | `packages/tokens`              | `packages/tokens/README.md`                                                                                             |
 | `packages/ai-config`           | `packages/ai-config/README.md`                                                                                          |
 | `packages/execution-core`      | `packages/execution-core/README.md`                                                                                     |

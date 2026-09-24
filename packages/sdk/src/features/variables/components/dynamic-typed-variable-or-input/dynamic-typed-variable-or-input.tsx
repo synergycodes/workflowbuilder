@@ -4,8 +4,6 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-import styles from './dynamic-typed-variable-or-input.module.css';
-
 import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
 import { getIsSingleVariable } from '../../actions/get-is-single-variable';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
@@ -60,9 +58,14 @@ export function DynamicTypedVariableOrInput({
         suggestionGroups={suggestionGroupsForType}
         hasError={isError}
         endAdornment={
-          <NavButton className={styles['button-toggle']} tooltip={t('variables.typeValue')} onClick={handleToggleMode}>
-            <Icon name="PencilSimple" />
-          </NavButton>
+          <NavButton
+            aria-label={t('variables.typeValue')}
+            tooltip={t('variables.typeValue')}
+            onClick={handleToggleMode}
+            prefixIcon={<Icon name="PencilSimple" />}
+            size="xs"
+            variant="plain"
+          />
         }
       />
     );
@@ -80,12 +83,13 @@ export function DynamicTypedVariableOrInput({
       endAdornment={
         suggestionGroupsForType.length > 0 ? (
           <NavButton
-            className={styles['button-toggle']}
+            aria-label={t('variables.pickVariable')}
             tooltip={t('variables.pickVariable')}
             onClick={handleToggleMode}
-          >
-            <Icon name="BracketsCurly" />
-          </NavButton>
+            prefixIcon={<Icon name="BracketsCurly" />}
+            size="xs"
+            variant="plain"
+          />
         ) : undefined
       }
     />

@@ -17,9 +17,9 @@
 }
 
 .panel {
-  background: var(--wb-app-bar-background);
-  border-radius: var(--wb-app-bar-border-radius);
-  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  background: var(--wb-sdk-app-bar-background);
+  border-radius: var(--wb-sdk-app-bar-border-radius);
+  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem 1rem;

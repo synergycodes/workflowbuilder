@@ -21,12 +21,12 @@ export function RootShell({ children }: { children?: ReactNode }) {
   useDetectLanguageChange();
 
   return (
-    <>
+    <div className="workflow-builder-root workflow-builder-root-shell">
       {children ?? <DefaultLayout />}
       <SnackbarContainer />
       <AppLoaderContainer />
       <OptionalHooks />
       <OptionalAppChildren />
-    </>
+    </div>
   );
 }

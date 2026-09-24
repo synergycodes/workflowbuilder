@@ -1,55 +1,82 @@
 :root {
-  --ax-public-textarea-color-disabled: var(--ax-txt-quaternary-default);
-  --ax-public-textarea-root-color: var(--ax-txt-secondary-default);
-  --ax-public-textarea-root-border-color: var(--ax-input-stroke-primary-default);
-  --ax-public-textarea-root-border-color-focus: var(--ax-input-stroke-primary-focus);
-  --ax-public-textarea-root-border-size: 0.0625rem;
-  --ax-public-textarea-root-background-color-error: var(--ax-input-bg-primary-error);
-  --ax-public-textarea-root-border-color-error: var(--ax-input-stroke-primary-error);
-  --ax-public-textarea-root-color-error: var(--ax-txt-error-default);
-  --ax-public-textarea-root-color-disabled: var(--ax-txt-quaternary-default);
+  --wb-public-textarea-color: var(--wb-ds-ui-text-default);
+  --wb-public-textarea-color-disabled: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-textarea-placeholder-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-textarea-root-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-textarea-root-background-color-disabled: var(--wb-ds-ui-bg-inset);
+  --wb-public-textarea-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
+  --wb-public-textarea-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
+  --wb-public-textarea-root-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-textarea-root-border-color-hover: var(--wb-ds-ui-stroke-default);
+  --wb-public-textarea-root-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
+  --wb-public-textarea-root-border-color-critical: var(--wb-ds-components-text-field-stroke-critical);
+  --wb-public-textarea-root-border-color-success: var(--wb-ds-components-text-field-stroke-success);
+  --wb-public-textarea-root-border-size: var(--wb-ds-size-12);
+  --wb-public-textarea-root-icon-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-textarea-root-color-disabled: var(--wb-ds-ui-text-ghost-default);
 }
 
 @layer ui.component {
   .text-area-container {
     display: flex;
-    min-width: 100px;
+    min-width: 0;
+    width: 100%;
     align-items: flex-start;
-    gap: 0.5rem;
-    background-color: transparent;
-    color: var(--ax-public-textarea-root-color);
-    border: var(--ax-public-textarea-root-border-size) solid var(--ax-public-textarea-root-border-color);
+    background-color: var(--wb-public-textarea-root-background-color);
+    color: var(--wb-public-textarea-root-icon-color);
+    border: var(--wb-public-textarea-root-border-size) solid var(--wb-public-textarea-root-border-color);
 
-    &:not(:hover) {
-      transition: all var(--ax-public-transition);
+    &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
+      border-color: var(--wb-public-textarea-root-border-color-hover);
     }
 
-    &:has(.text-area:focus-visible) {
-      border-color: var(--ax-public-textarea-root-border-color-focus);
+    &[data-state='critical']:not([data-disabled]) {
+      background-color: var(--wb-public-textarea-root-background-color-critical);
+      border-color: var(--wb-public-textarea-root-border-color-critical);
     }
 
-    &:global(.base--error) {
-      background-color: var(--ax-public-textarea-root-background-color-error);
-      border-color: var(--ax-public-textarea-root-border-color-error);
-      color: var(--ax-public-textarea-root-color-error);
+    &[data-state='success']:not([data-disabled]) {
+      background-color: var(--wb-public-textarea-root-background-color-success);
+      border-color: var(--wb-public-textarea-root-border-color-success);
     }
 
-    &:global(.base--disabled) {
-      color: var(--ax-public-textarea-root-color-disabled);
-      background-color: var(--ax-public-textarea-root-background-color-disabled);
+    &[data-state='read-only']:not([data-disabled]),
+    &[data-disabled] {
+      background-color: var(--wb-public-textarea-root-background-color-disabled);
+      border-color: var(--wb-public-textarea-root-border-color);
+    }
+
+    &[data-disabled] {
+      color: var(--wb-public-textarea-root-color-disabled);
       cursor: not-allowed;
+    }
+
+    &:not([data-disabled]):focus-within {
+      border-color: var(--wb-public-textarea-root-border-color-focus);
     }
   }
 
+  .size-l {
+    min-height: calc(var(--wb-ds-size-800) + var(--wb-ds-size-700));
+  }
+
+  .size-m {
+    min-height: calc(var(--wb-ds-size-1000) + var(--wb-ds-space-250));
+  }
+
+  .size-s {
+    min-height: var(--wb-ds-size-1000);
+  }
+
   .text-area {
+    min-width: 0;
+    flex: 1;
     border: none;
     background: transparent;
     padding: 0;
-    color: unset;
+    color: var(--wb-public-textarea-color);
     width: 100%;
     resize: none;
-    /* Not the `font` shorthand - it would also set the size, overriding the
-       ax-public-* typography class the component is given. */
     font-family: inherit;
 
     &:focus-visible {
@@ -57,7 +84,48 @@
     }
 
     &:disabled {
-      color: var(--ax-public-textarea-color-disabled);
+      color: var(--wb-public-textarea-color-disabled);
+      cursor: not-allowed;
+    }
+
+    &::placeholder {
+      color: var(--wb-public-textarea-placeholder-color);
+      opacity: 1;
+    }
+  }
+
+  .icon,
+  .clear {
+    display: inline-flex;
+    flex: 0 0 auto;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .icon svg,
+  .clear svg {
+    width: var(--wb-ds-size-200);
+    height: var(--wb-ds-size-200);
+  }
+
+  .clear {
+    padding: 0;
+    border: none;
+    background: transparent;
+    color: inherit;
+    cursor: pointer;
+
+    &:hover:not(:disabled) {
+      color: var(--wb-public-textarea-color);
+    }
+
+    &:focus-visible {
+      border-radius: var(--wb-ds-radius-25);
+      outline: var(--wb-ds-size-12) solid var(--wb-ds-ui-focus-ring);
+      outline-offset: var(--wb-ds-size-25);
+    }
+
+    &:disabled {
       cursor: not-allowed;
     }
   }

@@ -12,12 +12,20 @@ export function ButtonsUndoRedo() {
 
   return (
     <>
-      <NavButton onClick={undo} disabled={!canUndo || isReadOnlyMode} tooltip={t('plugins.undoRedo.undo')}>
-        <Icon name="ArrowUUpLeft" />
-      </NavButton>
-      <NavButton onClick={redo} disabled={!canRedo || isReadOnlyMode} tooltip={t('plugins.undoRedo.redo')}>
-        <Icon name="ArrowUUpRight" />
-      </NavButton>
+      <NavButton
+        aria-label={t('plugins.undoRedo.undo')}
+        onClick={undo}
+        disabled={!canUndo || isReadOnlyMode}
+        tooltip={t('plugins.undoRedo.undo')}
+        prefixIcon={<Icon name="ArrowUUpLeft" />}
+      />
+      <NavButton
+        aria-label={t('plugins.undoRedo.redo')}
+        onClick={redo}
+        disabled={!canRedo || isReadOnlyMode}
+        tooltip={t('plugins.undoRedo.redo')}
+        prefixIcon={<Icon name="ArrowUUpRight" />}
+      />
     </>
   );
 }

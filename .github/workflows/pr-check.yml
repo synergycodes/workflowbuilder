@@ -8,9 +8,12 @@ name: PR Check
 # determinism tests guard Temporal replay safety and so must not be able to
 # regress silently. Plus the deploy compose files, which ship to the demo VM on
 # every deploy, and global format consistency. apps/docs has its own path-filtered workflow
-# (pr-check-docs.yml); demo and ai-studio are not checked here — they're
-# internal and have their own broken-state tolerances.
+# (pr-check-docs.yml); demo and ai-studio are not built or type-checked here — they're
+# internal and have their own broken-state tolerances — but their CSS goes
+# through the style lint below like every other workspace's.
 
+# PRs into main and release get checks. Add an integration branch here for
+# the time it is the base of stacked PRs.
 on:
   pull_request:
     branches:
@@ -261,6 +264,9 @@ jobs:
         # build:ui builds @workflowbuilder/ui-tokens first, then ui, then runs
         # the check:built-css guard.
         run: pnpm build:ui
+
+      - name: Style lint (token usage + fallbacks)
+        run: pnpm lint:styles
 
   execution:
     name: Execution pipeline lint + typecheck + test

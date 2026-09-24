@@ -19,6 +19,7 @@ const componentEntries = [
   'avatar',
   'button',
   'checkbox',
+  'chip',
   'collapsible',
   'date-picker',
   'edge',
@@ -56,7 +57,7 @@ function isExternal(id: string): boolean {
 }
 
 function copyTokenStyles() {
-  const files = ['tokens.css', 'numerals-mode-1.css', 'primitives-mode-1.css'];
+  const files = ['tokens.css'];
 
   for (const file of files) {
     if (!existsSync(path.resolve(rootDirectory, `../tokens/dist/${file}`))) {
@@ -135,7 +136,7 @@ export default defineConfig({
     libInjectCss(),
     // A stray *.spec.mts in the ts program stalls this build for 15+ minutes
     // with no output - keep every spec shape excluded.
-    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}'] }),
+    dts({ entryRoot: 'src', exclude: ['**/*.spec.{ts,tsx,mts}', 'vitest.setup.ts'] }),
     copyTokenStyles(),
     combineCssBundle(rootDirectory),
     ...(process.env.BUNDLE_STATS ? bundleStatsPlugins() : []),

@@ -1,11 +1,11 @@
 :root {
-  --wb-sidebar-vertical-padding: 0.75rem;
-  --wb-sidebar-horizontal-padding: 1rem;
-  --wb-sidebar-background: var(--ax-ui-bg-primary-default);
-  --wb-sidebar-text-color: var(--ax-txt-primary-default);
-  --wb-sidebar-border-color: var(--ax-ui-stroke-primary-default);
-  --wb-sidebar-border-radius: 0.75rem;
-  --wb-sidebar-content-gap: 1.25rem;
+  --wb-sdk-sidebar-vertical-padding: 0.75rem;
+  --wb-sdk-sidebar-horizontal-padding: 1rem;
+  --wb-sdk-sidebar-background: var(--wb-ds-ui-bg-base);
+  --wb-sdk-sidebar-text-color: var(--wb-ds-ui-text-default);
+  --wb-sdk-sidebar-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-sdk-sidebar-border-radius: 0.75rem;
+  --wb-sdk-sidebar-content-gap: 1.25rem;
 
-  --wb-sidebar-expanded-width: 20rem;
+  --wb-sdk-sidebar-expanded-width: 20rem;
 }

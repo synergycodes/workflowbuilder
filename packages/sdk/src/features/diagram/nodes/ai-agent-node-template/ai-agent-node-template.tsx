@@ -2,6 +2,7 @@ import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@work
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
@@ -23,6 +24,8 @@ type Props = {
   label: string;
   description: string;
   selected?: boolean;
+  /** Render the Node Disabled variant (palette entries that cannot be added). */
+  disabled?: boolean;
   isConnecting?: boolean;
   showHandles?: boolean;
   chatModel?: ItemOption | undefined;
@@ -39,6 +42,7 @@ export const AiAgentNodeTemplate = memo(
     label,
     description,
     selected = false,
+    disabled = false,
     showHandles = true,
     chatModel,
     memoryModel,
@@ -47,6 +51,7 @@ export const AiAgentNodeTemplate = memo(
     layoutDirection = 'RIGHT',
     onAddTool,
   }: Props) => {
+    const { t } = useTranslation();
     const isCanvasNode = showHandles;
     const handleTargetId = getHandleId({ handleType: 'target' });
     const handleSourceId = getHandleId({ handleType: 'source' });
@@ -59,11 +64,11 @@ export const AiAgentNodeTemplate = memo(
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <Collapsible>
-        <NodePanel.Root selected={selected}>
+      <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
+        <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header className={styles['header']}>
-            <NodeIcon className={styles['icon']} icon={iconElement} />
-            <NodeDescription label={label} description={description} />
+            <NodeIcon className={styles['icon']} icon={iconElement} disabled={disabled} />
+            <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>

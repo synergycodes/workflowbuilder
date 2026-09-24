@@ -50,7 +50,7 @@ export default defineConfig({
         // Route `@workflowbuilder/sdk` through a docs-only shim that re-exports
         // just the symbols demo's schema/uischema files import — without the
         // SDK barrel's CSS side-effect, which would leak a full-viewport reset
-        // (body overflow:hidden, global Poppins) into the docs layout.
+        // (body overflow:hidden) into the docs layout.
         {
           find: /^@workflowbuilder\/sdk$/,
           replacement: path.resolve(import.meta.dirname, 'src/sdk-shim.ts'),
@@ -117,9 +117,9 @@ export default defineConfig({
       ],
       // `@workflowbuilder/ui` styles are safe to load globally: everything is
       // layered (no global reset), classes are hashed or opt-in, and tokens.css
-      // only defines `--ax-*` custom properties keyed on `html[data-theme]` —
-      // which Starlight already toggles, so the live component showcases follow
-      // the docs light/dark theme. index.css is required at document level:
+      // defines `--wb-*` custom properties on `:root` and `html[data-theme]`.
+      // Starlight toggles the latter, so the live component showcases follow the
+      // docs light/dark theme. index.css is required at document level:
       // Modal/Menu/Select/Tooltip/DatePicker portal their popups to body,
       // outside the shadow roots that carry the preview styles.
       customCss: [
@@ -167,6 +167,7 @@ export default defineConfig({
             },
             { label: 'Theming', link: '/get-started/theming/' },
             { label: 'Side effects & limitations', link: '/get-started/side-effects/' },
+            { label: 'Upgrade to 3.0', link: '/get-started/upgrade-to-3/' },
           ],
         },
         { label: 'Guides', autogenerate: { directory: 'guides' } },
@@ -178,6 +179,7 @@ export default defineConfig({
           items: [
             { label: 'Overview', link: '/ui-library/overview/' },
             { label: 'Design tokens', link: '/ui-library/design-tokens/' },
+            { label: 'Typography', link: '/ui-library/typography/' },
             { label: 'UI Components', autogenerate: { directory: 'ui-library/ui-components' } },
             { label: 'Diagram Components', autogenerate: { directory: 'ui-library/diagram-components' } },
           ],

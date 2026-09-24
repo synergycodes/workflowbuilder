@@ -8,8 +8,8 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { TextAreaExample } from '../../../../components/ui-examples/text-area';
 
 A `TextArea` is a multi-line text field for longer, free-form input. It
-auto-resizes to fit its content and supports row limits, an error state, and the
-standard input sizes.
+auto-resizes to fit its content and supports row limits, letter sizes, icon
+slots, a clear affordance, and explicit validation and read-only states.
 
 <TextAreaExample client:visible />
 
@@ -21,7 +21,17 @@ import { useState } from 'react';
 
 function Example() {
   const [value, setValue] = useState('');
-  return <TextArea placeholder="Multi-line input" value={value} onChange={(event) => setValue(event.target.value)} />;
+  return (
+    <TextArea
+      size="m"
+      state={value ? 'success' : 'default'}
+      label="Description"
+      helperText="Explain what this workflow does"
+      placeholder="Multi-line input"
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+    />
+  );
 }
 ```
 

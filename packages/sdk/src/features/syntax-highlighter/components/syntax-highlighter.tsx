@@ -27,8 +27,6 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         mode={mode}
         theme="github_light_default"
         onChange={onChange}
-        fontSize={12}
-        lineHeight={16}
         showPrintMargin={false}
         showGutter={false}
         highlightActiveLine={false}
@@ -36,12 +34,14 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         readOnly={isDisabled}
         width="100%"
         height="auto"
+        fontSize={12}
         style={{
           textIndent: 'none',
           minHeight: '1rem',
           boxSizing: 'border-box',
         }}
         setOptions={{
+          fontFamily: "var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace)",
           useWorker: false,
           enableBasicAutocompletion: false,
           enableLiveAutocompletion: false,

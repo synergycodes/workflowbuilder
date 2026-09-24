@@ -1,11 +1,10 @@
 :root {
-  --ax-public-list-box-background-color: var(--ax-dropdown-bg-primary-default);
-  --ax-public-list-box-border-radius: var(--ax-token-radius-dropdown-wrap-s);
-  --ax-public-list-box-box-shadow: var(--ax-token-shadow-shadow-s-x) var(--ax-token-shadow-shadow-s-y)
-    var(--ax-token-shadow-shadow-s-blur) var(--ax-token-shadow-shadow-s-spread) var(--ax-shadow);
-  --ax-public-list-box-padding: var(--ax-token-spacing-dropdown-wrap-s-v-pad)
-    var(--ax-token-spacing-dropdown-wrap-s-h-pad);
-  --ax-public-list-box-gap: var(--ax-token-spacing-dropdown-wrap-s-gap);
+  --wb-public-list-box-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-list-box-border-radius: var(--wb-ds-radius-100);
+  --wb-public-list-box-box-shadow: var(--wb-ds-shadow-ui-s-x) var(--wb-ds-shadow-ui-s-y) var(--wb-ds-shadow-ui-s-blur)
+    var(--wb-ds-shadow-ui-s-spread) var(--wb-ds-shadow-ui-color);
+  --wb-public-list-box-padding: var(--wb-ds-space-50) var(--wb-ds-space-50);
+  --wb-public-list-box-gap: var(--wb-ds-space-50);
 }
 
 @layer ui.component {
@@ -21,19 +20,19 @@
      attributes (same pattern as Tooltip.Popup and Dialog.Popup). */
   .list-box {
     display: flex;
-    padding: var(--ax-public-list-box-padding);
+    padding: var(--wb-public-list-box-padding);
     flex-direction: column;
     align-items: center;
-    gap: var(--ax-public-list-box-gap);
+    gap: var(--wb-public-list-box-gap);
     max-height: 200px;
     overflow-y: auto;
     overflow-x: hidden;
 
     margin: 0;
 
-    border-radius: var(--ax-public-list-box-border-radius);
-    background: var(--ax-public-list-box-background-color);
-    box-shadow: var(--ax-public-list-box-box-shadow);
+    border-radius: var(--wb-public-list-box-border-radius);
+    background: var(--wb-public-list-box-background-color);
+    box-shadow: var(--wb-public-list-box-box-shadow);
 
     transition:
       opacity 150ms ease-out,
@@ -45,5 +44,15 @@
       opacity: 0;
       transform: scaleY(0.96);
     }
+  }
+
+  /* A Base UI RadioGroup wraps the items in its own div[role="group"], which
+     would otherwise swallow the popup's column gap. */
+  .group {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: stretch;
+    gap: var(--wb-public-list-box-gap);
   }
 }

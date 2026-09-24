@@ -27,17 +27,17 @@ export function useEdgeStyle({ state = 'default', isHovered = false }: UseEdgeSt
   return useMemo(() => {
     const strokeCssVariable =
       state === 'disabled'
-        ? '--ax-public-edge-color-disabled'
+        ? '--wb-public-edge-color-disabled'
         : state === 'selected' || state === 'temporary'
-          ? '--ax-public-edge-color-select'
+          ? '--wb-public-edge-color-select'
           : isHovered
-            ? '--ax-public-edge-color-hover'
-            : '--ax-public-edge-color';
+            ? '--wb-public-edge-color-hover'
+            : '--wb-public-edge-color';
 
     const strokeWidthCssVariable =
-      state === 'selected' ? '--ax-public-edge-stroke-width-select' : '--ax-public-edge-stroke-width';
+      state === 'selected' ? '--wb-public-edge-stroke-width-select' : '--wb-public-edge-stroke-width';
 
-    const transition = isHovered ? 'none' : `stroke var(--ax-public-transition)`;
+    const transition = isHovered ? 'none' : `stroke var(--wb-public-transition)`;
 
     return {
       stroke: `var(${strokeCssVariable})`,

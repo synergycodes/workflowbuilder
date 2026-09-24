@@ -1,22 +1,38 @@
 import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
-import type { EdgeProps } from '@xyflow/react';
+import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
-  nodeHeight?: number;
   hovered: boolean;
 };
+
+/**
+ * Y coordinate a self-loop peaks at: {@link SELF_CONNECTING_EDGE_LABEL_OFFSET}
+ * above the top edge of the source node, whatever the node height and wherever
+ * its ports sit. Falls back to the same offset above `sourceY` for a node React
+ * Flow has not placed yet, so the loop and its label always read one value.
+ * Subscribes to the React Flow store, so the loop follows the node as it moves
+ * or grows.
+ *
+ * @category Hooks
+ */
+export function useSelfLoopApexY(source: string, target: string, sourceY: number) {
+  const top = useReactFlowStore((state) =>
+    source === target ? state.nodeLookup.get(source)?.internals.positionAbsolute.y : undefined,
+  );
+
+  return (top ?? sourceY) - SELF_CONNECTING_EDGE_LABEL_OFFSET;
+}
 
 type Point = {
   x: number;
   y: number;
 };
 
-function createSelfConnectingPath(source: Point, target: Point, nodeHeight: number, radius: number) {
-  const loopHeight = nodeHeight + SELF_CONNECTING_EDGE_LABEL_OFFSET;
+function createSelfConnectingPath(source: Point, target: Point, loopHeight: number, radius: number) {
   const horizontalOffset = 25;
 
   const points = {
@@ -59,15 +75,17 @@ export function SelfConnectingEdge({
   targetY,
   selected,
   hovered,
-  nodeHeight = 0,
+  source,
+  target,
 }: SelfConnectingEdgeProps) {
+  const apexY = useSelfLoopApexY(source, target, sourceY);
   const edgeState: EdgeState = selected ? 'selected' : 'default';
   const style = useEdgeStyle({ state: edgeState, isHovered: hovered });
 
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
     { x: targetX, y: targetY },
-    nodeHeight,
+    sourceY - apexY,
     EDGE_CURVE_RADIUS,
   );
 

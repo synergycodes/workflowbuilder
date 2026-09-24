@@ -72,7 +72,9 @@ function findTypeByName(root, name, warnings) {
     for (const child of node.children ?? []) walk(child);
   })(root);
   if (matches.length > 1 && warnings) {
-    warnings.push(`type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`);
+    warnings.push(
+      `type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`,
+    );
   }
   return matches[0] ?? null;
 }
@@ -213,21 +215,50 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
     // Follow first-party prop types only; both declaration forms count.
     if (target && (target.kind === 2_097_152 || target.kind === 256)) {
       collectProps(target, byId, accumulator, context);
+    } else if (!target && context) {
+      context.warnings.push(
+        `"${context.slug}": props of ${typeNode.name} are missing from the table - export the type so TypeDoc emits it`,
+      );
     }
     return accumulator;
   }
-  // Partial<X> / Omit<X, …> would silently drop every prop of X.
-  if (typeNode.type === 'reference' && typeNode.typeArguments?.length && context) {
-    const firstParty = typeNode.typeArguments.find(
-      (argument) => argument.type === 'reference' && typeof argument.target === 'number' && byId.get(argument.target),
-    );
-    if (firstParty) {
+  if (typeNode.type === 'reference' && typeNode.typeArguments?.length) {
+    const [source, keys] = typeNode.typeArguments;
+    const sourceIsFirstParty =
+      source && source.type === 'reference' && typeof source.target === 'number' && byId.get(source.target);
+    if (typeNode.name === 'Omit' || typeNode.name === 'Pick' || typeNode.name === 'Partial') {
+      const named = collectProps(source, byId, new Map(), context);
+      const listed = new Set(literalNames(keys));
+      if (keys && listed.size === 0 && context) {
+        context.warnings.push(
+          `"${context.slug}": the keys of ${typeNode.name}<...> are not string literals, so the table ${
+            typeNode.name === 'Pick' ? 'keeps nothing' : 'drops nothing'
+          } - inline the keys or extend the generator`,
+        );
+      }
+      for (const [name, property] of named) {
+        const keep = typeNode.name === 'Pick' ? listed.has(name) : !listed.has(name);
+        if (!keep) continue;
+        const optional = typeNode.name === 'Partial' ? { ...property, required: false } : property;
+        if (!accumulator.has(name)) accumulator.set(name, optional);
+      }
+      return accumulator;
+    }
+    if (sourceIsFirstParty && context) {
       context.warnings.push(
-        `"${context.slug}": props of ${firstParty.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
+        `"${context.slug}": props of ${source.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
       );
     }
   }
   return accumulator;
+}
+
+// String literals a utility type was given, e.g. the 'children' in Omit<X, 'children'>.
+function literalNames(typeNode) {
+  if (!typeNode) return [];
+  if (typeNode.type === 'literal' && typeof typeNode.value === 'string') return [typeNode.value];
+  if (typeNode.type === 'union') return typeNode.types.flatMap((member) => literalNames(member));
+  return [];
 }
 
 function addProperty(child, byId, accumulator) {
@@ -270,8 +301,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
     // Required in every variant, else the table documents an impossible call.
-    const requiredEverywhere =
-      occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
+    const requiredEverywhere = occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
     const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
 
     const base = occurrences[0].prop;
@@ -299,7 +329,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
   return merged;
 }
 
-function extractCssVariables(directory, warnings, slug) {
+function extractCssVariables(directory, cssSources, warnings, slug) {
   // No directory - the entry documents an API, not a styled component.
   if (!directory) return [];
 
@@ -316,12 +346,18 @@ function extractCssVariables(directory, warnings, slug) {
 
   const files = globSync('**/*.css', { cwd: abs })
     .filter((file) => !nestedPrefixes.some((prefix) => file.startsWith(prefix)))
-    .sort();
+    .sort()
+    .map((file) => path.resolve(abs, file));
+  for (const source of cssSources ?? []) {
+    const sourcePath = path.resolve(uiSource, source);
+    if (existsSync(sourcePath)) files.push(sourcePath);
+    else warnings.push(`"${slug}": CSS source ${source} does not exist`);
+  }
   const seen = new Set();
   const variables = [];
   for (const file of files) {
-    const css = readFileSync(path.resolve(abs, file), 'utf8');
-    const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
+    const css = readFileSync(file, 'utf8');
+    const re = /(--wb-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
       if (seen.has(m[1])) continue;
@@ -349,7 +385,7 @@ function readTokenValues() {
   if (!existsSync(tokenDistribution)) return values;
   for (const file of globSync('*.css', { cwd: tokenDistribution })) {
     const css = readFileSync(path.resolve(tokenDistribution, file), 'utf8');
-    for (const [, name, value] of css.matchAll(/(--ax-[\w-]+)\s*:\s*([^;]+);/g)) {
+    for (const [, name, value] of css.matchAll(/(--wb-ds-[\w-]+)\s*:\s*([^;]+);/g)) {
       if (!values.has(name)) values.set(name, value.trim());
     }
   }
@@ -374,9 +410,9 @@ async function main() {
     let props = [];
     const context = { warnings, slug: component.slug };
     if (Array.isArray(component.propsType)) {
-      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values()].sort(
-        (a, b) => a.name.localeCompare(b.name),
-      );
+      props = [
+        ...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values(),
+      ].sort((a, b) => a.name.localeCompare(b.name));
     } else if (component.propsType) {
       const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
@@ -392,7 +428,7 @@ async function main() {
       name: component.name,
       props,
       nativeElement: context.nativeElement ?? null,
-      cssVariables: extractCssVariables(component.dir, warnings, component.slug),
+      cssVariables: extractCssVariables(component.dir, component.cssSources, warnings, component.slug),
     };
   }
 

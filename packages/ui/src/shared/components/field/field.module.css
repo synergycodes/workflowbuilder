@@ -1,0 +1,61 @@
+:root {
+  --wb-public-field-gap: var(--wb-ds-space-75);
+  --wb-public-field-row-min-height: var(--wb-ds-size-200);
+  --wb-public-field-font-size: var(--wb-ds-font-size-150);
+  --wb-public-field-font-weight: 400;
+  --wb-public-field-line-height: var(--wb-ds-size-200);
+  --wb-public-field-label-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-field-helper-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-field-critical-color: var(--wb-ds-ui-text-critical-default);
+  --wb-public-field-success-color: var(--wb-ds-ui-text-success-default);
+  --wb-public-field-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-field-required-color-disabled: var(--wb-ds-ui-text-ghost-default);
+}
+
+@layer ui.component {
+  .field {
+    display: flex;
+    min-width: 0;
+    width: 100%;
+    flex-direction: column;
+    gap: var(--wb-public-field-gap);
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  }
+
+  .label,
+  .helper {
+    display: flex;
+    min-height: var(--wb-public-field-row-min-height);
+    font-size: var(--wb-public-field-font-size);
+    font-weight: var(--wb-public-field-font-weight);
+    line-height: var(--wb-public-field-line-height);
+  }
+
+  .label {
+    color: var(--wb-public-field-label-color);
+  }
+
+  .required {
+    color: var(--wb-public-field-critical-color);
+  }
+
+  .helper {
+    color: var(--wb-public-field-helper-color);
+  }
+
+  .field[data-state='critical']:not([data-disabled]) .helper {
+    color: var(--wb-public-field-critical-color);
+  }
+
+  .field[data-state='success']:not([data-disabled]) .helper {
+    color: var(--wb-public-field-success-color);
+  }
+
+  .field[data-disabled] :is(.label, .helper) {
+    color: var(--wb-public-field-color-disabled);
+  }
+
+  .field[data-disabled] .required {
+    color: var(--wb-public-field-required-color-disabled);
+  }
+}

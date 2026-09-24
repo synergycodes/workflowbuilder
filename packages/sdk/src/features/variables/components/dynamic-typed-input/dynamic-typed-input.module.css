@@ -7,7 +7,7 @@
 
 .container--select {
   position: relative;
-  border-radius: var(--ax-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-m);
 
   > div > button {
     min-height: 2.5rem;
@@ -16,7 +16,7 @@
 }
 
 .date-picker {
-  border-radius: var(--ax-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-m);
   min-height: 2.5rem;
   text-align: left;
 }
@@ -28,7 +28,7 @@
 .adornment--select {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad) + 1rem + var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150) + 1rem + var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }
@@ -36,7 +36,7 @@
 .adornment--date {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }

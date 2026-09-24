@@ -1,6 +1,8 @@
 :root {
-  --ax-public-node-title-color: var(--ax-txt-primary-default);
-  --ax-public-node-title-subtitle: var(--ax-txt-secondary-default);
+  --wb-public-node-title-color: var(--wb-ds-ui-text-default);
+  --wb-public-node-title-subtitle: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-node-title-color-disabled: var(--wb-ds-canvas-node-text-disabled);
+  --wb-public-node-subtitle-color-disabled: var(--wb-ds-canvas-node-text-disabled);
 }
 
 @layer ui.component {
@@ -11,17 +13,33 @@
     align-items: flex-start;
     overflow: hidden;
     width: 100%;
+    min-width: 0;
+    contain: inline-size;
 
-    .title {
-      color: var(--ax-public-node-title-color);
+    .title,
+    .subtitle {
       text-overflow: ellipsis;
       overflow: hidden;
       white-space: nowrap;
       width: 100%;
     }
 
+    .title {
+      color: var(--wb-public-node-title-color);
+    }
+
     .subtitle {
-      color: var(--ax-public-node-title-subtitle);
+      color: var(--wb-public-node-title-subtitle);
+    }
+
+    &.disabled {
+      .title {
+        color: var(--wb-public-node-title-color-disabled);
+      }
+
+      .subtitle {
+        color: var(--wb-public-node-subtitle-color-disabled);
+      }
     }
   }
 }

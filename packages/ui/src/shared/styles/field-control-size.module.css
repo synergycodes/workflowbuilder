@@ -1,0 +1,42 @@
+:root {
+  --wb-public-input-padding-l: var(--wb-ds-space-137) var(--wb-ds-space-150);
+  --wb-public-input-padding-m: var(--wb-ds-space-125) var(--wb-ds-space-150);
+  --wb-public-input-padding-s: var(--wb-ds-space-100) var(--wb-ds-space-150);
+  --wb-public-input-padding-xs: var(--wb-ds-space-75) var(--wb-ds-space-150);
+
+  --wb-public-input-border-radius-l: var(--wb-ds-radius-100);
+  --wb-public-input-border-radius-m: var(--wb-ds-radius-75);
+  --wb-public-input-border-radius-s: var(--wb-ds-radius-75);
+  --wb-public-input-border-radius-xs: var(--wb-ds-radius-75);
+
+  --wb-public-input-gap-l: var(--wb-ds-space-100);
+  --wb-public-input-gap-m: var(--wb-ds-space-100);
+  --wb-public-input-gap-s: var(--wb-ds-space-100);
+  --wb-public-input-gap-xs: var(--wb-ds-space-100);
+}
+
+@layer ui.component {
+  .l {
+    padding: var(--wb-public-input-padding-l);
+    border-radius: var(--wb-public-input-border-radius-l);
+    gap: var(--wb-public-input-gap-l);
+  }
+
+  .m {
+    padding: var(--wb-public-input-padding-m);
+    border-radius: var(--wb-public-input-border-radius-m);
+    gap: var(--wb-public-input-gap-m);
+  }
+
+  .s {
+    padding: var(--wb-public-input-padding-s);
+    border-radius: var(--wb-public-input-border-radius-s);
+    gap: var(--wb-public-input-gap-s);
+  }
+
+  .xs {
+    padding: var(--wb-public-input-padding-xs);
+    border-radius: var(--wb-public-input-border-radius-xs);
+    gap: var(--wb-public-input-gap-xs);
+  }
+}

@@ -82,21 +82,21 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 ## Customization
 
-Each `@workflowbuilder/ui` component uses CSS variables that are derived from primitive values.
+`@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
-You can override them:
+Override a generated design token:
 
 ```css
 :root {
-  --ax-ui-bg-primary-default: #40ba12;
+  --wb-ds-ui-bg-base: #40ba12;
 }
 ```
 
-or a derived value used by the selected component:
+Or scope a public override to one component:
 
 ```css
 :root {
-  --ax-public-date-picker-dropdown-background: #40ba12;
+  --wb-public-date-picker-dropdown-background: #40ba12;
 }
 ```
 

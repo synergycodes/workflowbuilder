@@ -29,7 +29,7 @@ export function TemplateSelector() {
   return (
     <div className={styles['container']}>
       <section className={styles['header']}>
-        <span className={clsx('ax-public-p10', styles['sub-title'])}>
+        <span className={clsx('wb-text-body-s', styles['sub-title'])}>
           <Trans i18nKey="templateSelector.description" components={{ br: <br /> }} />
         </span>
       </section>

@@ -1,10 +1,20 @@
 @layer ui.component {
+  .l {
+    composes: wb-text-label-l from global;
+  }
+
+  .m,
+  .s,
+  .xs {
+    composes: wb-text-label-m from global;
+  }
+
   .large {
-    composes: ax-public-p9 from global;
+    composes: wb-text-label-l from global;
   }
 
   .medium,
   .small {
-    composes: ax-public-p10 from global;
+    composes: wb-text-label-m from global;
   }
 }

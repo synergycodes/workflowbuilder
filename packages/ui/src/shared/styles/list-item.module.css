@@ -1,62 +1,93 @@
 :root {
-  --ax-public-list-item-background-color: var(--ax-dropdown-bg-secondary-default);
-  --ax-public-list-item-background-color-selected: var(--ax-dropdown-bg-secondary-active);
-  --ax-public-list-item-color-selected: var(--ax-txt-primary-white);
-  --ax-public-list-item-color: var(--ax-txt-primary-default);
+  --wb-public-list-item-background-color: var(--wb-ds-ui-bg-inset);
+  --wb-public-list-item-background-color-selected: var(--wb-ds-ui-bg-selected);
+  --wb-public-list-item-background-color-selected-hover: var(--wb-ds-ui-bg-selected-hover);
+  --wb-public-list-item-color-selected: var(--wb-ds-ui-text-default);
+  --wb-public-list-item-color: var(--wb-ds-ui-text-default);
 
-  --ax-public-list-item-background-color-focus: var(--ax-dropdown-bg-secondary-default);
-  --ax-public-list-item-outline-color-focus: var(--ax-ui-stroke-primary-focus);
-  --ax-public-list-item-outline-size: 0.0625rem;
+  --wb-public-list-item-icon-color: var(--wb-ds-ui-icon-subtle-default);
+  --wb-public-list-item-indicator-color: var(--wb-ds-ui-icon-action-default);
 
-  --ax-public-list-item-color-destructive: var(--ax-txt-error-default);
-  --ax-public-list-item-background-color-destructive: var(--ax-dropdown-bg-destructive-default);
-  --ax-public-list-item-background-color-hover-destructive: var(--ax-dropdown-bg-destructive-hover);
-  --ax-public-list-border-radius: var(--ax-token-radius-dropdown-item-s);
+  --wb-public-list-item-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-list-item-icon-color-disabled: var(--wb-ds-ui-icon-disabled);
+
+  --wb-public-list-item-background-color-focus: var(--wb-ds-ui-bg-inset);
+  --wb-public-list-item-outline-color-focus: var(--wb-ds-shadow-ui-focus);
+  --wb-public-list-item-outline-size: var(--wb-ds-shadow-ui-focus-element-spread);
+
+  --wb-public-list-item-color-critical: var(--wb-ds-ui-text-critical-default);
+  --wb-public-list-item-color-critical-disabled: var(--wb-ds-ui-text-critical-disabled);
+  --wb-public-list-item-icon-color-critical: var(--wb-ds-ui-icon-critical-default);
+  --wb-public-list-border-radius: var(--wb-ds-radius-75);
 }
 
 @layer ui.component {
   .list-item {
     display: flex;
     align-items: center;
-    border-radius: var(--ax-public-list-border-radius);
+    border-radius: var(--wb-public-list-border-radius);
     width: max-content;
     min-width: 100%;
     cursor: pointer;
-    color: var(--ax-public-list-item-color);
+    color: var(--wb-public-list-item-color);
 
     /* State selectors below weigh the same, so order decides - a `:not()` here
        would silently outrank the states under it. */
     &:hover {
-      background-color: var(--ax-public-list-item-background-color);
+      background-color: var(--wb-public-list-item-background-color);
     }
 
     &:focus-visible,
     &[data-highlighted] {
-      outline: var(--ax-public-list-item-outline-size) solid var(--ax-public-list-item-outline-color-focus);
-      background-color: var(--ax-public-list-item-background-color-focus);
+      outline: none;
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-public-list-item-outline-size)
+        var(--wb-public-list-item-outline-color-focus);
+      background-color: var(--wb-public-list-item-background-color-focus);
+
+      @media (forced-colors: active) {
+        outline: var(--wb-public-list-item-outline-size) solid Highlight;
+        box-shadow: none;
+      }
     }
 
     /* After the highlight rule: a selected item keeps its selected colors
-       while highlighted — the outline alone marks the keyboard cursor. */
-    &[data-selected] {
-      background-color: var(--ax-public-list-item-background-color-selected);
-      color: var(--ax-public-list-item-color-selected);
+       while highlighted - the ring alone marks the keyboard cursor.
+       Select items expose data-selected, menu radio items data-checked. */
+    &[data-selected],
+    &[data-checked] {
+      background-color: var(--wb-public-list-item-background-color-selected);
+      color: var(--wb-public-list-item-color-selected);
+
+      &:hover,
+      &[data-highlighted] {
+        background-color: var(--wb-public-list-item-background-color-selected-hover);
+      }
     }
 
     &[data-disabled] {
-      color: var(--ax-public-input-color-disabled);
+      color: var(--wb-public-list-item-color-disabled);
       background-color: transparent;
       cursor: auto;
+
+      svg {
+        color: var(--wb-public-list-item-icon-color-disabled);
+      }
     }
 
-    &.destructive {
-      color: var(--ax-public-list-item-color-destructive);
-      background-color: var(--ax-public-list-item-background-color-destructive);
+    &.critical {
+      color: var(--wb-public-list-item-color-critical);
 
-      &:hover,
-      &:focus-visible,
-      &[data-highlighted] {
-        background-color: var(--ax-public-list-item-background-color-hover-destructive);
+      svg {
+        color: var(--wb-public-list-item-icon-color-critical);
+      }
+
+      &[data-disabled] {
+        color: var(--wb-public-list-item-color-critical-disabled);
+
+        svg {
+          color: var(--wb-public-list-item-icon-color-disabled);
+        }
       }
     }
 
@@ -64,6 +95,16 @@
       width: 1rem;
       height: 1rem;
       min-width: 1rem;
+      color: var(--wb-public-list-item-icon-color);
+    }
+
+    .indicator {
+      display: flex;
+      margin-left: auto;
+
+      svg {
+        color: var(--wb-public-list-item-indicator-color);
+      }
     }
   }
 }

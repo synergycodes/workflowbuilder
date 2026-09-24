@@ -24,8 +24,8 @@ export function Tile({ icon, title, subTitle, outlined, onClick }: TileProps) {
     >
       <Icon name={icon} size="large" />
       <div className={styles['description']}>
-        <span className={clsx('ax-public-p10', styles['title'])}>{title}</span>
-        {subTitle && <span className={clsx('ax-public-p10', styles['sub-title'])}>{subTitle}</span>}
+        <span className={clsx('wb-text-body-s', styles['title'])}>{title}</span>
+        {subTitle && <span className={clsx('wb-text-body-s', styles['sub-title'])}>{subTitle}</span>}
       </div>
     </div>
   );

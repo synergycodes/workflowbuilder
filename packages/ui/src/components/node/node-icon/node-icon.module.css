@@ -1,23 +1,30 @@
 :root {
-  --ax-public-node-icon-border-size: 0.0625rem;
-  --ax-public-node-icon-border-radius: var(--ax-token-radius-node-head-icon);
-  --ax-public-node-icon-padding: var(--ax-token-spacing-node-head-icon);
+  --wb-public-node-icon-border-size: 0.0625rem;
+  --wb-public-node-icon-border-radius: var(--wb-ds-canvas-node-head-icon-radius);
+  --wb-public-node-icon-padding: var(--wb-ds-space-125);
 
-  --ax-public-node-icon-color: var(--ax-node-icon-primary-default);
-  --ax-public-node-icon-container-border-color: var(--ax-node-stroke-primary-default);
-  --ax-public-node-icon-container-background-color: var(--ax-node-bg-secondary-default);
+  --wb-public-node-icon-color: var(--wb-ds-canvas-node-icon-primary);
+  --wb-public-node-icon-container-border-color: var(--wb-ds-canvas-node-stroke-default);
+  --wb-public-node-icon-container-background-color: var(--wb-ds-canvas-node-bg-secondary-default);
+  --wb-public-node-icon-color-disabled: var(--wb-ds-ui-icon-disabled);
+  --wb-public-node-icon-container-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
 }
 
 @layer ui.component {
   .container {
     display: flex;
-    padding: var(--ax-public-node-icon-padding);
+    padding: var(--wb-public-node-icon-padding);
     justify-content: center;
     align-items: center;
-    color: var(--ax-public-node-icon-color);
+    color: var(--wb-public-node-icon-color);
 
-    border-radius: var(--ax-public-node-icon-border-radius);
-    border: var(--ax-public-node-icon-border-size) solid var(--ax-public-node-icon-container-border-color);
-    background: var(--ax-public-node-icon-container-background-color);
+    border-radius: var(--wb-public-node-icon-border-radius);
+    border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
+    background: var(--wb-public-node-icon-container-background-color);
+
+    &.disabled {
+      color: var(--wb-public-node-icon-color-disabled);
+      background: var(--wb-public-node-icon-container-background-color-disabled);
+    }
   }
 }

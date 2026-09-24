@@ -1,9 +1,0 @@
-:root {
-  --wb-edge-color: var(--ax-colors-gray-500); /* missing token */
-  --wb-edge-color-temporary: var(--ax-colors-gray-500-50); /* missing token */
-  --wb-edge-color-hover: var(--ax-colors-gray-600); /* missing token */
-  --wb-edge-color-select: var(--ax-colors-acc1-500); /* missing token */
-
-  --wb-edge-label-color: var(--ax-colors-gray-500); /* missing token */
-  --wb-edge-label-background: var(--ax-colors-gray-200); /* missing token */
-}

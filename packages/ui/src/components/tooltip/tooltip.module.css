@@ -1,19 +1,19 @@
 :root {
-  --ax-public-tooltip-default-background: var(--ax-tooltip-bg-default);
-  --ax-public-tooltip-blue-background: var(--ax-tooltip-bg-blue);
-  --ax-public-tooltip-padding: var(--ax-token-spacing-tooltip-v-pad) var(--ax-token-spacing-tooltip-h-pad);
-  --ax-public-tooltip-radius-size: var(--ax-token-radius-tooltip);
-  --ax-public-tooltip-text-color: var(--ax-txt-tooltip-bw);
-  --ax-public-tooltip-blue-text-color: var(--ax-txt-tooltip-blue);
+  --wb-public-tooltip-default-background: var(--wb-ds-components-tooltip-bg-default);
+  --wb-public-tooltip-blue-background: var(--wb-ds-components-tooltip-bg-info);
+  --wb-public-tooltip-padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
+  --wb-public-tooltip-radius-size: var(--wb-ds-radius-100);
+  --wb-public-tooltip-text-color: var(--wb-ds-ui-text-tooltip-default);
+  --wb-public-tooltip-blue-text-color: var(--wb-ds-ui-text-tooltip-accent-default);
 }
 
 @layer ui.component {
   .container {
-    --tooltip-background: var(--ax-public-tooltip-default-background);
-    --tooltip-text-color: var(--ax-public-tooltip-text-color);
+    --tooltip-background: var(--wb-public-tooltip-default-background);
+    --tooltip-text-color: var(--wb-public-tooltip-text-color);
 
-    padding: var(--ax-public-tooltip-padding);
-    border-radius: var(--ax-public-tooltip-radius-size);
+    padding: var(--wb-public-tooltip-padding);
+    border-radius: var(--wb-public-tooltip-radius-size);
     width: max-content;
     max-width: 33vw;
     z-index: 100;
@@ -22,13 +22,13 @@
   }
 
   .container[data-tooltip-type='blue'] {
-    --tooltip-background: var(--ax-public-tooltip-blue-background);
-    --tooltip-text-color: var(--ax-public-tooltip-blue-text-color);
+    --tooltip-background: var(--wb-public-tooltip-blue-background);
+    --tooltip-text-color: var(--wb-public-tooltip-blue-text-color);
   }
 
   .arrow {
-    width: 10px;
-    height: 4px;
+    width: 0.625rem;
+    height: var(--wb-ds-size-50);
     background-color: var(--tooltip-background);
     clip-path: polygon(0 0, 100% 0, 50% 100%);
   }

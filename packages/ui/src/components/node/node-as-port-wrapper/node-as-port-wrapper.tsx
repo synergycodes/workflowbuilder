@@ -26,9 +26,9 @@ export const NodeAsPortWrapper = memo(function NodeAsPortWrapper({
 
   const containerStyles = canApplyStyles
     ? {
-        '--ax-node-as-port-width': `${ref.current?.offsetWidth}px`,
-        '--ax-node-as-port-height': `${ref.current?.offsetHeight}px`,
-        '--ax-node-as-port-position':
+        '--node-as-port-width': `${ref.current?.offsetWidth}px`,
+        '--node-as-port-height': `${ref.current?.offsetHeight}px`,
+        '--node-as-port-position':
           targetPortPosition === 'left'
             ? `translate(calc(-10% + ${offset.x}px), calc(-50% + ${offset.y}px))`
             : `translate(calc(-50% + ${offset.x}px), calc(-10% + ${offset.y}px))`,
