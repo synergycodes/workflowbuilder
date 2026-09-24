@@ -24,7 +24,7 @@ type Props = {
   validate?: boolean;
   /** Receives the top-level fields the schema finds fault with, once JsonForms reports the change. */
   onInvalidFieldsChange?: (invalidFields: ReadonlySet<string>) => void;
-  /** Called when the schema cannot be compiled: the form shows a notice in place of its fields. */
+  /** Called when the validator or a control throws: the form shows a notice in place of its fields. */
   onFail?: () => void;
   /** Receives the data the form holds as it unmounts, including a change the debounced report has not sent yet. */
   onUnmount?: (data: Record<string, unknown>) => void;
@@ -72,10 +72,7 @@ export function EditorForm({
 
   return (
     <div className={styles['fields']}>
-      <FormBoundary
-        fallback={<p role="alert">This form cannot be shown: its schema could not be compiled.</p>}
-        onError={onFail}
-      >
+      <FormBoundary fallback={<p role="alert">These fields cannot be shown here.</p>} onError={onFail}>
         <JsonForms
           schema={fixed.schema}
           uischema={fixed.layout}

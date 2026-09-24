@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { workflowBuilderValidator } from '../../../../../packages/sdk/src/utils/validation/workflow-builder-validator';
 import { decodePointerSegment, encodePointerSegment, invalidFieldsOf, isFormSchema, schemaFields } from './form-schema';
 
 describe('isFormSchema', () => {
@@ -41,6 +42,18 @@ describe('encodePointerSegment and decodePointerSegment', () => {
 describe('invalidFieldsOf', () => {
   it('names the field an error points into, decoded', () => {
     expect(invalidFieldsOf([{ instancePath: '/a~1b/0', params: {} }])).toEqual(new Set(['a/b']));
+  });
+
+  it("names the field of each key the editor's validator reports percent-encoded", () => {
+    const keys = ['reply draft', 'kwota_zł', '50%', 'a/b', 'a~b'];
+    const field = { type: 'string', maxLength: 3 };
+    const validate = workflowBuilderValidator.compile({
+      type: 'object',
+      properties: Object.fromEntries(keys.map((key) => [key, field])),
+    });
+    validate(Object.fromEntries(keys.map((key) => [key, 'too long'])));
+
+    expect(invalidFieldsOf(validate.errors ?? undefined)).toEqual(new Set(keys));
   });
 
   it('names a missing required field from the error its parent object carries', () => {

@@ -1,4 +1,4 @@
-import { type ComponentProps, StrictMode, act } from 'react';
+import { type ComponentProps, Fragment, StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -108,28 +108,33 @@ async function click(element: Element) {
   });
 }
 
-describe('the decision form in the properties panel', () => {
+// Development mounts every effect twice, so each form writes a draft as it mounts; a production build does not.
+// Each mode hides regressions the other one catches.
+describe.each([
+  ['in development', StrictMode],
+  ['in a production build', Fragment],
+])('the decision form in the properties panel, %s', (_mode, Mode) => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
   let nodeChanges: unknown[];
-  let renderedRequests: unknown[];
+  let renderedData: unknown[];
 
   const render = (decisionRequest: unknown = reviewRequest, readonly = false) => {
     // JsonForms reports a change after its debounce even from an unmounted form, so each test keeps its own list.
     const changes = nodeChanges;
-    renderedRequests.push(decisionRequest);
+    const data = { label: 'Review Refund', description: '', decisionRequest };
+    renderedData.push(data);
     act(() =>
       root.render(
-        // The app runs in StrictMode, which mounts every effect twice; the drafts and the unmount report depend on it.
-        <StrictMode>
+        <Mode>
           <JSONForm
             schema={nodeSchema}
             uischema={nodeUischema as ComponentProps<typeof JSONForm>['uischema']}
-            data={{ label: 'Review Refund', description: '', decisionRequest }}
+            data={data}
             readonly={readonly}
             onChange={({ data }) => changes.push(data)}
           />
-        </StrictMode>,
+        </Mode>,
       ),
     );
   };
@@ -138,7 +143,7 @@ describe('the decision form in the properties panel', () => {
     resetExecution();
     selection.nodeId = 'human-1';
     nodeChanges = [];
-    renderedRequests = [];
+    renderedData = [];
     submit.mockReset();
     submit.mockResolvedValue({ ok: true });
     container = document.createElement('div');
@@ -152,9 +157,9 @@ describe('the decision form in the properties panel', () => {
     await settle();
     act(() => root.unmount());
     container.remove();
-    // The form never writes the node: whatever node data the panel reports is a request the test rendered.
+    // The form never writes the node: whatever node data the panel reports is data the test rendered.
     for (const data of nodeChanges) {
-      expect(renderedRequests).toContainEqual((data as { decisionRequest: unknown }).decisionRequest);
+      expect(renderedData).toContainEqual(data);
     }
   });
 
@@ -215,7 +220,7 @@ describe('the decision form in the properties panel', () => {
       expect(sentEdits()).toEqual({ refundAmount: 120 });
     });
 
-    it('keeps the page and the reject when the request schema cannot be compiled', async () => {
+    it('keeps the page and the reject when the validator cannot check the request', async () => {
       // Valid in JavaScript, but not under the `u` flag the SDK validator compiles patterns with.
       const schema = {
         type: 'object',
@@ -225,7 +230,7 @@ describe('the decision form in the properties panel', () => {
       parkHumanOne({ note: 'ORD-1' });
 
       expect(fieldOf('Title')).toBeDefined();
-      expect(container.querySelector('[role="alert"]')?.textContent).toContain('cannot be shown');
+      expect(container.querySelector('[role="alert"]')?.textContent).toContain('cannot be shown here');
       expect(button('Approve').disabled).toBe(true);
 
       await click(button('Reject'));

@@ -22,7 +22,8 @@ export function attemptOf(events: ExecutionEvent[], nodeId: string): number {
   return events.filter((event) => event.type === 'node_waiting' && event.nodeId === nodeId).length;
 }
 
-// The rule the backend applies at execute, on the same graph: the canvas is read-only while it shows a run.
+// The backend's rule at execute: the declared source, else the one predecessor other than the node itself. It reads
+// the canvas, which useRunLocksCanvas keeps as the run's graph.
 export function proposalSourceIdOf(
   declared: string | undefined,
   edges: EdgeLike[],

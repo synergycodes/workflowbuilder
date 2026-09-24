@@ -28,7 +28,7 @@ export function editsOf(
   return edits;
 }
 
-// Only a fault the person can correct holds the decision back; the backend checks the fields it receives.
+// Only a fault the person can correct holds the decision back. The backend checks presence and editability, not values.
 export function blocksApproval(invalidFields: ReadonlySet<string>, schema: unknown): boolean {
   const editable = editableFields(schema);
   return [...invalidFields].some((field) => editable.has(field));

@@ -10,7 +10,7 @@ import { useHasStartNode } from '../../hooks/use-has-start-node';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 
 export function AiStudioControls() {
-  const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
+  const { executeFromCanvas, cancel, reset, status, executionId } = useBackendExecution();
   const shouldShowControls = useHasStartNode();
   useRunLocksCanvas();
 
@@ -30,12 +30,13 @@ export function AiStudioControls() {
   }, [executeFromCanvas]);
 
   const isRunning = status === 'pending' || status === 'running' || status === 'waiting';
-  const isDone = status === 'completed' || status === 'incomplete' || status === 'failed' || status === 'cancelled';
+  // A shown run keeps the canvas read-only until Reset, so every state that is not running offers it.
+  const showsRun = executionId !== undefined;
 
   return (
     <div
       className={clsx(styles['container'], {
-        [styles['container--visible']]: shouldShowControls,
+        [styles['container--visible']]: shouldShowControls || showsRun,
       })}
     >
       <div className={styles['panel']}>
@@ -48,7 +49,7 @@ export function AiStudioControls() {
             <Icon name="Play" />
           </NavButton>
         )}
-        {isDone && (
+        {showsRun && !isRunning && (
           <NavButton onClick={reset} tooltip="Reset">
             <Icon name="ArrowCounterClockwise" />
           </NavButton>
