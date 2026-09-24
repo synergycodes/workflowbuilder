@@ -10,7 +10,7 @@ This repo publishes **three** packages. Each has its own **scoped** release tag 
 | --------------------------- | --------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
 | `@workflowbuilder/sdk`      | `@workflowbuilder/sdk@X.Y.Z`      | `.github/workflows/release-sdk.yml`      | on npm                                               |
 | `@workflowbuilder/ui`       | `@workflowbuilder/ui@X.Y.Z`       | `.github/workflows/release-ui.yml`       | not on npm yet, see § First release of a new package |
-| `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | not on npm yet, see § First release of a new package |
+| `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | on npm                                               |
 
 Two rules keep the packages independent of each other:
 
@@ -66,7 +66,7 @@ release  ───────────────●───────�
 
 ## First release of a new package
 
-Applies to `@workflowbuilder/ui` and `@workflowbuilder/temporal` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
+Applies to `@workflowbuilder/ui` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
 
 The whole sequence:
 

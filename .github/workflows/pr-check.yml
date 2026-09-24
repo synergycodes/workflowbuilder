@@ -119,6 +119,41 @@ jobs:
       - name: Build
         run: npm run build
 
+  temporal-sample:
+    name: Temporal sample typecheck + build
+    runs-on: ubuntu-latest
+    # Two npm projects, neither in the pnpm workspace, so this job needs no pnpm and no
+    # workspace install: the worker installs @workflowbuilder/temporal from npm like any consumer.
+    # There are no tests to run: the sample demonstrates the plugin rather than testing it.
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: |
+            examples/workflow-builder-temporal/worker/package-lock.json
+            examples/workflow-builder-temporal/editor/package-lock.json
+
+      - name: Install worker dependencies
+        working-directory: examples/workflow-builder-temporal/worker
+        run: npm ci
+
+      - name: Typecheck worker
+        working-directory: examples/workflow-builder-temporal/worker
+        run: npm run typecheck
+
+      - name: Install editor dependencies
+        working-directory: examples/workflow-builder-temporal/editor
+        run: npm ci
+
+      - name: Build editor
+        working-directory: examples/workflow-builder-temporal/editor
+        run: npm run build
+
   temporal:
     name: Temporal plugin lint + typecheck + test + build
     runs-on: ubuntu-latest

@@ -48,6 +48,8 @@ Don't want to install or clone anything yet? [Try the live demo](https://app.wor
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter%20Example&file=src%2Fapp.tsx)
 
+Want to see a diagram execute on Temporal without Docker? The [Temporal sample](examples/workflow-builder-temporal/) runs one from the terminal and, optionally, from the canvas.
+
 ### Path A. Embed the SDK
 
 Use Workflow Builder inside your own React app. No clone, no Docker. Install the SDK and its peer dependencies from npm:
