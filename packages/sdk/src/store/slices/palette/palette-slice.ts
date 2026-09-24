@@ -1,11 +1,5 @@
 import { getPaletteData } from '../../../data/palette';
-import {
-  type DraggingItem,
-  type PaletteGroup,
-  type PaletteItem,
-  type PaletteItemOrGroup,
-  StatusType,
-} from '../../../node/common';
+import { type PaletteGroup, type PaletteItem, type PaletteItemOrGroup, StatusType } from '../../../node/common';
 import type { GetDiagramState, SetDiagramState } from '../../store';
 import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
 
@@ -13,10 +7,8 @@ export type PaletteState = {
   isSidebarExpanded: boolean;
   data: PaletteItemOrGroup[];
   fetchDataStatus: StatusType;
-  draggedItem: DraggingItem | null;
   toggleSidebar: (value?: boolean) => void;
   fetchData: () => void;
-  setDraggedItem: (item: DraggingItem | null) => void;
   getNodeDefinition: (nodeType: string) => PaletteItem | undefined;
 };
 
@@ -25,10 +17,6 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
     isSidebarExpanded: false,
     data: [],
     fetchDataStatus: StatusType.Idle,
-    draggedItem: null,
-    setDraggedItem: (item) => {
-      set({ draggedItem: item });
-    },
     toggleSidebar: (value) => {
       set({
         isSidebarExpanded: value ?? !get().isSidebarExpanded,
