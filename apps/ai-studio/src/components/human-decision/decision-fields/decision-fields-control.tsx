@@ -16,6 +16,7 @@ import styles from './decision-fields-control.module.css';
 import { proposalSourceIdOf } from '../../../hooks/use-node-decision';
 import { isRunAlive, useExecutionStore } from '../../../stores/use-execution-store';
 import {
+  FIELD_MODES,
   type FieldMode,
   type FieldRow,
   fieldModeOf,
@@ -26,15 +27,17 @@ import {
 } from '../../../utils/human-decision/decision-fields';
 import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
 
-const HINT_NO_SOURCE = 'Connect one node with a Response format before this one to list its fields.';
+const HINT_NO_SOURCE = 'Connect one node before this one whose Response format has text, number or yes/no fields.';
+
+const MODE_LABELS = {
+  hidden: 'Hidden',
+  readOnly: 'Read-only',
+  editable: 'Editable',
+  required: 'Editable, required',
+} satisfies Record<FieldMode, string>;
 
 // Fixed items: a mounted Base UI Select resets its value when its items change.
-const MODE_ITEMS: SelectItem[] = [
-  { value: 'hidden', label: 'Hidden' },
-  { value: 'readOnly', label: 'Read-only' },
-  { value: 'editable', label: 'Editable' },
-  { value: 'required', label: 'Editable, required' },
-];
+const MODE_ITEMS: SelectItem[] = FIELD_MODES.map((mode) => ({ value: mode, label: MODE_LABELS[mode] }));
 
 type RowProps = { row: FieldRow; mode: FieldMode; disabled: boolean; onPick: (mode: FieldMode) => void };
 
@@ -78,7 +81,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   const isWaiting = useExecutionStore(
     (state) => nodeId !== undefined && state.nodeStates[nodeId]?.status === 'waiting',
   );
-  // The app bar can lift the canvas lock mid-run; the picks stay locked so they match the request the run was sent.
+  // The app bar can lift the canvas lock mid-run; the dropdowns stay locked, undo does not.
   const isLocked = useExecutionStore((state) => isRunAlive(state.status));
 
   // While the node waits, the sidebar belongs to the decision form.

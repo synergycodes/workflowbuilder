@@ -15,12 +15,13 @@ export const uischema: UISchema = {
       label: 'Title',
       placeholder: 'Node Title...',
     },
+    // Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     {
       type: 'DecisionFields',
       scope: scope('properties.decisionRequest'),
       label: 'Fields the decider sees',
     } as unknown as UISchema,
-    // The run-time decision form. The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
+    // The run-time decision form.
     { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
   ],
 };
