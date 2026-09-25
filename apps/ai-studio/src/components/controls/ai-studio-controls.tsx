@@ -1,5 +1,5 @@
 import { Icon, getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
-import { NavButton } from '@workflowbuilder/ui';
+import { Button, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 
@@ -55,16 +55,30 @@ export function AiStudioControls() {
       <div className={styles['panel']}>
         {isRunning || isStarting ? (
           // There is no run to cancel until the backend names it.
-          <NavButton onClick={cancel} disabled={isStarting} prefixIcon={<Icon name="Stop" />}>
+          <Button
+            className={styles['run-slot']}
+            variant="ghost-critical"
+            size="s"
+            onClick={cancel}
+            disabled={isStarting}
+            prefixIcon={<Icon name="Stop" />}
+          >
             Stop
-          </NavButton>
+          </Button>
         ) : hasStartNode ? (
-          <NavButton onClick={handleExecute} prefixIcon={<Icon name="Play" />}>
+          <Button
+            className={styles['run-slot']}
+            variant="primary"
+            size="s"
+            onClick={handleExecute}
+            prefixIcon={<Icon name="Play" />}
+          >
             Run
-          </NavButton>
+          </Button>
         ) : null}
         {isDoneOrStuck && !isStarting && (
           <NavButton
+            size="s"
             aria-label={resetTooltip}
             onClick={reset}
             tooltip={resetTooltip}
