@@ -1,9 +1,11 @@
-import { ReactFlowProvider } from '@xyflow/react';
+import { type Node, ReactFlowProvider, type ReactFlowState, useStoreApi } from '@xyflow/react';
 import { type ReactNode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
+import { applyEvent, applySnapshot, resetExecution } from '../../../stores/use-execution-store';
+import { nodeEvent, snapshotFrame } from '../../../test/execution-history';
 import { HumanDecisionNodeTemplate } from './human-decision-template';
 
 // The slot is observed through a marker element; the real one renders its children unchanged.
@@ -30,6 +32,8 @@ const data = {
   properties: { label: 'Human decision', description: '', decisionRequest: defaultDecisionRequest },
 };
 
+const parkOnHuman1 = () => act(() => applySnapshot(snapshotFrame('waiting')));
+
 function handles(container: HTMLElement, type: 'source' | 'target') {
   return [...container.querySelectorAll<HTMLElement>(`.react-flow__handle.${type}`)];
 }
@@ -39,6 +43,7 @@ describe('HumanDecisionNodeTemplate', () => {
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
+    resetExecution();
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -117,7 +122,6 @@ describe('HumanDecisionNodeTemplate', () => {
     );
 
     expect(container.textContent).toContain('Human decision');
-    expect(container.textContent).not.toContain('Decision');
     expect(handles(container, 'source')).toHaveLength(0);
     expect(handles(container, 'target').map((handle) => handle.dataset['handleid'])).toEqual(['target']);
   });
@@ -201,5 +205,63 @@ describe('HumanDecisionNodeTemplate', () => {
 
     // The panel shell, the icon and the label each carry the disabled state.
     expect(container.querySelectorAll('[class*="disabled"]')).toHaveLength(3);
+  });
+
+  const decideButton = () =>
+    [...container.querySelectorAll('button')].find((button) => button.textContent === 'Decide');
+
+  it('shows the wait and Decide at the bottom only while the run waits on this node', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(decideButton()).toBeUndefined();
+
+    parkOnHuman1();
+    expect(container.textContent).toContain('Waiting for decision');
+    expect(decideButton()).toBeDefined();
+
+    act(() => applyEvent(nodeEvent('node_completed', 'human-1')));
+    expect(container.textContent).not.toContain('Waiting for decision');
+    expect(decideButton()).toBeUndefined();
+  });
+
+  it('keeps the wait off a decision node the run is not parked on', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-2" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    expect(decideButton()).toBeUndefined();
+  });
+
+  it('selects the node through React Flow on Decide, replacing the selection as a click on the node does', () => {
+    const nodes: Node[] = [
+      { id: 'human-1', position: { x: 0, y: 0 }, data: {} },
+      { id: 'other', position: { x: 300, y: 0 }, data: {}, selected: true },
+    ];
+    let store: { getState: () => ReactFlowState } | undefined;
+    function StoreProbe() {
+      store = useStoreApi();
+      return null;
+    }
+    act(() =>
+      root.render(
+        <ReactFlowProvider defaultNodes={nodes}>
+          <StoreProbe />
+          <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />
+        </ReactFlowProvider>,
+      ),
+    );
+    parkOnHuman1();
+
+    act(() => decideButton()?.click());
+
+    expect(
+      store
+        ?.getState()
+        .nodes.filter((node) => node.selected)
+        .map((node) => node.id),
+    ).toEqual(['human-1']);
   });
 });

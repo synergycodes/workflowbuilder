@@ -1,4 +1,4 @@
-import { Icon, NodeSection, OptionalNodeContent, defineNodeTemplate, getHandleId } from '@workflowbuilder/sdk';
+import { Icon, OptionalNodeContent, defineNodeTemplate, getHandleId } from '@workflowbuilder/sdk';
 import type { NodeDataProperties, WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
@@ -8,6 +8,7 @@ import { memo, useMemo } from 'react';
 import styles from './human-decision-template.module.css';
 
 import type { HumanDecisionSchema } from '../../../nodes/human-decision/schema';
+import { DecisionWaitingFooter } from './decision-waiting-footer';
 
 type HumanDecisionProperties = NodeDataProperties<HumanDecisionSchema>;
 
@@ -59,18 +60,17 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
             <OptionalNodeContent nodeId={id}>
               <Status status={isValid === false ? 'invalid' : undefined} />
               {actions.length > 0 && (
-                <NodeSection label="Decision">
-                  <div className={clsx(styles['actions'], { [styles['actions--vertical']]: isHorizontal })}>
-                    {actions.map(({ label: actionLabel, port }) => (
-                      <div key={port} className={styles['action']}>
-                        <span className={styles['action-label']}>{actionLabel}</span>
-                        <Handle id={port} type="source" position={isHorizontal ? Position.Right : Position.Bottom} />
-                      </div>
-                    ))}
-                  </div>
-                </NodeSection>
+                <div className={clsx(styles['actions'], { [styles['actions--vertical']]: isHorizontal })}>
+                  {actions.map(({ label: actionLabel, port }) => (
+                    <div key={port} className={styles['action']}>
+                      <span className={styles['action-label']}>{actionLabel}</span>
+                      <Handle id={port} type="source" position={isHorizontal ? Position.Right : Position.Bottom} />
+                    </div>
+                  ))}
+                </div>
               )}
             </OptionalNodeContent>
+            <DecisionWaitingFooter nodeId={id} />
           </NodePanel.Content>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
             <Handle
