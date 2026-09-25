@@ -37,11 +37,6 @@ export function fieldRows(outputSchema: unknown, schema: unknown): FieldRow[] {
   ];
 }
 
-/** Whether the source declares any field the decider's form can show. */
-export function hasSourceFields(rows: readonly FieldRow[]): boolean {
-  return rows.some((row) => row.declaration !== undefined);
-}
-
 // The contract's own encoding, so the stored schema is the decider's form: a field it leaves out is Hidden.
 export function fieldModeOf(schema: unknown, key: string): FieldMode {
   const declaration = schemaFields(schema).find(([name]) => name === key)?.[1];

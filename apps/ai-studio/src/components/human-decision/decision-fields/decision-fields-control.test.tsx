@@ -152,6 +152,10 @@ describe('the decision fields control in the real properties panel', () => {
   const rows = () => [...container.querySelectorAll<HTMLElement>('[data-output-field]')];
   const rowKeys = () => rows().map((row) => row.dataset['outputField']);
   const selects = () => rows().map((row) => row.querySelector('select')!);
+  const sectionHeader = () =>
+    [...container.querySelectorAll('[aria-expanded]')].find(
+      (element) => element.textContent === 'Fields the decider sees',
+    );
 
   async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[]) {
     useStore.setState({
@@ -236,14 +240,16 @@ describe('the decision fields control in the real properties panel', () => {
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
-  it('steps aside while this node waits and comes back after Reset', async () => {
+  it('steps aside while this node waits, section header included, and comes back after Reset', async () => {
     await renderRefund();
+    expect(sectionHeader()).toBeDefined();
 
     act(() => {
       setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
       applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
     });
     expect(rows()).toHaveLength(0);
+    expect(sectionHeader()).toBeUndefined();
 
     act(() => resetExecution());
     expect(rows()).toHaveLength(4);
@@ -294,18 +300,26 @@ describe('the decision fields control in the real properties panel', () => {
     expect(rowKeys()).toEqual(['summary']);
   });
 
-  it('without one source, says how to get fields and keeps listing the stored ones', async () => {
-    const stored = {
-      ...defaultDecisionRequest,
-      schema: { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } },
-    };
+  const stored = {
+    ...defaultDecisionRequest,
+    schema: { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } },
+  };
+  const rowLabels = () => rows().map((row) => row.querySelector('span')?.textContent);
 
+  it('with nothing connected, says to connect a block and keeps listing the stored fields', async () => {
+    await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
+
+    expect(container.textContent).toContain('Connect a block before this one');
+    expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
+  });
+
+  it('with two predecessors and no declared source, lists the stored fields without the hint', async () => {
     await renderPanel(
       [agent('draft-1', refundOutput), agent('draft-2', refundOutput), human(stored)],
       [edge('draft-1'), edge('draft-2')],
     );
 
-    expect(container.textContent).toContain('Connect one node before this one whose Response format');
-    expect(rows().map((row) => row.querySelector('span')?.textContent)).toEqual(['Reply draft (not in the source)']);
+    expect(container.textContent).not.toContain('Connect a block before this one');
+    expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 });
