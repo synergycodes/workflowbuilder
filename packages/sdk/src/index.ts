@@ -221,6 +221,8 @@ export type { DynamicCondition } from './features/json-form/types/controls';
 export { generalInformation, globalControls, statusOptions } from './utils/general-information';
 export { sharedProperties, errorPolicyProperty } from './utils/shared-properties';
 export type { DeepPartial, Prettify } from './utils/typescript';
+export { showSnackbar, closeSnackbar } from './features/snackbar/show-snackbar';
+export type { ShowSnackbarOptions } from './features/snackbar/show-snackbar';
 
 // =============================================================================
 // Constants
