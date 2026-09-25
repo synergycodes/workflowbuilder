@@ -29,6 +29,7 @@ This decision log records the structural piece (scope L from [`local-dev-binding
 | `workflows:update`  | `{ kind: 'workflow', workflowId }`                |
 | `workflows:publish` | `{ kind: 'workflow', workflowId }`                |
 | `workflows:execute` | `{ kind: 'workflow', workflowId }`                |
+| `executions:list`   | `{ kind: 'executions' }`                          |
 | `executions:read`   | `{ kind: 'execution', executionId }`              |
 | `executions:stream` | `{ kind: 'execution', executionId }`              |
 | `executions:cancel` | `{ kind: 'execution', executionId }`              |
@@ -157,7 +158,7 @@ export class JwtAuthPort implements AuthPort {
     const roles = (caller.attributes?.roles as string[] | undefined) ?? [];
 
     // Reads are open to any authenticated user.
-    if (action.endsWith(':read') || action === 'workflows:list' || action === 'executions:stream') {
+    if (action.endsWith(':read') || action.endsWith(':list') || action === 'executions:stream') {
       return true;
     }
 

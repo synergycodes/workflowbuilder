@@ -18,6 +18,7 @@ import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events
 import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
 import type { BackendEnv } from './backend-env';
+import { LIST_ORDER, listExecutionsWhere, pageOf, parseListExecutionsQuery } from './list-executions-query';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
@@ -25,6 +26,45 @@ const TERMINAL_STATUSES = new Set<string>(TERMINAL_EXECUTION_STATUSES);
 
 export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
   const routes = new Hono<BackendEnv>();
+
+  routes.get('/', async (c) => {
+    await assertAuthorized(c, 'executions:list', { kind: 'executions' });
+
+    const parsed = parseListExecutionsQuery({
+      status: c.req.query('status'),
+      workflowId: c.req.query('workflowId'),
+      limit: c.req.query('limit'),
+      cursor: c.req.query('cursor'),
+    });
+    if (!parsed.ok) {
+      return c.json({ code: parsed.code, message: parsed.message }, 400);
+    }
+    const { query } = parsed;
+
+    // A resolved context with no id is a broken adapter, not single-tenant mode: `?? null` would
+    // read as "no tenant" and drop the scope clause, returning every tenant's rows.
+    const tenantId: string | undefined = c.var.tenant?.tenantId;
+    if (c.var.tenant && tenantId === undefined) {
+      return c.json({ code: 'tenant_required', message: 'Tenant context required' }, 400);
+    }
+
+    const rows = await database
+      .select({
+        id: executions.id,
+        workflowId: executions.workflowId,
+        sourceVersion: executions.sourceVersion,
+        status: executions.status,
+        startedAt: executions.startedAt,
+        finishedAt: executions.finishedAt,
+        createdAt: executions.createdAt,
+      })
+      .from(executions)
+      .where(listExecutionsWhere(query, tenantId ?? null))
+      .orderBy(...LIST_ORDER)
+      .limit(query.limit + 1);
+
+    return c.json(pageOf(rows, query.limit));
+  });
 
   routes.get('/:id', async (c) => {
     const executionId = c.req.param('id');

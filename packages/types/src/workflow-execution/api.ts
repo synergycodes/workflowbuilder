@@ -61,6 +61,21 @@ export type GetExecutionResponse = {
   updatedAt: string;
 };
 
+export type ExecutionListItem = {
+  id: string;
+  workflowId: string;
+  sourceVersion: SourceVersion;
+  status: ExecutionStatus;
+  startedAt: string | null;
+  finishedAt: string | null;
+  createdAt: string;
+};
+
+export type ListExecutionsResponse = {
+  items: ExecutionListItem[];
+  nextCursor: string | null;
+};
+
 export type CancelExecutionResponse = {
   id: string;
   status: 'cancelling';

@@ -1,3 +1,5 @@
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +15,7 @@ import {
 import { type TenantContext, createTenantMiddleware } from '../tenant';
 import type { BackendEnv } from './backend-env';
 import { createExecutionsRoutes } from './executions';
+import { decodeCursor, encodeCursor } from './list-executions-query';
 
 // ---- module mocks -----------------------------------------------------------
 //
@@ -129,6 +132,13 @@ describe('createExecutionsRoutes - authorize is called with the right shape per 
   it.each<{ method: string; path: string; action: AuthAction; resource: AuthResource; execution: unknown }>([
     {
       method: 'GET',
+      path: '/api/executions',
+      action: 'executions:list',
+      resource: { kind: 'executions' },
+      execution: terminalExecution,
+    },
+    {
+      method: 'GET',
       path: '/api/executions/e-1',
       action: 'executions:read',
       resource: { kind: 'execution', executionId: 'e-1' },
@@ -185,6 +195,7 @@ describe('createExecutionsRoutes - authorize is called with the right shape per 
 
 describe('createExecutionsRoutes - deny short-circuits before DB or engine work', () => {
   const cases: Array<{ method: string; path: string }> = [
+    { method: 'GET', path: '/api/executions' },
     { method: 'GET', path: '/api/executions/e-1' },
     { method: 'GET', path: '/api/executions/e-1/stream' },
     { method: 'DELETE', path: '/api/executions/e-1' },
@@ -410,5 +421,182 @@ describe('createExecutionsRoutes - GET /:id body', () => {
     databaseMock.select.mockReturnValueOnce(chainResolving([terminalExecution]));
     const plain = await app.request('/api/executions/e-1');
     expect(await plain.json()).toMatchObject({ status: 'completed', outcome: null, resolvedBy: null });
+  });
+});
+
+// ---- list -------------------------------------------------------------------
+//
+// The chain proxy discards call arguments, so the WHERE the route builds is
+// invisible through it. This mock records what reaches `.where()`, `.orderBy()`
+// and `.limit()` and renders the fragment to text, so tenant scoping and the page size are
+// asserted as SQL rather than inferred from the rows the mock returns.
+
+const dialect = new PgDialect();
+
+const listedExecution = {
+  ...terminalExecution,
+  id: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11',
+  createdAt: new Date('2026-09-18T10:00:00.123Z'),
+};
+const olderExecution = {
+  ...listedExecution,
+  id: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c10',
+  createdAt: new Date('2026-09-18T09:00:00.000Z'),
+};
+
+function captureSelect(rows: unknown[]) {
+  const captured: { where?: SQL; orderBy?: unknown[]; limit?: number } = {};
+  databaseMock.select.mockImplementation(() => ({
+    from: () => ({
+      where: (condition: SQL | undefined) => {
+        captured.where = condition;
+        return {
+          orderBy: (...terms: unknown[]) => {
+            captured.orderBy = terms;
+            return {
+              limit: (count: number) => {
+                captured.limit = count;
+                return chainResolving(rows);
+              },
+            };
+          },
+        };
+      },
+    }),
+  }));
+  return captured;
+}
+
+describe('createExecutionsRoutes - list', () => {
+  it('200 with the envelope: summary fields only, dates as ISO strings, no next page under the limit', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([listedExecution, olderExecution]));
+
+    const response = await app.request('/api/executions');
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      items: [
+        {
+          id: listedExecution.id,
+          workflowId: 'w-1',
+          sourceVersion: 'draft',
+          status: 'completed',
+          startedAt: null,
+          finishedAt: '1970-01-01T00:00:00.000Z',
+          createdAt: '2026-09-18T10:00:00.123Z',
+        },
+        {
+          id: olderExecution.id,
+          workflowId: 'w-1',
+          sourceVersion: 'draft',
+          status: 'completed',
+          startedAt: null,
+          finishedAt: '1970-01-01T00:00:00.000Z',
+          createdAt: '2026-09-18T09:00:00.000Z',
+        },
+      ],
+      nextCursor: null,
+    });
+  });
+
+  it('limit + 1 rows -> limit items and a cursor for the last returned item', async () => {
+    const app = buildApp(allowStream());
+    captureSelect([listedExecution, olderExecution]);
+
+    const response = await app.request('/api/executions?limit=1');
+    const body = (await response.json()) as { items: unknown[]; nextCursor: string };
+
+    expect(body.items).toHaveLength(1);
+    expect(decodeCursor(body.nextCursor)).toEqual({ createdAt: '2026-09-18T10:00:00.123Z', id: listedExecution.id });
+  });
+
+  it.each([
+    { query: 'status=waitting', code: 'invalid_status' },
+    { query: 'cursor=%25%25%25', code: 'invalid_cursor' },
+    { query: 'limit=0', code: 'invalid_limit' },
+    { query: 'workflowId=nope', code: 'invalid_workflow_id' },
+  ])('?$query -> 400 $code and no select', async ({ query, code }) => {
+    const app = buildApp(allowStream());
+
+    const response = await app.request(`/api/executions?${query}`);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code });
+    expect(databaseMock.select).not.toHaveBeenCalled();
+  });
+
+  it('tenant present -> the WHERE scopes to the tenant and untenanted rows', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
+    const captured = captureSelect([]);
+
+    await app.request('/api/executions?status=waiting');
+
+    const rendered = dialect.sqlToQuery(captured.where!);
+    expect(rendered.sql).toBe(
+      '("executions"."status" = $1 and ("executions"."tenant_id" = $2 or "executions"."tenant_id" is null))',
+    );
+    expect(rendered.params).toEqual(['waiting', 'acme']);
+  });
+
+  it('no tenant, no filters -> no WHERE at all (single-tenant default)', async () => {
+    const app = buildAppWithTenant(allowStream(), null);
+    const captured = captureSelect([]);
+
+    await app.request('/api/executions');
+
+    expect(captured.where).toBeUndefined();
+  });
+
+  // An adapter outside TypeScript can return what TenantContext forbids. Failing open here
+  // would hand one tenant every other tenant's rows, so the list refuses what the stream 404s on.
+  it('a resolved tenant with no id -> 400 tenant_required and no select', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: undefined } as unknown as TenantContext);
+
+    const response = await app.request('/api/executions');
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: 'tenant_required' });
+    expect(databaseMock.select).not.toHaveBeenCalled();
+  });
+
+  it('an empty tenant id is a tenant, not a missing one: it still scopes the WHERE', async () => {
+    const app = buildAppWithTenant(allowStream(), { tenantId: '' });
+    const captured = captureSelect([]);
+
+    await app.request('/api/executions');
+
+    const rendered = dialect.sqlToQuery(captured.where!);
+    expect(rendered.sql).toBe('("executions"."tenant_id" = $1 or "executions"."tenant_id" is null)');
+    expect(rendered.params).toEqual(['']);
+  });
+
+  // list-executions-query.test.ts covers the predicate; this covers the wiring that feeds it,
+  // which no other test exercises with a cursor the route would actually accept.
+  it('a valid cursor reaches the WHERE as the keyset predicate', async () => {
+    const app = buildApp(allowStream());
+    const captured = captureSelect([]);
+    const cursor = encodeCursor({ createdAt: listedExecution.createdAt, id: listedExecution.id });
+
+    await app.request(`/api/executions?cursor=${cursor}`);
+
+    const rendered = dialect.sqlToQuery(captured.where!);
+    expect(rendered.sql).toBe(
+      `(date_trunc('milliseconds', "executions"."created_at"), "executions"."id") < ($1::timestamptz, $2::uuid)`,
+    );
+    expect(rendered.params).toEqual(['2026-09-18T10:00:00.123Z', listedExecution.id]);
+  });
+
+  it.each([
+    { query: '', limit: 51 },
+    { query: '?limit=500', limit: 201 },
+  ])('GET /api/executions$query asks for limit + 1 rows: $limit', async ({ query, limit }) => {
+    const app = buildApp(allowStream());
+    const captured = captureSelect([]);
+
+    await app.request(`/api/executions${query}`);
+
+    expect(captured.limit).toBe(limit);
+    expect(captured.orderBy).toHaveLength(2);
   });
 });

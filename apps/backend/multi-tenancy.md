@@ -12,6 +12,7 @@ How to make the reference backend multi-tenant. For **why** it is shaped this wa
 | 2    | Stamp `tenantId` onto the execution row at submit                    | shipped (no-op default)             | `src/routes/workflows.ts`               | ✅      |
 | 3    | Worker inherits `tenant_id` for each event from its parent execution | shipped (no-op default)             | `apps/execution-worker/src/database.ts` | ⚠️ none |
 | 4    | SSE stream cross-check (defence-in-depth)                            | shipped (no-op default)             | `src/routes/executions.ts`              | ✅      |
+| 4b   | Tenant filter on the executions collection                           | shipped (no-op default)             | `src/routes/list-executions-query.ts`   | ✅      |
 | 5    | Postgres Row-Level Security                                          | **documented pattern, not shipped** | —                                       | —       |
 
 "No-op default" means: under `NoopTenantContextPort` the tenant is `null` on every request, every seam degrades to single-tenant behaviour, and the reference runs with zero tenancy ceremony. Swap the port instance to turn seams 1–4 on; enable seam 5 yourself.
@@ -69,6 +70,12 @@ Before subscribing, `GET /:id/stream` checks the caller's tenant against the ten
 On mismatch the response is a **404 byte-identical to not-found, not a 403** — a recognisable 403 would confirm the id exists in another tenant and make foreign executions enumerable. The check is a no-op when either side is `null`, preserving single-tenant behaviour (which is also why untenanted rows stay app-layer visible — the threat-model trade-off).
 
 → `src/routes/executions.ts`
+
+#### Seam 4b — the collection route filters in `WHERE`
+
+`GET /api/executions` cannot lean on `AuthPort` for scoping: the port answers one resource at a time and never sees a result set. `listExecutionsWhere` therefore adds `tenant_id = caller OR tenant_id IS NULL` to the query whenever `c.var.tenant` is set, and no clause at all when it is `null`. Untenanted rows stay visible to every tenant, the same trade-off as seam 4; RLS (seam 5) is the backstop for deployments that need them hidden.
+
+→ `src/routes/list-executions-query.ts`
 
 ### Seam 5 — Postgres Row-Level Security (you enable this)
 
