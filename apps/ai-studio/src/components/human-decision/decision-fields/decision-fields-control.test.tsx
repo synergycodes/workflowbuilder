@@ -220,6 +220,16 @@ describe('the decision fields control in the real properties panel', () => {
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
+  it('locks the dropdowns while the canvas is in the app bar read-only mode', async () => {
+    await renderRefund();
+
+    act(() => useStore.getState().setToggleReadOnlyMode(true));
+    expect(selects().every((select) => select.disabled)).toBe(true);
+
+    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    expect(selects().every((select) => !select.disabled)).toBe(true);
+  });
+
   it('steps aside while this node waits and comes back after Reset', async () => {
     await renderRefund();
 
@@ -259,7 +269,7 @@ describe('the decision fields control in the real properties panel', () => {
       [edge('draft-1'), edge('draft-2')],
     );
 
-    expect(container.textContent).toContain('Connect one node with a Response format before this one');
+    expect(container.textContent).toContain('Connect one node before this one whose Response format');
     expect(rows().map((row) => row.querySelector('span')?.textContent)).toEqual(['Reply draft (not in the source)']);
   });
 });

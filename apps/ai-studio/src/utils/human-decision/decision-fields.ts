@@ -54,7 +54,7 @@ export function fieldModeOf(schema: unknown, key: string): FieldMode {
   return requiredOf(schema).includes(key) ? 'required' : 'editable';
 }
 
-/** The schema after one pick: rebuilt in row order, each field from the source's declaration over its stored one. */
+/** The schema after one pick: rebuilt from `rows`, so a stored field the editor's form cannot show is dropped. */
 export function withFieldMode(schema: JsonSchema, rows: readonly FieldRow[], key: string, mode: FieldMode): JsonSchema {
   const stored = new Map(schemaFields(schema));
   const modeOf = (row: FieldRow) => (row.key === key ? mode : fieldModeOf(schema, row.key));

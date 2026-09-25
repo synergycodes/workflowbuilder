@@ -26,7 +26,6 @@
   color: var(--wb-ds-ui-text-muted-default);
 }
 
-/* 10.5rem = the 168 px control width of the prototype's sidebar rows. */
 .select {
   flex: none;
   width: 10.5rem;
