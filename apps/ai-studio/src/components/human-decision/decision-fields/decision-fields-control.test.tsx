@@ -8,6 +8,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // SDK internals by path: the public API mounts these only inside a whole <WorkflowBuilder.Root>.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { NodeProperties } from '../../../../../../packages/sdk/src/features/properties-bar/components/node-properties/node-properties';
+import { useRunLocksCanvas } from '../../../hooks/use-run-locks-canvas';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
@@ -106,6 +107,11 @@ function edge(source: string): WorkflowBuilderEdge {
 function Host() {
   const node = useStore((state) => state.nodes.find((candidate) => candidate.id === HUMAN));
   return node ? <NodeProperties node={node} /> : null;
+}
+
+function RunLock() {
+  useRunLocksCanvas();
+  return null;
 }
 
 const storedProperties = () => useStore.getState().nodes.find((node) => node.id === HUMAN)?.data.properties;
@@ -241,6 +247,36 @@ describe('the decision fields control in the real properties panel', () => {
 
     act(() => resetExecution());
     expect(rows()).toHaveLength(4);
+  });
+
+  it('comes back beside the settled decision and stays locked until Reset', async () => {
+    await renderRefund();
+    act(() =>
+      root.render(
+        <>
+          <RunLock />
+          <Host />
+        </>,
+      ),
+    );
+
+    act(() => {
+      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+      applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
+      applyEvent(
+        event({
+          type: 'node_completed',
+          nodeId: HUMAN,
+          payload: { output: { action: 'approve', effect: 'resume', resolvedBy: 'human' } },
+        }),
+      );
+      applyEvent(event({ type: 'execution_completed' }));
+    });
+    expect(rows()).toHaveLength(4);
+    expect(selects().every((select) => select.disabled)).toBe(true);
+
+    act(() => resetExecution());
+    expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
   it('with two predecessors, lists the fields of the declared proposal source', async () => {
