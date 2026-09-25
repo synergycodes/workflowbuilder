@@ -6,33 +6,6 @@
   contain: inline-size;
 }
 
-.row {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  min-height: 2.25rem;
-}
-
-.label {
-  composes: wb-text-body-s from global;
-
-  flex: 1;
-  min-width: 0;
-  overflow: hidden;
-  color: var(--wb-ds-ui-text-default);
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.row--muted .label {
-  color: var(--wb-ds-ui-text-muted-default);
-}
-
-.select {
-  flex: none;
-  width: 10.5rem;
-}
-
 .hint {
   composes: wb-text-body-s from global;
 
