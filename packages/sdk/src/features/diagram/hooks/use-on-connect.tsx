@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import { trackFutureChange } from '../../../features/changes-tracker/stores/use-changes-tracker-store';
 import { useStore } from '../../../store/store';
-import { showSnackbar } from '../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 
 export function useConnect() {
   const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
@@ -14,7 +14,7 @@ export function useConnect() {
   const onConnect: OnConnect = useCallback(
     (connection) => {
       if (isReadOnlyMode) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'cantEditReadOnlyMode',
           variant: SnackbarType.WARNING,
         });

@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './variable-text.module.css';
 
 import type { VariableType } from '../../../../node/node-output-schema';
-import { showSnackbar } from '../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
 import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
 
@@ -236,7 +236,7 @@ export function VariableText({
   const onMentionsChange = useCallback(
     ({ value }: { value: string }) => {
       if (value.endsWith(VARIABLE_BRACKETS_START) && mentionData.length === 0) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variablesListIsEmpty',
           subtitle: 'variables.variablesListIsEmptyHint',
           variant: SnackbarType.WARNING,

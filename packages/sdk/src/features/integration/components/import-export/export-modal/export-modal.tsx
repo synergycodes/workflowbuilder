@@ -9,7 +9,7 @@ import styles from '../import-export-modal.module.css';
 import { getStoreDataForIntegration } from '../../../../../store/slices/diagram-slice/actions';
 import { copy } from '../../../../../utils/copy';
 import { noop } from '../../../../../utils/noop';
-import { showSnackbar } from '../../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
 import { SyntaxHighlighterLazy } from '../../../../syntax-highlighter/components/syntax-highlighter-lazy';
 
 export function ExportModal() {
@@ -22,7 +22,7 @@ export function ExportModal() {
   const handleCopy = useCallback(() => {
     copy(storeData);
 
-    showSnackbar({
+    showTranslatedSnackbar({
       title: 'contentCopied',
       variant: SnackbarType.SUCCESS,
     });

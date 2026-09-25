@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from '../import-export-modal.module.css';
 
 import { setStoreDataFromIntegration } from '../../../../../store/slices/diagram-slice/actions';
-import { showSnackbar } from '../../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../../../../modals/stores/use-modal-store';
 import { SyntaxHighlighterLazy } from '../../../../syntax-highlighter/components/syntax-highlighter-lazy';
@@ -47,7 +47,7 @@ export function ImportModal() {
         setStoreDataFromIntegration(validatedIntegrationData);
         closeModal();
 
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'loadDiagramSuccess',
           variant: SnackbarType.SUCCESS,
         });

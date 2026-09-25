@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
-import { showSnackbar } from '../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 import { getStoreSavingStatus, loadData, setStoreSavingStatus, useIntegrationStore } from './use-integration-store';
 
@@ -17,8 +17,8 @@ vi.mock('@/features/modals/template-selector/open-template-selector-modal', () =
   openTemplateSelectorModal: vi.fn(),
 }));
 
-vi.mock('@/utils/show-snackbar', () => ({
-  showSnackbar: vi.fn(),
+vi.mock('@/utils/show-translated-snackbar', () => ({
+  showTranslatedSnackbar: vi.fn(),
 }));
 
 describe('use-integration-store', () => {
@@ -50,7 +50,9 @@ describe('use-integration-store', () => {
 
     it('shows success snackbar when data is provided', () => {
       loadData({ nodes: [] });
-      expect(vi.mocked(showSnackbar)).toHaveBeenCalledWith(expect.objectContaining({ title: 'restoreDiagramSuccess' }));
+      expect(vi.mocked(showTranslatedSnackbar)).toHaveBeenCalledWith(
+        expect.objectContaining({ title: 'restoreDiagramSuccess' }),
+      );
     });
 
     it('sets savingStatus to waiting when data is provided', () => {

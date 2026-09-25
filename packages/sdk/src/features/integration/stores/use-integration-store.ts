@@ -4,7 +4,7 @@ import { devtools } from 'zustand/middleware';
 
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import type { IntegrationDataFormat } from '../../../types/integration';
-import { showSnackbar } from '../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 
 type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
@@ -30,7 +30,7 @@ export function loadData(loadData: Partial<IntegrationDataFormat>) {
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
 
-    showSnackbar({
+    showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,
     });
