@@ -29,3 +29,8 @@
     transform 0.3s ease-in-out,
     opacity 0.3s ease-in-out;
 }
+
+/* Run and Stop take turns in one slot; one width keeps the button under the cursor when they swap. */
+.run-slot {
+  min-width: var(--wb-ds-size-1200);
+}
