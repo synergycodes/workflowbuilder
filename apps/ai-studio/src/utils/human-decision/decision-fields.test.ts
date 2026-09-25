@@ -142,6 +142,17 @@ describe('withFieldMode', () => {
     expect(Object.keys(kept.properties ?? {})).toEqual(['refundAmount', 'summary']);
     expect(Object.keys(pick(kept, 'summary', 'hidden').properties ?? {})).toEqual(['refundAmount']);
   });
+
+  it('drops a stored field of a type the editor cannot show once another field is picked', () => {
+    const stored: JsonSchema = {
+      type: 'object',
+      properties: { quantity: { type: 'integer' }, refundAmount: { type: 'number', title: 'Refund amount' } },
+    };
+
+    const next = pick(stored, 'refundAmount', 'editable');
+
+    expect(Object.keys(next.properties ?? {})).toEqual(['refundAmount']);
+  });
 });
 
 function outcomeOf(schema: JsonSchema, edits: Record<string, unknown>): string {
