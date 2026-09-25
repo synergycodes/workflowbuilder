@@ -12,6 +12,7 @@ import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
 import { HumanDecisionNodeTemplate } from '../components/human-decision/node-template/human-decision-template';
+import { DecisionWaitingSnackbar } from '../components/human-decision/waiting-snackbar/decision-waiting-snackbar';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
@@ -47,6 +48,7 @@ export function App() {
       <WorkflowBuilder.DefaultLayout />
       <AiStudioControls />
       <ExecutionLogPanel />
+      <DecisionWaitingSnackbar />
       <ExecutionHighlighting />
       <DisclaimerModal />
     </WorkflowBuilder.Root>
