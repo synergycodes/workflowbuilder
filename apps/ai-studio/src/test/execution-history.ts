@@ -25,3 +25,9 @@ export function snapshotFrame(status: ExecutionStatus, events: ExecutionEvent[] 
     events,
   };
 }
+
+/** One node event of the test run, for `applyEvent`. */
+export function nodeEvent(type: 'node_started' | 'node_waiting' | 'node_completed', nodeId: string): ExecutionEvent {
+  const event = { ...base, sequence: 1, nodeId };
+  return type === 'node_completed' ? { ...event, type, payload: { output: {} } } : { ...event, type };
+}

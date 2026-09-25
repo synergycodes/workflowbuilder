@@ -51,10 +51,6 @@
   animation: spin 1.6s linear infinite;
 }
 
-.icon--waiting {
-  color: var(--ai-studio-status-color--waiting);
-}
-
 @keyframes spin {
   from {
     transform: rotate(0deg);
