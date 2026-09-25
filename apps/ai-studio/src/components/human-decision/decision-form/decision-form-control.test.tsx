@@ -58,6 +58,15 @@ const draftOutput = {
   internalReasoning: 'hidden',
 };
 
+// With the app bar's read-only switch lifted, undo can take a pick back while the node waits.
+function refundAmountReadOnly() {
+  const refundAmount = { type: 'number', title: 'Refund amount', readOnly: true };
+  return {
+    ...reviewRequest,
+    schema: { ...reviewRequest.schema, properties: { ...reviewRequest.schema.properties, refundAmount } },
+  };
+}
+
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
 
 function parkHumanOne(output: unknown = draftOutput) {
@@ -330,8 +339,8 @@ describe.each([
     });
 
     it('still lets the person decide when the request declares no fields', async () => {
-      parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+      parkHumanOne();
 
       expect(button('Reject…')).toBeDefined();
 
@@ -383,6 +392,42 @@ describe.each([
       render(structuredClone(reviewRequest));
 
       expect(fieldOf('Refund amount')?.value).toBe('120');
+    });
+
+    it('keeps the fields it opened with when the picks change under it, and sends what it shows', async () => {
+      parkHumanOne();
+      render(refundAmountReadOnly());
+
+      expect(fieldOf('Refund amount')?.disabled).toBe(false);
+      commit(fieldOf('Refund amount')!, '120');
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('sends no edit for a field the picks hide under it', async () => {
+      parkHumanOne();
+      render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
+    });
+
+    it('opens again under the changed picks: a field turned read-only shows the proposal, the rest keep the draft', async () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '120');
+      commit(fieldOf('Reply draft')!, 'Hello');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render(refundAmountReadOnly());
+
+      expect(fieldOf('Refund amount')?.disabled).toBe(true);
+      expect(fieldOf('Refund amount')?.value).toBe('80');
+      expect(fieldOf('Reply draft')?.value).toBe('Hello');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ replyDraft: 'Hello' });
     });
 
     it('keeps what was typed while the panel shows another node, and measures the edits against the proposal', async () => {
@@ -778,6 +823,19 @@ describe.each([
       act(() => applyEvent(event({ type: 'execution_completed', payload: undefined })));
 
       expect(record()).not.toBeNull();
+      expect(fieldOf('Refund amount')?.value).toBe('80');
+    });
+
+    it('shows the settled values under the current picks, also when they change after the decision', () => {
+      parkHumanOne();
+      decideHumanOne({ action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' });
+
+      const properties = Object.fromEntries(
+        Object.entries(reviewRequest.schema.properties).filter(([key]) => key !== 'replyDraft'),
+      );
+      render({ ...reviewRequest, schema: { ...reviewRequest.schema, properties } });
+
+      expect(labelled('Reply draft')).toBeUndefined();
       expect(fieldOf('Refund amount')?.value).toBe('80');
     });
 

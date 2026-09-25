@@ -124,6 +124,13 @@ describe('withFieldMode', () => {
     }
   });
 
+  it('drops null from a nullable type picked Required, and Editable brings it back', () => {
+    const required = pick(empty, 'note', 'required');
+
+    expect(required.properties?.['note']).toEqual({ type: 'string' });
+    expect(pick(required, 'note', 'editable').properties?.['note']).toEqual({ type: ['string', 'null'] });
+  });
+
   it('leaves required out once no field is required', () => {
     expect(pick(pick(empty, 'refundAmount', 'required'), 'refundAmount', 'editable')).not.toHaveProperty('required');
   });
