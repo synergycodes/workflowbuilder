@@ -9,7 +9,7 @@ import { validateSubmittedDecision } from '../../../../backend/src/domain/decisi
 import { workflowSnapshotSchema } from '../../../../backend/src/domain/mapper/snapshot-schema';
 import { humanDecisionNodeType } from '../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../nodes/human-decision/default-properties-data';
-import { FIELD_MODES, type FieldMode, fieldModeOf, fieldRows, hasSourceFields, withFieldMode } from './decision-fields';
+import { FIELD_MODES, type FieldMode, fieldModeOf, fieldRows, withFieldMode } from './decision-fields';
 
 const outputSchema = {
   type: 'object',
@@ -57,13 +57,6 @@ describe('fieldRows', () => {
     const stored = { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } };
 
     expect(fieldRows(undefined, stored)).toEqual([{ key: 'replyDraft', title: 'Reply draft', declaration: undefined }]);
-  });
-
-  it('tells a source that declares fields from one that declares none', () => {
-    const stored = { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } };
-
-    expect(hasSourceFields(fieldRows(outputSchema, empty))).toBe(true);
-    expect(hasSourceFields(fieldRows(undefined, stored))).toBe(false);
   });
 });
 

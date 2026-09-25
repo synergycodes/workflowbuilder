@@ -1,5 +1,4 @@
 import {
-  FormControlWithLabel,
   rankWith,
   uiTypeIs,
   useSingleSelectedElement,
@@ -7,7 +6,7 @@ import {
   withJsonFormsControlProps,
 } from '@workflowbuilder/sdk';
 import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/sdk';
-import { Select } from '@workflowbuilder/ui';
+import { Accordion, Select } from '@workflowbuilder/ui';
 import type { SelectItem } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
@@ -21,13 +20,12 @@ import {
   type FieldRow,
   fieldModeOf,
   fieldRows,
-  hasSourceFields,
   isFieldMode,
   withFieldMode,
 } from '../../../utils/human-decision/decision-fields';
 import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
 
-const HINT_NO_SOURCE = 'Connect one node before this one whose Response format has text, number or yes/no fields.';
+const HINT_NO_SOURCE = 'Connect a block before this one — its output fields will appear here (e.g. the AI step).';
 
 const MODE_LABELS = {
   hidden: 'Hidden',
@@ -73,6 +71,8 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   const request = readDecisionRequest(data);
   const edges = useStore((state) => state.edges);
   const sourceId = nodeId === undefined ? undefined : proposalSourceIdOf(request?.proposalSourceNodeId, edges, nodeId);
+  const isUnconnected =
+    sourceId === undefined && !edges.some((edge) => edge.target === nodeId && edge.source !== nodeId);
   const outputSchema = useStore((state) =>
     sourceId === undefined
       ? undefined
@@ -95,9 +95,9 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 
   return (
-    <FormControlWithLabel label={label}>
+    <Accordion label={label}>
       <div className={styles['fields']}>
-        {!hasSourceFields(rows) && <p className={styles['hint']}>{HINT_NO_SOURCE}</p>}
+        {isUnconnected && <p className={styles['hint']}>{HINT_NO_SOURCE}</p>}
         {rows.map((row) => (
           <FieldModeRow
             key={row.key}
@@ -108,7 +108,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
           />
         ))}
       </div>
-    </FormControlWithLabel>
+    </Accordion>
   );
 }
 
