@@ -5,7 +5,7 @@ import type { HumanDecisionSchema } from './schema';
 
 const scope = getScope<HumanDecisionSchema>;
 
-// Authoring the request itself lands later (follow-up: decision-request-properties-ui).
+// Authoring the actions lands later (follow-up: decision-request-properties-ui).
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
@@ -15,6 +15,11 @@ export const uischema: UISchema = {
       label: 'Title',
       placeholder: 'Node Title...',
     },
+    {
+      type: 'DecisionFields',
+      scope: scope('properties.decisionRequest'),
+      label: 'Fields the decider sees',
+    } as unknown as UISchema,
     // The run-time decision form. The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
   ],
