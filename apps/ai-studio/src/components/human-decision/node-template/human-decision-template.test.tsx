@@ -186,4 +186,20 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(container.querySelector('[data-optional-node-content]')).toBeNull();
     expect(container.textContent).toContain('Human decision');
   });
+
+  it('greys out in the palette while it cannot be added, the same as the built-in nodes', () => {
+    render(
+      <HumanDecisionNodeTemplate
+        id=""
+        icon="UserCheck"
+        label="Human decision"
+        description=""
+        showHandles={false}
+        disabled
+      />,
+    );
+
+    // The panel shell, the icon and the label each carry the disabled state.
+    expect(container.querySelectorAll('[class*="disabled"]')).toHaveLength(3);
+  });
 });

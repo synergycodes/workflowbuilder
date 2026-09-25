@@ -4,6 +4,7 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
+import { refundReviewOutputSchema } from '../utils/ai-agent/response-options';
 
 const REFUND_CONTEXT = `You work in customer support for Lumen, a SaaS analytics product.
 
@@ -11,15 +12,17 @@ Refund policy: a duplicate charge is refunded in full; an unused month on the Pr
 is refunded pro rata; refunds go back to the original card within 5 to 10 business days.
 Style: empathetic, concise, no promises the team cannot keep.`;
 
-// The palette preset with the refund form on top: the amount may be corrected, the order date may not.
+// The palette preset with the refund form on top: the amount and the reply may be corrected, the order
+// date may not, and the reasoning stays with the team, so it is not a field of the form at all.
+// Only the confirmation prompt keeps it out of the reply to the customer.
 export const refundReviewRequest = {
   ...defaultDecisionRequest,
   schema: {
     type: 'object',
     properties: {
-      refundAmount: { type: 'number' },
-      orderDate: { type: 'string', readOnly: true },
-      note: { type: 'string' },
+      refundAmount: { type: 'number', title: 'Refund amount' },
+      orderDate: { type: 'string', title: 'Order date', readOnly: true },
+      replyDraft: { type: 'string', title: 'Reply draft' },
     },
     required: ['refundAmount'],
   },
@@ -62,15 +65,11 @@ Head of Ops, Brightwave`,
             description: 'Proposes a refund and drafts the reply.',
             systemPrompt: `${REFUND_CONTEXT}
 
-Read the customer's message. Decide the refund amount under the policy and draft the reply.
-
-Return exactly this format:
-
-**Refund amount:** [number, in USD]
-**Order date:** [YYYY-MM-DD, taken from the message]
-**Reply draft:**
-[the reply, under 120 words, signed "Lumen Support"]`,
+Read the customer's message. Decide the refund amount under the policy, take the order date from the
+message, and draft the reply: the amount refunded, where and when it arrives, and one sentence on
+preventing a repeat. Keep your reasoning about the policy for the team, not for the customer.`,
             webSearch: false,
+            outputSchema: refundReviewOutputSchema,
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -102,11 +101,13 @@ Return exactly this format:
             description: 'Writes the confirmation to the customer.',
             systemPrompt: `${REFUND_CONTEXT}
 
-A person approved the refund. The context holds the drafted reply and the decision record.
-If the decision carries edits (for example a corrected refundAmount), the edited values win over the draft.
+A person approved the refund. The context holds the draft (refundAmount, orderDate, replyDraft,
+internalReasoning) and the decision record, whose edits hold every field the person corrected. An
+edited value wins over the draft. internalReasoning is for the team: leave it out.
 
-Write the final confirmation to the customer: the amount refunded, where and when it arrives,
-and one sentence on preventing a repeat. Under 100 words, signed "Lumen Support".`,
+Send replyDraft to the customer as the confirmation, keeping its wording. Change it only where the
+amount it names differs from the approved refundAmount, and keep it signed "Lumen Support".
+Answer with the message alone.`,
             webSearch: false,
           },
           type: 'ai-studio/ai-agent',
