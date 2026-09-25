@@ -6,7 +6,7 @@ import styles from './decision-form.module.css';
 import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
 import type { DecisionDraft, DecisionWait } from '../../../stores/use-execution-store';
 import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
-import { blocksApproval, editsOf } from '../../../utils/human-decision/decision-values';
+import { blocksApproval, editsOf, startingValues } from '../../../utils/human-decision/decision-values';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
 import { DecisionVerdict } from './decision-verdict';
 
@@ -21,7 +21,9 @@ type Props = {
 };
 
 // The control remounts it (React `key`) for each wait, so it starts from that wait's draft, or from the proposal.
-export function DecisionForm({ schema, actions, proposal, draft, saveDraft, wait }: Props) {
+export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Props) {
+  // Undo can change the picks under an open decision once the lock is lifted; the form keeps the fields it opened with.
+  const [{ schema, proposal }] = useState(opened);
   const fields = useRef<EditorFormHandle>(null);
   const [isApproveBlocked, setIsApproveBlocked] = useState(false);
   const { isBusy, isAccepted, message, submit } = useDecisionSubmit(wait);
@@ -39,7 +41,7 @@ export function DecisionForm({ schema, actions, proposal, draft, saveDraft, wait
       <EditorForm
         ref={fields}
         schema={schema}
-        initialData={draft?.values ?? proposal}
+        initialData={startingValues(proposal, draft?.values, schema)}
         readOnly={isBusy}
         onInvalidFieldsChange={(invalidFields) => setIsApproveBlocked(blocksApproval(invalidFields, schema))}
         onFail={() => setIsApproveBlocked(true)}

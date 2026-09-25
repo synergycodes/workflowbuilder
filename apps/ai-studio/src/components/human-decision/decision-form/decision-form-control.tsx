@@ -27,7 +27,8 @@ function DecisionFormControl({ data }: ControlProps) {
     const outcome = readDecisionOutcome(decision.output);
     return outcome === undefined ? null : (
       <DecisionRecord
-        key={waitKey(wait)}
+        // EditorForm holds its schema from mount; the record follows the picks, which change once the lock is lifted.
+        key={`${waitKey(wait)}:${JSON.stringify(schema)}`}
         schema={schema}
         values={withEdits(proposal, outcome.edits)}
         reason={outcome.reason}

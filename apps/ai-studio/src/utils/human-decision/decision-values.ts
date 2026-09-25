@@ -12,6 +12,29 @@ export function proposedValues(proposal: unknown, schema: unknown): Record<strin
   );
 }
 
+/** Where the form starts: the draft, except that a field the person cannot change shows the proposal. */
+export function startingValues(
+  proposed: Record<string, unknown>,
+  draft: Record<string, unknown> | undefined,
+  schema: unknown,
+): Record<string, unknown> {
+  if (draft === undefined) {
+    return proposed;
+  }
+  // A draft can outlive its schema: undo takes a pick back under an open decision when the canvas lock is lifted.
+  const editable = editableFields(schema);
+  const values = { ...draft };
+  for (const [key] of schemaFields(schema).filter(([name]) => !editable.has(name))) {
+    // The editor's validator throws on a key that holds `undefined`, so a value the proposal lacks is left out.
+    if (Object.hasOwn(proposed, key)) {
+      values[key] = proposed[key];
+    } else {
+      delete values[key];
+    }
+  }
+  return values;
+}
+
 // An emptied field travels as null, or as '' from a text area; the backend reads both as emptied, and a dropped key
 // would keep the old value.
 export function editsOf(

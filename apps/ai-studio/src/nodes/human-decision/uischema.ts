@@ -5,7 +5,7 @@ import type { HumanDecisionSchema } from './schema';
 
 const scope = getScope<HumanDecisionSchema>;
 
-// Authoring the actions lands later (follow-up: decision-request-properties-ui).
+// Authoring the rest of the request lands later (follow-up: decision-request-properties-ui).
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [

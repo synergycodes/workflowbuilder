@@ -49,6 +49,11 @@ export function fieldModeOf(schema: unknown, key: string): FieldMode {
   return requiredOf(schema).includes(key) ? 'required' : 'editable';
 }
 
+function withoutNull(type: unknown[]): unknown {
+  const types = type.filter((entry) => entry !== 'null');
+  return types.length === 1 ? types[0] : types;
+}
+
 /** The schema after one pick: rebuilt from `rows`, so a stored field the editor's form cannot show is dropped. */
 export function withFieldMode(schema: JsonSchema, rows: readonly FieldRow[], key: string, mode: FieldMode): JsonSchema {
   const stored = new Map(schemaFields(schema));
@@ -58,6 +63,10 @@ export function withFieldMode(schema: JsonSchema, rows: readonly FieldRow[], key
     shown.map((row) => {
       const entry: Record<string, unknown> = { ...stored.get(row.key), ...row.declaration };
       delete entry['readOnly'];
+      // The form lets a present `null` through `required`; without it, a null the model left holds Approve back.
+      if (modeOf(row) === 'required' && Array.isArray(entry['type'])) {
+        entry['type'] = withoutNull(entry['type']);
+      }
       return [row.key, modeOf(row) === 'readOnly' ? { ...entry, readOnly: true } : entry];
     }),
   );
