@@ -1,4 +1,5 @@
-import { describe, expect, it } from 'vitest';
+import type { JSONSchema7 } from 'ai';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { aiConfig } from '@workflow-builder/ai-config';
 import {
@@ -29,6 +30,55 @@ const node: AiAgentNode = {
 };
 
 const endpoint = { AI_BASE_URL: 'https://openrouter.ai/api/v1', AI_MODEL: 'some/model' };
+
+function stubEndpoint(content: string) {
+  const bodies: Record<string, unknown>[] = [];
+  vi.stubGlobal('fetch', async (_url: unknown, init: RequestInit) => {
+    bodies.push(JSON.parse(String(init.body)));
+    return Response.json({
+      id: 'chat',
+      object: 'chat.completion',
+      created: 0,
+      model: 'some/model',
+      choices: [{ index: 0, message: { role: 'assistant', content }, finish_reason: 'stop' }],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+    });
+  });
+  return bodies;
+}
+
+// Answers every request with a web search until one carries tool_choice none, then with `answer`.
+function stubSearchingEndpoint(answer: string) {
+  const bodies: Record<string, unknown>[] = [];
+  vi.stubGlobal('fetch', async (url: unknown, init: RequestInit) => {
+    if (String(url).startsWith('https://api.tavily.com')) {
+      return Response.json({ answer: 'Duplicate charges are refunded in full.' });
+    }
+    const body = JSON.parse(String(init.body)) as Record<string, unknown>;
+    bodies.push(body);
+    const answers = body['tool_choice'] === 'none';
+    const toolCall = {
+      id: `call-${bodies.length}`,
+      type: 'function',
+      function: { name: 'webSearch', arguments: '{}' },
+    };
+    return Response.json({
+      id: 'chat',
+      object: 'chat.completion',
+      created: 0,
+      model: 'some/model',
+      choices: [
+        {
+          index: 0,
+          message: answers ? { role: 'assistant', content: answer } : { role: 'assistant', tool_calls: [toolCall] },
+          finish_reason: answers ? 'stop' : 'tool_calls',
+        },
+      ],
+      usage: { prompt_tokens: 1, completion_tokens: 1, total_tokens: 2 },
+    });
+  });
+  return bodies;
+}
 
 describe('createAiAgentExecutor without a key', () => {
   const executor = createAiAgentExecutor({ ai: aiConfig(endpoint) });
@@ -68,6 +118,74 @@ describe('createAiAgentExecutor with a key', () => {
     const executor = createAiAgentExecutor({ ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }) });
 
     expect(executor).toBeTypeOf('function');
+  });
+});
+
+describe('createAiAgentExecutor against the endpoint', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  const executor = createAiAgentExecutor({ ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }) });
+
+  // Without supportsStructuredOutputs the provider sends json_object and drops the schema, and the node still resolves.
+  it('asks for a strict json_schema response carrying the node schema', async () => {
+    const bodies = stubEndpoint('{"refundAmount":49}');
+    const outputSchema: JSONSchema7 = {
+      type: 'object',
+      properties: { refundAmount: { type: 'number' } },
+      required: ['refundAmount'],
+      additionalProperties: false,
+    };
+
+    const result = await executor({ ...node, config: { ...node.config, outputSchema } }, context());
+
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]?.['response_format']).toEqual({
+      type: 'json_schema',
+      json_schema: { name: 'response', strict: true, schema: outputSchema },
+    });
+    expect(result).toEqual({ output: { refundAmount: 49 } });
+  });
+
+  it('sends tool_choice none on the last step of the search loop, so a structured node still answers', async () => {
+    const bodies = stubSearchingEndpoint('{"refundAmount":49}');
+    const searching = createAiAgentExecutor({
+      ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }),
+      tavilyApiKey: 'tavily-key',
+    });
+    const outputSchema: JSONSchema7 = {
+      type: 'object',
+      properties: { refundAmount: { type: 'number' } },
+      required: ['refundAmount'],
+      additionalProperties: false,
+    };
+
+    const result = await searching({ ...node, config: { ...node.config, webSearch: true, outputSchema } }, context());
+
+    expect(bodies.map((body) => body['tool_choice'])).toEqual(['auto', 'auto', 'auto', 'none']);
+    expect(result).toEqual({ output: { refundAmount: 49 } });
+  });
+
+  it('sends tool_choice none on the last step of a plain-text search loop and returns the answer', async () => {
+    const bodies = stubSearchingEndpoint('Duplicate charges are refunded in full.');
+    const searching = createAiAgentExecutor({
+      ai: aiConfig({ ...endpoint, AI_API_KEY: 'test-key' }),
+      tavilyApiKey: 'tavily-key',
+    });
+
+    const result = await searching({ ...node, config: { ...node.config, webSearch: true } }, context());
+
+    expect(bodies.map((body) => body['tool_choice'])).toEqual(['auto', 'auto', 'auto', 'none']);
+    expect(result).toEqual({ output: { response: 'Duplicate charges are refunded in full.' } });
+  });
+
+  it('asks for no response format when the node has no output schema', async () => {
+    const bodies = stubEndpoint('A short summary.');
+
+    const result = await executor(node, context());
+
+    expect(bodies).toHaveLength(1);
+    expect(bodies[0]).not.toHaveProperty('response_format');
+    expect(result).toEqual({ output: { response: 'A short summary.' } });
   });
 });
 

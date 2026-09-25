@@ -1,4 +1,4 @@
-// AI agents return { response }, trigger returns { input } — others fall back to JSON
+// AI agents without an output schema return { response }, trigger returns { input } — others fall back to JSON
 export function extractOutputText(output: unknown): string {
   if (output === undefined || output === null) return '';
   if (typeof output === 'string') return output;

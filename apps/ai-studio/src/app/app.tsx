@@ -5,6 +5,7 @@ import '@workflowbuilder/sdk/style.css';
 
 import logoDark from '../assets/workflow-builder-logo-white.svg';
 import logoLight from '../assets/workflow-builder-logo.svg';
+import { responseControlRenderer } from '../components/ai-agent/response-control';
 import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
@@ -22,7 +23,7 @@ const flagship = supportTriageFlow.value;
 
 // Module-level: `nodeTemplates` must keep the same reference across renders.
 const nodeTemplates = { [humanDecisionNodeType]: HumanDecisionNodeTemplate };
-const jsonForm = { renderers: [decisionFormRenderer] };
+const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer] };
 
 // A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;

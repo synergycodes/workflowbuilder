@@ -37,6 +37,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       description,
       data,
       selected = false,
+      disabled = false,
       layoutDirection = 'RIGHT',
       showHandles = true,
       isValid,
@@ -49,10 +50,10 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       const isCanvasNode = showHandles;
 
       return (
-        <NodePanel.Root selected={selected}>
+        <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header>
-            <NodeIcon icon={iconElement} />
-            <NodeDescription label={label} description={description} />
+            <NodeIcon icon={iconElement} disabled={disabled} />
+            <NodeDescription label={label} description={description} disabled={disabled} />
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
             <OptionalNodeContent nodeId={id}>

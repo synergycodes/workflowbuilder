@@ -552,6 +552,24 @@ describe('mapToExecutionModel', () => {
     expect(result.nodes[0]!.config).toEqual({ foo: 1 });
   });
 
+  it('keeps an AI agent output schema on the way to `config`, like any key it does not know', () => {
+    const outputSchema = {
+      type: 'object',
+      properties: { refundAmount: { type: 'number' } },
+      required: ['refundAmount'],
+    };
+    const snapshot = workflowSnapshotSchema.parse({
+      nodes: [
+        { id: 'n1', data: { type: 'ai-studio/ai-agent', properties: { systemPrompt: 'Decide.', outputSchema } } },
+      ],
+      edges: [],
+    });
+
+    const result = mapToExecutionModel('wf-1', snapshot);
+
+    expect(result.nodes[0]!.config).toEqual({ systemPrompt: 'Decide.', outputSchema });
+  });
+
   it('passes unknown node types through unchanged — backend does not know any vocabulary', () => {
     // The whole point of the structural mapper: a type the backend has never
     // heard of reaches the worker, where the registry-miss becomes a
