@@ -38,11 +38,16 @@ function controlOf(key: string, field: Record<string, unknown>): EditorControl['
   return type !== undefined && isAddressable(key) ? CONTROL_BY_TYPE.get(type) : undefined;
 }
 
+/** The fields the editor shows, in declaration order; a field of another type is left out. */
+export function shownFields(schema: unknown): [string, Record<string, unknown>][] {
+  return schemaFields(schema).filter(([key, field]) => controlOf(key, field) !== undefined);
+}
+
 /** The fields a person can change: shown by the editor and not read-only. Any other field passes through untouched. */
 export function editableFields(schema: unknown): Set<string> {
   return new Set(
-    schemaFields(schema)
-      .filter(([key, field]) => controlOf(key, field) !== undefined && field['readOnly'] !== true)
+    shownFields(schema)
+      .filter(([, field]) => field['readOnly'] !== true)
       .map(([key]) => key),
   );
 }
