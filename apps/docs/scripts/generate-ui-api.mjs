@@ -22,6 +22,8 @@ const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
 const uiSource = path.resolve(repoRoot, 'packages/ui/src');
 const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
+// Entry point of the UI API Reference: re-exports, from the package barrel, every type a Props table mentions.
+const typesEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
 // Engineering notes in the CSS, never public documentation.
@@ -268,22 +270,18 @@ function addProperty(child, byId, accumulator) {
   accumulator.set(child.name, {
     name: child.name,
     type,
-    references: typeReferences(child.type, byId, type),
+    references: typeReferences(child.type, byId),
     required: !child.flags?.isOptional,
     default: defaultTag(child.comment),
     description: summaryText(child.comment),
   });
 }
 
-const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256;
-
-// Matches `name` as a whole identifier, so `Size` does not match inside `React.Size` or `ButtonSize`.
-const identifierPattern = (name) => new RegExp(`(?<![\\w$.])${name.replaceAll(/[$.]/g, String.raw`\$&`)}(?![\\w$])`);
+const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256 || node?.kind === 8; // alias, interface, enum
 
 // First-party type declarations a type mentions, as `{ text, target }`: `text` is the name as written
 // at the use site (an aliased import differs from the declaration), `target` the declaration id.
-// Only names visible in `rendered` are kept - a type hidden inside `{ … }` would get no link.
-function typeReferences(typeNode, byId, rendered) {
+function typeReferences(typeNode, byId) {
   const found = new Map();
   (function walk(value) {
     if (Array.isArray(value)) {
@@ -296,9 +294,7 @@ function typeReferences(typeNode, byId, rendered) {
     }
     for (const nested of Object.values(value)) walk(nested);
   })(typeNode);
-  return [...found.values()]
-    .filter((reference) => identifierPattern(reference.text).test(rendered))
-    .sort((a, b) => a.text.localeCompare(b.text));
+  return [...found.values()].sort((a, b) => a.text.localeCompare(b.text));
 }
 
 function uniqueReferences(references) {
@@ -363,75 +359,37 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
   return merged;
 }
 
-// `(typeof SIZES)[number]` reads as the literals of the SIZES tuple, not as a formula.
-function shapeToString(typeNode, byId) {
-  if (typeNode?.type === 'indexedAccess' && typeNode.objectType?.type === 'query') {
-    let constType = byId.get(typeNode.objectType.queryType?.target)?.type;
-    if (constType?.type === 'typeOperator') constType = constType.target;
-    if (constType?.type === 'tuple')
-      return constType.elements.map((element) => typeToString(element, byId)).join(' | ');
-  }
-  // `${SnackbarType}` reads as the enum's string values.
-  const [onlySpan] =
-    typeNode?.type === 'templateLiteral' && !typeNode.head && typeNode.tail.length === 1 ? typeNode.tail : [];
-  const enumNode = onlySpan && !onlySpan[1] ? byId.get(onlySpan[0].target) : null;
-  if (enumNode?.kind === 8) return enumNode.children.map((member) => typeToString(member.type, byId)).join(' | ');
-  return typeToString(typeNode, byId);
+function categoryTag(comment) {
+  const tag = (comment?.blockTags ?? []).find((b) => b.tag === '@category');
+  return tag?.content.map((c) => c.text).join('').trim() || null;
 }
 
-// A union keeps its shape: listing its members' fields would hide the non-object members.
-function isObjectType(node) {
-  if (node.kind === 256) return true;
-  if (node.type?.type === 'reflection') return Boolean(node.type.declaration?.children);
-  return node.type?.type === 'intersection';
-}
-
+// Every type the Props tables mention, and the types those mention, so the UI API Reference has no dangling
+// reference. Rewrites each reference to the page path starlight-typedoc gives it (`<category>/<name>`).
 function collectTypes(entries, byId, warnings) {
   const pending = entries.flatMap((entry) => entry.props.flatMap((property) => property.references));
-  const byTarget = new Map();
+  const types = new Map();
   while (pending.length > 0) {
     const { target } = pending.pop();
-    if (byTarget.has(target)) continue;
+    if (types.has(target)) continue;
     const node = byId.get(target);
-    const properties = isObjectType(node)
-      ? [...collectProps(node, byId, new Map()).values()].sort((a, b) => a.name.localeCompare(b.name))
-      : [];
-    const shape = isObjectType(node) ? (properties.length > 0 ? null : '{}') : shapeToString(node.type, byId);
-    const entry = {
-      name: node.name,
-      description: summaryText(node.comment),
-      shape,
-      shapeReferences: shape ? typeReferences(node.type, byId, shape) : [],
-      properties,
-    };
-    byTarget.set(target, entry);
-    pending.push(...entry.shapeReferences, ...properties.flatMap((property) => property.references));
+    const category = categoryTag(node.comment);
+    if (!category) warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
+    types.set(target, { name: node.name, pagePath: `${category ?? 'Other'}/${node.name}`.toLowerCase() });
+    pending.push(...typeReferences(node.type ?? node.children, byId));
   }
 
-  const nameCounts = new Map();
-  for (const entry of byTarget.values()) nameCounts.set(entry.name, (nameCounts.get(entry.name) ?? 0) + 1);
-  const anchors = new Map(
-    [...byTarget].map(([target, entry]) => [
-      target,
-      nameCounts.get(entry.name) > 1 ? `${entry.name}-${target}` : entry.name,
-    ]),
-  );
-  for (const [name, count] of nameCounts) {
-    if (count > 1)
-      warnings.push(`type name "${name}" is declared ${count} times - its Types page entries carry an id suffix`);
+  const pagePaths = new Map();
+  for (const { name, pagePath } of types.values()) {
+    if (pagePaths.has(pagePath)) warnings.push(`type name "${name}" is declared twice - both would render at ${pagePath}`);
+    pagePaths.set(pagePath, name);
   }
-  const withAnchors = (references) => references.map(({ text, target }) => ({ text, anchor: anchors.get(target) }));
-  const withPropertyAnchors = (properties) =>
-    properties.map((property) => ({ ...property, references: withAnchors(property.references) }));
-
-  for (const entry of entries) entry.props = withPropertyAnchors(entry.props);
-  const types = [...byTarget].map(([target, entry]) => ({
-    ...entry,
-    anchor: anchors.get(target),
-    shapeReferences: withAnchors(entry.shapeReferences),
-    properties: withPropertyAnchors(entry.properties),
-  }));
-  return types.sort((a, b) => a.anchor.localeCompare(b.anchor));
+  const withPages = (references) =>
+    references.map(({ text, target }) => ({ text, pagePath: types.get(target).pagePath }));
+  for (const entry of entries) {
+    entry.props = entry.props.map((property) => ({ ...property, references: withPages(property.references) }));
+  }
+  return [...types.values()].map((type) => type.name).sort();
 }
 
 function extractCssVariables(directory, cssSources, warnings, slug) {
@@ -537,15 +495,17 @@ async function main() {
     };
   }
 
-  const types = collectTypes(Object.values(components), byId, warnings);
+  const typeNames = collectTypes(Object.values(components), byId, warnings);
 
   await mkdir(path.dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify({ components, types }, null, 2) + '\n');
+  await writeFile(outFile, JSON.stringify(components, null, 2) + '\n');
+  const barrel = path.relative(path.dirname(typesEntryFile), path.resolve(uiSource, 'index'));
+  await writeFile(typesEntryFile, `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`);
 
   const summary = Object.entries(components).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
   );
-  console.log(`✔ ui-api.json generated (${types.length} types)\n  ` + summary.join('\n  '));
+  console.log(`✔ ui-api.json generated (${typeNames.length} types)\n  ` + summary.join('\n  '));
 
   if (warnings.length > 0) {
     // An unresolved type would silently ship a "no configurable props" page.

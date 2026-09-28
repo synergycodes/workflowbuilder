@@ -1,5 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
+  "exclude": ["dist", "src/generated/ui-types.ts"],
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {

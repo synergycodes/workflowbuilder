@@ -9,7 +9,7 @@ interface Entry {
 }
 
 const { slug } = Astro.props as { slug: string };
-const entry = (data.components as Record<string, Entry>)[slug];
+const entry = (data as Record<string, Entry>)[slug];
 if (!entry) {
   throw new Error(
     `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
