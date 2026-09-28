@@ -88,15 +88,7 @@ const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 2
 const LINK = /\{@link (\S+) ([^}]+)\}/g;
 const linkedTypes = new Set();
 
-function categoryTag(comment) {
-  const tag = (comment?.blockTags ?? []).find((b) => b.tag === '@category');
-  return (
-    tag?.content
-      .map((c) => c.text)
-      .join('')
-      .trim() || null
-  );
-}
+const categoryTag = (comment) => comment?.blockTags?.find((b) => b.tag === '@category')?.content[0]?.text.trim();
 
 const pagePath = (node) => `${categoryTag(node.comment) ?? 'Other'}/${node.name}`.toLowerCase();
 
@@ -144,7 +136,8 @@ function typeToString(t, byId, depth = 0) {
       return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
     case 'templateLiteral': {
-      return 'string';
+      const spans = (t.tail ?? []).map(([span, text]) => `\${${typeToString(span, byId, depth + 1)}}${text}`);
+      return `\`${t.head}${spans.join('')}\``;
     }
     case 'query': {
       return typeToString(t.queryType, byId, depth + 1);
@@ -353,32 +346,16 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
   return merged;
 }
 
-// Every type the Props tables link to, and the types those mention, so the UI API Reference has no dangling reference.
+// Every type the Props tables link to, plus the types those mention: rendering a type marks the types it mentions,
+// and a Set's iteration visits entries added during it. The UI API Reference then has no dangling reference.
 function collectLinkedTypes(byId, warnings) {
-  const pending = [...linkedTypes];
-  const types = new Map();
-  while (pending.length > 0) {
-    const node = pending.pop();
-    if (types.has(node.id)) continue;
-    if (!categoryTag(node.comment)) {
+  for (const node of linkedTypes) {
+    if (!categoryTag(node.comment))
       warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
-    }
-    types.set(node.id, node);
-    (function walk(value) {
-      if (Array.isArray(value)) {
-        for (const item of value) walk(item);
-        return;
-      }
-      if (!value || typeof value !== 'object') return;
-      if (value.type === 'reference' && isTypeDeclaration(byId.get(value.target))) pending.push(byId.get(value.target));
-      for (const nested of Object.values(value)) walk(nested);
-    })(node.type ?? node.children);
+    collectProps(node, byId);
+    typeToString(node.type, byId);
   }
-  const names = [...types.values()].map((node) => node.name);
-  for (const name of new Set(names.filter((name, index) => names.indexOf(name) !== index))) {
-    warnings.push(`type name "${name}" is declared twice - both would render at the same UI API Reference page`);
-  }
-  return names.sort();
+  return [...linkedTypes].map((node) => node.name).sort();
 }
 
 function extractCssVariables(directory, cssSources, warnings, slug) {
@@ -497,7 +474,7 @@ async function main() {
   const summary = Object.entries(out).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
   );
-  console.log(`✔ ui-api.json generated (${typeNames.length} types)\n  ` + summary.join('\n  '));
+  console.log('✔ ui-api.json generated\n  ' + summary.join('\n  '));
 
   if (warnings.length > 0) {
     // An unresolved type would silently ship a "no configurable props" page.
