@@ -238,32 +238,6 @@ describe('the decision fields control in the real properties panel', () => {
     expect(dataUpdates).toBe(0);
   });
 
-  it('locks the dropdowns while a run is alive, though nothing else disables the panel', async () => {
-    await renderRefund();
-
-    act(() => {
-      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-      applyEvent(event({ type: 'node_started', nodeId: 'draft-1' }));
-    });
-    expect(runStatus()).toBe('pending');
-    expect(selects().every((select) => select.disabled)).toBe(true);
-
-    act(() => applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } })));
-    expect(runStatus()).toBe('running');
-    expect(selects().every((select) => select.disabled)).toBe(true);
-
-    act(() => applyEvent(event({ type: 'node_waiting', nodeId: 'approver-2' })));
-    expect(runStatus()).toBe('waiting');
-    expect(selects().every((select) => select.disabled)).toBe(true);
-
-    act(() => applyConnectionLost());
-    expect(runStatus()).toBe('disconnected');
-    expect(selects().every((select) => select.disabled)).toBe(true);
-
-    act(() => applyEvent(event({ type: 'execution_completed' })));
-    expect(selects().every((select) => !select.disabled)).toBe(true);
-  });
-
   it('locks the dropdowns while the canvas is in the app bar read-only mode', async () => {
     await renderRefund();
 
@@ -274,22 +248,7 @@ describe('the decision fields control in the real properties panel', () => {
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
-  it('steps aside while this node waits, section header included, and comes back after Reset', async () => {
-    await renderRefund();
-    expect(sectionHeader()).toBeDefined();
-
-    act(() => {
-      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-      applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
-    });
-    expect(rows()).toHaveLength(0);
-    expect(sectionHeader()).toBeUndefined();
-
-    act(() => resetExecution());
-    expect(rows()).toHaveLength(4);
-  });
-
-  it('comes back beside the settled decision and stays locked until Reset', async () => {
+  it('steps aside from Run until Reset, section header included, even with the canvas lock lifted', async () => {
     await renderRefund();
     act(() =>
       root.render(
@@ -299,10 +258,21 @@ describe('the decision fields control in the real properties panel', () => {
         </>,
       ),
     );
+    expect(sectionHeader()).toBeDefined();
+
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    expect(runStatus()).toBe('pending');
+    expect(sectionHeader()).toBeUndefined();
+
+    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => applyEvent(event({ type: 'node_waiting', nodeId: HUMAN })));
+    expect(sectionHeader()).toBeUndefined();
+
+    act(() => applyConnectionLost());
+    expect(runStatus()).toBe('disconnected');
+    expect(sectionHeader()).toBeUndefined();
 
     act(() => {
-      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-      applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
       applyEvent(
         event({
           type: 'node_completed',
@@ -312,10 +282,10 @@ describe('the decision fields control in the real properties panel', () => {
       );
       applyEvent(event({ type: 'execution_completed' }));
     });
-    expect(rows()).toHaveLength(4);
-    expect(selects().every((select) => select.disabled)).toBe(true);
+    expect(sectionHeader()).toBeUndefined();
 
     act(() => resetExecution());
+    expect(rows()).toHaveLength(4);
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 

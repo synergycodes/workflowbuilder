@@ -11,7 +11,7 @@ import { Accordion } from '@workflowbuilder/ui';
 import styles from './decision-fields-control.module.css';
 
 import { proposalSourceIdOf } from '../../../hooks/use-node-decision';
-import { isRunAlive, useExecutionStore } from '../../../stores/use-execution-store';
+import { useExecutionStore } from '../../../stores/use-execution-store';
 import {
   type FieldMode,
   type SourceHint,
@@ -45,14 +45,10 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
       ? undefined
       : state.nodes.find((node) => node.id === sourceId)?.data.properties['outputSchema'],
   );
-  const isWaiting = useExecutionStore(
-    (state) => nodeId !== undefined && state.nodeStates[nodeId]?.status === 'waiting',
-  );
-  // The app bar can lift the canvas lock mid-run; the dropdowns stay locked, undo does not.
-  const isLocked = useExecutionStore((state) => isRunAlive(state.status));
+  // From Run until Reset the sidebar belongs to the run, even if the app bar lifts the canvas lock.
+  const isRunShown = useExecutionStore((state) => state.executionId !== undefined);
 
-  // While the node waits, the sidebar belongs to the decision form.
-  if (request === undefined || isWaiting) {
+  if (request === undefined || isRunShown) {
     return null;
   }
 
@@ -71,7 +67,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
             key={row.key}
             row={row}
             mode={fieldModeOf(schema, row.key)}
-            disabled={!enabled || isLocked}
+            disabled={!enabled}
             onPick={(mode) => pick(row.key, mode)}
           />
         ))}
