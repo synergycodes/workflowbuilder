@@ -12,7 +12,13 @@ import { useRunLocksCanvas } from '../../../hooks/use-run-locks-canvas';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
-import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
+import {
+  applyConnectionLost,
+  applyEvent,
+  resetExecution,
+  setExecutionStarted,
+  useExecutionStore,
+} from '../../../stores/use-execution-store';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
 import { decisionFieldsRenderer } from './decision-fields-control';
 
@@ -115,6 +121,7 @@ function RunLock() {
 }
 
 const storedProperties = () => useStore.getState().nodes.find((node) => node.id === HUMAN)?.data.properties;
+const runStatus = () => useExecutionStore.getState().status;
 const storedSchema = () => (storedProperties()?.['decisionRequest'] as { schema: unknown }).schema;
 
 // JsonForms debounces onChange by 10 ms.
@@ -224,6 +231,19 @@ describe('the decision fields control in the real properties panel', () => {
       setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
       applyEvent(event({ type: 'node_started', nodeId: 'draft-1' }));
     });
+    expect(runStatus()).toBe('pending');
+    expect(selects().every((select) => select.disabled)).toBe(true);
+
+    act(() => applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } })));
+    expect(runStatus()).toBe('running');
+    expect(selects().every((select) => select.disabled)).toBe(true);
+
+    act(() => applyEvent(event({ type: 'node_waiting', nodeId: 'approver-2' })));
+    expect(runStatus()).toBe('waiting');
+    expect(selects().every((select) => select.disabled)).toBe(true);
+
+    act(() => applyConnectionLost());
+    expect(runStatus()).toBe('disconnected');
     expect(selects().every((select) => select.disabled)).toBe(true);
 
     act(() => applyEvent(event({ type: 'execution_completed' })));

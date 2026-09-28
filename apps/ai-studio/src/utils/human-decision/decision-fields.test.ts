@@ -7,6 +7,7 @@ import { decisionRequestSchema } from '../../../../backend/src/domain/decision/d
 import { findDecisionRequest } from '../../../../backend/src/domain/decision/find-decision-request';
 import { validateSubmittedDecision } from '../../../../backend/src/domain/decision/validate-submitted-decision';
 import { workflowSnapshotSchema } from '../../../../backend/src/domain/mapper/snapshot-schema';
+import { refundReviewRequest } from '../../data/refund-review-flow';
 import { humanDecisionNodeType } from '../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../nodes/human-decision/default-properties-data';
 import { FIELD_MODES, type FieldMode, fieldModeOf, fieldRows, withFieldMode } from './decision-fields';
@@ -25,6 +26,10 @@ const outputSchema = {
 };
 
 const empty: JsonSchema = defaultDecisionRequest.schema;
+const refundReview: JsonSchema = refundReviewRequest.schema;
+
+const parsed = (schema: JsonSchema) => decisionRequestSchema.safeParse({ ...defaultDecisionRequest, schema });
+const issuesOf = (result: ReturnType<typeof parsed>) => (result.success ? '' : JSON.stringify(result.error.issues));
 
 function pick(schema: JsonSchema, key: string, mode: FieldMode): JsonSchema {
   return withFieldMode(schema, fieldRows(outputSchema, schema), key, mode);
@@ -135,6 +140,14 @@ describe('withFieldMode', () => {
     expect(pick(pick(empty, 'refundAmount', 'required'), 'refundAmount', 'editable')).not.toHaveProperty('required');
   });
 
+  it('hiding a required field leaves required, and the result still parses', () => {
+    const next = pick(pick(empty, 'refundAmount', 'required'), 'refundAmount', 'hidden');
+
+    expect(next).not.toHaveProperty('required');
+    const result = parsed(next);
+    expect(result.success, issuesOf(result)).toBe(true);
+  });
+
   it('keeps a field the source no longer declares until the author hides it', () => {
     const stored: JsonSchema = { type: 'object', properties: { summary: { type: 'string', title: 'Summary' } } };
 
@@ -147,11 +160,15 @@ describe('withFieldMode', () => {
     const stored: JsonSchema = {
       type: 'object',
       properties: { quantity: { type: 'integer' }, refundAmount: { type: 'number', title: 'Refund amount' } },
+      required: ['quantity'],
     };
 
     const next = pick(stored, 'refundAmount', 'editable');
 
     expect(Object.keys(next.properties ?? {})).toEqual(['refundAmount']);
+    expect(next).not.toHaveProperty('required');
+    const result = parsed(next);
+    expect(result.success, issuesOf(result)).toBe(true);
   });
 });
 
@@ -206,14 +223,30 @@ describe('the backend takes the stored schema as it is', () => {
     required: 'accepted',
   };
 
-  it('every pick from the palette preset parses with decisionRequestSchema', () => {
-    for (const key of keysOf(empty)) {
+  it.each([
+    ['the palette preset', empty],
+    ['the "Refund Review" request', refundReview],
+  ])('every pick from %s parses with decisionRequestSchema', (_name, start) => {
+    for (const key of keysOf(start)) {
       for (const mode of FIELD_MODES) {
-        const parsed = decisionRequestSchema.safeParse({ ...defaultDecisionRequest, schema: pick(empty, key, mode) });
-        expect(parsed.success, `${key}=${mode}: ${parsed.success ? '' : JSON.stringify(parsed.error.issues)}`).toBe(
-          true,
-        );
+        const result = parsed(pick(start, key, mode));
+        expect(result.success, `${key}=${mode}: ${issuesOf(result)}`).toBe(true);
       }
+    }
+  });
+
+  it('a sequence of picks parses at every step', () => {
+    const steps: [string, FieldMode][] = [
+      ['refundAmount', 'required'],
+      ['orderDate', 'readOnly'],
+      ['refundAmount', 'hidden'],
+    ];
+
+    let schema = empty;
+    for (const [key, mode] of steps) {
+      schema = pick(schema, key, mode);
+      const result = parsed(schema);
+      expect(result.success, `${key}=${mode}: ${issuesOf(result)}`).toBe(true);
     }
   });
 
