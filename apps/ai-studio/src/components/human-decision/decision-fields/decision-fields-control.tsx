@@ -25,15 +25,21 @@ import { FieldModeRow } from './field-mode-row';
 
 const HINTS = {
   unconnected: 'Connect a block before this one — its output fields will appear here (e.g. the AI step).',
-  noFields: 'The block before this one declares no output fields — for an AI step, pick a structured Response format.',
+  ambiguous: 'Several blocks lead into this one — keep one connection before it so its output fields appear here.',
+  noFields:
+    'The block before this one declares no output fields the form can show (text, number, yes/no) — for an AI step, pick a structured Response format.',
 } satisfies Record<SourceHint, string>;
 
 function DecisionFieldsControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
   const request = readDecisionRequest(data);
   const edges = useStore((state) => state.edges);
-  const sourceId = nodeId === undefined ? undefined : proposalSourceIdOf(request?.proposalSourceNodeId, edges, nodeId);
-  const hasIncoming = edges.some((edge) => edge.target === nodeId && edge.source !== nodeId);
+  const predecessors = edges
+    .filter((edge) => edge.target === nodeId && edge.source !== nodeId)
+    .map((edge) => edge.source);
+  const resolved = nodeId === undefined ? undefined : proposalSourceIdOf(request?.proposalSourceNodeId, edges, nodeId);
+  // The backend refuses a declared source that is not a predecessor, so the list does not read one either.
+  const sourceId = resolved !== undefined && predecessors.includes(resolved) ? resolved : undefined;
   const outputSchema = useStore((state) =>
     sourceId === undefined
       ? undefined
@@ -52,7 +58,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
 
   const { schema } = request;
   const rows = fieldRows(outputSchema, schema);
-  const hint = sourceHintOf(sourceId, hasIncoming, rows);
+  const hint = sourceHintOf(sourceId, predecessors.length, rows);
   const pick = (key: string, mode: FieldMode) =>
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 

@@ -78,13 +78,23 @@ describe('sourceHintOf', () => {
   const storedOnly: FieldRow = { key: 'replyDraft', title: 'Reply draft', declaration: undefined };
 
   it.each([
-    ['nothing connected', undefined, false, [storedOnly], 'unconnected'],
-    ['several predecessors, none declared the source', undefined, true, [storedOnly], undefined],
-    ['a source that declares fields', 'draft-1', true, [declared, storedOnly], undefined],
-    ['a source that declares none', 'draft-1', true, [storedOnly], 'noFields'],
-    ['a source that declares none, nothing stored', 'draft-1', true, [], 'noFields'],
-  ] as const)('%s', (_case, sourceId, hasIncoming, rows, hint) => {
-    expect(sourceHintOf(sourceId, hasIncoming, rows)).toBe(hint);
+    ['nothing connected', undefined, 0, [storedOnly], 'unconnected'],
+    ['one predecessor, not resolved as the source', undefined, 1, [storedOnly], undefined],
+    ['several predecessors, none declared the source', undefined, 2, [storedOnly], 'ambiguous'],
+    ['a source that declares fields', 'draft-1', 1, [declared, storedOnly], undefined],
+    ['a source that declares none', 'draft-1', 1, [storedOnly], 'noFields'],
+    ['a source that declares none, nothing stored', 'draft-1', 1, [], 'noFields'],
+  ] as const)('%s', (_case, sourceId, predecessorCount, rows, hint) => {
+    expect(sourceHintOf(sourceId, predecessorCount, rows)).toBe(hint);
+  });
+
+  it('a source that declares only fields the form cannot show', () => {
+    const unshowable = {
+      type: 'object',
+      properties: { lines: { type: 'array', items: { type: 'string' } }, quantity: { type: 'integer' } },
+    };
+
+    expect(sourceHintOf('draft-1', 1, fieldRows(unshowable, empty))).toBe('noFields');
   });
 });
 

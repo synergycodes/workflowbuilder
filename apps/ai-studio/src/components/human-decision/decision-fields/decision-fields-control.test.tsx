@@ -348,15 +348,37 @@ describe('the decision fields control in the real properties panel', () => {
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
-  it('with two predecessors and no declared source, lists the stored fields without the hint', async () => {
+  it('with two predecessors and no declared source, says several blocks lead in and lists the stored fields', async () => {
     await renderPanel(
       [agent('draft-1', refundOutput), agent('draft-2', refundOutput), human(stored)],
       [edge('draft-1'), edge('draft-2')],
     );
 
+    expect(container.textContent).toContain('Several blocks lead into this one');
     expect(container.textContent).not.toContain('Connect a block before this one');
     expect(container.textContent).not.toContain('declares no output fields');
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
+  });
+
+  it('a declared source that is not a predecessor is not read: with another block connected, no hint', async () => {
+    const ghost = { ...refundReviewRequest, proposalSourceNodeId: 'ghost' };
+    await renderPanel([agent('draft-1', refundOutput), human(ghost)], [edge('draft-1')]);
+
+    expect(container.textContent).not.toContain('declares no output fields');
+    expect(container.textContent).not.toContain('Connect a block before this one');
+    expect(rowLabels()).toEqual([
+      'Refund amount (not in the source)',
+      'Order date (not in the source)',
+      'Reply draft (not in the source)',
+    ]);
+  });
+
+  it('a declared source that is not a predecessor is not read: with nothing connected, the unconnected hint', async () => {
+    const ghost = { ...refundReviewRequest, proposalSourceNodeId: 'ghost' };
+    await renderPanel([agent('draft-1', refundOutput), human(ghost)], []);
+
+    expect(container.textContent).toContain('Connect a block before this one');
+    expect(container.textContent).not.toContain('declares no output fields');
   });
 
   describe('on the "Refund Review" template', () => {

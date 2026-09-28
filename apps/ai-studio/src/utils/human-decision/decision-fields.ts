@@ -37,16 +37,19 @@ export function fieldRows(outputSchema: unknown, schema: unknown): FieldRow[] {
   ];
 }
 
-/** Why the list cannot come from a source, if it cannot. */
-export type SourceHint = 'unconnected' | 'noFields';
+/** Why no source supplies the list: nothing connected, several blocks with none declared, or no field the form can show. */
+export type SourceHint = 'unconnected' | 'ambiguous' | 'noFields';
 
 export function sourceHintOf(
   sourceId: string | undefined,
-  hasIncoming: boolean,
+  predecessorCount: number,
   rows: readonly FieldRow[],
 ): SourceHint | undefined {
   if (sourceId === undefined) {
-    return hasIncoming ? undefined : 'unconnected';
+    if (predecessorCount === 0) {
+      return 'unconnected';
+    }
+    return predecessorCount > 1 ? 'ambiguous' : undefined;
   }
   return rows.some((row) => row.declaration !== undefined) ? undefined : 'noFields';
 }
