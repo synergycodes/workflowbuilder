@@ -1,5 +1,5 @@
 import { rankWith, uiTypeIs, useSingleSelectedElement, withJsonFormsControlProps } from '@workflowbuilder/sdk';
-import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/sdk';
+import type { JsonFormsRendererExtension } from '@workflowbuilder/sdk';
 
 import { useNodeDecision } from '../../../hooks/use-node-decision';
 import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
@@ -9,10 +9,12 @@ import { proposedValues, withEdits } from '../../../utils/human-decision/decisio
 import { DecisionForm } from './decision-form';
 import { DecisionRecord } from './decision-record';
 
-// Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored.
-function DecisionFormControl({ data }: ControlProps) {
-  const nodeId = useSingleSelectedElement()?.node?.id;
-  const request = readDecisionRequest(data);
+// Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored. The request comes with
+// the node from one store snapshot, not from `data`, which JsonForms hands over a render after the selection moves.
+function DecisionFormControl() {
+  const node = useSingleSelectedElement()?.node;
+  const nodeId = node?.id;
+  const request = readDecisionRequest(node?.data.properties['decisionRequest']);
   const decision = useNodeDecision(nodeId, request?.proposalSourceNodeId);
 
   if (request === undefined || decision.phase === 'none') {

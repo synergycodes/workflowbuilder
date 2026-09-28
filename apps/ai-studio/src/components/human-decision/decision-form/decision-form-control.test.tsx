@@ -21,8 +21,9 @@ import {
 import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
 import { decisionFormRenderer } from './decision-form-control';
 
-// The sidebar renders for the single selected node; the test moves the selection by hand.
-const selection: { nodeId: string | undefined } = { nodeId: 'human-1' };
+// The sidebar renders for the single selected node; the test moves the selection by hand, and the node's properties are
+// the data it last rendered.
+const selection: { nodeId: string | undefined; properties: unknown } = { nodeId: 'human-1', properties: undefined };
 const edges = [
   { id: 'e1', source: 'draft-1', target: 'human-1' },
   { id: 'e2', source: 'human-1', target: 'send-1' },
@@ -34,7 +35,9 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   return {
     ...actual,
     useSingleSelectedElement: () =>
-      selection.nodeId === undefined ? null : { node: { id: selection.nodeId }, edge: null },
+      selection.nodeId === undefined
+        ? null
+        : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
   };
 });
@@ -143,6 +146,7 @@ describe.each([
     const changes = nodeChanges;
     const data = { label: 'Review Refund', description: '', decisionRequest };
     renderedData.push(data);
+    selection.properties = data;
     act(() =>
       root.render(
         <Mode>
