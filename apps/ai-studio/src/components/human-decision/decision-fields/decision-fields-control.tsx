@@ -12,19 +12,28 @@ import styles from './decision-fields-control.module.css';
 
 import { proposalSourceIdOf } from '../../../hooks/use-node-decision';
 import { isRunAlive, useExecutionStore } from '../../../stores/use-execution-store';
-import { type FieldMode, fieldModeOf, fieldRows, withFieldMode } from '../../../utils/human-decision/decision-fields';
+import {
+  type FieldMode,
+  type SourceHint,
+  fieldModeOf,
+  fieldRows,
+  sourceHintOf,
+  withFieldMode,
+} from '../../../utils/human-decision/decision-fields';
 import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
 import { FieldModeRow } from './field-mode-row';
 
-const HINT_NO_SOURCE = 'Connect a block before this one — its output fields will appear here (e.g. the AI step).';
+const HINTS = {
+  unconnected: 'Connect a block before this one — its output fields will appear here (e.g. the AI step).',
+  noFields: 'The block before this one declares no output fields — for an AI step, pick a structured Response format.',
+} satisfies Record<SourceHint, string>;
 
 function DecisionFieldsControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
   const request = readDecisionRequest(data);
   const edges = useStore((state) => state.edges);
   const sourceId = nodeId === undefined ? undefined : proposalSourceIdOf(request?.proposalSourceNodeId, edges, nodeId);
-  const isUnconnected =
-    sourceId === undefined && !edges.some((edge) => edge.target === nodeId && edge.source !== nodeId);
+  const hasIncoming = edges.some((edge) => edge.target === nodeId && edge.source !== nodeId);
   const outputSchema = useStore((state) =>
     sourceId === undefined
       ? undefined
@@ -43,13 +52,14 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
 
   const { schema } = request;
   const rows = fieldRows(outputSchema, schema);
+  const hint = sourceHintOf(sourceId, hasIncoming, rows);
   const pick = (key: string, mode: FieldMode) =>
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 
   return (
     <Accordion label={label}>
       <div className={styles['fields']}>
-        {isUnconnected && <p className={styles['hint']}>{HINT_NO_SOURCE}</p>}
+        {hint && <p className={styles['hint']}>{HINTS[hint]}</p>}
         {rows.map((row) => (
           <FieldModeRow
             key={row.key}

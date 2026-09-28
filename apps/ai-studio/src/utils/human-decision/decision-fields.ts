@@ -37,6 +37,20 @@ export function fieldRows(outputSchema: unknown, schema: unknown): FieldRow[] {
   ];
 }
 
+/** Why the list cannot come from a source, if it cannot. */
+export type SourceHint = 'unconnected' | 'noFields';
+
+export function sourceHintOf(
+  sourceId: string | undefined,
+  hasIncoming: boolean,
+  rows: readonly FieldRow[],
+): SourceHint | undefined {
+  if (sourceId === undefined) {
+    return hasIncoming ? undefined : 'unconnected';
+  }
+  return rows.some((row) => row.declaration !== undefined) ? undefined : 'noFields';
+}
+
 // The contract's own encoding, so the stored schema is the decider's form: a field it leaves out is Hidden.
 export function fieldModeOf(schema: unknown, key: string): FieldMode {
   const declaration = schemaFields(schema).find(([name]) => name === key)?.[1];
