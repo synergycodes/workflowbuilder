@@ -9,6 +9,8 @@ import type { FieldState } from '../../shared/types/field';
  * - `default`: select a single date.
  * - `range`: select a date range (`[from, to]`).
  * - `multiple`: select an arbitrary array of dates.
+ *
+ * @category DatePicker
  */
 export type DatePickerType = 'default' | 'range' | 'multiple';
 

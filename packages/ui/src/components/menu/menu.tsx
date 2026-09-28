@@ -12,7 +12,7 @@ import { MenuTriggerButton } from './menu-trigger-button';
 import { type OffsetOptions, type Placement, offsetToBaseUI, placementToSideAlign } from './placement';
 import { MenuItemProps } from './types';
 
-export type { OffsetOptions, Placement } from './placement';
+export type { OffsetAxes, OffsetOptions, Placement } from './placement';
 
 export type MenuProps = {
   /**

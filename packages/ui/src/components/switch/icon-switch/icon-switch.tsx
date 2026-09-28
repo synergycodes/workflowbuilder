@@ -11,10 +11,15 @@ export type IconSwitchProps = WithIcon & {
   /**
    * @default 'primary'
    */
-  variant?: Variant;
+  variant?: IconSwitchVariant;
 } & BaseSwitchProps;
 
-type Variant = 'primary' | 'secondary';
+/**
+ * Visual style of an `IconSwitch`.
+ *
+ * @category Switch
+ */
+export type IconSwitchVariant = 'primary' | 'secondary';
 
 export function IconSwitch({
   icon,

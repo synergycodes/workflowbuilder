@@ -3,6 +3,11 @@ import clsx from 'clsx';
 
 import styles from './status.module.css';
 
+/**
+ * Validation status shown by `Status`.
+ *
+ * @category Status
+ */
 export type ValidationStatus = 'invalid';
 
 export type StatusProps = {

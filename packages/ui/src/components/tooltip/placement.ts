@@ -1,10 +1,24 @@
-type Side = 'top' | 'right' | 'bottom' | 'left';
-type Align = 'start' | 'end';
-
-export type TooltipPlacement = Side | `${Side}-${Align}`;
+/**
+ * Where a `Tooltip` opens: a side of the trigger, optionally aligned to its start or end.
+ *
+ * @category Tooltip
+ */
+export type TooltipPlacement =
+  | 'top'
+  | 'top-start'
+  | 'top-end'
+  | 'right'
+  | 'right-start'
+  | 'right-end'
+  | 'bottom'
+  | 'bottom-start'
+  | 'bottom-end'
+  | 'left'
+  | 'left-start'
+  | 'left-end';
 
 export type PlacementContextValue = {
-  side: Side;
+  side: 'top' | 'right' | 'bottom' | 'left';
   align: 'start' | 'center' | 'end';
 };
 

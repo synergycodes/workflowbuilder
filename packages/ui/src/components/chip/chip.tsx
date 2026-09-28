@@ -26,7 +26,17 @@ export type ChipProps = {
   closeLabel?: string;
 } & HTMLAttributes<HTMLSpanElement>;
 
+/**
+ * Visual style of a `Chip`: filled (`solid`) or bordered (`outline`).
+ *
+ * @category Chip
+ */
 export type ChipVariant = 'solid' | 'outline';
+/**
+ * Size of a `Chip`.
+ *
+ * @category Chip
+ */
 export type ChipSize = 's' | 'm' | 'l' | 'xl';
 
 export const Chip = forwardRef<HTMLSpanElement, ChipProps>(
