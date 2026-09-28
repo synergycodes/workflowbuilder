@@ -10,7 +10,7 @@ export const FIELD_SIZES = ['l', 'm', 's', 'xs'] as const;
  */
 export type FieldState = (typeof FIELD_STATES)[number];
 /**
- * Size of a form field control such as `Input`, `TextArea` or `DatePicker`, from `l` down to `xs`.
+ * Size of a form field control such as `Input` or `TextArea`, from `l` down to `xs`.
  *
  * @category Field
  */

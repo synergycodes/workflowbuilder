@@ -27,7 +27,8 @@ const props = [...(entry?.props ?? [])].sort(
 );
 const nativeElement = entry?.nativeElement ?? null;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-// generate-ui-api.mjs writes each linked type name as `{@link <page path> <name>}`.
+// generate-ui-api.mjs writes a linked type name as `{@link <page path> <name>}`; splitting on it with two capture
+// groups yields text, page path, name, text, ... so index % 3 tells the three apart.
 const typeParts = (type: string) => type.split(/\{@link (\S+) ([^}]+)\}/);
 ---
 

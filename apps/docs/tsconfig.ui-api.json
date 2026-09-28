@@ -1,7 +1,10 @@
 {
+  // TypeDoc program of the UI API Reference: only the generated entry, so the UI spec files stay out.
   "extends": "../../packages/ui/tsconfig.json",
   "compilerOptions": {
+    // The UI config also loads `vitest/globals`, which apps/docs does not install.
     "types": ["node"]
   },
+  // types.d.ts declares the `*.module.css` imports of the UI source.
   "include": ["src/generated/ui-types.ts", "../../packages/ui/types.d.ts"]
 }

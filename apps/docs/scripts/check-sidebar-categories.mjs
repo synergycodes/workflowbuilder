@@ -40,6 +40,7 @@ function* walk(directory) {
 }
 
 const config = readFileSync(astroConfigPath, 'utf8');
+let failed = false;
 
 for (const { source, directory, label } of REFERENCES) {
   const sourceCategories = new Set();
@@ -67,19 +68,23 @@ for (const { source, directory, label } of REFERENCES) {
         `  { label: '${category}', collapsed: true, autogenerate: { directory: '${directory}/${category}' } },`,
       );
     }
-    // Build-gate script: console.error above already prints the formatted
-    // punch list, so process.exit gives a clean non-zero without a stack trace.
-    // eslint-disable-next-line unicorn/no-process-exit
-    process.exit(1);
+    failed = true;
   }
 
   if (stale.length > 0) {
-    console.warn('warning: sidebar entries with no matching @category in source (stale):');
+    console.warn(`warning: ${label} sidebar entries with no matching @category in source (stale):`);
     for (const category of stale) {
       console.warn(`  - ${directory}/${category}`);
     }
     console.warn('Either drop them from astro.config.mjs or expect them to render an empty group.');
   }
+}
+
+if (failed) {
+  // Build-gate script: console.error above already prints the formatted
+  // punch list, so process.exit gives a clean non-zero without a stack trace.
+  // eslint-disable-next-line unicorn/no-process-exit
+  process.exit(1);
 }
 
 console.log('✓ sidebar / @category parity ok.');

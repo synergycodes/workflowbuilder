@@ -1,5 +1,6 @@
 {
   "extends": "astro/tsconfigs/strict",
+  // ui-types.ts imports UI source that needs the `@ui/*` paths of tsconfig.ui-api.json.
   "exclude": ["dist", "src/generated/ui-types.ts"],
   "compilerOptions": {
     "baseUrl": ".",

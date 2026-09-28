@@ -71,7 +71,9 @@ function indexById(root) {
 function findTypeByName(root, name, warnings) {
   const matches = [];
   (function walk(node) {
-    if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) matches.push(node);
+    if (node.name === name && (node.kind === ReflectionKind.TypeAlias || node.kind === ReflectionKind.Interface)) {
+      matches.push(node);
+    }
     for (const child of node.children ?? []) walk(child);
   })(root);
   if (matches.length > 1 && warnings) {
@@ -214,7 +216,7 @@ function findNativeElement(typeNode, byId, depth = 0) {
 // Own properties of a prop type, walking intersections and skipping native members.
 function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (!typeNode) return accumulator;
-  if (typeNode.kind === 2_097_152 || typeNode.kind === 256) {
+  if (typeNode.kind === ReflectionKind.TypeAlias || typeNode.kind === ReflectionKind.Interface) {
     if (typeNode.children?.length) {
       for (const child of typeNode.children) addProperty(child, byId, accumulator);
       return accumulator;
@@ -232,7 +234,7 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Follow first-party prop types only; both declaration forms count.
-    if (target && (target.kind === 2_097_152 || target.kind === 256)) {
+    if (target && (target.kind === ReflectionKind.TypeAlias || target.kind === ReflectionKind.Interface)) {
       collectProps(target, byId, accumulator, context);
     } else if (!target && context) {
       context.warnings.push(
@@ -281,7 +283,7 @@ function literalNames(typeNode) {
 }
 
 function addProperty(child, byId, accumulator) {
-  if (child.kind !== 1024 || accumulator.has(child.name)) return; // 1024 = Property
+  if (child.kind !== ReflectionKind.Property || accumulator.has(child.name)) return;
   accumulator.set(child.name, {
     name: child.name,
     type: typeToString(child.type, byId),
@@ -349,7 +351,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
 }
 
 // Every type the Props tables link to, plus the types those mention: rendering a type marks the types it mentions,
-// and a Set's iteration visits entries added during it. The UI API Reference then has no dangling reference.
+// and a Set's iteration visits entries added during it.
 function collectLinkedTypes(byId, warnings) {
   for (const node of linkedTypes) {
     if (!categoryTag(node.comment))
@@ -467,7 +469,7 @@ async function main() {
 
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
-  const barrel = path.relative(path.dirname(typesEntryFile), path.resolve(uiSource, 'index'));
+  const barrel = path.relative(path.dirname(typesEntryFile), path.resolve(uiSource, 'index')).split(path.sep).join('/');
   await writeFile(
     typesEntryFile,
     `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`,

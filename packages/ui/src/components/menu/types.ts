@@ -30,6 +30,6 @@ export type MenuItemProps = ListItem & {
   selected?: boolean;
   /** Called when the item is chosen. */
   onClick?: () => void;
-  /** Size of the row. */
+  /** Ignored: `Menu` sizes every row with its own `size` prop. */
   size?: ItemSize;
 };
