@@ -1,5 +1,5 @@
 import { screen } from '@testing-library/react';
-import { act } from 'react';
+import { StrictMode, act, useEffect } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -51,6 +51,15 @@ const timesShown = (text: string) => (document.body.textContent ?? '').split(tex
 const buttonNamed = (name: string) => screen.queryByRole('button', { name }) ?? undefined;
 
 const press = (name: string) => act(() => buttonNamed(name)?.click());
+
+// The example from showSnackbar's JSDoc.
+function Announcement() {
+  useEffect(() => {
+    const key = showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    return () => closeSnackbar(key);
+  }, []);
+  return null;
+}
 
 describe('showSnackbar', () => {
   it('shows the title and subtitle as given', () => {
@@ -140,6 +149,16 @@ describe('showSnackbar', () => {
     expect(timesShown('Second')).toBe(0);
   });
 
+  it('drops a show under a key whose snackbar is still closing', () => {
+    const key = show({ key: 'wait', variant: 'info', title: 'First', autoHideDuration: null });
+    act(() => closeSnackbar(key));
+
+    show({ key: 'wait', variant: 'info', title: 'Second', autoHideDuration: null });
+    settle();
+
+    expect(timesShown('Second')).toBe(0);
+  });
+
   it('shows the key again once the snackbar under it is gone', () => {
     const key = show({ key: 'wait', variant: 'info', title: 'First', autoHideDuration: null });
     act(() => closeSnackbar(key));
@@ -150,7 +169,6 @@ describe('showSnackbar', () => {
     expect(timesShown('Second')).toBe(1);
   });
 
-  // The SDK once passed the variant as notistack's message, so a second snackbar of a variant was dropped.
   it('shows two different snackbars of the same variant together', () => {
     show({ variant: 'success', title: 'Saved data has been restored' });
     show({ variant: 'success', title: 'Diagram saved' });
@@ -159,10 +177,33 @@ describe('showSnackbar', () => {
     expect(timesShown('Diagram saved')).toBe(1);
   });
 
-  it('without a key, shows the same snackbar once while it is on screen', () => {
-    show({ variant: 'warning', title: 'Read-only mode' });
-    show({ variant: 'warning', title: 'Read-only mode' });
+  it('without a key, shows a snackbar again right after the same one is closed', () => {
+    const first = show({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    act(() => closeSnackbar(first));
 
-    expect(timesShown('Read-only mode')).toBe(1);
+    const second = show({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    settle();
+
+    expect(second).not.toBe(first);
+    expect(timesShown('Waiting for decision')).toBe(1);
+  });
+
+  it('shows one snackbar for the documented effect under StrictMode', () => {
+    const host = document.createElement('div');
+    document.body.append(host);
+    const hostRoot = createRoot(host);
+
+    act(() =>
+      hostRoot.render(
+        <StrictMode>
+          <Announcement />
+        </StrictMode>,
+      ),
+    );
+    settle();
+
+    expect(timesShown('Waiting for decision')).toBe(1);
+    act(() => hostRoot.unmount());
+    host.remove();
   });
 });

@@ -3,6 +3,8 @@ import { closeSnackbar as closeNotistackSnackbar, enqueueSnackbar } from 'notist
 
 const AUTO_HIDE_DURATION_TIME = 3000;
 
+let shownCount = 0;
+
 /**
  * Options of {@link showSnackbar}.
  *
@@ -10,9 +12,8 @@ const AUTO_HIDE_DURATION_TIME = 3000;
  */
 export type ShowSnackbarOptions = {
   /**
-   * Identifies the snackbar: while one with this key is on screen, showing it again does nothing, and
-   * {@link closeSnackbar} closes it. Without a key, a snackbar with the same variant, title and subtitle
-   * on screen is not shown twice.
+   * Makes the snackbar unique: while one with this key is shown, queued or still closing, showing it
+   * again does nothing. Without a key, every call shows a new snackbar.
    */
   key?: string;
   /** Visual style of the `@workflowbuilder/ui` Snackbar. */
@@ -35,15 +36,17 @@ export type ShowSnackbarOptions = {
 
 /**
  * Shows a snackbar in the editor's own stack, at the bottom centre with the SDK's snackbars, so
- * they line up instead of covering each other.
+ * they line up instead of covering each other. It needs a mounted `<WorkflowBuilder.Root>`; before
+ * that it shows nothing.
  *
  * @returns The snackbar's key, for {@link closeSnackbar}.
  *
  * @example
  * ```ts
- * const key = showSnackbar({ variant: 'info', title: 'Waiting for a decision', autoHideDuration: null });
- * // later
- * closeSnackbar(key);
+ * useEffect(() => {
+ *   const key = showSnackbar({ variant: 'info', title: 'Waiting for a decision', autoHideDuration: null });
+ *   return () => closeSnackbar(key);
+ * }, []);
  * ```
  *
  * @category Utilities
@@ -59,7 +62,11 @@ export function showSnackbar({
   onClose,
   autoHideDuration = AUTO_HIDE_DURATION_TIME,
 }: ShowSnackbarOptions): string {
-  const snackbarKey = key ?? `${variant}:${title}:${subtitle ?? ''}`;
+  const snackbarKey = key ?? `snackbar-${++shownCount}`;
+
+  if (!isEditorMounted()) {
+    return snackbarKey;
+  }
 
   enqueueSnackbar(title, {
     key: snackbarKey,
@@ -93,10 +100,17 @@ export function showSnackbar({
 }
 
 /**
- * Closes a snackbar shown by {@link showSnackbar}. Does nothing when it is already gone.
+ * Closes a snackbar shown by {@link showSnackbar}. Does nothing when it is already gone or no editor is mounted.
  *
  * @category Utilities
  */
 export function closeSnackbar(key: string): void {
-  closeNotistackSnackbar(key);
+  if (isEditorMounted()) {
+    closeNotistackSnackbar(key);
+  }
+}
+
+// notistack assigns its module-level functions when a SnackbarProvider mounts; until then they are undefined.
+function isEditorMounted(): boolean {
+  return typeof enqueueSnackbar === 'function';
 }

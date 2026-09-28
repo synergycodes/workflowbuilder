@@ -11,9 +11,10 @@ type ShowTranslatedSnackbarOptions = Omit<ShowSnackbarOptions, 'title' | 'subtit
   subtitle?: TranslationKey;
 };
 
-/** The SDK's own snackbars: the texts are keys of its translations. */
+/** The SDK's own snackbars: the texts are keys of its translations, and one already on screen is not shown again. */
 export function showTranslatedSnackbar({ title, subtitle, ...options }: ShowTranslatedSnackbarOptions): string {
   return showSnackbar({
+    key: `${options.variant}:${title}:${subtitle ?? ''}`,
     ...options,
     title: i18n.t(`${SNACKBAR_PREFIX}.${title}`),
     subtitle: subtitle ? (i18n.t(subtitle) as string) : undefined,
