@@ -405,12 +405,14 @@ describe.each([
       expect(sentEdits()).toEqual({ refundAmount: 120 });
     });
 
-    it('sends no edit for a field the picks hide under it', async () => {
+    it('sends the edit to a field the picks hide under it, because it sends what it shows', async () => {
       parkHumanOne();
+      commit(fieldOf('Refund amount')!, '120');
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
-      await click(button('Approve'));
 
-      expect(sentEdits()).toEqual({});
+      expect(fieldOf('Refund amount')?.value).toBe('120');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
     });
 
     it('opens again under the changed picks: a field turned read-only shows the proposal, the rest keep the draft', async () => {
@@ -428,6 +430,39 @@ describe.each([
       expect(fieldOf('Reply draft')?.value).toBe('Hello');
       await click(button('Approve'));
       expect(sentEdits()).toEqual({ replyDraft: 'Hello' });
+    });
+
+    it('opens again under the changed picks: a field the draft was taken without starts from the proposal', async () => {
+      const properties = Object.fromEntries(
+        Object.entries(reviewRequest.schema.properties).filter(([key]) => key !== 'replyDraft'),
+      );
+      render({ ...reviewRequest, schema: { ...reviewRequest.schema, properties } });
+      parkHumanOne();
+      expect(labelled('Reply draft')).toBeUndefined();
+      commit(fieldOf('Refund amount')!, '120');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render(reviewRequest);
+
+      expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('opens again with a field the person cleared before leaving still empty, and sends it emptied', async () => {
+      parkHumanOne();
+      commit(fieldOf('Reply draft')!, '');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render();
+
+      expect(fieldOf('Reply draft')?.value).toBe('');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ replyDraft: '' });
     });
 
     it('keeps what was typed while the panel shows another node, and measures the edits against the proposal', async () => {
@@ -566,6 +601,15 @@ describe.each([
       expect(hasError('Refund amount')).toBe(true);
       expect(button('Approve').disabled).toBe(true);
       expect(button('Reject…').disabled).toBe(false);
+    });
+
+    it('keeps blocking a required field emptied before the picks hide it under the form', async () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '');
+      render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
     });
 
     it('blocks the approve from the start when the proposal leaves a required field out', async () => {

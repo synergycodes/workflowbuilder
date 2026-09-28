@@ -22,7 +22,12 @@ export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
 export type DecisionWait = { executionId: string; nodeId: string; attempt: number };
 
 /** What a person has entered for a wait and not yet sent. */
-export type DecisionDraft = { values?: Record<string, unknown>; reason?: string };
+export type DecisionDraft = {
+  values?: Record<string, unknown>;
+  /** The fields the form showed, so a field the draft was not taken under starts from the proposal. */
+  fields?: string[];
+  reason?: string;
+};
 
 /** Where the decision sent for a wait stands until the run records it. */
 type DecisionSend = { status: 'sending' } | { status: 'accepted' } | { status: 'refused'; message: string };

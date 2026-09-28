@@ -5,6 +5,7 @@ import styles from './decision-form.module.css';
 
 import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
 import type { DecisionDraft, DecisionWait } from '../../../stores/use-execution-store';
+import { schemaFields } from '../../../utils/editor-form/form-schema';
 import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
 import { blocksApproval, editsOf, startingValues } from '../../../utils/human-decision/decision-values';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
@@ -41,11 +42,11 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
       <EditorForm
         ref={fields}
         schema={schema}
-        initialData={startingValues(proposal, draft?.values, schema)}
+        initialData={startingValues(proposal, draft?.values, schema, draft?.fields)}
         readOnly={isBusy}
         onInvalidFieldsChange={(invalidFields) => setIsApproveBlocked(blocksApproval(invalidFields, schema))}
         onFail={() => setIsApproveBlocked(true)}
-        onUnmount={(values) => saveDraft({ values })}
+        onUnmount={(values) => saveDraft({ values, fields: schemaFields(schema).map(([key]) => key) })}
       />
       <DecisionVerdict
         actions={actions}
