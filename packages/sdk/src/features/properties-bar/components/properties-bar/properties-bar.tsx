@@ -39,7 +39,7 @@ function PropertiesBarComponent({
   const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
   const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
-  const hasFooter = footerTarget.hasContent || onDeleteClick !== undefined;
+  const hasFooter = footerTarget.hasContent || !!onDeleteClick;
 
   const segmentPicker = {
     when: () => isExpanded && !!selection?.node && selection.node.type === 'node' && hasCustomItems,
