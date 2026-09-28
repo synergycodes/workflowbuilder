@@ -526,6 +526,17 @@ describe('createExecutionsRoutes - list', () => {
     expect(databaseMock.select).not.toHaveBeenCalled();
   });
 
+  // The invalid query pins the order: parsing first would answer 400, not 403.
+  it('an identified caller denied executions:list -> 403 before the query is parsed', async () => {
+    const app = buildApp({ identify: vi.fn(async () => ({ subject: 'u-1' })), authorize: vi.fn(async () => false) });
+
+    const response = await app.request('/api/executions?status=waitting');
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ code: 'forbidden' });
+    expect(databaseMock.select).not.toHaveBeenCalled();
+  });
+
   it('tenant present -> the WHERE scopes to the tenant and untenanted rows', async () => {
     const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
     const captured = captureSelect([]);
@@ -550,15 +561,18 @@ describe('createExecutionsRoutes - list', () => {
 
   // An adapter outside TypeScript can return what TenantContext forbids. Failing open here
   // would hand one tenant every other tenant's rows, so the list refuses what the stream 404s on.
-  it('a resolved tenant with no id -> 400 tenant_required and no select', async () => {
-    const app = buildAppWithTenant(allowStream(), { tenantId: undefined } as unknown as TenantContext);
+  it.each([undefined, null])(
+    'a resolved tenant with a %s id -> 400 tenant_required and no select',
+    async (tenantId) => {
+      const app = buildAppWithTenant(allowStream(), { tenantId } as unknown as TenantContext);
 
-    const response = await app.request('/api/executions');
+      const response = await app.request('/api/executions');
 
-    expect(response.status).toBe(400);
-    expect(await response.json()).toMatchObject({ code: 'tenant_required' });
-    expect(databaseMock.select).not.toHaveBeenCalled();
-  });
+      expect(response.status).toBe(400);
+      expect(await response.json()).toMatchObject({ code: 'tenant_required' });
+      expect(databaseMock.select).not.toHaveBeenCalled();
+    },
+  );
 
   it('an empty tenant id is a tenant, not a missing one: it still scopes the WHERE', async () => {
     const app = buildAppWithTenant(allowStream(), { tenantId: '' });
