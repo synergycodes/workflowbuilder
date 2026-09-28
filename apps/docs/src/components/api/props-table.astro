@@ -27,9 +27,17 @@ const props = [...(entry?.props ?? [])].sort(
 );
 const nativeElement = entry?.nativeElement ?? null;
 const base = import.meta.env.BASE_URL.replace(/\/$/, '');
-// generate-ui-api.mjs writes a linked type name as `{@link <page path> <name>}`; splitting on it with two capture
-// groups yields text, page path, name, text, ... so index % 3 tells the three apart.
-const typeParts = (type: string) => type.split(/\{@link (\S+) ([^}]+)\}/);
+// generate-ui-api.mjs writes a linked type name as `{@link <page path> <name>}`.
+function typeSegments(type: string) {
+  const segments: { text: string; href?: string }[] = [];
+  let rest = 0;
+  for (const match of type.matchAll(/\{@link (\S+) ([^}]+)\}/g)) {
+    segments.push({ text: type.slice(rest, match.index) }, { text: match[2], href: `${base}/ui-api/${match[1]}/` });
+    rest = match.index + match[0].length;
+  }
+  segments.push({ text: type.slice(rest) });
+  return segments;
+}
 ---
 
 {
@@ -55,12 +63,8 @@ const typeParts = (type: string) => type.split(/\{@link (\S+) ([^}]+)\}/);
           <div class="meta">
             <span class="meta-label">Type</span>
             <code>
-              {typeParts(property.type).map((part, index, parts) =>
-                index % 3 === 1 ? (
-                  <a href={`${base}/ui-api/${part}/`}>{parts[index + 1]}</a>
-                ) : index % 3 === 2 ? null : (
-                  part
-                ),
+              {typeSegments(property.type).map((segment) =>
+                segment.href ? <a href={segment.href}>{segment.text}</a> : segment.text,
               )}
             </code>
           </div>
