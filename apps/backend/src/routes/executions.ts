@@ -41,10 +41,10 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     }
     const { query } = parsed;
 
-    // A resolved context with no id is a broken adapter, not single-tenant mode: `?? null` would
-    // read as "no tenant" and drop the scope clause, returning every tenant's rows.
-    const tenantId: string | undefined = c.var.tenant?.tenantId;
-    if (c.var.tenant && tenantId === undefined) {
+    // A resolved context whose id is not a string is a broken adapter, not single-tenant mode:
+    // `?? null` would read `null` or `undefined` as "no tenant" and list every tenant's rows.
+    const tenant = c.var.tenant;
+    if (tenant && typeof tenant.tenantId !== 'string') {
       return c.json({ code: 'tenant_required', message: 'Tenant context required' }, 400);
     }
 
@@ -59,7 +59,7 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
         createdAt: executions.createdAt,
       })
       .from(executions)
-      .where(listExecutionsWhere(query, tenantId ?? null))
+      .where(listExecutionsWhere(query, tenant?.tenantId ?? null))
       .orderBy(...LIST_ORDER)
       .limit(query.limit + 1);
 
