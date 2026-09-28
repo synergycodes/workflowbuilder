@@ -14,6 +14,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { ReflectionKind } from 'typedoc';
 
 import { COMPONENTS } from './ui-components.mjs';
 
@@ -81,7 +82,8 @@ function findTypeByName(root, name, warnings) {
   return matches[0] ?? null;
 }
 
-const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256 || node?.kind === 8; // alias, interface, enum
+const TYPE_DECLARATION_KINDS = new Set([ReflectionKind.TypeAlias, ReflectionKind.Interface, ReflectionKind.Enum]);
+const isTypeDeclaration = (node) => TYPE_DECLARATION_KINDS.has(node?.kind);
 
 // A first-party type name in a rendered type becomes `{@link <page path> <name>}`, the path of its UI API
 // Reference page (`<category>/<name>`, as starlight-typedoc lays it out); the Props table turns it into a link.
