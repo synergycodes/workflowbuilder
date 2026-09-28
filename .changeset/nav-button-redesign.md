@@ -1,5 +1,4 @@
 ---
-'@workflowbuilder/ui': major
 '@workflowbuilder/sdk': minor
 ---
 

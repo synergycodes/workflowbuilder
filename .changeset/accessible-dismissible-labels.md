@@ -1,5 +1,4 @@
 ---
-'@workflowbuilder/ui': minor
 '@workflowbuilder/sdk': patch
 ---
 
