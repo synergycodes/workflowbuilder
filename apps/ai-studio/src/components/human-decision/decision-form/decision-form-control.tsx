@@ -9,8 +9,8 @@ import { proposedValues, withEdits } from '../../../utils/human-decision/decisio
 import { DecisionForm } from './decision-form';
 import { DecisionRecord } from './decision-record';
 
-// Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored. The request comes with
-// the node from one store snapshot, not from `data`, which JsonForms hands over a render after the selection moves.
+// The request is read off the selected node, not off `data`: JsonForms updates `data` one render after the selection
+// moves, so a form keyed on the new wait would mount with the previous node's schema (see decision-form-panel.test.tsx).
 function DecisionFormControl() {
   const node = useSingleSelectedElement()?.node;
   const nodeId = node?.id;

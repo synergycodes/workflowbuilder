@@ -23,12 +23,6 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
 vi.mock('../../../adapters/submit-decision', () => ({ submitDecision: vi.fn() }));
 const submit = vi.mocked(submitDecision);
 
-declare global {
-  // eslint-disable-next-line no-var
-  var IS_REACT_ACT_ENVIRONMENT: boolean;
-}
-globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
 registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
 
 function agent(id: string): WorkflowBuilderNode {
