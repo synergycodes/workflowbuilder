@@ -10,7 +10,15 @@ import { workflowSnapshotSchema } from '../../../../backend/src/domain/mapper/sn
 import { refundReviewRequest } from '../../data/refund-review-flow';
 import { humanDecisionNodeType } from '../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../nodes/human-decision/default-properties-data';
-import { FIELD_MODES, type FieldMode, fieldModeOf, fieldRows, withFieldMode } from './decision-fields';
+import {
+  FIELD_MODES,
+  type FieldMode,
+  type FieldRow,
+  fieldModeOf,
+  fieldRows,
+  sourceHintOf,
+  withFieldMode,
+} from './decision-fields';
 
 const outputSchema = {
   type: 'object',
@@ -62,6 +70,21 @@ describe('fieldRows', () => {
     const stored = { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } };
 
     expect(fieldRows(undefined, stored)).toEqual([{ key: 'replyDraft', title: 'Reply draft', declaration: undefined }]);
+  });
+});
+
+describe('sourceHintOf', () => {
+  const declared: FieldRow = { key: 'replyDraft', title: 'Reply draft', declaration: { type: 'string' } };
+  const storedOnly: FieldRow = { key: 'replyDraft', title: 'Reply draft', declaration: undefined };
+
+  it.each([
+    ['nothing connected', undefined, false, [storedOnly], 'unconnected'],
+    ['several predecessors, none declared the source', undefined, true, [storedOnly], undefined],
+    ['a source that declares fields', 'draft-1', true, [declared, storedOnly], undefined],
+    ['a source that declares none', 'draft-1', true, [storedOnly], 'noFields'],
+    ['a source that declares none, nothing stored', 'draft-1', true, [], 'noFields'],
+  ] as const)('%s', (_case, sourceId, hasIncoming, rows, hint) => {
+    expect(sourceHintOf(sourceId, hasIncoming, rows)).toBe(hint);
   });
 });
 

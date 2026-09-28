@@ -8,6 +8,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // SDK internals by path: the public API mounts these only inside a whole <WorkflowBuilder.Root>.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { NodeProperties } from '../../../../../../packages/sdk/src/features/properties-bar/components/node-properties/node-properties';
+// The real receivers, not copies, as in ../../../nodes/human-decision/decision-request-contract.test.ts
+// (follow-up: decision-request-contract-test-home).
+import { decisionRequestSchema } from '../../../../../backend/src/domain/decision/decision-request-schema';
+import { findDecisionRequest } from '../../../../../backend/src/domain/decision/find-decision-request';
+import { validateSubmittedDecision } from '../../../../../backend/src/domain/decision/validate-submitted-decision';
+import { workflowSnapshotSchema } from '../../../../../backend/src/domain/mapper/snapshot-schema';
+import { refundReviewFlow, refundReviewRequest } from '../../../data/refund-review-flow';
 import { useRunLocksCanvas } from '../../../hooks/use-run-locks-canvas';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
@@ -19,6 +26,7 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../../../stores/use-execution-store';
+import { FIELD_MODES } from '../../../utils/human-decision/decision-fields';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
 import { decisionFieldsRenderer } from './decision-fields-control';
 
@@ -163,6 +171,12 @@ describe('the decision fields control in the real properties panel', () => {
     [...container.querySelectorAll('[aria-expanded]')].find(
       (element) => element.textContent === 'Fields the decider sees',
     );
+  // A row of the decider's form is found by its label, the way a person finds it.
+  const formField = (label: string) =>
+    [...container.querySelectorAll('[data-decision-form] span')]
+      .find((span) => span.childElementCount === 0 && span.textContent === label)
+      ?.parentElement?.parentElement?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ??
+    undefined;
 
   async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[]) {
     useStore.setState({
@@ -330,6 +344,7 @@ describe('the decision fields control in the real properties panel', () => {
     await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
 
     expect(container.textContent).toContain('Connect a block before this one');
+    expect(container.textContent).not.toContain('declares no output fields');
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
@@ -340,6 +355,141 @@ describe('the decision fields control in the real properties panel', () => {
     );
 
     expect(container.textContent).not.toContain('Connect a block before this one');
+    expect(container.textContent).not.toContain('declares no output fields');
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
+  });
+
+  describe('on the "Refund Review" template', () => {
+    const template = refundReviewFlow.value.diagram;
+    const renderTemplate = (nodes: WorkflowBuilderNode[] = template.nodes) => renderPanel(nodes, template.edges);
+
+    // What the backend answers at decision time: the snapshot the run carries, then the submitted edits.
+    function answerTo(edits: Record<string, unknown>): string {
+      const { nodes, edges } = useStore.getState();
+      const parsed = workflowSnapshotSchema.safeParse(structuredClone({ nodes, edges }));
+      if (!parsed.success) throw new Error(`snapshot refused: ${JSON.stringify(parsed.error.issues)}`);
+      const found = findDecisionRequest(parsed.data, HUMAN);
+      if (found.error !== undefined) throw new Error(found.error);
+      return validateSubmittedDecision(found.request, { action: 'approve', edits }).error?.code ?? 'accepted';
+    }
+
+    const edit: Record<string, unknown> = {
+      refundAmount: 40,
+      orderDate: '2026-09-01',
+      replyDraft: 'Hi',
+      internalReasoning: 'Why',
+    };
+    const ANSWER = {
+      hidden: 'unknown_field',
+      readOnly: 'field_not_editable',
+      editable: 'accepted',
+      required: 'accepted',
+    };
+    const templateOutput = {
+      refundAmount: 49,
+      orderDate: '2026-09-02',
+      replyDraft: 'Hi Marcus, we refunded the duplicate charge.',
+      internalReasoning: 'Duplicate charge, refunded in full.',
+    };
+
+    it("lists the draft's four fields under their titles, in the draft's order, with the template's picks", async () => {
+      await renderTemplate();
+
+      expect(rowLabels()).toEqual(['Refund amount', 'Order date', 'Reply draft', 'Internal reasoning']);
+      expect(selects().map((select) => select.value)).toEqual(['required', 'readOnly', 'editable', 'hidden']);
+      expect(container.textContent).not.toContain('declares no output fields');
+    });
+
+    it('as shipped, the backend refuses an edit to the read-only and the hidden field and takes the rest', async () => {
+      await renderTemplate();
+
+      expect(answerTo({ refundAmount: 40 })).toBe('accepted');
+      expect(answerTo({ orderDate: '2026-09-01' })).toBe('field_not_editable');
+      expect(answerTo({ replyDraft: 'Hi' })).toBe('accepted');
+      expect(answerTo({ internalReasoning: 'Why' })).toBe('unknown_field');
+    });
+
+    it.each(Object.keys(edit).flatMap((key) => FIELD_MODES.map((mode) => [key, mode] as const)))(
+      '%s picked %s stores a request the backend takes, and an edit to it gets the answer the pick promises',
+      async (key, mode) => {
+        await renderTemplate();
+
+        await choose(key, mode);
+
+        const request = storedProperties()?.['decisionRequest'];
+        const parsed = decisionRequestSchema.safeParse(request);
+        expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
+        expect(answerTo({ [key]: edit[key] })).toBe(ANSWER[mode]);
+      },
+    );
+
+    it('a pick leaves the template itself as it was, for the next time it is opened', async () => {
+      await renderTemplate();
+
+      await choose('orderDate', 'editable');
+      await choose('internalReasoning', 'readOnly');
+
+      expect(storedProperties()?.['decisionRequest']).not.toBe(refundReviewRequest);
+      expect(refundReviewRequest.schema).toEqual({
+        type: 'object',
+        properties: {
+          refundAmount: { type: 'number', title: 'Refund amount' },
+          orderDate: { type: 'string', title: 'Order date', readOnly: true },
+          replyDraft: { type: 'string', title: 'Reply draft' },
+        },
+        required: ['refundAmount'],
+      });
+    });
+
+    it("a pick made before Run is the decider's form: a Hidden field is absent, a Read-only one disabled", async () => {
+      await renderTemplate();
+      await choose('replyDraft', 'hidden');
+      await choose('internalReasoning', 'readOnly');
+
+      act(() => {
+        setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+        applyEvent(event({ type: 'node_completed', nodeId: 'draft-1', payload: { output: templateOutput } }));
+        applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
+      });
+      await settle();
+
+      expect(container.querySelector('[data-decision-form]')).not.toBeNull();
+      expect(formField('Reply draft')).toBeUndefined();
+      expect(formField('Internal reasoning')?.value).toBe('Duplicate charge, refunded in full.');
+      expect(formField('Internal reasoning')?.disabled).toBe(true);
+      expect(formField('Order date')?.disabled).toBe(true);
+      expect(formField('Refund amount')?.value).toBe('49');
+      expect(formField('Refund amount')?.disabled).toBe(false);
+    });
+
+    const withDraftProperties = (change: (properties: Record<string, unknown>) => Record<string, unknown>) =>
+      template.nodes.map((node) =>
+        node.id === 'draft-1' ? { ...node, data: { ...node.data, properties: change(node.data.properties) } } : node,
+      );
+
+    it('with the draft on Plain text, says it declares no fields and keeps listing the stored ones', async () => {
+      await renderTemplate(withDraftProperties((properties) => ({ ...properties, outputSchema: undefined })));
+
+      expect(container.textContent).toContain('declares no output fields');
+      expect(container.textContent).not.toContain('Connect a block before this one');
+      expect(rowLabels()).toEqual([
+        'Refund amount (not in the source)',
+        'Order date (not in the source)',
+        'Reply draft (not in the source)',
+      ]);
+    });
+
+    it('with a draft that still declares one of the stored fields, marks the others and gives no hint', async () => {
+      const amountOnly = { type: 'object', properties: { refundAmount: { type: 'number', title: 'Refund amount' } } };
+
+      await renderTemplate(withDraftProperties((properties) => ({ ...properties, outputSchema: amountOnly })));
+
+      expect(container.textContent).not.toContain('declares no output fields');
+      expect(rowLabels()).toEqual([
+        'Refund amount',
+        'Order date (not in the source)',
+        'Reply draft (not in the source)',
+      ]);
+    });
   });
 });
