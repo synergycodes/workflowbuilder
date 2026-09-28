@@ -8,6 +8,10 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
 import { EdgeProperties } from '../edge-properties/edge-properties';
 import { PropertiesBarHeader } from '../header/properties-bar-header';
 import { NodeProperties } from '../node-properties/node-properties';
+import {
+  PropertiesPanelFooterTargetProvider,
+  usePropertiesPanelFooterTarget,
+} from '../properties-panel-footer/properties-panel-footer';
 import type { PropertiesBarItem, PropertiesBarProps } from './properties-bar.types';
 import { renderComponent } from './render-component';
 
@@ -30,10 +34,12 @@ function PropertiesBarComponent({
   tabs = [],
 }: PropertiesBarProps) {
   const [isPropertiesBarOpen, setIsPropertiesBarOpen] = useState(true);
+  const footerTarget = usePropertiesPanelFooterTarget();
 
   const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
   const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
+  const hasFooter = footerTarget.hasContent || onDeleteClick !== undefined;
 
   const segmentPicker = {
     when: () => isExpanded && !!selection?.node && selection.node.type === 'node' && hasCustomItems,
@@ -70,32 +76,39 @@ function PropertiesBarComponent({
   }
 
   return (
-    <Sidebar
-      isExpanded={isExpanded}
-      contentClassName={styles['extend-bounds']}
-      header={
-        <>
-          <PropertiesBarHeader
-            hasSelection={!!selection}
-            isExpendable={isPropertiesBarOpen}
-            onTogglePropertiesBar={onToggleExpand}
-            header={headerLabel}
-            name={name ?? ''}
-            onDotsClick={onMenuHeaderClick}
-          />
-          {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}
-        </>
-      }
-      footer={
-        isExpanded && (
-          <Button onClick={onDeleteClick} variant="ghost-critical">
-            {selection?.node ? deleteNodeLabel : deleteEdgeLabel}
-          </Button>
-        )
-      }
-    >
-      {isExpanded && renderComponent(contentComponents, selection, selectedTab)}
-    </Sidebar>
+    <PropertiesPanelFooterTargetProvider value={footerTarget.target}>
+      <Sidebar
+        isExpanded={isExpanded}
+        contentClassName={styles['extend-bounds']}
+        header={
+          <>
+            <PropertiesBarHeader
+              hasSelection={!!selection}
+              isExpendable={isPropertiesBarOpen}
+              onTogglePropertiesBar={onToggleExpand}
+              header={headerLabel}
+              name={name ?? ''}
+              onDotsClick={onMenuHeaderClick}
+            />
+            {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}
+          </>
+        }
+        footer={
+          hasFooter && (
+            <div className={styles['footer']}>
+              <div ref={footerTarget.setElement} className={styles['footer-content']} />
+              {onDeleteClick && (
+                <Button onClick={onDeleteClick} variant="ghost-critical">
+                  {selection?.node ? deleteNodeLabel : deleteEdgeLabel}
+                </Button>
+              )}
+            </div>
+          )
+        }
+      >
+        {isExpanded && renderComponent(contentComponents, selection, selectedTab)}
+      </Sidebar>
+    </PropertiesPanelFooterTargetProvider>
   );
 }
 

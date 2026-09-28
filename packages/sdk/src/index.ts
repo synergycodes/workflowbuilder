@@ -145,6 +145,7 @@ export { ProjectSelection } from './features/app-bar/components/project-selectio
 export type { ProjectSelectionProps } from './features/app-bar/components/project-selection/project-selection';
 export { PropertiesBar } from './features/properties-bar/components/properties-bar/properties-bar';
 export type { PropertiesBarProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
+export { PropertiesPanelFooter } from './features/properties-bar/components/properties-panel-footer/properties-panel-footer';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
 export type { WorkflowNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
 export { defineNodeTemplate } from './utils/define-node-template';
