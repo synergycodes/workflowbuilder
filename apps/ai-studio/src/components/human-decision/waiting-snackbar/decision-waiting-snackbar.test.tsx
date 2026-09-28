@@ -9,14 +9,15 @@ import { nodeEvent } from '../../../test/execution-history';
 import { DecisionWaitingSnackbar } from './decision-waiting-snackbar';
 
 // The SDK's own spec covers how a snackbar looks and closes; this one follows what the app asks of it.
-const snackbars = vi.hoisted(() => ({ shown: [] as ShowSnackbarOptions[], closed: new Set<string>() }));
+const snackbars = vi.hoisted(() => ({ shown: [] as ShowSnackbarOptions[], closed: new Set<string>(), count: 0 }));
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
   return {
     ...actual,
     showSnackbar: (options: ShowSnackbarOptions) => {
-      snackbars.shown.push(options);
-      return options.key ?? '';
+      const key = options.key ?? `snackbar-${++snackbars.count}`;
+      snackbars.shown.push({ ...options, key });
+      return key;
     },
     closeSnackbar: (key: string) => snackbars.closed.add(key),
   };
@@ -122,14 +123,12 @@ describe('DecisionWaitingSnackbar', () => {
     expect(onlyOpen().title).toBe('Waiting for decision');
   });
 
-  it('shows each time under a new key, so one still closing cannot swallow the next', () => {
+  it('stays while the waiting node is only part of a larger selection', () => {
     apply('node_waiting', 'human-1');
-    const first = onlyOpen().key;
 
-    selectInSdk(['human-1']);
-    selectInSdk([]);
+    selectInSdk(['human-1', 'other']);
 
-    expect(onlyOpen().key).not.toBe(first);
+    expect(onlyOpen().title).toBe('Waiting for decision');
   });
 
   it('stays closed for the same wait and comes back when another node parks', () => {
@@ -139,6 +138,16 @@ describe('DecisionWaitingSnackbar', () => {
 
     apply('node_waiting', 'human-2');
     expect(onlyOpen().title).toBe('2 decisions are waiting');
+  });
+
+  it('stays closed when one of the closed waits ends', () => {
+    apply('node_waiting', 'human-1');
+    apply('node_waiting', 'human-2');
+    act(() => onlyOpen().onClose?.());
+
+    apply('node_completed', 'human-2');
+
+    expect(open()).toHaveLength(0);
   });
 
   it('comes back when the same node parks again', () => {
