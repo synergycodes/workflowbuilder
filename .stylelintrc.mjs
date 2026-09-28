@@ -1,8 +1,6 @@
-import { fileURLToPath } from 'node:url';
-
-// The csstools rule resolves importFrom paths against process.cwd(), and
-// lint-staged runs commands from workspace directories — anchor to this file.
-const customProperties = fileURLToPath(new URL('./tools/stylelint/custom-properties.mjs', import.meta.url));
+// The csstools rule import()s an importFrom path as given, which Windows rejects
+// (C:\ reads as a URL scheme); an object source never reaches that code path.
+import customProperties from './tools/stylelint/custom-properties.mjs';
 
 /** @type {import('stylelint').Config} */
 export default {
