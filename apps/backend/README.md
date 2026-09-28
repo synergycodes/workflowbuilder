@@ -72,6 +72,16 @@ Newest first, filtered and paged. Query: `status` (one `ExecutionStatus`), `work
 | 400    | `invalid_cursor`      | Not a canonical `<ISO timestamp>\|<UUID>` pair in base64url: the cursor is an opaque window position, validated on shape, not on origin |
 | 400    | `tenant_required`     | A tenant context resolved without an id: a broken `TenantContextPort` adapter, refused rather than read as single-tenant                |
 
+## The graph a run executed: `GET /api/executions/:id/snapshot`
+
+Success: `200 { workflowId, sourceVersion, snapshot }`. `snapshot` is the workflow JSON the execute route copied into the run, as it was stored: editing or publishing the workflow afterwards leaves it unchanged. It is a route of its own, not a field of `GET /api/executions/:id`, because pollers call that one. Authorization is `executions:read` on `{ kind: 'execution', executionId }`, the same as `GET /api/executions/:id`, checked before the id is read.
+
+| Status | Code                  | When                                                   |
+| ------ | --------------------- | ------------------------------------------------------ |
+| 404    | `execution_not_found` | No run with this id, or the id is not a canonical UUID |
+
+This route, `GET /api/executions/:id/stream` and `GET /api/workflows/:id` answer an id that is not a canonical UUID with their 404 (`execution_not_found`, `workflow_not_found`) without querying. Postgres rejects such a value as a `uuid` (SQLSTATE `22P02`), which used to reach the client as a 500. Braced and hyphen-less spellings, which Postgres accepts, are refused too; any case passes. The other `/:id` routes do not check the format yet, so a malformed id still answers 500 there.
+
 ## Running individual processes
 
 For debugging, the parts that `pnpm dev:ai-studio` orchestrates can also be run separately:

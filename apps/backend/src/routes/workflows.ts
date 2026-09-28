@@ -10,6 +10,7 @@ import { getWorkflowEngine } from '../engine';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
 import type { BackendEnv } from './backend-env';
+import { isUuid } from './is-uuid';
 import { formatValidationDetails, parseSnapshot } from './snapshot-validation';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
@@ -88,6 +89,10 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
     const workflowId = c.req.param('id');
 
     await assertAuthorized(c, 'workflows:read', { kind: 'workflow', workflowId });
+
+    if (!isUuid(workflowId)) {
+      return c.json({ code: 'workflow_not_found', message: 'Workflow not found' }, 404);
+    }
 
     const [workflow] = await database.select().from(workflows).where(eq(workflows.id, workflowId));
 

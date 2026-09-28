@@ -12,6 +12,7 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from '../auth';
+import { executions } from '../db/schema';
 import { type TenantContext, createTenantMiddleware } from '../tenant';
 import type { BackendEnv } from './backend-env';
 import { createExecutionsRoutes } from './executions';
@@ -121,6 +122,9 @@ const terminalExecution = {
 
 const pendingExecution = { ...terminalExecution, status: 'pending', finishedAt: null };
 
+const EXECUTION_ID = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+const STREAM_PATH = `/api/executions/${EXECUTION_ID}/stream`;
+
 beforeEach(() => {
   vi.clearAllMocks();
   getEngineMock.mockReturnValue(engineMock);
@@ -140,6 +144,13 @@ describe('createExecutionsRoutes - authorize is called with the right shape per 
     {
       method: 'GET',
       path: '/api/executions/e-1',
+      action: 'executions:read',
+      resource: { kind: 'execution', executionId: 'e-1' },
+      execution: terminalExecution,
+    },
+    {
+      method: 'GET',
+      path: '/api/executions/e-1/snapshot',
       action: 'executions:read',
       resource: { kind: 'execution', executionId: 'e-1' },
       execution: terminalExecution,
@@ -178,11 +189,11 @@ describe('createExecutionsRoutes - authorize is called with the right shape per 
     databaseMock.select.mockReturnValueOnce(chainResolving([terminalExecution]));
     databaseMock.select.mockReturnValue(chainResolving([]));
 
-    await app.request('/api/executions/e-1/stream', { method: 'GET' });
+    await app.request(STREAM_PATH, { method: 'GET' });
 
     expect(authorizeSpy).toHaveBeenCalledWith(null, 'executions:stream', {
       kind: 'execution',
-      executionId: 'e-1',
+      executionId: EXECUTION_ID,
     });
     // Subscribe is only wired for non-terminal executions; pin that the
     // terminal short-circuit holds so the test does not pay for a postgres
@@ -197,7 +208,8 @@ describe('createExecutionsRoutes - deny short-circuits before DB or engine work'
   const cases: Array<{ method: string; path: string }> = [
     { method: 'GET', path: '/api/executions' },
     { method: 'GET', path: '/api/executions/e-1' },
-    { method: 'GET', path: '/api/executions/e-1/stream' },
+    { method: 'GET', path: STREAM_PATH },
+    { method: 'GET', path: '/api/executions/e-1/snapshot' },
     { method: 'DELETE', path: '/api/executions/e-1' },
   ];
 
@@ -239,7 +251,7 @@ describe('createExecutionsRoutes - stream tenant cross-check', () => {
     const app = buildAppWithTenant(allowStream(), { tenantId: 'other' });
     programStream(tenantedExecution);
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
 
     // Byte-identical to the not-found branch: a foreign execution must be
     // indistinguishable from one that does not exist, or the id is enumerable.
@@ -252,7 +264,7 @@ describe('createExecutionsRoutes - stream tenant cross-check', () => {
     const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
     programStream(tenantedExecution);
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
 
     expect(response.status).toBe(200);
   });
@@ -261,7 +273,7 @@ describe('createExecutionsRoutes - stream tenant cross-check', () => {
     const app = buildAppWithTenant(allowStream(), null);
     programStream(tenantedExecution);
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
 
     expect(response.status).toBe(200);
   });
@@ -270,7 +282,7 @@ describe('createExecutionsRoutes - stream tenant cross-check', () => {
     const app = buildAppWithTenant(allowStream(), { tenantId: 'acme' });
     programStream(terminalExecution); // terminalExecution carries no tenantId
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
 
     expect(response.status).toBe(200);
   });
@@ -314,7 +326,7 @@ describe('createExecutionsRoutes - stream snapshot-window race', () => {
       chainResolving([makeEventRow(1, 'execution_started'), makeEventRow(2, 'execution_completed')]),
     );
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
     // Pre-fix this text() never resolves: the handler holds the stream open on
     // heartbeats forever, so a test timeout here is the regression signal.
     const body = await response.text();
@@ -335,7 +347,7 @@ describe('createExecutionsRoutes - stream snapshot-window race', () => {
     databaseMock.select.mockReturnValueOnce(chainResolving([pendingExecution]));
     databaseMock.select.mockReturnValue(chainResolving([makeEventRow(1, type)]));
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
     const body = await response.text();
 
     expect(snapshotFrom(body).status).toBe(status);
@@ -350,7 +362,7 @@ describe('createExecutionsRoutes - stream snapshot-window race', () => {
     databaseMock.select.mockReturnValueOnce(chainResolving([makeEventRow(1, 'execution_started')]));
     databaseMock.select.mockReturnValue(chainResolving([makeEventRow(2, 'execution_completed')]));
 
-    const response = await app.request('/api/executions/e-1/stream');
+    const response = await app.request(STREAM_PATH);
     const body = await response.text();
 
     // Negative half: 'execution_started' must not read as terminal.
@@ -613,4 +625,66 @@ describe('createExecutionsRoutes - list', () => {
     expect(captured.limit).toBe(limit);
     expect(captured.orderBy).toHaveLength(2);
   });
+});
+
+// ---- snapshot ----------------------------------------------------------------
+
+const SNAPSHOT_PATH = `/api/executions/${EXECUTION_ID}/snapshot`;
+
+const executedGraph = {
+  nodes: [{ id: 'n-1', type: 'start-node', position: { x: 0, y: 0 }, data: { type: 'trigger', properties: {} } }],
+  edges: [],
+};
+
+function captureSnapshotSelect(rows: unknown[]) {
+  const captured: { columns?: Record<string, unknown>; table?: unknown } = {};
+  databaseMock.select.mockImplementation((columns: Record<string, unknown>) => {
+    captured.columns = columns;
+    return {
+      from: (table: unknown) => {
+        captured.table = table;
+        return { where: () => chainResolving(rows) };
+      },
+    };
+  });
+  return captured;
+}
+
+describe('createExecutionsRoutes - GET /:id/snapshot', () => {
+  it('200 with the graph copied into the execution row at execute time, not the workflow draft', async () => {
+    const app = buildApp(allowStream());
+    const captured = captureSnapshotSelect([{ workflowId: 'w-1', sourceVersion: 'draft', snapshot: executedGraph }]);
+
+    const response = await app.request(SNAPSHOT_PATH);
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ workflowId: 'w-1', sourceVersion: 'draft', snapshot: executedGraph });
+    expect(captured.table).toBe(executions);
+    expect(Object.values(captured.columns!)).toContain(executions.workflowSnapshotJson);
+  });
+
+  it('404 execution_not_found when no row has the id', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([]));
+
+    const response = await app.request(SNAPSHOT_PATH);
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
+  });
+});
+
+describe('createExecutionsRoutes - a malformed id, which Postgres would answer with 22P02', () => {
+  it.each(['/api/executions/not-a-uuid/snapshot', '/api/executions/not-a-uuid/stream'])(
+    'GET %s -> 404 execution_not_found without a query',
+    async (path) => {
+      const app = buildApp(allowStream());
+
+      const response = await app.request(path);
+
+      expect(response.status).toBe(404);
+      expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
+      expect(databaseMock.select).not.toHaveBeenCalled();
+    },
+  );
 });

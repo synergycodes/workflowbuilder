@@ -231,6 +231,28 @@ describe('createWorkflowsRoutes - deny short-circuits before any DB access', () 
   });
 });
 
+describe('createWorkflowsRoutes - GET /:id and the id format', () => {
+  it('a malformed id -> 404 workflow_not_found without a query, where Postgres would answer 22P02', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+
+    const response = await app.request('/api/workflows/not-a-uuid');
+
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ code: 'workflow_not_found', message: 'Workflow not found' });
+    expect(databaseMock.select).not.toHaveBeenCalled();
+  });
+
+  it('a canonical id reads the row', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+
+    const response = await app.request('/api/workflows/7c9e6679-7425-40de-944b-e07fc1f90ae7');
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ id: 'w-1', name: 'demo' });
+  });
+});
+
 // ---- tenant propagation on execute -----------------------------------------
 //
 // The resolved tenant is stamped onto the executions row (the worker's event
