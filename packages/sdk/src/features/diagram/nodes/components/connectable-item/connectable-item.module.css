@@ -30,6 +30,10 @@
   .handle-container {
     position: relative;
 
+    :global(.react-flow__handle.react-flow__handle-right) {
+      right: calc((var(--wb-public-node-port-size) + 2 * var(--wb-public-node-port-border-size)) / 2);
+    }
+
     &.vertical {
       position: absolute;
       bottom: 0;
