@@ -1,11 +1,11 @@
 ---
 // Name / type / default / description rows shared by the component Props tables and the UI Types page.
-import TypeCode from './type-code.astro';
+import TypeCode, { type TypeReference } from './type-code.astro';
 
 export interface PropertyRow {
   name: string;
   type: string;
-  references: string[];
+  references: TypeReference[];
   required: boolean;
   default: string | null;
   description: string;

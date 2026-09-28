@@ -2,25 +2,26 @@
 // Every first-party type the UI Props tables mention, generated from source into ui-api.json.
 import data from '../../generated/ui-api.json';
 import PropertyList, { type PropertyRow } from './property-list.astro';
-import TypeCode from './type-code.astro';
+import TypeCode, { type TypeReference } from './type-code.astro';
 
 interface TypeEntry {
   name: string;
+  anchor: string;
   description: string;
   shape: string | null;
-  shapeReferences: string[];
+  shapeReferences: TypeReference[];
   properties: PropertyRow[];
 }
 
-const types = Object.values(data.types as Record<string, TypeEntry>);
+const types = data.types as TypeEntry[];
 ---
 
 {
   types.map((entry) => (
     <section class="type">
-      <h3 id={entry.name.toLowerCase()}>
+      <h2 id={entry.anchor}>
         <code>{entry.name}</code>
-      </h3>
+      </h2>
       {entry.description && <p>{entry.description.replaceAll('\n', ' ')}</p>}
       {entry.shape ? (
         <p class="shape">
@@ -37,7 +38,7 @@ const types = Object.values(data.types as Record<string, TypeEntry>);
   .type {
     margin-top: 2.5rem;
   }
-  .type h3 code {
+  .type h2 code {
     background: none;
     padding: 0;
   }
