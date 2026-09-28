@@ -249,7 +249,7 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
   }
 }
 
-// A cancel records no node_failed for a parked node, so its hourglass would outlive the run.
+// A cancel records no node_failed for a parked node, so its wait would outlive the run.
 function settleNodesInFlight(states: Record<string, NodeExecutionState>) {
   for (const [nodeId, state] of Object.entries(states)) {
     if (state.status === 'running' || state.status === 'waiting') {

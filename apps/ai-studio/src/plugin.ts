@@ -13,7 +13,7 @@ export function plugin(): void {
     content: VisualizeCard,
     place: 'after',
   });
-  // The panel's footer holds the decision actions; deleting stays on the Delete and Backspace keys.
+  // Deliberately, for now: no Delete button in the properties panel for any selection; deleting stays on the keys.
   registerComponentDecorator<PropertiesBarProps>('PropertiesBar', {
     name: 'ai-studio-no-delete-button',
     modifyProps: (props) => ({ ...props, onDeleteClick: undefined }),
