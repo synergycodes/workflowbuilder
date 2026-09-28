@@ -1,0 +1,20 @@
+---
+// A type expression whose first-party type names link to their entry on the UI Types page.
+interface Props {
+  type: string;
+  references?: string[];
+}
+
+const { type, references = [] } = Astro.props;
+const base = import.meta.env.BASE_URL.replace(/\/$/, '');
+const pattern = references.length > 0 ? new RegExp(`\\b(${references.join('|')})\\b`) : null;
+const segments = pattern ? type.split(pattern) : [type];
+---
+
+<code
+  >{
+    segments.map((segment, index) =>
+      index % 2 === 1 ? <a href={`${base}/ui-library/types/#${segment.toLowerCase()}`}>{segment}</a> : segment,
+    )
+  }</code
+>

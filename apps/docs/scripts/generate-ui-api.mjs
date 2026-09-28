@@ -120,7 +120,8 @@ function typeToString(t, byId, depth = 0) {
       return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
     case 'templateLiteral': {
-      return 'string';
+      const spans = (t.tail ?? []).map(([span, text]) => `\${${typeToString(span, byId, depth + 1)}}${text}`);
+      return `\`${t.head}${spans.join('')}\``;
     }
     case 'query': {
       return typeToString(t.queryType, byId, depth + 1);
@@ -269,7 +270,25 @@ function addProperty(child, byId, accumulator) {
     required: !child.flags?.isOptional,
     default: defaultTag(child.comment),
     description: summaryText(child.comment),
+    references: typeReferences(child.type, byId),
   });
+}
+
+const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256;
+
+// Names of first-party type declarations a type mentions; the docs link them to the Types page.
+function typeReferences(typeNode, byId) {
+  const names = new Set();
+  (function walk(value) {
+    if (Array.isArray(value)) {
+      for (const item of value) walk(item);
+      return;
+    }
+    if (!value || typeof value !== 'object') return;
+    if (value.type === 'reference' && isTypeDeclaration(byId.get(value.target))) names.add(value.name);
+    for (const nested of Object.values(value)) walk(nested);
+  })(typeNode);
+  return [...names].sort();
 }
 
 // Merges the variants of a union/overload component into one flat table,
@@ -324,9 +343,55 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       required: requiredEverywhere,
       default: base.default,
       description,
+      references: [...new Set(occurrences.flatMap((o) => o.prop.references))].sort(),
     });
   }
   return merged;
+}
+
+// `(typeof SIZES)[number]` reads as the literals of the SIZES tuple, not as a formula.
+function shapeToString(typeNode, byId) {
+  if (typeNode?.type === 'indexedAccess' && typeNode.objectType?.type === 'query') {
+    let constType = byId.get(typeNode.objectType.queryType?.target)?.type;
+    if (constType?.type === 'typeOperator') constType = constType.target;
+    if (constType?.type === 'tuple')
+      return constType.elements.map((element) => typeToString(element, byId)).join(' | ');
+  }
+  // `${SnackbarType}` reads as the enum's string values.
+  const [onlySpan] = typeNode?.type === 'templateLiteral' && !typeNode.head ? typeNode.tail : [];
+  const enumNode = onlySpan && !onlySpan[1] ? byId.get(onlySpan[0].target) : null;
+  if (enumNode?.kind === 8) return enumNode.children.map((member) => typeToString(member.type, byId)).join(' | ');
+  return typeToString(typeNode, byId);
+}
+
+// Every first-party type the props tables mention, plus the types those mention in turn.
+function collectTypes(entries, byId, project, warnings) {
+  const declarations = new Map();
+  (function walk(node) {
+    if (isTypeDeclaration(node)) declarations.set(node.name, [...(declarations.get(node.name) ?? []), node]);
+    for (const child of node.children ?? []) walk(child);
+  })(project);
+
+  const pending = entries.flatMap((entry) => entry.props.flatMap((property) => property.references));
+  const types = {};
+  while (pending.length > 0) {
+    const name = pending.pop();
+    if (types[name]) continue;
+    const [node, ...others] = declarations.get(name);
+    if (others.length > 0)
+      warnings.push(`type name "${name}" is declared more than once - its Types page link is ambiguous`);
+    const properties = [...collectProps(node, byId, new Map()).values()].sort((a, b) => a.name.localeCompare(b.name));
+    const shape = properties.length > 0 ? null : shapeToString(node.type, byId);
+    types[name] = {
+      name,
+      description: summaryText(node.comment),
+      shape,
+      shapeReferences: shape ? typeReferences(node.type, byId) : [],
+      properties,
+    };
+    pending.push(...types[name].shapeReferences, ...properties.flatMap((property) => property.references));
+  }
+  return Object.fromEntries(Object.entries(types).sort(([a], [b]) => a.localeCompare(b)));
 }
 
 function extractCssVariables(directory, cssSources, warnings, slug) {
@@ -403,7 +468,7 @@ function valueKind(value, depth = 0) {
 async function main() {
   const project = await runTypedoc();
   const byId = indexById(project);
-  const out = {};
+  const components = {};
   const warnings = [];
 
   for (const component of COMPONENTS) {
@@ -424,7 +489,7 @@ async function main() {
         warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
     }
-    out[component.slug] = {
+    components[component.slug] = {
       name: component.name,
       props,
       nativeElement: context.nativeElement ?? null,
@@ -432,13 +497,15 @@ async function main() {
     };
   }
 
-  await mkdir(path.dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
+  const types = collectTypes(Object.values(components), byId, project, warnings);
 
-  const summary = Object.entries(out).map(
+  await mkdir(path.dirname(outFile), { recursive: true });
+  await writeFile(outFile, JSON.stringify({ components, types }, null, 2) + '\n');
+
+  const summary = Object.entries(components).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
   );
-  console.log('✔ ui-api.json generated\n  ' + summary.join('\n  '));
+  console.log(`✔ ui-api.json generated (${Object.keys(types).length} types)\n  ` + summary.join('\n  '));
 
   if (warnings.length > 0) {
     // An unresolved type would silently ship a "no configurable props" page.
