@@ -1,4 +1,4 @@
-import { type ComponentProps, Fragment, StrictMode, act } from 'react';
+import { type ComponentProps, Fragment, type ReactNode, StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,6 +39,10 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
         ? null
         : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
+    // Rendered in place: without the properties panel the real one has no footer to render into.
+    PropertiesPanelFooter: ({ children }: { children?: ReactNode }) => (
+      <div data-properties-panel-footer>{children}</div>
+    ),
   };
 });
 
@@ -227,6 +231,14 @@ describe.each([
       expect(fieldOf('orderDate')?.disabled).toBe(true);
       expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
       expect(fieldOf('Reply draft')?.disabled).toBe(false);
+    });
+
+    it('puts the actions in the properties panel footer and keeps the fields above it', () => {
+      parkHumanOne();
+
+      const footer = container.querySelector('[data-properties-panel-footer]');
+      expect(footer?.contains(button('Approve')!)).toBe(true);
+      expect(footer?.contains(fieldOf('Refund amount')!)).toBe(false);
     });
 
     it('renders nothing for a node whose properties carry no well-formed request', () => {

@@ -1,3 +1,4 @@
+import { PropertiesPanelFooter } from '@workflowbuilder/sdk';
 import { Button } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
@@ -18,7 +19,7 @@ type Props = {
   onReject: (reject: RejectOffer) => void;
 };
 
-/** The verdict half of the form: the actions the decider may take, a rejection asking for its reason first. */
+/** The verdict half of the form, in the panel's footer: the actions the decider may take, a rejection asking for its reason first. */
 export function DecisionVerdict({
   actions: { resume, reject },
   reason,
@@ -33,29 +34,33 @@ export function DecisionVerdict({
   const [isRejecting, setIsRejecting] = useState(false);
 
   return (
-    <div className={styles['verdict']}>
-      {message && (
-        <p role="alert" className={styles['message']}>
-          {message}
-        </p>
-      )}
-      {isAccepted && (
-        <p role="status" className={styles['pending']}>
-          Sent. Waiting for the run to record the decision.
-        </p>
-      )}
-      <div className={styles['buttons']}>
-        {reject && (
-          <Button variant="ghost-critical" disabled={isBusy} onClick={() => setIsRejecting(true)}>
-            {`${reject.label}…`}
-          </Button>
-        )}
-        {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
-            the first tap after a correction is lost (follow-up: decision-form-blocked-button-a11y). */}
-        <Button variant="primary" disabled={isBusy || isApproveBlocked} onClick={onApprove}>
-          {resume.label}
-        </Button>
-      </div>
+    <>
+      <PropertiesPanelFooter>
+        <div className={styles['verdict']}>
+          {message && (
+            <p role="alert" className={styles['message']}>
+              {message}
+            </p>
+          )}
+          {isAccepted && (
+            <p role="status" className={styles['pending']}>
+              Sent. Waiting for the run to record the decision.
+            </p>
+          )}
+          <div className={styles['buttons']}>
+            {reject && (
+              <Button variant="ghost-critical" disabled={isBusy} onClick={() => setIsRejecting(true)}>
+                {`${reject.label}…`}
+              </Button>
+            )}
+            {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
+                the first tap after a correction is lost (follow-up: decision-form-blocked-button-a11y). */}
+            <Button variant="primary" disabled={isBusy || isApproveBlocked} onClick={onApprove}>
+              {resume.label}
+            </Button>
+          </div>
+        </div>
+      </PropertiesPanelFooter>
       {reject && (
         <RejectDialog
           reject={reject}
@@ -70,6 +75,6 @@ export function DecisionVerdict({
           }}
         />
       )}
-    </div>
+    </>
   );
 }
