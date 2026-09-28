@@ -15,7 +15,7 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 ## Props reference
 
-Every prop is optional. The **Type** column links to the auto-generated [API Reference](/api/core/workflowbuilderrootprops/) for the exact shape. The **Description** points to the section or guide that shows how to use each prop, and notes the default where there is one.
+Every prop is optional. The **Type** column links to the auto-generated [SDK API Reference](/api/core/workflowbuilderrootprops/) for the exact shape. The **Description** points to the section or guide that shows how to use each prop, and notes the default where there is one.
 
 | Prop                | Type                                                                              | Description                                                                                                                                                         |
 | ------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
