@@ -40,7 +40,6 @@ function* walk(directory) {
 }
 
 const config = readFileSync(astroConfigPath, 'utf8');
-let checked = 0;
 
 for (const { source, directory, label } of REFERENCES) {
   const sourceCategories = new Set();
@@ -81,7 +80,6 @@ for (const { source, directory, label } of REFERENCES) {
     }
     console.warn('Either drop them from astro.config.mjs or expect them to render an empty group.');
   }
-  checked += sourceCategories.size;
 }
 
-console.log(`✓ sidebar / @category parity ok — ${checked} categories cross-checked.`);
+console.log('✓ sidebar / @category parity ok.');
