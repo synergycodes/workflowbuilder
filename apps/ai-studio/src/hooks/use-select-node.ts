@@ -4,5 +4,12 @@ import { useCallback } from 'react';
 /** Selects one node the way a click on it does, so the SDK shows its properties. */
 export function useSelectNode(): (nodeId: string) => void {
   const reactFlowStore = useStoreApi();
-  return useCallback((nodeId: string) => reactFlowStore.getState().addSelectedNodes([nodeId]), [reactFlowStore]);
+  return useCallback(
+    (nodeId: string) => {
+      // React Flow's node click does this first; without it a group's selection box stays around the one node.
+      reactFlowStore.setState({ nodesSelectionActive: false });
+      reactFlowStore.getState().addSelectedNodes([nodeId]);
+    },
+    [reactFlowStore],
+  );
 }
