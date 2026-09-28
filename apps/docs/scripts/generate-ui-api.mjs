@@ -81,6 +81,25 @@ function findTypeByName(root, name, warnings) {
   return matches[0] ?? null;
 }
 
+const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256 || node?.kind === 8; // alias, interface, enum
+
+// A first-party type name in a rendered type becomes `{@link <page path> <name>}`, the path of its UI API
+// Reference page (`<category>/<name>`, as starlight-typedoc lays it out); the Props table turns it into a link.
+const LINK = /\{@link (\S+) ([^}]+)\}/g;
+const linkedTypes = new Set();
+
+function categoryTag(comment) {
+  const tag = (comment?.blockTags ?? []).find((b) => b.tag === '@category');
+  return (
+    tag?.content
+      .map((c) => c.text)
+      .join('')
+      .trim() || null
+  );
+}
+
+const pagePath = (node) => `${categoryTag(node.comment) ?? 'Other'}/${node.name}`.toLowerCase();
+
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
   switch (t.type) {
@@ -94,7 +113,10 @@ function typeToString(t, byId, depth = 0) {
       const arguments_ = t.typeArguments?.length
         ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>`
         : '';
-      return `${t.name}${arguments_}`;
+      const target = byId.get(t.target);
+      if (!isTypeDeclaration(target)) return `${t.name}${arguments_}`;
+      linkedTypes.add(target);
+      return `{@link ${pagePath(target)} ${t.name}}${arguments_}`;
     }
     case 'union': {
       return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
@@ -122,8 +144,7 @@ function typeToString(t, byId, depth = 0) {
       return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
     case 'templateLiteral': {
-      const spans = (t.tail ?? []).map(([span, text]) => `\${${typeToString(span, byId, depth + 1)}}${text}`);
-      return `\`${t.head}${spans.join('')}\``;
+      return 'string';
     }
     case 'query': {
       return typeToString(t.queryType, byId, depth + 1);
@@ -266,39 +287,13 @@ function literalNames(typeNode) {
 
 function addProperty(child, byId, accumulator) {
   if (child.kind !== 1024 || accumulator.has(child.name)) return; // 1024 = Property
-  const type = typeToString(child.type, byId);
   accumulator.set(child.name, {
     name: child.name,
-    type,
-    references: typeReferences(child.type, byId),
+    type: typeToString(child.type, byId),
     required: !child.flags?.isOptional,
     default: defaultTag(child.comment),
     description: summaryText(child.comment),
   });
-}
-
-const isTypeDeclaration = (node) => node?.kind === 2_097_152 || node?.kind === 256 || node?.kind === 8; // alias, interface, enum
-
-// First-party type declarations a type mentions, as `{ text, target }`: `text` is the name as written
-// at the use site (an aliased import differs from the declaration), `target` the declaration id.
-function typeReferences(typeNode, byId) {
-  const found = new Map();
-  (function walk(value) {
-    if (Array.isArray(value)) {
-      for (const item of value) walk(item);
-      return;
-    }
-    if (!value || typeof value !== 'object') return;
-    if (value.type === 'reference' && isTypeDeclaration(byId.get(value.target))) {
-      found.set(`${value.name}:${value.target}`, { text: value.name, target: value.target });
-    }
-    for (const nested of Object.values(value)) walk(nested);
-  })(typeNode);
-  return [...found.values()].sort((a, b) => a.text.localeCompare(b.text));
-}
-
-function uniqueReferences(references) {
-  return [...new Map(references.map((reference) => [`${reference.text}:${reference.target}`, reference])).values()];
 }
 
 // Merges the variants of a union/overload component into one flat table,
@@ -340,7 +335,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
       const note =
         distinctTypes.size > 1
-          ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type}`).join(', ')}).`
+          ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type.replaceAll(LINK, '$2')}`).join(', ')}).`
           : requiredInItsVariants
             ? `Only applies to the ${variants} variant (required there).`
             : `Only applies to the ${variants} variant.`;
@@ -353,43 +348,37 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       required: requiredEverywhere,
       default: base.default,
       description,
-      references: uniqueReferences(occurrences.flatMap((o) => o.prop.references)),
     });
   }
   return merged;
 }
 
-function categoryTag(comment) {
-  const tag = (comment?.blockTags ?? []).find((b) => b.tag === '@category');
-  return tag?.content.map((c) => c.text).join('').trim() || null;
-}
-
-// Every type the Props tables mention, and the types those mention, so the UI API Reference has no dangling
-// reference. Rewrites each reference to the page path starlight-typedoc gives it (`<category>/<name>`).
-function collectTypes(entries, byId, warnings) {
-  const pending = entries.flatMap((entry) => entry.props.flatMap((property) => property.references));
+// Every type the Props tables link to, and the types those mention, so the UI API Reference has no dangling reference.
+function collectLinkedTypes(byId, warnings) {
+  const pending = [...linkedTypes];
   const types = new Map();
   while (pending.length > 0) {
-    const { target } = pending.pop();
-    if (types.has(target)) continue;
-    const node = byId.get(target);
-    const category = categoryTag(node.comment);
-    if (!category) warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
-    types.set(target, { name: node.name, pagePath: `${category ?? 'Other'}/${node.name}`.toLowerCase() });
-    pending.push(...typeReferences(node.type ?? node.children, byId));
+    const node = pending.pop();
+    if (types.has(node.id)) continue;
+    if (!categoryTag(node.comment)) {
+      warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
+    }
+    types.set(node.id, node);
+    (function walk(value) {
+      if (Array.isArray(value)) {
+        for (const item of value) walk(item);
+        return;
+      }
+      if (!value || typeof value !== 'object') return;
+      if (value.type === 'reference' && isTypeDeclaration(byId.get(value.target))) pending.push(byId.get(value.target));
+      for (const nested of Object.values(value)) walk(nested);
+    })(node.type ?? node.children);
   }
-
-  const pagePaths = new Map();
-  for (const { name, pagePath } of types.values()) {
-    if (pagePaths.has(pagePath)) warnings.push(`type name "${name}" is declared twice - both would render at ${pagePath}`);
-    pagePaths.set(pagePath, name);
+  const names = [...types.values()].map((node) => node.name);
+  for (const name of new Set(names.filter((name, index) => names.indexOf(name) !== index))) {
+    warnings.push(`type name "${name}" is declared twice - both would render at the same UI API Reference page`);
   }
-  const withPages = (references) =>
-    references.map(({ text, target }) => ({ text, pagePath: types.get(target).pagePath }));
-  for (const entry of entries) {
-    entry.props = entry.props.map((property) => ({ ...property, references: withPages(property.references) }));
-  }
-  return [...types.values()].map((type) => type.name).sort();
+  return names.sort();
 }
 
 function extractCssVariables(directory, cssSources, warnings, slug) {
@@ -466,7 +455,7 @@ function valueKind(value, depth = 0) {
 async function main() {
   const project = await runTypedoc();
   const byId = indexById(project);
-  const components = {};
+  const out = {};
   const warnings = [];
 
   for (const component of COMPONENTS) {
@@ -487,7 +476,7 @@ async function main() {
         warnings.push(`props type "${component.propsType}" not found for "${component.slug}"`);
       }
     }
-    components[component.slug] = {
+    out[component.slug] = {
       name: component.name,
       props,
       nativeElement: context.nativeElement ?? null,
@@ -495,14 +484,17 @@ async function main() {
     };
   }
 
-  const typeNames = collectTypes(Object.values(components), byId, warnings);
+  const typeNames = collectLinkedTypes(byId, warnings);
 
   await mkdir(path.dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify(components, null, 2) + '\n');
+  await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
   const barrel = path.relative(path.dirname(typesEntryFile), path.resolve(uiSource, 'index'));
-  await writeFile(typesEntryFile, `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`);
+  await writeFile(
+    typesEntryFile,
+    `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`,
+  );
 
-  const summary = Object.entries(components).map(
+  const summary = Object.entries(out).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
   );
   console.log(`✔ ui-api.json generated (${typeNames.length} types)\n  ` + summary.join('\n  '));
