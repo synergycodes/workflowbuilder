@@ -16,7 +16,7 @@ const sql = postgres(env.DATABASE_URL);
 const TERMINAL_STATUSES: readonly ExecutionStatus[] = TERMINAL_EXECUTION_STATUSES;
 
 // A non-terminal write can land after a cancel, so only a terminal one replaces `cancelling`.
-export function statusesNotReplacedBy(status: ExecutionStatus): readonly ExecutionStatus[] {
+function statusesNotReplacedBy(status: ExecutionStatus): readonly ExecutionStatus[] {
   return TERMINAL_STATUSES.includes(status) ? TERMINAL_STATUSES : [...TERMINAL_STATUSES, 'cancelling'];
 }
 
