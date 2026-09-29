@@ -1,7 +1,7 @@
 import type { Size } from './size';
 
 /**
- * Size of `Menu` and `Select` rows, the `Select` trigger and the `DatePicker` input: a subset of `Size`.
+ * Size of `Menu` and `Select` rows, the `Select` trigger and the `DatePicker` input.
  *
  * @category Shared
  */

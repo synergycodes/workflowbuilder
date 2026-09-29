@@ -4,7 +4,7 @@ export const FIELD_STATES = ['default', 'critical', 'success', 'read-only'] as c
 export const FIELD_SIZES = ['l', 'm', 's', 'xs'] as const;
 
 /**
- * Validation or editing state of a form field. `read-only` shows the value without allowing edits.
+ * Validation or editing state of a form field. `read-only` blocks editing in `Input` and `TextArea`.
  *
  * @category Field
  */

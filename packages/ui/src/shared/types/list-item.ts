@@ -8,8 +8,6 @@ import { WithIcon } from '../../shared/types/with-icon';
 export type ListItem = Partial<WithIcon> & {
   /** `separator` renders a divider instead of a row. */
   type?: 'item' | 'separator';
-  /** Text of the row. */
   label?: string;
-  /** Makes the row non-interactive. */
   disabled?: boolean;
 };

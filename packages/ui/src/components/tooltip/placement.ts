@@ -9,7 +9,7 @@ export type TooltipPlacement = PopupSide | `${PopupSide}-${PopupAlign}`;
 
 export type PlacementContextValue = {
   side: PopupSide;
-  align: 'start' | 'center' | 'end';
+  align: PopupAlign | 'center';
 };
 
 export function placementToSideAlign(placement: TooltipPlacement): PlacementContextValue {

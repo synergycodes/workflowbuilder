@@ -22,6 +22,5 @@ export type IconNode = React.ReactElement;
 export type BaseButtonProps = {
   /** Text of a tooltip shown when the button is hovered or focused. */
   tooltip?: string;
-  /** Visual style of the tooltip. */
   tooltipType?: TooltipVariant;
 } & React.DetailedHTMLProps<React.ButtonHTMLAttributes<HTMLButtonElement>, HTMLButtonElement>;

@@ -15,8 +15,6 @@ export type IconSwitchProps = WithIcon & {
 } & BaseSwitchProps;
 
 /**
- * Visual style of an `IconSwitch`.
- *
  * @category Switch
  */
 export type IconSwitchVariant = 'primary' | 'secondary';

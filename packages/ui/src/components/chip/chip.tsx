@@ -33,8 +33,6 @@ export type ChipProps = {
  */
 export type ChipVariant = 'solid' | 'outline';
 /**
- * Size of a `Chip`.
- *
  * @category Chip
  */
 export type ChipSize = 's' | 'm' | 'l' | 'xl';

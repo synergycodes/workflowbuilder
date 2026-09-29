@@ -28,7 +28,6 @@ export type MenuItemProps = ListItem & {
    * (`menuitemradio` with `aria-checked`) and highlights the selected one.
    */
   selected?: boolean;
-  /** Called when the item is chosen. */
   onClick?: () => void;
   /** Ignored: `Menu` sizes every row with its own `size` prop. */
   size?: ItemSize;

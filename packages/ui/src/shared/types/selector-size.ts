@@ -1,7 +1,7 @@
 import { Size } from '@ui/shared/types/size';
 
 /**
- * Size of a selection control (`Checkbox`, `Radio`, `Switch`): a subset of `Size`.
+ * Size of a selection control (`Checkbox`, `Radio`, `Switch`).
  *
  * @category Shared
  */

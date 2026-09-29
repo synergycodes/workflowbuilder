@@ -40,7 +40,6 @@ export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
 export type NavLabelButtonProps = NavButtonBaseProps & {
   /** @default 'square' */
   variant?: Exclude<NavButtonVariant, 'plain'>;
-  /** Label of the button. */
   children: ReactNode;
   /** Icon before the label. */
   prefixIcon?: IconNode;
@@ -56,15 +55,12 @@ export type NavLabelButtonProps = NavButtonBaseProps & {
 export type NavIconButtonProps = NavButtonBaseProps & {
   /** @default 'square' */
   variant?: NavButtonVariant;
-  /** The icon the button shows. */
   prefixIcon: IconNode;
   children?: never;
   suffixIcon?: never;
 };
 
 /**
- * Props of `NavButton`: either a labelled or an icon-only button.
- *
  * @category NavButton
  */
 export type NavButtonProps = NavLabelButtonProps | NavIconButtonProps;

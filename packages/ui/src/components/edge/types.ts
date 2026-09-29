@@ -3,7 +3,7 @@ import { rangeBetween } from '../../shared/utils/arrays';
 
 export const EDGE_LABEL_SIZES = rangeBetween(SIZES, 'extra-small', 'medium');
 /**
- * Size of an edge label: a subset of `Size`.
+ * Size of an edge label.
  *
  * @category Edge
  */
