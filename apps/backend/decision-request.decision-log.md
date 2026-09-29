@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape)
 
 ## Context
 
@@ -49,6 +49,11 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 23. **A reject port with no edge is a deliberate end.** The runner records no dead end for a completion with an outcome. Publish requires no edge there, a test pins it, and a future rule wiring every handle must keep the exception.
 24. **The route stamps the initiator.** The validator judges the body against the request and returns the decision without `resolvedBy`; the route adds `human`, since only it knows who called, and the schema strips an initiator sent in the body. Identity will be stamped at the same line; a deadline that decides writes its own inside the workflow. Note what the initiator reaches: the row's `resolved_by` (readable by any `executions:read` caller), the `execution_completed` payload, and the node's `output`, which downstream nodes read and the node's `outputSchema` declares. None is on the `x-pii` path `(follow-up: decision-initiator-identity-exposure)`.
 
+## Failure policy and edit shape (29.09.2026)
+
+25. **A node that carries a request may not use `errorPolicy: 'continue'`.** The runner absorbs such a failure with no port, which lights every non-error edge: a worker without the node's executor, or a `node_completed` write that fails after an accepted verdict, would run approve and reject together. Publish and execute refuse it with `error_policy_continue`; `fail` and `errorRoute` keep failures visible. The rule lives in the backend, not the runner, because the runner deliberately reads no request. Like decision 21 it tightens a schema the decision route re-parses, so a run parked on such a node would answer 500; accepted, because the feature lives on its branch with no run in flight.
+26. **Edits are a patch of the proposal.** The node's output carries them unapplied; whoever reads the decision merges an object field by field and a list element by element. That is why the walk checks only the keys an edit names. A level with `properties` or `items` must therefore keep its shape: `null`, a primitive or the other container could drop the read-only and required children it may hold, so it answers `field_shape_changed`, except `null` where the level's `type` allows it. `null` is the patch's own way to empty a field, and listing it in `type` is the author's consent; any other value would replace the level rather than patch it, even one its `type` lists. Replacement was rejected: it would make every object with a read-only child uneditable as a whole.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -67,10 +72,13 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - A workflow with a `null` draft still publishes `null`, unvalidated, as it did before. Changing that is its own decision.
 - A draft may store an own `__proto__` key; it goes nowhere but the database, and publish and execute refuse it. Rejecting it at save time was judged not worth touching the draft route.
 - The submission validator returns the first refusal, not a list.
-- It checks editability and presence at every level the form describes inline, following `properties` and `items`. A level reached only through `$ref` or a composition keyword describes nothing there, so an edit into it is refused as an unknown field rather than checked `(follow-up: decision-edit-schema-composition)`.
+- It checks editability, presence and shape at every level the form describes inline, following `properties` and `items`. A level reached only through `$ref` or a composition keyword describes nothing there, so an edit into it is refused as an unknown field rather than checked `(follow-up: decision-edit-schema-composition)`.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
 - Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
 - The route re-parses the stored snapshot with today's `workflowSnapshotSchema`, and a run can wait for days across deploys. A schema tightened in between makes every parked run whose snapshot no longer parses undecidable: the route answers 500 until the snapshot is migrated or the rule relaxed.
+- Edits as a patch: a list edit longer than the proposal appends elements that carry none of the read-only fields, since the validator never reads the proposal; a list cannot be shortened, since `[]` patches no element; an object whose `type` does not allow `null` cannot be cleared. AI Studio's `withEdits` only renders a decided record and merges top-level keys, all its form can edit.
+- Nothing applies the edits yet: the node's output is the decision alone, so a step after it that reads the source's output sees the proposal without the corrections. Refund Review merges them in its prompt `(follow-up: decision-settled-values)`.
+- The `errorPolicy` rule keys on the request, so a node that routes by port without one (a condition node, or a decision node missing its request) still lights every branch on a failure under `continue` `(follow-up: port-routing-continue-broadcast)`.
 
 ## Open points, closed 10.09.2026
 

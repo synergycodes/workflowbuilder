@@ -29,7 +29,7 @@ verdict carries. This file records the decisions behind the Temporal side of the
   key the map by attempt, deliberately.
 - **Registering the handler unconditionally is additive.** Handler registration writes
   nothing to Event History, and a `condition()` awaited without a deadline creates no
-  timer command. The committed gateless history in `test/replay/` pins this.
+  timer command. The 0.1.0 histories in `test/replay/`, recorded before the handler existed, pin this.
 - **The `ReturnType<typeof defineUpdate<…>>` annotation.** `defineUpdate`'s return type
   (`UpdateDefinition`) lives in `@temporalio/common`, which this package does not
   declare as a dependency. Naming it in the emitted d.ts (TS2742) would break consumers

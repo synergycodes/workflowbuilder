@@ -363,6 +363,53 @@ describe('workflowSnapshotSchema: decision requests', () => {
 
     expect(sourceIssues).toEqual([{ path, message: decisionIssueMessage(issue.code, issue.value) }]);
   });
+
+  function withErrorPolicy(deciding: ReturnType<typeof decisionNode>, errorPolicy: string) {
+    return { ...deciding, data: { ...deciding.data, properties: { ...deciding.data.properties, errorPolicy } } };
+  }
+
+  it("rejects errorPolicy 'continue' on a node that carries a decision request", () => {
+    const snapshot = {
+      nodes: [node('src'), withErrorPolicy(decisionNode('review', { actions: [approve] }), 'continue')],
+      edges: [edge('src', 'review')],
+    };
+    const result = workflowSnapshotSchema.safeParse(snapshot);
+
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['nodes', 1, 'data', 'properties', 'errorPolicy'],
+        message: decisionIssueMessage('error_policy_continue'),
+        params: { issue: 'error_policy_continue' },
+      }),
+    ]);
+  });
+
+  it('reports the errorPolicy issue beside a source issue on the same node', () => {
+    const snapshot = {
+      nodes: [withErrorPolicy(decisionNode('review', { actions: [approve] }), 'continue')],
+      edges: [],
+    };
+
+    expect(issuePaths(snapshot)).toEqual([
+      'nodes.0.data.properties.errorPolicy',
+      'nodes.0.data.properties.decisionRequest.proposalSourceNodeId',
+    ]);
+  });
+
+  it.each(['fail', 'errorRoute'])("accepts errorPolicy '%s' on a node that carries a decision request", (policy) => {
+    const snapshot = {
+      nodes: [node('src'), withErrorPolicy(decisionNode('review', { actions: [approve] }), policy)],
+      edges: [edge('src', 'review')],
+    };
+
+    expect(issuePaths(snapshot)).toEqual([]);
+  });
+
+  it("leaves errorPolicy 'continue' alone on a node without a request", () => {
+    const snapshot = { nodes: [node('src', { errorPolicy: 'continue' })], edges: [] };
+
+    expect(issuePaths(snapshot)).toEqual([]);
+  });
 });
 
 describe('mapToExecutionModel', () => {

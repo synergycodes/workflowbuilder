@@ -15,6 +15,11 @@ const sql = postgres(env.DATABASE_URL);
 // Widened alias: `.includes` on the terminal-only tuple rejects the full status union.
 const TERMINAL_STATUSES: readonly ExecutionStatus[] = TERMINAL_EXECUTION_STATUSES;
 
+// A non-terminal write can land after a cancel, so only a terminal one replaces `cancelling`.
+function statusesNotReplacedBy(status: ExecutionStatus): readonly ExecutionStatus[] {
+  return TERMINAL_STATUSES.includes(status) ? TERMINAL_STATUSES : [...TERMINAL_STATUSES, 'cancelling'];
+}
+
 export const database = {
   async emitExecutionEvent(
     executionId: string,
@@ -56,7 +61,7 @@ export const database = {
     // wrote `failed` must not flip it to `cancelled`. Matching 0 rows is a silent
     // no-op, which also makes a retried terminal write idempotent.
     // started_at survives resumes: only the first 'running' stamps it, so a verdict
-    // un-parking a gate does not move the start. Writing 'running' at actual run
+    // un-parking a node does not move the start. Writing 'running' at actual run
     // start is a separate, still-open fix (follow-up: running-status-at-start).
     await sql`
       UPDATE executions SET
@@ -68,7 +73,7 @@ export const database = {
         resolved_by = COALESCE(${outcome?.resolvedBy ?? null}, resolved_by),
         updated_at = now()
       WHERE id = ${executionId}
-        AND status NOT IN ${sql([...TERMINAL_EXECUTION_STATUSES])}
+        AND status NOT IN ${sql([...statusesNotReplacedBy(status)])}
     `;
   },
 };

@@ -24,7 +24,11 @@ describe('TemporalWorkflowEngine.resolveNode deadline', () => {
     vi.setSystemTime(NOW);
     const { client, withDeadline, executeUpdate } = fakeClient();
 
-    const result = await new TemporalWorkflowEngine({ client }).resolveNode('e-1', 'n-1', { output: 1 });
+    const result = await new TemporalWorkflowEngine({ client }).resolveNode({
+      executionId: 'e-1',
+      nodeId: 'n-1',
+      resolution: { output: 1 },
+    });
 
     expect(result).toEqual({});
     expect(withDeadline).toHaveBeenCalledWith(NOW + 10_000, expect.any(Function));
@@ -38,7 +42,11 @@ describe('TemporalWorkflowEngine.resolveNode deadline', () => {
     vi.setSystemTime(NOW);
     const { client, withDeadline } = fakeClient();
 
-    await new TemporalWorkflowEngine({ client, resolveTimeoutMs: 250 }).resolveNode('e-1', 'n-1', { output: 1 });
+    await new TemporalWorkflowEngine({ client, resolveTimeoutMs: 250 }).resolveNode({
+      executionId: 'e-1',
+      nodeId: 'n-1',
+      resolution: { output: 1 },
+    });
 
     expect(withDeadline).toHaveBeenCalledWith(NOW + 250, expect.any(Function));
   });

@@ -15,6 +15,7 @@ export type { ExecutionContext } from './execution-context';
 
 export { RESOLVE_NODE_REJECTIONS } from './ports/workflow-engine.port';
 export type {
+  ResolveNodeInput,
   ResolveNodeRejection,
   ResolveNodeResult,
   VerdictRejection,

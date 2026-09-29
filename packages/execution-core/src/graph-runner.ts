@@ -338,10 +338,10 @@ async function runNode<TNode extends BaseNode>(
     if (executed.waiting) {
       if (runner.awaitResolution === undefined) {
         // A runner-level abort, not a node failure: routed around `errorPolicy`, where
-        // 'continue' would close the run as completed with the gate silently skipped.
+        // 'continue' would close the run as completed with the waiting node silently skipped.
         return {
           node,
-          message: `Node "${node.id}" returned a waiting result, but this engine adapter does not support gates`,
+          message: `Node "${node.id}" returned a waiting result, but this engine adapter does not support waiting nodes`,
           code: 'waiting_unsupported',
           failed: true,
           abort: true,
@@ -363,7 +363,7 @@ async function runNode<TNode extends BaseNode>(
   }
 }
 
-// `parked` is a counter, not a flag: with two gates parked, the first verdict
+// `parked` is a counter, not a flag: with two nodes parked, the first verdict
 // must not flip the run back to 'running'.
 async function parkUntilResolved(
   awaitResolution: (nodeId: string) => Promise<CompletedNodeExecution>,
