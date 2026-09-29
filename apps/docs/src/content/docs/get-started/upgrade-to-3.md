@@ -209,8 +209,8 @@ inferring a subtype from the children structure.
 
 Sizes `extra-large`, `large`, `medium`, `small` and `extra-small` become `xl`, `l`, `m`, `s`
 and `xs`. The `xx-small` and `xxx-small` steps are gone. On `Button`, `shape="circle"`
-becomes `shape="round"`, alongside the new `shape="square"`. `SegmentPicker` keeps the
-`Shape` type it always had, so its `shape="circle"` stays as it is.
+becomes `shape="round"`, alongside the new `shape="square"`. `SegmentPicker` keeps its
+`shape="circle"`; its type, previously `Shape`, is now `SegmentPickerShape`.
 
 `Variant` is renamed to `ButtonVariant`. `BaseRegularButtonProps` and the label, icon and
 icon-with-label component subtypes are removed; `LabelButtonProps` and `IconButtonProps` are

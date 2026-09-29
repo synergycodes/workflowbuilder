@@ -3,4 +3,4 @@
  *
  * @category Modal
  */
-export type FooterVariant = 'integrated' | 'separated';
+export type ModalFooterVariant = 'integrated' | 'separated';

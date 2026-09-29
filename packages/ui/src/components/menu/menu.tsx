@@ -9,10 +9,10 @@ import listBoxStyles from '@ui/shared/styles/list-box.module.css';
 import { MenuItem } from './menu-item';
 import { MenuOpenContext } from './menu-open-context';
 import { MenuTriggerButton } from './menu-trigger-button';
-import { type OffsetOptions, type Placement, offsetToBaseUI, placementToSideAlign } from './placement';
+import { type MenuPlacement, type OffsetOptions, offsetToBaseUI, placementToSideAlign } from './placement';
 import { MenuItemProps } from './types';
 
-export type { OffsetAxes, OffsetOptions, Placement } from './placement';
+export type { OffsetAxes, OffsetOptions, MenuPlacement } from './placement';
 
 export type MenuProps = {
   /**
@@ -32,7 +32,7 @@ export type MenuProps = {
    * Uses Floating UI placement options.
    * @default 'bottom-end'
    */
-  placement?: Placement | undefined;
+  placement?: MenuPlacement | undefined;
 
   /**
    * Controls whether the menu is open or closed.

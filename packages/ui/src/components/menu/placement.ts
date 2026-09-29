@@ -7,7 +7,7 @@ import { type ComponentProps } from 'react';
  *
  * @category Menu
  */
-export type Placement = PopupSide | `${PopupSide}-${PopupAlign}`;
+export type MenuPlacement = PopupSide | `${PopupSide}-${PopupAlign}`;
 
 /**
  * Offsets of a `Menu` popup from its trigger, in pixels, per axis.
@@ -34,7 +34,7 @@ type PositionerProps = ComponentProps<typeof MenuBase.Positioner>;
 type PositionerSide = NonNullable<PositionerProps['side']>;
 type PositionerAlign = NonNullable<PositionerProps['align']>;
 
-export function placementToSideAlign(placement: Placement): {
+export function placementToSideAlign(placement: MenuPlacement): {
   side: PositionerSide;
   align: PositionerAlign;
 } {

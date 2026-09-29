@@ -1,9 +1,12 @@
-import type { Shape } from '@ui/components/button/types';
 import { type ReactElement, isValidElement } from 'react';
 
 import { Item, type SegmentPickerItemProps } from '../item/segment-picker-item';
+import type { SegmentPickerShape } from '../types';
 
-export function getValidShape(shape: Shape, items: ReactElement<SegmentPickerItemProps, typeof Item>[]): Shape {
+export function getValidShape(
+  shape: SegmentPickerShape,
+  items: ReactElement<SegmentPickerItemProps, typeof Item>[],
+): SegmentPickerShape {
   if (shape !== 'circle') {
     return shape;
   }

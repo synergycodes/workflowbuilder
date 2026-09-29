@@ -1,13 +1,6 @@
 import { TooltipVariant } from '../tooltip/types';
 
 /**
- * Shape of the segments of a `SegmentPicker`.
- *
- * @category SegmentPicker
- */
-export type Shape = 'default' | 'circle';
-
-/**
  * An icon element for a button icon prop, e.g. `<Plus />`.
  *
  * @category Button
