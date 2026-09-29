@@ -23,10 +23,8 @@ const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
 const uiSource = path.resolve(repoRoot, 'packages/ui/src');
 const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
-// Entry point of the UI API Reference: re-exports, from the package barrel, every type a Props table mentions.
-const typesEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
-// The UI API Reference categories, one sidebar group each (read by astro.config.mjs).
-const categoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
+const uiApiReferenceEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
+const uiApiReferenceCategoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
 // Engineering notes in the CSS, never public documentation.
@@ -470,12 +468,15 @@ async function main() {
 
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
-  const barrel = path.relative(path.dirname(typesEntryFile), path.resolve(uiSource, 'index')).split(path.sep).join('/');
+  const barrel = path
+    .relative(path.dirname(uiApiReferenceEntryFile), path.resolve(uiSource, 'index'))
+    .split(path.sep)
+    .join('/');
   await writeFile(
-    typesEntryFile,
+    uiApiReferenceEntryFile,
     `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`,
   );
-  await writeFile(categoriesFile, JSON.stringify(categories, null, 2) + '\n');
+  await writeFile(uiApiReferenceCategoriesFile, JSON.stringify(categories, null, 2) + '\n');
 
   const summary = Object.entries(out).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
