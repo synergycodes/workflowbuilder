@@ -75,7 +75,7 @@ The URL can name what the editor opens. AI Studio reads it once, while the page 
 
 Known limits:
 
-- Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it.
+- Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it. The welcome disclaimer tells visitors so and asks them not to enter personal or confidential data.
 - A reload after the run finished still shows it, read-only, until Reset, because the URL still names it.
 - The run view is read-only through the run lock only. The app bar's read-only switch lifts it, and edits made then are saved nowhere.
 - Workflow edits live in the page until Save or Run. There is no autosave to the backend, and nothing warns before a reload drops them.
