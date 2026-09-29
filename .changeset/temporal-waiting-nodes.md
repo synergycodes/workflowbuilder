@@ -2,4 +2,10 @@
 '@workflowbuilder/temporal': minor
 ---
 
-A node executor can return `{ waiting: true }` to park the run until `TemporalWorkflowEngine.resolveNode` delivers the node's completion, which may declare a run `outcome`; `NodeExecutionResult` is now that union, so code reading `.output` must narrow it first, and `WorkflowEnginePort` requires `resolveNode`. Around a parked node the store also receives the advisory `waiting` and `running` statuses, which can land after a cancel, and the terminal `completed` write carries the `outcome` as a fourth argument of `updateExecutionStatus`.
+A node executor can return `{ waiting: true }` to park the run until `TemporalWorkflowEngine.resolveNode` delivers the node's completion as the `resolveNodeUpdate` Workflow Update (`RESOLVE_NODE_UPDATE_NAME`); refusals come back as a `ResolveNodeResult`, and `resolveTimeoutMs` bounds the wait for acceptance. A completion may declare a run `outcome`, which the terminal `completed` write passes to `updateExecutionStatus` as a fourth argument.
+
+Breaking changes:
+
+- `NodeExecutionResult` is now `CompletedNodeExecution | WaitingNodeExecution`: narrow on `waiting` before reading `.output`.
+- A custom `WorkflowEnginePort` must implement `resolveNode`, which takes a `ResolveNodeInput` (`{ executionId, nodeId, resolution }`).
+- An `ExecutionStore` now receives the `node_waiting` event and the `waiting` and `running` statuses. They can arrive after a cancel or a terminal status, so the store must not let them replace a cancel it recorded or a terminal status.

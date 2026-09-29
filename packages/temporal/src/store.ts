@@ -17,8 +17,8 @@ export interface ExecutionStore {
   ): Promise<void>;
   /**
    * `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result.
-   * 'waiting' and 'running' are advisory and can land after a cancel, even after the terminal status, so
-   * they must not replace a cancel the store recorded or a terminal status.
+   * 'waiting' and 'running' are advisory and can land after a cancel or the terminal status, so neither may
+   * replace a recorded cancel or a terminal status. 'cancelled' can also follow another terminal one: keep the first.
    */
   updateExecutionStatus(
     executionId: string,
