@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import styles from './full-page.module.css';
+import styles from './loading-screen.module.css';
 
 export function LoadingScreen() {
   return (
