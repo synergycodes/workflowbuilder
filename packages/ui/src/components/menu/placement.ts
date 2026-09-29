@@ -1,4 +1,5 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
+import type { PopupAlign, PopupSide } from '@ui/shared/types/popup-placement';
 import { type ComponentProps } from 'react';
 
 /**
@@ -6,19 +7,7 @@ import { type ComponentProps } from 'react';
  *
  * @category Menu
  */
-export type Placement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end';
+export type Placement = PopupSide | `${PopupSide}-${PopupAlign}`;
 
 /**
  * Offsets of a `Menu` popup from its trigger, in pixels, per axis.

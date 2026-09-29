@@ -1,24 +1,14 @@
+import type { PopupAlign, PopupSide } from '@ui/shared/types/popup-placement';
+
 /**
  * Where a `Tooltip` opens: a side of the trigger, optionally aligned to its start or end.
  *
  * @category Tooltip
  */
-export type TooltipPlacement =
-  | 'top'
-  | 'top-start'
-  | 'top-end'
-  | 'right'
-  | 'right-start'
-  | 'right-end'
-  | 'bottom'
-  | 'bottom-start'
-  | 'bottom-end'
-  | 'left'
-  | 'left-start'
-  | 'left-end';
+export type TooltipPlacement = PopupSide | `${PopupSide}-${PopupAlign}`;
 
 export type PlacementContextValue = {
-  side: 'top' | 'right' | 'bottom' | 'left';
+  side: PopupSide;
   align: 'start' | 'center' | 'end';
 };
 

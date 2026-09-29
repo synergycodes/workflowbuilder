@@ -28,6 +28,7 @@ export * from './components/tooltip';
 export * from './shared/types/size';
 export * from './shared/types/item-size';
 export * from './shared/types/list-item';
+export * from './shared/types/popup-placement';
 export * from './shared/types/selector-size';
 export * from './shared/types/with-icon';
 export * from './shared/types/field';
