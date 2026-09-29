@@ -84,6 +84,7 @@ beforeEach(() => {
   installFakeEventSource();
   resetExecution();
   hook = undefined;
+  globalThis.history.replaceState(null, '', '/');
 });
 
 afterEach(() => {
@@ -449,6 +450,17 @@ describe('useBackendExecution: starting a run from the canvas', () => {
     expect(useExecutionStore.getState()).toMatchObject({ executionId: 'exec-2', isStopRequested: false });
   });
 
+  it('puts the new run in the address', async () => {
+    unmount = mountHook();
+    serverAcceptsExecute();
+
+    await act(async () => {
+      await api().executeFromCanvas([], []);
+    });
+
+    expect(globalThis.location.search).toBe('?executionId=exec-2');
+  });
+
   it('a workflow that will not save opens no stream and leaves the canvas idle', async () => {
     unmount = mountHook();
     vi.stubGlobal(
@@ -462,6 +474,63 @@ describe('useBackendExecution: starting a run from the canvas', () => {
 
     expect(useExecutionStore.getState().status).toBe('idle');
     expect(FakeEventSource.instances).toHaveLength(0);
+  });
+});
+
+describe('useBackendExecution: starting a run on the workflow the link opened', () => {
+  const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
+  const nodes = [{ id: 'n-1' }];
+
+  it("saves the canvas into that workflow's draft, runs that workflow and adds the run to its address", async () => {
+    globalThis.history.replaceState(null, '', `/?workflowId=${workflow}`);
+    unmount = mountHook();
+    const request = vi.fn<typeof fetch>(async (url) =>
+      String(url).endsWith('/draft')
+        ? jsonResponse(200, { id: workflow, name: 'Refund review' })
+        : jsonResponse(202, { executionId: 'exec-2', streamUrl: '/api/executions/exec-2/stream' }),
+    );
+    vi.stubGlobal('fetch', request);
+
+    await act(async () => {
+      await api().executeFromCanvas(nodes, [], {}, workflow);
+    });
+
+    expect(request.mock.calls.map(([url, init]) => [url, init?.method])).toEqual([
+      [`${BACKEND_URL}/api/workflows/${workflow}/draft`, 'PATCH'],
+      [`${BACKEND_URL}/api/workflows/${workflow}/execute`, 'POST'],
+    ]);
+    expect(JSON.parse(request.mock.calls[0]![1]!.body as string)).toEqual({
+      draftJson: { nodes, edges: [] },
+    });
+    expect(globalThis.location.search).toBe(`?workflowId=${workflow}&executionId=exec-2`);
+  });
+
+  it('a workflow the server no longer has starts nothing and leaves the address alone', async () => {
+    globalThis.history.replaceState(null, '', `/?workflowId=${workflow}`);
+    unmount = mountHook();
+    const request = vi.fn(async () => jsonResponse(404, { code: 'workflow_not_found', message: 'Workflow not found' }));
+    vi.stubGlobal('fetch', request);
+
+    await act(async () => {
+      await expect(api().executeFromCanvas(nodes, [], {}, workflow)).rejects.toThrow('Workflow not found');
+    });
+
+    expect(request).toHaveBeenCalledTimes(1);
+    expect(useExecutionStore.getState().status).toBe('idle');
+    expect(globalThis.location.search).toBe(`?workflowId=${workflow}`);
+  });
+});
+
+describe('useBackendExecution: Reset', () => {
+  it('takes the run out of the address and keeps the workflow', () => {
+    const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
+    globalThis.history.replaceState(null, '', `/?workflowId=${workflow}&executionId=exec-1`);
+    rememberRun('completed');
+    unmount = mountHook();
+
+    act(() => api().reset());
+
+    expect(globalThis.location.search).toBe(`?workflowId=${workflow}`);
   });
 });
 

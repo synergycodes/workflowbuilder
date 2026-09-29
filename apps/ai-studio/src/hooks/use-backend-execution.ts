@@ -10,6 +10,7 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../stores/use-execution-store';
+import { syncExecutionIdToAddress } from '../utils/open-from-url/address-execution-id';
 
 const STREAM_PATH_PREFIX = '/api/executions/';
 
@@ -17,6 +18,28 @@ const STREAM_PATH_PREFIX = '/api/executions/';
 async function isExecutionNotFound(response: Response): Promise<boolean> {
   const body = (await response.json().catch(() => null)) as { code?: string } | null;
   return body?.code === 'execution_not_found';
+}
+
+async function workflowToRun(nodes: unknown[], edges: unknown[], targetWorkflowId?: string): Promise<string> {
+  const response = await (targetWorkflowId === undefined
+    ? fetch(`${BACKEND_URL}/api/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'AI Studio Draft', draftJson: { nodes, edges } }),
+      })
+    : fetch(`${BACKEND_URL}/api/workflows/${targetWorkflowId}/draft`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draftJson: { nodes, edges } }),
+      }));
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message ?? 'Failed to save workflow');
+  }
+
+  const { id } = (await response.json()) as { id: string };
+  return id;
 }
 
 export function useBackendExecution() {
@@ -56,23 +79,18 @@ export function useBackendExecution() {
   }, [openStream]);
 
   const executeFromCanvas = useCallback(
-    async (nodes: unknown[], edges: unknown[], triggerPayload: Record<string, unknown> = {}) => {
+    async (
+      nodes: unknown[],
+      edges: unknown[],
+      triggerPayload: Record<string, unknown> = {},
+      /** Saves the canvas into this workflow's draft instead of creating a workflow per run. */
+      targetWorkflowId?: string,
+    ) => {
       // Not redundant with openStream's own close: left open, a stale stream could still mutate the
       // store through the two round trips below.
       disconnectRef.current?.();
 
-      const wfResponse = await fetch(`${BACKEND_URL}/api/workflows`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'AI Studio Draft', draftJson: { nodes, edges } }),
-      });
-
-      if (!wfResponse.ok) {
-        const error = (await wfResponse.json()) as { message?: string };
-        throw new Error(error.message ?? 'Failed to save workflow');
-      }
-
-      const { id: workflowId } = (await wfResponse.json()) as { id: string };
+      const workflowId = await workflowToRun(nodes, edges, targetWorkflowId);
 
       const turnstileToken = await getTurnstileToken();
 
@@ -96,6 +114,7 @@ export function useBackendExecution() {
       };
 
       setExecutionStarted(execId, streamUrl);
+      syncExecutionIdToAddress(execId);
       openStream(execId, streamUrl);
 
       return execId;
@@ -107,6 +126,7 @@ export function useBackendExecution() {
     disconnectRef.current?.();
     disconnectRef.current = null;
     resetExecution();
+    syncExecutionIdToAddress(null);
   }, []);
 
   const cancel = useCallback(async () => {

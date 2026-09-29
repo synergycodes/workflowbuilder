@@ -8,7 +8,7 @@ import styles from './ai-studio-controls.module.css';
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
-import { useDiagramSourceStore } from '../../stores/use-diagram-source-store';
+import { addNotice, useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 import { leaveRunView } from '../../utils/open-from-url/address-execution-id';
 
@@ -22,6 +22,9 @@ export function AiStudioControls() {
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
   const isRunView = useDiagramSourceStore((state) => state.isRunView);
+  const targetWorkflowId = useDiagramSourceStore((state) => state.targetWorkflowId);
+  // The run view's canvas is that run's graph, and Run would save it over the workflow's newer draft.
+  const canRun = hasStartNode && !(isRunView && targetWorkflowId !== undefined);
 
   const handleReset = useCallback(() => {
     reset();
@@ -38,13 +41,14 @@ export function AiStudioControls() {
 
     setIsStarting(true);
     try {
-      await executeFromCanvas(nodes, edges, triggerPayload);
+      await executeFromCanvas(nodes, edges, triggerPayload, targetWorkflowId);
     } catch (error) {
       console.error('Execution failed:', error);
+      addNotice(`The run did not start: ${error instanceof Error ? error.message : String(error)}.`, 'error');
     } finally {
       setIsStarting(false);
     }
-  }, [executeFromCanvas]);
+  }, [executeFromCanvas, targetWorkflowId]);
 
   const isRunning = isRunAlive(status);
   const isDone = status !== 'idle' && !isRunning;
@@ -73,7 +77,7 @@ export function AiStudioControls() {
           >
             Stop
           </Button>
-        ) : hasStartNode ? (
+        ) : canRun ? (
           <Button
             className={styles['run-stop-button']}
             variant="primary"

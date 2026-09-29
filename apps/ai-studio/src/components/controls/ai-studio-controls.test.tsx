@@ -57,7 +57,7 @@ describe('AiStudioControls', () => {
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
     startNode.exists = true;
-    useDiagramSourceStore.setState({ isRunView: false });
+    useDiagramSourceStore.setState({ isRunView: false, targetWorkflowId: undefined, notices: [] });
     address.leaveRunView.mockClear();
     useStore.getState().setToggleReadOnlyMode(false);
     container = document.createElement('div');
@@ -137,6 +137,41 @@ describe('AiStudioControls', () => {
 
     expect(logged).toHaveBeenCalled();
     expect(icons()).toEqual(['Play']);
+  });
+
+  it('tells the user why a start failed', async () => {
+    fetchMock.mockImplementation(async () => jsonResponse(503, { message: 'Unavailable' }));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await clickIcon('Play');
+
+    expect(useDiagramSourceStore.getState().notices.map((notice) => notice.text)).toEqual([
+      'The run did not start: Unavailable.',
+    ]);
+  });
+
+  it("Run on the link's workflow saves into that workflow first", async () => {
+    const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
+    act(() => useDiagramSourceStore.setState({ targetWorkflowId: workflow }));
+
+    await clickIcon('Play');
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${BACKEND_URL}/api/workflows/${workflow}/draft`);
+  });
+
+  // The canvas holds the run's graph, which Run would save over the workflow's newer draft.
+  it("offers no Run in the run view of the link's workflow, only Reset", () => {
+    act(() => useDiagramSourceStore.setState({ isRunView: true, targetWorkflowId: 'wf-1' }));
+    setRunStatus('completed');
+
+    expect(icons()).toEqual(['ArrowCounterClockwise']);
+  });
+
+  it('offers Run in the run view of a run that belongs to no linked workflow', () => {
+    act(() => useDiagramSourceStore.setState({ isRunView: true }));
+    setRunStatus('completed');
+
+    expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
   });
 
   it('adds Reset once a cancel is in flight: a cancel the server never resolves would trap the user', () => {
