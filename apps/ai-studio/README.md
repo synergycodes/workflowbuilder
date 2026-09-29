@@ -20,7 +20,8 @@ A complete, runnable AI workflow product built on top of the Workflow Builder SD
 - An AI Agent node that answers as structured fields: the Response format dropdown sets `properties.outputSchema` to a preset JSON Schema, the worker asks the model for that shape (see [apps/execution-worker/README.md](../execution-worker/README.md#ai-agent-structured-output)), and in Refund Review the draft's fields fill the decision form, and the reply the person approves, edits included, is what the customer gets. Plain text stays the default and returns `{ response }`. The draft's `internalReasoning` stays off the form because the decision request's schema leaves it out, and out of the confirmation only because the second agent's prompt says so; nothing downstream enforces that. A node switched to a structured format has no `response`, so a downstream `{{ nodes.<id>.response }}` fails the run as `template_unresolved`, while the editor still suggests `response` for every AI Agent.
 - Live execution UI: Run/Stop controls, log panel, per-node status markers, a footer on a waiting decision node with Decide, a snackbar while the run waits for a decision, edge highlighting, node-detail overlay
 - Decide selects the waiting node through the SDK's `useSetSelection`, replacing the selection, and moves the focus to its decision form. Neither the footer nor the snackbar shows while the run is `cancelling`, since the backend refuses a decision then, and the snackbar offers no Decide for a node the canvas lacks. A closed snackbar stays closed for that wait until the page reloads.
-- A run survives a reload or a closed tab: its id, stream URL and status live in `localStorage` under `ai-studio:execution`, and on mount `useBackendExecution` reopens the stream while the run may still be alive, so the snapshot rebuilds markers and log. A run the client saw finish is stored as idle; one that finished while the tab was closed shows once more, then goes idle. [Stopping and resetting a run](#stopping-and-resetting-a-run) covers Stop, Reset and the limits.
+- A run survives a reload or a closed tab. Run writes the run's id into the URL, so a reload opens that run. A URL without one falls back to the run stored in `localStorage` under `ai-studio:execution` (id, stream URL and status, kept while the run may still be alive) and writes its id into the URL. Either way `useBackendExecution` opens the stream on mount, and the snapshot rebuilds markers and log. [Stopping and resetting a run](#stopping-and-resetting-a-run) covers Stop, Reset and the limits.
+- A URL opens a stored workflow or a run: `?workflowId=` to edit a workflow, `?executionId=` to watch or replay a run. See [Opening a workflow or a run from the URL](#opening-a-workflow-or-a-run-from-the-url).
 
 This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothing else.
 
@@ -45,12 +46,37 @@ Stop sends `DELETE /api/executions/:id`. The controls offer it for every status 
 
 The client keeps the Stop request in memory only. After a reload, one more Stop brings Reset back, and a run the server reports as `cancelling` brings it back without one.
 
-Reset clears the client only. It closes the stream and forgets the run, and never cancels the run on the server.
+Reset clears the client only. It closes the stream, forgets the run and removes `executionId` from the URL, and never cancels the run on the server.
 
 `disconnected` means the client lost the stream, not that the run ended, and a reload tries the stream again. A refused stream shows `disconnected` at once, because the browser never retries one. That covers any non-200 answer and a wrong MIME type, a proxy's `502` included. After a network error the browser retries on its own, and the client gives up with `disconnected` after five failed retries.
 
 Known limits:
 
-- Tabs share one entry. Each tab writes its own run and the log panel's collapsed state over it on every change: Run, Reset, a log toggle, a live event. A reload then shows whichever run was written last, or none, and a live run replaced this way keeps going on the server.
-- A remembered run the server no longer knows, after a fresh database for example, shows `disconnected` and Stop on every visit until the server answers a Stop with `404` and the client forgets the run. The client does not check the id on mount.
+- Tabs share one stored run. Each tab writes its own run and the log panel's collapsed state over it on every change: Run, Reset, a log toggle, a live event. A tab whose URL names a run reopens that run; only a URL without one takes the stored run, which is whichever one a tab wrote last. A live run replaced this way keeps going on the server.
 - Storage is best effort. A failed write, with storage full or disabled, leaves the live run alone, and a reload then finds whatever was written last.
+
+## Opening a workflow or a run from the URL
+
+The URL can name what the editor opens. AI Studio reads it once, while the page loads, and shows a loading screen while it looks the ids up. Editing the URL and pressing Enter loads the page again; a URL changed any other way is ignored until the next load.
+
+| URL                           | Canvas                                                                                                                         | Save                                                                                       | Run                                                             |
+| ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
+| no parameter                  | The local draft in `localStorage`, as before                                                                                   | The editor's Save button and autosave, into `localStorage`                                 | Creates a workflow for every run                                |
+| `?workflowId=<id>`            | The workflow's draft, or its published version when it has no draft, under the workflow's name                                 | AI Studio's Save button writes the draft (`PATCH /api/workflows/:id/draft`), on click only | Saves the draft, then runs that workflow                        |
+| `?executionId=<id>`           | The graph the run executed (`GET /api/executions/:id/snapshot`), read-only, live or replayed, named `Run <first 8 characters>` | None                                                                                       | Creates a workflow for every run                                |
+| `?workflowId=…&executionId=…` | As `?executionId=`                                                                                                             | Disabled while the canvas shows the run                                                    | Not offered: it would save the run's graph over the newer draft |
+
+- Ids are UUIDs in the canonical 36-character form, in any case. Anything else is ignored with a notice, and an empty value counts as absent.
+- With both ids, the run wins the canvas. A run that cannot be opened falls back to the workflow. A run from another workflow opens on its own, with a notice, and nothing saves into or runs the URL's workflow.
+- A URL with neither id takes the stored run while it may still be alive and writes its id into the URL, so a remembered run opens the same way as a linked one.
+- A diagram opened from the URL never touches the local draft. The editor gets the `props` integration with a save callback that is never called, and `plugins/open-from-url/` replaces the editor's Save button, which is also what autosaves and saves on close.
+- Run writes the new run's id into the URL with `history.replaceState` and keeps `workflowId`. Reset removes it. In a run view, Reset also reloads the page, which lands on the workflow when the URL names one and on the local draft otherwise.
+- Anything that stops a lookup shows one notice and opens the local draft (or the workflow, when only the run failed): an unknown id, `401`, `403` and `404` (read alike, so the answer never confirms that an id exists), no answer, an unreadable answer, a graph that cannot be drawn. When a stored run gets no answer, its id still moves into the URL, so a reload tries again. A throw while the editor draws is caught by an error boundary that offers the local draft.
+
+Known limits:
+
+- Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it.
+- A reload after the run finished still shows it, read-only, until Reset, because the URL still names it.
+- The run view is read-only through the run lock only. The app bar's read-only switch lifts it, and edits made then are saved nowhere.
+- Workflow edits live in the page until Save or Run. There is no autosave to the backend, and nothing warns before a reload drops them.
+- Nodes of a type this app does not know show without a properties panel, with a notice.
