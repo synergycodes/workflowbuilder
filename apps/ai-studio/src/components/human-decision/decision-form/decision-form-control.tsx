@@ -1,5 +1,5 @@
 import { rankWith, uiTypeIs, useSingleSelectedElement, withJsonFormsControlProps } from '@workflowbuilder/sdk';
-import type { ControlProps, JsonFormsRendererExtension } from '@workflowbuilder/sdk';
+import type { JsonFormsRendererExtension } from '@workflowbuilder/sdk';
 
 import { useNodeDecision } from '../../../hooks/use-node-decision';
 import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
@@ -9,10 +9,12 @@ import { proposedValues, withEdits } from '../../../utils/human-decision/decisio
 import { DecisionForm } from './decision-form';
 import { DecisionRecord } from './decision-record';
 
-// Deciding is not editing the diagram: `handleChange` is never called and `enabled` is ignored.
-function DecisionFormControl({ data }: ControlProps) {
-  const nodeId = useSingleSelectedElement()?.node?.id;
-  const request = readDecisionRequest(data);
+// The request is read off the selected node, not off `data`: JsonForms updates `data` one render after the selection
+// moves, so a form keyed on the new wait would mount with the previous node's schema (see decision-form-panel.test.tsx).
+function DecisionFormControl() {
+  const node = useSingleSelectedElement()?.node;
+  const nodeId = node?.id;
+  const request = readDecisionRequest(node?.data.properties['decisionRequest']);
   const decision = useNodeDecision(nodeId, request?.proposalSourceNodeId);
 
   if (request === undefined || decision.phase === 'none') {
@@ -27,7 +29,8 @@ function DecisionFormControl({ data }: ControlProps) {
     const outcome = readDecisionOutcome(decision.output);
     return outcome === undefined ? null : (
       <DecisionRecord
-        key={waitKey(wait)}
+        // EditorForm holds its schema from mount; the record follows the picks, which change once the lock is lifted.
+        key={`${waitKey(wait)}:${JSON.stringify(schema)}`}
         schema={schema}
         values={withEdits(proposal, outcome.edits)}
         reason={outcome.reason}

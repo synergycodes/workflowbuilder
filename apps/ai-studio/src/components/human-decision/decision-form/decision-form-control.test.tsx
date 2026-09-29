@@ -21,8 +21,9 @@ import {
 import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
 import { decisionFormRenderer } from './decision-form-control';
 
-// The sidebar renders for the single selected node; the test moves the selection by hand.
-const selection: { nodeId: string | undefined } = { nodeId: 'human-1' };
+// The sidebar renders for the single selected node; the test moves the selection by hand, and the node's properties are
+// the data it last rendered.
+const selection: { nodeId: string | undefined; properties: unknown } = { nodeId: 'human-1', properties: undefined };
 const edges = [
   { id: 'e1', source: 'draft-1', target: 'human-1' },
   { id: 'e2', source: 'human-1', target: 'send-1' },
@@ -34,7 +35,9 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   return {
     ...actual,
     useSingleSelectedElement: () =>
-      selection.nodeId === undefined ? null : { node: { id: selection.nodeId }, edge: null },
+      selection.nodeId === undefined
+        ? null
+        : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
   };
 });
@@ -57,6 +60,15 @@ const draftOutput = {
   itemCount: 3,
   internalReasoning: 'hidden',
 };
+
+// With the app bar's read-only switch lifted, undo can take a pick back while the node waits.
+function refundAmountReadOnly() {
+  const refundAmount = { type: 'number', title: 'Refund amount', readOnly: true };
+  return {
+    ...reviewRequest,
+    schema: { ...reviewRequest.schema, properties: { ...reviewRequest.schema.properties, refundAmount } },
+  };
+}
 
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
 
@@ -134,6 +146,7 @@ describe.each([
     const changes = nodeChanges;
     const data = { label: 'Review Refund', description: '', decisionRequest };
     renderedData.push(data);
+    selection.properties = data;
     act(() =>
       root.render(
         <Mode>
@@ -330,8 +343,8 @@ describe.each([
     });
 
     it('still lets the person decide when the request declares no fields', async () => {
-      parkHumanOne();
       render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+      parkHumanOne();
 
       expect(button('Reject…')).toBeDefined();
 
@@ -383,6 +396,77 @@ describe.each([
       render(structuredClone(reviewRequest));
 
       expect(fieldOf('Refund amount')?.value).toBe('120');
+    });
+
+    it('keeps the fields it opened with when the picks change under it, and sends what it shows', async () => {
+      parkHumanOne();
+      render(refundAmountReadOnly());
+
+      expect(fieldOf('Refund amount')?.disabled).toBe(false);
+      commit(fieldOf('Refund amount')!, '120');
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('sends the edit to a field the picks hide under it, because it sends what it shows', async () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '120');
+      render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+
+      expect(fieldOf('Refund amount')?.value).toBe('120');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('opens again under the changed picks: a field turned read-only shows the proposal, the rest keep the draft', async () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '120');
+      commit(fieldOf('Reply draft')!, 'Hello');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render(refundAmountReadOnly());
+
+      expect(fieldOf('Refund amount')?.disabled).toBe(true);
+      expect(fieldOf('Refund amount')?.value).toBe('80');
+      expect(fieldOf('Reply draft')?.value).toBe('Hello');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ replyDraft: 'Hello' });
+    });
+
+    it('opens again under the changed picks: a field the draft was taken without starts from the proposal', async () => {
+      const properties = Object.fromEntries(
+        Object.entries(reviewRequest.schema.properties).filter(([key]) => key !== 'replyDraft'),
+      );
+      render({ ...reviewRequest, schema: { ...reviewRequest.schema, properties } });
+      parkHumanOne();
+      expect(labelled('Reply draft')).toBeUndefined();
+      commit(fieldOf('Refund amount')!, '120');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render(reviewRequest);
+
+      expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ refundAmount: 120 });
+    });
+
+    it('opens again with a field the person cleared before leaving still empty, and sends it emptied', async () => {
+      parkHumanOne();
+      commit(fieldOf('Reply draft')!, '');
+
+      selection.nodeId = 'draft-1';
+      render();
+      selection.nodeId = 'human-1';
+      render();
+
+      expect(fieldOf('Reply draft')?.value).toBe('');
+      await click(button('Approve'));
+      expect(sentEdits()).toEqual({ replyDraft: '' });
     });
 
     it('keeps what was typed while the panel shows another node, and measures the edits against the proposal', async () => {
@@ -521,6 +605,15 @@ describe.each([
       expect(hasError('Refund amount')).toBe(true);
       expect(button('Approve').disabled).toBe(true);
       expect(button('Reject…').disabled).toBe(false);
+    });
+
+    it('keeps blocking a required field emptied before the picks hide it under the form', async () => {
+      parkHumanOne();
+      commit(fieldOf('Refund amount')!, '');
+      render({ ...reviewRequest, schema: { type: 'object', properties: {} } });
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
     });
 
     it('blocks the approve from the start when the proposal leaves a required field out', async () => {
@@ -778,6 +871,19 @@ describe.each([
       act(() => applyEvent(event({ type: 'execution_completed', payload: undefined })));
 
       expect(record()).not.toBeNull();
+      expect(fieldOf('Refund amount')?.value).toBe('80');
+    });
+
+    it('shows the settled values under the current picks, also when they change after the decision', () => {
+      parkHumanOne();
+      decideHumanOne({ action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' });
+
+      const properties = Object.fromEntries(
+        Object.entries(reviewRequest.schema.properties).filter(([key]) => key !== 'replyDraft'),
+      );
+      render({ ...reviewRequest, schema: { ...reviewRequest.schema, properties } });
+
+      expect(labelled('Reply draft')).toBeUndefined();
       expect(fieldOf('Refund amount')?.value).toBe('80');
     });
 
