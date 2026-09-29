@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { ReflectionKind } from 'typedoc';
 
+import { formatTypeLink, stripTypeLinks } from '../src/ui-api-reference.mjs';
 import { COMPONENTS } from './ui-components.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -84,14 +85,15 @@ function findTypeByName(root, name, warnings) {
 const TYPE_DECLARATION_KINDS = new Set([ReflectionKind.TypeAlias, ReflectionKind.Interface, ReflectionKind.Enum]);
 const isTypeDeclaration = (node) => TYPE_DECLARATION_KINDS.has(node?.kind);
 
-// A first-party type name in a rendered type becomes `{@link <page path> <name>}`, the path of its UI API
-// Reference page (`<category>/<name>`, as starlight-typedoc lays it out); the Props table turns it into a link.
-const LINK = /\{@link (\S+) ([^}]+)\}/g;
 const linkedTypes = new Set();
 
-const categoryTag = (comment) => comment?.blockTags?.find(({ tag }) => tag === '@category')?.content[0]?.text.trim();
+const CATEGORY_TAG = '@category';
+// The category starlight-typedoc files a type without `@category` under.
+const TYPEDOC_DEFAULT_CATEGORY = 'Other';
 
-const pagePath = (node) => `${categoryTag(node.comment) ?? 'Other'}/${node.name}`.toLowerCase();
+const categoryTag = (comment) => comment?.blockTags?.find(({ tag }) => tag === CATEGORY_TAG)?.content[0]?.text.trim();
+
+const pagePath = (node) => `${categoryTag(node.comment) ?? TYPEDOC_DEFAULT_CATEGORY}/${node.name}`.toLowerCase();
 
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
@@ -109,7 +111,7 @@ function typeToString(t, byId, depth = 0) {
       const target = byId.get(t.target);
       if (!isTypeDeclaration(target)) return `${t.name}${arguments_}`;
       linkedTypes.add(target);
-      return `{@link ${pagePath(target)} ${t.name}}${arguments_}`;
+      return `${formatTypeLink(pagePath(target), t.name)}${arguments_}`;
     }
     case 'union': {
       return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
@@ -329,7 +331,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
       const note =
         distinctTypes.size > 1
-          ? `Type varies by variant (${occurrences.map((occurrence) => `${variantLabel(occurrence.typeName)}: ${occurrence.prop.type.replaceAll(LINK, '$2')}`).join(', ')}).`
+          ? `Type varies by variant (${occurrences.map((occurrence) => `${variantLabel(occurrence.typeName)}: ${stripTypeLinks(occurrence.prop.type)}`).join(', ')}).`
           : requiredInItsVariants
             ? `Only applies to the ${variants} variant (required there).`
             : `Only applies to the ${variants} variant.`;

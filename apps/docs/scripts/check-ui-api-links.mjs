@@ -4,10 +4,14 @@ import { existsSync, globSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 
+import { UI_API_REFERENCE_DIRECTORY, containsTypeLink } from '../src/ui-api-reference.mjs';
+
 const DISTRIBUTION_ROOT = path.resolve(import.meta.dirname, '../dist');
 const UI_LIBRARY_PAGES = 'docs/ui-library/**/index.html';
-const UNRENDERED_LINK_MARKER = '{@link ';
-const UI_API_REFERENCE_HREF_RE = /href="(?<href>\/docs\/ui-api\/[^"#]*)"/g;
+const UI_API_REFERENCE_HREF_RE = new RegExp(
+  String.raw`href="(?<href>/docs/${UI_API_REFERENCE_DIRECTORY}/[^"#]*)"`,
+  'g',
+);
 
 const problems = new Set(globSync(UI_LIBRARY_PAGES, { cwd: DISTRIBUTION_ROOT }).flatMap(findProblems));
 
@@ -23,6 +27,6 @@ function findProblems(page) {
   const hrefs = [...html.matchAll(UI_API_REFERENCE_HREF_RE)].map(({ groups }) => groups.href);
   const missingPages = hrefs.filter((href) => !existsSync(path.join(DISTRIBUTION_ROOT, href, 'index.html')));
   const pageProblems = missingPages.map((href) => `${page}: ${href} has no page`);
-  if (html.includes(UNRENDERED_LINK_MARKER)) pageProblems.push(`${page}: unrendered {@link} marker`);
+  if (containsTypeLink(html)) pageProblems.push(`${page}: unrendered {@link} marker`);
   return pageProblems;
 }

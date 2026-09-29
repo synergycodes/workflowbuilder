@@ -12,6 +12,7 @@ import starlightTypeDoc, { createStarlightTypeDocPlugin } from 'starlight-typedo
 
 import uiApiCategories from './src/generated/ui-api-categories.json';
 import { remarkBasePathLinks } from './src/remark-base-path-links.mjs';
+import { UI_API_REFERENCE_DIRECTORY } from './src/ui-api-reference.mjs';
 
 // Copies the hand-written API landing page into the gitignored TypeDoc
 // output directory. Two things matter:
@@ -114,7 +115,7 @@ export default defineConfig({
         starlightUiApiReference({
           entryPoints: ['./src/generated/ui-types.ts'],
           tsconfig: './tsconfig.ui-api.json',
-          output: 'ui-api',
+          output: UI_API_REFERENCE_DIRECTORY,
           watch: isAstroDevelopmentServer,
           typeDoc: STRICT_TYPEDOC,
         }),
@@ -192,7 +193,7 @@ export default defineConfig({
               items: uiApiCategories.map((category) => ({
                 label: category,
                 collapsed: true,
-                autogenerate: { directory: `ui-api/${category}` },
+                autogenerate: { directory: `${UI_API_REFERENCE_DIRECTORY}/${category}` },
               })),
             },
           ],
