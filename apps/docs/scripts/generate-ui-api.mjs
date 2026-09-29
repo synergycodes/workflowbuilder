@@ -1,5 +1,6 @@
 /*
- * Generates `src/generated/ui-api.json` for the UI Library docs.
+ * Generates, for the UI Library docs, `src/generated/ui-api.json` (Props and CSS variables per component) and the
+ * UI API Reference inputs: `ui-types.ts` (TypeDoc entry point) and `ui-api-categories.json` (sidebar groups).
  *
  * Props are extracted with TypeDoc (source of truth: the component prop types
  * in `@workflowbuilder/ui`); CSS variables are extracted from each component's
@@ -23,8 +24,10 @@ const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
 const uiSource = path.resolve(repoRoot, 'packages/ui/src');
-const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
+const componentsDataFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
 const uiApiReferenceEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
+// Resolved through the `@ui/*` path alias that tsconfig.ui-api.json inherits from the UI package.
+const UI_BARREL_IMPORT = '@ui/index';
 const uiApiReferenceCategoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
@@ -60,6 +63,8 @@ async function runTypedoc() {
   return JSON.parse(await readFile(tdJson, 'utf8'));
 }
 
+const isAliasOrInterface = (node) => node?.kind === ReflectionKind.TypeAlias || node?.kind === ReflectionKind.Interface;
+
 const flattenReflections = (node) => [node, ...(node.children ?? []).flatMap(flattenReflections)];
 
 function indexById(root) {
@@ -71,9 +76,7 @@ function indexById(root) {
 }
 
 function findTypeByName(root, name, warnings) {
-  const matches = flattenReflections(root).filter(
-    (node) => node.name === name && (node.kind === ReflectionKind.TypeAlias || node.kind === ReflectionKind.Interface),
-  );
+  const matches = flattenReflections(root).filter((node) => node.name === name && isAliasOrInterface(node));
   if (matches.length > 1 && warnings) {
     warnings.push(
       `type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`,
@@ -88,12 +91,15 @@ const isTypeDeclaration = (node) => TYPE_DECLARATION_KINDS.has(node?.kind);
 const linkedTypes = new Set();
 
 const CATEGORY_TAG = '@category';
-// The category starlight-typedoc files a type without `@category` under.
-const TYPEDOC_DEFAULT_CATEGORY = 'Other';
+const WHITESPACE_RE = /\s/;
 
-const categoryTag = (comment) => comment?.blockTags?.find(({ tag }) => tag === CATEGORY_TAG)?.content[0]?.text.trim();
+function categoryOf(node) {
+  const categoryTag = node.comment?.blockTags?.find(({ tag }) => tag === CATEGORY_TAG);
+  const [categoryText] = categoryTag?.content ?? [];
+  return categoryText?.text.trim();
+}
 
-const pagePath = (node) => `${categoryTag(node.comment) ?? TYPEDOC_DEFAULT_CATEGORY}/${node.name}`.toLowerCase();
+const pagePath = (node) => `${categoryOf(node)}/${node.name}`.toLowerCase();
 
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
@@ -106,7 +112,7 @@ function typeToString(t, byId, depth = 0) {
     }
     case 'reference': {
       const arguments_ = t.typeArguments?.length
-        ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>`
+        ? `<${t.typeArguments.map((typeArgument) => typeToString(typeArgument, byId, depth + 1)).join(', ')}>`
         : '';
       const target = byId.get(t.target);
       if (!isTypeDeclaration(target)) return `${t.name}${arguments_}`;
@@ -114,22 +120,22 @@ function typeToString(t, byId, depth = 0) {
       return `${formatTypeLink(pagePath(target), t.name)}${arguments_}`;
     }
     case 'union': {
-      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
+      return t.types.map((member) => typeToString(member, byId, depth + 1)).join(' | ');
     }
     case 'intersection': {
-      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
+      return t.types.map((member) => typeToString(member, byId, depth + 1)).join(' & ');
     }
     case 'array': {
       return `${typeToString(t.elementType, byId, depth + 1)}[]`;
     }
     case 'tuple': {
-      return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
+      return `[${(t.elements ?? []).map((element) => typeToString(element, byId, depth + 1)).join(', ')}]`;
     }
     case 'reflection': {
       const sig = t.declaration?.signatures?.[0];
       if (sig) {
         const params = (sig.parameters ?? [])
-          .map((p) => `${p.name}: ${typeToString(p.type, byId, depth + 1)}`)
+          .map((parameter) => `${parameter.name}: ${typeToString(parameter.type, byId, depth + 1)}`)
           .join(', ');
         return `(${params}) => ${typeToString(sig.type, byId, depth + 1)}`;
       }
@@ -139,7 +145,7 @@ function typeToString(t, byId, depth = 0) {
       return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
     case 'templateLiteral': {
-      const spans = (t.tail ?? []).map(([span, text]) => `\${${typeToString(span, byId, depth + 1)}}${text}`);
+      const spans = (t.tail ?? []).map(([spanType, text]) => `\${${typeToString(spanType, byId, depth + 1)}}${text}`);
       return `\`${t.head}${spans.join('')}\``;
     }
     case 'query': {
@@ -215,7 +221,7 @@ function findNativeElement(typeNode, byId, depth = 0) {
 // Own properties of a prop type, walking intersections and skipping native members.
 function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (!typeNode) return accumulator;
-  if (typeNode.kind === ReflectionKind.TypeAlias || typeNode.kind === ReflectionKind.Interface) {
+  if (isAliasOrInterface(typeNode)) {
     if (typeNode.children?.length) {
       for (const child of typeNode.children) addProperty(child, byId, accumulator);
       return accumulator;
@@ -233,7 +239,7 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Follow first-party prop types only; both declaration forms count.
-    if (target && (target.kind === ReflectionKind.TypeAlias || target.kind === ReflectionKind.Interface)) {
+    if (isAliasOrInterface(target)) {
       collectProps(target, byId, accumulator, context);
     } else if (!target && context) {
       context.warnings.push(
@@ -317,21 +323,25 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       // `foo?: never` marks a prop forbidden in that variant.
       .filter((occurrence) => occurrence.prop.type !== 'never');
     if (occurrences.length === 0) continue;
-    const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
+    const distinctTypes = new Set(occurrences.map((occurrence) => occurrence.prop.type));
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
     // Required in every variant, else the table documents an impossible call.
-    const requiredEverywhere = occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
-    const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
+    const requiredEverywhere =
+      occurrences.length === perVariant.length && occurrences.every((occurrence) => occurrence.prop.required);
+    const requiredInItsVariants = !requiredEverywhere && occurrences.every((occurrence) => occurrence.prop.required);
 
     const base = occurrences[0].prop;
     let description = base.description;
     if (!sharedByAll) {
       const variantLabel = (typeName) => typeName.replace(/Props$/, '');
-      const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
+      const variants = occurrences.map((occurrence) => variantLabel(occurrence.typeName)).join(', ');
+      const typePerVariant = occurrences
+        .map((occurrence) => `${variantLabel(occurrence.typeName)}: ${stripTypeLinks(occurrence.prop.type)}`)
+        .join(', ');
       const note =
         distinctTypes.size > 1
-          ? `Type varies by variant (${occurrences.map((occurrence) => `${variantLabel(occurrence.typeName)}: ${stripTypeLinks(occurrence.prop.type)}`).join(', ')}).`
+          ? `Type varies by variant (${typePerVariant}).`
           : requiredInItsVariants
             ? `Only applies to the ${variants} variant (required there).`
             : `Only applies to the ${variants} variant.`;
@@ -353,8 +363,11 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
 // and a Set's iteration visits entries added during it.
 function collectLinkedTypes(byId, warnings) {
   for (const node of linkedTypes) {
-    if (!categoryTag(node.comment))
-      warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
+    const category = categoryOf(node);
+    if (!category) warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
+    else if (WHITESPACE_RE.test(category)) {
+      warnings.push(`@category "${category}" of "${node.name}" has a space - use one word`);
+    }
     collectProps(node, byId);
     typeToString(node.type, byId);
   }
@@ -466,17 +479,13 @@ async function main() {
 
   const linked = collectLinkedTypes(byId, warnings);
   const typeNames = linked.map((node) => node.name).sort();
-  const categories = [...new Set(linked.map((node) => categoryTag(node.comment)).filter(Boolean))].sort();
+  const categories = [...new Set(linked.map((node) => categoryOf(node)).filter(Boolean))].sort();
 
-  await mkdir(path.dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
-  const barrel = path
-    .relative(path.dirname(uiApiReferenceEntryFile), path.resolve(uiSource, 'index'))
-    .split(path.sep)
-    .join('/');
+  await mkdir(path.dirname(componentsDataFile), { recursive: true });
+  await writeFile(componentsDataFile, JSON.stringify(out, null, 2) + '\n');
   await writeFile(
     uiApiReferenceEntryFile,
-    `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`,
+    `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${UI_BARREL_IMPORT}';\n`,
   );
   await writeFile(uiApiReferenceCategoriesFile, JSON.stringify(categories, null, 2) + '\n');
 

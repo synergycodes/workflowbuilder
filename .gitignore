@@ -75,8 +75,6 @@ apps/docs/src/content/docs/api/
 # UI API Reference, emitted the same way from the types in apps/docs/src/generated/ui-types.ts.
 apps/docs/src/content/docs/ui-api/
 
-# UI Library props + CSS-variable data and the UI API Reference entry
-# (ui-types.ts), generated from @workflowbuilder/ui by
-# apps/docs/scripts/generate-ui-api.mjs (TypeDoc + CSS extraction) on every
-# docs build / dev. Source of truth is the library, so keep it out of git.
+# Generated from @workflowbuilder/ui by apps/docs/scripts/generate-ui-api.mjs
+# on every docs build / dev. Source of truth is the library, so keep it out of git.
 apps/docs/src/generated/

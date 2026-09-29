@@ -13,7 +13,8 @@ const UI_API_REFERENCE_HREF_RE = new RegExp(
   'g',
 );
 
-const problems = new Set(globSync(UI_LIBRARY_PAGES, { cwd: DISTRIBUTION_ROOT }).flatMap(findProblems));
+const pages = globSync(UI_LIBRARY_PAGES, { cwd: DISTRIBUTION_ROOT });
+const problems = new Set(pages.length > 0 ? pages.flatMap(findProblems) : [`no page matches ${UI_LIBRARY_PAGES}`]);
 
 if (problems.size > 0) {
   console.error(['error: broken UI API Reference links', ...problems].join('\n'));

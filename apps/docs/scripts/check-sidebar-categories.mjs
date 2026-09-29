@@ -56,7 +56,7 @@ if (missing.length > 0) {
   for (const category of missing) {
     console.error(`  - api/${category}`);
   }
-  console.error('\nAdd a matching entry under "API Reference" in apps/docs/astro.config.mjs:');
+  console.error('\nAdd a matching entry under "SDK API Reference" in apps/docs/astro.config.mjs:');
   for (const category of missing) {
     console.error(`  { label: '${category}', collapsed: true, autogenerate: { directory: 'api/${category}' } },`);
   }
