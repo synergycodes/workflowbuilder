@@ -21,6 +21,8 @@ export const DECISION_ISSUE_MESSAGES = {
   source_missing: 'a rerun-source action needs a proposal source, but this node has no predecessor',
   source_ambiguous: 'several predecessors; set proposalSourceNodeId to say which one rerun-source re-runs',
   source_has_decision_request: "proposal source '{value}' carries its own decision request and cannot be re-run",
+  error_policy_continue:
+    "errorPolicy 'continue' would send a failure of this node down every port; use 'fail' or 'errorRoute'",
 } as const;
 
 export type DecisionIssueCode = keyof typeof DECISION_ISSUE_MESSAGES;

@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy)
 
 ## Context
 
@@ -49,6 +49,10 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 23. **A reject port with no edge is a deliberate end.** The runner records no dead end for a completion with an outcome. Publish requires no edge there, a test pins it, and a future rule wiring every handle must keep the exception.
 24. **The route stamps the initiator.** The validator judges the body against the request and returns the decision without `resolvedBy`; the route adds `human`, since only it knows who called, and the schema strips an initiator sent in the body. Identity will be stamped at the same line; a deadline that decides writes its own inside the workflow. Note what the initiator reaches: the row's `resolved_by` (readable by any `executions:read` caller), the `execution_completed` payload, and the node's `output`, which downstream nodes read and the node's `outputSchema` declares. None is on the `x-pii` path `(follow-up: decision-initiator-identity-exposure)`.
 
+## Failure policy (29.09.2026)
+
+25. **A node that carries a request may not use `errorPolicy: 'continue'`.** The runner absorbs such a failure with no port, which lights every non-error edge: a worker without the node's executor, or a `node_completed` write that fails after an accepted verdict, would run approve and reject together. Publish and execute refuse it with `error_policy_continue`; `fail` and `errorRoute` keep failures visible. The rule lives in the backend, not the runner, because the runner deliberately reads no request. Like decision 21 it tightens a schema the decision route re-parses, so a run parked on such a node would answer 500; accepted, because the feature lives on its branch with no run in flight.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -71,6 +75,7 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - The snapshot schema does not check that edge endpoints exist, so an explicit source with a dangling edge passes. This predates the change.
 - Node ids are not checked for uniqueness either; with a duplicate, the graph rules see the first node of that id. Also pre-existing `(follow-up: snapshot-node-id-uniqueness)`.
 - The route re-parses the stored snapshot with today's `workflowSnapshotSchema`, and a run can wait for days across deploys. A schema tightened in between makes every parked run whose snapshot no longer parses undecidable: the route answers 500 until the snapshot is migrated or the rule relaxed.
+- The `errorPolicy` rule keys on the request, so a node that routes by port without one (a condition node, or a decision node missing its request) still lights every branch on a failure under `continue`.
 
 ## Open points, closed 10.09.2026
 

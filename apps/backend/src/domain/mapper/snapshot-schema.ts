@@ -51,6 +51,12 @@ export const workflowSnapshotSchema = rejectingOwnProtoKey(
       for (const [index, node] of snapshot.nodes.entries()) {
         const request = node.data.properties?.decisionRequest;
         if (request === undefined) continue;
+        // 'continue' propagates a failure with no port, which lights every non-error edge: approve and reject alike.
+        if (node.data.properties?.['errorPolicy'] === 'continue') {
+          context.addIssue(
+            decisionIssue('error_policy_continue', ['nodes', index, 'data', 'properties', 'errorPolicy']),
+          );
+        }
         const declaresRerun = request.actions.some((action) => action.effect === 'rerun-source');
 
         const path = ['nodes', index, 'data', 'properties', 'decisionRequest', 'proposalSourceNodeId'];
