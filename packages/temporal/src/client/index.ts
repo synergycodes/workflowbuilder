@@ -6,7 +6,7 @@ import { Client, WorkflowNotFoundError } from '@temporalio/client';
 import { DEFAULT_TASK_QUEUE, RESOLVE_NODE_UPDATE_NAME, RUN_WORKFLOW_NAME, executionWorkflowId } from '../constants';
 import type {
   BaseNode,
-  CompletedNodeExecution,
+  ResolveNodeInput,
   ResolveNodeResult,
   WorkflowEnginePort,
   WorkflowExecutionInput,
@@ -71,11 +71,7 @@ export class TemporalWorkflowEngine<TNode extends BaseNode = BaseNode> implement
     }
   }
 
-  async resolveNode(
-    executionId: string,
-    nodeId: string,
-    resolution: CompletedNodeExecution,
-  ): Promise<ResolveNodeResult> {
+  async resolveNode({ executionId, nodeId, resolution }: ResolveNodeInput): Promise<ResolveNodeResult> {
     const client = await this.client();
     const handle = client.workflow.getHandle(executionWorkflowId(executionId));
     try {

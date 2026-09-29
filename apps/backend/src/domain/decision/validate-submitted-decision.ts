@@ -80,9 +80,23 @@ function childrenOf(
   };
 }
 
-// Every level the form declares, not just the outermost one: a `readOnly` child would
-// otherwise be rewritten by replacing the object that holds it
-// (follow-up: decision-edit-schema-composition).
+function allowsNull(declared: Record<string, unknown>): boolean {
+  const type = declared['type'];
+  return type === 'null' || (Array.isArray(type) && type.includes('null'));
+}
+
+// A level the form describes. Edits patch it, so a value of another shape could drop the
+// read-only and required children it may hold; `null` passes where the level's `type` allows it.
+function changesShape(declared: Record<string, unknown>, value: unknown): boolean {
+  if (value === null && allowsNull(declared)) return false;
+  if (asObject(declared['properties']) !== undefined) return asObject(value) === undefined;
+  if (asObject(declared['items']) !== undefined) return !Array.isArray(value);
+  return false;
+}
+
+// Every level the form describes inline: edits patch the proposal, so a `readOnly` child is refused
+// wherever an edit names it. A level behind `$ref` or a composition keyword describes nothing, so an
+// edit into it is refused as unknown (follow-up: decision-edit-schema-composition).
 function validateEdits(
   schema: Record<string, unknown>,
   edited: unknown,
@@ -96,6 +110,7 @@ function validateEdits(
     if (declared === undefined) return refuse('unknown_field', key, here);
     if (declared['readOnly'] === true) return refuse('field_not_editable', key, here);
     if (level.required.has(key) && isEmptied(value)) return refuse('required_field_missing', key, here);
+    if (changesShape(declared, value)) return refuse('field_shape_changed', key, here);
 
     const refused = validateEdits(declared, value, here);
     if (refused !== undefined) return refused;
@@ -104,7 +119,7 @@ function validateEdits(
   return undefined;
 }
 
-// Presence and editability only. Whether an edited value fits its declared type is a
+// Presence, editability and shape only. Whether an edited value fits its declared type is a
 // later concern with its own validator (follow-up: decision-edit-value-validation)
 export function validateSubmittedDecision(
   request: DecisionRequest,

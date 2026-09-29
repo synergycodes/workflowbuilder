@@ -14,6 +14,7 @@ export { NodeExecutionError } from './errors';
 export type { ExecutionContext } from './execution-context';
 
 export type {
+  ResolveNodeInput,
   ResolveNodeRejection,
   ResolveNodeResult,
   VerdictRejection,

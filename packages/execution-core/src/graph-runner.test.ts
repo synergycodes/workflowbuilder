@@ -1855,7 +1855,7 @@ describe('runGraph — waiting results', () => {
       events.port,
     );
 
-    const message = 'Node "A" returned a waiting result, but this engine adapter does not support gates';
+    const message = 'Node "A" returned a waiting result, but this engine adapter does not support waiting nodes';
     expect(outcome).toEqual({ status: 'failed', error: { message, code: 'waiting_unsupported' } });
     expect(runner.callOrder).toEqual(['A']);
     // No node_failed for the gate, and B is never-reached rather than skipped.

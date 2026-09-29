@@ -27,6 +27,12 @@ export type ResolveNodeRejection = (typeof RESOLVE_NODE_REJECTIONS)[number];
 
 export type ResolveNodeResult = { error?: undefined } | { error: { code: ResolveNodeRejection; message: string } };
 
+export type ResolveNodeInput = {
+  executionId: string;
+  nodeId: string;
+  resolution: CompletedNodeExecution;
+};
+
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 // TNode is opaque to the backend — only the worker narrows it to concrete types.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
@@ -34,5 +40,5 @@ export interface WorkflowEnginePort<TNode extends BaseNode> {
   cancel(executionId: string): Promise<void>;
   // Delivers the completion a parked node waits for. Refusals are results, not throws;
   // anything else that goes wrong is thrown.
-  resolveNode(executionId: string, nodeId: string, resolution: CompletedNodeExecution): Promise<ResolveNodeResult>;
+  resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
 }

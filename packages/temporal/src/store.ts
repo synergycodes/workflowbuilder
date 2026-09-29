@@ -15,7 +15,11 @@ export interface ExecutionStore {
     payload?: unknown,
     nodeId?: string,
   ): Promise<void>;
-  /** `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result. */
+  /**
+   * `outcome` arrives with the terminal 'completed' write only; a store that drops it loses the run's result.
+   * 'waiting' and 'running' are advisory and can land after a cancel or the terminal status, so neither may
+   * replace a recorded cancel or a terminal status. 'cancelled' can also follow another terminal one: keep the first.
+   */
   updateExecutionStatus(
     executionId: string,
     status: ExecutionStatus,

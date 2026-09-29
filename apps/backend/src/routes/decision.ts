@@ -98,7 +98,11 @@ export function createDecisionRoutes(assertAuthorized: AssertAuthorized): Hono<B
       return refuse(c, 'effect_not_supported', { value: action.name });
     }
 
-    const result = await getWorkflowEngine().resolveNode(resolvedId, nodeId, toNodeResolution(decision, action));
+    const result = await getWorkflowEngine().resolveNode({
+      executionId: resolvedId,
+      nodeId,
+      resolution: toNodeResolution(decision, action),
+    });
     if (result.error !== undefined) {
       const refusal = ENGINE_REFUSALS[result.error.code];
       if (refusal === 'fault') {

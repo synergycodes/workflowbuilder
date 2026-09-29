@@ -86,7 +86,7 @@ describe('resolveNode through the engine port', () => {
     const worker = await createWorker(taskQueue, store, harness);
     await worker.runUntil(async () => {
       await whenAnnounced(store, 'gate');
-      expect(await engine.resolveNode(executionId, 'gate', { output: 'approved' })).toEqual({});
+      expect(await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: 'approved' } })).toEqual({});
       await handle.result();
     });
 
@@ -95,7 +95,7 @@ describe('resolveNode through the engine port', () => {
     expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
 
     // The server answers for a closed run on its own; no worker is involved.
-    expect(await engine.resolveNode(executionId, 'gate', { output: 'late' })).toMatchObject({
+    expect(await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: 'late' } })).toMatchObject({
       error: { code: 'run_not_found', message: expect.any(String) },
     });
   }, 120_000);
@@ -112,22 +112,28 @@ describe('resolveNode through the engine port', () => {
     await worker.runUntil(async () => {
       await Promise.all([whenAnnounced(store, 'gate-a'), whenAnnounced(store, 'gate-b')]);
 
-      expect(await engine.resolveNode(executionId, 'ghost', { output: 1 })).toMatchObject({
+      expect(await engine.resolveNode({ executionId, nodeId: 'ghost', resolution: { output: 1 } })).toMatchObject({
         error: { code: 'verdict_for_unknown_node', message: expect.any(String) },
       });
-      expect(await engine.resolveNode(executionId, 'join', { output: 1 })).toMatchObject({
+      expect(await engine.resolveNode({ executionId, nodeId: 'join', resolution: { output: 1 } })).toMatchObject({
         error: { code: 'node_not_waiting', message: expect.any(String) },
       });
       // Well-typed for the port, refused by the validator: the reserved port name.
-      expect(await engine.resolveNode(executionId, 'gate-a', { output: 1, nextPort: 'errorRoute' })).toMatchObject({
+      expect(
+        await engine.resolveNode({ executionId, nodeId: 'gate-a', resolution: { output: 1, nextPort: 'errorRoute' } }),
+      ).toMatchObject({
         error: { code: 'verdict_malformed', message: expect.any(String) },
       });
 
-      expect(await engine.resolveNode(executionId, 'gate-a', { output: 'first' })).toEqual({});
-      expect(await engine.resolveNode(executionId, 'gate-a', { output: 'second' })).toMatchObject({
+      expect(await engine.resolveNode({ executionId, nodeId: 'gate-a', resolution: { output: 'first' } })).toEqual({});
+      expect(
+        await engine.resolveNode({ executionId, nodeId: 'gate-a', resolution: { output: 'second' } }),
+      ).toMatchObject({
         error: { code: 'verdict_already_delivered', message: expect.any(String) },
       });
-      expect(await engine.resolveNode(executionId, 'gate-b', { output: 'b-verdict' })).toEqual({});
+      expect(await engine.resolveNode({ executionId, nodeId: 'gate-b', resolution: { output: 'b-verdict' } })).toEqual(
+        {},
+      );
       await handle.result();
     });
 
@@ -155,7 +161,11 @@ describe('resolveNode through the engine port', () => {
 
     // Parked, and nobody polls the queue: the update cannot reach a validator.
     const startedAt = Date.now();
-    const timedOut = await impatient.resolveNode(executionId, 'gate', { output: 'first attempt' });
+    const timedOut = await impatient.resolveNode({
+      executionId,
+      nodeId: 'gate',
+      resolution: { output: 'first attempt' },
+    });
     const elapsedMs = Date.now() - startedAt;
     expect(timedOut).toMatchObject({ error: { code: 'delivery_timeout', message: expect.any(String) } });
     expect(elapsedMs).toBeGreaterThanOrEqual(900);
@@ -164,7 +174,7 @@ describe('resolveNode through the engine port', () => {
     let retry: ResolveNodeResult | undefined;
     const worker2 = await createWorker(taskQueue, store, harness);
     await worker2.runUntil(async () => {
-      retry = await engine.resolveNode(executionId, 'gate', { output: 'retry' });
+      retry = await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: 'retry' } });
       await handle.result();
     });
 
