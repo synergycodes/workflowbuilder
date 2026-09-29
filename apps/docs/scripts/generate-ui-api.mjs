@@ -89,7 +89,7 @@ const isTypeDeclaration = (node) => TYPE_DECLARATION_KINDS.has(node?.kind);
 const LINK = /\{@link (\S+) ([^}]+)\}/g;
 const linkedTypes = new Set();
 
-const categoryTag = (comment) => comment?.blockTags?.find((b) => b.tag === '@category')?.content[0]?.text.trim();
+const categoryTag = (comment) => comment?.blockTags?.find(({ tag }) => tag === '@category')?.content[0]?.text.trim();
 
 const pagePath = (node) => `${categoryTag(node.comment) ?? 'Other'}/${node.name}`.toLowerCase();
 
@@ -329,7 +329,7 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
       const note =
         distinctTypes.size > 1
-          ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type.replaceAll(LINK, '$2')}`).join(', ')}).`
+          ? `Type varies by variant (${occurrences.map((occurrence) => `${variantLabel(occurrence.typeName)}: ${occurrence.prop.type.replaceAll(LINK, '$2')}`).join(', ')}).`
           : requiredInItsVariants
             ? `Only applies to the ${variants} variant (required there).`
             : `Only applies to the ${variants} variant.`;
