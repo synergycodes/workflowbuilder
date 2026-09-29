@@ -33,6 +33,7 @@ export type {
   NodeExecutionResult,
   NodeExecutor,
   NodeExecutorRegistry,
+  ResolveNodeInput,
   ResolveNodeRejection,
   ResolveNodeResult,
   WaitingNodeExecution,

@@ -436,9 +436,13 @@ describe('POST /api/executions/:id/decision - the wait instance', () => {
 
     expect(response.status).toBe(200);
     expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
-    expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-2', {
-      output: { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' },
-      nextPort: 'source:inner:approved',
+    expect(engineMock.resolveNode).toHaveBeenCalledWith({
+      executionId: 'e-1',
+      nodeId: 'review-2',
+      resolution: {
+        output: { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' },
+        nextPort: 'source:inner:approved',
+      },
     });
   });
 });
@@ -481,9 +485,13 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       action: 'approve',
       effect: 'resume-with-edits',
     });
-    expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-1', {
-      output: approvedDecision,
-      nextPort: 'source:inner:approved',
+    expect(engineMock.resolveNode).toHaveBeenCalledWith({
+      executionId: 'e-1',
+      nodeId: 'review-1',
+      resolution: {
+        output: approvedDecision,
+        nextPort: 'source:inner:approved',
+      },
     });
   });
 
@@ -501,9 +509,13 @@ describe('POST /api/executions/:id/decision - delivery', () => {
 
     expect(response.status).toBe(200);
     expect(await response.json()).toMatchObject({ executionId: canonical });
-    expect(engineMock.resolveNode).toHaveBeenCalledWith(canonical, 'review-1', {
-      output: approvedDecision,
-      nextPort: 'source:inner:approved',
+    expect(engineMock.resolveNode).toHaveBeenCalledWith({
+      executionId: canonical,
+      nodeId: 'review-1',
+      resolution: {
+        output: approvedDecision,
+        nextPort: 'source:inner:approved',
+      },
     });
   });
 
@@ -515,10 +527,14 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(response.status).toBe(200);
     const body = await bodyOf(response);
     expect(body.effect).toBe('reject');
-    expect(engineMock.resolveNode).toHaveBeenCalledWith('e-1', 'review-1', {
-      output: { action: 'reject', effect: 'reject', edits: {}, resolvedBy: 'human' },
-      nextPort: 'source:inner:rejected',
-      outcome: { value: 'rejected', resolvedBy: 'human' },
+    expect(engineMock.resolveNode).toHaveBeenCalledWith({
+      executionId: 'e-1',
+      nodeId: 'review-1',
+      resolution: {
+        output: { action: 'reject', effect: 'reject', edits: {}, resolvedBy: 'human' },
+        nextPort: 'source:inner:rejected',
+        outcome: { value: 'rejected', resolvedBy: 'human' },
+      },
     });
   });
 
@@ -535,7 +551,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       action: 'approve',
       effect: 'resume-with-edits',
     });
-    const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[2];
+    const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[0]?.resolution;
     expect(completion).toEqual({ output: approvedDecision, nextPort: 'source:inner:approved' });
     expect(completion).not.toHaveProperty('outcome');
   });

@@ -9,6 +9,7 @@ import type {
 } from '../../execution-core/src/ports/activity-runner.port';
 import type { EventEmitterPort as CoreEventEmitterPort } from '../../execution-core/src/ports/event-emitter.port';
 import type {
+  ResolveNodeInput as CoreResolveNodeInput,
   WorkflowEnginePort as CoreWorkflowEnginePort,
   WorkflowExecutionInput as CoreWorkflowExecutionInput,
 } from '../../execution-core/src/ports/workflow-engine.port';
@@ -22,6 +23,7 @@ import type {
   NodeExecutionResult,
   NodeExecutor,
   NodeExecutorRegistry,
+  ResolveNodeInput,
   WaitingNodeExecution,
   WorkflowEnginePort,
   WorkflowExecutionInput,
@@ -86,6 +88,7 @@ const inputKeysMatchCore: MutuallyAssignable<
   keyof CoreWorkflowExecutionInput<BaseNode>
 > = true;
 const waitingKeysMatchCore: MutuallyAssignable<keyof WaitingNodeExecution, keyof CoreWaitingNodeExecution> = true;
+const resolveInputKeysMatchCore: MutuallyAssignable<keyof ResolveNodeInput, keyof CoreResolveNodeInput> = true;
 
 // The `keyof` pin catches an optional field present on one side only, which the object pin misses.
 const completionMatchesCore: MutuallyAssignable<CompletedNodeExecution, CoreCompletedNodeExecution> = true;
@@ -113,6 +116,7 @@ describe('published contract vs execution-core', () => {
         executorParamsMatchCore &&
         inputKeysMatchCore &&
         waitingKeysMatchCore &&
+        resolveInputKeysMatchCore &&
         completionMatchesCore &&
         completionKeysMatchCore &&
         waitingMatchesCore &&

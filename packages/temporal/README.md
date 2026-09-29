@@ -130,7 +130,11 @@ const engine = new TemporalWorkflowEngine({
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
 await engine.cancel(executionId);
-const { error } = await engine.resolveNode(executionId, 'approval-1', { output: 'approved', nextPort: 'approved' });
+const { error } = await engine.resolveNode({
+  executionId,
+  nodeId: 'approval-1',
+  resolution: { output: 'approved', nextPort: 'approved' },
+});
 ```
 
 The engine and the worker default to the same task queue (`workflow-execution`). Override it in both places together, or leave both alone.

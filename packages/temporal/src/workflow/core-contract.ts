@@ -58,11 +58,18 @@ export type WaitingNodeExecution = {
 
 export type NodeExecutionResult = CompletedNodeExecution | WaitingNodeExecution;
 
+// Restated for the same reason: `resolution` is the completion restated above.
+export type ResolveNodeInput = {
+  executionId: string;
+  nodeId: string;
+  resolution: CompletedNodeExecution;
+};
+
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
   submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
   cancel(executionId: string): Promise<void>;
-  resolveNode(executionId: string, nodeId: string, resolution: CompletedNodeExecution): Promise<ResolveNodeResult>;
+  resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
 }
 
 // Restated for the same reason as WorkflowExecutionInput: the core's port module
