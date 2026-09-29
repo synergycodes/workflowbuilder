@@ -41,9 +41,7 @@ function copyApiLanding() {
 
 const [starlightUiApiReference] = createStarlightTypeDocPlugin();
 
-// `astro dev` sets NODE_ENV to `development` before loading this file. Watch mode waits out a TypeScript error
-// instead of failing, which would hang `astro build`.
-const TYPEDOC_WATCH = process.env.NODE_ENV === 'development';
+const isAstroDevelopmentServer = process.env.NODE_ENV === 'development';
 
 // Shared by both API References; typedoc-api-reference.decision-log.md explains each option.
 const STRICT_TYPEDOC = {
@@ -109,7 +107,7 @@ export default defineConfig({
           // doesn't work with `router: 'category'` — it groups by TypeDoc
           // Kind ("Type Aliases" / "Functions") while the on-disk folders
           // are per `@category`. Same pattern as ngDiagram.
-          watch: TYPEDOC_WATCH,
+          watch: isAstroDevelopmentServer,
           typeDoc: STRICT_TYPEDOC,
         }),
         // The entry point is written by `generate:ui-api`.
@@ -117,7 +115,7 @@ export default defineConfig({
           entryPoints: ['./src/generated/ui-types.ts'],
           tsconfig: './tsconfig.ui-api.json',
           output: 'ui-api',
-          watch: TYPEDOC_WATCH,
+          watch: isAstroDevelopmentServer,
           typeDoc: STRICT_TYPEDOC,
         }),
       ],
