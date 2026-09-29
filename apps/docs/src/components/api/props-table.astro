@@ -30,12 +30,13 @@ const base = import.meta.env.BASE_URL.replace(/\/$/, '');
 // generate-ui-api.mjs writes a linked type name as `{@link <page path> <name>}`.
 function typeSegments(type: string) {
   const segments: { text: string; href?: string }[] = [];
-  let rest = 0;
+  let textStart = 0;
   for (const match of type.matchAll(/\{@link (\S+) ([^}]+)\}/g)) {
-    segments.push({ text: type.slice(rest, match.index) }, { text: match[2], href: `${base}/ui-api/${match[1]}/` });
-    rest = match.index + match[0].length;
+    const [marker, pagePath, name] = match;
+    segments.push({ text: type.slice(textStart, match.index) }, { text: name, href: `${base}/ui-api/${pagePath}/` });
+    textStart = match.index + marker.length;
   }
-  segments.push({ text: type.slice(rest) });
+  segments.push({ text: type.slice(textStart) });
   return segments;
 }
 ---
