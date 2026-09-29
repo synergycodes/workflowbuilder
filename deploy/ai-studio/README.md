@@ -182,7 +182,10 @@ deployment; the worker README ("Temporal specifics") has the reasoning.
 
 - **No login.** The API is open (`WB_AUTH_PORT=allow-all`); anyone with the
   URL can create and run workflows within the rate limits. The SDK has an
-  `AuthPort` seam for wiring real auth later.
+  `AuthPort` seam for wiring real auth later. A workflow or a run is reachable
+  by whoever holds its id, which is random and never listed (`ENABLE_WB_LISTING`
+  stays unset, so the collection routes answer 403). A run's link therefore
+  grants full control of that run: reading it, stopping it, deciding for it.
 - **Single backend replica.** The rate limiter is process-local. Scaling out
   needs a shared store (Redis) — deferred to the scale-ready task.
 - **`temporalio/auto-setup` is dev-grade.** Fine for a demo; move to Temporal

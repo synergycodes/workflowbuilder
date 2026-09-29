@@ -72,6 +72,8 @@ Newest first, filtered and paged. Query: `status` (one `ExecutionStatus`), `work
 | 400    | `invalid_cursor`      | Not a canonical `<ISO timestamp>\|<UUID>` pair in base64url: the cursor is an opaque window position, validated on shape, not on origin |
 | 400    | `tenant_required`     | A tenant context resolved without an id: a broken `TenantContextPort` adapter, refused rather than read as single-tenant                |
 
+The route answers `403 listing_disabled` unless `ENABLE_WB_LISTING=true`, like `GET /api/workflows`; see [Environment](#environment).
+
 ## The graph a run executed: `GET /api/executions/:id/snapshot`
 
 Success: `200 { workflowId, sourceVersion, snapshot }`. `snapshot` is the workflow JSON the execute route copied into the run, as it was stored: editing or publishing the workflow afterwards leaves it unchanged. It is a route of its own, not a field of `GET /api/executions/:id`, because pollers call that one. Authorization is `executions:read` on `{ kind: 'execution', executionId }`, the same as `GET /api/executions/:id`, checked before the id is read.
@@ -114,6 +116,12 @@ Both also read `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` — all three or none,
 of that contract. Each side degrades on its own when they are missing: the backend's AI adapt endpoint
 returns 501, and the worker runs everything except AI Agent nodes. See
 [`apps/execution-worker/README.md`](../execution-worker/README.md).
+
+`ENABLE_WB_LISTING=true` turns on the two collection routes, `GET /api/workflows` and `GET /api/executions`.
+Unset, or set to anything but `true`, both answer `403 listing_disabled`: with no real `AuthPort`, a workflow
+or a run is private only while its random id stays unlisted, so a forgotten variable must not list every
+id. Every other route that reads a workflow or a run needs its id. The local `.env.example` sets it; the deploy leaves it unset. A new
+collection route goes into `LISTING_PATHS` in `src/middleware/listing-guard.ts`.
 
 ### Connecting to a secured Temporal cluster
 
