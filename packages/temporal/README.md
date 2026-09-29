@@ -169,7 +169,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early.
+While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Both are also advisory: a write can land after a cancel, even after the terminal status, so a store must not let either replace a cancel it recorded or a terminal status.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
