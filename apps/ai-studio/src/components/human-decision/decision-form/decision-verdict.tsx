@@ -50,8 +50,9 @@ export function DecisionVerdict({
             {`${reject.label}…`}
           </Button>
         )}
-        {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
-            the first tap after a correction is lost (follow-up: decision-form-blocked-button-a11y). */}
+        {/* A disabled button does not say why, and a required field emptied to blank text shows no error of its own. The
+            state trails the form's debounced report, so on a touch screen the first tap after a correction is lost
+            (follow-up: decision-form-blocked-button-a11y). */}
         <Button variant="primary" disabled={isBusy || isApproveBlocked} onClick={onApprove}>
           {resume.label}
         </Button>

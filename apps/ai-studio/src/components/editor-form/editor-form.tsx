@@ -15,6 +15,10 @@ type ValidationMode = NonNullable<ComponentProps<typeof JsonForms>['validationMo
 
 type EditorFormSnapshot = { data: Record<string, unknown>; invalidFields: ReadonlySet<string> };
 
+function snapshotOf(data: unknown, errors: Parameters<typeof invalidFieldsOf>[0]): EditorFormSnapshot {
+  return { data: isPlainObject(data) ? data : {}, invalidFields: invalidFieldsOf(errors) };
+}
+
 export type EditorFormHandle = { snapshot: () => EditorFormSnapshot };
 
 type Props = {
@@ -22,8 +26,8 @@ type Props = {
   initialData: Record<string, unknown>;
   readOnly?: boolean;
   validate?: boolean;
-  /** Receives the top-level fields the schema finds fault with, once JsonForms reports the change. */
-  onInvalidFieldsChange?: (invalidFields: ReadonlySet<string>) => void;
+  /** Receives the data and the top-level fields the schema finds fault with, once JsonForms reports the change. */
+  onChange?: (snapshot: EditorFormSnapshot) => void;
   /** Called when the validator or a control throws: the form shows a notice in place of its fields. */
   onFail?: () => void;
   /** Receives the data the form holds as it unmounts, including a change the debounced report has not sent yet. */
@@ -41,7 +45,7 @@ export function EditorForm({
   initialData,
   readOnly = false,
   validate = true,
-  onInvalidFieldsChange,
+  onChange,
   onFail,
   onUnmount,
   ref,
@@ -57,10 +61,7 @@ export function EditorForm({
 
   const track: Middleware = (state, action, reduce) => {
     const next = reduce(state, action);
-    latest.current = {
-      data: isPlainObject(next.data) ? next.data : {},
-      invalidFields: invalidFieldsOf(next.errors),
-    };
+    latest.current = snapshotOf(next.data, next.errors);
     return next;
   };
 
@@ -83,7 +84,7 @@ export function EditorForm({
           readonly={readOnly}
           validationMode={fixed.validationMode}
           middleware={track}
-          onChange={({ errors }) => onInvalidFieldsChange?.(invalidFieldsOf(errors))}
+          onChange={({ data, errors }) => onChange?.(snapshotOf(data, errors))}
         />
       </FormBoundary>
     </div>

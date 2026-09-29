@@ -308,7 +308,7 @@ describe.each([
       expect(sentEdits()).toEqual({ 'a/b': 'changed' });
     });
 
-    it('shows and edits an optional field that structured output types with null', async () => {
+    it('shows and edits a required field that structured output types with null', async () => {
       const schema = {
         type: 'object',
         properties: { note: { type: ['string', 'null'], title: 'Note' } },
@@ -325,7 +325,7 @@ describe.each([
       expect(sentEdits()).toEqual({ note: 'Refunded' });
     });
 
-    it('does not hold back an optional field the model left null', async () => {
+    it('lets through a required field the model left null and the person left alone', async () => {
       const schema = {
         type: 'object',
         properties: { note: { type: ['string', 'null'], title: 'Note' } },
@@ -340,6 +340,27 @@ describe.each([
       await click(button('Approve'));
 
       expect(sentEdits()).toEqual({});
+    });
+
+    it('holds back Approve while a required text field is emptied to whitespace, and lets it through once filled again', async () => {
+      const schema = {
+        type: 'object',
+        properties: { note: { type: ['string', 'null'], title: 'Note' } },
+        required: ['note'],
+      };
+      render({ ...reviewRequest, schema });
+      parkHumanOne({ note: 'Call back' });
+
+      commit(fieldOf('Note')!, '   ');
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
+
+      commit(fieldOf('Note')!, 'Refunded');
+      await settle();
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({ note: 'Refunded' });
     });
 
     it('still lets the person decide when the request declares no fields', async () => {

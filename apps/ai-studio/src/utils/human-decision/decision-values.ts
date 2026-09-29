@@ -1,5 +1,6 @@
 import { editableFields } from '../editor-form/editor-layout';
-import { schemaFields } from '../editor-form/form-schema';
+import { requiredFields, schemaFields } from '../editor-form/form-schema';
+import { hasText } from '../has-text';
 import { isPlainObject } from '../is-plain-object';
 
 /** The proposal's values for the fields the form declares. A hidden field is not declared, so it is not here. */
@@ -56,10 +57,24 @@ export function editsOf(
   return edits;
 }
 
-// Only a fault the person can correct holds the decision back. The backend checks presence and editability, not values.
-export function blocksApproval(invalidFields: ReadonlySet<string>, schema: unknown): boolean {
+// Same as `isEmptied` in the backend's validate-submitted-decision.ts.
+function isEmptied(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === 'string' && !hasText(value));
+}
+
+// Only a fault the person can correct holds the decision back: an editable field the schema faults, which the backend
+// does not check yet, or a required field the edits empty, which it refuses even where the type accepts the value.
+export function blocksApproval(
+  invalidFields: ReadonlySet<string>,
+  schema: unknown,
+  edits: Record<string, unknown>,
+): boolean {
   const editable = editableFields(schema);
-  return [...invalidFields].some((field) => editable.has(field));
+  if ([...invalidFields].some((field) => editable.has(field))) {
+    return true;
+  }
+  const required = requiredFields(schema);
+  return Object.entries(edits).some(([key, value]) => required.has(key) && isEmptied(value));
 }
 
 /** The values a decision settled: the proposal with the edits applied, an emptied field left without a value. */
