@@ -1,6 +1,5 @@
 // Asserts that every `@category Foo` tag in packages/sdk/src has a matching
-// `autogenerate: { directory: 'api/Foo' }` entry in apps/docs/astro.config.mjs,
-// and every one in packages/ui/src a matching `ui-api/Foo` entry.
+// `autogenerate: { directory: 'api/Foo' }` entry in apps/docs/astro.config.mjs.
 //
 // Without this guard, a contributor can introduce a new @category in source
 // TSDoc and the docs build will succeed: the pages exist on disk under
@@ -17,18 +16,16 @@
 // Wired into apps/docs/package.json's `build` script before `astro build`,
 // so `pnpm build:docs` (and the CI build_docs step) catches the drift at
 // the same gate as the strict-mode TypeDoc check.
-import { readFileSync, readdirSync } from 'node:fs';
+
+import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
+const sdkSourceRoot = path.resolve(documentsRoot, '../../packages/sdk/src');
 const astroConfigPath = path.resolve(documentsRoot, 'astro.config.mjs');
-const REFERENCES = [
-  { source: '../../packages/sdk/src', directory: 'api', label: 'SDK API Reference' },
-  { source: '../../packages/ui/src', directory: 'ui-api', label: 'UI API Reference' },
-];
 
 function* walk(directory) {
   for (const entry of readdirSync(directory, { withFileTypes: true })) {
@@ -39,52 +36,42 @@ function* walk(directory) {
   }
 }
 
-const config = readFileSync(astroConfigPath, 'utf8');
-let failed = false;
-
-for (const { source, directory, label } of REFERENCES) {
-  const sourceCategories = new Set();
-  const categoryRe = /@category\s+(\S+)/g;
-  for (const file of walk(path.resolve(documentsRoot, source))) {
-    const text = readFileSync(file, 'utf8');
-    for (const match of text.matchAll(categoryRe)) sourceCategories.add(match[1]);
-  }
-
-  const sidebarCategories = new Set();
-  const sidebarRe = new RegExp(String.raw`autogenerate:\s*\{\s*directory:\s*['"]${directory}/([^'"\s/]+)['"]`, 'g');
-  for (const match of config.matchAll(sidebarRe)) sidebarCategories.add(match[1]);
-
-  const missing = [...sourceCategories].filter((c) => !sidebarCategories.has(c));
-  const stale = [...sidebarCategories].filter((c) => !sourceCategories.has(c));
-
-  if (missing.length > 0) {
-    console.error(`error: @category tags in ${source.replace('../../', '')} have no matching sidebar entry.\n`);
-    for (const category of missing) {
-      console.error(`  - ${directory}/${category}`);
-    }
-    console.error(`\nAdd a matching entry under "${label}" in apps/docs/astro.config.mjs:`);
-    for (const category of missing) {
-      console.error(
-        `  { label: '${category}', collapsed: true, autogenerate: { directory: '${directory}/${category}' } },`,
-      );
-    }
-    failed = true;
-  }
-
-  if (stale.length > 0) {
-    console.warn(`warning: ${label} sidebar entries with no matching @category in source (stale):`);
-    for (const category of stale) {
-      console.warn(`  - ${directory}/${category}`);
-    }
-    console.warn('Either drop them from astro.config.mjs or expect them to render an empty group.');
-  }
+const sourceCategories = new Set();
+const categoryRe = /@category\s+(\S+)/g;
+for (const file of walk(sdkSourceRoot)) {
+  const text = readFileSync(file, 'utf8');
+  for (const match of text.matchAll(categoryRe)) sourceCategories.add(match[1]);
 }
 
-if (failed) {
+const sidebarCategories = new Set();
+const sidebarRe = /autogenerate:\s*\{\s*directory:\s*['"]api\/([^'"\s/]+)['"]/g;
+const config = readFileSync(astroConfigPath, 'utf8');
+for (const match of config.matchAll(sidebarRe)) sidebarCategories.add(match[1]);
+
+const missing = [...sourceCategories].filter((category) => !sidebarCategories.has(category));
+const stale = [...sidebarCategories].filter((category) => !sourceCategories.has(category));
+
+if (missing.length > 0) {
+  console.error('error: @category tags in packages/sdk/src have no matching sidebar entry.\n');
+  for (const category of missing) {
+    console.error(`  - api/${category}`);
+  }
+  console.error('\nAdd a matching entry under "API Reference" in apps/docs/astro.config.mjs:');
+  for (const category of missing) {
+    console.error(`  { label: '${category}', collapsed: true, autogenerate: { directory: 'api/${category}' } },`);
+  }
   // Build-gate script: console.error above already prints the formatted
   // punch list, so process.exit gives a clean non-zero without a stack trace.
   // eslint-disable-next-line unicorn/no-process-exit
   process.exit(1);
 }
 
-console.log('✓ sidebar / @category parity ok.');
+if (stale.length > 0) {
+  console.warn('warning: sidebar entries with no matching @category in source (stale):');
+  for (const category of stale) {
+    console.warn(`  - api/${category}`);
+  }
+  console.warn('Either drop them from astro.config.mjs or expect them to render an empty group.');
+}
+
+console.log(`✓ sidebar / @category parity ok — ${sourceCategories.size} categories cross-checked.`);

@@ -25,6 +25,8 @@ const uiSource = path.resolve(repoRoot, 'packages/ui/src');
 const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
 // Entry point of the UI API Reference: re-exports, from the package barrel, every type a Props table mentions.
 const typesEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
+// The UI API Reference categories, one sidebar group each (read by astro.config.mjs).
+const categoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
 // Engineering notes in the CSS, never public documentation.
@@ -59,23 +61,20 @@ async function runTypedoc() {
   return JSON.parse(await readFile(tdJson, 'utf8'));
 }
 
+const flattenReflections = (node) => [node, ...(node.children ?? []).flatMap(flattenReflections)];
+
 function indexById(root) {
-  const byId = new Map();
-  (function walk(node) {
-    if (node && typeof node.id === 'number') byId.set(node.id, node);
-    for (const child of node.children ?? []) walk(child);
-  })(root);
-  return byId;
+  return new Map(
+    flattenReflections(root)
+      .filter((node) => typeof node.id === 'number')
+      .map((node) => [node.id, node]),
+  );
 }
 
 function findTypeByName(root, name, warnings) {
-  const matches = [];
-  (function walk(node) {
-    if (node.name === name && (node.kind === ReflectionKind.TypeAlias || node.kind === ReflectionKind.Interface)) {
-      matches.push(node);
-    }
-    for (const child of node.children ?? []) walk(child);
-  })(root);
+  const matches = flattenReflections(root).filter(
+    (node) => node.name === name && (node.kind === ReflectionKind.TypeAlias || node.kind === ReflectionKind.Interface),
+  );
   if (matches.length > 1 && warnings) {
     warnings.push(
       `type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`,
@@ -359,7 +358,7 @@ function collectLinkedTypes(byId, warnings) {
     collectProps(node, byId);
     typeToString(node.type, byId);
   }
-  return [...linkedTypes].map((node) => node.name).sort();
+  return [...linkedTypes];
 }
 
 function extractCssVariables(directory, cssSources, warnings, slug) {
@@ -465,7 +464,9 @@ async function main() {
     };
   }
 
-  const typeNames = collectLinkedTypes(byId, warnings);
+  const linked = collectLinkedTypes(byId, warnings);
+  const typeNames = linked.map((node) => node.name).sort();
+  const categories = [...new Set(linked.map((node) => categoryTag(node.comment)).filter(Boolean))].sort();
 
   await mkdir(path.dirname(outFile), { recursive: true });
   await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
@@ -474,6 +475,7 @@ async function main() {
     typesEntryFile,
     `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${barrel}';\n`,
   );
+  await writeFile(categoriesFile, JSON.stringify(categories, null, 2) + '\n');
 
   const summary = Object.entries(out).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,
