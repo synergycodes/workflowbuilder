@@ -1,0 +1,11 @@
+.list {
+  position: fixed;
+  top: 10.5rem;
+  left: 50%;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-width: calc(100vw - 2rem);
+  transform: translateX(-50%);
+}

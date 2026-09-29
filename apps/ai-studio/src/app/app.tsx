@@ -14,12 +14,13 @@ import { decisionFieldsRenderer } from '../components/human-decision/decision-fi
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
 import { HumanDecisionNodeTemplate } from '../components/human-decision/node-template/human-decision-template';
 import { DecisionWaitingSnackbar } from '../components/human-decision/waiting-snackbar/decision-waiting-snackbar';
+import { OpenNotices } from '../components/open-from-url/open-notices';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { humanDecisionNodeType } from '../nodes/human-decision';
-import { plugin as aiStudioFeaturesPlugin } from '../plugin';
-import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
+import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import { rootPropsFor } from './root-props';
 
 const flagship = supportTriageFlow.value;
 
@@ -30,21 +31,24 @@ const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer, de
 // A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
-export function App() {
+export function App({ opened }: { opened: OpenedSource }) {
+  const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+
   return (
     <WorkflowBuilder.Root
-      name={flagship.name}
+      name={name}
       logo={{ light: logoLight, dark: logoDark }}
       logoHref="https://workflowbuilder.io"
       layoutDirection={flagship.layoutDirection}
-      initialNodes={flagship.diagram.nodes}
-      initialEdges={flagship.diagram.edges}
+      initialNodes={initialNodes}
+      initialEdges={initialEdges}
+      integration={integration}
       nodeTypes={aiStudioNodeTypes}
       nodeTemplates={nodeTemplates}
       jsonForm={jsonForm}
       diagramTemplates={aiStudioTemplates}
       isValidConnection={isValidConnection}
-      plugins={[aiStudioFeaturesPlugin, undoRedoPlugin]}
+      plugins={plugins}
     >
       <WorkflowBuilder.DefaultLayout />
       <AiStudioControls />
@@ -52,6 +56,7 @@ export function App() {
       <DecisionWaitingSnackbar />
       <ExecutionHighlighting />
       <DisclaimerModal />
+      <OpenNotices />
     </WorkflowBuilder.Root>
   );
 }

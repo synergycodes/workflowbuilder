@@ -8,6 +8,7 @@ import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution
 import styles from './ai-studio-controls.module.css';
 
 import { BACKEND_URL } from '../../config';
+import { useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 import {
   applyConnectionLost,
   applySnapshot,
@@ -25,6 +26,12 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
   return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
 });
+
+const address = vi.hoisted(() => ({ leaveRunView: vi.fn() }));
+vi.mock('../../utils/open-from-url/address-execution-id', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/open-from-url/address-execution-id')>()),
+  leaveRunView: address.leaveRunView,
+}));
 
 const startNode = vi.hoisted(() => ({ exists: true }));
 vi.mock('../../hooks/use-has-start-node', () => ({ useHasStartNode: () => startNode.exists }));
@@ -50,6 +57,8 @@ describe('AiStudioControls', () => {
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
     startNode.exists = true;
+    useDiagramSourceStore.setState({ isRunView: false });
+    address.leaveRunView.mockClear();
     useStore.getState().setToggleReadOnlyMode(false);
     container = document.createElement('div');
     document.body.append(container);
@@ -181,6 +190,26 @@ describe('AiStudioControls', () => {
 
     expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('Reset stays on the page in the local draft', async () => {
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('completed');
+
+    await clickReset();
+
+    expect(address.leaveRunView).not.toHaveBeenCalled();
+  });
+
+  it('Reset in the run view forgets the run and goes back to where edits are saved', async () => {
+    act(() => useDiagramSourceStore.setState({ isRunView: true }));
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('completed');
+
+    await clickReset();
+
+    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
+    expect(address.leaveRunView).toHaveBeenCalledTimes(1);
   });
 
   it('keeps the Reset escape when a snapshot arrives again: an answering server has not ended the run', () => {

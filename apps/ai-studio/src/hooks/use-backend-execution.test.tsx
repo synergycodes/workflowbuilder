@@ -4,7 +4,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/execution-events';
 
+import { openFromUrl } from '../app/open-from-url';
 import { BACKEND_URL } from '../config';
+import { knownNodeTypes } from '../data/known-node-types';
+import { refundReviewFlow } from '../data/refund-review-flow';
 import { type RunStatus, resetExecution, setExecutionStarted, useExecutionStore } from '../stores/use-execution-store';
 import { deferred } from '../test/deferred';
 import { cancelledEvent, parkedRunHistory, snapshotFrame } from '../test/execution-history';
@@ -459,5 +462,27 @@ describe('useBackendExecution: starting a run from the canvas', () => {
 
     expect(useExecutionStore.getState().status).toBe('idle');
     expect(FakeEventSource.instances).toHaveLength(0);
+  });
+});
+
+describe('useBackendExecution: a run opened from the link', () => {
+  const run = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+  const graph = { nodes: refundReviewFlow.value.diagram.nodes, edges: refundReviewFlow.value.diagram.edges };
+
+  it('opens exactly one stream, on that run, after the StrictMode double mount', async () => {
+    rememberRun('waiting');
+
+    await openFromUrl(`?executionId=${run}`, {
+      fetchWorkflow: vi.fn(),
+      fetchExecutionSnapshot: async () => ({
+        ok: true,
+        data: { workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11', sourceVersion: 'draft', snapshot: graph },
+      }),
+      knownTypes: knownNodeTypes,
+    });
+    unmount = mountHook();
+
+    expect(openStreams()).toHaveLength(1);
+    expect(latestStream().url).toBe(`${BACKEND_URL}/api/executions/${run}/stream`);
   });
 });

@@ -36,7 +36,6 @@ function deps(overrides: Partial<ResolveDeps> = {}) {
   return {
     fetchWorkflow: vi.fn(async () => ok(workflow)),
     fetchExecutionSnapshot: vi.fn(async () => ok(snapshot)),
-    isOwnRun: vi.fn(() => false),
     knownTypes: knownNodeTypes,
     ...overrides,
   };
@@ -56,7 +55,11 @@ describe('resolveDiagramSource: no ids', () => {
   it('opens the local draft without asking the backend', async () => {
     const fakes = deps();
 
-    expect(await resolveDiagramSource(target({}), fakes)).toEqual({ source: { kind: 'local' }, notices: [] });
+    expect(await resolveDiagramSource(target({}), fakes)).toEqual({
+      source: { kind: 'local' },
+      notices: [],
+      serverUnreachable: false,
+    });
     expect(fakes.fetchWorkflow).not.toHaveBeenCalled();
     expect(fakes.fetchExecutionSnapshot).not.toHaveBeenCalled();
   });
@@ -166,15 +169,6 @@ describe('resolveDiagramSource: ?executionId=', () => {
     expect(fakes.fetchWorkflow).not.toHaveBeenCalled();
   });
 
-  it('reopens a run this browser started on the local canvas, without asking the backend', async () => {
-    const fakes = deps({ isOwnRun: vi.fn((id: string) => id === RUN) });
-
-    const resolution = await resolveDiagramSource(target({ executionId: RUN }), fakes);
-
-    expect(resolution).toEqual({ source: { kind: 'local', executionId: RUN }, notices: [] });
-    expect(fakes.fetchExecutionSnapshot).not.toHaveBeenCalled();
-  });
-
   it.each(failures)('opens the local draft with one notice on %s', async (_name, failure) => {
     const resolution = await resolveDiagramSource(
       target({ executionId: RUN }),
@@ -183,6 +177,18 @@ describe('resolveDiagramSource: ?executionId=', () => {
 
     expect(resolution.source).toEqual({ kind: 'local' });
     expect(resolution.notices).toHaveLength(1);
+  });
+
+  it.each([
+    ['a network error', { ok: false, status: 'network' } as const, true],
+    ['a 404', { ok: false, status: 404 } as const, false],
+  ])('says whether the server answered, after %s', async (_name, failure, serverUnreachable) => {
+    const resolution = await resolveDiagramSource(
+      target({ executionId: RUN }),
+      deps({ fetchExecutionSnapshot: vi.fn(async () => failure) }),
+    );
+
+    expect(resolution.serverUnreachable).toBe(serverUnreachable);
   });
 
   it('opens the local draft when the executed graph cannot be drawn', async () => {
@@ -215,15 +221,6 @@ describe('resolveDiagramSource: both ids', () => {
     expect(resolution.source.kind).toBe('execution');
     expect(resolution.source).not.toHaveProperty('targetWorkflowId');
     expect(resolution.notices).toHaveLength(1);
-  });
-
-  it('opens the run from the backend even when this browser started it', async () => {
-    const fakes = deps({ isOwnRun: vi.fn(() => true) });
-
-    const resolution = await resolveDiagramSource(target({ executionId: RUN, workflowId: WORKFLOW }), fakes);
-
-    expect(resolution.source).toMatchObject({ kind: 'execution', targetWorkflowId: WORKFLOW });
-    expect(fakes.fetchExecutionSnapshot).toHaveBeenCalledWith(RUN);
   });
 
   it('opens the workflow when the run cannot be opened', async () => {

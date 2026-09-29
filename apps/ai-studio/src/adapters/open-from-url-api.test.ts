@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { BACKEND_URL } from '../config';
 import { jsonResponse, unparsableResponse } from '../test/json-response';
-import { fetchExecutionSnapshot, fetchWorkflow } from './open-from-url-api';
+import { fetchExecutionSnapshot, fetchWorkflow, saveWorkflowDraft } from './open-from-url-api';
 
 const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 const WORKFLOW = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
@@ -68,5 +68,26 @@ describe('fetchExecutionSnapshot', () => {
     stubFetch(jsonResponse(200, { snapshot: {} }));
 
     expect(await fetchExecutionSnapshot(RUN)).toEqual({ ok: false, status: 'unparsable' });
+  });
+});
+
+describe('saveWorkflowDraft', () => {
+  const draft = { nodes: [], edges: [] };
+
+  it('replaces the draft and reads the row back', async () => {
+    const fetchMock = stubFetch(jsonResponse(200, record));
+
+    expect(await saveWorkflowDraft(WORKFLOW, draft)).toEqual({ ok: true, data: record });
+    expect(fetchMock).toHaveBeenCalledWith(`${BACKEND_URL}/api/workflows/${WORKFLOW}/draft`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ draftJson: draft }),
+    });
+  });
+
+  it('keeps the status and code of a refusal', async () => {
+    stubFetch(jsonResponse(404, { code: 'workflow_not_found' }));
+
+    expect(await saveWorkflowDraft(WORKFLOW, draft)).toEqual({ ok: false, status: 404, code: 'workflow_not_found' });
   });
 });

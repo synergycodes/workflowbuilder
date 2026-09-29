@@ -1,0 +1,50 @@
+import { describe, expect, it } from 'vitest';
+
+import { refundReviewFlow } from '../data/refund-review-flow';
+import { supportTriageFlow } from '../data/support-triage-flow';
+import { plugin as openFromUrlPlugin } from '../plugins/open-from-url/plugin';
+import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import { neverSaves, rootPropsFor } from './root-props';
+
+const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+const WORKFLOW = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
+const diagram = { nodes: refundReviewFlow.value.diagram.nodes, edges: refundReviewFlow.value.diagram.edges };
+
+const workflowSource: OpenedSource = { kind: 'workflow', workflowId: WORKFLOW, name: 'Refund desk', diagram };
+const executionSource: OpenedSource = { kind: 'execution', executionId: RUN, workflowId: WORKFLOW, diagram };
+
+describe('rootPropsFor', () => {
+  it('keeps the local draft on the default localStorage strategy and the flagship seed', () => {
+    const props = rootPropsFor({ kind: 'local' });
+
+    expect(props.integration).toBeUndefined();
+    expect(props.initialNodes).toBe(supportTriageFlow.value.diagram.nodes);
+    expect(props.plugins).not.toContain(openFromUrlPlugin);
+  });
+
+  it('opens a workflow under its name, off localStorage, with the Save button swapped', () => {
+    const props = rootPropsFor(workflowSource);
+
+    expect(props.integration).toMatchObject({ strategy: 'props' });
+    expect(props.name).toBe('Refund desk');
+    expect(props.initialNodes).toBe(diagram.nodes);
+    expect(props.initialEdges).toBe(diagram.edges);
+    expect(props.plugins).toContain(openFromUrlPlugin);
+  });
+
+  it('opens a run under a short run name, off localStorage', () => {
+    const props = rootPropsFor(executionSource);
+
+    expect(props.integration).toMatchObject({ strategy: 'props' });
+    expect(props.name).toBe('Run 7c9e6679');
+    expect(props.plugins).toContain(openFromUrlPlugin);
+  });
+
+  it('hands every render the same integration object', () => {
+    expect(rootPropsFor(workflowSource).integration).toBe(rootPropsFor(executionSource).integration);
+  });
+
+  it('refuses the editor save that URL modes never trigger', async () => {
+    await expect(neverSaves(rootPropsFor(workflowSource) as never)).rejects.toThrow();
+  });
+});

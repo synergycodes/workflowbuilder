@@ -8,7 +8,9 @@ import styles from './ai-studio-controls.module.css';
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
+import { useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
+import { leaveRunView } from '../../utils/open-from-url/address-execution-id';
 
 export function AiStudioControls() {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
@@ -19,6 +21,12 @@ export function AiStudioControls() {
   // A start waits for the backend; a second one meanwhile would leave two runs streaming into one view.
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
+  const isRunView = useDiagramSourceStore((state) => state.isRunView);
+
+  const handleReset = useCallback(() => {
+    reset();
+    if (isRunView) leaveRunView();
+  }, [reset, isRunView]);
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
@@ -80,7 +88,7 @@ export function AiStudioControls() {
           <NavButton
             size="s"
             aria-label={resetTooltip}
-            onClick={reset}
+            onClick={handleReset}
             tooltip={resetTooltip}
             prefixIcon={<Icon name="ArrowCounterClockwise" />}
           />
