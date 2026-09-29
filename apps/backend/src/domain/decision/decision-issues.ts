@@ -36,6 +36,7 @@ export const SUBMITTED_DECISION_ERRORS = {
   unknown_field: "field '{value}' is not in the decision schema",
   field_not_editable: "field '{value}' is read-only",
   required_field_missing: "required field '{value}' must not be emptied",
+  field_shape_changed: "field '{value}' must keep its shape: an object stays an object and a list stays a list",
 } as const;
 
 export type SubmittedDecisionErrorCode = keyof typeof SUBMITTED_DECISION_ERRORS;

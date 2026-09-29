@@ -91,6 +91,37 @@ describe('validateSubmittedDecision', () => {
       call: { action: 'approve', edits: { profile: { nickname: 'Ada' }, lines: [{ qty: 3 }] } },
       effect: 'resume-with-edits',
     },
+    {
+      name: 'an object edit that names no child, which patches nothing',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: {} } },
+      effect: 'resume-with-edits',
+    },
+    {
+      name: 'an empty list edit, which patches no element',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: [] } },
+      effect: 'resume-with-edits',
+    },
+    {
+      name: 'null on a described object whose type allows null',
+      request: requestWith({
+        schema: {
+          type: 'object',
+          properties: { address: { type: ['object', 'null'], properties: { city: { type: 'string' } } } },
+        },
+      }),
+      call: { action: 'approve', edits: { address: null } },
+      effect: 'resume-with-edits',
+    },
+    {
+      name: 'null on a described list whose type allows null',
+      request: requestWith({
+        schema: { type: 'object', properties: { tags: { type: ['array', 'null'], items: { type: 'string' } } } },
+      }),
+      call: { action: 'approve', edits: { tags: null } },
+      effect: 'resume-with-edits',
+    },
     { name: 'a reject without a reason when none is required', call: { action: 'reject' }, effect: 'reject' },
     { name: 'a reject with empty edits', call: { action: 'reject', edits: {} }, effect: 'reject' },
     {
@@ -322,6 +353,64 @@ describe('validateSubmittedDecision', () => {
       code: 'unknown_field',
       value: 'constructor',
       path: ['edits', 'profile', 'constructor'],
+    },
+    ...[null, 'x', []].map((replacement) => ({
+      name: `a described object replaced by ${JSON.stringify(replacement)}`,
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { profile: replacement } },
+      code: 'field_shape_changed' as const,
+      value: 'profile',
+      path: ['edits', 'profile'],
+    })),
+    ...[null, { qty: 1 }].map((replacement) => ({
+      name: `a described list replaced by ${JSON.stringify(replacement)}`,
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: replacement } },
+      code: 'field_shape_changed' as const,
+      value: 'lines',
+      path: ['edits', 'lines'],
+    })),
+    {
+      name: 'null on a described object with only editable children, whose type does not allow null',
+      request: requestWith({
+        schema: {
+          type: 'object',
+          properties: { address: { type: 'object', properties: { city: { type: 'string' } } } },
+        },
+      }),
+      call: { action: 'approve', edits: { address: null } },
+      code: 'field_shape_changed',
+      value: 'address',
+      path: ['edits', 'address'],
+    },
+    {
+      name: 'a string on a described object that allows null',
+      request: requestWith({
+        schema: {
+          type: 'object',
+          properties: { address: { type: ['object', 'null'], properties: { city: { type: 'string' } } } },
+        },
+      }),
+      call: { action: 'approve', edits: { address: 'Main St' } },
+      code: 'field_shape_changed',
+      value: 'address',
+      path: ['edits', 'address'],
+    },
+    {
+      name: 'a list element replaced by null, named by its index',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: [null] } },
+      code: 'field_shape_changed',
+      value: '0',
+      path: ['edits', 'lines', '0'],
+    },
+    {
+      name: 'an object inside a list element replaced by a string',
+      request: nestedRequest(),
+      call: { action: 'approve', edits: { lines: [{ origin: 'dock' }] } },
+      code: 'field_shape_changed',
+      value: 'origin',
+      path: ['edits', 'lines', '0', 'origin'],
     },
   ])('refuses $name', ({ request = requestWith(), call, code, value, path }) => {
     expect(validateSubmittedDecision(request, call)).toEqual({

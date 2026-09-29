@@ -107,6 +107,7 @@ const refundForm = {
     orderDate: { type: 'string', readOnly: true },
     refundAmount: { type: 'number' },
     note: { type: 'string' },
+    customer: { type: 'object', properties: { id: { type: 'string', readOnly: true } } },
   },
   required: ['refundAmount'],
 };
@@ -366,6 +367,7 @@ const INVALID_DECISIONS = {
   unknown_field: { nodeId: 'review-1', action: 'approve', edits: { discount: 10 } },
   field_not_editable: { nodeId: 'review-1', action: 'approve', edits: { orderDate: '2026-01-01' } },
   required_field_missing: { nodeId: 'review-1', action: 'approve', edits: { refundAmount: null } },
+  field_shape_changed: { nodeId: 'review-1', action: 'approve', edits: { customer: null } },
 } satisfies Record<SubmittedDecisionErrorCode, Record<string, unknown>>;
 
 describe('POST /api/executions/:id/decision - the decision', () => {

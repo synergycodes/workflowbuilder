@@ -74,6 +74,10 @@ export type DecisionDeadline = {
 export type Decision = {
   action: string;
   effect: DecisionEffect;
+  /**
+   * A patch of the proposal, carried unapplied: an object merges field by field, a list element by
+   * element (unlike JSON Merge Patch), and `null` empties a field.
+   */
   edits: Record<string, unknown>;
   reason?: string;
   comment?: string;
