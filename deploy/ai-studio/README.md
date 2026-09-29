@@ -193,3 +193,9 @@ deployment; the worker README ("Temporal specifics") has the reasoning.
   only — see "Pointing at a different Temporal" above.
 - **Anyone-can-edit demo content.** Visitors share one workspace; data is
   wiped whenever you decide to recreate the volumes.
+- **Drafts are stored unvalidated.** `POST /api/workflows` and
+  `PATCH /api/workflows/:id/draft` keep any JSON, so anyone can save a draft
+  the editor cannot draw. AI Studio refuses a diagram it cannot draw when a
+  `?workflowId=` link opens and shows the local draft instead; a subtler value
+  that still breaks the page has to be removed from the `workflows` table by
+  hand.
