@@ -14,7 +14,7 @@ import styles from './decision-actions-control.module.css';
 import { useIsRunShown } from '../../../hooks/use-is-run-shown';
 import { defaultRejectAction } from '../../../nodes/human-decision/default-properties-data';
 import { rejectPortOf, withReasonRequired, withReject } from '../../../utils/human-decision/decision-actions';
-import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
+import { authoredActionsOf, readDecisionRequest } from '../../../utils/human-decision/decision-request';
 import { Hint, type HintVariant } from '../hint/hint';
 
 type OutputHint = 'single' | 'unwired' | 'wired';
@@ -37,7 +37,7 @@ const OUTPUT_HINTS = {
 function DecisionActionsControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
   const request = readDecisionRequest(data);
-  const actions: readonly unknown[] = request === undefined ? [] : data['actions'];
+  const actions = authoredActionsOf(data);
   const rejectPort = rejectPortOf(actions);
   const rejectWired = useStore(
     (state) =>
