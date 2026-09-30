@@ -1,0 +1,34 @@
+.hint {
+  composes: wb-text-body-s from global;
+
+  display: flex;
+  gap: var(--wb-ds-space-100);
+  align-items: flex-start;
+  margin: 0;
+  border-radius: var(--wb-ds-radius-75);
+  color: var(--wb-ds-ui-text-muted-default);
+}
+
+.icon {
+  flex: none;
+  margin-top: var(--wb-ds-space-25);
+}
+
+.hint--neutral {
+  padding: var(--wb-ds-space-150);
+  background: var(--wb-ds-ui-bg-inset-subtle);
+}
+
+.hint--info .icon {
+  color: var(--wb-ds-ui-icon-subtle-default);
+}
+
+.hint--warning {
+  padding: var(--wb-ds-space-150);
+  background: var(--wb-ds-components-snackbar-bg-warning); /* missing token */
+  color: var(--wb-ds-ui-text-warning-default);
+}
+
+.hint--warning .icon {
+  color: var(--wb-ds-ui-icon-warning-default);
+}
