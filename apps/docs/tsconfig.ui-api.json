@@ -1,0 +1,7 @@
+{
+  "extends": "../../packages/ui/tsconfig.json",
+  "compilerOptions": {
+    "types": ["node"]
+  },
+  "include": ["src/generated/ui-types.ts", "../../packages/ui/types.d.ts"]
+}

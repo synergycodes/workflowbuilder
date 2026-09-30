@@ -141,7 +141,7 @@ This repo is public, but ticket IDs (`WB-123`) point to a private ClickUp — fo
 - Write the comment self-sufficiently: state the limitation and the direction of the fix in plain words.
 - End it with a stable kebab-case slug naming the work: `(follow-up: temporal-payload-codec)`.
 - Add a matching `Code marker: <slug>` line to the ClickUp task's description, so picking the task up later starts with `grep -r "follow-up: <slug>"` — grep survives file moves.
-- Ticket IDs belong in commit messages and PR descriptions, where `git blame` leads to full context.
+- Ticket IDs stay out of branch names, commit messages, PR titles, and PR descriptions too: they are public, and the IDs lead nowhere for external readers. Describe the change in plain words instead.
 
 ## Getting Started
 

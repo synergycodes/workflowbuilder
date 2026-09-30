@@ -7,7 +7,7 @@ import { type ReactNode, forwardRef } from 'react';
 
 import styles from './modal.module.css';
 
-import type { FooterVariant } from './types';
+import type { ModalFooterVariant } from './types';
 
 export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> &
   // Plain WithIcon, not Partial<WithIcon>: `icon` is already optional there, and
@@ -39,7 +39,7 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      * Variant of the footer styling
      * @default 'integrated'
      */
-    footerVariant?: FooterVariant;
+    footerVariant?: ModalFooterVariant;
     /**
      * Controls the visibility of the modal
      */

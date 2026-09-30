@@ -5,7 +5,7 @@ sidebar:
   order: 2
 ---
 
-`<WorkflowBuilder.Root>` is the main entry point of the SDK. Mount it at the top of your editor subtree with the props you need. The full type-level reference lives at [`WorkflowBuilderRoot`](/api/core/workflowbuilderroot/) under API Reference; this page focuses on what each prop does and when you reach for it.
+`<WorkflowBuilder.Root>` is the main entry point of the SDK. Mount it at the top of your editor subtree with the props you need. The full type-level reference lives at [`WorkflowBuilderRoot`](/api/core/workflowbuilderroot/) under SDK API Reference; this page focuses on what each prop does and when you reach for it.
 
 ```tsx
 import { WorkflowBuilder } from '@workflowbuilder/sdk';
@@ -15,7 +15,7 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 ## Props reference
 
-Every prop is optional. The **Type** column links to the auto-generated [API Reference](/api/core/workflowbuilderrootprops/) for the exact shape. The **Description** points to the section or guide that shows how to use each prop, and notes the default where there is one.
+Every prop is optional. The **Type** column links to the auto-generated [SDK API Reference](/api/core/workflowbuilderrootprops/) for the exact shape. The **Description** points to the section or guide that shows how to use each prop, and notes the default where there is one.
 
 | Prop                | Type                                                                              | Description                                                                                                                                                         |
 | ------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

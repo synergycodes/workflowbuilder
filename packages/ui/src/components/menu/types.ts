@@ -3,8 +3,18 @@ import { ListItem } from '@ui/shared/types/list-item';
 
 export const MENU_ITEM_TONES = ['default', 'critical'] as const;
 
+/**
+ * Colour tone of a menu item. `critical` marks a destructive action.
+ *
+ * @category Menu
+ */
 export type MenuItemTone = (typeof MENU_ITEM_TONES)[number];
 
+/**
+ * One entry of a `Menu`'s `items`.
+ *
+ * @category Menu
+ */
 export type MenuItemProps = ListItem & {
   /**
    * Colours the label and icon for a destructive action. The row keeps the
@@ -19,5 +29,6 @@ export type MenuItemProps = ListItem & {
    */
   selected?: boolean;
   onClick?: () => void;
+  /** Ignored: `Menu` sizes every row with its own `size` prop. */
   size?: ItemSize;
 };

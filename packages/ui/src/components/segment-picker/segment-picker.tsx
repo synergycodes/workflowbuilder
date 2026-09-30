@@ -1,5 +1,4 @@
 import type { NavButtonSize, NavButtonVariant } from '@ui/components/button/nav-button/types';
-import type { Shape } from '@ui/components/button/types';
 import type { Size } from '@ui/shared/types/size';
 import clsx from 'clsx';
 import {
@@ -15,6 +14,7 @@ import borderRadiusStyles from './border-radius-size.module.css';
 import styles from './segment-picker.module.css';
 
 import { Item, type SegmentPickerItemProps } from './item/segment-picker-item';
+import type { SegmentPickerShape } from './types';
 import { SegmentPickerContext } from './utils/context';
 import { getValidShape } from './utils/get-valid-shape';
 
@@ -28,7 +28,7 @@ const NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE: Record<Size, NavButtonSize> = {
   'xxx-small': 'xxxs',
 };
 
-const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<Shape, Exclude<NavButtonVariant, 'plain'>> = {
+const NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE: Record<SegmentPickerShape, Exclude<NavButtonVariant, 'plain'>> = {
   default: 'square',
   circle: 'round',
 };
@@ -41,7 +41,7 @@ export type SegmentPickerPropsBase = {
    * Circle is supported only when every item contains an icon without a label.
    * @default 'default'
    */
-  shape?: Shape;
+  shape?: SegmentPickerShape;
   className?: string;
   onChange?: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
 };

@@ -1,4 +1,4 @@
-import type { FooterVariant, Modal } from '@workflowbuilder/ui';
+import type { Modal, ModalFooterVariant } from '@workflowbuilder/ui';
 import type { ComponentProps } from 'react';
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
@@ -9,7 +9,7 @@ type ModalProps = {
   title: string;
   footer?: ComponentProps<typeof Modal>['footer'];
   isCloseButtonVisible?: boolean;
-  footerVariant?: FooterVariant;
+  footerVariant?: ModalFooterVariant;
   onModalClosed?: () => void;
 };
 

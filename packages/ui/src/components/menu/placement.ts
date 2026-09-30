@@ -1,24 +1,40 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
+import type { PopupAlign, PopupSide } from '@ui/shared/types/popup-placement';
 import { type ComponentProps } from 'react';
 
-type Side = 'top' | 'bottom' | 'left' | 'right';
-type Align = 'start' | 'end';
+/**
+ * Where a `Menu` popup opens: a side of the trigger, optionally aligned to its start or end.
+ *
+ * @category Menu
+ */
+export type MenuPlacement = PopupSide | `${PopupSide}-${PopupAlign}`;
 
-export type Placement = Side | `${Side}-${Align}`;
-
-type OffsetAxes = {
+/**
+ * Offsets of a `Menu` popup from its trigger, in pixels, per axis.
+ *
+ * @category Menu
+ */
+export type OffsetAxes = {
+  /** Distance from the trigger. */
   mainAxis?: number;
+  /** Shift along the trigger edge, in physical direction. */
   crossAxis?: number;
+  /** Shift along the trigger edge, mirrored for `-end` placements. Overrides `crossAxis`. */
   alignmentAxis?: number | null;
 };
 
+/**
+ * Offset of a `Menu` popup from its trigger: a distance in pixels, or per-axis offsets.
+ *
+ * @category Menu
+ */
 export type OffsetOptions = number | OffsetAxes;
 
 type PositionerProps = ComponentProps<typeof MenuBase.Positioner>;
 type PositionerSide = NonNullable<PositionerProps['side']>;
 type PositionerAlign = NonNullable<PositionerProps['align']>;
 
-export function placementToSideAlign(placement: Placement): {
+export function placementToSideAlign(placement: MenuPlacement): {
   side: PositionerSide;
   align: PositionerAlign;
 } {

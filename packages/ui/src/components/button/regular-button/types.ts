@@ -13,14 +13,29 @@ export const BUTTON_VARIANTS = [
   'ghost-success',
 ] as const;
 
+/**
+ * Visual style of a `Button`. Each `ghost-*` variant is the outlined counterpart of the filled one.
+ *
+ * @category Button
+ */
 export type ButtonVariant = (typeof BUTTON_VARIANTS)[number];
 
 export const BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs'] as const;
 
+/**
+ * Size of a `Button`, from `xl` down to `xs`.
+ *
+ * @category Button
+ */
 export type ButtonSize = (typeof BUTTON_SIZES)[number];
 
 export const BUTTON_SHAPES = ['default', 'square', 'round'] as const;
 
+/**
+ * Shape of a `Button`. Use `square` or `round` for icon-only buttons.
+ *
+ * @category Button
+ */
 export type ButtonShape = (typeof BUTTON_SHAPES)[number];
 
 export type LabelButtonProps = {

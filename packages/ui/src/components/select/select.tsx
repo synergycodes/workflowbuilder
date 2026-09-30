@@ -16,9 +16,7 @@ import { Separator } from '../separator/separator';
 import { SelectButton } from './select-button/select-button';
 import { SelectOption } from './select-option/select-option';
 import { SelectValue } from './select-value/select-value';
-import type { SelectItem } from './types';
-
-type SelectValueType = string | number | null;
+import type { SelectItem, SelectValueType } from './types';
 
 export type SelectBaseProps = {
   /**

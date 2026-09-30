@@ -8,8 +8,14 @@ import itemShapeStyles from './segment-picker-item-shape.module.css';
 import type { BaseButtonProps } from '../../button/types';
 import { SegmentPickerContext } from '../utils/context';
 
+/**
+ * Props of `SegmentPicker.Item`, one segment of the picker.
+ *
+ * @category SegmentPicker
+ */
 export type SegmentPickerItemProps = BaseButtonProps &
   Pick<NavButtonProps, 'prefixIcon' | 'suffixIcon'> & {
+    /** Identifies the segment; the picker reports it when the segment is selected. */
     value: string;
   };
 
