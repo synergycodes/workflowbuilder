@@ -195,8 +195,7 @@ deployment; the worker README ("Temporal specifics") has the reasoning.
   wiped whenever you decide to recreate the volumes.
 - **Drafts are stored unvalidated.** `POST /api/workflows` and
   `PATCH /api/workflows/:id/draft` keep any JSON, so anyone can save a draft
-  the editor cannot draw. AI Studio refuses a diagram it cannot draw when a
-  `?workflowId=` link opens and shows the local draft instead. A subtler value
-  that still breaks the editor shows an error with a way back to the local
-  draft, and has to be removed by hand: from `workflows`, or for a run from
-  `executions`.
+  the editor cannot draw. Opening it from a `?workflowId=` link ends on an
+  error screen with a way back to the local draft; a subtler value that draws
+  wrongly shows wrongly. Either has to be removed by hand: from `workflows`,
+  or for a run from `executions`.
