@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': minor
 ---
 
-Node definitions take an optional `accent` (`'blue' | 'green' | 'orange' | 'violet' | 'neutral' | 'ai'`) that colors the node's icon on the canvas and in the palette; it is read by node type and never saved into the diagram. `WorkflowNodeTemplateProps` gains `accent`, `NodeIconAccent` is exported, and `Icon` takes `size="inherit"` to follow the surrounding font size.
+Node definitions take an optional `accent` (`'blue' | 'green' | 'orange' | 'violet' | 'neutral' | 'ai'`) that colors the node's icon on the canvas and in the palette; it is read by node type and never saved into the diagram. `WorkflowNodeTemplateProps` gains `accent` and `NodeIconAccent` is exported.

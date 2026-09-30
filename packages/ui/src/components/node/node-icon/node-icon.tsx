@@ -12,7 +12,7 @@ export type NodeIconAccent = 'blue' | 'green' | 'orange' | 'violet' | 'neutral' 
 
 export type NodeIconProps = {
   icon: ReactNode;
-  /** Tinted container without a border and a glyph in the accent color. Without it the icon keeps the default color. */
+  /** Tints the container, drops its border and colors the glyph. Without it the icon keeps the default color. */
   accent?: NodeIconAccent;
   /** Muted glyph and container of the Node Disabled variant. */
   disabled?: boolean;
@@ -24,7 +24,7 @@ export function NodeIcon({ icon, accent, disabled = false, className }: NodeIcon
     <div
       className={clsx(
         styles['container'],
-        accent && styles[`accent-${accent}`],
+        accent && [styles['accented'], styles[`accent-${accent}`]],
         { [styles['disabled']]: disabled },
         className,
       )}

@@ -115,7 +115,7 @@ describe('useNodeTypes', () => {
     expect(received).toEqual([{ layoutDirection: 'DOWN' }]);
   });
 
-  it('forwards the accent of the definition found by node type, not stored in the node data', () => {
+  it('forwards the accent from the definition of data.type to the custom template', () => {
     const received: { accent?: string }[] = [];
     function Recorder(props: WorkflowNodeTemplateProps) {
       received.push({ accent: props.accent });

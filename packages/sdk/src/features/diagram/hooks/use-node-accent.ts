@@ -1,5 +1,4 @@
-import type { NodeIconAccent } from '@workflowbuilder/ui';
-
+import type { NodeIconAccent } from '../../../node/common';
 import { useStore } from '../../../store/store';
 
 export function useNodeAccent(nodeType: string): NodeIconAccent | undefined {

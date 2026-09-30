@@ -1,13 +1,20 @@
 import { getPaletteData } from '../../../data/palette';
-import {
-  type DraggingItem,
-  type PaletteGroup,
-  type PaletteItem,
-  type PaletteItemOrGroup,
-  StatusType,
-} from '../../../node/common';
+import { type DraggingItem, type PaletteItem, type PaletteItemOrGroup, StatusType } from '../../../node/common';
+import { getNodesDefinitionsByType } from '../../../utils/validation/get-nodes-definitions-by-type';
 import type { GetDiagramState, SetDiagramState } from '../../store';
 import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
+
+let definitionsSource: PaletteItemOrGroup[] | undefined;
+let definitionsByType = new Map<string, PaletteItem>();
+
+function getDefinitionsByType(palette: PaletteItemOrGroup[]) {
+  if (palette !== definitionsSource) {
+    definitionsSource = palette;
+    definitionsByType = new Map(Object.entries(getNodesDefinitionsByType(palette)));
+  }
+
+  return definitionsByType;
+}
 
 export type PaletteState = {
   isSidebarExpanded: boolean;
@@ -53,21 +60,8 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
     getNodeDefinition: (nodeType) => {
       const { data } = get();
 
-      const nodeDefinition = data.find((itemOrGroup) => (itemOrGroup as PaletteItem)?.type === nodeType);
-
-      if (nodeDefinition) {
-        return nodeDefinition as PaletteItem;
-      }
-
-      const groupWithNodeDefinition = data.find((itemOrGroup) =>
-        ((itemOrGroup as unknown as PaletteGroup)?.groupItems || []).some(({ type }) => type === nodeType),
-      );
-
-      if (groupWithNodeDefinition) {
-        return (groupWithNodeDefinition as unknown as PaletteGroup)?.groupItems.find(({ type }) => type === nodeType);
-      }
-
-      return;
+      // `data` is filled only once the Palette mounts; a Canvas without one still needs definitions.
+      return getDefinitionsByType(data.length > 0 ? data : getPaletteData()).get(nodeType);
     },
   };
 }

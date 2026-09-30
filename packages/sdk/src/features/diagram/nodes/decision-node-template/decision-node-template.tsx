@@ -1,4 +1,4 @@
-import { NodeDescription, NodeIcon, type NodeIconAccent, NodePanel, Status } from '@workflowbuilder/ui';
+import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -7,7 +7,7 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './decision-node-template.module.css';
 
-import type { IconType } from '../../../../node/common';
+import type { IconType, NodeIconAccent } from '../../../../node/common';
 import type { LayoutDirection } from '../../../../node/common';
 import type { DecisionBranch } from '../../../json-form/types/controls';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';

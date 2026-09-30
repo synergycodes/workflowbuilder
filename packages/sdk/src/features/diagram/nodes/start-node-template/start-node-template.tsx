@@ -1,4 +1,4 @@
-import { Collapsible, NodeDescription, NodeIcon, type NodeIconAccent, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './start-node-template.module.css';
 
-import type { IconType, LayoutDirection } from '../../../../node/common';
+import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';

@@ -1,5 +1,5 @@
 :root {
-  --wb-public-node-icon-glyph-size: var(--wb-ds-size-225);
+  --wb-public-node-icon-glyph-size: var(--wb-ds-size-225) /* missing token */;
   --wb-public-node-icon-border-size: 0.0625rem;
   --wb-public-node-icon-border-radius: var(--wb-ds-canvas-node-head-icon-radius);
   --wb-public-node-icon-padding: var(--wb-ds-space-100);
@@ -36,7 +36,7 @@
   --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-600) /* missing token */;
   --wb-public-node-icon-container-background-color-neutral: var(--wb-ds-colors-gray-200) /* missing token */;
   --wb-public-node-icon-color-ai: var(--wb-ds-colors-gray-100) /* missing token */;
-  --wb-public-node-icon-container-background-ai: linear-gradient(140deg, var(--wb-ds-colors-acc4-500), #5b4fe0)
+  --wb-public-node-icon-container-background-color-ai: linear-gradient(140deg, var(--wb-ds-colors-acc4-500), #5b4fe0)
     /* missing token */;
 }
 
@@ -66,7 +66,7 @@
     /* missing token */;
   --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-400) /* missing token */;
   --wb-public-node-icon-container-background-color-neutral: #333438 /* missing token */;
-  --wb-public-node-icon-container-background-ai: linear-gradient(140deg, #c77cf5, #6b6ae8) /* missing token */;
+  --wb-public-node-icon-container-background-color-ai: linear-gradient(140deg, #c77cf5, #6b6ae8) /* missing token */;
 }
 
 @layer ui.component {
@@ -109,11 +109,12 @@
 
     &.accent-ai {
       color: var(--wb-public-node-icon-color-ai);
-      background: var(--wb-public-node-icon-container-background-ai);
+      background: var(--wb-public-node-icon-container-background-color-ai);
     }
 
-    &:is(.accent-blue, .accent-green, .accent-orange, .accent-violet, .accent-neutral, .accent-ai) {
+    &.accented:not(.disabled) {
       border-color: transparent;
+      background-origin: border-box;
     }
 
     &.disabled {
