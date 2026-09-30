@@ -93,4 +93,17 @@ describe('node-icon.module.css', () => {
     expect(rule.get('border-color')).toBe('transparent');
     expect(rule.get('background-origin')).toBe('border-box');
   });
+
+  it('puts the disabled rule after every accent rule, which it beats only by source order', () => {
+    const order: string[] = [];
+    stylesheet.walkRules((rule) => {
+      order.push(rule.selector);
+    });
+
+    const disabled = order.indexOf('&.disabled');
+    expect(disabled).toBeGreaterThan(-1);
+    for (const accent of ACCENTS) {
+      expect(order.indexOf(`&.accent-${accent}`)).toBeLessThan(disabled);
+    }
+  });
 });

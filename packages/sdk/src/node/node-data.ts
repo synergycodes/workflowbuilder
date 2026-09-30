@@ -34,7 +34,7 @@ export type NodeDefinition<T extends NodeSchema> = {
   /**
    * Icon color on the canvas and in the palette. Read by node type at render time and
    * never saved into the diagram, so saved diagrams pick up a change without migration.
-   * Without it the icon keeps the default color.
+   * Without it the icon keeps the default color; the built-in AI Agent template defaults to `ai`.
    */
   accent?: NodeIconAccent;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &

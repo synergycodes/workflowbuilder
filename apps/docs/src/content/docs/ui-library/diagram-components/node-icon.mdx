@@ -35,7 +35,8 @@ function NodeHeader({ label, description }) {
 
 `accent` tints the container, hides its border and colors the glyph. `blue`, `green`,
 `orange`, `violet` and `neutral` are named by hue; `ai` is a gradient with a white glyph.
-Without `accent` the icon keeps the default color.
+Without `accent` the icon keeps the default color. A `disabled` icon keeps its border and the
+disabled colors, whatever its accent.
 
 ```tsx
 <NodeIcon icon={<User />} accent="violet" />

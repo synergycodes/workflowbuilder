@@ -27,6 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
+import type { PaletteItem } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -43,7 +44,8 @@ vi.mock('./root-shell', () => ({
   RootShell: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../data/palette', () => ({ setCustomPaletteNodes: vi.fn() }));
+const paletteMock = vi.hoisted(() => ({ getPaletteData: vi.fn((): PaletteItem[] => []) }));
+vi.mock('../data/palette', () => ({ setCustomPaletteNodes: vi.fn(), getPaletteData: paletteMock.getPaletteData }));
 vi.mock('../data/templates', () => ({ setCustomTemplates: vi.fn() }));
 vi.mock('../data/node-templates', () => ({ setCustomNodeTemplates: vi.fn() }));
 vi.mock('../features/json-form/extension-registry', () => ({
@@ -216,5 +218,31 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
 
     expect(getIsValidConnection()).toBeNull();
     expect(getReactFlowProps()).toEqual({});
+  });
+});
+
+describe('WorkflowBuilderRoot — node definitions', () => {
+  it('resolves definitions without a Palette and reads the palette data once per mount', () => {
+    const definition = { type: 'action', label: 'Action', icon: 'Plus', accent: 'green' } as PaletteItem;
+    paletteMock.getPaletteData.mockClear();
+    paletteMock.getPaletteData.mockImplementation(() => [definition]);
+    function NodeProbe() {
+      const accent = useStore((store) => store.getNodeDefinition('action')?.accent);
+      return <span data-testid="accent">{accent}</span>;
+    }
+
+    const { getByTestId } = render(
+      <WorkflowBuilderRoot>
+        <NodeProbe />
+      </WorkflowBuilderRoot>,
+    );
+    act(() => {
+      for (let update = 0; update < 3; update++) {
+        useStore.setState({ nodes: [makeNode(`node-${update}`)] });
+      }
+    });
+
+    expect(getByTestId('accent').textContent).toBe('green');
+    expect(paletteMock.getPaletteData).toHaveBeenCalledTimes(1);
   });
 });

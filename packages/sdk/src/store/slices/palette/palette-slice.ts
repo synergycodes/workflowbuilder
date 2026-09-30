@@ -57,11 +57,6 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
       // those pending state updates, not just the current microtask queue.
       setTimeout(() => refreshNodesErrorsIfNeeded(), 0);
     },
-    getNodeDefinition: (nodeType) => {
-      const { data } = get();
-
-      // `data` is filled only once the Palette mounts; a Canvas without one still needs definitions.
-      return getDefinitionsByType(data.length > 0 ? data : getPaletteData()).get(nodeType);
-    },
+    getNodeDefinition: (nodeType) => getDefinitionsByType(get().data).get(nodeType),
   };
 }
