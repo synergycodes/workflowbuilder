@@ -78,11 +78,9 @@ Under the `AllowAllAuthPort` the route answers `403 listing_disabled` unless `EN
 
 Success: `200 { workflowId, sourceVersion, snapshot }`. `snapshot` is the workflow JSON the execute route copied into the run, as it was stored: editing or publishing the workflow afterwards leaves it unchanged. It is a route of its own, not a field of `GET /api/executions/:id`, because pollers call that one. Authorization is `executions:read` on `{ kind: 'execution', executionId }`, the same as `GET /api/executions/:id`, checked before the id is read.
 
-| Status | Code                  | When                                                   |
-| ------ | --------------------- | ------------------------------------------------------ |
-| 404    | `execution_not_found` | No run with this id, or the id is not a canonical UUID |
-
-This route, `GET /api/executions/:id/stream` and `GET /api/workflows/:id` answer an id that is not a canonical UUID with their 404 (`execution_not_found`, `workflow_not_found`) without querying. Postgres rejects such a value as a `uuid` (SQLSTATE `22P02`), which used to reach the client as a 500. Braced and hyphen-less spellings, which Postgres accepts, are refused too; any case passes. The other `/:id` routes do not check the format yet, so a malformed id still answers 500 there.
+| Status | Code                  | When                |
+| ------ | --------------------- | ------------------- |
+| 404    | `execution_not_found` | No run with this id |
 
 ## Running individual processes
 

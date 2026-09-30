@@ -18,7 +18,6 @@ import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events
 import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
 import type { BackendEnv } from './backend-env';
-import { isUuid } from './is-uuid';
 import { LIST_ORDER, listExecutionsWhere, pageOf, parseListExecutionsQuery } from './list-executions-query';
 
 const logger = backendLogger.child({ component: 'executions-route' });
@@ -97,10 +96,7 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
 
     await assertAuthorized(c, 'executions:read', { kind: 'execution', executionId });
 
-    if (!isUuid(executionId)) {
-      return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
-    }
-
+    // A malformed id reaches Postgres and answers 500, like every other /:id route (follow-up: malformed-id-404).
     const [execution] = await database
       .select({
         workflowId: executions.workflowId,
@@ -125,10 +121,6 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     const executionId = c.req.param('id');
 
     await assertAuthorized(c, 'executions:stream', { kind: 'execution', executionId });
-
-    if (!isUuid(executionId)) {
-      return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
-    }
 
     const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
 

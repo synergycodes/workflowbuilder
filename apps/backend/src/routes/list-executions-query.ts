@@ -3,7 +3,6 @@ import { type SQL, and, desc, eq, isNull, or, sql } from 'drizzle-orm';
 import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution/execution-events';
 
 import { executions } from '../db/schema';
-import { isUuid } from './is-uuid';
 
 const STATUS_KEYS = {
   pending: true,
@@ -20,6 +19,8 @@ export const EXECUTION_STATUSES: ReadonlySet<string> = new Set(Object.keys(STATU
 
 export const DEFAULT_LIMIT = 50;
 export const MAX_LIMIT = 200;
+
+const UUID_PATTERN = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 type Cursor = { createdAt: string; id: string };
 
@@ -46,7 +47,7 @@ export function parseListExecutionsQuery(raw: {
   if (raw.status && !EXECUTION_STATUSES.has(raw.status)) {
     return { ok: false, code: 'invalid_status', message: 'Unknown execution status' };
   }
-  if (raw.workflowId && !isUuid(raw.workflowId)) {
+  if (raw.workflowId && !UUID_PATTERN.test(raw.workflowId)) {
     return { ok: false, code: 'invalid_workflow_id', message: 'workflowId must be a UUID' };
   }
   if (raw.limit && (!/^\d+$/.test(raw.limit) || Number(raw.limit) < 1)) {
@@ -82,7 +83,7 @@ export function decodeCursor(token: string): Cursor | undefined {
   const time = Date.parse(createdAt);
   if (!/^\d{4}-/.test(createdAt) || Number.isNaN(time) || time < 0 || new Date(time).toISOString() !== createdAt)
     return;
-  if (!isUuid(id)) return;
+  if (!UUID_PATTERN.test(id)) return;
   return { createdAt, id };
 }
 

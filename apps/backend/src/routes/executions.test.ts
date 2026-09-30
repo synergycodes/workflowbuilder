@@ -673,18 +673,3 @@ describe('createExecutionsRoutes - GET /:id/snapshot', () => {
     expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
   });
 });
-
-describe('createExecutionsRoutes - a malformed id, which Postgres would answer with 22P02', () => {
-  it.each(['/api/executions/not-a-uuid/snapshot', '/api/executions/not-a-uuid/stream'])(
-    'GET %s -> 404 execution_not_found without a query',
-    async (path) => {
-      const app = buildApp(allowStream());
-
-      const response = await app.request(path);
-
-      expect(response.status).toBe(404);
-      expect(await response.json()).toEqual({ code: 'execution_not_found', message: 'Execution not found' });
-      expect(databaseMock.select).not.toHaveBeenCalled();
-    },
-  );
-});

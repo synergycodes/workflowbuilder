@@ -231,18 +231,8 @@ describe('createWorkflowsRoutes - deny short-circuits before any DB access', () 
   });
 });
 
-describe('createWorkflowsRoutes - GET /:id and the id format', () => {
-  it('a malformed id -> 404 workflow_not_found without a query, where Postgres would answer 22P02', async () => {
-    const app = buildApp(allowAll(vi.fn(async () => true)));
-
-    const response = await app.request('/api/workflows/not-a-uuid');
-
-    expect(response.status).toBe(404);
-    expect(await response.json()).toEqual({ code: 'workflow_not_found', message: 'Workflow not found' });
-    expect(databaseMock.select).not.toHaveBeenCalled();
-  });
-
-  it('a canonical id reads the row', async () => {
+describe('createWorkflowsRoutes - GET /:id', () => {
+  it('answers 200 with the row', async () => {
     const app = buildApp(allowAll(vi.fn(async () => true)));
     databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
 
