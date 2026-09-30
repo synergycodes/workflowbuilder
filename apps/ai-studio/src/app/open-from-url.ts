@@ -1,7 +1,7 @@
 import * as openFromUrlApi from '../adapters/open-from-url-api';
 import { knownNodeTypes } from '../data/known-node-types';
-import { addNotice, useDiagramSourceStore } from '../stores/use-diagram-source-store';
 import { resetExecution, setExecutionStarted } from '../stores/use-execution-store';
+import { addNotice } from '../stores/use-notices-store';
 import { parseOpenTarget } from '../utils/open-from-url/parse-open-target';
 import {
   type OpenedSource,
@@ -15,12 +15,6 @@ const liveDeps: ResolveDeps = {
   knownTypes: knownNodeTypes,
 };
 
-function targetOf(source: OpenedSource): string | undefined {
-  if (source.kind === 'workflow') return source.workflowId;
-  if (source.kind === 'execution') return source.targetWorkflowId;
-  return undefined;
-}
-
 /** Opens no stream: it puts the run in the store, and `useBackendExecution`, the one opener, connects to it. */
 async function open(search: string, deps: ResolveDeps): Promise<OpenedSource> {
   const { source, notices } = await resolveDiagramSource(parseOpenTarget(search), deps);
@@ -31,7 +25,6 @@ async function open(search: string, deps: ResolveDeps): Promise<OpenedSource> {
     resetExecution();
   }
 
-  useDiagramSourceStore.setState({ targetWorkflowId: targetOf(source), isRunView: source.kind === 'execution' });
   for (const text of notices) addNotice(text);
 
   return source;

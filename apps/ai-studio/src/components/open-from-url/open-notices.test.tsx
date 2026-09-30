@@ -2,7 +2,7 @@ import { StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { addNotice, useDiagramSourceStore } from '../../stores/use-diagram-source-store';
+import { addNotice, useNoticesStore } from '../../stores/use-notices-store';
 import { OpenNotices } from './open-notices';
 
 const snackbar = vi.hoisted(() => ({ show: vi.fn() }));
@@ -33,7 +33,7 @@ const shownTitles = () => snackbar.show.mock.calls.map(([options]) => (options a
 
 beforeEach(() => {
   snackbar.show.mockClear();
-  useDiagramSourceStore.setState({ notices: [] });
+  useNoticesStore.setState({ notices: [] });
   container = document.createElement('div');
   root = createRoot(container);
 });
@@ -50,7 +50,7 @@ describe('OpenNotices', () => {
     mount();
 
     expect(shownTitles()).toEqual(['The run could not be opened.', 'Some nodes use types this app does not know.']);
-    expect(useDiagramSourceStore.getState().notices).toEqual([]);
+    expect(useNoticesStore.getState().notices).toEqual([]);
   });
 
   it('shows a notice raised later at once', () => {
@@ -83,6 +83,6 @@ describe('OpenNotices', () => {
     addNotice('The run could not be opened.');
 
     expect(snackbar.show).not.toHaveBeenCalled();
-    expect(useDiagramSourceStore.getState().notices).toHaveLength(1);
+    expect(useNoticesStore.getState().notices).toHaveLength(1);
   });
 });

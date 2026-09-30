@@ -33,6 +33,8 @@ const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => 
 
 export function App({ opened }: { opened: OpenedSource }) {
   const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+  const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
+  const isRunView = opened.kind === 'execution';
 
   return (
     <WorkflowBuilder.Root
@@ -51,7 +53,7 @@ export function App({ opened }: { opened: OpenedSource }) {
       plugins={plugins}
     >
       <WorkflowBuilder.DefaultLayout />
-      <AiStudioControls />
+      <AiStudioControls workflowId={workflowId} isRunView={isRunView} />
       <ExecutionLogPanel />
       <DecisionWaitingSnackbar />
       <ExecutionHighlighting />

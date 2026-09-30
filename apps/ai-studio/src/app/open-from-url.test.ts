@@ -4,8 +4,8 @@ import type { GetExecutionSnapshotResponse, WorkflowRecord } from '@workflow-bui
 
 import { knownNodeTypes } from '../data/known-node-types';
 import { refundReviewFlow } from '../data/refund-review-flow';
-import { useDiagramSourceStore } from '../stores/use-diagram-source-store';
 import { resetExecution, useExecutionStore } from '../stores/use-execution-store';
+import { useNoticesStore } from '../stores/use-notices-store';
 import type { ResolveDeps } from '../utils/open-from-url/resolve-diagram-source';
 import { openFromUrl } from './open-from-url';
 
@@ -35,7 +35,7 @@ function deps(overrides: Partial<ResolveDeps> = {}): ResolveDeps {
 
 beforeEach(() => {
   resetExecution();
-  useDiagramSourceStore.setState({ targetWorkflowId: undefined, notices: [] });
+  useNoticesStore.setState({ notices: [] });
 });
 
 afterEach(() => {
@@ -54,32 +54,6 @@ describe('openFromUrl', () => {
     });
   });
 
-  it.each([
-    ['a workflow', `?workflowId=${WORKFLOW}`],
-    ['a run of that workflow', `?executionId=${RUN}&workflowId=${WORKFLOW}`],
-  ])('makes the workflow the Save and Run target for %s', async (_name, search) => {
-    await openFromUrl(search, deps());
-
-    expect(useDiagramSourceStore.getState().targetWorkflowId).toBe(WORKFLOW);
-  });
-
-  it.each([
-    ['a run', `?executionId=${RUN}`, true],
-    ['a run of that workflow', `?executionId=${RUN}&workflowId=${WORKFLOW}`, true],
-    ['a workflow', `?workflowId=${WORKFLOW}`, false],
-    ['nothing', '', false],
-  ])('knows whether it shows the run view for %s', async (_name, search, isRunView) => {
-    await openFromUrl(search, deps());
-
-    expect(useDiagramSourceStore.getState().isRunView).toBe(isRunView);
-  });
-
-  it('sets no target for a run opened on its own', async () => {
-    await openFromUrl(`?executionId=${RUN}`, deps());
-
-    expect(useDiagramSourceStore.getState().targetWorkflowId).toBeUndefined();
-  });
-
   it('opens the local draft instead of rejecting when a dependency throws', async () => {
     const failing = deps({
       fetchExecutionSnapshot: () => {
@@ -93,7 +67,7 @@ describe('openFromUrl', () => {
   it('hands the notices to the notice list', async () => {
     await openFromUrl('?executionId=nope', deps());
 
-    const notices = useDiagramSourceStore.getState().notices;
+    const notices = useNoticesStore.getState().notices;
     expect(notices).toHaveLength(1);
     expect(notices[0]).toMatchObject({ variant: 'warning' });
     expect(notices[0]!.text).toContain('executionId');

@@ -1,7 +1,7 @@
 import type { DidSaveStatus, OnSaveExternal, OnSaveParams } from '@workflowbuilder/sdk';
 
 import { BACKEND_URL } from '../config';
-import { addNotice } from '../stores/use-diagram-source-store';
+import { addNotice } from '../stores/use-notices-store';
 
 // Browsers refuse a keepalive request whose body reaches 64 KiB. A larger draft goes without it: it still
 // saves while the page is up, and on close the last autosave stands.

@@ -2,7 +2,7 @@ import type { IntegrationDataFormat } from '@workflowbuilder/sdk';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BACKEND_URL } from '../config';
-import { useDiagramSourceStore } from '../stores/use-diagram-source-store';
+import { useNoticesStore } from '../stores/use-notices-store';
 import { jsonResponse } from '../test/json-response';
 import { saveDraftOf } from './save-workflow-draft';
 
@@ -18,13 +18,13 @@ const data = {
 
 let fetchMock: ReturnType<typeof vi.fn>;
 
-const notices = () => useDiagramSourceStore.getState().notices.map((notice) => notice.text);
+const notices = () => useNoticesStore.getState().notices.map((notice) => notice.text);
 const request = () => fetchMock.mock.calls[0] as [string, RequestInit];
 
 beforeEach(() => {
   fetchMock = vi.fn(async () => jsonResponse(200, { id: WORKFLOW, name: 'Refund desk' }));
   vi.stubGlobal('fetch', fetchMock);
-  useDiagramSourceStore.setState({ notices: [] });
+  useNoticesStore.setState({ notices: [] });
 });
 
 afterEach(() => {

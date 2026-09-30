@@ -1,5 +1,5 @@
 import { useStore } from '@workflowbuilder/sdk';
-import { act } from 'react';
+import { type ComponentProps, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,7 +8,6 @@ import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution
 import styles from './ai-studio-controls.module.css';
 
 import { BACKEND_URL } from '../../config';
-import { useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 import {
   applyConnectionLost,
   applySnapshot,
@@ -17,6 +16,7 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../../stores/use-execution-store';
+import { useNoticesStore } from '../../stores/use-notices-store';
 import { cancelledEvent, snapshotFrame } from '../../test/execution-history';
 import { installFakeEventSource, latestStream, openStreams } from '../../test/fake-event-source';
 import { jsonResponse } from '../../test/json-response';
@@ -57,13 +57,13 @@ describe('AiStudioControls', () => {
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
     startNode.exists = true;
-    useDiagramSourceStore.setState({ isRunView: false, targetWorkflowId: undefined, notices: [] });
+    useNoticesStore.setState({ notices: [] });
     address.leaveRunView.mockClear();
     useStore.getState().setToggleReadOnlyMode(false);
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
-    act(() => root.render(<AiStudioControls />));
+    render();
   });
 
   afterEach(() => {
@@ -72,6 +72,9 @@ describe('AiStudioControls', () => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
+
+  const render = (props: Partial<ComponentProps<typeof AiStudioControls>> = {}) =>
+    act(() => root.render(<AiStudioControls isRunView={false} {...props} />));
 
   const icons = () => [...container.querySelectorAll<HTMLElement>('[data-icon]')].map((icon) => icon.dataset['icon']);
 
@@ -91,7 +94,7 @@ describe('AiStudioControls', () => {
 
   const deleteStartNode = () => {
     startNode.exists = false;
-    act(() => root.render(<AiStudioControls />));
+    render();
   };
 
   // The words on Run and Stop are their names; an aria-label would replace what a person reads.
@@ -145,33 +148,29 @@ describe('AiStudioControls', () => {
 
     await clickIcon('Play');
 
-    expect(useDiagramSourceStore.getState().notices.map((notice) => notice.text)).toEqual([
+    expect(useNoticesStore.getState().notices.map((notice) => notice.text)).toEqual([
       'The run did not start: Unavailable.',
     ]);
   });
 
   it("Run on the link's workflow saves into that workflow first", async () => {
     const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
-    act(() => useDiagramSourceStore.setState({ targetWorkflowId: workflow }));
+    render({ workflowId: workflow });
 
     await clickIcon('Play');
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe(`${BACKEND_URL}/api/workflows/${workflow}/draft`);
   });
 
-  // The canvas holds the run's graph, which Run would save over the workflow's newer draft.
-  it("offers no Run in the run view of the link's workflow, only Reset", () => {
-    act(() => useDiagramSourceStore.setState({ isRunView: true, targetWorkflowId: 'wf-1' }));
+  // The canvas holds the run's graph, which is saved nowhere; running it again is a feature of its own.
+  it.each([
+    ['under a workflow link', { isRunView: true, workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' }],
+    ['on its own', { isRunView: true }],
+  ])('offers no Run in a run view %s, only Reset', (_, props) => {
+    render(props);
     setRunStatus('completed');
 
     expect(icons()).toEqual(['ArrowCounterClockwise']);
-  });
-
-  it('offers Run in the run view of a run that belongs to no linked workflow', () => {
-    act(() => useDiagramSourceStore.setState({ isRunView: true }));
-    setRunStatus('completed');
-
-    expect(icons()).toEqual(['Play', 'ArrowCounterClockwise']);
   });
 
   it('adds Reset once a cancel is in flight: a cancel the server never resolves would trap the user', () => {
@@ -237,7 +236,7 @@ describe('AiStudioControls', () => {
   });
 
   it('Reset in the run view forgets the run and goes back to where edits are saved', async () => {
-    act(() => useDiagramSourceStore.setState({ isRunView: true }));
+    render({ isRunView: true });
     act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
     setRunStatus('completed');
 

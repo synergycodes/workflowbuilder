@@ -8,11 +8,18 @@ import styles from './ai-studio-controls.module.css';
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
-import { addNotice, useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
+import { addNotice } from '../../stores/use-notices-store';
 import { leaveRunView } from '../../utils/open-from-url/address-execution-id';
 
-export function AiStudioControls() {
+type Props = {
+  /** The link's workflow: Run saves the canvas into its draft before it runs. */
+  workflowId?: string;
+  /** The canvas shows a run's graph, saved nowhere: no Run, and Reset reloads the page without the run. */
+  isRunView: boolean;
+};
+
+export function AiStudioControls({ workflowId, isRunView }: Props) {
   const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
   const hasStartNode = useHasStartNode();
   // A run outlives its trigger node, so Stop and Reset stay reachable after it is deleted.
@@ -21,10 +28,7 @@ export function AiStudioControls() {
   // A start waits for the backend; a second one meanwhile would leave two runs streaming into one view.
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
-  const isRunView = useDiagramSourceStore((state) => state.isRunView);
-  const targetWorkflowId = useDiagramSourceStore((state) => state.targetWorkflowId);
-  // The run view's canvas is that run's graph, and Run would save it over the workflow's newer draft.
-  const canRun = hasStartNode && !(isRunView && targetWorkflowId !== undefined);
+  const canRun = hasStartNode && !isRunView;
 
   const handleReset = useCallback(() => {
     reset();
@@ -41,14 +45,14 @@ export function AiStudioControls() {
 
     setIsStarting(true);
     try {
-      await executeFromCanvas(nodes, edges, triggerPayload, targetWorkflowId);
+      await executeFromCanvas(nodes, edges, triggerPayload, workflowId);
     } catch (error) {
       console.error('Execution failed:', error);
       addNotice(`The run did not start: ${error instanceof Error ? error.message : String(error)}.`, 'error');
     } finally {
       setIsStarting(false);
     }
-  }, [executeFromCanvas, targetWorkflowId]);
+  }, [executeFromCanvas, workflowId]);
 
   const isRunning = isRunAlive(status);
   const isDone = status !== 'idle' && !isRunning;
