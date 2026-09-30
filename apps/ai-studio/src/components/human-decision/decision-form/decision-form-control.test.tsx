@@ -1,4 +1,4 @@
-import { type ComponentProps, Fragment, StrictMode, act } from 'react';
+import { type ComponentProps, Fragment, type ReactNode, StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -13,6 +13,7 @@ import { executionEvent as event } from '../../../stores/execution-event.fixture
 import {
   applyEvent,
   applySnapshot,
+  requestDecisionFocus,
   resetExecution,
   saveDecisionSend,
   setExecutionStarted,
@@ -39,6 +40,10 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
         ? null
         : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
+    // Rendered in place: without the properties panel the real one has no footer to render into.
+    PropertiesPanelFooter: ({ children }: { children?: ReactNode }) => (
+      <div data-properties-panel-footer>{children}</div>
+    ),
   };
 });
 
@@ -229,6 +234,14 @@ describe.each([
       expect(fieldOf('Reply draft')?.disabled).toBe(false);
     });
 
+    it('puts the actions in the properties panel footer and leaves the fields out of it', () => {
+      parkHumanOne();
+
+      const footer = container.querySelector('[data-properties-panel-footer]');
+      expect(footer?.contains(button('Approve')!)).toBe(true);
+      expect(footer?.contains(fieldOf('Refund amount')!)).toBe(false);
+    });
+
     it('renders nothing for a node whose properties carry no well-formed request', () => {
       parkHumanOne();
       render({ actions: 'approve' });
@@ -386,6 +399,39 @@ describe.each([
       const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
 
       expect(buttons).toEqual(['Reject…', 'Approve']);
+    });
+  });
+
+  describe('the focus Decide asks for', () => {
+    it('takes it when the form mounts after the request', () => {
+      selection.nodeId = 'draft-1';
+      render();
+      parkHumanOne();
+      expect(form()).toBeNull();
+
+      act(() => requestDecisionFocus('human-1'));
+      selection.nodeId = 'human-1';
+      render();
+
+      expect(document.activeElement).toBe(form());
+      expect(useExecutionStore.getState().decisionFocusRequest).toBeUndefined();
+    });
+
+    it('takes it while the form already shows', () => {
+      parkHumanOne();
+
+      act(() => requestDecisionFocus('human-1'));
+
+      expect(document.activeElement).toBe(form());
+    });
+
+    it("leaves it to another node's form", () => {
+      parkHumanOne();
+
+      act(() => requestDecisionFocus('human-2'));
+
+      expect(document.activeElement).not.toBe(form());
+      expect(useExecutionStore.getState().decisionFocusRequest).toBe('human-2');
     });
   });
 

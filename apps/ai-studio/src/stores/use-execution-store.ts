@@ -44,6 +44,8 @@ type ExecutionStore = {
   decisionDrafts: Record<string, DecisionDraft>;
   /** By {@link waitKey}. */
   decisionSends: Record<string, DecisionSend>;
+  /** The waiting node whose decision form takes the focus when it next renders; Decide asks for it. */
+  decisionFocusRequest: string | undefined;
 };
 
 const emptyStore: ExecutionStore = {
@@ -56,6 +58,7 @@ const emptyStore: ExecutionStore = {
   isStopRequested: false,
   decisionDrafts: {},
   decisionSends: {},
+  decisionFocusRequest: undefined,
 };
 
 type PersistedSlice = Pick<ExecutionStore, 'executionId' | 'streamUrl' | 'status' | 'isLogCollapsed'>;
@@ -125,7 +128,21 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     isStopRequested: false,
     decisionDrafts: {},
     decisionSends: {},
+    decisionFocusRequest: undefined,
   });
+}
+
+// The backend refuses a decision while the run is cancelling, though the replay still shows the node waiting.
+export function isDecidable(status: RunStatus): boolean {
+  return status !== 'cancelling';
+}
+
+export function requestDecisionFocus(nodeId: string) {
+  useExecutionStore.setState({ decisionFocusRequest: nodeId });
+}
+
+export function clearDecisionFocusRequest() {
+  useExecutionStore.setState({ decisionFocusRequest: undefined });
 }
 
 export function waitKey({ executionId, nodeId, attempt }: DecisionWait): string {
@@ -184,6 +201,7 @@ export function applySnapshot(snapshot: ExecutionSnapshot) {
     status,
     nodeStates,
     events: snapshot.events,
+    decisionFocusRequest: whileWaiting(useExecutionStore.getState().decisionFocusRequest, nodeStates),
   });
 }
 
@@ -196,8 +214,14 @@ export function applyEvent(event: ExecutionEvent) {
       nodeStates,
       events: [...state.events, event],
       status: nextRunStatus(state.status, event, nodeStates),
+      decisionFocusRequest: whileWaiting(state.decisionFocusRequest, nodeStates),
     };
   });
+}
+
+// A focus request lasts only while its node waits, so a later wait of the same node does not inherit it.
+function whileWaiting(nodeId: string | undefined, nodeStates: Record<string, NodeExecutionState>): string | undefined {
+  return nodeId !== undefined && nodeStates[nodeId]?.status === 'waiting' ? nodeId : undefined;
 }
 
 function nextRunStatus(
@@ -249,7 +273,7 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
   }
 }
 
-// A cancel records no node_failed for a parked node, so its hourglass would outlive the run.
+// A cancel records no node_failed for a parked node, so its wait would outlive the run.
 function settleNodesInFlight(states: Record<string, NodeExecutionState>) {
   for (const [nodeId, state] of Object.entries(states)) {
     if (state.status === 'running' || state.status === 'waiting') {

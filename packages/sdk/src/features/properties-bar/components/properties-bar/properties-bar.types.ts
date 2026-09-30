@@ -24,9 +24,10 @@ export type PropertiesBarItem = {
  * Props accepted by {@link PropertiesBar}.
  *
  * Provide localized labels (`headerLabel`, `deleteNodeLabel`,
- * `deleteEdgeLabel`), the active tab + change handler, the delete handler,
- * and an optional `tabs` array for extra tabs alongside the default
- * "Properties" tab.
+ * `deleteEdgeLabel`), the active tab + change handler, and an optional
+ * `tabs` array for extra tabs alongside the default "Properties" tab.
+ * The Delete button shows only with `onDeleteClick`; a decorator on the
+ * `'PropertiesBar'` slot that sets it to `undefined` removes the button.
  *
  * @category Components
  */
@@ -37,5 +38,5 @@ export type PropertiesBarProps = PropertiesBarBaseProps & {
   tabs?: PropertiesBarTab[];
   onTabChange: (tab: string) => void;
   onMenuHeaderClick?: () => void;
-  onDeleteClick: () => void;
+  onDeleteClick?: () => void;
 };

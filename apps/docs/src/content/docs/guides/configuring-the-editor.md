@@ -103,6 +103,7 @@ The hook returns a stable object, so you can pass any callback straight to an ev
 
 - It must be called from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) via context, so calling the hook outside Root resolves `save()` to `'error'` and logs a warning.
 - The hook also exposes layout-direction control the bar does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
+- To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
 - The top bar also shows and edits the document name. Render your own with `useStore`: read `s.documentName` and write through `s.setDocumentName`.
 
 ## Node types
