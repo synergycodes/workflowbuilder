@@ -1,4 +1,4 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, type NodeIconAccent, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -18,6 +18,7 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
 type StartNodeTemplateProps = {
   id: string;
   icon: IconType;
+  accent?: NodeIconAccent;
   label: string;
   description: string;
   data?: NodeData;
@@ -35,6 +36,7 @@ const StartNodeTemplateComponent = memo(
   ({
     id,
     icon,
+    accent,
     label,
     description,
     layoutDirection = 'RIGHT',
@@ -51,7 +53,7 @@ const StartNodeTemplateComponent = memo(
 
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
@@ -59,7 +61,7 @@ const StartNodeTemplateComponent = memo(
       <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
         <NodePanel.Root selected={selected} disabled={disabled} className={styles['content']}>
           <NodePanel.Header>
-            <NodeIcon icon={iconElement} disabled={disabled} />
+            <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
           </NodePanel.Header>

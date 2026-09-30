@@ -88,10 +88,12 @@ function IconFallback({ size = 'medium' }: Pick<IconProps, 'size'>) {
   return <svg style={{ width: computedSize, height: computedSize }} />;
 }
 
-type Size = 'extra-large' | 'large' | 'medium' | 'small';
+// `inherit` follows the surrounding font-size, so a container such as `NodeIcon` sets the glyph size.
+type Size = 'extra-large' | 'large' | 'medium' | 'small' | 'inherit';
 const iconSizeMap: Record<Size, string> = {
   small: '0.5rem',
   medium: '1rem',
   large: '1.5rem',
   'extra-large': '2rem',
+  inherit: '1em',
 };

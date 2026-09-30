@@ -7,6 +7,7 @@ import { useStore } from '../../../store/store';
 import { getIsValidFromProperties } from '../../../utils/validation/get-is-valid-from-properties';
 import { chatModelOptions, memoryOptions } from '../../json-form/controls/ai-tools-control/select-options';
 import type { AiAgentTool } from '../../json-form/types/controls';
+import { useNodeAccent } from '../hooks/use-node-accent';
 import { openAddToolModalForNode } from './ai-agent-node-template/add-tool-action';
 import { AiAgentNodeTemplate } from './ai-agent-node-template/ai-agent-node-template';
 
@@ -26,6 +27,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
   const { icon, properties, type } = data;
   const { label = '', description = '', chatModel, memory } = properties;
   const isValid = getIsValidFromProperties(properties);
+  const accent = useNodeAccent(type);
 
   const layoutDirection = useStore((store) => store.layoutDirection);
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
@@ -57,6 +59,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
         label={label}
         description={description}
         icon={icon}
+        accent={accent}
         chatModel={selectedModelOption}
         memoryModel={selectedMemoryOptions}
         selectedTools={data.properties.tools}

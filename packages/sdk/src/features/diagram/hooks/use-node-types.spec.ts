@@ -4,7 +4,7 @@ import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { setCustomNodeTemplates } from '../../../data/node-templates';
-import type { LayoutDirection } from '../../../node/common';
+import type { LayoutDirection, PaletteItem } from '../../../node/common';
 import { NodeType } from '../../../node/node-types';
 import type { WorkflowNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
 
@@ -14,9 +14,11 @@ vi.mock('../nodes/ai-node-container', () => ({ AiNodeContainer: () => null }));
 vi.mock('../nodes/decision-node-container', () => ({ DecisionNodeContainer: () => null }));
 
 let mockLayoutDirection: LayoutDirection = 'RIGHT';
+let mockNodeDefinitions: Record<string, PaletteItem> = {};
+type FakeState = { layoutDirection: LayoutDirection; getNodeDefinition: (type: string) => PaletteItem | undefined };
 vi.mock('../../../store/store', () => ({
-  useStore: <T>(selector: (state: { layoutDirection: LayoutDirection }) => T) =>
-    selector({ layoutDirection: mockLayoutDirection }),
+  useStore: <T>(selector: (state: FakeState) => T) =>
+    selector({ layoutDirection: mockLayoutDirection, getNodeDefinition: (type) => mockNodeDefinitions[type] }),
 }));
 
 const { useNodeTypes } = await import('./use-node-types');
@@ -44,6 +46,7 @@ describe('useNodeTypes', () => {
   afterEach(() => {
     setCustomNodeTemplates(null);
     mockLayoutDirection = 'RIGHT';
+    mockNodeDefinitions = {};
     vi.restoreAllMocks();
   });
 
@@ -110,5 +113,26 @@ describe('useNodeTypes', () => {
     });
 
     expect(received).toEqual([{ layoutDirection: 'DOWN' }]);
+  });
+
+  it('forwards the accent of the definition found by node type, not stored in the node data', () => {
+    const received: { accent?: string }[] = [];
+    function Recorder(props: WorkflowNodeTemplateProps) {
+      received.push({ accent: props.accent });
+      return null;
+    }
+    setCustomNodeTemplates({ 'multi-port': Recorder });
+    mockNodeDefinitions = { 'multi-port': { type: 'multi-port', accent: 'violet' } as PaletteItem };
+
+    const { result } = renderHook(() => useNodeTypes());
+    const Adapter = result.current['multi-port'] as ComponentType<unknown>;
+
+    renderAdapter(Adapter, {
+      type: 'multi-port',
+      icon: 'Star',
+      properties: { errors: [], customErrors: [] },
+    });
+
+    expect(received).toEqual([{ accent: 'violet' }]);
   });
 });

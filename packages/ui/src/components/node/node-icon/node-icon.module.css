@@ -1,13 +1,72 @@
 :root {
+  --wb-public-node-icon-glyph-size: var(--wb-ds-size-225);
   --wb-public-node-icon-border-size: 0.0625rem;
   --wb-public-node-icon-border-radius: var(--wb-ds-canvas-node-head-icon-radius);
-  --wb-public-node-icon-padding: var(--wb-ds-space-125);
+  --wb-public-node-icon-padding: var(--wb-ds-space-100);
 
   --wb-public-node-icon-color: var(--wb-ds-canvas-node-icon-primary);
   --wb-public-node-icon-container-border-color: var(--wb-ds-canvas-node-stroke-default);
   --wb-public-node-icon-container-background-color: var(--wb-ds-canvas-node-bg-secondary-default);
   --wb-public-node-icon-color-disabled: var(--wb-ds-ui-icon-disabled);
   --wb-public-node-icon-container-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
+
+  --wb-public-node-icon-color-blue: var(--wb-ds-colors-acc1-600) /* missing token */;
+  --wb-public-node-icon-container-background-color-blue: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc1-500) 12%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-green: var(--wb-ds-colors-acc3-700) /* missing token */;
+  --wb-public-node-icon-container-background-color-green: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc3-500) 14%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-orange: var(--wb-ds-colors-acc5-700) /* missing token */;
+  --wb-public-node-icon-container-background-color-orange: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc5-500) 16%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-violet: var(--wb-ds-colors-acc4-700) /* missing token */;
+  --wb-public-node-icon-container-background-color-violet: var(--wb-ds-colors-acc4-500-10) /* missing token */;
+  --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-600) /* missing token */;
+  --wb-public-node-icon-container-background-color-neutral: var(--wb-ds-colors-gray-200) /* missing token */;
+  --wb-public-node-icon-color-ai: var(--wb-ds-colors-gray-100) /* missing token */;
+  --wb-public-node-icon-container-background-ai: linear-gradient(140deg, var(--wb-ds-colors-acc4-500), #5b4fe0)
+    /* missing token */;
+}
+
+:root[data-theme='dark'] {
+  --wb-public-node-icon-color-blue: #8ca8ff /* missing token */;
+  --wb-public-node-icon-container-background-color-blue: var(--wb-ds-colors-acc1-500-20) /* missing token */;
+  --wb-public-node-icon-color-green: var(--wb-ds-colors-acc3-400) /* missing token */;
+  --wb-public-node-icon-container-background-color-green: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc3-500) 16%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-orange: var(--wb-ds-colors-acc5-400) /* missing token */;
+  --wb-public-node-icon-container-background-color-orange: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc5-500) 18%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-violet: var(--wb-ds-colors-acc4-400) /* missing token */;
+  --wb-public-node-icon-container-background-color-violet: color-mix(
+      in srgb,
+      var(--wb-ds-colors-acc4-500) 14%,
+      transparent
+    )
+    /* missing token */;
+  --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-400) /* missing token */;
+  --wb-public-node-icon-container-background-color-neutral: #333438 /* missing token */;
+  --wb-public-node-icon-container-background-ai: linear-gradient(140deg, #c77cf5, #6b6ae8) /* missing token */;
 }
 
 @layer ui.component {
@@ -16,11 +75,46 @@
     padding: var(--wb-public-node-icon-padding);
     justify-content: center;
     align-items: center;
+    font-size: var(--wb-public-node-icon-glyph-size);
     color: var(--wb-public-node-icon-color);
 
     border-radius: var(--wb-public-node-icon-border-radius);
     border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
     background: var(--wb-public-node-icon-container-background-color);
+
+    &.accent-blue {
+      color: var(--wb-public-node-icon-color-blue);
+      background: var(--wb-public-node-icon-container-background-color-blue);
+    }
+
+    &.accent-green {
+      color: var(--wb-public-node-icon-color-green);
+      background: var(--wb-public-node-icon-container-background-color-green);
+    }
+
+    &.accent-orange {
+      color: var(--wb-public-node-icon-color-orange);
+      background: var(--wb-public-node-icon-container-background-color-orange);
+    }
+
+    &.accent-violet {
+      color: var(--wb-public-node-icon-color-violet);
+      background: var(--wb-public-node-icon-container-background-color-violet);
+    }
+
+    &.accent-neutral {
+      color: var(--wb-public-node-icon-color-neutral);
+      background: var(--wb-public-node-icon-container-background-color-neutral);
+    }
+
+    &.accent-ai {
+      color: var(--wb-public-node-icon-color-ai);
+      background: var(--wb-public-node-icon-container-background-ai);
+    }
+
+    &:is(.accent-blue, .accent-green, .accent-orange, .accent-violet, .accent-neutral, .accent-ai) {
+      border-color: transparent;
+    }
 
     &.disabled {
       color: var(--wb-public-node-icon-color-disabled);

@@ -11,6 +11,7 @@ import { DecisionNodeContainer } from '../nodes/decision-node-container';
 import { NodeContainer } from '../nodes/node-container';
 import { StartContainer } from '../nodes/start-node-container';
 import type { WorkflowNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
+import { useNodeAccent } from './use-node-accent';
 
 const BUILT_IN_KEYS: ReadonlySet<string> = new Set<string>([
   NodeType.Node,
@@ -27,14 +28,16 @@ const BUILT_IN_KEYS: ReadonlySet<string> = new Set<string>([
 // that need drag-to-create connections on the node body.
 function adaptCustomNodeTemplate(Template: ComponentType<WorkflowNodeTemplateProps>) {
   const Adapter = memo(({ id, data, selected }: NodeProps<WorkflowBuilderNode>) => {
-    const { icon, properties } = data;
+    const { icon, properties, type } = data;
     const { label = '', description = '' } = properties;
     const isValid = getIsValidFromProperties(properties);
+    const accent = useNodeAccent(type);
     const layoutDirection = useStore((store) => store.layoutDirection);
     return (
       <Template
         id={id}
         icon={icon}
+        accent={accent}
         label={label}
         description={description}
         data={data}

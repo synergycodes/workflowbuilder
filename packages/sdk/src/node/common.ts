@@ -1,3 +1,4 @@
+import type { NodeIconAccent as UiNodeIconAccent } from '@workflowbuilder/ui';
 import type { ReactFlowInstance, ReactFlowJsonObject, Viewport } from '@xyflow/react';
 import type { ReactNode } from 'react';
 
@@ -24,6 +25,14 @@ export type LayoutDirection = (typeof layoutDirections)[number];
  * @category Types
  */
 export type IconType = WBIcon;
+
+/**
+ * Icon color a node definition declares in `accent`, named by hue; `ai` is a
+ * gradient. Alias for `NodeIconAccent` from `@workflowbuilder/ui`.
+ *
+ * @category Types
+ */
+export type NodeIconAccent = UiNodeIconAccent;
 
 export type ItemType = NodeType;
 

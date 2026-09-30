@@ -1,4 +1,4 @@
-import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { NodeDescription, NodeIcon, type NodeIconAccent, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -19,6 +19,7 @@ import { BranchesContainer } from './components/branches-container';
 type Props = {
   id: string;
   icon: IconType;
+  accent?: NodeIconAccent;
   label: string;
   description: string;
   selected?: boolean;
@@ -36,6 +37,7 @@ export const DecisionNodeTemplate = memo(
   ({
     id,
     icon,
+    accent,
     label,
     description,
     showHandles,
@@ -46,7 +48,7 @@ export const DecisionNodeTemplate = memo(
     layoutDirection = 'RIGHT',
     onAddBranch,
   }: Props) => {
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handleTargetId = getHandleId({ handleType: 'target' });
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
@@ -62,7 +64,7 @@ export const DecisionNodeTemplate = memo(
         className={clsx(styles['decision-node'], { [styles['decision-node--down']]: layoutDirection === 'DOWN' })}
       >
         <NodePanel.Header>
-          <NodeIcon icon={iconElement} disabled={disabled} />
+          <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />
         </NodePanel.Header>
         <NodePanel.Content isVisible={isCanvasNode}>

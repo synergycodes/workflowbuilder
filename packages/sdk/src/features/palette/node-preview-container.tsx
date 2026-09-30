@@ -52,7 +52,7 @@ type NodePreviewProps = NodeStateProps & {
 };
 
 function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
-  const { type, icon, label, description, templateType = NodeType.Node } = nodeDefinition;
+  const { type, icon, accent, label, description, templateType = NodeType.Node } = nodeDefinition;
 
   const translateIfPossible = useTranslateIfPossible();
 
@@ -66,6 +66,7 @@ function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
   return (
     <TemplateComponent
       icon={icon}
+      accent={accent}
       label={nodeLabel}
       description={nodeDescription}
       showHandles={false}
