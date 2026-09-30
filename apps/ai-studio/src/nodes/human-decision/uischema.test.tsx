@@ -8,6 +8,7 @@ import { humanDecisionNodeType, humanDecisionPaletteItem } from '.';
 // SDK internals by path: the public API mounts these only inside a whole <WorkflowBuilder.Root>.
 import { registerCustomRenderers } from '../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { NodeProperties } from '../../../../../packages/sdk/src/features/properties-bar/components/node-properties/node-properties';
+import { decisionActionsRenderer } from '../../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../../components/human-decision/decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../../components/human-decision/decision-form/decision-form-control';
 import { resetExecution } from '../../stores/use-execution-store';
@@ -18,7 +19,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
 });
 
-registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
 
 const HUMAN = 'human-1';
 
@@ -102,8 +103,8 @@ describe('the Human task properties panel', () => {
     return found;
   };
 
-  it('opens with General information, above the fields the decider sees', () => {
-    expect(sectionHeaders().slice(0, 2)).toEqual(['General information', 'Fields the decider sees']);
+  it('opens with General information, then the fields the decider sees, then the decider actions', () => {
+    expect(sectionHeaders()).toEqual(['General information', 'Fields the decider sees', 'Decider actions']);
   });
 
   it("groups the node's title and description, and no Status field", () => {

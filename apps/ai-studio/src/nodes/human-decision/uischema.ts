@@ -5,7 +5,7 @@ import type { HumanDecisionSchema } from './schema';
 
 const scope = getScope<HumanDecisionSchema>;
 
-// Authoring the rest of the request lands later (follow-up: decision-request-properties-ui).
+// Deadline, rerun and action labels are not authorable yet (follow-up: decision-request-properties-ui).
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
@@ -33,6 +33,11 @@ export const uischema: UISchema = {
       type: 'DecisionFields',
       scope: scope('properties.decisionRequest'),
       label: 'Fields the decider sees',
+    } as unknown as UISchema,
+    {
+      type: 'DecisionActions',
+      scope: scope('properties.decisionRequest'),
+      label: 'Decider actions',
     } as unknown as UISchema,
     // The run-time decision form.
     { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
