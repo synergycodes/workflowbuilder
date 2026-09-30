@@ -29,3 +29,25 @@ export function offeredActions(actions: readonly unknown[]): OfferedActions | un
   const resume = offerOf(withEffect('resume'));
   return resume === undefined ? undefined : { resume, reject: rejectOfferOf(withEffect('reject')) };
 }
+
+function isReject(entry: unknown): entry is Record<string, unknown> {
+  return isPlainObject(entry) && entry['effect'] === 'reject';
+}
+
+/** The port the reject action routes on, when the request has one. */
+export function rejectPortOf(actions: readonly unknown[]): string | undefined {
+  const port = actions.find(isReject)?.['port'];
+  return hasText(port) ? port : undefined;
+}
+
+/** The actions with the reject turned on or off; turned on, it is `rejectAction`, a stored reject is kept. */
+export function withReject(actions: readonly unknown[], on: boolean, rejectAction: unknown): unknown[] {
+  if (!on) {
+    return actions.filter((entry) => !isReject(entry));
+  }
+  return actions.some(isReject) ? [...actions] : [...actions, rejectAction];
+}
+
+export function withReasonRequired(actions: readonly unknown[], reasonRequired: boolean): unknown[] {
+  return actions.map((entry) => (isReject(entry) ? { ...entry, reasonRequired } : entry));
+}

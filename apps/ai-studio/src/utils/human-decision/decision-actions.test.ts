@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { offeredActions } from './decision-actions';
+import { offeredActions, rejectPortOf, withReasonRequired, withReject } from './decision-actions';
 import { reviewRequest } from './review-request.fixture';
 
 const [approve, reject] = reviewRequest.actions;
@@ -40,5 +40,39 @@ describe('offeredActions', () => {
   it('offers nothing without a usable resume action, whatever else the request carries', () => {
     expect(offeredActions([reject])).toBeUndefined();
     expect(offeredActions([null, { name: '', effect: 'resume' }])).toBeUndefined();
+  });
+});
+
+describe('the reject switches', () => {
+  const rerun = { name: 'redraft', label: 'Ask again', effect: 'rerun-source' };
+  const added = {
+    name: 'reject',
+    label: 'Reject',
+    effect: 'reject',
+    port: 'source:inner:rejected',
+    reasonRequired: true,
+  };
+
+  it('reads the port the reject routes on, and none without a reject', () => {
+    expect(rejectPortOf(reviewRequest.actions)).toBe('source:inner:rejected');
+    expect(rejectPortOf([approve])).toBeUndefined();
+    expect(rejectPortOf([approve, { ...reject, port: '' }])).toBeUndefined();
+  });
+
+  it('turned off, drops the reject and keeps every other action in its place', () => {
+    expect(withReject([rerun, reject, approve], false, added)).toEqual([rerun, approve]);
+  });
+
+  it('turned on, appends the given reject', () => {
+    expect(withReject([approve], true, added)).toEqual([approve, added]);
+  });
+
+  it('turned on over a stored reject, keeps that one and its settings', () => {
+    expect(withReject(reviewRequest.actions, true, added)).toEqual(reviewRequest.actions);
+  });
+
+  it('sets reasonRequired on the reject alone, and leaves a request without one as it was', () => {
+    expect(withReasonRequired(reviewRequest.actions, true)).toEqual([approve, { ...reject, reasonRequired: true }]);
+    expect(withReasonRequired([approve], true)).toEqual([approve]);
   });
 });
