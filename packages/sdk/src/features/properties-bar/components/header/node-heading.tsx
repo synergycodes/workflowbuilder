@@ -13,12 +13,11 @@ type Props = {
   subtitle?: string;
   icon?: IconType;
   accent?: NodeIconAccent;
-  className?: string;
 };
 
-export function NodeHeading({ label, subtitle, icon, accent, className }: Props) {
+export function NodeHeading({ label, subtitle, icon, accent }: Props) {
   return (
-    <div className={clsx(styles['container'], className)}>
+    <div className={styles['container']}>
       {icon && <NodeIcon icon={<Icon name={icon} size="inherit" />} accent={accent} />}
       <div className={styles['text']}>
         {/* Native title until the DS Tooltip takes over; no keyboard or touch access today (follow-up: node-text-ds-tooltip). */}

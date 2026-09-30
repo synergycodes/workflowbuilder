@@ -65,5 +65,6 @@ export type NodeData<T = BaseNodeProperties & Record<string, unknown>> = {
 
 export type EdgeData = {
   label?: string;
+  /** Drawn in place of the label on a `labelEdge`, and shown in the Properties panel header. */
   icon?: IconType;
 };

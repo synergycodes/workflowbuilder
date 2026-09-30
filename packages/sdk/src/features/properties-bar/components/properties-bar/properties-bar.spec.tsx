@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteItem } from '../../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
-import { useStore } from '../../../../store/store';
+import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { PropertiesPanelFooter } from '../properties-panel-footer/properties-panel-footer';
 import { PropertiesBar } from './properties-bar';
@@ -141,7 +141,7 @@ describe('PropertiesBar header', () => {
 
   afterEach(() => {
     cleanup();
-    useStore.setState(useStore.getInitialState(), true);
+    resetWorkflowStore();
   });
 
   it('shows the node icon in its accent, the node label and the translated type label', () => {
@@ -164,8 +164,8 @@ describe('PropertiesBar header', () => {
   it('prefers the icon of the node definition over the one saved on the node', () => {
     const { container } = renderHeader();
 
-    expect(nodeIcon(container)).toBeDefined();
-    expect(nodeIcon(container, 'Lightning')).toBeUndefined();
+    expect(container.querySelector('[data-icon="Play"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="Lightning"]')).toBeNull();
   });
 
   it('titles a node without a label with its type label, without a subtitle', () => {
@@ -180,7 +180,7 @@ describe('PropertiesBar header', () => {
 
     expect(screen.getByText('action')).not.toBeNull();
     expect(screen.queryByText('Properties')).toBeNull();
-    expect(nodeIcon(container, 'Lightning')?.className).not.toMatch(/accent-/);
+    expect(nodeIcon(container, 'Lightning')?.className).not.toMatch(/accent/);
   });
 
   it('keeps the node heading and offers to open the panel after collapsing it', () => {
@@ -193,10 +193,22 @@ describe('PropertiesBar header', () => {
     );
   });
 
-  it('names the panel with the header label while a node is selected', () => {
-    renderHeader();
+  it('shows the content again and offers to close the panel after expanding it', () => {
+    renderBar({ withContent: true });
 
-    expect(screen.getByRole('region', { name: 'Properties' }).contains(screen.getByText('Review'))).toBe(true);
+    fireEvent.click(button('Close properties bar')!);
+    expect(screen.queryByText('Form')).toBeNull();
+    fireEvent.click(button('Open properties bar')!);
+
+    expect(screen.getByText('Form')).not.toBeNull();
+    expect(button('Close properties bar')).not.toBeNull();
+    expect(button('Open properties bar')).toBeNull();
+  });
+
+  it('names the panel with the header label while a node is selected', () => {
+    renderHeader({ headerLabel: 'Inspector' });
+
+    expect(screen.getByRole('region', { name: 'Inspector' }).contains(screen.getByText('Review'))).toBe(true);
   });
 
   it('shows the icon of a selected edge in place of the default arrow', () => {
@@ -225,9 +237,9 @@ describe('PropertiesBar header', () => {
   });
 
   it('shows the header label, no content and a disabled Open toggle while nothing is selected', () => {
-    renderBar({ withContent: true, selection: null });
+    renderBar({ withContent: true, selection: null, headerLabel: 'Inspector' });
 
-    expect(screen.getByText('Properties')).not.toBeNull();
+    expect(screen.getByText('Inspector')).not.toBeNull();
     expect(button('Close properties bar')).toBeNull();
     expect((button('Open properties bar') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.queryByText('Form')).toBeNull();

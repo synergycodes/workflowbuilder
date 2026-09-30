@@ -2,7 +2,6 @@
   display: flex;
   align-items: center;
   gap: var(--wb-ds-space-100);
-  min-width: 0;
 
   .text {
     display: flex;
@@ -23,7 +22,7 @@
   }
 
   .subtitle {
-    /* The label class's 100% line height crops descenders once overflow is hidden. */
+    /* The 100% line height of wb-text-label-s crops descenders once overflow is hidden. */
     line-height: 1.4;
     color: var(--wb-ds-ui-text-subtle-default);
   }
