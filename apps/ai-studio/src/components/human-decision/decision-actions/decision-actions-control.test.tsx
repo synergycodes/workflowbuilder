@@ -1,4 +1,4 @@
-import { getHandleId, useChangesTrackerStore, useStore } from '@workflowbuilder/sdk';
+import { getHandleId, registerFunctionDecorator, useChangesTrackerStore, useStore } from '@workflowbuilder/sdk';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflowbuilder/sdk';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -14,6 +14,8 @@ import { refundReviewFlow } from '../../../data/refund-review-flow';
 import { useRunLocksCanvas } from '../../../hooks/use-run-locks-canvas';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { defaultDecisionRequest, defaultRejectAction } from '../../../nodes/human-decision/default-properties-data';
+import { trackFutureChangeDecorator } from '../../../plugins/undo-redo/functions/decorators';
+import { undo, useUndoRedoStore } from '../../../plugins/undo-redo/stores/use-undo-redo-store';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
 import { decisionFieldsRenderer } from '../decision-fields/decision-fields-control';
@@ -26,6 +28,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
 });
 
 registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
+registerFunctionDecorator('trackFutureChange', { callback: trackFutureChangeDecorator, name: 'undoRedo' });
 
 const HUMAN = 'human-1';
 const REJECTED = getHandleId({ handleType: 'source', innerId: 'rejected' });
@@ -89,15 +92,16 @@ const WIRED =
 describe('the decider actions control in the real properties panel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
-  let dataUpdates = 0;
+  let trackedChanges = 0;
   let unsubscribe: () => void;
 
   beforeEach(() => {
     useStore.setState(useStore.getInitialState(), true);
     resetExecution();
-    dataUpdates = 0;
-    unsubscribe = useChangesTrackerStore.subscribe((state) => {
-      if (state.lastChangeName === 'dataUpdate') dataUpdates += 1;
+    useUndoRedoStore.setState({ past: [], future: [], snapshotsWatchers: {} });
+    trackedChanges = 0;
+    unsubscribe = useChangesTrackerStore.subscribe(() => {
+      trackedChanges += 1;
     });
     container = document.createElement('div');
     document.body.append(container);
@@ -132,6 +136,10 @@ describe('the decider actions control in the real properties panel', () => {
     const id = toggle(action)?.getAttribute('aria-labelledby') ?? '';
     return container.querySelector(`[id="${id}"]`)?.textContent;
   };
+  const descriptionOf = (action: string) => {
+    const id = toggle(action)?.getAttribute('aria-describedby');
+    return id ? container.querySelector(`[id="${id}"]`)?.textContent : undefined;
+  };
   const hints = () =>
     [...container.querySelectorAll<HTMLElement>('[data-decider-actions] [data-hint]')].map((hint) => ({
       variant: hint.dataset['hint'],
@@ -164,9 +172,12 @@ describe('the decider actions control in the real properties panel', () => {
     expect(toggle('approve')).toBeNull();
     expect(isOn('reject')).toBe(true);
     expect(row('reject')?.textContent).not.toContain('single output');
+    expect(descriptionOf('reject')).toBeUndefined();
     expect(isOn('reasonRequired')).toBe(true);
     expect(row('reasonRequired')?.textContent).not.toContain('optional');
+    expect(descriptionOf('reasonRequired')).toBeUndefined();
     expect(hints()).toEqual([{ variant: 'info', text: UNWIRED }]);
+    expect(container.querySelector('[data-decider-actions] [data-hint]')?.getAttribute('role')).toBe('status');
   });
 
   it('names each switch after its row', async () => {
@@ -193,13 +204,21 @@ describe('the decider actions control in the real properties panel', () => {
 
     await flip('reject');
 
-    expect(dataUpdates).toBe(1);
+    expect(trackedChanges).toBe(1);
     expect(storedRequest()?.actions).toEqual([approveAction]);
     expect(storedRequest()?.schema).toBe(defaultDecisionRequest.schema);
     expect(isOn('reject')).toBe(false);
     expect(row('reject')?.textContent).toContain('single output');
+    expect(descriptionOf('reject')).toBe('single output');
     expect(row('reasonRequired')).toBeNull();
     expect(hints()).toEqual([{ variant: 'info', text: SINGLE }]);
+
+    act(() => undo());
+    await settle();
+
+    expect(storedRequest()?.actions).toEqual(defaultDecisionRequest.actions);
+    expect(isOn('reject')).toBe(true);
+    expect(useUndoRedoStore.getState().past).toEqual([]);
   });
 
   it('turning Reject on is one undo step and adds it back on the fixed Rejected port, a reason required', async () => {
@@ -207,7 +226,7 @@ describe('the decider actions control in the real properties panel', () => {
 
     await flip('reject');
 
-    expect(dataUpdates).toBe(1);
+    expect(trackedChanges).toBe(1);
     expect(storedRequest()?.actions).toEqual([approveAction, defaultRejectAction]);
     expect(storedRequest()?.actions[1]).toMatchObject({ port: REJECTED, reasonRequired: true });
     expect(isOn('reasonRequired')).toBe(true);
@@ -219,14 +238,15 @@ describe('the decider actions control in the real properties panel', () => {
 
     await flip('reasonRequired');
 
-    expect(dataUpdates).toBe(1);
+    expect(trackedChanges).toBe(1);
     expect(storedRequest()?.actions[1]).toEqual({ ...defaultRejectAction, reasonRequired: false });
     expect(isOn('reasonRequired')).toBe(false);
     expect(row('reasonRequired')?.textContent).toContain('optional');
+    expect(descriptionOf('reasonRequired')).toBe('optional');
 
     await flip('reasonRequired');
 
-    expect(dataUpdates).toBe(2);
+    expect(trackedChanges).toBe(2);
     expect(storedRequest()?.actions[1]).toEqual(defaultRejectAction);
   });
 
@@ -255,7 +275,8 @@ describe('the decider actions control in the real properties panel', () => {
     expect(hints()).toEqual([{ variant: 'info', text: SINGLE }]);
   });
 
-  it.todo('turning Reject off removes the edge from the Rejected port in the same undo step');
+  it.todo('turning Reject off removes the Rejected edge in the same undo step');
+  it.todo('turning Reject on again brings the Rejected port back without its old edge');
 
   it('locks the switches while the canvas is in the app bar read-only mode', async () => {
     await renderPanel([human(defaultDecisionRequest)]);

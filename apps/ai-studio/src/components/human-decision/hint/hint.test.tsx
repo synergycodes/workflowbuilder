@@ -24,7 +24,14 @@ describe('Hint', () => {
     container.remove();
   });
 
-  const render = (variant: HintVariant) => act(() => root.render(<Hint variant={variant}>Some guidance</Hint>));
+  const render = (variant: HintVariant, live?: boolean) =>
+    act(() =>
+      root.render(
+        <Hint variant={variant} live={live}>
+          Some guidance
+        </Hint>,
+      ),
+    );
   const hint = () => container.querySelector<HTMLElement>('[data-hint]');
   const icon = () => container.querySelector<HTMLElement>('[data-icon]')?.dataset['icon'];
 
@@ -40,10 +47,12 @@ describe('Hint', () => {
     expect(icon()).toBe(expectedIcon);
   });
 
-  // A switch or a new edge changes the hint in place, and a screen reader hears the new text.
-  it('is a status region', () => {
+  // A selection change puts new text in the same mounted hints, which a status region would read out each time.
+  it('is a status region only when live', () => {
     render('info');
+    expect(hint()?.hasAttribute('role')).toBe(false);
 
+    render('info', true);
     expect(hint()?.getAttribute('role')).toBe('status');
   });
 });

@@ -24,8 +24,11 @@
 }
 
 .hint--warning {
+  /* missing token: a semantic --wb-ds-ui-bg-warning-* */
+  --hint-warning-bg: var(--wb-ds-components-snackbar-bg-warning);
+
   padding: var(--wb-ds-space-150);
-  background: var(--wb-ds-components-snackbar-bg-warning); /* missing token */
+  background: var(--hint-warning-bg);
   color: var(--wb-ds-ui-text-warning-default);
 }
 

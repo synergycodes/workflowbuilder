@@ -67,8 +67,15 @@ describe('the reject switches', () => {
     expect(withReject([approve], true, added)).toEqual([approve, added]);
   });
 
-  it('turned on over a stored reject, keeps that one and its settings', () => {
+  it('turned on over a reject the decider is offered, keeps that one and its settings', () => {
     expect(withReject(reviewRequest.actions, true, added)).toEqual(reviewRequest.actions);
+  });
+
+  it('turned on over a stored reject the decider is not offered, puts the given one in its place', () => {
+    const unnamed = { effect: 'reject', port: 'source:inner:rejected', reasonRequired: false };
+
+    expect(offeredActions([approve, unnamed])?.reject).toBeUndefined();
+    expect(withReject([approve, unnamed], true, added)).toEqual([approve, added]);
   });
 
   it('sets reasonRequired on the reject alone, and leaves a request without one as it was', () => {

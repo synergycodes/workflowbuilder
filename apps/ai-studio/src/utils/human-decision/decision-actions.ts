@@ -22,30 +22,32 @@ function rejectOfferOf(entry: Record<string, unknown> | undefined): RejectOffer 
   return offer === undefined ? undefined : { ...offer, reasonRequired: entry?.['reasonRequired'] === true };
 }
 
-// Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
-export function offeredActions(actions: readonly unknown[]): OfferedActions | undefined {
-  const entries = actions.filter(isPlainObject);
-  const withEffect = (effect: string) => entries.find((entry) => entry['effect'] === effect);
-  const resume = offerOf(withEffect('resume'));
-  return resume === undefined ? undefined : { resume, reject: rejectOfferOf(withEffect('reject')) };
-}
-
 function isReject(entry: unknown): entry is Record<string, unknown> {
   return isPlainObject(entry) && entry['effect'] === 'reject';
 }
 
-/** The port the reject action routes on, when the request has one. */
+function offeredReject(actions: readonly unknown[]): RejectOffer | undefined {
+  return rejectOfferOf(actions.find(isReject));
+}
+
+// Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
+export function offeredActions(actions: readonly unknown[]): OfferedActions | undefined {
+  const resume = offerOf(actions.filter(isPlainObject).find((entry) => entry['effect'] === 'resume'));
+  return resume === undefined ? undefined : { resume, reject: offeredReject(actions) };
+}
+
 export function rejectPortOf(actions: readonly unknown[]): string | undefined {
   const port = actions.find(isReject)?.['port'];
   return hasText(port) ? port : undefined;
 }
 
-/** The actions with the reject turned on or off; turned on, it is `rejectAction`, a stored reject is kept. */
+/** Turned on, keeps a reject the decider is offered and replaces any other stored reject with `rejectAction`. */
 export function withReject(actions: readonly unknown[], on: boolean, rejectAction: unknown): unknown[] {
-  if (!on) {
-    return actions.filter((entry) => !isReject(entry));
+  if (on && offeredReject(actions) !== undefined) {
+    return [...actions];
   }
-  return actions.some(isReject) ? [...actions] : [...actions, rejectAction];
+  const withoutReject = actions.filter((entry) => !isReject(entry));
+  return on ? [...withoutReject, rejectAction] : withoutReject;
 }
 
 export function withReasonRequired(actions: readonly unknown[], reasonRequired: boolean): unknown[] {
