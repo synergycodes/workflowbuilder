@@ -57,7 +57,7 @@ Known limits:
 
 ## Opening a workflow or a run from the URL
 
-The URL can name what the editor opens. AI Studio reads it once, while the page loads, and shows a loading screen while it looks the ids up. Editing the URL and pressing Enter loads the page again; a URL changed any other way is ignored until the next load.
+The URL can name what the editor opens. AI Studio reads it once, while the page loads, and shows a loading screen while it looks the ids up. Editing the URL and pressing Enter loads the page again; a URL changed any other way is ignored until the next load. Notices show in the editor's snackbars (`showSnackbar`); one raised before the editor mounts waits for it. Warnings and errors stay until closed, a success goes by itself.
 
 | URL                           | Canvas                                                                                                                         | Save                                                                                       | Run                                                             |
 | ----------------------------- | ------------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------- |
