@@ -21,14 +21,25 @@ import {
   withFieldMode,
 } from '../../../utils/human-decision/decision-fields';
 import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
+import { Hint, type HintVariant } from '../hint/hint';
 import { FieldModeRow } from './field-mode-row';
 
+// The backend refuses a Human task with no predecessor, so `unconnected` may say Run won't start;
+// nothing refuses an empty form yet, so `noFields` promises nothing about Run.
 const HINTS = {
-  unconnected: 'Connect a block before this one — its output fields will appear here (e.g. the AI step).',
-  ambiguous: 'Several blocks lead into this one — keep one connection before it so its output fields appear here.',
-  noFields:
-    'The block before this one declares no output fields the form can show (text, number, yes/no) — for an AI step, pick a structured Response format.',
-} satisfies Record<SourceHint, string>;
+  unconnected: {
+    variant: 'neutral',
+    text: 'Nothing leads into this block yet. Connect a block before it — its output fields will appear here (e.g. the AI step). Run won’t start until this block has an incoming connection.',
+  },
+  ambiguous: {
+    variant: 'neutral',
+    text: 'Several blocks lead into this one — keep one connection before it so its output fields appear here.',
+  },
+  noFields: {
+    variant: 'warning',
+    text: 'The block before this one declares no output fields the form can show (text, number, yes/no) — for an AI step, pick a structured Response format.',
+  },
+} satisfies Record<SourceHint, { variant: HintVariant; text: string }>;
 
 function DecisionFieldsControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
@@ -61,7 +72,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   return (
     <Accordion label={label}>
       <div className={styles['fields']}>
-        {hint && <p className={styles['hint']}>{HINTS[hint]}</p>}
+        {hint && <Hint variant={HINTS[hint].variant}>{HINTS[hint].text}</Hint>}
         {rows.map((row) => (
           <FieldModeRow
             key={row.key}
