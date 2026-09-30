@@ -10,8 +10,8 @@ import { Accordion } from '@workflowbuilder/ui';
 
 import styles from './decision-fields-control.module.css';
 
+import { useIsRunShown } from '../../../hooks/use-is-run-shown';
 import { proposalSourceIdOf } from '../../../hooks/use-node-decision';
-import { useExecutionStore } from '../../../stores/use-execution-store';
 import {
   type FieldMode,
   type SourceHint,
@@ -26,7 +26,7 @@ import { FieldModeRow } from './field-mode-row';
 
 // The backend refuses a Human task with no predecessor, so `unconnected` may say Run won't start;
 // nothing refuses an empty form yet, so `noFields` promises nothing about Run.
-const HINTS = {
+const SOURCE_HINTS = {
   unconnected: {
     variant: 'neutral',
     text: 'Nothing leads into this block yet. Connect a block before it — its output fields will appear here (e.g. the AI step). Run won’t start until this block has an incoming connection.',
@@ -56,8 +56,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
       ? undefined
       : state.nodes.find((node) => node.id === sourceId)?.data.properties['outputSchema'],
   );
-  // From Run until Reset the sidebar belongs to the run, even if the app bar lifts the canvas lock.
-  const isRunShown = useExecutionStore((state) => state.executionId !== undefined);
+  const isRunShown = useIsRunShown();
 
   if (request === undefined || isRunShown) {
     return null;
@@ -65,14 +64,14 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
 
   const { schema } = request;
   const rows = fieldRows(outputSchema, schema);
-  const hint = sourceHintOf(sourceId, predecessors.length, rows);
+  const sourceHint = sourceHintOf(sourceId, predecessors.length, rows);
   const pick = (key: string, mode: FieldMode) =>
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 
   return (
     <Accordion label={label}>
-      <div className={styles['fields']}>
-        {hint && <Hint variant={HINTS[hint].variant}>{HINTS[hint].text}</Hint>}
+      <div className={styles['fields']} data-decision-fields>
+        {sourceHint && <Hint variant={SOURCE_HINTS[sourceHint].variant}>{SOURCE_HINTS[sourceHint].text}</Hint>}
         {rows.map((row) => (
           <FieldModeRow
             key={row.key}

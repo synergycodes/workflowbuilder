@@ -27,6 +27,7 @@ import {
   useExecutionStore,
 } from '../../../stores/use-execution-store';
 import { FIELD_MODES } from '../../../utils/human-decision/decision-fields';
+import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
 import { decisionFieldsRenderer } from './decision-fields-control';
 
@@ -64,7 +65,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
 
 const HUMAN = 'human-1';
 
@@ -310,7 +311,7 @@ describe('the decision fields control in the real properties panel', () => {
   };
   const rowLabels = () => rows().map((row) => row.querySelector('span')?.textContent);
   const hints = () =>
-    [...container.querySelectorAll<HTMLElement>('[data-hint]')].map((hint) => ({
+    [...container.querySelectorAll<HTMLElement>('[data-decision-fields] [data-hint]')].map((hint) => ({
       variant: hint.dataset['hint'],
       text: hint.textContent,
     }));
@@ -324,6 +325,7 @@ describe('the decision fields control in the real properties panel', () => {
     await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
 
     expect(hints()).toEqual([{ variant: 'neutral', text: UNCONNECTED }]);
+    expect(container.querySelector('[data-decision-fields] [data-hint]')?.hasAttribute('role')).toBe(false);
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
