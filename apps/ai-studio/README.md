@@ -69,7 +69,7 @@ So after every action the canvas shows what a reload of the current URL would sh
 | `?workflowId=…&executionId=…` | As `?executionId=`                              | None                                                                                           | Not offered; Reset returns to the workflow |
 
 - Ids are lowercased before use, because the worker notifies the stream under lowercase ids. Nothing else is checked in the browser: a malformed id goes to the backend, and its answer ends on the error screen.
-- Saving a workflow goes through the SDK's `props` integration: `onDataSave` sends the draft with `keepalive`, so the save on close outlives the page. The SDK autosaves only when a change comes more than 10 s after its last save, so the latest edits often wait for Save or for the save on close. Browsers refuse a keepalive body of 64 KiB or more, so a larger draft is sent without it and its save on close may not arrive. A failed autosave shows an error snackbar, since the SDK shows nothing for it; a failed Save shows the SDK's own.
+- Saving a workflow goes through the SDK's `props` integration: `onDataSave` sends the draft with `keepalive`, so the save on close outlives the page. An autosave, the save on close included, sends nothing when the draft is what the tab last saved, or when nothing was edited since the link opened, so closing a tab that was only looked at writes nothing. The SDK autosaves only when a change comes more than 10 s after its last save, so the latest edits often wait for Save or for the save on close. Browsers refuse a keepalive body of 64 KiB or more, so a larger draft is sent without it and its save on close may not arrive. A failed autosave shows an error snackbar, since the SDK shows nothing for it; a failed Save shows the SDK's own.
 - A run view gets the `props` integration with a save callback that is never called, and `plugins/run-view/` hides the editor's Save button, which is also where autosave and the save on close live.
 - Notices show in the editor's snackbars (`showSnackbar`); one raised before the editor mounts waits for it. Warnings and errors stay until closed, a success goes by itself.
 - A diagram opened from the URL never touches the local draft.
@@ -80,5 +80,6 @@ Known limits:
 - A reload after the run finished still shows it, read-only, until Reset, because the URL still names it.
 - The run view is read-only through the run lock only. The app bar's read-only switch lifts it, and edits made then are saved nowhere.
 - Autosave and the save on close keep a workflow's edits, so a reload no longer discards them; undo is the only way back.
+- Before the first save, only edits the editor tracks count. The decision node's Add branch is not tracked, so a tab whose only edit is a new branch drops it on close unless Save runs first.
 - The graph is drawn as stored. A draft saved through the API in a shape the editor cannot draw ends on the error screen; one that draws wrongly shows wrongly.
 - Run saves the raw store into the draft, `selected` and `measured` included; autosave writes the clean shape. Nodes of a type this app does not know show without a properties panel.

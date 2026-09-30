@@ -1,4 +1,4 @@
-import { getStoreNodes } from '@workflowbuilder/sdk';
+import { getStoreNodes, useChangesTrackerStore, useStore } from '@workflowbuilder/sdk';
 import { act, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -6,6 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { IntegrationContext } from '../../../../packages/sdk/src/features/integration/components/integration-variants/context/integration-context-wrapper';
 import { RuntimeIntegrationWrapper } from '../../../../packages/sdk/src/features/integration/components/runtime-integration-wrapper';
 import { SaveButton } from '../../../../packages/sdk/src/features/integration/components/save-button/save-button';
+import {
+  showSnackbarSaveErrorIfNeeded,
+  showSnackbarSaveSuccessIfNeeded,
+} from '../../../../packages/sdk/src/features/integration/utils/show-snackbar';
 import { OptionalAppBarTools } from '../../../../packages/sdk/src/features/plugins-core/components/app/optional-app-bar-toolbar';
 import { resolveIntegration } from '../../../../packages/sdk/src/workflow-builder-root/resolve-integration';
 import { BACKEND_URL } from '../config';
@@ -84,12 +88,25 @@ async function leaveThePage() {
   });
 }
 
+// A real edit between saves, so each save carries something new.
+const moveFirstNode = () =>
+  act(() =>
+    useStore.setState((state) => ({
+      nodes: state.nodes.map((node, index) =>
+        index === 0 ? { ...node, position: { x: node.position.x + 10, y: node.position.y } } : node,
+      ),
+    })),
+  );
+
 const draftPatches = () =>
   fetchMock.mock.calls.filter(
     ([url, init]) => String(url).endsWith('/draft') && (init as RequestInit | undefined)?.method === 'PATCH',
   );
 
 beforeEach(() => {
+  vi.mocked(showSnackbarSaveSuccessIfNeeded).mockClear();
+  vi.mocked(showSnackbarSaveErrorIfNeeded).mockClear();
+  useChangesTrackerStore.setState({ lastChangeName: '', lastChangeTimestamp: 0 });
   vi.useFakeTimers();
   localStorage.clear();
   localStorage.setItem(LOCAL_DRAFT_KEY, otherLocalDraft);
@@ -126,14 +143,38 @@ describe('the local draft in URL mode', () => {
     await act(async () => {
       await save?.(false);
     });
+    moveFirstNode();
     await act(async () => {
       await save?.(true);
     });
+    moveFirstNode();
     await leaveThePage();
 
     expect(draftPatches()).toHaveLength(3);
     expect(draftPatches()[0]![0]).toBe(`${BACKEND_URL}/api/workflows/${WORKFLOW}/draft`);
     expect(localStorage.getItem(LOCAL_DRAFT_KEY)).toBe(otherLocalDraft);
+  });
+
+  it('a workflow link opened and closed without an edit writes nothing', async () => {
+    mount({ kind: 'workflow', workflowId: WORKFLOW, name: 'Refund desk', diagram });
+
+    await leaveThePage();
+
+    expect(draftPatches()).toHaveLength(0);
+  });
+
+  it("a Save the server refuses shows the SDK's error, not its success", async () => {
+    fetchMock.mockImplementation(async () => jsonResponse(500, { message: 'boom' }));
+    mount({ kind: 'workflow', workflowId: WORKFLOW, name: 'Refund desk', diagram });
+
+    let status: unknown;
+    await act(async () => {
+      status = await save?.(false);
+    });
+
+    expect(status).toBe('error');
+    expect(showSnackbarSaveSuccessIfNeeded).not.toHaveBeenCalled();
+    expect(showSnackbarSaveErrorIfNeeded).toHaveBeenCalledWith({ isAutoSave: false });
   });
 
   it('a run from the link has no Save button, saves nowhere and leaves the local draft alone', async () => {

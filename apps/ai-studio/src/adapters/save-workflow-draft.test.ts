@@ -1,4 +1,4 @@
-import type { IntegrationDataFormat } from '@workflowbuilder/sdk';
+import { type IntegrationDataFormat, useChangesTrackerStore } from '@workflowbuilder/sdk';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BACKEND_URL } from '../config';
@@ -15,16 +15,21 @@ const data = {
   nodes: [node],
   edges: [],
 } as unknown as IntegrationDataFormat;
+const moved = { ...data, nodes: [{ ...node, position: { x: 40, y: 0 } }] } as unknown as IntegrationDataFormat;
 
 let fetchMock: ReturnType<typeof vi.fn>;
 
 const notices = () => useNoticesStore.getState().notices.map((notice) => notice.text);
 const request = () => fetchMock.mock.calls[0] as [string, RequestInit];
+const edited = () =>
+  useChangesTrackerStore.setState({ lastChangeName: 'nodeDragStop', lastChangeTimestamp: Date.now() + 1 });
+const autosave = { isAutoSave: true };
 
 beforeEach(() => {
   fetchMock = vi.fn(async () => jsonResponse(200, { id: WORKFLOW, name: 'Refund desk' }));
   vi.stubGlobal('fetch', fetchMock);
   useNoticesStore.setState({ notices: [] });
+  useChangesTrackerStore.setState({ lastChangeName: '', lastChangeTimestamp: 0 });
 });
 
 afterEach(() => {
@@ -33,7 +38,10 @@ afterEach(() => {
 
 describe('saveDraftOf', () => {
   it('PATCHes the nodes and edges into the draft, with keepalive so the save on close outlives the page', async () => {
-    const status = await saveDraftOf(WORKFLOW)(data, { isAutoSave: true });
+    const save = saveDraftOf(WORKFLOW);
+    edited();
+
+    const status = await save(data, autosave);
 
     expect(status).toBe('success');
     const [url, init] = request();
@@ -45,24 +53,28 @@ describe('saveDraftOf', () => {
 
   it('sends a draft of 64 KiB or more without keepalive, which browsers refuse', async () => {
     const big = { ...data, nodes: [{ ...node, data: { type: 'x', properties: { text: 'y'.repeat(70_000) } } }] };
+    const save = saveDraftOf(WORKFLOW);
+    edited();
 
-    await saveDraftOf(WORKFLOW)(big as unknown as IntegrationDataFormat, { isAutoSave: true });
+    await save(big as unknown as IntegrationDataFormat, autosave);
 
     expect(request()[1].keepalive).toBe(false);
   });
 
-  it('a failed autosave raises an error notice, which the SDK does not', async () => {
+  it('a failed autosave throws and raises an error notice, which the SDK does not', async () => {
     fetchMock.mockImplementation(async () => jsonResponse(500, { message: 'boom' }));
+    const save = saveDraftOf(WORKFLOW);
+    edited();
 
-    expect(await saveDraftOf(WORKFLOW)(data, { isAutoSave: true })).toBe('error');
+    await expect(save(data, autosave)).rejects.toThrow('the server answered 500');
 
     expect(notices()).toEqual(['The workflow draft could not be saved automatically: the server answered 500.']);
   });
 
-  it("a failed manual save raises none: the SDK's own error snackbar shows", async () => {
+  it("a failed manual save throws and raises no notice: the SDK's own error snackbar shows", async () => {
     fetchMock.mockImplementation(async () => jsonResponse(500, { message: 'boom' }));
 
-    expect(await saveDraftOf(WORKFLOW)(data, { isAutoSave: false })).toBe('error');
+    await expect(saveDraftOf(WORKFLOW)(data, { isAutoSave: false })).rejects.toThrow('the server answered 500');
 
     expect(notices()).toEqual([]);
   });
@@ -71,9 +83,55 @@ describe('saveDraftOf', () => {
     fetchMock.mockImplementation(async () => {
       throw new TypeError('Failed to fetch');
     });
+    const save = saveDraftOf(WORKFLOW);
+    edited();
 
-    expect(await saveDraftOf(WORKFLOW)(data, { isAutoSave: true })).toBe('error');
+    await expect(save(data, autosave)).rejects.toThrow('the server did not answer');
 
     expect(notices()[0]).toContain('the server did not answer');
+  });
+});
+
+describe('saveDraftOf: an autosave with nothing new', () => {
+  it('sends nothing when nothing was edited since the link opened, so closing a tab only looked at writes nothing', async () => {
+    expect(await saveDraftOf(WORKFLOW)(data, autosave)).toBe('success');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('sends nothing when the draft is what it last saved', async () => {
+    const save = saveDraftOf(WORKFLOW);
+    edited();
+    await save(data, autosave);
+
+    expect(await save(data, autosave)).toBe('success');
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends an edit made after the last save, tracked or not', async () => {
+    const save = saveDraftOf(WORKFLOW);
+    await save(data, { isAutoSave: false });
+
+    await save(moved, autosave);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+  });
+
+  it('never holds back a manual Save', async () => {
+    await saveDraftOf(WORKFLOW)(data, { isAutoSave: false });
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it('sends again after a save that failed', async () => {
+    fetchMock.mockImplementationOnce(async () => jsonResponse(500, { message: 'boom' }));
+    const save = saveDraftOf(WORKFLOW);
+    edited();
+    await expect(save(data, autosave)).rejects.toThrow();
+
+    await save(data, autosave);
+
+    expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
