@@ -1,9 +1,0 @@
-.screen {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
-  background: var(--wb-ds-ui-bg-base);
-  color: var(--wb-ds-ui-text-default);
-}
