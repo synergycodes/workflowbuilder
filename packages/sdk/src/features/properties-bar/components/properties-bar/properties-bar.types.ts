@@ -29,9 +29,13 @@ export type PropertiesBarItem = {
  * The Delete button shows only with `onDeleteClick`; a decorator on the
  * `'PropertiesBar'` slot that sets it to `undefined` removes the button.
  *
+ * The header shows the selected node's icon, label and type label, or the
+ * selected edge's icon, label and "Link". `onMenuHeaderClick` adds a menu button to it.
+ *
  * @category Components
  */
 export type PropertiesBarProps = PropertiesBarBaseProps & {
+  /** Header text while nothing is selected; a selected node or edge shows its own heading instead. */
   headerLabel: string;
   deleteNodeLabel: string;
   deleteEdgeLabel: string;

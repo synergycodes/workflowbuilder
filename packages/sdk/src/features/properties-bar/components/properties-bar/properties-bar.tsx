@@ -36,7 +36,6 @@ function PropertiesBarComponent({
   const [isPropertiesBarOpen, setIsPropertiesBarOpen] = useState(true);
   const footerTarget = usePropertiesPanelFooterTarget();
 
-  const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
   const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
   const hasFooter = footerTarget.hasContent || !!onDeleteClick;
@@ -83,11 +82,10 @@ function PropertiesBarComponent({
         header={
           <>
             <PropertiesBarHeader
-              hasSelection={!!selection}
-              isExpendable={isPropertiesBarOpen}
+              selection={selection}
+              headerLabel={headerLabel}
+              isOpen={isPropertiesBarOpen}
               onTogglePropertiesBar={onToggleExpand}
-              header={headerLabel}
-              name={name ?? ''}
               onDotsClick={onMenuHeaderClick}
             />
             {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}

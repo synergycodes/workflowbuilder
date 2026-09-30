@@ -1,11 +1,17 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { StrictMode } from 'react';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { WorkflowBuilderNode } from '../../../../node/node-data';
+import type { PaletteItem } from '../../../../node/common';
+import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
+import { useStore } from '../../../../store/store';
+import '../../../i18n/index';
 import { PropertiesPanelFooter } from '../properties-panel-footer/properties-panel-footer';
 import { PropertiesBar } from './properties-bar';
 import type { PropertiesBarProps } from './properties-bar.types';
+
+vi.mock('@workflow-builder/icons', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }));
 
 const node = {
   id: 'node-1',
@@ -102,6 +108,96 @@ describe('PropertiesBar footer', () => {
 
     expect(button('Approve')).toBeNull();
     expect(hasFooter(container)).toBe(false);
+  });
+});
+
+const actionDefinition = {
+  type: 'action',
+  icon: 'Play',
+  accent: 'violet',
+  label: 'specNodes.action',
+  description: 'Runs an action',
+} as unknown as PaletteItem;
+
+function edge(label?: string): WorkflowBuilderEdge {
+  return { id: 'edge-1', source: 'node-1', target: 'node-2', data: { label } };
+}
+
+const nodeIcon = (container: HTMLElement) => container.querySelector('[data-icon="Play"]')?.parentElement;
+
+// Without tabs the header has no segment picker, whose first item also reads "Properties".
+const renderHeader = (props: Partial<PropertiesBarProps> = {}) => renderBar({ withContent: false, tabs: [], ...props });
+
+describe('PropertiesBar header', () => {
+  beforeEach(() => {
+    i18n.addResourceBundle('en', 'translation', { specNodes: { action: 'Action' } }, true, true);
+    useStore.setState({ data: [actionDefinition] });
+  });
+
+  afterEach(() => {
+    cleanup();
+    useStore.setState(useStore.getInitialState(), true);
+  });
+
+  it('shows the node icon in its accent, the node label and the translated type label', () => {
+    const { container } = renderHeader();
+
+    expect(screen.getByText('Review')).not.toBeNull();
+    expect(screen.getByText('Action')).not.toBeNull();
+    expect(nodeIcon(container)?.getAttribute('style')).toContain('--wb-public-node-icon-color-violet');
+    expect(screen.queryByText('Properties')).toBeNull();
+  });
+
+  it('shows the type label, never the node description', () => {
+    renderHeader();
+
+    expect(screen.queryByText('Runs an action')).toBeNull();
+  });
+
+  it('shows the label of a selected edge with an icon and the Link subtitle', () => {
+    const { container } = renderHeader({ selection: { node: null, edge: edge('Approved') } });
+
+    expect(screen.getByText('Approved')).not.toBeNull();
+    expect(screen.getByText('Link')).not.toBeNull();
+    expect(container.querySelector('[data-icon="CaretRight"]')).not.toBeNull();
+    expect(screen.queryByText('Properties')).toBeNull();
+  });
+
+  it('titles an edge without a label Link', () => {
+    renderHeader({ selection: { node: null, edge: edge() } });
+
+    expect(screen.getAllByText('Link')).toHaveLength(2);
+    expect(screen.queryByText('Properties')).toBeNull();
+  });
+
+  it('shows the header label and a disabled toggle while nothing is selected', () => {
+    renderHeader({ selection: null });
+
+    expect(screen.getByText('Properties')).not.toBeNull();
+    expect(button('Open properties bar')).toBeNull();
+    expect((button('Close properties bar') as HTMLButtonElement).disabled).toBe(true);
+    expect(screen.queryByText('Form')).toBeNull();
+  });
+
+  it('has a menu button only with onMenuHeaderClick, left of the toggle', () => {
+    const onMenuHeaderClick = vi.fn();
+    const { rerenderBar } = renderHeader();
+    expect(button('Menu')).toBeNull();
+
+    rerenderBar({ onMenuHeaderClick });
+    fireEvent.click(button('Menu')!);
+
+    expect(onMenuHeaderClick).toHaveBeenCalledOnce();
+    expect(button('Menu')!.compareDocumentPosition(button('Close properties bar')!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('exposes a long node label in full as a title', () => {
+    const label = 'A node label far too long to fit on a single line of the properties panel header';
+    renderHeader({ selection: { node: { ...node, data: { ...node.data, properties: { label } } }, edge: null } });
+
+    expect(screen.getByText(label).getAttribute('title')).toBe(label);
   });
 });
 
