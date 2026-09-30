@@ -8,7 +8,7 @@ import { AllowAllAuthPort, AuthDeniedError, type AuthPort, createAuthMiddleware,
 import { runMigrations } from './db/migrate';
 import { env } from './env';
 import { logger } from './logger';
-import { refuseListing } from './middleware/listing-guard';
+import { isListingRefused, refuseListing } from './middleware/listing-guard';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
 import type { BackendEnv } from './routes/backend-env';
 import { createDecisionRoutes } from './routes/decision';
@@ -75,7 +75,7 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
   });
 }
 
-if (!env.ENABLE_WB_LISTING) {
+if (isListingRefused(authPort, env.ENABLE_WB_LISTING)) {
   refuseListing(app);
   logger.info('listing disabled');
 }

@@ -17,7 +17,8 @@ export const env = {
   RATE_LIMIT_EXECUTE_PER_MINUTE: Number(envOr('RATE_LIMIT_EXECUTE_PER_MINUTE', '0')),
   RATE_LIMIT_EXECUTE_PER_DAY: Number(envOr('RATE_LIMIT_EXECUTE_PER_DAY', '0')),
   TRUST_PROXY: envOr('TRUST_PROXY', 'false') === 'true',
-  // Opt-in like WB_AUTH_PORT: unset keeps the collection routes off, so a forgotten variable never exposes every id.
+  // Read only under the AllowAllAuthPort (server.ts): unset keeps the collection routes off there, so a
+  // forgotten variable never exposes every id. A real port authorizes listing by itself.
   ENABLE_WB_LISTING: envOr('ENABLE_WB_LISTING', 'false') === 'true',
   // Null = Turnstile verification disabled (local dev runs unprotected).
   TURNSTILE_SECRET_KEY: process.env['TURNSTILE_SECRET_KEY'] ?? null,

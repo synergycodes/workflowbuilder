@@ -1,8 +1,9 @@
 import { Hono } from 'hono';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { AllowAllAuthPort, type AuthPort } from '../auth';
 import type { BackendEnv } from '../routes/backend-env';
-import { refuseListing } from './listing-guard';
+import { isListingRefused, refuseListing } from './listing-guard';
 
 const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
@@ -58,5 +59,28 @@ describe('refuseListing', () => {
     const response = await app.request(path, { method });
 
     expect(response.status).toBe(status);
+  });
+});
+
+describe('isListingRefused', () => {
+  const realPort: AuthPort = { identify: async () => null, authorize: async () => true };
+
+  beforeEach(() => {
+    vi.stubEnv('WB_AUTH_PORT', 'allow-all');
+    vi.spyOn(console, 'warn').mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.restoreAllMocks();
+  });
+
+  it('refuses under the allow-all port until the switch is set', () => {
+    expect(isListingRefused(new AllowAllAuthPort(), false)).toBe(true);
+    expect(isListingRefused(new AllowAllAuthPort(), true)).toBe(false);
+  });
+
+  it('never refuses under another port, which authorizes listing by itself', () => {
+    expect(isListingRefused(realPort, false)).toBe(false);
   });
 });
