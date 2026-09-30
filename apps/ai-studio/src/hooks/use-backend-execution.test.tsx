@@ -53,15 +53,9 @@ function mountHook() {
 
 const STREAM_URL = '/api/executions/exec-1/stream';
 
-// The hydrated store a reload leaves behind before anything mounts.
-function rememberRun(status: RunStatus) {
+// The store as openFromUrl leaves it before the editor mounts.
+function putRunInStore(status: RunStatus) {
   useExecutionStore.setState({ executionId: 'exec-1', streamUrl: STREAM_URL, status });
-}
-
-class RejectingEventSource {
-  constructor() {
-    throw new SyntaxError("Failed to construct 'EventSource': The URL is invalid.");
-  }
 }
 
 // The parked run, resumed elsewhere and finished before Stop reached the server.
@@ -94,17 +88,17 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
-describe('useBackendExecution: a reload while a run is in flight', () => {
-  it('keeps one stream open on the remembered URL after the StrictMode double mount', () => {
-    rememberRun('waiting');
+describe('useBackendExecution: the run openFromUrl put in the store', () => {
+  it('keeps one stream open on its URL after the StrictMode double mount', () => {
+    putRunInStore('waiting');
     unmount = mountHook();
 
     expect(openStreams()).toHaveLength(1);
     expect(latestStream().url).toBe(`${BACKEND_URL}${STREAM_URL}`);
   });
 
-  it('shows the remembered status before the stream answers, so Stop is available at once', () => {
-    rememberRun('waiting');
+  it('shows its status before the stream answers, so Stop is available at once', () => {
+    putRunInStore('waiting');
     unmount = mountHook();
 
     expect(api().status).toBe('waiting');
@@ -112,7 +106,7 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
   });
 
   it('lets the snapshot rebuild the waiting marker', () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
 
     act(() => latestStream().emit(snapshotFrame('waiting')));
@@ -121,15 +115,8 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
     expect(useExecutionStore.getState().status).toBe('waiting');
   });
 
-  it('retries a run whose connection was lost before the reload', () => {
-    rememberRun('disconnected');
-    unmount = mountHook();
-
-    expect(openStreams()).toHaveLength(1);
-  });
-
   it('opens no stream for a run that already ended', () => {
-    rememberRun('completed');
+    putRunInStore('completed');
     unmount = mountHook();
 
     expect(FakeEventSource.instances).toHaveLength(0);
@@ -141,35 +128,8 @@ describe('useBackendExecution: a reload while a run is in flight', () => {
     expect(FakeEventSource.instances).toHaveLength(0);
   });
 
-  it('forgets a remembered alive status that carries no run id', () => {
-    useExecutionStore.setState({ status: 'waiting' });
-    unmount = mountHook();
-
-    expect(useExecutionStore.getState().status).toBe('idle');
-    expect(FakeEventSource.instances).toHaveLength(0);
-  });
-
-  it('forgets a remembered run whose stream URL is not on the backend stream path', () => {
-    useExecutionStore.setState({ executionId: 'exec-1', streamUrl: '//evil.example/x', status: 'waiting' });
-    unmount = mountHook();
-
-    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
-    expect(FakeEventSource.instances).toHaveLength(0);
-  });
-
-  it('forgets a remembered run whose stream the browser refuses to construct, and stays mounted', () => {
-    vi.stubGlobal('EventSource', RejectingEventSource);
-    rememberRun('waiting');
-
-    expect(() => {
-      unmount = mountHook();
-    }).not.toThrow();
-    expect(useExecutionStore.getState().status).toBe('idle');
-    expect(api().status).toBe('idle');
-  });
-
   it('closes the reopened stream when the controls unmount', () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
 
     unmount();
@@ -195,7 +155,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   }
 
   it('a run the server no longer has is forgotten: idle canvas, no stream left open', async () => {
-    rememberRun('disconnected');
+    putRunInStore('disconnected');
     unmount = mountHook();
     serverAnswersDelete(404, { code: 'execution_not_found', message: 'Execution not found' });
 
@@ -211,7 +171,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a run that already finished is caught up on, not forgotten: the reopened stream tells how it ended', async () => {
-    rememberRun('disconnected');
+    putRunInStore('disconnected');
     unmount = mountHook();
     const streamBefore = latestStream();
     serverAnswersDelete(409, { code: 'execution_not_cancellable', message: 'Execution already finished' });
@@ -228,7 +188,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a Stop refused because the run completed ends on completed, keeping the run and the Stop request', async () => {
-    rememberRun('disconnected');
+    putRunInStore('disconnected');
     unmount = mountHook();
     serverAnswersDelete(409, { code: 'execution_not_cancellable', message: 'Execution already finished' });
 
@@ -244,7 +204,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a cancel the server accepted is followed over a fresh stream, never two at once', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     const streamBefore = latestStream();
     serverAnswersDelete(200, { id: 'exec-1', status: 'cancelling' });
@@ -260,7 +220,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('Stop marks the request before the server answers', () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     serverHoldsDelete();
 
@@ -271,7 +231,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a run that ended over the old stream while Stop was in flight is not reopened', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     const streamBefore = latestStream();
     const deleteAnswer = serverHoldsDelete();
@@ -296,7 +256,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a request that never reaches the server leaves the run remembered and the request marked', async () => {
-    rememberRun('disconnected');
+    putRunInStore('disconnected');
     unmount = mountHook();
     const streamBefore = latestStream();
     fetchMock = vi.fn(async () => {
@@ -336,7 +296,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
     ['a 404 whose body will not parse', async () => unparsableResponse(404)],
     ['a 500', async () => jsonResponse(500, { message: 'Internal Server Error' })],
   ])('%s is not the server forgetting the run: it stays, and Reset becomes the way out', async (_, answer) => {
-    rememberRun('disconnected');
+    putRunInStore('disconnected');
     unmount = mountHook();
     fetchMock = vi.fn(answer);
     vi.stubGlobal('fetch', fetchMock);
@@ -348,7 +308,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a 404 the owner changed during neither forgets nor marks the newer run', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     // The owner has to change while the body is being read, and a real Response offers no hook for that.
     const bodyThatStartsANewRun = {
@@ -369,7 +329,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a Stop that fails after Reset leaves the clean canvas unmarked', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     const deleteAnswer = serverHoldsDelete();
     vi.spyOn(console, 'error').mockImplementation(() => {});
@@ -387,7 +347,7 @@ describe('useBackendExecution: what Stop does with the server answer', () => {
   });
 
   it('a Stop answered after the controls unmounted opens no stream nobody is left to close', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     const deleteAnswer = serverHoldsDelete();
 
@@ -416,7 +376,7 @@ function serverAcceptsExecute() {
 
 describe('useBackendExecution: starting a run from the canvas', () => {
   it('a new run closes the stream a reload reopened before the server answers, and never joins it', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     const reconnected = latestStream();
     serverAcceptsExecute();
@@ -433,7 +393,7 @@ describe('useBackendExecution: starting a run from the canvas', () => {
   });
 
   it("a new run starts without the previous run's Stop request", async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
     unmount = mountHook();
     vi.stubGlobal(
       'fetch',
@@ -525,7 +485,7 @@ describe('useBackendExecution: Reset', () => {
   it('takes the run out of the address and keeps the workflow', () => {
     const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
     globalThis.history.replaceState(null, '', `/?workflowId=${workflow}&executionId=exec-1`);
-    rememberRun('completed');
+    putRunInStore('completed');
     unmount = mountHook();
 
     act(() => api().reset());
@@ -539,7 +499,7 @@ describe('useBackendExecution: a run opened from the link', () => {
   const graph = { nodes: refundReviewFlow.value.diagram.nodes, edges: refundReviewFlow.value.diagram.edges };
 
   it('opens exactly one stream, on that run, after the StrictMode double mount', async () => {
-    rememberRun('waiting');
+    putRunInStore('waiting');
 
     await openFromUrl(`?executionId=${run}`, {
       fetchWorkflow: vi.fn(),

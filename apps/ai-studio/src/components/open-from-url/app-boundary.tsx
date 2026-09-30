@@ -2,11 +2,7 @@ import { Component, type ReactNode } from 'react';
 
 import styles from './full-page.module.css';
 
-import { resetExecution } from '../../stores/use-execution-store';
-
-// Without the reset, a bare address reopens the remembered run that just crashed.
 function openLocalDraft() {
-  resetExecution();
   globalThis.location.assign(globalThis.location.pathname);
 }
 

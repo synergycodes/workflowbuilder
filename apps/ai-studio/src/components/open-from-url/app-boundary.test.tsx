@@ -2,7 +2,6 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { setExecutionStarted, useExecutionStore } from '../../stores/use-execution-store';
 import { AppBoundary } from './app-boundary';
 
 declare global {
@@ -10,8 +9,6 @@ declare global {
   var IS_REACT_ACT_ENVIRONMENT: boolean;
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
-
-const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 
 function Crashing(): never {
   throw new TypeError("Cannot read properties of undefined (reading 'x')");
@@ -50,15 +47,13 @@ describe('AppBoundary', () => {
     expect(container.querySelector('button')?.textContent).toBe('Open local draft');
   });
 
-  it('forgets the run that crashed before leaving, so the bare address does not reopen it', () => {
-    setExecutionStarted(RUN, `/api/executions/${RUN}/stream`);
+  it('leaves for the bare address, which opens the local draft', () => {
     const assign = vi.fn();
     vi.stubGlobal('location', { ...globalThis.location, pathname: '/', assign });
     renderCrash();
 
     act(() => container.querySelector('button')!.click());
 
-    expect(useExecutionStore.getState().executionId).toBeUndefined();
     expect(assign).toHaveBeenCalledWith('/');
   });
 });

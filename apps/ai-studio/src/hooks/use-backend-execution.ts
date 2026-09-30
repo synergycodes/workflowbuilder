@@ -12,8 +12,6 @@ import {
 } from '../stores/use-execution-store';
 import { syncExecutionIdToAddress } from '../utils/open-from-url/address-execution-id';
 
-const STREAM_PATH_PREFIX = '/api/executions/';
-
 // A proxy 404 is not JSON, and only the backend's own code means the server forgot the run.
 async function isExecutionNotFound(response: Response): Promise<boolean> {
   const body = (await response.json().catch(() => null)) as { code?: string } | null;
@@ -58,19 +56,9 @@ export function useBackendExecution() {
 
   useEffect(() => {
     isUnmountedRef.current = false;
-    const persisted = useExecutionStore.getState();
-    // Anything on the origin can write this entry, and an EventSource it rejects would unmount the root.
-    if (isRunAlive(persisted.status)) {
-      if (persisted.executionId && persisted.streamUrl?.startsWith(STREAM_PATH_PREFIX)) {
-        try {
-          openStream(persisted.executionId, persisted.streamUrl);
-        } catch {
-          resetExecution();
-        }
-      } else {
-        resetExecution();
-      }
-    }
+    // The run a link opened is in the store before the editor mounts; this is where its stream opens.
+    const { executionId: runId, streamUrl: runStreamUrl, status: runStatus } = useExecutionStore.getState();
+    if (runId && runStreamUrl && isRunAlive(runStatus)) openStream(runId, runStreamUrl);
     return () => {
       isUnmountedRef.current = true;
       disconnectRef.current?.();
