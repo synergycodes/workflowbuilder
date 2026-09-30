@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { refundReviewFlow } from '../data/refund-review-flow';
 import { supportTriageFlow } from '../data/support-triage-flow';
-import { plugin as openFromUrlPlugin } from '../plugins/open-from-url/plugin';
+import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
 import { neverSaves, rootPropsFor } from './root-props';
 
@@ -19,32 +19,33 @@ describe('rootPropsFor', () => {
 
     expect(props.integration).toBeUndefined();
     expect(props.initialNodes).toBe(supportTriageFlow.value.diagram.nodes);
-    expect(props.plugins).not.toContain(openFromUrlPlugin);
+    expect(props.plugins).not.toContain(runViewPlugin);
   });
 
-  it('opens a workflow under its name, off localStorage, with the Save button swapped', () => {
+  it("opens a workflow under its name, off localStorage, with the editor's own Save button", () => {
     const props = rootPropsFor(workflowSource);
 
     expect(props.integration).toMatchObject({ strategy: 'props' });
     expect(props.name).toBe('Refund desk');
     expect(props.initialNodes).toBe(diagram.nodes);
     expect(props.initialEdges).toBe(diagram.edges);
-    expect(props.plugins).toContain(openFromUrlPlugin);
+    expect(props.plugins).not.toContain(runViewPlugin);
   });
 
-  it('opens a run under a short run name, off localStorage', () => {
+  it('opens a run under a short run name, off localStorage, with Save hidden', () => {
     const props = rootPropsFor(executionSource);
 
     expect(props.integration).toMatchObject({ strategy: 'props' });
     expect(props.name).toBe('Run 7c9e6679');
-    expect(props.plugins).toContain(openFromUrlPlugin);
+    expect(props.plugins).toContain(runViewPlugin);
   });
 
-  it('hands every render the same integration object', () => {
-    expect(rootPropsFor(workflowSource).integration).toBe(rootPropsFor(executionSource).integration);
+  it('hands every render the same props for one opened source', () => {
+    expect(rootPropsFor(workflowSource)).toBe(rootPropsFor(workflowSource));
+    expect(rootPropsFor(workflowSource).integration).not.toBe(rootPropsFor(executionSource).integration);
   });
 
-  it('refuses the editor save that URL modes never trigger', async () => {
-    await expect(neverSaves(rootPropsFor(workflowSource) as never)).rejects.toThrow();
+  it('refuses the editor save a run view never triggers', async () => {
+    await expect(neverSaves(rootPropsFor(executionSource) as never)).rejects.toThrow();
   });
 });

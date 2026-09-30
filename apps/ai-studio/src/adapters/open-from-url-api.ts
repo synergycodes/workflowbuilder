@@ -1,5 +1,3 @@
-import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflowbuilder/sdk';
-
 import type { GetExecutionSnapshotResponse, WorkflowRecord } from '@workflow-builder/types/workflow-execution/api';
 
 import { BACKEND_URL } from '../config';
@@ -41,15 +39,4 @@ export function fetchWorkflow(workflowId: string): Promise<FetchResult<WorkflowR
 
 export function fetchExecutionSnapshot(executionId: string): Promise<FetchResult<GetExecutionSnapshotResponse>> {
   return requestJson(`/api/executions/${executionId}/snapshot`, (body) => typeof body['workflowId'] === 'string');
-}
-
-export function saveWorkflowDraft(
-  workflowId: string,
-  draft: { nodes: WorkflowBuilderNode[]; edges: WorkflowBuilderEdge[] },
-): Promise<FetchResult<WorkflowRecord>> {
-  return requestJson(`/api/workflows/${workflowId}/draft`, hasName, {
-    method: 'PATCH',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ draftJson: draft }),
-  });
 }

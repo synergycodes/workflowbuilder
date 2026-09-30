@@ -6,21 +6,23 @@ import type {
   WorkflowBuilderPlugin,
 } from '@workflowbuilder/sdk';
 
+import { saveDraftOf } from '../adapters/save-workflow-draft';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
-import { plugin as openFromUrlPlugin } from '../plugins/open-from-url/plugin';
+import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
 
 const flagship = supportTriageFlow.value;
 
 export const neverSaves: OnSaveExternal = () =>
-  Promise.reject(new Error('A diagram opened from a link is saved by AI Studio, not by the editor'));
+  Promise.reject(new Error('A run view has no Save button, so the editor never saves it'));
 
-// Module-level: the run lock re-applies itself whenever the editor's save callback changes identity.
-const PROPS_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves };
+// Module-level, and one props object per opened source below: the run lock re-applies itself whenever the
+// editor's save callback changes identity.
+const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves };
 const LOCAL_PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
-const URL_MODE_PLUGINS: WorkflowBuilderPlugin[] = [...LOCAL_PLUGINS, openFromUrlPlugin];
+const RUN_VIEW_PLUGINS: WorkflowBuilderPlugin[] = [...LOCAL_PLUGINS, runViewPlugin];
 
 type RootProps = {
   name: string;
@@ -30,7 +32,18 @@ type RootProps = {
   plugins: WorkflowBuilderPlugin[];
 };
 
+const propsBySource = new WeakMap<OpenedSource, RootProps>();
+
 export function rootPropsFor(opened: OpenedSource): RootProps {
+  let props = propsBySource.get(opened);
+  if (props === undefined) {
+    props = buildRootProps(opened);
+    propsBySource.set(opened, props);
+  }
+  return props;
+}
+
+function buildRootProps(opened: OpenedSource): RootProps {
   switch (opened.kind) {
     case 'local': {
       return {
@@ -45,8 +58,8 @@ export function rootPropsFor(opened: OpenedSource): RootProps {
         name: opened.name,
         initialNodes: opened.diagram.nodes,
         initialEdges: opened.diagram.edges,
-        integration: PROPS_INTEGRATION,
-        plugins: URL_MODE_PLUGINS,
+        integration: { strategy: 'props', onDataSave: saveDraftOf(opened.workflowId) },
+        plugins: LOCAL_PLUGINS,
       };
     }
     case 'execution': {
@@ -54,8 +67,8 @@ export function rootPropsFor(opened: OpenedSource): RootProps {
         name: `Run ${opened.executionId.slice(0, 8)}`,
         initialNodes: opened.diagram.nodes,
         initialEdges: opened.diagram.edges,
-        integration: PROPS_INTEGRATION,
-        plugins: URL_MODE_PLUGINS,
+        integration: RUN_VIEW_INTEGRATION,
+        plugins: RUN_VIEW_PLUGINS,
       };
     }
   }
