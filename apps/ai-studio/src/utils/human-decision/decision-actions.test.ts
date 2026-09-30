@@ -37,6 +37,13 @@ describe('offeredActions', () => {
     expect(offeredActions([{ ...approve, label: '  ' }])?.resume.label).toBe('approve');
   });
 
+  it('offers no reject when the reject has no port to route on', () => {
+    const portless = { name: 'reject', label: 'Reject', effect: 'reject', reasonRequired: false };
+
+    expect(offeredActions([approve, portless])?.reject).toBeUndefined();
+    expect(offeredActions([approve, { ...reject, port: ' ' }])?.reject).toBeUndefined();
+  });
+
   it('offers nothing without a usable resume action, whatever else the request carries', () => {
     expect(offeredActions([reject])).toBeUndefined();
     expect(offeredActions([null, { name: '', effect: 'resume' }])).toBeUndefined();
@@ -67,11 +74,11 @@ describe('the reject switches', () => {
     expect(withReject([approve], true, added)).toEqual([approve, added]);
   });
 
-  it('turned on over a reject the decider is offered, keeps that one and its settings', () => {
-    expect(withReject(reviewRequest.actions, true, added)).toEqual(reviewRequest.actions);
+  it('turned on over a stored reject listed first, drops it and appends the given one', () => {
+    expect(withReject([reject, approve], true, added)).toEqual([approve, added]);
   });
 
-  it('turned on over a stored reject the decider is not offered, puts the given one in its place', () => {
+  it('turned on over a stored reject the decider is not offered, drops it and appends the given one', () => {
     const unnamed = { effect: 'reject', port: 'source:inner:rejected', reasonRequired: false };
 
     expect(offeredActions([approve, unnamed])?.reject).toBeUndefined();

@@ -26,8 +26,10 @@ function isReject(entry: unknown): entry is Record<string, unknown> {
   return isPlainObject(entry) && entry['effect'] === 'reject';
 }
 
+// A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
 function offeredReject(actions: readonly unknown[]): RejectOffer | undefined {
-  return rejectOfferOf(actions.find(isReject));
+  const entry = actions.find(isReject);
+  return hasText(entry?.['port']) ? rejectOfferOf(entry) : undefined;
 }
 
 // Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
@@ -41,11 +43,8 @@ export function rejectPortOf(actions: readonly unknown[]): string | undefined {
   return hasText(port) ? port : undefined;
 }
 
-/** Turned on, keeps a reject the decider is offered and replaces any other stored reject with `rejectAction`. */
+/** Drops every stored reject and, turned on, appends `rejectAction`. The switch turns it on only while it shows off. */
 export function withReject(actions: readonly unknown[], on: boolean, rejectAction: unknown): unknown[] {
-  if (on && offeredReject(actions) !== undefined) {
-    return [...actions];
-  }
   const withoutReject = actions.filter((entry) => !isReject(entry));
   return on ? [...withoutReject, rejectAction] : withoutReject;
 }

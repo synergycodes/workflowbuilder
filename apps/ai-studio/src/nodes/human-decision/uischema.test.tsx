@@ -64,15 +64,15 @@ function commit(element: HTMLInputElement, text: string) {
 describe('the Human task properties panel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
-  let dataUpdates = 0;
+  let trackedChanges = 0;
   let unsubscribe: () => void;
 
   beforeEach(async () => {
     useStore.setState(useStore.getInitialState(), true);
     resetExecution();
-    dataUpdates = 0;
-    unsubscribe = useChangesTrackerStore.subscribe((state) => {
-      if (state.lastChangeName === 'dataUpdate') dataUpdates += 1;
+    trackedChanges = 0;
+    unsubscribe = useChangesTrackerStore.subscribe(() => {
+      trackedChanges += 1;
     });
     container = document.createElement('div');
     document.body.append(container);
@@ -119,6 +119,6 @@ describe('the Human task properties panel', () => {
 
     expect(storedProperties()?.['description']).toBe('A person approves the refund');
     expect(storedProperties()?.['decisionRequest']).toBe(defaultPropertiesData.decisionRequest);
-    expect(dataUpdates).toBe(1);
+    expect(trackedChanges).toBe(1);
   });
 });

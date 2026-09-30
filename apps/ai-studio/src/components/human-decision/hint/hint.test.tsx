@@ -47,7 +47,6 @@ describe('Hint', () => {
     expect(icon()).toBe(expectedIcon);
   });
 
-  // A selection change puts new text in the same mounted hints, which a status region would read out each time.
   it('is a status region only when live', () => {
     render('info');
     expect(hint()?.hasAttribute('role')).toBe(false);

@@ -8,7 +8,7 @@ export type HintVariant = 'neutral' | 'info' | 'warning';
 
 const ICONS = { neutral: undefined, info: 'Info', warning: 'Warning' } as const;
 
-// `live` announces a new text, for a hint a switch in the same section changes in place.
+// `live` reads out every new text: a switch's, and, as the panel stays mounted, a new selection's or edge's too.
 type Props = { variant: HintVariant; live?: boolean; children: ReactNode };
 
 /** A note in a properties section: neutral for guidance, info for how the node behaves, warning for a gap. */

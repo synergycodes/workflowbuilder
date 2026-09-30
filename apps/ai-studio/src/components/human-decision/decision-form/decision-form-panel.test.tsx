@@ -13,6 +13,7 @@ import { plugin } from '../../../plugin';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
 import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
+import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../decision-fields/decision-fields-control';
 import { decisionFormRenderer } from './decision-form-control';
 
@@ -24,7 +25,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
 vi.mock('../../../adapters/submit-decision', () => ({ submitDecision: vi.fn() }));
 const submit = vi.mocked(submitDecision);
 
-registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
 plugin();
 
 function agent(id: string): WorkflowBuilderNode {
