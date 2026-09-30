@@ -71,7 +71,7 @@ The URL can name what the editor opens. AI Studio reads it once, while the page 
 - A URL with neither id takes the stored run while it may still be alive and writes its id into the URL, so a remembered run opens the same way as a linked one.
 - A diagram opened from the URL never touches the local draft. The editor gets the `props` integration with a save callback that is never called, and `plugins/open-from-url/` replaces the editor's Save button, which is also what autosaves and saves on close.
 - Run writes the new run's id into the URL with `history.replaceState` and keeps `workflowId`. Reset removes it. In a run view, Reset also reloads the page, which lands on the workflow when the URL names one and on the local draft otherwise.
-- Anything that stops a lookup shows one notice and opens the local draft (or the workflow, when only the run failed): an unknown id, `401`, `403` and `404` (read alike, so the answer never confirms that an id exists), no answer, an unreadable answer, a graph that cannot be drawn. When a stored run gets no answer, its id still moves into the URL, so a reload tries again.
+- Anything that stops a lookup shows one notice and opens the local draft (or the workflow, when only the run failed): an unknown id, `401`, `403` and `404` (read alike, so the answer never confirms that an id exists), no answer, an unreadable answer, a graph that cannot be drawn. When a stored run gets no answer or a server error, its id still moves into the URL, so a reload tries again. A throw while the editor draws is caught by an error boundary that forgets the stored run and offers the local draft.
 
 Known limits:
 

@@ -58,7 +58,7 @@ describe('resolveDiagramSource: no ids', () => {
     expect(await resolveDiagramSource(target({}), fakes)).toEqual({
       source: { kind: 'local' },
       notices: [],
-      serverUnreachable: false,
+      mayOpenOnRetry: false,
     });
     expect(fakes.fetchWorkflow).not.toHaveBeenCalled();
     expect(fakes.fetchExecutionSnapshot).not.toHaveBeenCalled();
@@ -181,14 +181,15 @@ describe('resolveDiagramSource: ?executionId=', () => {
 
   it.each([
     ['a network error', { ok: false, status: 'network' } as const, true],
+    ['a gateway 502', { ok: false, status: 502 } as const, true],
     ['a 404', { ok: false, status: 404 } as const, false],
-  ])('says whether the server answered, after %s', async (_name, failure, serverUnreachable) => {
+  ])('says whether a retry may open it, after %s', async (_name, failure, mayOpenOnRetry) => {
     const resolution = await resolveDiagramSource(
       target({ executionId: RUN }),
       deps({ fetchExecutionSnapshot: vi.fn(async () => failure) }),
     );
 
-    expect(resolution.serverUnreachable).toBe(serverUnreachable);
+    expect(resolution.mayOpenOnRetry).toBe(mayOpenOnRetry);
   });
 
   it('opens the local draft when the executed graph cannot be drawn', async () => {

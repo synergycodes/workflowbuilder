@@ -36,14 +36,14 @@ function withRememberedRun(target: OpenTarget): OpenTarget {
 async function open(search: string, deps: ResolveDeps): Promise<OpenedSource> {
   const named = parseOpenTarget(search);
   const target = withRememberedRun(named);
-  const { source, notices, serverUnreachable } = await resolveDiagramSource(target, deps);
+  const { source, notices, mayOpenOnRetry } = await resolveDiagramSource(target, deps);
 
   // The store holds exactly the run the canvas shows; any other remembered run belongs to another canvas.
   const runToOpen = source.kind === 'execution' ? source.executionId : undefined;
   if (runToOpen === undefined) {
     resetExecution();
     // A remembered run the server did not answer for moves into the address, so a reload retries it.
-    if (named.executionId === undefined && target.executionId !== undefined && serverUnreachable) {
+    if (named.executionId === undefined && target.executionId !== undefined && mayOpenOnRetry) {
       syncExecutionIdToAddress(target.executionId);
     }
   } else {

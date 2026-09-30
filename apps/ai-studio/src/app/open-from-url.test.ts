@@ -181,6 +181,15 @@ describe('openFromUrl: a bare address and the remembered run', () => {
     expect(useDiagramSourceStore.getState().notices[0]!.text).toMatch(/reload/i);
   });
 
+  it('keeps a remembered run in the address when a gateway answers 502 while the backend restarts', async () => {
+    rememberRun();
+
+    await openFromUrl('', deps({ fetchExecutionSnapshot: vi.fn(async () => ({ ok: false as const, status: 502 })) }));
+
+    expect(globalThis.location.search).toBe(`?executionId=${REMEMBERED_RUN}`);
+    expect(useDiagramSourceStore.getState().notices[0]!.text).toMatch(/reload/i);
+  });
+
   it('promotes nothing when no run is remembered', async () => {
     const fakes = deps();
 

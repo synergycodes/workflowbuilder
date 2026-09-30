@@ -24,13 +24,16 @@ export type OpenedSource =
 type ExecutionSource = Extract<OpenedSource, { kind: 'execution' }>;
 type WorkflowSource = Extract<OpenedSource, { kind: 'workflow' }>;
 
-/** `serverUnreachable`: a lookup got no answer at all, so the same address may open on a retry. */
-export type Resolution = { source: OpenedSource; notices: string[]; serverUnreachable: boolean };
+/** `mayOpenOnRetry`: a lookup got no answer or a server error, so the same address may open on a retry. */
+export type Resolution = { source: OpenedSource; notices: string[]; mayOpenOnRetry: boolean };
 
-type Trace = { notices: string[]; serverUnreachable: boolean };
+type Trace = { notices: string[]; mayOpenOnRetry: boolean };
 
 const SHOWING_LOCAL = 'Showing your local draft instead.';
 const SHOWING_WORKFLOW = 'Showing its workflow instead.';
+
+// A gateway answers 5xx while the backend restarts.
+const isRetryable = ({ status }: FetchFailure) => status === 'network' || (typeof status === 'number' && status >= 500);
 
 // 401 and 403 read like 404: telling them apart would confirm that the id exists.
 function failureReason(failure: FetchFailure): string {
@@ -39,6 +42,7 @@ function failureReason(failure: FetchFailure): string {
   if (failure.status === 401 || failure.status === 403 || failure.status === 404) {
     return 'it does not exist or cannot be opened here';
   }
+  if (isRetryable(failure)) return `the server answered ${failure.status}; reload the page to try again`;
   return `the server answered ${failure.status}`;
 }
 
@@ -64,7 +68,7 @@ async function openRun(
 ): Promise<ExecutionSource | undefined> {
   const result = await deps.fetchExecutionSnapshot(executionId);
   if (!result.ok) {
-    if (result.status === 'network') trace.serverUnreachable = true;
+    if (isRetryable(result)) trace.mayOpenOnRetry = true;
     trace.notices.push(`The run could not be opened: ${failureReason(result)}. ${fallback}`);
     return undefined;
   }
@@ -76,7 +80,7 @@ async function openWorkflow(workflowId: string, deps: ResolveDeps, trace: Trace)
   const { notices } = trace;
   const result = await deps.fetchWorkflow(workflowId);
   if (!result.ok) {
-    if (result.status === 'network') trace.serverUnreachable = true;
+    if (isRetryable(result)) trace.mayOpenOnRetry = true;
     notices.push(`The workflow in the link could not be opened: ${failureReason(result)}. ${SHOWING_LOCAL}`);
     return undefined;
   }
@@ -116,7 +120,7 @@ async function resolve(target: OpenTarget, deps: ResolveDeps, trace: Trace): Pro
 
 /** Never rejects: a source that cannot be opened becomes a notice. */
 export async function resolveDiagramSource(target: OpenTarget, deps: ResolveDeps): Promise<Resolution> {
-  const trace: Trace = { notices: [...target.notices], serverUnreachable: false };
+  const trace: Trace = { notices: [...target.notices], mayOpenOnRetry: false };
   const source = await resolve(target, deps, trace);
   return { source, ...trace };
 }
