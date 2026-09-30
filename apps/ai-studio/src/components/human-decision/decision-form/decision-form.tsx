@@ -32,8 +32,12 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
 
   const approve = () => {
     const snapshot = fields.current?.snapshot();
-    if (snapshot && !blocksApproval(snapshot.invalidFields, schema)) {
-      void submit({ action: actions.resume.name, edits: editsOf(proposal, snapshot.data, schema) });
+    if (!snapshot) {
+      return;
+    }
+    const edits = editsOf(proposal, snapshot.data, schema);
+    if (!blocksApproval(snapshot.invalidFields, schema, edits)) {
+      void submit({ action: actions.resume.name, edits });
     }
   };
 
@@ -44,7 +48,9 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
         schema={schema}
         initialData={startingValues(proposal, draft?.values, schema, draft?.fields)}
         readOnly={isBusy}
-        onInvalidFieldsChange={(invalidFields) => setIsApproveBlocked(blocksApproval(invalidFields, schema))}
+        onChange={({ data, invalidFields }) =>
+          setIsApproveBlocked(blocksApproval(invalidFields, schema, editsOf(proposal, data, schema)))
+        }
         onFail={() => setIsApproveBlocked(true)}
         onUnmount={(values) => saveDraft({ values, fields: schemaFields(schema).map(([key]) => key) })}
       />

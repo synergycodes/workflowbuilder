@@ -1,5 +1,6 @@
 import { editableFields } from '../editor-form/editor-layout';
-import { schemaFields } from '../editor-form/form-schema';
+import { requiredFields, schemaFields } from '../editor-form/form-schema';
+import { hasText } from '../has-text';
 import { isPlainObject } from '../is-plain-object';
 
 /** The proposal's values for the fields the form declares. A hidden field is not declared, so it is not here. */
@@ -40,26 +41,48 @@ export function startingValues(
   return values;
 }
 
+function allowsNull(declaration: Record<string, unknown> | undefined): boolean {
+  const type = declaration?.['type'];
+  return Array.isArray(type) && type.includes('null');
+}
+
 // An emptied field travels as null, or as '' from a text area; the backend reads both as emptied, and a dropped key
-// would keep the old value.
+// would keep the old value. A text area shows a null as empty and hands back '' once touched, which is no edit where
+// the type allows null.
 export function editsOf(
   proposed: Record<string, unknown>,
   current: Record<string, unknown>,
   schema: unknown,
 ): Record<string, unknown> {
+  const declarations = new Map(schemaFields(schema));
   const edits: Record<string, unknown> = {};
   for (const key of editableFields(schema)) {
-    if (!Object.is(current[key], proposed[key])) {
+    const isNullShownEmpty = proposed[key] === null && current[key] === '' && allowsNull(declarations.get(key));
+    if (!Object.is(current[key], proposed[key]) && !isNullShownEmpty) {
       edits[key] = current[key] === undefined ? null : current[key];
     }
   }
   return edits;
 }
 
-// Only a fault the person can correct holds the decision back. The backend checks presence and editability, not values.
-export function blocksApproval(invalidFields: ReadonlySet<string>, schema: unknown): boolean {
+// Must stay equal to `isEmptied` in the backend's validate-submitted-decision.ts; the parity table in the tests checks it.
+function isEmptied(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === 'string' && !hasText(value));
+}
+
+// Only a fault the person can correct holds the decision back: an editable field the schema faults, which the backend
+// does not check yet, or a required field the edits empty, which it refuses even where the type accepts the value.
+export function blocksApproval(
+  invalidFields: ReadonlySet<string>,
+  schema: unknown,
+  edits: Record<string, unknown>,
+): boolean {
   const editable = editableFields(schema);
-  return [...invalidFields].some((field) => editable.has(field));
+  if ([...invalidFields].some((field) => editable.has(field))) {
+    return true;
+  }
+  const required = requiredFields(schema);
+  return Object.entries(edits).some(([key, value]) => required.has(key) && isEmptied(value));
 }
 
 /** The values a decision settled: the proposal with the edits applied, an emptied field left without a value. */

@@ -15,6 +15,12 @@ export function schemaFields(schema: unknown): [string, Record<string, unknown>]
   );
 }
 
+/** The fields an object schema lists under `required`; anything else requires none. */
+export function requiredFields(schema: unknown): Set<string> {
+  const required = isPlainObject(schema) ? schema['required'] : undefined;
+  return new Set(Array.isArray(required) ? required.filter((name): name is string => typeof name === 'string') : []);
+}
+
 export function encodePointerSegment(key: string): string {
   return key.replaceAll('~', '~0').replaceAll('/', '~1');
 }
@@ -23,7 +29,7 @@ export function decodePointerSegment(segment: string): string {
   return segment.replaceAll('~1', '/').replaceAll('~0', '~');
 }
 
-type SchemaError = { instancePath: string; params: Record<string, unknown> };
+export type SchemaError = { instancePath: string; params: Record<string, unknown> };
 
 /** The top-level fields a set of validation errors is about. */
 export function invalidFieldsOf(errors?: readonly SchemaError[]): ReadonlySet<string> {

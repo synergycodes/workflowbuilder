@@ -1,9 +1,8 @@
 import type { JsonSchema } from '@workflowbuilder/sdk';
 
 import { shownFields } from '../editor-form/editor-layout';
-import { schemaFields } from '../editor-form/form-schema';
+import { requiredFields, schemaFields } from '../editor-form/form-schema';
 import { hasText } from '../has-text';
-import { isPlainObject } from '../is-plain-object';
 
 /** What the author picks per field, in dropdown order. */
 export const FIELD_MODES = ['hidden', 'readOnly', 'editable', 'required'] as const;
@@ -14,11 +13,6 @@ export type FieldRow = { key: string; title: string; declaration: Record<string,
 
 export function isFieldMode(value: unknown): value is FieldMode {
   return (FIELD_MODES as readonly unknown[]).includes(value);
-}
-
-function requiredOf(schema: unknown): unknown[] {
-  const required = isPlainObject(schema) ? schema['required'] : undefined;
-  return Array.isArray(required) ? required : [];
 }
 
 function titleOf(key: string, field: Record<string, unknown>): string {
@@ -63,7 +57,7 @@ export function fieldModeOf(schema: unknown, key: string): FieldMode {
   if (declaration['readOnly'] === true) {
     return 'readOnly';
   }
-  return requiredOf(schema).includes(key) ? 'required' : 'editable';
+  return requiredFields(schema).has(key) ? 'required' : 'editable';
 }
 
 function withoutNull(type: unknown[]): unknown {
