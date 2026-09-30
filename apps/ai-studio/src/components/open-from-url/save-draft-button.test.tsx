@@ -37,7 +37,7 @@ function render() {
 beforeEach(() => {
   fetchMock = vi.fn(async () => jsonResponse(200, { id: WORKFLOW, name: 'Refund desk' }));
   vi.stubGlobal('fetch', fetchMock);
-  useDiagramSourceStore.setState({ notices: [] });
+  useDiagramSourceStore.setState({ isRunView: false, notices: [] });
   useStore.getState().setToggleReadOnlyMode(false);
   setStoreNodes(nodes);
   setStoreEdges(edges);
@@ -92,6 +92,13 @@ describe('SaveDraftButton', () => {
 
   it('cannot save while the canvas is read-only', () => {
     useStore.getState().setToggleReadOnlyMode(true);
+    render();
+
+    expect(saveButton().disabled).toBe(true);
+  });
+
+  it("cannot save a run's graph, even after the read-only switch lifts the run lock", () => {
+    useDiagramSourceStore.setState({ isRunView: true });
     render();
 
     expect(saveButton().disabled).toBe(true);

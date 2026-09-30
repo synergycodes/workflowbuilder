@@ -3,14 +3,15 @@ import { NavButton } from '@workflowbuilder/ui';
 import { useCallback, useState } from 'react';
 
 import { saveWorkflowDraft } from '../../adapters/open-from-url-api';
-import { addNotice } from '../../stores/use-diagram-source-store';
+import { addNotice, useDiagramSourceStore } from '../../stores/use-diagram-source-store';
 
 const LABEL = 'Save the workflow draft';
 
 export function SaveDraftButton({ workflowId }: { workflowId: string }) {
   const [isSaving, setIsSaving] = useState(false);
-  // A locked canvas can be an older run's graph, which would replace the workflow's newer draft.
   const isReadOnly = useStore((state) => state.isReadOnlyMode);
+  // A run's graph is older than the workflow's draft, even after the read-only switch lifts the lock.
+  const isRunView = useDiagramSourceStore((state) => state.isRunView);
 
   const save = useCallback(async () => {
     setIsSaving(true);
@@ -29,7 +30,7 @@ export function SaveDraftButton({ workflowId }: { workflowId: string }) {
       aria-label={LABEL}
       tooltip={LABEL}
       onClick={save}
-      disabled={isSaving || isReadOnly}
+      disabled={isSaving || isReadOnly || isRunView}
       prefixIcon={<Icon name="FloppyDisk" />}
     />
   );
