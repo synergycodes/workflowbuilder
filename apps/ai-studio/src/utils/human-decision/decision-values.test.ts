@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 
+import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
+
+// The real receiver, not a copy, as in ../../nodes/human-decision/decision-request-contract.test.ts
+// (follow-up: decision-request-contract-test-home).
+import { validateSubmittedDecision } from '../../../../backend/src/domain/decision/validate-submitted-decision';
 import { blocksApproval, editsOf, proposedValues, withEdits } from './decision-values';
 import { reviewRequest } from './review-request.fixture';
 
@@ -72,6 +77,18 @@ describe('editsOf', () => {
   it('carries a value typed into a field that started empty', () => {
     expect(editsOf({}, { refundAmount: 120 }, schema)).toEqual({ refundAmount: 120 });
   });
+
+  it('reads the empty text a text area hands back for a null as no edit, where the type allows null', () => {
+    const nullable = { type: 'object', properties: { note: { type: ['string', 'null'] } } };
+
+    expect(editsOf({ note: null }, { note: '' }, nullable)).toEqual({});
+  });
+
+  it('carries the empty text over a null where the type does not allow null', () => {
+    expect(editsOf({ ...proposed, replyDraft: null }, { ...proposed, replyDraft: '' }, schema)).toEqual({
+      replyDraft: '',
+    });
+  });
 });
 
 describe('withEdits', () => {
@@ -97,7 +114,7 @@ describe('withEdits', () => {
 
 describe('blocksApproval', () => {
   it('holds the decision back for a fault in a field the person can edit', () => {
-    expect(blocksApproval(new Set(['refundAmount']), schema)).toBe(true);
+    expect(blocksApproval(new Set(['refundAmount']), schema, {})).toBe(true);
   });
 
   it.each([
@@ -105,10 +122,61 @@ describe('blocksApproval', () => {
     ['a field of a type the form leaves out', 'itemCount'],
     ['a field the form does not declare', 'internalReasoning'],
   ])('lets it through for a fault in %s', (_name, field) => {
-    expect(blocksApproval(new Set([field]), schema)).toBe(false);
+    expect(blocksApproval(new Set([field]), schema, {})).toBe(false);
   });
 
   it('lets it through when nothing is at fault', () => {
-    expect(blocksApproval(new Set(), schema)).toBe(false);
+    expect(blocksApproval(new Set(), schema, { refundAmount: 120 })).toBe(false);
   });
+});
+
+describe('blocksApproval against the backend validator', () => {
+  const noteRequest: DecisionRequest = {
+    ...reviewRequest,
+    schema: {
+      type: 'object',
+      properties: { note: { type: ['string', 'null'] }, remark: { type: 'string' } },
+      required: ['note'],
+    },
+  };
+  const replyRequest: DecisionRequest = {
+    ...reviewRequest,
+    schema: { ...reviewRequest.schema, required: ['refundAmount', 'replyDraft'] },
+  };
+  const proposed = proposedValues(proposal, schema);
+
+  it.each<[string, DecisionRequest, Record<string, unknown>, Record<string, unknown>, boolean]>([
+    ['an edited amount', reviewRequest, proposed, { ...proposed, refundAmount: 120 }, false],
+    ['a required amount cleared', reviewRequest, proposed, { ...proposed, refundAmount: undefined }, true],
+    ['a required reply emptied to an empty string', replyRequest, proposed, { ...proposed, replyDraft: '' }, true],
+    ['a required reply emptied to whitespace', replyRequest, proposed, { ...proposed, replyDraft: '  ' }, true],
+    [
+      'a required reply the model left null, typed and cleared',
+      replyRequest,
+      { ...proposed, replyDraft: null },
+      { ...proposed, replyDraft: '' },
+      true,
+    ],
+    ['a nullable required note emptied to an empty string', noteRequest, { note: 'Call back' }, { note: '' }, true],
+    ['a nullable required note emptied to whitespace', noteRequest, { note: 'Call back' }, { note: '  ' }, true],
+    ['a nullable required note emptied to a tab and a newline', noteRequest, { note: 'x' }, { note: '\t\n' }, true],
+    [
+      'a required note the model left null and the person left alone',
+      noteRequest,
+      { note: null },
+      { note: null },
+      false,
+    ],
+    ['a required note the model left null, typed and cleared', noteRequest, { note: null }, { note: '' }, false],
+    ['an emptied optional remark', noteRequest, { note: 'a', remark: 'b' }, { note: 'a', remark: '' }, false],
+  ])(
+    'blocks Approve for the edits the backend refuses, and only those: %s',
+    (_name, request, before, after, blocked) => {
+      const edits = editsOf(before, after, request.schema);
+      const refusal = validateSubmittedDecision(request, { action: 'approve', edits });
+
+      expect(blocksApproval(new Set(), request.schema, edits)).toBe(blocked);
+      expect(refusal.error?.code).toBe(blocked ? 'required_field_missing' : undefined);
+    },
+  );
 });

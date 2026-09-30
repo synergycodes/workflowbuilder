@@ -70,6 +70,11 @@ function refundAmountReadOnly() {
   };
 }
 
+// A text field the panel sets to Editable and required: a plain `string`, since the pick drops `null` from the type.
+function replyDraftRequired() {
+  return { ...reviewRequest, schema: { ...reviewRequest.schema, required: ['refundAmount', 'replyDraft'] } };
+}
+
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
 
 function parkHumanOne(output: unknown = draftOutput) {
@@ -308,7 +313,7 @@ describe.each([
       expect(sentEdits()).toEqual({ 'a/b': 'changed' });
     });
 
-    it('shows and edits an optional field that structured output types with null', async () => {
+    it('shows and edits a required field that structured output types with null', async () => {
       const schema = {
         type: 'object',
         properties: { note: { type: ['string', 'null'], title: 'Note' } },
@@ -325,7 +330,7 @@ describe.each([
       expect(sentEdits()).toEqual({ note: 'Refunded' });
     });
 
-    it('does not hold back an optional field the model left null', async () => {
+    it('lets through a required field the model left null and the person left alone', async () => {
       const schema = {
         type: 'object',
         properties: { note: { type: ['string', 'null'], title: 'Note' } },
@@ -333,6 +338,27 @@ describe.each([
       };
       render({ ...reviewRequest, schema });
       parkHumanOne({ note: null });
+      await settle();
+
+      expect(button('Approve').disabled).toBe(false);
+
+      await click(button('Approve'));
+
+      expect(sentEdits()).toEqual({});
+    });
+
+    it('lets through a required field the model left null, even after the person types and clears it', async () => {
+      const schema = {
+        type: 'object',
+        properties: { note: { type: ['string', 'null'], title: 'Note' } },
+        required: ['note'],
+      };
+      render({ ...reviewRequest, schema });
+      parkHumanOne({ note: null });
+
+      commit(fieldOf('Note')!, 'x');
+      await settle();
+      commit(fieldOf('Note')!, '');
       await settle();
 
       expect(button('Approve').disabled).toBe(false);
@@ -573,6 +599,50 @@ describe.each([
       await click(button('Approve'));
 
       expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('refuses to send a required text field emptied to blank text, even before the button greys out', async () => {
+      render(replyDraftRequired());
+      parkHumanOne();
+      commit(fieldOf('Reply draft')!, '   ');
+
+      await click(button('Approve'));
+
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ['an empty string', ''],
+      ['whitespace', '   '],
+    ])(
+      'holds back Approve while a required text field is emptied to %s, and lets it through once filled again',
+      async (_name, blank) => {
+        render(replyDraftRequired());
+        parkHumanOne();
+
+        commit(fieldOf('Reply draft')!, blank);
+        await settle();
+
+        expect(button('Approve').disabled).toBe(true);
+
+        commit(fieldOf('Reply draft')!, 'Refunded');
+        await settle();
+        await click(button('Approve'));
+
+        expect(sentEdits()).toEqual({ replyDraft: 'Refunded' });
+      },
+    );
+
+    it('still holds back a required text field the model left null after the person types and clears it', async () => {
+      render(replyDraftRequired());
+      parkHumanOne({ ...draftOutput, replyDraft: null });
+
+      commit(fieldOf('Reply draft')!, 'x');
+      await settle();
+      commit(fieldOf('Reply draft')!, '');
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
     });
 
     it('opens the reject for a required reason, and confirms it only once the reason is given', async () => {
