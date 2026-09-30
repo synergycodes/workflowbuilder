@@ -955,7 +955,10 @@ describe.each([
       expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
       expect(labelled('Decision')).toBeUndefined();
-      expect(container.querySelectorAll('button')).toHaveLength(0);
+      const outsideSectionHeaders = [...container.querySelectorAll('button')].filter(
+        (button) => button.closest('[aria-expanded]') === null,
+      );
+      expect(outsideSectionHeaders).toHaveLength(0);
     });
 
     it('shows a rejection with its reason and the proposal it turned down', () => {

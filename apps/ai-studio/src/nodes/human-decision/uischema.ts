@@ -9,11 +9,24 @@ const scope = getScope<HumanDecisionSchema>;
 export const uischema: UISchema = {
   type: 'VerticalLayout',
   elements: [
+    // Not the SDK's `generalInformation`: it adds a Status field and shows only on a node with a `type`.
     {
-      type: 'Text',
-      scope: scope('properties.label'),
-      label: 'Title',
-      placeholder: 'Node Title...',
+      type: 'Accordion',
+      label: 'General information',
+      elements: [
+        {
+          type: 'Text',
+          scope: scope('properties.label'),
+          label: 'Title',
+          placeholder: 'Node Title...',
+        },
+        {
+          type: 'Text',
+          scope: scope('properties.description'),
+          label: 'Description',
+          placeholder: 'Type your description here...',
+        },
+      ],
     },
     // Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     {
