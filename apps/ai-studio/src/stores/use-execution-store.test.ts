@@ -16,6 +16,7 @@ import {
   applySnapshot,
   applyStopRequested,
   isRunAlive,
+  requestDecisionFocus,
   resetExecution,
   saveDecisionDraft,
   saveDecisionSend,
@@ -36,6 +37,9 @@ const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[no
 
 const drafts = () => useExecutionStore.getState().decisionDrafts;
 const sends = () => useExecutionStore.getState().decisionSends;
+
+const focusRequest = () => useExecutionStore.getState().decisionFocusRequest;
+const waitOn = (nodeId: string) => applyEvent(event({ type: 'node_waiting', nodeId }));
 
 const terminalPayload: { [T in TerminalExecutionEventType]: Extract<ExecutionEvent, { type: T }>['payload'] } = {
   execution_completed: undefined,
@@ -242,6 +246,35 @@ describe('use-execution-store: decision drafts', () => {
     saveDecisionDraft(wait, { reason: 'Checked' });
     resetExecution();
     expect(drafts()).toEqual({});
+  });
+});
+
+describe('use-execution-store: the focus Decide asks for', () => {
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    waitOn('human-1');
+    requestDecisionFocus('human-1');
+  });
+
+  it('keeps the request while its node waits', () => {
+    waitOn('human-2');
+
+    expect(focusRequest()).toBe('human-1');
+  });
+
+  it('drops it once the node stops waiting, so a later wait of the same node does not inherit it', () => {
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(focusRequest()).toBeUndefined();
+
+    waitOn('human-1');
+    expect(focusRequest()).toBeUndefined();
+  });
+
+  it('drops it when a snapshot shows the node no longer waiting', () => {
+    applySnapshot({ executionId: 'exec-1', status: 'running', lastSequence: 0, events: [] });
+
+    expect(focusRequest()).toBeUndefined();
   });
 });
 

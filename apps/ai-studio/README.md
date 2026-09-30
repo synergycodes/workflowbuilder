@@ -1,6 +1,6 @@
 # AI Studio
 
-Reference frontend for the Workflow Builder AI Studio product. Consumes `@workflowbuilder/sdk` like an external user would, composing app-shell UI directly via JSX and using the plugin API only for per-node markers + translations.
+Reference frontend for the Workflow Builder AI Studio product. Consumes `@workflowbuilder/sdk` like an external user would, composing app-shell UI directly via JSX and using the plugin API only for per-node markers + translations, and to hide the properties panel's Delete button.
 
 > ⚠️ Local development only. Depends on the reference backend, which has no auth/authz. See [apps/backend/README.md](../backend/README.md).
 
@@ -16,21 +16,22 @@ A complete, runnable AI workflow product built on top of the Workflow Builder SD
 - The author picks what the decider's form shows. The panel lists the fields the proposal source (the named `proposalSourceNodeId`, else the single predecessor) declares under `properties.outputSchema` that the form can show (text, number, yes/no, and nullable text or yes/no; integers, nullable numbers, objects, arrays and keys with a dot or bracket are left out), each at one of four levels: Hidden, Read-only, Editable, or Editable and required. The control lives in `src/components/human-decision/decision-fields/`; from the moment the backend starts a run until Reset it is hidden, so the panel shows only the run (the decision form, then the record).
 - The picks are `decisionRequest.schema` itself, in the contract's format, so the canvas, the Run payload and the decider's form read one schema: a field it leaves out is Hidden, and Editable and required drops `null` from a nullable type, so a null the model left holds Approve back. A required field the decider empties holds it back too, because the backend refuses it. A required text field emptied or left with only whitespace shows no error of its own, and nothing on screen says why Approve is disabled. A field the source no longer declares stays in the schema, listed as "not in the source", until the author hides it. A stored field of a type the form cannot show gets no row, and the next pick drops it from the schema, `readOnly` and `required` included. Hidden keeps a field off the form and refuses edits to it; the value stays in the source's output, which the log panel shows and later nodes read.
 - A rejection ends the run as a result, not a dead end: the run closes `completed`, the log panel names the outcome and who settled it, and the reject handle needs no edge. The node's output carries `resolvedBy` beside the other decision fields. The run's pill stays `completed` on purpose, a rejection being a result and not a failure; whether the panel marks it visually is for the design pass.
-- The person decides in the node's properties sidebar: the editor's own form over `decisionRequest.schema`, filled from the proposal source's output, with read-only fields disabled and only the changed editable fields sent as `edits`. From the moment the backend starts a run until Reset the canvas is read-only, so the form reads the graph the run executes; `use-run-locks-canvas.ts` lists the exceptions. Should undo change the picks under an open form, the form keeps the fields it opened with.
+- The person decides in the node's properties sidebar: the editor's own form over `decisionRequest.schema`, filled from the proposal source's output, with read-only fields disabled and only the changed editable fields sent as `edits`. Approve and "Reject…" sit in the panel's footer. The panel shows no Delete button for any selection, deliberately for now; deleting stays on the Delete and Backspace keys. From the moment the backend starts a run until Reset the canvas is read-only, so the form reads the graph the run executes; `use-run-locks-canvas.ts` lists the exceptions. Should undo change the picks under an open form, the form keeps the fields it opened with.
 - An AI Agent node that answers as structured fields: the Response format dropdown sets `properties.outputSchema` to a preset JSON Schema, the worker asks the model for that shape (see [apps/execution-worker/README.md](../execution-worker/README.md#ai-agent-structured-output)), and in Refund Review the draft's fields fill the decision form, and the reply the person approves, edits included, is what the customer gets. Plain text stays the default and returns `{ response }`. The draft's `internalReasoning` stays off the form because the decision request's schema leaves it out, and out of the confirmation only because the second agent's prompt says so; nothing downstream enforces that. A node switched to a structured format has no `response`, so a downstream `{{ nodes.<id>.response }}` fails the run as `template_unresolved`, while the editor still suggests `response` for every AI Agent.
-- Live execution UI: Run/Stop controls, log panel, per-node status markers (including a waiting marker), edge highlighting, node-detail overlay
+- Live execution UI: Run/Stop controls, log panel, per-node status markers, a footer on a waiting decision node with Decide, a snackbar while the run waits for a decision, edge highlighting, node-detail overlay
+- Decide selects the waiting node through the SDK's `useSetSelection`, replacing the selection, and moves the focus to its decision form. Neither the footer nor the snackbar shows while the run is `cancelling`, since the backend refuses a decision then, and the snackbar offers no Decide for a node the canvas lacks. A closed snackbar stays closed for that wait until the page reloads.
 - A run survives a reload or a closed tab: its id, stream URL and status live in `localStorage` under `ai-studio:execution`, and on mount `useBackendExecution` reopens the stream while the run may still be alive, so the snapshot rebuilds markers and log. A run the client saw finish is stored as idle; one that finished while the tab was closed shows once more, then goes idle. [Stopping and resetting a run](#stopping-and-resetting-a-run) covers Stop, Reset and the limits.
 
 This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothing else.
 
 ## Compared to apps/demo
 
-|              | `apps/demo`                 | `apps/ai-studio`                                         |
-| ------------ | --------------------------- | -------------------------------------------------------- |
-| Purpose      | Minimal embed showcase      | Full AI workflow product                                 |
-| Backend      | None (pure SPA)             | Required (Hono + Temporal)                               |
-| Plugin model | Plugins decorate the editor | Direct JSX composition; one slim plugin for node markers |
-| Dev port     | 4200                        | 4201                                                     |
+|              | `apps/demo`                 | `apps/ai-studio`                                                                       |
+| ------------ | --------------------------- | -------------------------------------------------------------------------------------- |
+| Purpose      | Minimal embed showcase      | Full AI workflow product                                                               |
+| Backend      | None (pure SPA)             | Required (Hono + Temporal)                                                             |
+| Plugin model | Plugins decorate the editor | Direct JSX composition; one slim plugin for node markers and the panel's Delete button |
+| Dev port     | 4200                        | 4201                                                                                   |
 
 ## Stopping and resetting a run
 

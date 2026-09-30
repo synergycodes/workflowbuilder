@@ -29,3 +29,8 @@
     transform 0.3s ease-in-out,
     opacity 0.3s ease-in-out;
 }
+
+/* Run and Stop replace each other, so a shared width keeps the swap from resizing the button. */
+.run-stop-button {
+  min-width: var(--wb-ds-size-1200);
+}
