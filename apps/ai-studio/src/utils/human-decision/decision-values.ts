@@ -41,23 +41,31 @@ export function startingValues(
   return values;
 }
 
+function allowsNull(declaration: Record<string, unknown> | undefined): boolean {
+  const type = declaration?.['type'];
+  return Array.isArray(type) && type.includes('null');
+}
+
 // An emptied field travels as null, or as '' from a text area; the backend reads both as emptied, and a dropped key
-// would keep the old value.
+// would keep the old value. A text area shows a null as empty and hands back '' once touched, which is no edit where
+// the type allows null.
 export function editsOf(
   proposed: Record<string, unknown>,
   current: Record<string, unknown>,
   schema: unknown,
 ): Record<string, unknown> {
+  const declarations = new Map(schemaFields(schema));
   const edits: Record<string, unknown> = {};
   for (const key of editableFields(schema)) {
-    if (!Object.is(current[key], proposed[key])) {
+    const isNullShownEmpty = proposed[key] === null && current[key] === '' && allowsNull(declarations.get(key));
+    if (!Object.is(current[key], proposed[key]) && !isNullShownEmpty) {
       edits[key] = current[key] === undefined ? null : current[key];
     }
   }
   return edits;
 }
 
-// Same as `isEmptied` in the backend's validate-submitted-decision.ts.
+// Must stay equal to `isEmptied` in the backend's validate-submitted-decision.ts; the parity table in the tests checks it.
 function isEmptied(value: unknown): boolean {
   return value === undefined || value === null || (typeof value === 'string' && !hasText(value));
 }

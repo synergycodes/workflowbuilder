@@ -29,7 +29,7 @@ export function decodePointerSegment(segment: string): string {
   return segment.replaceAll('~1', '/').replaceAll('~0', '~');
 }
 
-type SchemaError = { instancePath: string; params: Record<string, unknown> };
+export type SchemaError = { instancePath: string; params: Record<string, unknown> };
 
 /** The top-level fields a set of validation errors is about. */
 export function invalidFieldsOf(errors?: readonly SchemaError[]): ReadonlySet<string> {

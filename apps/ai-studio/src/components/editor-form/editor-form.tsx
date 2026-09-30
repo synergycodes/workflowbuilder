@@ -5,7 +5,7 @@ import { type ComponentProps, type Ref, useEffect, useImperativeHandle, useRef, 
 import styles from './editor-form.module.css';
 
 import { editorLayout } from '../../utils/editor-form/editor-layout';
-import { invalidFieldsOf } from '../../utils/editor-form/form-schema';
+import { type SchemaError, invalidFieldsOf } from '../../utils/editor-form/form-schema';
 import { isPlainObject } from '../../utils/is-plain-object';
 import { FormBoundary } from './form-boundary';
 
@@ -15,7 +15,7 @@ type ValidationMode = NonNullable<ComponentProps<typeof JsonForms>['validationMo
 
 type EditorFormSnapshot = { data: Record<string, unknown>; invalidFields: ReadonlySet<string> };
 
-function snapshotOf(data: unknown, errors: Parameters<typeof invalidFieldsOf>[0]): EditorFormSnapshot {
+function snapshotOf(data: unknown, errors: readonly SchemaError[] | undefined): EditorFormSnapshot {
   return { data: isPlainObject(data) ? data : {}, invalidFields: invalidFieldsOf(errors) };
 }
 
@@ -26,7 +26,10 @@ type Props = {
   initialData: Record<string, unknown>;
   readOnly?: boolean;
   validate?: boolean;
-  /** Receives the data and the top-level fields the schema finds fault with, once JsonForms reports the change. */
+  /**
+   * Receives the data and the top-level fields the schema finds fault with, as JsonForms reports them: first for the
+   * starting data, then after each change.
+   */
   onChange?: (snapshot: EditorFormSnapshot) => void;
   /** Called when the validator or a control throws: the form shows a notice in place of its fields. */
   onFail?: () => void;
