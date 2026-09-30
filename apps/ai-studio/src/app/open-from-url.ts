@@ -1,42 +1,59 @@
-import * as openFromUrlApi from '../adapters/open-from-url-api';
-import { knownNodeTypes } from '../data/known-node-types';
-import { resetExecution, setExecutionStarted } from '../stores/use-execution-store';
-import { addNotice } from '../stores/use-notices-store';
-import { parseOpenTarget } from '../utils/open-from-url/parse-open-target';
-import {
-  type OpenedSource,
-  type ResolveDeps,
-  resolveDiagramSource,
-} from '../utils/open-from-url/resolve-diagram-source';
+import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflowbuilder/sdk';
 
-const liveDeps: ResolveDeps = {
-  fetchWorkflow: openFromUrlApi.fetchWorkflow,
-  fetchExecutionSnapshot: openFromUrlApi.fetchExecutionSnapshot,
-  knownTypes: knownNodeTypes,
-};
+import type { GetExecutionSnapshotResponse, WorkflowRecord } from '@workflow-builder/types/workflow-execution/api';
 
-/** Opens no stream: it puts the run in the store, and `useBackendExecution`, the one opener, connects to it. */
-async function open(search: string, deps: ResolveDeps): Promise<OpenedSource> {
-  const { source, notices } = await resolveDiagramSource(parseOpenTarget(search), deps);
+import { BACKEND_URL } from '../config';
+import { setExecutionStarted } from '../stores/use-execution-store';
+import { OpenError } from './open-error';
 
-  if (source.kind === 'execution') {
-    setExecutionStarted(source.executionId, `/api/executions/${source.executionId}/stream`);
-  } else {
-    resetExecution();
+export type Diagram = { nodes: WorkflowBuilderNode[]; edges: WorkflowBuilderEdge[] };
+
+export type OpenedSource =
+  | { kind: 'local' }
+  | { kind: 'workflow'; workflowId: string; name: string; diagram: Diagram }
+  | { kind: 'execution'; executionId: string; diagram: Diagram };
+
+const EMPTY_DIAGRAM: Diagram = { nodes: [], edges: [] };
+
+async function read<T>(what: 'run' | 'workflow', path: string): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(`${BACKEND_URL}${path}`);
+  } catch {
+    throw new OpenError(what, 'the server did not answer');
   }
-
-  for (const text of notices) addNotice(text);
-
-  return source;
+  if (!response.ok) throw new OpenError(what, `the server answered ${response.status}`);
+  try {
+    return (await response.json()) as T;
+  } catch {
+    throw new OpenError(what, "the server's answer could not be read");
+  }
 }
 
-/** Never rejects, so the editor always mounts: a lookup that fails opens the local draft. */
-export async function openFromUrl(search: string, deps: ResolveDeps = liveDeps): Promise<OpenedSource> {
-  try {
-    return await open(search, deps);
-  } catch {
-    resetExecution();
-    addNotice('The link could not be opened. Showing your local draft instead.');
-    return { kind: 'local' };
+// Lowercased: the stream subscribes under the id as written, and the worker notifies lowercase ones.
+function idIn(address: URLSearchParams, name: 'executionId' | 'workflowId'): string | undefined {
+  const value = address.get(name)?.trim().toLowerCase();
+  return value || undefined;
+}
+
+/** Runs once, before the editor mounts. A run goes into the store here, and `useBackendExecution` opens its stream. */
+export async function openFromUrl(search: string): Promise<OpenedSource> {
+  const address = new URLSearchParams(search);
+  const executionId = idIn(address, 'executionId');
+  const workflowId = idIn(address, 'workflowId');
+
+  if (executionId !== undefined) {
+    const path = `/api/executions/${encodeURIComponent(executionId)}/snapshot`;
+    const run = await read<GetExecutionSnapshotResponse>('run', path);
+    setExecutionStarted(executionId, `/api/executions/${executionId}/stream`);
+    return { kind: 'execution', executionId, diagram: run.snapshot as Diagram };
   }
+
+  if (workflowId !== undefined) {
+    const workflow = await read<WorkflowRecord>('workflow', `/api/workflows/${encodeURIComponent(workflowId)}`);
+    const diagram = (workflow.draftJson ?? workflow.publishedJson ?? EMPTY_DIAGRAM) as Diagram;
+    return { kind: 'workflow', workflowId, name: workflow.name, diagram };
+  }
+
+  return { kind: 'local' };
 }

@@ -12,7 +12,7 @@ import { BACKEND_URL } from '../config';
 import { refundReviewFlow } from '../data/refund-review-flow';
 import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { jsonResponse } from '../test/json-response';
-import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import type { OpenedSource } from './open-from-url';
 import { rootPropsFor } from './root-props';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
@@ -139,7 +139,7 @@ describe('the local draft in URL mode', () => {
   it('a run from the link has no Save button, saves nowhere and leaves the local draft alone', async () => {
     runViewPlugin();
 
-    mount({ kind: 'execution', executionId: RUN, workflowId: WORKFLOW, diagram });
+    mount({ kind: 'execution', executionId: RUN, diagram });
 
     expect(container.querySelectorAll('button')).toHaveLength(0);
     await leaveThePage();

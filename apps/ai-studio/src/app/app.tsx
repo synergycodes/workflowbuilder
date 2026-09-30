@@ -19,7 +19,7 @@ import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { humanDecisionNodeType } from '../nodes/human-decision';
-import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import type { OpenedSource } from './open-from-url';
 import { rootPropsFor } from './root-props';
 
 const flagship = supportTriageFlow.value;

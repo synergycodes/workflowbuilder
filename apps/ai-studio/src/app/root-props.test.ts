@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { refundReviewFlow } from '../data/refund-review-flow';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
-import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import type { OpenedSource } from './open-from-url';
 import { neverSaves, rootPropsFor } from './root-props';
 
 const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
@@ -11,7 +11,7 @@ const WORKFLOW = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
 const diagram = { nodes: refundReviewFlow.value.diagram.nodes, edges: refundReviewFlow.value.diagram.edges };
 
 const workflowSource: OpenedSource = { kind: 'workflow', workflowId: WORKFLOW, name: 'Refund desk', diagram };
-const executionSource: OpenedSource = { kind: 'execution', executionId: RUN, workflowId: WORKFLOW, diagram };
+const executionSource: OpenedSource = { kind: 'execution', executionId: RUN, diagram };
 
 describe('rootPropsFor', () => {
   it('keeps the local draft on the default localStorage strategy and the flagship seed', () => {

@@ -6,7 +6,6 @@ import type { ExecutionEvent } from '@workflow-builder/types/workflow-execution/
 
 import { openFromUrl } from '../app/open-from-url';
 import { BACKEND_URL } from '../config';
-import { knownNodeTypes } from '../data/known-node-types';
 import { refundReviewFlow } from '../data/refund-review-flow';
 import { type RunStatus, resetExecution, setExecutionStarted, useExecutionStore } from '../stores/use-execution-store';
 import { deferred } from '../test/deferred';
@@ -499,16 +498,18 @@ describe('useBackendExecution: a run opened from the link', () => {
   const graph = { nodes: refundReviewFlow.value.diagram.nodes, edges: refundReviewFlow.value.diagram.edges };
 
   it('opens exactly one stream, on that run, after the StrictMode double mount', async () => {
-    putRunInStore('waiting');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () =>
+        jsonResponse(200, {
+          workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11',
+          sourceVersion: 'draft',
+          snapshot: graph,
+        }),
+      ),
+    );
 
-    await openFromUrl(`?executionId=${run}`, {
-      fetchWorkflow: vi.fn(),
-      fetchExecutionSnapshot: async () => ({
-        ok: true,
-        data: { workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11', sourceVersion: 'draft', snapshot: graph },
-      }),
-      knownTypes: knownNodeTypes,
-    });
+    await openFromUrl(`?executionId=${run}`);
     unmount = mountHook();
 
     expect(openStreams()).toHaveLength(1);

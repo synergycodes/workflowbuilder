@@ -11,7 +11,7 @@ import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
 import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
-import type { OpenedSource } from '../utils/open-from-url/resolve-diagram-source';
+import type { OpenedSource } from './open-from-url';
 
 const flagship = supportTriageFlow.value;
 
