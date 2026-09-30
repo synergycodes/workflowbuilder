@@ -70,7 +70,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
                 </div>
               )}
             </OptionalNodeContent>
-            <DecisionWaitingFooter nodeId={id} />
+            <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
           </NodePanel.Content>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
             <Handle

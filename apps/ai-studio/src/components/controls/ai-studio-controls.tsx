@@ -56,7 +56,7 @@ export function AiStudioControls() {
         {isRunning || isStarting ? (
           // There is no run to cancel until the backend names it.
           <Button
-            className={styles['run-slot']}
+            className={styles['run-stop-button']}
             variant="ghost-critical"
             size="s"
             onClick={cancel}
@@ -67,7 +67,7 @@ export function AiStudioControls() {
           </Button>
         ) : hasStartNode ? (
           <Button
-            className={styles['run-slot']}
+            className={styles['run-stop-button']}
             variant="primary"
             size="s"
             onClick={handleExecute}

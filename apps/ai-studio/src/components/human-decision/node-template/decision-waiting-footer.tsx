@@ -1,23 +1,32 @@
-import { Icon } from '@workflowbuilder/sdk';
+import { Icon, useSetSelection } from '@workflowbuilder/sdk';
 import { Button } from '@workflowbuilder/ui';
 
 import styles from './human-decision-template.module.css';
 
-import { useSelectNode } from '../../../hooks/use-select-node';
-import { useExecutionStore } from '../../../stores/use-execution-store';
+import { isDecidable, requestDecisionFocus, useExecutionStore } from '../../../stores/use-execution-store';
+import { hasText } from '../../../utils/has-text';
 
 type Props = {
   nodeId: string;
+  nodeLabel: string | undefined;
 };
 
 /** Says on the node that the run waits for this decision, and leads the person to it. */
-export function DecisionWaitingFooter({ nodeId }: Props) {
-  const isWaiting = useExecutionStore((state) => state.nodeStates[nodeId]?.status === 'waiting');
-  const selectNode = useSelectNode();
+export function DecisionWaitingFooter({ nodeId, nodeLabel }: Props) {
+  const isAwaitingDecision = useExecutionStore(
+    (state) => state.nodeStates[nodeId]?.status === 'waiting' && isDecidable(state.status),
+  );
+  const setSelection = useSetSelection();
 
-  if (!isWaiting) {
+  if (!isAwaitingDecision) {
     return null;
   }
+
+  const decide = () => {
+    if (setSelection({ nodeIds: [nodeId] })) {
+      requestDecisionFocus(nodeId);
+    }
+  };
 
   return (
     <div className={styles['waiting']}>
@@ -25,8 +34,13 @@ export function DecisionWaitingFooter({ nodeId }: Props) {
         <Icon name="Clock" />
         Waiting for decision
       </span>
-      {/* Selecting the node is what opens the decision form in the properties panel. */}
-      <Button variant="ghost-primary" size="xs" onClick={() => selectNode(nodeId)}>
+      <Button
+        className="nodrag"
+        variant="ghost-primary"
+        size="xs"
+        aria-label={hasText(nodeLabel) ? `Decide: ${nodeLabel}` : undefined}
+        onClick={decide}
+      >
         Decide
       </Button>
     </div>

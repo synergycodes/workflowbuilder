@@ -6,9 +6,10 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 // SDK internals by path: the public API mounts these only inside a whole <WorkflowBuilder.Root>.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
-import { NodeProperties } from '../../../../../../packages/sdk/src/features/properties-bar/components/node-properties/node-properties';
+import { PropertiesBar } from '../../../../../../packages/sdk/src/features/properties-bar/components/properties-bar/properties-bar';
 import { submitDecision } from '../../../adapters/submit-decision';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
+import { plugin } from '../../../plugin';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
 import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
@@ -24,6 +25,7 @@ vi.mock('../../../adapters/submit-decision', () => ({ submitDecision: vi.fn() })
 const submit = vi.mocked(submitDecision);
 
 registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+plugin();
 
 function agent(id: string): WorkflowBuilderNode {
   return {
@@ -70,10 +72,19 @@ function edge(source: string, target: string): WorkflowBuilderEdge {
   };
 }
 
-// As the properties bar renders it: one NodeProperties, kept from one selected node to the next.
+// The SDK's own panel, with AI Studio's decorator on it: one panel, its content kept from one selected node to the next.
 function Host() {
-  const node = useSingleSelectedElement()?.node;
-  return node ? <NodeProperties node={node} /> : null;
+  return (
+    <PropertiesBar
+      selection={useSingleSelectedElement()}
+      headerLabel="Properties"
+      deleteNodeLabel="Delete node"
+      deleteEdgeLabel="Delete edge"
+      selectedTab="properties"
+      onTabChange={() => {}}
+      onDeleteClick={() => {}}
+    />
+  );
 }
 
 // What a click on the canvas calls.
@@ -149,8 +160,18 @@ describe('the decision form in the real properties panel, as the selection moves
       .find((span) => span.childElementCount === 0 && span.textContent === label)
       ?.parentElement?.parentElement?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ??
     undefined;
-  const approve = () =>
-    [...container.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === 'Approve')!;
+  const button = (label: string) =>
+    [...container.querySelectorAll('button')].find((candidate) => candidate.textContent?.trim() === label);
+  const approve = () => button('Approve')!;
+
+  it("puts Approve in the panel's footer, outside the form's scrolling fields, and shows no Delete", async () => {
+    select('human-1');
+    await settle();
+
+    expect(formField('Alpha')).toBeDefined();
+    expect(approve().closest('[data-decision-form]')).toBeNull();
+    expect(button('Delete node')).toBeUndefined();
+  });
 
   it('shows the field of the node the selection lands on, not the one it left', async () => {
     select('human-1');

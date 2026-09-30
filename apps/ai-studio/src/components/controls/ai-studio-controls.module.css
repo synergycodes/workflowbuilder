@@ -30,7 +30,7 @@
     opacity 0.3s ease-in-out;
 }
 
-/* Run and Stop take turns in one slot; one width keeps the button under the cursor when they swap. */
-.run-slot {
+/* Run and Stop replace each other, so a shared width keeps the swap from resizing the button. */
+.run-stop-button {
   min-width: var(--wb-ds-size-1200);
 }

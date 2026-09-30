@@ -1,10 +1,15 @@
 import type { JsonSchema } from '@workflowbuilder/sdk';
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from './decision-form.module.css';
 
 import { useDecisionSubmit } from '../../../hooks/use-decision-submit';
-import type { DecisionDraft, DecisionWait } from '../../../stores/use-execution-store';
+import {
+  type DecisionDraft,
+  type DecisionWait,
+  clearDecisionFocusRequest,
+  useExecutionStore,
+} from '../../../stores/use-execution-store';
 import { schemaFields } from '../../../utils/editor-form/form-schema';
 import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
 import { blocksApproval, editsOf, startingValues } from '../../../utils/human-decision/decision-values';
@@ -26,9 +31,19 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
   // Undo can change the picks under an open decision once the lock is lifted; the form keeps the fields it opened with.
   const [{ schema, proposal }] = useState(opened);
   const fields = useRef<EditorFormHandle>(null);
+  const formElement = useRef<HTMLDivElement>(null);
+  const isFocusRequested = useExecutionStore((state) => state.decisionFocusRequest === wait.nodeId);
   const [isApproveBlocked, setIsApproveBlocked] = useState(false);
   const { isBusy, isAccepted, message, submit } = useDecisionSubmit(wait);
   const reason = draft?.reason ?? '';
+
+  // Decide asks for it, whether this form is about to mount or already shows.
+  useEffect(() => {
+    if (isFocusRequested) {
+      formElement.current?.focus();
+      clearDecisionFocusRequest();
+    }
+  }, [isFocusRequested]);
 
   const approve = () => {
     const snapshot = fields.current?.snapshot();
@@ -42,7 +57,14 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
   };
 
   return (
-    <div className={styles['form']} data-decision-form>
+    <div
+      ref={formElement}
+      className={styles['form']}
+      role="group"
+      aria-label="Decision"
+      tabIndex={-1}
+      data-decision-form
+    >
       <EditorForm
         ref={fields}
         schema={schema}

@@ -4,7 +4,7 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
-import { applyEvent, applySnapshot, resetExecution } from '../../../stores/use-execution-store';
+import { applyEvent, applySnapshot, resetExecution, useExecutionStore } from '../../../stores/use-execution-store';
 import { nodeEvent, snapshotFrame } from '../../../test/execution-history';
 import { HumanDecisionNodeTemplate } from './human-decision-template';
 
@@ -210,7 +210,7 @@ describe('HumanDecisionNodeTemplate', () => {
   const decideButton = () =>
     [...container.querySelectorAll('button')].find((button) => button.textContent === 'Decide');
 
-  it('shows the wait and Decide at the bottom only while the run waits on this node', () => {
+  it('shows the wait and Decide only while the run waits on this node', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
@@ -226,6 +226,37 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(decideButton()).toBeUndefined();
   });
 
+  it('keeps the wait off while the run is cancelling, since the backend refuses a decision then', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+
+    act(() => applySnapshot(snapshotFrame('cancelling')));
+
+    expect(container.textContent).not.toContain('Waiting for decision');
+  });
+
+  it('names Decide after its node, and a press on it does not drag the node', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    expect(decideButton()?.getAttribute('aria-label')).toBe('Decide: Human decision');
+    expect(decideButton()?.classList.contains('nodrag')).toBe(true);
+  });
+
+  it('asks for no focus when the canvas has no such node to select', () => {
+    render(
+      <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
+    );
+    parkOnHuman1();
+
+    act(() => decideButton()?.click());
+
+    expect(useExecutionStore.getState().decisionFocusRequest).toBeUndefined();
+  });
+
   it('keeps the wait off a decision node the run is not parked on', () => {
     render(
       <HumanDecisionNodeTemplate id="human-2" icon="UserCheck" label="Human decision" description="" data={data} />,
@@ -235,7 +266,7 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(decideButton()).toBeUndefined();
   });
 
-  it('selects the node through React Flow on Decide, replacing the selection as a click on the node does', () => {
+  it('selects the node through React Flow on Decide, replacing the selection, and asks its form for the focus', () => {
     const nodes: Node[] = [
       { id: 'human-1', position: { x: 0, y: 0 }, data: {} },
       { id: 'other', position: { x: 300, y: 0 }, data: {}, selected: true },
@@ -263,5 +294,6 @@ describe('HumanDecisionNodeTemplate', () => {
         .nodes.filter((node) => node.selected)
         .map((node) => node.id),
     ).toEqual(['human-1']);
+    expect(useExecutionStore.getState().decisionFocusRequest).toBe('human-1');
   });
 });
