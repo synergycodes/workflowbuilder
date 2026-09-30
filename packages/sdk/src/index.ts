@@ -156,6 +156,8 @@ export { defineNodeTemplate } from './utils/define-node-template';
 
 export { useEffectChange } from './hooks/use-effect-change';
 export { useFitView } from './hooks/use-fit-view';
+export { useSetSelection } from './hooks/use-set-selection';
+export type { SelectionIds } from './hooks/use-set-selection';
 export { useKeyPress } from './hooks/use-key-press';
 export { useWorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
 export type { LayoutChangeOptions, WorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
