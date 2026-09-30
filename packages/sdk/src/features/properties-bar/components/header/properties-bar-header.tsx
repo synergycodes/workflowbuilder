@@ -26,17 +26,7 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
   return (
     <div className={styles['header']}>
       <div className={styles['heading']}>
-        {selection?.node ? (
-          <SelectedNodeHeading node={selection.node} fallbackLabel={headerLabel} />
-        ) : selection?.edge ? (
-          <NodeHeading
-            label={selection.edge.data?.label || t('propertiesBar.edge')}
-            subtitle={t('propertiesBar.edge')}
-            icon="CaretRight"
-          />
-        ) : (
-          <span className="wb-text-title-m-emphasized">{headerLabel}</span>
-        )}
+        <SelectionHeading selection={selection} headerLabel={headerLabel} />
       </div>
       {onDotsClick && (
         <NavButton
@@ -58,12 +48,26 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
   );
 }
 
-type SelectedNodeHeadingProps = {
-  node: WorkflowBuilderNode;
-  fallbackLabel: string;
-};
+type SelectionHeadingProps = Pick<Props, 'selection' | 'headerLabel'>;
 
-function SelectedNodeHeading({ node, fallbackLabel }: SelectedNodeHeadingProps) {
+function SelectionHeading({ selection, headerLabel }: SelectionHeadingProps) {
+  const { t } = useTranslation();
+
+  if (selection?.node) {
+    return <SelectedNodeHeading node={selection.node} />;
+  }
+
+  if (!selection?.edge) {
+    return <span className="wb-text-title-m-emphasized">{headerLabel}</span>;
+  }
+
+  const edgeType = t('propertiesBar.edge');
+  const { label, icon } = selection.edge.data ?? {};
+
+  return <NodeHeading label={label || edgeType} subtitle={edgeType} icon={icon ?? 'CaretRight'} />;
+}
+
+function SelectedNodeHeading({ node }: { node: WorkflowBuilderNode }) {
   const definition = useStore((store) => store.getNodeDefinition(node.data.type));
   const translateIfPossible = useTranslateIfPossible();
 
@@ -72,7 +76,7 @@ function SelectedNodeHeading({ node, fallbackLabel }: SelectedNodeHeadingProps) 
 
   return (
     <NodeHeading
-      label={label || typeLabel || fallbackLabel}
+      label={label || typeLabel || node.data.type}
       subtitle={label ? typeLabel : undefined}
       icon={definition?.icon ?? node.data.icon}
       accent={definition?.accent}

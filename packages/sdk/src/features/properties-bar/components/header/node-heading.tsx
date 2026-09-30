@@ -7,17 +7,16 @@ import styles from './node-heading.module.css';
 
 import type { IconType } from '../../../../node/common';
 
-export type NodeHeadingProps = {
+type Props = {
   label: string;
   /** Second line under the label, for example the node type. */
   subtitle?: string;
-  /** Without it the heading has no icon. */
   icon?: IconType;
   accent?: NodeIconAccent;
   className?: string;
 };
 
-export function NodeHeading({ label, subtitle, icon, accent, className }: NodeHeadingProps) {
+export function NodeHeading({ label, subtitle, icon, accent, className }: Props) {
   return (
     <div className={clsx(styles['container'], className)}>
       {icon && <NodeIcon icon={<Icon name={icon} size="inherit" />} accent={accent} />}

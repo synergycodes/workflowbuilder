@@ -17,7 +17,7 @@ const node = {
   id: 'node-1',
   type: 'node',
   position: { x: 0, y: 0 },
-  data: { type: 'action', icon: 'Play', properties: { label: 'Review' } },
+  data: { type: 'action', icon: 'Lightning', properties: { label: 'Review' } },
 } as unknown as WorkflowBuilderNode;
 
 function Decision() {
@@ -123,7 +123,12 @@ function edge(label?: string): WorkflowBuilderEdge {
   return { id: 'edge-1', source: 'node-1', target: 'node-2', data: { label } };
 }
 
-const nodeIcon = (container: HTMLElement) => container.querySelector('[data-icon="Play"]')?.parentElement;
+const nodeIcon = (container: HTMLElement, name = 'Play') =>
+  container.querySelector(`[data-icon="${name}"]`)?.parentElement;
+
+const withNodeData = (data: Partial<WorkflowBuilderNode['data']>) => ({
+  selection: { node: { ...node, data: { ...node.data, ...data } }, edge: null },
+});
 
 // Without tabs the header has no segment picker, whose first item also reads "Properties".
 const renderHeader = (props: Partial<PropertiesBarProps> = {}) => renderBar({ withContent: false, tabs: [], ...props });
@@ -149,9 +154,58 @@ describe('PropertiesBar header', () => {
   });
 
   it('shows the type label, never the node description', () => {
+    renderHeader(withNodeData({ properties: { label: 'Review', description: 'Checks the request' } }));
+
+    expect(screen.getByText('Action')).not.toBeNull();
+    expect(screen.queryByText('Checks the request')).toBeNull();
+    expect(screen.queryByText('Runs an action')).toBeNull();
+  });
+
+  it('prefers the icon of the node definition over the one saved on the node', () => {
+    const { container } = renderHeader();
+
+    expect(nodeIcon(container)).toBeDefined();
+    expect(nodeIcon(container, 'Lightning')).toBeUndefined();
+  });
+
+  it('titles a node without a label with its type label, without a subtitle', () => {
+    renderHeader(withNodeData({ properties: {} }));
+
+    expect(screen.getAllByText('Action')).toHaveLength(1);
+  });
+
+  it('titles an unlabelled node of an unknown type with its type and shows its saved icon', () => {
+    useStore.setState({ data: [] });
+    const { container } = renderHeader(withNodeData({ properties: {} }));
+
+    expect(screen.getByText('action')).not.toBeNull();
+    expect(screen.queryByText('Properties')).toBeNull();
+    expect(nodeIcon(container, 'Lightning')?.className).not.toMatch(/accent-/);
+  });
+
+  it('keeps the node heading and offers to open the panel after collapsing it', () => {
     renderHeader();
 
-    expect(screen.queryByText('Runs an action')).toBeNull();
+    fireEvent.click(button('Close properties bar')!);
+
+    expect(screen.getByText('Review').compareDocumentPosition(button('Open properties bar')!)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    );
+  });
+
+  it('names the panel with the header label while a node is selected', () => {
+    renderHeader();
+
+    expect(screen.getByRole('region', { name: 'Properties' }).contains(screen.getByText('Review'))).toBe(true);
+  });
+
+  it('shows the icon of a selected edge in place of the default arrow', () => {
+    const { container } = renderHeader({
+      selection: { node: null, edge: { ...edge(), data: { label: 'Approved', icon: 'Check' } } },
+    });
+
+    expect(container.querySelector('[data-icon="Check"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="CaretRight"]')).toBeNull();
   });
 
   it('shows the label of a selected edge with an icon and the Link subtitle', () => {
@@ -170,12 +224,12 @@ describe('PropertiesBar header', () => {
     expect(screen.queryByText('Properties')).toBeNull();
   });
 
-  it('shows the header label and a disabled toggle while nothing is selected', () => {
-    renderHeader({ selection: null });
+  it('shows the header label, no content and a disabled Open toggle while nothing is selected', () => {
+    renderBar({ withContent: true, selection: null });
 
     expect(screen.getByText('Properties')).not.toBeNull();
-    expect(button('Open properties bar')).toBeNull();
-    expect((button('Close properties bar') as HTMLButtonElement).disabled).toBe(true);
+    expect(button('Close properties bar')).toBeNull();
+    expect((button('Open properties bar') as HTMLButtonElement).disabled).toBe(true);
     expect(screen.queryByText('Form')).toBeNull();
   });
 

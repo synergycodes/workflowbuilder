@@ -4,8 +4,9 @@
   display: flex;
   align-items: center;
   gap: var(--wb-ds-space-100);
-  /* The collapsed panel sizes to its content, so a long label would widen it past the open panel. */
-  max-width: calc(var(--wb-sdk-sidebar-expanded-width) - 2 * var(--wb-sdk-sidebar-horizontal-padding));
+  /* The collapsed panel sizes to its content, so a long label would widen it past the open panel.
+     2px is the panel's 1px border on each side. */
+  max-width: calc(var(--wb-sdk-sidebar-expanded-width) - 2 * var(--wb-sdk-sidebar-horizontal-padding) - 2px);
 
   .heading {
     flex: 1;

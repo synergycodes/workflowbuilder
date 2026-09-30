@@ -77,6 +77,8 @@ function PropertiesBarComponent({
   return (
     <PropertiesPanelFooterTargetProvider value={footerTarget.target}>
       <Sidebar
+        role="region"
+        aria-label={headerLabel}
         isExpanded={isExpanded}
         contentClassName={styles['extend-bounds']}
         header={
@@ -84,7 +86,7 @@ function PropertiesBarComponent({
             <PropertiesBarHeader
               selection={selection}
               headerLabel={headerLabel}
-              isOpen={isPropertiesBarOpen}
+              isOpen={isExpanded}
               onTogglePropertiesBar={onToggleExpand}
               onDotsClick={onMenuHeaderClick}
             />
