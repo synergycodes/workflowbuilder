@@ -1,0 +1,5 @@
+/* Figma draws node borders inside the box; CSS borders add to it, so the padding gives the border back. */
+.preview {
+  --wb-public-node-padding: calc(var(--wb-ds-canvas-node-head-h-pad) - var(--wb-public-node-border-size));
+  --wb-public-node-icon-padding: calc(var(--wb-ds-space-125) - var(--wb-public-node-icon-border-size));
+}

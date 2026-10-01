@@ -90,6 +90,12 @@ describe('NodePreviewContainer', () => {
     expect(element.dataset.disabled).toBe('true');
   });
 
+  it('wraps the template in the palette scope, so the canvas node keeps its size', () => {
+    render(<NodePreviewContainer type="multi-port" />);
+
+    expect(screen.getByTestId('built-in-template').parentElement?.className).toMatch(/preview/);
+  });
+
   it('renders nothing when the palette type is unknown', () => {
     mockNodeDefinition = undefined;
 
