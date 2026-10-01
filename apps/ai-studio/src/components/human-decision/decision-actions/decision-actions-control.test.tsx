@@ -20,7 +20,7 @@ import { executionEvent as event } from '../../../stores/execution-event.fixture
 import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
 import { decisionFieldsRenderer } from '../decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
-import { decisionActionsRenderer } from './decision-actions-control';
+import { OUTPUT_HINTS, decisionActionsRenderer } from './decision-actions-control';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
@@ -82,12 +82,6 @@ const settle = () =>
   act(async () => {
     await new Promise((resolve) => setTimeout(resolve, 40));
   });
-
-const SINGLE = 'Reject is off, so the gate has a single output: Approved — the decider can only approve.';
-const UNWIRED =
-  '“Rejected” has no path yet. That is not a validation error — a run that reaches it simply ends as rejected. Draw an edge only if rejection has its own business path.';
-const WIRED =
-  'Both outputs carry equal weight. An unwired “Rejected” output is not a validation error — a run that reaches it ends as rejected.';
 
 describe('the decider actions control in the real properties panel', () => {
   let container: HTMLDivElement;
@@ -176,7 +170,7 @@ describe('the decider actions control in the real properties panel', () => {
     expect(isOn('reasonRequired')).toBe(true);
     expect(row('reasonRequired')?.textContent).not.toContain('optional');
     expect(descriptionOf('reasonRequired')).toBeUndefined();
-    expect(hints()).toEqual([{ variant: 'info', text: UNWIRED }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
     expect(container.querySelector('[data-decider-actions] [data-hint]')?.getAttribute('role')).toBe('status');
   });
 
@@ -190,13 +184,13 @@ describe('the decider actions control in the real properties panel', () => {
   it('with an edge from the Rejected port, says both outputs carry equal weight', async () => {
     await renderPanel([human(defaultDecisionRequest)], [edgeFrom(REJECTED)]);
 
-    expect(hints()).toEqual([{ variant: 'info', text: WIRED }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.wired]);
   });
 
   it('an edge from the Approved port alone leaves Rejected without a path', async () => {
     await renderPanel([human(defaultDecisionRequest)], [edgeFrom(approveAction.port)]);
 
-    expect(hints()).toEqual([{ variant: 'info', text: UNWIRED }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
   });
 
   it('turning Reject off is one undo step: the request keeps Approve alone and the rest as it was', async () => {
@@ -211,7 +205,7 @@ describe('the decider actions control in the real properties panel', () => {
     expect(row('reject')?.textContent).toContain('single output');
     expect(descriptionOf('reject')).toBe('single output');
     expect(row('reasonRequired')).toBeNull();
-    expect(hints()).toEqual([{ variant: 'info', text: SINGLE }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.single]);
 
     act(() => undo());
     await settle();
@@ -230,7 +224,7 @@ describe('the decider actions control in the real properties panel', () => {
     expect(storedRequest()?.actions).toEqual([approveAction, defaultRejectAction]);
     expect(storedRequest()?.actions[1]).toMatchObject({ port: REJECTED, reasonRequired: true });
     expect(isOn('reasonRequired')).toBe(true);
-    expect(hints()).toEqual([{ variant: 'info', text: UNWIRED }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
   });
 
   it('Reason required off is one undo step, stores it and notes the reason is optional; on again requires it', async () => {
@@ -267,12 +261,12 @@ describe('the decider actions control in the real properties panel', () => {
     const { nodes, edges } = refundReviewFlow.value.diagram;
     await renderPanel(nodes, edges);
 
-    expect(hints()).toEqual([{ variant: 'info', text: WIRED }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.wired]);
 
     await flip('reject');
 
     expect(decisionRequestSchema.safeParse(storedRequest()).success).toBe(true);
-    expect(hints()).toEqual([{ variant: 'info', text: SINGLE }]);
+    expect(hints()).toEqual([OUTPUT_HINTS.single]);
   });
 
   it.todo('turning Reject off removes the Rejected edge in the same undo step');
