@@ -83,4 +83,4 @@ Known limits:
 - Before the first save, only edits the editor tracks count. The decision node's Add branch is not tracked, and the SDK reports a node moved with the keyboard only as a node change, which does not count; a tab whose only edit is either drops it on close unless Save runs first.
 - The graph is drawn as stored. A draft saved through the API in a shape the editor cannot draw ends on the error screen; one that draws wrongly shows wrongly.
 - In local mode the SDK saves the local draft itself, so an edit that breaks the canvas, an import for example, can still reach `localStorage` after the error screen. "Open local draft" then leads back to the same screen until the site's data is cleared.
-- Run saves the raw store into the draft, `selected` and `measured` included; autosave writes the clean shape. Nodes of a type this app does not know show without a properties panel.
+- Nodes of a type this app does not know show without a properties panel.

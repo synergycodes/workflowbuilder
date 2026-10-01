@@ -1,4 +1,4 @@
-import { Icon, getStoreEdges, getStoreNodes } from '@workflowbuilder/sdk';
+import { Icon, getStoreDataForIntegration } from '@workflowbuilder/sdk';
 import { Button, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
@@ -32,8 +32,8 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
   const canRun = hasStartNode && !isRunView;
 
   const handleExecute = useCallback(async () => {
-    const nodes = getStoreNodes();
-    const edges = getStoreEdges();
+    // The shape the editor's autosave sends, so its compare recognises Run's write.
+    const { nodes, edges } = getStoreDataForIntegration();
 
     const startNode = nodes.find((n) => n.data.isStartNode);
     const inputPrompt = (startNode?.data.properties as { inputPrompt?: string })?.inputPrompt ?? '';

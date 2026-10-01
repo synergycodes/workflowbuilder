@@ -8,6 +8,7 @@ import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution
 import styles from './ai-studio-controls.module.css';
 
 import { BACKEND_URL } from '../../config';
+import { supportTriageFlow } from '../../data/support-triage-flow';
 import {
   applyConnectionLost,
   applySnapshot,
@@ -60,6 +61,7 @@ describe('AiStudioControls', () => {
     useNoticesStore.setState({ notices: [] });
     address.leaveRunView.mockClear();
     useStore.getState().setToggleReadOnlyMode(false);
+    useStore.setState({ nodes: [], edges: [] });
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -160,6 +162,23 @@ describe('AiStudioControls', () => {
     await clickIcon('Play');
 
     expect(fetchMock.mock.calls[0]?.[0]).toBe(`${BACKEND_URL}/api/workflows/${workflow}/draft`);
+  });
+
+  it("Run saves the editor's clean shape, which autosave compares against, and still reads the prompt", async () => {
+    const start = supportTriageFlow.value.diagram.nodes.find((node) => node.data.isStartNode)!;
+    useStore.setState({
+      nodes: [{ ...start, selected: true, dragging: true, measured: { width: 200, height: 80 } }],
+      edges: [],
+    });
+    render({ workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' });
+
+    await clickIcon('Play');
+
+    const [draft, execute] = fetchMock.mock.calls;
+    expect(JSON.parse(String(draft?.[1]?.body)).draftJson.nodes).toEqual([{ ...start, selected: false }]);
+    expect(JSON.parse(String(execute?.[1]?.body)).triggerPayload).toEqual({
+      input: (start.data.properties as { inputPrompt: string }).inputPrompt,
+    });
   });
 
   // The canvas holds the run's graph, which is saved nowhere; running it again is a feature of its own.
