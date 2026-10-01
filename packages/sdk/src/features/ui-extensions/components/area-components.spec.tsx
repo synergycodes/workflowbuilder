@@ -12,7 +12,7 @@ import { registerComponentDecorator } from '../../plugins-core/adapters/adapter-
 import { OptionalAppChildren } from '../../plugins-core/components/app/optional-app-children';
 import { PropertiesBar } from '../../properties-bar/components/properties-bar/properties-bar';
 import { renderInRoot } from '../test-utils';
-import type { AreaId, UiExtensionRegistry } from '../ui-extension-registry';
+import type { AreaId, AreaPlace, UiExtensionRegistry } from '../ui-extension-registry';
 import { AppBarControlsContent } from './app-bar-controls-content';
 import { AppBarToolsContent } from './app-bar-tools-content';
 import { PaletteFooterContent } from './palette-footer-content';
@@ -63,9 +63,9 @@ function renderHosts(ui?: ReactNode) {
   );
 }
 
-function targetOf(registry: UiExtensionRegistry, area: AreaId): HTMLElement {
-  const { element } = registry.getAreaSlot(area);
-  if (!element) throw new Error(`No target is mounted for ${area}`);
+function targetOf(registry: UiExtensionRegistry, area: AreaId, place: AreaPlace = 'before'): HTMLElement {
+  const { element } = registry.getAreaSlot(area, place);
+  if (!element) throw new Error(`No ${place} target is mounted for ${area}`);
   return element;
 }
 
@@ -105,13 +105,15 @@ afterEach(() => {
 
 type AreaCase = {
   name: string;
-  Content: (props: PropsWithChildren) => ReactNode;
+  Content: (props: PropsWithChildren<{ place?: AreaPlace }>) => ReactNode;
   area: AreaId;
   container: string;
   /** A built-in element of the same host container. */
   builtIn: () => HTMLElement;
   /** Where the content stands relative to `builtIn`. */
   position: 'before' | 'after';
+  /** The last built-in element of the host container that `place="after"` content follows. */
+  lastBuiltIn: () => HTMLElement;
 };
 
 const AREA_CASES: AreaCase[] = [
@@ -122,6 +124,7 @@ const AREA_CASES: AreaCase[] = [
     container: APP_BAR_TOOLS,
     builtIn: () => screen.getByRole('button', { name: 'Save' }),
     position: 'before',
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Save' }),
   },
   {
     name: 'AppBarControlsContent',
@@ -130,6 +133,7 @@ const AREA_CASES: AreaCase[] = [
     container: APP_BAR_CONTROLS,
     builtIn: () => screen.getByRole('button', { name: /Change Language/i }),
     position: 'before',
+    lastBuiltIn: () => screen.getAllByRole('switch').at(-1)!,
   },
   {
     name: 'PaletteHeaderContent',
@@ -138,6 +142,7 @@ const AREA_CASES: AreaCase[] = [
     container: SIDEBAR_HEADER,
     builtIn: () => screen.getByText('Nodes Library'),
     position: 'after',
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Close palette' }),
   },
   {
     name: 'PaletteFooterContent',
@@ -146,6 +151,7 @@ const AREA_CASES: AreaCase[] = [
     container: SIDEBAR_FOOTER,
     builtIn: () => screen.getByRole('button', { name: 'Templates' }),
     position: 'before',
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Templates' }),
   },
   {
     name: 'PropertiesPanelHeaderContent',
@@ -154,6 +160,7 @@ const AREA_CASES: AreaCase[] = [
     container: SIDEBAR_HEADER,
     builtIn: () => screen.getByText('Review'),
     position: 'after',
+    lastBuiltIn: () => screen.getByText('Review'),
   },
   {
     name: 'PropertiesPanelFooterContent',
@@ -162,6 +169,7 @@ const AREA_CASES: AreaCase[] = [
     container: SIDEBAR_FOOTER,
     builtIn: () => screen.getByRole('button', { name: 'Delete node' }),
     position: 'before',
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Delete node' }),
   },
 ];
 
@@ -186,6 +194,48 @@ describe('area content components', () => {
       expect(content.parentElement).toBe(target);
       expect(target.parentElement).toBe(builtIn().closest(container));
       expect(position === 'before' ? isBefore(content, builtIn()) : isBefore(builtIn(), content)).toBe(true);
+    },
+  );
+
+  it.each(AREA_CASES)(
+    '$name with place="after" renders after the built-in controls and after the content placed before',
+    ({ Content, area, container, lastBuiltIn }) => {
+      const { registry } = renderHosts(
+        <>
+          <Content place="after">
+            <button type="button">Last</button>
+          </Content>
+          <Content>
+            <button type="button">First</button>
+          </Content>
+        </>,
+      );
+
+      const last = screen.getByRole('button', { name: 'Last' });
+      const target = targetOf(registry, area, 'after');
+      expect(last.parentElement).toBe(target);
+      expect(target.parentElement).toBe(lastBuiltIn().closest(container));
+      expect(isBefore(lastBuiltIn(), last)).toBe(true);
+      expect(isBefore(screen.getByRole('button', { name: 'First' }), last)).toBe(true);
+    },
+  );
+
+  it.each(DEPRECATED_SLOT_CASES)(
+    '$name with place="after" renders after the after-content of a deprecated $slot decorator',
+    ({ slot, Content, area, lastBuiltIn }) => {
+      registerComponentDecorator(slot, { name: AFTER, place: 'after', content: After });
+
+      const { registry } = renderHosts(
+        <Content place="after">
+          <button type="button">Mine</button>
+        </Content>,
+      );
+
+      const mine = screen.getByRole('button', { name: 'Mine' });
+      const after = screen.getByRole('button', { name: 'After' });
+      expect(mine.parentElement).toBe(targetOf(registry, area, 'after'));
+      expect(isBefore(lastBuiltIn(), after)).toBe(true);
+      expect(isBefore(after, mine)).toBe(true);
     },
   );
 
@@ -242,6 +292,18 @@ describe('area content components', () => {
     }
   });
 
+  it('an empty after-target adds no visible element', () => {
+    const { registry } = renderHosts();
+
+    for (const { area, container, lastBuiltIn } of AREA_CASES) {
+      const target = targetOf(registry, area, 'after');
+      expect(target.parentElement, area).toBe(lastBuiltIn().closest(container));
+      expect(isBefore(lastBuiltIn(), target), area).toBe(true);
+      expect(target.className, area).toContain('target');
+      expect(target.matches(':empty'), area).toBe(true);
+    }
+  });
+
   it('renders nothing, and does not warn, when its area is absent from a custom layout', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
@@ -270,6 +332,7 @@ describe('area content components', () => {
 
     expect(screen.queryByRole('textbox', { name: 'Search nodes' })).toBeNull();
     expect(registry.getAreaSlot('paletteHeader').element).toBeNull();
+    expect(registry.getAreaSlot('paletteHeader', 'after').element).toBeNull();
     expect(screen.getByText('Nodes Library')).toBeTruthy();
 
     fireEvent.click(screen.getByRole('button', { name: 'Open palette' }));
@@ -289,6 +352,7 @@ describe('area content components', () => {
 
     expect(screen.queryByRole('button', { name: 'Docs' })).toBeNull();
     expect(registry.getAreaSlot('propertiesPanelHeader').element).toBeNull();
+    expect(registry.getAreaSlot('propertiesPanelHeader', 'after').element).toBeNull();
     expect(screen.getByText('Properties')).toBeTruthy();
   });
 });

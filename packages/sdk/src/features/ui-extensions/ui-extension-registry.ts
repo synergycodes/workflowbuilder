@@ -9,6 +9,11 @@ export type AreaId =
   | 'propertiesPanelHeader'
   | 'propertiesPanelFooter';
 
+/** Whether area content stands before or after the area's built-in controls. */
+export type AreaPlace = 'before' | 'after';
+
+type AreaKey = `${AreaId}:${AreaPlace}`;
+
 /** A built-in menu that app items can be registered into. */
 export type MenuId = 'project' | 'appBar' | 'propertiesPanel';
 
@@ -41,9 +46,9 @@ export type RegisteredMenuItem = UiMenuItemProps & { id: string };
  */
 export type UiExtensionRegistry = {
   subscribe(listener: () => void): () => void;
-  /** Returns one shared empty slot for every area without an element. */
-  getAreaSlot(area: AreaId): AreaSlot;
-  setAreaElement(area: AreaId, element: HTMLElement | null): void;
+  /** Returns one shared empty slot for every area and place without an element. */
+  getAreaSlot(area: AreaId, place?: AreaPlace): AreaSlot;
+  setAreaElement(area: AreaId, element: HTMLElement | null, place?: AreaPlace): void;
   /** Items in registration order; a new array after every change of that menu. */
   getMenuItems(menu: MenuId): readonly RegisteredMenuItem[];
   /** Adds the item at the end, or replaces the item with the same `id` where it stands. */
@@ -55,15 +60,15 @@ export const EMPTY_SLOT: AreaSlot = Object.freeze({ element: null });
 
 export function createUiExtensionRegistry(): UiExtensionRegistry {
   const listeners = new Set<() => void>();
-  let areas: Partial<Record<AreaId, AreaSlot>> = {};
+  let areas: Partial<Record<AreaKey, AreaSlot>> = {};
   let menus: Record<MenuId, readonly RegisteredMenuItem[]> = { project: [], appBar: [], propertiesPanel: [] };
 
   function notify() {
     for (const listener of listeners) listener();
   }
 
-  function getAreaSlot(area: AreaId): AreaSlot {
-    return areas[area] ?? EMPTY_SLOT;
+  function getAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot {
+    return areas[`${area}:${place}`] ?? EMPTY_SLOT;
   }
 
   function setMenuItems(menu: MenuId, items: readonly RegisteredMenuItem[]) {
@@ -79,9 +84,9 @@ export function createUiExtensionRegistry(): UiExtensionRegistry {
       };
     },
     getAreaSlot,
-    setAreaElement(area, element) {
-      if (getAreaSlot(area).element === element) return;
-      areas = { ...areas, [area]: element ? { element } : EMPTY_SLOT };
+    setAreaElement(area, element, place = 'before') {
+      if (getAreaSlot(area, place).element === element) return;
+      areas = { ...areas, [`${area}:${place}`]: element ? { element } : EMPTY_SLOT };
       notify();
     },
     getMenuItems(menu) {

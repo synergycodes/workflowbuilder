@@ -25,6 +25,7 @@ export function PaletteFooter({ onTemplateClick }: Props) {
           </Button>
         )}
       </OptionalFooterContent>
+      <AreaTarget area="paletteFooter" place="after" />
     </>
   );
 }
