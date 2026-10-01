@@ -14,7 +14,10 @@ const writtenDrafts = new Map<string, string>();
 
 let isHalted = false;
 
-/** After a crash the store holds what would not draw, and the editor's autosave timer outlives the editor. */
+/**
+ * After a crash the store holds what would not draw, and the SDK's autosave timer outlives the editor.
+ * Once the SDK clears that timer on unmount, this goes (follow-up: sdk-autosave-timer-unmount).
+ */
 export function haltSaves(): void {
   isHalted = true;
 }
@@ -45,6 +48,7 @@ export function saveDraftOf(workflowId: string): OnSaveExternal {
   });
 
   // The SDK also autosaves on close with nothing edited, which would overwrite newer edits made elsewhere.
+  // Once the SDK skips an unchanged save itself, the guard goes (follow-up: sdk-autosave-skips-unchanged).
   const isUnchanged = (body: string) => {
     const written = writtenDrafts.get(workflowId);
     return written === undefined ? !isEdited : body === written;
