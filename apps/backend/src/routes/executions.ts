@@ -118,15 +118,17 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
   // See `auth-port.decision-log.md` section "SSE / EventSource auth caveats"
   // for the supported fallbacks (query-param token, cookie session).
   routes.get('/:id/stream', async (c) => {
-    const executionId = c.req.param('id');
+    const requestedId = c.req.param('id');
 
-    await assertAuthorized(c, 'executions:stream', { kind: 'execution', executionId });
+    await assertAuthorized(c, 'executions:stream', { kind: 'execution', executionId: requestedId });
 
-    const [execution] = await database.select().from(executions).where(eq(executions.id, executionId));
+    const [execution] = await database.select().from(executions).where(eq(executions.id, requestedId));
 
     if (!execution) {
       return c.json({ code: 'execution_not_found', message: 'Execution not found' }, 404);
     }
+    // Postgres reads any spelling of a uuid; the worker notifies under the stored one.
+    const executionId = execution.id;
 
     // Tenant cross-check, scoped to the stream on purpose. This is NOT the
     // general per-resource tenant guard - resource-level scoping of GET/:id

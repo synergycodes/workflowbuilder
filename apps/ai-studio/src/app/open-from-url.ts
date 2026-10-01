@@ -30,7 +30,7 @@ async function read<T>(what: 'run' | 'workflow', path: string): Promise<T> {
   }
 }
 
-// Lowercased: the stream subscribes under the id as written, and the worker notifies lowercase ones.
+// Lowercased, the form the backend stores and sends back.
 function idIn(address: URLSearchParams, name: 'executionId' | 'workflowId'): string | undefined {
   const value = address.get(name)?.trim().toLowerCase();
   return value || undefined;

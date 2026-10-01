@@ -374,6 +374,27 @@ describe('createExecutionsRoutes - stream snapshot-window race', () => {
   });
 });
 
+describe('createExecutionsRoutes - stream id', () => {
+  // Postgres reads these as the same uuid and answers with the stored row.
+  it.each([
+    { spelling: 'upper case', id: EXECUTION_ID.toUpperCase() },
+    { spelling: 'braces', id: `{${EXECUTION_ID}}` },
+    { spelling: 'no hyphens', id: EXECUTION_ID.replaceAll('-', '') },
+  ])('a request spelled with $spelling subscribes and reports under the stored id', async ({ id }) => {
+    const app = buildApp(allowStream());
+    subscribeMock.mockResolvedValue(() => {});
+    databaseMock.select.mockReturnValueOnce(chainResolving([{ ...pendingExecution, id: EXECUTION_ID }]));
+    databaseMock.select.mockReturnValueOnce(chainResolving([makeEventRow(1, 'execution_started')]));
+    databaseMock.select.mockReturnValue(chainResolving([makeEventRow(2, 'execution_completed')]));
+
+    const response = await app.request(`/api/executions/${encodeURIComponent(id)}/stream`);
+    const body = await response.text();
+
+    expect(snapshotFrom(body)).toMatchObject({ executionId: EXECUTION_ID });
+    expect(subscribeMock).toHaveBeenCalledWith(EXECUTION_ID, expect.any(Function));
+  });
+});
+
 // ---- cancel race -------------------------------------------------------------
 //
 // The pre-check 409 reads the row, but the enforcement is the UPDATE's WHERE:
