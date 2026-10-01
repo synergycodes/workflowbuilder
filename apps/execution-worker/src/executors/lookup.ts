@@ -44,14 +44,20 @@ function parseRecords(records: unknown): Record<string, LookupRecord> {
 
 export function executeLookup(node: LookupNode, context: ExecutionContext): { output: LookupRecord } {
   const table = parseRecords(node.config.records);
-  const key = typeof node.config.key === 'string' ? resolveTemplate(node.config.key, context).trim() : '';
+  const keyTemplate = typeof node.config.key === 'string' ? node.config.key : '';
+  // Exact match, like Decision's isEqual: neither the key nor the record keys are trimmed.
+  const key = resolveTemplate(keyTemplate, context);
 
-  if (key === '') {
-    throw new PermanentNodeExecutionError('lookup_record_not_found', 'Lookup key is empty');
+  if (key.trim() === '') {
+    throw new PermanentNodeExecutionError('lookup_key_missing', 'Lookup key is empty');
   }
   // Own keys only: `constructor` or `toString` must not resolve off Object.prototype.
   if (!Object.hasOwn(table, key)) {
-    throw new PermanentNodeExecutionError('lookup_record_not_found', `Lookup has no record under the key "${key}"`);
+    // Names the authored key, not the resolved one: a resolved value can be arbitrary upstream text.
+    throw new PermanentNodeExecutionError(
+      'lookup_record_not_found',
+      `Lookup has no record under the key ${keyTemplate}`,
+    );
   }
 
   return { output: table[key]! };

@@ -49,29 +49,37 @@ describe('executeLookup', () => {
     expect(result.output).toEqual({ customer: 'Alan' });
   });
 
-  it('ignores whitespace around the resolved key', () => {
-    const result = executeLookup(
-      lookupNode(' {{trigger.orderId}} '),
-      context({ triggerPayload: { orderId: ' ORD-1\n' } }),
-    );
+  it('matches the resolved key exactly, without trimming', () => {
+    const records = JSON.stringify({ 'ORD-1 ': { customer: 'Ada' } });
+    const lookUp = (orderId: string) =>
+      executeLookup(lookupNode('{{trigger.orderId}}', records), context({ triggerPayload: { orderId } }));
 
-    expect(result.output).toEqual({ customer: 'Ada', total: 120 });
+    expect(lookUp('ORD-1 ').output).toEqual({ customer: 'Ada' });
+    expectPermanent(() => lookUp('ORD-1'), 'lookup_record_not_found');
   });
 
-  it('fails permanently with the key in the message when no record matches', () => {
-    expect(() => executeLookup(lookupNode('ORD-404'), context())).toThrow(
-      expect.objectContaining({ code: 'lookup_record_not_found', message: expect.stringContaining('"ORD-404"') }),
+  it('names the authored key, not the resolved value, when no record matches', () => {
+    expect(() =>
+      executeLookup(lookupNode('{{trigger.orderId}}'), context({ triggerPayload: { orderId: 'a long email body' } })),
+    ).toThrow(
+      expect.objectContaining({
+        code: 'lookup_record_not_found',
+        message: 'Lookup has no record under the key {{trigger.orderId}}',
+      }),
     );
   });
 
-  it('fails permanently when the key resolves to an empty string', () => {
-    expectPermanent(() => executeLookup(lookupNode('{{trigger.orderId?}}'), context()), 'lookup_record_not_found');
+  it.each([
+    ['an empty string', '{{trigger.orderId?}}'],
+    ['whitespace', '  '],
+  ])('fails permanently when the key resolves to %s', (_, key) => {
+    expectPermanent(() => executeLookup(lookupNode(key), context()), 'lookup_key_missing');
   });
 
   it('fails permanently when the node carries no key', () => {
     const node = { id: 'l1', type: 'ai-studio/lookup', config: { records: '{}' } } as unknown as LookupNode;
 
-    expectPermanent(() => executeLookup(node, context()), 'lookup_record_not_found');
+    expectPermanent(() => executeLookup(node, context()), 'lookup_key_missing');
   });
 
   it.each(['constructor', '__proto__'])('does not find "%s" through Object.prototype', (key) => {

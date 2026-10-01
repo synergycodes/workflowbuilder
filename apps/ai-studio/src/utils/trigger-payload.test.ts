@@ -11,16 +11,8 @@ describe('triggerPayloadOf', () => {
     expect(triggerPayloadOf('Where is my order?')).toEqual({ input: 'Where is my order?' });
   });
 
-  it("lends a JSON object's fields to the payload beside the raw text", () => {
-    const text = '{ "orderId": "ORD-1", "total": 120 }';
-
-    expect(triggerPayloadOf(text)).toEqual({ orderId: 'ORD-1', total: 120, input: text });
-  });
-
-  it('keeps the raw text under input when the object has its own input field', () => {
-    const text = '{ "input": "overridden?" }';
-
-    expect(triggerPayloadOf(text)).toEqual({ input: text });
+  it("sends a JSON object's fields without the raw text", () => {
+    expect(triggerPayloadOf('{ "orderId": "ORD-1", "total": 120 }')).toEqual({ orderId: 'ORD-1', total: 120 });
   });
 
   it.each([

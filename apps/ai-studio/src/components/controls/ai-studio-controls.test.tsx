@@ -181,7 +181,7 @@ describe('AiStudioControls', () => {
     });
   });
 
-  it("Run sends a JSON trigger's fields beside the raw text", async () => {
+  it("Run sends a JSON trigger's fields as the payload", async () => {
     const start = supportTriageFlow.value.diagram.nodes.find((node) => node.data.isStartNode)!;
     const inputPrompt = '{ "orderId": "ORD-1" }';
     useStore.setState({
@@ -193,7 +193,7 @@ describe('AiStudioControls', () => {
     await clickIcon('Play');
 
     const [, execute] = fetchMock.mock.calls;
-    expect(JSON.parse(String(execute?.[1]?.body)).triggerPayload).toEqual({ orderId: 'ORD-1', input: inputPrompt });
+    expect(JSON.parse(String(execute?.[1]?.body)).triggerPayload).toEqual({ orderId: 'ORD-1' });
   });
 
   // The canvas holds the run's graph, which is saved nowhere; running it again is a feature of its own.
