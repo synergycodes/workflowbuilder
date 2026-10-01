@@ -1,6 +1,6 @@
 import { registerComponentDecorator, registerFunctionDecorator, registerPluginTranslation } from '@workflowbuilder/sdk';
 
-import { ButtonsUndoRedo } from './components/buttons-undo-redo/buttons-undo-redo';
+import { AppBarUndoRedo } from './components/app-bar-undo-redo/app-bar-undo-redo';
 import { trackFutureChangeDecorator } from './functions/decorators';
 import * as translationEN from './locales/en/translation.json';
 import * as translationPL from './locales/pl/translation.json';
@@ -11,9 +11,8 @@ export function plugin(): void {
     content: UndoRedoProvider,
   });
 
-  registerComponentDecorator('OptionalAppBarTools', {
-    content: ButtonsUndoRedo,
-    place: 'after',
+  registerComponentDecorator('OptionalAppChildren', {
+    content: AppBarUndoRedo,
     name: 'UndoRedo',
   });
 
