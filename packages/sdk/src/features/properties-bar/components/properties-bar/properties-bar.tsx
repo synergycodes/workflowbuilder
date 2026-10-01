@@ -92,6 +92,7 @@ function PropertiesBarComponent({
           />
           {isExpanded && <AreaTarget area="propertiesPanelHeader" />}
           {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}
+          {isExpanded && <AreaTarget area="propertiesPanelHeader" place="after" />}
         </>
       }
       footer={
@@ -102,6 +103,7 @@ function PropertiesBarComponent({
               {selection?.node ? deleteNodeLabel : deleteEdgeLabel}
             </Button>
           )}
+          <AreaTarget area="propertiesPanelFooter" place="after" />
         </>
       }
     >

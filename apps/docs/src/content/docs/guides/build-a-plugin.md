@@ -172,7 +172,22 @@ function ThemeSwitch() {
 }
 ```
 
-This renders, left to right: `ReadOnlySwitch`, `ShareButton`, the rebuilt `ThemeSwitch` (own content, in JSX order), then the built-in language selector (not hidden here), then the app bar's kebab-menu trigger (shown because Export and Import are still visible). Own content always renders before whatever built-ins remain; it does not reorder the built-ins among themselves.
+This renders, left to right: `ReadOnlySwitch`, `ShareButton`, the rebuilt `ThemeSwitch` (own content, in JSX order), then the built-in language selector (not hidden here), then the app bar's kebab-menu trigger (shown because Export and Import are still visible). Own content never reorders the built-ins among themselves; it only stands before or after them as a block.
+
+### Placing content before or after the built-ins
+
+Every `…Content` component accepts an optional `place`, `'before'` by default (as in every example above) or `'after'`. `place="after"` renders past the area's whole built-in group, including any `place: 'after'` decorator still registered on that area's deprecated slot. In `AppBarControlsContent` the after-content still stands ahead of the kebab-menu trigger. In the sidebar headers it becomes a second full-width row at the end of the header, under the tabs when the properties panel shows them. Either way, content lands before or after the whole built-in group as one block; it can never land between two built-in controls.
+
+```tsx
+import { AppBarToolsContent } from '@workflowbuilder/sdk';
+
+<AppBarToolsContent place="after">
+  <UndoButton />
+  <RedoButton />
+</AppBarToolsContent>;
+```
+
+With the built-in Save button visible, this renders the app bar's tools group as `[Save][Undo][Redo]`.
 
 ### A plugin that adds UI
 
@@ -202,7 +217,7 @@ function PublishControls() {
 These are deliberate limits of the model, not bugs:
 
 - **Order is mount order.** A component rendered conditionally (`{canPublish && <AppBarMenuItem … />}`) moves to the end of its area or menu when it remounts.
-- **Own content stands before the built-in controls** of its area. In the app bar and the footers that means immediately before them; in the sidebar headers it renders as a full-width row under the title, wide enough for a search field.
+- **Own content stands before or after the whole built-in group of its area, never between two built-in controls.** The default `place="before"` puts it immediately ahead of the group in the app bar and the footers, or as a full-width row under the title in the sidebar headers, wide enough for a search field. `place="after"` puts it immediately behind the group instead: still ahead of the kebab-menu trigger in the app bar's controls area, or as a second full-width row at the end of a sidebar header, under the tabs when the properties panel shows them.
 - **The area sets the outer layout.** The app bar lays its content out in a line; the footers lay it out in a column, so two buttons side by side there need a container of their own. Your content adapts to the area it is in; it does not change how the area itself lays out.
 - **Hiding is not blocking.** `builtInControls={{ delete: false }}` removes the button; the Delete key and `deleteSelection()` keep working. Use read-only mode, or `reactFlowProps={{ deleteKeyCode: null }}`, to actually block deletion.
 - **Hiding is app-wide, not per-node.** `builtInControls` hides a control for the whole app; it cannot protect one specific node from deletion. For that, set `deletable: false` on the node itself (a React Flow property), which also blocks the Delete key for that node.
