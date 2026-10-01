@@ -18,7 +18,7 @@ export const uischema: UISchema = {
       type: 'Text',
       scope: scope('properties.key'),
       label: 'Key',
-      placeholder: '{{trigger.orderId}}',
+      placeholder: 'e.g. ORD-1 or {{…}}',
     },
     {
       type: 'TextArea',

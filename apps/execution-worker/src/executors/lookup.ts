@@ -4,9 +4,6 @@ import type { LookupNode } from '../domain/ai-studio-nodes';
 
 type LookupRecord = Record<string, unknown>;
 
-// A resolved key can be arbitrary upstream text, so a message carries only its start.
-const KEY_PREVIEW_CHARS = 80;
-
 function isPlainObject(value: unknown): value is LookupRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
@@ -45,7 +42,11 @@ function parseRecords(records: unknown): Record<string, LookupRecord> {
   return table as Record<string, LookupRecord>;
 }
 
-function describeKey(key: string, keyTemplate: string): string {
+// How much of the key a failure message quotes: a key resolved from an AI answer can run to pages.
+const KEY_PREVIEW_CHARS = 80;
+
+// The value looked up, shortened, and the reference it came from, if any.
+function errorMessageKey(key: string, keyTemplate: string): string {
   const preview = key.length > KEY_PREVIEW_CHARS ? `${key.slice(0, KEY_PREVIEW_CHARS)}…` : key;
   return keyTemplate.trim() === key ? `"${preview}"` : `"${preview}" (${keyTemplate.trim()})`;
 }
@@ -60,12 +61,13 @@ export function executeLookup(node: LookupNode, context: ExecutionContext): { ou
     throw new PermanentNodeExecutionError('lookup_key_missing', 'Lookup key is empty');
   }
   // Own keys only: `constructor` or `toString` must not resolve off Object.prototype.
-  if (!Object.hasOwn(table, key)) {
+  const record = Object.hasOwn(table, key) ? table[key] : undefined;
+  if (record === undefined) {
     throw new PermanentNodeExecutionError(
       'lookup_record_not_found',
-      `Lookup has no record under the key ${describeKey(key, keyTemplate)}`,
+      `Lookup has no record under the key ${errorMessageKey(key, keyTemplate)}`,
     );
   }
 
-  return { output: table[key]! };
+  return { output: record };
 }
