@@ -74,6 +74,19 @@ describe('OpenNotices', () => {
     expect(snackbar.show.mock.calls[1]![0]).not.toHaveProperty('autoHideDuration');
   });
 
+  it('gives an error the key of its text, so the editor shows a repeat once until it is closed', () => {
+    mount();
+
+    act(() => {
+      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'error');
+      addNotice('The workflow draft could not be saved automatically: the server did not answer.', 'error');
+    });
+
+    const [first, second] = snackbar.show.mock.calls.map(([options]) => options as { key?: string });
+    expect(first!.key).toBe('The workflow draft could not be saved automatically: the server did not answer.');
+    expect(second!.key).toBe(first!.key);
+  });
+
   // The editor's snackbars show nothing while it is not mounted, so a notice waits for the next one.
   it('holds a notice raised while no editor is on screen', () => {
     mount();
