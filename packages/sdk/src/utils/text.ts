@@ -23,6 +23,7 @@ export const keyToLabel = (key: string): string => {
   }
   const pascalCaseKey = snakeCaseToPascalCase(key);
 
+  // Only non-diacritics are acceptable.
   const words = pascalCaseKey.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+/g) ?? [];
   return words
     .map((word, index) => {
