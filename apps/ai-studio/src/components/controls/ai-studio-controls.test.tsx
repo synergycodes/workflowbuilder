@@ -181,6 +181,21 @@ describe('AiStudioControls', () => {
     });
   });
 
+  it("Run sends a JSON trigger's fields beside the raw text", async () => {
+    const start = supportTriageFlow.value.diagram.nodes.find((node) => node.data.isStartNode)!;
+    const inputPrompt = '{ "orderId": "ORD-1" }';
+    useStore.setState({
+      nodes: [{ ...start, data: { ...start.data, properties: { ...start.data.properties, inputPrompt } } }],
+      edges: [],
+    });
+    render({ workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' });
+
+    await clickIcon('Play');
+
+    const [, execute] = fetchMock.mock.calls;
+    expect(JSON.parse(String(execute?.[1]?.body)).triggerPayload).toEqual({ orderId: 'ORD-1', input: inputPrompt });
+  });
+
   // The canvas holds the run's graph, which is saved nowhere; running it again is a feature of its own.
   it.each([
     ['under a workflow link', { isRunView: true, workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' }],

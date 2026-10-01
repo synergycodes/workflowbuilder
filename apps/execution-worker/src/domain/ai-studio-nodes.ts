@@ -35,6 +35,11 @@ type DecisionNodeConfig = {
   decisionBranches: DecisionBranch[];
 };
 
+type LookupNodeConfig = {
+  key: string; // supports {{namespace.path}} template references
+  records: string; // JSON object: record key -> record object
+};
+
 // Display-only node; the UI reads the upstream output directly, so no runtime config.
 type VisualizeNodeConfig = Record<string, never>;
 
@@ -47,8 +52,10 @@ export type AiAgentNode = ProductNode<'ai-studio/ai-agent', AiAgentNodeConfig>;
 
 export type DecisionNode = ProductNode<'ai-studio/decision', DecisionNodeConfig>;
 
+export type LookupNode = ProductNode<'ai-studio/lookup', LookupNodeConfig>;
+
 type VisualizeNode = ProductNode<'ai-studio/visualize', VisualizeNodeConfig>;
 
 export type HumanDecisionNode = ProductNode<'ai-studio/human-decision', HumanDecisionNodeConfig>;
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode | HumanDecisionNode;
+export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | LookupNode | VisualizeNode | HumanDecisionNode;

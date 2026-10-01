@@ -90,25 +90,27 @@ own: one executor per node type and the database as the store port.
 
 Each judgment is made at the throw site that owns the error. The runner and the adapter never infer a class from a status code, so a consumer's own executors are unaffected by this table.
 
-| Failure                                                        | Class     | Code                                        |
-| -------------------------------------------------------------- | --------- | ------------------------------------------- |
-| AI Agent: provider answered 401 or 403                         | permanent | `provider_auth_rejected`                    |
-| AI Agent: provider answered any other 4xx except 408 and 429   | permanent | `provider_rejected_request`                 |
-| AI Agent: provider answered 429                                | transient | `provider_rate_limited`                     |
-| AI Agent: provider answered 5xx                                | transient | `provider_unavailable`                      |
-| AI Agent: provider answered 408, or the connection failed      | transient | `provider_unreachable`                      |
-| AI Agent: structured answer ended on anything but `stop`       | transient | `structured_output_incomplete`              |
-| AI Agent: `outputSchema` is not a JSON Schema of type `object` | permanent | `output_schema_invalid`                     |
-| AI Agent: `AI_*` variables missing                             | permanent | `ai_not_configured`                         |
-| AI Agent, Decision: template reference malformed or unresolved | permanent | `template_malformed`, `template_unresolved` |
-| Decision: no branch matched                                    | permanent | `no_branch_matched`                         |
-| Human decision: node carries no decision request               | permanent | `decision_request_missing`                  |
+| Failure                                                                | Class     | Code                                        |
+| ---------------------------------------------------------------------- | --------- | ------------------------------------------- |
+| AI Agent: provider answered 401 or 403                                 | permanent | `provider_auth_rejected`                    |
+| AI Agent: provider answered any other 4xx except 408 and 429           | permanent | `provider_rejected_request`                 |
+| AI Agent: provider answered 429                                        | transient | `provider_rate_limited`                     |
+| AI Agent: provider answered 5xx                                        | transient | `provider_unavailable`                      |
+| AI Agent: provider answered 408, or the connection failed              | transient | `provider_unreachable`                      |
+| AI Agent: structured answer ended on anything but `stop`               | transient | `structured_output_incomplete`              |
+| AI Agent: `outputSchema` is not a JSON Schema of type `object`         | permanent | `output_schema_invalid`                     |
+| AI Agent: `AI_*` variables missing                                     | permanent | `ai_not_configured`                         |
+| AI Agent, Decision, Lookup: template reference malformed or unresolved | permanent | `template_malformed`, `template_unresolved` |
+| Decision: no branch matched                                            | permanent | `no_branch_matched`                         |
+| Lookup: records are not a JSON object of record objects                | permanent | `lookup_records_invalid`                    |
+| Lookup: no record under the key                                        | permanent | `lookup_record_not_found`                   |
+| Human decision: node carries no decision request                       | permanent | `decision_request_missing`                  |
 
 The provider's own error is attached as `cause`, and `node_failed` reports the deepest non-empty cause's text, so the provider's message reaches the UI as it did before classification. A refused connection is the exception: the SDK reports it as `Cannot connect to API:` with nothing after the colon, because the reason sits in an `AggregateError` it wraps — one entry per address tried. Only messages survive the activity boundary, so the classifier attaches the first entry (`connect ECONNREFUSED ::1:11434`) as the cause instead of the SDK error. The classifier's own message, which names the HTTP status, is one level up and visible only in Temporal's failure record. 409 is permanent on purpose, unlike the AI SDK's own retry default: no chat provider is known to answer 409 for a condition a retry would clear. Two kinds of SDK error stay unclassified and keep the profile's uniform retry: a response the SDK could not parse (a 2xx with a non-JSON body, typically a proxy answering with HTML) and errors raised without any provider response (a malformed tool call from the model, no output generated), which describe model behaviour a retry can change. Marking a failure transient does not buy extra attempts — the node profile still caps them.
 
 ## AI Agent structured output
 
-An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor then asks the model for an answer matching it and the node's output is the parsed answer, with no `response` key beside it. Without the key the node keeps returning `{ response: text }`. Web search runs in either mode; its loop allows four steps and sends `tool_choice: 'none'` on the last, so the model answers instead of searching again. A value without `type: 'object'` at its root fails the node as a permanent `output_schema_invalid` before any model call. A top-level `response` or `input` string is best avoided: an AI Agent downstream reads that one field as the whole output and drops the rest.
+An AI Agent node may carry `outputSchema`, a JSON Schema object. The executor then asks the model for an answer matching it and the node's output is the parsed answer, with no `response` key beside it. Without the key the node keeps returning `{ response: text }`. Web search runs in either mode; its loop allows four steps and sends `tool_choice: 'none'` on the last, so the model answers instead of searching again. A value without `type: 'object'` at its root fails the node as a permanent `output_schema_invalid` before any model call. A top-level `response` or `input` string is best avoided: an AI Agent downstream reads that one field as the whole output and drops the rest. The same holds for a Lookup record, which is the Lookup node's output as stored.
 
 The model is created with `supportsStructuredOutputs: true`. Without that flag the OpenAI-compatible provider drops the schema, sends plain JSON mode and only warns, so the keys would come from the model's guess. The provider sends `strict: true` by default. OpenAI's strict mode requires the schema to list every property in `required` and set `additionalProperties: false`; an endpoint that refuses the schema answers 4xx, which [Failure classification](#failure-classification) makes permanent. The endpoint has to support the `json_schema` response format at all. OpenRouter's documentation says it honours it only on models that advertise structured outputs, so check the model before a demo.
 

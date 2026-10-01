@@ -1,9 +1,9 @@
 import { getScope } from '@workflowbuilder/sdk';
 import type { UISchema } from '@workflowbuilder/sdk';
 
-import type { TriggerSchema } from './schema';
+import type { LookupSchema } from './schema';
 
-const scope = getScope<TriggerSchema>;
+const scope = getScope<LookupSchema>;
 
 export const uischema: UISchema = {
   type: 'VerticalLayout',
@@ -15,11 +15,17 @@ export const uischema: UISchema = {
       placeholder: 'Node Title...',
     },
     {
+      type: 'Text',
+      scope: scope('properties.key'),
+      label: 'Key',
+      placeholder: '{{trigger.orderId}}',
+    },
+    {
       type: 'TextArea',
-      scope: scope('properties.inputPrompt'),
-      label: 'Input',
+      scope: scope('properties.records'),
+      label: 'Records (JSON)',
       placeholder:
-        'Paste the input data here (e.g. email content)... A JSON object also exposes its fields as {{trigger.<field>}}.',
+        '{\n  "ORD-1": { "customer": "Ada", "total": 120 },\n  "ORD-2": { "customer": "Grace", "total": 80 }\n}',
       minRows: 5,
       maxRows: 14,
     },

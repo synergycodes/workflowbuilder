@@ -11,6 +11,7 @@ import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 import { addNotice } from '../../stores/use-notices-store';
 import { leaveRunView } from '../../utils/open-from-url/address-execution-id';
+import { triggerPayloadOf } from '../../utils/trigger-payload';
 
 type Props = {
   /** The link's workflow: Run saves the canvas into its draft before it runs. */
@@ -37,7 +38,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
 
     const startNode = nodes.find((n) => n.data.isStartNode);
     const inputPrompt = (startNode?.data.properties as { inputPrompt?: string })?.inputPrompt ?? '';
-    const triggerPayload = inputPrompt ? { input: inputPrompt } : {};
+    const triggerPayload = triggerPayloadOf(inputPrompt);
 
     setIsStarting(true);
     try {

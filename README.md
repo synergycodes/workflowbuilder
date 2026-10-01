@@ -197,13 +197,13 @@ Temporal ready
 [ai-studio]    ➜  Local:   http://127.0.0.1:4201/
 ```
 
-Open `http://localhost:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
+Open `http://localhost:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Lookup, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 
 #### Connect a real LLM (optional)
 
-The stack starts without an LLM: Trigger, Decision and Visualize nodes run as usual, and an AI Agent node fails with `ai_not_configured` when the run reaches it. AI nodes need three variables in both `apps/backend/.env` and `apps/execution-worker/.env`. The files `pnpm setup:env` created already carry an endpoint and a model for [OpenRouter](https://openrouter.ai), so only the key is missing:
+The stack starts without an LLM: Trigger, Lookup, Decision and Visualize nodes run as usual, and an AI Agent node fails with `ai_not_configured` when the run reaches it. AI nodes need three variables in both `apps/backend/.env` and `apps/execution-worker/.env`. The files `pnpm setup:env` created already carry an endpoint and a model for [OpenRouter](https://openrouter.ai), so only the key is missing:
 
 ```env
 AI_API_KEY=sk-or-v1-...

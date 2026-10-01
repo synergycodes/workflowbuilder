@@ -12,6 +12,7 @@ import { env } from '../../env';
 import { createAiAgentExecutor } from '../../executors/ai-agent';
 import { executeDecision } from '../../executors/decision';
 import { executeHumanDecision } from '../../executors/human-decision';
+import { executeLookup } from '../../executors/lookup';
 import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
@@ -41,6 +42,7 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/trigger': executeTrigger,
     'ai-studio/decision': executeDecision,
     'ai-studio/ai-agent': executeAIAgent,
+    'ai-studio/lookup': executeLookup,
     'ai-studio/visualize': executeVisualize,
     'ai-studio/human-decision': executeHumanDecision,
   },
