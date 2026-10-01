@@ -40,7 +40,8 @@ async function workflowToRun(nodes: unknown[], edges: unknown[], targetWorkflowI
   return id;
 }
 
-export function useBackendExecution() {
+/** `onForget` runs once the client forgets the run: on Reset, and when Stop learns the server no longer has it. */
+export function useBackendExecution(onForget?: () => void) {
   const disconnectRef = useRef<(() => void) | null>(null);
   const isUnmountedRef = useRef(false);
   const status = useExecutionStore((s) => s.status);
@@ -115,7 +116,8 @@ export function useBackendExecution() {
     disconnectRef.current = null;
     resetExecution();
     syncExecutionIdToAddress(null);
-  }, []);
+    onForget?.();
+  }, [onForget]);
 
   const cancel = useCallback(async () => {
     if (!executionId) return;

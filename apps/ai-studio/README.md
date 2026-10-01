@@ -41,7 +41,7 @@ Stop sends `DELETE /api/executions/:id`. The controls offer it for every status 
 | Answer to Stop                         | What the client does                                                                                       |
 | -------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
 | `200` or `409`                         | Reopens the stream unless the run already ended over the old one. The snapshot shows where the run stands. |
-| `404` with `code: execution_not_found` | Forgets the run.                                                                                           |
+| `404` with `code: execution_not_found` | Forgets the run, as Reset does; a run view reloads.                                                        |
 | Anything else, or no answer            | Keeps the run. Reset stays available.                                                                      |
 
 The client keeps the Stop request in memory only. After a reload, one more Stop brings Reset back, and a run the server reports as `cancelling` brings it back without one.
@@ -56,7 +56,7 @@ The URL is the only record of what the editor shows. Four rules:
 
 1. AI Studio reads the URL once, while the page loads, behind a loading screen. Editing the URL and pressing Enter loads the page again; a URL changed any other way is ignored until the next load.
 2. `executionId` wins: the canvas shows the graph the run executed (`GET /api/executions/:id/snapshot`), read-only, live or replayed, named `Run <first 8 characters>`. `workflowId` without a run opens the workflow's draft (its published version when it has no draft, an empty canvas when it has neither) under the workflow's name, and the editor saves into that draft. Neither id opens the local draft in `localStorage`, as before.
-3. The app writes the URL in two places. Run adds `executionId` with `history.replaceState` and keeps `workflowId`; Reset removes it and, in a run view, reloads the page, which lands on the workflow when the URL names one and on the local draft otherwise.
+3. The app writes the URL in two places. Run adds `executionId` with `history.replaceState` and keeps `workflowId`. Forgetting the run, on Reset or on a Stop the server answers with `execution_not_found`, removes it and, in a run view, reloads the page, which lands on the workflow when the URL names one and on the local draft otherwise.
 4. A URL that cannot be opened shows one screen with the reason and a way out: to the workflow when the URL names one and only the run failed, to the local draft otherwise. The URL stays, so a reload tries again. The same screen catches a diagram that throws while drawing.
 
 So after every action the canvas shows what a reload of the current URL would show.

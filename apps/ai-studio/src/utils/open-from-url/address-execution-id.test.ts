@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { syncExecutionIdToAddress, withExecutionId } from './address-execution-id';
+import { leaveRunView, syncExecutionIdToAddress, withExecutionId } from './address-execution-id';
 
 const RUN = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
 const NEXT_RUN = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
@@ -55,5 +55,24 @@ describe('syncExecutionIdToAddress', () => {
     syncExecutionIdToAddress(RUN);
 
     expect(replaceState).not.toHaveBeenCalled();
+  });
+});
+
+describe('leaveRunView', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.restoreAllMocks();
+  });
+
+  // Assigning the current URL again loads nothing when it carries a fragment.
+  it('drops the run from the address and reloads, a fragment included', () => {
+    const replaceState = vi.spyOn(globalThis.history, 'replaceState').mockImplementation(() => {});
+    const reload = vi.fn();
+    vi.stubGlobal('location', { href: `https://studio.test/?workflowId=${WORKFLOW}&executionId=${RUN}#log`, reload });
+
+    leaveRunView();
+
+    expect(replaceState).toHaveBeenCalledWith(null, '', `https://studio.test/?workflowId=${WORKFLOW}#log`);
+    expect(reload).toHaveBeenCalledTimes(1);
   });
 });

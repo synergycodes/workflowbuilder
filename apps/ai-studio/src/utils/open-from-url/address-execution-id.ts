@@ -13,9 +13,10 @@ export function withExecutionId(href: string, executionId: string | null): strin
   return url.toString();
 }
 
-/** A full reload: the editor fixes its diagram at mount, so the local draft or the address's workflow needs one. */
+/** A full reload: the editor fixes its diagram at mount. `reload`, as assigning the same URL with a fragment loads nothing. */
 export function leaveRunView(): void {
-  globalThis.location.assign(withExecutionId(globalThis.location.href, null));
+  syncExecutionIdToAddress(null);
+  globalThis.location.reload();
 }
 
 export function syncExecutionIdToAddress(executionId: string | null): void {

@@ -20,7 +20,8 @@ type Props = {
 };
 
 export function AiStudioControls({ workflowId, isRunView }: Props) {
-  const { executeFromCanvas, cancel, reset, status } = useBackendExecution();
+  // A run view shows only its run: once the run is forgotten, the page reloads onto the workflow or the local draft.
+  const { executeFromCanvas, cancel, reset, status } = useBackendExecution(isRunView ? leaveRunView : undefined);
   const hasStartNode = useHasStartNode();
   // A run outlives its trigger node, so Stop and Reset stay reachable after it is deleted.
   const shouldShowControls = hasStartNode || status !== 'idle';
@@ -29,11 +30,6 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
   const canRun = hasStartNode && !isRunView;
-
-  const handleReset = useCallback(() => {
-    reset();
-    if (isRunView) leaveRunView();
-  }, [reset, isRunView]);
 
   const handleExecute = useCallback(async () => {
     const nodes = getStoreNodes();
@@ -96,7 +92,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
           <NavButton
             size="s"
             aria-label={resetTooltip}
-            onClick={handleReset}
+            onClick={reset}
             tooltip={resetTooltip}
             prefixIcon={<Icon name="ArrowCounterClockwise" />}
           />

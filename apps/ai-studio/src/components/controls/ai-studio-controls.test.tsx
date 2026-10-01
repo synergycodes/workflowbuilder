@@ -246,6 +246,33 @@ describe('AiStudioControls', () => {
     expect(address.leaveRunView).toHaveBeenCalledTimes(1);
   });
 
+  it('a Stop the server answers with execution_not_found leaves the run view, as Reset does', async () => {
+    render({ isRunView: true });
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('waiting');
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(404, { code: 'execution_not_found', message: 'Execution not found' }),
+    );
+
+    await clickStop();
+
+    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
+    expect(address.leaveRunView).toHaveBeenCalledTimes(1);
+  });
+
+  it('the same answer in the local draft stays on the page and offers Run', async () => {
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('waiting');
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(404, { code: 'execution_not_found', message: 'Execution not found' }),
+    );
+
+    await clickStop();
+
+    expect(address.leaveRunView).not.toHaveBeenCalled();
+    expect(icons()).toEqual(['Play']);
+  });
+
   it('keeps the Reset escape when a snapshot arrives again: an answering server has not ended the run', () => {
     setRunStatus('waiting');
     act(() => applyConnectionLost());
