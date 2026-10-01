@@ -31,11 +31,7 @@ export type NodeDefinition<T extends NodeSchema> = {
   uischema?: UISchema;
   /** describes the output properties this node produces, used by the variable picker */
   outputSchema?: NodeOutputSchema;
-  /**
-   * Icon color on the canvas and in the palette. Read by node type at render time and
-   * never saved into the diagram, so saved diagrams pick up a change without migration.
-   * Without it the icon keeps the default color; the built-in AI Agent template defaults to `ai`.
-   */
+  /** icon color on the canvas and in the palette, resolved by node type and never saved into the diagram */
   accent?: NodeIconAccent;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
   Pick<NodeData, 'type' | 'icon' | 'templateType' | 'isStartNode'>;

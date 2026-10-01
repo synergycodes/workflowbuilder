@@ -6,13 +6,14 @@ import { registerPluginTranslation } from '../features/plugins-core/adapters/ada
 import { setAppBarBranding } from '../data/app-bar-branding';
 import { setCustomEdgeTemplates } from '../data/edge-templates';
 import { setCustomNodeTemplates } from '../data/node-templates';
-import { getPaletteData, setCustomPaletteNodes } from '../data/palette';
+import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
-import { resetWorkflowStore, useStore } from '../store/store';
+import { loadNodeDefinitions } from '../store/slices/palette/actions';
+import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
 import type {
@@ -100,8 +101,7 @@ export function WorkflowBuilderRoot({
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
-    // Node definitions are read before the Palette mounts and in layouts without one.
-    useStore.setState({ data: getPaletteData() });
+    loadNodeDefinitions();
   }, []);
 
   // Paint the persisted theme on the DOM once, client-side. Lives here (not at

@@ -19,7 +19,7 @@
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getIsValidConnection,
@@ -27,7 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
-import type { PaletteItem } from '../node/common';
+import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -69,11 +69,17 @@ function makeNode(id: string): WorkflowBuilderNode {
 // renders are already unmounted, so the reset's store update never reaches a
 // still-mounted subscriber outside `act(...)`.
 beforeEach(() => {
+  // Each mount schedules a node re-validation timer; fake timers keep it from firing in a later test.
+  vi.useFakeTimers();
   resetWorkflowStore();
   setIsValidConnection(null);
   setReactFlowProps(null);
   localStorage.clear();
   delete document.documentElement.dataset.theme;
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
@@ -222,7 +228,7 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
 });
 
 describe('WorkflowBuilderRoot — node definitions', () => {
-  it('resolves definitions without a Palette and reads the palette data once per mount', () => {
+  it('loads node definitions on mount without a Palette', () => {
     const definition = { type: 'action', label: 'Action', icon: 'Plus', accent: 'green' } as PaletteItem;
     paletteMock.getPaletteData.mockClear();
     paletteMock.getPaletteData.mockImplementation(() => [definition]);
@@ -243,6 +249,7 @@ describe('WorkflowBuilderRoot — node definitions', () => {
     });
 
     expect(getByTestId('accent').textContent).toBe('green');
+    expect(useStore.getState().fetchDataStatus).toBe(StatusType.Success);
     expect(paletteMock.getPaletteData).toHaveBeenCalledTimes(1);
   });
 });

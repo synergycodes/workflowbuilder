@@ -27,9 +27,7 @@ export type LayoutDirection = (typeof layoutDirections)[number];
 export type IconType = WBIcon;
 
 /**
- * Icon color a node definition declares in `accent`, one of
- * `'blue' | 'green' | 'orange' | 'violet' | 'neutral' | 'ai'` (`ai` is a gradient).
- * Alias for `NodeIconAccent` from `@workflowbuilder/ui`.
+ * Icon color a node definition declares in `accent`. Alias for `NodeIconAccent` from `@workflowbuilder/ui`.
  *
  * @category Types
  */
