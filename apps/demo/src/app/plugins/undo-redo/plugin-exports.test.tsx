@@ -22,7 +22,7 @@ describe('undo/redo plugin', () => {
     container.remove();
   });
 
-  it('renders Undo and Redo right after Save in the app bar', async () => {
+  it('renders Undo and Redo right after Save, through the app bar tools area', async () => {
     act(() =>
       root.render(
         <StrictMode>
@@ -41,5 +41,8 @@ describe('undo/redo plugin', () => {
     const save = labels.indexOf('Save');
     expect(save).toBeGreaterThanOrEqual(0);
     expect(labels.slice(save, save + 3)).toEqual(['Save', 'Undo', 'Redo']);
+    // The deprecated OptionalAppBarTools slot renders the buttons straight into the nav segment.
+    const undo = container.querySelector('button[aria-label="Undo"]');
+    expect(undo?.parentElement?.matches('[class*="target"]')).toBe(true);
   });
 });
