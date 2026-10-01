@@ -29,7 +29,7 @@ import {
 import { FIELD_MODES } from '../../../utils/human-decision/decision-fields';
 import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
-import { decisionFieldsRenderer } from './decision-fields-control';
+import { SOURCE_HINTS, decisionFieldsRenderer } from './decision-fields-control';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
@@ -316,15 +316,10 @@ describe('the decision fields control in the real properties panel', () => {
       text: hint.textContent,
     }));
 
-  const UNCONNECTED =
-    'Nothing leads into this block yet. Connect a block before it — its output fields will appear here (e.g. the AI step). Run won’t start until this block has an incoming connection.';
-  const NO_FIELDS =
-    'The block before this one declares no output fields the form can show (text, number, yes/no) — for an AI step, pick a structured Response format.';
-
   it('with nothing connected, a neutral hint says nothing leads in, and keeps listing the stored fields', async () => {
     await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
 
-    expect(hints()).toEqual([{ variant: 'neutral', text: UNCONNECTED }]);
+    expect(hints()).toEqual([SOURCE_HINTS.unconnected]);
     expect(container.querySelector('[data-decision-fields] [data-hint]')?.hasAttribute('role')).toBe(false);
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
@@ -344,12 +339,7 @@ describe('the decision fields control in the real properties panel', () => {
       [edge('draft-1'), edge('draft-2')],
     );
 
-    expect(hints()).toEqual([
-      {
-        variant: 'neutral',
-        text: 'Several blocks lead into this one — keep one connection before it so its output fields appear here.',
-      },
-    ]);
+    expect(hints()).toEqual([SOURCE_HINTS.ambiguous]);
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
@@ -369,7 +359,7 @@ describe('the decision fields control in the real properties panel', () => {
     const ghost = { ...refundReviewRequest, proposalSourceNodeId: 'ghost' };
     await renderPanel([agent('draft-1', refundOutput), human(ghost)], []);
 
-    expect(hints()).toEqual([{ variant: 'neutral', text: UNCONNECTED }]);
+    expect(hints()).toEqual([SOURCE_HINTS.unconnected]);
   });
 
   describe('on the "Refund Review" template', () => {
@@ -483,7 +473,7 @@ describe('the decision fields control in the real properties panel', () => {
     it('with the draft on Plain text, a warning says it declares no fields, and the stored ones stay listed', async () => {
       await renderTemplate(withDraftProperties((properties) => ({ ...properties, outputSchema: undefined })));
 
-      expect(hints()).toEqual([{ variant: 'warning', text: NO_FIELDS }]);
+      expect(hints()).toEqual([SOURCE_HINTS.noFields]);
       expect(rowLabels()).toEqual([
         'Refund amount (not in the source)',
         'Order date (not in the source)',

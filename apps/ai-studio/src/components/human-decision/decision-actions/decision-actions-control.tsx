@@ -19,18 +19,18 @@ import { Hint, type HintVariant } from '../hint/hint';
 
 type OutputHint = 'single' | 'unwired' | 'wired';
 
-const OUTPUT_HINTS = {
+export const OUTPUT_HINTS = {
   single: {
     variant: 'info',
-    text: 'Reject is off, so the gate has a single output: Approved — the decider can only approve.',
+    text: 'Reject is off, so the gate has a single output: Approved - the decider can only approve.',
   },
   unwired: {
     variant: 'info',
-    text: '“Rejected” has no path yet. That is not a validation error — a run that reaches it simply ends as rejected. Draw an edge only if rejection has its own business path.',
+    text: '"Rejected" has no path yet. That is not a validation error - a run that reaches it simply ends as rejected. Draw an edge only if rejection has its own business path.',
   },
   wired: {
     variant: 'info',
-    text: 'Both outputs carry equal weight. An unwired “Rejected” output is not a validation error — a run that reaches it ends as rejected.',
+    text: 'Both outputs carry equal weight. An unwired "Rejected" output is not a validation error - a run that reaches it ends as rejected.',
   },
 } satisfies Record<OutputHint, { variant: HintVariant; text: string }>;
 
