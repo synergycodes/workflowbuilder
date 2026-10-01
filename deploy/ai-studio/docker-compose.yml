@@ -64,6 +64,7 @@ services:
       DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
       # explicit opt-in — a forgotten env var fails loudly instead of exposing the API
       WB_AUTH_PORT: allow-all
+      # ENABLE_WB_LISTING stays unset: the collection routes are off, and the random id is the only secret here
       # only nginx can reach the backend, so X-Forwarded-For is trustworthy
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}

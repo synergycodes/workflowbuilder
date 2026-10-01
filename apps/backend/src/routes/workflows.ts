@@ -14,6 +14,8 @@ import { formatValidationDetails, parseSnapshot } from './snapshot-validation';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
 
+// Both write schemas store a draft as sent, so on a public deployment anyone can save one the editor
+// cannot draw. (follow-up: validate-workflow-drafts)
 const createWorkflowSchema = z.object({
   name: z.string().min(1).max(200),
   draftJson: z.unknown().optional(),
