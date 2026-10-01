@@ -34,7 +34,7 @@ export function PaneEditVariable({
       {(title || setActivePane) && (
         <TabHeader title={title} onGoBack={setActivePane ? () => setActivePane(VARIABLE_PANE.LIST) : undefined} />
       )}
-      {!variable && <p className={clsx('ax-public-p9')}>{t('variables.variableNotFound')}</p>}
+      {!variable && <p className={clsx('wb-text-body-m')}>{t('variables.variableNotFound')}</p>}
       {variable && (
         <VariableForm
           variant={variant}

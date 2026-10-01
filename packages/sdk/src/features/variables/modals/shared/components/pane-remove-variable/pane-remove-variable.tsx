@@ -48,7 +48,9 @@ export function PaneRemoveVariable({
         />
       )}
       <div className={styles['content']}>
-        {!variable && <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.variableNotFound')}</p>}
+        {!variable && (
+          <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.variableNotFound')}</p>
+        )}
         {variable && <VariableMeta name={variable.name} type={variable.type} />}
         {nodesWithVariable.length === 0 ? (
           <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.removeVariableWarning')}</p>
