@@ -13,7 +13,6 @@
   gap: 0.5rem;
   align-self: stretch;
   border-radius: 0.5rem;
-  border: 1px solid var(--wb-ui-stroke-primary-default);
   background: none;
 
   svg {
@@ -21,19 +20,17 @@
   }
 
   span {
-    color: var(--wb-colors-gray-900);
     font-size: 0.8125rem;
     font-weight: 600;
   }
 }
 
 .preview {
-  padding: var(--wb-token-spacing-spacing-4) var(--wb-token-spacing-spacing-8);
-  color: var(--wb-txt-tertiary-default);
+  padding: var(--wb-ds-space-50) var(--wb-ds-space-100);
 
   * {
     font-size: 0.75rem;
-    gap: var(--wb-token-spacing-spacing-4);
+    gap: var(--wb-ds-space-50);
   }
 }
 
