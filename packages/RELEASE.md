@@ -68,6 +68,8 @@ release  ───────────────●───────�
 
 Applies to `@workflowbuilder/ui` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
 
+`@workflowbuilder/temporal` 0.1.0 was published by hand and has no scoped tag or GitHub Release; 0.2.0 is the first release that runs `release-temporal.yml`, so confirm its trusted publisher on npmjs.com before tagging.
+
 The whole sequence:
 
 1. **Make the package publishable on `main`** in an ordinary PR: drop `"private": true`, check that `package.json` has `publishConfig.access: public`, `files`, `repository.directory` and `license`, that `LICENSE` and `CHANGELOG.md` sit next to it, and that `CHANGELOG.md` contains nothing but the `# Changelog` heading (see "Reformat the generated CHANGELOG section" for why). Every README link that leaves the package directory has to be an absolute GitHub URL: npm renders the README, and a relative `../` link is dead there.
@@ -220,7 +222,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
-- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released; the 0.1.0 release replaced the pre-release baseline, and the release PR that first records `<version>-parked-decision.json` deletes the remaining `v0-parked-decision.json` once the new recording replays
+- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, plus, for the release that first records `parked-decision`, the deletion of `v0-parked-decision.json`
 - Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.

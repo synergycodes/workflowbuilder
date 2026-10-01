@@ -83,7 +83,7 @@ A scenario still worth adding: two nodes parked in one wave, resolved one after 
 ## Rules once files live here
 
 1. A failing replay means today's code would issue commands the recorded run never made.
-   What to do about it depends on whether the package has shipped; see the next section.
+   What to do about it depends on which recording is red; see the last section.
 2. Do not edit or delete a history while runs recorded by that version may still exist.
    New behaviour gets a new file next to the old ones.
 3. Regenerating a file resets what it guards. Rewriting a history from current code turns
@@ -95,9 +95,9 @@ A scenario still worth adding: two nodes parked in one wave, resolved one after 
 `v0-` was the pre-release baseline, recorded before the package published its first
 version; those files went with the 0.1.0 release, so a recording that lands under `v0-`
 today means the version variable was forgotten. The one exception is
-`v0-parked-decision.json`: the parked path has not shipped, so its pre-release recording
-is deleted by the release PR that first records `<version>-parked-decision.json`, once
-the new recording replays. Every release records every scenario again under the version
+`v0-parked-decision.json`, the pre-release recording of the parked path, which has not
+shipped. The release PR that first records `<version>-parked-decision.json` deletes it
+once the new recording replays. Every release records every scenario again under the version
 it ships, in the release PR right after `pnpm release:version temporal`:
 
 ```bash
@@ -120,8 +120,8 @@ away the only evidence of what the published version actually did.
 not shipped. A red replay is a design signal: read the change first, and if the new command
 genuinely belongs on that path, re-record it with `REPLAY_HISTORY_OVERWRITE=1` and say so
 in the commit message. `patched()` is not needed and no major is due for that unshipped path.
-Delete this recording in the release PR that first records `<version>-parked-decision.json`,
-once the new recording replays; published-recording rules apply from then on.
+Follow the replacement rule in [Rules once files live here](#rules-once-files-live-here);
+published-recording rules apply from then on.
 
 ### Reading the change
 

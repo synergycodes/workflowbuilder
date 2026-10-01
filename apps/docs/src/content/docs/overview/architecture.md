@@ -23,7 +23,9 @@ The project is a pnpm workspace. The editor itself lives in a single distributab
 
 ```
 packages/
-└── sdk/               # The editor — distributed as @workflowbuilder/sdk
+├── sdk/               # The editor — distributed as @workflowbuilder/sdk
+├── execution-core/    # Optional workflow execution runtime
+└── types/             # Shared types for the execution layer
 
 apps/
 ├── demo/              # Reference React host that consumes the SDK
@@ -31,13 +33,11 @@ apps/
 ├── docs/              # This documentation site (Astro + Starlight)
 ├── icons/             # Lazy-loadable icon set, bundled into the SDK at build time
 ├── backend/           # Optional REST backend used by the demo's `api` strategy
-├── execution-core/    # Optional workflow execution runtime
 ├── execution-worker/  # Optional async worker for execution jobs
-├── types/             # Shared types for the execution layer
 └── tools/             # Internal scripts and developer utilities
 ```
 
-`@workflowbuilder/sdk` is the only artifact an external app needs. The execution-side apps (`backend`, `execution-core`, `execution-worker`) are independent — the SDK serialises workflows to JSON and emits save events; what runs them is up to you.
+`@workflowbuilder/sdk` is the only artifact an external app needs. The execution-side packages and apps (`execution-core`, `backend`, `execution-worker`) are independent — the SDK serialises workflows to JSON and emits save events; what runs them is up to you.
 
 ## SDK structure
 
@@ -111,7 +111,7 @@ Each node carries its type, position, icon, and a `properties` object whose shap
 
 ## Execution
 
-Workflow Builder focuses on the editor layer. The serialised JSON is designed to be consumed by a backend execution engine — yours or one of the in-repo apps (`apps/execution-core/` + `apps/execution-worker/` cover the demo's runtime; `apps/backend/` is the REST surface they sit behind). For in-editor execution, the optional [Flow Runner plugin](/plugins/flow-runner/) (Enterprise) traverses the workflow graph and runs node functions directly.
+Workflow Builder focuses on the editor layer. The serialised JSON is designed to be consumed by a backend execution engine — yours or the in-repo runtime (`packages/execution-core/` + `apps/execution-worker/` cover the demo's runtime; `apps/backend/` is the REST surface they sit behind). For in-editor execution, the optional [Flow Runner plugin](/plugins/flow-runner/) (Enterprise) traverses the workflow graph and runs node functions directly.
 
 ## See also
 

@@ -11,7 +11,7 @@
 //                                              ship the SDK although UI, compiled into it, has pending changesets
 //
 // Full procedure: packages/RELEASE.md.
-import { readFileSync, rmSync } from 'node:fs';
+import { existsSync, readFileSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -154,14 +154,7 @@ const commitMessage =
 
 console.log('\nDone. Next steps:');
 for (const r of released) {
-  if (RECORDS_REPLAY_HISTORIES.has(r.name)) {
-    console.log(`  - Record the replay histories under ${r.version}, then check that everything still replays:`);
-    console.log(`      REPLAY_HISTORY_VERSION=${r.version} UPDATE_REPLAY_HISTORIES=1 pnpm --filter ${r.name} test`);
-    console.log(`      pnpm --filter ${r.name} test`);
-    console.log(
-      `    (${r.directory}/test/replay/README.md; delete v0-parked-decision.json in the release PR that first records <version>-parked-decision.json, once it replays)`,
-    );
-  }
+  printReplayInstructions(r);
   console.log(`  - Rewrite the new section in ${r.directory}/CHANGELOG.md into Keep a Changelog form`);
   console.log('    (packages/RELEASE.md § "Reformat the generated CHANGELOG section").');
 }
@@ -169,3 +162,17 @@ console.log(`  - git add -A && git commit -m "${commitMessage}"`);
 console.log('  - Open a PR into `release`. Once it is merged, tag from the release head:');
 for (const r of released)
   console.log(`      pnpm release:tag ${r.short}    # creates and pushes ${r.name}@${r.version}`);
+
+function printReplayInstructions(release) {
+  if (!RECORDS_REPLAY_HISTORIES.has(release.name)) return;
+  console.log(`  - Record the replay histories under ${release.version}, then check that everything still replays:`);
+  console.log(
+    `      REPLAY_HISTORY_VERSION=${release.version} UPDATE_REPLAY_HISTORIES=1 pnpm --filter ${release.name} test`,
+  );
+  console.log(`      pnpm --filter ${release.name} test`);
+  const legacyRecording = path.join(ROOT, release.directory, 'test/replay/histories/v0-parked-decision.json');
+  const legacyNote = existsSync(legacyRecording)
+    ? `; delete v0-parked-decision.json once ${release.version}-parked-decision.json replays`
+    : '';
+  console.log(`    (${release.directory}/test/replay/README.md${legacyNote})`);
+}

@@ -28,7 +28,7 @@ Used in production by teams including [Vercom](https://www.workflowbuilder.io/ca
 
 > **Since 2.0, this repository is the home of Workflow Builder.** Previously we worked in a private monorepo and only partially mirrored changes here. Now every commit lands here directly.
 >
-> See the [SDK changelog](./packages/sdk/CHANGELOG.md) for released changes and the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/) for moving from 2.x to 3.0.
+> See the [SDK changelog](./packages/sdk/CHANGELOG.md) for released changes and the [3.0 upgrade guide](./apps/docs/src/content/docs/get-started/upgrade-to-3.md) for moving from 2.x to 3.0.
 
 ## Get started
 
