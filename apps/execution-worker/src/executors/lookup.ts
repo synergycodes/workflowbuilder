@@ -4,13 +4,16 @@ import type { LookupNode } from '../domain/ai-studio-nodes';
 
 type LookupRecord = Record<string, unknown>;
 
+// A resolved key can be arbitrary upstream text, so a message carries only its start.
+const KEY_PREVIEW_CHARS = 80;
+
 function isPlainObject(value: unknown): value is LookupRecord {
   return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // The backend passes node config through unvalidated, so a missing field must still fail as classified.
 function parseRecords(records: unknown): Record<string, LookupRecord> {
-  if (typeof records !== 'string') {
+  if (typeof records !== 'string' || records.trim() === '') {
     throw new PermanentNodeExecutionError('lookup_records_invalid', 'Lookup node has no records');
   }
 
@@ -18,9 +21,9 @@ function parseRecords(records: unknown): Record<string, LookupRecord> {
   try {
     table = JSON.parse(records);
   } catch (error) {
-    throw new PermanentNodeExecutionError('lookup_records_invalid', 'Lookup records are not valid JSON', {
-      cause: error,
-    });
+    // No `cause`: node_failed reports the deepest cause's message, which would replace this one.
+    const reason = error instanceof Error ? error.message : String(error);
+    throw new PermanentNodeExecutionError('lookup_records_invalid', `Lookup records are not valid JSON: ${reason}`);
   }
 
   if (!isPlainObject(table)) {
@@ -42,21 +45,25 @@ function parseRecords(records: unknown): Record<string, LookupRecord> {
   return table as Record<string, LookupRecord>;
 }
 
+function describeKey(key: string, keyTemplate: string): string {
+  const preview = key.length > KEY_PREVIEW_CHARS ? `${key.slice(0, KEY_PREVIEW_CHARS)}…` : key;
+  return keyTemplate.trim() === key ? `"${preview}"` : `"${preview}" (${keyTemplate.trim()})`;
+}
+
 export function executeLookup(node: LookupNode, context: ExecutionContext): { output: LookupRecord } {
   const table = parseRecords(node.config.records);
   const keyTemplate = typeof node.config.key === 'string' ? node.config.key : '';
-  // Exact match, like Decision's isEqual: neither the key nor the record keys are trimmed.
-  const key = resolveTemplate(keyTemplate, context);
+  // Trimmed: a model's answer used as the key can carry a trailing newline. Record keys are matched as written.
+  const key = resolveTemplate(keyTemplate, context).trim();
 
-  if (key.trim() === '') {
+  if (key === '') {
     throw new PermanentNodeExecutionError('lookup_key_missing', 'Lookup key is empty');
   }
   // Own keys only: `constructor` or `toString` must not resolve off Object.prototype.
   if (!Object.hasOwn(table, key)) {
-    // Names the authored key, not the resolved one: a resolved value can be arbitrary upstream text.
     throw new PermanentNodeExecutionError(
       'lookup_record_not_found',
-      `Lookup has no record under the key ${keyTemplate}`,
+      `Lookup has no record under the key ${describeKey(key, keyTemplate)}`,
     );
   }
 

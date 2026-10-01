@@ -49,23 +49,32 @@ describe('executeLookup', () => {
     expect(result.output).toEqual({ customer: 'Alan' });
   });
 
-  it('matches the resolved key exactly, without trimming', () => {
-    const records = JSON.stringify({ 'ORD-1 ': { customer: 'Ada' } });
-    const lookUp = (orderId: string) =>
-      executeLookup(lookupNode('{{trigger.orderId}}', records), context({ triggerPayload: { orderId } }));
+  it('trims whitespace around the resolved key', () => {
+    const result = executeLookup(
+      lookupNode('{{trigger.orderId}}'),
+      context({ triggerPayload: { orderId: ' ORD-1\n' } }),
+    );
 
-    expect(lookUp('ORD-1 ').output).toEqual({ customer: 'Ada' });
-    expectPermanent(() => lookUp('ORD-1'), 'lookup_record_not_found');
+    expect(result.output).toEqual({ customer: 'Ada', total: 120 });
   });
 
-  it('names the authored key, not the resolved value, when no record matches', () => {
-    expect(() =>
-      executeLookup(lookupNode('{{trigger.orderId}}'), context({ triggerPayload: { orderId: 'a long email body' } })),
-    ).toThrow(
-      expect.objectContaining({
-        code: 'lookup_record_not_found',
-        message: 'Lookup has no record under the key {{trigger.orderId}}',
-      }),
+  it.each([
+    ['a literal key', 'ORD-9', {}, 'Lookup has no record under the key "ORD-9"'],
+    [
+      'a resolved key, beside its reference',
+      '{{trigger.orderId}}',
+      { orderId: 'ORD-9' },
+      'Lookup has no record under the key "ORD-9" ({{trigger.orderId}})',
+    ],
+    [
+      'only the start of a long resolved key',
+      '{{trigger.orderId}}',
+      { orderId: 'x'.repeat(200) },
+      `Lookup has no record under the key "${'x'.repeat(80)}…" ({{trigger.orderId}})`,
+    ],
+  ])('names %s when no record matches', (_, key, triggerPayload, message) => {
+    expect(() => executeLookup(lookupNode(key), context({ triggerPayload }))).toThrow(
+      expect.objectContaining({ code: 'lookup_record_not_found', message }),
     );
   });
 
@@ -100,6 +109,19 @@ describe('executeLookup', () => {
     ['empty records', ''],
   ])('fails permanently on %s', (_, records) => {
     expectPermanent(() => executeLookup(lookupNode('ORD-1', records), context()), 'lookup_records_invalid');
+  });
+
+  // node_failed reports the deepest cause's message, so a parser error attached as `cause` would be all the UI shows.
+  it('says the records are not valid JSON in its own message, with no cause', () => {
+    let thrown: unknown;
+    try {
+      executeLookup(lookupNode('ORD-1', '{ "ORD-1": '), context());
+    } catch (error) {
+      thrown = error;
+    }
+
+    expect(thrown).toMatchObject({ message: expect.stringMatching(/^Lookup records are not valid JSON: ./) });
+    expect((thrown as Error).cause).toBeUndefined();
   });
 
   it('fails permanently when the node carries no records', () => {

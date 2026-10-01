@@ -19,7 +19,7 @@ export const uischema: UISchema = {
       scope: scope('properties.inputPrompt'),
       label: 'Input',
       placeholder:
-        'Paste the input data here (e.g. email content)... A JSON object also exposes its fields as {{trigger.<field>}}.',
+        'Paste the input data here (e.g. email content)... Paste a JSON object to read its fields as {{trigger.<field>}}.',
       minRows: 5,
       maxRows: 14,
     },
