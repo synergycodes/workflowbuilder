@@ -24,23 +24,53 @@ You can compare it with your local version.
 
 If you want to see how the plugin logic works in a smaller example, we have prepared a showcase repository: https://github.com/synergycodes/optional-plugins-demo
 
+> **Note:** `OptionalAppBarTools`, `OptionalAppBarControls` and `OptionalFooterContent` (used as example slots in some of the sections below) are deprecated in favor of the SDK's `…Content` components (`AppBarToolsContent`, `AppBarControlsContent`, `PaletteFooterContent`, …) and `builtInControls`. They keep working. See [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add) for the current way to add UI to the app bar, the palette or the properties panel.
+
 ## How to add plugin?
 
 1. Create your plugin directory, for example: `plugins/example`.
-2. Add your `<ExampleComponent />` to `plugins/example/components/example-component.tsx`.
-3. In `plugins/example/plugin-exports` import dependencies and add:
+2. Add your `<ExampleComponent />` to `plugins/example/components/example-component.tsx`:
 
-```ts
-registerComponentDecorator('OptionalFooterContent', {
-  content: ExampleComponent,
-  place: 'after',
-});
+```tsx
+export function ExampleComponent() {
+  return <button>Example</button>;
+}
 ```
 
-4. Import your plugin to `apps/demo/src/app/features/plugins-core/index.ts` with line `import '@/plugins/example/plugin-exports';`
-5. Refresh the page.
+3. Add `<ExampleControls />` to `plugins/example/components/example-controls/example-controls.tsx`, placing `ExampleComponent` where you want it to show up:
 
-Your component should now be displayed in the left sidebar (palette) footer.
+```tsx
+import { PaletteFooterContent } from '@workflowbuilder/sdk';
+
+import { ExampleComponent } from '../example-component';
+
+export function ExampleControls() {
+  return (
+    <PaletteFooterContent>
+      <ExampleComponent />
+    </PaletteFooterContent>
+  );
+}
+```
+
+4. In `plugins/example/plugin-exports.ts`, mount it through `OptionalAppChildren` (a plugin file is `.ts`, so the JSX itself lives in the `.tsx` components above):
+
+```ts
+import { registerComponentDecorator } from '@workflowbuilder/sdk';
+
+import { ExampleControls } from './components/example-controls/example-controls';
+
+export function plugin(): void {
+  registerComponentDecorator('OptionalAppChildren', {
+    content: ExampleControls,
+  });
+}
+```
+
+5. Import your plugin into `apps/demo/src/app/app.tsx` and add it to the `plugins` array passed to `<WorkflowBuilder.Root>`, the same way the existing plugins there are wired in: `import { plugin as examplePlugin } from './plugins/example/plugin-exports';`, then add `examplePlugin` to the `plugins={[...]}` list.
+6. Refresh the page.
+
+Your component should now be displayed in the left sidebar (palette) footer, before the built-in Templates button.
 
 ### How to remove plugin?
 
@@ -48,7 +78,7 @@ Simply remove the folder of your plugin and restart the application. It will sti
 
 #### How to remove "Fallback used for missing plugin..."?
 
-Go to `apps/demo/src/app/features/plugins-core/index.ts` and remove the import there.
+Go to `apps/demo/src/app/app.tsx` and remove the plugin's import and its entry from the `plugins` array.
 
 ### How do I change the position of a plugin?
 
@@ -135,4 +165,4 @@ if (hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton')) {
 }
 ```
 
-The order in which plugins are imported in @features/plugins-core/index is important.
+The order in which plugins are listed in `app.tsx`'s `plugins` array is important.

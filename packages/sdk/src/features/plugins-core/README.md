@@ -14,7 +14,7 @@ registerComponentDecorator('OptionalHooks', {
 });
 ```
 
-And import it in `apps/demo/src/app/features/plugins-core/index.ts`.
+Wrap the call in an exported `plugin(): void` function (your `plugin-exports.ts`), then add that function to the `plugins` array passed to `<WorkflowBuilder.Root>` in `apps/demo/src/app/app.tsx`.
 
 ## Adding button before
 
@@ -30,4 +30,6 @@ registerComponentDecorator('OptionalAppBarTools', {
 });
 ```
 
-And import it in `apps/demo/src/app/features/plugins-core/index.ts`.
+The same way: wrap it in a `plugin(): void` function and add that function to `app.tsx`'s `plugins` array.
+
+`OptionalAppBarTools` is deprecated in favor of `AppBarToolsContent` and `builtInControls`; it keeps working. See `packages/sdk/README.md` for the current built-in interface model.

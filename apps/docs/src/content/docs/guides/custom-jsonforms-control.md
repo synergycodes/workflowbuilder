@@ -59,6 +59,37 @@ function App() {
 
 Any node whose `uischema` contains `{ type: 'ColorPicker', scope: '...' }` will now render with your `ColorPicker` component.
 
+## Actions for a control
+
+A control's own buttons and menu items belong with its form, not with the panel chrome: render them from inside the control with [`PropertiesPanelFooterContent`](/api/components/propertiespanelfootercontent/) (for footer actions, such as Approve / Reject) and [`PropertiesPanelMenuItem`](/api/components/propertiespanelmenuitem/) (for an item in the panel's kebab menu). Both mount only while the control's tab is active and unmount with the form, so they never outlive the node they belong to.
+
+```tsx
+import { PropertiesPanelFooterContent, PropertiesPanelMenuItem } from '@workflowbuilder/sdk';
+import { Button } from '@workflowbuilder/ui';
+
+function DecisionVerdict() {
+  return (
+    <>
+      <DecisionFields />
+      <PropertiesPanelMenuItem label="Reassign" onClick={openReassign} />
+      <PropertiesPanelFooterContent>
+        {/* The footer lays its content out in a column, so two buttons side by side need a container of their own. */}
+        <div className={styles['verdict']}>
+          <Button variant="ghost-critical" onClick={openReject}>
+            Reject…
+          </Button>
+          <Button variant="primary" onClick={approve}>
+            Approve
+          </Button>
+        </div>
+      </PropertiesPanelFooterContent>
+    </>
+  );
+}
+```
+
+See the full model, including hiding and reordering built-in controls, in [Built-in interface: hide, move, add](/guides/build-a-plugin/#built-in-interface-hide-move-add).
+
 ## Cells
 
 `cells` work the same way — type the entry with `JsonFormsCellExtension` and wrap your component with `withJsonFormsCellProps` (also from `@workflowbuilder/sdk`) for list/array cell rendering. Built-in cells are passed through when consumer cells are absent; if you provide any, yours are used as-is (no merging with built-ins for cells).
