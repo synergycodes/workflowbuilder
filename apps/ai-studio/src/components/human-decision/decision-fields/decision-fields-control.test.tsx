@@ -241,10 +241,10 @@ describe('the decision fields control in the real properties panel', () => {
   it('locks the dropdowns while the canvas is in the app bar read-only mode', async () => {
     await renderRefund();
 
-    act(() => useStore.getState().setToggleReadOnlyMode(true));
+    act(() => useStore.getState().setReadOnly(true));
     expect(selects().every((select) => select.disabled)).toBe(true);
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
@@ -264,7 +264,7 @@ describe('the decision fields control in the real properties panel', () => {
     expect(runStatus()).toBe('pending');
     expect(sectionHeader()).toBeUndefined();
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     act(() => applyEvent(event({ type: 'node_waiting', nodeId: HUMAN })));
     expect(sectionHeader()).toBeUndefined();
 

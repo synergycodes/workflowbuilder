@@ -3,10 +3,13 @@ import { useCallback } from 'react';
 import { getStoreDataForIntegration } from '../../../../store/slices/diagram-slice/actions';
 import type { OnSave, OnSaveExternal } from '../../../../types/integration';
 import type { Prettify } from '../../../../utils/typescript';
+import { defaultOnStart } from '../../../../workflow-builder-root/default-on-start';
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../../utils/show-snackbar';
 import { IntegrationWrapper } from './wrapper/integration-wrapper';
 
-type Props = Omit<React.ComponentProps<typeof IntegrationWrapper>, 'onSave'> & { onDataSave: OnSaveExternal };
+type Props = Omit<React.ComponentProps<typeof IntegrationWrapper>, 'onSave' | 'isLoaded' | 'onStart'> & {
+  onDataSave: OnSaveExternal;
+};
 
 export function withIntegrationThroughProps<WProps extends object>(WrappedComponent: React.ComponentType<WProps>) {
   function WithIntegrationComponent(
@@ -44,6 +47,8 @@ export function withIntegrationThroughProps<WProps extends object>(WrappedCompon
         layoutDirection={layoutDirection}
         nodes={nodes}
         edges={edges}
+        isLoaded
+        onStart={defaultOnStart}
         onSave={handleSave}
       >
         <WrappedComponent {...(props as React.ComponentProps<typeof WrappedComponent>)} />

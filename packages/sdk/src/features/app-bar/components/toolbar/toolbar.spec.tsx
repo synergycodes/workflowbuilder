@@ -1,8 +1,10 @@
 import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { renderInRoot } from '../../../ui-extensions/test-utils';
+
 vi.mock('../../../integration/components/save-button/save-button', () => ({
-  SaveButton: () => null,
+  SaveButton: () => <div data-testid="save-button" />,
 }));
 
 vi.mock('../../../plugins-core/components/app/optional-app-bar-toolbar', () => ({
@@ -53,5 +55,16 @@ describe('Toolbar branding', () => {
 
     const sources = Array.from(container.querySelectorAll('img'), (img) => img.getAttribute('src'));
     expect(sources).toEqual(['/brand-light.svg', '/brand-dark.svg']);
+  });
+});
+
+describe('Toolbar builtInControls', () => {
+  it('save:false hides the Save button; save:true (the default) shows it', () => {
+    const { unmount } = renderInRoot(<Toolbar />, { builtInControls: { save: false } });
+    expect(screen.queryByTestId('save-button')).toBeNull();
+    unmount();
+
+    renderInRoot(<Toolbar />, { builtInControls: { save: true } });
+    expect(screen.getByTestId('save-button')).not.toBeNull();
   });
 });

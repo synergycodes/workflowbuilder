@@ -10,11 +10,15 @@ import type { GetDiagramState, SetDiagramState } from '../../store';
 import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
 
 export type PaletteState = {
-  isSidebarExpanded: boolean;
+  isPaletteOpen: boolean;
+  isPropertiesPanelOpen: boolean;
+  paletteFilter: string;
   data: PaletteItemOrGroup[];
   fetchDataStatus: StatusType;
   draggedItem: DraggingItem | null;
-  toggleSidebar: (value?: boolean) => void;
+  setPaletteOpen: (value?: boolean) => void;
+  setIsPropertiesPanelOpen: (open: boolean) => void;
+  setPaletteFilter: (query: string) => void;
   fetchData: () => void;
   setDraggedItem: (item: DraggingItem | null) => void;
   getNodeDefinition: (nodeType: string) => PaletteItem | undefined;
@@ -22,17 +26,25 @@ export type PaletteState = {
 
 export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): PaletteState {
   return {
-    isSidebarExpanded: false,
+    isPaletteOpen: false,
+    isPropertiesPanelOpen: true,
+    paletteFilter: '',
     data: [],
     fetchDataStatus: StatusType.Idle,
     draggedItem: null,
     setDraggedItem: (item) => {
       set({ draggedItem: item });
     },
-    toggleSidebar: (value) => {
+    setPaletteOpen: (value) => {
       set({
-        isSidebarExpanded: value ?? !get().isSidebarExpanded,
+        isPaletteOpen: value ?? !get().isPaletteOpen,
       });
+    },
+    setIsPropertiesPanelOpen: (open) => {
+      set({ isPropertiesPanelOpen: open });
+    },
+    setPaletteFilter: (query) => {
+      set({ paletteFilter: query });
     },
     fetchData: () => {
       set({ fetchDataStatus: StatusType.Loading });

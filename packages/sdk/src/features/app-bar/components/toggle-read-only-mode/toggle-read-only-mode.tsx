@@ -4,13 +4,13 @@ import { IconSwitch } from '@workflowbuilder/ui';
 import { useStore } from '../../../../store/store';
 
 export function ToggleReadyOnlyMode() {
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
-  const setToggleReadOnlyMode = useStore((store) => store.setToggleReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
+  const setReadOnly = useStore((store) => store.setReadOnly);
 
   return (
     <IconSwitch
-      checked={isReadOnlyMode}
-      onChange={setToggleReadOnlyMode}
+      checked={isReadOnly}
+      onChange={setReadOnly}
       icon={<PencilSimple />}
       IconChecked={<PencilSimpleSlash />}
     />

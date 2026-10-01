@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { getStoreDataForIntegration } from '../../../../store/slices/diagram-slice/actions';
 import type { IntegrationDataFormatOptional, OnSave } from '../../../../types/integration';
+import { defaultOnStart } from '../../../../workflow-builder-root/default-on-start';
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../../utils/show-snackbar';
 import { IntegrationWrapper } from './wrapper/integration-wrapper';
 
@@ -41,6 +42,7 @@ export function withIntegrationThroughApi<WProps extends object>(WrappedComponen
     const [{ name, globalVariables, layoutDirection, nodes, edges }, setData] = useState<IntegrationDataFormatOptional>(
       {},
     );
+    const [isLoaded, setIsLoaded] = useState(false);
 
     useEffect(() => {
       (async () => {
@@ -61,6 +63,8 @@ export function withIntegrationThroughApi<WProps extends object>(WrappedComponen
           }
         } catch {
           //
+        } finally {
+          setIsLoaded(true);
         }
       })();
     }, []);
@@ -72,6 +76,8 @@ export function withIntegrationThroughApi<WProps extends object>(WrappedComponen
         layoutDirection={layoutDirection}
         nodes={nodes}
         edges={edges}
+        isLoaded={isLoaded}
+        onStart={defaultOnStart}
         onSave={handleSave}
       >
         <WrappedComponent {...props} />

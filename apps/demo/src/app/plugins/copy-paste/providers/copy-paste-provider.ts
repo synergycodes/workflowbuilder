@@ -28,7 +28,7 @@ const getHandleIdForCopyPaste: GetHandleId = (params) => {
 };
 
 function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
   const mousePosition = useFlowMousePosition();
 
   const { setNodes, setEdges } = useReactFlow();
@@ -46,7 +46,7 @@ function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
   });
 
   const handleCut = useCallback(() => {
-    if (isReadOnlyMode) {
+    if (isReadOnly) {
       return;
     }
 
@@ -56,10 +56,10 @@ function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
       trackFutureChange('cut');
       cut();
     }
-  }, [cut, isReadOnlyMode]);
+  }, [cut, isReadOnly]);
 
   const handlePaste = useCallback(async () => {
-    if (isReadOnlyMode) {
+    if (isReadOnly) {
       return;
     }
 
@@ -69,7 +69,7 @@ function CopyPasteProviderComponent({ children }: CopyPasteProviderProps) {
       trackFutureChange('paste');
       paste({ mousePosition: mousePosition.flow });
     }
-  }, [isReadOnlyMode, mousePosition.flow, paste]);
+  }, [isReadOnly, mousePosition.flow, paste]);
 
   useCopyPasteKeyboardHandler({
     handleCut,

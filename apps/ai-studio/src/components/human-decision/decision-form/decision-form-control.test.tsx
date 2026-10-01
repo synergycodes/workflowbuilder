@@ -41,7 +41,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
         : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
     // Rendered in place: without the properties panel the real one has no footer to render into.
-    PropertiesPanelFooter: ({ children }: { children?: ReactNode }) => (
+    PropertiesPanelFooterContent: ({ children }: { children?: ReactNode }) => (
       <div data-properties-panel-footer>{children}</div>
     ),
   };
