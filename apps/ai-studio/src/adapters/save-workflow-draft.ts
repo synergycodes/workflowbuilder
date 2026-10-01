@@ -12,6 +12,13 @@ const NOT_AN_EDIT = 'nodeDragChange';
 
 const writtenDrafts = new Map<string, string>();
 
+let isHalted = false;
+
+/** After a crash the store holds what would not draw, and the editor's autosave timer outlives the editor. */
+export function haltSaves(): void {
+  isHalted = true;
+}
+
 /** Writes a workflow's draft. The editor's saves and Run both come here, so an autosave knows what the draft holds. */
 export async function patchDraft(workflowId: string, nodes: unknown[], edges: unknown[]): Promise<Response> {
   const body = JSON.stringify({ draftJson: { nodes, edges } });
@@ -44,6 +51,9 @@ export function saveDraftOf(workflowId: string): OnSaveExternal {
   };
 
   return async ({ nodes, edges }, params) => {
+    if (isHalted) {
+      throw new Error('The editor stopped after a crash, so nothing is saved.');
+    }
     if (params?.isAutoSave && isUnchanged(JSON.stringify({ draftJson: { nodes, edges } }))) {
       return 'success';
     }

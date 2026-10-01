@@ -167,3 +167,17 @@ describe('saveDraftOf: an autosave with nothing new', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2);
   });
 });
+
+describe('saveDraftOf after a crash', () => {
+  it('sends nothing once saves are halted, neither an autosave nor Save', async () => {
+    vi.resetModules();
+    const adapter = await import('./save-workflow-draft');
+    const save = adapter.saveDraftOf(WORKFLOW);
+    adapter.haltSaves();
+
+    await expect(save(data, autosave)).rejects.toThrow();
+    await expect(save(data, { isAutoSave: false })).rejects.toThrow();
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+});

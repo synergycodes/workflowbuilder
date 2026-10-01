@@ -5,6 +5,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { OpenError } from '../../app/open-error';
 import { AppBoundary } from './app-boundary';
 
+const saves = vi.hoisted(() => ({ halt: vi.fn() }));
+vi.mock('../../adapters/save-workflow-draft', () => ({ haltSaves: saves.halt }));
+
 declare global {
   // eslint-disable-next-line no-var
   var IS_REACT_ACT_ENVIRONMENT: boolean;
@@ -41,6 +44,7 @@ const button = () => container.querySelector('button')!;
 const clickExit = () => act(() => button().click());
 
 beforeEach(() => {
+  saves.halt.mockClear();
   vi.spyOn(console, 'error').mockImplementation(() => {});
   container = document.createElement('div');
   root = createRoot(container);
@@ -61,6 +65,14 @@ describe('AppBoundary', () => {
     expect(button().textContent).toBe('Open local draft');
     clickExit();
     expect(assign).toHaveBeenCalledWith('/');
+  });
+
+  // The editor's pending autosave fires after it unmounted, with the graph that would not draw.
+  it('stops the editor saving once it caught a crash', () => {
+    atAddress(`http://localhost/?workflowId=${WORKFLOW}`);
+    renderThrowing(new TypeError("Cannot read properties of undefined (reading 'x')"));
+
+    expect(saves.halt).toHaveBeenCalled();
   });
 
   it('a run that would not open under a workflow link offers that workflow, without the run in the address', () => {

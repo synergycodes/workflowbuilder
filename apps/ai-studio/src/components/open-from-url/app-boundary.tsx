@@ -2,6 +2,7 @@ import { Component, type ReactNode } from 'react';
 
 import styles from './full-page.module.css';
 
+import { haltSaves } from '../../adapters/save-workflow-draft';
 import { OpenError } from '../../app/open-error';
 
 type Exit = { label: string; href: string };
@@ -24,6 +25,10 @@ export class AppBoundary extends Component<{ children: ReactNode }, State> {
 
   static getDerivedStateFromError(error: unknown): State {
     return { failed: true, error };
+  }
+
+  override componentDidCatch(): void {
+    haltSaves();
   }
 
   override render() {
