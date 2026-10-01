@@ -8,16 +8,16 @@ type PickerItem = ReactElement<SegmentPickerItemProps, typeof Item>;
 
 const icon = createElement('svg');
 
-// `SegmentPickerItemProps` requires `children` in props, so the guards read
-// `item.props.children` — pass it as a prop rather than a createElement arg.
 function iconItem(value: string): PickerItem {
-  // eslint-disable-next-line react/no-children-prop
-  return createElement(Item, { value, children: icon }) as PickerItem;
+  return createElement(Item, { value, prefixIcon: icon }) as PickerItem;
+}
+
+function legacyIconItem(value: string): PickerItem {
+  return createElement(Item, { value }, icon) as PickerItem;
 }
 
 function labelItem(value: string): PickerItem {
-  // eslint-disable-next-line react/no-children-prop
-  return createElement(Item, { value, children: 'label' }) as PickerItem;
+  return createElement(Item, { value }, 'label') as PickerItem;
 }
 
 describe('getValidShape', () => {
@@ -25,11 +25,15 @@ describe('getValidShape', () => {
     expect(getValidShape('default', [labelItem('a')])).toBe('default');
   });
 
-  it("returns 'circle' when every item has icon-only children", () => {
+  it("returns 'circle' when every item has an explicit prefix icon", () => {
     expect(getValidShape('circle', [iconItem('a'), iconItem('b')])).toBe('circle');
   });
 
-  it("falls back to 'default' and logs an error when an item has a string child", () => {
+  it("returns 'circle' for the existing icon-child API", () => {
+    expect(getValidShape('circle', [legacyIconItem('a'), legacyIconItem('b')])).toBe('circle');
+  });
+
+  it("falls back to 'default' and logs an error when an item has a label", () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
 
     expect(getValidShape('circle', [iconItem('a'), labelItem('b')])).toBe('default');

@@ -1,0 +1,7 @@
+/* The SDK's VerticalLayout names a class its module lacks, so a form nested below the panel's own gets no gap
+   (follow-up: sdk-vertical-layout-class). */
+.fields > div {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

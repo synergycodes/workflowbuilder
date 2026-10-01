@@ -107,7 +107,7 @@ export function VariableForm(props: Props) {
       <FormControlWithLabel label="common.name" required>
         <Input
           value={formData.name}
-          error={formData.fieldsWithErrors.has('name')}
+          state={formData.fieldsWithErrors.has('name') ? 'critical' : 'default'}
           placeholder={t('common.namePlaceholder')}
           onChange={(event) => handleInputUpdate('name', event.target.value)}
           disabled={VARIABLE_FORM_VARIANT.EDIT_LIMITED_STRICT === props.variant || props.isReadOnly}
@@ -135,12 +135,11 @@ export function VariableForm(props: Props) {
       <FormControlWithLabel label="common.description">
         <TextArea
           value={formData.description}
-          error={formData.fieldsWithErrors.has('description')}
+          state={formData.fieldsWithErrors.has('description') ? 'critical' : 'default'}
           placeholder={t('common.descriptionPlaceholder')}
           onChange={(event) => handleInputUpdate('description', event.target.value)}
           minRows={3}
           maxRows={3}
-          size="medium"
         />
       </FormControlWithLabel>
       <div className={styles['buttons']}>
@@ -149,7 +148,7 @@ export function VariableForm(props: Props) {
             {t('common.cancel')}
           </Button>
         )}
-        <ButtonSubmit size="medium" type="submit" isPending={false} disabled={props.isReadOnly}>
+        <ButtonSubmit size="m" type="submit" isPending={false} disabled={props.isReadOnly}>
           {t('common.save')}
         </ButtonSubmit>
       </div>

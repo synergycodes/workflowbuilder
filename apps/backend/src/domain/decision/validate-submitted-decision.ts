@@ -1,0 +1,153 @@
+import { z } from 'zod';
+
+import type {
+  Decision,
+  DecisionAction,
+  DecisionEffect,
+  DecisionRequest,
+} from '@workflow-builder/types/workflow-execution/decision-request';
+
+import { type SubmittedDecisionErrorCode, submittedDecisionErrorMessage } from './decision-issues';
+
+// Parsed at the endpoint, which extends it with `nodeId` and `attempt`, before
+// `validateSubmittedDecision` checks the rules on the parsed shape.
+export const submittedDecisionSchema = z.object({
+  action: z.string(),
+  edits: z.record(z.string(), z.unknown()).optional(),
+  reason: z.string().optional(),
+  comment: z.string().optional(),
+});
+
+export type SubmittedDecision = z.infer<typeof submittedDecisionSchema>;
+
+export type SubmittedDecisionError = { code: SubmittedDecisionErrorCode; message: string; path?: string[] };
+
+// `action` is the matched action, for routing; the decision itself records only its name.
+// The initiator is the route's to add: only it knows who called.
+export type SubmittedDecisionResult =
+  | { decision: Omit<Decision, 'resolvedBy'>; action: DecisionAction; error?: undefined }
+  | { decision?: undefined; action?: undefined; error: SubmittedDecisionError };
+
+function refuse(code: SubmittedDecisionErrorCode, value: string, path: string[]): SubmittedDecisionResult {
+  return { error: { code, message: submittedDecisionErrorMessage(code, value), path } };
+}
+
+function isBlank(text: string | undefined): boolean {
+  return text === undefined || text.trim().length === 0;
+}
+
+// "Emptied" means the decider cleared the field, not that they typed something invalid.
+function isEmptied(value: unknown): boolean {
+  return value === undefined || value === null || (typeof value === 'string' && value.trim().length === 0);
+}
+
+// The request arrived through the parser, so `schema` has the shape checked there; the
+// reads below only narrow what `Record<string, unknown>` hides.
+function asObject(value: unknown): Record<string, unknown> | undefined {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+    ? (value as Record<string, unknown>)
+    : undefined;
+}
+
+type EditedChild = { key: string; value: unknown; declared: Record<string, unknown> | undefined };
+
+// What an edited value's children are and which schema declares each. Undefined for a leaf,
+// which has none. An array's elements are all declared by `items`, so an index carries no
+// rules of its own; a level the form does not describe inline declares nothing at all.
+function childrenOf(
+  schema: Record<string, unknown>,
+  edited: unknown,
+): { children: EditedChild[]; required: Set<string> } | undefined {
+  const fields = asObject(edited);
+  if (fields !== undefined) {
+    const properties = asObject(schema['properties']) ?? {};
+    const names = schema['required'];
+    return {
+      children: Object.entries(fields).map(([key, value]) => ({
+        key,
+        value,
+        declared: Object.hasOwn(properties, key) ? (asObject(properties[key]) ?? {}) : undefined,
+      })),
+      required: new Set(Array.isArray(names) ? (names as string[]) : []),
+    };
+  }
+
+  if (!Array.isArray(edited)) return undefined;
+  const items = asObject(schema['items']);
+  return {
+    children: edited.map((value, index) => ({ key: `${index}`, value, declared: items })),
+    required: new Set<string>(),
+  };
+}
+
+function allowsNull(declared: Record<string, unknown>): boolean {
+  const type = declared['type'];
+  return type === 'null' || (Array.isArray(type) && type.includes('null'));
+}
+
+// A level the form describes. Edits patch it, so a value of another shape could drop the
+// read-only and required children it may hold; `null` passes where the level's `type` allows it.
+function changesShape(declared: Record<string, unknown>, value: unknown): boolean {
+  if (value === null && allowsNull(declared)) return false;
+  if (asObject(declared['properties']) !== undefined) return asObject(value) === undefined;
+  if (asObject(declared['items']) !== undefined) return !Array.isArray(value);
+  return false;
+}
+
+// Every level the form describes inline: edits patch the proposal, so a `readOnly` child is refused
+// wherever an edit names it. A level behind `$ref` or a composition keyword describes nothing, so an
+// edit into it is refused as unknown (follow-up: decision-edit-schema-composition).
+function validateEdits(
+  schema: Record<string, unknown>,
+  edited: unknown,
+  path: string[],
+): SubmittedDecisionResult | undefined {
+  const level = childrenOf(schema, edited);
+  if (level === undefined) return undefined;
+
+  for (const { key, value, declared } of level.children) {
+    const here = [...path, key];
+    if (declared === undefined) return refuse('unknown_field', key, here);
+    if (declared['readOnly'] === true) return refuse('field_not_editable', key, here);
+    if (level.required.has(key) && isEmptied(value)) return refuse('required_field_missing', key, here);
+    if (changesShape(declared, value)) return refuse('field_shape_changed', key, here);
+
+    const refused = validateEdits(declared, value, here);
+    if (refused !== undefined) return refused;
+  }
+
+  return undefined;
+}
+
+// Presence, editability and shape only. Whether an edited value fits its declared type is a
+// later concern with its own validator (follow-up: decision-edit-value-validation)
+export function validateSubmittedDecision(
+  request: DecisionRequest,
+  submitted: SubmittedDecision,
+): SubmittedDecisionResult {
+  const action = request.actions.find((candidate) => candidate.name === submitted.action);
+  if (action === undefined) return refuse('unknown_action', submitted.action, ['action']);
+
+  if (action.effect === 'reject' && action.reasonRequired && isBlank(submitted.reason)) {
+    return refuse('reason_required', action.name, ['reason']);
+  }
+  if (action.effect === 'rerun-source' && isBlank(submitted.comment)) {
+    return refuse('comment_required', action.name, ['comment']);
+  }
+
+  // Before the walk, so the refusal names the edits and not one field.
+  const edits = submitted.edits ?? {};
+  if (action.effect !== 'resume' && Object.keys(edits).length > 0) {
+    return refuse('edits_not_allowed', action.name, ['edits']);
+  }
+
+  const refused = validateEdits(request.schema, edits, ['edits']);
+  if (refused !== undefined) return refused;
+
+  const withEdits = Object.keys(edits).length > 0;
+  const effect: DecisionEffect = action.effect === 'resume' && withEdits ? 'resume-with-edits' : action.effect;
+  return {
+    decision: { action: action.name, effect, edits, reason: submitted.reason, comment: submitted.comment },
+    action,
+  };
+}

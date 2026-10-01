@@ -118,5 +118,5 @@ Workflow Builder focuses on the editor layer. The serialised JSON is designed to
 - [Plugins](/plugins/) — optional plugins that extend Workflow Builder
 - [Built-in Nodes](/nodes/) — all built-in node types
 - [Diagram state management](/overview/features/diagram-state-management/) — canvas state, undo/redo, and auto-save
-- [API Reference](/api/) — every public symbol exported by the SDK
+- [SDK API Reference](/api/) — every public symbol exported by the SDK
 - [FAQ](/faq/) — licensing, data residency, and tech-stack questions

@@ -24,7 +24,7 @@ export function PaletteItem({ item, onDragStart, onMouseDown, isDisabled = false
       onMouseDown={() => onMouseDown(item.type)}
       onDragStart={onDragStart}
     >
-      <NodePreviewContainer type={item.type} />
+      <NodePreviewContainer type={item.type} disabled={isDisabled} />
     </div>
   );
 }

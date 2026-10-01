@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './schema-builder.module.css';
 
 import { filterEmpty } from '../../../../utils/array';
-import { showSnackbar } from '../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { getNodesWithVariable } from '../../actions/get-nodes-with-variable';
 import { openModalSchemaBuilderVariableConfig } from '../../modals/control/modal-schema-builder-variable-config';
 import { openModalSchemaBuilderVariableRemoval } from '../../modals/control/modal-schema-builder-variable-remove';
@@ -45,7 +45,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
   const handleEditVariable = useCallback(
     (variableId: string) => {
       if (!value[variableId]) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variableWasNotFound',
           variant: SnackbarType.ERROR,
         });
@@ -126,7 +126,7 @@ export function SchemaBuilder({ isDisabled, value, onChange, nodeId }: Props) {
       <Button
         className={styles['button--add']}
         variant="secondary"
-        size="extra-small"
+        size="xs"
         onClick={handleAddVariable}
         disabled={isDisabled}
       >

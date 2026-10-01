@@ -7,13 +7,14 @@
 // TypeScript SDK bundles workflow code from a single module, so a plugin cannot
 // register it on their behalf.
 
-export { createRunWorkflow, runWorkflow } from './run-workflow';
-export type { RunWorkflowOptions } from './run-workflow';
+export { createRunWorkflow, resolveNodeUpdate, runWorkflow } from './run-workflow';
+export type { ResolveNodeUpdateInput, RunWorkflowOptions } from './run-workflow';
 
 export { createSequencedEventEmitter } from './sequenced-event-emitter';
 export type { EventPersistence } from './sequenced-event-emitter';
 
 export type { Activities } from './activities-interface';
+export type { ExecutionEventType, ExecutionOutcome, ExecutionOutcomeRecord, ExecutionStatus } from './core-contract';
 
 export { DEFAULT_DATABASE_ACTIVITY_PROFILE, DEFAULT_NODE_ACTIVITY_PROFILE } from './activity-profiles';
 export type { ActivityProfile, NodeActivityProfiles } from './activity-profiles';

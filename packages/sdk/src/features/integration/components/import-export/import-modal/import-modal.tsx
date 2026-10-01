@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from '../import-export-modal.module.css';
 
 import { setStoreDataFromIntegration } from '../../../../../store/slices/diagram-slice/actions';
-import { showSnackbar } from '../../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
 import { closeModal } from '../../../../modals/stores/use-modal-store';
 import { SyntaxHighlighterLazy } from '../../../../syntax-highlighter/components/syntax-highlighter-lazy';
@@ -47,7 +47,7 @@ export function ImportModal() {
         setStoreDataFromIntegration(validatedIntegrationData);
         closeModal();
 
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'loadDiagramSuccess',
           variant: SnackbarType.SUCCESS,
         });
@@ -58,10 +58,10 @@ export function ImportModal() {
 
   return (
     <div className={styles['container']}>
-      <p className={clsx('ax-public-p10', styles['tip'])}>{t('importExport.importTip')}</p>
+      <p className={clsx('wb-text-body-s', styles['tip'])}>{t('importExport.importTip')}</p>
       <SyntaxHighlighterLazy value={jsonToParse} onChange={(json) => setJsonToParse(json || '{}')} />
       {(errors.length > 0 || warnings.length > 0) && (
-        <div className={clsx('ax-public-p10', styles['error'])}>
+        <div className={clsx('wb-text-body-s', styles['error'])}>
           {[...errors, ...warnings].map(({ message, messageParams }) => (
             <div key={message}>{t(message, messageParams) as string}</div>
           ))}
@@ -69,13 +69,19 @@ export function ImportModal() {
       )}
       <div className={styles['actions']}>
         {warnings.length > 0 && errors.length === 0 && (
-          <Button variant="warning" onClick={() => handleImport({ shouldIgnoreWarnings: true })}>
-            <Icon name="DownloadSimple" />
+          <Button
+            variant="secondary"
+            prefixIcon={<Icon name="DownloadSimple" />}
+            onClick={() => handleImport({ shouldIgnoreWarnings: true })}
+          >
             {t('importExport.ignoreAndImport')}
           </Button>
         )}
-        <Button variant="primary" onClick={() => handleImport({ shouldIgnoreWarnings: false })}>
-          <Icon name="DownloadSimple" />
+        <Button
+          variant="primary"
+          prefixIcon={<Icon name="DownloadSimple" />}
+          onClick={() => handleImport({ shouldIgnoreWarnings: false })}
+        >
           {t('importExport.import')}
         </Button>
       </div>

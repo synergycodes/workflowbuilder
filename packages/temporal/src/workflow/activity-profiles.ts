@@ -5,9 +5,9 @@ export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 // Timeout and retry shape for a proxied activity.
 //
 // Deliberately our own type rather than Temporal's `ActivityOptions`: it keeps
-// @temporalio/workflow out of the published type surface (it is an optional peer, so
-// a client-only consumer may not have it installed), and it is the seam that
-// per-node-type profiles plug into. Structurally compatible with `ActivityOptions`,
+// @temporalio/workflow out of the published type surface, so a consumer describes a
+// profile without importing Temporal's types, and it is the seam that per-node-type
+// profiles plug into. Structurally compatible with `ActivityOptions`,
 // so it can be handed straight to `proxyActivities`.
 export type ActivityProfile = {
   startToCloseTimeout: DurationString;

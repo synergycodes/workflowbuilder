@@ -79,6 +79,7 @@ export function withRedactedPayloads(events: EventEmitterPort): EventEmitterPort
   return {
     emitEvent: (executionId, type, payload, nodeId) =>
       events.emitEvent(executionId, type, redactSensitive(payload), nodeId),
-    updateStatus: (executionId, status, errorMessage) => events.updateStatus(executionId, status, errorMessage),
+    updateStatus: (executionId, status, errorMessage, outcome) =>
+      events.updateStatus(executionId, status, errorMessage, outcome),
   };
 }

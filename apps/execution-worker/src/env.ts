@@ -1,12 +1,3 @@
-// Centralized env — fail fast at module load with a readable message.
-function requireEnv(name: string): string {
-  const value = process.env[name];
-  if (!value) {
-    throw new Error(`${name} is required — see apps/execution-worker/.env.example`);
-  }
-  return value;
-}
-
 function envOr(name: string, defaultValue: string): string {
   return process.env[name] ?? defaultValue;
 }
@@ -15,10 +6,9 @@ function envOr(name: string, defaultValue: string): string {
 // bindings; see apps/backend/src/env.ts for the full reason.
 export const env = {
   DATABASE_URL: envOr('DATABASE_URL', 'postgresql://wb:wb@127.0.0.1:5432/workflow_builder'),
-  TEMPORAL_ADDRESS: envOr('TEMPORAL_ADDRESS', '127.0.0.1:7233'),
-  OPENROUTER_API_KEY: requireEnv('OPENROUTER_API_KEY'),
-  // Cheap, fast default for the public demo; quality-per-cost over frontier capability.
-  AI_MODEL: envOr('AI_MODEL', 'mistralai/mistral-small-3.2-24b-instruct'),
+  // TEMPORAL_*: read at startup by @workflow-builder/temporal-connection.
+  // AI_API_KEY / AI_BASE_URL / AI_MODEL: read at startup by @workflow-builder/ai-config.
   // Optional. Enables the AI Agent's web-search tool; agents run without it when unset.
-  TAVILY_API_KEY: process.env['TAVILY_API_KEY'],
+  // Empty counts as unset: compose passes it through as `${TAVILY_API_KEY:-}`.
+  TAVILY_API_KEY: process.env['TAVILY_API_KEY'] || undefined,
 };

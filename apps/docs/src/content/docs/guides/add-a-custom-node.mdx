@@ -224,7 +224,15 @@ import { Handle, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
 export const MyNodeTemplate = memo(
-  ({ id, icon, label, description, selected = false, showHandles = true }: WorkflowNodeTemplateProps) => {
+  ({
+    id,
+    icon,
+    label,
+    description,
+    selected = false,
+    disabled = false,
+    showHandles = true,
+  }: WorkflowNodeTemplateProps) => {
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
     const handleTargetTopId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'top' });
@@ -233,10 +241,10 @@ export const MyNodeTemplate = memo(
     const handleSourceRightId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'right' });
 
     return (
-      <NodePanel.Root selected={selected}>
+      <NodePanel.Root selected={selected} disabled={disabled}>
         <NodePanel.Header>
-          <NodeIcon icon={iconElement} />
-          <NodeDescription label={label} description={description} />
+          <NodeIcon icon={iconElement} disabled={disabled} />
+          <NodeDescription label={label} description={description} disabled={disabled} />
         </NodePanel.Header>
         <NodePanel.Handles isVisible={showHandles}>
           <Handle id={handleTargetTopId} type="target" position={Position.Top} />
@@ -266,7 +274,7 @@ Wire it through the `nodeTemplates` prop on `<WorkflowBuilder.Root>`:
 
 The key must match the palette item's `type`. Keys that collide with built-in template names (`'node'`, `'start-node'`, `'ai-node'`, `'decision-node'`) override the built-in renderer for that node category. This affects rendering only — a node is an entry point because of its `isStartNode` flag, never because of the template it draws with. Declare `nodeTemplates` at module level — recreating the map on every render busts ReactFlow's internal memoisation and remounts every node on the canvas.
 
-The same template renders both the canvas node and the static palette thumbnail / drag-ghost. In preview mode `data`, `selected`, and `layoutDirection` are `undefined` — read them with optional chaining and fall back to defaults.
+The same template renders the canvas node, the palette thumbnail and the drag ghost. In the palette `data` and `layoutDirection` are `undefined` — read them with optional chaining and fall back to defaults. The palette passes `selected` for the drag ghost (the Node Active ring) and `disabled` for entries that cannot be added, for example in read-only mode; forward both to `NodePanel.Root`, `NodeIcon` and `NodeDescription`, otherwise your entry looks draggable while the palette is locked.
 
 One thing the custom template path does **not** include: `NodeAsPortWrapper` (drag-to-create connections by dropping onto the node body). If you need that, register a custom node container through a plugin instead — see [Build a plugin](/guides/build-a-plugin/).
 

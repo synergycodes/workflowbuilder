@@ -51,13 +51,13 @@ export function PaneRemoveVariable({
         {!variable && <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.variableNotFound')}</p>}
         {variable && <VariableMeta name={variable.name} type={variable.type} />}
         {nodesWithVariable.length === 0 ? (
-          <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.removeVariableWarning')}</p>
+          <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.removeVariableWarning')}</p>
         ) : (
           <>
-            <p className={clsx('ax-public-p9', styles['description'])}>{t('variables.removeVariableIsBlocked')}</p>
+            <p className={clsx('wb-text-body-m', styles['description'])}>{t('variables.removeVariableIsBlocked')}</p>
             <ul className={styles['list']}>
               {nodesWithVariable.map(({ id, title }) => (
-                <li key={id} className="ax-public-p10">
+                <li key={id} className="wb-text-body-s">
                   {title}
                 </li>
               ))}
@@ -67,9 +67,9 @@ export function PaneRemoveVariable({
         {variable && (
           <div className={styles['buttons']}>
             <ButtonSubmit
-              size="medium"
+              size="m"
               onClick={handleRemove}
-              variant="error"
+              variant="critical"
               isPending={false}
               disabled={isReadOnly || nodesWithVariable.length > 0}
             >

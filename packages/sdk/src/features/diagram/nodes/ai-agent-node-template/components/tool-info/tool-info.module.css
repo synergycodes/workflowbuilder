@@ -1,7 +1,7 @@
 .tools-container {
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: var(--wb-ds-canvas-node-body-gap);
 
   &:empty {
     display: none;

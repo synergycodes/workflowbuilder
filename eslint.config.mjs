@@ -36,7 +36,8 @@ const rules = {
 /** @type {import('eslint').Linter.Config[]} */
 export default [
   { files: ['**/*.{ts}'] },
-  { languageOptions: { globals: globals.browser } },
+  { ignores: ['tools/**/*.mjs'], languageOptions: { globals: globals.browser } },
+  { files: ['tools/**/*.mjs'], languageOptions: { globals: globals.node } },
   { ignores: ['**/node_modules/', '.git/', '**/dist/'] },
   pluginJs.configs.recommended,
   eslintConfigPrettier,

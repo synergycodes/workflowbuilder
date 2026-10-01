@@ -6,7 +6,7 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './modal-schema-builder-variable-config.module.css';
 
-import { showSnackbar } from '../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { labelToSnakeCase } from '../../../../utils/text';
 import { closeModal, openModal } from '../../../modals/stores/use-modal-store';
 import type { VariableDefinition, VariablesIndex } from '../../types';
@@ -27,7 +27,7 @@ function ModalSchemaBuilderVariableConfig(props: Props) {
       const floorIdForAPI = labelToSnakeCase(definition.name);
 
       if (props.variant === VARIABLE_FORM_VARIANT.ADD && props.variablesById[floorIdForAPI]) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variableNameAlreadyExists',
           variant: SnackbarType.ERROR,
         });

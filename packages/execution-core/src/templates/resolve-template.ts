@@ -11,6 +11,7 @@
 // Keeping plain `{{x.y}}` strict is deliberate: a typo in a prompt template
 // should fail loudly during development. The safe forms are an opt-in for
 // authors who genuinely expect a value to be absent some of the time.
+import { PermanentNodeExecutionError } from '../errors';
 import type { ExecutionContext } from '../execution-context';
 
 // Two-stage parse: the OUTER regex catches anything that *looks* like a
@@ -54,7 +55,7 @@ export function resolveTemplate(template: string, context: ExecutionContext): st
   return template.replaceAll(OUTER_TEMPLATE_REGEX, (match) => {
     const groups = PARSE_REGEX.exec(match)?.groups;
     if (!groups) {
-      throw new Error(`Malformed template reference: ${match}`);
+      throw new PermanentNodeExecutionError('template_malformed', `Malformed template reference: ${match}`);
     }
     const { namespace, path, safe, default: defaultValue } = groups;
 
@@ -64,7 +65,7 @@ export function resolveTemplate(template: string, context: ExecutionContext): st
     if (value === undefined) {
       if (safe === '?') return '';
       if (defaultValue !== undefined) return defaultValue;
-      throw new Error(`Unresolved template reference: ${match}`);
+      throw new PermanentNodeExecutionError('template_unresolved', `Unresolved template reference: ${match}`);
     }
 
     return typeof value === 'string' ? value : JSON.stringify(value);
@@ -86,7 +87,10 @@ function resolveNamespace(namespace: string, context: ExecutionContext, match: s
       return context.global;
     }
     default: {
-      throw new Error(`Unresolved template reference: ${match} (unknown namespace "${namespace}")`);
+      throw new PermanentNodeExecutionError(
+        'template_unresolved',
+        `Unresolved template reference: ${match} (unknown namespace "${namespace}")`,
+      );
     }
   }
 }

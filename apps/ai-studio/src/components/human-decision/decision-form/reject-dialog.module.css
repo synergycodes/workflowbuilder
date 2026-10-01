@@ -1,0 +1,10 @@
+/* The modal centres its content; the reason takes the dialog's width. */
+.field {
+  align-self: stretch;
+}
+
+.buttons {
+  width: 100%;
+  display: flex;
+  justify-content: space-between;
+}

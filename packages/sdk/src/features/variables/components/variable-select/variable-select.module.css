@@ -1,21 +1,11 @@
 .container {
   position: relative;
-
-  &:has([class*='control--error']) {
-    .adornment button {
-      color: var(--ax-public-input-root-color-error);
-    }
-  }
 }
 
 .adornment {
   position: absolute;
   top: 50%;
-  right: var(--ax-token-spacing-input-m-h-pad);
+  right: var(--wb-ds-space-150);
   transform: translateY(-50%);
   z-index: 1;
-}
-
-.control {
-  height: 2.5625rem;
 }

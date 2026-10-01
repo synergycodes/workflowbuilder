@@ -11,7 +11,7 @@ import { withJsonFormsControlProps } from '@jsonforms/react';
 
 function UnknownRenderer({ uischema: { type } }: ControlProps | LayoutProps) {
   return (
-    <div className="ax-public-p10" style={{ color: 'red' }}>
+    <div className="wb-text-body-s" style={{ color: 'red' }}>
       No renderer provided for type: {type}
     </div>
   );

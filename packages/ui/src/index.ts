@@ -6,6 +6,7 @@ export * from './components/accordion';
 export * from './components/avatar';
 export * from './components/button';
 export * from './components/checkbox';
+export * from './components/chip';
 export * from './components/collapsible';
 export * from './components/date-picker';
 export * from './components/edge';
@@ -26,4 +27,8 @@ export * from './components/tooltip';
 // Shared types
 export * from './shared/types/size';
 export * from './shared/types/item-size';
+export * from './shared/types/list-item';
+export * from './shared/types/popup-placement';
+export * from './shared/types/selector-size';
 export * from './shared/types/with-icon';
+export * from './shared/types/field';

@@ -21,7 +21,7 @@ import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
  * "Custom edges and selection".
  *
  * To diverge from the built-in selection look, add a `selected` branch to the
- * `style` below, or restyle every edge globally via the `--ax-public-edge-color-select`
+ * `style` below, or restyle every edge globally via the `--wb-public-edge-color-select`
  * CSS variable. See the SDK README, "Custom edges and selection".
  */
 export function DashedEdge({

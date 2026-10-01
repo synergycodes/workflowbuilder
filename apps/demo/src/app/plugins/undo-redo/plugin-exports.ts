@@ -9,6 +9,7 @@ import { UndoRedoProvider } from './providers/undo-redo-provider';
 export function plugin(): void {
   registerComponentDecorator('OptionalHooks', {
     content: UndoRedoProvider,
+    name: 'UndoRedoProvider',
   });
 
   registerComponentDecorator('OptionalAppBarTools', {

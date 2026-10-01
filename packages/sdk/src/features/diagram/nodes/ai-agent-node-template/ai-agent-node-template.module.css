@@ -7,7 +7,7 @@
 }
 
 .root {
-  --ax-public-node-gap: 0;
+  --wb-public-node-gap: 0;
 }
 
 .content {
@@ -23,14 +23,14 @@
   }
 
   .selected-model-icon {
-    background-color: var(--ax-txt-primary-default);
-    color: var(--ax-txt-primary-inverse);
+    background-color: var(--wb-ds-ui-text-default);
+    color: var(--wb-ds-ui-text-inverse-default);
     outline: none;
   }
 
   .selected-memory-icon {
-    color: var(--ax-txt-primary-white);
-    background-color: var(--ax-button-gray-bg-default);
+    color: var(--wb-ds-ui-text-onaccent-default);
+    background-color: var(--wb-ds-components-button-solid-gray-default);
     outline: none;
   }
 }

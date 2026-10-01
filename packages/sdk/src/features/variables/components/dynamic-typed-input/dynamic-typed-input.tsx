@@ -95,7 +95,7 @@ export function DynamicTypedInput({
         // Adornment here doesn't make sense since we show variable picker above
         // endAdornment={endAdornment}
         onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
-        error={isError}
+        state={isError ? 'critical' : 'default'}
         placeholder={placeholder ?? t('variables.placeholderTypeString')}
         disabled={disabled}
       />
@@ -112,9 +112,9 @@ export function DynamicTypedInput({
         className={className}
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
-        endAdornment={endAdornment}
+        suffixIcon={endAdornment}
         onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
-        error={isError || isInvalidNumberValue}
+        state={isError || isInvalidNumberValue ? 'critical' : 'default'}
         placeholder={placeholder ?? t('variables.placeholderTypeNumber')}
         disabled={disabled}
       />
@@ -140,7 +140,6 @@ export function DynamicTypedInput({
           }}
           placeholder={placeholder}
           disabled={disabled}
-          error={isError}
         />
         {endAdornment && <span className={clsx(styles['adornment--select'], 'right-adornment')}>{endAdornment}</span>}
       </div>
@@ -151,6 +150,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['date-with-reset-container']}>
         <DatePicker
+          error={isError}
           key={value}
           className={clsx(
             styles['date-picker'],
@@ -172,7 +172,6 @@ export function DynamicTypedInput({
           }}
           valueFormat={'dd-MM-yyyy'}
           placeholder={placeholder || 'DD-MM-YYYY'}
-          error={isError}
           disabled={disabled}
         />
         {endAdornment && <span className={clsx(styles['adornment--date'], 'right-adornment')}>{endAdornment}</span>}
@@ -186,6 +185,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['row']}>
         <DatePicker
+          error={isError}
           key={value}
           className={clsx(styles['date-picker'], styles['date-picker--date'], className)}
           value={date}
@@ -207,12 +207,12 @@ export function DynamicTypedInput({
           // valueFormat="DD-MM-YYYY HH:mm"
           // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
-          error={isError}
         />
         <Input
           className={clsx(styles['date-picker'], styles['date-picker--time'], className)}
           value={time}
           placeholder="HH:mm"
+          suffixIcon={endAdornment}
           onChange={(event) => {
             const value = (event.target.value as string).slice(0, 5);
             if (value.length < 5) {
@@ -260,8 +260,7 @@ export function DynamicTypedInput({
             }
           }}
           disabled={disabled || !date}
-          error={isError}
-          endAdornment={endAdornment}
+          state={isError ? 'critical' : 'default'}
         />
       </div>
     );

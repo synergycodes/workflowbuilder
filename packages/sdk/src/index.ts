@@ -136,13 +136,17 @@ export type { DiagramContainerProps } from './features/diagram/diagram';
 export { EnhancedBaseEdge } from './features/diagram/edges/enhanced-base-edge/enhanced-base-edge';
 export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-label-renderer';
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
-export { SelfConnectingEdge } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
+export {
+  SelfConnectingEdge,
+  useSelfLoopApexY,
+} from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
 export { ProjectSelection } from './features/app-bar/components/project-selection/project-selection';
 export type { ProjectSelectionProps } from './features/app-bar/components/project-selection/project-selection';
 export { PropertiesBar } from './features/properties-bar/components/properties-bar/properties-bar';
 export type { PropertiesBarProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
+export { PropertiesPanelFooter } from './features/properties-bar/components/properties-panel-footer/properties-panel-footer';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
 export type { WorkflowNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
 export { defineNodeTemplate } from './utils/define-node-template';
@@ -153,6 +157,8 @@ export { defineNodeTemplate } from './utils/define-node-template';
 
 export { useEffectChange } from './hooks/use-effect-change';
 export { useFitView } from './hooks/use-fit-view';
+export { useSetSelection } from './hooks/use-set-selection';
+export type { SelectionIds } from './hooks/use-set-selection';
 export { useKeyPress } from './hooks/use-key-press';
 export { useWorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
 export type { LayoutChangeOptions, WorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
@@ -220,6 +226,8 @@ export type { DynamicCondition } from './features/json-form/types/controls';
 export { generalInformation, globalControls, statusOptions } from './utils/general-information';
 export { sharedProperties, errorPolicyProperty } from './utils/shared-properties';
 export type { DeepPartial, Prettify } from './utils/typescript';
+export { showSnackbar, closeSnackbar } from './features/snackbar/show-snackbar';
+export type { ShowSnackbarOptions } from './features/snackbar/show-snackbar';
 
 // =============================================================================
 // Constants
@@ -269,13 +277,6 @@ export type { WBIcon } from '@workflow-builder/icons';
 // `UISchema` piecemeal (e.g. a helper returning a single layout element).
 
 export type { UISchemaElement } from './types/uischema';
-
-/**
- * Displays a snackbar notification to the user.
- *
- * @param message - The message to display in the snackbar.
- */
-export { showSnackbar } from './utils/show-snackbar';
 
 // =============================================================================
 // Variables

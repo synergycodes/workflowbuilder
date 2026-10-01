@@ -1,16 +1,6 @@
-import { Snackbar } from '@workflowbuilder/ui';
 import { SnackbarProvider } from 'notistack';
 
+// No variant components: showSnackbar renders each snackbar through its own `content`.
 export function SnackbarContainer() {
-  return (
-    <SnackbarProvider
-      Components={{
-        default: Snackbar,
-        info: Snackbar,
-        success: Snackbar,
-        warning: Snackbar,
-        error: Snackbar,
-      }}
-    />
-  );
+  return <SnackbarProvider />;
 }

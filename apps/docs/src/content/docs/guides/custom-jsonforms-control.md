@@ -103,7 +103,7 @@ The same translations can also be registered imperatively via [`registerPluginTr
 
 ## Authoring primitives
 
-All the JsonForms building blocks — the `withJsonForms*Props` HOCs, the `useJsonForms` hook, `JsonFormsDispatch`, the testers (`rankWith`, `uiTypeIs`, `schemaTypeIs`, …), `RuleEffect`, and the prop types (`ControlProps`, `CellProps`, …) — are re-exported from `@workflowbuilder/sdk`. The full list lives in the Forms section of the [API reference](/api/).
+All the JsonForms building blocks are re-exported from `@workflowbuilder/sdk`: the `withJsonForms*Props` HOCs, the `useJsonForms` hook, `JsonFormsDispatch`, the `JsonForms` component for a separate form whose data is not a node's properties, the testers (`rankWith`, `uiTypeIs`, `schemaTypeIs`, …), `RuleEffect`, and the prop types (`ControlProps`, `CellProps`, …). The full list lives in the Forms section of the [API reference](/api/).
 
 ## Related types
 

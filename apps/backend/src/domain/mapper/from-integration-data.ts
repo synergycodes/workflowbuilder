@@ -28,11 +28,14 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// Lifts the three fields an engine reads out of `data.properties`, where the SDK's
-// `sharedProperties` put them. `role` comes from `data.isStartNode` instead, which sits
-// beside the properties. `description` stays in `config`: no engine reads it.
+// Lifts what an engine reads out of `data.properties`: `label`, `errorPolicy` (from the SDK's
+// `sharedProperties`) and `decisionRequest` (validated and defaulted by the parse, unchecked here).
+// `role` comes from `data.isStartNode` beside the properties; `description` stays in `config`.
 function mapNode(node: FrontendNode): BaseNode {
-  const { errorPolicy: rawErrorPolicy, label: rawLabel, ...config } = node.data.properties ?? {};
+  // Spread first, so only own keys are read. The parse keeps unknown keys, and an own
+  // `__proto__` among them would leave the properties inheriting fields no schema saw;
+  // this is the one read that would turn such a field into a real one on the way out.
+  const { errorPolicy: rawErrorPolicy, label: rawLabel, decisionRequest, ...config } = { ...node.data.properties };
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
   const label = isNonEmptyString(rawLabel) ? rawLabel.trim() : undefined;
   const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
@@ -40,7 +43,7 @@ function mapNode(node: FrontendNode): BaseNode {
     id: node.id,
     type: node.data.type,
     config,
-    ...pickBy({ label, errorPolicy, role }, isDefined),
+    ...pickBy({ label, errorPolicy, decisionRequest, role }, isDefined),
   };
 }
 

@@ -13,8 +13,21 @@ export type { NodeErrorClassification, NodeErrorEnvelope } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './ports/workflow-engine.port';
-export type { ActivityRunnerPort, NodeExecutionResult } from './ports/activity-runner.port';
+export { RESOLVE_NODE_REJECTIONS } from './ports/workflow-engine.port';
+export type {
+  ResolveNodeInput,
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  VerdictRejection,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './ports/workflow-engine.port';
+export type {
+  ActivityRunnerPort,
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';
 export type { LoggerPort, LogBindings } from './ports/logger.port';
 

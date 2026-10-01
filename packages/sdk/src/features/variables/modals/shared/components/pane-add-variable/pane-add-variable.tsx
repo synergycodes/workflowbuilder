@@ -4,7 +4,7 @@ import { useCallback } from 'react';
 
 import { getStoreVariables, saveVariableDefinition } from '../../../../../../store/slices/diagram-slice/actions';
 import { filterEmpty } from '../../../../../../utils/array';
-import { showSnackbar } from '../../../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../../../utils/show-translated-snackbar';
 import type { VariableDefinition } from '../../../../types';
 import { getEmptyVariableDefinition } from '../../../../utils/get-empty-variable-definition';
 import { TabHeader } from '../../../global/tab/tab-header';
@@ -26,7 +26,7 @@ export function PaneAddVariable({ className, setActivePane }: Props) {
         .find(({ id, name }) => id !== definition.id && name.toLowerCase() === definition.name.toLowerCase());
 
       if (variableWithName) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variableNameAlreadyExists',
           variant: SnackbarType.ERROR,
         });

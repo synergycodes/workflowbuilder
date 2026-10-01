@@ -12,24 +12,31 @@
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
-  // No single props type - one of three variants depending on `children`.
-  {
-    slug: 'button',
-    name: 'Button',
-    propsType: ['LabelButtonProps', 'IconButtonProps', 'IconLabelButtonProps'],
-    dir: 'button',
-  },
+  { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps'], dir: 'button' },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
+  { slug: 'chip', name: 'Chip', propsType: 'ChipProps', dir: 'chip' },
   { slug: 'collapsible', name: 'Collapsible', propsType: 'CollapsibleProps', dir: 'collapsible' },
   { slug: 'date-picker', name: 'DatePicker', propsType: 'DatePickerProps', dir: 'date-picker' },
   { slug: 'icon-switch', name: 'IconSwitch', propsType: 'IconSwitchProps', dir: 'switch/icon-switch' },
-  { slug: 'input', name: 'Input', propsType: 'InputProps', dir: 'input' },
+  {
+    slug: 'input',
+    name: 'Input',
+    propsType: 'InputProps',
+    dir: 'input',
+    cssSources: [
+      'shared/components/field/field.module.css',
+      'shared/styles/field-control-height.module.css',
+      'shared/styles/field-control-size.module.css',
+    ],
+  },
   { slug: 'menu', name: 'Menu', propsType: 'MenuProps', dir: 'menu' },
+  // Documented on the Menu page; styled through the NavButton variables.
+  { slug: 'menu-trigger-button', name: 'Menu.TriggerButton', propsType: 'MenuTriggerButtonProps', dir: null },
   { slug: 'modal', name: 'Modal', propsType: 'ModalProps', dir: 'modal' },
   {
     slug: 'nav-button',
     name: 'NavButton',
-    propsType: ['NavLabelButtonProps', 'NavIconButtonProps', 'NavIconLabelButtonProps'],
+    propsType: ['NavLabelButtonProps', 'NavIconButtonProps'],
     dir: 'button/nav-button',
   },
   { slug: 'radio', name: 'Radio', propsType: 'RadioProps', dir: 'radio-button' },
@@ -44,7 +51,13 @@ export const COMPONENTS = [
   { slug: 'snackbar', name: 'Snackbar', propsType: 'SnackbarProps', dir: 'snackbar' },
   { slug: 'status', name: 'Status', propsType: 'StatusProps', dir: 'status' },
   { slug: 'switch', name: 'Switch', propsType: 'BaseSwitchProps', dir: 'switch' },
-  { slug: 'text-area', name: 'TextArea', propsType: 'TextAreaProps', dir: 'text-area' },
+  {
+    slug: 'text-area',
+    name: 'TextArea',
+    propsType: 'TextAreaProps',
+    dir: 'text-area',
+    cssSources: ['shared/components/field/field.module.css', 'shared/styles/field-control-size.module.css'],
+  },
   { slug: 'tooltip', name: 'Tooltip', propsType: 'TooltipProps', dir: 'tooltip' },
   // Diagram components.
   { slug: 'node-icon', name: 'NodeIcon', propsType: 'NodeIconProps', dir: 'node/node-icon' },

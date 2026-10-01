@@ -8,7 +8,7 @@ import {
   type TerminalExecutionEventType,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
-import type { AssertAuthorized, AuthVariables } from '../auth';
+import type { AssertAuthorized } from '../auth';
 import { database } from '../db/client';
 import { executions } from '../db/schema';
 import { getWorkflowEngine } from '../engine';
@@ -17,16 +17,54 @@ import { subscribe } from '../events/execution-event-bus';
 import { type ExecutionEventRow, fetchEventsAfter } from '../events/fetch-events-after';
 import { createSerializedDrainer } from '../events/serialized-drainer';
 import { logger as backendLogger } from '../logger';
-import type { TenantVariables } from '../tenant';
+import type { BackendEnv } from './backend-env';
+import { LIST_ORDER, listExecutionsWhere, pageOf, parseListExecutionsQuery } from './list-executions-query';
 
 const logger = backendLogger.child({ component: 'executions-route' });
 
 const TERMINAL_STATUSES = new Set<string>(TERMINAL_EXECUTION_STATUSES);
 
-export function createExecutionsRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
+
+  routes.get('/', async (c) => {
+    await assertAuthorized(c, 'executions:list', { kind: 'executions' });
+
+    const parsed = parseListExecutionsQuery({
+      status: c.req.query('status'),
+      workflowId: c.req.query('workflowId'),
+      limit: c.req.query('limit'),
+      cursor: c.req.query('cursor'),
+    });
+    if (!parsed.ok) {
+      return c.json({ code: parsed.code, message: parsed.message }, 400);
+    }
+    const { query } = parsed;
+
+    // A resolved context whose id is not a string is a broken adapter, not single-tenant mode:
+    // `?? null` would read `null` or `undefined` as "no tenant" and list every tenant's rows.
+    const tenant = c.var.tenant;
+    if (tenant && typeof tenant.tenantId !== 'string') {
+      return c.json({ code: 'tenant_required', message: 'Tenant context required' }, 400);
+    }
+
+    const rows = await database
+      .select({
+        id: executions.id,
+        workflowId: executions.workflowId,
+        sourceVersion: executions.sourceVersion,
+        status: executions.status,
+        startedAt: executions.startedAt,
+        finishedAt: executions.finishedAt,
+        createdAt: executions.createdAt,
+      })
+      .from(executions)
+      .where(listExecutionsWhere(query, tenant?.tenantId ?? null))
+      .orderBy(...LIST_ORDER)
+      .limit(query.limit + 1);
+
+    return c.json(pageOf(rows, query.limit));
+  });
 
   routes.get('/:id', async (c) => {
     const executionId = c.req.param('id');
@@ -44,6 +82,8 @@ export function createExecutionsRoutes(
       workflowId: execution.workflowId,
       sourceVersion: execution.sourceVersion,
       status: execution.status,
+      outcome: execution.outcome,
+      resolvedBy: execution.resolvedBy,
       startedAt: execution.startedAt,
       finishedAt: execution.finishedAt,
       createdAt: execution.createdAt,

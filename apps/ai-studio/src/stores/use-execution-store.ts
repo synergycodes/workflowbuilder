@@ -1,13 +1,14 @@
 import { create } from 'zustand';
-import { createJSONStorage, devtools, persist } from 'zustand/middleware';
+import { type StateStorage, createJSONStorage, devtools, persist } from 'zustand/middleware';
 
-import type {
-  ExecutionEvent,
-  ExecutionSnapshot,
-  ExecutionStatus,
+import {
+  type ExecutionEvent,
+  type ExecutionSnapshot,
+  type ExecutionStatus,
+  TERMINAL_EXECUTION_STATUSES,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 
-type NodeExecutionStatus = 'idle' | 'running' | 'completed' | 'failed' | 'skipped';
+type NodeExecutionStatus = 'idle' | 'running' | 'waiting' | 'completed' | 'failed' | 'skipped';
 
 export type NodeExecutionState = {
   status: NodeExecutionStatus;
@@ -15,13 +16,36 @@ export type NodeExecutionState = {
   error?: { message: string; code?: string };
 };
 
+export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
+
+/** One wait of a decision node: the run, the node, and which time the node parked in it. */
+export type DecisionWait = { executionId: string; nodeId: string; attempt: number };
+
+/** What a person has entered for a wait and not yet sent. */
+export type DecisionDraft = {
+  values?: Record<string, unknown>;
+  /** The fields the form showed, so a field the draft was not taken under starts from the proposal. */
+  fields?: string[];
+  reason?: string;
+};
+
+/** Where the decision sent for a wait stands until the run records it. */
+type DecisionSend = { status: 'sending' } | { status: 'accepted' } | { status: 'refused'; message: string };
+
 type ExecutionStore = {
   executionId: string | undefined;
-  status: ExecutionStatus | 'idle' | 'disconnected';
+  status: RunStatus;
   streamUrl: string | undefined;
   nodeStates: Record<string, NodeExecutionState>;
   events: ExecutionEvent[];
   isLogCollapsed: boolean;
+  isStopRequested: boolean;
+  /** By {@link waitKey}. */
+  decisionDrafts: Record<string, DecisionDraft>;
+  /** By {@link waitKey}. */
+  decisionSends: Record<string, DecisionSend>;
+  /** The waiting node whose decision form takes the focus when it next renders; Decide asks for it. */
+  decisionFocusRequest: string | undefined;
 };
 
 const emptyStore: ExecutionStore = {
@@ -31,14 +55,54 @@ const emptyStore: ExecutionStore = {
   nodeStates: {},
   events: [],
   isLogCollapsed: false,
+  isStopRequested: false,
+  decisionDrafts: {},
+  decisionSends: {},
+  decisionFocusRequest: undefined,
 };
+
+type PersistedSlice = Pick<ExecutionStore, 'executionId' | 'streamUrl' | 'status' | 'isLogCollapsed'>;
+
+const persistedSlice = ({ executionId, streamUrl, status, isLogCollapsed }: PersistedSlice): PersistedSlice => ({
+  executionId,
+  streamUrl,
+  status,
+  isLogCollapsed,
+});
+
+const persistedDefaults = persistedSlice(emptyStore);
+
+const TERMINAL_STATUSES: ReadonlySet<string> = new Set(TERMINAL_EXECUTION_STATUSES);
+
+// A lost write costs only the reload, never the live run.
+const bestEffortLocalStorage: StateStorage = {
+  getItem: (name) => bestEffort(() => localStorage.getItem(name)) ?? null,
+  setItem: (name, value) => bestEffort(() => localStorage.setItem(name, value)),
+  removeItem: (name) => bestEffort(() => localStorage.removeItem(name)),
+};
+
+function bestEffort<T>(action: () => T): T | undefined {
+  try {
+    return action();
+  } catch {
+    return;
+  }
+}
 
 export const useExecutionStore = create<ExecutionStore>()(
   devtools(
     persist(() => ({ ...emptyStore }), {
-      name: 'ai-studio:execution-log',
-      storage: createJSONStorage(() => sessionStorage),
-      partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
+      name: 'ai-studio:execution',
+      version: 1,
+      storage: createJSONStorage(() => bestEffortLocalStorage),
+      // A finished run is dropped on purpose: a reload after one starts on an idle canvas.
+      partialize: (state): PersistedSlice =>
+        !isRunAlive(state.status) || !state.executionId || !state.streamUrl
+          ? { ...persistedDefaults, isLogCollapsed: state.isLogCollapsed }
+          : persistedSlice(state),
+      // Without migrate, zustand answers a version mismatch with a console.error and hydrates none of
+      // the stored state, so the log preference would be lost; the entry lingers until the next write.
+      migrate: (persisted) => ({ ...persistedDefaults, ...(persisted as Partial<PersistedSlice>) }),
     }),
     { name: 'aiStudioExecutionStore' },
   ),
@@ -46,6 +110,11 @@ export const useExecutionStore = create<ExecutionStore>()(
 
 export function resetExecution() {
   useExecutionStore.setState((state) => ({ ...emptyStore, isLogCollapsed: state.isLogCollapsed }));
+}
+
+// `disconnected` counts: a lost stream says nothing about the run on the server.
+export function isRunAlive(status: RunStatus): boolean {
+  return status !== 'idle' && !TERMINAL_STATUSES.has(status);
 }
 
 export function setExecutionStarted(executionId: string, streamUrl: string) {
@@ -56,25 +125,83 @@ export function setExecutionStarted(executionId: string, streamUrl: string) {
     nodeStates: {},
     events: [],
     isLogCollapsed: false,
+    isStopRequested: false,
+    decisionDrafts: {},
+    decisionSends: {},
+    decisionFocusRequest: undefined,
   });
 }
 
-export function applyConnectionLost() {
-  useExecutionStore.setState({ status: 'disconnected' });
+// The backend refuses a decision while the run is cancelling, though the replay still shows the node waiting.
+export function isDecidable(status: RunStatus): boolean {
+  return status !== 'cancelling';
 }
 
+export function requestDecisionFocus(nodeId: string) {
+  useExecutionStore.setState({ decisionFocusRequest: nodeId });
+}
+
+export function clearDecisionFocusRequest() {
+  useExecutionStore.setState({ decisionFocusRequest: undefined });
+}
+
+export function waitKey({ executionId, nodeId, attempt }: DecisionWait): string {
+  return `${executionId}:${nodeId}:${attempt}`;
+}
+
+// A form that closes, or an answer that arrives, after its run was replaced leaves nothing in the new one.
+function updateWait(wait: DecisionWait, update: (state: ExecutionStore, key: string) => Partial<ExecutionStore>) {
+  useExecutionStore.setState((state) =>
+    state.executionId === wait.executionId ? update(state, waitKey(wait)) : state,
+  );
+}
+
+export function saveDecisionDraft(wait: DecisionWait, change: DecisionDraft) {
+  updateWait(wait, (state, key) => ({
+    decisionDrafts: { ...state.decisionDrafts, [key]: { ...state.decisionDrafts[key], ...change } },
+  }));
+}
+
+export function saveDecisionSend(wait: DecisionWait, send: DecisionSend) {
+  updateWait(wait, (state, key) => ({ decisionSends: { ...state.decisionSends, [key]: send } }));
+}
+
+// Keeps the run id for Stop; any other caller must probe it first (follow-up: stale-execution-id-probe).
+export function applyConnectionLost() {
+  useExecutionStore.setState((state) => (isRunAlive(state.status) ? { status: 'disconnected' } : {}));
+}
+
+// Not persisted on purpose: a reload re-derives it from the next Stop.
+export function applyStopRequested() {
+  useExecutionStore.setState({ isStopRequested: true });
+}
+
+// Replayed through the same rule as live events, so a reload shows what live showed. The row seeds
+// the replay: the engine never writes `running` at start and its `waiting` write is advisory.
 export function applySnapshot(snapshot: ExecutionSnapshot) {
   const nodeStates: Record<string, NodeExecutionState> = {};
+  let status: RunStatus = snapshot.status;
 
   for (const event of snapshot.events) {
     applyEventToNodeStates(event, nodeStates);
+    status = nextRunStatus(status, event, nodeStates);
+  }
+
+  // Two facts only the row carries: a cancel the backend accepted, and a terminal status whose
+  // event never landed. No event expresses either, so the row wins over an alive replay.
+  if ((snapshot.status === 'cancelling' || TERMINAL_STATUSES.has(snapshot.status)) && isRunAlive(status)) {
+    status = snapshot.status;
+    if (TERMINAL_STATUSES.has(status)) {
+      settleNodesInFlight(nodeStates);
+    }
   }
 
   useExecutionStore.setState({
     executionId: snapshot.executionId,
-    status: snapshot.status,
+    status,
     nodeStates,
     events: snapshot.events,
+    decisionFocusRequest: whileWaiting(useExecutionStore.getState().decisionFocusRequest, nodeStates),
   });
 }
 
@@ -83,20 +210,52 @@ export function applyEvent(event: ExecutionEvent) {
     const nodeStates = { ...state.nodeStates };
     applyEventToNodeStates(event, nodeStates);
 
-    const status = eventToExecutionStatus(event) ?? state.status;
-
     return {
       nodeStates,
       events: [...state.events, event],
-      status,
+      status: nextRunStatus(state.status, event, nodeStates),
+      decisionFocusRequest: whileWaiting(state.decisionFocusRequest, nodeStates),
     };
   });
 }
 
+// A focus request lasts only while its node waits, so a later wait of the same node does not inherit it.
+function whileWaiting(nodeId: string | undefined, nodeStates: Record<string, NodeExecutionState>): string | undefined {
+  return nodeId !== undefined && nodeStates[nodeId]?.status === 'waiting' ? nodeId : undefined;
+}
+
+function nextRunStatus(
+  current: RunStatus,
+  event: ExecutionEvent,
+  nodeStates: Record<string, NodeExecutionState>,
+): RunStatus {
+  return eventToExecutionStatus(event) ?? deriveRunStatus(current, nodeStates);
+}
+
+// No event carries the run's waiting status, so it is derived the way the engine derives it:
+// waiting while any node is parked, running again once the last one resolves.
+function deriveRunStatus(current: RunStatus, nodeStates: Record<string, NodeExecutionState>) {
+  if (current !== 'running' && current !== 'waiting') {
+    return current;
+  }
+  return Object.values(nodeStates).some((node) => node.status === 'waiting') ? 'waiting' : 'running';
+}
+
 function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, NodeExecutionState>) {
   switch (event.type) {
+    case 'execution_completed':
+    case 'execution_incomplete':
+    case 'execution_failed':
+    case 'execution_cancelled': {
+      settleNodesInFlight(states);
+      break;
+    }
     case 'node_started': {
       states[event.nodeId] = { status: 'running' };
+      break;
+    }
+    case 'node_waiting': {
+      states[event.nodeId] = { status: 'waiting' };
       break;
     }
     case 'node_completed': {
@@ -110,6 +269,15 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
     case 'node_skipped': {
       states[event.nodeId] = { status: 'skipped' };
       break;
+    }
+  }
+}
+
+// A cancel records no node_failed for a parked node, so its wait would outlive the run.
+function settleNodesInFlight(states: Record<string, NodeExecutionState>) {
+  for (const [nodeId, state] of Object.entries(states)) {
+    if (state.status === 'running' || state.status === 'waiting') {
+      states[nodeId] = { status: 'idle' };
     }
   }
 }

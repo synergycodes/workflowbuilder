@@ -1,98 +1,42 @@
-:root {
-  --wb-variable-control-height: 2.5625rem;
-}
-
 .row {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.25rem;
-  height: var(--wb-variable-control-height);
+  height: 2.5rem;
 }
 
 .container--select {
   position: relative;
-  border-radius: var(--ax-public-input-border-radius-medium);
+  border-radius: var(--wb-public-input-border-radius-m);
 
   > div > button {
-    min-height: var(--wb-variable-control-height);
+    min-height: 2.5rem;
     text-align: left;
   }
 }
 
-.date-picker--date {
-  > div > button {
-    height: var(--wb-variable-control-height);
-  }
-}
-
-.date-picker--date-alone {
-  &:has([class*='container--error']) {
-    & ~ :global(.right-adornment) button {
-      color: var(--ax-public-input-root-color-error);
-    }
-  }
-}
-
-.date-picker--time {
-  height: var(--wb-variable-control-height);
-
-  &:global(.base--error) {
-    input:disabled {
-      color: var(--ax-public-input-root-color-error);
-      opacity: 0.5;
-    }
-
-    :global(.right-adornment) button {
-      color: var(--ax-public-input-root-color-error);
-    }
-  }
+.date-picker {
+  border-radius: var(--wb-public-input-border-radius-m);
+  min-height: 2.5rem;
+  text-align: left;
 }
 
 .date-with-reset-container {
   position: relative;
 }
 
-.select {
-  height: var(--wb-variable-control-height);
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.reset-button {
-  position: absolute;
-  top: var(--ax-token-spacing-input-m-v-pad);
-  right: var(--ax-token-spacing-input-m-h-pad);
-  cursor: pointer;
-}
-
-.container--select {
-  position: relative;
-
-  > select {
-    min-height: 41px;
-  }
-}
-
 .adornment--select {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad) + 1rem + var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150) + 1rem + var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
-}
-
-.container--select:has([class*='container--error']) {
-  :global(.right-adornment) button {
-    color: var(--ax-public-input-root-color-error);
-  }
 }
 
 .adornment--date {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }

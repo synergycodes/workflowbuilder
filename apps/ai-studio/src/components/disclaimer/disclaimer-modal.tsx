@@ -68,7 +68,7 @@ export function DisclaimerModal() {
             workflow editors.
           </p>
           <p>
-            The workflows here run for real: every AI step calls a live model through <strong>OpenRouter</strong>.
+            The workflows here run for real: every AI step calls a <strong>live model</strong>.
           </p>
           <p>
             It is <strong>not</strong> a place to test or benchmark AI models. The model is just the engine — the point

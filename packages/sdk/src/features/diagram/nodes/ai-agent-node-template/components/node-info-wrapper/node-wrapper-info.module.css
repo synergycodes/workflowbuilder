@@ -1,11 +1,13 @@
 .container {
+  --wb-sdk-connectable-item-inset: calc(var(--wb-ds-canvas-node-body-h-pad) + 1px);
+
   display: flex;
   flex-direction: column;
-  gap: 0.75rem;
-  border-radius: 0.5rem;
-  padding: 0.625rem;
-  border: 1px solid var(--ax-ui-stroke-primary-default);
-  color: var(--ax-txt-primary-default);
+  gap: var(--wb-ds-canvas-node-body-gap);
+  border-radius: var(--wb-ds-canvas-node-body-radius);
+  padding: var(--wb-ds-canvas-node-body-v-pad) var(--wb-ds-canvas-node-body-h-pad);
+  border: 1px solid var(--wb-ds-canvas-node-stroke-default);
+  color: var(--wb-ds-ui-text-default);
 
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
 }

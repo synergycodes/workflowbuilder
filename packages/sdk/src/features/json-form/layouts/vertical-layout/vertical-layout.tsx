@@ -8,7 +8,7 @@ import { renderElements } from '../render-elements';
 function VerticalLayout(props: LayoutProps<VerticalLayoutElement>) {
   return (
     <LayoutWrapper {...props}>
-      <div className={styles['horizontal-layout']}>{renderElements(props)}</div>
+      <div className={styles['vertical-layout']}>{renderElements(props)}</div>
     </LayoutWrapper>
   );
 }

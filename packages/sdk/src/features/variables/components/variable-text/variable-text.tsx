@@ -9,7 +9,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './variable-text.module.css';
 
 import { getNodeByIdAction } from '../../../../store-get-actions/stores/use-store-get-actions';
-import { showSnackbar } from '../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY, variableTypeInfoByType } from '../../constants';
 import { buildMentionData } from './core/build-mention-data';
 import type {
@@ -243,7 +243,7 @@ export function VariableText({
   const onMentionsChange = useCallback(
     ({ value }: { value: string }) => {
       if (value.endsWith(VARIABLE_BRACKETS_START) && mentionData.length === 0) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variablesListIsEmpty',
           subtitle: 'variables.variablesListIsEmptyHint',
           variant: SnackbarType.WARNING,

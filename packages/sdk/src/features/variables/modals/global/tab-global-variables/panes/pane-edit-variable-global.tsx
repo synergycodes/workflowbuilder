@@ -4,7 +4,7 @@ import { useCallback, useMemo } from 'react';
 import { getStoreVariables, saveVariableDefinition } from '../../../../../../store/slices/diagram-slice/actions';
 import { useStore } from '../../../../../../store/store';
 import { filterEmpty } from '../../../../../../utils/array';
-import { showSnackbar } from '../../../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../../../utils/show-translated-snackbar';
 import { getNodesWithVariable } from '../../../../actions/get-nodes-with-variable';
 import type { VariableDefinition } from '../../../../types';
 import { getVariableReferenceWithoutBracketsForGlobal } from '../../../../utils/keys/get-variable-reference-without-brackets-for-global';
@@ -31,7 +31,7 @@ export function PaneEditVariableGlobal({ className, setActivePane, id, isReadOnl
         .find(({ id, name }) => id !== definition.id && name.toLowerCase() === definition.name.toLowerCase());
 
       if (variableWithName) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variableNameAlreadyExists',
           variant: SnackbarType.ERROR,
         });
