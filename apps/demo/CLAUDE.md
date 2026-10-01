@@ -27,13 +27,15 @@ Nodes are registered in `src/app/data/palette.ts` (flat array of `PaletteItem`).
 
 Plugins live in `src/app/plugins/<plugin-name>/` and register via SDK decorators inside `<plugin-name>/plugin-exports.ts`:
 
-| Decorator                                | Purpose                                                                                                                        |
-| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
-| `registerComponentDecorator(name, opts)` | Inject UI or hooks into a known slot (`OptionalHooks`, `OptionalAppChildren`, `OptionalNodeContent`, `OptionalAppBarTools`, …) |
-| `registerFunctionDecorator(name, opts)`  | Intercept a registered function (e.g. `getPaletteData`, `getTemplates`) before/after                                           |
-| `registerPluginTranslation(resource)`    | Add i18next strings under the `plugins.<name>` namespace                                                                       |
+| Decorator                                | Purpose                                                                                                                           |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| `registerComponentDecorator(name, opts)` | Inject UI or hooks into a known slot (`OptionalHooks`, `OptionalAppChildren`, `OptionalNodeContent`, `OptionalEdgeProperties`, …) |
+| `registerFunctionDecorator(name, opts)`  | Intercept a registered function (e.g. `getPaletteData`, `getTemplates`) before/after                                              |
+| `registerPluginTranslation(resource)`    | Add i18next strings under the `plugins.<name>` namespace                                                                          |
 
 Plugin signature is `() => void` and the function runs once on first mount of `<WorkflowBuilder.Root plugins={[...]} />` (invoked synchronously inside a `useRef`-guarded first-render branch; deduplicated by `name` on strict-mode double-invoke).
+
+To add UI to the app bar, the palette or the properties panel, prefer the `…Content` / `…MenuItem` components and `builtInControls` over a decorator - see the SDK's [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add). The slots `OptionalAppBarTools`, `OptionalAppBarControls` and `OptionalFooterContent`, and the `getControlsDotsItems` function decorator, still work but are deprecated in favor of that model.
 
 Reference plugins:
 
