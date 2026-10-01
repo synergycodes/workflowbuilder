@@ -5,12 +5,13 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
 
-const CLAIMS_CONTEXT = `You work in claims handling for Harbor Mutual, a home and travel insurer.
+const CLAIMS_CONTEXT = `You work in claims handling for XYZ Insurance, a home and travel insurer.
 
 Rules: a covered loss is paid at the amount claimed minus the policy deductible, never above the
 coverage limit; a loss the policy excludes is not paid; earlier claims of the same kind are worth a
 note for the reviewer, not a reason to refuse on their own.
-Style: plain, respectful, no promises beyond the decision.`;
+Style: plain, respectful, no promises beyond the decision. Address the claimant by the name as the
+claim gives it, adding no title.`;
 
 const policyRecords = {
   'HM-20417': {
@@ -76,7 +77,7 @@ const letterSchema = {
     letter: {
       type: 'string',
       title: 'Letter',
-      description: 'The letter to the insured, no subject line: under 150 words, signed "Harbor Mutual Claims".',
+      description: 'The letter to the insured, no subject line: under 150 words, signed "XYZ Insurance Claims".',
     },
   },
   required: ['letter'],
@@ -192,15 +193,16 @@ reviewer.`,
           segments: [],
           properties: {
             label: 'Draft the letter',
-            description: 'Writes the approval letter.',
+            description: 'Writes the settlement letter.',
             systemPrompt: `${CLAIMS_CONTEXT}
 
 A claims handler approved the claim. The context holds the claim, the policy, the assessment
 (proposedPayout, coverageVerdict, rationale) and the decision record (review-1), whose edits hold
 every field the handler corrected. An edited value wins over the assessment.
 
-Write the approval letter to the claimant: the claim number, the payout and how the deductible was
-applied. Leave the rationale and the claim history out.`,
+Write the settlement letter to the claimant: the claim number, the loss it covers and the approved
+payout in USD. Do not show how the amount was calculated. Leave the rationale and the claim history
+out.`,
             webSearch: false,
             outputSchema: letterSchema,
           },
@@ -237,7 +239,7 @@ applied. Leave the rationale and the claim history out.`,
 The context holds the claim and the decision record (review-1). If the claim was approved, it also
 holds the letter (letter-1): send the letter, keeping its wording, and apply any later edit from a
 decision record, where an edited value wins. If the claim was rejected, write a short message with
-the claim number and the reason from the decision record, signed "Harbor Mutual Claims".
+the claim number and the reason from the decision record, signed "XYZ Insurance Claims".
 Answer with the message alone.`,
             webSearch: false,
           },
