@@ -8,8 +8,8 @@ import { defaultDecisionRequest } from '../nodes/human-decision/default-properti
 const CLAIMS_CONTEXT = `You work in claims handling for XYZ Insurance, a home and travel insurer.
 
 Rules: a covered loss is paid at the amount claimed minus the policy deductible, never above the
-coverage limit; a loss the policy excludes is not paid; earlier claims of the same kind are worth a
-note for the reviewer, not a reason to refuse on their own.
+coverage limit; a loss the policy excludes is not paid; an earlier claim of the same kind does not
+change the payout, but point it out to the reviewer as something to check.
 Style: plain, respectful, no promises beyond the decision. Address the claimant by the name as the
 claim gives it, adding no title.`;
 
@@ -64,7 +64,8 @@ export const claimAssessmentSchema = {
     rationale: {
       type: 'string',
       title: 'Rationale',
-      description: 'For the reviewer: how the payout follows from the policy and what the claim history adds.',
+      description:
+        'For the reviewer: how the payout follows from the policy, then anything in the claim history worth checking.',
     },
   },
   required: ['proposedPayout', 'coverageVerdict', 'rationale'],
