@@ -160,7 +160,7 @@ const AREA_CASES: AreaCase[] = [
     container: SIDEBAR_HEADER,
     builtIn: () => screen.getByText('Review'),
     position: 'after',
-    lastBuiltIn: () => screen.getByText('Review'),
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Custom' }),
   },
   {
     name: 'PropertiesPanelFooterContent',
@@ -219,6 +219,18 @@ describe('area content components', () => {
       expect(isBefore(screen.getByRole('button', { name: 'First' }), last)).toBe(true);
     },
   );
+
+  it('AppBarControlsContent with place="after" stays before the menu button', () => {
+    renderHosts(
+      <AppBarControlsContent place="after">
+        <button type="button">Last</button>
+      </AppBarControlsContent>,
+    );
+
+    expect(isBefore(screen.getByRole('button', { name: 'Last' }), screen.getByRole('button', { name: 'Menu' }))).toBe(
+      true,
+    );
+  });
 
   it.each(DEPRECATED_SLOT_CASES)(
     '$name with place="after" renders after the after-content of a deprecated $slot decorator',

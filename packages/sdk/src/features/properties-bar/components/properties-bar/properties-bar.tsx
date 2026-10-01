@@ -91,8 +91,8 @@ function PropertiesBarComponent({
             onDotsClick={onMenuHeaderClick}
           />
           {isExpanded && <AreaTarget area="propertiesPanelHeader" />}
-          {isExpanded && <AreaTarget area="propertiesPanelHeader" place="after" />}
           {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}
+          {isExpanded && <AreaTarget area="propertiesPanelHeader" place="after" />}
         </>
       }
       footer={
