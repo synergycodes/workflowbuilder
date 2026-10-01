@@ -83,7 +83,6 @@ type VariableTypeOption = {
   type: VariableType;
   baseType: VariableType;
   label: string;
-  isPrimitive: boolean;
 };
 
 export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = {
@@ -91,43 +90,36 @@ export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = 
     type: 'string',
     baseType: 'string',
     label: 'Text',
-    isPrimitive: true,
   },
   number: {
     type: 'number',
     baseType: 'number',
     label: 'Number',
-    isPrimitive: true,
   },
   boolean: {
     type: 'boolean',
     baseType: 'boolean',
     label: 'Boolean',
-    isPrimitive: true,
   },
   date: {
     type: 'date',
     baseType: 'date',
     label: 'Date',
-    isPrimitive: true,
   },
   datetime: {
     type: 'datetime',
     baseType: 'datetime',
     label: 'Datetime',
-    isPrimitive: true,
   },
   object: {
     type: 'object',
     baseType: 'object',
     label: 'Object',
-    isPrimitive: false,
   },
   array: {
     type: 'array',
     baseType: 'array',
     label: 'Array',
-    isPrimitive: false,
   },
 };
 

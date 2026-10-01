@@ -3,6 +3,8 @@ import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { getVariableTypeIfPrimitive } from '@workflow-builder/types/node-output-schema';
+
 import styles from './variable-form.module.css';
 
 import { ButtonSubmit } from '../../../../../../components/button-submit/button-submit';
@@ -13,7 +15,7 @@ import type { VariableDefinition } from '../../../../types';
 import { getDefinitionErrors } from '../../../../utils/form-validation/definitions';
 
 const optionsType: SelectItem[] = variableTypesOptions
-  .filter(({ isPrimitive }) => isPrimitive)
+  .filter(({ type }) => getVariableTypeIfPrimitive(type) !== undefined)
   .map(({ type, label }) => ({
     type: 'item',
     label,
