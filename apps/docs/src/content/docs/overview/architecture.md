@@ -19,7 +19,7 @@ All libraries are open-source with no additional license purchase required.
 
 ## Repository layout
 
-The project is a pnpm workspace. The editor itself lives in a single distributable package (`packages/sdk`, eventually published to npm as `@workflowbuilder/sdk`); everything in `apps/` is either a consumer of that package, an optional execution-side service, or developer tooling.
+The project is a pnpm workspace. The editor itself lives in a single distributable package (`packages/sdk`, published on npm as `@workflowbuilder/sdk`); everything in `apps/` is either a consumer of that package, an optional execution-side service, or developer tooling.
 
 ```
 packages/

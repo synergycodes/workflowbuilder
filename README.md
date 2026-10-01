@@ -26,13 +26,9 @@ Used in production by teams including [Vercom](https://www.workflowbuilder.io/ca
 
 </div>
 
-> 🎉 **Workflow Builder 2.0 is here.**
+> **Since 2.0, this repository is the home of Workflow Builder.** Previously we worked in a private monorepo and only partially mirrored changes here. Now every commit lands here directly.
 >
-> A best-in-class SDK for embedding workflow editors, now paired with a dedicated reference backend and a fully modular plugin surface. Building products on top of a workflow editor has never been easier.
->
-> Starting with 2.0, this repository is the home of Workflow Builder. Previously we worked in a private monorepo and only partially mirrored changes here. From now on, every commit lands here directly.
->
-> See the [CHANGELOG](./CHANGELOG.md) for everything that's changed since the last release.
+> See the [SDK changelog](./packages/sdk/CHANGELOG.md) for released changes and the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/) for moving from 2.x to 3.0.
 
 ## Get started
 

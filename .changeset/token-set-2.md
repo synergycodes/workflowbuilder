@@ -2,7 +2,7 @@
 '@workflowbuilder/sdk': major
 ---
 
-The design-token surface published as `--ax-*` custom properties is replaced by `--wb-ds-*` properties generated from the Design System 2.0 Figma variables. This is not a prefix swap: primitives are renamed and re-scaled, semantic colours are defined per theme, and the export adds canvas, shadow (effects) and component role sets that had no counterpart before. The 3.0 upgrade guide in the documentation carries the full old-to-new mapping.
+The design-token surface published as `--ax-*` custom properties is replaced by `--wb-ds-*` properties generated from the Design System 2.0 Figma variables, with renamed and re-scaled primitives, semantic colours per theme, and new canvas, shadow (effects) and component role sets. The 3.0 upgrade guide maps token families and lists primitive changes; most old tokens have no direct counterpart.
 
 Breaking changes:
 

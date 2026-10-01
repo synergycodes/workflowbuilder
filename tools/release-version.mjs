@@ -159,7 +159,7 @@ for (const r of released) {
     console.log(`      REPLAY_HISTORY_VERSION=${r.version} UPDATE_REPLAY_HISTORIES=1 pnpm --filter ${r.name} test`);
     console.log(`      pnpm --filter ${r.name} test`);
     console.log(
-      `    (${r.directory}/test/replay/README.md; at the first release the v0-*.json files go once the new set is green)`,
+      `    (${r.directory}/test/replay/README.md; delete v0-parked-decision.json in the release PR that first records <version>-parked-decision.json, once it replays)`,
     );
   }
   console.log(`  - Rewrite the new section in ${r.directory}/CHANGELOG.md into Keep a Changelog form`);

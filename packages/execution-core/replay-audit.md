@@ -6,7 +6,7 @@
 
 This document audits every code path reachable from `runGraph` in the sandbox, enumerates known sources of non-determinism, and records the verdict for each.
 
-**Out of scope (per WB-182):**
+**Out of scope:**
 
 - Activity executor code (`apps/execution-worker/src/activities/*`, `executors/*`). Activities run outside the sandbox; non-determinism there is fine.
 - Temporal versioning via `patched()` for algorithm changes mid-flight. That is a separate task.

@@ -21,7 +21,8 @@ prior history lives in the old package's
   IconSwitch, Checkbox, RadioButton, SegmentPicker, DatePicker, Accordion,
   Avatar, Snackbar, Status, Separator, plus the NodePanel / NodeIcon /
   NodeDescription / EdgeLabel diagram primitives.
-- **Theming** via `--ax-*` design tokens, isolated in cascade layers
+- **Theming** via `--wb-ds-*` design tokens and `--wb-public-*` component overrides,
+  isolated in cascade layers
   (`@layer ui.base, ui.component`) so app styles win without `!important` and
   components retheme cleanly.
 - **Multi-entry build** with per-component subpath exports
@@ -50,11 +51,11 @@ Floating UI stack is gone), so several public APIs changed:
   `(event: React.MouseEvent<HTMLButtonElement>, value: string)`.
 - **DatePicker**: rebuilt on `react-day-picker` + `date-fns`. The prop surface
   is curated (`value`, `defaultValue`, `type`, `valueFormat`, `placeholder`,
-  `error`, `size`, `disabled`, `minDate`, `maxDate`, `onChange`, `id`,
+  `error`, `state`, `inputSize`, `disabled`, `minDate`, `maxDate`, `onChange`, `id`,
   `className`, `aria-label`, `aria-labelledby`). `valueFormat` uses `date-fns`
   tokens; the legacy dayjs `DD/MM/YYYY` default is accepted and converted.
 - **Modal**: `className` and forwarded HTML attributes apply to the root element.
-- **shape** prop (Button / SegmentPicker): the type is `'default' | 'circle'`
-  (pass `'default'`, not `''`).
+- **shape** prop: `Button` takes `'default' | 'square' | 'round'`, `SegmentPicker`
+  takes `'default' | 'circle'` (pass `'default'`, not `''`).
 
 [1.0.0]: https://www.npmjs.com/package/@workflowbuilder/ui/v/1.0.0

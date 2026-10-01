@@ -92,7 +92,7 @@ description: Frequently asked questions about Workflow Builder for developers.
 ## Technical
 
 11. **How do I install Workflow Builder?**
-    Workflow Builder is not distributed as an npm package. You receive access to the source repository and clone it directly. See the [Quick Start](/get-started/quick-start/standalone-app/) guide.
+    The SDK is available on npm as `@workflowbuilder/sdk`; the reference apps and backend run from the repository. See the [Quick Start](/get-started/quick-start/standalone-app/) guide.
 
 12. **What technologies and libraries are used?**
     Workflow Builder is built on a modern, modular tech stack:

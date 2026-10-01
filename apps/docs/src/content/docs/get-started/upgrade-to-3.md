@@ -54,7 +54,7 @@ The renames:
 | `--wb-scroll-<name>`      | `--wb-public-scroll-<name>`                   |
 | every other `--wb-<name>` | `--wb-sdk-<name>`, now private                |
 
-Renaming the prefix is not enough on its own. The button, input, text area and select
+Renaming the prefix is not enough on its own. The button, input and text area
 families also rename variants and size suffixes, and some properties are gone. Check each
 overridden name against the component sections below.
 
@@ -255,6 +255,18 @@ shares a treatment with the pointer-down state.
 `SegmentPicker` keeps its API but adopts the new slots, so an icon passed as
 `SegmentPicker.Item` children must move to an explicit icon slot. `Menu.TriggerButton` is new: an icon-only trigger that shows the pressed state while its `Menu` is open.
 
+### Custom node templates
+
+`WorkflowNodeTemplateProps` gains `disabled?: boolean`. Forward `disabled` to
+`NodePanel.Root`, `NodeIcon` and `NodeDescription` so palette entries look disabled when
+they cannot be added; the palette wrapper no longer fades them. See
+[Add a custom node](/guides/add-a-custom-node/#7-optional-custom-node-template).
+
+### Properties panel
+
+`onDeleteClick` is now optional. A decorator on the `'PropertiesBar'` slot that calls it
+must use `onDeleteClick?.()`; omitting it hides the Delete button.
+
 ### Typography classes
 
 | 2.3.0                              | 3.0                                                                                                           |
@@ -303,14 +315,17 @@ runtime.
   old values.
 - **Self-connecting edges loop 48px above the node's top edge**, for any node height, where
   2.3.0 drew them a flat 100px above the source port. `SelfConnectingEdge` no longer takes
-  `nodeHeight`; it reads the node position from the React Flow store, and `useSelfLoopApexY`
-  is exported for custom edges that draw their own loop.
+  `nodeHeight`; `SELF_CONNECTING_EDGE_LABEL_OFFSET` is now `48`, measured from the node's
+  top edge. The component reads the node position from the React Flow store, and
+  `useSelfLoopApexY` is exported for custom edges that draw their own loop.
 - **Canvas nodes use the design geometry.** The node shell is 241px wide and no longer
   scales with the root font size. Node titles, subtitles and row labels truncate to one line
   and expose the full text through the browser's native tooltip.
 - **Menus mark the current choice.** A menu with a selection renders its entries as a radio
   group (`menuitemradio` with `aria-checked`), and a selected entry uses a tinted background
   instead of a solid accent fill.
+- **SDK snackbars of the same variant can show together.** Two different SDK snackbars
+  now appear together instead of the second being dropped.
 - **The single top-level cascade layer.** The SDK stylesheet declares
   `@layer ui.base, ui.component;` and moved the XYFlow stylesheet and its own resets into
   `ui.base`. If you targeted the removed `reset` or `ext-lib` layer names, plain unlayered

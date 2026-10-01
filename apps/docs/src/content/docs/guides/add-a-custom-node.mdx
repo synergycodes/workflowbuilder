@@ -224,21 +224,13 @@ import { Handle, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
 export const MyNodeTemplate = memo(
-  ({
-    id,
-    icon,
-    label,
-    description,
-    selected = false,
-    disabled = false,
-    showHandles = true,
-  }: WorkflowNodeTemplateProps) => {
+  ({ icon, label, description, selected = false, disabled = false, showHandles = true }: WorkflowNodeTemplateProps) => {
     const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
 
-    const handleTargetTopId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'top' });
-    const handleTargetLeftId = getHandleId({ nodeId: id, handleType: 'target', innerId: 'left' });
-    const handleSourceBottomId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'bottom' });
-    const handleSourceRightId = getHandleId({ nodeId: id, handleType: 'source', innerId: 'right' });
+    const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
+    const handleTargetLeftId = getHandleId({ handleType: 'target', innerId: 'left' });
+    const handleSourceBottomId = getHandleId({ handleType: 'source', innerId: 'bottom' });
+    const handleSourceRightId = getHandleId({ handleType: 'source', innerId: 'right' });
 
     return (
       <NodePanel.Root selected={selected} disabled={disabled}>
