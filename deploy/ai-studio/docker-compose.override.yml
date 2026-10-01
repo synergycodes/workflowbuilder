@@ -33,6 +33,11 @@ services:
       POSTGRES_USER: temporal
       POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
       POSTGRES_SEEDS: temporal-db
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1.5G
     restart: unless-stopped
 
   # Inspects this bundled cluster only. An external cluster comes with its own UI.
