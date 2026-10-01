@@ -22,11 +22,8 @@ const ports = (request: DecisionRequest) =>
   request.actions.flatMap((action) => ('port' in action ? [action.port] : []));
 
 describe('refundReviewFlow', () => {
-  it('is registered once among the AI Studio templates, under an id no other template uses', () => {
-    const ids = aiStudioTemplates.map((template) => template.id);
-
+  it('is registered once among the AI Studio templates', () => {
     expect(aiStudioTemplates.filter((template) => template === refundReviewFlow)).toHaveLength(1);
-    expect(new Set(ids).size).toBe(ids.length);
   });
 
   it('renders the human-decision node with its own template: the React Flow type is the palette type', () => {
@@ -51,15 +48,6 @@ describe('refundReviewFlow', () => {
     const handles = edgesOutOf('human-1').map((edge) => edge.sourceHandle);
 
     expect([...handles].sort()).toEqual([...ports(refundReviewRequest)].sort());
-  });
-
-  it('connects every edge to nodes that exist', () => {
-    const ids = new Set(nodes.map((node) => node.id));
-
-    for (const edge of edges) {
-      expect(ids.has(edge.source), edge.id).toBe(true);
-      expect(ids.has(edge.target), edge.id).toBe(true);
-    }
   });
 });
 

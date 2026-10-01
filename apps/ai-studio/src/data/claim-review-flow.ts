@@ -53,7 +53,7 @@ export const claimAssessmentSchema = {
     proposedPayout: {
       type: 'number',
       title: 'Proposed payout',
-      description: 'In USD: the amount claimed minus the deductible, within the coverage limit; 0 when not covered.',
+      description: 'In USD, under the payout rules; 0 when not covered.',
     },
     coverageVerdict: {
       type: 'string',
@@ -83,7 +83,6 @@ const letterSchema = {
   additionalProperties: false,
 };
 
-// The reviewer may correct the payout; the verdict and rationale are shown for context only.
 export const claimReviewRequest = {
   ...defaultDecisionRequest,
   schema: {
@@ -162,7 +161,7 @@ const diagram: DiagramModel = {
 
 The context holds the claim (trigger-1), the policy (policy-1) and the claim history (history-1).
 Decide whether the policy covers the loss and propose the payout under the rules. Explain it for the
-reviewer, mentioning earlier claims of the same kind.`,
+reviewer.`,
             webSearch: false,
             outputSchema: claimAssessmentSchema,
           },
