@@ -13,7 +13,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const isReadOnly = () => useStore.getState().isReadOnlyMode;
+const isReadOnly = () => useStore.getState().isReadOnly;
 
 function Probe() {
   useRunLocksCanvas();
@@ -25,7 +25,7 @@ describe('useRunLocksCanvas', () => {
 
   beforeEach(() => {
     resetExecution();
-    useStore.getState().setToggleReadOnlyMode(false);
+    useStore.getState().setReadOnly(false);
     root = createRoot(document.createElement('div'));
     act(() => root.render(<Probe />));
   });
@@ -49,7 +49,7 @@ describe('useRunLocksCanvas', () => {
 
   it('locks each new run, even after the read-only switch lifted the lock during the one before', () => {
     act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     expect(isReadOnly()).toBe(false);
 
     act(() => setExecutionStarted('exec-2', '/api/executions/exec-2/stream'));

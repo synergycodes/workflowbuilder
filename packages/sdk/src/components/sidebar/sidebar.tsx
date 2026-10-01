@@ -21,10 +21,10 @@ export function Sidebar({ isExpanded, children, className, header, footer, conte
           <Separator />
           <div className={clsx(styles.content, contentClassName)}>{children}</div>
           {footer && (
-            <>
+            <div className={styles['footer-area']}>
               <Separator />
               <div className={styles.footer}>{footer}</div>
-            </>
+            </div>
           )}
         </>
       )}

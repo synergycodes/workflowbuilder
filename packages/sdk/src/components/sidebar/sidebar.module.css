@@ -46,6 +46,18 @@
 
     .footer {
       margin-top: var(--wb-sdk-sidebar-content-gap);
+      gap: var(--wb-ds-space-100);
+    }
+
+    .footer-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hides the footer area, separator included, while every direct child of `.footer` is empty. */
+    .footer-area:not(:has(> .footer > :not(:empty))) {
+      display: none;
     }
 
     &.expanded {

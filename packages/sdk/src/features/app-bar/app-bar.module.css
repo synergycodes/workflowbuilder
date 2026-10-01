@@ -69,6 +69,12 @@
   composes: wb-text-body-m from global;
   min-height: 1em;
   min-width: 1em;
+}
+
+/* Only applied while `documentRename` is visible and the editor isn't read-only: a plain
+   title (the `documentRename: false` case) carries neither the pointer cursor nor the
+   empty-name placeholder underline, since neither affordance applies. */
+.title-editable {
   cursor: pointer;
 
   &:empty {

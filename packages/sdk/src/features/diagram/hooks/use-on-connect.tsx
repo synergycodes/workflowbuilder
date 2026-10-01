@@ -7,13 +7,13 @@ import { useStore } from '../../../store/store';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 
 export function useConnect() {
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
   const onConnectAction = useStore((store) => store.onConnect);
   const setConnectionBeingDragged = useStore((store) => store.setConnectionBeingDragged);
 
   const onConnect: OnConnect = useCallback(
     (connection) => {
-      if (isReadOnlyMode) {
+      if (isReadOnly) {
         showTranslatedSnackbar({
           title: 'cantEditReadOnlyMode',
           variant: SnackbarType.WARNING,
@@ -25,7 +25,7 @@ export function useConnect() {
       trackFutureChange('addEdge');
       onConnectAction(connection);
     },
-    [isReadOnlyMode, onConnectAction],
+    [isReadOnly, onConnectAction],
   );
 
   const onConnectStart: OnConnectStart = useCallback(
@@ -34,22 +34,22 @@ export function useConnect() {
       _: any,
       { nodeId, handleId }: { nodeId: string | null; handleId: string | null },
     ) => {
-      if (isReadOnlyMode) {
+      if (isReadOnly) {
         return;
       }
 
       setConnectionBeingDragged(nodeId, handleId);
     },
-    [isReadOnlyMode, setConnectionBeingDragged],
+    [isReadOnly, setConnectionBeingDragged],
   );
 
   const onConnectEnd: OnConnectEnd = useCallback(() => {
-    if (isReadOnlyMode) {
+    if (isReadOnly) {
       return;
     }
 
     setConnectionBeingDragged(null, null);
-  }, [isReadOnlyMode, setConnectionBeingDragged]);
+  }, [isReadOnly, setConnectionBeingDragged]);
 
   return {
     onConnect,

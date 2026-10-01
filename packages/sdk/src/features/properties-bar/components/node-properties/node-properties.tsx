@@ -65,7 +65,7 @@ export const NodeProperties = memo(({ node }: Props) => {
   const fetchStatus = useStore((state) => state.fetchDataStatus);
   const getNodeDefinition = useStore((state) => state.getNodeDefinition);
   const setNodeProperties = useStore((state) => state.setNodeProperties);
-  const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
+  const isReadOnly = useStore((state) => state.isReadOnly);
 
   const { data, id } = node;
   const { properties, type } = data;
@@ -99,7 +99,7 @@ export const NodeProperties = memo(({ node }: Props) => {
       schema={schema}
       uischema={uischema as JsonFormsProps['uischema']}
       onChange={onChange}
-      readonly={isReadOnlyMode}
+      readonly={isReadOnly}
       additionalErrors={properties.customErrors}
     />
   );

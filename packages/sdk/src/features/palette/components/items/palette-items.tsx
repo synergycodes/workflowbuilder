@@ -12,9 +12,17 @@ type PaletteItemsProps = {
   onMouseDown: (type: string) => void;
   items: (PaletteItemType | PaletteGroup)[];
   isDisabled?: boolean;
+  /** While `true`, every group renders open regardless of its own `isOpen`. */
+  isFiltering?: boolean;
 };
 
-export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = false }: PaletteItemsProps) {
+export function PaletteItems({
+  items,
+  onDragStart,
+  onMouseDown,
+  isDisabled = false,
+  isFiltering = false,
+}: PaletteItemsProps) {
   const translateIfPossible = useTranslateIfPossible();
 
   return (
@@ -30,6 +38,7 @@ export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = fal
               key={group.label}
               className={styles['accordion']}
               label={translateIfPossible(group.label) || group.label}
+              isOpen={isFiltering ? true : undefined}
               defaultOpen={group.isOpen}
             >
               <div className={styles['accordion-content']}>

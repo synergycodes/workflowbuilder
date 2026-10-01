@@ -18,7 +18,13 @@ vi.mock('@workflowbuilder/ui', () => ({
     ),
     { TriggerButton: () => null },
   ),
-  Input: () => null,
+  Input: ({ value, onChange }: { value: string; onChange: (event: { target: { value: string } }) => void }) => (
+    <input
+      aria-label="document name"
+      value={value}
+      onChange={(event) => onChange({ target: { value: event.target.value } })}
+    />
+  ),
 }));
 
 vi.mock('@workflow-builder/icons', () => ({
@@ -34,9 +40,13 @@ vi.mock('../../../../features/variables/modals/modal-settings', () => ({
 }));
 
 vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(
-    selector: (state: { documentName: string; isReadOnlyMode: boolean; setDocumentName: () => void }) => T,
-  ) => selector({ documentName: 'Doc', isReadOnlyMode: false, setDocumentName: () => {} }),
+  useStore: <T,>(selector: (state: { documentName: string; isReadOnly: boolean }) => T) =>
+    selector({ documentName: 'Doc', isReadOnly: false }),
+}));
+
+const renameDocument = vi.fn();
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => ({ renameDocument }),
 }));
 
 const { ProjectSelection } = await import('./project-selection');
@@ -44,7 +54,7 @@ const { ProjectSelection } = await import('./project-selection');
 const DUPLICATE_LABEL = 'header.projectSelection.duplicateToDrafts';
 const SETTINGS_LABEL = 'common.settings';
 
-describe('ProjectSelection — "Duplicate to Drafts" visibility', () => {
+describe('ProjectSelection: "Duplicate to Drafts" visibility', () => {
   it('omits the item when no onDuplicateClick is provided (default editor)', () => {
     render(<ProjectSelection />);
 
@@ -61,5 +71,16 @@ describe('ProjectSelection — "Duplicate to Drafts" visibility', () => {
 
     fireEvent.click(item);
     expect(onDuplicateClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('ProjectSelection: inline rename', () => {
+  it('typing a new name calls the renameDocument action, not setDocumentName directly', () => {
+    render(<ProjectSelection />);
+
+    fireEvent.click(screen.getByText('Doc'));
+    fireEvent.change(screen.getByLabelText('document name'), { target: { value: 'New Name' } });
+
+    expect(renameDocument).toHaveBeenCalledWith('New Name');
   });
 });

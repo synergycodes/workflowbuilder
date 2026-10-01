@@ -17,24 +17,26 @@ import { WorkflowBuilder } from '@workflowbuilder/sdk';
 
 Every prop is optional. The **Type** column links to the auto-generated [SDK API Reference](/api/core/workflowbuilderrootprops/) for the exact shape. The **Description** points to the section or guide that shows how to use each prop, and notes the default where there is one.
 
-| Prop                | Type                                                                              | Description                                                                                                                                                         |
-| ------------------- | --------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `integration`       | [`WorkflowBuilderIntegration`](/api/integration/workflowbuilderintegration/)      | How the builder loads and persists diagram data. Defaults to `{ strategy: 'localStorage' }`. See [Integration strategies](#integration-strategies).                 |
-| `nodeTypes`         | [`PaletteItemOrGroup[]`](/api/types/paletteitemorgroup/)                          | Node type definitions rendered in the palette and used for validation. Defaults to `[]` (empty palette). See [Node types](#node-types).                             |
-| `nodeTemplates`     | [`WorkflowBuilderNodeTemplates`](/api/components/workflowbuildernodetemplates/)   | Per-node-type custom renderers, keyed by `data.type`. See [Custom node and edge renderers](#custom-node-and-edge-renderers).                                        |
-| `edgeTemplates`     | [`WorkflowBuilderEdgeTemplates`](/api/components/workflowbuilderedgetemplates/)   | Per-edge-type custom renderers, keyed by `edge.type`, overriding the built-in `'labelEdge'`. See [Custom node and edge renderers](#custom-node-and-edge-renderers). |
-| `diagramTemplates`  | [`TemplateModel[]`](/api/types/templatemodel/)                                    | Starter diagrams offered in the template selector. Defaults to `[]`.                                                                                                |
-| `jsonForm`          | [`WorkflowBuilderJsonFormConfig`](/api/plugins/workflowbuilderjsonformconfig/)    | Custom JSONForms renderers, cells, and translations for the properties panel. See [Custom JsonForms control](/guides/custom-jsonforms-control/).                    |
-| `plugins`           | [`WorkflowBuilderPlugin[]`](/api/plugins/workflowbuilderplugin/)                  | Plugin initializer functions, each called once on first mount. See [Build a plugin](/guides/build-a-plugin/).                                                       |
-| `name`              | `string`                                                                          | Workflow name shown in the header and included in saved data.                                                                                                       |
-| `logo`              | `WorkflowBuilderLogo`                                                             | Replaces the built-in app-bar logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                            |
-| `logoHref`          | `string`                                                                          | Wraps the app-bar logo (built-in or custom) in a link opened in a new tab.                                                                                          |
-| `layoutDirection`   | [`LayoutDirection`](/api/types/layoutdirection/)                                  | Initial flow direction, `'DOWN'` or `'RIGHT'`. Defaults to `'DOWN'`.                                                                                                |
-| `initialNodes`      | [`WorkflowBuilderNode[]`](/api/types/workflowbuildernode/)                        | Initial nodes for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                        |
-| `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                        | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                        |
-| `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/) | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                   |
-| `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)       | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                 |
-| `children`          | `ReactNode`                                                                       | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                 |
+| Prop                | Type                                                                                       | Description                                                                                                                                                                                                                                                                                                     |
+| ------------------- | ------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `integration`       | [`WorkflowBuilderIntegration`](/api/integration/workflowbuilderintegration/)               | How the builder loads and persists diagram data. Defaults to `{ strategy: 'localStorage' }`. See [Integration strategies](#integration-strategies).                                                                                                                                                             |
+| `onStart`           | [`(context: WorkflowBuilderStartContext) => void`](/api/core/workflowbuilderstartcontext/) | Runs once after the initial diagram load. Defaults to opening the template selector for an empty diagram; a custom handler replaces the default. See [Start behavior](#start-behavior).                                                                                                                         |
+| `nodeTypes`         | [`PaletteItemOrGroup[]`](/api/types/paletteitemorgroup/)                                   | Node type definitions rendered in the palette and used for validation. Defaults to `[]` (empty palette). See [Node types](#node-types).                                                                                                                                                                         |
+| `nodeTemplates`     | [`WorkflowBuilderNodeTemplates`](/api/components/workflowbuildernodetemplates/)            | Per-node-type custom renderers, keyed by `data.type`. See [Custom node and edge renderers](#custom-node-and-edge-renderers).                                                                                                                                                                                    |
+| `edgeTemplates`     | [`WorkflowBuilderEdgeTemplates`](/api/components/workflowbuilderedgetemplates/)            | Per-edge-type custom renderers, keyed by `edge.type`, overriding the built-in `'labelEdge'`. See [Custom node and edge renderers](#custom-node-and-edge-renderers).                                                                                                                                             |
+| `diagramTemplates`  | [`TemplateModel[]`](/api/types/templatemodel/)                                             | Starter diagrams offered in the template selector. Defaults to `[]`.                                                                                                                                                                                                                                            |
+| `jsonForm`          | [`WorkflowBuilderJsonFormConfig`](/api/plugins/workflowbuilderjsonformconfig/)             | Custom JSONForms renderers, cells, and translations for the properties panel. See [Custom JsonForms control](/guides/custom-jsonforms-control/).                                                                                                                                                                |
+| `plugins`           | [`WorkflowBuilderPlugin[]`](/api/plugins/workflowbuilderplugin/)                           | Plugin initializer functions, each called once on first mount. See [Build a plugin](/guides/build-a-plugin/).                                                                                                                                                                                                   |
+| `name`              | `string`                                                                                   | Workflow name shown in the header and included in saved data.                                                                                                                                                                                                                                                   |
+| `logo`              | `WorkflowBuilderLogo`                                                                      | Replaces the built-in app-bar logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                        |
+| `logoHref`          | `string`                                                                                   | Wraps the app-bar logo (built-in or custom) in a link opened in a new tab.                                                                                                                                                                                                                                      |
+| `layoutDirection`   | [`LayoutDirection`](/api/types/layoutdirection/)                                           | Initial flow direction, `'DOWN'` or `'RIGHT'`. Defaults to `'DOWN'`.                                                                                                                                                                                                                                            |
+| `initialNodes`      | [`WorkflowBuilderNode[]`](/api/types/workflowbuildernode/)                                 | Initial nodes for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                    |
+| `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                                 | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                    |
+| `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/)          | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                                                                                                                                                               |
+| `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)                | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                                                                                                                                                             |
+| `builtInControls`   | [`BuiltInControls`](/api/core/builtincontrols/)                                            | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `documentRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
+| `children`          | `ReactNode`                                                                                | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                                                                                                                                                             |
 
 ## Compound subcomponents
 
@@ -78,33 +80,41 @@ To extend the default layout instead of replacing it (e.g. add a banner alongsid
 
 ## Custom toolbar without the app bar
 
-`<WorkflowBuilder.TopBar />` ships the save, import / export, settings, read-only, and theme controls. When you omit it from a custom layout, reach the same commands through the `useWorkflowBuilderActions()` hook. Call it from any descendant of `<WorkflowBuilder.Root>` and wire the returned callbacks to your own buttons:
+`<WorkflowBuilder.TopBar />` ships the save, import / export, settings, read-only, theme, and language controls, plus the document name and its rename control. When you omit it from a custom layout, read the same state with `useWorkflowBuilderState()` and reach the same commands through `useWorkflowBuilderActions()`. Call both from any descendant of `<WorkflowBuilder.Root>` and wire them to your own buttons:
 
 ```tsx
-import { useWorkflowBuilderActions } from '@workflowbuilder/sdk';
+import { useWorkflowBuilderActions, useWorkflowBuilderState } from '@workflowbuilder/sdk';
 
 function MyToolbar() {
+  const { isReadOnly, documentName } = useWorkflowBuilderState();
   const actions = useWorkflowBuilderActions();
 
   return (
     <header>
+      <input value={documentName} onChange={(event) => actions.renameDocument(event.target.value)} />
       <button onClick={actions.save}>Save</button>
       <button onClick={actions.openImport}>Import</button>
       <button onClick={actions.openExport}>Export</button>
+      <button disabled={isReadOnly} onClick={actions.openTemplates}>
+        Templates
+      </button>
+      <button onClick={actions.deleteSelection}>Delete</button>
       <button onClick={actions.openSettings}>Settings</button>
       <button onClick={actions.toggleReadOnly}>Read-only</button>
       <button onClick={actions.toggleDarkMode}>Theme</button>
+      <button onClick={actions.togglePropertiesPanel}>Properties</button>
     </header>
   );
 }
 ```
 
-The hook returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
+`useWorkflowBuilderState()` returns `isReadOnly`, `theme`, `language`, `isPaletteOpen`, `isPropertiesPanelOpen`, `paletteFilter`, `layoutDirection` and `documentName`; see [`WorkflowBuilderState`](/api/hooks/workflowbuilderstate/) for the full shape. `useWorkflowBuilderActions()` returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
 
-- It must be called from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) via context, so calling the hook outside Root resolves `save()` to `'error'` and logs a warning.
-- The hook also exposes layout-direction control the bar does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
+- Call both from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) through context, so outside Root `save()` logs an error and resolves to `'error'`. `deleteSelection` does nothing until `<WorkflowBuilder.Canvas />` has mounted.
+- Besides the app bar's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control the bar does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
+- `openTemplates`, `renameDocument`, `deleteSelection`, `setLayoutDirection` and `toggleLayoutDirection` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openImport` and `openSettings`, which do change the persisted diagram (a full replace, and the global variables respectively) but are not read-only-guarded today. Hide them explicitly where that matters, e.g. `builtInControls={{ import: canEdit, settings: canEdit }}`.
 - To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
-- The top bar also shows and edits the document name. Render your own with `useStore`: read `s.documentName` and write through `s.setDocumentName`.
+- The top bar also shows and edits the document name. Read it with `useWorkflowBuilderState()`'s `documentName` and change it with `useWorkflowBuilderActions()`'s `renameDocument(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
 
 ## Node types
 
@@ -238,6 +248,20 @@ type DidSaveStatus = 'success' | 'error' | 'alreadyStarted';
 ```
 
 Today the runtime treats every non-empty resolution of `onDataSave` as "the save finished", surfacing the success-style snackbar — `'success'`, `'error'`, and `'alreadyStarted'` all behave the same way at the UI level. Throw from `onDataSave` instead of resolving to `'error'` if you need an error snackbar.
+
+## Start behavior
+
+`onStart` runs once per Root mount, after the active integration finished its initial load: right after mount for `localStorage` and `props`, and once the load request settled for `api` (also when it failed). It receives a [`WorkflowBuilderStartContext`](/api/core/workflowbuilderstartcontext/) with `isEmpty` and `openTemplates`. `isEmpty` is `true` when the load produced no nodes; a `name` alone does not count as diagram data. `openTemplates` is the same action as `useWorkflowBuilderActions().openTemplates`, so it does nothing in read-only mode.
+
+Without `onStart`, the builder opens the template selector for an empty diagram. A custom handler replaces that default entirely, so the template selector opens only when the handler calls `openTemplates`. For example, to show your own welcome screen that offers the templates:
+
+```tsx
+<WorkflowBuilder.Root
+  onStart={({ isEmpty, openTemplates }) => {
+    if (isEmpty) showWelcome({ onPickTemplate: openTemplates });
+  }}
+/>
+```
 
 ## Connection validation
 

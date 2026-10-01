@@ -60,7 +60,29 @@ export type {
   WorkflowBuilderIsValidConnection,
   WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderReactFlowProps,
+  WorkflowBuilderStartContext,
 } from './workflow-builder-root';
+export type { BuiltInControl, BuiltInControls } from './features/ui-extensions/built-in-controls';
+
+// =============================================================================
+// Built-in interface areas: own content next to the built-in controls
+// =============================================================================
+
+export { AppBarToolsContent } from './features/ui-extensions/components/app-bar-tools-content';
+export { AppBarControlsContent } from './features/ui-extensions/components/app-bar-controls-content';
+export { PaletteHeaderContent } from './features/ui-extensions/components/palette-header-content';
+export { PaletteFooterContent } from './features/ui-extensions/components/palette-footer-content';
+export { PropertiesPanelHeaderContent } from './features/ui-extensions/components/properties-panel-header-content';
+export { PropertiesPanelFooterContent } from './features/ui-extensions/components/properties-panel-footer-content';
+
+// =============================================================================
+// Built-in menus: own items next to the project, app bar and properties panel menus
+// =============================================================================
+
+export { ProjectMenuItem } from './features/ui-extensions/components/project-menu-item';
+export { AppBarMenuItem } from './features/ui-extensions/components/app-bar-menu-item';
+export { PropertiesPanelMenuItem } from './features/ui-extensions/components/properties-panel-menu-item';
+export type { UiMenuItemProps } from './features/ui-extensions/ui-extension-registry';
 
 // =============================================================================
 // Plugin API — decorators, function hooks, translations
@@ -145,7 +167,6 @@ export { ProjectSelection } from './features/app-bar/components/project-selectio
 export type { ProjectSelectionProps } from './features/app-bar/components/project-selection/project-selection';
 export { PropertiesBar } from './features/properties-bar/components/properties-bar/properties-bar';
 export type { PropertiesBarProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
-export { PropertiesPanelFooter } from './features/properties-bar/components/properties-panel-footer/properties-panel-footer';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
 export type { WorkflowNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
 export { defineNodeTemplate } from './utils/define-node-template';
@@ -161,6 +182,8 @@ export type { SelectionIds } from './hooks/use-set-selection';
 export { useKeyPress } from './hooks/use-key-press';
 export { useWorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
 export type { LayoutChangeOptions, WorkflowBuilderActions } from './hooks/use-workflow-builder-actions';
+export { useWorkflowBuilderState } from './hooks/use-workflow-builder-state';
+export type { WorkflowBuilderLanguage, WorkflowBuilderState } from './hooks/use-workflow-builder-state';
 export type { Theme } from './hooks/theme';
 export { useLabelEdgeHover } from './features/diagram/edges/label-edge/use-label-edge-hover';
 export { useSingleSelectedElement } from './features/properties-bar/use-single-selected-element';

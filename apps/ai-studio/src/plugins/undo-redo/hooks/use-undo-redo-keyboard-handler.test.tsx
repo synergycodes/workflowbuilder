@@ -26,14 +26,14 @@ describe('useUndoRedoKeyboardHandler', () => {
 
   beforeEach(() => {
     vi.mocked(undo).mockReset();
-    useStore.getState().setToggleReadOnlyMode(false);
+    useStore.getState().setReadOnly(false);
     root = createRoot(document.createElement('div'));
     act(() => root.render(<Probe />));
   });
 
   afterEach(() => {
     act(() => root.unmount());
-    useStore.getState().setToggleReadOnlyMode(false);
+    useStore.getState().setReadOnly(false);
   });
 
   it('undoes on Ctrl+Z', () => {
@@ -43,7 +43,7 @@ describe('useUndoRedoKeyboardHandler', () => {
   });
 
   it('leaves the diagram alone while it is read-only', () => {
-    useStore.getState().setToggleReadOnlyMode(true);
+    useStore.getState().setReadOnly(true);
 
     pressUndo();
 

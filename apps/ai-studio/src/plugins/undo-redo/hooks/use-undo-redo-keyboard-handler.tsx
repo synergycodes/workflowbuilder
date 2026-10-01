@@ -19,7 +19,7 @@ export const useUndoRedoKeyboardHandler = () => {
         !(event.ctrlKey || event.metaKey) ||
         event.repeat ||
         isTextTarget(event.target) ||
-        useStore.getState().isReadOnlyMode
+        useStore.getState().isReadOnly
       ) {
         return;
       }
