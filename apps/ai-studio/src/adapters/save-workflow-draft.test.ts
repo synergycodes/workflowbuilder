@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { BACKEND_URL } from '../config';
 import { useNoticesStore } from '../stores/use-notices-store';
 import { jsonResponse } from '../test/json-response';
-import { saveDraftOf } from './save-workflow-draft';
+import { patchDraft, saveDraftOf } from './save-workflow-draft';
 
 const WORKFLOW = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
 const node = { id: 'n-1', type: 'node', position: { x: 0, y: 0 }, data: { type: 'x', properties: {} } };
@@ -97,6 +97,38 @@ describe('saveDraftOf: an autosave with nothing new', () => {
     expect(await saveDraftOf(WORKFLOW)(data, autosave)).toBe('success');
 
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  // React Flow's measuring after mount and a selecting click both reach the SDK's tracker under this name.
+  it("sends nothing after only the SDK's node changes, so a tab only looked at writes nothing on close", async () => {
+    const save = saveDraftOf(WORKFLOW);
+    useChangesTrackerStore.setState({ lastChangeName: 'nodeDragChange', lastChangeTimestamp: Date.now() + 1 });
+
+    expect(await save(data, autosave)).toBe('success');
+
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('still sends an edit that a node change followed', async () => {
+    const save = saveDraftOf(WORKFLOW);
+    edited();
+    useChangesTrackerStore.setState({ lastChangeName: 'nodeDragChange', lastChangeTimestamp: Date.now() + 2 });
+
+    await save(data, autosave);
+
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("compares with Run's write too, so going back to an earlier save is sent", async () => {
+    const save = saveDraftOf(WORKFLOW);
+    await save(data, { isAutoSave: false });
+    await patchDraft(WORKFLOW, moved.nodes, moved.edges);
+
+    await save(moved, autosave);
+    expect(fetchMock).toHaveBeenCalledTimes(2);
+
+    await save(data, autosave);
+    expect(fetchMock).toHaveBeenCalledTimes(3);
   });
 
   it('sends nothing when the draft is what it last saved', async () => {

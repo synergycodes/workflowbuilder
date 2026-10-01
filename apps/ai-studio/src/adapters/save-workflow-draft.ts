@@ -7,30 +7,50 @@ import { addNotice } from '../stores/use-notices-store';
 // saves while the page is up, and on close the last autosave stands.
 const KEEPALIVE_BODY_LIMIT = 64 * 1024;
 
+// The SDK ticks this for every React Flow node change, the measuring after mount and a selecting click included.
+const NOT_AN_EDIT = 'nodeDragChange';
+
+const writtenDrafts = new Map<string, string>();
+
+/** Writes a workflow's draft. The editor's saves and Run both come here, so an autosave knows what the draft holds. */
+export async function patchDraft(workflowId: string, nodes: unknown[], edges: unknown[]): Promise<Response> {
+  const body = JSON.stringify({ draftJson: { nodes, edges } });
+  const response = await fetch(`${BACKEND_URL}/api/workflows/${workflowId}/draft`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body,
+    keepalive: new TextEncoder().encode(body).byteLength < KEEPALIVE_BODY_LIMIT,
+  });
+  if (response.ok) {
+    writtenDrafts.set(workflowId, body);
+  }
+  return response;
+}
+
 /** The editor's save callback for the link's workflow: Save, autosave and the save on close all land here. */
 export function saveDraftOf(workflowId: string): OnSaveExternal {
   const openedAt = Date.now();
-  let savedBody: string | undefined;
+  // Only this editor's writes count: the draft may have changed elsewhere since.
+  writtenDrafts.delete(workflowId);
+  let isEdited = false;
+  useChangesTrackerStore.subscribe(({ lastChangeName, lastChangeTimestamp }) => {
+    if (lastChangeTimestamp > openedAt && lastChangeName !== NOT_AN_EDIT) isEdited = true;
+  });
 
   // The SDK also autosaves on close with nothing edited, which would overwrite newer edits made elsewhere.
-  // Until the first save, only a change the SDK tracks counts as an edit.
-  const isUnchanged = (body: string) =>
-    savedBody === undefined ? useChangesTrackerStore.getState().lastChangeTimestamp <= openedAt : body === savedBody;
+  const isUnchanged = (body: string) => {
+    const written = writtenDrafts.get(workflowId);
+    return written === undefined ? !isEdited : body === written;
+  };
 
   return async ({ nodes, edges }, params) => {
-    const body = JSON.stringify({ draftJson: { nodes, edges } });
-    if (params?.isAutoSave && isUnchanged(body)) {
+    if (params?.isAutoSave && isUnchanged(JSON.stringify({ draftJson: { nodes, edges } }))) {
       return 'success';
     }
 
     let response: Response;
     try {
-      response = await fetch(`${BACKEND_URL}/api/workflows/${workflowId}/draft`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body,
-        keepalive: new TextEncoder().encode(body).byteLength < KEEPALIVE_BODY_LIMIT,
-      });
+      response = await patchDraft(workflowId, nodes, edges);
     } catch {
       return failed(params, 'the server did not answer');
     }
@@ -38,7 +58,6 @@ export function saveDraftOf(workflowId: string): OnSaveExternal {
       return failed(params, `the server answered ${response.status}`);
     }
 
-    savedBody = body;
     return 'success';
   };
 }

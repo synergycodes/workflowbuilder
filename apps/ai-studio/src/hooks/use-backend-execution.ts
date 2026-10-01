@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { connectExecutionStream } from '../adapters/execution-stream-adapter';
+import { patchDraft } from '../adapters/save-workflow-draft';
 import { BACKEND_URL } from '../config';
 import { getTurnstileToken } from '../security/turnstile';
 import {
@@ -25,11 +26,7 @@ async function workflowToRun(nodes: unknown[], edges: unknown[], targetWorkflowI
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: 'AI Studio Draft', draftJson: { nodes, edges } }),
       })
-    : fetch(`${BACKEND_URL}/api/workflows/${targetWorkflowId}/draft`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ draftJson: { nodes, edges } }),
-      }));
+    : patchDraft(targetWorkflowId, nodes, edges));
 
   if (!response.ok) {
     const error = (await response.json()) as { message?: string };
