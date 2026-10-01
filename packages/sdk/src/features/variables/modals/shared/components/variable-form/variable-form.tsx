@@ -12,11 +12,13 @@ import { variableTypesOptions } from '../../../../constants';
 import type { VariableDefinition } from '../../../../types';
 import { getDefinitionErrors } from '../../../../utils/form-validation/definitions';
 
-const optionsType: SelectItem[] = variableTypesOptions.map(({ type, label }) => ({
-  type: 'item',
-  label,
-  value: type,
-}));
+const optionsType: SelectItem[] = variableTypesOptions
+  .filter(({ isPrimitive }) => isPrimitive)
+  .map(({ type, label }) => ({
+    type: 'item',
+    label,
+    value: type,
+  }));
 
 type FormData = VariableDefinition & {
   fieldsWithErrors: Set<string>;
