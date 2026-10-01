@@ -41,6 +41,7 @@ function renderThrowing(error: unknown) {
 
 const text = () => container.textContent ?? '';
 const button = () => container.querySelector('button')!;
+const buttons = () => [...container.querySelectorAll('button')].map((each) => each.textContent);
 const clickExit = () => act(() => button().click());
 
 beforeEach(() => {
@@ -54,6 +55,7 @@ afterEach(() => {
   act(() => root.unmount());
   vi.restoreAllMocks();
   vi.unstubAllGlobals();
+  localStorage.clear();
 });
 
 describe('AppBoundary', () => {
@@ -65,6 +67,26 @@ describe('AppBoundary', () => {
     expect(button().textContent).toBe('Open local draft');
     clickExit();
     expect(assign).toHaveBeenCalledWith('/');
+  });
+
+  // In local mode the SDK's own autosave can save the graph that would not draw, so the local draft loops.
+  it('a crash in the local draft also offers to discard it, which empties the SDK key and starts over', () => {
+    const assign = atAddress('http://localhost/');
+    localStorage.setItem('workflowBuilderDiagram', '{"nodes":[]}');
+    renderThrowing(new TypeError("Cannot read properties of undefined (reading 'x')"));
+
+    expect(text()).toContain('Discarding it starts from the template.');
+    expect(buttons()).toEqual(['Open local draft', 'Discard local draft']);
+    act(() => container.querySelectorAll('button')[1]!.click());
+    expect(localStorage.getItem('workflowBuilderDiagram')).toBeNull();
+    expect(assign).toHaveBeenCalledWith('/');
+  });
+
+  it('offers no discard under a link: the local draft is not what failed', () => {
+    atAddress(`http://localhost/?executionId=${RUN}`);
+    renderThrowing(new TypeError("Cannot read properties of undefined (reading 'x')"));
+
+    expect(buttons()).toEqual(['Open local draft']);
   });
 
   // The editor's pending autosave fires after it unmounted, with the graph that would not draw.

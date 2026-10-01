@@ -1,3 +1,4 @@
+import clsx from 'clsx';
 import { Component, type ReactNode } from 'react';
 
 import styles from './full-page.module.css';
@@ -16,6 +17,25 @@ function exitFor(error: unknown): Exit {
     return { label: 'Open the workflow', href: address.toString() };
   }
   return { label: 'Open local draft', href: address.pathname };
+}
+
+// The SDK's localStorage strategy key, named on WorkflowBuilder.Root's integration prop.
+const LOCAL_DRAFT_KEY = 'workflowBuilderDiagram';
+
+// With no id in the address the local draft is what failed to draw, and the SDK may have saved it after the
+// crash, so opening it again fails the same way.
+function isLocalDraftCrash(): boolean {
+  const { searchParams } = new URL(globalThis.location.href);
+  return !searchParams.has('workflowId') && !searchParams.has('executionId');
+}
+
+function discardLocalDraft(): void {
+  try {
+    localStorage.removeItem(LOCAL_DRAFT_KEY);
+  } catch {
+    // storage unavailable
+  }
+  globalThis.location.assign(globalThis.location.pathname);
 }
 
 type State = { failed: boolean; error: unknown };
@@ -38,15 +58,33 @@ export class AppBoundary extends Component<{ children: ReactNode }, State> {
 
     const { error } = this.state;
     const exit = exitFor(error);
+    const mayDiscard = isLocalDraftCrash();
 
     return (
       <div className={styles['screen']}>
         <div className={styles['card']} role="alert">
           <p>{error instanceof OpenError ? error.message : 'The diagram could not be drawn.'}</p>
           {error instanceof OpenError && <p>Reload the page to try the link again.</p>}
-          <button className={styles['button']} type="button" onClick={() => globalThis.location.assign(exit.href)}>
-            {exit.label}
-          </button>
+          {mayDiscard && (
+            <p>
+              If the local draft is what failed, opening it again fails the same way. Discarding it starts from the
+              template.
+            </p>
+          )}
+          <div className={styles['actions']}>
+            <button className={styles['button']} type="button" onClick={() => globalThis.location.assign(exit.href)}>
+              {exit.label}
+            </button>
+            {mayDiscard && (
+              <button
+                className={clsx(styles['button'], styles['button--secondary'])}
+                type="button"
+                onClick={discardLocalDraft}
+              >
+                Discard local draft
+              </button>
+            )}
+          </div>
         </div>
       </div>
     );

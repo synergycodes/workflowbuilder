@@ -57,7 +57,7 @@ The URL is the only record of what the editor shows. Four rules:
 1. AI Studio reads the URL once, while the page loads, behind a loading screen. Editing the URL and pressing Enter loads the page again; a URL changed any other way is ignored until the next load.
 2. `executionId` wins: the canvas shows the graph the run executed (`GET /api/executions/:id/snapshot`), read-only, live or replayed, named `Run <first 8 characters>`. `workflowId` without a run opens the workflow's draft (its published version when it has no draft, an empty canvas when it has neither) under the workflow's name, and the editor saves into that draft. Neither id opens the local draft in `localStorage`, as before.
 3. The app writes the URL in two places. Run adds `executionId` with `history.replaceState` and keeps `workflowId`. Forgetting the run, on Reset or on a Stop the server answers with `execution_not_found`, removes it and, in a run view, reloads the page, which lands on the workflow when the URL names one and on the local draft otherwise.
-4. A URL that cannot be opened shows one screen with the reason and a way out: to the workflow when the URL names one and only the run failed, to the local draft otherwise. The URL stays, so a reload tries again. The same screen catches a diagram that throws while drawing, and from then on the page saves nothing into the workflow.
+4. A URL that cannot be opened shows one screen with the reason and a way out: to the workflow when the URL names one and only the run failed, to the local draft otherwise. The URL stays, so a reload tries again. The same screen catches a diagram that throws while drawing, and from then on the page saves nothing into the workflow. With no id in the URL it also offers to discard the local draft, since that draft is what failed.
 
 So after every action the canvas shows what a reload of the current URL would show.
 
@@ -82,5 +82,5 @@ Known limits:
 - Autosave and the save on close keep a workflow's edits, so a reload no longer discards them; undo is the only way back.
 - Before the first save, only edits the editor tracks count. The decision node's Add branch is not tracked, and the SDK reports a node moved with the keyboard only as a node change, which does not count; a tab whose only edit is either drops it on close unless Save runs first.
 - The graph is drawn as stored. A draft saved through the API in a shape the editor cannot draw ends on the error screen; one that draws wrongly shows wrongly.
-- In local mode the SDK saves the local draft itself, so an edit that breaks the canvas, an import for example, can still reach `localStorage` after the error screen. "Open local draft" then leads back to the same screen until the site's data is cleared.
+- In local mode the SDK saves the local draft itself, so an edit that breaks the canvas, an import for example, can still reach `localStorage` after the error screen, and "Open local draft" draws it again. "Discard local draft" removes it and starts from the template; the edits since the last working state are lost.
 - Nodes of a type this app does not know show without a properties panel.

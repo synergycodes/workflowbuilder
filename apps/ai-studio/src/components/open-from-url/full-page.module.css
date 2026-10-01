@@ -34,3 +34,19 @@
 .button:hover {
   background: var(--wb-ds-colors-acc1-600);
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.button--secondary {
+  border: 0.0625rem solid var(--wb-ds-ui-stroke-default);
+  background: transparent;
+  color: var(--wb-ds-ui-text-default);
+}
+
+.button--secondary:hover {
+  background: var(--wb-ds-ui-bg-fill-hover);
+}
