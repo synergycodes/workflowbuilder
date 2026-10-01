@@ -178,6 +178,8 @@ The app bar, the palette and the properties panel are not customized by targetin
 
 A plugin has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the `OptionalAppChildren` slot shown above, and that component uses these components inside it. Six `…Content` components cover the app bar, palette and properties-panel areas (`AppBarToolsContent`, `AppBarControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`); three `…MenuItem` components add an item to a built-in menu (`ProjectMenuItem`, `AppBarMenuItem`, `PropertiesPanelMenuItem`).
 
+Each `…Content` component also takes an optional `place`, `'before'` (the default) or `'after'`, to stand before or after the area's whole built-in group instead of only before it, as a block that never lands between two built-in controls.
+
 Hiding a control never removes what it does: the action and its keyboard shortcut (if any) stay available, so anywhere else that offers the same command keeps working.
 
 ```tsx
