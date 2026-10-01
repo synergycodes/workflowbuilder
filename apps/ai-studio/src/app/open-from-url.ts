@@ -45,7 +45,7 @@ export async function openFromUrl(search: string): Promise<OpenedSource> {
   if (executionId !== undefined) {
     const path = `/api/executions/${encodeURIComponent(executionId)}/snapshot`;
     const run = await read<GetExecutionSnapshotResponse>('run', path);
-    setExecutionStarted(executionId, `/api/executions/${executionId}/stream`);
+    setExecutionStarted(executionId, `/api/executions/${executionId}/stream`, { keepLogChoice: true });
     return { kind: 'execution', executionId, diagram: run.snapshot as Diagram };
   }
 

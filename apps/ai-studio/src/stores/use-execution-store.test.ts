@@ -444,4 +444,73 @@ describe('use-execution-store: what a reload keeps', () => {
     expect(entry.state).toEqual({ isLogCollapsed: true });
     expect(localStorage.getItem('ai-studio:execution')).toBeNull();
   });
+
+  it('gives a run the address reopens the log as the tab left it, and opens it for a run started here', async () => {
+    sessionStorage.setItem('ai-studio:execution-log', JSON.stringify({ state: { isLogCollapsed: true }, version: 0 }));
+    await useExecutionStore.persist.rehydrate();
+
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream', { keepLogChoice: true });
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(true);
+
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(false);
+  });
+});
+
+describe('use-execution-store: storage is best effort', () => {
+  const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+
+  beforeEach(() => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(globalThis, 'sessionStorage', sessionStorageDescriptor);
+    }
+  });
+
+  it.each([
+    [
+      'a new run',
+      () => setExecutionStarted('exec-2', '/api/executions/exec-2/stream'),
+      { executionId: 'exec-2', status: 'pending' },
+    ],
+    [
+      'a live event',
+      () => applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } })),
+      { status: 'running' },
+    ],
+    ['a reset', () => resetExecution(), { executionId: undefined, status: 'idle' }],
+  ])('%s still lands in memory when the storage write throws', (_, action, expected) => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    });
+
+    expect(action).not.toThrow();
+
+    expect(setItem).toHaveBeenCalled();
+    expect(useExecutionStore.getState()).toMatchObject(expected);
+  });
+
+  it.each([
+    ['is null', { value: null }],
+    [
+      'throws on access',
+      {
+        get: () => {
+          throw new DOMException('The operation is insecure.', 'SecurityError');
+        },
+      },
+    ],
+  ])('a run still starts when sessionStorage %s from the first load', async (_, descriptor) => {
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, ...descriptor });
+    vi.resetModules();
+    const store = await import('./use-execution-store');
+
+    expect(() => store.setExecutionStarted('exec-2', '/api/executions/exec-2/stream')).not.toThrow();
+
+    expect(store.useExecutionStore.getState()).toMatchObject({ executionId: 'exec-2', status: 'pending' });
+  });
 });

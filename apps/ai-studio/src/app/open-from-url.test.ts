@@ -4,7 +4,7 @@ import type { WorkflowRecord } from '@workflow-builder/types/workflow-execution/
 
 import { BACKEND_URL } from '../config';
 import { refundReviewFlow } from '../data/refund-review-flow';
-import { resetExecution, useExecutionStore } from '../stores/use-execution-store';
+import { resetExecution, setLogCollapsed, useExecutionStore } from '../stores/use-execution-store';
 import { jsonResponse, unparsableResponse } from '../test/json-response';
 import { OpenError } from './open-error';
 import { openFromUrl } from './open-from-url';
@@ -53,6 +53,14 @@ describe('openFromUrl: a run', () => {
     });
   });
 
+  it('keeps the log as the tab left it, collapsed included', async () => {
+    setLogCollapsed(true);
+
+    await openFromUrl(`?executionId=${RUN}`);
+
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(true);
+  });
+
   it('wins over a workflow in the same address, which is not read', async () => {
     const opened = await openFromUrl(`?workflowId=${WORKFLOW}&executionId=${RUN}`);
 
@@ -60,7 +68,7 @@ describe('openFromUrl: a run', () => {
     expect(opened.kind).toBe('execution');
   });
 
-  it('is read under its lowercase id, which is what the worker notifies the stream under', async () => {
+  it('is read under its lowercase id, the form the backend stores', async () => {
     const opened = await openFromUrl(`?executionId=${RUN.toUpperCase()}`);
 
     expect(requestedPaths()).toEqual([`/api/executions/${RUN}/snapshot`]);

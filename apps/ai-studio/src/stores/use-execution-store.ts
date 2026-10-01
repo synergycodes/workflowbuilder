@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { createJSONStorage, devtools, persist } from 'zustand/middleware';
+import { type StateStorage, createJSONStorage, devtools, persist } from 'zustand/middleware';
 
 import {
   type ExecutionEvent,
@@ -63,11 +63,26 @@ const emptyStore: ExecutionStore = {
 
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set(TERMINAL_EXECUTION_STATUSES);
 
+// Every store write persists, so a storage that throws would break the run; it costs only the log preference.
+const bestEffortSessionStorage: StateStorage = {
+  getItem: (name) => bestEffort(() => sessionStorage.getItem(name)) ?? null,
+  setItem: (name, value) => bestEffort(() => sessionStorage.setItem(name, value)),
+  removeItem: (name) => bestEffort(() => sessionStorage.removeItem(name)),
+};
+
+function bestEffort<T>(action: () => T): T | undefined {
+  try {
+    return action();
+  } catch {
+    return;
+  }
+}
+
 export const useExecutionStore = create<ExecutionStore>()(
   devtools(
     persist(() => ({ ...emptyStore }), {
       name: 'ai-studio:execution-log',
-      storage: createJSONStorage(() => sessionStorage),
+      storage: createJSONStorage(() => bestEffortSessionStorage),
       partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
     }),
     { name: 'aiStudioExecutionStore' },
@@ -83,19 +98,20 @@ export function isRunAlive(status: RunStatus): boolean {
   return status !== 'idle' && !TERMINAL_STATUSES.has(status);
 }
 
-export function setExecutionStarted(executionId: string, streamUrl: string) {
-  useExecutionStore.setState({
+/** A run started here opens the log; a run the address reopens keeps the tab's choice. */
+export function setExecutionStarted(executionId: string, streamUrl: string, { keepLogChoice = false } = {}) {
+  useExecutionStore.setState((state) => ({
     executionId,
     status: 'pending',
     streamUrl,
     nodeStates: {},
     events: [],
-    isLogCollapsed: false,
+    isLogCollapsed: keepLogChoice && state.isLogCollapsed,
     isStopRequested: false,
     decisionDrafts: {},
     decisionSends: {},
     decisionFocusRequest: undefined,
-  });
+  }));
 }
 
 // The backend refuses a decision while the run is cancelling, though the replay still shows the node waiting.
