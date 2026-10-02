@@ -29,9 +29,53 @@ Keep the export named `runWorkflow`: that is the name the client starts, and a t
 
 Entries are whole profiles rather than partials on purpose. A partial would let you set a timeout and silently drop the retry cap, and what Temporal falls back to is unlimited retries with backoff, which on a permanently failing model call is an unbounded bill. A node type with no entry resolves to `DEFAULT_NODE_ACTIVITY_PROFILE` and nothing else.
 
+## Heartbeats and cancellation
+
+For a long-running step, add optional `heartbeatTimeout` to its whole profile and share the map between the plugin and `createRunWorkflow` as described below:
+
+```ts
+export const nodeActivityProfiles: NodeActivityProfiles = {
+  'my-product/shell': {
+    startToCloseTimeout: '45m',
+    retry: { maximumAttempts: 1 },
+    heartbeatTimeout: '5s',
+  },
+};
+```
+
+The executor runs inside a Temporal activity, so the native activity context is available even in nested async calls. No extra executor argument is needed:
+
+```ts
+import { Context } from '@temporalio/activity';
+import { execFile } from 'node:child_process';
+import { promisify } from 'node:util';
+
+const execute = promisify(execFile);
+
+async function executeShell() {
+  const activity = Context.current();
+  activity.heartbeat();
+  const timer = setInterval(() => activity.heartbeat(), 1000);
+  try {
+    const { stdout } = await execute('sh', ['-c', 'exec ./long-running-step'], {
+      signal: activity.cancellationSignal,
+    });
+    return { output: stdout };
+  } finally {
+    clearInterval(timer);
+  }
+}
+```
+
+Only enable the timeout for executors that heartbeat. When heartbeats stop, Temporal times out that attempt and applies its retry policy; leaving the field unset means no heartbeat monitoring. Timer-driven heartbeats detect worker loss, not a hung command while the timer still runs: keep `startToCloseTimeout` and, where needed, an operation-specific idle timeout.
+
+Cancellation is cooperative. A running activity must heartbeat to receive workflow cancellation, then use `cancellationSignal` or the rejecting `cancelled` promise to stop its operation. The signal does not kill subprocess descendants automatically; the example uses shell `exec` to replace the wrapper, and commands that create children need their own process-tree cleanup. Do not catch an abort and report a successful result.
+
+The SDK throttles heartbeat RPCs: normally to 80% of `heartbeatTimeout`, capped by the worker's `maxHeartbeatThrottleInterval`; without a timeout it uses `defaultHeartbeatThrottleInterval` (30 seconds by default). Calling `heartbeat()` every second therefore does not imply one-second cancellation delivery. See [Temporal's activity context](https://typescript.temporal.io/api/classes/activity.Context) and [worker options](https://typescript.temporal.io/api/interfaces/worker.WorkerOptions#defaultheartbeatthrottleinterval).
+
 ## Duration grammar
 
-A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`. Decimals are fine (`'1.5h'`). It has to fit a protobuf `Duration`, so anything under one nanosecond or over `'3652500d'` is out. Zero, negative values and exponent notation are rejected even though TypeScript's template literal type admits them: `'0s'` type-checks, and Temporal treats a zero timeout as unset and refuses to schedule the activity.
+`startToCloseTimeout` and optional `heartbeatTimeout` are a number followed by `ms`, `s`, `m`, `h` or `d`. Decimals are fine (`'1.5h'`). Each has to fit a protobuf `Duration`, so anything under one nanosecond or over `'3652500d'` is out. Zero, negative values and exponent notation are rejected even though TypeScript's template literal type admits them: `'0s'` type-checks, but Temporal treats a zero timeout as unset.
 
 This grammar is narrower than Temporal's own, which parses durations with the `ms` package and also takes `'30 minutes'` or `'1 week'`. One documented form is deliberate. If you think in the wider grammar, convert before the value reaches this map.
 
@@ -65,9 +109,9 @@ Profile **keys** cannot be validated inside the workflow: it runs in Temporal's 
 
 ## What the profile check covers
 
-It rejects a map whose entry is missing or `undefined`, whose `startToCloseTimeout` falls outside what a protobuf `Duration` carries, whose `retry.maximumAttempts` is not a positive integer that fits Temporal's `int32` field, or that carries any key beyond those two.
+It rejects a map whose entry is missing or `undefined`, whose `startToCloseTimeout` or optional `heartbeatTimeout` falls outside the documented duration grammar and protobuf range, whose `retry.maximumAttempts` is not a positive integer that fits Temporal's `int32` field, or that carries any other key.
 
-Unknown keys throw rather than being quietly dropped. Only those two fields are forwarded to `proxyActivities`, so a third would do nothing, and a map built from configuration gets no excess-property check from TypeScript to catch it at the keyboard.
+Unknown keys throw rather than being quietly dropped. Only validated fields are forwarded to `proxyActivities`, and a map built from configuration gets no excess-property check from TypeScript to catch an unsupported field at the keyboard.
 
 Both bounds guard the same failure, where a value becomes its own opposite on the wire. Under one nanosecond a duration rounds to zero, which the server reads as unset and refuses, leaving the workflow task in a retry loop with nothing written to your database. A retry cap of `4294967296` arrives as `0`, which Temporal reads as unlimited.
 
