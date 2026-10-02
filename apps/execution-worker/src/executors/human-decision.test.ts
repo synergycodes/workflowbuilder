@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import { PermanentNodeExecutionError } from '@workflow-builder/execution-core';
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
-import type { HumanDecisionNode } from '../domain/ai-studio-nodes';
+import type { HumanDecisionNode, ReviewNode } from '../domain/ai-studio-nodes';
 import { executeHumanDecision } from './human-decision';
 
 const request: DecisionRequest = {
@@ -27,6 +27,12 @@ function humanDecisionNode(decisionRequest?: DecisionRequest): HumanDecisionNode
 describe('executeHumanDecision', () => {
   it('returns exactly { waiting: true } for a node that carries a request', () => {
     expect(executeHumanDecision(humanDecisionNode(request))).toStrictEqual({ waiting: true });
+  });
+
+  it('parks a Review node the same way: the preset differs, the executor does not', () => {
+    const review: ReviewNode = { id: 'review-1', type: 'ai-studio/review', config: {}, decisionRequest: request };
+
+    expect(executeHumanDecision(review)).toStrictEqual({ waiting: true });
   });
 
   it('is not a second validator: a request with no actions still parks', () => {
