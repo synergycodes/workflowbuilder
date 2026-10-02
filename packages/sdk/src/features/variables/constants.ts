@@ -136,21 +136,18 @@ export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
 export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
 
 /**
- * Special keywords used to determine source-handle behaviour.
+ * Optional buckets in `bySourceHandle`, next to entries keyed by real handle names.
+ * None of them has to be present; a handle's own entry is always used on its own.
  *
- * Source handles may have arbitrary names, but handles containing one of these
- * keywords are treated specially when processing `bySourceHandle`.
+ * - `every`: added to every handle.
+ * - `error`: added to handles whose name contains `error`.
+ * - `success`: added to every other handle.
  *
- * - `EVERY` (`every`): Values assigned to this handle are additionally attached
- *   to every branch. `every` values are always forwarded.
- * - `SUCCESS` (`success`): A branch is considered successful when its source
- *   handle does not contain the `ERROR` keyword. Successful branches receive
- *   the values assigned to this handle in addition to their own values.
- * - `ERROR` (`error`): Values assigned to this handle are additionally attached
- *   to every branch whose source handle contains the `ERROR` keyword.
+ * The check is a substring match on the handle name, so `onError` or `error-1`
+ * count as error handles.
  *
- * The keywords are matched against the source-handle name, so source handles
- * can have custom names while still triggering the corresponding behaviour.
+ * A variable may sit in several buckets. Duplicates are dropped by id later,
+ * so keep its type the same in each bucket; the type is not resolved per handle.
  */
 export const SPECIAL_SOURCE_HANDLE_KEYWORDS = {
   EVERY: 'every',

@@ -195,7 +195,8 @@ export const myNode: PaletteItem = {
 
 How the schema is read:
 
-- Keys of `bySourceHandle` are source handle ids (`success`, `error`, ...). Use the special key `every` for properties emitted on all handles.
+- Keys of `bySourceHandle` are your node's source handle ids, named however you like. Three optional keys are buckets rather than handles: `every` is added to every handle, `error` to handles whose id contains `error` (`onError`, `error-1`), `success` to every other handle. None of them is required; a handle's own entry is always used on its own.
+- A property may sit in several buckets. Duplicates are dropped by id downstream, so keep its type the same in each bucket; the type is not resolved per handle.
 - Each value is a JSON Schema object (`type: 'object'` with `properties`). `title` becomes the suggestion label, `description` its help text.
 - Supported property types: `string`, `number`, `boolean`, `object`, `array`. A `string` with `format: 'date-time'` is surfaced as a date-time variable.
 - Nested `object` properties are flattened to dot paths - `result.status` in the schema becomes `{{nodes.<id>.result.status}}` in the picker.
