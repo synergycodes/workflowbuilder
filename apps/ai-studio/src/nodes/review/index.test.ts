@@ -21,6 +21,7 @@ describe('reviewPaletteItem', () => {
     expect(reviewPaletteItem.outputSchema).toBe(humanDecisionPaletteItem.outputSchema);
     expect(reviewPaletteItem.defaultPropertiesData).toBe(defaultPropertiesData);
     expect(reviewPaletteItem.label).toBe('Review');
-    expect(reviewPaletteItem.icon).not.toBe(humanDecisionPaletteItem.icon);
+    expect(reviewPaletteItem.description).toBe('Approve, escalate or reject');
+    expect(reviewPaletteItem.icon).toBe('Scales');
   });
 });

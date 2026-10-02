@@ -10,7 +10,7 @@ import { defaultDecisionRequest } from './default-properties-data';
 
 describe('the decision requests AI Studio ships, against the backend contract', () => {
   it.each([
-    ['the palette preset', defaultDecisionRequest],
+    ['the Human decision preset', defaultDecisionRequest],
     ['the "Refund Review" template', refundReviewRequest],
     ['the Review preset', reviewDecisionRequest],
   ])('%s parses with decisionRequestSchema', (_name, request) => {
