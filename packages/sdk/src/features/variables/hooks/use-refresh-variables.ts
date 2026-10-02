@@ -20,6 +20,8 @@ function useRefreshVariables() {
   const lastChangeName = useChangesTrackerStore((store) => store.lastChangeName);
   const lastChangeParams = useChangesTrackerStore((store) => store.lastChangeParams);
 
+  // The effect already schedules this via setTimeout, so a global refresh is debounced twice.
+  // Intended: the doubled delay lets bursts (paste, undo, import) settle before one full pass.
   const refreshAll = useCallback(() => {
     timeoutRef.current = setTimeout(() => {
       refreshAllSuggestions();
