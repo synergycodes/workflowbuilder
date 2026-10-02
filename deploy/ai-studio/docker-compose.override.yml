@@ -18,6 +18,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     restart: unless-stopped
 
   # auto-setup is dev-grade; sustained load should move to Temporal Cloud or an
@@ -50,6 +55,11 @@ services:
       TEMPORAL_ADDRESS: temporal:7233
     ports:
       - '127.0.0.1:8233:8080'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     restart: unless-stopped
 
   backend:
