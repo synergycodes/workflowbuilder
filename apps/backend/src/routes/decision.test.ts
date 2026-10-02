@@ -113,11 +113,13 @@ const refundForm = {
 };
 // Not the strings the former defaults produced: the nextPort assertions must prove the port came from the request.
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'source:inner:approved' };
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'source:inner:held' };
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'source:inner:rejected' };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
 
-// source-1 feeds two deciding nodes. review-1 offers all three effects and takes a reject
-// without a reason; review-2 requires one. after-1 hangs off review-1's approved port.
+// source-1 feeds two deciding nodes. review-1 offers two resume actions and all three effects, and takes a
+// reject without a reason; review-2 keeps one resume action and requires a reason. after-1 hangs off
+// review-1's approved port.
 const snapshot = {
   nodes: [
     { id: 'source-1', data: { type: 'product/any', properties: {} } },
@@ -128,7 +130,7 @@ const snapshot = {
         properties: {
           decisionRequest: {
             version: 1,
-            actions: [approve, reject, askAgain],
+            actions: [approve, hold, reject, askAgain],
             schema: refundForm,
             proposalSourceNodeId: 'source-1',
           },
@@ -554,6 +556,54 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[0]?.resolution;
     expect(completion).toEqual({ output: approvedDecision, nextPort: 'source:inner:approved' });
     expect(completion).not.toHaveProperty('outcome');
+  });
+
+  it('a decision on the second resume action routes on that action port and declares no outcome', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { nodeId: 'review-1', attempt: 1, action: 'hold' });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({
+      executionId: 'e-1',
+      nodeId: 'review-1',
+      attempt: 1,
+      action: 'hold',
+      effect: 'resume',
+    });
+    const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[0]?.resolution;
+    expect(completion).toEqual({
+      output: { action: 'hold', effect: 'resume', edits: {}, resolvedBy: 'human' },
+      nextPort: 'source:inner:held',
+    });
+    expect(completion).not.toHaveProperty('outcome');
+  });
+
+  it('edits ride on any resume action, not only the first', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), {
+      nodeId: 'review-1',
+      attempt: 1,
+      action: 'hold',
+      edits: { note: 'missing invoice' },
+    });
+
+    expect(response.status).toBe(200);
+    expect(await bodyOf(response)).toMatchObject({ effect: 'resume-with-edits' });
+    expect(engineMock.resolveNode).toHaveBeenCalledWith({
+      executionId: 'e-1',
+      nodeId: 'review-1',
+      resolution: {
+        output: {
+          action: 'hold',
+          effect: 'resume-with-edits',
+          edits: { note: 'missing invoice' },
+          resolvedBy: 'human',
+        },
+        nextPort: 'source:inner:held',
+      },
+    });
   });
 
   it.each<{ code: ResolveNodeRejection; status: number; answer: string }>([

@@ -13,6 +13,7 @@ import {
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 } as const;
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held' } as const;
 
 // As the parser leaves it: defaults present, every action explicit.
 function requestWith(overrides: Partial<DecisionRequest> = {}): DecisionRequest {
@@ -83,6 +84,18 @@ describe('validateSubmittedDecision', () => {
     {
       name: 'an optional field may be emptied',
       call: { action: 'approve', edits: { note: '' } },
+      effect: 'resume-with-edits',
+    },
+    {
+      name: 'a second resume action, on its own',
+      request: requestWith({ actions: [approve, hold, reject, askAgain] }),
+      call: { action: 'hold' },
+      effect: 'resume',
+    },
+    {
+      name: 'a second resume action with an edit',
+      request: requestWith({ actions: [approve, hold, reject, askAgain] }),
+      call: { action: 'hold', edits: { note: 'Missing invoice' } },
       effect: 'resume-with-edits',
     },
     {
@@ -445,6 +458,13 @@ describe('validateSubmittedDecision', () => {
       comment: 'rounded down',
     });
     expect(result.action).toEqual(approve);
+  });
+
+  it('returns the second resume action beside the decision, so the route reads its port', () => {
+    const result = validateSubmittedDecision(requestWith({ actions: [approve, hold, reject] }), { action: 'hold' });
+
+    expect(result.error).toBeUndefined();
+    expect(result.action).toEqual(hold);
   });
 
   it('leaves the initiator to the route: a judged decision carries no resolvedBy', () => {
