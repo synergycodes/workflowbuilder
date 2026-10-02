@@ -12,6 +12,8 @@ export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 export type ActivityProfile = {
   startToCloseTimeout: DurationString;
   retry: { maximumAttempts: number };
+  // Requires heartbeats from the executor; omitted means no heartbeat monitoring.
+  heartbeatTimeout?: DurationString;
 };
 
 // Only for the two frozen singletons below. Annotating them `ActivityProfile` would
@@ -20,6 +22,7 @@ export type ActivityProfile = {
 type ReadonlyActivityProfile = {
   readonly startToCloseTimeout: DurationString;
   readonly retry: { readonly maximumAttempts: number };
+  readonly heartbeatTimeout?: DurationString;
 };
 
 // Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
