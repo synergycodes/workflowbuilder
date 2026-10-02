@@ -188,7 +188,6 @@ export const en = {
     variableNameAlreadyExists: 'A variable with this name already exists.',
     variableWasNotFound: 'This variable was not found.',
     cantEditReadOnlyMode: 'Editing is blocked in read-only mode.',
-    notValidConnection: 'That connection is blocked.',
   },
   workflowsSettings: {
     modalTitle: 'Settings',

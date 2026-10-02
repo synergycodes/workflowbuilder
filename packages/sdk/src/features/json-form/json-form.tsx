@@ -4,7 +4,7 @@ import { type ComponentProps, useMemo } from 'react';
 
 import styles from './json-form.module.css';
 
-import { workflowBuilderValidator } from '../../utils/validation/workflow-builder-validator';
+import { workflowBuilderValidator } from '../../utils/validation/workflow-builder-validator/workflow-builder-validator';
 import { aiToolsControlRenderer } from './controls/ai-tools-control/ai-tools-control';
 import { datePickerControlRenderer } from './controls/date-picker-control/date-picker-control';
 import { decisionBranchesControlRenderer } from './controls/decision-branches-control/decision-branches-control';

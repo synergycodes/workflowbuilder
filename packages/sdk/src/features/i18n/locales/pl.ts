@@ -151,7 +151,6 @@ export const pl = {
     variableNameAlreadyExists: 'Zmienna o tej nazwie już istnieje.',
     variableWasNotFound: 'Nie znaleziono tej zmiennej.',
     cantEditReadOnlyMode: 'Edycja jest zablokowana w trybie tylko do odczytu.',
-    notValidConnection: 'To połączenie jest zablokowane.',
   },
   aiTools: {
     title: 'Narzędzia agenta AI',

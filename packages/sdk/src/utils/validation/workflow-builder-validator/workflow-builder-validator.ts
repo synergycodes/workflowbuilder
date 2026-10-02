@@ -17,6 +17,9 @@ import { Validator } from '@cfworker/json-schema';
 import type Ajv from 'ajv';
 import type { ErrorObject } from 'ajv';
 
+import { combineValidators } from './utils/combine-validators';
+import { getValidationForCustomTypes } from './workflow-builder-validator-for-custom-types';
+
 /**
  * Matches Ajv's ValidateFunction interface:
  * a callable that returns boolean and exposes `.errors` after each call.
@@ -80,6 +83,53 @@ function mapOutputToErrorObjects(errors: OutputUnit[]): ErrorObject[] {
   });
 }
 
+const getValidator = (object: object): Validator => {
+  const schema = object as Schema;
+
+  const { standardSchema, hasCustomSchema, customSchema } = Object.entries(schema?.properties || {}).reduce(
+    (
+      stack: {
+        standardSchema: Exclude<Schema['properties'], undefined>;
+        customSchema: Exclude<Schema['properties'], undefined>;
+        hasCustomSchema: boolean;
+      },
+      [key, value],
+    ) => {
+      const isCustomProperty =
+        typeof value !== 'boolean' && typeof value.type === 'string' && ['datetime', 'date'].includes(value.type);
+
+      if (isCustomProperty) {
+        stack.customSchema[key] = value;
+        stack.hasCustomSchema = true;
+      } else {
+        stack.standardSchema[key] = value;
+      }
+
+      return stack;
+    },
+    {
+      standardSchema: {},
+      customSchema: {},
+      hasCustomSchema: false,
+    },
+  );
+
+  const standardValidator = new Validator(
+    {
+      ...schema,
+      properties: {
+        ...standardSchema,
+      },
+    },
+    '7',
+    false,
+  );
+
+  const validationCustomTypes = hasCustomSchema ? getValidationForCustomTypes(customSchema) : undefined;
+
+  return combineValidators({ standardValidator, validationCustomTypes });
+};
+
 /**
  * Creates a function matching Ajv's ValidateFunction interface,
  * backed by @cfworker/json-schema's interpreter-based Validator.
@@ -88,7 +138,7 @@ function mapOutputToErrorObjects(errors: OutputUnit[]): ErrorObject[] {
  * - shortCircuit=false — collect all errors, equivalent to Ajv's `allErrors: true`
  */
 function createValidateFunction(schema: object): ValidateFunction {
-  const validator = new Validator(schema as Schema, '7', false);
+  const validator = getValidator(schema);
 
   const validateFn = (data: unknown): boolean => {
     const result = validator.validate(data);
