@@ -5,12 +5,14 @@ import { describe, expect, it } from 'vitest';
 // live is still open (follow-up: decision-request-contract-test-home).
 import { decisionRequestSchema } from '../../../../backend/src/domain/decision/decision-request-schema';
 import { refundReviewRequest } from '../../data/refund-review-flow';
+import { reviewDecisionRequest } from '../review/default-properties-data';
 import { defaultDecisionRequest } from './default-properties-data';
 
 describe('the decision requests AI Studio ships, against the backend contract', () => {
   it.each([
     ['the palette preset', defaultDecisionRequest],
     ['the "Refund Review" template', refundReviewRequest],
+    ['the Review preset', reviewDecisionRequest],
   ])('%s parses with decisionRequestSchema', (_name, request) => {
     const parsed = decisionRequestSchema.safeParse(request);
 
