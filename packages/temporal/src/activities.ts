@@ -71,8 +71,8 @@ export function createActivities<TNode extends BaseNode>(options: CreateActiviti
       await store.emitExecutionEvent(executionId, sequence, type, payload, nodeId);
     },
 
-    async updateStatus(executionId, status, errorMessage) {
-      await store.updateExecutionStatus(executionId, status, errorMessage);
+    async updateStatus(executionId, status, errorMessage, outcome) {
+      await store.updateExecutionStatus(executionId, status, errorMessage, outcome);
     },
   };
 }

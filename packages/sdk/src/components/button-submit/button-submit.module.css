@@ -1,5 +1,5 @@
 :root {
-  --spinner-color: var(--ax-txt-primary-white);
+  --wb-sdk-spinner-color: var(--wb-ds-ui-text-onaccent-default);
 }
 
 .container {
@@ -7,11 +7,11 @@
 }
 
 .container--success {
-  --spinner-color: var(--ax-txt-primary-white);
+  --wb-sdk-spinner-color: var(--wb-ds-ui-text-onaccent-default);
 }
 
-.container--ghost-destructive {
-  --spinner-color: var(--ax-public-button-ghost-destructive-color);
+.container--ghost-critical {
+  --wb-sdk-spinner-color: var(--wb-public-button-ghost-critical-color);
 }
 
 .container--pending button {
@@ -21,7 +21,7 @@
 
 .icon--spinner {
   position: absolute;
-  color: var(--spinner-color);
+  color: var(--wb-sdk-spinner-color);
   top: 50%;
   left: 50%;
   animation: spin infinite linear 1.6s;

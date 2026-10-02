@@ -4,22 +4,18 @@ import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
 import { cors } from 'hono/cors';
 
-import {
-  AllowAllAuthPort,
-  AuthDeniedError,
-  type AuthPort,
-  type AuthVariables,
-  createAuthMiddleware,
-  makeAssertAuthorized,
-} from './auth';
+import { AllowAllAuthPort, AuthDeniedError, type AuthPort, createAuthMiddleware, makeAssertAuthorized } from './auth';
 import { runMigrations } from './db/migrate';
 import { env } from './env';
 import { logger } from './logger';
+import { isListingRefused, refuseListing } from './middleware/listing-guard';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
+import type { BackendEnv } from './routes/backend-env';
+import { createDecisionRoutes } from './routes/decision';
 import { createExecutionsRoutes } from './routes/executions';
 import { createVisualizeRoutes } from './routes/visualize';
 import { createWorkflowsRoutes } from './routes/workflows';
-import { NoopTenantContextPort, type TenantContextPort, type TenantVariables, createTenantMiddleware } from './tenant';
+import { NoopTenantContextPort, type TenantContextPort, createTenantMiddleware } from './tenant';
 
 // Permissive default for local development. The constructor itself emits a
 // loud startup warning and refuses to boot unless `WB_AUTH_PORT=allow-all` is
@@ -34,7 +30,7 @@ const assertAuthorized = makeAssertAuthorized(authPort);
 // claim, header, …) — see `apps/backend/tenant-context-port.decision-log.md`.
 const tenantPort: TenantContextPort = new NoopTenantContextPort();
 
-const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+const app = new Hono<BackendEnv>();
 
 app.use('/*', cors());
 // Reject request bodies larger than 1 MB to prevent memory exhaustion
@@ -79,8 +75,14 @@ if (env.RATE_LIMIT_EXECUTE_PER_MINUTE > 0 || env.RATE_LIMIT_EXECUTE_PER_DAY > 0)
   });
 }
 
+if (isListingRefused(authPort, env.ENABLE_WB_LISTING)) {
+  refuseListing(app);
+  logger.info('listing disabled');
+}
+
 app.route('/api/workflows', createWorkflowsRoutes(assertAuthorized));
 app.route('/api/executions', createExecutionsRoutes(assertAuthorized));
+app.route('/api/executions', createDecisionRoutes(assertAuthorized));
 app.route('/api/visualize', createVisualizeRoutes(assertAuthorized));
 
 // a failure (DB still starting) exits the process; the container restart policy retries

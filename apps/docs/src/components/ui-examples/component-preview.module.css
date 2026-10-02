@@ -3,16 +3,15 @@
   width: 100%;
   max-width: 50rem;
   aspect-ratio: 2 / 1;
-  /* The ratio is a preferred size, not a clamp: overflow:hidden zeroes the
-     content-based automatic minimum, so restore it - oversized examples grow
-     the stage instead of being clipped. */
-  min-height: fit-content;
   margin-top: 1rem;
   padding: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  overflow: hidden;
+  /* `clip`, not `hidden`: a scroll container has no content-based automatic
+     minimum, which would turn the ratio into a hard clamp and cut tall
+     examples. `clip` still hides the spotlight's negative margins. */
+  overflow: clip;
   border: 1px solid var(--sl-color-gray-5);
   border-radius: 0.5rem;
   background-color: var(--sl-color-bg);

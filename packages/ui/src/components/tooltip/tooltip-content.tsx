@@ -26,6 +26,7 @@ export const TooltipContent = forwardRef<
   return (
     <BaseTooltip.Portal>
       <BaseTooltip.Positioner
+        className={styles['positioner']}
         side={side}
         align={align}
         sideOffset={TOOLTIP_OFFSET}
@@ -34,7 +35,7 @@ export const TooltipContent = forwardRef<
       >
         <BaseTooltip.Popup
           ref={propertyRef}
-          className={clsx(styles['container'], 'ax-public-p11', className)}
+          className={clsx(styles['container'], 'wb-text-label-s', className)}
           data-tooltip-type={tooltipType}
           style={style}
           {...props}

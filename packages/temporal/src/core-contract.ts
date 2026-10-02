@@ -1,6 +1,6 @@
 import type { ExecutionContext } from '../../execution-core/src/execution-context';
-import type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';
 import type { BaseNode } from '../../types/src/workflow-execution/execution-model';
+import type { NodeExecutionResult } from './workflow/core-contract';
 
 // The single seam between this published package and the private, source-only
 // workspace packages it is built on.
@@ -19,6 +19,7 @@ import type { BaseNode } from '../../types/src/workflow-execution/execution-mode
 export {
   NodeExecutionError,
   PermanentNodeExecutionError,
+  RESOLVE_NODE_REJECTIONS,
   TransientNodeExecutionError,
   classifyNodeError,
   resolveExecutor,
@@ -27,7 +28,6 @@ export {
 export type { NodeErrorEnvelope } from '../../execution-core/src/index';
 
 export type { ExecutionContext } from '../../execution-core/src/execution-context';
-export type { NodeExecutionResult } from '../../execution-core/src/ports/activity-runner.port';
 export type { LogBindings, LoggerPort } from '../../execution-core/src/ports/logger.port';
 
 export type {
@@ -38,7 +38,20 @@ export type {
 } from '../../types/src/workflow-execution/execution-model';
 
 // Defined on the sandbox-safe side so both halves of the package share one definition.
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './workflow/core-contract';
+export type {
+  CompletedNodeExecution,
+  ExecutionEventType,
+  ExecutionOutcome,
+  ExecutionOutcomeRecord,
+  ExecutionStatus,
+  NodeExecutionResult,
+  ResolveNodeInput,
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  WaitingNodeExecution,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './workflow/core-contract';
 
 // Restated for the same reason as WorkflowExecutionInput: the core's registry module
 // reaches for @workflow-builder/types by package name, and that name would survive

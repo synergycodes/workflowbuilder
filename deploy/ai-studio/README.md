@@ -171,11 +171,21 @@ the Temporal UI (`--profile debug` for the bundled cluster, your cluster's own U
 otherwise), or accept that any still running will fail. Deploys that leave the emit sequence alone are unaffected. See
 [`replay-audit.md`](../../packages/execution-core/replay-audit.md) rule 9.
 
+**A release that widens what the worker accepts from the backend** (a new key on a
+decision, as `outcome` was) wants the reverse: workers before the backend. This stack
+cannot express it, since the backend is the migrator and the worker waits for it to be
+healthy, so `docker compose up -d --build` recreates the backend first. Until the worker
+is recreated, seconds later, a rejection answers 500. Accepted for the reference
+deployment; the worker README ("Temporal specifics") has the reasoning.
+
 ## Known limitations (accepted for the lean MVP)
 
 - **No login.** The API is open (`WB_AUTH_PORT=allow-all`); anyone with the
   URL can create and run workflows within the rate limits. The SDK has an
-  `AuthPort` seam for wiring real auth later.
+  `AuthPort` seam for wiring real auth later. A workflow or a run is reachable
+  by whoever holds its id, which is random and never listed (`ENABLE_WB_LISTING`
+  stays unset, so the collection routes answer 403). A run's link therefore
+  grants full control of that run: reading it, stopping it, deciding for it.
 - **Single backend replica.** The rate limiter is process-local. Scaling out
   needs a shared store (Redis) — deferred to the scale-ready task.
 - **`temporalio/auto-setup` is dev-grade.** Fine for a demo; move to Temporal
@@ -183,3 +193,9 @@ otherwise), or accept that any still running will fail. Deploys that leave the e
   only — see "Pointing at a different Temporal" above.
 - **Anyone-can-edit demo content.** Visitors share one workspace; data is
   wiped whenever you decide to recreate the volumes.
+- **Drafts are stored unvalidated.** `POST /api/workflows` and
+  `PATCH /api/workflows/:id/draft` keep any JSON, so anyone can save a draft
+  the editor cannot draw. Opening it from a `?workflowId=` link ends on an
+  error screen with a way back to the local draft; a subtler value that draws
+  wrongly shows wrongly. Either has to be removed by hand: from `workflows`,
+  or for a run from `executions`.

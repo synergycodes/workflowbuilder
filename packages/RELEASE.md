@@ -10,7 +10,7 @@ This repo publishes **three** packages. Each has its own **scoped** release tag 
 | --------------------------- | --------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
 | `@workflowbuilder/sdk`      | `@workflowbuilder/sdk@X.Y.Z`      | `.github/workflows/release-sdk.yml`      | on npm                                               |
 | `@workflowbuilder/ui`       | `@workflowbuilder/ui@X.Y.Z`       | `.github/workflows/release-ui.yml`       | not on npm yet, see § First release of a new package |
-| `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | not on npm yet, see § First release of a new package |
+| `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | on npm                                               |
 
 Two rules keep the packages independent of each other:
 
@@ -66,12 +66,14 @@ release  ───────────────●───────�
 
 ## First release of a new package
 
-Applies to `@workflowbuilder/ui` and `@workflowbuilder/temporal` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
+Applies to `@workflowbuilder/ui` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
+
+`@workflowbuilder/temporal` 0.1.0 was published by hand and has no scoped tag or GitHub Release; 0.2.0 is the first release that runs `release-temporal.yml`, so confirm its trusted publisher on npmjs.com before tagging.
 
 The whole sequence:
 
 1. **Make the package publishable on `main`** in an ordinary PR: drop `"private": true`, check that `package.json` has `publishConfig.access: public`, `files`, `repository.directory` and `license`, that `LICENSE` and `CHANGELOG.md` sit next to it, and that `CHANGELOG.md` contains nothing but the `# Changelog` heading (see "Reformat the generated CHANGELOG section" for why). Every README link that leaves the package directory has to be an absolute GitHub URL: npm renders the README, and a relative `../` link is dead there.
-2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` has a written `## [2.0.0]` and five minor changesets, so its first publish is `2.1.0`). Fold the hand-written notes into the generated section rather than shipping two. For `@workflowbuilder/temporal` the same PR replaces the `v0-` replay baseline: record the histories under the new version as § Release procedure step 1 describes, then delete the `v0-*.json` files once the new set replays.
+2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` sits at `0.1.0` in `package.json` with a major changeset pending, so its first publish is `1.0.0`, and its hand-written `## [1.0.0]` section is where the generated bullets land). Fold the hand-written notes into the generated section rather than shipping two.
 3. **Publish from the release head**, logged in to npm (`npm login`) as a member of the `workflowbuilder` org with 2FA enabled:
 
    ```bash
@@ -108,6 +110,8 @@ This part Claude (or any contributor) handles per change — not the maintainer.
    One package per changeset file. Name two only when they are meant to ship together: `release:version` cannot apply one side of such a file, and it refuses with the file name.
 
    **Keep the body short.** It becomes this change's CHANGELOG bullet at release time, reformatted into Keep a Changelog style (the maintainer strips the commit hash and the `feat:` / `fix:` prefix and files it under Added / Changed / Fixed). One sentence for a fix, one or two for a feature. State what changed and the consumer-facing effect, name the public symbols touched, and stop. No rationale, no implementation walk-through, no internal file names. Reasoning belongs in the PR description or code comments, not the release notes. Breaking changes are the only exception: add a `Breaking changes:` list with migration steps (for the pattern: `git show 79b6efdf:.changeset/remove-nodeid-from-handles.md`, consumed in SDK 2.0.1).
+
+   **Write against the last published version, not against the branch.** A reader of the CHANGELOG upgrades from the released version straight to the next one, and never sees the intermediate states a long-lived branch passed through. Describe the net change and give migration steps only for names that were actually published. When a later commit on the same branch supersedes an earlier one, rewrite or delete the earlier changeset instead of adding a second entry, so one change produces one CHANGELOG bullet.
 
 4. Commit code + changeset together. Conventional Commits format is enforced by `.husky/commit-msg`:
 
@@ -152,7 +156,7 @@ REPLAY_HISTORY_VERSION=$VERSION UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflo
 pnpm --filter @workflowbuilder/temporal test
 ```
 
-The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists, so a forgotten `REPLAY_HISTORY_VERSION` fails instead of silently rewriting the previous set. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The one exception is the `v0-` baseline at the first release, which no run outside this repo was ever recorded by, so it goes once the new set is green. The rules are in `packages/temporal/test/replay/README.md`.
+The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists, so a forgotten `REPLAY_HISTORY_VERSION` fails instead of silently rewriting the previous set. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The pre-release `v0-` baseline was replaced by the 0.1.0 recordings. The only pre-release recording left, `packages/temporal/test/replay/histories/v0-parked-decision.json`, is deleted by the release PR that first records `<version>-parked-decision.json`, once the new recording replays. The rules are in `packages/temporal/test/replay/README.md`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -218,7 +222,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
-- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, plus the `v0-*.json` deletions at the first release
+- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, plus, for the release that first records `parked-decision`, the deletion of `v0-parked-decision.json`
 - Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.

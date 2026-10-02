@@ -1,6 +1,7 @@
 import { Modal } from '@workflowbuilder/ui';
 import { useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useTranslation } from 'react-i18next';
 
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
@@ -8,6 +9,7 @@ import { closeModal, useModalStore } from '../stores/use-modal-store';
 const MODAL_OPEN_BODY_CLASS = 'wb-modal-open';
 
 export function ModalProvider() {
+  const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.isOpen);
   const modal = useModalStore((state) => state.modal);
 
@@ -46,6 +48,7 @@ export function ModalProvider() {
           open={isOpen && !!modal}
           icon={activeModal?.icon}
           onClose={activeModal?.isCloseButtonVisible ? closeModal : undefined}
+          closeLabel={t('common.close')}
           title={activeModal?.title || ''}
           footer={activeModal?.footer}
           footerVariant={activeModal?.footerVariant}

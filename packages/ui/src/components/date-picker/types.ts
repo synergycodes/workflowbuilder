@@ -1,4 +1,7 @@
 import type { ItemSize } from '@ui/shared/types/item-size';
+import type { ReactNode } from 'react';
+
+import type { FieldState } from '../../shared/types/field';
 
 /**
  * The picker type.
@@ -6,6 +9,8 @@ import type { ItemSize } from '@ui/shared/types/item-size';
  * - `default`: select a single date.
  * - `range`: select a date range (`[from, to]`).
  * - `multiple`: select an arbitrary array of dates.
+ *
+ * @category DatePicker
  */
 export type DatePickerType = 'default' | 'range' | 'multiple';
 
@@ -77,6 +82,23 @@ export type DatePickerProps = {
    * `aria-labelledby` for the trigger button.
    */
   'aria-labelledby'?: string;
+  /**
+   * Label rendered above the trigger and linked to it.
+   */
+  label?: ReactNode;
+  /**
+   * Message rendered under the trigger and announced with it.
+   */
+  helperText?: ReactNode;
+  /**
+   * Visual state of the control.
+   * @default 'default'
+   */
+  state?: FieldState;
+  /**
+   * Adds the required marker next to the label.
+   */
+  isRequired?: boolean;
 
   /**
    * Format string used to render the selected date(s) in the trigger.

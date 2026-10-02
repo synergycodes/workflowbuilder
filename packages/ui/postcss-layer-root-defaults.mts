@@ -5,7 +5,7 @@ import type { Plugin, Rule } from 'postcss';
  * `@layer ui.base`.
  *
  * Layered declarations lose to unlayered CSS regardless of source order, so a
- * consumer's `:root { --ax-public-…: … }` override always beats the shipped
+ * consumer's `:root { --wb-public-…: … }` override always beats the shipped
  * default - even when a lazily loaded component stylesheet arrives after the
  * override. Unlayered defaults would instead win or lose by load order.
  *

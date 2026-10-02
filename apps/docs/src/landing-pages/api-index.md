@@ -1,5 +1,5 @@
 ---
-title: API Reference
+title: SDK API Reference
 description: Auto-generated reference for every public export from @workflowbuilder/sdk.
 sidebar:
   hidden: true

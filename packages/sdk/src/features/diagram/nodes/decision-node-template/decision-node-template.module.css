@@ -1,4 +1,6 @@
-.decision-node {
+/* The DOWN layout lays the branch rows out horizontally, so the body may widen the node.
+   In the RIGHT layout rows fill the fixed width and truncate instead. */
+.decision-node--down {
   > div {
     min-width: max-content;
   }

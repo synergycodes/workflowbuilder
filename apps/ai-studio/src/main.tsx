@@ -1,12 +1,20 @@
-import { StrictMode } from 'react';
+import { StrictMode, Suspense } from 'react';
 import * as ReactDOM from 'react-dom/client';
 
-import { App } from './app/app';
+import { openFromUrl } from './app/open-from-url';
+import { OpenedApp } from './app/opened-app';
+import { AppBoundary } from './components/open-from-url/app-boundary';
+import { LoadingScreen } from './components/open-from-url/loading-screen';
 
-const root = ReactDOM.createRoot(document.querySelector('#root') as HTMLElement);
+// Started once, outside render: the editor fixes its diagram at mount, and StrictMode would repeat an effect.
+const opening = openFromUrl(globalThis.location.search);
 
-root.render(
+ReactDOM.createRoot(document.querySelector('#root') as HTMLElement).render(
   <StrictMode>
-    <App />
+    <AppBoundary>
+      <Suspense fallback={<LoadingScreen />}>
+        <OpenedApp opening={opening} />
+      </Suspense>
+    </AppBoundary>
   </StrictMode>,
 );

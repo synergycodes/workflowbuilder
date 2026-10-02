@@ -1,6 +1,6 @@
 import { PlusCircle, Trash } from '@phosphor-icons/react';
 import { Button, NavButton } from '@workflowbuilder/ui';
-import { type ComponentProps, useCallback } from 'react';
+import { useCallback } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
@@ -16,7 +16,7 @@ import { openAddToolModal } from './open-add-tool-modal';
 import { toolOptions } from './select-options';
 
 function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiToolsControlProps) {
-  const { t } = useTranslation(undefined, { keyPrefix: 'aiTools' });
+  const { t } = useTranslation();
   const isDisabled = !enabled || uischema.disabled === true;
   const handleSubmit = useCallback(
     (change: AiAgentTool) => {
@@ -57,8 +57,8 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
         const icon = toolOption?.icon;
         const label = toolOption?.label;
 
-        const sharedButtonProps: Partial<ComponentProps<typeof Button>> = {
-          variant: 'secondary',
+        const sharedButtonProps = {
+          variant: 'secondary' as const,
           className: styles['selected-tool-button'],
           onClick: () => openEditorModal(toolData),
           disabled: isDisabled,
@@ -68,23 +68,24 @@ function AiToolsControl({ path, handleChange, data, enabled, uischema }: AiTools
           <FormControlWithLabel key={toolData.id || index} label={`Tool #${index + 1}`}>
             <div className={styles['tool-row']}>
               {icon ? (
-                <Button {...sharedButtonProps}>
-                  <Icon name={icon} />
+                <Button {...sharedButtonProps} prefixIcon={<Icon name={icon} />}>
                   {label}
                 </Button>
               ) : (
                 <Button {...sharedButtonProps}>{label}</Button>
               )}
-              <NavButton onClick={() => onRemoveTool(toolData.id)} disabled={isDisabled}>
-                <Trash weight="bold" />
-              </NavButton>
+              <NavButton
+                aria-label={t('common.remove')}
+                onClick={() => onRemoveTool(toolData.id)}
+                disabled={isDisabled}
+                prefixIcon={<Trash weight="bold" />}
+              />
             </div>
           </FormControlWithLabel>
         );
       })}
-      <Button variant="primary" onClick={(_) => openEditorModal()} disabled={isDisabled}>
-        <PlusCircle />
-        {t('addToolSlot')}
+      <Button variant="primary" prefixIcon={<PlusCircle />} onClick={(_) => openEditorModal()} disabled={isDisabled}>
+        {t('aiTools.addToolSlot')}
       </Button>
     </>
   );

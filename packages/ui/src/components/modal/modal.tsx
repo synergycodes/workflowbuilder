@@ -7,7 +7,7 @@ import { type ReactNode, forwardRef } from 'react';
 
 import styles from './modal.module.css';
 
-import type { FooterVariant } from './types';
+import type { ModalFooterVariant } from './types';
 
 export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> &
   // Plain WithIcon, not Partial<WithIcon>: `icon` is already optional there, and
@@ -39,7 +39,7 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      * Variant of the footer styling
      * @default 'integrated'
      */
-    footerVariant?: FooterVariant;
+    footerVariant?: ModalFooterVariant;
     /**
      * Controls the visibility of the modal
      */
@@ -48,6 +48,11 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      * Callback function called when the modal is closed
      */
     onClose?: () => void;
+    /**
+     * Accessible label for the close button
+     * @default 'Close'
+     */
+    closeLabel?: string;
   };
 
 /**
@@ -65,6 +70,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       footerVariant = 'integrated',
       open,
       onClose,
+      closeLabel = 'Close',
       className,
       ...rest
     },
@@ -89,21 +95,17 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
               <div className={styles['title-wrapper']}>
                 {icon && <div className={styles['icon']}>{icon}</div>}
                 <div className={styles['title-container']}>
-                  <Dialog.Title className={clsx(styles['title'], 'ax-public-h6')} render={<span />}>
+                  <Dialog.Title className={clsx(styles['title'], 'wb-text-title-l-emphasized')} render={<span />}>
                     {title}
                   </Dialog.Title>
                   {subtitle && (
-                    <Dialog.Description className={clsx(styles['description'], 'ax-public-p11')} render={<span />}>
+                    <Dialog.Description className={clsx(styles['description'], 'wb-text-label-s')} render={<span />}>
                       {subtitle}
                     </Dialog.Description>
                   )}
                 </div>
               </div>
-              {onClose && (
-                <NavButton onClick={onClose}>
-                  <X />
-                </NavButton>
-              )}
+              {onClose && <NavButton aria-label={closeLabel} onClick={onClose} prefixIcon={<X />} />}
             </div>
 
             {children && <div className={styles['content']}>{children}</div>}

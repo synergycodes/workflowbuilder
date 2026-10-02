@@ -8,11 +8,13 @@ name: PR Check (docs)
 # Typecheck is deliberately absent: apps/docs tolerates known starlight
 # virtual-module type errors.
 
+# PRs into main and release get checks. Add an integration branch here for
+# the time it is the base of stacked PRs.
 on:
   pull_request:
     branches:
       - main
-      - release # merging into release is what deploys the docs site
+      - release # the docs site is deployed by hand from release, so its PRs get the same checks
     paths:
       - 'apps/docs/**'
       - 'packages/ui/**'

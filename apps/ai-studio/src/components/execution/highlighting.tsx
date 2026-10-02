@@ -38,7 +38,8 @@ export function ExecutionHighlighting() {
       }
 
       switch (state.status) {
-        case 'running': {
+        case 'running':
+        case 'waiting': {
           byStatus.running.push(nodeId);
           break;
         }

@@ -15,7 +15,8 @@ export function ExecutionNodeMarkers({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const nodeState = useExecutionStore((s) => s.nodeStates[nodeId]);
 
-  if (!nodeState || nodeState.status === 'idle') return null;
+  // Only a decision node waits, and its template says so in its own footer.
+  if (!nodeState || nodeState.status === 'idle' || nodeState.status === 'waiting') return null;
 
   const isClickable =
     nodeState.status === 'completed' || nodeState.status === 'failed' || nodeState.status === 'skipped';

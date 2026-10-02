@@ -1,6 +1,8 @@
 import type {
   DeadEnd,
   ExecutionErrorPayload,
+  ExecutionOutcome,
+  ExecutionOutcomeRecord,
   NodeSkipReason,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
@@ -11,7 +13,7 @@ import type {
 
 import { extractDeepestError } from './errors';
 import type { ExecutionContext } from './execution-context';
-import type { ActivityRunnerPort } from './ports/activity-runner.port';
+import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
@@ -34,9 +36,10 @@ const RESERVED_ERROR_HANDLE = 'errorRoute';
 // and still yields `{ status: 'completed' }` — only an unhandled node failure, a stall,
 // or a malformed start (missing, duplicated, or with orphaned nodes alongside it) fails
 // the run. 'incomplete' means every route the graph took was followed to its end, but at
-// least one of them led nowhere — see `deadEnds`.
+// least one of them led nowhere — see `deadEnds`. 'completed' may carry the first outcome a
+// completion declared (README, "Outcomes").
 export type RunGraphOutcome =
-  | { status: 'completed' }
+  | { status: 'completed'; outcome?: ExecutionOutcomeRecord }
   | { status: 'incomplete'; deadEnds: DeadEnd[] }
   | { status: 'failed'; error: { message: string; code?: string } };
 
@@ -89,6 +92,8 @@ export async function runGraph<TNode extends BaseNode>(
   let ready: TNode[] = [startNode];
   const nodeOutputs: Record<string, unknown> = {};
   const deadEnds: DeadEnd[] = [];
+  let outcome: ExecutionOutcomeRecord | undefined;
+  const parked = { count: 0 };
 
   while (ready.length > 0) {
     const context: ExecutionContext = {
@@ -100,14 +105,16 @@ export async function runGraph<TNode extends BaseNode>(
       global: input.global,
     };
 
-    const results = await Promise.all(ready.map((node) => runNode(node, context, runner, events, input.executionId)));
+    const results = await Promise.all(
+      ready.map((node) => runNode(node, context, runner, events, input.executionId, parked)),
+    );
 
     // Fatal failures (policy 'fail') abort the whole execution — pick the first
     // one in deterministic node order, just like the previous behavior. The abort
     // itself waits until the wave has propagated and emitted its skips: siblings
     // that resolved in this same wave still owe their `node_skipped` events, and
     // `execution_failed` has to stay the last event of the run.
-    const fatal = results.find((r) => r.failed && resolveErrorPolicy(r.node) === 'fail');
+    const fatal = results.find((r) => r.failed && (r.abort === true || resolveErrorPolicy(r.node) === 'fail'));
 
     const newlyReady: TNode[] = [];
     const skipped: SkippedNode[] = [];
@@ -117,7 +124,7 @@ export async function runGraph<TNode extends BaseNode>(
         // A fatal node resolves nothing — no output, no propagation — so its
         // successors keep their pending predecessor count and emit no event.
         // Never reached is a different state from deliberately skipped.
-        if (policy === 'fail') continue;
+        if (result.abort === true || policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
         // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
         const errorOutput =
@@ -134,12 +141,18 @@ export async function runGraph<TNode extends BaseNode>(
       nodeOutputs[result.node.id] = result.output;
       state.status.set(result.node.id, 'completed');
       const deadEnd = propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
-      if (deadEnd) deadEnds.push(deadEnd);
+      const declared = declaredOutcome(result.outcome);
+      // A declared result makes an unrouted port a deliberate end, so no dead end is recorded.
+      if (declared) {
+        outcome ??= { ...declared, nodeId: result.node.id };
+      } else if (deadEnd) {
+        deadEnds.push(deadEnd);
+      }
     }
 
     // Emitted once the whole wave has propagated, so a skip reads as a consequence of
     // the wave that pruned it rather than arriving mid-wave. Order is a pure function of
-    // the definition: `results` follows `ready`, which follows `definition.nodes`, and
+    // the definition: `results` follows `ready`, which follows the predecessors' edge order, and
     // `propagate` walks the dead subtree breadth-first from there — nothing wall-clock or
     // completion-order dependent, so a replay reproduces it. An exhausted `emitEvent` is
     // swallowed rather than failing the run: the event is advisory, so a node that was
@@ -178,9 +191,17 @@ export async function runGraph<TNode extends BaseNode>(
     return { status: 'incomplete', deadEnds };
   }
 
-  await events.emitEvent(input.executionId, 'execution_completed');
-  await events.updateStatus(input.executionId, 'completed');
-  return { status: 'completed' };
+  if (outcome === undefined) {
+    await events.emitEvent(input.executionId, 'execution_completed');
+    await events.updateStatus(input.executionId, 'completed');
+    return { status: 'completed' };
+  }
+  await events.emitEvent(input.executionId, 'execution_completed', { outcome });
+  await events.updateStatus(input.executionId, 'completed', undefined, {
+    value: outcome.value,
+    resolvedBy: outcome.resolvedBy,
+  });
+  return { status: 'completed', outcome };
 }
 
 // Emits the terminal failure signals and shapes the outcome. Every failure path routes
@@ -297,8 +318,9 @@ function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
 }
 
 type NodeRunResult<TNode extends BaseNode> =
-  | { node: TNode; output: unknown; nextPort?: string; failed: false }
-  | { node: TNode; message: string; code?: string; failed: true };
+  | { node: TNode; output: unknown; nextPort?: string; outcome?: ExecutionOutcome; failed: false }
+  // `abort` marks a runner-level abort that outranks the node's own errorPolicy.
+  | { node: TNode; message: string; code?: string; failed: true; abort?: true };
 
 async function runNode<TNode extends BaseNode>(
   node: TNode,
@@ -306,13 +328,31 @@ async function runNode<TNode extends BaseNode>(
   runner: ActivityRunnerPort<TNode>,
   events: EventEmitterPort,
   executionId: string,
+  parked: { count: number },
 ): Promise<NodeRunResult<TNode>> {
   try {
     const visibleNodeIds = Object.keys(context.nodeOutputs);
     await events.emitEvent(executionId, 'node_started', { config: node.config, visibleNodeIds }, node.id);
-    const result = await runner.executeNode(node, context);
+    const executed = await runner.executeNode(node, context);
+    let result: CompletedNodeExecution;
+    if (executed.waiting) {
+      if (runner.awaitResolution === undefined) {
+        // A runner-level abort, not a node failure: routed around `errorPolicy`, where
+        // 'continue' would close the run as completed with the waiting node silently skipped.
+        return {
+          node,
+          message: `Node "${node.id}" returned a waiting result, but this engine adapter does not support waiting nodes`,
+          code: 'waiting_unsupported',
+          failed: true,
+          abort: true,
+        };
+      }
+      result = await parkUntilResolved(runner.awaitResolution.bind(runner), node.id, events, executionId, parked);
+    } else {
+      result = executed;
+    }
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
-    return { node, output: result.output, nextPort: result.nextPort, failed: false };
+    return { node, output: result.output, nextPort: result.nextPort, outcome: result.outcome, failed: false };
   } catch (error) {
     const { message, code, attempt } = extractDeepestError(error);
     const errorPayload: ExecutionErrorPayload['error'] = { message };
@@ -323,8 +363,65 @@ async function runNode<TNode extends BaseNode>(
   }
 }
 
+// `parked` is a counter, not a flag: with two nodes parked, the first verdict
+// must not flip the run back to 'running'.
+async function parkUntilResolved(
+  awaitResolution: (nodeId: string) => Promise<CompletedNodeExecution>,
+  nodeId: string,
+  events: EventEmitterPort,
+  executionId: string,
+  parked: { count: number },
+): Promise<CompletedNodeExecution> {
+  // Registered before it is announced, so a verdict sent on seeing node_waiting is never early.
+  const resolution = awaitResolution(nodeId);
+  // Abandoned if the announcement throws; an unhandled rejection would fail the workflow task.
+  resolution.catch(() => {});
+  await events.emitEvent(executionId, 'node_waiting', undefined, nodeId);
+  parked.count += 1;
+  try {
+    if (parked.count === 1) {
+      await setAdvisoryStatus(events, executionId, 'waiting');
+    }
+    // Awaited here, so the caller's wave slot stays pending and the barrier holds
+    // itself: the wave completes only once every parked node has resolved.
+    return await resolution;
+  } finally {
+    // On rejection too: a failure absorbed by 'continue' must not strand the run in 'waiting'.
+    parked.count -= 1;
+    if (parked.count === 0) {
+      await setAdvisoryStatus(events, executionId, 'running');
+    }
+  }
+}
+
+// waiting/running are derived, advisory state: a failed write must not cost a park or
+// a delivered verdict. Same rationale as the swallowed node_skipped emit above.
+async function setAdvisoryStatus(
+  events: EventEmitterPort,
+  executionId: string,
+  status: 'waiting' | 'running',
+): Promise<void> {
+  try {
+    await events.updateStatus(executionId, status);
+  } catch {
+    // Swallowed on purpose — see above. No logger inside the workflow sandbox.
+  }
+}
+
 function resolveErrorPolicy(node: BaseNode): NodeErrorPolicy {
   return node.errorPolicy ?? 'fail';
+}
+
+// Shape only, never the meaning: a shapeless or blank outcome from unvalidated config counts as
+// none, so it cannot hide a dead end behind an empty result.
+function declaredOutcome(candidate: unknown): ExecutionOutcome | undefined {
+  if (typeof candidate !== 'object' || candidate === null) return undefined;
+  const { value, resolvedBy } = candidate as Partial<Record<keyof ExecutionOutcome, unknown>>;
+  return isFilled(value) && isFilled(resolvedBy) ? { value, resolvedBy } : undefined;
+}
+
+function isFilled(text: unknown): text is string {
+  return typeof text === 'string' && text.trim().length > 0;
 }
 
 // Edge liveness rules:

@@ -50,8 +50,8 @@ const plugin = new WorkflowBuilderPlugin({
     async emitExecutionEvent(executionId, sequence, type, payload, nodeId) {
       /* insert a row */
     },
-    async updateExecutionStatus(executionId, status, errorMessage) {
-      /* update the run */
+    async updateExecutionStatus(executionId, status, errorMessage, outcome) {
+      /* update the run; the terminal 'completed' write may carry the run's outcome */
     },
   },
 });
@@ -130,6 +130,11 @@ const engine = new TemporalWorkflowEngine({
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
 await engine.cancel(executionId);
+const { error } = await engine.resolveNode({
+  executionId,
+  nodeId: 'approval-1',
+  resolution: { output: 'approved', nextPort: 'approved' },
+});
 ```
 
 The engine and the worker default to the same task queue (`workflow-execution`). Override it in both places together, or leave both alone.
@@ -144,15 +149,61 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 
 ## Entry points
 
-| Import                               | Use it for                                                           |
-| ------------------------------------ | -------------------------------------------------------------------- |
-| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, shared constants, types |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs                                         |
-| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles    |
+| Import                               | Use it for                                                                                                           |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, the `RUN_WORKFLOW_NAME` and `RESOLVE_NODE_UPDATE_NAME` constants, types |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                                                    |
+| `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update                          |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
 
 Also exported, for the pieces the quick start does not touch: `DEFAULT_NODE_ACTIVITY_PROFILE` and `DEFAULT_DATABASE_ACTIVITY_PROFILE` are what every activity gets unless a profile says otherwise; `assertNodeActivityProfiles` and `resolveNodeActivityOptions` check a profile map in worker setup, before the sandbox would; `PermanentNodeExecutionError` and `TransientNodeExecutionError` (both extending `NodeExecutionError`) let an executor say whether a failure deserves another attempt. The rules behind profiles are in [activity-profiles.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/activity-profiles.md); how node labels reach Event History is in [event-history-labels.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/event-history-labels.md).
+
+## Pausing a run for a human
+
+An executor that returns `{ waiting: true }` instead of a completion parks the run at that node. Nothing polls and no timer is set: the workflow stops producing commands, so a parked run costs nothing while it waits and survives worker restarts, redeploys and weeks of idleness. The wave containing the waiting node holds until every node in it has resolved; the rest of that wave keeps running.
+
+```ts
+const plugin = new WorkflowBuilderPlugin({
+  executors: {
+    'my-app/approval': () => ({ waiting: true }),
+    // ...the rest of your executors
+  },
+  store,
+});
+```
+
+While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Both are also advisory: a write can land after a cancel, even after the terminal status, so a store must not let either replace a cancel it recorded or a terminal status.
+
+The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
+
+```ts
+import { executionWorkflowId } from '@workflowbuilder/temporal';
+import { resolveNodeUpdate } from '@workflowbuilder/temporal/workflow';
+
+const handle = client.workflow.getHandle(executionWorkflowId(executionId));
+await handle.executeUpdate(resolveNodeUpdate, {
+  args: [{ nodeId: 'approval-1', resolution: { output: { decision: 'approved' }, nextPort: 'approved' } }],
+});
+```
+
+The `resolution` is the completion the node finishes with, exactly as if its executor had returned it: `output` becomes the node's output for everything downstream, and `nextPort` routes the graph. This package passes it through untouched. What a verdict contains, and who may deliver one, is your application's contract.
+
+A resolution may also carry `outcome: { value, resolvedBy }`, the run's business result. The runner then treats an unrouted `nextPort` as a deliberate end, closes the run `completed`, records `{ outcome: { value, resolvedBy, nodeId } }` on `execution_completed` and passes `{ value, resolvedBy }` as the fourth argument of `updateExecutionStatus`; a store that ignores it loses the result. This package reads neither string. The rule in full is in the execution-core README under ["Outcomes"](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#outcomes).
+
+A waiting node that routes its verdict by port should not use `errorPolicy: 'continue'`. A failure under `continue` has no port, so every non-error edge runs, and approve and reject run together. Use `'fail'` or `'errorRoute'`. The runner does not refuse the combination, so check it where your application accepts a graph.
+
+Because this is an Update and not a signal, the caller gets a synchronous answer, and the update is validated before it is accepted, so a rejected verdict leaves no trace in the run. The rejections, each an `ApplicationFailure` with a stable type: a malformed envelope is `verdict_malformed` (the envelope is an object carrying at most `output`, `nextPort` and `outcome`; `nextPort` must not be the reserved `errorRoute`; `outcome`, when present, is an object with exactly `value` and `resolvedBy`, both non-empty strings; and a missing `output` is read as `undefined`, which is what the default JSON payload converter turns `output: undefined` into), a node id that is not in the graph is `verdict_for_unknown_node`, a node that is not currently waiting is `node_not_waiting` (final: it has not parked, or its wait was cancelled), and a second verdict for the same node is `verdict_already_delivered`: the first one wins. A verdict for a run that has already closed fails at the server. Through `engine.resolveNode` every one of these comes back as `{ error: { code, message } }` instead of a throw, plus `run_not_found` for a closed run and `delivery_timeout` when no worker accepted the update within `resolveTimeoutMs` (default 10 s). A timed-out update may still reach the next worker, so a resend can answer `verdict_already_delivered`; exactly one lands. Cancelling a parked run closes it as `cancelled`, with `execution_cancelled` following the node's `node_waiting` and no `node_failed` recorded for the node that was waiting.
+
+### Wave-barrier limitations (deliberate)
+
+Graph traversal is wave-based with a barrier, and the pause does not restructure it. Three consequences are documented limitations, not bugs:
+
+- successors of an independent parallel branch wait for the wave that contains a waiting node, even when their own inputs are ready;
+- a waiting node in a deeper wave becomes visible only once the earlier waves resolve;
+- a fatal failure in the same wave as a parked node cannot close the run until the verdict arrives, so a person can approve a run that then immediately fails.
+
+Lifting the barrier later is an additive engine change: same events, same update, same statuses.
 
 ## Versioning and replay
 

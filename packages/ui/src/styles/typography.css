@@ -1,169 +1,221 @@
 @layer ui.base {
-  /* Heading and paragraph styles */
-
-  .ax-public-h1,
-  .ax-public-h2,
-  .ax-public-h3,
-  .ax-public-h4,
-  .ax-public-h5,
-  .ax-public-h6,
-  .ax-public-h7,
-  .ax-public-h8,
-  .ax-public-h9,
-  .ax-public-h10,
-  .ax-public-h11,
-  .ax-public-h12 {
-    font-weight: 600;
+  :root {
+    --wb-public-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    --wb-public-font-family-mono: ui-monospace, 'Cascadia Mono', monospace;
   }
 
-  .ax-public-p1,
-  .ax-public-p2,
-  .ax-public-p3,
-  .ax-public-p4,
-  .ax-public-p5,
-  .ax-public-p6,
-  .ax-public-p7,
-  .ax-public-p8,
-  .ax-public-p9,
-  .ax-public-p10,
-  .ax-public-p11,
-  .ax-public-p12 {
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
+    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  }
+
+  .wb-text-code {
+    font-family: 'Inter', system-ui, sans-serif;
+  }
+
+  .wb-text-code-mono {
+    font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
+  }
+
+  .wb-text-display-s,
+  .wb-text-display-m,
+  .wb-text-display-l,
+  .wb-text-headline-s,
+  .wb-text-headline-m,
+  .wb-text-headline-l,
+  .wb-text-title-s,
+  .wb-text-title-m,
+  .wb-text-title-l,
+  .wb-text-body-s,
+  .wb-text-body-m,
+  .wb-text-body-l,
+  .wb-text-label-s,
+  .wb-text-label-m,
+  .wb-text-label-l,
+  .wb-text-label-xl,
+  .wb-text-node-s,
+  .wb-text-node-m,
+  .wb-text-node-l,
+  .wb-text-code,
+  .wb-text-code-mono {
     font-weight: 400;
   }
 
-  .ax-public-h1,
-  .ax-public-h2,
-  .ax-public-h3,
-  .ax-public-p1,
-  .ax-public-p2,
-  .ax-public-p3 {
-    line-height: 120%;
-  }
-
-  .ax-public-h4,
-  .ax-public-h5,
-  .ax-public-h6,
-  .ax-public-p4,
-  .ax-public-p5,
-  .ax-public-p6 {
+  .wb-text-display-s,
+  .wb-text-display-s-emphasized {
+    font-size: var(--wb-ds-font-size-300);
     line-height: 130%;
   }
 
-  .ax-public-h7,
-  .ax-public-h8,
-  .ax-public-h9,
-  .ax-public-h10,
-  .ax-public-h11,
-  .ax-public-h12,
-  .ax-public-p7,
-  .ax-public-p8,
-  .ax-public-p9,
-  .ax-public-p10,
-  .ax-public-p11,
-  .ax-public-p12 {
+  .wb-text-display-m,
+  .wb-text-display-m-emphasized {
+    font-size: var(--wb-ds-font-size-350);
+    line-height: 120%;
+  }
+
+  .wb-text-display-l,
+  .wb-text-display-l-emphasized {
+    font-size: var(--wb-ds-font-size-400);
+    line-height: 120%;
+  }
+
+  .wb-text-headline-s,
+  .wb-text-headline-s-emphasized {
+    font-size: var(--wb-ds-font-size-250);
+    line-height: 130%;
+  }
+
+  .wb-text-headline-m,
+  .wb-text-headline-m-emphasized {
+    font-size: var(--wb-ds-font-size-275);
+    line-height: 130%;
+  }
+
+  .wb-text-headline-l,
+  .wb-text-headline-l-emphasized {
+    font-size: var(--wb-ds-font-size-300);
+    line-height: 130%;
+  }
+
+  .wb-text-title-s,
+  .wb-text-title-s-emphasized {
+    font-size: var(--wb-ds-font-size-175);
     line-height: 140%;
   }
 
-  .ax-public-h1,
-  .ax-public-p1 {
-    font-size: 2.25rem;
+  .wb-text-title-m,
+  .wb-text-title-m-emphasized {
+    font-size: var(--wb-ds-font-size-200);
+    line-height: 140%;
   }
 
-  .ax-public-h2,
-  .ax-public-p2 {
-    font-size: 2rem;
+  .wb-text-title-l,
+  .wb-text-title-l-emphasized {
+    font-size: var(--wb-ds-font-size-225);
+    line-height: 130%;
   }
 
-  .ax-public-h3,
-  .ax-public-p3 {
-    font-size: 1.75rem;
+  .wb-text-body-s,
+  .wb-text-body-s-emphasized {
+    font-size: var(--wb-ds-font-size-150);
+    line-height: 130%;
   }
 
-  .ax-public-h4,
-  .ax-public-p4 {
-    font-size: 1.5rem;
+  .wb-text-body-m,
+  .wb-text-body-m-emphasized {
+    font-size: var(--wb-ds-font-size-175);
+    line-height: 140%;
   }
 
-  .ax-public-h5,
-  .ax-public-p5 {
-    font-size: 1.25rem;
+  .wb-text-body-l,
+  .wb-text-body-l-emphasized {
+    font-size: var(--wb-ds-font-size-200);
+    line-height: 140%;
   }
 
-  .ax-public-h6,
-  .ax-public-p6 {
-    font-size: 1.125rem;
+  .wb-text-label-s,
+  .wb-text-label-s-emphasized {
+    font-size: var(--wb-ds-font-size-125);
+    line-height: 100%;
   }
 
-  .ax-public-h7,
-  .ax-public-p7 {
-    font-size: 1rem;
+  .wb-text-label-m,
+  .wb-text-label-m-emphasized {
+    font-size: var(--wb-ds-font-size-150);
+    line-height: 100%;
   }
 
-  .ax-public-h8,
-  .ax-public-p8 {
-    font-size: 0.9375rem;
+  .wb-text-label-l,
+  .wb-text-label-l-emphasized {
+    font-size: var(--wb-ds-font-size-175);
+    line-height: 100%;
   }
 
-  .ax-public-h9,
-  .ax-public-p9 {
-    font-size: 0.875rem;
+  .wb-text-label-xl,
+  .wb-text-label-xl-emphasized {
+    font-size: var(--wb-ds-font-size-200);
+    line-height: 100%;
   }
 
-  .ax-public-h10,
-  .ax-public-p10 {
-    font-size: 0.75rem;
+  .wb-text-node-s,
+  .wb-text-node-s-emphasized {
+    font-size: var(--wb-ds-font-size-137);
+    line-height: 130%;
   }
 
-  .ax-public-h11,
-  .ax-public-p11 {
-    font-size: 0.625rem;
+  .wb-text-node-m,
+  .wb-text-node-m-emphasized {
+    font-size: var(--wb-ds-font-size-162);
+    line-height: 140%;
   }
 
-  .ax-public-h12,
-  .ax-public-p12 {
-    font-size: 0.5rem;
+  .wb-text-node-l,
+  .wb-text-node-l-emphasized {
+    font-size: var(--wb-ds-font-size-200);
+    line-height: 140%;
   }
 
-  /* Navigation and Links */
+  .wb-text-code,
+  .wb-text-code-mono {
+    font-size: var(--wb-ds-font-size-150);
+    line-height: 130%;
+  }
 
-  .ax-public-button-large,
-  .ax-public-button-medium,
-  .ax-public-button-small,
-  .ax-public-button-extra-small {
+  .wb-text-display-s-emphasized,
+  .wb-text-display-m-emphasized,
+  .wb-text-display-l-emphasized,
+  .wb-text-headline-s-emphasized,
+  .wb-text-headline-m-emphasized,
+  .wb-text-headline-l-emphasized,
+  .wb-text-title-s-emphasized,
+  .wb-text-title-m-emphasized,
+  .wb-text-title-l-emphasized,
+  .wb-text-body-s-emphasized,
+  .wb-text-body-m-emphasized,
+  .wb-text-body-l-emphasized,
+  .wb-text-label-s-emphasized,
+  .wb-text-label-m-emphasized,
+  .wb-text-label-l-emphasized,
+  .wb-text-label-xl-emphasized,
+  .wb-text-node-s-emphasized,
+  .wb-text-node-m-emphasized,
+  .wb-text-node-l-emphasized {
     font-weight: 600;
-    line-height: 100%;
-  }
-
-  .ax-public-button-large {
-    font-size: 1rem;
-  }
-
-  .ax-public-button-medium {
-    font-size: 0.875rem;
-  }
-
-  .ax-public-button-small {
-    font-size: 0.75rem;
-  }
-
-  .ax-public-button-extra-small {
-    font-size: 0.625rem;
-  }
-
-  /* Edge Label */
-
-  .ax-public-edge-label-medium {
-    font-size: 0.75rem;
-    line-height: 100%;
-  }
-
-  .ax-public-edge-label-small {
-    font-size: 0.75rem;
-    line-height: 100%;
-  }
-
-  .ax-public-edge-label-extra-small {
-    font-size: 0.625rem;
-    line-height: 100%;
   }
 }

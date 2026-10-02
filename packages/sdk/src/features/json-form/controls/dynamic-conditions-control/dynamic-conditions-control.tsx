@@ -1,4 +1,4 @@
-import { NavButton } from '@workflowbuilder/ui';
+import { Chip, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -43,13 +43,18 @@ function DynamicConditionsControl(props: DynamicConditionsControlProps) {
   return (
     <div className={styles['container']}>
       <div className={styles['header']}>
-        <span className={clsx('ax-public-h10', styles['title'])}>{t('title')}</span>
-        <NavButton size="small" onClick={openEditorModal} tooltip={t('title')} disabled={isDisabled}>
-          <Icon name="FrameCorners" size="small" />
-        </NavButton>
+        <span className={clsx('wb-text-body-s-emphasized', styles['title'])}>{t('title')}</span>
+        <NavButton
+          aria-label={t('title')}
+          size="s"
+          onClick={openEditorModal}
+          tooltip={t('title')}
+          disabled={isDisabled}
+          prefixIcon={<Icon name="FrameCorners" size="small" />}
+        />
       </div>
       <Dependencies conditions={data} onClick={openEditorModal} disabled={isDisabled} />
-      <span className={styles['tag']}>{t('totalNumber', { count: data.length })}</span>
+      <Chip size="l" className={styles['tag']} label={t('totalNumber', { count: data.length })} />
     </div>
   );
 }
