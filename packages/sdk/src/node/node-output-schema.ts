@@ -66,4 +66,12 @@ export type NodeSchemaOutputVariant = {
   variants: OutputVariant[];
 };
 
+/**
+ * The output contract of a node: what downstream nodes can reference as variables.
+ * Attach it via `PaletteItem.schemaOutput`. `default` maps each source handle to a
+ * JSON Schema (`every` covers all handles); `variant` merges every variant whose rule
+ * matches the node's current properties.
+ *
+ * @category Types
+ */
 export type NodeSchemaOutput = NodeSchemaOutputDefault | NodeSchemaOutputVariant;

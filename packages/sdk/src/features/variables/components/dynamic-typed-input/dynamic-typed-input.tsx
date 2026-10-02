@@ -127,6 +127,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['container--select']}>
         <Select
+          error={isError}
           className={clsx(styles['select'], className)}
           value={booleanValue}
           items={itemsForBoolean}
