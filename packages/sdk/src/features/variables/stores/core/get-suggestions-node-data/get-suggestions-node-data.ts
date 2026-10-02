@@ -3,8 +3,8 @@ import type { WorkflowBuilderNode } from '../../../../../node/node-data';
 import { OUTPUT_SCHEMA_TYPE } from '../../../../../node/node-output-schema';
 import { filterEmpty } from '../../../../../utils/array';
 import { getByPath } from '../../../../../utils/object';
-import type { VariablesIndex } from '../../../types';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
+import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-index-if-valid';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
 import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
 import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
@@ -154,15 +154,12 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
         'fromValueOfPropertyPath' in variant.variantRule &&
         variant.variantRule.fromValueOfPropertyPath
       ) {
-        const variablesIndex = getByPath(
-          node.data.properties,
-          variant.variantRule.fromValueOfPropertyPath,
-        ) as unknown as VariablesIndex | undefined;
+        const maybeVariablesIndex = getByPath(node.data.properties, variant.variantRule.fromValueOfPropertyPath);
+
+        const variablesIndex = getVariablesIndexIfValid(maybeVariablesIndex);
 
         const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
 
-        // TODO: Add better guard
-        // It's an output of schema-builder control
         if (variablesIndex) {
           const suggestions = getSuggestionsFromVariableIndex({
             variablesIndex,
