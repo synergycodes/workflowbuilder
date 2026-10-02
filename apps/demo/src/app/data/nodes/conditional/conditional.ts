@@ -2,6 +2,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type ConditionalNodeSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const conditional: PaletteItem<ConditionalNodeSchema> = {
@@ -11,16 +12,6 @@ export const conditional: PaletteItem<ConditionalNodeSchema> = {
   icon: 'ListChecks',
   defaultPropertiesData,
   schema,
+  schemaOutput,
   uischema,
-  outputSchema: {
-    type: 'default',
-    properties: {
-      result: { type: 'boolean', label: 'Result', description: 'Whether the condition evaluated to true or false' },
-      matchedCondition: {
-        type: 'string',
-        label: 'Matched Condition',
-        description: 'The condition expression that matched',
-      },
-    },
-  },
 };

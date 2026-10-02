@@ -1,0 +1,9 @@
+.button-toggle {
+  padding: 0;
+  margin: 0;
+  height: auto;
+
+  > div {
+    display: inline-flex;
+  }
+}

@@ -1,6 +1,13 @@
-import type { VariableType, VariableTypePrimitive } from '../../node/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
 
-export type LogicalOperator = 'OR' | 'AND';
+export const NODE_ID_FOR_COMMON_NODE_DATA = '<NODE_ID>';
+export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<NODE_LABEL>';
+
+export const LOGICAL_OPERATOR = {
+  OR: 'OR',
+  AND: 'AND',
+} as const;
+export type LogicalOperator = (typeof LOGICAL_OPERATOR)[keyof typeof LOGICAL_OPERATOR];
 
 /**
  * String literal union of comparison operators recognised by the
@@ -50,6 +57,7 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
 
 export const VARIABLE_BRACKETS_START = '{{';
 export const VARIABLE_BRACKETS_END = '}}';
+export const VARIABLE_DELIMITER = ' · ';
 
 /**
  * Reserved key under which the variable-text control looks up the
@@ -72,12 +80,12 @@ export const VARIABLE_GLOBAL_KEY = 'global';
 export const VARIABLE_NODES_KEY = 'nodes';
 
 type VariableTypeOption = {
-  type: VariableTypePrimitive;
-  baseType: VariableTypePrimitive;
+  type: VariableType;
+  baseType: VariableType;
   label: string;
 };
 
-export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeOption> = {
+export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = {
   string: {
     type: 'string',
     baseType: 'string',
@@ -103,24 +111,46 @@ export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeO
     baseType: 'datetime',
     label: 'Datetime',
   },
-  // Possible in future?
-  // email: {
-  //   type: 'email',
-  //   baseType: 'string',
-  //   label: 'Email',
-  // },
-  // url: {
-  //   type: 'url',
-  //   baseType: 'string',
-  //   label: 'URL',
-  // },
+  object: {
+    type: 'object',
+    baseType: 'object',
+    label: 'Object',
+  },
+  array: {
+    type: 'array',
+    baseType: 'array',
+    label: 'Array',
+  },
 };
 
-// Remove filter when other formats will be supported
 export const variableTypesOptions: VariableTypeOption[] = Object.values(variableTypeInfoByType).filter(
   ({ type, baseType }) => type === baseType,
 );
 
-export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'array'];
+export const VARIABLES_TYPES_NOT_PRIMITIVE: VariableType[] = ['object', 'array'];
 
-export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
+export const VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT: VariableType[] = [...VARIABLES_TYPES_NOT_PRIMITIVE, 'boolean'];
+
+export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
+
+export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
+
+/**
+ * Optional buckets in `bySourceHandle`, next to entries keyed by real handle names.
+ * None of them has to be present; a handle's own entry is always used on its own.
+ *
+ * - `every`: added to every handle.
+ * - `error`: added to handles whose name contains `error`.
+ * - `success`: added to every other handle.
+ *
+ * The check is a substring match on the handle name, so `onError` or `error-1`
+ * count as error handles.
+ *
+ * A variable may sit in several buckets. Duplicates are dropped by id later,
+ * so keep its type the same in each bucket; the type is not resolved per handle.
+ */
+export const SPECIAL_SOURCE_HANDLE_KEYWORDS = {
+  EVERY: 'every',
+  SUCCESS: 'success',
+  ERROR: 'error',
+} as const;

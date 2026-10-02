@@ -3,7 +3,7 @@ import { useContext, useMemo } from 'react';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
 import type { LayoutDirection } from '../node/common';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';
@@ -106,7 +106,7 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
     () => ({
       save: () => onSave({ isAutoSave: false }),
 
-      openSettings: openModalWorkflowSettings,
+      openSettings: () => openModalWorkflowSettings(),
       openImport: openImportModal,
       openExport: openExportModal,
 
