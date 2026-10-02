@@ -1,15 +1,13 @@
 # Changelog
 
-## [1.0.0]
+## [1.0.0] - 2026-10-02
 
 First release of `@workflowbuilder/ui`: an accessible, themeable React
 component library built on [Base UI](https://base-ui.com/), plus diagram
 building blocks (node and edge parts). It is the styled layer behind the
 Workflow Builder SDK.
 
-All notable changes to `@workflowbuilder/ui` are documented in this file. The
-format is based on [Keep a Changelog](https://keepachangelog.com/). The library
-was previously published as
+The library was previously published as
 [`@synergycodes/overflow-ui`](https://www.npmjs.com/package/@synergycodes/overflow-ui);
 it moved into the Workflow Builder monorepo and was rebuilt on Base UI. Its
 prior history lives in the old package's
