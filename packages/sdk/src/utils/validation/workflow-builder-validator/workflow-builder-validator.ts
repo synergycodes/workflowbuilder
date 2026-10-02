@@ -83,10 +83,16 @@ function mapOutputToErrorObjects(errors: OutputUnit[]): ErrorObject[] {
   });
 }
 
+const allowsNull = (declaration: Schema | boolean): boolean =>
+  typeof declaration !== 'boolean' &&
+  (declaration.type === 'null' || (Array.isArray(declaration.type) && declaration.type.includes('null')));
+
 const getValidator = (object: object): Validator => {
   const schema = object as Schema;
+  const properties = Object.entries(schema?.properties || {});
+  const nullableProperties = new Set(properties.filter(([, value]) => allowsNull(value)).map(([key]) => key));
 
-  const { standardSchema, hasCustomSchema, customSchema } = Object.entries(schema?.properties || {}).reduce(
+  const { standardSchema, hasCustomSchema, customSchema } = properties.reduce(
     (
       stack: {
         standardSchema: Exclude<Schema['properties'], undefined>;
@@ -127,7 +133,7 @@ const getValidator = (object: object): Validator => {
 
   const validationCustomTypes = hasCustomSchema ? getValidationForCustomTypes(customSchema) : undefined;
 
-  return combineValidators({ standardValidator, validationCustomTypes });
+  return combineValidators({ standardValidator, validationCustomTypes, nullableProperties });
 };
 
 /**
