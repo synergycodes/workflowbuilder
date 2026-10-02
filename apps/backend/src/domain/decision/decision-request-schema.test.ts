@@ -12,6 +12,7 @@ import { decisionRequestSchema } from './decision-request-schema';
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 };
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held' };
 
 const refundForm = {
   type: 'object',
@@ -66,6 +67,12 @@ describe('decisionRequestSchema', () => {
     };
 
     expect(decisionRequestSchema.safeParse(minimal).success).toBe(true);
+  });
+
+  it('accepts several resume actions, each on its own port, beside one reject and one rerun-source', () => {
+    const parsed = decisionRequestSchema.parse(request({ actions: [approve, hold, reject, askAgain] }));
+
+    expect(parsed.actions.map((action) => action.name)).toEqual(['approve', 'hold', 'reject', 'ask-again']);
   });
 
   // Shapes JsonForms 3.5.1 generates a control for. The parser reads none of their
@@ -192,10 +199,10 @@ describe('decisionRequestSchema', () => {
       issue: { code: 'resume_required' },
     },
     {
-      name: 'two resume actions',
-      input: request({ actions: [approve, { ...approve, name: 'approve-2' }] }),
-      path: 'actions.1.effect',
-      issue: { code: 'duplicate_effect', value: 'resume' },
+      name: 'two resume actions sharing a port',
+      input: request({ actions: [approve, { ...hold, port: 'approved' }] }),
+      path: 'actions.1.port',
+      issue: { code: 'duplicate_port', value: 'approved' },
     },
     {
       name: 'two reject actions',
@@ -279,10 +286,16 @@ describe('decisionRequestSchema', () => {
       issue: { code: 'port_reserved' },
     },
     {
-      name: 'a reject port equal to the resume port',
+      name: 'a reject port equal to a resume port',
       input: request({ actions: [approve, { ...reject, port: 'approved' }] }),
       path: 'actions.1.port',
-      issue: { code: 'reject_port_equals_resume_port', value: 'approved' },
+      issue: { code: 'duplicate_port', value: 'approved' },
+    },
+    {
+      name: 'a resume port equal to the reject port, the reject coming first',
+      input: request({ actions: [reject, { ...approve, port: 'rejected' }] }),
+      path: 'actions.1.port',
+      issue: { code: 'duplicate_port', value: 'rejected' },
     },
     {
       name: 'a non-boolean reasonRequired',
@@ -396,8 +409,19 @@ describe('decisionRequestSchema', () => {
     }
   });
 
+  it('reports every later action that reuses a port, each at its own index', () => {
+    const issues = issuesOf(
+      request({ actions: [approve, { ...hold, port: 'approved' }, { ...reject, port: 'approved' }] }),
+    );
+
+    expect(issues.map((issue) => [issue.path, issue.domain])).toEqual([
+      ['actions.1.port', { issue: 'duplicate_port', value: 'approved' }],
+      ['actions.2.port', { issue: 'duplicate_port', value: 'approved' }],
+    ]);
+  });
+
   // Two absent ports would compare equal, so the request-level rule must not run on them.
-  it('reports each missing port on its own, without a port-equality issue riding along', () => {
+  it('reports each missing port on its own, without a duplicate-port issue riding along', () => {
     const issues = issuesOf(
       request({
         actions: [
@@ -411,18 +435,23 @@ describe('decisionRequestSchema', () => {
     expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
   });
 
-  it('reports two blank ports as two empty-port issues, without a port-equality issue riding along', () => {
+  it('reports three blank ports as three empty-port issues, without a duplicate-port issue riding along', () => {
     const issues = issuesOf(
       request({
         actions: [
           { ...approve, port: ' ' },
+          { ...hold, port: ' ' },
           { ...reject, port: ' ' },
         ],
       }),
     );
 
-    expect(issues.map((issue) => issue.path)).toEqual(['actions.0.port', 'actions.1.port']);
-    expect(issues.map((issue) => issue.domain)).toEqual([{ issue: 'port_empty' }, { issue: 'port_empty' }]);
+    expect(issues.map((issue) => issue.path)).toEqual(['actions.0.port', 'actions.1.port', 'actions.2.port']);
+    expect(issues.map((issue) => issue.domain)).toEqual([
+      { issue: 'port_empty' },
+      { issue: 'port_empty' },
+      { issue: 'port_empty' },
+    ]);
   });
 
   it('reports a stray rerun-source port beside a structural failure of the same action', () => {

@@ -194,7 +194,7 @@ describe('workflowSnapshotSchema: decision requests', () => {
       edges: [edge('src', 'review')],
     };
 
-    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decisionRequest.actions.1.effect');
+    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decisionRequest.actions.1.port');
   });
 
   it('rejects `decisionRequest: null`; absent is the only way to carry no request', () => {
