@@ -22,7 +22,10 @@ export function ConnectableItem({ handleId, label, canHaveBottomHandle = true }:
         [styles['connectable-item--right']]: layoutDirection === 'RIGHT',
       })}
     >
-      <div className={styles['label']}>{label}</div>
+      {/* Native title until the DS Tooltip takes over (follow-up: node-text-ds-tooltip). */}
+      <div className={styles['label']} title={label}>
+        {label}
+      </div>
       <div className={clsx(styles['handle-container'], { [styles['vertical']]: isVertical })}>
         <Handle id={handleId} position={position} type="source" />
       </div>

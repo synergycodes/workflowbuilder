@@ -93,7 +93,7 @@ const diagram: DiagramModel = {
 };
 
 export const agentHarnessFlow: TemplateModel = {
-  id: 306,
+  id: 307,
   name: 'Agent Harness Demo',
   value: diagram,
   icon: 'Terminal',

@@ -8,9 +8,11 @@ import { defineConfig, passthroughImageService } from 'astro/config';
 import icon from 'astro-icon';
 import rehypeExternalLinks from 'rehype-external-links';
 import starlightImageZoom from 'starlight-image-zoom';
-import starlightTypeDoc from 'starlight-typedoc';
+import starlightTypeDoc, { createStarlightTypeDocPlugin } from 'starlight-typedoc';
 
+import uiApiCategories from './src/generated/ui-api-categories.json';
 import { remarkBasePathLinks } from './src/remark-base-path-links.mjs';
+import { UI_API_REFERENCE_DIRECTORY } from './src/ui-api-reference.mjs';
 
 // Copies the hand-written API landing page into the gitignored TypeDoc
 // output directory. Two things matter:
@@ -38,6 +40,22 @@ function copyApiLanding() {
   };
 }
 
+const [starlightUiApiReference] = createStarlightTypeDocPlugin();
+
+const isAstroDevelopmentServer = process.env.NODE_ENV === 'development';
+
+// Shared by both API References; typedoc-api-reference.decision-log.md explains each option.
+const STRICT_TYPEDOC = {
+  router: 'category',
+  disableSources: true,
+  excludeInternal: true,
+  excludePrivate: true,
+  excludeProtected: true,
+  excludeNotDocumented: true,
+  treatWarningsAsErrors: true,
+  entryFileName: '_readme',
+};
+
 const UMAMI_WEBSITE_ID = process.env.UMAMI_WEBSITE_ID || '';
 
 const BASE = '/docs';
@@ -50,7 +68,7 @@ export default defineConfig({
         // Route `@workflowbuilder/sdk` through a docs-only shim that re-exports
         // just the symbols demo's schema/uischema files import — without the
         // SDK barrel's CSS side-effect, which would leak a full-viewport reset
-        // (body overflow:hidden, global Poppins) into the docs layout.
+        // (body overflow:hidden) into the docs layout.
         {
           find: /^@workflowbuilder\/sdk$/,
           replacement: path.resolve(import.meta.dirname, 'src/sdk-shim.ts'),
@@ -79,8 +97,6 @@ export default defineConfig({
         // TypeDoc → Markdown for the SDK barrel. Runs inside `astro build` and
         // `astro dev` (watch). Output goes to `src/content/docs/api/` (gitignored)
         // and is wired into the sidebar via `typeDocSidebarGroup` below.
-        // See `apps/docs/typedoc-api-reference.decision-log.md` for the rationale
-        // behind each option.
         starlightTypeDoc({
           entryPoints: ['../../packages/sdk/src/index.ts'],
           tsconfig: '../../packages/sdk/tsconfig.json',
@@ -90,36 +106,23 @@ export default defineConfig({
           // doesn't work with `router: 'category'` — it groups by TypeDoc
           // Kind ("Type Aliases" / "Functions") while the on-disk folders
           // are per `@category`. Same pattern as ngDiagram.
-          watch: true,
-          typeDoc: {
-            // Show every public export grouped by `@category` (matches the
-            // sectioning already used in `packages/sdk/src/index.ts`).
-            // Symbols without a category fall through to "Other".
-            router: 'category',
-            // Drop noise: source links (file paths inside packages/sdk),
-            // private fields, anything tagged `@internal`.
-            disableSources: true,
-            excludeInternal: true,
-            excludePrivate: true,
-            excludeProtected: true,
-            // Strict mode: every public symbol must have a TSDoc comment.
-            // `excludeNotDocumented` hides any rogue undocumented symbol
-            // from the rendered site; `treatWarningsAsErrors` makes
-            // `pnpm build:docs` fail when one is found, so a missing
-            // doc-comment is caught at CI time instead of shipping silently.
-            excludeNotDocumented: true,
-            treatWarningsAsErrors: true,
-            // Hide the per-package README page that TypeDoc emits by default.
-            // The category landing pages cover the same surface.
-            entryFileName: '_readme',
-          },
+          watch: isAstroDevelopmentServer,
+          typeDoc: STRICT_TYPEDOC,
+        }),
+        // The entry point is written by `generate:ui-api`.
+        starlightUiApiReference({
+          entryPoints: ['./src/generated/ui-types.ts'],
+          tsconfig: './tsconfig.ui-api.json',
+          output: UI_API_REFERENCE_DIRECTORY,
+          watch: isAstroDevelopmentServer,
+          typeDoc: STRICT_TYPEDOC,
         }),
       ],
       // `@workflowbuilder/ui` styles are safe to load globally: everything is
       // layered (no global reset), classes are hashed or opt-in, and tokens.css
-      // only defines `--ax-*` custom properties keyed on `html[data-theme]` —
-      // which Starlight already toggles, so the live component showcases follow
-      // the docs light/dark theme. index.css is required at document level:
+      // defines `--wb-*` custom properties on `:root` and `html[data-theme]`.
+      // Starlight toggles the latter, so the live component showcases follow the
+      // docs light/dark theme. index.css is required at document level:
       // Modal/Menu/Select/Tooltip/DatePicker portal their popups to body,
       // outside the shadow roots that carry the preview styles.
       customCss: [
@@ -167,6 +170,7 @@ export default defineConfig({
             },
             { label: 'Theming', link: '/get-started/theming/' },
             { label: 'Side effects & limitations', link: '/get-started/side-effects/' },
+            { label: 'Upgrade to 3.0', link: '/get-started/upgrade-to-3/' },
           ],
         },
         { label: 'Guides', autogenerate: { directory: 'guides' } },
@@ -178,11 +182,21 @@ export default defineConfig({
           items: [
             { label: 'Overview', link: '/ui-library/overview/' },
             { label: 'Design tokens', link: '/ui-library/design-tokens/' },
+            { label: 'Typography', link: '/ui-library/typography/' },
             { label: 'UI Components', autogenerate: { directory: 'ui-library/ui-components' } },
             { label: 'Diagram Components', autogenerate: { directory: 'ui-library/diagram-components' } },
+            {
+              label: 'UI API Reference',
+              collapsed: true,
+              items: uiApiCategories.map((category) => ({
+                label: category,
+                collapsed: true,
+                autogenerate: { directory: `${UI_API_REFERENCE_DIRECTORY}/${category}` },
+              })),
+            },
           ],
         },
-        // API Reference — pages auto-generated by `starlight-typedoc` from
+        // SDK API Reference — pages auto-generated by `starlight-typedoc` from
         // packages/sdk's barrel into `src/content/docs/api/<Category>/`.
         // Folder names match the `@category` tag in source TSDoc verbatim.
         //
@@ -197,7 +211,7 @@ export default defineConfig({
         // Listeners, Forms, Integration), reference material last
         // (Types, Utilities, Constants, i18n, Icons).
         {
-          label: 'API Reference',
+          label: 'SDK API Reference',
           collapsed: true,
           items: [
             { label: 'Core', collapsed: true, autogenerate: { directory: 'api/Core' } },

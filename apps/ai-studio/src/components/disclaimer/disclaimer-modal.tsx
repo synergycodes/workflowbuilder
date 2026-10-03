@@ -6,7 +6,8 @@ import styles from './disclaimer-modal.module.css';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { useExecutionStore } from '../../stores/use-execution-store';
 
-const STORAGE_KEY = 'ai-studio:disclaimer-acknowledged';
+// Versioned: a new key shows changed text once to visitors who dismissed the old one.
+const STORAGE_KEY = 'ai-studio:disclaimer-acknowledged-v2';
 
 function hasAcknowledged(): boolean {
   try {
@@ -68,12 +69,17 @@ export function DisclaimerModal() {
             workflow editors.
           </p>
           <p>
-            The workflows here run for real: every AI step calls a live model through <strong>OpenRouter</strong>.
+            The workflows here run for real: every AI step calls a <strong>live model</strong>.
           </p>
           <p>
             It is <strong>not</strong> a place to test or benchmark AI models. The model is just the engine — the point
             is to show what you can build with Workflow Builder. To keep the demo open to everyone, runs are
             rate-limited.
+          </p>
+          <p>
+            AI Studio is a <strong>shared, public workspace</strong>. Anyone with a run&apos;s link can see everything
+            in it, from your input and the prompts to the model&apos;s answers and any decision made, and can act on it.
+            Do not enter personal or confidential data.
           </p>
         </div>
 

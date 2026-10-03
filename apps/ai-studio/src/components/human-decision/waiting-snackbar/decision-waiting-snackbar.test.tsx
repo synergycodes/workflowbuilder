@@ -1,0 +1,223 @@
+import { type ShowSnackbarOptions, useStore } from '@workflowbuilder/sdk';
+import { type Node, ReactFlowProvider, type ReactFlowState, useStoreApi } from '@xyflow/react';
+import { StrictMode, act } from 'react';
+import { createRoot } from 'react-dom/client';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  applyEvent,
+  applySnapshot,
+  resetExecution,
+  setExecutionStarted,
+  useExecutionStore,
+} from '../../../stores/use-execution-store';
+import { nodeEvent, snapshotFrame } from '../../../test/execution-history';
+import { DecisionWaitingSnackbar } from './decision-waiting-snackbar';
+
+// The SDK's own spec covers how a snackbar looks and closes; this one follows what the app asks of it.
+const snackbars = vi.hoisted(() => ({ shown: [] as ShowSnackbarOptions[], closed: new Set<string>(), count: 0 }));
+vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
+  return {
+    ...actual,
+    showSnackbar: (options: ShowSnackbarOptions) => {
+      const key = options.key ?? `snackbar-${++snackbars.count}`;
+      snackbars.shown.push({ ...options, key });
+      return key;
+    },
+    closeSnackbar: (key: string) => snackbars.closed.add(key),
+  };
+});
+
+declare global {
+  // eslint-disable-next-line no-var
+  var IS_REACT_ACT_ENVIRONMENT: boolean;
+}
+globalThis.IS_REACT_ACT_ENVIRONMENT = true;
+
+const open = () => snackbars.shown.filter((options) => !snackbars.closed.has(options.key ?? ''));
+const onlyOpen = () => {
+  expect(open()).toHaveLength(1);
+  return open()[0]!;
+};
+
+const decisionNode = (id: string, label: string) => ({
+  id,
+  position: { x: 0, y: 0 },
+  data: { type: 'ai-studio/human-decision', icon: 'UserCheck' as const, properties: { label } },
+});
+
+const apply = (type: 'node_waiting' | 'node_completed', nodeId: string) =>
+  act(() => applyEvent(nodeEvent(type, nodeId)));
+
+const selectInSdk = (ids: string[]) => act(() => useStore.setState({ selectedNodesIds: ids }));
+
+describe('DecisionWaitingSnackbar', () => {
+  let container: HTMLDivElement;
+  let root: ReturnType<typeof createRoot>;
+  let reactFlowStore: { getState: () => ReactFlowState } | undefined;
+
+  function StoreProbe() {
+    reactFlowStore = useStoreApi();
+    return null;
+  }
+
+  beforeEach(() => {
+    snackbars.shown.length = 0;
+    snackbars.closed.clear();
+    resetExecution();
+    setExecutionStarted('exec-1', '/stream');
+    useStore.setState({ nodes: [decisionNode('human-1', 'Review Refund'), decisionNode('human-2', 'Review Tone')] });
+    const flowNodes: Node[] = [
+      { id: 'human-1', position: { x: 0, y: 0 }, data: {} },
+      { id: 'other', position: { x: 300, y: 0 }, data: {}, selected: true },
+    ];
+    container = document.createElement('div');
+    document.body.append(container);
+    root = createRoot(container);
+    act(() =>
+      root.render(
+        <StrictMode>
+          <ReactFlowProvider defaultNodes={flowNodes}>
+            <StoreProbe />
+            <DecisionWaitingSnackbar />
+          </ReactFlowProvider>
+        </StrictMode>,
+      ),
+    );
+  });
+
+  afterEach(() => {
+    act(() => root.unmount());
+    container.remove();
+    useStore.setState({ nodes: [], selectedNodesIds: [] });
+  });
+
+  it('says nothing while no node waits', () => {
+    expect(open()).toHaveLength(0);
+  });
+
+  it('names the waiting node, stays until it is closed, and on Decide selects the node and asks its form for the focus', () => {
+    apply('node_waiting', 'human-1');
+
+    const snackbar = onlyOpen();
+    expect(snackbar).toMatchObject({
+      variant: 'info',
+      title: 'Waiting for decision',
+      subtitle: 'Review Refund',
+      buttonLabel: 'Decide',
+      autoHideDuration: null,
+    });
+
+    act(() => snackbar.onButtonClick?.());
+
+    const selected = reactFlowStore
+      ?.getState()
+      .nodes.filter((node) => node.selected)
+      .map((node) => node.id);
+    expect(selected).toEqual(['human-1']);
+    expect(useExecutionStore.getState().decisionFocusRequest).toBe('human-1');
+  });
+
+  it('offers no Decide for a waiting node the canvas lacks, and still stays', () => {
+    act(() => useStore.setState({ nodes: [decisionNode('human-2', 'Review Tone')] }));
+
+    apply('node_waiting', 'human-1');
+
+    const snackbar = onlyOpen();
+    expect(snackbar.title).toBe('Waiting for decision');
+    expect(snackbar.buttonLabel).toBeUndefined();
+    expect(snackbar.onButtonClick).toBeUndefined();
+  });
+
+  it('says nothing while the run is cancelling, since the backend refuses a decision then', () => {
+    act(() => applySnapshot(snapshotFrame('cancelling')));
+
+    expect(open()).toHaveLength(0);
+  });
+
+  it('closes for a node whose id holds a space', () => {
+    act(() => useStore.setState({ nodes: [decisionNode('human 1', 'Review Refund')] }));
+    apply('node_waiting', 'human 1');
+
+    act(() => onlyOpen().onClose?.());
+
+    expect(open()).toHaveLength(0);
+  });
+
+  it('does not show again when a waiting node is renamed while several wait', () => {
+    apply('node_waiting', 'human-1');
+    apply('node_waiting', 'human-2');
+    const shownBefore = snackbars.shown.length;
+
+    act(() =>
+      useStore.setState({ nodes: [decisionNode('human-1', 'Renamed'), decisionNode('human-2', 'Review Tone')] }),
+    );
+
+    expect(snackbars.shown).toHaveLength(shownBefore);
+  });
+
+  // In the app the SDK copies a React Flow selection into its store; here the store is set directly.
+  it('steps aside while a waiting node is selected, however it was selected, and comes back after', () => {
+    apply('node_waiting', 'human-1');
+
+    selectInSdk(['human-1']);
+    expect(open()).toHaveLength(0);
+
+    selectInSdk(['other']);
+    expect(onlyOpen().title).toBe('Waiting for decision');
+  });
+
+  it('stays while the waiting node is only part of a larger selection', () => {
+    apply('node_waiting', 'human-1');
+
+    selectInSdk(['human-1', 'other']);
+
+    expect(onlyOpen().title).toBe('Waiting for decision');
+  });
+
+  it('stays closed for the same wait and comes back when another node parks', () => {
+    apply('node_waiting', 'human-1');
+    act(() => onlyOpen().onClose?.());
+    expect(open()).toHaveLength(0);
+
+    apply('node_waiting', 'human-2');
+    expect(onlyOpen().title).toBe('2 decisions are waiting');
+  });
+
+  it('stays closed when one of the closed waits ends', () => {
+    apply('node_waiting', 'human-1');
+    apply('node_waiting', 'human-2');
+    act(() => onlyOpen().onClose?.());
+
+    apply('node_completed', 'human-2');
+
+    expect(open()).toHaveLength(0);
+  });
+
+  it('comes back when the same node parks again', () => {
+    apply('node_waiting', 'human-1');
+    act(() => onlyOpen().onClose?.());
+    apply('node_completed', 'human-1');
+
+    apply('node_waiting', 'human-1');
+    expect(onlyOpen().title).toBe('Waiting for decision');
+  });
+
+  it('counts several waits and offers no Decide', () => {
+    apply('node_waiting', 'human-1');
+    apply('node_waiting', 'human-2');
+
+    const snackbar = onlyOpen();
+    expect(snackbar.title).toBe('2 decisions are waiting');
+    expect(snackbar.buttonLabel).toBeUndefined();
+    expect(snackbar.onButtonClick).toBeUndefined();
+  });
+
+  it('leaves once the wait ends', () => {
+    apply('node_waiting', 'human-1');
+    apply('node_completed', 'human-1');
+
+    expect(open()).toHaveLength(0);
+  });
+});

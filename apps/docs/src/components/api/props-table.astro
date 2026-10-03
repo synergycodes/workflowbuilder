@@ -1,6 +1,7 @@
 ---
 // Props of a UI component, generated from source into ui-api.json.
 import data from '../../generated/ui-api.json';
+import { splitTypeLinks, UI_API_REFERENCE_DIRECTORY } from '../../ui-api-reference.mjs';
 
 interface PropertyRow {
   name: string;
@@ -26,6 +27,9 @@ const props = [...(entry?.props ?? [])].sort(
   (a, b) => Number(b.required) - Number(a.required) || a.name.localeCompare(b.name),
 );
 const nativeElement = entry?.nativeElement ?? null;
+const TRAILING_SLASH_RE = /\/$/;
+const base = import.meta.env.BASE_URL.replace(TRAILING_SLASH_RE, '');
+const typeLinkHref = (pagePath: string) => `${base}/${UI_API_REFERENCE_DIRECTORY}/${pagePath}/`;
 ---
 
 {
@@ -50,7 +54,11 @@ const nativeElement = entry?.nativeElement ?? null;
           </div>
           <div class="meta">
             <span class="meta-label">Type</span>
-            <code>{property.type}</code>
+            <code>
+              {splitTypeLinks(property.type, typeLinkHref).map((segment) =>
+                segment.href ? <a href={segment.href}>{segment.text}</a> : segment.text,
+              )}
+            </code>
           </div>
           {property.default && (
             <div class="meta">

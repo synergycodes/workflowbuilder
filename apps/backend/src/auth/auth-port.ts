@@ -34,9 +34,11 @@ export type AuthAction =
   | 'workflows:update'
   | 'workflows:publish'
   | 'workflows:execute'
+  | 'executions:list'
   | 'executions:read'
   | 'executions:stream'
-  | 'executions:cancel';
+  | 'executions:cancel'
+  | 'executions:decide';
 
 /**
  * Resources passed to `authorize`. The per-row kinds carry an optional
@@ -46,6 +48,7 @@ export type AuthAction =
  */
 export type AuthResource =
   | { kind: 'workflows' }
+  | { kind: 'executions' }
   | { kind: 'workflow'; workflowId: string; attributes?: Record<string, unknown> }
   | { kind: 'execution'; executionId: string; attributes?: Record<string, unknown> };
 

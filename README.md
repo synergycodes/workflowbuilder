@@ -26,13 +26,9 @@ Used in production by teams including [Vercom](https://www.workflowbuilder.io/ca
 
 </div>
 
-> 🎉 **Workflow Builder 2.0 is here.**
+> **Since 2.0, this repository is the home of Workflow Builder.** Previously we worked in a private monorepo and only partially mirrored changes here. Now every commit lands here directly.
 >
-> A best-in-class SDK for embedding workflow editors, now paired with a dedicated reference backend and a fully modular plugin surface. Building products on top of a workflow editor has never been easier.
->
-> Starting with 2.0, this repository is the home of Workflow Builder. Previously we worked in a private monorepo and only partially mirrored changes here. From now on, every commit lands here directly.
->
-> See the [CHANGELOG](./CHANGELOG.md) for everything that's changed since the last release.
+> See the [SDK changelog](./packages/sdk/CHANGELOG.md) for released changes and the [3.0 upgrade guide](./apps/docs/src/content/docs/get-started/upgrade-to-3.md) for moving from 2.x to 3.0.
 
 ## Get started
 
@@ -197,30 +193,31 @@ Temporal ready
 [ai-studio]    ➜  Local:   http://127.0.0.1:4201/
 ```
 
-Open `http://localhost:4201`. Pick the "Sales Inquiry" template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
+Open `http://localhost:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 
 #### Connect a real LLM (optional)
 
-AI Studio works with stub responses out of the box. To use a real model, add to both `apps/backend/.env` and `apps/execution-worker/.env`:
+The stack starts without an LLM: Trigger, Decision and Visualize nodes run as usual, and an AI Agent node fails with `ai_not_configured` when the run reaches it. AI nodes need three variables in both `apps/backend/.env` and `apps/execution-worker/.env`. The files `pnpm setup:env` created already carry an endpoint and a model for [OpenRouter](https://openrouter.ai), so only the key is missing:
 
 ```env
-OPENROUTER_API_KEY=sk-or-v1-...
-AI_MODEL=anthropic/claude-3.5-haiku
+AI_API_KEY=sk-or-v1-...
+AI_BASE_URL=https://openrouter.ai/api/v1
+AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
 ```
 
-If the key is missing the worker fails to start with `OPENROUTER_API_KEY is required`. If the model id is wrong the first AI node fails at runtime and the error surfaces in the UI log panel.
+None of the three has a built-in default. Any OpenAI-compatible endpoint works: set `AI_BASE_URL` to a gateway or to a model hosted inside your own network, `AI_MODEL` to an id that endpoint understands, and model requests stay inside it. That covers the model only: the optional web-search tool calls Tavily's API when `TAVILY_API_KEY` is set, so leave it unset if nothing may call out. If the model id is wrong, the first AI node fails at runtime and the error surfaces in the UI log panel.
 
 ### Troubleshooting
 
-| Symptom                                                                 | Cause                                                                 | Fix                                                                              |
-| ----------------------------------------------------------------------- | --------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                        | `pnpm preflight` shows the conflict. Stop the other process or change the port   |
-| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                    | `pnpm -F backend db:migrate`                                                     |
-| Worker exits with `OPENROUTER_API_KEY is required`                      | Real LLM env var missing                                              | Set it in `apps/execution-worker/.env`. Optional unless you want a real LLM call |
-| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal | Fix the errors or ignore them temporarily                                        |
-| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                            | `rm -rf node_modules/.vite` and rerun                                            |
+| Symptom                                                                 | Cause                                                                        | Fix                                                                            |
+| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                               | `pnpm preflight` shows the conflict. Stop the other process or change the port |
+| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                           | `pnpm -F backend db:migrate`                                                   |
+| AI Agent node fails with `ai_not_configured`                            | LLM not configured — the worker starts anyway, only AI nodes are unavailable | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env` |
+| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal        | Fix the errors or ignore them temporarily                                      |
+| Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                                   | `rm -rf node_modules/.vite` and rerun                                          |
 
 For the full command reference, see the table in [`CLAUDE.md`](./CLAUDE.md) or the documentation site.
 
@@ -266,6 +263,8 @@ Using `pnpm workspaces`, Workflow Builder is split into runnable apps under `app
 - [`packages/sdk`](./packages/sdk/README.md) - `@workflowbuilder/sdk`, the embeddable React library (public API, types, build)
 - [`packages/types`](./packages/types) - `@workflow-builder/types`, shared TypeScript types used by the SDK and the bundled backend/worker
 - [`packages/execution-core`](./packages/execution-core/README.md) - Pure domain layer (ports, graph runner, node executors) shared by the bundled backend and worker
+- [`packages/ui`](./packages/ui/README.md) - `@workflowbuilder/ui`, the component library (Base UI) the SDK is built on, published on its own
+- [`packages/temporal`](./packages/temporal/README.md) - `@workflowbuilder/temporal`, the Temporal Plugin that runs diagrams as durable Workflow Executions (bundles `execution-core` and `types`)
 - [`apps/demo`](./apps/demo/README.md) - Reference SPA that consumes the SDK with the full plugin set (also the source of truth for example node types, templates, and plugins)
 - [`apps/docs`](./apps/docs/README.md) - Documentation site
 - [`apps/icons`](./apps/icons/README.md) - Lazy-loadable, extensible icons consumed by the SDK

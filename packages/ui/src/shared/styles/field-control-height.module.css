@@ -1,0 +1,24 @@
+:root {
+  --wb-public-input-height-l: calc(var(--wb-ds-size-500) + var(--wb-ds-size-25));
+  --wb-public-input-height-m: calc(var(--wb-ds-size-400) + var(--wb-ds-size-50));
+  --wb-public-input-height-s: var(--wb-ds-size-400);
+  --wb-public-input-height-xs: calc(var(--wb-ds-size-300) + var(--wb-ds-size-50));
+}
+
+@layer ui.component {
+  .l {
+    min-height: var(--wb-public-input-height-l);
+  }
+
+  .m {
+    min-height: var(--wb-public-input-height-m);
+  }
+
+  .s {
+    min-height: var(--wb-public-input-height-s);
+  }
+
+  .xs {
+    min-height: var(--wb-public-input-height-xs);
+  }
+}

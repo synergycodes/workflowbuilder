@@ -66,7 +66,7 @@ export const Accordion = forwardRef<HTMLDivElement, AccordionProps>(
             onClick={onExpandCollapse}
             aria-expanded={isExpanded}
           >
-            <span className="ax-public-h10">{label}</span>
+            <span className="wb-text-body-s-emphasized">{label}</span>
             <Collapsible.Button />
           </div>
           <Collapsible.Content>

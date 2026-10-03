@@ -7,7 +7,7 @@
 
 > **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo). This file documents the backend's internals, not how to start it.
 
-Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows defined on the canvas via Temporal + OpenRouter.
+Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows defined on the canvas via Temporal and an OpenAI-compatible LLM endpoint (`AI_BASE_URL`).
 
 ## Architecture
 
@@ -28,6 +28,59 @@ Frontend (React)
 - **Worker** (`apps/execution-worker`) — Temporal worker. Activities delegate node execution to `execution-core`. See the [worker README](../execution-worker/README.md).
 - **Domain** (`packages/execution-core`) — pure graph runner + ports + node executors. No Temporal, no HTTP. See the [execution-core README](../../packages/execution-core/README.md).
 - **Frontend** (`apps/ai-studio`) — full AI workflow product. Composes `@workflowbuilder/sdk` directly via JSX, with a slim plugin only for per-node execution markers. Owns Play/Stop controls, log panel, node detail, and execution highlighting.
+
+## Decision request on a node
+
+A node asks a human for a decision by carrying `data.properties.decisionRequest`: the actions offered, the JSON Schema of the form, the node whose output is judged, and an optional deadline. Any node type may carry one: the backend and the decision endpoint find the request by this field, never by `type`. The mapper lifts it to `BaseNode.decisionRequest`, out of `config`.
+
+The runner does not read the field, deliberately: it learns no product's vocabulary, so a run stops where a node's executor returns a waiting result. A request on a node that never parks therefore validates, reaches the worker and asks nobody anything. The node whose executor does nothing but park is `ai-studio/human-decision`: `apps/execution-worker/src/executors/human-decision.ts` returns `{ waiting: true }`, and `apps/ai-studio/src/nodes/human-decision/` renders one output handle per action that carries a port.
+
+The request is validated on `POST /:id/publish` and `POST /:id/execute`, never on `PATCH /:id/draft`: a draft is legitimately mid-edit. A broken request answers with the existing `invalid_snapshot` 400, whose `details[].path` points at the node index and field, for example `nodes.1.data.properties.decisionRequest.actions.1.effect`. A `resume` or `reject` action always names its `port`: a port is the id of an output handle on the canvas, and the backend supplies no default for it. A `rerun-source` action takes no port, because it does not route. A node that carries a request may not set `errorPolicy: 'continue'`, since a failure would then light every port at once; `fail` and `errorRoute` are accepted. Structural issues come first; the graph rules (proposal source, predecessors) run once the structure parses, so a second round of issues can follow a fix. Every domain message the validation can produce is listed in `src/domain/decision/decision-issues.ts`. Each such detail also carries `domainCode`, its key in that dictionary, and `params` with the value the message interpolates, so a client branches and translates on the identifier and never on the wording; `code` stays zod's own.
+
+One key is refused outright, wherever it sits. An own `__proto__` anywhere in the snapshot answers `invalid_snapshot` 400 naming its path: `JSON.parse` turns it into an ordinary key, and a loose object copies unknown keys by assignment, which for that one swaps the parsed output's prototype and hands the engine a request no schema ever saw. The check does not weigh position, so it also refuses a `__proto__` buried inside an opaque node property, where zod never copies keys one by one and the key is inert. A node type that keeps a raw JSON document in `data.properties` therefore cannot carry one.
+
+A submitted decision is checked against the request by `validateSubmittedDecision` in `src/domain/decision/` and delivered by the endpoint below. Shape, rules and the reasoning are in [`decision-request.decision-log.md`](./decision-request.decision-log.md).
+
+### Deciding: `POST /api/executions/:id/decision`
+
+Body: `{ nodeId, attempt, action, edits?, reason?, comment? }`. `action` is the `name` of one of the node's actions. `attempt` is how many times the node has parked in this run (its `node_waiting` count; today always 1). `edits` are a patch of the proposal for whoever reads the decision to apply; the node's output carries them unapplied. Nothing applies them yet, so a step after the decision that reads the source's output sees the proposal without the corrections (follow-up: decision-settled-values). An object merges field by field and a list element by element, so a field whose schema declares `properties` or `items` must keep that shape; only `null` also passes, where the field's `type` allows it. Checks run in this order, each answering before the next: row, authorization (`executions:decide` with the row's `{ workflowId, tenantId, status }`; a deny wins over 404), status, body, node, decision, `attempt`, effect, engine. The engine is asked once; nothing is retried. Success: `200 { executionId, nodeId, attempt, action, effect }`. Codes and messages live in `src/routes/decision-refusals.ts`.
+
+The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiator is ignored. A `reject` also declares the run's outcome, edge or no edge: the run closes `completed` unless another branch ends it `incomplete` or `failed`, `GET /api/executions/:id` answers `outcome: 'rejected'` and `resolvedBy: 'human'` (`null` otherwise), and `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }`. Publish requires no edge on a reject port.
+
+| Status | Code                        | When                                                                                                                                  |
+| ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `validation_error`          | Body shape                                                                                                                            |
+| 400    | `invalid_decision`          | Submission against the request; `details[0].code` is a `SUBMITTED_DECISION_ERRORS` key                                                |
+| 404    | `execution_not_found`       |                                                                                                                                       |
+| 404    | `node_not_found`            | Not in the run's snapshot                                                                                                             |
+| 409    | `execution_not_waiting`     | Terminal or cancelling run, or the engine no longer has it                                                                            |
+| 409    | `node_not_waiting`          | No request on the node, never parked, or not waiting now. Final                                                                       |
+| 409    | `decision_already_made`     | The first decision won, whoever sent it                                                                                               |
+| 409    | `decision_attempt_mismatch` | Body carries the current `attempt`                                                                                                    |
+| 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                                  |
+| 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then names the wait, not the sender |
+
+## Listing executions: `GET /api/executions`
+
+Newest first, filtered and paged. Query: `status` (one `ExecutionStatus`), `workflowId` (a UUID), `limit` (default 50, capped at 200; a larger value is clamped, not refused), `cursor` (opaque, taken from the previous page's `nextCursor`). Success: `200 { items, nextCursor }`, `nextCursor` is `null` on the last page. Items carry summary fields only (`id`, `workflowId`, `sourceVersion`, `status`, `startedAt`, `finishedAt`, `createdAt`): no snapshot, no trigger payload, no outputs. Authorization is `executions:list` on `{ kind: 'executions' }`, checked before the query string is read. With a tenant context the list holds the caller's rows plus untenanted rows, the stream route's rule applied as a filter; without one, every row. An empty value counts as absent. Paging is keyset on `(date_trunc('milliseconds', created_at), id)`, not on the raw column: the cursor carries the millisecond `createdAt` the client saw, so both sides of the comparison are truncated the same way. A run submitted between two requests lands on top and never repeats or shifts the pages that follow. A run whose insert committed after a page was read but whose `created_at` predates the cursor is returned mid-walk, on a later page — the predicate only asks for rows older than the cursor. The reverse is the case a walk cannot show: a row whose `created_at` is newer than the cursor stays invisible until the client restarts from a fresh first page. No index serves this order: every page sorts the whole matching set, and `status` or `workflowId` narrow what is scanned but not what is sorted. The two-argument `date_trunc` used here depends on the session `TimeZone` and is therefore STABLE, so it cannot appear in an expression index; the three-argument `date_trunc('milliseconds', created_at, 'UTC')` is IMMUTABLE and returns the same values, so switching to it allows an index on `(date_trunc('milliseconds', created_at, 'UTC'), id)`. Storing `created_at` as `timestamptz(3)` is the other route; it rounds where the current key truncates, so a cursor minted before that migration repeats one row once (follow-up: executions-created-at-millis). A cursor minted under one filter stays valid under another.
+
+| Status | Code                  | When                                                                                                                                    |
+| ------ | --------------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| 400    | `invalid_status`      | Not an `ExecutionStatus`; a typo never yields an empty list                                                                             |
+| 400    | `invalid_workflow_id` | Not a UUID                                                                                                                              |
+| 400    | `invalid_limit`       | Not a positive integer                                                                                                                  |
+| 400    | `invalid_cursor`      | Not a canonical `<ISO timestamp>\|<UUID>` pair in base64url: the cursor is an opaque window position, validated on shape, not on origin |
+| 400    | `tenant_required`     | A tenant context resolved without an id: a broken `TenantContextPort` adapter, refused rather than read as single-tenant                |
+
+Under the `AllowAllAuthPort` the route answers `403 listing_disabled` unless `ENABLE_WB_LISTING=true`, like `GET /api/workflows`; see [Environment](#environment).
+
+## The graph a run executed: `GET /api/executions/:id/snapshot`
+
+Success: `200 { workflowId, sourceVersion, snapshot }`. `snapshot` is the workflow JSON the execute route copied into the run, as it was stored: editing or publishing the workflow afterwards leaves it unchanged. It is a route of its own, not a field of `GET /api/executions/:id`, because pollers call that one. Authorization is `executions:read` on `{ kind: 'execution', executionId }`, the same as `GET /api/executions/:id`, checked before the id is read.
+
+| Status | Code                  | When                |
+| ------ | --------------------- | ------------------- |
+| 404    | `execution_not_found` | No run with this id |
 
 ## Running individual processes
 
@@ -56,7 +109,38 @@ DATABASE_URL=postgresql://wb:wb@127.0.0.1:5432/workflow_builder
 TEMPORAL_ADDRESS=127.0.0.1:7233
 ```
 
-Worker additionally needs `OPENROUTER_API_KEY` and optionally `AI_MODEL`. See [`apps/execution-worker/README.md`](../execution-worker/README.md).
+Both also read `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` — all three or none, through
+[`@workflow-builder/ai-config`](../../packages/ai-config/README.md), which is the canonical description
+of that contract. Each side degrades on its own when they are missing: the backend's AI adapt endpoint
+returns 501, and the worker runs everything except AI Agent nodes. See
+[`apps/execution-worker/README.md`](../execution-worker/README.md).
+
+When `server.ts` runs the `AllowAllAuthPort`, the two collection routes, `GET /api/workflows` and `GET /api/executions`, answer `403 listing_disabled` unless `ENABLE_WB_LISTING=true`: a workflow or a run is then private only while its random id stays unlisted, so a forgotten variable must not list every id. With any other `AuthPort` the variable is not read, and the port authorizes `workflows:list` and `executions:list` itself. The local `.env.example` sets it; the deploy leaves it unset. A new collection route goes into `LISTING_PATHS` in `src/middleware/listing-guard.ts`.
+
+### Connecting to a secured Temporal cluster
+
+The defaults above open a plaintext connection to the bundled dev cluster. Everything about the
+connection is env-driven, so a hardened cluster or Temporal Cloud needs no code change. The
+variables are read and validated by [`@workflow-builder/temporal-connection`](../../packages/temporal-connection/README.md),
+the same code the worker uses:
+
+| Var                      | Purpose                                                      | Default       |
+| ------------------------ | ------------------------------------------------------------ | ------------- |
+| `TEMPORAL_NAMESPACE`     | Namespace to use. Must match the worker's                    | `default`     |
+| `TEMPORAL_TLS`           | `true` requires TLS, `false` asserts plaintext, empty infers | empty (infer) |
+| `TEMPORAL_API_KEY`       | API key auth (Temporal Cloud). Implies TLS                   | —             |
+| `TEMPORAL_TLS_CA_PATH`   | PEM for a private certificate authority                      | —             |
+| `TEMPORAL_TLS_CERT_PATH` | Client certificate for mTLS. Set with the key                | —             |
+| `TEMPORAL_TLS_KEY_PATH`  | Client private key for mTLS. Set with the certificate        | —             |
+
+Any credential turns TLS on by itself, so `TEMPORAL_TLS` only has to be set to force TLS with no
+credentials, or to assert plaintext. Contradictory combinations — half an mTLS pair, an API key
+together with a client certificate, or credentials alongside `TEMPORAL_TLS=false` — are rejected
+with an explanatory error at startup, rather than being silently ignored. The connection itself is
+opened on the first run, so booting does not require Temporal to be reachable.
+
+For Temporal Cloud, set `TEMPORAL_ADDRESS` to `<namespace>.<accountId>.tmprl.cloud:7233`,
+`TEMPORAL_NAMESPACE` to `<namespace>.<accountId>`, and `TEMPORAL_API_KEY` to your key.
 
 ## Scripts
 

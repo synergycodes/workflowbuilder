@@ -1,23 +1,17 @@
 # Changelog
 
-All notable changes to `@workflowbuilder/ui` are documented in this file.
-The format is based on [Keep a Changelog](https://keepachangelog.com/).
-
-> **Moved from `@synergycodes/overflow-ui`.** This library was previously
-> published as
-> [`@synergycodes/overflow-ui`](https://www.npmjs.com/package/@synergycodes/overflow-ui).
-> It moved into the Workflow Builder monorepo, was rebuilt on
-> [Base UI](https://base-ui.com/), and is released as `2.0.0` under the
-> `@workflowbuilder/ui` name. The library's prior history lives in the old
-> package's
-> [changelog](https://github.com/synergycodes/overflow-ui/blob/main/packages/ui/CHANGELOG.md).
-
-## [2.0.0]
+## [1.0.0] - 2026-10-02
 
 First release of `@workflowbuilder/ui`: an accessible, themeable React
 component library built on [Base UI](https://base-ui.com/), plus diagram
 building blocks (node and edge parts). It is the styled layer behind the
 Workflow Builder SDK.
+
+The library was previously published as
+[`@synergycodes/overflow-ui`](https://www.npmjs.com/package/@synergycodes/overflow-ui);
+it moved into the Workflow Builder monorepo and was rebuilt on Base UI. Its
+prior history lives in the old package's
+[changelog](https://github.com/synergycodes/overflow-ui/blob/main/packages/ui/CHANGELOG.md).
 
 ### Highlights
 
@@ -25,20 +19,21 @@ Workflow Builder SDK.
   IconSwitch, Checkbox, RadioButton, SegmentPicker, DatePicker, Accordion,
   Avatar, Snackbar, Status, Separator, plus the NodePanel / NodeIcon /
   NodeDescription / EdgeLabel diagram primitives.
-- **Theming** via `--ax-*` design tokens, isolated in cascade layers
+- **Theming** via `--wb-ds-*` design tokens and `--wb-public-*` component overrides,
+  isolated in cascade layers
   (`@layer ui.base, ui.component`) so app styles win without `!important` and
   components retheme cleanly.
 - **Multi-entry build** with per-component subpath exports
   (`@workflowbuilder/ui/<component>`). Importing from the package root injects
-  all required styles; subpath imports inject only that component's CSS. Every
+  the component styles, the reset and typography; add `@workflowbuilder/ui/tokens.css`
+  once for the design tokens. Subpath imports inject only that component's CSS. Every
   built stylesheet carries the `@layer` order statement, so import order never
   affects the cascade; add `@workflowbuilder/ui/styles.css` once if you also
   want the global reset and typography.
 - **Dependencies**: `react` / `react-dom` are the only peer dependencies.
-  `@base-ui/react` (pinned to `1.7.0`) and
+  `@base-ui/react` (pinned to `1.7.0`), `@phosphor-icons/react` and
   `react-textarea-autosize` are regular dependencies; `date-fns`,
-  `react-day-picker`, `clsx`, and the Phosphor icons are bundled into the
-  package output.
+  `react-day-picker` and `clsx` are bundled into the package output.
 
 ### Migrating from `@synergycodes/overflow-ui`
 
@@ -54,11 +49,12 @@ Floating UI stack is gone), so several public APIs changed:
   `(event: React.MouseEvent<HTMLButtonElement>, value: string)`.
 - **DatePicker**: rebuilt on `react-day-picker` + `date-fns`. The prop surface
   is curated (`value`, `defaultValue`, `type`, `valueFormat`, `placeholder`,
-  `error`, `size`, `disabled`, `minDate`, `maxDate`, `onChange`, `id`,
-  `className`, `aria-label`, `aria-labelledby`). `valueFormat` uses `date-fns`
-  tokens; the legacy dayjs `DD/MM/YYYY` default is accepted and converted.
+  `error`, `state`, `inputSize`, `disabled`, `readOnly`, `label`, `helperText`,
+  `isRequired`, `minDate`, `maxDate`, `onChange`, `id`, `className`, `aria-label`,
+  `aria-labelledby`). `valueFormat` uses `date-fns` tokens; the legacy dayjs
+  `DD/MM/YYYY` default is accepted and converted.
 - **Modal**: `className` and forwarded HTML attributes apply to the root element.
-- **shape** prop (Button / SegmentPicker): the type is `'default' | 'circle'`
-  (pass `'default'`, not `''`).
+- **shape** prop: `Button` takes `'default' | 'square' | 'round'`, `SegmentPicker`
+  takes `'default' | 'circle'` (pass `'default'`, not `''`).
 
-[2.0.0]: https://www.npmjs.com/package/@workflowbuilder/ui/v/2.0.0
+[1.0.0]: https://www.npmjs.com/package/@workflowbuilder/ui/v/1.0.0

@@ -1,16 +1,66 @@
-import { Size } from '@ui/shared/types/size';
+import type { ReactNode } from 'react';
 
-import { BaseButtonProps } from '../types';
+import type { BaseButtonProps, IconNode } from '../types';
 
-export type NavBaseButtonProps = BaseButtonProps & {
-  /**
-   * Size variant of the nav button.
-   * @default 'medium'
-   */
-  size?: Size;
+export const NAV_BUTTON_SIZES = ['xl', 'l', 'm', 's', 'xs', 'xxs', 'xxxs'] as const;
+
+/**
+ * Size of a `NavButton`, from `xl` down to `xxxs`.
+ *
+ * @category NavButton
+ */
+export type NavButtonSize = (typeof NAV_BUTTON_SIZES)[number];
+
+export const NAV_BUTTON_VARIANTS = ['square', 'round', 'plain'] as const;
+
+/**
+ * Shape of a `NavButton`. `plain` is available for icon-only buttons only.
+ *
+ * @category NavButton
+ */
+export type NavButtonVariant = (typeof NAV_BUTTON_VARIANTS)[number];
+
+/**
+ * Props shared by the labelled and the icon-only `NavButton`.
+ *
+ * @category NavButton
+ */
+export type NavButtonBaseProps = Omit<BaseButtonProps, 'children'> & {
+  /** @default 'm' */
+  size?: NavButtonSize;
+  /** Renders the button in its selected state. */
   isSelected?: boolean;
 };
 
-export type { NavIconButtonProps } from './nav-icon-button/nav-icon-button';
-export type { NavIconLabelButtonProps } from './nav-icon-label-button/nav-icon-label-button';
-export type { NavLabelButtonProps } from './nav-label-button/nav-label-button';
+/**
+ * Props of a `NavButton` with a text label.
+ *
+ * @category NavButton
+ */
+export type NavLabelButtonProps = NavButtonBaseProps & {
+  /** @default 'square' */
+  variant?: Exclude<NavButtonVariant, 'plain'>;
+  children: ReactNode;
+  /** Icon before the label. */
+  prefixIcon?: IconNode;
+  /** Icon after the label. */
+  suffixIcon?: IconNode;
+};
+
+/**
+ * Props of an icon-only `NavButton`: it takes `prefixIcon` and no children.
+ *
+ * @category NavButton
+ */
+export type NavIconButtonProps = NavButtonBaseProps & {
+  /** @default 'square' */
+  variant?: NavButtonVariant;
+  prefixIcon: IconNode;
+  children?: never;
+  suffixIcon?: never;
+};
+
+/**
+ * @category NavButton
+ */
+export type NavButtonProps = NavLabelButtonProps | NavIconButtonProps;

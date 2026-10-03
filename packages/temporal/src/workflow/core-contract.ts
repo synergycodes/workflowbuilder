@@ -1,3 +1,9 @@
+import type { ResolveNodeResult } from '../../../execution-core/src/workflow';
+import type {
+  ExecutionEventType,
+  ExecutionOutcome,
+  ExecutionStatus,
+} from '../../../types/src/workflow-execution/execution-events';
 import type { BaseNode, WorkflowDefinition } from '../../../types/src/workflow-execution/execution-model';
 
 // The sandbox-safe half of the seam described in ../core-contract.ts.
@@ -10,19 +16,25 @@ export { runGraph } from '../../../execution-core/src/workflow';
 
 export type {
   ActivityRunnerPort,
-  EventEmitterPort,
   ExecutionContext,
-  NodeExecutionResult,
+  ResolveNodeRejection,
+  ResolveNodeResult,
   RunGraphOutcome,
+  VerdictRejection,
 } from '../../../execution-core/src/workflow';
 
 export type { BaseNode } from '../../../types/src/workflow-execution/execution-model';
 
-// Restated here rather than re-exported from execution-core's port module, which
-// reaches for @workflow-builder/types by package name — that name survives into the
-// emitted .d.ts and breaks types for consumers, since the package is not published.
-// Restating it in terms of the relatively-imported types keeps dist self-contained.
-// `test/core-contract.test.ts` fails to compile if this ever drifts from the core.
+export type {
+  ExecutionEventType,
+  ExecutionOutcome,
+  ExecutionOutcomeRecord,
+  ExecutionStatus,
+} from '../../../types/src/workflow-execution/execution-events';
+
+// Restated, not re-exported: the core names `@workflow-builder/types`, a package never published,
+// and that name would survive into the emitted .d.ts. Every type reachable from an entry point is
+// restated; `test/core-contract.test.ts` pins drift, nothing checks dist yet (follow-up: temporal-dist-dts-guard).
 export type WorkflowExecutionInput<TNode extends BaseNode> = {
   workflowId: string;
   executionId: string;
@@ -32,8 +44,42 @@ export type WorkflowExecutionInput<TNode extends BaseNode> = {
   global: Record<string, unknown>;
 };
 
+// Restated for the same reason: `outcome` names a @workflow-builder/types type.
+export type CompletedNodeExecution = {
+  output: unknown;
+  nextPort?: string;
+  outcome?: ExecutionOutcome;
+  waiting?: never;
+};
+
+export type WaitingNodeExecution = {
+  waiting: true;
+};
+
+export type NodeExecutionResult = CompletedNodeExecution | WaitingNodeExecution;
+
+// Restated for the same reason: `resolution` is the completion restated above.
+export type ResolveNodeInput = {
+  executionId: string;
+  nodeId: string;
+  resolution: CompletedNodeExecution;
+};
+
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
   submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
   cancel(executionId: string): Promise<void>;
+  resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
+}
+
+// Restated for the same reason as WorkflowExecutionInput: the core's port module
+// reaches for @workflow-builder/types by package name.
+export interface EventEmitterPort {
+  emitEvent(executionId: string, type: ExecutionEventType, payload?: unknown, nodeId?: string): Promise<void>;
+  updateStatus(
+    executionId: string,
+    status: ExecutionStatus,
+    errorMessage?: string,
+    outcome?: ExecutionOutcome,
+  ): Promise<void>;
 }

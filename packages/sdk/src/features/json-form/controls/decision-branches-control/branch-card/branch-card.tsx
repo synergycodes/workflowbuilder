@@ -59,14 +59,14 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
   return (
     <div className={styles['branch-card']}>
       <div className={styles['header']}>
-        <h1 className="ax-public-h10">{t('decisionBranches.branch', { index: index + 1 })}</h1>
+        <h1 className="wb-text-body-s-emphasized">{t('decisionBranches.branch', { index: index + 1 })}</h1>
         <div className={styles['actions']}>
-          <NavButton onClick={onClickEdit}>
-            <SlidersHorizontal weight="bold" />
-          </NavButton>
-          <NavButton onClick={onClickRemove}>
-            <Trash weight="bold" />
-          </NavButton>
+          <NavButton
+            aria-label={t('common.edit')}
+            onClick={onClickEdit}
+            prefixIcon={<SlidersHorizontal weight="bold" />}
+          />
+          <NavButton aria-label={t('common.remove')} onClick={onClickRemove} prefixIcon={<Trash weight="bold" />} />
         </div>
       </div>
       <div>
@@ -80,7 +80,7 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
         </FormControlWithLabel>
       </div>
       <button
-        className={clsx(styles['conditions-chip'], 'ax-public-p11', {
+        className={clsx(styles['conditions-chip'], 'wb-text-label-s', {
           [styles['no-conditions']]: conditionCount === 0,
         })}
         onClick={onClickEdit}

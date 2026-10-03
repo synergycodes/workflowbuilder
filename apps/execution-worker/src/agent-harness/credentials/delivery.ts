@@ -46,7 +46,8 @@ export type OAuthCredentials = Record<string, unknown>;
  * that need the full blob (e.g. a file-based delivery).
  */
 export type ResolvedCredential =
-  { kind: 'api_key'; apiKey: string } | { kind: 'oauth'; oauthApiKey: string; rawCreds: OAuthCredentials };
+  | { kind: 'api_key'; apiKey: string }
+  | { kind: 'oauth'; oauthApiKey: string; rawCreds: OAuthCredentials };
 
 export interface DeliveryResult {
   env: Record<string, string>;

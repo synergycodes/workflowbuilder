@@ -21,11 +21,16 @@ export function SaveButton() {
   useAutoSaveOnClose();
 
   return (
-    <NavButton onClick={handleSave} tooltip={t('tooltips.save')}>
-      <>
-        <SavingStatus />
-        <Icon name="FloppyDisk" />
-      </>
-    </NavButton>
+    <NavButton
+      aria-label={t('tooltips.save')}
+      onClick={handleSave}
+      tooltip={t('tooltips.save')}
+      prefixIcon={
+        <>
+          <SavingStatus />
+          <Icon name="FloppyDisk" />
+        </>
+      }
+    />
   );
 }

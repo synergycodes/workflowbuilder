@@ -1,5 +1,6 @@
 /*
- * Generates `src/generated/ui-api.json` for the UI Library docs.
+ * Generates, for the UI Library docs, `src/generated/ui-api.json` (Props and CSS variables per component) and the
+ * UI API Reference inputs: `ui-types.ts` (TypeDoc entry point) and `ui-api-categories.json` (sidebar groups).
  *
  * Props are extracted with TypeDoc (source of truth: the component prop types
  * in `@workflowbuilder/ui`); CSS variables are extracted from each component's
@@ -14,14 +15,20 @@ import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
+import { ReflectionKind } from 'typedoc';
 
+import { formatTypeLink, stripTypeLinks } from '../src/ui-api-reference.mjs';
 import { COMPONENTS } from './ui-components.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
 const repoRoot = path.resolve(documentsRoot, '../..');
 const uiSource = path.resolve(repoRoot, 'packages/ui/src');
-const outFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
+const componentsDataFile = path.resolve(documentsRoot, 'src/generated/ui-api.json');
+const uiApiReferenceEntryFile = path.resolve(documentsRoot, 'src/generated/ui-types.ts');
+// Resolved through the `@ui/*` path alias that tsconfig.ui-api.json inherits from the UI package.
+const UI_BARREL_IMPORT = '@ui/index';
+const uiApiReferenceCategoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
 
 // Engineering notes in the CSS, never public documentation.
@@ -56,26 +63,43 @@ async function runTypedoc() {
   return JSON.parse(await readFile(tdJson, 'utf8'));
 }
 
+const isAliasOrInterface = (node) => node?.kind === ReflectionKind.TypeAlias || node?.kind === ReflectionKind.Interface;
+
+const flattenReflections = (node) => [node, ...(node.children ?? []).flatMap(flattenReflections)];
+
 function indexById(root) {
-  const byId = new Map();
-  (function walk(node) {
-    if (node && typeof node.id === 'number') byId.set(node.id, node);
-    for (const child of node.children ?? []) walk(child);
-  })(root);
-  return byId;
+  return new Map(
+    flattenReflections(root)
+      .filter((node) => typeof node.id === 'number')
+      .map((node) => [node.id, node]),
+  );
 }
 
 function findTypeByName(root, name, warnings) {
-  const matches = [];
-  (function walk(node) {
-    if (node.name === name && (node.kind === 2_097_152 || node.kind === 256)) matches.push(node);
-    for (const child of node.children ?? []) walk(child);
-  })(root);
+  const matches = flattenReflections(root).filter((node) => node.name === name && isAliasOrInterface(node));
   if (matches.length > 1 && warnings) {
-    warnings.push(`type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`);
+    warnings.push(
+      `type name "${name}" is ambiguous (${matches.length} declarations) - the table would document whichever TypeDoc emitted first`,
+    );
   }
   return matches[0] ?? null;
 }
+
+const TYPE_DECLARATION_KINDS = new Set([ReflectionKind.TypeAlias, ReflectionKind.Interface, ReflectionKind.Enum]);
+const isTypeDeclaration = (node) => TYPE_DECLARATION_KINDS.has(node?.kind);
+
+const linkedTypes = new Set();
+
+const CATEGORY_TAG = '@category';
+const WHITESPACE_RE = /\s/;
+
+function categoryOf(node) {
+  const categoryTag = node.comment?.blockTags?.find(({ tag }) => tag === CATEGORY_TAG);
+  const [categoryText] = categoryTag?.content ?? [];
+  return categoryText?.text.trim();
+}
+
+const pagePath = (node) => `${categoryOf(node)}/${node.name}`.toLowerCase();
 
 function typeToString(t, byId, depth = 0) {
   if (!t || depth > 6) return 'unknown';
@@ -88,27 +112,30 @@ function typeToString(t, byId, depth = 0) {
     }
     case 'reference': {
       const arguments_ = t.typeArguments?.length
-        ? `<${t.typeArguments.map((a) => typeToString(a, byId, depth + 1)).join(', ')}>`
+        ? `<${t.typeArguments.map((typeArgument) => typeToString(typeArgument, byId, depth + 1)).join(', ')}>`
         : '';
-      return `${t.name}${arguments_}`;
+      const target = byId.get(t.target);
+      if (!isTypeDeclaration(target)) return `${t.name}${arguments_}`;
+      linkedTypes.add(target);
+      return `${formatTypeLink(pagePath(target), t.name)}${arguments_}`;
     }
     case 'union': {
-      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' | ');
+      return t.types.map((member) => typeToString(member, byId, depth + 1)).join(' | ');
     }
     case 'intersection': {
-      return t.types.map((x) => typeToString(x, byId, depth + 1)).join(' & ');
+      return t.types.map((member) => typeToString(member, byId, depth + 1)).join(' & ');
     }
     case 'array': {
       return `${typeToString(t.elementType, byId, depth + 1)}[]`;
     }
     case 'tuple': {
-      return `[${(t.elements ?? []).map((x) => typeToString(x, byId, depth + 1)).join(', ')}]`;
+      return `[${(t.elements ?? []).map((element) => typeToString(element, byId, depth + 1)).join(', ')}]`;
     }
     case 'reflection': {
       const sig = t.declaration?.signatures?.[0];
       if (sig) {
         const params = (sig.parameters ?? [])
-          .map((p) => `${p.name}: ${typeToString(p.type, byId, depth + 1)}`)
+          .map((parameter) => `${parameter.name}: ${typeToString(parameter.type, byId, depth + 1)}`)
           .join(', ');
         return `(${params}) => ${typeToString(sig.type, byId, depth + 1)}`;
       }
@@ -118,7 +145,8 @@ function typeToString(t, byId, depth = 0) {
       return `${typeToString(t.objectType, byId, depth + 1)}[${typeToString(t.indexType, byId, depth + 1)}]`;
     }
     case 'templateLiteral': {
-      return 'string';
+      const spans = (t.tail ?? []).map(([spanType, text]) => `\${${typeToString(spanType, byId, depth + 1)}}${text}`);
+      return `\`${t.head}${spans.join('')}\``;
     }
     case 'query': {
       return typeToString(t.queryType, byId, depth + 1);
@@ -193,7 +221,7 @@ function findNativeElement(typeNode, byId, depth = 0) {
 // Own properties of a prop type, walking intersections and skipping native members.
 function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (!typeNode) return accumulator;
-  if (typeNode.kind === 2_097_152 || typeNode.kind === 256) {
+  if (isAliasOrInterface(typeNode)) {
     if (typeNode.children?.length) {
       for (const child of typeNode.children) addProperty(child, byId, accumulator);
       return accumulator;
@@ -211,27 +239,56 @@ function collectProps(typeNode, byId, accumulator = new Map(), context = null) {
   if (typeNode.type === 'reference' && typeof typeNode.target === 'number') {
     const target = byId.get(typeNode.target);
     // Follow first-party prop types only; both declaration forms count.
-    if (target && (target.kind === 2_097_152 || target.kind === 256)) {
+    if (isAliasOrInterface(target)) {
       collectProps(target, byId, accumulator, context);
+    } else if (!target && context) {
+      context.warnings.push(
+        `"${context.slug}": props of ${typeNode.name} are missing from the table - export the type so TypeDoc emits it`,
+      );
     }
     return accumulator;
   }
-  // Partial<X> / Omit<X, …> would silently drop every prop of X.
-  if (typeNode.type === 'reference' && typeNode.typeArguments?.length && context) {
-    const firstParty = typeNode.typeArguments.find(
-      (argument) => argument.type === 'reference' && typeof argument.target === 'number' && byId.get(argument.target),
-    );
-    if (firstParty) {
+  if (typeNode.type === 'reference' && typeNode.typeArguments?.length) {
+    const [source, keys] = typeNode.typeArguments;
+    const sourceIsFirstParty =
+      source && source.type === 'reference' && typeof source.target === 'number' && byId.get(source.target);
+    if (typeNode.name === 'Omit' || typeNode.name === 'Pick' || typeNode.name === 'Partial') {
+      const named = collectProps(source, byId, new Map(), context);
+      const listed = new Set(literalNames(keys));
+      if (keys && listed.size === 0 && context) {
+        context.warnings.push(
+          `"${context.slug}": the keys of ${typeNode.name}<...> are not string literals, so the table ${
+            typeNode.name === 'Pick' ? 'keeps nothing' : 'drops nothing'
+          } - inline the keys or extend the generator`,
+        );
+      }
+      for (const [name, property] of named) {
+        const keep = typeNode.name === 'Pick' ? listed.has(name) : !listed.has(name);
+        if (!keep) continue;
+        const optional = typeNode.name === 'Partial' ? { ...property, required: false } : property;
+        if (!accumulator.has(name)) accumulator.set(name, optional);
+      }
+      return accumulator;
+    }
+    if (sourceIsFirstParty && context) {
       context.warnings.push(
-        `"${context.slug}": props of ${firstParty.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
+        `"${context.slug}": props of ${source.name} are hidden behind ${typeNode.name}<...> - unwrap the utility type or extend the generator`,
       );
     }
   }
   return accumulator;
 }
 
+// String literals a utility type was given, e.g. the 'children' in Omit<X, 'children'>.
+function literalNames(typeNode) {
+  if (!typeNode) return [];
+  if (typeNode.type === 'literal' && typeof typeNode.value === 'string') return [typeNode.value];
+  if (typeNode.type === 'union') return typeNode.types.flatMap((member) => literalNames(member));
+  return [];
+}
+
 function addProperty(child, byId, accumulator) {
-  if (child.kind !== 1024 || accumulator.has(child.name)) return; // 1024 = Property
+  if (child.kind !== ReflectionKind.Property || accumulator.has(child.name)) return;
   accumulator.set(child.name, {
     name: child.name,
     type: typeToString(child.type, byId),
@@ -266,22 +323,25 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
       // `foo?: never` marks a prop forbidden in that variant.
       .filter((occurrence) => occurrence.prop.type !== 'never');
     if (occurrences.length === 0) continue;
-    const distinctTypes = new Set(occurrences.map((o) => o.prop.type));
+    const distinctTypes = new Set(occurrences.map((occurrence) => occurrence.prop.type));
     const sharedByAll = occurrences.length === perVariant.length && distinctTypes.size === 1;
 
     // Required in every variant, else the table documents an impossible call.
     const requiredEverywhere =
-      occurrences.length === perVariant.length && occurrences.every((o) => o.prop.required);
-    const requiredInItsVariants = !requiredEverywhere && occurrences.every((o) => o.prop.required);
+      occurrences.length === perVariant.length && occurrences.every((occurrence) => occurrence.prop.required);
+    const requiredInItsVariants = !requiredEverywhere && occurrences.every((occurrence) => occurrence.prop.required);
 
     const base = occurrences[0].prop;
     let description = base.description;
     if (!sharedByAll) {
       const variantLabel = (typeName) => typeName.replace(/Props$/, '');
-      const variants = occurrences.map((o) => variantLabel(o.typeName)).join(', ');
+      const variants = occurrences.map((occurrence) => variantLabel(occurrence.typeName)).join(', ');
+      const typePerVariant = occurrences
+        .map((occurrence) => `${variantLabel(occurrence.typeName)}: ${stripTypeLinks(occurrence.prop.type)}`)
+        .join(', ');
       const note =
         distinctTypes.size > 1
-          ? `Type varies by variant (${occurrences.map((o) => `${variantLabel(o.typeName)}: ${o.prop.type}`).join(', ')}).`
+          ? `Type varies by variant (${typePerVariant}).`
           : requiredInItsVariants
             ? `Only applies to the ${variants} variant (required there).`
             : `Only applies to the ${variants} variant.`;
@@ -299,7 +359,22 @@ function collectVariantProps(propsTypeNames, project, byId, warnings, slug, cont
   return merged;
 }
 
-function extractCssVariables(directory, warnings, slug) {
+// Every type the Props tables link to, plus the types those mention: rendering a type marks the types it mentions,
+// and a Set's iteration visits entries added during it.
+function collectLinkedTypes(byId, warnings) {
+  for (const node of linkedTypes) {
+    const category = categoryOf(node);
+    if (!category) warnings.push(`type "${node.name}" has no @category - the UI API Reference cannot place it`);
+    else if (WHITESPACE_RE.test(category)) {
+      warnings.push(`@category "${category}" of "${node.name}" has a space - use one word`);
+    }
+    collectProps(node, byId);
+    typeToString(node.type, byId);
+  }
+  return [...linkedTypes];
+}
+
+function extractCssVariables(directory, cssSources, warnings, slug) {
   // No directory - the entry documents an API, not a styled component.
   if (!directory) return [];
 
@@ -316,12 +391,18 @@ function extractCssVariables(directory, warnings, slug) {
 
   const files = globSync('**/*.css', { cwd: abs })
     .filter((file) => !nestedPrefixes.some((prefix) => file.startsWith(prefix)))
-    .sort();
+    .sort()
+    .map((file) => path.resolve(abs, file));
+  for (const source of cssSources ?? []) {
+    const sourcePath = path.resolve(uiSource, source);
+    if (existsSync(sourcePath)) files.push(sourcePath);
+    else warnings.push(`"${slug}": CSS source ${source} does not exist`);
+  }
   const seen = new Set();
   const variables = [];
   for (const file of files) {
-    const css = readFileSync(path.resolve(abs, file), 'utf8');
-    const re = /(--ax-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
+    const css = readFileSync(file, 'utf8');
+    const re = /(--wb-public-[\w-]+)\s*:\s*([^;]*?)(?:\/\*\s*(.*?)\s*\*\/)?\s*;/g;
     let m;
     while ((m = re.exec(css))) {
       if (seen.has(m[1])) continue;
@@ -349,7 +430,7 @@ function readTokenValues() {
   if (!existsSync(tokenDistribution)) return values;
   for (const file of globSync('*.css', { cwd: tokenDistribution })) {
     const css = readFileSync(path.resolve(tokenDistribution, file), 'utf8');
-    for (const [, name, value] of css.matchAll(/(--ax-[\w-]+)\s*:\s*([^;]+);/g)) {
+    for (const [, name, value] of css.matchAll(/(--wb-ds-[\w-]+)\s*:\s*([^;]+);/g)) {
       if (!values.has(name)) values.set(name, value.trim());
     }
   }
@@ -374,9 +455,9 @@ async function main() {
     let props = [];
     const context = { warnings, slug: component.slug };
     if (Array.isArray(component.propsType)) {
-      props = [...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values()].sort(
-        (a, b) => a.name.localeCompare(b.name),
-      );
+      props = [
+        ...collectVariantProps(component.propsType, project, byId, warnings, component.slug, context).values(),
+      ].sort((a, b) => a.name.localeCompare(b.name));
     } else if (component.propsType) {
       const typeNode = findTypeByName(project, component.propsType, warnings);
       if (typeNode) {
@@ -392,12 +473,21 @@ async function main() {
       name: component.name,
       props,
       nativeElement: context.nativeElement ?? null,
-      cssVariables: extractCssVariables(component.dir, warnings, component.slug),
+      cssVariables: extractCssVariables(component.dir, component.cssSources, warnings, component.slug),
     };
   }
 
-  await mkdir(path.dirname(outFile), { recursive: true });
-  await writeFile(outFile, JSON.stringify(out, null, 2) + '\n');
+  const linked = collectLinkedTypes(byId, warnings);
+  const typeNames = linked.map((node) => node.name).sort();
+  const categories = [...new Set(linked.map((node) => categoryOf(node)).filter(Boolean))].sort();
+
+  await mkdir(path.dirname(componentsDataFile), { recursive: true });
+  await writeFile(componentsDataFile, JSON.stringify(out, null, 2) + '\n');
+  await writeFile(
+    uiApiReferenceEntryFile,
+    `export type {\n${typeNames.map((name) => `  ${name},\n`).join('')}} from '${UI_BARREL_IMPORT}';\n`,
+  );
+  await writeFile(uiApiReferenceCategoriesFile, JSON.stringify(categories, null, 2) + '\n');
 
   const summary = Object.entries(out).map(
     ([slug, entry]) => `${slug}: ${entry.props.length} props, ${entry.cssVariables.length} vars`,

@@ -1,6 +1,6 @@
 {
   "name": "@workflowbuilder/sdk",
-  "version": "2.3.0",
+  "version": "3.0.0",
   "description": "React SDK for Workflow Builder — embed a visual, flow-based workflow editor in your app.",
   "keywords": [
     "workflow",
@@ -60,7 +60,7 @@
     "lint": "eslint",
     "test": "vitest run",
     "test:watch": "vitest",
-    "build:lib": "vite build",
+    "build:lib": "vite build && pnpm exec tsx ../ui/scripts/check-built-css.ts dist",
     "prepublishOnly": "pnpm build:lib"
   },
   "peerDependencies": {
@@ -72,7 +72,6 @@
   "dependencies": {
     "@base-ui/react": "catalog:",
     "@cfworker/json-schema": "4.1.1",
-    "@fontsource/poppins": "^5.2.7",
     "@jsonforms/core": "^3.4.0",
     "@jsonforms/react": "^3.4.0",
     "@phosphor-icons/react": "^2.1.7",

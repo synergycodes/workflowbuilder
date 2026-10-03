@@ -34,7 +34,7 @@ function TextAreaControl(props: TextAreaControlProps) {
         placeholder={placeholder}
         onChange={onChange}
         onBlur={onBlur}
-        size="medium"
+        size="m"
       />
     </ControlWrapper>
   );

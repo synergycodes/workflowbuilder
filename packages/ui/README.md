@@ -25,9 +25,9 @@ yarn add @workflowbuilder/ui
 > **Peers &amp; dependencies.** The only peer dependencies are `react` and
 > `react-dom` (bring your own). `@base-ui/react` (pinned to `1.7.0`) is a regular
 > dependency, so it installs automatically — no need to add it yourself. The
-> heavier component dependencies (date-fns, react-day-picker, clsx, Phosphor
-> icons) are bundled into the package; `react-textarea-autosize` and
-> `@base-ui/react` are the only ones resolved from your `node_modules`.
+> component dependencies `date-fns`, `react-day-picker` and `clsx` are bundled
+> into the package; `@phosphor-icons/react`, `react-textarea-autosize` and
+> `@base-ui/react` are regular dependencies resolved from your `node_modules`.
 
 ### 🎨 Import styles
 
@@ -82,21 +82,21 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 ## Customization
 
-Each `@workflowbuilder/ui` component uses CSS variables that are derived from primitive values.
+`@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
-You can override them:
+Override a generated design token:
 
 ```css
 :root {
-  --ax-ui-bg-primary-default: #40ba12;
+  --wb-ds-ui-bg-base: #40ba12;
 }
 ```
 
-or a derived value used by the selected component:
+Or scope a public override to one component:
 
 ```css
 :root {
-  --ax-public-date-picker-dropdown-background: #40ba12;
+  --wb-public-date-picker-dropdown-background: #40ba12;
 }
 ```
 
@@ -154,7 +154,7 @@ To see components rendered live, start the documentation site with `pnpm dev:doc
 >
 > Thanks to Base UI, `@workflowbuilder/ui` provides components that are **accessible by default** and **fully customizable** through our design tokens.
 >
-> The library was previously published as `@synergycodes/overflow-ui` on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/) stack. `2.0.0` is the first release rebuilt on Base UI under the `@workflowbuilder/ui` name; see [CHANGELOG.md](./CHANGELOG.md).
+> The library was previously published as `@synergycodes/overflow-ui` on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/) stack. The library was rebuilt on Base UI and moved under the `@workflowbuilder/ui` name; [CHANGELOG.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/ui/CHANGELOG.md) has what changed in the move.
 
 ## Showcase
 

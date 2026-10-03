@@ -23,14 +23,18 @@ export function TabHeader({ title, description, onGoBack, children, className = 
   return (
     <header className={clsx(styles['container'], className)}>
       {onGoBack && (
-        <NavButton tooltip={t('common.goBack')} onClick={onGoBack} size="large">
-          <Icon name="ArrowLeft" />
-        </NavButton>
+        <NavButton
+          aria-label={t('common.goBack')}
+          tooltip={t('common.goBack')}
+          onClick={onGoBack}
+          size="l"
+          prefixIcon={<Icon name="ArrowLeft" />}
+        />
       )}
       <div className={styles['content']}>
-        <h4 className={clsx('ax-public-h7', styles['title'])}>{translateIfPossible(title) || title}</h4>
+        <h4 className={clsx('wb-text-title-m-emphasized', styles['title'])}>{translateIfPossible(title) || title}</h4>
         {description && (
-          <p className={clsx('ax-public-p10', styles['description'])}>
+          <p className={clsx('wb-text-body-s', styles['description'])}>
             {translateIfPossible(description) || description}
           </p>
         )}

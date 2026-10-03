@@ -1,0 +1,516 @@
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import {
+  type ExecutionEvent,
+  type ExecutionStatus,
+  TERMINAL_EVENT_TO_STATUS,
+  TERMINAL_EXECUTION_STATUSES,
+  type TerminalExecutionEventType,
+} from '@workflow-builder/types/workflow-execution/execution-events';
+
+import { executionEvent as event, lastSequence } from './execution-event.fixture';
+import {
+  type RunStatus,
+  applyConnectionLost,
+  applyEvent,
+  applySnapshot,
+  applyStopRequested,
+  isRunAlive,
+  requestDecisionFocus,
+  resetExecution,
+  saveDecisionDraft,
+  saveDecisionSend,
+  setExecutionStarted,
+  setLogCollapsed,
+  useExecutionStore,
+  waitKey,
+} from './use-execution-store';
+
+const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
+
+const drafts = () => useExecutionStore.getState().decisionDrafts;
+const sends = () => useExecutionStore.getState().decisionSends;
+
+const focusRequest = () => useExecutionStore.getState().decisionFocusRequest;
+const waitOn = (nodeId: string) => applyEvent(event({ type: 'node_waiting', nodeId }));
+
+const terminalPayload: { [T in TerminalExecutionEventType]: Extract<ExecutionEvent, { type: T }>['payload'] } = {
+  execution_completed: undefined,
+  execution_incomplete: { deadEnds: [{ nodeId: 'human-1', port: 'source:inner:rejected' }] },
+  execution_failed: { error: { message: 'boom' } },
+  execution_cancelled: {},
+};
+
+const terminalEvent = (type: TerminalExecutionEventType) => event({ type, payload: terminalPayload[type] });
+
+const terminalCases = Object.entries(TERMINAL_EVENT_TO_STATUS) as [TerminalExecutionEventType, ExecutionStatus][];
+
+beforeEach(() => {
+  resetExecution();
+  sessionStorage.clear();
+});
+
+afterEach(() => {
+  vi.restoreAllMocks();
+});
+
+describe('use-execution-store: a node waiting for a person', () => {
+  beforeEach(() => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('node_waiting marks the node waiting, and the completion that follows marks it completed', () => {
+    applyEvent(event({ type: 'node_started', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+
+    expect(nodeState('human-1')).toEqual({ status: 'waiting' });
+
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: { action: 'approve' } } }));
+
+    expect(nodeState('human-1')).toEqual({ status: 'completed', output: { action: 'approve' } });
+  });
+
+  it('a failure after the wait marks the node failed, not waiting', () => {
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_failed', nodeId: 'human-1', payload: { error: { message: 'boom' } } }));
+
+    expect(nodeState('human-1')).toEqual({ status: 'failed', error: { message: 'boom' } });
+  });
+
+  it('the run is waiting while a node waits, and running again once the node resolves', () => {
+    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    expect(useExecutionStore.getState().status).toBe('running');
+
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    expect(useExecutionStore.getState().status).toBe('waiting');
+
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it('with two nodes waiting, the first verdict keeps the run waiting', () => {
+    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-2' }));
+
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(useExecutionStore.getState().status).toBe('waiting');
+
+    applyEvent(event({ type: 'node_failed', nodeId: 'human-2', payload: { error: { message: 'boom' } } }));
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it.each(terminalCases)('%s closes a waiting run and settles the nodes still in flight', (type, status) => {
+    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    applyEvent(event({ type: 'node_completed', nodeId: 'trigger-1', payload: { output: { input: 'refund' } } }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_started', nodeId: 'agent-1' }));
+
+    applyEvent(terminalEvent(type));
+
+    expect(useExecutionStore.getState().status).toBe(status);
+    expect(nodeState('human-1')).toEqual({ status: 'idle' });
+    expect(nodeState('agent-1')).toEqual({ status: 'idle' });
+    expect(nodeState('trigger-1')).toEqual({ status: 'completed', output: { input: 'refund' } });
+  });
+
+  it('a snapshot whose row still says pending shows the run waiting, because the events say so', () => {
+    const events = [
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'node_started', nodeId: 'human-1' }),
+      event({ type: 'node_waiting', nodeId: 'human-1' }),
+    ];
+
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
+
+    expect(useExecutionStore.getState().status).toBe('waiting');
+  });
+
+  it('a snapshot of a run that already resolved its wait shows running, whatever the row says', () => {
+    const events = [
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'node_waiting', nodeId: 'human-1' }),
+      event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }),
+      event({ type: 'node_started', nodeId: 'send-1' }),
+    ];
+
+    applySnapshot({ executionId: 'exec-1', status: 'pending', lastSequence: lastSequence(), events });
+
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it('node_waiting delivered twice for one node does not drift the run status', () => {
+    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+    expect(useExecutionStore.getState().status).toBe('waiting');
+
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it('a snapshot replayed after a reload rebuilds the waiting node and the run status', () => {
+    const events = [
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'node_started', nodeId: 'trigger-1' }),
+      event({ type: 'node_completed', nodeId: 'trigger-1', payload: { output: {} } }),
+      event({ type: 'node_started', nodeId: 'human-1' }),
+      event({ type: 'node_waiting', nodeId: 'human-1' }),
+    ];
+
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
+
+    const state = useExecutionStore.getState();
+    expect(state.status).toBe('waiting');
+    expect(state.nodeStates['trigger-1']?.status).toBe('completed');
+    expect(state.nodeStates['human-1']?.status).toBe('waiting');
+    expect(state.events).toHaveLength(events.length);
+  });
+
+  it.each(terminalCases)(
+    '%s closes the run for good: a node event that arrives after it does not reopen it',
+    (type, status) => {
+      applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+      applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
+      applyEvent(terminalEvent(type));
+      expect(useExecutionStore.getState().status).toBe(status);
+
+      applyEvent(event({ type: 'node_waiting', nodeId: 'human-2' }));
+      expect(useExecutionStore.getState().status).toBe(status);
+
+      applyEvent(event({ type: 'node_completed', nodeId: 'human-2', payload: { output: {} } }));
+      expect(useExecutionStore.getState().status).toBe(status);
+    },
+  );
+
+  it.each(terminalCases)(
+    'a snapshot whose row still says waiting but whose events end in %s shows %s',
+    (type, status) => {
+      const events = [
+        event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+        event({ type: 'node_waiting', nodeId: 'human-1' }),
+        terminalEvent(type),
+      ];
+
+      applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: lastSequence(), events });
+
+      expect(useExecutionStore.getState().status).toBe(status);
+    },
+  );
+});
+
+describe('use-execution-store: decision drafts', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('merges what is saved for one wait and keeps the waits apart', () => {
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft({ ...wait, attempt: 2 }, { reason: 'Second wait' });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ values: { refundAmount: 120 }, reason: 'Checked' });
+    expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reason: 'Second wait' });
+  });
+
+  it('keeps the drafts when a snapshot replays the same run', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] });
+
+    expect(drafts()[waitKey(wait)]).toEqual({ reason: 'Checked' });
+  });
+
+  it('drops a draft saved for a run that is no longer the current one', () => {
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionDraft(wait, { values: { refundAmount: 120 } });
+
+    expect(drafts()).toEqual({});
+  });
+
+  it('starts a new run and a reset without drafts', () => {
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    expect(drafts()).toEqual({});
+
+    saveDecisionDraft(wait, { reason: 'Checked' });
+    resetExecution();
+    expect(drafts()).toEqual({});
+  });
+});
+
+describe('use-execution-store: the focus Decide asks for', () => {
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    waitOn('human-1');
+    requestDecisionFocus('human-1');
+  });
+
+  it('keeps the request while its node waits', () => {
+    waitOn('human-2');
+
+    expect(focusRequest()).toBe('human-1');
+  });
+
+  it('drops it once the node stops waiting, so a later wait of the same node does not inherit it', () => {
+    applyEvent(event({ type: 'node_completed', nodeId: 'human-1', payload: { output: {} } }));
+    expect(focusRequest()).toBeUndefined();
+
+    waitOn('human-1');
+    expect(focusRequest()).toBeUndefined();
+  });
+
+  it('drops it when a snapshot shows the node no longer waiting', () => {
+    applySnapshot({ executionId: 'exec-1', status: 'running', lastSequence: 0, events: [] });
+
+    expect(focusRequest()).toBeUndefined();
+  });
+});
+
+describe('use-execution-store: decision sends', () => {
+  const wait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
+
+  beforeEach(() => {
+    resetExecution();
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it('keeps where the decision for each wait stands', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    saveDecisionSend({ ...wait, attempt: 2 }, { status: 'refused', message: 'Refused.' });
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()[waitKey(wait)]).toEqual({ status: 'accepted' });
+    expect(sends()[waitKey({ ...wait, attempt: 2 })]).toEqual({ status: 'refused', message: 'Refused.' });
+  });
+
+  it('drops an answer that arrives for a run that is no longer the current one, and starts a run without any', () => {
+    saveDecisionSend(wait, { status: 'sending' });
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    saveDecisionSend(wait, { status: 'accepted' });
+
+    expect(sends()).toEqual({});
+  });
+});
+
+const startedHistory = () => [
+  event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+  event({ type: 'node_started', nodeId: 'agent-1' }),
+];
+
+const inFlightHistory = () => [
+  event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+  event({ type: 'node_started', nodeId: 'agent-1' }),
+  event({ type: 'node_waiting', nodeId: 'human-1' }),
+];
+
+describe('use-execution-store: facts only the row carries', () => {
+  beforeEach(() => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  it.each(TERMINAL_EXECUTION_STATUSES)(
+    'a row that says %s wins over a history whose terminal event never landed',
+    (status) => {
+      applySnapshot({ executionId: 'exec-1', status, lastSequence: 2, events: startedHistory() });
+
+      expect(useExecutionStore.getState().status).toBe(status);
+    },
+  );
+
+  it('a cancelling row stays cancelling over a history that replays to running', () => {
+    applySnapshot({ executionId: 'exec-1', status: 'cancelling', lastSequence: 2, events: startedHistory() });
+
+    expect(useExecutionStore.getState().status).toBe('cancelling');
+  });
+
+  it('a cancelling row whose history already ends in execution_cancelled ends cancelled', () => {
+    const events = [...startedHistory(), terminalEvent('execution_cancelled')];
+
+    applySnapshot({ executionId: 'exec-1', status: 'cancelling', lastSequence: lastSequence(), events });
+
+    expect(useExecutionStore.getState().status).toBe('cancelled');
+  });
+
+  it('a waiting row with no parked node still derives running from the events', () => {
+    applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 2, events: startedHistory() });
+
+    expect(useExecutionStore.getState().status).toBe('running');
+  });
+
+  it.each(TERMINAL_EXECUTION_STATUSES)('a row that says %s settles the nodes the history left in flight', (status) => {
+    applySnapshot({ executionId: 'exec-1', status, lastSequence: 3, events: inFlightHistory() });
+
+    expect(useExecutionStore.getState().status).toBe(status);
+    expect(useExecutionStore.getState().nodeStates).toEqual({
+      'agent-1': { status: 'idle' },
+      'human-1': { status: 'idle' },
+    });
+  });
+
+  it('a cancelling row keeps the markers of the nodes still in flight', () => {
+    applySnapshot({ executionId: 'exec-1', status: 'cancelling', lastSequence: 3, events: inFlightHistory() });
+
+    expect(useExecutionStore.getState().status).toBe('cancelling');
+    expect(useExecutionStore.getState().nodeStates).toEqual({
+      'agent-1': { status: 'running' },
+      'human-1': { status: 'waiting' },
+    });
+  });
+
+  it('a completed row whose history ends in execution_completed shows the nodes as the events left them', () => {
+    const events = [
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'node_started', nodeId: 'agent-1' }),
+      event({ type: 'node_completed', nodeId: 'agent-1', payload: { output: { answer: 'refund' } } }),
+      event({ type: 'node_skipped', nodeId: 'human-1' }),
+      terminalEvent('execution_completed'),
+    ];
+
+    applySnapshot({ executionId: 'exec-1', status: 'completed', lastSequence: lastSequence(), events });
+
+    expect(useExecutionStore.getState().status).toBe('completed');
+    expect(useExecutionStore.getState().nodeStates).toEqual({
+      'agent-1': { status: 'completed', output: { answer: 'refund' } },
+      'human-1': { status: 'skipped' },
+    });
+  });
+});
+
+describe('use-execution-store: a lost stream after the run ended', () => {
+  it.each(['idle', ...TERMINAL_EXECUTION_STATUSES] as RunStatus[])(
+    'a lost stream leaves the status %s: there is no run left to lose',
+    (status) => {
+      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+      useExecutionStore.setState({ status });
+
+      applyConnectionLost();
+
+      expect(useExecutionStore.getState().status).toBe(status);
+    },
+  );
+});
+
+describe('use-execution-store: a stop the user asked for', () => {
+  it.each([
+    ['a new run', () => setExecutionStarted('exec-2', '/api/executions/exec-2/stream')],
+    ['a reset', () => resetExecution()],
+  ])('%s clears the request, so Reset stops being offered', (_, moveOn) => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    applyStopRequested();
+
+    moveOn();
+
+    expect(useExecutionStore.getState().isStopRequested).toBe(false);
+  });
+
+  it.each([
+    ['a snapshot', () => applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] })],
+    ['a live event', () => applyEvent(event({ type: 'node_started', nodeId: 'human-1' }))],
+    ['a lost stream', () => applyConnectionLost()],
+  ])('%s leaves the request standing: none of them says the cancel landed', (_, moveOn) => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    applyStopRequested();
+
+    moveOn();
+
+    expect(useExecutionStore.getState().isStopRequested).toBe(true);
+  });
+});
+
+describe('use-execution-store: which runs may still be alive on the server', () => {
+  it.each(['pending', 'running', 'waiting', 'cancelling', 'disconnected'] as RunStatus[])(
+    '%s: the server may still hold the run',
+    (status) => {
+      expect(isRunAlive(status)).toBe(true);
+    },
+  );
+
+  it.each(['idle', ...TERMINAL_EXECUTION_STATUSES] as RunStatus[])('%s: nothing to reconnect or cancel', (status) => {
+    expect(isRunAlive(status)).toBe(false);
+  });
+});
+
+describe('use-execution-store: what a reload keeps', () => {
+  it('keeps the log preference for the tab and nothing of the run, which the address names', () => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    setLogCollapsed(true);
+
+    const entry = JSON.parse(sessionStorage.getItem('ai-studio:execution-log')!) as { state: Record<string, unknown> };
+    expect(entry.state).toEqual({ isLogCollapsed: true });
+    expect(localStorage.getItem('ai-studio:execution')).toBeNull();
+  });
+
+  it('gives a run the address reopens the log as the tab left it, and opens it for a run started here', async () => {
+    sessionStorage.setItem('ai-studio:execution-log', JSON.stringify({ state: { isLogCollapsed: true }, version: 0 }));
+    await useExecutionStore.persist.rehydrate();
+
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream', { keepLogChoice: true });
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(true);
+
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(false);
+  });
+});
+
+describe('use-execution-store: storage is best effort', () => {
+  const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
+
+  beforeEach(() => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(globalThis, 'sessionStorage', sessionStorageDescriptor);
+    }
+  });
+
+  it.each([
+    [
+      'a new run',
+      () => setExecutionStarted('exec-2', '/api/executions/exec-2/stream'),
+      { executionId: 'exec-2', status: 'pending' },
+    ],
+    [
+      'a live event',
+      () => applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } })),
+      { status: 'running' },
+    ],
+    ['a reset', () => resetExecution(), { executionId: undefined, status: 'idle' }],
+  ])('%s still lands in memory when the storage write throws', (_, action, expected) => {
+    const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
+    });
+
+    expect(action).not.toThrow();
+
+    expect(setItem).toHaveBeenCalled();
+    expect(useExecutionStore.getState()).toMatchObject(expected);
+  });
+
+  it.each([
+    ['is null', { value: null }],
+    [
+      'throws on access',
+      {
+        get: () => {
+          throw new DOMException('The operation is insecure.', 'SecurityError');
+        },
+      },
+    ],
+  ])('a run still starts when sessionStorage %s from the first load', async (_, descriptor) => {
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, ...descriptor });
+    vi.resetModules();
+    const store = await import('./use-execution-store');
+
+    expect(() => store.setExecutionStarted('exec-2', '/api/executions/exec-2/stream')).not.toThrow();
+
+    expect(store.useExecutionStore.getState()).toMatchObject({ executionId: 'exec-2', status: 'pending' });
+  });
+});

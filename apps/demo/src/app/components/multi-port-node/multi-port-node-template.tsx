@@ -24,6 +24,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
       label,
       description,
       selected = false,
+      disabled = false,
       data,
       showHandles = true,
     }: WorkflowNodeTemplateProps<MultiPortProperties>) => {
@@ -40,10 +41,10 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
       return (
         <div className={styles['wrapper']}>
           <div className={barClassName} />
-          <NodePanel.Root selected={selected}>
+          <NodePanel.Root selected={selected} disabled={disabled}>
             <NodePanel.Header>
-              <NodeIcon icon={iconElement} />
-              <NodeDescription label={label} description={description} />
+              <NodeIcon icon={iconElement} disabled={disabled} />
+              <NodeDescription label={label} description={description} disabled={disabled} />
             </NodePanel.Header>
             <NodePanel.Handles isVisible={showHandles}>
               <Handle id={handleTargetTopId} type="target" position={Position.Top} />

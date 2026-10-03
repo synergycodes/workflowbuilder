@@ -3,6 +3,7 @@
 // the generic BaseNode shape. A different product would define its own union
 // here and register matching executors.
 import type { BaseNode } from '@workflowbuilder/temporal';
+import type { JSONSchema7 } from 'ai';
 
 import type { EffortRung } from '../agent-harness/types';
 
@@ -15,8 +16,7 @@ type TriggerNodeConfig = Record<string, never>;
 type AiAgentNodeConfig = {
   systemPrompt: string; // supports {{namespace.path}} template references
   webSearch?: boolean; // needs TAVILY_API_KEY to take effect
-  model?: string; // unset inherits env.AI_MODEL
-  provider?: string; // 'auto' | 'openrouter' | known provider id | free text; unset behaves as 'auto'
+  outputSchema?: JSONSchema7 | null; // asked of the model, answer unchecked; absent or null means text in `response`
 };
 
 export type DecisionBranchCondition = {
@@ -77,6 +77,8 @@ type AgentHarnessNodeConfig = {
   >;
   [key: string]: unknown;
 };
+// What to ask a person travels on BaseNode.decisionRequest, lifted off config by the backend.
+type HumanDecisionNodeConfig = Record<string, never>;
 
 export type TriggerNode = ProductNode<'ai-studio/trigger', TriggerNodeConfig>;
 
@@ -88,4 +90,12 @@ type VisualizeNode = ProductNode<'ai-studio/visualize', VisualizeNodeConfig>;
 
 export type AgentHarnessNode = ProductNode<'ai-studio/agent-harness', AgentHarnessNodeConfig>;
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode | AgentHarnessNode;
+export type HumanDecisionNode = ProductNode<'ai-studio/human-decision', HumanDecisionNodeConfig>;
+
+export type AiStudioNode =
+  | TriggerNode
+  | AiAgentNode
+  | DecisionNode
+  | VisualizeNode
+  | HumanDecisionNode
+  | AgentHarnessNode;

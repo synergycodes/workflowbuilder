@@ -1,3 +1,5 @@
+import { isPlainObject } from './is-plain-object';
+
 export type VisualizeRenderer = 'markdown' | 'text' | 'json' | 'table' | 'stat-cards' | 'chart' | 'diagram';
 
 type DetectResult = {
@@ -16,10 +18,6 @@ const CHART_TYPES = new Set(['bar', 'line', 'pie', 'area', 'donut']);
 
 function isScalar(value: unknown): boolean {
   return value === null || ['string', 'number', 'boolean'].includes(typeof value);
-}
-
-function isPlainObject(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 function looksLikeChartArray(array: unknown[]): boolean {

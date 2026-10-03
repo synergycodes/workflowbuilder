@@ -1,7 +1,6 @@
 import { useEffect } from 'react';
 
 import styles from './palette-container.module.css';
-import './variables.css';
 
 import { Sidebar } from '../../components/sidebar/sidebar';
 import { useStore } from '../../store/store';

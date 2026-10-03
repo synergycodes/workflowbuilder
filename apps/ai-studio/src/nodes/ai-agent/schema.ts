@@ -1,15 +1,6 @@
 import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
-// Kept as a plain string (not an enum) so a provider added later, or a custom
-// OpenAI-compatible endpoint, doesn't require a schema migration to unlock.
-const providerOptions = [
-  { label: 'Auto', value: 'auto' },
-  { label: 'OpenRouter', value: 'openrouter' },
-  { label: 'OpenAI', value: 'openai' },
-  { label: 'Anthropic', value: 'anthropic' },
-];
-
 export const schema = {
   type: 'object',
   properties: {
@@ -20,13 +11,8 @@ export const schema = {
     webSearch: {
       type: 'boolean',
     },
-    model: {
-      type: 'string',
-    },
-    provider: {
-      type: 'string',
-      options: providerOptions,
-    },
+    // The JSON Schema asked of the model. Unrelated to the palette item's `outputSchema`, the editor's variables.
+    outputSchema: { type: 'object', properties: {} },
   },
 } satisfies NodeSchema;
 

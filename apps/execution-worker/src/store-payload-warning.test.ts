@@ -1,11 +1,12 @@
+import type { ExecutionStore } from '@workflowbuilder/temporal';
 import { describe, expect, it, vi } from 'vitest';
 
 import { withPayloadSizeWarning } from './store-payload-warning';
 
 function makeStore() {
   return {
-    emitExecutionEvent: vi.fn(async () => {}),
-    updateExecutionStatus: vi.fn(async () => {}),
+    emitExecutionEvent: vi.fn<ExecutionStore['emitExecutionEvent']>(async () => {}),
+    updateExecutionStatus: vi.fn<ExecutionStore['updateExecutionStatus']>(async () => {}),
   };
 }
 
@@ -53,12 +54,18 @@ describe('withPayloadSizeWarning', () => {
     expect(logger.warn).not.toHaveBeenCalled();
   });
 
-  it('forwards status updates untouched', async () => {
+  it('forwards status updates untouched, the outcome included', async () => {
     const store = makeStore();
     const logger = makeLogger();
+    const wrapped = withPayloadSizeWarning(store, logger as never);
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
 
-    await withPayloadSizeWarning(store, logger as never).updateExecutionStatus('exec-1', 'failed', 'boom');
+    await wrapped.updateExecutionStatus('exec-1', 'failed', 'boom');
+    await wrapped.updateExecutionStatus('exec-1', 'completed', undefined, outcome);
 
-    expect(store.updateExecutionStatus).toHaveBeenCalledWith('exec-1', 'failed', 'boom');
+    expect(store.updateExecutionStatus.mock.calls).toEqual([
+      ['exec-1', 'failed', 'boom', undefined],
+      ['exec-1', 'completed', undefined, outcome],
+    ]);
   });
 });

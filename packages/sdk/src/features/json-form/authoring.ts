@@ -44,6 +44,15 @@ export const useJsonForms = JsonFormsReact.useJsonForms;
 export const JsonFormsDispatch = JsonFormsReact.JsonFormsDispatch;
 
 /**
+ * Renders a separate form, for data that is not a node's properties. Inside a custom control, pass it the
+ * `renderers`, `cells` and `core.ajv` from {@link useJsonForms}: without them it has none of the editor's
+ * controls and builds its own Ajv, which needs `unsafe-eval`. The editor's read-only mode is not inherited;
+ * pass `readonly` to follow it.
+ * @category Forms
+ */
+export const JsonForms = JsonFormsReact.JsonForms;
+
+/**
  * Assigns a priority to a tester; rank above the built-ins to override a control.
  * @category Forms
  */

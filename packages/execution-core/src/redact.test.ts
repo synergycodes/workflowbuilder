@@ -159,7 +159,7 @@ describe('redactSensitive — traversal contract', () => {
 
 describe('withRedactedPayloads', () => {
   type EmitCall = { executionId: string; type: string; payload?: unknown; nodeId?: string };
-  type StatusCall = { executionId: string; status: string; errorMessage?: string };
+  type StatusCall = { executionId: string; status: string; errorMessage?: string; outcome?: unknown };
 
   function makeInner(): { port: EventEmitterPort; emits: EmitCall[]; statuses: StatusCall[] } {
     const emits: EmitCall[] = [];
@@ -171,8 +171,8 @@ describe('withRedactedPayloads', () => {
         async emitEvent(executionId, type, payload, nodeId) {
           emits.push({ executionId, type, payload, nodeId });
         },
-        async updateStatus(executionId, status, errorMessage) {
-          statuses.push({ executionId, status, errorMessage });
+        async updateStatus(executionId, status, errorMessage, outcome) {
+          statuses.push({ executionId, status, errorMessage, outcome });
         },
       },
     };
@@ -225,12 +225,18 @@ describe('withRedactedPayloads', () => {
     });
   });
 
-  it('passes updateStatus through untouched', async () => {
+  it('passes updateStatus through untouched, the outcome included', async () => {
     const inner = makeInner();
     const events = withRedactedPayloads(inner.port);
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
 
     await events.updateStatus('exec-1', 'failed', 'boom');
+    await events.updateStatus('exec-1', 'completed', undefined, outcome);
 
-    expect(inner.statuses).toEqual([{ executionId: 'exec-1', status: 'failed', errorMessage: 'boom' }]);
+    expect(inner.statuses).toEqual([
+      { executionId: 'exec-1', status: 'failed', errorMessage: 'boom' },
+      { executionId: 'exec-1', status: 'completed', errorMessage: undefined, outcome },
+    ]);
+    expect(inner.statuses[1]?.outcome).toBe(outcome);
   });
 });

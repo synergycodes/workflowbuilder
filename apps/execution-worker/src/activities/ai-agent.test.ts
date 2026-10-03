@@ -1,12 +1,16 @@
-import { APICallError } from 'ai';
+import { APICallError, type FinishReason, type JSONSchema7, NoObjectGeneratedError } from 'ai';
 import { MockLanguageModelV3 } from 'ai/test';
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { ExecutionContext } from '@workflow-builder/execution-core';
+import {
+  type ExecutionContext,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+} from '@workflow-builder/execution-core';
 
 import type { AiAgentNode } from '../domain/ai-studio-nodes';
-import type { OpenRouterClient } from '../model-provider';
 import { executeAiAgent } from './ai-agent';
+import { apiCallError } from './api-call-error.fixture';
 
 function context(): ExecutionContext {
   return {
@@ -19,27 +23,79 @@ function context(): ExecutionContext {
   };
 }
 
-function aiAgentNode(): AiAgentNode {
+function aiAgentNode(config: Partial<AiAgentNode['config']> = {}): AiAgentNode {
   return {
     id: 'agent1',
     type: 'ai-studio/ai-agent',
-    config: { systemPrompt: 'You are a test agent.' },
+    config: { systemPrompt: 'You are a test agent.', ...config },
   };
+}
+
+const refundSchema: JSONSchema7 = {
+  type: 'object',
+  properties: { refundAmount: { type: 'number' }, orderDate: { type: 'string' } },
+  required: ['refundAmount', 'orderDate'],
+  additionalProperties: false,
+};
+
+const usage = {
+  inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
+  outputTokens: { total: undefined, text: undefined, reasoning: undefined },
+};
+
+function answeringModel(text: string, finishReason: FinishReason = 'stop'): MockLanguageModelV3 {
+  return new MockLanguageModelV3({
+    doGenerate: {
+      content: [{ type: 'text', text }],
+      finishReason: { unified: finishReason, raw: undefined },
+      usage,
+      warnings: [],
+    },
+  });
+}
+
+// Calls webSearch on each of the first `searches` steps, then answers `text`.
+function searchingModel(searches: number, text: string): MockLanguageModelV3 {
+  let step = 0;
+  return new MockLanguageModelV3({
+    doGenerate: async () => {
+      step += 1;
+      if (step <= searches) {
+        return {
+          content: [
+            {
+              type: 'tool-call',
+              toolCallId: `search-${step}`,
+              toolName: 'webSearch',
+              input: '{"query":"refund policy"}',
+            },
+          ],
+          finishReason: { unified: 'tool-calls', raw: undefined },
+          usage,
+          warnings: [],
+        };
+      }
+      return {
+        content: [{ type: 'text', text }],
+        finishReason: { unified: 'stop', raw: undefined },
+        usage,
+        warnings: [],
+      };
+    },
+  });
+}
+
+function failingModel(statusCode: number, message: string): MockLanguageModelV3 {
+  return new MockLanguageModelV3({
+    doGenerate: () => {
+      throw apiCallError(statusCode, message);
+    },
+  });
 }
 
 describe('executeAiAgent', () => {
   it('returns the model text as the node output', async () => {
-    const model = new MockLanguageModelV3({
-      doGenerate: {
-        content: [{ type: 'text', text: 'final answer' }],
-        finishReason: { unified: 'stop', raw: undefined },
-        usage: {
-          inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
-          outputTokens: { total: undefined, text: undefined, reasoning: undefined },
-        },
-        warnings: [],
-      },
-    });
+    const model = answeringModel('final answer');
 
     const result = await executeAiAgent(aiAgentNode(), context(), { model });
 
@@ -47,83 +103,191 @@ describe('executeAiAgent', () => {
   });
 
   it('calls the model exactly once on a retryable failure (retries belong to the Temporal activity policy)', async () => {
-    const model = new MockLanguageModelV3({
-      doGenerate: () => {
-        // statusCode 500 makes isRetryable default to true — the error must be one
-        // the SDK would retry, or this test passes even with retries enabled.
-        throw new APICallError({
-          message: 'Internal Server Error',
-          url: 'https://model.invalid/chat/completions',
-          requestBodyValues: {},
-          statusCode: 500,
-        });
-      },
-    });
+    // statusCode 500 makes isRetryable default to true — a failure the SDK itself would
+    // retry, so this assertion fails if client retries ever come back on.
+    const model = failingModel(500, 'Internal Server Error');
 
-    await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toThrow(APICallError);
+    await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toThrow(TransientNodeExecutionError);
 
     expect(model.doGenerateCalls).toHaveLength(1);
   });
-});
 
-function mockModel(text: string) {
-  return new MockLanguageModelV3({
-    doGenerate: {
-      content: [{ type: 'text', text }],
-      finishReason: { unified: 'stop', raw: undefined },
-      usage: {
-        inputTokens: { total: undefined, noCache: undefined, cacheRead: undefined, cacheWrite: undefined },
-        outputTokens: { total: undefined, text: undefined, reasoning: undefined },
-      },
-      warnings: [],
-    },
-  });
-}
+  it('surfaces a 5xx as a transient failure that keeps the provider error as its cause', async () => {
+    const model = failingModel(503, 'upstream overloaded');
 
-function fakeOpenrouter(chat: (id: string) => unknown): OpenRouterClient {
-  return { chat: vi.fn(chat) } as unknown as OpenRouterClient;
-}
-
-describe('executeAiAgent model/provider fallback chain', () => {
-  it("uses node.config.model over deps.defaultModel when resolving via 'auto'/openrouter", async () => {
-    const chat = vi.fn(() => mockModel('ok'));
-    const openrouter = fakeOpenrouter(chat);
-    const node: AiAgentNode = {
-      id: 'agent1',
-      type: 'ai-studio/ai-agent',
-      config: { systemPrompt: 'p', model: 'node-model' },
-    };
-
-    await executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' });
-
-    expect(chat).toHaveBeenCalledWith('node-model');
+    await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toMatchObject({
+      code: 'provider_unavailable',
+      cause: expect.any(APICallError),
+    });
   });
 
-  it('falls back to deps.defaultModel when node.config.model is unset', async () => {
-    const chat = vi.fn(() => mockModel('ok'));
-    const openrouter = fakeOpenrouter(chat);
-    const node: AiAgentNode = {
-      id: 'agent1',
-      type: 'ai-studio/ai-agent',
-      config: { systemPrompt: 'p' },
-    };
+  it('surfaces a rejected API key as a permanent failure', async () => {
+    const model = failingModel(401, 'Incorrect API key provided');
 
-    await executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' });
-
-    expect(chat).toHaveBeenCalledWith('env-model');
-  });
-
-  it('throws when node.config.provider selects a known provider whose API key is missing', async () => {
-    const openrouter = fakeOpenrouter(() => mockModel('unused'));
-    delete process.env['OPENAI_API_KEY'];
-    const node: AiAgentNode = {
-      id: 'agent1',
-      type: 'ai-studio/ai-agent',
-      config: { systemPrompt: 'p', model: 'gpt-4o-mini', provider: 'openai' },
-    };
-
-    await expect(executeAiAgent(node, context(), { openrouter, defaultModel: 'env-model' })).rejects.toThrow(
-      'OPENAI_API_KEY',
+    await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toBeInstanceOf(
+      PermanentNodeExecutionError,
     );
+  });
+
+  it('treats an explicit null output schema as absent, as a hand-edited snapshot may carry one', async () => {
+    const node = aiAgentNode({ outputSchema: null });
+    const model = answeringModel('final answer');
+
+    const result = await executeAiAgent(node, context(), { model });
+
+    expect(result).toEqual({ output: { response: 'final answer' } });
+    expect(model.doGenerateCalls[0]?.responseFormat).toBeUndefined();
+  });
+
+  it.each([
+    ['an empty object', {}],
+    ['a string', 'refund review'],
+    ['an array', [refundSchema]],
+    ['a schema of another type', { type: 'string' }],
+    ['a boolean', false],
+  ])('fails %s as an output schema, before calling the model', async (_kind, outputSchema) => {
+    const model = answeringModel('{}');
+    const node = aiAgentNode({ outputSchema: outputSchema as unknown as JSONSchema7 });
+
+    await expect(executeAiAgent(node, context(), { model })).rejects.toMatchObject({
+      code: 'output_schema_invalid',
+      classification: 'permanent',
+    });
+    expect(model.doGenerateCalls).toHaveLength(0);
+  });
+
+  it('returns the object the model produced as the node output when the config declares an output schema', async () => {
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    const result = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    expect(result).toEqual({ output: { refundAmount: 49, orderDate: '2026-09-02' } });
+  });
+
+  it('passes the declared schema to the model untouched, as the JSON response format', async () => {
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    const format = model.doGenerateCalls[0]?.responseFormat;
+    expect(format).toEqual({ type: 'json', schema: refundSchema });
+    expect(format?.type === 'json' && format.schema).toBe(refundSchema);
+  });
+
+  it('keeps the web-search tool on the call beside the structured output', async () => {
+    const node = aiAgentNode({ webSearch: true, outputSchema: refundSchema });
+    const model = answeringModel('{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+    await executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' });
+
+    const call = model.doGenerateCalls[0];
+    expect(call?.tools?.map((tool) => tool.name)).toEqual(['webSearch']);
+    expect(call?.responseFormat?.type).toBe('json');
+  });
+
+  it('keeps the web-search tool on a plain-text call', async () => {
+    const model = answeringModel('final answer');
+
+    await executeAiAgent(aiAgentNode({ webSearch: true }), context(), { model, tavilyApiKey: 'tavily-key' });
+
+    const call = model.doGenerateCalls[0];
+    expect(call?.tools?.map((tool) => tool.name)).toEqual(['webSearch']);
+    expect(call?.responseFormat).toBeUndefined();
+  });
+
+  it.each(['length', 'content-filter'] as const)(
+    'names the finish reason when a structured answer ends with %s, as a transient failure',
+    async (finishReason) => {
+      const model = answeringModel('{"refundAmount":4', finishReason);
+
+      const failure = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model }).catch(
+        (error: unknown) => error,
+      );
+
+      expect(failure).toMatchObject({ code: 'structured_output_incomplete', classification: 'transient' });
+      expect((failure as Error).message).toContain(`finish reason: ${finishReason}`);
+    },
+  );
+
+  it('returns the partial text of a truncated answer when the node has no output schema', async () => {
+    const model = answeringModel('The refund is', 'length');
+
+    const result = await executeAiAgent(aiAgentNode(), context(), { model });
+
+    expect(result).toEqual({ output: { response: 'The refund is' } });
+  });
+
+  it('rethrows an answer the SDK could not parse as JSON unchanged, so the profile keeps its uniform retry', async () => {
+    const model = answeringModel('Sure, the refund is 49 USD.');
+
+    const failure = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model }).catch(
+      (error: unknown) => error,
+    );
+
+    expect(NoObjectGeneratedError.isInstance(failure)).toBe(true);
+    expect(failure).not.toHaveProperty('classification');
+  });
+
+  it('returns an answer that does not match the schema as it came: the endpoint, not the worker, enforces the shape', async () => {
+    const model = answeringModel('{"refundAmount":"forty-nine"}');
+
+    const result = await executeAiAgent(aiAgentNode({ outputSchema: refundSchema }), context(), { model });
+
+    expect(result).toEqual({ output: { refundAmount: 'forty-nine' } });
+  });
+
+  describe('with web search and an output schema', () => {
+    const node = aiAgentNode({ webSearch: true, outputSchema: refundSchema });
+
+    beforeEach(() => vi.stubGlobal('fetch', async () => Response.json({ answer: '30-day refunds.' })));
+    afterEach(() => vi.unstubAllGlobals());
+
+    it('parses the answer that follows a search', async () => {
+      const model = searchingModel(1, '{"refundAmount":49,"orderDate":"2026-09-02"}');
+
+      const result = await executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' });
+
+      expect(model.doGenerateCalls).toHaveLength(2);
+      expect(result).toEqual({ output: { refundAmount: 49, orderDate: '2026-09-02' } });
+    });
+
+    it('turns the tools off on the last step of the loop', async () => {
+      const model = searchingModel(Number.POSITIVE_INFINITY, 'never reached');
+
+      await expect(executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' })).rejects.toThrow();
+
+      expect(model.doGenerateCalls.map((call) => call.toolChoice?.type)).toEqual(['auto', 'auto', 'auto', 'none']);
+    });
+
+    it('names tool-calls as the finish reason when the model searches even on the last step', async () => {
+      const model = searchingModel(Number.POSITIVE_INFINITY, 'never reached');
+
+      await expect(executeAiAgent(node, context(), { model, tavilyApiKey: 'tavily-key' })).rejects.toMatchObject({
+        code: 'structured_output_incomplete',
+        message: expect.stringContaining('finish reason: tool-calls'),
+      });
+      expect(model.doGenerateCalls).toHaveLength(4);
+    });
+  });
+
+  it('classifies a 4xx on the structured call like any other: permanent', async () => {
+    const node = aiAgentNode({ outputSchema: refundSchema });
+    const model = failingModel(400, 'Invalid schema for response_format');
+
+    await expect(executeAiAgent(node, context(), { model })).rejects.toMatchObject({
+      code: 'provider_rejected_request',
+      classification: 'permanent',
+    });
+  });
+
+  it('rethrows an error that is not a provider response unchanged', async () => {
+    const thrown = new Error('mock exploded');
+    const model = new MockLanguageModelV3({
+      doGenerate: () => {
+        throw thrown;
+      },
+    });
+
+    await expect(executeAiAgent(aiAgentNode(), context(), { model })).rejects.toBe(thrown);
   });
 });

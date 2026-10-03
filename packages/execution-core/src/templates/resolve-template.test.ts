@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import { PermanentNodeExecutionError } from '../errors';
 import type { ExecutionContext } from '../execution-context';
 import { resolveTemplate } from './resolve-template';
 
@@ -236,5 +237,24 @@ describe('resolveTemplate — malformed templates throw loudly', () => {
     expect(() => resolveTemplate('{{nodes.foo,bar}}', makeContext())).toThrow(/Malformed template reference/);
     expect(() => resolveTemplate('{{nodes.foo[0]}}', makeContext())).toThrow(/Malformed template reference/);
     expect(() => resolveTemplate('{{nodes.foo*bar}}', makeContext())).toThrow(/Malformed template reference/);
+  });
+});
+
+const resolving = (template: string) => () => resolveTemplate(template, makeContext());
+
+describe('resolveTemplate — failures are permanent', () => {
+  it('a malformed reference is a permanent template_malformed failure', () => {
+    expect(resolving('{{nodes.foo?bar}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{nodes.foo?bar}}')).toThrow(expect.objectContaining({ code: 'template_malformed' }));
+  });
+
+  it('a missing path is a permanent template_unresolved failure', () => {
+    expect(resolving('{{nodes.missing}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{nodes.missing}}')).toThrow(expect.objectContaining({ code: 'template_unresolved' }));
+  });
+
+  it('an unknown namespace is a permanent template_unresolved failure', () => {
+    expect(resolving('{{unknown.x}}')).toThrow(PermanentNodeExecutionError);
+    expect(resolving('{{unknown.x}}')).toThrow(expect.objectContaining({ code: 'template_unresolved' }));
   });
 });

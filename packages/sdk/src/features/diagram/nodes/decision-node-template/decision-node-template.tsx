@@ -1,5 +1,6 @@
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
+import clsx from 'clsx';
 import { memo, useMemo } from 'react';
 
 import { Icon } from '@workflow-builder/icons';
@@ -21,6 +22,8 @@ type Props = {
   label: string;
   description: string;
   selected?: boolean;
+  /** Render the Node Disabled variant (palette entries that cannot be added). */
+  disabled?: boolean;
   layoutDirection?: LayoutDirection;
   isConnecting?: boolean;
   showHandles?: boolean;
@@ -37,6 +40,7 @@ export const DecisionNodeTemplate = memo(
     description,
     showHandles,
     selected = false,
+    disabled = false,
     isValid,
     decisionBranches,
     layoutDirection = 'RIGHT',
@@ -52,10 +56,14 @@ export const DecisionNodeTemplate = memo(
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <NodePanel.Root selected={selected} className={styles['decision-node']}>
+      <NodePanel.Root
+        selected={selected}
+        disabled={disabled}
+        className={clsx(styles['decision-node'], { [styles['decision-node--down']]: layoutDirection === 'DOWN' })}
+      >
         <NodePanel.Header>
-          <NodeIcon icon={iconElement} />
-          <NodeDescription label={label} description={description} />
+          <NodeIcon icon={iconElement} disabled={disabled} />
+          <NodeDescription label={label} description={description} disabled={disabled} />
         </NodePanel.Header>
         <NodePanel.Content isVisible={isCanvasNode}>
           <OptionalNodeContent nodeId={id}>

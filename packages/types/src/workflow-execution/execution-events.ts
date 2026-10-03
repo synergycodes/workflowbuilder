@@ -78,8 +78,19 @@ export type ExecutionErrorPayload = {
   };
 };
 
+// A business result a node's completion declares for the run. Open strings, not enums:
+// `rejected` and `human` are the values written today, `timer` once a deadline can decide.
+export type ExecutionOutcome = {
+  value: string;
+  resolvedBy: string;
+};
+
+// The outcome a run recorded, with the node whose completion declared it.
+export type ExecutionOutcomeRecord = ExecutionOutcome & { nodeId: string };
+
 export type ExecutionCompletedPayload = {
   result?: unknown;
+  outcome?: ExecutionOutcomeRecord;
 };
 
 export type ExecutionCancelledPayload = {
@@ -188,4 +199,4 @@ export type ExecutionSnapshot = {
   events: ExecutionEvent[];
 };
 
-export type ExecutionStatus = 'pending' | 'running' | 'cancelling' | TerminalExecutionStatus;
+export type ExecutionStatus = 'pending' | 'running' | 'waiting' | 'cancelling' | TerminalExecutionStatus;

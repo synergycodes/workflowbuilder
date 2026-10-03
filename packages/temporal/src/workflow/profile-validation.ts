@@ -1,5 +1,5 @@
 // The one boundary that decides whether a nodeActivityProfiles map is usable. What it
-// deliberately does not check is in the README under "What the profile check covers".
+// deliberately does not check is in activity-profiles.md under "What the profile check covers".
 // (follow-up: temporal-profile-wire-validation)
 import type { ActivityProfile, DurationString, NodeActivityProfiles } from './activity-profiles';
 

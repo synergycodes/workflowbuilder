@@ -105,7 +105,20 @@ describe('createActivities', () => {
 
     await activities.updateStatus('exec-1', 'failed', 'boom');
 
-    expect(store.statuses).toEqual([['exec-1', 'failed', 'boom']]);
+    expect(store.statuses).toEqual([['exec-1', 'failed', 'boom', undefined]]);
+  });
+
+  it('forwards a status update together with its outcome', async () => {
+    const store = makeStore();
+    const activities = createActivities<TestNode>({
+      store,
+      executors: { 'test/echo': () => ({ output: null }), 'test/upper': () => ({ output: null }) },
+    });
+    const outcome = { value: 'rejected', resolvedBy: 'human' };
+
+    await activities.updateStatus('exec-1', 'completed', undefined, outcome);
+
+    expect(store.statuses).toEqual([['exec-1', 'completed', undefined, outcome]]);
   });
 });
 
@@ -126,7 +139,7 @@ const failing = { id: 'a', type: 'test/echo', config: {} } as const;
 describe('executeNode — error classification', () => {
   it.each([
     ['a plain Error', new Error('boom')],
-    ['an unclassified NodeExecutionError', new NodeExecutionError('no_branch_matched', 'No branch')],
+    ['an unclassified NodeExecutionError', new NodeExecutionError('test_unclassified', 'Unclassified failure')],
   ])('rethrows %s as the very same object', async (_label, thrown) => {
     // Unclassified throws must reach the SDK's own conversion untouched.
     await expect(activitiesThrowing(thrown).executeNode(failing, context)).rejects.toBe(thrown);

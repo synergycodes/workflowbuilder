@@ -22,21 +22,16 @@ export const uischema: UISchema = {
       minRows: 5,
       maxRows: 14,
     },
+    // The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
+    {
+      type: 'ResponseSelect',
+      scope: scope('properties.outputSchema'),
+      label: 'Response format',
+    } as unknown as UISchema,
     {
       type: 'Switch',
       scope: scope('properties.webSearch'),
       label: 'Web search (let the agent look things up)',
-    },
-    {
-      type: 'Text',
-      scope: scope('properties.model'),
-      label: 'Model',
-      placeholder: 'Inherit workflow/deployment default',
-    },
-    {
-      type: 'Select',
-      scope: scope('properties.provider'),
-      label: 'Provider',
     },
   ],
 };

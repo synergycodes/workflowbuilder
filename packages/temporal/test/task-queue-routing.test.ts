@@ -7,7 +7,8 @@ import { fileURLToPath } from 'node:url';
 import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 
 import { WorkflowBuilderPlugin, type WorkflowExecutionInput, executionWorkflowId } from '../src/index';
-import { REPLAY_TEST_GRAPH, createRecordingStore, replayTestExecutors } from './fixtures/graph';
+import { SINGLE_GATE_GRAPH } from './fixtures/pause-graph';
+import { createRecordingStore } from './fixtures/recording-store';
 import { SPECIALIZED_TASK_QUEUE } from './fixtures/workflows-with-task-queue';
 
 const EXECUTION_ID = 'task-queue-routing-execution';
@@ -28,7 +29,7 @@ describe('taskQueue routing', () => {
 
     const plugin = new WorkflowBuilderPlugin({
       store: createRecordingStore(),
-      executors: replayTestExecutors,
+      executors: { 'test/step': () => ({ output: null }), 'test/gate': () => ({ waiting: true }) },
       taskQueue: TASK_QUEUE,
     });
 
@@ -42,10 +43,10 @@ describe('taskQueue routing', () => {
       plugins: [plugin],
     });
 
-    const input: WorkflowExecutionInput<(typeof REPLAY_TEST_GRAPH)['nodes'][number]> = {
-      workflowId: REPLAY_TEST_GRAPH.workflowId,
+    const input: WorkflowExecutionInput<(typeof SINGLE_GATE_GRAPH)['nodes'][number]> = {
+      workflowId: SINGLE_GATE_GRAPH.workflowId,
       executionId: EXECUTION_ID,
-      definition: REPLAY_TEST_GRAPH,
+      definition: SINGLE_GATE_GRAPH,
       triggerPayload: {},
       variables: {},
       global: {},

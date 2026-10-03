@@ -4,7 +4,7 @@
 //
 // `@workflowbuilder/ui` is mocked because the hook imports `SnackbarType`
 // from it, and the package's JS carries a CSS side-effect import vitest's
-// node-side transformer can't process. `show-snackbar` is mocked so the user
+// node-side transformer can't process. `show-translated-snackbar` is mocked so the user
 // feedback can be asserted without rendering the snackbar stack.
 import { renderHook } from '@testing-library/react';
 import type { Connection } from '@xyflow/react';
@@ -17,8 +17,8 @@ vi.mock('@workflowbuilder/ui', () => ({
   SnackbarType: { SUCCESS: 'success', WARNING: 'warning', ERROR: 'error', INFO: 'info' },
 }));
 
-const { showSnackbar } = vi.hoisted(() => ({ showSnackbar: vi.fn() }));
-vi.mock('../../../utils/show-snackbar', () => ({ showSnackbar }));
+const { showTranslatedSnackbar } = vi.hoisted(() => ({ showTranslatedSnackbar: vi.fn() }));
+vi.mock('../../../utils/show-translated-snackbar', () => ({ showTranslatedSnackbar }));
 
 const { trackFutureChange } = vi.hoisted(() => ({ trackFutureChange: vi.fn() }));
 vi.mock('../../../features/changes-tracker/stores/use-changes-tracker-store', () => ({
@@ -29,7 +29,7 @@ const CONNECTION: Connection = { source: 'a', target: 'b', sourceHandle: null, t
 
 beforeEach(() => {
   resetWorkflowStore();
-  showSnackbar.mockClear();
+  showTranslatedSnackbar.mockClear();
   trackFutureChange.mockClear();
 });
 
@@ -47,7 +47,7 @@ describe('useConnect — read-only mode', () => {
 
     expect(onConnectAction).not.toHaveBeenCalled();
     expect(trackFutureChange).not.toHaveBeenCalled();
-    expect(showSnackbar).toHaveBeenCalledWith({ title: 'cantEditReadOnlyMode', variant: 'warning' });
+    expect(showTranslatedSnackbar).toHaveBeenCalledWith({ title: 'cantEditReadOnlyMode', variant: 'warning' });
   });
 
   it('onConnectStart does not flag a connection as being dragged', () => {
@@ -83,7 +83,7 @@ describe('useConnect — editable mode', () => {
 
     expect(trackFutureChange).toHaveBeenCalledWith('addEdge');
     expect(onConnectAction).toHaveBeenCalledWith(CONNECTION);
-    expect(showSnackbar).not.toHaveBeenCalled();
+    expect(showTranslatedSnackbar).not.toHaveBeenCalled();
   });
 
   it('onConnectStart flags the originating node and handle as being dragged', () => {
