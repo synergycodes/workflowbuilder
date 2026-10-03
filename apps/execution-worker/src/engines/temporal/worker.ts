@@ -6,6 +6,7 @@ import { fileURLToPath } from 'node:url';
 import { aiConfig, retiredAiVariables } from '@workflow-builder/ai-config';
 import { temporalConfig } from '@workflow-builder/temporal-connection';
 
+import { executeAgentHarness } from '../../activities/agent-harness';
 import { database } from '../../database';
 import type { AiStudioNode } from '../../domain/ai-studio-nodes';
 import { env } from '../../env';
@@ -16,6 +17,7 @@ import { executeTrigger } from '../../executors/trigger';
 import { executeVisualize } from '../../executors/visualize';
 import { logger } from '../../logger';
 import { withPayloadSizeWarning } from '../../store-payload-warning';
+import { nodeActivityProfiles } from './node-activity-profiles';
 
 const ai = aiConfig();
 if (!ai.available) {
@@ -43,8 +45,14 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/ai-agent': executeAIAgent,
     'ai-studio/visualize': executeVisualize,
     'ai-studio/human-decision': executeHumanDecision,
+    'ai-studio/agent-harness': (node, context) =>
+      executeAgentHarness(node, context, {
+        logger: logger.child({ component: 'agent-harness' }),
+        credential: env.COPILOT_GITHUB_TOKEN ? { kind: 'api_key', apiKey: env.COPILOT_GITHUB_TOKEN } : undefined,
+      }),
   },
   store: withPayloadSizeWarning(database, logger),
+  nodeActivityProfiles,
 });
 
 // without an explicit connection, Worker.create dials 127.0.0.1:7233 and ignores TEMPORAL_ADDRESS.

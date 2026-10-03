@@ -129,6 +129,30 @@ services:
           memory: 1G
     restart: unless-stopped
 
+  # dedicated pool for node types routed via a profile's `taskQueue`, so their
+  # dependencies (heavier tools, a different runtime) never reach the shared image.
+  # Same runtime image today — give it its own Dockerfile stage only once a routed
+  # node type actually needs extra OS-level tooling the shared image doesn't have.
+  worker-specialized:
+    image: ${RUNTIME_IMAGE:-ai-studio-runtime}
+    build: *runtime-build
+    command: ['pnpm', '--filter', 'execution-worker', 'start:specialized']
+    environment:
+      <<: *temporal-env
+      DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
+      AI_API_KEY: ${AI_API_KEY:-}
+      AI_BASE_URL: ${AI_BASE_URL:-}
+      AI_MODEL: ${AI_MODEL:-}
+      TAVILY_API_KEY: ${TAVILY_API_KEY:-}
+      SPECIALIZED_TASK_QUEUE: ${SPECIALIZED_TASK_QUEUE:-workflow-execution-specialized}
+    volumes: *temporal-tls-volumes
+    depends_on:
+      app-db:
+        condition: service_healthy
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
   web:
     image: ${WEB_IMAGE:-ai-studio-web}
     build:

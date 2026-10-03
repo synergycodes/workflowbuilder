@@ -7,6 +7,7 @@
     "dev": "tsx watch --env-file=.env ./src/engines/temporal/worker.ts",
     "start": "tsx --env-file=.env ./src/engines/temporal/worker.ts",
     "start:prod": "tsx ./src/engines/temporal/worker.ts",
+    "start:specialized": "tsx ./src/engines/temporal/specialized-worker.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -15,6 +16,8 @@
   },
   "dependencies": {
     "@ai-sdk/openai-compatible": "catalog:",
+    "@github/copilot-sdk": "^1.0.13",
+    "@temporalio/activity": "catalog:",
     "@temporalio/plugin": "catalog:",
     "@temporalio/worker": "catalog:",
     "@temporalio/workflow": "catalog:",
@@ -29,6 +32,7 @@
     "tsx": "^4.19.3"
   },
   "devDependencies": {
+    "@temporalio/testing": "catalog:",
     "@types/node": "^22.12.0",
     "vitest": "^3.0.4"
   }

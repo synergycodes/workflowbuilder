@@ -101,6 +101,12 @@ Keep the export named `runWorkflow`: that is the name the client starts. Entries
 
 **Use one constant on both sides.** The plugin validates the map at `Worker.create`, so a bad profile fails the deploy. `createRunWorkflow` alone validates only on the first workflow activation, and a map handed to the plugin but not to `createRunWorkflow` gives you a green deploy with every node on the default profile.
 
+### Long-running and routed activities
+
+A profile can also carry optional `heartbeatTimeout` and `taskQueue`. Heartbeat timeouts require the executor to call Temporal's `Context.current().heartbeat()`; connect `cancellationSignal` to the running operation for cooperative cancellation. A timer-driven heartbeat detects worker loss, not a hung operation while the timer keeps running. The SDK throttles heartbeat RPCs (normally 80% of the timeout), so a one-second timer does not guarantee one-second cancellation delivery. Heartbeating can deliver cancellation even without a heartbeat timeout.
+
+`taskQueue` routes that node type to a separate activity worker. Share the profile map with both the plugin and `createRunWorkflow`; otherwise the workflow schedules its default options. See [worker routing examples](/apps/execution-worker/README.md#per-node-type-task-queue-routing).
+
 ### Failures and retries
 
 A node activity gets the attempts its profile allows. An executor can settle the question itself:

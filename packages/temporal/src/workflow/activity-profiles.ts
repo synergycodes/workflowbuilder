@@ -12,6 +12,13 @@ export type DurationString = `${number}${'ms' | 's' | 'm' | 'h' | 'd'}`;
 export type ActivityProfile = {
   startToCloseTimeout: DurationString;
   retry: { maximumAttempts: number };
+  // Routes this node type's activities to a non-default queue, e.g. a specialized
+  // worker with its own image/tools. Absent means the plugin's own task queue.
+  taskQueue?: string;
+  // Detects a stalled/crashed worker faster than startToCloseTimeout alone: the activity
+  // must call Context.current().heartbeat() more often than this or Temporal fails it early.
+  // Absent means Temporal's own default (no heartbeat monitoring).
+  heartbeatTimeout?: DurationString;
 };
 
 // Only for the two frozen singletons below. Annotating them `ActivityProfile` would
@@ -20,6 +27,8 @@ export type ActivityProfile = {
 type ReadonlyActivityProfile = {
   readonly startToCloseTimeout: DurationString;
   readonly retry: { readonly maximumAttempts: number };
+  readonly taskQueue?: string;
+  readonly heartbeatTimeout?: DurationString;
 };
 
 // Node activities may call LLMs (minutes) — generous timeout, fewer retries to limit
