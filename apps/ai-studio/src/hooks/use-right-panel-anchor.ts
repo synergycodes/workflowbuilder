@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-const GAP_PX = 16;
+const GAP_PX = 12;
 const EXPANDED_HEIGHT_RATIO = 0.9;
 
 type RightPanelAnchor = {

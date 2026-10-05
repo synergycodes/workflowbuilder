@@ -1,11 +1,19 @@
 html[data-theme='light'] {
   --ai-studio-edge-color--active: var(--wb-ds-colors-green-400);
   --ai-studio-status-color--completed: var(--wb-ds-colors-green-400);
+  /* missing token */
+  --ai-studio-status-color--running: var(--wb-ds-colors-acc1-500);
+  /* missing token */
+  --ai-studio-status-color--human: var(--wb-ds-colors-acc4-700);
 }
 
 html[data-theme='dark'] {
   --ai-studio-edge-color--active: var(--wb-ds-colors-green-200);
   --ai-studio-status-color--completed: var(--wb-ds-colors-green-200);
+  /* missing token */
+  --ai-studio-status-color--running: var(--wb-ds-colors-acc1-400);
+  /* missing token */
+  --ai-studio-status-color--human: var(--wb-ds-colors-acc4-300);
 }
 
 :root {
@@ -15,6 +23,8 @@ html[data-theme='dark'] {
   --ai-studio-status-bg--completed: color-mix(in srgb, var(--ai-studio-status-color--completed), transparent 85%);
   --ai-studio-status-bg--waiting: color-mix(in srgb, var(--ai-studio-status-color--waiting), transparent 85%);
   --ai-studio-status-bg--incomplete: color-mix(in srgb, var(--ai-studio-status-color--incomplete), transparent 85%);
+  --ai-studio-status-bg--running: color-mix(in srgb, var(--ai-studio-status-color--running), transparent 85%);
+  --ai-studio-status-bg--human: color-mix(in srgb, var(--ai-studio-status-color--human), transparent 85%);
   --ai-studio-status-bg--failed: color-mix(in srgb, var(--ai-studio-status-color--failed), transparent 85%);
 
   --ai-studio-node-shadow-color--active: var(--ai-studio-edge-color--active);

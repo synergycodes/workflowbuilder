@@ -1,4 +1,5 @@
-import { useSingleSelectedElement } from '@workflowbuilder/sdk';
+import { Icon, useSingleSelectedElement, useStore } from '@workflowbuilder/sdk';
+import { Chip, NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
@@ -6,9 +7,11 @@ import type { ExecutionEvent, NodeSkipReason } from '@workflow-builder/types/wor
 
 import styles from './log-panel.module.css';
 
+import { useLeftPanelAnchor } from '../../hooks/use-left-panel-anchor';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
-import { toggleLog, useExecutionStore } from '../../stores/use-execution-store';
+import { type RunStatus, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
+import { ExecutionStatusIcon, type ExecutionStatusTone } from './execution-status-icon';
 
 const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
   branch_not_taken: 'branch not taken',
@@ -16,12 +19,103 @@ const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
   error_route_not_taken: 'error branch not taken',
 };
 
+const EVENT_LOOK: Record<ExecutionEvent['type'], { tone: ExecutionStatusTone; message: string }> = {
+  execution_started: { tone: 'info', message: 'Execution started' },
+  node_started: { tone: 'info', message: 'Started' },
+  node_waiting: { tone: 'waiting', message: 'Waiting for decision' },
+  node_completed: { tone: 'completed', message: 'Completed' },
+  node_failed: { tone: 'failed', message: 'Failed' },
+  node_skipped: { tone: 'skipped', message: 'Skipped' },
+  branch_spawned: { tone: 'branch', message: 'Started parallel branches' },
+  branches_joined: { tone: 'join', message: 'Branches joined' },
+  execution_completed: { tone: 'completed', message: 'Execution completed' },
+  execution_incomplete: { tone: 'incomplete', message: 'Incomplete' },
+  execution_failed: { tone: 'failed', message: 'Execution failed' },
+  execution_cancelled: { tone: 'neutral', message: 'Execution cancelled' },
+};
+
+type DiagramState = {
+  nodes: { id: string; data: { properties: { label?: unknown } } }[];
+  edges: { source: string; target: string }[];
+};
+
+function nodeLabel(state: DiagramState, nodeId: string) {
+  const label = state.nodes.find((node) => node.id === nodeId)?.data.properties.label;
+  return typeof label === 'string' && label ? label : nodeId;
+}
+
+// Branch names and join counts come from the diagram until the events carry them (follow-up: execution-log-branch-payloads).
+function eventMessage(event: ExecutionEvent, state: DiagramState): string {
+  const { message } = EVENT_LOOK[event.type];
+  switch (event.type) {
+    case 'node_skipped': {
+      return `${message} — ${SKIP_REASON_LABEL[event.payload.reason]}`;
+    }
+    case 'branch_spawned': {
+      const count = event.payload.childPathIds.length;
+      const targets = state.edges.filter((edge) => edge.source === event.nodeId).map((edge) => edge.target);
+      const names = targets.length === count ? ` → ${targets.map((id) => nodeLabel(state, id)).join(' · ')}` : '';
+      return `Started ${count} parallel branches${names}`;
+    }
+    case 'branches_joined': {
+      return `${message} — ${event.payload.mergedPathIds.length} inputs arrived · continuing`;
+    }
+    case 'execution_incomplete': {
+      return event.payload.deadEnds
+        .map(
+          ({ nodeId, port }) =>
+            `${nodeLabel(state, nodeId)} took “${port}”, an output with no connection. Draw the missing connection to finish this path.`,
+        )
+        .join('\n');
+    }
+    default: {
+      return message;
+    }
+  }
+}
+
+const RUN_STATUS_LOOK: Record<RunStatus, { tone: ExecutionStatusTone; label: string }> = {
+  idle: { tone: 'neutral', label: 'Idle' },
+  pending: { tone: 'running', label: 'Starting' },
+  running: { tone: 'running', label: 'Running' },
+  waiting: { tone: 'waiting', label: 'Waiting for decision' },
+  cancelling: { tone: 'neutral', label: 'Stopping' },
+  completed: { tone: 'completed', label: 'Completed' },
+  incomplete: { tone: 'incomplete', label: 'Incomplete' },
+  failed: { tone: 'failed', label: 'Failed' },
+  cancelled: { tone: 'neutral', label: 'Cancelled' },
+  disconnected: { tone: 'warning', label: 'Disconnected' },
+};
+
 const DETAIL_PREVIEW_CHARS = 120;
-const NODE_ID_PREVIEW_CHARS = 8;
 const AT_BOTTOM_TOLERANCE_PX = 4;
 
 function formatTime(isoTimestamp: string) {
   return new Date(isoTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function eventDetail(event: ExecutionEvent): string | undefined {
+  switch (event.type) {
+    case 'node_completed': {
+      return extractOutputText(event.payload.output);
+    }
+    case 'node_failed':
+    case 'execution_failed': {
+      return event.payload.error.message;
+    }
+    case 'execution_completed': {
+      const outcome = event.payload?.outcome;
+      return outcome ? `${outcome.value} · resolved by ${outcome.resolvedBy} · ${outcome.nodeId}` : undefined;
+    }
+    case 'execution_incomplete': {
+      return event.payload.deadEnds
+        .map(({ nodeId, port }) => `${nodeId} routed to "${port}" — nothing connected to that handle`)
+        .join('\n');
+    }
+    default: {
+      return undefined;
+    }
+  }
 }
 
 function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNodeId: string | null }) {
@@ -30,42 +124,14 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   const nodeId = (event as { nodeId?: string | null }).nodeId;
   const isNode = typeof nodeId === 'string' && nodeId.length > 0;
   const isHighlighted = isNode && nodeId === selectedNodeId;
-  const label = event.type.replaceAll('_', ' ');
-  const skipReason = event.type === 'node_skipped' ? SKIP_REASON_LABEL[event.payload.reason] : undefined;
+  const { tone, message } = EVENT_LOOK[event.type];
+  // Each selector returns a string, so the row re-renders only when its text changes.
+  const title = useStore((state) => (isNode ? nodeLabel(state, nodeId) : message));
+  const subtitle = useStore((state) =>
+    isNode || event.type === 'execution_incomplete' ? eventMessage(event, state) : undefined,
+  );
 
-  let detail: string | undefined;
-  switch (event.type) {
-    case 'node_completed': {
-      detail = extractOutputText(event.payload.output);
-
-      break;
-    }
-    case 'node_failed': {
-      detail = event.payload.error.message;
-
-      break;
-    }
-    case 'execution_failed': {
-      detail = event.payload.error.message;
-
-      break;
-    }
-    case 'execution_completed': {
-      const outcome = event.payload?.outcome;
-      if (outcome) detail = `${outcome.value} · resolved by ${outcome.resolvedBy} · ${outcome.nodeId}`;
-
-      break;
-    }
-    case 'execution_incomplete': {
-      detail = event.payload.deadEnds
-        .map(({ nodeId, port }) => `${nodeId} routed to "${port}" — nothing connected to that handle`)
-        .join('\n');
-
-      break;
-    }
-    // No default
-  }
-
+  const detail = eventDetail(event);
   const hasDetail = !!detail;
   const truncated =
     detail && detail.length > DETAIL_PREVIEW_CHARS ? detail.slice(0, DETAIL_PREVIEW_CHARS) + '…' : detail;
@@ -82,19 +148,17 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
   return (
     <div
       data-node-id={isNode ? nodeId : undefined}
-      className={clsx(styles['event'], {
-        [styles['event--toggleable']]: hasDetail,
-        [styles['event--highlighted']]: isHighlighted,
+      className={clsx(styles['row'], {
+        [styles['row--toggleable']]: hasDetail,
+        [styles['row--highlighted']]: isHighlighted,
+        [styles['row--failed']]: tone === 'failed',
       })}
       onClick={handleToggle}
     >
-      <div className={styles['event-header']}>
-        <span className={clsx(styles['badge'], styles[`badge--${event.type}`])}>{label}</span>
-        {isNode && <span className={styles['node-id']}>{nodeId.slice(0, NODE_ID_PREVIEW_CHARS)}</span>}
-        {skipReason && <span className={styles['reason']}>{skipReason}</span>}
-        <span className={styles['time']}>{formatTime(event.timestamp)}</span>
-        {hasDetail && <span className={styles['toggle']}>{isExpanded ? '▲' : '▼'}</span>}
-      </div>
+      <span className={styles['time']}>{formatTime(event.timestamp)}</span>
+      <ExecutionStatusIcon tone={tone} className={styles['status']} />
+      <span className={clsx(styles['title'], 'wb-text-body-s-emphasized')}>{title}</span>
+      {subtitle && <span className={clsx(styles['message'], 'wb-text-body-s')}>{subtitle}</span>}
       {hasDetail && (
         <div className={clsx(styles['detail'], { [styles['detail--expanded']]: isExpanded })}>
           {isExpanded ? detail : truncated}
@@ -112,6 +176,7 @@ export function ExecutionLogPanel() {
   // Clicking a node (incl. its flag marker) selects it on the canvas; the
   // highlight derives from that selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
+  const { leftOffset } = useLeftPanelAnchor();
   const { rightOffset } = useRightPanelAnchor();
 
   const bodyRef = useRef<HTMLDivElement>(null);
@@ -129,7 +194,13 @@ export function ExecutionLogPanel() {
 
   useEffect(() => {
     if (!selectedNodeId || isCollapsed) return;
-    bodyRef.current?.querySelector(`[data-node-id="${selectedNodeId}"]`)?.scrollIntoView({ block: 'nearest' });
+    const body = bodyRef.current;
+    const row = body?.querySelector(`[data-node-id="${selectedNodeId}"]`);
+    if (!body || !row) return;
+
+    // The first row goes to the top so the node's later rows fit below it; scrollIntoView would also scroll the page.
+    const paddingTop = Number.parseFloat(getComputedStyle(body).paddingTop) || 0;
+    body.scrollTop += row.getBoundingClientRect().top - body.getBoundingClientRect().top - paddingTop;
   }, [selectedNodeId, isCollapsed]);
 
   function handleBodyScroll() {
@@ -140,17 +211,45 @@ export function ExecutionLogPanel() {
     stickToBottomRef.current = distanceFromBottom < AT_BOTTOM_TOLERANCE_PX;
   }
 
+  function handleHeaderClick({ target }: React.MouseEvent) {
+    if (target instanceof Element && target.closest('button')) return;
+    toggleLog();
+  }
+
   if (events.length === 0 && status === 'idle') return null;
 
+  const runStatus = RUN_STATUS_LOOK[status];
+  const collapseLabel = isCollapsed ? 'Expand execution log' : 'Collapse execution log';
+
   return (
-    <div
-      className={clsx(styles['panel'], { [styles['panel--collapsed']]: isCollapsed })}
-      style={{ '--log-panel-right': `${rightOffset}px` } as React.CSSProperties}
+    <section
+      aria-label="Execution log"
+      className={clsx(styles['dock'], { [styles['dock--collapsed']]: isCollapsed })}
+      style={
+        {
+          '--log-dock-left': `${leftOffset}px`,
+          '--log-dock-right': `${rightOffset}px`,
+        } as React.CSSProperties
+      }
     >
-      <div className={styles['header']} onClick={toggleLog}>
-        <span className={styles['title']}>Execution Log</span>
-        <span className={clsx(styles['status'], styles[`status--${status}`])}>{status}</span>
-        <span className={styles['toggle']}>{isCollapsed ? '▲' : '▼'}</span>
+      <div className={styles['header']} onClick={handleHeaderClick}>
+        <NavButton
+          size="xs"
+          variant="plain"
+          aria-label={collapseLabel}
+          aria-expanded={!isCollapsed}
+          tooltip={collapseLabel}
+          onClick={toggleLog}
+          className={styles['collapse']}
+          prefixIcon={<Icon name="CaretDown" />}
+        />
+        <span className="wb-text-body-s-emphasized">Execution log</span>
+        <Chip
+          label={runStatus.label}
+          size="l"
+          prefixIcon={status === 'incomplete' ? <Icon name="LinkBreak" /> : undefined}
+          className={clsx(styles['chip'], styles[`chip--${runStatus.tone}`])}
+        />
       </div>
       {!isCollapsed && (
         <div ref={bodyRef} className={styles['body']} onScroll={handleBodyScroll}>
@@ -159,6 +258,6 @@ export function ExecutionLogPanel() {
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 }
