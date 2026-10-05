@@ -20,7 +20,6 @@ export const getVariableBySourceHandlesForNode = (params: {
 
   const nodeData = store.byNodeId[params.nodeId];
 
-  // Not indexed
   if (!nodeData) {
     return undefined;
   }
