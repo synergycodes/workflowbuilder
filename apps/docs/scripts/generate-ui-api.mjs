@@ -11,6 +11,7 @@
 import { execFile } from 'node:child_process';
 import { existsSync, globSync, readFileSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import process from 'node:process';
 import { fileURLToPath } from 'node:url';
@@ -30,24 +31,33 @@ const uiApiReferenceEntryFile = path.resolve(documentsRoot, 'src/generated/ui-ty
 const UI_BARREL_IMPORT = '@ui/index';
 const uiApiReferenceCategoriesFile = path.resolve(documentsRoot, 'src/generated/ui-api-categories.json');
 const tdJson = path.resolve(documentsRoot, 'node_modules/.cache/ui-typedoc.json');
+// node_modules/.bin/typedoc is a POSIX shim that Windows cannot spawn; run the package's own bin with node.
+const TYPEDOC_PACKAGE = createRequire(import.meta.url).resolve('typedoc/package.json');
+const TYPEDOC_BIN = path.join(
+  path.dirname(TYPEDOC_PACKAGE),
+  JSON.parse(readFileSync(TYPEDOC_PACKAGE, 'utf8')).bin.typedoc,
+);
 
 // Engineering notes in the CSS, never public documentation.
 const INTERNAL_NOTE_RE = /missing token/i;
 
+// TypeDoc reads entry points as globs, where a Windows \ is an escape; the run's cwd is repoRoot.
+const toGlob = (file) => path.relative(repoRoot, file).replaceAll(path.sep, '/');
+
 async function runTypedoc() {
   await mkdir(path.dirname(tdJson), { recursive: true });
-  const bin = path.resolve(documentsRoot, 'node_modules/.bin/typedoc');
   await promisify(execFile)(
-    bin,
+    process.execPath,
     [
+      TYPEDOC_BIN,
       '--json',
       tdJson,
       // Whole tree, not the barrel: variant prop types are not re-exported.
       '--entryPoints',
-      path.resolve(uiSource, 'components'),
+      toGlob(path.resolve(uiSource, 'components')),
       // A type outside the entry tree gets no reflection and vanishes from the tables.
       '--entryPoints',
-      path.resolve(uiSource, 'shared'),
+      toGlob(path.resolve(uiSource, 'shared')),
       '--entryPointStrategy',
       'expand',
       '--tsconfig',
