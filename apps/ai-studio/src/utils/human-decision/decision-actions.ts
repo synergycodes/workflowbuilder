@@ -22,10 +22,33 @@ function rejectOfferOf(entry: Record<string, unknown> | undefined): RejectOffer 
   return offer === undefined ? undefined : { ...offer, reasonRequired: entry?.['reasonRequired'] === true };
 }
 
+function isReject(entry: unknown): entry is Record<string, unknown> {
+  return isPlainObject(entry) && entry['effect'] === 'reject';
+}
+
+// A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
+function offeredReject(actions: readonly unknown[]): RejectOffer | undefined {
+  const entry = actions.find(isReject);
+  return hasText(entry?.['port']) ? rejectOfferOf(entry) : undefined;
+}
+
 // Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
 export function offeredActions(actions: readonly unknown[]): OfferedActions | undefined {
-  const entries = actions.filter(isPlainObject);
-  const withEffect = (effect: string) => entries.find((entry) => entry['effect'] === effect);
-  const resume = offerOf(withEffect('resume'));
-  return resume === undefined ? undefined : { resume, reject: rejectOfferOf(withEffect('reject')) };
+  const resume = offerOf(actions.filter(isPlainObject).find((entry) => entry['effect'] === 'resume'));
+  return resume === undefined ? undefined : { resume, reject: offeredReject(actions) };
+}
+
+export function rejectPortOf(actions: readonly unknown[]): string | undefined {
+  const port = actions.find(isReject)?.['port'];
+  return hasText(port) ? port : undefined;
+}
+
+/** Drops every stored reject and, turned on, appends `rejectAction`. The switch turns it on only while it shows off. */
+export function withReject(actions: readonly unknown[], on: boolean, rejectAction: unknown): unknown[] {
+  const withoutReject = actions.filter((entry) => !isReject(entry));
+  return on ? [...withoutReject, rejectAction] : withoutReject;
+}
+
+export function withReasonRequired(actions: readonly unknown[], reasonRequired: boolean): unknown[] {
+  return actions.map((entry) => (isReject(entry) ? { ...entry, reasonRequired } : entry));
 }
