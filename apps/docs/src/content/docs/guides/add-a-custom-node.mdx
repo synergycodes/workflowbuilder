@@ -18,12 +18,12 @@ Custom nodes let you extend Workflow Builder with node types that match your spe
 
 A node is a [`PaletteItem`](/api/types/paletteitem/) made of four pieces. File organisation is a suggestion — collapse them into one file if you prefer.
 
-| Piece                   | Defined in                   | Purpose                                                               |
-| ----------------------- | ---------------------------- | --------------------------------------------------------------------- |
-| `schema`                | `schema.ts`                  | Shape and validation of the node's properties.                        |
-| `uischema`              | `uischema.ts`                | How those properties render in the property panel.                    |
-| `defaultPropertiesData` | `default-properties-data.ts` | Initial values applied when the node is dropped.                      |
-| Top-level fields        | `<node-name>.ts`             | `type`, `label`, `description`, `icon` — plus optional `isStartNode`. |
+| Piece                   | Defined in                   | Purpose                                                                            |
+| ----------------------- | ---------------------------- | ---------------------------------------------------------------------------------- |
+| `schema`                | `schema.ts`                  | Shape and validation of the node's properties.                                     |
+| `uischema`              | `uischema.ts`                | How those properties render in the property panel.                                 |
+| `defaultPropertiesData` | `default-properties-data.ts` | Initial values applied when the node is dropped.                                   |
+| Top-level fields        | `<node-name>.ts`             | `type`, `label`, `description`, `icon` — plus optional `accent` and `isStartNode`. |
 
 ## 1. JSON Schema — `webhook/schema.ts`
 
@@ -106,11 +106,14 @@ export const webhookNode: PaletteItem<WebhookNodeSchema> = {
   label: 'Webhook',
   description: 'Send data to an external HTTP endpoint',
   icon: 'Globe', // see the WBIcon name union for valid icon names
+  accent: 'blue',
   defaultPropertiesData,
   schema,
   uischema,
 };
 ```
+
+`accent` colors the node's icon: `'blue'`, `'green'`, `'orange'`, `'violet'`, `'gray'`, `'violet-gradient'`, or a name of your own (see [`NodeIcon`](/ui-library/diagram-components/node-icon/#custom-accent)). The editor reads it from the palette item by node type every time it renders, and never saves it into the diagram, so changing it restyles existing diagrams too. Without it the icon keeps the default color, except on the built-in AI Agent template, which defaults to `'violet-gradient'`.
 
 If this node is where a run begins, add `isStartNode: true`. The editor copies the flag onto every node dropped from this palette item, so it travels with the saved diagram as `data.isStartNode` and your execution engine can find the entry point directly:
 
@@ -224,8 +227,16 @@ import { Handle, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
 export const MyNodeTemplate = memo(
-  ({ icon, label, description, selected = false, disabled = false, showHandles = true }: WorkflowNodeTemplateProps) => {
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+  ({
+    icon,
+    accent,
+    label,
+    description,
+    selected = false,
+    disabled = false,
+    showHandles = true,
+  }: WorkflowNodeTemplateProps) => {
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
     const handleTargetLeftId = getHandleId({ handleType: 'target', innerId: 'left' });
@@ -235,7 +246,7 @@ export const MyNodeTemplate = memo(
     return (
       <NodePanel.Root selected={selected} disabled={disabled}>
         <NodePanel.Header>
-          <NodeIcon icon={iconElement} disabled={disabled} />
+          <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />
         </NodePanel.Header>
         <NodePanel.Handles isVisible={showHandles}>
@@ -252,7 +263,7 @@ export const MyNodeTemplate = memo(
 
 The example composes the node from `@workflowbuilder/ui` primitives (`NodePanel.Root`, `NodePanel.Header`, `NodePanel.Handles`) — the same building blocks Workflow Builder uses for its own node renderers, so the result matches the editor's visual language out of the box.
 
-The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/). Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
+The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/), including the palette item's `accent`; `NodeIcon` sets the glyph size, so render the icon with `size="inherit"`. Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
 
 Wire it through the `nodeTemplates` prop on `<WorkflowBuilder.Root>`:
 

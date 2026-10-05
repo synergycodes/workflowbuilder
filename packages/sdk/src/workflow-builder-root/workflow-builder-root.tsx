@@ -12,6 +12,7 @@ import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
+import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
@@ -100,6 +101,7 @@ export function WorkflowBuilderRoot({
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
+    loadNodeDefinitions();
   }, []);
 
   // Paint the persisted theme on the DOM once, client-side. Lives here (not at

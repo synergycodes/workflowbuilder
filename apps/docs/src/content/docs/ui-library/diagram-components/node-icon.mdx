@@ -31,6 +31,47 @@ function NodeHeader({ label, description }) {
 }
 ```
 
+## Accent
+
+`accent` tints the container, hides its border and colors the glyph. `blue`, `green`,
+`orange`, `violet` and `gray` are named by hue; `violet-gradient` is a gradient with a white glyph.
+Without `accent` the icon keeps the default color. A `disabled` icon keeps its border and the
+disabled colors, whatever its accent.
+
+```tsx
+<NodeIcon icon={<User />} accent="violet" />
+```
+
+## Custom accent
+
+Any other lowercase name works too: the icon reads `--wb-public-node-icon-color-<name>` for the
+glyph and `--wb-public-node-icon-container-background-color-<name>` for the container. Define
+both for each theme; a name without them falls back to the default color.
+
+```css
+:root {
+  --wb-public-node-icon-color-teal: #0f766e;
+  --wb-public-node-icon-container-background-color-teal: #ccfbf1;
+}
+
+html[data-theme='dark'] {
+  --wb-public-node-icon-color-teal: #5eead4;
+  --wb-public-node-icon-container-background-color-teal: #134e4a;
+}
+```
+
+```tsx
+<NodeIcon icon={<User />} accent="teal" />
+```
+
+## Size
+
+The container pads the icon with `--wb-public-node-icon-padding` and sets `font-size` to
+`--wb-public-node-icon-glyph-size`, so an icon sized in `em` - such as a Phosphor icon, or
+the SDK's `Icon` with `size="inherit"` - follows it. To render a larger icon, set the
+variables on `NodePanel.Root` or an element above it, not on `NodePanel.Header` or the
+icon: the header ports read both to stay centred on the icon.
+
 ## Disabled
 
 `disabled` mutes the glyph and the container with the Node Disabled colors.

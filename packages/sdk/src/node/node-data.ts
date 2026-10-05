@@ -2,7 +2,7 @@ import type { Edge, Node } from '@xyflow/react';
 
 import type { NodeDataProperties } from '../types/default-properties';
 import type { UISchema } from '../types/uischema';
-import type { IconType } from './common';
+import type { IconType, NodeIconAccent } from './common';
 import type { NodeOutputSchema } from './node-output-schema';
 import type { BaseNodeProperties, NodeSchema } from './node-schema';
 import type { NodeType } from './node-types';
@@ -31,6 +31,8 @@ export type NodeDefinition<T extends NodeSchema> = {
   uischema?: UISchema;
   /** describes the output properties this node produces, used by the variable picker */
   outputSchema?: NodeOutputSchema;
+  /** icon color on the canvas and in the palette, resolved by node type and never saved into the diagram */
+  accent?: NodeIconAccent;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
   Pick<NodeData, 'type' | 'icon' | 'templateType' | 'isStartNode'>;
 
