@@ -14,13 +14,13 @@ vi.mock('@xyflow/react', () => ({
 }));
 
 describe('AiAgentNodeTemplate', () => {
-  it('uses the ai accent when the definition sets none', () => {
+  it('uses the violet-gradient accent when the definition sets none', () => {
     render(<AiAgentNodeTemplate id="agent" icon="Robot" label="Agent" description="" />);
 
-    expect(screen.getByTestId('node-icon').dataset.accent).toBe('ai');
+    expect(screen.getByTestId('node-icon').dataset.accent).toBe('violet-gradient');
   });
 
-  it('an explicit accent overrides the ai default', () => {
+  it('an explicit accent overrides the violet-gradient default', () => {
     render(<AiAgentNodeTemplate id="agent" icon="Robot" label="Agent" description="" accent="green" />);
 
     expect(screen.getByTestId('node-icon').dataset.accent).toBe('green');

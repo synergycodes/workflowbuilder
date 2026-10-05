@@ -33,10 +33,14 @@
     /* missing token */;
   --wb-public-node-icon-color-violet: var(--wb-ds-colors-acc4-700) /* missing token */;
   --wb-public-node-icon-container-background-color-violet: var(--wb-ds-colors-acc4-500-10) /* missing token */;
-  --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-600) /* missing token */;
-  --wb-public-node-icon-container-background-color-neutral: var(--wb-ds-colors-gray-200) /* missing token */;
-  --wb-public-node-icon-color-ai: var(--wb-ds-colors-gray-100) /* missing token */;
-  --wb-public-node-icon-container-background-color-ai: linear-gradient(140deg, var(--wb-ds-colors-acc4-500), #5b4fe0)
+  --wb-public-node-icon-color-gray: var(--wb-ds-colors-gray-600) /* missing token */;
+  --wb-public-node-icon-container-background-color-gray: var(--wb-ds-colors-gray-200) /* missing token */;
+  --wb-public-node-icon-color-violet-gradient: var(--wb-ds-colors-gray-100) /* missing token */;
+  --wb-public-node-icon-container-background-color-violet-gradient: linear-gradient(
+      140deg,
+      var(--wb-ds-colors-acc4-500),
+      #5b4fe0
+    )
     /* missing token */;
 }
 
@@ -64,53 +68,27 @@
       transparent
     )
     /* missing token */;
-  --wb-public-node-icon-color-neutral: var(--wb-ds-colors-gray-400) /* missing token */;
-  --wb-public-node-icon-container-background-color-neutral: #333438 /* missing token */;
-  --wb-public-node-icon-container-background-color-ai: linear-gradient(140deg, #c77cf5, #6b6ae8) /* missing token */;
+  --wb-public-node-icon-color-gray: var(--wb-ds-colors-gray-400) /* missing token */;
+  --wb-public-node-icon-container-background-color-gray: #333438 /* missing token */;
+  --wb-public-node-icon-container-background-color-violet-gradient: linear-gradient(140deg, #c77cf5, #6b6ae8)
+    /* missing token */;
 }
 
 @layer ui.component {
   .container {
+    --node-icon-color: var(--wb-public-node-icon-color);
+    --node-icon-background: var(--wb-public-node-icon-container-background-color);
+
     display: flex;
     padding: var(--wb-public-node-icon-padding);
     justify-content: center;
     align-items: center;
     font-size: var(--wb-public-node-icon-glyph-size);
-    color: var(--wb-public-node-icon-color);
+    color: var(--node-icon-color);
 
     border-radius: var(--wb-public-node-icon-border-radius);
     border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
-    background: var(--wb-public-node-icon-container-background-color);
-
-    &.accent-blue {
-      color: var(--wb-public-node-icon-color-blue);
-      background: var(--wb-public-node-icon-container-background-color-blue);
-    }
-
-    &.accent-green {
-      color: var(--wb-public-node-icon-color-green);
-      background: var(--wb-public-node-icon-container-background-color-green);
-    }
-
-    &.accent-orange {
-      color: var(--wb-public-node-icon-color-orange);
-      background: var(--wb-public-node-icon-container-background-color-orange);
-    }
-
-    &.accent-violet {
-      color: var(--wb-public-node-icon-color-violet);
-      background: var(--wb-public-node-icon-container-background-color-violet);
-    }
-
-    &.accent-neutral {
-      color: var(--wb-public-node-icon-color-neutral);
-      background: var(--wb-public-node-icon-container-background-color-neutral);
-    }
-
-    &.accent-ai {
-      color: var(--wb-public-node-icon-color-ai);
-      background: var(--wb-public-node-icon-container-background-color-ai);
-    }
+    background: var(--node-icon-background);
 
     &.accented:not(.disabled) {
       border-color: transparent;

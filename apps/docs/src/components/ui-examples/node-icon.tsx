@@ -20,7 +20,7 @@ export function NodeIconExample() {
       </NodePanel.Root>
       <NodePanel.Root selected={false}>
         <NodePanel.Header>
-          <NodeIcon icon={<Sparkle />} accent="ai" />
+          <NodeIcon icon={<Sparkle />} accent="violet-gradient" />
           AI accent
         </NodePanel.Header>
       </NodePanel.Root>

@@ -41,7 +41,7 @@ export const AiAgentNodeTemplate = memo(
   ({
     icon,
     // The agent had its gradient before accents existed; a definition without one keeps it.
-    accent = 'ai',
+    accent = 'violet-gradient',
     label,
     description,
     selected = false,

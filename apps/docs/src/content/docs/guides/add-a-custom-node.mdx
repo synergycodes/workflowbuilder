@@ -113,7 +113,7 @@ export const webhookNode: PaletteItem<WebhookNodeSchema> = {
 };
 ```
 
-`accent` colors the node's icon: `'blue'`, `'green'`, `'orange'`, `'violet'`, `'neutral'`, or `'ai'` for a gradient. The editor reads it from the palette item by node type every time it renders, and never saves it into the diagram, so changing it restyles existing diagrams too. Without it the icon keeps the default color, except on the built-in AI Agent template, which defaults to `'ai'`.
+`accent` colors the node's icon: `'blue'`, `'green'`, `'orange'`, `'violet'`, `'gray'`, `'violet-gradient'`, or a name of your own (see [`NodeIcon`](/ui-library/diagram-components/node-icon/#custom-accent)). The editor reads it from the palette item by node type every time it renders, and never saves it into the diagram, so changing it restyles existing diagrams too. Without it the icon keeps the default color, except on the built-in AI Agent template, which defaults to `'violet-gradient'`.
 
 If this node is where a run begins, add `isStartNode: true`. The editor copies the flag onto every node dropped from this palette item, so it travels with the saved diagram as `data.isStartNode` and your execution engine can find the entry point directly:
 
