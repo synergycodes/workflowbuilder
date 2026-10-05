@@ -52,5 +52,7 @@ export function TabGlobalVariables({ className, isReadOnly }: Props) {
     );
   }
 
-  return <PaneList className={clsx(styles['container'], className)} setActivePane={setActivePane} />;
+  return (
+    <PaneList className={clsx(styles['container'], className)} setActivePane={setActivePane} isReadOnly={isReadOnly} />
+  );
 }

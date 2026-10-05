@@ -144,6 +144,7 @@ export function VariableForm(props: Props) {
           onChange={(event) => handleInputUpdate('description', event.target.value)}
           minRows={3}
           maxRows={3}
+          disabled={props.isReadOnly}
         />
       </FormControlWithLabel>
       <div className={styles['buttons']}>

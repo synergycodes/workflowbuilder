@@ -15,9 +15,10 @@ import { VARIABLE_PANE, type VariablePane } from '../constants';
 type Props = {
   className?: string;
   setActivePane: (pane: VariablePane, id?: string) => void;
+  isReadOnly?: boolean;
 };
 
-export function PaneList({ className, setActivePane }: Props) {
+export function PaneList({ className, setActivePane, isReadOnly }: Props) {
   const globalVariables = useStore((store) => store.globalVariables);
   const { t } = useTranslation();
 
@@ -36,6 +37,7 @@ export function PaneList({ className, setActivePane }: Props) {
           size="xs"
           prefixIcon={<Icon name="Plus" />}
           onClick={() => setActivePane(VARIABLE_PANE.ADD)}
+          disabled={isReadOnly}
         >
           {t('workflowsSettings.tab.addVariable')}
         </Button>
@@ -50,8 +52,9 @@ export function PaneList({ className, setActivePane }: Props) {
           <GlobalVariablePreview
             key={id}
             id={id}
+            // We allow going to edit pane in readOnly to allow inspection
             onEdit={() => setActivePane(VARIABLE_PANE.EDIT, id)}
-            onRemove={() => setActivePane(VARIABLE_PANE.REMOVE, id)}
+            onRemove={isReadOnly ? undefined : () => setActivePane(VARIABLE_PANE.REMOVE, id)}
           />
         ))}
       </div>
