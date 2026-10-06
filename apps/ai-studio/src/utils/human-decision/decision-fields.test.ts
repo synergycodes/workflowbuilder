@@ -108,6 +108,7 @@ describe('isEveryFieldHidden', () => {
     ['a source that declares fields, every one Hidden', outputSchema, empty, true],
     ['a source that declares fields, one Read-only', outputSchema, readOnlyDate, false],
     ['only fields the source does not declare', undefined, stored, false],
+    ['declared fields all Hidden, plus a stored field the source does not declare', outputSchema, stored, false],
     ['a source that declares no field the form can show', { type: 'object', properties: {} }, empty, false],
   ] as const)('%s', (_case, source, schema, expected) => {
     expect(isEveryFieldHidden(fieldRows(source, schema), schema)).toBe(expected);

@@ -1,7 +1,14 @@
 .fields {
+  --fields-gap: 0.5rem;
+
   display: flex;
   flex-direction: column;
-  gap: 0.5rem;
+  gap: var(--fields-gap);
   /* The accordion's grid track grows to the widest label; this keeps it at the panel's width. */
   contain: inline-size;
+}
+
+/* Cancels the gap above the empty status region; `display: none` would drop it from the accessibility tree. */
+.status:empty {
+  margin-top: calc(-1 * var(--fields-gap));
 }

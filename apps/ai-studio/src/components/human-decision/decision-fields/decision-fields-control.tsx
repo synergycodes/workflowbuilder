@@ -68,7 +68,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   const { schema } = request;
   const rows = fieldRows(outputSchema, schema);
   const sourceHint = sourceHintOf(sourceId, predecessors.length, rows);
-  const everyHidden = isEveryFieldHidden(rows, schema);
+  const everyHidden = sourceHint === undefined && isEveryFieldHidden(rows, schema);
   const pick = (key: string, mode: FieldMode) =>
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 
@@ -85,11 +85,10 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
             onPick={(mode) => pick(row.key, mode)}
           />
         ))}
-        {everyHidden && (
-          <Hint variant="warning" live>
-            {ALL_HIDDEN_HINT}
-          </Hint>
-        )}
+        {/* Screen readers often skip a live region mounted with its text, so the region stays mounted. */}
+        <div role="status" className={styles['status']}>
+          {everyHidden && <Hint variant="warning">{ALL_HIDDEN_HINT}</Hint>}
+        </div>
       </div>
     </Accordion>
   );
