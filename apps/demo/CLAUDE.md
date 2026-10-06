@@ -12,7 +12,7 @@ Each node type lives in `src/app/data/nodes/<node-name>/`. Canonical pattern is 
 
 | File                         | Purpose                                                                               |
 | ---------------------------- | ------------------------------------------------------------------------------------- |
-| `<node-name>.ts`             | `PaletteItem<Schema>` — label, type, icon, defaults, schemas, optional `outputSchema` |
+| `<node-name>.ts`             | `PaletteItem<Schema>` — label, type, icon, defaults, schemas, optional `schemaOutput` |
 | `schema.ts`                  | JSON Schema with `satisfies NodeSchema`; spreads `sharedProperties` from the SDK      |
 | `uischema.ts`                | UI Schema using `getScope<Schema>` for type-safe scopes                               |
 | `default-properties-data.ts` | Defaults aligned with the schema                                                      |

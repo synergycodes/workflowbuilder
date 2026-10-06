@@ -11,7 +11,7 @@ export const action: PaletteItem<ActionNodeSchema> = {
   description: 'node.action.description',
   defaultPropertiesData,
   schema,
-  uischema,
+  // Example of a deprecated response. Use schemaOutput instead.
   outputSchema: {
     type: 'default',
     properties: {
@@ -20,4 +20,5 @@ export const action: PaletteItem<ActionNodeSchema> = {
       errorMessage: { type: 'string', label: 'Error Message', description: 'Error details if the action failed' },
     },
   },
+  uischema,
 };
