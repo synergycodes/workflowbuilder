@@ -1,5 +1,6 @@
+import { CaretDown } from '@phosphor-icons/react';
 import { Icon, useSingleSelectedElement, useStore } from '@workflowbuilder/sdk';
-import { Chip, NavButton } from '@workflowbuilder/ui';
+import { Chip } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useEffect, useRef, useState } from 'react';
 
@@ -88,6 +89,14 @@ const RUN_STATUS_LOOK: Record<RunStatus, { tone: ExecutionStatusTone; label: str
 };
 
 const AT_BOTTOM_TOLERANCE_PX = 4;
+const MIN_BODY_HEIGHT_PX = 120;
+const MAX_BODY_HEIGHT_RATIO = 0.6;
+const RESIZE_KEY_STEP_PX = 16;
+
+function clampBodyHeight(height: number) {
+  const max = Math.max(MIN_BODY_HEIGHT_PX, window.innerHeight * MAX_BODY_HEIGHT_RATIO);
+  return Math.round(Math.min(Math.max(height, MIN_BODY_HEIGHT_PX), max));
+}
 
 function formatTime(isoTimestamp: string) {
   return new Date(isoTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -181,6 +190,9 @@ export function ExecutionLogPanel() {
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
+  // `undefined` keeps the default height from the stylesheet; double-click or Home goes back to it.
+  const [bodyHeight, setBodyHeight] = useState<number | undefined>();
+  const resizeStartRef = useRef<{ pointerY: number; height: number } | undefined>(undefined);
 
   useEffect(() => {
     stickToBottomRef.current = true;
@@ -211,6 +223,37 @@ export function ExecutionLogPanel() {
     stickToBottomRef.current = distanceFromBottom < AT_BOTTOM_TOLERANCE_PX;
   }
 
+  function handleResizeStart(event: React.PointerEvent<HTMLDivElement>) {
+    const height = bodyRef.current?.getBoundingClientRect().height;
+    if (height === undefined) return;
+
+    event.preventDefault();
+    event.currentTarget.setPointerCapture(event.pointerId);
+    resizeStartRef.current = { pointerY: event.clientY, height };
+  }
+
+  function handleResizeMove(event: React.PointerEvent<HTMLDivElement>) {
+    const start = resizeStartRef.current;
+    if (!start) return;
+
+    setBodyHeight(clampBodyHeight(start.height + start.pointerY - event.clientY));
+  }
+
+  function handleResizeEnd(event: React.PointerEvent<HTMLDivElement>) {
+    resizeStartRef.current = undefined;
+    event.currentTarget.releasePointerCapture(event.pointerId);
+  }
+
+  function handleResizeKey(event: React.KeyboardEvent<HTMLDivElement>) {
+    const current = bodyRef.current?.getBoundingClientRect().height ?? 0;
+    if (event.key === 'ArrowUp') setBodyHeight(clampBodyHeight(current + RESIZE_KEY_STEP_PX));
+    else if (event.key === 'ArrowDown') setBodyHeight(clampBodyHeight(current - RESIZE_KEY_STEP_PX));
+    else if (event.key === 'Home') setBodyHeight(undefined);
+    else return;
+
+    event.preventDefault();
+  }
+
   function handleHeaderClick({ target }: React.MouseEvent) {
     if (target instanceof Element && target.closest('button')) return;
     toggleLog();
@@ -229,21 +272,40 @@ export function ExecutionLogPanel() {
         {
           '--log-dock-left': `${leftOffset}px`,
           '--log-dock-right': `${rightOffset}px`,
+          '--log-body-height': bodyHeight === undefined ? undefined : `${bodyHeight}px`,
         } as React.CSSProperties
       }
     >
-      <div className={styles['header']} onClick={handleHeaderClick}>
-        <NavButton
-          size="xs"
-          variant="plain"
-          aria-label={collapseLabel}
-          aria-expanded={!isCollapsed}
-          tooltip={collapseLabel}
-          onClick={toggleLog}
-          className={styles['collapse']}
-          prefixIcon={<Icon name="CaretDown" />}
+      {!isCollapsed && (
+        <div
+          role="separator"
+          aria-orientation="horizontal"
+          aria-label="Resize execution log"
+          aria-valuemin={MIN_BODY_HEIGHT_PX}
+          aria-valuenow={bodyHeight}
+          tabIndex={0}
+          className={styles['resize']}
+          onPointerDown={handleResizeStart}
+          onPointerMove={handleResizeMove}
+          onPointerUp={handleResizeEnd}
+          onPointerCancel={handleResizeEnd}
+          onDoubleClick={() => setBodyHeight(undefined)}
+          onKeyDown={handleResizeKey}
         />
-        <span className={clsx(styles['dock-title'], 'wb-text-body-s-emphasized')}>Execution log</span>
+      )}
+      <div className={styles['header']} onClick={handleHeaderClick}>
+        <button
+          type="button"
+          className={clsx(styles['toggle'], 'wb-text-body-s-emphasized')}
+          aria-expanded={!isCollapsed}
+          title={collapseLabel}
+          onClick={toggleLog}
+        >
+          <span className={styles['caret']}>
+            <CaretDown weight="bold" />
+          </span>
+          Execution log
+        </button>
         <Chip
           label={runStatus.label}
           size="l"

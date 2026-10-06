@@ -19,10 +19,40 @@
   overflow: hidden;
 }
 
+/* Inside the dock rather than over its edge: the dock clips its overflow for the rounded corners. */
+.resize {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: var(--wb-ds-size-100);
+  cursor: ns-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 var(--wb-ds-space-150) auto;
+    height: var(--wb-ds-size-25);
+    border-radius: var(--wb-ds-radius-full);
+    background: transparent;
+    transition: background 0.1s;
+  }
+
+  &:hover::after,
+  &:active::after,
+  &:focus-visible::after {
+    background: var(--wb-ds-ui-brand-border);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
+}
+
 .header {
   display: flex;
   align-items: center;
-  gap: var(--wb-ds-space-100);
+  gap: var(--wb-ds-space-150);
   min-height: 2.625rem;
   padding: var(--wb-ds-space-75) var(--wb-ds-space-150) var(--wb-ds-space-75) var(--wb-ds-space-75);
   border-bottom: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-divider);
@@ -35,15 +65,44 @@
   border-bottom: none;
 }
 
-.dock-title {
+.toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-ds-space-100);
+  padding: var(--wb-ds-space-62) var(--wb-ds-space-125) var(--wb-ds-space-62) var(--wb-ds-space-75);
+  border: none;
+  border-radius: var(--wb-ds-radius-75);
+  background: none;
   font-size: var(--wb-ds-font-size-162);
+  line-height: 1;
+  color: var(--wb-ds-ui-text-default);
+  cursor: pointer;
+
+  &:hover {
+    background: var(--wb-ds-ui-bg-inset-subtle);
+  }
+
+  &:focus-visible {
+    outline: var(--wb-ds-size-25) solid var(--wb-ds-ui-stroke-focus);
+    outline-offset: var(--wb-ds-size-25);
+  }
 }
 
-.collapse svg {
+.caret {
+  display: grid;
+  place-items: center;
+  width: var(--wb-ds-size-200);
+  height: var(--wb-ds-size-200);
+  color: var(--wb-ds-ui-text-muted-default);
   transition: transform 0.15s;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
 }
 
-.dock--collapsed .collapse svg {
+.dock--collapsed .caret {
   transform: rotate(180deg);
 }
 
@@ -82,7 +141,8 @@
 }
 
 .body {
-  height: 12.5rem;
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx when resized */
+  height: var(--log-body-height, 12.5rem);
   overflow-y: auto;
   padding: var(--wb-ds-space-75) var(--wb-ds-space-100) var(--wb-ds-space-100);
 }
@@ -98,7 +158,7 @@
   line-height: 1.45;
 
   &:hover {
-    background: var(--wb-ds-ui-bg-fill-hover);
+    background: var(--wb-ds-ui-bg-inset-subtle);
   }
 }
 
@@ -144,7 +204,7 @@
 
 .detail {
   grid-column: 3;
-  margin-top: var(--wb-ds-space-25);
+  margin-top: var(--wb-ds-space-62);
   padding: var(--wb-ds-space-75) var(--wb-ds-space-112);
   background: var(--ai-studio-log-detail-bg);
   border: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-default);
