@@ -19,15 +19,8 @@ const INVALID_RESPONSE: Response = {
 };
 
 /**
- * Resolves a value into both forms of a single variable reference.
- *
- * Accepts a bracketed reference (`{{global.total}}`) or a bare key (`global.total`),
- * trimming surrounding whitespace. Returns `reference` (always bracketed) and
- * `referenceWithoutBrackets` (always bare).
- *
- * Returns both fields as `undefined` when the value is empty, contains whitespace
- * inside the reference, has unbalanced brackets, or holds anything other than
- * exactly one reference (e.g. `{{a}} {{b}}`, `{{a}}x`).
+ * Accepts `{{global.total}}` or bare `global.total`; both fields are `undefined` unless the trimmed value
+ * is exactly one reference (`{{a}} {{b}}`, `{{a}}x` and inner whitespace are rejected).
  */
 export function getVariableReferences(keyOrReference: MaybeVariableReference): Response {
   const stringToParse = keyOrReference?.trim() || '';

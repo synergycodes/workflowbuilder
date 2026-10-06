@@ -11,15 +11,8 @@ export type NodeWithVariable = {
 };
 
 /**
- * Returns nodes whose properties reference the given variable.
- *
- * This is a very expensive operation (stringifies properties of every node), so call it only inside
- * a callback triggered by a user action - when the variable edit or delete flow is opened.
- *
- * The result is used to:
- * - block changing the type of a variable that is already used, since existing controls would keep a value
- *   that no longer matches the type (e.g. a number variable switched to string leaves a broken control value)
- * - block deleting a variable that is still used, and show which nodes contain it
+ * Stringifies every node's properties, so call it only from a user action (variable edit / delete flow).
+ * Blocks type changes and deletes of a variable still in use: a control would keep a value of the old type.
  */
 export function getNodesWithVariable(maybeReference: MaybeVariableReference): NodeWithVariable[] {
   const { reference } = getVariableReferences(maybeReference);

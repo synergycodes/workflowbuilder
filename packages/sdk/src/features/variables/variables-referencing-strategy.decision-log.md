@@ -55,6 +55,24 @@ The nature of the most common diagrams in Workflow Builder can result in differe
 
 - Limited Support for Database-Like Diagrams: This approach does not support diagrams where variables are passed between nodes through edges, similar to how data flows between nodes in database-like systems. In such cases, variables would need to be explicitly propagated through the graph rather than being defined per input field.
 
+### 3. Special source-handle buckets in `bySourceHandle`
+
+Besides entries keyed by real source handle ids, `bySourceHandle` accepts three optional bucket keys (`SPECIAL_SOURCE_HANDLE_KEYWORDS` in `constants.ts`): `every` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. None of them is required; a handle's own entry is always used on its own. The `error` check is a substring match on the handle id, so `onError` and `error-1` both count as error handles.
+
+Suggestions from several buckets are merged per handle and de-duplicated by variable id. The type is taken from whichever copy survives; it is not resolved per handle. A variable that sits in more than one bucket must therefore declare the same type in each.
+
+#### Consequences
+
+##### Pros
+
+- Nodes with a success / error split declare the shared part once in `every` and only the branch-specific properties per bucket.
+- Handle ids stay free-form; a node author does not have to register handles anywhere else for the picker to work.
+
+##### Cons
+
+- A handle whose id happens to contain `error` is treated as an error handle even when it is not one.
+- A type that differs between buckets for the same variable id is silently collapsed to one; nothing validates this at definition time.
+
 ## Status
 
 Accepted

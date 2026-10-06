@@ -273,8 +273,7 @@ export type { WBIcon } from '@workflow-builder/icons';
 // =============================================================================
 // Elements
 // =============================================================================
-// Individual UI schema element types, for consumers building parts of a
-// `UISchema` piecemeal (e.g. a helper returning a single layout element).
+// Single element types, for consumers assembling a `UISchema` piecemeal.
 
 export type { UISchemaElement } from './types/uischema';
 
@@ -285,21 +284,8 @@ export type { UISchemaElement } from './types/uischema';
 // Prefix of a node-output reference (`{{nodes.<nodeId>.<property>}}`).
 export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
-// The output contract of a node — the shape downstream nodes can reference as
-// variables. Attach it via `NodeData.schemaOutput`. Two forms:
-// `{ type: 'default', bySourceHandle }` maps each source handle to a JSON
-// Schema (`every` covers all handles at once, e.g. `success` / `error` split);
-// `{ type: 'variant', variants }` picks the shape at runtime from a property
-// value, for nodes whose outputs depend on how they are configured.
+// Documented in the docs guide "Use Variable Picker"; the type's JSDoc carries the API reference.
 export type { NodeSchemaOutput } from './node/node-output-schema';
-
-// Every variable a node can reference — global variables plus the outputs of
-// its ancestors — grouped for a picker UI. Optionally narrowed by variable type
-// (`includeTypes` / `excludeTypes`).
 export { useNodeVariables } from './features/variables/hooks/use-node-variables';
-
-// Imperative, non-React counterpart: the variables a single node exposes on one
-// of its source handles (branch-aware — an error handle gets the error-branch
-// outputs, others the success ones). Returns `undefined` when the node has not
-// been indexed yet.
+// Non-React counterpart of `useNodeVariables`; `undefined` until the node is indexed.
 export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';

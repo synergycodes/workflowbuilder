@@ -9,15 +9,8 @@ type Params = {
 };
 
 /**
- * Tells whether a value's inferred type doesn't match the expected type,
- * but is still usable (a "soft" mismatch we can tolerate instead of erroring).
- *
- * Returns false when types match, and false when the mismatch is unacceptable.
- * Returns true only for these tolerated mismatches:
- * - number value where a string is expected (e.g. '12' compared as string)
- * - boolean expected with 'true' / 'false' / '' string value
- * - date ↔ datetime mix
- * - date/datetime expected with a string that parses as a valid date
+ * Soft type mismatches the form tolerates instead of raising an error.
+ * False both when the types match and when the mismatch is not tolerated; true only for a tolerated mismatch.
  */
 export function getIsWrongTypeButAcceptable({ expectedType = 'string', value }: Params) {
   const valueType = getStringVariableTypeIfPossible(value);
