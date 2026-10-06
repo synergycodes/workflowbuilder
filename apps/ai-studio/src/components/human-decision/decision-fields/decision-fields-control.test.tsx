@@ -29,7 +29,7 @@ import {
 import { FIELD_MODES } from '../../../utils/human-decision/decision-fields';
 import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
-import { SOURCE_HINTS, decisionFieldsRenderer } from './decision-fields-control';
+import { ALL_HIDDEN_HINT, SOURCE_HINTS, decisionFieldsRenderer } from './decision-fields-control';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
@@ -315,6 +315,45 @@ describe('the decision fields control in the real properties panel', () => {
       variant: hint.dataset['hint'],
       text: hint.textContent,
     }));
+
+  const lastChild = () => container.querySelector('[data-decision-fields]')?.lastElementChild;
+
+  it('with every field Hidden, a live warning below the rows says none is visible, and nothing above', async () => {
+    await renderRefund();
+
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+    expect(lastChild()?.getAttribute('data-hint')).toBe('warning');
+    expect(lastChild()?.getAttribute('role')).toBe('status');
+  });
+
+  it('setting one field to Read-only clears the all-hidden warning', async () => {
+    await renderRefund();
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+
+    await choose('orderDate', 'readOnly');
+
+    expect(hints()).toEqual([]);
+  });
+
+  it('with the source switched to Plain text after every field was Hidden, only the noFields warning shows', async () => {
+    await renderRefund();
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+
+    act(() =>
+      useStore.setState({
+        nodes: useStore
+          .getState()
+          .nodes.map((node) =>
+            node.id === 'draft-1'
+              ? { ...node, data: { ...node.data, properties: { ...node.data.properties, outputSchema: undefined } } }
+              : node,
+          ),
+      }),
+    );
+    await settle();
+
+    expect(hints()).toEqual([SOURCE_HINTS.noFields]);
+  });
 
   it('with nothing connected, a neutral hint says nothing leads in, and keeps listing the stored fields', async () => {
     await renderPanel([agent('draft-1', refundOutput), human(stored)], []);

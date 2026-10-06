@@ -17,6 +17,7 @@ import {
   type SourceHint,
   fieldModeOf,
   fieldRows,
+  isEveryFieldHidden,
   sourceHintOf,
   withFieldMode,
 } from '../../../utils/human-decision/decision-fields';
@@ -40,6 +41,8 @@ export const SOURCE_HINTS = {
     text: 'The block before this one declares no output fields the form can show (text, number, yes/no) - for an AI step, pick a structured Response format.',
   },
 } satisfies Record<SourceHint, { variant: HintVariant; text: string }>;
+
+export const ALL_HIDDEN_HINT = 'No field is visible to the decider. Set at least one field to Read-only or Editable.';
 
 function DecisionFieldsControl({ data, handleChange, path, enabled, label }: ControlProps) {
   const nodeId = useSingleSelectedElement()?.node?.id;
@@ -65,6 +68,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   const { schema } = request;
   const rows = fieldRows(outputSchema, schema);
   const sourceHint = sourceHintOf(sourceId, predecessors.length, rows);
+  const everyHidden = isEveryFieldHidden(rows, schema);
   const pick = (key: string, mode: FieldMode) =>
     handleChange(path, { ...data, schema: withFieldMode(schema, rows, key, mode) });
 
@@ -81,6 +85,11 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
             onPick={(mode) => pick(row.key, mode)}
           />
         ))}
+        {everyHidden && (
+          <Hint variant="warning" live>
+            {ALL_HIDDEN_HINT}
+          </Hint>
+        )}
       </div>
     </Accordion>
   );
