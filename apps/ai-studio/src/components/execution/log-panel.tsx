@@ -243,7 +243,7 @@ export function ExecutionLogPanel() {
           className={styles['collapse']}
           prefixIcon={<Icon name="CaretDown" />}
         />
-        <span className="wb-text-body-s-emphasized">Execution log</span>
+        <span className={clsx(styles['dock-title'], 'wb-text-body-s-emphasized')}>Execution log</span>
         <Chip
           label={runStatus.label}
           size="l"

@@ -5,6 +5,8 @@ html[data-theme='light'] {
   --ai-studio-status-color--running: var(--wb-ds-colors-acc1-500);
   /* missing token */
   --ai-studio-status-color--human: var(--wb-ds-colors-acc4-700);
+  /* missing token */
+  --ai-studio-log-detail-bg: var(--wb-ds-colors-gray-200);
 }
 
 html[data-theme='dark'] {
@@ -14,6 +16,8 @@ html[data-theme='dark'] {
   --ai-studio-status-color--running: var(--wb-ds-colors-acc1-400);
   /* missing token */
   --ai-studio-status-color--human: var(--wb-ds-colors-acc4-300);
+  /* missing token */
+  --ai-studio-log-detail-bg: var(--wb-ds-colors-gray-800);
 }
 
 :root {

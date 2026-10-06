@@ -35,6 +35,10 @@
   border-bottom: none;
 }
 
+.dock-title {
+  font-size: var(--wb-ds-font-size-162);
+}
+
 .collapse svg {
   transition: transform 0.15s;
 }
@@ -118,10 +122,16 @@
 .message {
   min-width: 0;
   overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.title {
+  font-weight: 500;
 }
 
 .message {
   grid-column: 3;
+  font-size: var(--wb-ds-font-size-137);
   color: var(--wb-ds-ui-text-subtle-default);
   white-space: pre-line;
 }
@@ -136,8 +146,8 @@
   grid-column: 3;
   margin-top: var(--wb-ds-space-25);
   padding: var(--wb-ds-space-75) var(--wb-ds-space-112);
-  background: var(--wb-ds-ui-bg-inset);
-  border: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-subtle);
+  background: var(--ai-studio-log-detail-bg);
+  border: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-default);
   border-radius: var(--wb-ds-radius-100);
   font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
   font-size: 0.625rem;
