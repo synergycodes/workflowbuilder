@@ -153,4 +153,17 @@ describe('ExecutionLogPanel', () => {
     );
     expect(container.querySelector('[class*="header"]')?.textContent).toContain('Incomplete');
   });
+
+  it('keeps the detail on the message line until the row is expanded', () => {
+    renderAfter(event({ type: 'node_failed', nodeId: 'classify-1', payload: { error: { message: 'boom' } } }));
+    const row = nodeRow('classify-1') as HTMLElement;
+
+    expect(row.textContent).toContain('Failed — boom');
+    expect(row.querySelector('[class*="detail"]')).toBeNull();
+
+    act(() => row.click());
+
+    expect(row.querySelector('[class*="detail"]')?.textContent).toBe('boom');
+    expect(row.textContent).not.toContain('Failed — boom');
+  });
 });

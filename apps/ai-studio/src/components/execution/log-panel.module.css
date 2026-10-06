@@ -126,6 +126,12 @@
   white-space: pre-line;
 }
 
+.message--clipped {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
 .detail {
   grid-column: 3;
   margin-top: var(--wb-ds-space-25);
@@ -138,9 +144,6 @@
   color: var(--wb-ds-ui-text-subtle-default);
   white-space: pre-wrap;
   word-break: break-word;
-}
-
-.detail--expanded {
   max-height: 20rem;
   overflow-y: auto;
 }
@@ -186,6 +189,6 @@
   }
 
   .detail {
-    grid-column: 3 / -1;
+    grid-column: 1 / -1;
   }
 }
