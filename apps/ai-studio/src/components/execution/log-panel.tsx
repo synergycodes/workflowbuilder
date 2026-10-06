@@ -246,10 +246,23 @@ export function ExecutionLogPanel() {
 
   function handleResizeKey(event: React.KeyboardEvent<HTMLDivElement>) {
     const current = bodyRef.current?.getBoundingClientRect().height ?? 0;
-    if (event.key === 'ArrowUp') setBodyHeight(clampBodyHeight(current + RESIZE_KEY_STEP_PX));
-    else if (event.key === 'ArrowDown') setBodyHeight(clampBodyHeight(current - RESIZE_KEY_STEP_PX));
-    else if (event.key === 'Home') setBodyHeight(undefined);
-    else return;
+    switch (event.key) {
+      case 'ArrowUp': {
+        setBodyHeight(clampBodyHeight(current + RESIZE_KEY_STEP_PX));
+        break;
+      }
+      case 'ArrowDown': {
+        setBodyHeight(clampBodyHeight(current - RESIZE_KEY_STEP_PX));
+        break;
+      }
+      case 'Home': {
+        setBodyHeight(undefined);
+        break;
+      }
+      default: {
+        return;
+      }
+    }
 
     event.preventDefault();
   }

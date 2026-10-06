@@ -166,4 +166,20 @@ describe('ExecutionLogPanel', () => {
     expect(row.querySelector('[class*="detail"]')?.textContent).toBe('boom');
     expect(row.textContent).not.toContain('Failed — boom');
   });
+
+  it('resizes the log from the keyboard and goes back to the default height on Home', () => {
+    renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    const handle = container.querySelector('[role="separator"]') as HTMLElement;
+    const dock = container.querySelector('section') as HTMLElement;
+    const press = (key: string) =>
+      act(() => {
+        handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      });
+
+    press('ArrowUp');
+    expect(dock.style.getPropertyValue('--log-body-height')).toBe('120px');
+
+    press('Home');
+    expect(dock.style.getPropertyValue('--log-body-height')).toBe('');
+  });
 });
