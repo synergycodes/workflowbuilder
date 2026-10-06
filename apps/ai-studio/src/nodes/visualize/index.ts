@@ -9,6 +9,7 @@ export const visualizePaletteItem: PaletteItem<VisualizeSchema> = {
   description: 'Render the result visually',
   type: 'ai-studio/visualize',
   icon: 'Eye',
+  accent: 'green',
   templateType: NodeType.Node,
   defaultPropertiesData,
   schema,

@@ -19,6 +19,7 @@ export const humanDecisionPaletteItem: PaletteItem<HumanDecisionSchema> = {
   description: 'A person decides before the run continues',
   type: humanDecisionNodeType,
   icon: 'UserCheck',
+  accent: 'violet',
   defaultPropertiesData,
   schema,
   uischema,
