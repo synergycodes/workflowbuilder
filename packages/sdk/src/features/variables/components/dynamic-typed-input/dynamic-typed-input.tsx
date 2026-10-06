@@ -202,11 +202,9 @@ export function DynamicTypedInput({
               onBlur(newValue);
             }
           }}
+          // Add "HH:mm" to debug time
           valueFormat="dd-MM-yyyy"
           placeholder="DD-MM-YYYY"
-          // Uncomment to see times in value
-          // valueFormat="DD-MM-YYYY HH:mm"
-          // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
         />
         <Input
