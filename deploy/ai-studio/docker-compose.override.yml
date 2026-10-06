@@ -18,6 +18,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     restart: unless-stopped
 
   # auto-setup is dev-grade; sustained load should move to Temporal Cloud or an
@@ -33,6 +38,11 @@ services:
       POSTGRES_USER: temporal
       POSTGRES_PWD: ${TEMPORAL_DB_PASSWORD:-temporal}
       POSTGRES_SEEDS: temporal-db
+    deploy:
+      resources:
+        limits:
+          cpus: '2.0'
+          memory: 1.5G
     restart: unless-stopped
 
   # Inspects this bundled cluster only. An external cluster comes with its own UI.
@@ -45,6 +55,11 @@ services:
       TEMPORAL_ADDRESS: temporal:7233
     ports:
       - '127.0.0.1:8233:8080'
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 256M
     restart: unless-stopped
 
   backend:

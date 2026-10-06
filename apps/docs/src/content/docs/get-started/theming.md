@@ -29,3 +29,5 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 ## Other tokens
 
 The supported customization contract uses `--wb-public-*` for SDK controls and component overrides. Generated design tokens from `@workflowbuilder/ui` use `--wb-ds-*`; `--wb-sdk-*` is reserved for private SDK implementation details. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
+
+For the migration from `--ax-*`, see the [3.0 upgrade guide](/get-started/upgrade-to-3/).

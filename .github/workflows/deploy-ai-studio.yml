@@ -90,35 +90,43 @@ jobs:
       # The VM runs the repo's compose files, shipped here on every deploy (base64,
       # so the script stays free of quoting). Compose is run from the project
       # directory, not with -f: that is what applies docker-compose.override.yml
-      # by default and honours COMPOSE_FILE from the VM's .env.
+      # by default.
       #
-      # The retired-key check runs before anything is written, so a refused deploy
-      # leaves the VM exactly as it was. It lives here rather than in the compose
-      # file because Compose 2.21 and older evaluate a nested `${A:+${B:?}}` guard
-      # eagerly and fail on every command, key set or not.
-      #
-      # The image tags are written into that .env rather than exported: an export
-      # dies with this shell, and the next `docker compose up -d worker` on the VM
-      # would fall back to the local ai-studio-* names. Only the two image lines
-      # are replaced; the rest of .env is the VM's own and stays untouched.
+      # .env is generated in full from the repo secrets/vars on every deploy,
+      # so nothing on the VM is edited by hand. It holds the image tags too: an
+      # export dies with this shell, and the next `docker compose up -d worker`
+      # on the VM would fall back to the local ai-studio-* names.
       - name: Refresh docker compose on Azure VM
         env:
           IMAGE: ${{ env.REGISTRY }}/${{ env.APP }}:${{ needs.build-and-push.outputs.image_tag }}
+          # repo-level secrets for credentials, vars for the rest — no `environment:`,
+          # which would change the OIDC subject the Azure federated credential trusts
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          TEMPORAL_DB_PASSWORD: ${{ secrets.TEMPORAL_DB_PASSWORD }}
+          AI_BASE_URL: ${{ vars.AI_BASE_URL }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+          RATE_LIMIT_EXECUTE_PER_MINUTE: ${{ vars.RATE_LIMIT_EXECUTE_PER_MINUTE || '10' }}
+          RATE_LIMIT_EXECUTE_PER_DAY: ${{ vars.RATE_LIMIT_EXECUTE_PER_DAY || '50' }}
         run: |
+          # the databases keep the password they were created with — an empty one
+          # would fall back to the compose default and lock the apps out
+          : "${APP_DB_PASSWORD:?set secret APP_DB_PASSWORD}" "${TEMPORAL_DB_PASSWORD:?set secret TEMPORAL_DB_PASSWORD}"
+          # .env is generated in full on every deploy; single quotes keep values literal
+          ENV_B64=$(for k in AI_API_KEY AI_BASE_URL AI_MODEL TAVILY_API_KEY \
+                RATE_LIMIT_EXECUTE_PER_MINUTE RATE_LIMIT_EXECUTE_PER_DAY \
+                APP_DB_PASSWORD TEMPORAL_DB_PASSWORD; do
+              printf "%s='%s'\n" "$k" "${!k}"
+            done | cat - <(printf "RUNTIME_IMAGE='%s'\nWEB_IMAGE='%s'\n" "$IMAGE-runtime" "$IMAGE-web") | base64 -w0)
           COMPOSE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.yml)
           OVERRIDE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.override.yml)
           SCRIPT=$(cat <<EOF
           set -e
           cd /app/ai-studio
-          if [ -f .env ] && grep -Eq '^OPENROUTER_API_KEY=.+' .env; then
-            echo "OPENROUTER_API_KEY is still set in the VM's .env. It was renamed to AI_API_KEY and is no longer read; rename it and set AI_BASE_URL and AI_MODEL too (values in deploy/ai-studio/.env.example), then deploy again."
-            exit 1
-          fi
           echo "$COMPOSE_B64" | base64 -d > docker-compose.yml
           echo "$OVERRIDE_B64" | base64 -d > docker-compose.override.yml
-          touch .env
-          { grep -vE '^(RUNTIME_IMAGE|WEB_IMAGE)=' .env || true; printf 'RUNTIME_IMAGE=%s\nWEB_IMAGE=%s\n' "$IMAGE-runtime" "$IMAGE-web"; } > .env.tmp
-          chmod --reference=.env .env.tmp && chown --reference=.env .env.tmp && mv .env.tmp .env
+          (umask 077; echo "$ENV_B64" | base64 -d > .env)
           az acr login --name synergycodes
           docker compose pull
           docker compose up -d --no-build --force-recreate --remove-orphans

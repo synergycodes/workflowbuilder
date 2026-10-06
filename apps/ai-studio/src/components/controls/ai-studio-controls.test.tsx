@@ -1,5 +1,5 @@
 import { useStore } from '@workflowbuilder/sdk';
-import { act } from 'react';
+import { type ComponentProps, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -8,6 +8,7 @@ import type { ExecutionStatus } from '@workflow-builder/types/workflow-execution
 import styles from './ai-studio-controls.module.css';
 
 import { BACKEND_URL } from '../../config';
+import { supportTriageFlow } from '../../data/support-triage-flow';
 import {
   applyConnectionLost,
   applySnapshot,
@@ -16,6 +17,7 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../../stores/use-execution-store';
+import { useNoticesStore } from '../../stores/use-notices-store';
 import { cancelledEvent, snapshotFrame } from '../../test/execution-history';
 import { installFakeEventSource, latestStream, openStreams } from '../../test/fake-event-source';
 import { jsonResponse } from '../../test/json-response';
@@ -25,6 +27,12 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
   return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
 });
+
+const address = vi.hoisted(() => ({ leaveRunView: vi.fn() }));
+vi.mock('../../utils/open-from-url/address-execution-id', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../utils/open-from-url/address-execution-id')>()),
+  leaveRunView: address.leaveRunView,
+}));
 
 const startNode = vi.hoisted(() => ({ exists: true }));
 vi.mock('../../hooks/use-has-start-node', () => ({ useHasStartNode: () => startNode.exists }));
@@ -50,11 +58,14 @@ describe('AiStudioControls', () => {
     vi.stubGlobal('fetch', fetchMock);
     resetExecution();
     startNode.exists = true;
+    useNoticesStore.setState({ notices: [] });
+    address.leaveRunView.mockClear();
     useStore.getState().setToggleReadOnlyMode(false);
+    useStore.setState({ nodes: [], edges: [] });
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
-    act(() => root.render(<AiStudioControls />));
+    render();
   });
 
   afterEach(() => {
@@ -63,6 +74,9 @@ describe('AiStudioControls', () => {
     vi.unstubAllGlobals();
     vi.restoreAllMocks();
   });
+
+  const render = (props: Partial<ComponentProps<typeof AiStudioControls>> = {}) =>
+    act(() => root.render(<AiStudioControls isRunView={false} {...props} />));
 
   const icons = () => [...container.querySelectorAll<HTMLElement>('[data-icon]')].map((icon) => icon.dataset['icon']);
 
@@ -82,7 +96,7 @@ describe('AiStudioControls', () => {
 
   const deleteStartNode = () => {
     startNode.exists = false;
-    act(() => root.render(<AiStudioControls />));
+    render();
   };
 
   // The words on Run and Stop are their names; an aria-label would replace what a person reads.
@@ -128,6 +142,54 @@ describe('AiStudioControls', () => {
 
     expect(logged).toHaveBeenCalled();
     expect(icons()).toEqual(['Play']);
+  });
+
+  it('tells the user why a start failed', async () => {
+    fetchMock.mockImplementation(async () => jsonResponse(503, { message: 'Unavailable' }));
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+
+    await clickIcon('Play');
+
+    expect(useNoticesStore.getState().notices.map((notice) => notice.text)).toEqual([
+      'The run did not start: Unavailable.',
+    ]);
+  });
+
+  it("Run on the link's workflow saves into that workflow first", async () => {
+    const workflow = '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11';
+    render({ workflowId: workflow });
+
+    await clickIcon('Play');
+
+    expect(fetchMock.mock.calls[0]?.[0]).toBe(`${BACKEND_URL}/api/workflows/${workflow}/draft`);
+  });
+
+  it("Run saves the editor's clean shape, which autosave compares against, and still reads the prompt", async () => {
+    const start = supportTriageFlow.value.diagram.nodes.find((node) => node.data.isStartNode)!;
+    useStore.setState({
+      nodes: [{ ...start, selected: true, dragging: true, measured: { width: 200, height: 80 } }],
+      edges: [],
+    });
+    render({ workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' });
+
+    await clickIcon('Play');
+
+    const [draft, execute] = fetchMock.mock.calls;
+    expect(JSON.parse(String(draft?.[1]?.body)).draftJson.nodes).toEqual([{ ...start, selected: false }]);
+    expect(JSON.parse(String(execute?.[1]?.body)).triggerPayload).toEqual({
+      input: (start.data.properties as { inputPrompt: string }).inputPrompt,
+    });
+  });
+
+  // The canvas holds the run's graph, which is saved nowhere; running it again is a feature of its own.
+  it.each([
+    ['under a workflow link', { isRunView: true, workflowId: '0b6e7d9c-4b1a-4c2e-9a3f-2f7a1d8e5c11' }],
+    ['on its own', { isRunView: true }],
+  ])('offers no Run in a run view %s, only Reset', (_, props) => {
+    render(props);
+    setRunStatus('completed');
+
+    expect(icons()).toEqual(['ArrowCounterClockwise']);
   });
 
   it('adds Reset once a cancel is in flight: a cancel the server never resolves would trap the user', () => {
@@ -181,6 +243,53 @@ describe('AiStudioControls', () => {
 
     expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('Reset stays on the page in the local draft', async () => {
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('completed');
+
+    await clickReset();
+
+    expect(address.leaveRunView).not.toHaveBeenCalled();
+  });
+
+  it('Reset in the run view forgets the run and goes back to where edits are saved', async () => {
+    render({ isRunView: true });
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('completed');
+
+    await clickReset();
+
+    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
+    expect(address.leaveRunView).toHaveBeenCalledTimes(1);
+  });
+
+  it('a Stop the server answers with execution_not_found leaves the run view, as Reset does', async () => {
+    render({ isRunView: true });
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('waiting');
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(404, { code: 'execution_not_found', message: 'Execution not found' }),
+    );
+
+    await clickStop();
+
+    expect(useExecutionStore.getState()).toMatchObject({ status: 'idle', executionId: undefined });
+    expect(address.leaveRunView).toHaveBeenCalledTimes(1);
+  });
+
+  it('the same answer in the local draft stays on the page and offers Run', async () => {
+    act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
+    setRunStatus('waiting');
+    fetchMock.mockImplementation(async () =>
+      jsonResponse(404, { code: 'execution_not_found', message: 'Execution not found' }),
+    );
+
+    await clickStop();
+
+    expect(address.leaveRunView).not.toHaveBeenCalled();
+    expect(icons()).toEqual(['Play']);
   });
 
   it('keeps the Reset escape when a snapshot arrives again: an answering server has not ended the run', () => {

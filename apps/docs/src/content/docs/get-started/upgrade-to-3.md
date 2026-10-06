@@ -45,18 +45,30 @@ supported surface:
 
 The renames:
 
-| 2.3.0                     | 3.0                                           |
-| ------------------------- | --------------------------------------------- |
-| `--ax-public-<name>`      | `--wb-public-<name>`                          |
-| `--ax-<token>`            | `--wb-ds-<token>`, where a counterpart exists |
-| `--wb-background-color`   | `--wb-public-background-color`                |
-| `--wb-transition`         | `--wb-public-transition`                      |
-| `--wb-scroll-<name>`      | `--wb-public-scroll-<name>`                   |
-| every other `--wb-<name>` | `--wb-sdk-<name>`, now private                |
+| 2.3.0                           | 3.0                                                    |
+| ------------------------------- | ------------------------------------------------------ |
+| `--ax-public-<name>`            | `--wb-public-<name>`                                   |
+| `--ax-<token>`                  | `--wb-ds-<token>`, where a counterpart exists          |
+| `--wb-background-color`         | `--wb-public-background-color`                         |
+| `--wb-transition`               | `--wb-public-transition`                               |
+| `--wb-font-family`              | `--wb-public-font-family`                              |
+| `--wb-scroll-thumb-hover-color` | no counterpart; documented but never consumed in 2.3.0 |
+| `--wb-scroll-<name>`            | `--wb-public-scroll-<name>`                            |
+| every other `--wb-<name>`       | `--wb-sdk-<name>`, now private                         |
 
-Renaming the prefix is not enough on its own. The button, input, text area and select
-families also rename variants and size suffixes, and some properties are gone. Check each
-overridden name against the component sections below.
+Renaming the prefix is not enough on its own. Button, nav button, icon-size, input,
+text area and list-item properties also rename variants, size suffixes or default states.
+Check each overridden name against this table and the Button, Input and TextArea sections
+below; properties with no direct counterpart are listed under Removed public properties.
+
+| 2.3.0                                     | 3.0                                                                                                                         |
+| ----------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `--ax-public-button-nav-background-color` | `--wb-public-nav-button-background-color-default`                                                                           |
+| `--ax-public-button-nav-color`            | `--wb-public-nav-button-color-default`                                                                                      |
+| `--ax-public-button-nav-color-<state>`    | `--wb-public-nav-button-color-<state>` (`active`, `disabled`, `hover`)                                                      |
+| `--ax-public-button-border-radius-circle` | `--wb-public-button-border-radius-round`                                                                                    |
+| `--ax-public-icon-size-<word>`            | `--wb-public-icon-size-<letter>`: `extra-large`, `large`, `medium`, `small`, `extra-small` become `xl`, `l`, `m`, `s`, `xs` |
+| `--ax-public-list-item-color-destructive` | `--wb-public-list-item-color-critical`; the destructive background overrides are removed                                    |
 
 ## Design tokens
 
@@ -209,8 +221,9 @@ inferring a subtype from the children structure.
 
 Sizes `extra-large`, `large`, `medium`, `small` and `extra-small` become `xl`, `l`, `m`, `s`
 and `xs`. The `xx-small` and `xxx-small` steps are gone. On `Button`, `shape="circle"`
-becomes `shape="round"`, alongside the new `shape="square"`. `SegmentPicker` keeps its
-`shape="circle"`; its type, previously `Shape`, is now `SegmentPickerShape`.
+becomes `shape="round"`, alongside the new `shape="square"`. `SegmentPicker` keeps
+`shape="circle"`; its default shape is now spelled `'default'` instead of the empty string,
+and the shape union is exported as `SegmentPickerShape`.
 
 `Variant` is renamed to `ButtonVariant`. `BaseRegularButtonProps` and the label, icon and
 icon-with-label component subtypes are removed; `LabelButtonProps` and `IconButtonProps` are
@@ -220,6 +233,18 @@ Public button variables follow the same migration: the `gray`, `error`, `warning
 `ghost-destructive` families no longer exist, and size suffixes follow the letter scale. The
 `secondary` family now describes the solid grey variant, so an override written for the old
 outlined `secondary` belongs on `ghost-secondary`.
+
+For sizes `extra-large` through `extra-small`, the suffixes in
+`--ax-public-button-border-radius-*`, `--ax-public-button-gap-*` and
+`--ax-public-button-icon-padding-*` become `xl`, `l`, `m`, `s` and `xs` under
+`--wb-public-`. The `-gray-background*` properties become `-secondary-background*`,
+`-error-background*` become `-critical-background*`, and `-ghost-destructive-*` become
+`-ghost-critical-*`. Retarget the old `-secondary-border-color*`, `-secondary-color` and
+`-secondary-color-disabled` to `-ghost-secondary-*` to keep the outlined treatment.
+The `-warning-background*` overrides belong on `-critical-background*` for destructive
+actions or `-secondary-background*` for cautionary ones. Keep any `-active`, `-focus`,
+`-hover` or `-disabled` suffix that exists on the replacement; the old secondary active
+text colour and the smallest size overrides are listed under Removed public properties.
 
 ### Input and TextArea
 
@@ -234,16 +259,19 @@ outlined `secondary` belongs on `ghost-secondary`.
 that supplies an associated label, helper text and a required marker, so `label`,
 `helperText` and `isRequired` replace hand-wired markup.
 
-The public variables follow: `-error` becomes `-critical`, and
-`--wb-public-input-padding-medium`, `--wb-public-input-gap-medium` and
-`--wb-public-input-border-radius-medium` become `-m`, with `-l`, `-s` and `-xs` alongside.
+The public variables follow: Input's `-error` properties and TextArea's background and
+border `-error` properties become `-critical`; TextArea's error text-colour override is
+removed, and Select keeps `-error`. The size suffixes in
+`--ax-public-input-padding-medium`, `--ax-public-input-gap-medium` and
+`--ax-public-input-border-radius-medium` become `-m` under `--wb-public-`, with `-l`, `-s`
+and `-xs` alongside.
 
 ### Select and DatePicker
 
 Both keep their existing props and gain `label`, `helperText`, `state`, `isRequired` and
-`id` from the same field composition. Their `size` prop keeps the word-based scale and maps
-to the letter scale internally. Both paint a disabled background they previously left
-transparent.
+`id` from the same field composition. `Select`'s `size` and `DatePicker`'s `inputSize` keep
+the word-based scale and map to the letter scale internally. Both paint a disabled
+background they previously left transparent.
 
 ### NavButton and SegmentPicker
 
@@ -254,6 +282,18 @@ shares a treatment with the pointer-down state.
 
 `SegmentPicker` keeps its API but adopts the new slots, so an icon passed as
 `SegmentPicker.Item` children must move to an explicit icon slot. `Menu.TriggerButton` is new: an icon-only trigger that shows the pressed state while its `Menu` is open.
+
+### Custom node templates
+
+`WorkflowNodeTemplateProps` gains `disabled?: boolean`. Forward `disabled` to
+`NodePanel.Root`, `NodeIcon` and `NodeDescription` so palette entries look disabled when
+they cannot be added; the palette wrapper no longer fades them. See
+[Add a custom node](/guides/add-a-custom-node/#7-optional-custom-node-template).
+
+### Properties panel
+
+`PropertiesBarProps.onDeleteClick` is now optional. A decorator on the `'PropertiesBar'`
+slot that calls it must use `onDeleteClick?.()`; omitting it hides the Delete button.
 
 ### Typography classes
 
@@ -271,14 +311,23 @@ shares a treatment with the pointer-down state.
 
 ### Removed public properties
 
-Most removals are covered by the renames above: a family that changed variant name or size
-suffix is listed with its replacement. Three properties go away with no counterpart:
+Families that changed variant name or size suffix are listed with their replacements
+above. These 31 old properties, grouped by family below, have no direct counterpart; do not
+just change their prefix:
 
-| Removed                                | What to do                                                                                                                                                                               |
-| -------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--wb-public-segment-picker-padding`   | `SegmentPicker` no longer pads its container, matching every variant of the design master. Space between segments comes from `--wb-public-segment-picker-gap`.                           |
-| `--wb-public-modal-close-button-color` | The close control is a `NavButton` now and takes its colour from the button's own properties.                                                                                            |
-| `--wb-public-textarea-root-color`      | Split by state: `--wb-public-textarea-color` for the value, `--wb-public-textarea-placeholder-color` for the placeholder and `--wb-public-textarea-color-disabled` for a disabled field. |
+| Removed                                                                                                                                             | What to do                                                                                                                                                                                                                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--ax-public-button-border-radius-<size>`, `--ax-public-button-gap-<size>`, `--ax-public-button-icon-padding-<size>` for `xx-small` and `xxx-small` | Button no longer has these sizes; use a supported size and its `--wb-public-button-border-radius-*`, `--wb-public-button-gap-*` or `--wb-public-button-icon-padding-*` override.                                                                      |
+| `--ax-public-label-button-padding-<size>`, `--ax-public-icon-label-button-padding-<size>`                                                           | The label and icon-with-label subtypes no longer have their own padding. Use the shared `--wb-public-button-padding-<size>` on the letter scale (`extra-large` to `extra-small` become `xl` to `xs`); `xx-small` and `xxx-small` have no counterpart. |
+| `--ax-public-icon-size-xx-small`, `--ax-public-icon-size-xxx-small`                                                                                 | Choose a supported icon size; NavButton has its own `--wb-public-nav-button-icon-size-xxs` and `--wb-public-nav-button-icon-size-xxxs`.                                                                                                               |
+| `--ax-public-list-item-background-color-destructive`, `--ax-public-list-item-background-color-hover-destructive`                                    | Critical items share the default item background, including `--wb-public-list-item-background-color` on hover, with separate critical text and icon colours.                                                                                          |
+| `--ax-public-button-secondary-color-active`                                                                                                         | The outlined treatment uses `--wb-public-button-ghost-secondary-color`, with no separate active text-colour override.                                                                                                                                 |
+| `--ax-public-date-picker-border-size`                                                                                                               | The dropdown border width comes from the design tokens; keep colour overrides on `--wb-public-date-picker-dropdown-border-color`.                                                                                                                     |
+| `--ax-public-icon-switch-thumb-bg`                                                                                                                  | Use the variant-specific `--wb-public-icon-switch-thumb-bg-primary` or `--wb-public-icon-switch-thumb-bg-secondary`.                                                                                                                                  |
+| `--ax-public-segment-picker-padding`                                                                                                                | `SegmentPicker` no longer pads its container, matching every variant of the design master. Space between segments comes from `--wb-public-segment-picker-gap`.                                                                                        |
+| `--ax-public-modal-close-button-color`                                                                                                              | The close control is a `NavButton` now and takes its colour from the button's own properties.                                                                                                                                                         |
+| `--ax-public-textarea-root-color`                                                                                                                   | Split by state: `--wb-public-textarea-color` for the value, `--wb-public-textarea-placeholder-color` for the placeholder and `--wb-public-textarea-color-disabled` for a disabled field.                                                              |
+| `--ax-public-textarea-root-color-error`                                                                                                             | Critical fields use the normal value and placeholder colours; the critical background and border have separate overrides.                                                                                                                             |
 
 ## Fonts
 
@@ -303,14 +352,16 @@ runtime.
   old values.
 - **Self-connecting edges loop 48px above the node's top edge**, for any node height, where
   2.3.0 drew them a flat 100px above the source port. `SelfConnectingEdge` no longer takes
-  `nodeHeight`; it reads the node position from the React Flow store, and `useSelfLoopApexY`
-  is exported for custom edges that draw their own loop.
+  `nodeHeight`; `SELF_CONNECTING_EDGE_LABEL_OFFSET` is now `48`, measured from the node's
+  top edge. The component reads the node position from the React Flow store, and
+  `useSelfLoopApexY` is exported for custom edges that draw their own loop.
 - **Canvas nodes use the design geometry.** The node shell is 241px wide and no longer
   scales with the root font size. Node titles, subtitles and row labels truncate to one line
   and expose the full text through the browser's native tooltip.
 - **Menus mark the current choice.** A menu with a selection renders its entries as a radio
-  group (`menuitemradio` with `aria-checked`), and a selected entry uses a tinted background
-  instead of a solid accent fill.
+  group (`menuitemradio` with `aria-checked`).
+- **SDK snackbars of the same variant can show together.** A second, different message of
+  the same variant now appears next to the first instead of being dropped.
 - **The single top-level cascade layer.** The SDK stylesheet declares
   `@layer ui.base, ui.component;` and moved the XYFlow stylesheet and its own resets into
   `ui.base`. If you targeted the removed `reset` or `ext-lib` layer names, plain unlayered
