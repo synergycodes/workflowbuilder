@@ -141,8 +141,9 @@
 }
 
 .body {
+  /* The bounds of clampBodyHeight in log-panel.tsx, repeated so a shorter window still applies them. */
   /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx when resized */
-  height: var(--log-body-height, 12.5rem);
+  height: clamp(7.5rem, var(--log-body-height, 12.5rem), 60vh);
   overflow-y: auto;
   padding: var(--wb-ds-space-75) var(--wb-ds-space-100) var(--wb-ds-space-100);
 }

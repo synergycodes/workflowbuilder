@@ -90,6 +90,8 @@ const RUN_STATUS_LOOK: Record<RunStatus, { tone: ExecutionStatusTone; label: str
 
 const AT_BOTTOM_TOLERANCE_PX = 4;
 const MIN_BODY_HEIGHT_PX = 120;
+// The stylesheet's default `12.5rem`: change the two together.
+const DEFAULT_BODY_HEIGHT_PX = 200;
 const MAX_BODY_HEIGHT_RATIO = 0.6;
 const RESIZE_KEY_STEP_PX = 16;
 
@@ -295,7 +297,8 @@ export function ExecutionLogPanel() {
           aria-orientation="horizontal"
           aria-label="Resize execution log"
           aria-valuemin={MIN_BODY_HEIGHT_PX}
-          aria-valuenow={bodyHeight}
+          aria-valuemax={clampBodyHeight(Number.POSITIVE_INFINITY)}
+          aria-valuenow={bodyHeight ?? DEFAULT_BODY_HEIGHT_PX}
           tabIndex={0}
           className={styles['resize']}
           onPointerDown={handleResizeStart}

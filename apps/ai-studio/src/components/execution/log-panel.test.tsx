@@ -182,4 +182,13 @@ describe('ExecutionLogPanel', () => {
     press('Home');
     expect(dock.style.getPropertyValue('--log-body-height')).toBe('');
   });
+
+  it('reports the default height and both bounds on the resize handle before any resize', () => {
+    renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    const handle = container.querySelector('[role="separator"]') as HTMLElement;
+
+    expect(handle.getAttribute('aria-valuenow')).toBe('200');
+    expect(handle.getAttribute('aria-valuemin')).toBe('120');
+    expect(handle.getAttribute('aria-valuemax')).toBe(String(Math.round(window.innerHeight * 0.6)));
+  });
 });
