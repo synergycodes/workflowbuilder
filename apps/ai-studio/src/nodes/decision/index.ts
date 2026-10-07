@@ -9,6 +9,7 @@ export const decisionPaletteItem: PaletteItem<DecisionSchema> = {
   description: 'Route by condition',
   type: 'ai-studio/decision',
   icon: 'ArrowsSplit',
+  accent: 'green',
   templateType: NodeType.DecisionNode,
   defaultPropertiesData,
   schema,
