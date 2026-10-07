@@ -154,17 +154,18 @@ describe('ExecutionLogPanel', () => {
     expect(container.querySelector('[class*="header"]')?.textContent).toContain('Incomplete');
   });
 
-  it('keeps the detail on the message line until the row is expanded', () => {
+  it('clamps the detail box under the message until the row is expanded', () => {
     renderAfter(event({ type: 'node_failed', nodeId: 'classify-1', payload: { error: { message: 'boom' } } }));
     const row = nodeRow('classify-1') as HTMLElement;
+    const detail = () => row.querySelector('[class*="detail"]');
 
-    expect(row.textContent).toContain('Failed — boom');
-    expect(row.querySelector('[class*="detail"]')).toBeNull();
+    expect(row.textContent).not.toContain('Failed — boom');
+    expect(detail()?.textContent).toBe('boom');
+    expect(detail()?.className).toContain('detail--clamped');
 
     act(() => row.click());
 
-    expect(row.querySelector('[class*="detail"]')?.textContent).toBe('boom');
-    expect(row.textContent).not.toContain('Failed — boom');
+    expect(detail()?.className).not.toContain('detail--clamped');
   });
 
   it('resizes the log from the keyboard and goes back to the default height on Home', () => {

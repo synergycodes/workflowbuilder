@@ -197,12 +197,6 @@
   white-space: pre-line;
 }
 
-.message--clipped {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .detail {
   grid-column: 3;
   margin-top: var(--wb-ds-space-62);
@@ -217,6 +211,14 @@
   word-break: break-word;
   max-height: 20rem;
   overflow-y: auto;
+}
+
+.detail--clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
 .row--highlighted,

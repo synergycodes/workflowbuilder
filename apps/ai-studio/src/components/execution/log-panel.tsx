@@ -143,9 +143,6 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
 
   const detail = eventDetail(event);
   const hasDetail = !!detail;
-  // Collapsed, the detail rides on the message line, clipped; expanded, it opens in full below.
-  const preview = hasDetail && !isExpanded ? detail : undefined;
-  const line = [subtitle, preview].filter(Boolean).join(' — ');
 
   function handleToggle({ target }: React.MouseEvent) {
     const clickedInteractiveElement = target instanceof Element && !!target.closest('a, button');
@@ -169,12 +166,10 @@ function EventRow({ event, selectedNodeId }: { event: ExecutionEvent; selectedNo
       <span className={styles['time']}>{formatTime(event.timestamp)}</span>
       <ExecutionStatusIcon tone={tone} className={styles['status']} />
       <span className={clsx(styles['title'], 'wb-text-body-s-emphasized')}>{title}</span>
-      {line && (
-        <span className={clsx(styles['message'], { [styles['message--clipped']]: preview }, 'wb-text-body-s')}>
-          {line}
-        </span>
+      {subtitle && <span className={clsx(styles['message'], 'wb-text-body-s')}>{subtitle}</span>}
+      {hasDetail && (
+        <div className={clsx(styles['detail'], { [styles['detail--clamped']]: !isExpanded })}>{detail}</div>
       )}
-      {isExpanded && <div className={styles['detail']}>{detail}</div>}
     </div>
   );
 }
