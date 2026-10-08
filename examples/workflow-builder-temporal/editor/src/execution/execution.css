@@ -13,8 +13,8 @@
   padding: 0.5rem 0.875rem;
   border: 0;
   border-radius: 0.5rem;
-  background: #2563eb;
-  color: #fff;
+  background: var(--wb-ds-ui-brand-fill, #3969ff);
+  color: var(--wb-ds-ui-brand-text-on, #fff);
   font: inherit;
   font-weight: 600;
   cursor: pointer;
@@ -27,11 +27,11 @@
 
 .run-phase--failed,
 .run-phase--error {
-  color: #dc2626;
+  color: var(--wb-ds-ui-text-critical-default, #c41a1a);
 }
 
 .run-phase--completed {
-  color: #16a34a;
+  color: var(--wb-ds-ui-text-success-default, #16a34a);
 }
 
 .run-link {
@@ -45,19 +45,19 @@
 .run-marker {
   position: absolute;
   top: 0;
-  right: var(--ax-public-status-right, 0.75rem);
+  right: var(--wb-public-status-right, 0.75rem);
   transform: translateY(-50%);
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  height: var(--ax-public-status-size, 1.25rem);
+  height: var(--wb-public-status-size, 1.25rem);
   aspect-ratio: 1 / 1;
   border-radius: 50%;
   color: #fff;
 }
 
 .run-marker--running {
-  background: #2563eb;
+  background: var(--wb-ds-ui-brand-fill, #3969ff);
 }
 
 .run-marker--running svg {
@@ -65,15 +65,15 @@
 }
 
 .run-marker--completed {
-  background: #16a34a;
+  background: var(--wb-ds-canvas-badge-notify-success-bg-default, #15803d);
 }
 
 .run-marker--failed {
-  background: #dc2626;
+  background: var(--wb-ds-canvas-badge-notify-critical-bg-default, #c41a1a);
 }
 
 .run-marker--skipped {
-  background: #6b7280;
+  background: var(--wb-ds-ui-icon-subtle-default, #6f7480);
 }
 
 .react-flow__node:has(.run-marker--skipped) {
