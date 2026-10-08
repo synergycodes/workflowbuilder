@@ -169,7 +169,7 @@ Open the printed URL (Vite defaults to <http://localhost:5173>). The editor open
 
 Then change things. Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette.
 
-The editor keeps your canvas in the browser between visits. **Reset diagram** puts back the diagram in [`shared/diagram.json`](shared/diagram.json), which is also the one `npm run workflow` submits.
+The editor keeps your canvas in the browser between visits. **Reset diagram** puts back the diagram in [`shared/diagram.json`](shared/diagram.json), which is also the one `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
 
 ## How it works
 
@@ -179,19 +179,19 @@ Six places carry the whole integration. Each has a comment where the reason is n
 2. [`worker/src/worker.ts`](worker/src/worker.ts) creates `WorkflowBuilderPlugin({ executors, store })` and hands it to `Worker.create`. The plugin contributes the activities that execute a graph. Connection, task queue, and shutdown stay yours.
 3. [`worker/src/executors.ts`](worker/src/executors.ts) is one function per node type. Executors run inside the plugin's `executeNode` Activity, which is why `action` can read Temporal's attempt number and why throwing `TransientNodeExecutionError` gets it retried while `PermanentNodeExecutionError` does not.
 4. [`worker/src/evaluate-branches.ts`](worker/src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions all hold wins, and a branch with no conditions always holds, so it belongs last. (The reference worker in the Workflow Builder repository never matches an empty branch; this sample prefers the rule you can read off the canvas.)
-5. [`worker/src/store.ts`](worker/src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same.
-6. [`worker/src/to-definition.ts`](worker/src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. The plugin knows nothing about React Flow; this file is the only glue.
+5. [`worker/src/store.ts`](worker/src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same. The first terminal status a run reaches is final: a late `running` or `waiting`, or a second terminal status, can still arrive and is dropped.
+6. [`worker/src/to-definition.ts`](worker/src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. A node is the run's start when its data carries `isStartNode: true`, which the editor copies from the palette item on drop. The plugin knows nothing about React Flow; this file is the only glue.
 
 [`worker/src/client.ts`](worker/src/client.ts) starts a run through `TemporalWorkflowEngine` from `@workflowbuilder/temporal/client` and then waits on an ordinary Temporal workflow handle. [`worker/src/bridge.ts`](worker/src/bridge.ts) does the same for the editor over HTTP and streams the store's events back as Server-Sent Events.
 
 ## Make it yours
 
-- **Add a node type.** Add a palette item under `editor/src/nodes/` and register it in `editor/src/nodes/index.ts`; add a variant to `SampleNode` in `worker/src/nodes.ts` and an executor in `worker/src/executors.ts`. TypeScript refuses to compile until the executor exists.
+- **Add a node type.** Add a palette item under `editor/src/nodes/` and register it in `editor/src/nodes/index.ts` (set `isStartNode: true` on it if runs should start there); add a variant to `SampleNode` in `worker/src/nodes.ts` and an executor in `worker/src/executors.ts`. TypeScript refuses to compile until the executor exists.
 - **Tune retries per node type.** Replace the re-export in `worker/src/workflows.ts` with `createRunWorkflow({ nodeActivityProfiles })` and pass the same map to the plugin. The plugin README explains why both sides need it.
 - **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the two connections in `worker/src/worker.ts` and `worker/src/client.ts`.
 - **Toggle the outage.** Every Action has a _Simulate an outage on the first attempt_ switch. Turn it on for `Auto-approve` and that node retries too.
 - **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Keep the branch with no conditions last, or it swallows every run.
-- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`.
+- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it.
 
 ## Learn more
 
