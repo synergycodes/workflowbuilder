@@ -34,7 +34,7 @@ New request (trigger)
 
 ## Prerequisites
 
-- Node.js 22 (20 works).
+- Node.js 22 (20.3+ works).
 - The Temporal CLI, from <https://docs.temporal.io/cli/setup-cli>:
   - macOS: `brew install temporal`.
   - Linux: `brew install temporal` if you have Homebrew, otherwise the Linux archive from that page.
@@ -188,10 +188,10 @@ Six places carry the whole integration. Each has a comment where the reason is n
 
 - **Add a node type.** Add a palette item under `editor/src/nodes/` and register it in `editor/src/nodes/index.ts` (set `isStartNode: true` on it if runs should start there); add a variant to `SampleNode` in `worker/src/nodes.ts` and an executor in `worker/src/executors.ts`. TypeScript refuses to compile until the executor exists.
 - **Tune retries per node type.** Replace the re-export in `worker/src/workflows.ts` with `createRunWorkflow({ nodeActivityProfiles })` and pass the same map to the plugin. The plugin README explains why both sides need it.
-- **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the two connections in `worker/src/worker.ts` and `worker/src/client.ts`.
+- **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the three connections: the worker and the bridge in `worker/src/worker.ts`, the CLI in `worker/src/client.ts`. To move the bridge off port 3210, set the same `BRIDGE_PORT` for `npm start` and `npm run dev`.
 - **Toggle the outage.** Every Action has a _Simulate an outage on the first attempt_ switch. Turn it on for `Auto-approve` and that node retries too.
-- **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Keep the branch with no conditions last, or it swallows every run.
-- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it.
+- **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Keep the branch with no conditions last, or it swallows every run. Conditions read only `{{trigger.*}}` and `{{nodes.*}}`; the worker does not resolve `{{global.*}}` variables.
+- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it. Keep the `outcome` that arrives with `completed` as well: it is the run's result.
 
 ## Learn more
 
