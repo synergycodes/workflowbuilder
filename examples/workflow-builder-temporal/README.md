@@ -35,7 +35,13 @@ New request (trigger)
 ## Prerequisites
 
 - Node.js 22 (20 works).
-- The Temporal CLI: install it from <https://docs.temporal.io/cli#install> (`brew install temporal` on macOS).
+- The Temporal CLI, from <https://docs.temporal.io/cli/setup-cli>:
+  - macOS: `brew install temporal`.
+  - Linux: `brew install temporal` if you have Homebrew, otherwise the Linux archive from that page.
+  - Windows: the Windows archive from that page.
+
+  With an archive, extract it and put the `temporal` binary (`temporal.exe` on Windows) on your `PATH`.
+
 - Nothing else. No Docker, no database, no API keys.
 
 ## Run it
@@ -60,8 +66,8 @@ elsewhere:
 temporal server start-dev --port 7234 --ui-port 8234
 ```
 
-and put the addresses in front of both npm commands below, which
-[`worker/src/config.ts`](worker/src/config.ts) reads:
+and set the addresses, which [`worker/src/config.ts`](worker/src/config.ts) reads, for both npm
+commands below. On macOS and Linux, put them in front of each command:
 
 ```bash
 # terminal 2
@@ -69,6 +75,16 @@ TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm sta
 
 # terminal 3
 TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm run workflow
+```
+
+On Windows (PowerShell), set them in each terminal first; they last until you close it:
+
+```powershell
+# terminal 2
+$env:TEMPORAL_ADDRESS='127.0.0.1:7234'; $env:TEMPORAL_UI_ORIGIN='http://localhost:8234'; npm start
+
+# terminal 3
+$env:TEMPORAL_ADDRESS='127.0.0.1:7234'; $env:TEMPORAL_UI_ORIGIN='http://localhost:8234'; npm run workflow
 ```
 
 Terminal 2, the Worker:
