@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 
-import type { RunEvent } from '../../../shared/protocol';
+import { type RunEvent, TERMINAL_STATUSES } from '../../../shared/protocol';
 
 export type NodeRunStatus = 'running' | 'completed' | 'failed' | 'skipped';
 export type RunPhase = 'idle' | 'starting' | 'running' | 'completed' | 'incomplete' | 'failed' | 'cancelled' | 'error';
@@ -34,8 +34,6 @@ export function runCleared(): void {
   useRunStore.setState(IDLE, true);
 }
 
-const TERMINAL_PHASES: ReadonlySet<string> = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
-
 const NODE_STATUS_BY_EVENT: Record<string, NodeRunStatus> = {
   node_started: 'running',
   node_completed: 'completed',
@@ -48,7 +46,9 @@ const NODE_STATUS_BY_EVENT: Record<string, NodeRunStatus> = {
 export function applyRunEvent(event: RunEvent): void {
   useRunStore.setState((state) => {
     if (event.kind === 'status') {
-      return TERMINAL_PHASES.has(event.status) ? { phase: event.status as RunPhase, message: event.errorMessage } : {};
+      return TERMINAL_STATUSES.has(event.status)
+        ? { phase: event.status as RunPhase, message: event.errorMessage }
+        : {};
     }
     const status = NODE_STATUS_BY_EVENT[event.type];
     if (!status || !event.nodeId) return {};
@@ -57,5 +57,5 @@ export function applyRunEvent(event: RunEvent): void {
 }
 
 export function isRunOver(phase: RunPhase): boolean {
-  return TERMINAL_PHASES.has(phase) || phase === 'error';
+  return TERMINAL_STATUSES.has(phase) || phase === 'error';
 }

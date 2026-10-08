@@ -1,4 +1,4 @@
-// Shared with the editor through type-only imports, so nothing here reaches a bundle.
+// The wire contract between the worker bridge and the editor.
 
 export type SnapshotNode = {
   id: string;
@@ -33,3 +33,6 @@ export type RunResponse = {
 export type RunEvent =
   | { kind: 'event'; sequence: number; type: string; nodeId?: string; payload?: unknown }
   | { kind: 'status'; status: string; errorMessage?: string };
+
+// A run is over once it reaches one of these; nothing the plugin sends afterwards replaces it.
+export const TERMINAL_STATUSES: ReadonlySet<string> = new Set(['completed', 'incomplete', 'failed', 'cancelled']);

@@ -1,6 +1,6 @@
 import type { ExecutionStore } from '@workflowbuilder/temporal';
 
-import type { RunEvent } from '../../shared/protocol';
+import { type RunEvent, TERMINAL_STATUSES } from '../../shared/protocol';
 
 type Listener = (event: RunEvent) => void;
 
@@ -15,6 +15,7 @@ export type RunStore = ExecutionStore & {
 export function createRunStore(): RunStore {
   const histories = new Map<string, RunEvent[]>();
   const listeners = new Map<string, Set<Listener>>();
+  const terminal = new Set<string>();
 
   function publish(executionId: string, event: RunEvent): void {
     const history = histories.get(executionId) ?? [];
@@ -37,6 +38,9 @@ export function createRunStore(): RunStore {
     },
 
     async updateExecutionStatus(executionId, status, errorMessage) {
+      // Since 0.2.0 a late 'running' or 'waiting', or a second terminal status, can follow the first one.
+      if (terminal.has(executionId)) return;
+      if (TERMINAL_STATUSES.has(status)) terminal.add(executionId);
       console.log(`[${executionId.slice(0, 8)}] status ${status}${errorMessage ? `: ${errorMessage}` : ''}`);
       publish(executionId, { kind: 'status', status, errorMessage });
     },
