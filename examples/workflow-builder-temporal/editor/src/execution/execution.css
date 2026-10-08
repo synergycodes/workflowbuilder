@@ -1,0 +1,87 @@
+.run-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.run-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: #2563eb;
+  color: #fff;
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.run-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.run-phase--failed,
+.run-phase--error {
+  color: #dc2626;
+}
+
+.run-phase--completed {
+  color: #16a34a;
+}
+
+.run-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+}
+
+/* Same spot and size as the SDK's own validity badge, so it reads as a status. */
+.run-marker {
+  position: absolute;
+  top: 0;
+  right: var(--ax-public-status-right, 0.75rem);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--ax-public-status-size, 1.25rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+  color: #fff;
+}
+
+.run-marker--running {
+  background: #2563eb;
+}
+
+.run-marker--running svg {
+  animation: run-marker-spin 1s linear infinite;
+}
+
+.run-marker--completed {
+  background: #16a34a;
+}
+
+.run-marker--failed {
+  background: #dc2626;
+}
+
+.run-marker--skipped {
+  background: #6b7280;
+}
+
+.react-flow__node:has(.run-marker--skipped) {
+  opacity: 0.5;
+}
+
+@keyframes run-marker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
