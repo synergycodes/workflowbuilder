@@ -9,6 +9,7 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
   icon: 'Lightning',
   label: 'Trigger',
   description: 'Starts the workflow',
+  isStartNode: true,
   defaultPropertiesData,
   schema,
   uischema,

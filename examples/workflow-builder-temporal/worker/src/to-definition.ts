@@ -6,14 +6,9 @@ import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
 // The editor's snapshot is React Flow data; the plugin wants `{ id, type, config }` per node
 // and `{ sourceNodeId, targetNodeId }` per edge. This is the only glue in the sample.
 export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: string): WorkflowDefinition<SampleNode> {
-  // Newer editors stamp `isStartNode` on the entry node. The 2.3.0 editor this sample ships
-  // does not, so the trigger type stands in when no node carries the flag.
-  const flagged = snapshot.nodes.some((node) => node.data.isStartNode === true);
-  const isStart = (node: SnapshotNode) => (flagged ? node.data.isStartNode === true : node.data.type === 'trigger');
-
-  const nodes = snapshot.nodes.map((node) => toNode(node, isStart(node)));
+  const nodes = snapshot.nodes.map((node) => toNode(node, node.data.isStartNode === true));
   if (!nodes.some((node) => node.role === 'start')) {
-    throw new Error('The diagram has no start node. Add a trigger node, or flag one node with isStartNode.');
+    throw new Error('The diagram has no start node. Add a trigger node from the palette.');
   }
 
   return { workflowId, nodes, edges: snapshot.edges.map(toEdge) };
