@@ -73,6 +73,7 @@ export const pl = {
   },
   propertiesBar: {
     label: 'Właściwości',
+    edge: 'Połączenie',
     deleteNode: 'Usuń węzeł',
     deleteEdge: 'Usuń krawędź',
   },

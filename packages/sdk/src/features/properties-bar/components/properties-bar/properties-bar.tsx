@@ -36,7 +36,6 @@ function PropertiesBarComponent({
   const [isPropertiesBarOpen, setIsPropertiesBarOpen] = useState(true);
   const footerTarget = usePropertiesPanelFooterTarget();
 
-  const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
   const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
   const hasFooter = footerTarget.hasContent || !!onDeleteClick;
@@ -78,16 +77,17 @@ function PropertiesBarComponent({
   return (
     <PropertiesPanelFooterTargetProvider value={footerTarget.target}>
       <Sidebar
+        role="region"
+        aria-label={headerLabel}
         isExpanded={isExpanded}
         contentClassName={styles['extend-bounds']}
         header={
           <>
             <PropertiesBarHeader
-              hasSelection={!!selection}
-              isExpendable={isPropertiesBarOpen}
+              selection={selection}
+              headerLabel={headerLabel}
+              isOpen={isExpanded}
               onTogglePropertiesBar={onToggleExpand}
-              header={headerLabel}
-              name={name ?? ''}
               onDotsClick={onMenuHeaderClick}
             />
             {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}

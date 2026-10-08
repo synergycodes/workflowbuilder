@@ -1,21 +1,15 @@
 .header {
+  --wb-public-node-icon-padding: var(--wb-ds-space-125);
+
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 0.5rem;
+  gap: var(--wb-ds-space-100);
+  /* The collapsed panel sizes to its content, so a long label would widen it past the open panel.
+     2px is the panel's 1px border on each side. */
+  max-width: calc(var(--wb-sdk-sidebar-expanded-width) - 2 * var(--wb-sdk-sidebar-horizontal-padding) - 2px);
 
-  .text-container {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-
-    p {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      margin: 0;
-    }
+  .heading {
+    flex: 1;
+    min-width: 0;
   }
 }
