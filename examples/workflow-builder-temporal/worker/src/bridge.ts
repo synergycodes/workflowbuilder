@@ -1,4 +1,4 @@
-import type { WorkflowEnginePort } from '@workflowbuilder/temporal';
+import type { WorkflowDefinition, WorkflowEnginePort } from '@workflowbuilder/temporal';
 import { randomUUID } from 'node:crypto';
 import { type IncomingMessage, type Server, type ServerResponse, createServer } from 'node:http';
 
@@ -31,7 +31,8 @@ export function startBridge({ engine, store, port }: BridgeOptions): Server {
       }
       sendJson(response, 404, { message: `No route for ${request.method} ${path}` });
     } catch (error) {
-      sendJson(response, 400, { message: error instanceof Error ? error.message : String(error) });
+      const status = error instanceof BadRequestError ? 400 : 502;
+      sendJson(response, status, { message: error instanceof Error ? error.message : String(error) });
     }
   });
 
@@ -43,21 +44,39 @@ export function startBridge({ engine, store, port }: BridgeOptions): Server {
   return server;
 }
 
+// An open event stream keeps `close()` waiting forever, so drop every connection first.
+export function closeBridge(server: Server): Promise<void> {
+  return new Promise((resolve, reject) => {
+    server.close((error) => (error ? reject(error) : resolve()));
+    server.closeAllConnections();
+  });
+}
+
+class BadRequestError extends Error {}
+
 async function startRun(
   request: IncomingMessage,
   response: ServerResponse,
   engine: WorkflowEnginePort<SampleNode>,
 ): Promise<void> {
-  const body = JSON.parse(await readBody(request)) as Partial<RunRequest>;
-  if (!Array.isArray(body.nodes) || !Array.isArray(body.edges)) {
-    throw new TypeError('The body must be a diagram snapshot: { nodes: [], edges: [], triggerPayload?: {} }.');
+  const raw = await readBody(request);
+  let body: Partial<RunRequest>;
+  let definition: WorkflowDefinition<SampleNode>;
+  try {
+    body = JSON.parse(raw) as Partial<RunRequest>;
+    if (!Array.isArray(body.nodes) || !Array.isArray(body.edges)) {
+      throw new TypeError('The body must be a diagram snapshot: { nodes: [], edges: [], triggerPayload?: {} }.');
+    }
+    definition = snapshotToDefinition({ nodes: body.nodes, edges: body.edges }, WORKFLOW_ID);
+  } catch (error) {
+    throw new BadRequestError(error instanceof Error ? error.message : String(error));
   }
 
   const executionId = randomUUID();
   await engine.submit({
     workflowId: WORKFLOW_ID,
     executionId,
-    definition: snapshotToDefinition({ nodes: body.nodes, edges: body.edges }, WORKFLOW_ID),
+    definition,
     triggerPayload: body.triggerPayload ?? {},
     variables: {},
     global: {},

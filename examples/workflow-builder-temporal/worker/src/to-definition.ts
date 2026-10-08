@@ -21,6 +21,8 @@ function toNode(node: SnapshotNode, isStart: boolean): SampleNode {
   }
 
   const { label, ...config } = node.data.properties ?? {};
+  // The editor's validation state, not node configuration.
+  delete config.errors;
   return {
     id: node.id,
     type,

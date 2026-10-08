@@ -6,7 +6,7 @@
   "description": "Run a diagram drawn in the Workflow Builder editor as a durable Temporal Workflow Execution.",
   "license": "Apache-2.0",
   "engines": {
-    "node": ">=20"
+    "node": ">=20.3.0"
   },
   "scripts": {
     "start": "tsx src/worker.ts",
