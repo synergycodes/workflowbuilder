@@ -7,6 +7,6 @@ export default defineConfig({
     // shared/ lives one folder up: the diagram, the wire types and the coin flip both processes use.
     fs: { allow: ['..'] },
     // The worker process hosts the bridge; proxying keeps the browser on one origin.
-    proxy: { '/api': 'http://127.0.0.1:3210' },
+    proxy: { '/api': `http://127.0.0.1:${process.env.BRIDGE_PORT ?? 3210}` },
   },
 });

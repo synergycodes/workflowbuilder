@@ -17,12 +17,15 @@ export function RunButton() {
         <PlayIcon size={16} weight="fill" />
         {busy ? 'Running on Temporal…' : 'Run on Temporal'}
       </button>
-      {phase !== 'idle' && (
-        <span className={`run-phase run-phase--${phase}`}>
-          {amount === undefined ? '' : `amount ${amount} · `}
-          {message ?? phase}
-        </span>
-      )}
+      {/* Mounted while idle too: screen readers announce changes to a live region, not its arrival. */}
+      <span role="status" className={`run-phase run-phase--${phase}`}>
+        {phase !== 'idle' && (
+          <>
+            {amount === undefined ? '' : `amount ${amount} · `}
+            {message ?? phase}
+          </>
+        )}
+      </span>
       {temporalUiUrl && (
         <a className="run-link" href={temporalUiUrl} target="_blank" rel="noreferrer">
           Temporal UI <ArrowSquareOutIcon size={14} />

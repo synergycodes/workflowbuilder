@@ -7,10 +7,10 @@ import { executionPlugin } from './execution/plugin';
 import { nodeTypes } from './nodes';
 import { resetPlugin } from './reset/plugin';
 
-// A trigger starts the workflow, so nothing can connect into it.
-const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => targetNode.data.type !== 'trigger';
+// The start node begins the workflow, so nothing can connect into it.
+const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
-// Plugin initializers run once on first mount; the array must be a stable reference.
+// Plugin initializers run once on first mount.
 const plugins = [executionPlugin, resetPlugin];
 
 const { nodes: initialNodes, edges: initialEdges } = defaultDiagram();

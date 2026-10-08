@@ -24,7 +24,7 @@ export async function runFromCanvas(): Promise<void> {
       body: JSON.stringify(request),
     });
   } catch {
-    runErrored('Could not reach the bridge. Is `npm start` running in the sample folder?');
+    runErrored('Could not reach the bridge. Is `npm start` running in `worker/`?');
     return;
   }
 
@@ -42,9 +42,10 @@ export async function runFromCanvas(): Promise<void> {
     applyRunEvent(JSON.parse(String(message.data)) as RunEvent);
     if (isRunOver(useRunStore.getState().phase)) stream?.close();
   });
+  // While the browser reconnects (CONNECTING), the bridge replays the run's history, so only a
+  // stream the browser gave up on (CLOSED) is lost.
   stream.addEventListener('error', () => {
-    if (isRunOver(useRunStore.getState().phase)) return;
+    if (isRunOver(useRunStore.getState().phase) || stream?.readyState !== EventSource.CLOSED) return;
     runErrored('Lost the event stream. Is the worker still running?');
-    stream?.close();
   });
 }

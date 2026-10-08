@@ -19,8 +19,13 @@ export function NodeRunMarker({ props }: Props) {
 
   const StatusIcon = ICONS[status];
   return (
-    <span className={`run-marker run-marker--${status}`} title={`Temporal: ${status}`}>
-      <StatusIcon size={12} weight="bold" />
+    <span
+      className={`run-marker run-marker--${status}`}
+      role="img"
+      aria-label={`Temporal: ${status}`}
+      title={`Temporal: ${status}`}
+    >
+      <StatusIcon size={12} weight="bold" aria-hidden />
     </span>
   );
 }
