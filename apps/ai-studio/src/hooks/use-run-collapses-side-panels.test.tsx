@@ -15,29 +15,23 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const sdkNode = (id: string) => ({
-  id,
-  position: { x: 0, y: 0 },
-  data: { type: 'action', icon: 'Lightning' as const, properties: { label: id } },
-});
-
 const isLibraryOpen = () => useStore.getState().isSidebarExpanded;
 const startRun = (id = 'exec-1') => act(() => setExecutionStarted(id, `/api/executions/${id}/stream`));
 
 describe('useRunCollapsesSidePanels', () => {
   let root: ReturnType<typeof createRoot>;
   let reactFlowStore: { getState: () => ReactFlowState } | undefined;
+  let flowNodes: Node[];
 
   const selectedOnCanvas = () =>
     reactFlowStore
       ?.getState()
       .nodes.filter((node) => node.selected)
       .map((node) => node.id);
-  // What a click does: React Flow selects the node and the SDK store hears of it.
   const clickNode = (id: string) =>
     act(() => {
+      reactFlowStore?.getState().unselectNodesAndEdges();
       reactFlowStore?.getState().triggerNodeChanges([{ id, type: 'select', selected: true }]);
-      useStore.setState({ selectedNodesIds: [id] });
     });
 
   function Probe() {
@@ -59,21 +53,17 @@ describe('useRunCollapsesSidePanels', () => {
     );
   }
 
-  let flowNodes: Node[];
-
   beforeEach(() => {
     resetExecution();
     flowNodes = [
       { id: 'ai', position: { x: 0, y: 0 }, data: {}, selected: true },
       { id: 'email', position: { x: 300, y: 0 }, data: {} },
     ];
-    useStore.setState({ nodes: [sdkNode('ai'), sdkNode('email')], selectedNodesIds: ['ai'], selectedEdgesIds: [] });
     useStore.getState().toggleSidebar(true);
   });
 
   afterEach(() => {
     act(() => root.unmount());
-    useStore.setState({ nodes: [], selectedNodesIds: [], selectedEdgesIds: [] });
     useStore.getState().toggleSidebar(false);
   });
 
@@ -125,7 +115,7 @@ describe('useRunCollapsesSidePanels', () => {
     expect(selectedOnCanvas()).toEqual(['ai']);
   });
 
-  it('collapses for a run already in the store when the editor mounts, as one opened from its link', () => {
+  it('collapses for a run already in the store when the hook mounts', () => {
     startRun();
     mount();
 
@@ -141,5 +131,49 @@ describe('useRunCollapsesSidePanels', () => {
 
     expect(isLibraryOpen()).toBe(true);
     expect(selectedOnCanvas()).toEqual([]);
+  });
+
+  it('keeps what the person opened during the run open on Reset', () => {
+    act(() => useStore.getState().toggleSidebar(false));
+    mount();
+    startRun();
+    act(() => useStore.getState().toggleSidebar(true));
+    clickNode('email');
+    act(() => resetExecution());
+
+    expect(isLibraryOpen()).toBe(true);
+    expect(selectedOnCanvas()).toEqual(['email']);
+  });
+
+  it('keeps a library that was closed before the run closed on Reset', () => {
+    act(() => useStore.getState().toggleSidebar(false));
+    mount();
+    startRun();
+    act(() => resetExecution());
+
+    expect(isLibraryOpen()).toBe(false);
+  });
+
+  it('a second Run and Reset bring back the panels from between the runs', () => {
+    mount();
+    startRun('exec-1');
+    act(() => resetExecution());
+    act(() => useStore.getState().toggleSidebar(false));
+    clickNode('email');
+    startRun('exec-2');
+    act(() => resetExecution());
+
+    expect(isLibraryOpen()).toBe(false);
+    expect(selectedOnCanvas()).toEqual(['email']);
+  });
+
+  it('restores the selected nodes still on the canvas on Reset', () => {
+    flowNodes = flowNodes.map((node) => ({ ...node, selected: true }));
+    mount();
+    startRun();
+    act(() => reactFlowStore?.getState().setNodes([{ id: 'email', position: { x: 300, y: 0 }, data: {} }]));
+    act(() => resetExecution());
+
+    expect(selectedOnCanvas()).toEqual(['email']);
   });
 });
