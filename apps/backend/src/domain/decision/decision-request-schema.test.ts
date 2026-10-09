@@ -420,6 +420,23 @@ describe('decisionRequestSchema', () => {
     ]);
   });
 
+  it('does not count a stray rerun-source port as a shared one', () => {
+    const issues = issuesOf(request({ actions: [approve, { ...askAgain, port: 'approved' }] }));
+
+    expect(issues.map((issue) => [issue.path, issue.domain])).toEqual([
+      ['actions.1.port', { issue: 'port_not_allowed' }],
+    ]);
+  });
+
+  // The request-level rule reads `port` without a type guard: zod skips it once any action failed structurally.
+  it('reports only the structural failure when a port is missing beside two that share one', () => {
+    const issues = issuesOf(
+      request({ actions: [approve, { ...reject, port: undefined }, { ...hold, port: 'approved' }] }),
+    );
+
+    expect(issues.map((issue) => [issue.path, issue.domain])).toEqual([['actions.1.port', undefined]]);
+  });
+
   // Two absent ports would compare equal, so the request-level rule must not run on them.
   it('reports each missing port on its own, without a duplicate-port issue riding along', () => {
     const issues = issuesOf(
