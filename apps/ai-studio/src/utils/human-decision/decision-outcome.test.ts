@@ -12,11 +12,23 @@ describe('readDecisionOutcome', () => {
         reason: 'Outside the policy',
         resolvedBy: 'human',
       }),
-    ).toEqual({ edits: {}, reason: 'Outside the policy' });
+    ).toEqual({ edits: {}, reason: 'Outside the policy', comment: undefined });
   });
 
-  it('treats a blank reason as none and missing edits as empty', () => {
-    expect(readDecisionOutcome({ action: 'approve', reason: '  ' })).toEqual({ edits: {}, reason: undefined });
+  it('reads the comment a decision was sent with', () => {
+    expect(readDecisionOutcome({ action: 'escalate', effect: 'resume', comment: 'Needs a senior look' })).toEqual({
+      edits: {},
+      reason: undefined,
+      comment: 'Needs a senior look',
+    });
+  });
+
+  it('treats a blank reason or comment as none and missing edits as empty', () => {
+    expect(readDecisionOutcome({ action: 'approve', reason: '  ', comment: ' ' })).toEqual({
+      edits: {},
+      reason: undefined,
+      comment: undefined,
+    });
   });
 
   it.each([

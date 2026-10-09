@@ -27,6 +27,7 @@ export type DecisionDraft = {
   /** The fields the form showed, so a field the draft was not taken under starts from the proposal. */
   fields?: string[];
   reason?: string;
+  comment?: string;
 };
 
 /** Where the decision sent for a wait stands until the run records it. */

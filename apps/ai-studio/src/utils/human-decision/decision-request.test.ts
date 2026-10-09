@@ -8,7 +8,7 @@ describe('readDecisionRequest', () => {
     expect(readDecisionRequest({ ...reviewRequest, proposalSourceNodeId: 'draft-1' })).toEqual({
       schema: reviewRequest.schema,
       actions: {
-        resume: { name: 'approve', label: 'Approve' },
+        resumes: [{ name: 'approve', label: 'Approve' }],
         reject: { name: 'reject', label: 'Reject', reasonRequired: false },
       },
       proposalSourceNodeId: 'draft-1',
