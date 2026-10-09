@@ -16,6 +16,7 @@ export const DECISION_ISSUE_MESSAGES = {
   deadline_format:
     "must be a duration such as '30s' or '3d' (number plus ms, s, m, h or d), above zero and at most '3652500d'",
   deadline_policy: "policy must be 'reject'",
+  deadline_not_supported: 'deadlines are not enforced yet, so the node would wait without end; remove it',
   source_node_without_decision_request: 'this node carries no decision request',
   source_not_a_predecessor: "proposalSourceNodeId '{value}' is not a direct predecessor of this node",
   source_missing: 'a rerun-source action needs a proposal source, but this node has no predecessor',

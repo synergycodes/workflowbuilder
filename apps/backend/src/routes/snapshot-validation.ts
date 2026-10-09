@@ -4,7 +4,7 @@ import { z } from 'zod';
 import type { SourceVersion } from '@workflow-builder/types/workflow-execution/api';
 
 import { decisionIssueOf } from '../domain/decision/decision-issues';
-import { type WorkflowSnapshot, workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
+import { type WorkflowSnapshot, admittedSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { logger as backendLogger } from '../logger';
 
 const logger = backendLogger.child({ component: 'snapshot-validation' });
@@ -29,7 +29,7 @@ export function parseSnapshot(
   snapshotJson: unknown,
   source: { workflowId: string; sourceVersion: SourceVersion },
 ): SnapshotParse {
-  const parsed = z.safeParse(workflowSnapshotSchema, snapshotJson);
+  const parsed = z.safeParse(admittedSnapshotSchema, snapshotJson);
   if (parsed.success) return { snapshot: parsed.data };
 
   const details = formatValidationDetails(parsed.error);

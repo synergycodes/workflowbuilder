@@ -75,4 +75,17 @@ export const workflowSnapshotSchema = rejectingOwnProtoKey(
     }),
 );
 
+// What publish and execute let in. A deadline is part of the request's shape but nothing enforces it
+// yet, so it is refused here and not in the shape, which the decision route re-reads from stored runs
+// (follow-up: decision-deadline-timer).
+export const admittedSnapshotSchema = workflowSnapshotSchema.superRefine((snapshot, context) => {
+  for (const [index, node] of snapshot.nodes.entries()) {
+    if (node.data.properties?.decisionRequest?.deadline !== undefined) {
+      context.addIssue(
+        decisionIssue('deadline_not_supported', ['nodes', index, 'data', 'properties', 'decisionRequest', 'deadline']),
+      );
+    }
+  }
+});
+
 export type WorkflowSnapshot = z.infer<typeof workflowSnapshotSchema>;

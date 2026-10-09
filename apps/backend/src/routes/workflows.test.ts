@@ -285,7 +285,11 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 // ---- snapshot validation on publish and execute -----------------------------
 // Never on draft save: a draft is legitimately mid-edit.
 
-function snapshotWithDecisionActions(actions: unknown[], properties: Record<string, unknown> = {}) {
+function snapshotWithDecisionActions(
+  actions: unknown[],
+  properties: Record<string, unknown> = {},
+  request: Record<string, unknown> = {},
+) {
   return {
     nodes: [
       { id: 'src', data: { type: 'product/any' } },
@@ -293,7 +297,7 @@ function snapshotWithDecisionActions(actions: unknown[], properties: Record<stri
         id: 'review',
         data: {
           type: 'product/any',
-          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties } } },
+          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties }, ...request } },
         },
       },
     ],
@@ -305,6 +309,7 @@ const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'ap
 const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
 const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
 const portlessResumeSnapshot = snapshotWithDecisionActions([{ name: 'approve', label: 'Approve', effect: 'resume' }]);
+const deadlineSnapshot = snapshotWithDecisionActions([approve], {}, { deadline: { after: '3d', policy: 'reject' } });
 
 type InvalidSnapshotBody = {
   code: string;
@@ -374,6 +379,23 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
+  it('refuses a decision request with a deadline, which nothing enforces yet, and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: deadlineSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details).toEqual([
+      expect.objectContaining({
+        path: ['nodes', 1, 'data', 'properties', 'decisionRequest', 'deadline'],
+        domainCode: 'deadline_not_supported',
+      }),
+    ]);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
   it('accepts a draft with a valid decision request and returns the row', async () => {
     const published = { ...fakeWorkflow, draftJson: validDecisionSnapshot, publishedJson: validDecisionSnapshot };
     databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validDecisionSnapshot }]));
@@ -416,6 +438,7 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
   it.each([
     { name: 'a broken decision request', draftJson: twoResumesSnapshot },
     { name: 'a decision request without a port', draftJson: portlessResumeSnapshot },
+    { name: 'a decision request with a deadline', draftJson: deadlineSnapshot },
     { name: 'an empty string', draftJson: '' },
     { name: 'zero', draftJson: 0 },
     { name: 'false', draftJson: false },
