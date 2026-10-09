@@ -302,8 +302,10 @@ function snapshotWithDecisionActions(actions: unknown[], properties: Record<stri
 }
 
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held' };
 const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
-const twoResumesSnapshot = snapshotWithDecisionActions([approve, { ...approve, name: 'approve-2' }]);
+const twoResumesSnapshot = snapshotWithDecisionActions([approve, hold]);
+const sharedPortSnapshot = snapshotWithDecisionActions([approve, { ...hold, port: 'approved' }]);
 const portlessResumeSnapshot = snapshotWithDecisionActions([{ name: 'approve', label: 'Approve', effect: 'resume' }]);
 
 type InvalidSnapshotBody = {
@@ -325,7 +327,7 @@ function jsonRequest(app: ReturnType<typeof buildApp>, path: string, method: str
 
 describe('createWorkflowsRoutes - snapshot validation on publish', () => {
   it('rejects a draft with a broken decision request and writes nothing', async () => {
-    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: sharedPortSnapshot }]));
 
     const response = await publish(allowAllApp());
     const body = (await response.json()) as InvalidSnapshotBody;
@@ -333,10 +335,10 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(response.status).toBe(400);
     expect(body.code).toBe('invalid_snapshot');
     const detail = body.details.find(
-      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.effect',
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.port',
     );
     // Beside zod's `code` and the English message, the identifier a client keys on and its value.
-    expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_effect', params: { value: 'resume' } });
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_port', params: { value: 'approved' } });
     expect(databaseMock.update).not.toHaveBeenCalled();
   });
 
@@ -386,6 +388,16 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
     expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validDecisionSnapshot });
   });
 
+  it('accepts a draft whose decision request offers two resume actions on their own ports', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, publishedJson: twoResumesSnapshot }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
   it('accepts a form whose properties carry no type, as JSON Schema allows', async () => {
     const draftJson = snapshotWithDecisionActions([approve], {
       status: { enum: ['open', 'closed'] },
@@ -414,7 +426,7 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
   // The falsy scalars used to short-circuit execute into published_version_missing while
   // publish went on to validate them; only null means "no version".
   it.each([
-    { name: 'a broken decision request', draftJson: twoResumesSnapshot },
+    { name: 'a broken decision request', draftJson: sharedPortSnapshot },
     { name: 'a decision request without a port', draftJson: portlessResumeSnapshot },
     { name: 'an empty string', draftJson: '' },
     { name: 'zero', draftJson: 0 },
@@ -437,10 +449,10 @@ describe('createWorkflowsRoutes - snapshot validation on publish', () => {
 
 describe('createWorkflowsRoutes - draft save never validates the snapshot', () => {
   it('stores a draft with a broken decision request', async () => {
-    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: sharedPortSnapshot }]));
 
     const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
-      draftJson: twoResumesSnapshot,
+      draftJson: sharedPortSnapshot,
     });
 
     expect(response.status).toBe(200);
