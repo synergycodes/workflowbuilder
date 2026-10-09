@@ -19,28 +19,42 @@ function offerOf(entry: Record<string, unknown> | undefined): Offer | undefined 
   return { name, label: hasText(label) ? label : name };
 }
 
-function rejectOfferOf(entry: Record<string, unknown> | undefined): RejectOffer | undefined {
-  const offer = offerOf(entry);
-  return offer === undefined ? undefined : { ...offer, reasonRequired: entry?.['reasonRequired'] === true };
-}
-
 function isReject(entry: unknown): entry is Record<string, unknown> {
   return isPlainObject(entry) && entry['effect'] === 'reject';
 }
 
-// A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
-function offeredReject(actions: readonly unknown[]): RejectOffer | undefined {
-  const entry = actions.find(isReject);
-  return hasText(entry?.['port']) ? rejectOfferOf(entry) : undefined;
-}
-
 // Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
 export function offeredActions(actions: readonly unknown[]): OfferedActions | undefined {
-  const resumes = actions
-    .filter(isPlainObject)
-    .filter((entry) => entry['effect'] === 'resume')
-    .flatMap((entry) => offerOf(entry) ?? []);
-  return resumes.length === 0 ? undefined : { resumes, reject: offeredReject(actions) };
+  const resumes: ResumeOffer[] = [];
+  let reject: RejectOffer | undefined;
+  let rejectSeen = false;
+  const seen = new Set<string>();
+  for (const entry of actions.filter(isPlainObject)) {
+    const effect = entry['effect'];
+    if (effect === 'reject') {
+      const isFirst = !rejectSeen;
+      rejectSeen = true;
+      // A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
+      if (!isFirst || !hasText(entry['port'])) {
+        continue;
+      }
+    } else if (effect !== 'resume') {
+      continue;
+    }
+    const offer = offerOf(entry);
+    // Publish refuses a repeated name, but the form reads the canvas node and the backend decides by the first action
+    // of a name, so a later namesake is left out here too.
+    if (offer === undefined || seen.has(offer.name)) {
+      continue;
+    }
+    seen.add(offer.name);
+    if (effect === 'resume') {
+      resumes.push(offer);
+    } else {
+      reject = { ...offer, reasonRequired: entry['reasonRequired'] === true };
+    }
+  }
+  return resumes.length === 0 ? undefined : { resumes, reject };
 }
 
 export function rejectPortOf(actions: readonly unknown[]): string | undefined {
