@@ -87,6 +87,12 @@ function withEscalate() {
   return { ...reviewRequest, actions: [approve, escalate, reject] };
 }
 
+function withEscalateAndHold() {
+  const [approve, escalate, reject] = withEscalate().actions;
+  const hold = { name: 'hold', label: 'Hold', effect: 'resume', port: 'source:inner:held' };
+  return { ...reviewRequest, actions: [approve, escalate, hold, reject] };
+}
+
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
 
 function parkHumanOne(output: unknown = draftOutput) {
@@ -953,6 +959,15 @@ describe.each([
       const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
 
       expect(buttons).toEqual(['Reject…', 'Escalate…', 'Approve']);
+    });
+
+    it('mirrors the request: the last-listed resume action sits next to the reject, the first stays rightmost', () => {
+      parkHumanOne();
+      render(withEscalateAndHold());
+
+      const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
+
+      expect(buttons).toEqual(['Reject…', 'Hold…', 'Escalate…', 'Approve']);
     });
 
     it('asks for a comment in a dialog first, and sends nothing on Cancel', async () => {
