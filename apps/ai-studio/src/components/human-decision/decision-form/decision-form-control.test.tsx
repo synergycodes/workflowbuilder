@@ -80,6 +80,13 @@ function replyDraftRequired() {
   return { ...reviewRequest, schema: { ...reviewRequest.schema, required: ['refundAmount', 'replyDraft'] } };
 }
 
+// The Review preset's shape: a second resume action between the first and the reject.
+function withEscalate() {
+  const [approve, reject] = reviewRequest.actions;
+  const escalate = { name: 'escalate', label: 'Escalate', effect: 'resume', port: 'source:inner:escalated' };
+  return { ...reviewRequest, actions: [approve, escalate, reject] };
+}
+
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
 
 function parkHumanOne(output: unknown = draftOutput) {
@@ -935,6 +942,102 @@ describe.each([
       expect(container.querySelector('[role="status"]')?.textContent).toBe(
         'Sent. Waiting for the run to record the decision.',
       );
+    });
+  });
+
+  describe('a further resume action', () => {
+    it('sits between the reject and the first resume action, which stays rightmost', () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
+
+      expect(buttons).toEqual(['Reject…', 'Escalate…', 'Approve']);
+    });
+
+    it('asks for a comment in a dialog first, and sends nothing on Cancel', async () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      await click(button('Escalate…'));
+      expect(dialog()?.textContent).toContain('Comment');
+      commit(reasonField()!, 'Not sure yet');
+      await click(dialogButton('Cancel'));
+
+      expect(dialog()).toBeNull();
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('confirms only once the comment is given', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      await click(button('Escalate…'));
+
+      expect(dialogButton('Confirm Escalate').disabled).toBe(true);
+      commit(reasonField()!, '   ');
+      expect(dialogButton('Confirm Escalate').disabled).toBe(true);
+      commit(reasonField()!, 'Needs a senior look');
+
+      expect(dialogButton('Confirm Escalate').disabled).toBe(false);
+    });
+
+    it('sends its own name with the edits and the comment, and closes the dialog', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      commit(fieldOf('Refund amount')!, '120');
+      await click(button('Escalate…'));
+      commit(reasonField()!, 'Needs a senior look');
+
+      await click(dialogButton('Confirm Escalate'));
+
+      expect(submit).toHaveBeenCalledWith(humanOneWait, {
+        action: 'escalate',
+        edits: { refundAmount: 120 },
+        comment: 'Needs a senior look',
+      });
+      expect(dialog()).toBeNull();
+    });
+
+    it('is held back with the first one while a required field is emptied, the reject never', async () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      commit(fieldOf('Refund amount')!, '');
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
+      expect(button('Escalate…').disabled).toBe(true);
+      expect(button('Reject…').disabled).toBe(false);
+    });
+
+    it('keeps the comment while the panel shows another node', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      await click(button('Escalate…'));
+      commit(reasonField()!, 'Needs a senior look');
+      await click(dialogButton('Cancel'));
+
+      selection.nodeId = 'draft-1';
+      render(withEscalate());
+      selection.nodeId = 'human-1';
+      render(withEscalate());
+      await click(button('Escalate…'));
+
+      expect(reasonField()?.value).toBe('Needs a senior look');
+    });
+
+    it('shows the comment it was sent with once the run moves on', () => {
+      parkHumanOne();
+      render(withEscalate());
+      decideHumanOne({
+        action: 'escalate',
+        effect: 'resume',
+        edits: {},
+        comment: 'Needs a senior look',
+        resolvedBy: 'human',
+      });
+
+      expect(valueOf('Comment')).toBe('Needs a senior look');
     });
   });
 
