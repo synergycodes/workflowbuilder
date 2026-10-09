@@ -2,6 +2,8 @@ import { describe, expect, it } from 'vitest';
 
 import type { DecisionRequest } from '@workflow-builder/types/workflow-execution/decision-request';
 
+// The backend's publish-time schema, by relative path, as decision-request-contract.test.ts does.
+import { workflowSnapshotSchema } from '../../../backend/src/domain/mapper/snapshot-schema';
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
 import { reviewNodeType } from '../nodes/review';
@@ -98,6 +100,12 @@ describe('refundReviewFlow', () => {
     expect(edgesInto('rejected-2').map((edge) => [edge.source, edge.sourceHandle])).toEqual([
       ['senior-1', portOf(seniorReviewRequest, 'reject')],
     ]);
+  });
+
+  it('publishes as a whole: the backend snapshot schema accepts it, graph rules included', () => {
+    const parsed = workflowSnapshotSchema.safeParse(structuredClone({ nodes, edges }));
+
+    expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
   });
 
   it('connects every edge to nodes that exist', () => {
