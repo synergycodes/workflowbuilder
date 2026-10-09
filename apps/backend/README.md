@@ -182,7 +182,7 @@ curl -s localhost:3001/api/executions/$RUN | jq '{status, outcome}'
 # { "status": "completed", "outcome": null }: the run took the incomplete branch and no outcome was declared
 ```
 
-A second run decided with `"action":"complete"` takes the other branch; one decided with `"action":"reject"` needs a `reason` and ends with `"outcome": "rejected"`. AI Studio opens the workflow at `?workflowId=$WF` and the run at `?executionId=$RUN`: the canvas draws one handle per routed action, while the decision form offers the first `resume` action only, for now.
+A second run decided with `"action":"complete"` takes the other branch; one decided with `"action":"reject"` needs a `reason` and ends with `"outcome": "rejected"`. AI Studio opens the workflow at `?workflowId=$WF` and the run at `?executionId=$RUN`: the canvas draws one handle per routed action, and the decision form offers every `resume` action, the first as its primary button and each further one through a dialog that asks for a comment.
 
 ## Listing executions: `GET /api/executions`
 
