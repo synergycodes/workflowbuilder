@@ -31,13 +31,14 @@ recorded by the same broken code.
 One file per path through the sandbox code. A change that leaves one path alone can still
 move the commands on another, so every scenario replays on every run.
 
-| File                               | Graph                            | Path it protects                                                                                                                                                                                                                             |
-| ---------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `<version>-parallel-wave.json`     | `start → (left, right) → join`   | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.                                                                                  |
-| `<version>-fail-policy.json`       | `start → (fail, sibling) → join` | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails.                                                                      |
-| `<version>-incomplete-branch.json` | `start → route ─[yes]→ taken`    | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                                                                                               |
-| `<version>-cancel-mid-run.json`    | `start → block`                  | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                                                                                                  |
-| `<version>-parked-decision.json`   | `start → gate → after`           | A node that parks the run and a verdict that resumes it: the accepted `resolveNode` update, the `node_waiting` emit, the `waiting`/`running` status writes and the resume. The other scenarios stay green when a command moves on this path. |
+| File                               | Graph                             | Path it protects                                                                                                                                                                                                                             |
+| ---------------------------------- | --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `<version>-parallel-wave.json`     | `start → (left, right) → join`    | The happy path. A fan-out is the only shape that puts two commands in a single workflow task, where the runner's `Promise.all` becomes visible to Temporal.                                                                                  |
+| `<version>-fail-policy.json`       | `start → (fail, sibling) → join`  | A node failing under the default `fail` policy: the wave still finishes, the join is never reached, `execution_failed` closes the run and the Workflow Execution fails.                                                                      |
+| `<version>-incomplete-branch.json` | `start → route ─[yes]→ taken`     | `route` names a port with no edge: `taken` is skipped as `branch_not_taken`, the run closes `incomplete` and the Workflow Execution completes.                                                                                               |
+| `<version>-cancel-mid-run.json`    | `start → block`                   | A cancel while `block` is in flight: the non-cancellable cleanup emits `execution_cancelled` and the Workflow Execution closes as Canceled.                                                                                                  |
+| `<version>-parked-decision.json`   | `start → gate → after`            | A node that parks the run and a verdict that resumes it: the accepted `resolveNode` update, the `node_waiting` emit, the `waiting`/`running` status writes and the resume. The other scenarios stay green when a command moves on this path. |
+| `<version>-parked-pair.json`       | `start → (gate-a, gate-b) → join` | Two nodes park in one wave and take their verdicts one after the other. The first verdict completes its node while the other still waits, so the run writes one `waiting`/`running` pair and the join runs once.                             |
 
 The cancel scenario parks its executor until the driver has cancelled the run, so the
 recording always catches the activity open. The late completion then meets a closed run,
@@ -77,8 +78,6 @@ The harness recordings carry only empty bags and a synthetic graph.
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
 ```
-
-A scenario still worth adding: two nodes parked in one wave, resolved one after the other.
 
 ## Rules once files live here
 

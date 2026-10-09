@@ -10,7 +10,7 @@ import {
 } from '../../src/index';
 import { resolveNodeUpdate } from '../../src/workflow/index';
 import { waitUntil } from './helpers';
-import { type PauseTestNode, SINGLE_GATE_GRAPH } from './pause-graph';
+import { type PauseTestNode, SINGLE_GATE_GRAPH, TWO_GATES_GRAPH } from './pause-graph';
 import type { RecordingStore } from './recording-store';
 
 export type ReplayScenarioNode =
@@ -233,6 +233,43 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
         await waitUntil(() => store.statuses.some((entry) => entry.status === 'waiting'), 'the waiting status');
         await handle.executeUpdate(resolveNodeUpdate, {
           args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
+        });
+        await settle(handle);
+      },
+    }),
+  },
+  {
+    // start ─┬─▶ gate-a ─┬─▶ join   Both nodes park in one wave and take their verdicts one after the
+    //        └─▶ gate-b ─┘          other: the first resumes its node while the second still waits.
+    name: 'parked-pair',
+    graph: TWO_GATES_GRAPH,
+    terminalEvent: 'execution_completed',
+    // One waiting/running pair for both parks: the first verdict must not flip the run back to running.
+    statuses: ['running', 'waiting', 'running', 'completed'],
+    closeAttributes: 'workflowExecutionCompletedEventAttributes',
+    expectedActivities: { executeNode: 4, emitEvent: 12, updateStatus: 4 },
+    nodeEvents: {
+      start: ['node_started', 'node_completed'],
+      'gate-a': ['node_started', 'node_waiting', 'node_completed'],
+      'gate-b': ['node_started', 'node_waiting', 'node_completed'],
+      join: ['node_started', 'node_completed'],
+    },
+    stage: () => ({
+      executors,
+      drive: async (handle, store) => {
+        const waiting = () => store.events.filter((event) => event.type === 'node_waiting').length;
+        await waitUntil(() => waiting() === 2, 'both nodes waiting');
+        await handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate-a', resolution: { output: 'a-verdict' } }],
+        });
+        // The second verdict waits for the first node to complete, so the recording holds a resumed
+        // node beside a parked one.
+        await waitUntil(
+          () => store.events.some((event) => event.type === 'node_completed' && event.nodeId === 'gate-a'),
+          'the first node resumed',
+        );
+        await handle.executeUpdate(resolveNodeUpdate, {
+          args: [{ nodeId: 'gate-b', resolution: { output: 'b-verdict' } }],
         });
         await settle(handle);
       },
