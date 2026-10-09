@@ -4,7 +4,7 @@ import { hasText } from '../utils/has-text';
 import { isPlainObject } from '../utils/is-plain-object';
 
 /** The decision itself, apart from the wait it answers. */
-export type DecisionInput = { action: string; edits?: Record<string, unknown>; reason?: string };
+export type DecisionInput = { action: string; edits?: Record<string, unknown>; reason?: string; comment?: string };
 
 export type SubmitDecisionResult =
   | { ok: true }
@@ -22,13 +22,14 @@ export type SubmitDecisionResult =
     };
 
 // A blank reason would be recorded as given, and an empty `edits` is left out to keep the body minimal.
-function decisionBody({ nodeId, attempt }: DecisionWait, { action, edits, reason }: DecisionInput) {
+function decisionBody({ nodeId, attempt }: DecisionWait, { action, edits, reason, comment }: DecisionInput) {
   return {
     nodeId,
     attempt,
     action,
     ...(edits !== undefined && Object.keys(edits).length > 0 ? { edits } : {}),
     ...(hasText(reason) ? { reason } : {}),
+    ...(hasText(comment) ? { comment } : {}),
   };
 }
 

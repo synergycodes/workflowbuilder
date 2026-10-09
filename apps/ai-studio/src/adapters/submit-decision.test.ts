@@ -42,6 +42,15 @@ describe('the body submitDecision sends', () => {
     expect(await sentBody({ ...approve, edits: {}, reason: '   ' })).toEqual({ ...addressed, ...approve });
   });
 
+  it('adds a comment only when non-blank', async () => {
+    expect(await sentBody({ action: 'escalate', comment: 'Needs a senior look' })).toEqual({
+      ...addressed,
+      action: 'escalate',
+      comment: 'Needs a senior look',
+    });
+    expect(await sentBody({ action: 'escalate', comment: '  ' })).toEqual({ ...addressed, action: 'escalate' });
+  });
+
   it('adds edits only when non-empty and reason only when non-blank', async () => {
     expect(await sentBody({ ...approve, edits: { refundAmount: 120 } })).toEqual({
       ...addressed,
