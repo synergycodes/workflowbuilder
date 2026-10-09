@@ -60,9 +60,8 @@ export const database = {
     // Terminal statuses are immutable: a cancel cleanup landing after the run already
     // wrote `failed` must not flip it to `cancelled`. Matching 0 rows is a silent
     // no-op, which also makes a retried terminal write idempotent.
-    // started_at survives resumes: only the first 'running' stamps it, so a verdict
-    // un-parking a node does not move the start. Writing 'running' at actual run
-    // start is a separate, still-open fix (follow-up: running-status-at-start).
+    // started_at survives resumes: only the first 'running', written when the run starts,
+    // stamps it, so a verdict un-parking a node does not move the start.
     await sql`
       UPDATE executions SET
         status = ${status},

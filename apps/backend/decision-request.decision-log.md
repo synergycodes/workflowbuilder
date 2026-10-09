@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape), 03.10.2026 (deadline refused)
 
 ## Context
 
@@ -53,6 +53,10 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 
 25. **A node that carries a request may not use `errorPolicy: 'continue'`.** The runner absorbs such a failure with no port, which lights every non-error edge: a worker without the node's executor, or a `node_completed` write that fails after an accepted verdict, would run approve and reject together. Publish and execute refuse it with `error_policy_continue`; `fail` and `errorRoute` keep failures visible. The rule lives in the backend, not the runner, because the runner deliberately reads no request. Like decision 21 it tightens a schema the decision route re-parses, so a run parked on such a node would answer 500; accepted, because the feature lives on its branch with no run in flight.
 26. **Edits are a patch of the proposal.** The node's output carries them unapplied; whoever reads the decision merges an object field by field and a list element by element. That is why the walk checks only the keys an edit names. A level with `properties` or `items` must therefore keep its shape: `null`, a primitive or the other container could drop the read-only and required children it may hold, so it answers `field_shape_changed`, except `null` where the level's `type` allows it. `null` is the patch's own way to empty a field, and listing it in `type` is the author's consent; any other value would replace the level rather than patch it, even one its `type` lists. Replacement was rejected: it would make every object with a read-only child uneditable as a whole.
+
+## Deadline refused until enforced (03.10.2026)
+
+27. **Publish and execute refuse a request that carries a `deadline`** with `deadline_not_supported`, until a timer enforces it `(follow-up: decision-deadline-timer)`. Accepted, it would wait past the deadline without end. Worse, once the timer lands, a run started with a deadline it never armed would issue a timer command its history lacks and stop replaying. The shape keeps its rules (`after`, `policy: 'reject'`), so lifting the refusal is the only change the timer needs here. The refusal lives in `admittedSnapshotSchema`, which only `parseSnapshot` uses; the decision route re-reads stored snapshots with `workflowSnapshotSchema`, which still accepts one, so no stored run turns undecidable.
 
 ## Rejected
 

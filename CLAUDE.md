@@ -207,7 +207,7 @@ Three workspaces publish to npm: `@workflowbuilder/sdk` (on npm), `@workflowbuil
 
 Tags are scoped per package (`@workflowbuilder/sdk@X.Y.Z`, `@workflowbuilder/ui@X.Y.Z`, `@workflowbuilder/temporal@X.Y.Z`); each package has its own tag-triggered workflow (`release-sdk.yml`, `release-ui.yml`, `release-temporal.yml`). The earlier single-package `v*` scheme was retired when `@workflowbuilder/ui` became publishable. See `packages/RELEASE.md` § "Why these decisions".
 
-`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs. See `packages/temporal/README.md` § "Versioning and replay". Each release of it records the replay histories under the new version inside the release PR (`packages/RELEASE.md` § "Release procedure").
+`@workflowbuilder/temporal` additionally carries a replay contract: a workflow can wait in Event History for days, so a patch or minor release must still replay a history recorded by an older version. Breaking that is a major, with a note to drain in-flight runs; before 1.0 a minor may break it, with the same note. See `packages/temporal/README.md` § "Versioning and replay". Each release of it records the replay histories under the new version inside the release PR (`packages/RELEASE.md` § "Release procedure").
 
 Canonical procedure with edge cases and rollback: [`packages/RELEASE.md`](packages/RELEASE.md).
 

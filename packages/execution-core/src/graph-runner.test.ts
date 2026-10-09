@@ -1557,6 +1557,7 @@ describe('runGraph: outcomes', () => {
       'node_completed',
     ]);
     expect(events.statuses).toEqual([
+      { status: 'running' },
       { status: 'waiting' },
       { status: 'running' },
       { status: 'completed', outcome: rejected },
@@ -1721,6 +1722,41 @@ describe('runGraph: outcomes', () => {
   });
 });
 
+describe('runGraph — run status', () => {
+  it('writes running right after execution_started, before the first node runs', async () => {
+    const runner = makeRunner();
+    const trail: string[] = [];
+    const recording: EventEmitterPort = {
+      async emitEvent(_executionId, type) {
+        trail.push(type);
+      },
+      async updateStatus(_executionId, status) {
+        trail.push(`status:${status}`);
+      },
+    };
+
+    await runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, recording);
+
+    expect(trail.slice(0, 3)).toEqual(['execution_started', 'status:running', 'node_started']);
+    expect(trail.at(-1)).toBe('status:completed');
+  });
+
+  it('a failing running write at start does not cost the run', async () => {
+    const runner = makeRunner();
+    const events = makeEvents(undefined, { status: 'running', message: 'db down' });
+
+    const outcome = await runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+    );
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['A', 'B']);
+    expect(events.statuses.map((entry) => entry.status)).toEqual(['running', 'completed']);
+  });
+});
+
 describe('runGraph — node_started payload', () => {
   it('records the node config and the ids of the outputs visible at start', async () => {
     const runner = makeRunner({ A: { output: 'a-result' } });
@@ -1860,7 +1896,7 @@ describe('runGraph — waiting results', () => {
     expect(runner.callOrder).toEqual(['A']);
     // No node_failed for the gate, and B is never-reached rather than skipped.
     expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'node_started', 'execution_failed']);
-    expect(events.statuses).toEqual([{ status: 'failed', errorMessage: message }]);
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'failed', errorMessage: message }]);
   });
 
   it('parks a single gate, resumes it on the verdict, and downstream sees the verdict output', async () => {
@@ -1872,7 +1908,7 @@ describe('runGraph — waiting results', () => {
 
     expect(runner.parkedIds()).toEqual(['A']);
     expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'node_started', 'node_waiting']);
-    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'waiting' }]);
     expect(runner.callOrder).toEqual(['A']);
 
     runner.resolveGate('A', { output: 'approved' });
@@ -1890,7 +1926,12 @@ describe('runGraph — waiting results', () => {
       'node_completed',
       'execution_completed',
     ]);
-    expect(events.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed' }]);
+    expect(events.statuses).toEqual([
+      { status: 'running' },
+      { status: 'waiting' },
+      { status: 'running' },
+      { status: 'completed' },
+    ]);
   });
 
   it('routes the verdict through nextPort like any completion', async () => {
@@ -1931,12 +1972,12 @@ describe('runGraph — waiting results', () => {
     expect(runner.parkedIds().sort()).toEqual(['B', 'C']);
     const waitingNodes = events.events.filter((event) => event.type === 'node_waiting').map((event) => event.nodeId);
     expect(waitingNodes.sort()).toEqual(['B', 'C']);
-    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'waiting' }]);
 
     runner.resolveGate('C', { output: 'c-verdict' });
     await flush();
     expect(runner.callOrder).toEqual(['A', 'B', 'C']);
-    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'waiting' }]);
 
     runner.resolveGate('B', { output: 'b-verdict' });
     const outcome = await run;
@@ -1944,7 +1985,12 @@ describe('runGraph — waiting results', () => {
     expect(outcome).toEqual({ status: 'completed' });
     expect(runner.callOrder.filter((id) => id === 'D')).toHaveLength(1);
     expect(runner.contexts.D).toEqual({ A: 'out-A', B: 'b-verdict', C: 'c-verdict' });
-    expect(events.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed' }]);
+    expect(events.statuses).toEqual([
+      { status: 'running' },
+      { status: 'waiting' },
+      { status: 'running' },
+      { status: 'completed' },
+    ]);
   });
 
   it('parks and resumes even when the waiting status write fails', async () => {
@@ -1959,7 +2005,7 @@ describe('runGraph — waiting results', () => {
     expect(outcome).toEqual({ status: 'completed' });
     expect(runner.callOrder).toEqual(['A', 'B']);
     // The failed write was attempted, absorbed, and the counter still reached zero.
-    expect(events.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(events.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   });
 
   it('a delivered verdict survives a failing running status write', async () => {
@@ -1996,7 +2042,7 @@ describe('runGraph — waiting results', () => {
     await flush();
 
     expect(events.events.map((event) => event.type)).toContain('node_failed');
-    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'waiting' }]);
 
     runner.resolveGate('B', { output: 'approved' });
     const outcome = await run;
@@ -2007,6 +2053,7 @@ describe('runGraph — waiting results', () => {
     expect(types.at(-1)).toBe('execution_failed');
     expect(types.indexOf('node_completed')).toBeLessThan(types.indexOf('execution_failed'));
     expect(events.statuses).toEqual([
+      { status: 'running' },
       { status: 'waiting' },
       { status: 'running' },
       { status: 'failed', errorMessage: 'boom' },
@@ -2080,8 +2127,8 @@ describe('runGraph — waiting results', () => {
       'node_waiting',
       'node_failed',
     ]);
-    // The park never counted, so no waiting/running pair was written.
-    expect(events.statuses).toEqual([{ status: 'completed' }]);
+    // The park never counted, so no waiting/running pair follows the start's running.
+    expect(events.statuses).toEqual([{ status: 'running' }, { status: 'completed' }]);
     // Known gap (durable-pause decision log): the registration outlives the failed node.
     expect(runner.parkedIds()).toEqual(['A']);
   });

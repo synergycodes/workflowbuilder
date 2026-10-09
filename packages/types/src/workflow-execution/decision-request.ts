@@ -108,6 +108,9 @@ export type DecisionRequest = {
    * decision always names one node to judge.
    */
   proposalSourceNodeId?: string;
-  /** Absent means the node waits forever. */
+  /**
+   * Absent means the node waits forever. The reference backend refuses one at publish and execute until a
+   * timer enforces it.
+   */
   deadline?: DecisionDeadline;
 };
