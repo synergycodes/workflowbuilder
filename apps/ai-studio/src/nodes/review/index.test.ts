@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
 
 import { reviewNodeType, reviewPaletteItem } from '.';
+import { HumanDecisionNodeTemplate } from '../../components/human-decision/node-template/human-decision-template';
+import { nodeTemplates } from '../../data/node-templates';
 import { aiStudioNodeTypes } from '../../data/node-types';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../human-decision';
 import { defaultPropertiesData } from './default-properties-data';
@@ -23,5 +25,9 @@ describe('reviewPaletteItem', () => {
     expect(reviewPaletteItem.label).toBe('Review');
     expect(reviewPaletteItem.description).toBe('Approve, escalate or reject');
     expect(reviewPaletteItem.icon).toBe('Scales');
+  });
+
+  it('is drawn by the Human decision template, under the type a template node and a dropped node carry', () => {
+    expect(nodeTemplates[reviewNodeType]).toBe(HumanDecisionNodeTemplate);
   });
 });
