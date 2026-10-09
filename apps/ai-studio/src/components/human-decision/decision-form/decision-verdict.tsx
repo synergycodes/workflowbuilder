@@ -10,13 +10,14 @@ import { ActionDialog } from './action-dialog';
 type Props = {
   actions: OfferedActions;
   reason: string;
-  comment: string;
+  /** By the resume action's name. */
+  comments: Record<string, string>;
   isResumeBlocked: boolean;
   isBusy: boolean;
   isAccepted: boolean;
   message: string | undefined;
   onReasonChange: (reason: string) => void;
-  onCommentChange: (comment: string) => void;
+  onCommentChange: (name: string, comment: string) => void;
   onResume: (resume: ResumeOffer, comment?: string) => void;
   onReject: () => void;
 };
@@ -29,7 +30,7 @@ type Props = {
 export function DecisionVerdict({
   actions: { resumes, reject },
   reason,
-  comment,
+  comments,
   isResumeBlocked,
   isBusy,
   isAccepted,
@@ -115,12 +116,12 @@ export function DecisionVerdict({
           confirmLabel={`Confirm ${resume.label}`}
           confirmVariant="primary"
           isConfirmBlocked={isBusy || isResumeBlocked}
-          text={comment}
-          onTextChange={onCommentChange}
+          text={comments[resume.name] ?? ''}
+          onTextChange={(next) => onCommentChange(resume.name, next)}
           onCancel={close}
           onConfirm={() => {
             close();
-            onResume(resume, comment);
+            onResume(resume, comments[resume.name] ?? '');
           }}
         />
       ))}
