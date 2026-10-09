@@ -36,7 +36,7 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
   const [isResumeBlocked, setIsResumeBlocked] = useState(false);
   const { isBusy, isAccepted, message, submit } = useDecisionSubmit(wait);
   const reason = draft?.reason ?? '';
-  const comment = draft?.comment ?? '';
+  const comments = draft?.comments ?? {};
 
   // Decide asks for it, whether this form is about to mount or already shows.
   useEffect(() => {
@@ -80,13 +80,13 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
       <DecisionVerdict
         actions={actions}
         reason={reason}
-        comment={comment}
+        comments={comments}
         isResumeBlocked={isResumeBlocked}
         isBusy={isBusy}
         isAccepted={isAccepted}
         message={message}
         onReasonChange={(next) => saveDraft({ reason: next })}
-        onCommentChange={(next) => saveDraft({ comment: next })}
+        onCommentChange={(name, next) => saveDraft({ comments: { ...comments, [name]: next } })}
         onResume={resume}
         onReject={() => actions.reject && void submit({ action: actions.reject.name, reason })}
       />
