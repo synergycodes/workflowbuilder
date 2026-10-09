@@ -23,8 +23,8 @@ import { mapResolveNodeError } from './resolve-node-result';
 const DEFAULT_RESOLVE_TIMEOUT_MS = 10_000;
 
 export type TemporalWorkflowEngineOptions = {
-  // A ready client, or a factory awaited once on first use. The factory form keeps
-  // process start independent of Temporal being reachable.
+  // A ready client, or a factory awaited on first use and again after a failed attempt.
+  // The factory form keeps process start independent of Temporal being reachable.
   client: Client | (() => Promise<Client>);
   // Must match the queue the worker serves — default on both sides is DEFAULT_TASK_QUEUE.
   taskQueue?: string;
@@ -91,8 +91,14 @@ export class TemporalWorkflowEngine<TNode extends BaseNode = BaseNode> implement
 
   private client(): Promise<Client> {
     if (!this.clientPromise) {
-      this.clientPromise =
+      const attempt =
         typeof this.clientSource === 'function' ? this.clientSource() : Promise.resolve(this.clientSource);
+      // Kept, a failed connect would answer every later call with its old error until restart.
+      const pending = attempt.catch((error: unknown) => {
+        if (this.clientPromise === pending) this.clientPromise = undefined;
+        throw error;
+      });
+      this.clientPromise = pending;
     }
     return this.clientPromise;
   }

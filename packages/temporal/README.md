@@ -124,7 +124,7 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
   // A ready Client, or a factory awaited on first use so process start does not
-  // depend on Temporal being reachable.
+  // depend on Temporal being reachable. A failed attempt is retried on the next call.
   client: async () => new Client({ connection: await Connection.connect({ address }) }),
 });
 
