@@ -94,9 +94,9 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_completed',
-    statuses: ['completed'],
+    statuses: ['running', 'completed'],
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
-    expectedActivities: { executeNode: 4, emitEvent: 10, updateStatus: 1 },
+    expectedActivities: { executeNode: 4, emitEvent: 10, updateStatus: 2 },
     nodeEvents: {
       start: ['node_started', 'node_completed'],
       left: ['node_started', 'node_completed'],
@@ -125,10 +125,10 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_failed',
-    statuses: ['failed'],
+    statuses: ['running', 'failed'],
     terminalErrorMessage: 'fails on purpose',
     closeAttributes: 'workflowExecutionFailedEventAttributes',
-    expectedActivities: { executeNode: 3, emitEvent: 8, updateStatus: 1 },
+    expectedActivities: { executeNode: 3, emitEvent: 8, updateStatus: 2 },
     // join is never reached under the fail policy, so it owes no event at all.
     nodeEvents: {
       start: ['node_started', 'node_completed'],
@@ -155,9 +155,9 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       ],
     },
     terminalEvent: 'execution_incomplete',
-    statuses: ['incomplete'],
+    statuses: ['running', 'incomplete'],
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
-    expectedActivities: { executeNode: 2, emitEvent: 7, updateStatus: 1 },
+    expectedActivities: { executeNode: 2, emitEvent: 7, updateStatus: 2 },
     nodeEvents: {
       start: ['node_started', 'node_completed'],
       route: ['node_started', 'node_completed'],
@@ -178,9 +178,9 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
       edges: [{ id: 'e-start-block', sourceNodeId: 'start', targetNodeId: 'block' }],
     },
     terminalEvent: 'execution_cancelled',
-    statuses: ['cancelled'],
+    statuses: ['running', 'cancelled'],
     closeAttributes: 'workflowExecutionCanceledEventAttributes',
-    expectedActivities: { executeNode: 2, emitEvent: 5, updateStatus: 1 },
+    expectedActivities: { executeNode: 2, emitEvent: 5, updateStatus: 2 },
     // block is cancelled in flight, so it starts and never completes.
     nodeEvents: { start: ['node_started', 'node_completed'], block: ['node_started'] },
     stage: () => {
@@ -216,10 +216,10 @@ export const REPLAY_SCENARIOS: ReplayScenario[] = [
     name: 'parked-decision',
     graph: SINGLE_GATE_GRAPH,
     terminalEvent: 'execution_completed',
-    statuses: ['waiting', 'running', 'completed'],
+    statuses: ['running', 'waiting', 'running', 'completed'],
     closeAttributes: 'workflowExecutionCompletedEventAttributes',
     // The usual pair per node plus one node_waiting; one status write per transition.
-    expectedActivities: { executeNode: 3, emitEvent: 9, updateStatus: 3 },
+    expectedActivities: { executeNode: 3, emitEvent: 9, updateStatus: 4 },
     nodeEvents: {
       start: ['node_started', 'node_completed'],
       gate: ['node_started', 'node_waiting', 'node_completed'],

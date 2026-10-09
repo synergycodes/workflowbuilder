@@ -98,7 +98,10 @@ describe('durable pause', () => {
 
     // Worker 1 is gone; the run is parked in Event History, visible only as state.
     expect(harness.executed).toEqual(['start', 'gate']);
-    expect(store.statuses).toEqual([{ status: 'waiting', errorMessage: undefined }]);
+    expect(store.statuses).toEqual([
+      { status: 'running', errorMessage: undefined },
+      { status: 'waiting', errorMessage: undefined },
+    ]);
 
     const worker2 = await createWorker(taskQueue, store, harness);
     await worker2.runUntil(async () => {
@@ -111,7 +114,7 @@ describe('durable pause', () => {
     expect(harness.inputsSeen.after.gate).toBe('approved');
     expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
     expect(store.events.at(-1)?.type).toBe('execution_completed');
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   }, 120_000);
 
   it('two gates park concurrently, take verdicts independently, and a duplicate verdict is rejected', async () => {
@@ -139,7 +142,7 @@ describe('durable pause', () => {
     expect(harness.inputsSeen.join['gate-a']).toBe('first');
     expect(harness.inputsSeen.join['gate-b']).toBe('b-verdict');
     expect(harness.executed.filter((id) => id === 'join')).toHaveLength(1);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   }, 120_000);
 
   it('rejects malformed and misaddressed verdicts before acceptance; the parked run stays resolvable', async () => {
@@ -178,7 +181,7 @@ describe('durable pause', () => {
     });
 
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
 
     // The same error class would also come back from an accepted handler that threw
     // later; only history shows the rejections happened before acceptance.
@@ -208,7 +211,7 @@ describe('durable pause', () => {
     // The activity context crosses the same converter, so downstream sees no `gate` key at all.
     expect(harness.inputsSeen.after).toEqual({ start: { visited: 'start' } });
     expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   }, 120_000);
 
   it('rejects a verdict before the node parks, and accepts one the instant node_waiting is announced', async () => {
@@ -236,8 +239,8 @@ describe('durable pause', () => {
         await handle.executeUpdate(resolveNodeUpdate, {
           args: [{ nodeId: 'gate', resolution: { output: 'approved' } }],
         });
-        // Accepted while the announcing activity is still in flight: the status write comes after it.
-        expect(store.statuses).toEqual([]);
+        // Accepted while the announcing activity is still in flight: the waiting write comes after it.
+        expect(store.statuses.map((entry) => entry.status)).toEqual(['running']);
       } finally {
         harness.release();
         announcement.release();
@@ -249,7 +252,7 @@ describe('durable pause', () => {
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
     expect(harness.inputsSeen.after.gate).toBe('approved');
     expect(eventTypes(store, 'gate')).toEqual(['node_started', 'node_waiting', 'node_completed']);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
     expect(acceptedUpdateIds(await handle.fetchHistory())).not.toContain('verdict-before-parking');
   }, 120_000);
 
@@ -281,7 +284,7 @@ describe('durable pause', () => {
     expect(types.at(-1)).toBe('execution_cancelled');
     expect(types.indexOf('node_waiting')).toBeLessThan(types.indexOf('execution_cancelled'));
     expect(types).not.toContain('node_failed');
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'cancelled']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'cancelled']);
   }, 120_000);
 
   it('a verdict carrying an outcome closes the run completed and records it, even on an unrouted port', async () => {
@@ -310,7 +313,12 @@ describe('durable pause', () => {
       nodeId: undefined,
       payload: { outcome: { ...outcome, nodeId: 'gate' } },
     });
-    expect(store.statuses).toEqual([{ status: 'waiting' }, { status: 'running' }, { status: 'completed', outcome }]);
+    expect(store.statuses).toEqual([
+      { status: 'running' },
+      { status: 'waiting' },
+      { status: 'running' },
+      { status: 'completed', outcome },
+    ]);
   }, 120_000);
 
   it('the same verdict without an outcome still ends the run incomplete', async () => {
@@ -334,7 +342,7 @@ describe('durable pause', () => {
       type: 'execution_incomplete',
       payload: { deadEnds: [{ nodeId: 'gate', port: 'rejected' }] },
     });
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'incomplete']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'incomplete']);
     expect(store.statuses.at(-1)?.outcome).toBeUndefined();
   }, 120_000);
 });

@@ -10,8 +10,8 @@ between releases at all.
 does three separate things with what came back:
 
 1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
-   `emitEvent` per emitted event, one `updateStatus` per status write (the terminal one; a
-   parked run adds the `waiting` and `running` writes). An extra activity anywhere in
+   `emitEvent` per emitted event, one `updateStatus` per status write (`running` at the start
+   and the terminal one; a parked run adds `waiting` and a second `running`). An extra activity anywhere in
    `runGraph` moves one of those numbers.
 2. **Replays the history it just recorded.** Same code, same history — proves the run is
    reproducible under Temporal's own replayer, not only under the re-execution harness in
@@ -111,10 +111,12 @@ this way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Published recordings**: since 0.1.0, a red replay is a compatibility break with runs that may be
+**Published recordings**: a red replay is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or
-declare a major with a note to drain in-flight runs first. Do not re-record: that throws
-away the only evidence of what the published version actually did.
+declare a major with a note to drain in-flight runs first; before 1.0 a minor may carry
+that note instead. Do not re-record: that throws away the only evidence of what the
+published version actually did. A release that breaks replay on purpose removes the sets it
+no longer replays in the same change, and its release notes name them.
 
 **The remaining pre-release recording**, `v0-parked-decision.json`, guards a path that has
 not shipped. A red replay is a design signal: read the change first, and if the new command
