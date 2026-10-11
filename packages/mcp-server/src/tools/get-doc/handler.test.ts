@@ -1,4 +1,6 @@
-import { buildFixtureCorpus } from '../../__fixtures__/fixtures.js';
+import path from 'node:path';
+
+import { FIXTURE_PACKAGES_ROOT, buildFixtureCorpus } from '../../__fixtures__/fixtures.js';
 import { budget as defaultBudget } from '../../config/budget.js';
 import { DocsEngine } from '../../docs/docs-search.js';
 import { createGetDocHandler } from './handler.js';
@@ -48,6 +50,16 @@ describe('get_doc', () => {
     expect(output.url).toBe('https://www.workflowbuilder.io/docs/guides/basic/#media');
     expect(output.content.startsWith('## Media')).toBe(true);
     expect(output.content).not.toContain('## Install');
+    expect(output.sections?.map((entry) => entry.id)).toEqual(['guides/basic#install', 'guides/basic#duplicate']);
+  });
+
+  it('lists the other sections of a README page with a section', async () => {
+    const readmes = await buildFixtureCorpus({
+      packageDocs: [{ name: 'sdk', root: path.join(FIXTURE_PACKAGES_ROOT, 'sdk'), title: '@workflowbuilder/sdk' }],
+    });
+    const output = (await createGetDocHandler(readmes.docs)({ id: 'readme/sdk#install' })) as Output;
+    expect(output.id).toBe('readme/sdk#install');
+    expect(output.sections).toEqual([{ id: 'readme/sdk#worker-zebrafruit-setup', title: 'Worker zebrafruit setup' }]);
   });
 
   it('accepts links, urls, extensions and chunk ids', async () => {

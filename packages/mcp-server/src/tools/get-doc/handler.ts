@@ -1,10 +1,10 @@
 import { type BudgetConfig, budget as defaultBudget } from '../../config/budget.js';
 import { INTRO_ANCHOR, normalizeDocRef, pageUrl, splitSectionId } from '../../docs/doc-ids.js';
 import type { DocsEngine } from '../../docs/docs-search.js';
-import type { DocPage, DocSection } from '../../docs/types.js';
 import { estimateTokens } from '../../search/tokens.js';
 import { truncateToTokens } from '../../search/truncate.js';
 import type { SymbolEngine } from '../../symbols/symbol-search.js';
+import { pageOutline } from '../page-outline.js';
 import { parseInput } from '../parse-input.js';
 import type { ToolHandler } from '../types.js';
 import { GetDocInputSchema } from './tool.validator.js';
@@ -46,14 +46,6 @@ function apiReferenceError(pageId: string, symbols: SymbolEngine | undefined): s
   return `"${pageId}" is an API reference page, not a document. Use get_symbol with the symbol name "${name}", or search_symbols.`;
 }
 
-function sectionList(docs: DocsEngine, page: DocPage) {
-  return page.sectionIds
-    .map((sectionId) => docs.sections.get(sectionId))
-    .filter((candidate): candidate is DocSection => candidate !== undefined && candidate.anchor !== INTRO_ANCHOR)
-    .filter((candidate) => hasBody(candidate))
-    .map((candidate) => ({ id: candidate.id, title: candidate.title }));
-}
-
 export function createGetDocHandler(
   docs: DocsEngine,
   budget: BudgetConfig = defaultBudget,
@@ -85,11 +77,14 @@ export function createGetDocHandler(
       content: section ? section.content : page.content,
       truncated: false,
     };
+    // A section carries the page's other sections so a sibling is not mistaken for missing documentation.
+    const sections = pageOutline(docs, page).filter((entry) => entry.id !== section?.id);
+    if (section && sections.length > 0) output.sections = sections;
     if (fits(output)) return output;
 
     // Over the cap: a page keeps its intro and lists its sections; a section is cut where the cap falls.
     output.truncated = true;
-    output.sections = sectionList(docs, page);
+    output.sections = sections;
     const intro = section ? undefined : docs.sections.get(page.sectionIds[0] ?? '');
     const body = section ? section.content : intro?.anchor === INTRO_ANCHOR ? intro.content : '';
     const overhead = estimateTokens(JSON.stringify({ ...output, content: '' }));
@@ -101,9 +96,4 @@ export function createGetDocHandler(
     }
     return output;
   };
-}
-
-// A section that is only its heading would send the agent on a fetch with nothing to read.
-function hasBody(section: DocSection) {
-  return section.content.trim().split(/\r?\n/).length > 1;
 }

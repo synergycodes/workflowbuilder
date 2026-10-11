@@ -11,6 +11,8 @@
 | `search_symbols` | Search exports and their members. Filters: `package` (`sdk`, `ui`, `temporal`) and `kind`.          |
 | `get_symbol`     | Signature, JSDoc, members and a ready import statement for `sdk:Name`, `sdk:Name.member` or a name. |
 
+A `search_docs` hit is one section, not the page. For the pages of the top three hits the response adds `otherSections`, e.g. `{"readme/temporal":["worker","client","+2 more"]}`: the anchors of that page's sections no hit covers (at most 8 per page). `get_doc` with a section id (`page#anchor`) adds `sections`, the page's other sections as `{id, title}`; `get_doc` with the page id returns the whole page. Both also apply to `readme/<package>` pages.
+
 Responses are compact JSON in a single text item. Errors use `isError: true` with `{"error": "..."}`.
 
 ## Build and run

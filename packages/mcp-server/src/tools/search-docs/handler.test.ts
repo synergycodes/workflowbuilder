@@ -1,6 +1,6 @@
 import { buildFixtureCorpus } from '../../__fixtures__/fixtures.js';
 import { budget as defaultBudget } from '../../config/budget.js';
-import type { DocsHit } from '../../docs/docs-search.js';
+import type { DocsEngine, DocsHit } from '../../docs/docs-search.js';
 import { estimateTokens } from '../../search/tokens.js';
 import { createSearchDocsHandler, formatSearchDocs } from './handler.js';
 
@@ -13,6 +13,31 @@ describe('search_docs', () => {
     expect(output.results.length).toBeGreaterThan(0);
     expect(Object.keys(output.results[0]).sort()).toEqual(['content', 'id', 'section', 'title', 'url']);
     expect(output.results[0].id).toMatch(/^guides\/basic#/);
+  });
+
+  it('lists the sections of a hit page that no hit covers, once per page', async () => {
+    const output = (await handler({ query: 'Duplicate Same', limit: 1 })) as {
+      results: { id: string }[];
+      otherSections?: Record<string, string[]>;
+    };
+    const [pageId, anchor] = output.results[0].id.split('#');
+    expect(Object.keys(output.otherSections ?? {})).toEqual([pageId]);
+    expect(output.otherSections?.[pageId]).toContain('media');
+    expect(output.otherSections?.[pageId]).not.toContain(anchor.replace(/~\d+$/, ''));
+  });
+
+  it('caps the other sections per page and marks the rest', () => {
+    const sectionIds = Array.from({ length: 12 }, (_, index) => `p#s${index}`);
+    const sections = sectionIds.map((id) => ({ id, anchor: id.slice(2), content: '## t\n\nbody' }));
+    const engine = {
+      pages: new Map([['p', { sectionIds }]]),
+      sections: new Map(sections.map((section) => [section.id, section])),
+    } as unknown as DocsEngine;
+    const { otherSections } = formatSearchDocs([chunk(1, 100)], 5, defaultBudget, undefined, engine) as {
+      otherSections: Record<string, string[]>;
+    };
+    expect(otherSections.p).toHaveLength(9);
+    expect(otherSections.p.at(-1)).toBe('+4 more');
   });
 
   it('explains an empty result list', async () => {
