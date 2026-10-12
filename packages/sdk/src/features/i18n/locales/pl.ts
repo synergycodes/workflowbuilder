@@ -164,6 +164,13 @@ export const pl = {
     addBranch: 'Dodaj rozgałęzienie',
     label: 'Tytuł',
   },
+  variablesList: {
+    variable: 'Zmienna',
+    variableIndex: 'Zmienna nr {{index}}',
+    addVariable: 'Dodaj zmienną',
+    addFromPrevious: 'Dodaj z poprzedniego',
+    label: 'Etykieta',
+  },
   conditions: {
     add: 'Dodaj warunek',
     title: 'Edytor Warunków',

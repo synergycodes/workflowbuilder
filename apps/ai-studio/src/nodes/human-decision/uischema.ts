@@ -15,6 +15,12 @@ export const uischema: UISchema = {
       label: 'Title',
       placeholder: 'Node Title...',
     },
+    {
+      type: 'VariablesList',
+      scope: scope('properties.editableFields'),
+      label: 'Task editable values',
+      variablesTypes: ['string', 'number', 'datetime', 'date', 'boolean'],
+    },
     // Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     {
       type: 'DecisionFields',

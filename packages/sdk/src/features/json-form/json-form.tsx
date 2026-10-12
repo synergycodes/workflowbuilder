@@ -19,6 +19,7 @@ import { textControlRenderer } from './controls/text-control/text-control';
 import { variableDynamicControlRenderer } from './controls/variable-dynamic-control/variable-dynamic-control';
 import { variableTextAreaControlRenderer } from './controls/variable-text-area-control/variable-text-area-control';
 import { variableTextControlRenderer } from './controls/variable-text-control/variable-text-control';
+import { variablesListControlRenderer } from './controls/variables-list-control/variables-list-control';
 import { getCustomCells, getCustomRenderers } from './extension-registry';
 import { accordionLayoutRenderer } from './layouts/accordion-layout/accordion-layout';
 import { groupLayoutRenderer } from './layouts/group-layout/group-layout';
@@ -73,5 +74,6 @@ const builtinRenderers: JsonFormsRendererRegistryEntry[] = [
   variableDynamicControlRenderer,
   variableTextControlRenderer,
   variableTextAreaControlRenderer,
+  variablesListControlRenderer,
   messageOnErrorControlRenderer,
 ];
