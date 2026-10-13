@@ -36,13 +36,19 @@ A backend that only starts and cancels runs uses `@temporalio/client` at run tim
 
 ```ts
 import { NativeConnection, Worker } from '@temporalio/worker';
-import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
+import { type BaseNode, WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
 import { fileURLToPath } from 'node:url';
 
-const plugin = new WorkflowBuilderPlugin({
+// One variant per node type in your editor's palette. `type` is the key of its executor.
+type HttpRequestNode = BaseNode & { type: 'my-app/http-request'; config: { url: string } };
+type DecisionNode = BaseNode & { type: 'my-app/decision'; config: { branches: { sourceHandle: string }[] } };
+type MyNode = HttpRequestNode | DecisionNode;
+
+const plugin = new WorkflowBuilderPlugin<MyNode>({
   // One executor per node type. Whatever your nodes do lives here.
   executors: {
     'my-app/http-request': async (node, context) => ({ output: await callApi(node.config, context) }),
+    // A branching node also returns `nextPort`: the `sourceHandle` of the edge to follow.
     'my-app/decision': (node, context) => ({ output: null, nextPort: pickBranch(node, context) }),
   },
   // Where execution events and status transitions land.
@@ -65,6 +71,8 @@ const worker = await Worker.create({
 
 await worker.run();
 ```
+
+Pass your node union as the plugin's type parameter. Without it every executor's `node` is `never`, because the registry is keyed by the literal `type` of each variant. With it, TypeScript refuses to compile until every node type has an executor.
 
 ### workflows.ts
 
