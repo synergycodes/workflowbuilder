@@ -1,0 +1,277 @@
+---
+title: Using Workflow Builder with Temporal
+description: Run diagrams drawn in Workflow Builder as durable Temporal Workflow Executions with the @workflowbuilder/temporal plugin.
+sidebar:
+  label: Run on Temporal
+  order: 6
+---
+
+import { Steps } from '@astrojs/starlight/components';
+import { Image } from 'astro:assets';
+
+import architectureImg from '@/assets/temporal/architecture.svg';
+import editorRunImg from '@/assets/temporal/editor-run.png';
+import eventHistoryImg from '@/assets/temporal/temporal-ui-event-history.png';
+
+[Temporal](https://temporal.io) is a durable execution platform that saves every step of a run in Event History, so the diagram you run survives crashes. It also retries failed nodes automatically. This guide shows how to run your diagrams this way with the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin for the Temporal TypeScript SDK.
+
+## How Workflow Builder works with Temporal
+
+Running a diagram on Temporal involves five parts, and you own four of them.
+
+<Image
+  src={architectureImg}
+  alt="Editor, your server, Temporal Service, your Worker with the plugin and your store, connected left to right"
+/>
+
+Your editor draws the diagram and sends it to your server, which turns it into a definition and starts a run. The Temporal Service, the only part you do not own, keeps the state of the run and its Event History. Your Worker picks up each node from Temporal, runs your code for it through the plugin, and writes run events and statuses to your store, where your app can read them. Node code never runs inside Temporal, and the editor never talks to it. You need the editor and a Temporal Service before you start.
+
+## Prerequisites
+
+Before you start, set up the editor, a Node.js project for your own code and a Temporal Service to run against.
+
+- **Editor:** an app with the Workflow Builder SDK, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
+- **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your server and Worker. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
+- **Temporal Service:** the [Temporal CLI](https://docs.temporal.io/cli/setup-cli) for local work, or any Temporal Service.
+
+## Setup
+
+Everything installs in your Node.js project with one command, and the editor app needs nothing new.
+
+```bash
+npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
+```
+
+The `@temporalio/*` packages are peers of the plugin and must all be one version, otherwise the Worker breaks at run time, not at install.
+
+## Your Worker
+
+The Worker polls Temporal for tasks and runs your node code. It needs the plugin's Workflow, one executor per node type and a store for run events and statuses.
+
+```ts
+// nodes.ts
+import type { BaseNode } from '@workflowbuilder/temporal';
+
+type Branch = { label: string; sourceHandle: string };
+
+// One variant per node type in your editor's palette.
+type TriggerNode = BaseNode & { type: 'trigger'; config: Record<string, unknown> };
+type ActionNode = BaseNode & { type: 'action'; config: { message: string } };
+type DecisionNode = BaseNode & { type: 'decision'; config: { decisionBranches: Branch[] } };
+export type MyNode = TriggerNode | ActionNode | DecisionNode;
+```
+
+```ts
+// worker.ts
+import { NativeConnection, Worker } from '@temporalio/worker';
+import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
+import { fileURLToPath } from 'node:url';
+
+import type { MyNode } from './nodes';
+
+const plugin = new WorkflowBuilderPlugin<MyNode>({
+  executors: {
+    trigger: (_node, context) => ({ output: context.triggerPayload }),
+    action: (node) => ({ output: { message: node.config.message } }),
+    decision: (node, context) => {
+      // pickBranch is your branching logic, for example evaluating each branch's conditions.
+      const branch = pickBranch(node.config.decisionBranches, context);
+      return { output: { branch: branch.label }, nextPort: branch.sourceHandle };
+    },
+  },
+  store: {
+    async emitExecutionEvent(executionId, sequence, type, payload, nodeId) {
+      /* insert a row */
+    },
+    async updateExecutionStatus(executionId, status, errorMessage, outcome) {
+      /* update the run */
+    },
+  },
+});
+
+const worker = await Worker.create({
+  connection: await NativeConnection.connect({ address: process.env.TEMPORAL_ADDRESS }),
+  taskQueue: plugin.taskQueue,
+  workflowsPath: fileURLToPath(new URL('workflows.ts', import.meta.url)),
+  plugins: [plugin],
+});
+
+await worker.run();
+```
+
+### workflows.ts
+
+The `workflowsPath` above points at a module that has to export the plugin's Workflow, and one line does it. Temporal bundles Workflow code from that one module, so the plugin cannot register its Workflow for you.
+
+```ts
+// workflows.ts
+export { runWorkflow } from '@workflowbuilder/temporal/workflow';
+```
+
+### Executors
+
+An executor is a function that runs one node type, and it is the only place where you write what your nodes do. Executors are keyed by the node `type` from the editor palette (see [Add a custom node](/guides/add-a-custom-node/)), and that key is the only link between the editor and the Worker. Pass your node union to the plugin as its type parameter, and TypeScript refuses to compile until every node type has an executor.
+
+Each executor returns `{ output }`. A branching node also returns `nextPort`, the `sourceHandle` of the edge the run follows. Take it from the node's config and never hardcode it, because the editor generates branch handles. The example's [`evaluate-branches.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/evaluate-branches.ts) shows one way to pick a branch.
+
+### Store
+
+The store is where run events and statuses land, so your app can show them. Implement `emitExecutionEvent` and `updateExecutionStatus` against any database.
+
+## Your server
+
+The server receives the diagram from the editor, turns it into a definition the plugin can run, and starts the run.
+
+```ts
+// server.ts
+import { Client, Connection } from '@temporalio/client';
+import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { randomUUID } from 'node:crypto';
+import { createServer } from 'node:http';
+
+import { toDefinition } from './to-definition';
+
+const engine = new TemporalWorkflowEngine({
+  client: async () => new Client({ connection: await Connection.connect({ address: process.env.TEMPORAL_ADDRESS }) }),
+});
+
+createServer(async (request, response) => {
+  let body = '';
+  for await (const chunk of request) body += chunk;
+
+  const workflowId = 'my-diagram'; // your diagram
+  const executionId = randomUUID(); // one run
+  await engine.submit({
+    workflowId,
+    executionId,
+    definition: toDefinition(JSON.parse(body), workflowId),
+    triggerPayload: {},
+    variables: {},
+    global: {},
+  });
+  response.writeHead(201).end(JSON.stringify({ executionId }));
+}).listen(3210);
+```
+
+### Get the diagram
+
+Your server needs the diagram's nodes and edges. In the editor, [`getStoreDataForIntegration()`](/api/integration/getstoredataforintegration/) returns them, and you send them to the server over any transport you already use. If your backend already saves diagrams (see [Persistence](/get-started/persistence/rest-api/)), the server can load the diagram by `workflowId` instead.
+
+### Map the diagram
+
+The plugin does not know React Flow, so a mapper turns the editor's nodes and edges into a `WorkflowDefinition`. It follows three rules. `type` must match an executor key, `label` becomes the node's Summary in Event History, and exactly one node has `role: 'start'`.
+
+| From the editor                   | To the definition                       |
+| --------------------------------- | --------------------------------------- |
+| node `id`                         | `id`                                    |
+| `data.type`                       | `type`, the executor key                |
+| `data.properties` without `label` | `config`                                |
+| `data.properties.label`           | `label`, the Summary in Event History   |
+| `data.isStartNode`                | `role: 'start'`                         |
+| edge `source`, `target`           | `sourceNodeId`, `targetNodeId`          |
+| edge `sourceHandle`               | `sourceHandle`, what `nextPort` matches |
+
+```ts
+// to-definition.ts
+import type { WorkflowDefinition } from '@workflowbuilder/temporal';
+
+import type { MyNode } from './nodes';
+
+// Diagram is the { nodes, edges } from the editor.
+export function toDefinition(diagram: Diagram, workflowId: string): WorkflowDefinition<MyNode> {
+  return {
+    workflowId,
+    nodes: diagram.nodes.map((node) => {
+      const { label, ...config } = node.data.properties ?? {};
+      return {
+        id: node.id,
+        type: node.data.type,
+        config,
+        label,
+        ...(node.data.isStartNode ? { role: 'start' } : {}),
+      } as MyNode;
+    }),
+    edges: diagram.edges.map((edge) => ({
+      id: edge.id,
+      sourceNodeId: edge.source,
+      targetNodeId: edge.target,
+      sourceHandle: edge.sourceHandle ?? undefined,
+    })),
+  };
+}
+```
+
+A complete version with validation is in the example's [`to-definition.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/to-definition.ts).
+
+### Start the run
+
+`engine.submit` in [`server.ts`](#your-server) starts the run on Temporal. `workflowId` identifies your diagram, and a new `executionId` identifies each run of it. Values in `variables` land in Event History unredacted, so make sure to keep secrets in the Worker's environment.
+
+## Run it
+
+Start the parts in order, run a diagram, and check the result in Temporal UI.
+
+### Run your app
+
+A run started without a polling Worker waits in Temporal UI with no error, so keep this order.
+
+<Steps>
+
+1. Start Temporal with `temporal server start-dev`.
+2. Start your Worker.
+3. Start your server.
+4. Run a diagram from the editor.
+5. Open Temporal UI at `http://localhost:8233`.
+
+</Steps>
+
+### Try the example
+
+If your setup does not behave as expected, compare it with the ready example, a mini project you can download and run.
+
+```bash
+npx degit synergycodes/workflowbuilder/examples/workflow-builder-temporal workflow-builder-temporal
+```
+
+Then start each part in its own terminal, from the `workflow-builder-temporal` folder.
+
+```bash title="Terminal 1: Temporal"
+temporal server start-dev
+```
+
+```bash title="Terminal 2: Worker and server"
+cd worker && npm install && npm start
+```
+
+```bash title="Terminal 3: Editor"
+cd editor && npm install && npm run dev
+```
+
+Open the editor and click **Run on Temporal**. Nodes light up as Temporal runs them, and the branch not taken turns grey. The **Temporal UI** link next to the button opens the run.
+
+<Image
+  src={editorRunImg}
+  alt="A finished run in the example editor: green on every executed node, grey on the skipped branch"
+/>
+
+### What you see in Temporal UI
+
+Temporal UI shows how the diagram maps onto Temporal. The diagram is one Workflow Execution, and each node is an `executeNode` Activity with the node label as its Summary. The `emitEvent` and `updateStatus` Activities between them are the plugin writing to your store. A successful run is Completed, with one `executeNode` Activity per executed node.
+
+<Image
+  src={eventHistoryImg}
+  alt="A completed run's Event History in Compact view: executeNode Activities with node labels as Summary, between emitEvent and updateStatus Activities"
+/>
+
+## Production
+
+Before production, settle where Temporal runs and how to protect the data it stores.
+
+Run against [Temporal Cloud](https://docs.temporal.io/cloud) or a [self-hosted Temporal Service](https://docs.temporal.io/self-hosted-guide). The plugin does not open the connection, so the address, TLS and API key go into `NativeConnection.connect` in your Worker and `Connection.connect` in your server.
+
+Event History stores the inputs of every run, including `variables`, as plain data. To encrypt them, add a [Payload Codec](https://docs.temporal.io/production-deployment/data-encryption).
+
+## Next steps
+
+- [`@workflowbuilder/temporal` README](https://www.npmjs.com/package/@workflowbuilder/temporal): per-node timeouts and retries, failure classification, pausing a run for a human, versioning.
+- [Temporal TypeScript SDK](https://docs.temporal.io/develop/typescript): Workers, Workflows, deployment.

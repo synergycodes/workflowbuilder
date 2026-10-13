@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 900 290" font-family="system-ui, -apple-system, Segoe UI, sans-serif" role="img" aria-labelledby="title">
+  <title id="title">Editor sends the diagram to your server, your server sends a definition to Temporal to start a run, Temporal sends node tasks to your Worker, the Worker returns results and writes run events to your store</title>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,0 L10,5 L0,10 z" fill="#5F5E5A"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="900" height="290" rx="12" fill="#FAFAF8"/>
+
+  <g font-size="14">
+    <rect x="20" y="70" width="150" height="70" rx="8" fill="#E1F5EE" stroke="#0F6E56"/>
+    <text x="95" y="100" text-anchor="middle" font-weight="600" fill="#085041">Editor</text>
+    <text x="95" y="120" text-anchor="middle" font-size="12" fill="#085041">draws the diagram</text>
+
+    <rect x="230" y="70" width="150" height="70" rx="8" fill="#E1F5EE" stroke="#0F6E56"/>
+    <text x="305" y="100" text-anchor="middle" font-weight="600" fill="#085041">Your server</text>
+    <text x="305" y="120" text-anchor="middle" font-size="12" fill="#085041">starts a run</text>
+
+    <rect x="460" y="70" width="160" height="70" rx="8" fill="#EEEDFE" stroke="#534AB7"/>
+    <text x="540" y="100" text-anchor="middle" font-weight="600" fill="#3C3489">Temporal Service</text>
+    <text x="540" y="120" text-anchor="middle" font-size="12" fill="#3C3489">state, Event History</text>
+
+    <rect x="710" y="70" width="170" height="70" rx="8" fill="#E1F5EE" stroke="#0F6E56"/>
+    <text x="795" y="100" text-anchor="middle" font-weight="600" fill="#085041">Your Worker + plugin</text>
+    <text x="795" y="120" text-anchor="middle" font-size="12" fill="#085041">runs node code</text>
+
+    <rect x="710" y="200" width="170" height="70" rx="8" fill="#E1F5EE" stroke="#0F6E56"/>
+    <text x="795" y="230" text-anchor="middle" font-weight="600" fill="#085041">Your store</text>
+    <text x="795" y="250" text-anchor="middle" font-size="12" fill="#085041">run events, statuses</text>
+  </g>
+
+  <g stroke="#5F5E5A" stroke-width="1.5" fill="none" marker-end="url(#arrow)">
+    <line x1="170" y1="105" x2="226" y2="105"/>
+    <line x1="380" y1="105" x2="456" y2="105"/>
+    <line x1="620" y1="90" x2="706" y2="90"/>
+    <line x1="710" y1="122" x2="624" y2="122"/>
+    <line x1="795" y1="140" x2="795" y2="196"/>
+  </g>
+
+  <g font-size="11" fill="#5F5E5A" text-anchor="middle">
+    <text x="200" y="96">diagram</text>
+    <text x="418" y="96">definition</text>
+    <text x="665" y="82">node tasks</text>
+    <text x="665" y="136">results</text>
+    <text x="807" y="173" text-anchor="start">events</text>
+  </g>
+
+  <g font-size="11">
+    <rect x="20" y="22" width="12" height="12" rx="2" fill="#E1F5EE" stroke="#0F6E56"/>
+    <text x="38" y="32" fill="#444441">yours</text>
+    <rect x="90" y="22" width="12" height="12" rx="2" fill="#EEEDFE" stroke="#534AB7"/>
+    <text x="108" y="32" fill="#444441">Temporal</text>
+  </g>
+</svg>
