@@ -7,6 +7,7 @@ export const schema = {
   properties: {
     ...sharedProperties,
     decisionRequest: { type: 'object', properties: {} },
+    readOnlyFields: variableListSchema,
     editableFields: variableListSchema,
   },
   required: ['decisionRequest'],

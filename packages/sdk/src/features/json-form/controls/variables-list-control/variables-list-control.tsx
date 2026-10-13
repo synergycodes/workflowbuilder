@@ -103,8 +103,13 @@ function VariablesListControl(props: VariablesListControlProps) {
             errors={errorsByIndex[index]}
           />
         ))}
-        <Button variant={data.length === 0 ? 'primary' : 'secondary'} size="xs" onClick={onAdd} disabled={!enabled}>
-          <PlusCircle />
+        <Button
+          variant={data.length === 0 ? 'primary' : 'secondary'}
+          size="xs"
+          prefixIcon={<PlusCircle weight="bold" />}
+          onClick={onAdd}
+          disabled={!enabled}
+        >
           {t('variablesList.addVariable')}
         </Button>
       </div>

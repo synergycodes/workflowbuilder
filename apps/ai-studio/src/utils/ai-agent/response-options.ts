@@ -25,10 +25,10 @@ type OutputSchema = typeof refundReviewOutputSchema;
 
 type ResponseOption = 'text' | 'refund-review' | 'custom';
 
-export const responseOptions: SelectItem[] = [
-  { value: 'text', label: 'Plain text' },
+export const responseOptions = [
+  { value: 'text', label: 'Plain text response' },
   { value: 'refund-review', label: 'Structured: refund review' },
-];
+] as const;
 
 // Never chosen, only shown: a schema no preset matches must not read as Plain text.
 export const customResponseOption: SelectItem = { value: 'custom', label: 'Structured: custom schema', disabled: true };

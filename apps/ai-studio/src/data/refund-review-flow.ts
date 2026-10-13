@@ -69,7 +69,7 @@ Read the customer's message. Decide the refund amount under the policy, take the
 message, and draft the reply: the amount refunded, where and when it arrives, and one sentence on
 preventing a repeat. Keep your reasoning about the policy for the team, not for the customer.`,
             webSearch: false,
-            outputSchema: refundReviewOutputSchema,
+            agentType: 'refund-review',
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',
@@ -85,6 +85,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
             label: 'Review Refund',
             description: 'A person approves or rejects it.',
             decisionRequest: refundReviewRequest,
+            readOnlyFields: [],
             editableFields: [],
           },
           type: humanDecisionNodeType,

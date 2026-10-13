@@ -29,5 +29,6 @@ export const defaultPropertiesData: NodeDataProperties<HumanDecisionSchema> = {
   label: 'Human decision',
   description: '',
   decisionRequest: defaultDecisionRequest,
+  readOnlyFields: [],
   editableFields: [],
 };

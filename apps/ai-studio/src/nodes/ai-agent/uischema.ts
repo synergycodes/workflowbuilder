@@ -1,6 +1,7 @@
 import { getScope } from '@workflowbuilder/sdk';
 import type { UISchema } from '@workflowbuilder/sdk';
 
+import { responseOptions } from '../../utils/ai-agent/response-options';
 import type { AiAgentSchema } from './schema';
 
 const scope = getScope<AiAgentSchema>;
@@ -15,6 +16,12 @@ export const uischema: UISchema = {
       placeholder: 'Node Title...',
     },
     {
+      type: 'Select',
+      scope: scope('properties.agentType'),
+      label: 'Agent type',
+      options: responseOptions,
+    },
+    {
       type: 'TextArea',
       scope: scope('properties.systemPrompt'),
       label: 'System Prompt',
@@ -22,12 +29,6 @@ export const uischema: UISchema = {
       minRows: 5,
       maxRows: 14,
     },
-    // The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
-    {
-      type: 'ResponseSelect',
-      scope: scope('properties.outputSchema'),
-      label: 'Response format',
-    } as unknown as UISchema,
     {
       type: 'Switch',
       scope: scope('properties.webSearch'),

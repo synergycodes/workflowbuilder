@@ -1,6 +1,8 @@
 import { sharedProperties } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
+import { responseOptions } from '../../utils/ai-agent/response-options';
+
 export const schema = {
   type: 'object',
   properties: {
@@ -11,8 +13,12 @@ export const schema = {
     webSearch: {
       type: 'boolean',
     },
-    // The JSON Schema asked of the model. Unrelated to the palette item's `outputSchema`, the editor's variables.
-    outputSchema: { type: 'object', properties: {} },
+    agentType: {
+      type: 'string',
+      options: Object.values(responseOptions),
+    },
+    // // The JSON Schema asked of the model. Unrelated to the palette item's `outputSchema`, the editor's variables.
+    // outputSchema: { type: 'object', properties: {} },
   },
 } satisfies NodeSchema;
 

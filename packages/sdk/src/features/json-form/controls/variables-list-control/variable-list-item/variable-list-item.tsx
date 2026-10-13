@@ -93,7 +93,10 @@ export function VariableListItem({
               <span className="sr-only">{t('common.expand')}</span>
             </button>
           )}
-          <button className={clsx('ax-public-h10', styles['title'])} onClick={() => setIsExpanded(!isExpanded)}>
+          <button
+            className={clsx('wb-text-body-s-emphasized', styles['title'])}
+            onClick={() => setIsExpanded(!isExpanded)}
+          >
             <span>{title}</span>
           </button>
           <div className={styles['actions']}>

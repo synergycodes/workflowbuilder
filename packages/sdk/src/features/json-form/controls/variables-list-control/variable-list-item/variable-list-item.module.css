@@ -1,11 +1,18 @@
 :root {
-  --wb-variable-card-padding: 0.5rem;
-  --wb-variable-card-border-radius: 0.5rem;
-  --wb-variable-card-border-width: 0.0625rem;
-  --wb-variable-card-border-color: var(--ax-ui-stroke-secondary-default);
-  --wb-variable-card-gap: 0.75rem;
-  --wb-variable-card-actions-gap: 0.375rem;
-  --wb-variable-card-error-border: var(--ax-colors-red-400-30);
+  --wb-sdk-variable-card-padding: 0.5rem;
+  --wb-sdk-variable-card-border-radius: 0.5rem;
+  --wb-sdk-variable-card-border-width: 0.0625rem;
+  --wb-sdk-variable-card-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-sdk-variable-card-border-color-error: var(--wb-ds-colors-red-400-30);
+  --wb-sdk-variable-card-gap: 0.75rem;
+
+  --wb-sdk-variable-card-actions-gap: 0.375rem;
+  --wb-sdk-variable-card-arrows-border-radius: var(--wb-ds-radius-50);
+  --wb-sdk-variable-card-arrows-background: var(--wb-ds-ui-bg-elevated);
+
+  --wb-sdk-variable-card-title-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-sdk-variable-card-title-color-hover: var(--wb-ds-ui-text-default);
+  --wb-sdk-variable-card-remove-color: var(--wb-ds-ui-icon-critical-default);
 }
 
 .variable-card {
@@ -13,19 +20,19 @@
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  padding: var(--wb-variable-card-padding);
-  gap: var(--wb-variable-card-gap);
-  border-radius: var(--wb-variable-card-border-radius);
-  border: var(--wb-variable-card-border-width) solid var(--wb-variable-card-border-color);
-  max-width: calc(var(--wb-sidebar-expanded-width) - 2rem);
-  transition: gap var(--wb-transition);
+  padding: var(--wb-sdk-variable-card-padding);
+  gap: var(--wb-sdk-variable-card-gap);
+  border-radius: var(--wb-sdk-variable-card-border-radius);
+  border: var(--wb-sdk-variable-card-border-width) solid var(--wb-sdk-variable-card-border-color);
+  max-width: calc(var(--wb-sdk-sidebar-expanded-width) - 2rem);
+  transition: gap var(--wb-public-transition);
 
   &.variable-card--collapsed {
     gap: 0;
   }
 
   &.variable-card--error {
-    border-color: var(--wb-variable-card-error-border);
+    border-color: var(--wb-sdk-variable-card-border-color-error);
   }
 
   > div {
@@ -37,7 +44,7 @@
     flex-direction: column;
     align-items: flex-start;
     width: 100%;
-    gap: var(--wb-variable-card-gap);
+    gap: var(--wb-sdk-variable-card-gap);
 
     > div {
       width: 100%;
@@ -51,13 +58,13 @@
 
     .actions {
       display: flex;
-      gap: var(--wb-variable-card-actions-gap);
+      gap: var(--wb-sdk-variable-card-actions-gap);
     }
 
     .arrows {
       display: flex;
-      border-radius: var(--wb-token-radius-element-4);
-      background: var(--wb-colors-gray-100);
+      border-radius: var(--wb-sdk-variable-card-arrows-border-radius);
+      background: var(--wb-sdk-variable-card-arrows-background);
     }
   }
 }
@@ -74,12 +81,12 @@
   border: none;
   padding: 0;
   width: 100%;
-  color: var(--ax-txt-secondary-default);
-  transition: color var(--wb-transition);
+  color: var(--wb-sdk-variable-card-title-color);
+  transition: color var(--wb-public-transition);
 
   .button-expand:hover ~ &,
   &:hover {
-    color: var(--ax-txt-primary-default);
+    color: var(--wb-sdk-variable-card-title-color-hover);
   }
 
   span {
@@ -94,5 +101,5 @@
 }
 
 .button-remove {
-  color: var(--wb-icon-error-default);
+  color: var(--wb-sdk-variable-card-remove-color);
 }

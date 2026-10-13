@@ -5,7 +5,7 @@ import type { Override } from '../../../../types/utils';
 
 type VariableInListWithReference = { label: string; reference: string; type: VariableType };
 
-export const variableListSchema: FieldSchema = {
+export const variableListSchema = {
   type: 'array',
   items: {
     type: 'object',
@@ -21,7 +21,7 @@ export const variableListSchema: FieldSchema = {
       },
     },
   },
-} as const;
+} satisfies FieldSchema;
 
 export type VariableInList = VariableInListWithReference;
 
