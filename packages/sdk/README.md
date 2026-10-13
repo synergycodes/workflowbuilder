@@ -32,6 +32,10 @@ npm install @workflowbuilder/sdk @xyflow/react zustand
 
 Requires React 18 or 19. Everything else the SDK needs (JsonForms, i18next, immer, …) is a regular dependency and installs automatically. See [Peer dependencies](#peer-dependencies) below.
 
+## Upgrading
+
+Moving from 2.3.0 to 3.0? See the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/).
+
 ## Quick start
 
 ```tsx

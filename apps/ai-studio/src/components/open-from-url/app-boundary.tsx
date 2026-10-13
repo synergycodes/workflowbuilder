@@ -1,0 +1,92 @@
+import clsx from 'clsx';
+import { Component, type ReactNode } from 'react';
+
+import styles from './full-page.module.css';
+
+import { haltSaves } from '../../adapters/save-workflow-draft';
+import { OpenError } from '../../app/open-error';
+
+type Exit = { label: string; href: string };
+
+// Only a run that failed under a workflow link goes back to the workflow. Anything else goes to the local
+// draft, so a workflow draft that throws while drawing cannot send the person back into it.
+function exitFor(error: unknown): Exit {
+  const address = new URL(globalThis.location.href);
+  if (error instanceof OpenError && error.what === 'run' && address.searchParams.has('workflowId')) {
+    address.searchParams.delete('executionId');
+    return { label: 'Open the workflow', href: address.toString() };
+  }
+  return { label: 'Open local draft', href: address.pathname };
+}
+
+// The SDK's localStorage strategy key, named on WorkflowBuilder.Root's integration prop.
+const LOCAL_DRAFT_KEY = 'workflowBuilderDiagram';
+
+// With no id in the address the local draft is what failed to draw, and the SDK may have saved it after the
+// crash, so opening it again fails the same way.
+function isLocalDraftCrash(): boolean {
+  const { searchParams } = new URL(globalThis.location.href);
+  return !searchParams.has('workflowId') && !searchParams.has('executionId');
+}
+
+function discardLocalDraft(): void {
+  try {
+    localStorage.removeItem(LOCAL_DRAFT_KEY);
+  } catch {
+    // storage unavailable
+  }
+  globalThis.location.assign(globalThis.location.pathname);
+}
+
+type State = { failed: boolean; error: unknown };
+
+export class AppBoundary extends Component<{ children: ReactNode }, State> {
+  override state: State = { failed: false, error: undefined };
+
+  static getDerivedStateFromError(error: unknown): State {
+    return { failed: true, error };
+  }
+
+  override componentDidCatch(): void {
+    haltSaves();
+  }
+
+  override render() {
+    if (!this.state.failed) {
+      return this.props.children;
+    }
+
+    const { error } = this.state;
+    const exit = exitFor(error);
+    const mayDiscard = isLocalDraftCrash();
+
+    return (
+      <div className={styles['screen']}>
+        <div className={styles['card']} role="alert">
+          <p>{error instanceof OpenError ? error.message : 'The diagram could not be drawn.'}</p>
+          {error instanceof OpenError && <p>Reload the page to try the link again.</p>}
+          {mayDiscard && (
+            <p>
+              If the local draft is what failed, opening it again fails the same way. Discarding it starts from the
+              template.
+            </p>
+          )}
+          <div className={styles['actions']}>
+            <button className={styles['button']} type="button" onClick={() => globalThis.location.assign(exit.href)}>
+              {exit.label}
+            </button>
+            {mayDiscard && (
+              <button
+                className={clsx(styles['button'], styles['button--secondary'])}
+                type="button"
+                onClick={discardLocalDraft}
+              >
+                Discard local draft
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
+    );
+  }
+}

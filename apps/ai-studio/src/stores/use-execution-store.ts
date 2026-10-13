@@ -61,24 +61,13 @@ const emptyStore: ExecutionStore = {
   decisionFocusRequest: undefined,
 };
 
-type PersistedSlice = Pick<ExecutionStore, 'executionId' | 'streamUrl' | 'status' | 'isLogCollapsed'>;
-
-const persistedSlice = ({ executionId, streamUrl, status, isLogCollapsed }: PersistedSlice): PersistedSlice => ({
-  executionId,
-  streamUrl,
-  status,
-  isLogCollapsed,
-});
-
-const persistedDefaults = persistedSlice(emptyStore);
-
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set(TERMINAL_EXECUTION_STATUSES);
 
-// A lost write costs only the reload, never the live run.
-const bestEffortLocalStorage: StateStorage = {
-  getItem: (name) => bestEffort(() => localStorage.getItem(name)) ?? null,
-  setItem: (name, value) => bestEffort(() => localStorage.setItem(name, value)),
-  removeItem: (name) => bestEffort(() => localStorage.removeItem(name)),
+// Every store write persists, so a storage that throws would break the run; it costs only the log preference.
+const bestEffortSessionStorage: StateStorage = {
+  getItem: (name) => bestEffort(() => sessionStorage.getItem(name)) ?? null,
+  setItem: (name, value) => bestEffort(() => sessionStorage.setItem(name, value)),
+  removeItem: (name) => bestEffort(() => sessionStorage.removeItem(name)),
 };
 
 function bestEffort<T>(action: () => T): T | undefined {
@@ -92,17 +81,9 @@ function bestEffort<T>(action: () => T): T | undefined {
 export const useExecutionStore = create<ExecutionStore>()(
   devtools(
     persist(() => ({ ...emptyStore }), {
-      name: 'ai-studio:execution',
-      version: 1,
-      storage: createJSONStorage(() => bestEffortLocalStorage),
-      // A finished run is dropped on purpose: a reload after one starts on an idle canvas.
-      partialize: (state): PersistedSlice =>
-        !isRunAlive(state.status) || !state.executionId || !state.streamUrl
-          ? { ...persistedDefaults, isLogCollapsed: state.isLogCollapsed }
-          : persistedSlice(state),
-      // Without migrate, zustand answers a version mismatch with a console.error and hydrates none of
-      // the stored state, so the log preference would be lost; the entry lingers until the next write.
-      migrate: (persisted) => ({ ...persistedDefaults, ...(persisted as Partial<PersistedSlice>) }),
+      name: 'ai-studio:execution-log',
+      storage: createJSONStorage(() => bestEffortSessionStorage),
+      partialize: (state) => ({ isLogCollapsed: state.isLogCollapsed }),
     }),
     { name: 'aiStudioExecutionStore' },
   ),
@@ -117,19 +98,20 @@ export function isRunAlive(status: RunStatus): boolean {
   return status !== 'idle' && !TERMINAL_STATUSES.has(status);
 }
 
-export function setExecutionStarted(executionId: string, streamUrl: string) {
-  useExecutionStore.setState({
+/** A run started here opens the log; a run the address reopens keeps the tab's choice. */
+export function setExecutionStarted(executionId: string, streamUrl: string, { keepLogChoice = false } = {}) {
+  useExecutionStore.setState((state) => ({
     executionId,
     status: 'pending',
     streamUrl,
     nodeStates: {},
     events: [],
-    isLogCollapsed: false,
+    isLogCollapsed: keepLogChoice && state.isLogCollapsed,
     isStopRequested: false,
     decisionDrafts: {},
     decisionSends: {},
     decisionFocusRequest: undefined,
-  });
+  }));
 }
 
 // The backend refuses a decision while the run is cancelling, though the replay still shows the node waiting.
@@ -171,7 +153,6 @@ export function applyConnectionLost() {
   useExecutionStore.setState((state) => (isRunAlive(state.status) ? { status: 'disconnected' } : {}));
 }
 
-// Not persisted on purpose: a reload re-derives it from the next Stop.
 export function applyStopRequested() {
   useExecutionStore.setState({ isStopRequested: true });
 }

@@ -5,12 +5,9 @@ name: Release Temporal
 # after merging the version-bump PR (which ran `pnpm release:version <pkg>`). See
 # packages/RELEASE.md (the release flow is shared between all published packages).
 #
-# One-time npm setup: @workflowbuilder/temporal needs its own GitHub Actions trusted
-# publisher registered on npmjs.com pointing at THIS workflow file
-# (.github/workflows/release-temporal.yml). npm only offers that on a package that
-# already exists, so the first version is published by hand and this workflow then
-# only creates the GitHub Release for it: packages/RELEASE.md § "First release
-# of a new package".
+# @workflowbuilder/temporal 0.1.0 is on npm; from 0.2.0 this workflow publishes via OIDC.
+# Its npm Trusted Publisher must point at .github/workflows/release-temporal.yml.
+# See packages/RELEASE.md for the shared release procedure.
 
 on:
   push:
