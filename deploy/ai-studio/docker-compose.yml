@@ -72,6 +72,8 @@ services:
       # ENABLE_WB_LISTING stays unset: the collection routes are off, and the random id is the only secret here
       # only nginx can reach the backend, so X-Forwarded-For is trustworthy
       TRUST_PROXY: 'true'
+      # empty admits no cross-origin caller: the SPA reaches /api on its own origin through nginx
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-}
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
       RATE_LIMIT_EXECUTE_PER_DAY: ${RATE_LIMIT_EXECUTE_PER_DAY:-50}
       # the backend calls the LLM itself for /api/visualize/adapt
