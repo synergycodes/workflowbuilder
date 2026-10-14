@@ -286,7 +286,24 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     }
 
     logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
-    await getWorkflowEngine().cancel(execution.id);
+    const cancelled = await getWorkflowEngine().cancel(execution.id);
+
+    // `started_at` is the worker's first write, so a row without it belongs to a run no worker
+    // ever saw. When the engine has no such run either, nothing is left to write it out of
+    // 'cancelling', and the route closes it. With `started_at` set, 'not found' is a run that
+    // just closed, and the worker's terminal write replaces 'cancelling' on its own.
+    if (cancelled.error !== undefined && execution.startedAt === null) {
+      const now = new Date();
+      const [closed] = await database
+        .update(executions)
+        .set({ status: 'cancelled', finishedAt: now, updatedAt: now })
+        .where(and(eq(executions.id, execution.id), eq(executions.status, 'cancelling')))
+        .returning({ id: executions.id });
+      if (closed) {
+        logger.info('cancelled a run the engine never started', { executionId: execution.id });
+        return c.json({ id: execution.id, status: 'cancelled' });
+      }
+    }
 
     return c.json({ id: execution.id, status: 'cancelling' });
   });

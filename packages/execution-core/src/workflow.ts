@@ -14,9 +14,12 @@ export { NodeExecutionError } from './errors';
 export type { ExecutionContext } from './execution-context';
 
 export type {
+  CancelResult,
   ResolveNodeInput,
   ResolveNodeRejection,
   ResolveNodeResult,
+  SubmitRejection,
+  SubmitResult,
   VerdictRejection,
   WorkflowEnginePort,
   WorkflowExecutionInput,

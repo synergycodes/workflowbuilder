@@ -134,6 +134,8 @@ const fakeWorkflow = {
 beforeEach(() => {
   vi.clearAllMocks();
   getEngineMock.mockReturnValue(engineMock);
+  engineMock.submit.mockResolvedValue({});
+  engineMock.cancel.mockResolvedValue({});
 });
 
 // ---- per-route authorization pins ------------------------------------------
@@ -279,6 +281,89 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 
     expect(insert.values?.tenantId).toBeNull();
     expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
+  });
+});
+
+// ---- a run the engine could not start ----------------------------------------
+//
+// The row is inserted before the engine is asked, so a start the engine knows
+// failed has to close it: no worker will ever write a run that never reached
+// the engine. A start the engine could not confirm must not be closed, because
+// the run may be alive on the engine's side.
+
+function captureExecuteUpdate(): { values?: Record<string, unknown> } {
+  const captured: { values?: Record<string, unknown> } = {};
+  databaseMock.update.mockImplementation(() => ({
+    set: (values: Record<string, unknown>) => {
+      captured.values = values;
+      return chainResolving([{ id: 'e-1' }]);
+    },
+  }));
+  return captured;
+}
+
+function execute(app: ReturnType<typeof buildApp>) {
+  return app.request('/api/workflows/w-1/execute', {
+    method: 'POST',
+    body: JSON.stringify({ sourceVersion: 'draft' }),
+    headers: { 'content-type': 'application/json' },
+  });
+}
+
+describe('createWorkflowsRoutes - execute when the engine cannot start the run', () => {
+  beforeEach(() => {
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+    captureExecuteInsert();
+  });
+
+  it('closes the run as failed and answers 503 execution_start_failed when the engine has no run', async () => {
+    const update = captureExecuteUpdate();
+    engineMock.submit.mockResolvedValueOnce({ error: { code: 'run_not_started', message: 'connect ECONNREFUSED' } });
+
+    const response = await execute(allowAllApp());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      code: 'execution_start_failed',
+      message: 'The run could not be started: connect ECONNREFUSED',
+      executionId: 'e-1',
+    });
+    expect(update.values).toMatchObject({ status: 'failed', errorMessage: 'connect ECONNREFUSED' });
+    expect(update.values?.finishedAt).toBeInstanceOf(Date);
+  });
+
+  it('keeps the run pending, notes the error and answers 503 execution_start_unconfirmed when the engine could not tell', async () => {
+    const update = captureExecuteUpdate();
+    engineMock.submit.mockResolvedValueOnce({ error: { code: 'start_unconfirmed', message: 'deadline exceeded' } });
+
+    const response = await execute(allowAllApp());
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'execution_start_unconfirmed', executionId: 'e-1' });
+    expect(update.values).toMatchObject({ errorMessage: 'deadline exceeded' });
+    expect(update.values).not.toHaveProperty('status');
+    expect(update.values).not.toHaveProperty('finishedAt');
+  });
+
+  it('answers 202 and writes nothing more when the engine has the run', async () => {
+    const update = captureExecuteUpdate();
+    engineMock.submit.mockResolvedValueOnce({});
+
+    const response = await execute(allowAllApp());
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toMatchObject({ executionId: 'e-1', status: 'pending' });
+    expect(update.values).toBeUndefined();
+  });
+
+  it('answers 500 and writes nothing when the engine throws', async () => {
+    const update = captureExecuteUpdate();
+    engineMock.submit.mockRejectedValueOnce(new Error('bug'));
+
+    const response = await execute(allowAllApp());
+
+    expect(response.status).toBe(500);
+    expect(update.values).toBeUndefined();
   });
 });
 

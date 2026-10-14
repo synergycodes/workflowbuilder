@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -234,7 +234,7 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
 
     const definition = mapToExecutionModel(workflowId, snapshotParse.snapshot);
 
-    await getWorkflowEngine().submit({
+    const submitted = await getWorkflowEngine().submit({
       workflowId,
       executionId: execution.id,
       definition,
@@ -242,6 +242,44 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
       variables: {}, // server-side globals (secrets, env) populated here later
       global: {},
     });
+
+    if (submitted.error !== undefined) {
+      const { code, message } = submitted.error;
+      const now = new Date();
+      // The row went in before the engine was asked. Only the worker writes a run out of
+      // 'pending', and it never hears of a run the engine does not have, so the route closes it.
+      if (code === 'run_not_started') {
+        await database
+          .update(executions)
+          .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
+          .where(and(eq(executions.id, execution.id), eq(executions.status, 'pending')));
+        logger.warn('execute did not start', { workflowId, executionId: execution.id, error: message });
+        return c.json(
+          {
+            code: 'execution_start_failed',
+            message: `The run could not be started: ${message}`,
+            executionId: execution.id,
+          },
+          503,
+          { 'Retry-After': '5' },
+        );
+      }
+      // The run may be alive on the engine's side, so the status stays. The note is for whoever
+      // reads the row; a worker's first status write clears it.
+      await database
+        .update(executions)
+        .set({ errorMessage: message, updatedAt: now })
+        .where(and(eq(executions.id, execution.id), eq(executions.status, 'pending')));
+      logger.error('execute start unconfirmed', { workflowId, executionId: execution.id, error: message });
+      return c.json(
+        {
+          code: 'execution_start_unconfirmed',
+          message: `The engine did not confirm the start: ${message}. The run may still begin: watch it, or stop it to close it`,
+          executionId: execution.id,
+        },
+        503,
+      );
+    }
 
     return c.json(
       {

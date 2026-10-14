@@ -128,6 +128,8 @@ const STREAM_PATH = `/api/executions/${EXECUTION_ID}/stream`;
 beforeEach(() => {
   vi.clearAllMocks();
   getEngineMock.mockReturnValue(engineMock);
+  engineMock.submit.mockResolvedValue({});
+  engineMock.cancel.mockResolvedValue({});
 });
 
 // ---- per-route authorization pins ------------------------------------------
@@ -437,6 +439,78 @@ describe('createExecutionsRoutes - cancel enforcement in the UPDATE', () => {
 
     expect(response.status).toBe(409);
     expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+});
+
+// ---- cancel of a run the engine never had ------------------------------------
+//
+// Only the worker writes a run out of 'cancelling', and it only ever hears about
+// runs the engine started. A row without `startedAt` that the engine does not
+// know is one no worker ever saw, so the route has to close it itself.
+
+function captureUpdates(): Record<string, unknown>[] {
+  const sets: Record<string, unknown>[] = [];
+  databaseMock.update.mockImplementation(() => ({
+    set: (values: Record<string, unknown>) => {
+      sets.push(values);
+      return chainResolving([{ id: 'e-1' }]);
+    },
+  }));
+  return sets;
+}
+
+describe('createExecutionsRoutes - cancel when the engine has no run', () => {
+  it('closes a pending run as cancelled', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([pendingExecution]));
+    const updates = captureUpdates();
+    engineMock.cancel.mockResolvedValueOnce({ error: { code: 'run_not_found', message: 'Workflow not found' } });
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id: 'e-1', status: 'cancelled' });
+    expect(updates.map((values) => values.status)).toEqual(['cancelling', 'cancelled']);
+    expect(updates[1]?.finishedAt).toBeInstanceOf(Date);
+  });
+
+  it('closes a run stuck at cancelling from before the engine reported not found', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([{ ...pendingExecution, status: 'cancelling' }]));
+    const updates = captureUpdates();
+    engineMock.cancel.mockResolvedValueOnce({ error: { code: 'run_not_found', message: 'Workflow not found' } });
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(await response.json()).toEqual({ id: 'e-1', status: 'cancelled' });
+    expect(updates.map((values) => values.status)).toEqual(['cancelling', 'cancelled']);
+  });
+
+  it('leaves a run a worker started at cancelling for the worker to close', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...pendingExecution, status: 'running', startedAt: new Date(0) }]),
+    );
+    const updates = captureUpdates();
+    engineMock.cancel.mockResolvedValueOnce({ error: { code: 'run_not_found', message: 'Workflow not found' } });
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toEqual({ id: 'e-1', status: 'cancelling' });
+    expect(updates.map((values) => values.status)).toEqual(['cancelling']);
+  });
+
+  it('does not close a run the engine still has', async () => {
+    const app = buildApp(allowStream());
+    databaseMock.select.mockReturnValue(chainResolving([pendingExecution]));
+    const updates = captureUpdates();
+    engineMock.cancel.mockResolvedValueOnce({});
+
+    const response = await app.request('/api/executions/e-1', { method: 'DELETE' });
+
+    expect(await response.json()).toEqual({ id: 'e-1', status: 'cancelling' });
+    expect(updates.map((values) => values.status)).toEqual(['cancelling']);
   });
 });
 
