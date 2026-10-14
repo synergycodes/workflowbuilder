@@ -137,6 +137,66 @@ point at `./tls` or at a directory outside the checkout, nothing else: the
 whole repository is the image build context, so a key placed in any other
 in-repo directory is copied into the runtime image by a local build.
 
+## Air-gapped install
+
+Only the image build needs a registry. Once built, the stack's only outbound
+connection is the LLM endpoint (`AI_BASE_URL`), which can sit inside your network,
+as long as `TAVILY_API_KEY` stays empty (web search calls `api.tavily.com`).
+The SPA's `index.html` also links Poppins from Google Fonts. The SDK stylesheet
+already bundles the font, so a blocked request changes nothing on screen; a
+firewall that drops packets instead of rejecting them delays the first paint.
+
+**Images.** Make these available to the Docker host (`docker pull` where there is
+network, `docker save` / `docker load` to carry them over, or your registry mirror):
+`node:22.12.0-bookworm-slim` and `nginx:1.31-alpine` for the build,
+`postgres:16`, `temporalio/auto-setup:1.29.6.1` and, for `--profile debug` only,
+`temporalio/ui:2.51.0` at runtime.
+
+**Option 1: build outside, carry the images in.** Simplest. On a connected
+machine of the same CPU architecture as the target:
+
+```bash
+docker build -f deploy/ai-studio/Dockerfile --target runtime -t ai-studio-runtime .
+docker build -f deploy/ai-studio/Dockerfile --target web -t ai-studio-web .
+docker save ai-studio-runtime ai-studio-web postgres:16 temporalio/auto-setup:1.29.6.1 | gzip > ai-studio.tar.gz
+```
+
+On the target: copy `deploy/ai-studio/` (the compose files) and write its `.env`,
+then `docker load < ai-studio.tar.gz` and `docker compose up -d` (no `--build`).
+
+**Option 2: build inside, against an npm registry mirror** (Verdaccio, Artifactory,
+Nexus). Write the mirror into an `.npmrc` outside the repository:
+
+```ini
+registry=https://npm.mirror.internal/
+//npm.mirror.internal/:_authToken=<token>
+```
+
+Pass it as a build secret: every Dockerfile step that may download reads it, and
+it never lands in an image layer. `.dockerignore` keeps any repo `.npmrc` out of
+the build context, so the secret is the only way in.
+
+```bash
+docker build --secret id=npmrc,src=$HOME/.npmrc -f deploy/ai-studio/Dockerfile --target runtime -t ai-studio-runtime .
+docker build --secret id=npmrc,src=$HOME/.npmrc -f deploy/ai-studio/Dockerfile --target web -t ai-studio-web .
+docker compose up -d   # no --build: compose would rebuild without the secret
+```
+
+The mirror needs the packages in `pnpm-lock.yaml` plus `pnpm@10.17.0`. Nothing
+downloads anything after install: `@temporalio/core-bridge` carries its native
+Rust core prebuilt inside the npm tarball for Linux x64 / arm64 (glibc), macOS
+and Windows x64, so a mirror needs no extra binaries. The image is Debian-based;
+the core does not support musl, so keep it off Alpine.
+
+**Verified.** After one connected build, `docker build --network none` of both
+targets succeeds: with networking off, every `RUN` step re-executes, and pnpm
+and all packages come from the BuildKit cache mounts (`pnpm fetch` reports
+`downloaded 0`). `--network none` cuts only the `RUN` steps; the base images
+were already local, which is what `docker load` gives an offline host. Outside
+Docker, `pnpm install --offline --frozen-lockfile` succeeds in a fresh clone
+against a store seeded by `pnpm fetch`, on Node 22.12.0 (another version makes
+pnpm download that one, per `useNodeVersion` in `pnpm-workspace.yaml`).
+
 ## Operations
 
 ```bash

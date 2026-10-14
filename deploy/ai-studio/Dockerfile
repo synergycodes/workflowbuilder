@@ -1,5 +1,3 @@
-# syntax=docker/dockerfile:1
-
 # Targets: runtime (backend + worker, command chosen per compose service),
 # web (nginx, SPA + /api proxy). Build context must be the repo root —
 # workspace packages are linked via pnpm `workspace:*`.
@@ -14,12 +12,18 @@ ENV PNPM_HOME=/pnpm \
     HUSKY=0 \
     npm_config_store_dir=/pnpm/store \
     CI=true
-RUN npm install -g pnpm@10.17.0
+# Every step that may reach a registry mounts the optional `npmrc` secret: it points them
+# at a mirror without baking its token into a layer (deploy README, "Air-gapped install").
+RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
+    npm install -g --prefer-offline pnpm@10.17.0
 WORKDIR /app
 
 FROM base AS source
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
+    pnpm fetch
 COPY . .
 
 # @workflowbuilder/temporal is the one workspace dependency of backend/worker that
@@ -29,16 +33,18 @@ COPY . .
 # with dev dependencies present, and only the result is carried over.
 FROM source AS package-build
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
     pnpm install --frozen-lockfile --prefer-offline --filter @workflowbuilder/temporal...
 RUN pnpm build:temporal
 
 # tsx runs TS directly — required anyway for the worker, whose workflow
 # sandbox bundles from TS source on disk at runtime.
-# --prefer-offline (not --offline): offline mode leaks into lifecycle
-# scripts and breaks the icons build, which shells out to npx.
+# --prefer-offline, not --offline: a registry layer cache can restore the
+# `pnpm fetch` step without the store mount, and the install must refill it.
 FROM source AS runtime
 COPY --from=package-build /app/packages/temporal/dist ./packages/temporal/dist
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
     # `prepare` runs husky at the root, and `tsup` in packages/temporal — neither is
     # available in a --prod install, and the dist copied above is what it would produce
     npm pkg delete scripts.prepare && \
@@ -51,6 +57,7 @@ RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
 FROM source AS frontend-build
 ARG VITE_BACKEND_URL=
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
     pnpm install --frozen-lockfile --prefer-offline --filter @workflow-builder/ai-studio...
 RUN VITE_BACKEND_URL=$VITE_BACKEND_URL pnpm build:ai-studio
 

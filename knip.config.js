@@ -26,7 +26,7 @@ export default {
     'apps/icons': {
       entry: ['index.ts', 'src/generate-icons.ts'],
       project: '**/*.{ts,tsx}',
-      ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
+      ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
     },
     'apps/tools': {
       entry: ['src/scripts/*.ts'],

@@ -12,7 +12,7 @@ export function generateIcons() {
   setupOutputDirectory();
 
   for (const path of sources) {
-    execSync(`npx @svgr/cli --no-index --typescript --out-dir ${outputDirectory} -- ${path}`);
+    execSync(`pnpm exec svgr --no-index --typescript --out-dir ${outputDirectory} -- ${path}`);
   }
 
   const keys = generateKeys();
