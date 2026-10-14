@@ -41,5 +41,6 @@ export const uischema: UISchema = {
     // } as unknown as UISchema,
     // The run-time decision form.
     { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
+    { type: 'DecisionFormNew', scope: scope('properties.decisionRequest') } as unknown as UISchema,
   ],
 };

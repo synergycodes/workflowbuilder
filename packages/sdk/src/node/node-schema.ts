@@ -34,7 +34,7 @@ type BaseFieldSchema = {
   placeholder?: string;
 };
 
-export type ArrayFieldSchema = BaseFieldSchema & {
+type ArrayFieldSchema = BaseFieldSchema & {
   type: 'array';
   items: {
     type: 'object';

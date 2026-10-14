@@ -49,6 +49,12 @@ export function useNodeDecision(nodeId: string | undefined, proposalSourceNodeId
   const wait = executionId === undefined || nodeId === undefined ? undefined : { executionId, nodeId, attempt };
   const draft = useExecutionStore((state) => (wait === undefined ? undefined : state.decisionDrafts[waitKey(wait)]));
 
+  console.log({
+    sourceId,
+    nodeState,
+    sourceOutput,
+  });
+
   // A node that never parked in this run has no decision to show.
   if (nodeState === undefined || wait === undefined || attempt < 1) {
     return { phase: 'none' };

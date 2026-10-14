@@ -4,6 +4,7 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 
 import { humanDecisionNodeType } from '../nodes/human-decision';
 import { defaultDecisionRequest } from '../nodes/human-decision/default-properties-data';
+import { refundReviewOutputSchema } from '../utils/ai-agent/response-options';
 
 const REFUND_CONTEXT = `You work in customer support for Lumen, a SaaS analytics product.
 
@@ -84,6 +85,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
             label: 'Review Refund',
             description: 'A person approves or rejects it.',
             decisionRequest: refundReviewRequest,
+            outputSchema: refundReviewOutputSchema,
             readOnlyFields: [],
             editableFields: [],
           },

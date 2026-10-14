@@ -90,7 +90,7 @@ export function VariableListItem({
         <div className={styles['header']}>
           {!isExpanded && (
             <button className={styles['button-expand']} onClick={() => setIsExpanded(!isExpanded)}>
-              <span className="sr-only">{t('common.expand')}</span>
+              <span className={styles['sr-only']}>{t('common.expand')}</span>
             </button>
           )}
           <button
