@@ -138,8 +138,9 @@ function messageOf(error: unknown): string {
   const parts: string[] = [];
   let current: unknown = error;
   while (current instanceof Error && !parts.includes(current.message)) {
-    parts.push(current.message);
+    if (current.message) parts.push(current.message);
     current = current.cause;
   }
-  return parts.length > 0 ? parts.join(': ') : String(error);
+  if (parts.length > 0) return parts.join(': ');
+  return error instanceof Error ? error.name : String(error);
 }

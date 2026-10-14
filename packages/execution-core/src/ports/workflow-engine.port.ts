@@ -36,9 +36,7 @@ export type ResolveNodeInput = {
 // A start that did not go through. 'run_not_started': the engine has no run under this id, so
 // the caller may close it. 'start_unconfirmed': the engine could not say, so the run may be
 // alive and the caller must not close it.
-export const SUBMIT_REJECTIONS = ['run_not_started', 'start_unconfirmed'] as const;
-
-export type SubmitRejection = (typeof SUBMIT_REJECTIONS)[number];
+export type SubmitRejection = 'run_not_started' | 'start_unconfirmed';
 
 export type SubmitResult = { error?: undefined } | { error: { code: SubmitRejection; message: string } };
 

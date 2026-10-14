@@ -443,10 +443,8 @@ describe('createExecutionsRoutes - cancel enforcement in the UPDATE', () => {
 });
 
 // ---- cancel of a run the engine never had ------------------------------------
-//
-// Only the worker writes a run out of 'cancelling', and it only ever hears about
-// runs the engine started. A row without `startedAt` that the engine does not
-// know is one no worker ever saw, so the route has to close it itself.
+// Only the worker writes a run out of 'cancelling', and it never hears of a run
+// the engine does not have: a row without `startedAt` the route closes itself.
 
 function captureUpdates(): Record<string, unknown>[] {
   const sets: Record<string, unknown>[] = [];

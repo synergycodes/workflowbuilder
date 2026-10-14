@@ -1,4 +1,4 @@
-import { and, eq, notInArray } from 'drizzle-orm';
+import { and, eq, isNull, notInArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 
@@ -288,16 +288,15 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
     const cancelled = await getWorkflowEngine().cancel(execution.id);
 
-    // `started_at` is the worker's first write, so a row without it belongs to a run no worker
-    // ever saw. When the engine has no such run either, nothing is left to write it out of
-    // 'cancelling', and the route closes it. With `started_at` set, 'not found' is a run that
-    // just closed, and the worker's terminal write replaces 'cancelling' on its own.
+    // A run the engine does not have and no worker ever started has nobody left to close it
+    // (README, "Stopping a run"). `started_at` is re-checked in the WHERE: the row was read
+    // before the engine was asked.
     if (cancelled.error !== undefined && execution.startedAt === null) {
       const now = new Date();
       const [closed] = await database
         .update(executions)
         .set({ status: 'cancelled', finishedAt: now, updatedAt: now })
-        .where(and(eq(executions.id, execution.id), eq(executions.status, 'cancelling')))
+        .where(and(eq(executions.id, execution.id), eq(executions.status, 'cancelling'), isNull(executions.startedAt)))
         .returning({ id: executions.id });
       if (closed) {
         logger.info('cancelled a run the engine never started', { executionId: execution.id });

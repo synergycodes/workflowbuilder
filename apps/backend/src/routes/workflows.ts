@@ -261,7 +261,6 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
             executionId: execution.id,
           },
           503,
-          { 'Retry-After': '5' },
         );
       }
       // The run may be alive on the engine's side, so the status stays. The note is for whoever

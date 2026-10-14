@@ -117,6 +117,16 @@ describe('TemporalWorkflowEngine.submit', () => {
     });
   });
 
+  it('falls back to the error name when every message is empty', async () => {
+    const { client, start, describeRun } = fakeClient();
+    start.mockRejectedValueOnce(Object.assign(new TypeError('cleared below'), { message: '' }));
+    describeRun.mockRejectedValueOnce(notFound());
+
+    await expect(new TemporalWorkflowEngine({ client }).submit(INPUT)).resolves.toEqual({
+      error: { code: 'run_not_started', message: 'TypeError' },
+    });
+  });
+
   it('names a non-Error cause in the message', async () => {
     const { client, start, describeRun } = fakeClient();
     start.mockRejectedValueOnce('boom');

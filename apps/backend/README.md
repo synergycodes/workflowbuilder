@@ -62,16 +62,16 @@ The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiat
 
 ## Starting a run: `POST /api/workflows/:id/execute`
 
-Body: `{ sourceVersion: 'draft' | 'published', triggerPayload? }`. The route stores the run as `pending` and then asks the engine to start it. Success: `202 { executionId, status, streamUrl }`. A start the engine refuses closes the run, because no worker ever hears of a run the engine does not have: the row becomes `failed`, with `finished_at` and the engine's message in `error_message`. A start the engine could not confirm leaves the row `pending`, since the run may be alive on the engine's side; the message still lands in `error_message`, and the worker's first status write clears it. Watch such a run, or stop it: a stop closes it when the engine still has nothing.
+Body: `{ sourceVersion: 'draft' | 'published', triggerPayload? }`. The route stores the run as `pending` and then asks the engine to start it. Success: `202 { executionId, status, streamUrl }`. A start the engine refuses closes the run, because no worker ever hears of a run the engine does not have: the row becomes `failed`, with `finished_at` and the engine's message in `error_message`. A start the engine could not confirm leaves the row `pending`, since the run may be alive on the engine's side; the message still lands in `error_message`, and the worker's first status write clears it. Watch such a run, or stop it: a stop closes it when the engine still has nothing. The engine's check cannot see a start the server is still processing after the client gave up on it; such a run would execute under a row already closed. Temporal answers a start in milliseconds, so the window stays theoretical.
 
-| Status | Code                          | When                                                                                            |
-| ------ | ----------------------------- | ----------------------------------------------------------------------------------------------- |
-| 400    | `validation_error`            | Body shape                                                                                      |
-| 400    | `published_version_missing`   | No stored version of that kind                                                                  |
-| 400    | `invalid_snapshot`            | See [Decision request on a node](#decision-request-on-a-node)                                   |
-| 404    | `workflow_not_found`          |                                                                                                 |
-| 503    | `execution_start_failed`      | The engine has no run; the row is `failed`. `executionId` names it. Try again (`Retry-After`)   |
-| 503    | `execution_start_unconfirmed` | The engine could not say; the row stays `pending`. `executionId` names it. Watch it, or stop it |
+| Status | Code                          | When                                                                                                             |
+| ------ | ----------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| 400    | `validation_error`            | Body shape                                                                                                       |
+| 400    | `published_version_missing`   | No stored version of that kind                                                                                   |
+| 400    | `invalid_snapshot`            | See [Decision request on a node](#decision-request-on-a-node)                                                    |
+| 404    | `workflow_not_found`          |                                                                                                                  |
+| 503    | `execution_start_failed`      | The engine has no run; the row is `failed`. `executionId` names it. Start a new run once the engine is reachable |
+| 503    | `execution_start_unconfirmed` | The engine could not say; the row stays `pending`. `executionId` names it. Watch it, or stop it                  |
 
 ## Stopping a run: `DELETE /api/executions/:id`
 

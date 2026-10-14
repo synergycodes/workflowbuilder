@@ -285,11 +285,8 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 });
 
 // ---- a run the engine could not start ----------------------------------------
-//
-// The row is inserted before the engine is asked, so a start the engine knows
-// failed has to close it: no worker will ever write a run that never reached
-// the engine. A start the engine could not confirm must not be closed, because
-// the run may be alive on the engine's side.
+// The row goes in before the engine is asked. A start the engine knows failed
+// closes it; one it could not confirm must not, the run may be alive.
 
 function captureExecuteUpdate(): { values?: Record<string, unknown> } {
   const captured: { values?: Record<string, unknown> } = {};
