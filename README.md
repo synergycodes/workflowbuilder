@@ -278,7 +278,7 @@ Technical choices are documented in `*.decision-log.md` files that live alongsid
 
 ## ⚠️ Reference Backend — Local Development Only
 
-The bundled execution backend (`apps/backend`, `apps/execution-worker`) is a **reference implementation** of the AI Studio plugin's execution layer. It has **no authentication, no authorization, no user/tenant isolation, and no CORS restrictions**. By default it binds only to `127.0.0.1` and the docker-compose stack does the same — nothing in the reference setup is reachable from the local network.
+The bundled execution backend (`apps/backend`, `apps/execution-worker`) is a **reference implementation** of the AI Studio plugin's execution layer. It has **no authentication, no authorization and no user/tenant isolation**, and answers every browser origin until `ALLOWED_ORIGINS` is set. By default it binds only to `127.0.0.1` and the docker-compose stack does the same — nothing in the reference setup is reachable from the local network.
 
 **Do not expose this backend to the internet, a shared LAN, or any environment with untrusted users without first adding proper authn/authz.** Anyone who can reach the port can read, modify, and execute every workflow.
 

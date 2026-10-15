@@ -56,4 +56,5 @@ RUN VITE_BACKEND_URL=$VITE_BACKEND_URL pnpm build:ai-studio
 
 FROM nginx:1.31-alpine AS web
 COPY deploy/ai-studio/nginx/default.conf /etc/nginx/conf.d/default.conf
+COPY deploy/ai-studio/nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=frontend-build /app/dist/apps/ai-studio /usr/share/nginx/html

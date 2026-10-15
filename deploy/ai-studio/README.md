@@ -80,6 +80,58 @@ The `web` container speaks plain HTTP on the internal port. Pick one:
 Keep 8233 (Temporal UI) and the Postgres ports unreachable from outside —
 this compose never publishes them; don't undo that.
 
+## Security headers
+
+nginx answers the SPA with the headers an automated scan (Mozilla Observatory
+or similar) grades on; the backend sets its own on `/api`. The policy lives in
+[`nginx/security-headers.conf`](nginx/security-headers.conf) and is included in
+each SPA location, because an nginx location with any `add_header` of its own
+drops every header inherited from the server block.
+
+The Content Security Policy:
+
+```
+default-src 'self'; script-src 'self' https://challenges.cloudflare.com;
+style-src 'self' 'unsafe-inline'; font-src 'self' data:; img-src 'self' data:;
+connect-src 'self'; frame-src https://challenges.cloudflare.com;
+frame-ancestors 'none'; base-uri 'self'; form-action 'self'; object-src 'none'
+```
+
+Why each allowance is there, and what to change when your deployment differs:
+
+- **No `'unsafe-eval'`.** Nothing in the SDK's runtime dependencies evaluates
+  code; schema validation runs an interpreter, not compiled functions.
+- **`style-src 'unsafe-inline'`.** The Ace editor and the toast library inject
+  `<style>` elements without a nonce. Scripts stay nonce-free and `'self'`-only,
+  which is what the scan grades on.
+- **`font-src data:`.** The UI package bundles Poppins; the two most-used
+  weights are inlined into its stylesheet. No font host is contacted.
+- **`img-src data:`.** Vite inlines small images into the bundle, and the
+  canvas library draws some of its backgrounds from inline SVG. An image a
+  model embeds in Markdown output (`![](https://…)`) is blocked on purpose:
+  untrusted output loads nothing from third parties.
+- **`https://challenges.cloudflare.com`** in `script-src` and `frame-src` is
+  Turnstile, which loads a script and renders an iframe. The origin is allowed
+  even when bot protection is off; remove both if you never enable it.
+- **`connect-src 'self'`** holds because the SPA reaches `/api` on its own
+  origin. If you set `VITE_BACKEND_URL` to another host, add that origin here
+  and list the web origin in `ALLOWED_ORIGINS`, or every request is blocked.
+- **Enterprise smart routing** (libavoid, WebAssembly) needs
+  `'wasm-unsafe-eval'` added to `script-src`. The Community SDK runs no
+  WebAssembly and no web workers.
+
+`Strict-Transport-Security` is sent on the assumption that TLS terminates at
+your ingress in front of `web` (see "TLS / going public"): browsers only honour
+it once they reach the origin over HTTPS, and ignore it on plain HTTP. The
+remaining headers are `X-Content-Type-Options: nosniff`, `X-Frame-Options: DENY`
+and `Referrer-Policy: strict-origin-when-cross-origin`.
+
+Check a running stack with `curl -sI http://localhost:8080/ | grep -i -E
+'content-security|strict-transport|x-frame|x-content|referrer'`, and watch the
+browser console for "violates the following Content Security Policy" while
+using the editor; a feature that stops working under a tightened policy fails
+that way, with a generic network error in the UI.
+
 ## Configuration
 
 See [.env.example](.env.example) — every variable is documented there.
@@ -106,6 +158,11 @@ AI_API_KEY=<the value that was OPENROUTER_API_KEY>
 AI_BASE_URL=https://openrouter.ai/api/v1
 AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
 ```
+
+A `.env` that sets `VITE_BACKEND_URL`, because the frontend is served from
+another host than the API, also needs `ALLOWED_ORIGINS=<that web origin>`: the
+backend now refuses cross-origin calls it is not told about, where it used to
+answer every origin. A `.env` with `VITE_BACKEND_URL` empty needs nothing.
 
 Renaming only the key is not enough: the stack comes up with every AI Agent
 node failing `ai_not_configured`, because the endpoint and the model have no
