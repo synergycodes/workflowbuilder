@@ -13,13 +13,22 @@ function originList(name: string): string[] | null {
     .split(',')
     .map((entry) => entry.trim())
     .filter((entry) => entry !== '')
-    .map((entry) => {
-      try {
-        return new URL(entry).origin;
-      } catch {
-        throw new Error(`${name}: "${entry}" is not a URL`);
-      }
-    });
+    .map((entry) => originOf(name, entry));
+}
+
+// Only http(s) yields a real origin: `localhost:4201` parses with the scheme `localhost:` and
+// the opaque origin "null", which would admit requests from sandboxed iframes and file:// pages.
+function originOf(name: string, entry: string): string {
+  let url: URL;
+  try {
+    url = new URL(entry);
+  } catch {
+    throw new Error(`${name}: "${entry}" is not a URL`);
+  }
+  if (url.protocol !== 'http:' && url.protocol !== 'https:') {
+    throw new Error(`${name}: "${entry}" is not an http(s) origin`);
+  }
+  return url.origin;
 }
 
 // 127.0.0.1 (not `localhost`) matches the loopback-only docker bindings in

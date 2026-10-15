@@ -157,6 +157,15 @@ describe('ALLOWED_ORIGINS', () => {
   it('refuses an entry that is not a URL', async () => {
     await expect(loadEnv({ ALLOWED_ORIGINS: 'studio.example.com' })).rejects.toThrow(/ALLOWED_ORIGINS/);
   });
+
+  // `localhost:4201` parses with `localhost:` as its scheme and the opaque origin "null",
+  // which would admit requests from sandboxed iframes and file:// pages.
+  it.each(['localhost:4201', 'ftp://studio.example.com'])(
+    'refuses %s, which is not an http(s) origin',
+    async (entry) => {
+      await expect(loadEnv({ ALLOWED_ORIGINS: entry })).rejects.toThrow(/not an http\(s\) origin/);
+    },
+  );
 });
 
 describe('TURNSTILE_SECRET_KEY', () => {
