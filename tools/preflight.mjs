@@ -153,11 +153,37 @@ async function checkServicePort(port, label) {
       };
 }
 
+// Names only; values never leave this function (the files hold API keys).
+function envKeys(relativePath) {
+  return new Set(
+    readFileSync(path.join(ROOT, relativePath), 'utf8')
+      .split('\n')
+      .map((line) => line.match(/^\s*([A-Z_][A-Z0-9_]*)\s*=\s*(.*)$/))
+      .filter((match) => match && match[2].trim() !== '')
+      .map((match) => match[1]),
+  );
+}
+
 async function checkEnvFile(relativePath) {
-  const present = existsSync(path.join(ROOT, relativePath));
-  return present
-    ? { name: relativePath, status: 'pass', detail: 'present' }
-    : { name: relativePath, status: 'warn', detail: `missing — copy from ${relativePath}.example` };
+  if (!existsSync(path.join(ROOT, relativePath))) {
+    return { name: relativePath, status: 'warn', detail: `missing — copy from ${relativePath}.example` };
+  }
+  const keys = envKeys(relativePath);
+  if (keys.has('OPENROUTER_API_KEY')) {
+    return {
+      name: relativePath,
+      status: 'warn',
+      detail: 'OPENROUTER_API_KEY is retired — rename it to AI_API_KEY and add AI_BASE_URL (see .env.example)',
+    };
+  }
+  if (keys.has('AI_MODEL') && !(keys.has('AI_API_KEY') && keys.has('AI_BASE_URL'))) {
+    return {
+      name: relativePath,
+      status: 'warn',
+      detail: 'AI_MODEL is set but AI_API_KEY or AI_BASE_URL is missing — AI Agent nodes fail with ai_not_configured',
+    };
+  }
+  return { name: relativePath, status: 'pass', detail: 'present' };
 }
 
 // ---------- Composition ----------
