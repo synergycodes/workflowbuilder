@@ -55,24 +55,32 @@ package store. Every `RUN` after that fetch is `--network=none`, so BuildKit
 cuts egress for the whole step — installs, lifecycle scripts and build
 commands included (`--offline` alone would only stop pnpm's own resolver). A
 step that needs the network fails every ordinary build, and
-`pnpm check:offline-build` fails if a post-fetch step ever loses the flag.
+`pnpm check:offline-build` fails if a post-fetch step ever loses the flag or
+adds a download of its own (`ADD <url>`, `COPY --from=<image>`).
 That per-step guarantee is the enforceable one: a whole-build
 `docker build --network none` cannot pass, because the pnpm bootstrap and
-`pnpm fetch` need the registry by design. So don't build on the air-gapped
-host — build on a connected machine and ship the images.
+`pnpm fetch` need the registry by design. The Dockerfile also carries no
+`# syntax=` directive, which would pull the build frontend from Docker Hub as
+an unpinned fourth download; the guard rejects one, and the packing machine
+needs Docker Engine 23 or later for the built-in frontend instead. So don't
+build on the air-gapped host — build on a connected machine and ship the
+images.
 
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
-the compose plugin (plus ~3 GB of disk for the loaded images).
+the Compose v2 plugin (plus ~3 GB of disk for the loaded images). Compose v1
+cannot parse the nested `${A:+${B:?}}` interpolation that the retired-key
+guard at the top of `docker-compose.yml` relies on.
 
 ### 1. Build and pack on a connected machine
 
 ```bash
 cd deploy/ai-studio
-./pack-offline.sh ../../ai-studio-offline   # any output directory
+./pack-offline.sh ~/ai-studio-offline   # any directory outside the checkout
 ```
 
 The script builds both images, pulls the infra images and writes one directory
-to ship:
+to ship. It refuses a directory inside the checkout: the repo root is the image
+build context, so a bundle left there would be copied into the next build.
 
 - `ai-studio-images.tar` (~1 GB): `ai-studio-runtime`, `ai-studio-web`,
   Postgres, Temporal and the Temporal UI (drop `--profile debug` from the
