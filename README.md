@@ -74,7 +74,7 @@ The two paths below run this repository locally (demo and full stack). They shar
 
 ### Requirements
 
-- Node `22.12.0` and pnpm `10.9.0`. Both pinned in `package.json`. Use `nvm`, `fnm`, or `corepack` to match.
+- pnpm `10.17.0`: `npm i -g pnpm@10.17.0`. It fetches Node `22.12.0` on its own (`useNodeVersion` in `pnpm-workspace.yaml`), so no Node version manager is needed. Both versions are pinned in `package.json`. Do not use corepack: the one bundled with Node 22 cannot load pnpm 10 (`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`).
 - Docker Desktop. Only required for Path C.
 
 Works the same on macOS, Linux, and Windows. No platform-specific steps.
@@ -94,7 +94,7 @@ Expected output:
 Workflow Builder preflight
 
 ✅ node                        22.12.0
-✅ pnpm                        10.9.0
+✅ pnpm                        10.17.0
 ✅ docker                      running
 ✅ port_3001                   free (backend)
 ✅ port_4200                   free (demo)
@@ -160,9 +160,9 @@ Expected output (first run):
  Container backend-temporal-ui-1    Started
 ```
 
-Verify: open `http://localhost:8233` (Temporal UI). The `default` namespace appears.
+Verify: open `http://127.0.0.1:8233` (Temporal UI). The `default` namespace appears. Temporal creates it while it starts, so give it a few seconds and reload if the list is still empty.
 
-**3. Run migrations.** First time, or after pulling schema changes.
+**3. Run migrations (optional).** The backend applies pending migrations itself at boot, so this step only matters when you want to migrate the database without starting the backend.
 
 ```bash
 pnpm -F backend db:migrate
@@ -187,13 +187,13 @@ Expected output (three interleaved streams):
 
 ```
 Temporal ready
-[backend]    Backend running on http://127.0.0.1:3001
-[worker]     Execution worker started on task queue: workflow-execution
+[backend]    INFO  backend listening  {"component":"backend","url":"http://127.0.0.1:3001"}
 [ai-studio]    VITE vX.Y.Z  ready in NNN ms
 [ai-studio]    ➜  Local:   http://127.0.0.1:4201/
+[worker]     INFO  execution worker started  {"component":"execution-worker","taskQueue":"workflow-execution","namespace":"default"}
 ```
 
-Open `http://localhost:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Play. The Temporal UI at `http://localhost:8233` shows the running execution.
+The worker line can arrive a few seconds after the other two. Open `http://127.0.0.1:4201`. Every bundled template contains AI Agent nodes, so either connect an LLM first (next section) or expect the run to stop at its first AI Agent node with `ai_not_configured` while the Trigger, Decision and Visualize nodes before it run. Pick a template, click Run. The Temporal UI at `http://127.0.0.1:8233` shows the running execution.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 
@@ -214,7 +214,7 @@ None of the three has a built-in default. Any OpenAI-compatible endpoint works: 
 | Symptom                                                                 | Cause                                                                        | Fix                                                                            |
 | ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                               | `pnpm preflight` shows the conflict. Stop the other process or change the port |
-| Temporal UI loads but the `default` namespace is missing                | Migrations not run                                                           | `pnpm -F backend db:migrate`                                                   |
+| Temporal UI loads but the `default` namespace is missing                | Temporal is still starting; its container creates the namespace              | Wait a few seconds and reload. Still missing: `docker logs backend-temporal-1` |
 | AI Agent node fails with `ai_not_configured`                            | LLM not configured — the worker starts anyway, only AI nodes are unavailable | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env` |
 | `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal        | Fix the errors or ignore them temporarily                                      |
 | Vite acts up after a dependency change                                  | Stale `node_modules/.vite`                                                   | `rm -rf node_modules/.vite` and rerun                                          |
