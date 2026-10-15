@@ -1,0 +1,90 @@
+.run-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.run-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--wb-ds-ui-brand-fill, #3969ff);
+  color: var(--wb-ds-ui-brand-text-on, #fff);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.run-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.run-phase--failed,
+.run-phase--error {
+  color: var(--wb-ds-ui-text-critical-default, #c41a1a);
+}
+
+.run-phase--completed {
+  color: var(--wb-ds-components-button-ghost-success-text-default, #166534);
+}
+
+.run-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+}
+
+/* Same spot and size as the SDK's own validity badge, so it reads as a status. */
+.run-marker {
+  position: absolute;
+  top: 0;
+  right: var(--wb-public-status-right, 0.75rem);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--wb-public-status-size, 1.25rem);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
+
+.run-marker--running {
+  background: var(--wb-ds-ui-brand-fill, #3969ff);
+  color: var(--wb-ds-ui-brand-text-on, #fff);
+}
+
+.run-marker--running svg {
+  animation: run-marker-spin 1s linear infinite;
+}
+
+.run-marker--completed {
+  background: var(--wb-ds-canvas-badge-notify-success-bg-default, #15803d);
+  color: var(--wb-ds-canvas-badge-notify-success-icon, #f0fdf4);
+}
+
+.run-marker--failed {
+  background: var(--wb-ds-canvas-badge-notify-critical-bg-default, #c41a1a);
+  color: var(--wb-ds-canvas-badge-notify-critical-icon, #fff5f5);
+}
+
+.run-marker--skipped {
+  background: var(--wb-ds-ui-icon-subtle-default, #6f7480);
+  color: var(--wb-ds-ui-icon-inverse-default, #fff);
+}
+
+.react-flow__node:has(.run-marker--skipped) {
+  opacity: 0.5;
+}
+
+@keyframes run-marker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
