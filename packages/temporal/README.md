@@ -128,14 +128,25 @@ const engine = new TemporalWorkflowEngine({
   client: async () => new Client({ connection: await Connection.connect({ address }) }),
 });
 
-await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
-await engine.cancel(executionId);
+const started = await engine.submit({
+  workflowId,
+  executionId,
+  definition,
+  triggerPayload: {},
+  variables: {},
+  global: {},
+});
+// {} or { error: { code: 'run_not_started' | 'start_unconfirmed', message } }
+const cancelled = await engine.cancel(executionId);
+// {} or { error: { code: 'run_not_found', message } }
 const { error } = await engine.resolveNode({
   executionId,
   nodeId: 'approval-1',
   resolution: { output: 'approved', nextPort: 'approved' },
 });
 ```
+
+Refusals are results, so the caller can act on each; anything else that goes wrong is thrown. A start that fails is checked against the server before it is reported: `run_not_started` means Temporal has no run under the execution id, so the caller may close its own record of the run; `start_unconfirmed` means neither the start nor the check reached the server, so the run may be alive and the caller must not. A start refused as already started is a success, since the server has the run. `run_not_found` on cancel covers a run that never started and one that already closed; the caller's own record tells which.
 
 The engine and the worker default to the same task queue (`workflow-execution`). Override it in both places together, or leave both alone.
 

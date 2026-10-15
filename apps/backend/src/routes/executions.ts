@@ -1,4 +1,4 @@
-import { and, eq, notInArray } from 'drizzle-orm';
+import { and, eq, isNull, notInArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { streamSSE } from 'hono/streaming';
 
@@ -286,7 +286,23 @@ export function createExecutionsRoutes(assertAuthorized: AssertAuthorized): Hono
     }
 
     logger.info('cancel requested', { executionId: execution.id, workflowId: execution.workflowId });
-    await getWorkflowEngine().cancel(execution.id);
+    const cancelled = await getWorkflowEngine().cancel(execution.id);
+
+    // A run the engine does not have and no worker ever started has nobody left to close it
+    // (README, "Stopping a run"). `started_at` is re-checked in the WHERE: the row was read
+    // before the engine was asked.
+    if (cancelled.error !== undefined && execution.startedAt === null) {
+      const now = new Date();
+      const [closed] = await database
+        .update(executions)
+        .set({ status: 'cancelled', finishedAt: now, updatedAt: now })
+        .where(and(eq(executions.id, execution.id), eq(executions.status, 'cancelling'), isNull(executions.startedAt)))
+        .returning({ id: executions.id });
+      if (closed) {
+        logger.info('cancelled a run the engine never started', { executionId: execution.id });
+        return c.json({ id: execution.id, status: 'cancelled' });
+      }
+    }
 
     return c.json({ id: execution.id, status: 'cancelling' });
   });

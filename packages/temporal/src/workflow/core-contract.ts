@@ -1,4 +1,4 @@
-import type { ResolveNodeResult } from '../../../execution-core/src/workflow';
+import type { CancelResult, ResolveNodeResult, SubmitResult } from '../../../execution-core/src/workflow';
 import type {
   ExecutionEventType,
   ExecutionOutcome,
@@ -16,10 +16,13 @@ export { runGraph } from '../../../execution-core/src/workflow';
 
 export type {
   ActivityRunnerPort,
+  CancelResult,
   ExecutionContext,
   ResolveNodeRejection,
   ResolveNodeResult,
   RunGraphOutcome,
+  SubmitRejection,
+  SubmitResult,
   VerdictRejection,
 } from '../../../execution-core/src/workflow';
 
@@ -67,8 +70,8 @@ export type ResolveNodeInput = {
 
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
-  submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
-  cancel(executionId: string): Promise<void>;
+  submit(input: WorkflowExecutionInput<TNode>): Promise<SubmitResult>;
+  cancel(executionId: string): Promise<CancelResult>;
   resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
 }
 

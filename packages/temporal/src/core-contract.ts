@@ -39,6 +39,7 @@ export type {
 
 // Defined on the sandbox-safe side so both halves of the package share one definition.
 export type {
+  CancelResult,
   CompletedNodeExecution,
   ExecutionEventType,
   ExecutionOutcome,
@@ -48,6 +49,8 @@ export type {
   ResolveNodeInput,
   ResolveNodeRejection,
   ResolveNodeResult,
+  SubmitRejection,
+  SubmitResult,
   WaitingNodeExecution,
   WorkflowEnginePort,
   WorkflowExecutionInput,

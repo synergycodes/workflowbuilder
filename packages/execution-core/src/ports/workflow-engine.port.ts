@@ -33,12 +33,23 @@ export type ResolveNodeInput = {
   resolution: CompletedNodeExecution;
 };
 
+// A start that did not go through. 'run_not_started': the engine has no run under this id, so
+// the caller may close it. 'start_unconfirmed': the engine could not say, so the run may be
+// alive and the caller must not close it.
+export type SubmitRejection = 'run_not_started' | 'start_unconfirmed';
+
+export type SubmitResult = { error?: undefined } | { error: { code: SubmitRejection; message: string } };
+
+// 'run_not_found': the engine has no open run under this id, either never started or already
+// closed. Which one, the caller's own record of the run tells.
+export type CancelResult = { error?: undefined } | { error: { code: 'run_not_found'; message: string } };
+
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 // TNode is opaque to the backend — only the worker narrows it to concrete types.
+// Refusals are results, not throws; anything else that goes wrong is thrown.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
-  submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
-  cancel(executionId: string): Promise<void>;
-  // Delivers the completion a parked node waits for. Refusals are results, not throws;
-  // anything else that goes wrong is thrown.
+  submit(input: WorkflowExecutionInput<TNode>): Promise<SubmitResult>;
+  cancel(executionId: string): Promise<CancelResult>;
+  // Delivers the completion a parked node waits for.
   resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
 }
