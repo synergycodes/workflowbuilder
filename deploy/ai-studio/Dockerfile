@@ -9,9 +9,9 @@
 # corepack — this Node's corepack cannot load pnpm 10
 # (ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING). Keep in sync with `packageManager`.
 #
-# The cache mount only spares the npm download on rebuilds. This step and `pnpm fetch`
-# are the two that need the registry, which is why an air-gapped host loads prebuilt
-# images instead of building (README "Air-gapped / offline install").
+# This step and `pnpm fetch` are the two that need the registry. Both mount an optional
+# `npmrc` secret, so a build can use a registry mirror without baking its token into a
+# layer (README "Air-gapped / offline install").
 FROM node:22.12.0-bookworm-slim AS base
 ENV PNPM_HOME=/pnpm \
     PATH="/pnpm:$PATH" \
@@ -20,6 +20,7 @@ ENV PNPM_HOME=/pnpm \
     npm_config_store_dir=/pnpm/store \
     CI=true
 RUN --mount=type=cache,id=npm-cache,target=/root/.npm \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
     npm install -g pnpm@10.17.0 --prefer-offline
 WORKDIR /app
 
@@ -29,7 +30,9 @@ WORKDIR /app
 FROM base AS source
 COPY pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --network=none sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
-RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store pnpm fetch
+RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
+    --mount=type=secret,id=npmrc,target=/root/.npmrc \
+    pnpm fetch
 COPY . .
 RUN --network=none sed -i '/^useNodeVersion:/d' pnpm-workspace.yaml
 

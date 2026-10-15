@@ -62,14 +62,13 @@ That per-step guarantee is the enforceable one: a whole-build
 `pnpm fetch` need the registry by design. The Dockerfile also carries no
 `# syntax=` directive, which would pull the build frontend from Docker Hub as
 an unpinned fourth download; the guard rejects one, and the packing machine
-needs Docker Engine 23 or later for the built-in frontend instead. So don't
-build on the air-gapped host — build on a connected machine and ship the
-images.
+needs Docker Engine 23 or later for the built-in frontend instead. So by
+default, build on a connected machine and ship the images.
 
-Shipping prebuilt images is the one supported air-gapped model. Building
-inside the gap from a customer-side registry mirror is not: there is no
-`.npmrc` to point at a mirror and no mirror procedure, and none is planned as
-long as the image route covers the need. The trade-off is that the bundle is
+Shipping prebuilt images is the default air-gapped model, covered in steps 1-4.
+A host that must build from source inside the gap can do so from a
+customer-side registry mirror instead; see "Alternative: build from a registry
+mirror". Either way the images are
 platform-specific: the base images are, and so are the native packages pnpm
 selects for the build platform during the image's install (esbuild behind
 `tsx`, swc). The Temporal worker's Rust core is the exception — one package
@@ -148,6 +147,34 @@ outside, it's the host firewall: allow `WEB_PORT` (default 8080) in. The
 default `WEB_BIND=0.0.0.0` already listens on all interfaces; set
 `WEB_BIND=127.0.0.1` only when a host-level reverse proxy should be the sole
 way in (see "TLS / going public").
+
+### Alternative: build from a registry mirror
+
+When policy requires building inside the network, point the two registry steps
+at your npm mirror (Artifactory, Nexus, Verdaccio) with an `.npmrc` passed as a
+build secret. Only those two steps mount it, so the token never lands in an
+image layer; a build without the secret uses the public registry as above.
+
+```ini
+# mirror.npmrc: keep it outside the checkout
+registry=https://npm.example.internal/
+//npm.example.internal/:_authToken=<token>
+```
+
+```bash
+# from the repo root: it is the build context
+for target in runtime web; do
+  docker build --secret id=npmrc,src=/path/to/mirror.npmrc \
+    -f deploy/ai-studio/Dockerfile --target "$target" -t "ai-studio-$target" .
+done
+cd deploy/ai-studio && docker compose up -d --no-build
+```
+
+The mirror must hold `pnpm@10.17.0` and every package in `pnpm-lock.yaml`,
+including the native ones for the build platform (esbuild, swc). The base
+images (`node`, `nginx`, Postgres, Temporal) come from your container registry,
+for example through the Docker daemon's `registry-mirrors`. Every step after
+`pnpm fetch` still runs with `--network=none`.
 
 ### Image versions
 
