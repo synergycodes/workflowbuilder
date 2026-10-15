@@ -83,7 +83,7 @@ A review with two normal outcomes and a rejection: `complete` and `incomplete` a
       },
       {
         "id": "review-1",
-        "type": "node",
+        "type": "ai-studio/human-decision",
         "position": { "x": 350, "y": 200 },
         "data": {
           "type": "ai-studio/human-decision",
