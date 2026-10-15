@@ -119,7 +119,8 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
     })
     .superRefine((request, context) => {
       const seenNames = new Set<string>();
-      const firstIndexByEffect = new Map<string, number>();
+      const seenSingleEffects = new Set<string>();
+      const seenPorts = new Set<string>();
 
       for (const [index, action] of request.actions.entries()) {
         if (seenNames.has(action.name)) {
@@ -127,32 +128,24 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
         }
         seenNames.add(action.name);
 
-        if (firstIndexByEffect.has(action.effect)) {
-          context.addIssue(decisionIssue('duplicate_effect', ['actions', index, 'effect'], action.effect));
-        } else {
-          firstIndexByEffect.set(action.effect, index);
+        if (action.effect !== 'resume') {
+          if (seenSingleEffects.has(action.effect)) {
+            context.addIssue(decisionIssue('duplicate_effect', ['actions', index, 'effect'], action.effect));
+          }
+          seenSingleEffects.add(action.effect);
+        }
+
+        // A blank port already answered `port_empty`; two of them must not also read as shared.
+        if (action.effect !== 'rerun-source' && isNotBlank(action.port)) {
+          if (seenPorts.has(action.port)) {
+            context.addIssue(decisionIssue('duplicate_port', ['actions', index, 'port'], action.port));
+          }
+          seenPorts.add(action.port);
         }
       }
 
-      const resumeIndex = firstIndexByEffect.get('resume');
-      if (resumeIndex === undefined) {
+      if (!request.actions.some((action) => action.effect === 'resume')) {
         context.addIssue(decisionIssue('resume_required', ['actions']));
-        return;
-      }
-
-      const rejectIndex = firstIndexByEffect.get('reject');
-      if (rejectIndex === undefined) return;
-      const resume = request.actions[resumeIndex];
-      const reject = request.actions[rejectIndex];
-      if (
-        resume.effect === 'resume' &&
-        reject.effect === 'reject' &&
-        resume.port === reject.port &&
-        isNotBlank(reject.port)
-      ) {
-        context.addIssue(
-          decisionIssue('reject_port_equals_resume_port', ['actions', rejectIndex, 'port'], reject.port),
-        );
       }
     }),
 );
