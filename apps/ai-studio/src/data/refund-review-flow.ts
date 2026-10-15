@@ -69,7 +69,7 @@ Read the customer's message. Decide the refund amount under the policy, take the
 message, and draft the reply: the amount refunded, where and when it arrives, and one sentence on
 preventing a repeat. Keep your reasoning about the policy for the team, not for the customer.`,
             webSearch: false,
-            agentType: 'refund-review',
+            expectedSchema: refundReviewOutputSchema,
           },
           type: 'ai-studio/ai-agent',
           icon: 'AiAgent',

@@ -33,6 +33,7 @@ export const uischema: UISchema = {
         },
       ],
     },
+    { type: 'DecisionFormNew', scope: scope('properties.editableFields') } as unknown as UISchema,
     // // Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     // {
     //   type: 'DecisionFields',
@@ -40,7 +41,6 @@ export const uischema: UISchema = {
     //   label: 'Fields the decider sees',
     // } as unknown as UISchema,
     // The run-time decision form.
-    { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
-    { type: 'DecisionFormNew', scope: scope('properties.decisionRequest') } as unknown as UISchema,
+    // { type: 'DecisionForm', scope: scope('properties.decisionRequest') } as unknown as UISchema,
   ],
 };

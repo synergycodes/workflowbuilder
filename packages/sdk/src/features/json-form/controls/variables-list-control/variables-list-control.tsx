@@ -104,7 +104,7 @@ function VariablesListControl(props: VariablesListControlProps) {
           />
         ))}
         <Button
-          variant={data.length === 0 ? 'primary' : 'secondary'}
+          variant={data.length === 0 ? 'primary' : 'ghost-secondary'}
           size="xs"
           prefixIcon={<PlusCircle weight="bold" />}
           onClick={onAdd}

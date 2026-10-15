@@ -18,6 +18,7 @@ export type NodeExecutionState = {
 
 export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
 
+// Bad name
 /** One wait of a decision node: the run, the node, and which time the node parked in it. */
 export type DecisionWait = { executionId: string; nodeId: string; attempt: number };
 

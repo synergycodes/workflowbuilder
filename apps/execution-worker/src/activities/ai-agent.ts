@@ -39,6 +39,7 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   console.log('HEY HEY HEY');
   console.log('HEY HEY HEY');
   console.log(node);
+  console.log(context);
 
   if (expectedSchema != null && !isObjectSchema(expectedSchema)) {
     throw new PermanentNodeExecutionError(

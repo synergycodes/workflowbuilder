@@ -289,6 +289,8 @@ export type { NodeSchemaOutput } from './node/node-output-schema';
 export { useNodeVariables } from './features/variables/hooks/use-node-variables';
 // Non-React counterpart of `useNodeVariables`; `undefined` until the node is indexed.
 export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';
+// Gets a reliable reference to a potential variable.
+export { getVariableReferences } from './features/variables/utils/keys/get-variable-references';
 
 // Variable controls
 // Schema you can use in your node while relying on VariablesList.
