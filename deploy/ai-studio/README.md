@@ -77,9 +77,8 @@ rest means the images must be built for the destination platform; see the
 platform note under step 1.
 
 The air-gapped host needs exactly one thing preinstalled: Docker Engine with
-the Compose v2 plugin (plus ~3 GB of disk for the loaded images). Compose v1
-cannot parse the nested `${A:+${B:?}}` interpolation that the retired-key
-guard at the top of `docker-compose.yml` relies on.
+the Compose v2 plugin (plus ~4 GB of disk for the loaded images). Compose v1
+is end-of-life and these files are not tested with it.
 
 ### 1. Build and pack on a connected machine
 
@@ -154,6 +153,9 @@ When policy requires building inside the network, point the two registry steps
 at your npm mirror (Artifactory, Nexus, Verdaccio) with an `.npmrc` passed as a
 build secret. Only those two steps mount it, so the token never lands in an
 image layer; a build without the secret uses the public registry as above.
+Keep credentials in the `_authToken` (or `_auth`) line, never in the
+`registry=` URL: pnpm records that URL in `node_modules/.modules.yaml`, which
+is part of the image.
 
 ```ini
 # mirror.npmrc: keep it outside the checkout
