@@ -46,6 +46,116 @@ curl -s http://localhost:8080/api/health   # {"status":"ok"}
 # open http://localhost:8080, run the "Sales Inquiry Pipeline" template
 ```
 
+## Air-gapped / offline install
+
+The host that runs the stack needs no internet access — but the machine that
+builds the images does. The Dockerfile reaches the network in exactly three
+places: pulling base images, installing pnpm itself, and `pnpm fetch` of the
+package store. Every `RUN` after that fetch is `--network=none`, so BuildKit
+cuts egress for the whole step — installs, lifecycle scripts and build
+commands included (`--offline` alone would only stop pnpm's own resolver). A
+step that needs the network fails every ordinary build, and
+`pnpm check:offline-build` fails if a post-fetch step ever loses the flag.
+That per-step guarantee is the enforceable one: a whole-build
+`docker build --network none` cannot pass, because the pnpm bootstrap and
+`pnpm fetch` need the registry by design. So don't build on the air-gapped
+host — build on a connected machine and ship the images.
+
+The air-gapped host needs exactly one thing preinstalled: Docker Engine with
+the compose plugin (plus ~3 GB of disk for the loaded images).
+
+### 1. Build and pack on a connected machine
+
+```bash
+cd deploy/ai-studio
+./pack-offline.sh ../../ai-studio-offline   # any output directory
+```
+
+The script builds both images, pulls the infra images and writes one directory
+to ship:
+
+- `ai-studio-images.tar` (~1 GB): `ai-studio-runtime`, `ai-studio-web`,
+  Postgres, Temporal and the Temporal UI (drop `--profile debug` from the
+  script to leave the UI out and save ~100 MB)
+- `ai-studio-images.tar.sha256`: checksum to verify on the host
+- `ai-studio-images.manifest.txt`: `docker image inspect` of every image in
+  the tarball — tags, registry digests, image IDs, platform. The compose files
+  pin tags, not digests, so this file is the record of exactly which builds
+  shipped; keep it with the bundle.
+- `docker-compose.yml`, `docker-compose.override.yml`, `.env.example` and an
+  empty `tls/` (the nginx config is already baked into the `web` image)
+
+If the host is x86 and you pack on an ARM Mac, put
+`DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of the script — `docker save`
+ships exactly what you built (slower under emulation, but correct).
+
+### 2. Ship to the host
+
+Move the bundle directory across the gap (USB drive, scp over the internal
+network — whatever your process allows).
+
+### 3. Verify, load and start on the host
+
+```bash
+cd ai-studio-offline                          # wherever you copied the bundle to
+shasum -a 256 -c ai-studio-images.tar.sha256  # or: sha256sum -c ai-studio-images.tar.sha256
+docker load -i ai-studio-images.tar
+cp .env.example .env              # set AI_API_KEY, AI_BASE_URL — see "What still needs egress"
+docker compose up -d --no-build   # --no-build: use the loaded images, never rebuild here
+```
+
+First boot behaves exactly as in Quick start: the backend applies migrations
+before serving, and the worker crash-loops for ~30s until Temporal finishes
+auto-setup.
+
+### 4. Connect
+
+Only the `web` container publishes a port. The backend, Temporal, and both
+databases stay on the internal Docker network — you reach the API through the
+nginx inside `web`, on the same port as the SPA:
+
+```bash
+# on the host itself
+curl http://localhost:8080/api/health        # {"status":"ok"}
+```
+
+From another machine on the same network, open `http://<host-ip>:8080` in a
+browser (the SPA calls `/api` on its own origin — there is no separate
+backend address to configure). If the host answers locally but not from
+outside, it's the host firewall: allow `WEB_PORT` (default 8080) in. The
+default `WEB_BIND=0.0.0.0` already listens on all interfaces; set
+`WEB_BIND=127.0.0.1` only when a host-level reverse proxy should be the sole
+way in (see "TLS / going public").
+
+### Image versions
+
+Every image this stack does not build itself is pinned to an exact version
+tag: `node` and `nginx` in [Dockerfile](Dockerfile), Postgres in both compose
+files, Temporal and its UI in
+[docker-compose.override.yml](docker-compose.override.yml). Tags are not
+digests: a base image can be rebuilt under the same tag, which is how it
+receives OS security patches, so two packs made months apart can differ in
+those layers. The manifest the script writes records the digests that actually
+shipped, so a bundle is always traceable to its exact contents. Bump a tag in
+the file that holds it; the Postgres tag appears in both compose files.
+
+### What still needs egress
+
+"Air-gapped" covers the install — nothing above pulls from a registry at
+deploy time. Whether the running stack needs egress is decided by
+`AI_BASE_URL`:
+
+- **Default (OpenRouter)**: the backend and worker need egress to
+  `openrouter.ai:443`. Without it the stack runs and every ordinary node
+  works, but AI Agent nodes and the visualize route fail. On a restricted
+  network, allow-list that host.
+- **Fully inside the gap**: point `AI_BASE_URL` at an OpenAI-compatible
+  endpoint on your own network (see "Pointing at a different LLM" under
+  Configuration) and no LLM traffic leaves it — zero egress.
+
+Leave `TAVILY_API_KEY` empty inside a gap: the AI Agent's web-search tool
+calls `tavily.com`. Agents with web search toggled on still run without it.
+
 ## Spend safety (do not skip)
 
 Two independent controls; both must be in place before the URL goes public:
