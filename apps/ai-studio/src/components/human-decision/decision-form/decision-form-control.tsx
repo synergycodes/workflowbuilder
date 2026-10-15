@@ -34,6 +34,7 @@ function DecisionFormControl() {
         schema={schema}
         values={withEdits(proposal, outcome.edits)}
         reason={outcome.reason}
+        comment={outcome.comment}
       />
     );
   }
