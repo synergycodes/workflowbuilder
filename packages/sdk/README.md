@@ -171,7 +171,7 @@ Full guide: [Build a plugin](https://www.workflowbuilder.io/docs/guides/build-a-
 
 ## The built-in interface: state, actions, and your own UI
 
-The app bar, the palette and the properties panel are not customized by targeting them with `registerComponentDecorator`; they share a separate, simpler model, with four tools that work the same way everywhere:
+Your own UI in the app bar, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesBar` and `ProjectSelection` slots still take a props decorator, for the panel's `tabs`, labels and `onDeleteClick`; that keeps working.)
 
 | You want to…                        | Use                                                                                                                                                |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |

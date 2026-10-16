@@ -86,7 +86,7 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
   return (
     <div className={styles['project-selection']}>
       <span className={styles['folder-name']}>{t('header.folderName')} /</span>
-      {editName && !isReadOnly ? (
+      {editName && isDocumentRenameVisible && !isReadOnly ? (
         <Input
           value={documentName}
           onChange={(event) => renameDocument(event.target.value)}
