@@ -547,6 +547,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       resolution: {
         output: approvedDecision,
         nextPort: 'source:inner:approved',
+        edits: { [refundAmountKey]: 120 },
       },
     });
   });
@@ -571,6 +572,7 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       resolution: {
         output: approvedDecision,
         nextPort: 'source:inner:approved',
+        edits: { [refundAmountKey]: 120 },
       },
     });
   });
@@ -608,7 +610,11 @@ describe('POST /api/executions/:id/decision - delivery', () => {
       effect: 'resume-with-edits',
     });
     const completion: unknown = engineMock.resolveNode.mock.calls[0]?.[0]?.resolution;
-    expect(completion).toEqual({ output: approvedDecision, nextPort: 'source:inner:approved' });
+    expect(completion).toEqual({
+      output: approvedDecision,
+      nextPort: 'source:inner:approved',
+      edits: { [refundAmountKey]: 120 },
+    });
     expect(completion).not.toHaveProperty('outcome');
   });
 

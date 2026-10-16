@@ -8,23 +8,26 @@ const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'ap
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
 
 describe('toNodeResolution', () => {
-  it.each<{ decision: RoutedDecision; action: RoutedDecisionAction; port: string }>([
-    {
-      decision: { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' },
-      action: approve,
-      port: 'approved',
-    },
-    {
-      decision: { action: 'approve', effect: 'resume-with-edits', edits: { refundAmount: 120 }, resolvedBy: 'human' },
-      action: approve,
-      port: 'approved',
-    },
-  ])('routes a $decision.effect decision on the action port and declares no outcome', ({ decision, action, port }) => {
-    const completion = toNodeResolution(decision, action);
+  it('routes a resume on the action port, declares no outcome and carries no edits', () => {
+    const decision: RoutedDecision = { action: 'approve', effect: 'resume', edits: {}, resolvedBy: 'human' };
 
-    expect(completion.nextPort).toBe(port);
+    const completion = toNodeResolution(decision, approve);
+
+    expect(completion.nextPort).toBe('approved');
     expect(completion.output).toBe(decision);
     expect(Object.keys(completion)).toEqual(['output', 'nextPort']);
+  });
+
+  it('lifts the edits of a resume-with-edits onto the completion for the engine to apply', () => {
+    const edits = { 'nodes/draft-1/refundAmount': 120 };
+    const decision: RoutedDecision = { action: 'approve', effect: 'resume-with-edits', edits, resolvedBy: 'human' };
+
+    const completion = toNodeResolution(decision, approve);
+
+    expect(completion.nextPort).toBe('approved');
+    expect(completion.output).toBe(decision);
+    expect(completion.edits).toBe(edits);
+    expect(Object.keys(completion)).toEqual(['output', 'nextPort', 'edits']);
   });
 
   it('routes a reject on its port and declares the rejection as the run outcome', () => {

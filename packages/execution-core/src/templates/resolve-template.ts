@@ -12,7 +12,7 @@
 // should fail loudly during development. The safe forms are an opt-in for
 // authors who genuinely expect a value to be absent some of the time.
 import { PermanentNodeExecutionError } from '../errors';
-import type { ExecutionContext } from '../execution-context';
+import { CONTEXT_NAMESPACES, type ExecutionContext, isContextNamespace } from '../execution-context';
 
 // Two-stage parse: the OUTER regex catches anything that *looks* like a
 // template reference (a `{{namespace.…}}` block with a dot — the marker of
@@ -73,26 +73,13 @@ export function resolveTemplate(template: string, context: ExecutionContext): st
 }
 
 function resolveNamespace(namespace: string, context: ExecutionContext, match: string): unknown {
-  switch (namespace) {
-    case 'nodes': {
-      return context.nodeOutputs;
-    }
-    case 'trigger': {
-      return context.triggerPayload;
-    }
-    case 'variables': {
-      return context.variables;
-    }
-    case 'global': {
-      return context.global;
-    }
-    default: {
-      throw new PermanentNodeExecutionError(
-        'template_unresolved',
-        `Unresolved template reference: ${match} (unknown namespace "${namespace}")`,
-      );
-    }
+  if (!isContextNamespace(namespace)) {
+    throw new PermanentNodeExecutionError(
+      'template_unresolved',
+      `Unresolved template reference: ${match} (unknown namespace "${namespace}")`,
+    );
   }
+  return context[CONTEXT_NAMESPACES[namespace]];
 }
 
 function getNestedValue(object: unknown, path: string): unknown {

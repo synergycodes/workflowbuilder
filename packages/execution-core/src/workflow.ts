@@ -13,6 +13,8 @@ export { NodeExecutionError } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 
+export { isEditKey } from './templates/update-context';
+
 export type {
   ResolveNodeInput,
   ResolveNodeRejection,

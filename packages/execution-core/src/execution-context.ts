@@ -11,3 +11,18 @@ export type ExecutionContext = {
   // Global variables defined manually in the builder
   readonly global: Record<string, unknown>;
 };
+
+// The namespaces a `{{namespace.path}}` reference or a `namespace/path` edit key may name,
+// and the context bag each one reads.
+export const CONTEXT_NAMESPACES = {
+  nodes: 'nodeOutputs',
+  trigger: 'triggerPayload',
+  variables: 'variables',
+  global: 'global',
+} as const satisfies Record<string, keyof ExecutionContext>;
+
+export type ContextNamespace = keyof typeof CONTEXT_NAMESPACES;
+
+export function isContextNamespace(namespace: string): namespace is ContextNamespace {
+  return Object.hasOwn(CONTEXT_NAMESPACES, namespace);
+}

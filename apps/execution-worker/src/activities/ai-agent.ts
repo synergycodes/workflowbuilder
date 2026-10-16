@@ -32,15 +32,6 @@ function isObjectSchema(value: unknown): boolean {
 export async function executeAiAgent(node: AiAgentNode, context: ExecutionContext, deps: AiAgentDeps) {
   const { expectedSchema } = node.config;
 
-  console.log('HEY HEY HEY');
-  console.log('HEY HEY HEY');
-  console.log('HEY HEY HEY');
-  console.log('HEY HEY HEY');
-  console.log('HEY HEY HEY');
-  console.log('HEY HEY HEY');
-  console.log(node);
-  console.log(context);
-
   if (expectedSchema != null && !isObjectSchema(expectedSchema)) {
     throw new PermanentNodeExecutionError(
       'output_schema_invalid',
@@ -83,7 +74,8 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     // multiply model calls (up to 3x per activity attempt).
     maxRetries: 0,
     system: resolvedPrompt,
-    prompt: userPrompt,
+    // Flow without context
+    prompt: '',
     // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
     ...(tools
       ? {

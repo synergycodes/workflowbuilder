@@ -24,10 +24,14 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
 
   const isDisabled = !enabled || disabled === true;
 
-  const [inputValue, setInputValue] = useState(data ?? '');
+  const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
-    setInputValue(data ?? '');
+    if (data == null) {
+      setInputValue('');
+    } else {
+      setInputValue(String(data));
+    }
   }, [data]);
 
   const onBlur = useCallback(

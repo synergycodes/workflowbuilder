@@ -35,11 +35,5 @@ export const schemaOutput: NodeSchemaOutput = {
         },
       },
     },
-    {
-      variantRule: {
-        fromValueOfPropertyPath: 'editableFields',
-        toSourceHandles: ['success'],
-      },
-    },
   ],
 };

@@ -303,7 +303,7 @@ export function VariableText({
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}
-      rows={minRows}
+      // rows={minRows}
     >
       <Mention
         trigger={trigger}

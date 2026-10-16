@@ -20,6 +20,9 @@ export function toNodeResolution(decision: RoutedDecision, action: RoutedDecisio
     throw new Error(`action '${action.name}' routes to the reserved 'errorRoute' port`);
   }
   const completion: CompletedNodeExecution = { output: decision, nextPort: action.port };
+  if (decision.effect === 'resume-with-edits') {
+    completion.edits = decision.edits;
+  }
   if (action.effect === 'reject') {
     completion.outcome = { value: REJECTED_OUTCOME, resolvedBy: decision.resolvedBy };
   }

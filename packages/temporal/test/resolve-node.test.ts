@@ -100,6 +100,38 @@ describe('resolveNode through the engine port', () => {
     });
   }, 120_000);
 
+  it('a verdict with edits patches what the next wave reads; a key naming no context path is refused', async () => {
+    const taskQueue = 'resolve-node-edits';
+    const executionId = 'resolve-node-edits-execution';
+    const store = createRecordingStore();
+    const harness = createPauseExecutors();
+    const engine = createEngine(taskQueue);
+    const handle = await submit(engine, executionId, SINGLE_GATE_GRAPH);
+
+    const worker = await createWorker(taskQueue, store, harness);
+    await worker.runUntil(async () => {
+      await whenAnnounced(store, 'gate');
+      expect(
+        await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: 1, edits: { 'secrets/x': 1 } } }),
+      ).toMatchObject({ error: { code: 'verdict_malformed', message: expect.any(String) } });
+      const edits = { 'nodes/start/visited': 'start, edited', 'nodes/start/by': 'human' };
+      expect(
+        await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: { approved: true }, edits } }),
+      ).toEqual({});
+      await handle.result();
+    });
+
+    expect(harness.executed).toEqual(['start', 'gate', 'after']);
+    expect(harness.inputsSeen.after).toEqual({
+      start: { visited: 'start, edited', by: 'human' },
+      gate: { approved: true },
+    });
+    // In memory only: the source's recorded output is what it produced.
+    expect(store.events.find((event) => event.type === 'node_completed' && event.nodeId === 'start')?.payload).toEqual({
+      output: { visited: 'start' },
+    });
+  }, 120_000);
+
   it('answers each rejection as a result and leaves the parked run resolvable', async () => {
     const taskQueue = 'resolve-node-rejections';
     const executionId = 'resolve-node-rejections-execution';
