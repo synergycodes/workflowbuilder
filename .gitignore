@@ -8,6 +8,9 @@ tmp
 # pnpm pack / npm pack artefacts (local tarballs for smoke tests + publish dry-runs)
 *.tgz
 
+# air-gap bundle from deploy/ai-studio/pack-offline.sh, if written into the checkout
+ai-studio-offline/
+
 # Emitted declarations from `pnpm --filter @workflow-builder/icons build`
 # (prepare hook). Root + src/ locations are outside `dist/` so need explicit
 # patterns. `global.d.ts` is a source file — don't ignore.

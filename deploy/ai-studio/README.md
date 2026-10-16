@@ -1,6 +1,6 @@
 # Deploying AI Studio
 
-Self-contained, portable deployment of the AI Studio stack (WB-229). Runs on
+Self-contained, portable deployment of the AI Studio stack. Runs on
 any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 
 ## What runs
@@ -11,8 +11,8 @@ any Docker host — an Azure VM, AWS, on-prem — with no cloud-specific glue.
 | `backend`     | `ai-studio-runtime`            | Hono REST + SSE event stream; calls the LLM for `/api/visualize/adapt` | internal                 |
 | `worker`      | `ai-studio-runtime`            | Temporal worker, runs the nodes; AI Agent nodes call the LLM           | internal                 |
 | `temporal`    | `temporalio/auto-setup` pinned | Workflow engine                                                        | internal                 |
-| `app-db`      | `postgres:16`                  | Workflow snapshots + execution events                                  | internal                 |
-| `temporal-db` | `postgres:16`                  | Temporal's own state store                                             | internal                 |
+| `app-db`      | `postgres:16.15`               | Workflow snapshots + execution events                                  | internal                 |
+| `temporal-db` | `postgres:16.15`               | Temporal's own state store                                             | internal                 |
 | `temporal-ui` | `temporalio/ui` pinned         | Debug only (`--profile debug`)                                         | `127.0.0.1:8233`         |
 
 The three Temporal rows come from
@@ -45,6 +45,173 @@ Verify:
 curl -s http://localhost:8080/api/health   # {"status":"ok"}
 # open http://localhost:8080, run the "Sales Inquiry Pipeline" template
 ```
+
+## Air-gapped / offline install
+
+The host that runs the stack needs no internet access — but the machine that
+builds the images does. The Dockerfile reaches the network in exactly three
+places: pulling base images, installing pnpm itself, and `pnpm fetch` of the
+package store. Every `RUN` after that fetch is `--network=none`, so BuildKit
+cuts egress for the whole step — installs, lifecycle scripts and build
+commands included (`--offline` alone would only stop pnpm's own resolver). A
+step that needs the network fails every ordinary build, and
+`pnpm check:offline-build` fails if a post-fetch step ever loses the flag or
+adds a download of its own (`ADD <url>`, `COPY --from=<image>`,
+`RUN --mount=…,from=<image>`), and when the `pnpm fetch` step runs anything
+else.
+That per-step guarantee is the enforceable one: a whole-build
+`docker build --network none` cannot pass, because the pnpm bootstrap and
+`pnpm fetch` need the registry by design. The Dockerfile also carries no
+`# syntax=` directive, which would pull the build frontend from Docker Hub as
+an unpinned fourth download; the guard rejects one, and the packing machine
+needs Docker Engine 23 or later for the built-in frontend instead. So by
+default, build on a connected machine and ship the images.
+
+Shipping prebuilt images is the default air-gapped model, covered in steps 1-4.
+A host that must build from source inside the gap can do so from a
+customer-side registry mirror instead; see "Alternative: build from a registry
+mirror". Either way the images are
+platform-specific: the base images are, and so are the native packages pnpm
+selects for the build platform during the image's install (esbuild behind
+`tsx`, swc). The Temporal worker's Rust core is the exception — one package
+carries the binary for every supported platform and picks at runtime — but the
+rest means the images must be built for the destination platform; see the
+platform note under step 1.
+
+The air-gapped host needs exactly one thing preinstalled: Docker Engine with
+the Compose v2 plugin (plus ~4 GB of disk for the loaded images). Compose v1
+is end-of-life and these files are not tested with it.
+
+### 1. Build and pack on a connected machine
+
+```bash
+cd deploy/ai-studio
+./pack-offline.sh ~/ai-studio-offline   # any directory outside the checkout
+```
+
+The script builds both images, pulls the infra images and writes one directory
+to ship. It refuses a directory inside the checkout: the repo root is the image
+build context, so a bundle left there would be copied into the next build.
+
+- `ai-studio-images.tar` (~1 GB): `ai-studio-runtime`, `ai-studio-web`,
+  Postgres, Temporal and the Temporal UI (drop `--profile debug` from the
+  script to leave the UI out and save ~100 MB)
+- `ai-studio-images.tar.sha256`: checksum to verify on the host
+- `ai-studio-images.manifest.txt`: `docker image inspect` of every image in
+  the tarball — tags, registry digests, image IDs, platform. The compose files
+  pin tags, not digests, so this file is the record of exactly which builds
+  shipped; keep it with the bundle.
+- `docker-compose.yml`, `docker-compose.override.yml`, `.env.example` and an
+  empty `tls/` (the nginx config is already baked into the `web` image)
+
+Build for the destination platform, not the packing machine's. On an ARM Mac
+packing for an x86 host, put `DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of
+the script: `docker save` ships exactly what you built (slower under emulation,
+but correct), and an image built for the wrong platform fails at container
+start, not at load. The manifest's last column shows the platform of every
+image in the tarball — check it before shipping.
+
+### 2. Ship to the host
+
+Move the bundle directory across the gap (USB drive, scp over the internal
+network — whatever your process allows).
+
+### 3. Verify, load and start on the host
+
+```bash
+cd ai-studio-offline                          # wherever you copied the bundle to
+shasum -a 256 -c ai-studio-images.tar.sha256  # or: sha256sum -c ai-studio-images.tar.sha256
+docker load -i ai-studio-images.tar
+cp .env.example .env              # set AI_API_KEY, AI_BASE_URL, AI_MODEL — see "What still needs egress"
+docker compose up -d --no-build   # --no-build: use the loaded images, never rebuild here
+```
+
+First boot behaves exactly as in Quick start: the backend applies migrations
+before serving, and the worker crash-loops for ~30s until Temporal finishes
+auto-setup.
+
+### 4. Connect
+
+Only the `web` container publishes a port. The backend, Temporal, and both
+databases stay on the internal Docker network — you reach the API through the
+nginx inside `web`, on the same port as the SPA:
+
+```bash
+# on the host itself
+curl http://localhost:8080/api/health        # {"status":"ok"}
+```
+
+From another machine on the same network, open `http://<host-ip>:8080` in a
+browser (the SPA calls `/api` on its own origin — there is no separate
+backend address to configure). If the host answers locally but not from
+outside, it's the host firewall: allow `WEB_PORT` (default 8080) in. The
+default `WEB_BIND=0.0.0.0` already listens on all interfaces; set
+`WEB_BIND=127.0.0.1` only when a host-level reverse proxy should be the sole
+way in (see "TLS / going public").
+
+### Alternative: build from a registry mirror
+
+When policy requires building inside the network, point the two registry steps
+at your npm mirror (Artifactory, Nexus, Verdaccio) with an `.npmrc` passed as a
+build secret. Only those two steps mount it, so the token never lands in an
+image layer; a build without the secret uses the public registry as above.
+Keep credentials in the `_authToken` (or `_auth`) line, never in the
+`registry=` URL: pnpm records that URL in `node_modules/.modules.yaml`, which
+is part of the image.
+
+```ini
+# mirror.npmrc: keep it outside the checkout
+registry=https://npm.example.internal/
+//npm.example.internal/:_authToken=<token>
+```
+
+```bash
+# from the repo root: it is the build context
+for target in runtime web; do
+  docker build --secret id=npmrc,src=/path/to/mirror.npmrc \
+    -f deploy/ai-studio/Dockerfile --target "$target" -t "ai-studio-$target" .
+done
+cd deploy/ai-studio && docker compose up -d --no-build
+```
+
+The mirror must hold `pnpm@10.17.0` and every package in `pnpm-lock.yaml`,
+including the native ones for the build platform (esbuild, swc). The base
+images (`node`, `nginx`, Postgres, Temporal) come from your container registry,
+for example through the Docker daemon's `registry-mirrors`. Every step after
+`pnpm fetch` still runs with `--network=none`.
+
+### Image versions
+
+Every image this stack does not build itself is pinned to a version tag:
+`node` and `nginx` in [Dockerfile](Dockerfile), Postgres in both compose files,
+Temporal and its UI in
+[docker-compose.override.yml](docker-compose.override.yml). All are exact
+releases except `nginx`, pinned to its 1.31 minor line. Tags are not
+digests: a base image can be rebuilt under the same tag, which is how it
+receives OS security patches, so two packs made months apart can differ in
+those layers. The manifest the script writes records the digests that actually
+shipped, so a bundle is always traceable to its exact contents. Bump a tag in
+the file that holds it; the Postgres tag appears in both compose files.
+
+### What still needs egress
+
+"Air-gapped" covers the install — nothing above pulls from a registry at
+deploy time. At runtime the stack has three optional egress paths, each behind
+one setting. Zero egress means all three are closed:
+
+| Path                                | Destination                        | Closed when                                                                                                                                                                  |
+| ----------------------------------- | ---------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| LLM calls (backend + worker)        | whatever `AI_BASE_URL` names       | `AI_BASE_URL` points at an OpenAI-compatible endpoint inside your network ("Pointing at a different LLM" under Configuration)                                                |
+| AI Agent web-search tool (worker)   | `api.tavily.com`, not configurable | `TAVILY_API_KEY` is empty — agents with web search toggled on still run, just without the tool                                                                               |
+| Turnstile bot check (SPA + backend) | `challenges.cloudflare.com`        | Always, in this deployment: the Dockerfile has no `VITE_TURNSTILE_SITE_KEY` build arg and compose passes no `TURNSTILE_SECRET_KEY`, so neither side ever contacts Cloudflare |
+
+The SPA itself loads nothing external: Poppins is bundled with the build and
+served as `/assets/*.woff2` by the `web` container, so the browser talks only
+to that container.
+With the pre-filled `AI_BASE_URL` (OpenRouter) the one required destination is
+`openrouter.ai:443`; without it the stack runs and every ordinary node works,
+while AI Agent nodes and the visualize route fail. On a restricted network,
+allow-list that host.
 
 ## Spend safety (do not skip)
 
