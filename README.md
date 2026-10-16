@@ -6,7 +6,7 @@
 
 ### Your users draw the workflow. Temporal runs it. You see every step.
 
-Workflow Builder ships the full stack: a white-label React workflow builder for your users, durable execution on your own Temporal, human approval steps for AI agents and business processes, and a live view of every run.
+Workflow Builder ships the full stack: a white-label React workflow builder for your users, durable execution on your own [Temporal](https://temporal.io), human approval steps for AI agents and business processes, and a live view of every run.
 
 [![Build](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml/badge.svg)](https://github.com/synergycodes/workflowbuilder/actions/workflows/build.yml)
 [![License](https://img.shields.io/badge/license-Apache%202.0-blue.svg)](./LICENSE)
@@ -31,52 +31,52 @@ Your customers want to automate their work inside your product, not in another t
 - **Versions:** your customers run the published version while they edit the next one, and every run is pinned to the graph it started with.
 - **A live view of every run:** what ran, what it returned, where it waits, why it failed.
 
-Workflow Builder ships all of it, the editor and the workflow orchestration behind it, as one open-source stack on your infrastructure. Use the whole stack, or only the parts you need.
+Workflow Builder ships all of it, the editor and the workflow orchestration on Temporal behind it, as one open-source stack on your infrastructure. Use the whole stack, or only the parts you need.
 
 ## What you get
 
 **Build.** A complete workflow editor in your React app: palette, canvas and a properties panel generated from JSON Schema, with validation. Your node types, your design tokens and logo, light and dark themes, plugins. Workflows are saved as JSON to your API, a callback or `localStorage`. [Vercom](https://www.workflowbuilder.io/case-study/vercom), [Athena Intelligence](https://www.workflowbuilder.io/case-study/athena-intelligence) and [Plura AI](https://www.workflowbuilder.io/case-study/plura-ai) built their workflow editors on it.
 
-**Orchestrate.** Durable workflow orchestration on your own Temporal, self-hosted or Temporal Cloud: the diagrams your users draw run as durable workflows. One generic workflow runs any diagram with one start node and no loops, so a new or changed process ships without new workflow code, as long as it uses node types your workers already run. Independent branches run in parallel and join, a decision routes the run down one branch, each node type can get its own timeout and retry cap, and an error that cannot succeed on retry fails fast instead of burning attempts.
+**Orchestrate.** Durable workflow orchestration on your own Temporal, self-hosted or [Temporal Cloud](https://temporal.io/cloud): the diagrams your users draw run as durable workflows. One generic workflow runs any diagram with one start node and no loops, so a new or changed process ships without new workflow code, as long as it uses node types your Workers already run. Independent branches run in parallel and join, a decision routes the run down one branch, each node type can get its own timeout and retry cap, and an error that cannot succeed on retry fails fast instead of burning attempts.
 
-**Decide.** Pause any step for a person. The run waits in Temporal, for minutes or for weeks, holding no worker and running no code, until someone approves, approves with corrections, or rejects with a reason. The first decision wins, a late one is refused with an answer, and the decision, corrections included, is recorded with the run for the next steps to read.
+**Decide.** Pause any step for a person. The run waits in Temporal, for minutes or for weeks, holding no Worker and running no code, until someone approves, approves with corrections, or rejects with a reason. The first decision wins, a late one is refused with an answer, and the decision, corrections included, is recorded with the run for the next steps to read.
 
-**Observe.** Watch a run live on the canvas: each step is marked running, completed, failed, skipped or waiting, and the log shows what every step returned and why one failed. Every run keeps the exact graph it ran and its ordered event history, streamed to the browser as it happens. In Temporal UI each step shows up under your node's name. AI Studio has this run view built in, as open code you can carry into your own app.
+**Observe.** Watch a run live on the canvas: each step is marked running, completed, failed, skipped or waiting, and the log shows what every step returned and why one failed. Every run keeps the exact graph it ran and its ordered event history, streamed to the browser as it happens. In Temporal Web UI each step shows up under your node's name. AI Studio has this run view built in, as open code you can carry into your own app.
 
-**Own.** Apache 2.0, all of it: embed it, white-label it, ship it to your customers. It runs on your Temporal and your Postgres, with any OpenAI-compatible model, including one inside your network. No per-run pricing from us, and open code you can fork.
+**Own.** Apache 2.0, the whole stack in this repository: embed it, white-label it, ship it to your customers. It runs on your Temporal and your Postgres, with any OpenAI-compatible model, including one inside your network. No per-run pricing from us, and open code you can fork.
 
 ## How it fits together
 
-**Editor SDK · Temporal plugin · Execution backend — open code, yours to own.**
+**Editor SDK · Temporal Plugin · Execution backend: open code, yours to own.**
 
 ```mermaid
 flowchart LR
     editor["<b>Editor SDK</b><br/>your users draw<br/>in your React app"]
-    backend["<b>Execution backend</b><br/>versions, runs,<br/>live events, decisions"]
     person(["A person decides"])
-    plugin["<b>Temporal plugin</b><br/>runs the graph<br/>on your Temporal"]
-    workers["<b>Your workers</b><br/>one executor<br/>per node type"]
+    backend["<b>Execution backend</b><br/>versions, runs, live events<br/>TemporalWorkflowEngine"]
+    temporal[("<b>Temporal Service</b><br/>self-hosted or<br/>Temporal Cloud")]
+    worker["<b>Your Worker</b><br/>WorkflowBuilderPlugin<br/>one executor per node type"]
 
     editor -- "workflow JSON" --> backend
     person -- "approve or reject" --> backend
-    backend -- "start, cancel, deliver decisions" --> plugin
-    plugin -- "one Activity per node" --> workers
+    backend -- "start, cancel, deliver decisions" --> temporal
+    temporal -- "one Activity per node" --> worker
 ```
 
-| Block                 | What it does                                                                                                                                                                                                                             | Where it lives                                                                                                                                                |
-| --------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Editor SDK**        | The visual workflow builder your users work in. Built on [React Flow](https://reactflow.dev). Outputs workflow JSON.                                                                                                                     | npm: [`@workflowbuilder/sdk`](https://www.npmjs.com/package/@workflowbuilder/sdk), [`@workflowbuilder/ui`](https://www.npmjs.com/package/@workflowbuilder/ui) |
-| **Temporal plugin**   | The workflow orchestration layer. Runs a diagram as one Temporal Workflow Execution, one Activity per node: parallel branches, routing, per-node error policies, retries and timeouts per node type, durable pauses for human decisions. | npm: [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal)                                                                   |
-| **Execution backend** | HTTP API around the engine: drafts and published versions, starting, cancelling and listing runs, a snapshot of each run's graph, live run events over SSE, human decisions, ports for your auth and tenancy.                            | this repo: [`apps/backend`](./apps/backend/README.md), with the Temporal worker in [`apps/execution-worker`](./apps/execution-worker/README.md)               |
-| **AI Studio**         | The whole stack as one app: AI workflow templates, a live run view on the canvas and the decision panel. The [hosted demo](https://aistudio.workflowbuilder.io/) is this app.                                                            | this repo: [`apps/ai-studio`](./apps/ai-studio/README.md)                                                                                                     |
+| Block                 | What it does                                                                                                                                                                                                                                                                                                                                                              | Where it lives                                                                                                                                                |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Editor SDK**        | The visual workflow builder your users work in. Built on [React Flow](https://reactflow.dev). Outputs workflow JSON.                                                                                                                                                                                                                                                      | npm: [`@workflowbuilder/sdk`](https://www.npmjs.com/package/@workflowbuilder/sdk), [`@workflowbuilder/ui`](https://www.npmjs.com/package/@workflowbuilder/ui) |
+| **Temporal Plugin**   | The workflow orchestration layer, built on Temporal's Plugin API (`SimplePlugin` from `@temporalio/plugin`) and added with `Worker.create({ plugins: [plugin] })`. Runs a diagram as one Temporal Workflow Execution, one Activity per node: parallel branches, routing, per-node error policies, retries and timeouts per node type, durable pauses for human decisions. | npm: [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal)                                                                   |
+| **Execution backend** | HTTP API around the engine: drafts and published versions, starting, cancelling and listing runs, a snapshot of each run's graph, live run events over SSE, human decisions, ports for your auth and tenancy.                                                                                                                                                             | this repo: [`apps/backend`](./apps/backend/README.md), with the Temporal Worker in [`apps/execution-worker`](./apps/execution-worker/README.md)               |
+| **AI Studio**         | The whole stack as one app: AI workflow templates, a live run view on the canvas and the decision panel. The [hosted demo](https://aistudio.workflowbuilder.io/) is this app.                                                                                                                                                                                             | this repo: [`apps/ai-studio`](./apps/ai-studio/README.md)                                                                                                     |
 
-**Your code plugs in, the framework calls it.** You write one executor function per node type, which can call your APIs, an LLM or an agent framework. Every node is your code, so there is no low-code ceiling: your users compose the flow, your executors do the work. A store port decides where run events land. `AuthPort` and `TenantContextPort` connect your identity provider and tenant model. Temporal is the engine available today; the graph runner reaches it only through ports, so another engine needs a new adapter, not a new runner.
+**Your code plugs in, the framework calls it.** You write one executor function per node type, which can call your APIs, an LLM or an agent framework. Every node is your code, so there is no low-code ceiling: your users compose the flow, your executors do the work. A store port decides where run events land. `AuthPort` and `TenantContextPort` connect your identity provider and tenant model.
 
 ## Why not just…
 
 **…build it on React Flow?** You will have a canvas quickly. Then come the properties forms, validation, theming, versions, a worker that executes the graph, retries and backoff, human steps and run history. Workflow Builder is built on React Flow and ships the rest.
 
-**…embed n8n or another automation tool?** n8n's [license FAQ](https://docs.n8n.io/n8n-community-license/community-license/license-faq) rules out letting external users build workflows through your product, and its paid [OEM offer](https://n8n.io/oem/) is priced per execution and keeps n8n branding in the editor. Workflow Builder is Apache 2.0, white-label included: it renders as React components inside your app, with no iframe, runs your node types and lives on your infrastructure.
+**…embed n8n or another automation tool?** As of October 2026, n8n's [license FAQ](https://docs.n8n.io/n8n-community-license/community-license/license-faq) rules out letting external users build workflows through your product, and its paid [OEM offer](https://n8n.io/oem/) is priced per execution and keeps n8n branding in the editor. Workflow Builder is Apache 2.0, white-label included: it renders as React components inside your app, with no iframe, runs your node types and lives on your infrastructure.
 
 **…use Temporal alone?** Temporal runs workflows your developers write in code, and its Web UI is made for debugging. Workflow Builder adds visual workflow orchestration on top: your users draw the workflow, one generic workflow runs every drawing on your Temporal, and AI Studio shows the run on the same canvas, in open code you can carry into your own frontend. It is the DSL-interpreter pattern from Temporal's own samples, with an editor, versions, human steps and run history around it.
 
@@ -91,7 +91,7 @@ flowchart LR
 
 > "I was looking for solutions that weren't just code libraries. I needed something built by people who'd solved this problem before."
 >
-> — Adam Lewkowicz, Founder & CTO, [Vercom](https://www.workflowbuilder.io/case-study/vercom)
+> Adam Lewkowicz, Founder & CTO, [Vercom](https://www.workflowbuilder.io/case-study/vercom)
 
 Workflow Builder is made by [Synergy Codes](https://www.synergycodes.com/): 15+ years of building diagramming tools, 200+ custom workflow tools delivered across 20+ industries.
 
@@ -143,12 +143,17 @@ npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @t
 
 Requires Node.js 20.3 or newer, ESM. Tested against the `1.23` line of the Temporal TypeScript SDK.
 
-Register one executor per node type and a store for run events:
+Declare your node types, then register one executor per node type and a store for run events:
 
 ```ts
-import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
+import { type BaseNode, WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
 
-const plugin = new WorkflowBuilderPlugin({
+// One variant per node type in your editor's palette. `type` is the key of its executor.
+type HttpRequestNode = BaseNode & { type: 'my-app/http-request'; config: { url: string } };
+type ApprovalNode = BaseNode & { type: 'my-app/approval' };
+type MyNode = HttpRequestNode | ApprovalNode;
+
+const plugin = new WorkflowBuilderPlugin<MyNode>({
   // One executor per node type. Whatever your nodes do lives here.
   executors: {
     'my-app/http-request': async (node, context) => ({ output: await callApi(node.config, context) }),
@@ -179,17 +184,21 @@ const engine = new TemporalWorkflowEngine({
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
 
-// Later, when the reviewer approves. The first decision wins; a second one is refused.
-await engine.resolveNode({
+// Later, when the reviewer approves.
+const { error } = await engine.resolveNode({
   executionId,
   nodeId: 'approval-1',
   resolution: { output: 'approved', nextPort: 'approved' },
 });
+// The first decision wins: a second one comes back as error.code 'verdict_already_delivered'.
+if (error) console.warn(error.code, error.message);
 ```
 
 The [package README](./packages/temporal/README.md) has the full worker and client code, retries and timeouts per node type, pausing a run for a human, and the replay contract.
 
 ### Requirements
+
+Paths B and C run this repository locally and share these requirements and the preflight check below. Paths A and D need neither.
 
 - pnpm `10.17.0`: `npm i -g pnpm@10.17.0`. It fetches Node `22.12.0` on its own (`useNodeVersion` in `pnpm-workspace.yaml`), so no Node version manager is needed. Both versions are pinned in `package.json`. Do not use corepack: the one bundled with Node 22 cannot load pnpm 10 (`ERR_VM_DYNAMIC_IMPORT_CALLBACK_MISSING`).
 - Docker Desktop. Only required for Path C.
@@ -219,7 +228,7 @@ Open `http://localhost:4200`. The editor opens with the default plugin set and a
 
 ### Path C. Run the full stack demo
 
-The whole stack on your machine: AI Studio (the same app as the hosted demo), the execution backend, the Temporal worker, Temporal and Postgres.
+The whole stack on your machine: AI Studio (the same app as the hosted demo), the execution backend, the Temporal Worker, Temporal and Postgres.
 
 **1. Create the `.env` files.** First time only; existing files are left untouched.
 
@@ -241,7 +250,7 @@ Any OpenAI-compatible endpoint works, including a model inside your own network:
 pnpm dev:ai-studio
 ```
 
-Open `http://127.0.0.1:4201`, open **Templates**, pick **Refund Review** and press **Run**. The run stops at the review step and waits for you; decide in the properties panel and the run finishes. Temporal UI at `http://127.0.0.1:8233` shows the same run as one Workflow Execution, each step under its node's name.
+Open `http://127.0.0.1:4201`, open **Templates**, pick **Refund Review** and press **Run**. The run stops at the review step and waits for you; decide in the properties panel and the run finishes. Temporal Web UI at `http://127.0.0.1:8233` shows the same run as one Workflow Execution, each step under its node's name.
 
 To stop: `Ctrl+C`, then `pnpm infra:down`.
 
@@ -266,13 +275,13 @@ After the preflight table and the Docker lines, wait for `Temporal ready`, then 
 
 #### Troubleshooting
 
-| Symptom                                                                 | Cause                                                                        | Fix                                                                                                             |
-| ----------------------------------------------------------------------- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
-| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                               | `pnpm preflight` shows the conflict. Stop the other process or change the port                                  |
-| Temporal UI loads but the `default` namespace is missing                | Temporal is still finishing its first start                                  | Wait a few seconds and reload. `docker compose -f apps/backend/docker-compose.yml logs temporal` shows progress |
-| AI Agent node fails with `ai_not_configured`                            | LLM not configured — the worker starts anyway, only AI nodes are unavailable | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env`                                  |
-| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal        | Fix the errors or ignore them temporarily                                                                       |
-| Vite acts up after a dependency change                                  | Stale Vite cache                                                             | Delete `apps/demo/node_modules/.vite` (or the `apps/ai-studio` one) and rerun                                   |
+| Symptom                                                                 | Cause                                                                      | Fix                                                                                                             |
+| ----------------------------------------------------------------------- | -------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `EADDRINUSE` on 3001, 4200, 4201, 5432, 5433, 7233, or 8233             | Another process holds the port                                             | `pnpm preflight` shows the conflict. Stop the other process or change the port                                  |
+| Temporal Web UI loads but the `default` namespace is missing            | Temporal is still finishing its first start                                | Wait a few seconds and reload. `docker compose -f apps/backend/docker-compose.yml logs temporal` shows progress |
+| AI Agent node fails with `ai_not_configured`                            | LLM not configured. The worker still starts; only AI nodes are unavailable | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env`                                  |
+| `pnpm dev:demo` shows TypeScript errors but the dev server still starts | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal      | Fix the errors or ignore them temporarily                                                                       |
+| Vite acts up after a dependency change                                  | Stale Vite cache                                                           | Delete `apps/demo/node_modules/.vite` (or the `apps/ai-studio` one) and rerun                                   |
 
 For the full command reference, see the table in [`CLAUDE.md`](./CLAUDE.md).
 
@@ -286,7 +295,7 @@ For the full command reference, see the table in [`CLAUDE.md`](./CLAUDE.md).
 | [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) | [![npm](https://img.shields.io/npm/v/@workflowbuilder/temporal.svg)](https://www.npmjs.com/package/@workflowbuilder/temporal) | Temporal Plugin for workflow orchestration: runs diagrams as durable Workflow Executions, pauses runs for human decisions |
 | [`@workflowbuilder/ui`](https://www.npmjs.com/package/@workflowbuilder/ui)             | [![npm](https://img.shields.io/npm/v/@workflowbuilder/ui.svg)](https://www.npmjs.com/package/@workflowbuilder/ui)             | The component library the editor is built on, for custom nodes, panels and screens                                        |
 
-The execution backend, the Temporal worker and AI Studio are not on npm. They live in this repo as open code, yours to own: run them, fork them, or replace them with your own service against the same ports.
+The execution backend, the Temporal Worker and AI Studio are not on npm. They live in this repo as open code, yours to own: run them, fork them, or replace them with your own service against the same ports.
 
 Changelogs: [sdk](./packages/sdk/CHANGELOG.md) · [temporal](./packages/temporal/CHANGELOG.md) · [ui](./packages/ui/CHANGELOG.md). Moving from 2.x to 3.0: [upgrade guide](./apps/docs/src/content/docs/get-started/upgrade-to-3.md).
 
@@ -300,7 +309,7 @@ Every commit lands in this repository. Using `pnpm workspaces`, it is split into
 - [`packages/ui`](./packages/ui/README.md) - `@workflowbuilder/ui`, the component library the SDK is built on
 - [`packages/types`](./packages/types) - shared TypeScript types
 - [`apps/backend`](./apps/backend/README.md) - the execution backend: an HTTP API (Hono, Postgres) for versions, runs, live events and decisions
-- [`apps/execution-worker`](./apps/execution-worker/README.md) - the Temporal worker with the node executors (one Activity per node)
+- [`apps/execution-worker`](./apps/execution-worker/README.md) - the Temporal Worker with the node executors (one Activity per node)
 - [`apps/ai-studio`](./apps/ai-studio/README.md) - AI Studio, the AI workflow app behind the [hosted demo](https://aistudio.workflowbuilder.io/)
 - [`apps/demo`](./apps/demo/README.md) - editor showcase with the plugin set, example node types and templates
 - [`apps/docs`](./apps/docs) - documentation site
@@ -324,14 +333,14 @@ The seams for production are in place: plug in your own [`AuthPort`](./apps/back
 
 ## License
 
-- **Community Edition** - Apache 2.0, this repository: the editor SDK, the Temporal plugin, the execution backend, the worker and AI Studio
+- **Community Edition** - Apache 2.0, this repository: the editor SDK, the Temporal Plugin, the execution backend, the worker and AI Studio
 - **Enterprise Edition** - a one-time license per organization that adds advanced canvas plugins (ELK auto-layout, edge routing, edge reshaping), the Flow Runner plugin, a Figma kit and priority GitHub issues. See [pricing](https://www.workflowbuilder.io/pricing)
 
 ## Support
 
 For end-to-end implementations we offer consulting from the team that builds Workflow Builder:
 
-- workflow orchestration on your Temporal: workers, node executors, retries and timeouts
+- workflow orchestration on your Temporal: Workers, node executors, retries and timeouts
 - human-in-the-loop flows and the screens where people decide
 - auth, tenancy and audit around the execution backend
 - custom node types, integrations and editor UX
