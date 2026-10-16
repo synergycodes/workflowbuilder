@@ -39,8 +39,9 @@ compose --profile debug pull --ignore-buildable
 images=()
 while IFS= read -r ref; do images+=("$ref"); done < <(compose --profile debug config --images | sort -u)
 
-docker save -o "$out/ai-studio-images.tar" "${images[@]}"
-(cd "$out" && shasum -a 256 ai-studio-images.tar > ai-studio-images.tar.sha256)
+docker save ${DOCKER_DEFAULT_PLATFORM:+--platform "$DOCKER_DEFAULT_PLATFORM"} -o "$out/ai-studio-images.tar" "${images[@]}"
+if command -v sha256sum >/dev/null; then checksum=(sha256sum); else checksum=(shasum -a 256); fi
+(cd "$out" && "${checksum[@]}" ai-studio-images.tar > ai-studio-images.tar.sha256)
 docker image inspect "${images[@]}" \
   --format '{{join .RepoTags " "}}	{{join .RepoDigests " "}}	{{.Id}}	{{.Os}}/{{.Architecture}}' \
   > "$out/ai-studio-images.manifest.txt"

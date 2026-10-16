@@ -7,6 +7,6 @@ import { describe, expect, it } from 'vitest';
 describe('index.html', () => {
   it('references no external resources', () => {
     const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
-    expect(html.match(/\b(?:href|src)="https?:\/\/[^"]*"/g) ?? []).toEqual([]);
+    expect(html.match(/\b(?:href|src)\s*=\s*["']?(?:https?:)?\/\/[^"'\s>]*/gi) ?? []).toEqual([]);
   });
 });

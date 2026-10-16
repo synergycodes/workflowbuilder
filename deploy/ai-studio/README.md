@@ -56,7 +56,9 @@ cuts egress for the whole step — installs, lifecycle scripts and build
 commands included (`--offline` alone would only stop pnpm's own resolver). A
 step that needs the network fails every ordinary build, and
 `pnpm check:offline-build` fails if a post-fetch step ever loses the flag or
-adds a download of its own (`ADD <url>`, `COPY --from=<image>`).
+adds a download of its own (`ADD <url>`, `COPY --from=<image>`,
+`RUN --mount=…,from=<image>`), and when the `pnpm fetch` step runs anything
+else.
 That per-step guarantee is the enforceable one: a whole-build
 `docker build --network none` cannot pass, because the pnpm bootstrap and
 `pnpm fetch` need the registry by design. The Dockerfile also carries no
