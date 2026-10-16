@@ -87,6 +87,16 @@ Design decisions a reader of the code should know:
   next to the check that gates the rest of the header, instead of being duplicated between the two
   files.
 
+- **The palette footer's deprecated slot sits in a `display: contents` element.** The Sidebar hides
+  a footer whose direct children are all `:empty`; bare text or an `<input>` from the slot is not a
+  non-empty element, so a footer with such content vanished. The wrapper is non-empty whenever the
+  slot renders anything and adds no layout of its own.
+- **`PropertiesPanelFooter` stays as a deprecated alias of `PropertiesPanelFooterContent`.** The old
+  name shipped in SDK 3.0.0 while this work was in review; dropping it would turn the rename into a
+  breaking removal in a minor.
+- **The store field renames are a major changeset.** SDK 3.0.0 shipped on 02.10.2026, before this
+  landed, so the pending major becomes 4.0.0 unless the old names return as aliases and the
+  changeset drops to minor. That call stays with the release owner.
 - **The read-only guard moved into `openTemplateSelectorModal`, not only into the `openTemplates`
   action.** `TemplateSelector` replaces the whole diagram through `setDiagramModel` without
   checking read-only mode itself. Before this change the palette's Templates button had a
