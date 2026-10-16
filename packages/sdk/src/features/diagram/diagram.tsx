@@ -15,7 +15,6 @@ import type { DragEvent } from 'react';
 import styles from './diagram.module.css';
 
 import { getReactFlowProps } from '../../data/react-flow-config';
-import { usePaletteDrop } from '../../hooks/use-palette-drop';
 import type { WorkflowBuilderOnSelectionChangeParams } from '../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../node/node-data';
 import { getStoreNodes } from '../../store/slices/diagram-slice/actions';
@@ -23,6 +22,7 @@ import { useStore } from '../../store/store';
 import type { WorkflowBuilderReactFlowProps } from '../../workflow-builder-root/workflow-builder-root.types';
 import { trackFutureChange } from '../changes-tracker/stores/use-changes-tracker-store';
 import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-confirmation';
+import { usePaletteDrop } from '../palette/hooks/use-palette-drop';
 import { withOptionalComponentPlugins } from '../plugins-core/adapters/adapter-components';
 import { deleteKeyCode } from './const';
 import { SNAP_GRID, SNAP_IS_ACTIVE } from './diagram.const';
