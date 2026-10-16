@@ -37,6 +37,9 @@ export const schema = {
         },
       },
     },
+    untilDate: {
+      type: 'string',
+    },
   },
   ...conditionalValidation,
 } satisfies NodeSchema;

@@ -2,6 +2,7 @@ import type { PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type NotificationNodeSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const notification: PaletteItem<NotificationNodeSchema> = {
@@ -11,13 +12,6 @@ export const notification: PaletteItem<NotificationNodeSchema> = {
   icon: 'PaperPlaneRight',
   defaultPropertiesData,
   schema,
+  schemaOutput,
   uischema,
-  outputSchema: {
-    type: 'default',
-    properties: {
-      sent: { type: 'boolean', label: 'Sent', description: 'Whether the notification was sent successfully' },
-      sentAt: { type: 'string', label: 'Sent At', description: 'ISO 8601 date-time when the notification was sent' },
-      recipient: { type: 'string', label: 'Recipient', description: 'The email address the notification was sent to' },
-    },
-  },
 };

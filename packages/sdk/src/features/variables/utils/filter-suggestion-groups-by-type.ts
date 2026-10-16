@@ -1,4 +1,5 @@
-import type { VariableType } from '../../../node/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import { typesForDate } from '../components/dynamic-typed-input/constants';
 import type { VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
 import { getIsDateType } from './get-is-date-type';

@@ -1,19 +1,26 @@
 import { useCallback, useEffect, useState } from 'react';
 
 import { VariableText } from '../../../../features/variables/components/variable-text/variable-text';
-import { variablesTypesToExcludeInText } from '../../../../features/variables/constants';
-import { useAvailableVariables } from '../../../../features/variables/hooks/use-available-variables';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';
+import {
+  VARIABLES_TYPES_EMPTY,
+  VARIABLES_TYPES_NUMERIC,
+  VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT,
+} from '../../../variables/constants';
+import { useNodeVariables } from '../../../variables/hooks/use-node-variables';
 import type { VariableTextControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
 import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextControl(props: VariableTextControlProps) {
-  const { data, handleChange, path, errors, enabled, uischema } = props;
-  const { placeholder, disabled } = uischema;
+  const { data, handleChange, path, errors, enabled, uischema, schema } = props;
+  const { placeholder, variablesTypes, disabled } = uischema;
+  const { type } = schema;
   const selection = useSingleSelectedElement();
-  // TODO: add param to pick what type of variables are available
-  const suggestionGroups = useAvailableVariables(selection?.node?.id, variablesTypesToExcludeInText);
+  const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
+    excludeTypes: variablesTypes ? VARIABLES_TYPES_EMPTY : VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT,
+    includeTypes: variablesTypes || (type === 'number' ? VARIABLES_TYPES_NUMERIC : VARIABLES_TYPES_EMPTY),
+  });
 
   const isDisabled = !enabled || disabled === true;
 
@@ -23,19 +30,24 @@ function VariableTextControl(props: VariableTextControlProps) {
     setInputValue(data ?? '');
   }, [data]);
 
-  const onBlur = useCallback(() => {
-    handleChange(path, inputValue || undefined);
-  }, [handleChange, path, inputValue]);
+  const onBlur = useCallback(
+    (value: string) => {
+      handleChange(path, value || undefined);
+    },
+    [handleChange, path],
+  );
 
   return (
     <ControlWrapper {...props}>
       <VariableText
+        key={variablesKey}
         value={inputValue}
         onChange={setInputValue}
+        onBlur={onBlur}
         variant="text"
         suggestionGroups={suggestionGroups}
         hasError={errors.length > 0}
-        mentionsInputProps={{ disabled: isDisabled, placeholder, onBlur }}
+        mentionsInputProps={{ disabled: isDisabled, placeholder }}
       />
     </ControlWrapper>
   );
