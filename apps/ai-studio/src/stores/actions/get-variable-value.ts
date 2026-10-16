@@ -1,42 +1,31 @@
 import { getVariableReferences } from '@workflowbuilder/sdk';
 
-import { useExecutionStore } from '../use-execution-store';
+import { type NodeExecutionState, useExecutionStore } from '../use-execution-store';
 
-function getByPath<T = unknown>(object: object | null | undefined, path: string): T | undefined {
-  if (!object) return undefined;
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let result: any = object;
-
-  for (const key of path.split('.')) {
-    if (result == null) return undefined;
-    result = result[key];
+function getByPath(object: unknown, path: string[]): unknown {
+  let result: unknown = object;
+  for (const key of path) {
+    if (typeof result !== 'object' || result === null) {
+      return undefined;
+    }
+    result = (result as Record<string, unknown>)[key];
   }
-
   return result;
 }
 
-export const getVariableValueAction = (maybeReference: string): unknown | undefined => {
+/** What a `{{nodes.<id>.<path>}}` reference resolves to in the run's node outputs; any other reference is undefined. */
+export function getVariableValue(nodeStates: Record<string, NodeExecutionState>, maybeReference: string): unknown {
   const { referenceWithoutBrackets } = getVariableReferences(maybeReference);
-
-  if (!referenceWithoutBrackets) {
-    return;
+  if (referenceWithoutBrackets === undefined) {
+    return undefined;
   }
-
-  const [namespace, ...rest] = referenceWithoutBrackets.split('.');
-
-  if (namespace === 'nodes') {
-    const [nodeId, ...pathParts] = rest;
-
-    const store = useExecutionStore.getState();
-    const nodeOutput = store.nodeStates?.[nodeId]?.output;
-
-    if (typeof nodeOutput === 'object') {
-      const path = pathParts.join('.');
-
-      const value = getByPath(nodeOutput, path);
-
-      return value;
-    }
+  const [namespace, nodeId, ...path] = referenceWithoutBrackets.split('.');
+  if (namespace !== 'nodes' || nodeId === undefined) {
+    return undefined;
   }
-};
+  return getByPath(nodeStates[nodeId]?.output, path);
+}
+
+/** For a one-off read outside React; a hook selects `nodeStates` and calls {@link getVariableValue} instead. */
+export const getVariableValueAction = (maybeReference: string): unknown =>
+  getVariableValue(useExecutionStore.getState().nodeStates, maybeReference);

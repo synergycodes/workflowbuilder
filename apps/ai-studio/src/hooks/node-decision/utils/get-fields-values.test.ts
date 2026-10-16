@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { DecisionField } from '../types';
 import { getFieldsValues } from './get-fields-values';
 
-function field(value: unknown, reference = '{{nodes.a.output.x}}'): DecisionField {
+function field(value: unknown, reference = '{{nodes.a.x}}'): DecisionField {
   return { type: typeof value, reference, label: reference, value };
 }
 
@@ -12,21 +12,21 @@ describe('getFieldsValues', () => {
     expect(getFieldsValues([])).toEqual({});
   });
 
-  it('maps primitive values keyed by reference', () => {
+  it('maps primitive values keyed by the field key', () => {
     const fields = [
-      field('Alice', '{{nodes.a.output.name}}'),
-      field(42, '{{nodes.a.output.amount}}'),
-      field(false, '{{nodes.a.output.approved}}'),
-      field(0, '{{nodes.a.output.zero}}'),
-      field('', '{{nodes.a.output.empty}}'),
+      field('Alice', '{{nodes.a.name}}'),
+      field(42, '{{nodes.a.amount}}'),
+      field(false, '{{nodes.a.approved}}'),
+      field(0, '{{nodes.a.zero}}'),
+      field('', '{{nodes.a.empty}}'),
     ];
 
     expect(getFieldsValues(fields)).toEqual({
-      '{{nodes.a.output.name}}': 'Alice',
-      '{{nodes.a.output.amount}}': 42,
-      '{{nodes.a.output.approved}}': false,
-      '{{nodes.a.output.zero}}': 0,
-      '{{nodes.a.output.empty}}': '',
+      'nodes/a/name': 'Alice',
+      'nodes/a/amount': 42,
+      'nodes/a/approved': false,
+      'nodes/a/zero': 0,
+      'nodes/a/empty': '',
     });
   });
 
@@ -37,14 +37,18 @@ describe('getFieldsValues', () => {
     ['undefined', undefined],
     ['date', new Date(0)],
   ])('drops a field with %s value', (_, value) => {
-    const fields = [field('kept', '{{nodes.a.output.kept}}'), field(value, '{{nodes.a.output.dropped}}')];
+    const fields = [field('kept', '{{nodes.a.kept}}'), field(value, '{{nodes.a.dropped}}')];
 
-    expect(getFieldsValues(fields)).toEqual({ '{{nodes.a.output.kept}}': 'kept' });
+    expect(getFieldsValues(fields)).toEqual({ 'nodes/a/kept': 'kept' });
+  });
+
+  it('drops a field whose reference is not one variable', () => {
+    expect(getFieldsValues([field('x', '{{nodes.a.x}} {{nodes.a.y}}')])).toEqual({});
   });
 
   it('keeps the last value for a duplicated reference', () => {
     const fields = [field('first'), field('second')];
 
-    expect(getFieldsValues(fields)).toEqual({ '{{nodes.a.output.x}}': 'second' });
+    expect(getFieldsValues(fields)).toEqual({ 'nodes/a/x': 'second' });
   });
 });

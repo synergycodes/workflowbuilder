@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape), 16.10.2026 (fields from picks)
 
 ## Context
 
@@ -54,6 +54,10 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 25. **A node that carries a request may not use `errorPolicy: 'continue'`.** The runner absorbs such a failure with no port, which lights every non-error edge: a worker without the node's executor, or a `node_completed` write that fails after an accepted verdict, would run approve and reject together. Publish and execute refuse it with `error_policy_continue`; `fail` and `errorRoute` keep failures visible. The rule lives in the backend, not the runner, because the runner deliberately reads no request. Like decision 21 it tightens a schema the decision route re-parses, so a run parked on such a node would answer 500; accepted, because the feature lives on its branch with no run in flight.
 26. **Edits are a patch of the proposal.** The node's output carries them unapplied; whoever reads the decision merges an object field by field and a list element by element. That is why the walk checks only the keys an edit names. A level with `properties` or `items` must therefore keep its shape: `null`, a primitive or the other container could drop the read-only and required children it may hold, so it answers `field_shape_changed`, except `null` where the level's `type` allows it. `null` is the patch's own way to empty a field, and listing it in `type` is the author's consent; any other value would replace the level rather than patch it, even one its `type` lists. Replacement was rejected: it would make every object with a read-only child uneditable as a whole.
 
+## The form's fields come from the node's picks (16.10.2026)
+
+27. **The decision endpoint builds the form schema from `data.properties.editableFields`, not from the request's `schema`.** AI Studio's author picks the variables the decider may edit with the SDK's VariablesList control, and the form is built from those picks: one required property per well-formed primitive pick, keyed by the reference with its brackets dropped and its dots turned to slashes, the one separator JsonForms does not use for data paths. `findDecisionRequest` returns the request with that schema in place of the authored one, so `validateSubmittedDecision` and the field rules stay as they are. The builder mirrors AI Studio's (`editable-fields-schema.ts` beside `getFieldKey` and `getFieldsSchema`), because the SDK is not a backend dependency; a parity test in AI Studio runs both over the same picks. This supersedes the mechanism in decision 3: whether a field may be edited is now which list its pick is in, and `readOnly` in the authored schema no longer reaches the endpoint.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -79,6 +83,7 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 - Edits as a patch: a list edit longer than the proposal appends elements that carry none of the read-only fields, since the validator never reads the proposal; a list cannot be shortened, since `[]` patches no element; an object whose `type` does not allow `null` cannot be cleared. AI Studio's `withEdits` only renders a decided record and merges top-level keys, all its form can edit.
 - Nothing applies the edits yet: the node's output is the decision alone, so a step after it that reads the source's output sees the proposal without the corrections. Refund Review merges them in its prompt `(follow-up: decision-settled-values)`.
 - The `errorPolicy` rule keys on the request, so a node that routes by port without one (a condition node, or a decision node missing its request) still lights every branch on a failure under `continue` `(follow-up: port-routing-continue-broadcast)`.
+- The request's authored `schema` is still required and shape-checked on publish, yet the endpoint never reads it since decision 27. `readOnlyFields` declares nothing either, so an edit naming one is refused as `unknown_field`, not `field_not_editable`, and a built schema has no nested level, so `field_shape_changed` is unreachable through the route `(follow-up: decision-request-authored-schema)`.
 
 ## Open points, closed 10.09.2026
 

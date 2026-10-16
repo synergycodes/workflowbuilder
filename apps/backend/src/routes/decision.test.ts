@@ -93,6 +93,11 @@ async function codeOf(response: Response): Promise<string | undefined> {
   return body.code;
 }
 
+async function firstDetailOf(response: Response) {
+  const body = await bodyOf(response);
+  return body.details?.[0];
+}
+
 // 1st select: the execution row (none when `execution` is undefined). 2nd: the wait count.
 function program(execution?: unknown, waits = 1) {
   databaseMock.select.mockReturnValueOnce(chainResolving(execution === undefined ? [] : [execution]));
@@ -101,23 +106,23 @@ function program(execution?: unknown, waits = 1) {
 
 // ---- fixtures ---------------------------------------------------------------
 
-const refundForm = {
-  type: 'object',
-  properties: {
-    orderDate: { type: 'string', readOnly: true },
-    refundAmount: { type: 'number' },
-    note: { type: 'string' },
-    customer: { type: 'object', properties: { id: { type: 'string', readOnly: true } } },
-  },
-  required: ['refundAmount'],
-};
+// The authored form declares `refundAmount` under its own name, so a test can prove the route never reads it.
+const refundForm = { type: 'object', properties: { refundAmount: { type: 'number' } }, required: ['refundAmount'] };
+// The decider's fields: review-1 lets the amount and the note be edited; the tags pick is not primitive, so it
+// declares no field.
+const editableFields = [
+  { label: 'Refund amount', reference: '{{nodes.source-1.refundAmount}}', type: 'number' },
+  { label: 'Note', reference: '{{nodes.source-1.note}}', type: 'string' },
+  { label: 'Tags', reference: '{{nodes.source-1.tags}}', type: 'array' },
+];
+const refundAmountKey = 'nodes/source-1/refundAmount';
 // Not the strings the former defaults produced: the nextPort assertions must prove the port came from the request.
 const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'source:inner:approved' };
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'source:inner:rejected' };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
 
 // source-1 feeds two deciding nodes. review-1 offers all three effects and takes a reject
-// without a reason; review-2 requires one. after-1 hangs off review-1's approved port.
+// without a reason; review-2 requires one and picks no field. after-1 hangs off review-1's approved port.
 const snapshot = {
   nodes: [
     { id: 'source-1', data: { type: 'product/any', properties: {} } },
@@ -132,6 +137,7 @@ const snapshot = {
             schema: refundForm,
             proposalSourceNodeId: 'source-1',
           },
+          editableFields,
         },
       },
     },
@@ -168,11 +174,11 @@ const waitingExecution = {
   updatedAt: new Date(0),
 };
 
-const approveBody = { nodeId: 'review-1', attempt: 1, action: 'approve', edits: { refundAmount: 120 } };
+const approveBody = { nodeId: 'review-1', attempt: 1, action: 'approve', edits: { [refundAmountKey]: 120 } };
 const approvedDecision = {
   action: 'approve',
   effect: 'resume-with-edits',
-  edits: { refundAmount: 120 },
+  edits: { [refundAmountKey]: 120 },
   resolvedBy: 'human',
 };
 
@@ -359,19 +365,27 @@ describe('POST /api/executions/:id/decision - the node', () => {
 
 // ---- the decision -------------------------------------------------------------------
 
+// A schema built from picks declares primitives only, none read-only, so `field_not_editable` and
+// `field_shape_changed` cannot be reached through the route; the validator's own tests cover them.
 const INVALID_DECISIONS = {
   unknown_action: { nodeId: 'review-1', action: 'escalate' },
   reason_required: { nodeId: 'review-2', action: 'reject' },
   comment_required: { nodeId: 'review-1', action: 'ask-again' },
-  edits_not_allowed: { nodeId: 'review-1', action: 'reject', edits: { refundAmount: 1 } },
+  edits_not_allowed: { nodeId: 'review-1', action: 'reject', edits: { [refundAmountKey]: 1 } },
   unknown_field: { nodeId: 'review-1', action: 'approve', edits: { discount: 10 } },
-  field_not_editable: { nodeId: 'review-1', action: 'approve', edits: { orderDate: '2026-01-01' } },
-  required_field_missing: { nodeId: 'review-1', action: 'approve', edits: { refundAmount: null } },
-  field_shape_changed: { nodeId: 'review-1', action: 'approve', edits: { customer: null } },
-} satisfies Record<SubmittedDecisionErrorCode, Record<string, unknown>>;
+  required_field_missing: { nodeId: 'review-1', action: 'approve', edits: { [refundAmountKey]: null } },
+} satisfies Partial<Record<SubmittedDecisionErrorCode, Record<string, unknown>>>;
 
 describe('POST /api/executions/:id/decision - the decision', () => {
-  it.each(Object.keys(SUBMITTED_DECISION_ERRORS) as SubmittedDecisionErrorCode[])(
+  it('every refusal the route can reach is in the table', () => {
+    const unreachable: SubmittedDecisionErrorCode[] = ['field_not_editable', 'field_shape_changed'];
+
+    expect([...Object.keys(INVALID_DECISIONS), ...unreachable].sort()).toEqual(
+      Object.keys(SUBMITTED_DECISION_ERRORS).sort(),
+    );
+  });
+
+  it.each(Object.keys(INVALID_DECISIONS) as (keyof typeof INVALID_DECISIONS)[])(
     '400 invalid_decision carrying %s',
     async (code) => {
       program(waitingExecution);
@@ -394,6 +408,48 @@ describe('POST /api/executions/:id/decision - the decision', () => {
 
     expect(response.status).toBe(400);
     expect(await codeOf(response)).toBe('invalid_decision');
+  });
+});
+
+// ---- the fields ---------------------------------------------------------------------
+
+describe('POST /api/executions/:id/decision - the fields', () => {
+  it("judges the edits against the node's editableFields, never against the request's authored schema", async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { ...approveBody, edits: { refundAmount: 120 } });
+
+    expect(response.status).toBe(400);
+    expect(await firstDetailOf(response)).toMatchObject({ code: 'unknown_field', path: ['edits', 'refundAmount'] });
+    expect(engineMock.resolveNode).not.toHaveBeenCalled();
+  });
+
+  it('a pick that is not primitive declares no field', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { ...approveBody, edits: { 'nodes/source-1/tags': [] } });
+
+    expect(response.status).toBe(400);
+    expect(await firstDetailOf(response)).toMatchObject({ code: 'unknown_field' });
+  });
+
+  it('a node that picks no field takes no edits', async () => {
+    program(waitingExecution);
+
+    const body = { nodeId: 'review-2', attempt: 1, action: 'approve', edits: { [refundAmountKey]: 120 } };
+    const response = await decide(buildApp(allowAll()), body);
+
+    expect(response.status).toBe(400);
+    expect(await firstDetailOf(response)).toMatchObject({ code: 'unknown_field' });
+  });
+
+  it('every picked field is required: emptying the note is refused', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { ...approveBody, edits: { 'nodes/source-1/note': '' } });
+
+    expect(response.status).toBe(400);
+    expect(await firstDetailOf(response)).toMatchObject({ code: 'required_field_missing' });
   });
 });
 

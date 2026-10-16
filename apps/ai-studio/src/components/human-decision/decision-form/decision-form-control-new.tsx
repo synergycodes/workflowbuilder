@@ -1,45 +1,34 @@
 import { rankWith, uiTypeIs, useSingleSelectedElement, withJsonFormsControlProps } from '@workflowbuilder/sdk';
-import type { JsonFormsRendererExtension, NodeData, NodeDataProperties } from '@workflowbuilder/sdk';
+import type { JsonFormsRendererExtension } from '@workflowbuilder/sdk';
 import { useMemo } from 'react';
 
-import { getNodeByIdAction } from '../../../../../../packages/sdk/src/store-get-actions/stores/use-store-get-actions';
-import { DECISION_PHASE, type DecisionField } from '../../../hooks/node-decision/types';
+import { DECISION_PHASE } from '../../../hooks/node-decision/types';
+import { getFieldPicks } from '../../../hooks/node-decision/utils/get-field-picks';
 import { useNodeDecisionNew } from '../../../hooks/use-node-decision-new';
-import type { HumanDecisionSchema } from '../../../nodes/human-decision/schema';
-import { getVariableValueAction } from '../../../stores/actions/get-variable-value';
-import { useExecutionStore } from '../../../stores/use-execution-store';
+import { saveDecisionDraft, waitKey } from '../../../stores/use-execution-store';
 import { readDecisionOutcome } from '../../../utils/human-decision/decision-outcome';
+import { readDecisionRequest } from '../../../utils/human-decision/decision-request';
+import { withEdits } from '../../../utils/human-decision/decision-values';
 import { DecisionForm } from './decision-form';
 import { DecisionRecord } from './decision-record';
 
-// import { DecisionFormNew } from './decision-form-new';
-
+// The picks and the request are read off the selected node, not off `data`: JsonForms updates `data` one render after
+// the selection moves, so a form keyed on the new wait would mount with the previous node's fields.
 function DecisionFormControlNew() {
-  // const { data, handleChange, path, enabled, uischema } = props;
-  const selection = useSingleSelectedElement();
-  const nodeId = selection?.node?.id;
+  const node = useSingleSelectedElement()?.node;
+  const nodeId = node?.id;
+  const request = readDecisionRequest(node?.data.properties['decisionRequest']);
+  const editableFields = node?.data.properties['editableFields'];
+  const picks = useMemo(() => getFieldPicks(editableFields), [editableFields]);
+  const decision = useNodeDecisionNew(nodeId, picks);
 
-  const nodeState = useExecutionStore((state) => (nodeId === undefined ? undefined : state.nodeStates[nodeId]));
+  if (request === undefined || decision.phase === DECISION_PHASE.NONE) {
+    return null;
+  }
 
-  const editableFields: DecisionField[] = useMemo(() => {
-    const node = getNodeByIdAction(nodeId);
+  const { wait, schema, proposal } = decision;
 
-    console.log('dd', node);
-
-    const editableFields =
-      (node?.data as NodeData<NodeDataProperties<HumanDecisionSchema>>)?.properties?.editableFields || [];
-
-    const fieldWithValues = editableFields.map((field) => ({
-      ...field,
-      value: getVariableValueAction(field.reference),
-    }));
-
-    return fieldWithValues;
-  }, [nodeId, nodeState]);
-
-  const decision = useNodeDecisionNew(nodeId, editableFields);
-
-  if (decision.phase === DECISION_PHASE.WAITING) {
+  if (decision.phase === DECISION_PHASE.DECIDED) {
     const outcome = readDecisionOutcome(decision.output);
     return outcome === undefined ? null : (
       <DecisionRecord
@@ -56,7 +45,7 @@ function DecisionFormControlNew() {
     <DecisionForm
       key={waitKey(wait)}
       schema={schema}
-      actions={actions}
+      actions={request.actions}
       proposal={proposal}
       draft={decision.draft}
       saveDraft={(change) => saveDecisionDraft(wait, change)}

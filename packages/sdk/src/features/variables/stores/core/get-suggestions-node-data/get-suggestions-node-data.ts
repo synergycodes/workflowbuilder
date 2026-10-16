@@ -6,10 +6,12 @@ import { getByPath } from '../../../../../utils/object';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
 import { getJsonSchemaIfValid } from '../../../utils/guards/get-json-schema-if-valid';
 import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-index-if-valid';
+import { getVariablesListIfValid } from '../../../utils/guards/get-variables-list-if-valid';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
 import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
 import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
 import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
+import { getSuggestionsFromVariablesList } from './get-suggestions-from-variables-list';
 
 type Params = {
   definition: PaletteItem;
@@ -157,12 +159,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       ) {
         const propertyValue = getByPath(node.data.properties, variant.variantRule.fromValueOfPropertyPath);
 
-        console.log('maybeVariablesIndex', {
-          prop: node.data.properties,
-          propertyValue,
-          rule: variant.variantRule,
-        });
-
         const variablesIndex = getVariablesIndexIfValid(propertyValue);
 
         const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
@@ -191,6 +187,22 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
             if (suggestions.length > 0) {
               for (const sourceHandle of sourceHandlesToAdd) {
                 bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+              }
+            }
+          } else {
+            const variablesList = getVariablesListIfValid(propertyValue);
+            if (variablesList) {
+              const suggestions = getSuggestionsFromVariablesList({
+                propertyPath: variant.variantRule.fromValueOfPropertyPath,
+                nodeId: node.id,
+                nodeLabel,
+                variablesList,
+              });
+
+              if (suggestions.length > 0) {
+                for (const sourceHandle of sourceHandlesToAdd) {
+                  bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+                }
               }
             }
           }

@@ -85,7 +85,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
             label: 'Review Refund',
             description: 'A person approves or rejects it.',
             decisionRequest: refundReviewRequest,
-            outputSchema: refundReviewOutputSchema,
+            // outputSchema: refundReviewOutputSchema,
             readOnlyFields: [],
             editableFields: [],
           },

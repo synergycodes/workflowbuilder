@@ -1,25 +1,31 @@
 import type { JsonSchema } from '@jsonforms/core';
 
 import type { DecisionField } from '../types';
+import { getFieldKey } from './get-field-key';
 
-const PRIMITIVE_TYPES = ['string', 'number', 'boolean'] as const;
+type SchemaType = 'string' | 'number' | 'boolean';
 
-type PrimitiveType = (typeof PRIMITIVE_TYPES)[number];
+// A date travels as text and the editor has no date control, so it is edited as text.
+const SCHEMA_TYPE_BY_FIELD_TYPE = new Map<string, SchemaType>([
+  ['string', 'string'],
+  ['number', 'number'],
+  ['boolean', 'boolean'],
+  ['date', 'string'],
+  ['datetime', 'string'],
+]);
 
-function isPrimitiveType(type: string): type is PrimitiveType {
-  return (PRIMITIVE_TYPES as readonly string[]).includes(type);
-}
-
+/**
+ * One required property per field the editor can show, keyed by {@link getFieldKey}; any other field is left out.
+ * Must stay equal to `editableFieldsSchema` in the backend's editable-fields-schema.ts; the parity test checks it.
+ */
 export function getFieldsSchema(fields: DecisionField[]): JsonSchema {
-  const primitiveFields = fields.filter((field) => isPrimitiveType(field.type));
-
   const properties = Object.fromEntries(
-    primitiveFields.map((field) => [field.reference, { type: field.type, title: field.label }]),
+    fields.flatMap((field): [string, { type: SchemaType; title: string }][] => {
+      const key = getFieldKey(field.reference);
+      const type = SCHEMA_TYPE_BY_FIELD_TYPE.get(field.type);
+      return key === undefined || type === undefined ? [] : [[key, { type, title: field.label }]];
+    }),
   );
 
-  return {
-    type: 'object',
-    properties,
-    required: primitiveFields.map((field) => field.reference),
-  };
+  return { type: 'object', properties, required: Object.keys(properties) };
 }
