@@ -1,3 +1,4 @@
 .sidebar {
   width: auto;
+  --wb-sdk-sidebar-expanded-width: calc(var(--wb-public-node-width) + 2 * var(--wb-sdk-sidebar-horizontal-padding));
 }

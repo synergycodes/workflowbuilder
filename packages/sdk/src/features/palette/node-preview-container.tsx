@@ -1,5 +1,7 @@
 import type { ComponentType } from 'react';
 
+import styles from './node-preview.module.css';
+
 import { getCustomNodeTemplates } from '../../data/node-templates';
 import { useTranslateIfPossible } from '../../hooks/use-translate-if-possible';
 import type { PaletteItem } from '../../node/common';
@@ -64,14 +66,16 @@ function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
   const TemplateComponent = custom[templateKey] ?? BUILT_IN_TEMPLATES[templateKey] ?? BUILT_IN_TEMPLATES[NodeType.Node];
 
   return (
-    <TemplateComponent
-      icon={icon}
-      label={nodeLabel}
-      description={nodeDescription}
-      showHandles={false}
-      selected={false}
-      disabled={disabled}
-      id={''}
-    />
+    <div className={styles['preview']}>
+      <TemplateComponent
+        icon={icon}
+        label={nodeLabel}
+        description={nodeDescription}
+        showHandles={false}
+        selected={false}
+        disabled={disabled}
+        id={''}
+      />
+    </div>
   );
 }
