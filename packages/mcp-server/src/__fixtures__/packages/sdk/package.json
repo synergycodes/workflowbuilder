@@ -1,0 +1,9 @@
+{
+  "name": "@workflowbuilder/sdk",
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ]
+}
