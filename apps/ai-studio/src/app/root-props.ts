@@ -9,6 +9,7 @@ import type {
 import { saveDraftOf } from '../adapters/save-workflow-draft';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
+import { plugin as nodeVariablesPreviewPlugin } from '../plugins/node-variables-preview/plugin-exports';
 import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 import type { OpenedSource } from './open-from-url';
@@ -21,7 +22,7 @@ export const neverSaves: OnSaveExternal = () =>
 // Module-level, and one props object per opened source below: the run lock re-applies itself whenever the
 // editor's save callback changes identity.
 const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves };
-const LOCAL_PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
+const LOCAL_PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin, nodeVariablesPreviewPlugin];
 const RUN_VIEW_PLUGINS: WorkflowBuilderPlugin[] = [...LOCAL_PLUGINS, runViewPlugin];
 
 type RootProps = {

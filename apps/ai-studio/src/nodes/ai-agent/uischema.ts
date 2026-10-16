@@ -15,17 +15,15 @@ export const uischema: UISchema = {
       placeholder: 'Node Title...',
     },
     {
-      type: 'TextArea',
+      type: 'VariableTextArea',
       scope: scope('properties.systemPrompt'),
       label: 'System Prompt',
       placeholder: 'Describe what the AI should do...',
       minRows: 5,
-      maxRows: 14,
     },
-    // The `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     {
       type: 'ResponseSelect',
-      scope: scope('properties.outputSchema'),
+      scope: scope('properties.expectedSchema'),
       label: 'Response format',
     } as unknown as UISchema,
     {

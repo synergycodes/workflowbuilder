@@ -75,8 +75,9 @@ export type Decision = {
   action: string;
   effect: DecisionEffect;
   /**
-   * A patch of the proposal, carried unapplied: an object merges field by field, a list element by
-   * element (unlike JSON Merge Patch), and `null` empties a field.
+   * A patch of the proposal, keyed by context path (`nodes/<id>/<field>`): an object merges field by
+   * field, a list element by element (unlike JSON Merge Patch), and `null` empties a field. The engine
+   * applies it to the execution context once the decision lands; the decision keeps it for the record.
    */
   edits: Record<string, unknown>;
   reason?: string;

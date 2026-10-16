@@ -22,10 +22,12 @@ describe('humanDecisionPaletteItem', () => {
       comment: '',
       resolvedBy: 'human',
     } satisfies Required<Decision>;
-    const { outputSchema } = humanDecisionPaletteItem;
+    const { schemaOutput } = humanDecisionPaletteItem;
 
-    expect(outputSchema?.type).toBe('default');
-    const properties = outputSchema?.type === 'default' ? outputSchema.properties : {};
-    expect(Object.keys(properties).sort()).toEqual(Object.keys(recorded).sort());
+    expect(schemaOutput?.type).toBe('variant');
+    const [variant] = schemaOutput?.type === 'variant' ? schemaOutput.variants : [];
+    expect(variant?.variantRule).toBeUndefined();
+    const every = variant && 'bySourceHandle' in variant ? variant.bySourceHandle.every : undefined;
+    expect(Object.keys(every?.properties ?? {}).sort()).toEqual(Object.keys(recorded).sort());
   });
 });

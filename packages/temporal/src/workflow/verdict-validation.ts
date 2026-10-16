@@ -1,6 +1,6 @@
 import { ApplicationFailure } from '@temporalio/workflow';
 
-import type { CompletedNodeExecution, VerdictRejection } from './core-contract';
+import { type CompletedNodeExecution, type VerdictRejection, isEditKey } from './core-contract';
 
 // A node's wait lifecycle; no entry means the node is not waiting.
 export type NodeWaitState = { status: 'waiting' } | { status: 'resolved'; resolution: CompletedNodeExecution };
@@ -19,6 +19,10 @@ export const VERDICT_REJECTION_MESSAGES = {
   outcome_invalid: {
     code: 'verdict_malformed',
     message: 'outcome must be an object carrying exactly value and resolvedBy, both non-empty strings',
+  },
+  edits_invalid: {
+    code: 'verdict_malformed',
+    message: "edits must be an object whose every key names a context path, such as 'nodes/<id>/<field>'",
   },
   unknown_node: { code: 'verdict_for_unknown_node', message: "no node '{value}' in this run" },
   already_delivered: { code: 'verdict_already_delivered', message: "node '{value}' already has a verdict" },
@@ -54,16 +58,19 @@ export function validateVerdict(
     throw reject('resolution_not_an_object');
   }
   for (const key of Object.keys(resolution)) {
-    if (key !== 'output' && key !== 'nextPort' && key !== 'outcome') {
+    if (key !== 'output' && key !== 'nextPort' && key !== 'outcome' && key !== 'edits') {
       throw reject('unknown_resolution_key', key);
     }
   }
-  const { nextPort, outcome } = resolution as { nextPort?: unknown; outcome?: unknown };
+  const { nextPort, outcome, edits } = resolution as { nextPort?: unknown; outcome?: unknown; edits?: unknown };
   if (nextPort !== undefined && (typeof nextPort !== 'string' || nextPort.length === 0 || nextPort === 'errorRoute')) {
     throw reject('next_port_invalid');
   }
   if (outcome !== undefined && !isOutcome(outcome)) {
     throw reject('outcome_invalid');
+  }
+  if (edits !== undefined && !isEdits(edits)) {
+    throw reject('edits_invalid');
   }
   if (!knownNodes.has(nodeId)) {
     throw reject('unknown_node', nodeId);
@@ -85,6 +92,12 @@ function isOutcome(candidate: unknown): boolean {
   if (keys.length !== 2 || !keys.includes('value') || !keys.includes('resolvedBy')) return false;
   const { value, resolvedBy } = candidate as { value: unknown; resolvedBy: unknown };
   return isFilled(value) && isFilled(resolvedBy);
+}
+
+// Keys only: a key the runner cannot place would fail the workflow task, not the verdict.
+function isEdits(candidate: unknown): boolean {
+  if (typeof candidate !== 'object' || candidate === null || Array.isArray(candidate)) return false;
+  return Object.keys(candidate).every(isEditKey);
 }
 
 function isFilled(text: unknown): text is string {

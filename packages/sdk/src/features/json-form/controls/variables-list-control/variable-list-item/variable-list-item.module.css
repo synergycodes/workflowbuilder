@@ -1,0 +1,117 @@
+:root {
+  --wb-sdk-variable-card-padding: 0.5rem;
+  --wb-sdk-variable-card-border-radius: 0.5rem;
+  --wb-sdk-variable-card-border-width: 0.0625rem;
+  --wb-sdk-variable-card-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-sdk-variable-card-border-color-error: var(--wb-ds-colors-red-400-30);
+  --wb-sdk-variable-card-gap: 0.75rem;
+
+  --wb-sdk-variable-card-actions-gap: 0.375rem;
+  --wb-sdk-variable-card-arrows-border-radius: var(--wb-ds-radius-50);
+  --wb-sdk-variable-card-arrows-background: var(--wb-ds-ui-bg-elevated);
+
+  --wb-sdk-variable-card-title-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-sdk-variable-card-title-color-hover: var(--wb-ds-ui-text-default);
+  --wb-sdk-variable-card-remove-color: var(--wb-ds-ui-icon-critical-default);
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.variable-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: var(--wb-sdk-variable-card-padding);
+  gap: var(--wb-sdk-variable-card-gap);
+  border-radius: var(--wb-sdk-variable-card-border-radius);
+  border: var(--wb-sdk-variable-card-border-width) solid var(--wb-sdk-variable-card-border-color);
+  max-width: calc(var(--wb-sdk-sidebar-expanded-width) - 2rem);
+  transition: gap var(--wb-public-transition);
+
+  &.variable-card--collapsed {
+    gap: 0;
+  }
+
+  &.variable-card--error {
+    border-color: var(--wb-sdk-variable-card-border-color-error);
+  }
+
+  > div {
+    width: 100%;
+  }
+
+  .content {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    width: 100%;
+    gap: var(--wb-sdk-variable-card-gap);
+
+    > div {
+      width: 100%;
+    }
+  }
+
+  .header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+
+    .actions {
+      display: flex;
+      gap: var(--wb-sdk-variable-card-actions-gap);
+    }
+
+    .arrows {
+      display: flex;
+      border-radius: var(--wb-sdk-variable-card-arrows-border-radius);
+      background: var(--wb-sdk-variable-card-arrows-background);
+    }
+  }
+}
+
+.button-expand {
+  position: absolute;
+  inset: 0;
+  border: none;
+  background: none;
+}
+
+.title {
+  background: none;
+  border: none;
+  padding: 0;
+  width: 100%;
+  color: var(--wb-sdk-variable-card-title-color);
+  transition: color var(--wb-public-transition);
+
+  .button-expand:hover ~ &,
+  &:hover {
+    color: var(--wb-sdk-variable-card-title-color-hover);
+  }
+
+  span {
+    text-align: left;
+    display: -webkit-box;
+    word-break: break-all;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+}
+
+.button-remove {
+  color: var(--wb-sdk-variable-card-remove-color);
+}

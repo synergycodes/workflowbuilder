@@ -18,6 +18,7 @@ import type { EventEmitterPort } from './ports/event-emitter.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
+import { updateContext } from './templates/update-context';
 
 // `sourceHandle` reserved for the 'errorRoute' error policy. Edges tagged
 // with this value fire ONLY when the upstream node failed with policy
@@ -90,23 +91,25 @@ export async function runGraph<TNode extends BaseNode>(
   };
 
   let ready: TNode[] = [startNode];
-  const nodeOutputs: Record<string, unknown> = {};
+  // Grows across waves; a verdict's edits replace it (see `updateContext`).
+  let context: ExecutionContext = {
+    workflowId: input.workflowId,
+    executionId: input.executionId,
+    triggerPayload: input.triggerPayload,
+    nodeOutputs: {},
+    variables: input.variables,
+    global: input.global,
+  };
   const deadEnds: DeadEnd[] = [];
   let outcome: ExecutionOutcomeRecord | undefined;
   const parked = { count: 0 };
 
   while (ready.length > 0) {
-    const context: ExecutionContext = {
-      workflowId: input.workflowId,
-      executionId: input.executionId,
-      triggerPayload: input.triggerPayload,
-      nodeOutputs: { ...nodeOutputs },
-      variables: input.variables,
-      global: input.global,
-    };
+    // Frozen for the wave: a sibling's completion must not show up mid-run.
+    const waveContext: ExecutionContext = { ...context, nodeOutputs: { ...context.nodeOutputs } };
 
     const results = await Promise.all(
-      ready.map((node) => runNode(node, context, runner, events, input.executionId, parked)),
+      ready.map((node) => runNode(node, waveContext, runner, events, input.executionId, parked)),
     );
 
     // Fatal failures (policy 'fail') abort the whole execution — pick the first
@@ -131,14 +134,16 @@ export async function runGraph<TNode extends BaseNode>(
           result.code === undefined
             ? { error: { message: result.message } }
             : { error: { message: result.message, code: result.code } };
-        nodeOutputs[result.node.id] = errorOutput;
+        context.nodeOutputs[result.node.id] = errorOutput;
         state.status.set(result.node.id, 'completed');
         const nextPort = policy === 'errorRoute' ? RESERVED_ERROR_HANDLE : undefined;
         const deadEnd = propagate(result.node.id, nextPort, true, state, newlyReady, skipped);
         if (deadEnd) deadEnds.push(deadEnd);
         continue;
       }
-      nodeOutputs[result.node.id] = result.output;
+      context.nodeOutputs[result.node.id] = result.output;
+      // After the output, so an edit may patch the deciding node's own record too.
+      if (result.edits !== undefined) context = updateContext(context, result.edits);
       state.status.set(result.node.id, 'completed');
       const deadEnd = propagate(result.node.id, result.nextPort, true, state, newlyReady, skipped);
       const declared = declaredOutcome(result.outcome);
@@ -318,7 +323,14 @@ function skipReason(kind: LivePruneKind | undefined): NodeSkipReason {
 }
 
 type NodeRunResult<TNode extends BaseNode> =
-  | { node: TNode; output: unknown; nextPort?: string; outcome?: ExecutionOutcome; failed: false }
+  | {
+      node: TNode;
+      output: unknown;
+      nextPort?: string;
+      outcome?: ExecutionOutcome;
+      edits?: Record<string, unknown>;
+      failed: false;
+    }
   // `abort` marks a runner-level abort that outranks the node's own errorPolicy.
   | { node: TNode; message: string; code?: string; failed: true; abort?: true };
 
@@ -352,7 +364,14 @@ async function runNode<TNode extends BaseNode>(
       result = executed;
     }
     await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
-    return { node, output: result.output, nextPort: result.nextPort, outcome: result.outcome, failed: false };
+    return {
+      node,
+      output: result.output,
+      nextPort: result.nextPort,
+      outcome: result.outcome,
+      edits: result.edits,
+      failed: false,
+    };
   } catch (error) {
     const { message, code, attempt } = extractDeepestError(error);
     const errorPayload: ExecutionErrorPayload['error'] = { message };

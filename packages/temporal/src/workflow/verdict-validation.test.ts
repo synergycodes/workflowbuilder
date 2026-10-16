@@ -81,10 +81,37 @@ describe('validateVerdict', () => {
     expect(rejection({ nodeId: 'gate', resolution: ['approved'] })).toBe('verdict_malformed');
   });
 
-  it('rejects envelope keys beyond output, nextPort and outcome', () => {
+  it('accepts edits keyed by context path, with or without the other fields', () => {
+    const edits = { 'nodes/draft-1/output/refundAmount': 120, 'global/total': null, 'trigger/customer': { tier: 'b' } };
+    expect(rejection({ nodeId: 'gate', resolution: { output: 'ok', nextPort: 'approved', edits } })).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: { edits } })).toBeUndefined();
+    expect(rejection({ nodeId: 'gate', resolution: { output: 'ok', edits: {} } })).toBeUndefined();
+  });
+
+  it.each<[string, unknown]>([
+    ['a string', 'nodes/draft-1/x'],
+    ['null', null],
+    ['an array', [['nodes/draft-1/x', 1]]],
+    ['an unknown namespace', { 'secrets/apiKey': 'x' }],
+    ['a namespace with no path', { nodes: {} }],
+    ['an empty segment', { 'nodes//x': 1 }],
+    ['a dotted reference', { 'nodes.draft-1.x': 1 }],
+    ['one bad key among good ones', { 'nodes/draft-1/x': 1, 'draft-1/x': 2 }],
+  ])('rejects edits that are %s', (_shape, edits) => {
+    expect(rejection({ nodeId: 'gate', resolution: { output: 1, edits } })).toBe('verdict_malformed');
+  });
+
+  it('names the edits rule in its message', () => {
+    expect(() =>
+      validateVerdict({ nodeId: 'gate', resolution: { edits: { nodes: 1 } } }, KNOWN_NODES, GATE_WAITING),
+    ).toThrow(VERDICT_REJECTION_MESSAGES.edits_invalid.message);
+  });
+
+  it('rejects envelope keys beyond output, nextPort, outcome and edits', () => {
     expect(rejection({ nodeId: 'gate', resolution: { output: 1, nexPort: 'typo' } })).toBe('verdict_malformed');
     expect(rejection({ nodeId: 'gate', resolution: { output: 1, waiting: true } })).toBe('verdict_malformed');
     expect(rejection({ nodeId: 'gate', resolution: { output: 1, outcomes: {} } })).toBe('verdict_malformed');
+    expect(rejection({ nodeId: 'gate', resolution: { output: 1, edit: {} } })).toBe('verdict_malformed');
   });
 
   it.each<[string, unknown]>([

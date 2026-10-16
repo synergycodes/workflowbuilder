@@ -13,6 +13,9 @@ export type CompletedNodeExecution = {
   // may then light no edge: a deliberate end, not a dead end. An object with non-blank `value`
   // and `resolvedBy`; anything else counts as none.
   outcome?: ExecutionOutcome;
+  // Context edits a verdict carries, keyed `namespace/path` (templates/update-context.ts). The
+  // runner applies them once `output` has landed, so later waves read the edited values.
+  edits?: Record<string, unknown>;
   // Never present — discriminates the union.
   waiting?: never;
 };

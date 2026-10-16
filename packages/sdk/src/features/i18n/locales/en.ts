@@ -100,6 +100,13 @@ export const en = {
     addBranch: 'Add branch',
     label: 'Title',
   },
+  variablesList: {
+    variable: 'Variable',
+    variableIndex: 'Variable #{{index}}',
+    addVariable: 'Add variable',
+    addFromPrevious: 'Add from previous',
+    label: 'Label',
+  },
   conditions: {
     add: 'Add condition',
     title: 'Conditional Editor',
