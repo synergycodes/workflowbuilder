@@ -24,4 +24,4 @@ Mount only one `<WorkflowBuilder.Root>` per page. Multi-instance is not supporte
 
 ### React deduplication (local-path installs only)
 
-When installed via `npm install <local-path>`, the consumer's bundler may resolve `react` from the library's `node_modules` instead of the consumer's. Fix with `resolve.dedupe: ['react', 'react-dom', '@xyflow/react']`. Not needed once published to npm.
+When installed via `npm install <local-path>`, the consumer's bundler may resolve `react` from the library's `node_modules` instead of the consumer's. Fix with `resolve.dedupe: ['react', 'react-dom', '@xyflow/react']`. Not needed when installing the SDK from npm.

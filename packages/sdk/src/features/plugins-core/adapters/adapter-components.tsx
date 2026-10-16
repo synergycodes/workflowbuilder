@@ -49,8 +49,9 @@ const pluginRegistryComponents = new Map<
  * without forking the editor. Common slots include `'OptionalAppChildren'`,
  * `'OptionalNodeContent'`, and others — see the
  * [Build a plugin](/docs/guides/build-a-plugin/) guide for the authoritative
- * list. The app bar, the palette and the properties panel are not among them:
- * see `useWorkflowBuilderState()`, `useWorkflowBuilderActions()`,
+ * list. Own UI in the app bar, the palette and the properties panel does not
+ * go through a slot (`'PropertiesBar'` and `'ProjectSelection'` still take a
+ * props decorator): see `useWorkflowBuilderState()`, `useWorkflowBuilderActions()`,
  * `builtInControls`, and the `…Content` / `…MenuItem` components instead.
  *
  * Safe to call more than once; pass `plugin.name` to deduplicate.

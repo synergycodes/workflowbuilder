@@ -106,6 +106,27 @@ describe('execute rate limits', () => {
   });
 });
 
+describe('ENABLE_WB_LISTING', () => {
+  // Off unless opted in: a deployment whose only secret is the random id must not list every id.
+  it('lists on true', async () => {
+    const env = await loadEnv({ ENABLE_WB_LISTING: 'true' });
+
+    expect(env.ENABLE_WB_LISTING).toBe(true);
+  });
+
+  it.each(['TRUE', 'True', '1', 'yes', 'enabled', ''])('does not list on %s', async (value) => {
+    const env = await loadEnv({ ENABLE_WB_LISTING: value });
+
+    expect(env.ENABLE_WB_LISTING).toBe(false);
+  });
+
+  it('does not list when unset', async () => {
+    const env = await loadEnv({});
+
+    expect(env.ENABLE_WB_LISTING).toBe(false);
+  });
+});
+
 describe('TURNSTILE_SECRET_KEY', () => {
   it('reads a secret that is set', async () => {
     const env = await loadEnv({ TURNSTILE_SECRET_KEY: 'secret' });
