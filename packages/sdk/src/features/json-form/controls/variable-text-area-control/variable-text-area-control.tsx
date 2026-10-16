@@ -14,7 +14,7 @@ import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextAreaControl(props: VariableTextAreaControlProps) {
   const { data, handleChange, path, errors, enabled, uischema, schema } = props;
-  const { placeholder, variablesTypes, disabled } = uischema;
+  const { placeholder, variablesTypes, minRows, disabled } = uischema;
   const { type } = schema;
   const selection = useSingleSelectedElement();
   const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
@@ -48,6 +48,7 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
         suggestionGroups={suggestionGroups}
         hasError={errors.length > 0}
         mentionsInputProps={{ disabled: isDisabled, placeholder }}
+        minRows={minRows}
       />
     </ControlWrapper>
   );

@@ -1,7 +1,6 @@
 import { getScope } from '@workflowbuilder/sdk';
 import type { UISchema } from '@workflowbuilder/sdk';
 
-import { responseOptions, responseOptionsAll } from '../../utils/ai-agent/response-options';
 import type { AiAgentSchema } from './schema';
 
 const scope = getScope<AiAgentSchema>;
@@ -16,12 +15,11 @@ export const uischema: UISchema = {
       placeholder: 'Node Title...',
     },
     {
-      type: 'TextArea',
+      type: 'VariableTextArea',
       scope: scope('properties.systemPrompt'),
       label: 'System Prompt',
       placeholder: 'Describe what the AI should do...',
       minRows: 5,
-      maxRows: 14,
     },
     {
       type: 'ResponseSelect',

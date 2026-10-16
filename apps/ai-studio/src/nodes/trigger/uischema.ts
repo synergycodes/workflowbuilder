@@ -15,12 +15,11 @@ export const uischema: UISchema = {
       placeholder: 'Node Title...',
     },
     {
-      type: 'TextArea',
+      type: 'VariableTextArea',
       scope: scope('properties.inputPrompt'),
       label: 'Input',
       placeholder: 'Paste the input data here (e.g. email content)...',
       minRows: 5,
-      maxRows: 14,
     },
   ],
 };
