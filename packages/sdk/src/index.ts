@@ -73,7 +73,10 @@ export { AppBarControlsContent } from './features/ui-extensions/components/app-b
 export { PaletteHeaderContent } from './features/ui-extensions/components/palette-header-content';
 export { PaletteFooterContent } from './features/ui-extensions/components/palette-footer-content';
 export { PropertiesPanelHeaderContent } from './features/ui-extensions/components/properties-panel-header-content';
-export { PropertiesPanelFooterContent } from './features/ui-extensions/components/properties-panel-footer-content';
+export {
+  PropertiesPanelFooter,
+  PropertiesPanelFooterContent,
+} from './features/ui-extensions/components/properties-panel-footer-content';
 
 // =============================================================================
 // Built-in menus: own items next to the project, app bar and properties panel menus

@@ -231,6 +231,18 @@ describe('createWorkflowsRoutes - deny short-circuits before any DB access', () 
   });
 });
 
+describe('createWorkflowsRoutes - GET /:id', () => {
+  it('answers 200 with the row', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+
+    const response = await app.request('/api/workflows/7c9e6679-7425-40de-944b-e07fc1f90ae7');
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ id: 'w-1', name: 'demo' });
+  });
+});
+
 // ---- tenant propagation on execute -----------------------------------------
 //
 // The resolved tenant is stamped onto the executions row (the worker's event

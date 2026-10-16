@@ -50,6 +50,11 @@ services:
       interval: 5s
       timeout: 3s
       retries: 12
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 512M
     restart: unless-stopped
 
   # applies migrations at boot; on failure exits and `restart` retries
@@ -64,6 +69,7 @@ services:
       DATABASE_URL: postgresql://wb:${APP_DB_PASSWORD:-wb}@app-db:5432/workflow_builder
       # explicit opt-in — a forgotten env var fails loudly instead of exposing the API
       WB_AUTH_PORT: allow-all
+      # ENABLE_WB_LISTING stays unset: the collection routes are off, and the random id is the only secret here
       # only nginx can reach the backend, so X-Forwarded-For is trustworthy
       TRUST_PROXY: 'true'
       RATE_LIMIT_EXECUTE_PER_MINUTE: ${RATE_LIMIT_EXECUTE_PER_MINUTE:-10}
@@ -88,6 +94,11 @@ services:
       timeout: 5s
       retries: 6
       start_period: 15s
+    deploy:
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: 512M
     restart: unless-stopped
 
   # crash-loops until Temporal answers (no usable healthcheck); restart converges it
@@ -111,6 +122,11 @@ services:
       # backend healthy = migrations applied
       backend:
         condition: service_healthy
+    deploy:
+      resources:
+        limits:
+          cpus: '1.0'
+          memory: 1G
     restart: unless-stopped
 
   web:
@@ -126,6 +142,11 @@ services:
       - '${WEB_BIND:-0.0.0.0}:${WEB_PORT:-8080}:80'
     depends_on:
       - backend
+    deploy:
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 128M
     restart: unless-stopped
 
 volumes:

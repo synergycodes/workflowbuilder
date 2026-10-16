@@ -2,6 +2,8 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import type { MenuItemProps } from '@workflowbuilder/ui';
 import { describe, expect, it, vi } from 'vitest';
 
+import { BuiltInControlsProvider } from '../../../ui-extensions/built-in-controls-context';
+
 // Render the menu's `items` inline so we can assert on them without driving the
 // real menu popover. The component also renders Input and Menu.TriggerButton, so
 // the mock must expose them too.
@@ -82,5 +84,25 @@ describe('ProjectSelection: inline rename', () => {
     fireEvent.change(screen.getByLabelText('document name'), { target: { value: 'New Name' } });
 
     expect(renameDocument).toHaveBeenCalledWith('New Name');
+  });
+
+  it('an open rename input closes when documentRename is hidden', () => {
+    const { rerender } = render(
+      <BuiltInControlsProvider value={{}}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    fireEvent.click(screen.getByText('Doc'));
+    expect(screen.getByLabelText('document name')).toBeDefined();
+
+    rerender(
+      <BuiltInControlsProvider value={{ documentRename: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(screen.queryByLabelText('document name')).toBeNull();
+    expect(screen.getByText('Doc')).toBeDefined();
   });
 });

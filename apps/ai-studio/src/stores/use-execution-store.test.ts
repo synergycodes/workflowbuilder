@@ -26,13 +26,6 @@ import {
   waitKey,
 } from './use-execution-store';
 
-const STORAGE_KEY = 'ai-studio:execution';
-
-const stored = () => {
-  const raw = localStorage.getItem(STORAGE_KEY);
-  return raw ? (JSON.parse(raw) as { state: Record<string, unknown>; version: number }) : null;
-};
-
 const nodeState = (nodeId: string) => useExecutionStore.getState().nodeStates[nodeId];
 
 const drafts = () => useExecutionStore.getState().decisionDrafts;
@@ -54,7 +47,7 @@ const terminalCases = Object.entries(TERMINAL_EVENT_TO_STATUS) as [TerminalExecu
 
 beforeEach(() => {
   resetExecution();
-  localStorage.clear();
+  sessionStorage.clear();
 });
 
 afterEach(() => {
@@ -388,91 +381,7 @@ describe('use-execution-store: facts only the row carries', () => {
   });
 });
 
-describe('use-execution-store: the run survives closing the tab', () => {
-  it('remembers exactly the run and the log preference, in storage that outlives the tab', () => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
-    applyEvent(event({ type: 'node_waiting', nodeId: 'human-1' }));
-
-    expect(stored()?.version).toBe(1);
-    expect(stored()?.state).toEqual({
-      executionId: 'exec-1',
-      streamUrl: '/api/executions/exec-1/stream',
-      status: 'waiting',
-      isLogCollapsed: false,
-    });
-  });
-
-  it('remembers a lost connection too, so the next load knows to retry', () => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    applyConnectionLost();
-
-    expect(stored()?.state).toMatchObject({ executionId: 'exec-1', status: 'disconnected' });
-  });
-
-  it('reset forgets the run but keeps the log preference', () => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    setLogCollapsed(true);
-    resetExecution();
-
-    expect(stored()?.state).toMatchObject({ status: 'idle', isLogCollapsed: true });
-    expect(stored()?.state).not.toHaveProperty('executionId');
-    expect(stored()?.state).not.toHaveProperty('streamUrl');
-  });
-
-  it('an entry from an older version loads through migrate, with its missing fields filled', async () => {
-    setExecutionStarted('exec-stale', '/api/executions/exec-stale/stream');
-    setLogCollapsed(false);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ state: { isLogCollapsed: true }, version: 0 }));
-
-    await useExecutionStore.persist.rehydrate();
-
-    const state = useExecutionStore.getState();
-    expect(state.isLogCollapsed).toBe(true);
-    expect(state.status).toBe('idle');
-    expect(state.executionId).toBeUndefined();
-    expect(state.streamUrl).toBeUndefined();
-  });
-
-  it('a reload comes back with the run, leaving markers and log for the snapshot to fill', async () => {
-    localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({
-        state: {
-          executionId: 'exec-1',
-          streamUrl: '/api/executions/exec-1/stream',
-          status: 'waiting',
-          isLogCollapsed: false,
-        },
-        version: 1,
-      }),
-    );
-
-    await useExecutionStore.persist.rehydrate();
-
-    expect(useExecutionStore.getState()).toMatchObject({
-      executionId: 'exec-1',
-      streamUrl: '/api/executions/exec-1/stream',
-      status: 'waiting',
-      nodeStates: {},
-      events: [],
-    });
-  });
-});
-
-describe('use-execution-store: a terminal run does not come back after a reload', () => {
-  it('a run that ended writes an idle entry to storage but stays visible in memory', () => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    setLogCollapsed(true);
-    applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
-    applyEvent(terminalEvent('execution_completed'));
-
-    expect(stored()?.state).toMatchObject({ status: 'idle', isLogCollapsed: true });
-    expect(stored()?.state).not.toHaveProperty('executionId');
-    expect(stored()?.state).not.toHaveProperty('streamUrl');
-    expect(useExecutionStore.getState()).toMatchObject({ executionId: 'exec-1', status: 'completed' });
-  });
-
+describe('use-execution-store: a lost stream after the run ended', () => {
   it.each(['idle', ...TERMINAL_EXECUTION_STATUSES] as RunStatus[])(
     'a lost stream leaves the status %s: there is no run left to lose',
     (status) => {
@@ -511,40 +420,54 @@ describe('use-execution-store: a stop the user asked for', () => {
 
     expect(useExecutionStore.getState().isStopRequested).toBe(true);
   });
+});
 
-  it('is never written to storage', () => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    applyStopRequested();
+describe('use-execution-store: which runs may still be alive on the server', () => {
+  it.each(['pending', 'running', 'waiting', 'cancelling', 'disconnected'] as RunStatus[])(
+    '%s: the server may still hold the run',
+    (status) => {
+      expect(isRunAlive(status)).toBe(true);
+    },
+  );
 
-    expect(stored()?.state).not.toHaveProperty('isStopRequested');
+  it.each(['idle', ...TERMINAL_EXECUTION_STATUSES] as RunStatus[])('%s: nothing to reconnect or cancel', (status) => {
+    expect(isRunAlive(status)).toBe(false);
   });
 });
 
-describe('use-execution-store: partialize refuses a half-run', () => {
-  it('an executionId without a stream URL never reaches storage, only the idle defaults with the log preference', () => {
-    useExecutionStore.setState({
-      executionId: 'exec-1',
-      streamUrl: undefined,
-      status: 'waiting',
-      isLogCollapsed: true,
-    });
+describe('use-execution-store: what a reload keeps', () => {
+  it('keeps the log preference for the tab and nothing of the run, which the address names', () => {
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
+    setLogCollapsed(true);
 
-    expect(stored()?.state).toEqual({ status: 'idle', isLogCollapsed: true });
-    expect(stored()?.state).not.toHaveProperty('executionId');
-    expect(stored()?.state).not.toHaveProperty('streamUrl');
+    const entry = JSON.parse(sessionStorage.getItem('ai-studio:execution-log')!) as { state: Record<string, unknown> };
+    expect(entry.state).toEqual({ isLogCollapsed: true });
+    expect(localStorage.getItem('ai-studio:execution')).toBeNull();
+  });
+
+  it('gives a run the address reopens the log as the tab left it, and opens it for a run started here', async () => {
+    sessionStorage.setItem('ai-studio:execution-log', JSON.stringify({ state: { isLogCollapsed: true }, version: 0 }));
+    await useExecutionStore.persist.rehydrate();
+
+    setExecutionStarted('exec-1', '/api/executions/exec-1/stream', { keepLogChoice: true });
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(true);
+
+    setExecutionStarted('exec-2', '/api/executions/exec-2/stream');
+    expect(useExecutionStore.getState().isLogCollapsed).toBe(false);
   });
 });
 
 describe('use-execution-store: storage is best effort', () => {
-  const localStorageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'localStorage');
+  const sessionStorageDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'sessionStorage');
 
   beforeEach(() => {
     setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
   });
 
   afterEach(() => {
-    if (localStorageDescriptor) {
-      Object.defineProperty(globalThis, 'localStorage', localStorageDescriptor);
+    vi.restoreAllMocks();
+    if (sessionStorageDescriptor) {
+      Object.defineProperty(globalThis, 'sessionStorage', sessionStorageDescriptor);
     }
   });
 
@@ -555,24 +478,11 @@ describe('use-execution-store: storage is best effort', () => {
       { executionId: 'exec-2', status: 'pending' },
     ],
     [
-      'a snapshot',
-      () =>
-        applySnapshot({
-          executionId: 'exec-1',
-          status: 'waiting',
-          lastSequence: 2,
-          events: [
-            event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
-            event({ type: 'node_waiting', nodeId: 'human-1' }),
-          ],
-        }),
-      { status: 'waiting', nodeStates: { 'human-1': { status: 'waiting' } } },
-    ],
-    [
       'a live event',
       () => applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } })),
       { status: 'running' },
     ],
+    ['a reset', () => resetExecution(), { executionId: undefined, status: 'idle' }],
   ])('%s still lands in memory when the storage write throws', (_, action, expected) => {
     const setItem = vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
       throw new DOMException('The quota has been exceeded.', 'QuotaExceededError');
@@ -594,26 +504,13 @@ describe('use-execution-store: storage is best effort', () => {
         },
       },
     ],
-  ])('a run still starts when localStorage %s from the first load', async (_, descriptor) => {
-    Object.defineProperty(globalThis, 'localStorage', { configurable: true, ...descriptor });
+  ])('a run still starts when sessionStorage %s from the first load', async (_, descriptor) => {
+    Object.defineProperty(globalThis, 'sessionStorage', { configurable: true, ...descriptor });
     vi.resetModules();
     const store = await import('./use-execution-store');
 
     expect(() => store.setExecutionStarted('exec-2', '/api/executions/exec-2/stream')).not.toThrow();
 
     expect(store.useExecutionStore.getState()).toMatchObject({ executionId: 'exec-2', status: 'pending' });
-  });
-});
-
-describe('use-execution-store: which runs may still be alive on the server', () => {
-  it.each(['pending', 'running', 'waiting', 'cancelling', 'disconnected'] as RunStatus[])(
-    '%s: the server may still hold the run',
-    (status) => {
-      expect(isRunAlive(status)).toBe(true);
-    },
-  );
-
-  it.each(['idle', ...TERMINAL_EXECUTION_STATUSES] as RunStatus[])('%s: nothing to reconnect or cancel', (status) => {
-    expect(isRunAlive(status)).toBe(false);
   });
 });

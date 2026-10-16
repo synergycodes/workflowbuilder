@@ -267,7 +267,7 @@ describe('area content components', () => {
   });
 
   it.each(DEPRECATED_SLOT_CASES)(
-    'a deprecated $slot decorator and $name render together in the documented order with no extra wrapper',
+    'a deprecated $slot decorator and $name render together in the documented order, the slot output unwrapped',
     ({ slot, Content, area, builtIn }) => {
       registerComponentDecorator(slot, { name: BEFORE, place: 'before', content: Before });
       registerComponentDecorator(slot, { name: AFTER, place: 'after', content: After });
@@ -280,13 +280,17 @@ describe('area content components', () => {
 
       const target = targetOf(registry, area);
       const container = target.parentElement!;
+      // The palette footer keeps its deprecated slot in a `display: contents` element, so bare text
+      // or an <input> from the slot still counts as footer content; layout-wise it is not a wrapper.
+      const slotHost = area === 'paletteFooter' ? container.children[1]! : container;
+      const firstSlotChild = area === 'paletteFooter' ? slotHost.firstElementChild : target.nextElementSibling;
       const before = screen.getByRole('button', { name: 'Before' });
       const after = screen.getByRole('button', { name: 'After' });
       expect(target.children).toHaveLength(1);
       expect(target.firstElementChild).toBe(screen.getByRole('button', { name: 'Mine' }));
       expect(container.children[0]).toBe(target);
-      expect(container.children[1]).toBe(before);
-      expect(after.parentElement).toBe(container);
+      expect(firstSlotChild).toBe(before);
+      expect(after.parentElement).toBe(slotHost);
       expect(container.contains(builtIn())).toBe(true);
       expect(isBefore(before, builtIn())).toBe(true);
       expect(isBefore(builtIn(), after)).toBe(true);
