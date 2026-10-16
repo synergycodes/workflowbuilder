@@ -1,9 +1,12 @@
 import { fireEvent, render, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { resetWorkflowStore } from '../../../../store/store';
 import '../../../i18n/index';
+import { useModalStore } from '../../../modals/stores/use-modal-store';
 import { registerComponentDecorator } from '../../../plugins-core/adapters/adapter-components';
 import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../../../ui-extensions/built-in-controls-context';
@@ -24,6 +27,26 @@ function renderControls(builtInControls?: BuiltInControls) {
   );
   const view = render(tree(builtInControls));
   return { ...view, rerenderControls: (next?: BuiltInControls) => view.rerender(tree(next)) };
+}
+
+// Calls the actions directly, bypassing the dots menu.
+function ImportExportButtons() {
+  const { openImport, openExport } = useWorkflowBuilderActions();
+  return (
+    <>
+      <button type="button" onClick={openImport}>
+        Import now
+      </button>
+      <button type="button" onClick={openExport}>
+        Export now
+      </button>
+    </>
+  );
+}
+
+function openedModalTitle() {
+  const { isOpen, modal } = useModalStore.getState();
+  return isOpen ? modal?.title : undefined;
 }
 
 function openDotsMenu() {
@@ -86,6 +109,25 @@ describe('Controls builtInControls', () => {
 
     renderInRoot(<Controls />, { builtInControls: { export: true, import: false } });
     expect(screen.getByRole('button', { name: 'Menu' })).not.toBeNull();
+  });
+
+  it('export:false and import:false keep openImport and openExport working', () => {
+    useModalStore.setState({ isOpen: false, modal: null });
+    renderInRoot(
+      <>
+        <ImportExportButtons />
+        <Controls />
+      </>,
+      { builtInControls: { export: false, import: false } },
+    );
+    expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
+
+    fireEvent.click(screen.getByText('Import now'));
+    expect(openedModalTitle()).toBe(i18n.t('importExport.import'));
+
+    useModalStore.setState({ isOpen: false, modal: null });
+    fireEvent.click(screen.getByText('Export now'));
+    expect(openedModalTitle()).toBe(i18n.t('importExport.export'));
   });
 
   it('export:false, import:true shows only the Import item in the dots menu', () => {

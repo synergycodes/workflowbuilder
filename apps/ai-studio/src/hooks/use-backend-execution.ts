@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef } from 'react';
 
 import { connectExecutionStream } from '../adapters/execution-stream-adapter';
+import { patchDraft } from '../adapters/save-workflow-draft';
 import { BACKEND_URL } from '../config';
 import { getTurnstileToken } from '../security/turnstile';
 import {
@@ -10,8 +11,7 @@ import {
   setExecutionStarted,
   useExecutionStore,
 } from '../stores/use-execution-store';
-
-const STREAM_PATH_PREFIX = '/api/executions/';
+import { syncExecutionIdToAddress } from '../utils/open-from-url/address-execution-id';
 
 // A proxy 404 is not JSON, and only the backend's own code means the server forgot the run.
 async function isExecutionNotFound(response: Response): Promise<boolean> {
@@ -19,7 +19,26 @@ async function isExecutionNotFound(response: Response): Promise<boolean> {
   return body?.code === 'execution_not_found';
 }
 
-export function useBackendExecution() {
+async function workflowToRun(nodes: unknown[], edges: unknown[], targetWorkflowId?: string): Promise<string> {
+  const response = await (targetWorkflowId === undefined
+    ? fetch(`${BACKEND_URL}/api/workflows`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'AI Studio Draft', draftJson: { nodes, edges } }),
+      })
+    : patchDraft(targetWorkflowId, nodes, edges));
+
+  if (!response.ok) {
+    const error = (await response.json()) as { message?: string };
+    throw new Error(error.message ?? 'Failed to save workflow');
+  }
+
+  const { id } = (await response.json()) as { id: string };
+  return id;
+}
+
+/** `onForget` runs once the client forgets the run: on Reset, and when Stop learns the server no longer has it. */
+export function useBackendExecution(onForget?: () => void) {
   const disconnectRef = useRef<(() => void) | null>(null);
   const isUnmountedRef = useRef(false);
   const status = useExecutionStore((s) => s.status);
@@ -35,19 +54,9 @@ export function useBackendExecution() {
 
   useEffect(() => {
     isUnmountedRef.current = false;
-    const persisted = useExecutionStore.getState();
-    // Anything on the origin can write this entry, and an EventSource it rejects would unmount the root.
-    if (isRunAlive(persisted.status)) {
-      if (persisted.executionId && persisted.streamUrl?.startsWith(STREAM_PATH_PREFIX)) {
-        try {
-          openStream(persisted.executionId, persisted.streamUrl);
-        } catch {
-          resetExecution();
-        }
-      } else {
-        resetExecution();
-      }
-    }
+    // The run a link opened is in the store before the editor mounts; this is where its stream opens.
+    const { executionId: runId, streamUrl: runStreamUrl, status: runStatus } = useExecutionStore.getState();
+    if (runId && runStreamUrl && isRunAlive(runStatus)) openStream(runId, runStreamUrl);
     return () => {
       isUnmountedRef.current = true;
       disconnectRef.current?.();
@@ -56,23 +65,18 @@ export function useBackendExecution() {
   }, [openStream]);
 
   const executeFromCanvas = useCallback(
-    async (nodes: unknown[], edges: unknown[], triggerPayload: Record<string, unknown> = {}) => {
+    async (
+      nodes: unknown[],
+      edges: unknown[],
+      triggerPayload: Record<string, unknown> = {},
+      /** Saves the canvas into this workflow's draft instead of creating a workflow per run. */
+      targetWorkflowId?: string,
+    ) => {
       // Not redundant with openStream's own close: left open, a stale stream could still mutate the
       // store through the two round trips below.
       disconnectRef.current?.();
 
-      const wfResponse = await fetch(`${BACKEND_URL}/api/workflows`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'AI Studio Draft', draftJson: { nodes, edges } }),
-      });
-
-      if (!wfResponse.ok) {
-        const error = (await wfResponse.json()) as { message?: string };
-        throw new Error(error.message ?? 'Failed to save workflow');
-      }
-
-      const { id: workflowId } = (await wfResponse.json()) as { id: string };
+      const workflowId = await workflowToRun(nodes, edges, targetWorkflowId);
 
       const turnstileToken = await getTurnstileToken();
 
@@ -96,6 +100,7 @@ export function useBackendExecution() {
       };
 
       setExecutionStarted(execId, streamUrl);
+      syncExecutionIdToAddress(execId);
       openStream(execId, streamUrl);
 
       return execId;
@@ -107,7 +112,9 @@ export function useBackendExecution() {
     disconnectRef.current?.();
     disconnectRef.current = null;
     resetExecution();
-  }, []);
+    syncExecutionIdToAddress(null);
+    onForget?.();
+  }, [onForget]);
 
   const cancel = useCallback(async () => {
     if (!executionId) return;

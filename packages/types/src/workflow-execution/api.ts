@@ -80,3 +80,9 @@ export type CancelExecutionResponse = {
   id: string;
   status: 'cancelling';
 };
+
+export type GetExecutionSnapshotResponse = {
+  workflowId: string;
+  sourceVersion: SourceVersion;
+  snapshot: unknown;
+};

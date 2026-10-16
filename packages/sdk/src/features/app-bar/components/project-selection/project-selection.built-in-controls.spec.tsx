@@ -1,9 +1,11 @@
 import { fireEvent, screen } from '@testing-library/react';
+import i18n from 'i18next';
 import { describe, expect, it, vi } from 'vitest';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
+import { useModalStore } from '../../../modals/stores/use-modal-store';
 import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { ProjectSelection } from './project-selection';
@@ -37,7 +39,36 @@ function RenameButton() {
   );
 }
 
+// Calls the action directly, bypassing the project menu's Settings item.
+function OpenSettingsButton() {
+  const { openSettings } = useWorkflowBuilderActions();
+  return (
+    <button type="button" onClick={openSettings}>
+      Open settings
+    </button>
+  );
+}
+
 describe('ProjectSelection builtInControls', () => {
+  it('settings:false keeps openSettings working', () => {
+    useModalStore.setState({ isOpen: false, modal: null });
+    resetWithDocumentName();
+    renderInRoot(
+      <>
+        <OpenSettingsButton />
+        <ProjectSelection />
+      </>,
+      { builtInControls: { settings: false } },
+    );
+    expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
+
+    fireEvent.click(screen.getByText('Open settings'));
+
+    const { isOpen, modal } = useModalStore.getState();
+    expect(isOpen).toBe(true);
+    expect(modal?.title).toBe(i18n.t('workflowsSettings.modalTitle'));
+  });
+
   it('settings:false hides the Settings item and the caret (nothing else in the menu)', () => {
     renderProjectSelection({ settings: false });
 
