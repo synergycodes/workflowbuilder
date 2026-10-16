@@ -4,6 +4,8 @@ import { StrictMode, useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import '../features/i18n/index';
+import { loadData } from '../features/integration/stores/use-integration-store';
+import type * as integrationStore from '../features/integration/stores/use-integration-store';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
 import { useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import type { WorkflowBuilderNode } from '../node/node-data';
@@ -13,6 +15,12 @@ import { WorkflowBuilderRoot } from './workflow-builder-root';
 import type { WorkflowBuilderRootProps } from './workflow-builder-root.types';
 
 vi.mock('../utils/show-translated-snackbar', () => ({ showTranslatedSnackbar: vi.fn() }));
+
+// The real loadData, wrapped so its call count can be asserted.
+vi.mock('../features/integration/stores/use-integration-store', async (importOriginal) => {
+  const actual = await importOriginal<typeof integrationStore>();
+  return { ...actual, loadData: vi.fn(actual.loadData) };
+});
 
 const localStorageKey = 'workflowBuilderDiagram';
 const storedNode: WorkflowBuilderNode = {
@@ -159,6 +167,25 @@ describe('WorkflowBuilderRoot onStart', () => {
 
     expect(onStart).toHaveBeenCalledOnce();
     expect(onStart).toHaveBeenCalledWith(expect.objectContaining({ isEmpty: true }));
+  });
+
+  it('loadData runs once on an empty localStorage start, also under StrictMode', async () => {
+    await renderRoot();
+
+    expect(loadData).toHaveBeenCalledOnce();
+    expect(useStore.getState().nodes).toEqual([]);
+  });
+
+  it('with the api strategy loadData runs once, after the load request settles', async () => {
+    vi.stubGlobal(
+      'fetch',
+      vi.fn(async () => new Response(JSON.stringify({ nodes: [storedNode], edges: [] }), { status: 200 })),
+    );
+
+    await renderRoot({ integration: { strategy: 'api', endpoints: { load: '/load', save: '/save' } } });
+
+    expect(loadData).toHaveBeenCalledOnce();
+    expect(useStore.getState().nodes.map(({ id }) => id)).toEqual(['stored']);
   });
 
   it('read-only start with an empty diagram does not open the template selector', async () => {

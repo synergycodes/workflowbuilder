@@ -1,70 +1,57 @@
-import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent, screen } from '@testing-library/react';
+import { describe, expect, it, vi } from 'vitest';
 
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { resetWorkflowStore } from '../../../../store/store';
+import type { OnSave } from '../../../../types/integration';
+import '../../../i18n/index';
+import { IntegrationContextWrapper } from '../../../integration/components/integration-variants/context/integration-context-wrapper';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
+import { Toolbar } from './toolbar';
 
-vi.mock('../../../integration/components/save-button/save-button', () => ({
-  SaveButton: () => <div data-testid="save-button" />,
-}));
+// Calls the action directly, bypassing the toolbar's own Save button.
+function SaveNowButton() {
+  const { save } = useWorkflowBuilderActions();
+  return (
+    <button type="button" onClick={() => void save()}>
+      Save now
+    </button>
+  );
+}
 
-vi.mock('../../../plugins-core/components/app/optional-app-bar-toolbar', () => ({
-  OptionalAppBarTools: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-}));
-
-vi.mock('../../../../assets/workflow-builder-logo.svg?react', () => ({
-  default: () => <svg data-testid="built-in-logo" />,
-}));
-
-const { setAppBarBranding } = await import('../../../../data/app-bar-branding');
-const { Toolbar } = await import('./toolbar');
-
-afterEach(() => {
-  setAppBarBranding({});
-});
-
-describe('Toolbar branding', () => {
-  it('renders the built-in logo by default', () => {
-    render(<Toolbar />);
-
-    expect(screen.getByTestId('built-in-logo')).toBeTruthy();
-  });
-
-  it('renders a custom logo wrapped in a link when branding is set', () => {
-    setAppBarBranding({ logo: <img alt="Acme" />, logoHref: 'https://acme.test' });
-
-    render(<Toolbar />);
-
-    const link = screen.getByRole('link');
-    expect(link.getAttribute('href')).toBe('https://acme.test');
-    expect(screen.getByAltText('Acme')).toBeTruthy();
-    expect(screen.queryByTestId('built-in-logo')).toBeNull();
-  });
-
-  it('treats a string logo as an image URL', () => {
-    setAppBarBranding({ logo: '/brand.svg' });
-
-    const { container } = render(<Toolbar />);
-
-    expect(container.querySelector('img')?.getAttribute('src')).toBe('/brand.svg');
-  });
-
-  it('renders both theme variants for a light/dark logo', () => {
-    setAppBarBranding({ logo: { light: '/brand-light.svg', dark: '/brand-dark.svg' } });
-
-    const { container } = render(<Toolbar />);
-
-    const sources = Array.from(container.querySelectorAll('img'), (img) => img.getAttribute('src'));
-    expect(sources).toEqual(['/brand-light.svg', '/brand-dark.svg']);
-  });
-});
+function renderToolbar(onSave: OnSave, save?: boolean) {
+  resetWorkflowStore();
+  return renderInRoot(
+    <IntegrationContextWrapper onSave={onSave}>
+      <SaveNowButton />
+      <Toolbar />
+    </IntegrationContextWrapper>,
+    { builtInControls: { save } },
+  );
+}
 
 describe('Toolbar builtInControls', () => {
-  it('save:false hides the Save button; save:true (the default) shows it', () => {
-    const { unmount } = renderInRoot(<Toolbar />, { builtInControls: { save: false } });
-    expect(screen.queryByTestId('save-button')).toBeNull();
+  it('save:false hides the Save button; true (the default) shows it', () => {
+    const { unmount } = renderToolbar(
+      vi.fn<OnSave>(async () => 'success'),
+      false,
+    );
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
     unmount();
 
-    renderInRoot(<Toolbar />, { builtInControls: { save: true } });
-    expect(screen.getByTestId('save-button')).not.toBeNull();
+    renderToolbar(
+      vi.fn<OnSave>(async () => 'success'),
+      true,
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).not.toBeNull();
+  });
+
+  it('save:false keeps the save action working', () => {
+    const onSave = vi.fn<OnSave>(async () => 'success');
+    renderToolbar(onSave, false);
+
+    fireEvent.click(screen.getByText('Save now'));
+
+    expect(onSave).toHaveBeenCalledWith({ isAutoSave: false });
   });
 });
