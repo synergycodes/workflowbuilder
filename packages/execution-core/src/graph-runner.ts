@@ -70,6 +70,7 @@ export async function runGraph<TNode extends BaseNode>(
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
   await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
+  await setAdvisoryStatus(events, input.executionId, 'running');
 
   const entry = resolveStartNode(input.definition.nodes, inDegree);
   if ('error' in entry) {
@@ -394,8 +395,8 @@ async function parkUntilResolved(
   }
 }
 
-// waiting/running are derived, advisory state: a failed write must not cost a park or
-// a delivered verdict. Same rationale as the swallowed node_skipped emit above.
+// waiting/running are derived, advisory state: a failed write must not cost a run, a park
+// or a delivered verdict. Same rationale as the swallowed node_skipped emit above.
 async function setAdvisoryStatus(
   events: EventEmitterPort,
   executionId: string,

@@ -19,7 +19,7 @@ Two rules keep the packages independent of each other:
 
 Both scripts live in `tools/` and accept the short name (`sdk`, `ui`, `temporal`) or the full one. `<pkg>` below stands for the package being released. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the packages don't collide.)
 
-`@workflowbuilder/temporal` has one extra consideration the other two do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version. See `packages/temporal/README.md` § "Versioning and replay".
+`@workflowbuilder/temporal` has one extra consideration the other two do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version; before 1.0 a minor may break it, saying so in its release notes. See `packages/temporal/README.md` § "Versioning and replay".
 
 `@workflowbuilder/sdk` has the same shape with `@workflowbuilder/ui`: the UI is compiled into the SDK bundle (it is not among the SDK's externals or dependencies), so a UI change reaches SDK consumers with the next SDK release whether or not the UI itself was released. `release:version` stops when you release the SDK while the UI has pending changesets, and `pr-check.yml` warns when `packages/ui` changes without a changeset for the SDK.
 
@@ -154,9 +154,11 @@ It refuses to run anywhere but a `release-*` branch (hyphenated because the `rel
 VERSION=$(node -p "require('./packages/temporal/package.json').version")
 REPLAY_HISTORY_VERSION=$VERSION UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
 pnpm --filter @workflowbuilder/temporal test
+git rm --ignore-unmatch packages/temporal/test/replay/histories/v0-*.json
+pnpm --filter @workflowbuilder/temporal test
 ```
 
-The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists, so a forgotten `REPLAY_HISTORY_VERSION` fails instead of silently rewriting the previous set. Earlier sets stay: a run recorded by that version may still be waiting in someone's Event History. The pre-release `v0-` baseline was replaced by the 0.1.0 recordings. The only pre-release recording left, `packages/temporal/test/replay/histories/v0-parked-decision.json`, is deleted by the release PR that first records `<version>-parked-decision.json`, once the new recording replays. The rules are in `packages/temporal/test/replay/README.md`.
+The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists. Earlier released sets stay: a run recorded by that version may still be waiting in someone's Event History. `v0-` files are recordings of code no release had shipped yet; once the version's own set replays they add nothing, so the release PR deletes them and runs the tests once more. A forgotten `REPLAY_HISTORY_VERSION` writes `v0-` files, or fails on the ones that exist; the pre-merge check below catches both. The rules are in `packages/temporal/test/replay/README.md`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -222,7 +224,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
-- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, plus, for the release that first records `parked-decision`, the deletion of `v0-parked-decision.json`
+- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, the deletion of every `v0-*.json`, and no new `v0-` file
 - Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.

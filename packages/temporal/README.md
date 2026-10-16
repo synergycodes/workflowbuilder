@@ -10,7 +10,7 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Issues:** <https://github.com/synergycodes/workflowbuilder/issues>
 - **Live demo:** <https://app.workflowbuilder.io/>
 - **Requires:** Node.js 20.3 or newer, ESM. Tested against the `1.23` line of the Temporal TypeScript SDK.
-- **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
+- **Status:** pre-1.0. The API and replay compatibility may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
 
 Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. Each node activity carries the node's label as its Summary, so Event History reads like the diagram. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
 
@@ -124,7 +124,7 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
   // A ready Client, or a factory awaited on first use so process start does not
-  // depend on Temporal being reachable.
+  // depend on Temporal being reachable. A failed attempt is retried on the next call.
   client: async () => new Client({ connection: await Connection.connect({ address }) }),
 });
 
@@ -173,7 +173,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Both are also advisory: a write can land after a cancel, even after the terminal status, so a store must not let either replace a cancel it recorded or a terminal status.
+The run status moves to `running` as soon as the run starts, right after `execution_started`. While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Every `waiting` and `running` write is advisory: it can land after a cancel, even after the terminal status, so a store must not let it replace a cancel it recorded or a terminal status.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
@@ -215,7 +215,7 @@ This package carries two contracts, not one. The API is the ordinary semver surf
 | minor   | additions only           | histories still replay; new behaviour sits behind `patched()`       |
 | major   | breaking changes allowed | replay may break, and the release notes say to drain in-flight runs |
 
-Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions.
+Pre-1.0 a minor may break both. The API surface is reviewed deliberately, not incidentally. A 0.x minor that breaks replay says so in its release notes and asks you to let runs started on an earlier version finish before the worker upgrades; 0.3.0 is one. A 0.x patch still replays every history its minor line recorded. From 1.0 the table holds without exception.
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
 
