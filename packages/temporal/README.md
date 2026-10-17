@@ -101,6 +101,10 @@ Keep the export named `runWorkflow`: that is the name the client starts. Entries
 
 **Use one constant on both sides.** The plugin validates the map at `Worker.create`, so a bad profile fails the deploy. `createRunWorkflow` alone validates only on the first workflow activation, and a map handed to the plugin but not to `createRunWorkflow` gives you a green deploy with every node on the default profile.
 
+### Long-running activities and cancellation
+
+Profiles accept optional `heartbeatTimeout`, using the same duration grammar as `startToCloseTimeout`. A long-running executor must send heartbeats itself and connect Temporal's cancellation signal to its running operation. See [heartbeat and cancellation examples](/packages/temporal/activity-profiles.md#heartbeats-and-cancellation), including a shell-backed step. Leaving the field unset preserves the existing defaults.
+
 ### Failures and retries
 
 A node activity gets the attempts its profile allows. An executor can settle the question itself:

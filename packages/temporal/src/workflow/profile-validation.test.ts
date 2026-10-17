@@ -101,7 +101,7 @@ describe('assertNodeActivityProfiles', () => {
   });
 
   describe('unknown keys', () => {
-    // The resolver forwards only the two validated fields, so anything else would be
+    // The resolver forwards only validated fields, so anything else would be
     // dropped in silence. A map built from configuration gets no excess-property check
     // from TypeScript either, which is how one arrives here in the first place.
     it('rejects a key the profile does not carry, naming it', () => {
@@ -130,14 +130,37 @@ describe('assertNodeActivityProfiles', () => {
           startToCloseTimeout: '10m',
           retry: { maximumAttempts: 2 },
           taskQueue: 'x',
-          heartbeatTimeout: '1m',
+          scheduleToCloseTimeout: '1m',
         },
       };
 
       expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
-        /has unknown keys "taskQueue", "heartbeatTimeout"/,
+        /has unknown keys "taskQueue", "scheduleToCloseTimeout"/,
       );
     });
+  });
+
+  describe('heartbeatTimeout', () => {
+    it('accepts a decimal duration and preserves it in the frozen snapshot', () => {
+      const live = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 1 }, heartbeatTimeout: '1.5s' },
+      };
+      const snapshot = freezeNodeActivityProfiles(live as NodeActivityProfiles);
+      live['test/step'].heartbeatTimeout = '0s';
+
+      expect(resolveNodeActivityOptions(node, snapshot).heartbeatTimeout).toBe('1.5s');
+    });
+
+    it.each(['0s', '-5s', '1e3s', '5 seconds', '0.0000001ms', '3652501d', 5000, null])(
+      'rejects invalid heartbeat timeout %s with its configuration path',
+      (heartbeatTimeout) => {
+        const map = { 'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 1 }, heartbeatTimeout } };
+
+        expect(() => assertNodeActivityProfiles(map as unknown as NodeActivityProfiles)).toThrow(
+          /nodeActivityProfiles\["test\/step"\]\.heartbeatTimeout must be a number followed by ms/,
+        );
+      },
+    );
   });
 
   it('rejects an entry whose value is undefined rather than defaulting it', () => {
