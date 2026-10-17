@@ -11,4 +11,7 @@ export const env = {
   // Optional. Enables the AI Agent's web-search tool; agents run without it when unset.
   // Empty counts as unset: compose passes it through as `${TAVILY_API_KEY:-}`.
   TAVILY_API_KEY: process.env['TAVILY_API_KEY'] || undefined,
+  COPILOT_GITHUB_TOKEN: process.env['COPILOT_GITHUB_TOKEN'] || undefined,
+  COPILOT_CLI_PATH: process.env['COPILOT_CLI_PATH'] || undefined,
+  SPECIALIZED_TASK_QUEUE: envOr('SPECIALIZED_TASK_QUEUE', 'workflow-execution-specialized'),
 };

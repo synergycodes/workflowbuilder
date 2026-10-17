@@ -5,6 +5,7 @@ import type { BaseNode } from './core-contract';
 import { resolveNodeActivityOptions } from './node-activity-options';
 import {
   assertNodeActivityProfiles,
+  findProfilesWithUnpolledTaskQueue,
   findProfilesWithoutExecutor,
   freezeNodeActivityProfiles,
 } from './profile-validation';
@@ -129,13 +130,82 @@ describe('assertNodeActivityProfiles', () => {
         'test/step': {
           startToCloseTimeout: '10m',
           retry: { maximumAttempts: 2 },
-          taskQueue: 'x',
-          heartbeatTimeout: '1m',
+          scheduleToCloseTimeout: '1h',
+          scheduleToStartTimeout: '1m',
         },
       };
 
       expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
-        /has unknown keys "taskQueue", "heartbeatTimeout"/,
+        /has unknown keys "scheduleToCloseTimeout", "scheduleToStartTimeout"/,
+      );
+    });
+  });
+
+  describe('heartbeatTimeout', () => {
+    it('accepts a profile with a valid heartbeatTimeout', () => {
+      const withHeartbeat = {
+        'test/step': { startToCloseTimeout: '45m', retry: { maximumAttempts: 1 }, heartbeatTimeout: '5s' },
+      };
+
+      expect(() => assertNodeActivityProfiles(withHeartbeat as unknown as NodeActivityProfiles)).not.toThrow();
+    });
+
+    it('accepts a profile with no heartbeatTimeout, unchanged from before', () => {
+      expect(() => assertNodeActivityProfiles(profiles('10m'))).not.toThrow();
+    });
+
+    it('rejects a heartbeatTimeout Temporal would not parse, naming the config path', () => {
+      const invalid = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, heartbeatTimeout: '5 seconds' },
+      };
+
+      expect(() => assertNodeActivityProfiles(invalid as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/step"\]\.heartbeatTimeout must be a number followed by ms/,
+      );
+    });
+
+    it('still rejects a genuinely unknown key alongside a valid heartbeatTimeout', () => {
+      const extra = {
+        'test/step': {
+          startToCloseTimeout: '10m',
+          retry: { maximumAttempts: 2 },
+          heartbeatTimeout: '5s',
+          scheduleToCloseTimeout: '1h',
+        },
+      };
+
+      expect(() => assertNodeActivityProfiles(extra as unknown as NodeActivityProfiles)).toThrow(
+        /has unknown key "scheduleToCloseTimeout"/,
+      );
+    });
+  });
+
+  describe('taskQueue', () => {
+    it('accepts a profile with a non-empty taskQueue', () => {
+      const withQueue = {
+        'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, taskQueue: 'specialized' },
+      };
+
+      expect(() => assertNodeActivityProfiles(withQueue as unknown as NodeActivityProfiles)).not.toThrow();
+    });
+
+    it('accepts a profile with no taskQueue, unchanged from before', () => {
+      expect(() => assertNodeActivityProfiles(profiles('10m'))).not.toThrow();
+    });
+
+    it('rejects an empty string, naming the path', () => {
+      const empty = { 'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, taskQueue: '' } };
+
+      expect(() => assertNodeActivityProfiles(empty as unknown as NodeActivityProfiles)).toThrow(
+        /nodeActivityProfiles\["test\/step"\]\.taskQueue must be a non-empty string/,
+      );
+    });
+
+    it('rejects a non-string value', () => {
+      const wrongType = { 'test/step': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, taskQueue: 7 } };
+
+      expect(() => assertNodeActivityProfiles(wrongType as unknown as NodeActivityProfiles)).toThrow(
+        /taskQueue must be a non-empty string/,
       );
     });
   });
@@ -203,5 +273,28 @@ describe('findProfilesWithoutExecutor', () => {
     const inherited = { ...map, constructor: map['test/step']! } as unknown as NodeActivityProfiles;
 
     expect(findProfilesWithoutExecutor(inherited, executors)).toEqual(['constructor']);
+  });
+});
+
+describe('findProfilesWithUnpolledTaskQueue', () => {
+  it('names a node type routed to a queue nobody polls', () => {
+    const map = {
+      'test/routed': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, taskQueue: 'specialized' },
+      'test/default': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 } },
+    } as unknown as NodeActivityProfiles;
+
+    expect(findProfilesWithUnpolledTaskQueue(map, new Set(['workflow-execution']))).toEqual(['test/routed']);
+  });
+
+  it('is silent once the queue is in the polled set', () => {
+    const map = {
+      'test/routed': { startToCloseTimeout: '10m', retry: { maximumAttempts: 2 }, taskQueue: 'specialized' },
+    } as unknown as NodeActivityProfiles;
+
+    expect(findProfilesWithUnpolledTaskQueue(map, new Set(['specialized']))).toEqual([]);
+  });
+
+  it('ignores a profile with no taskQueue regardless of the polled set', () => {
+    expect(findProfilesWithUnpolledTaskQueue(profiles('10m'), new Set())).toEqual([]);
   });
 });

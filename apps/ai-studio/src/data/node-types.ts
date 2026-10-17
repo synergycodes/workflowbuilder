@@ -1,5 +1,6 @@
 import type { PaletteItemOrGroup } from '@workflowbuilder/sdk';
 
+import { agentHarnessPaletteItem } from '../nodes/agent-harness';
 import { aiAgentPaletteItem } from '../nodes/ai-agent';
 import { decisionPaletteItem } from '../nodes/decision';
 import { humanDecisionPaletteItem } from '../nodes/human-decision';
@@ -13,6 +14,7 @@ export const aiStudioNodeTypes: PaletteItemOrGroup[] = [
     groupItems: [
       triggerPaletteItem,
       aiAgentPaletteItem,
+      agentHarnessPaletteItem,
       decisionPaletteItem,
       humanDecisionPaletteItem,
       visualizePaletteItem,
