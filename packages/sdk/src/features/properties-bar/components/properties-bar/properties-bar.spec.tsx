@@ -3,6 +3,8 @@ import i18n from 'i18next';
 import { useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import type { WorkflowBuilderReactFlowInstance } from '../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
@@ -65,6 +67,16 @@ function Panel({ initialTab, ...props }: PanelProps) {
 function renderPanel(props: PanelProps, builtInControls?: BuiltInControls) {
   const view = renderInRoot(<Panel {...props} />, { builtInControls });
   return { ...view, rerenderPanel: (next: PanelProps) => view.rerender(<Panel {...next} />) };
+}
+
+// Calls the action directly, bypassing the footer's own Delete button.
+function DeleteSelectionButton() {
+  const { deleteSelection } = useWorkflowBuilderActions();
+  return (
+    <button type="button" onClick={deleteSelection}>
+      Delete selection
+    </button>
+  );
 }
 
 const footerArea = (container: HTMLElement) => container.querySelector('[class*="footer-area"]');
@@ -188,6 +200,27 @@ describe('PropertiesBar open state', () => {
 });
 
 describe('PropertiesBar builtInControls', () => {
+  it('delete:false keeps deleteSelection working', () => {
+    const deleteElements = vi.fn(async () => ({ deletedNodes: [node], deletedEdges: [] }));
+    useStore.setState({
+      nodes: [node],
+      selectedNodesIds: [node.id],
+      reactFlowInstance: { deleteElements } as unknown as WorkflowBuilderReactFlowInstance,
+    });
+    renderInRoot(
+      <>
+        <DeleteSelectionButton />
+        <Panel initialTab="other" onDeleteClick={vi.fn()} />
+      </>,
+      { builtInControls: { delete: false } },
+    );
+    expect(button('Delete node')).toBeNull();
+
+    fireEvent.click(screen.getByText('Delete selection'));
+
+    expect(deleteElements).toHaveBeenCalledWith({ nodes: [node], edges: [] });
+  });
+
   it('delete:false hides Delete and the footer when it was the only content; true (the default) shows it', () => {
     const { container, unmount } = renderPanel({ initialTab: 'other', onDeleteClick: vi.fn() }, { delete: false });
 
