@@ -32,6 +32,7 @@ export function PaletteHeader({ onClick, isPaletteOpen }: PaletteHeaderProps) {
         )}
       </div>
       {isPaletteOpen && <AreaTarget area="paletteHeader" />}
+      {isPaletteOpen && <AreaTarget area="paletteHeader" place="after" />}
     </>
   );
 }

@@ -32,6 +32,18 @@ describe('createUiExtensionRegistry', () => {
     expect(registry.getAreaSlot('appBarTools')).toBe(emptySlot);
   });
 
+  it('keeps the before and after targets of an area apart', () => {
+    const registry = createUiExtensionRegistry();
+    const emptySlot = registry.getAreaSlot('appBarTools', 'after');
+    const element = document.createElement('div');
+
+    registry.setAreaElement('appBarTools', element, 'after');
+
+    expect(registry.getAreaSlot('appBarTools', 'after').element).toBe(element);
+    expect(registry.getAreaSlot('appBarTools', 'before')).toBe(emptySlot);
+    expect(registry.getAreaSlot('appBarTools')).toBe(emptySlot);
+  });
+
   it('setAreaElement notifies subscribers', () => {
     const registry = createUiExtensionRegistry();
     const listener = vi.fn();

@@ -46,6 +46,7 @@ export function Toolbar() {
       <div className={styles['nav-segment']}>
         <AreaTarget area="appBarTools" />
         <OptionalAppBarTools>{isSaveVisible && <SaveButton />}</OptionalAppBarTools>
+        <AreaTarget area="appBarTools" place="after" />
       </div>
     </div>
   );
