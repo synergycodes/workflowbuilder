@@ -7,18 +7,26 @@ import { openExportModal } from '../../integration/components/import-export/expo
 import { openImportModal } from '../../integration/components/import-export/import-modal/open-import-modal';
 import { withOptionalFunctionPlugins } from '../../plugins-core/adapters/adapter-functions';
 
-function getControlsDotsItemsFunction(): MenuItemProps[] {
+function getControlsDotsItemsFunction(visible: { export: boolean; import: boolean }): MenuItemProps[] {
   return [
-    {
-      label: i18n.t('importExport.export'),
-      icon: <Icon name="Export" />,
-      onClick: openExportModal,
-    },
-    {
-      label: i18n.t('importExport.import'),
-      icon: <Icon name="DownloadSimple" />,
-      onClick: openImportModal,
-    },
+    ...(visible.export
+      ? [
+          {
+            label: i18n.t('importExport.export'),
+            icon: <Icon name="Export" />,
+            onClick: openExportModal,
+          },
+        ]
+      : []),
+    ...(visible.import
+      ? [
+          {
+            label: i18n.t('importExport.import'),
+            icon: <Icon name="DownloadSimple" />,
+            onClick: openImportModal,
+          },
+        ]
+      : []),
   ];
 }
 

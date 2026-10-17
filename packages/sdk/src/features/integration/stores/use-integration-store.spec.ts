@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import type { WorkflowBuilderNode } from '../../../node/node-data';
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
@@ -21,6 +22,13 @@ vi.mock('@/utils/show-translated-snackbar', () => ({
   showTranslatedSnackbar: vi.fn(),
 }));
 
+const node: WorkflowBuilderNode = {
+  id: 'loaded',
+  position: { x: 0, y: 0 },
+  type: 'node',
+  data: { type: 'action', icon: 'Plus', properties: {} },
+};
+
 describe('use-integration-store', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -38,14 +46,24 @@ describe('use-integration-store', () => {
       expect(vi.mocked(setStoreDataFromIntegration)).not.toHaveBeenCalled();
     });
 
-    it('opens template selector modal when data is empty', () => {
+    it('loadData no longer opens the template selector by itself', () => {
       loadData({});
-      expect(vi.mocked(openTemplateSelectorModal)).toHaveBeenCalledOnce();
+      loadData({ name: 'diagram' });
+
+      expect(vi.mocked(openTemplateSelectorModal)).not.toHaveBeenCalled();
     });
 
-    it('does not open template selector when data has values', () => {
-      loadData({ name: 'diagram' });
-      expect(vi.mocked(openTemplateSelectorModal)).not.toHaveBeenCalled();
+    it('returns isEmpty false when the loaded data has nodes', () => {
+      expect(loadData({ nodes: [node] })).toEqual({ isEmpty: false });
+    });
+
+    it('returns isEmpty true when nothing was loaded', () => {
+      expect(loadData({})).toEqual({ isEmpty: true });
+    });
+
+    it('a name alone, or an empty nodes array, leaves isEmpty true', () => {
+      expect(loadData({ name: 'demo' })).toEqual({ isEmpty: true });
+      expect(loadData({ name: 'demo', nodes: [] })).toEqual({ isEmpty: true });
     });
 
     it('shows success snackbar when data is provided', () => {

@@ -37,6 +37,13 @@ export type PropertiesBarProps = PropertiesBarBaseProps & {
   deleteEdgeLabel: string;
   tabs?: PropertiesBarTab[];
   onTabChange: (tab: string) => void;
+  /**
+   * Fallback for the header's menu button, shown only while the panel is expanded and no
+   * `PropertiesPanelMenuItem` is registered. Once any are registered, the header shows a menu
+   * of those items instead and this handler is ignored.
+   *
+   * @deprecated Use {@link PropertiesPanelMenuItem} instead.
+   */
   onMenuHeaderClick?: () => void;
   onDeleteClick?: () => void;
 };

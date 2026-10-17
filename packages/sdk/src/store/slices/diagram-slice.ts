@@ -23,13 +23,13 @@ export type DiagramState = {
   reactFlowInstance: WorkflowBuilderReactFlowInstance | null;
   documentName: string | null;
   globalVariables: VariablesIndex;
-  isReadOnlyMode: boolean;
+  isReadOnly: boolean;
   layoutDirection: LayoutDirection;
   onConnect: OnConnect;
   onInit: (instance: WorkflowBuilderReactFlowInstance) => void;
   setDocumentName: (name: string) => void;
   setDiagramModel: (model?: DiagramModel, options?: { skipIfNotEmpty?: boolean }) => void;
-  setToggleReadOnlyMode: (value?: boolean) => void;
+  setReadOnly: (value?: boolean) => void;
   setLayoutDirection: (value: LayoutDirection) => void;
   setConnectionBeingDragged: (nodeId: string | null, handleId: string | null) => void;
   connectionBeingDragged: ConnectionBeingDragged | null;
@@ -45,7 +45,7 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
     reactFlowInstance: null,
     documentName: null,
     globalVariables: {},
-    isReadOnlyMode: false,
+    isReadOnly: false,
     layoutDirection: 'RIGHT' as LayoutDirection,
     connectionBeingDragged: null,
     draggedSegmentDestinationId: null,
@@ -95,9 +95,9 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
         documentName: name,
       });
     },
-    setToggleReadOnlyMode: (value?: boolean) => {
+    setReadOnly: (value?: boolean) => {
       set({
-        isReadOnlyMode: value ?? !get().isReadOnlyMode,
+        isReadOnly: value ?? !get().isReadOnly,
       });
     },
     setLayoutDirection: (value: LayoutDirection) => {

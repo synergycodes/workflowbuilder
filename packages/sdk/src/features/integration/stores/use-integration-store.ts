@@ -5,7 +5,6 @@ import { devtools } from 'zustand/middleware';
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import type { IntegrationDataFormat } from '../../../types/integration';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
-import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 
 type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
 
@@ -25,7 +24,7 @@ export const useIntegrationStore = create<IntegrationStore>()(
   ),
 );
 
-export function loadData(loadData: Partial<IntegrationDataFormat>) {
+export function loadData(loadData: Partial<IntegrationDataFormat>): { isEmpty: boolean } {
   const hasAnyData = Object.values(loadData).some(Boolean);
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
@@ -34,15 +33,14 @@ export function loadData(loadData: Partial<IntegrationDataFormat>) {
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,
     });
-  } else {
-    // Welcome modal for no data
-    openTemplateSelectorModal();
   }
 
   useIntegrationStore.setState({
     savingStatus: 'waiting',
     lastSaveAttemptTimestamp: Date.now(),
   });
+
+  return { isEmpty: !loadData.nodes?.length };
 }
 
 export function getStoreSavingStatus() {

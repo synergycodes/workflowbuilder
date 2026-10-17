@@ -10,4 +10,5 @@ export type {
   WorkflowBuilderPlugin,
   WorkflowBuilderReactFlowProps,
   WorkflowBuilderRootProps,
+  WorkflowBuilderStartContext,
 } from './workflow-builder-root.types';
