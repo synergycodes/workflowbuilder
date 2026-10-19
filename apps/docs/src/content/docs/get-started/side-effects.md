@@ -5,11 +5,10 @@ sidebar:
   order: 6
 ---
 
-Importing `@workflowbuilder/sdk` runs a handful of module-level side effects on your runtime instances. They're listed below alongside the runtime limitations they tie into — knowing both up front saves debugging time later.
+Importing `@workflowbuilder/sdk` runs one module-level side effect on your runtime instances, listed below alongside the runtime limitations it ties into — knowing both up front saves debugging time later.
 
 ## Side effects on import
 
-- **`immer`** — calls `setAutoFreeze(false)`. ReactFlow mutates the objects produced by the SDK's `produce` calls (size, position, internal flags), so the SDK's drafts must not be auto-frozen. Because `immer` is a shared, deduped dependency, this disables auto-freeze **globally** for the host app — any of your own reducers, RTK slices, or libraries that rely on frozen drafts lose that protection. If you have your own immer flows that depend on frozen drafts, treat it as a known caveat.
 - **`i18next`** — initialises the i18next instance with `react-i18next`, the language detector, and the SDK's bundled `en` / `pl` translations. If your app already configured i18next before importing the SDK, the SDK's `i18n.init(...)` is a no-op for the second `init` per i18next's contract — the registry is shared.
 
 ## Known limitations
