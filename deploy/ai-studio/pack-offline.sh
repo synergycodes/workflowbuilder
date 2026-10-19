@@ -4,6 +4,14 @@
 # compose. Run on a connected machine — README "Air-gapped / offline install".
 set -euo pipefail
 
+engine=$(docker version --format '{{.Server.Version}}')
+needed=23
+[ -n "${DOCKER_DEFAULT_PLATFORM:-}" ] && needed=28
+if [ "${engine%%.*}" -lt "$needed" ]; then
+  echo "pack-offline: Docker Engine $engine is too old; this run needs $needed or later${DOCKER_DEFAULT_PLATFORM:+ (DOCKER_DEFAULT_PLATFORM is set)}" >&2
+  exit 1
+fi
+
 here=$(cd "$(dirname "$0")" && pwd)
 repo=$(cd "$here/../.." && pwd)
 

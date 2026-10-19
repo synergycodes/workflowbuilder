@@ -109,7 +109,9 @@ packing for an x86 host, put `DOCKER_DEFAULT_PLATFORM=linux/amd64` in front of
 the script: `docker save` ships exactly what you built (slower under emulation,
 but correct), and an image built for the wrong platform fails at container
 start, not at load. The manifest's last column shows the platform of every
-image in the tarball — check it before shipping.
+image in the tarball — check it before shipping. Packing for another platform
+needs Docker Engine 28 or later (`docker save --platform`); the script checks
+the Engine version before it builds anything.
 
 ### 2. Ship to the host
 
@@ -276,10 +278,11 @@ AI_MODEL=mistralai/mistral-small-3.2-24b-instruct
 
 Renaming only the key is not enough: the stack comes up with every AI Agent
 node failing `ai_not_configured`, because the endpoint and the model have no
-built-in defaults any more. The deploy workflow refuses to run while
-`OPENROUTER_API_KEY` is still set, before it writes anything to the VM, so a
-stale `.env` stops the deploy instead of coming up with AI silently off. An
-operator deploying by hand can run the same check:
+built-in defaults any more. The deploy workflow writes the VM's `.env` from
+the repository's `AI_API_KEY` secret and `AI_BASE_URL` / `AI_MODEL` variables,
+so for the public demo the change is made in the GitHub settings; with any of
+the three empty the deploy still succeeds and AI Agent nodes are off. An
+operator deploying by hand can check a stale `.env` for the old name:
 
 ```bash
 grep -E '^OPENROUTER_API_KEY=.+' .env    # a hit means .env still needs the rename
@@ -316,16 +319,14 @@ docker exec ai-studio-app-db-1 pg_dump -U wb workflow_builder > backup.sql
 
 The public demo is deployed by the `Deploy AI Studio` GitHub Actions workflow:
 it builds and pushes both images to the registry, copies `docker-compose.yml`
-and `docker-compose.override.yml` from the repo to the VM, writes the tags it
-just pushed into the VM's `.env` as `RUNTIME_IMAGE` / `WEB_IMAGE`, and runs
-compose there. A first deploy of this version onto a VM whose `.env` still
-carries `OPENROUTER_API_KEY` stops before writing anything — see [Before
-deploying this version](#before-deploying-this-version).
-Because the tags live in `.env`, every later compose command on
-the VM (`docker compose up -d worker` after a model change, `--profile debug`)
-resolves the deployed images, not the local `ai-studio-*` build names. The VM's
-compose files are that copy — change them in the repo, never on the VM. Only
-`.env` lives on the VM alone; the deploy replaces just its two image lines.
+and `docker-compose.override.yml` from the repo to the VM, writes the VM's
+`.env` in full from the repository secrets and variables (with the tags it just
+pushed as `RUNTIME_IMAGE` / `WEB_IMAGE`), and runs compose there. Because the
+tags live in `.env`, every later compose command on the VM
+(`docker compose up -d worker`, `--profile debug`) resolves the deployed
+images, not the local `ai-studio-*` build names. The VM's compose files and
+`.env` are both that copy — change them in the repo or the GitHub settings,
+never on the VM: the next deploy overwrites a hand edit.
 
 Workflow data is treated as ephemeral for the public demo — losing the
 volumes is acceptable; there is nothing precious in them.

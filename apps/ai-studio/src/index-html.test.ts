@@ -2,7 +2,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-// Poppins ships inside @workflowbuilder/sdk/style.css, so index.html needs no CDN.
+// Poppins ships with @workflowbuilder/ui and reaches the app through @workflowbuilder/sdk/style.css, so index.html needs no CDN.
 // Anything external here would be browser egress the air-gapped deployment cannot make.
 describe('index.html', () => {
   it('references no external resources', () => {
