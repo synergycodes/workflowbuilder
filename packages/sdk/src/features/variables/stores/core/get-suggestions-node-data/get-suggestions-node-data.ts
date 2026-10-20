@@ -4,11 +4,14 @@ import { OUTPUT_SCHEMA_TYPE } from '../../../../../node/node-output-schema';
 import { filterEmpty } from '../../../../../utils/array';
 import { getByPath } from '../../../../../utils/object';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
+import { getJsonSchemaIfValid } from '../../../utils/guards/get-json-schema-if-valid';
 import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-index-if-valid';
+import { getVariablesListIfValid } from '../../../utils/guards/get-variables-list-if-valid';
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
 import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
 import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
 import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
+import { getSuggestionsFromVariablesList } from './get-suggestions-from-variables-list';
 
 type Params = {
   definition: PaletteItem;
@@ -154,9 +157,9 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
         'fromValueOfPropertyPath' in variant.variantRule &&
         variant.variantRule.fromValueOfPropertyPath
       ) {
-        const maybeVariablesIndex = getByPath(node.data.properties, variant.variantRule.fromValueOfPropertyPath);
+        const propertyValue = getByPath(node.data.properties, variant.variantRule.fromValueOfPropertyPath);
 
-        const variablesIndex = getVariablesIndexIfValid(maybeVariablesIndex);
+        const variablesIndex = getVariablesIndexIfValid(propertyValue);
 
         const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
 
@@ -170,6 +173,38 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
 
           for (const sourceHandle of sourceHandlesToAdd) {
             bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+          }
+        } else {
+          const jsonSchema = getJsonSchemaIfValid(propertyValue);
+
+          if (jsonSchema) {
+            const suggestions = getSuggestionsFromSchemaOutput({
+              nodeId: node.id,
+              nodeLabel,
+              properties: jsonSchema,
+            });
+
+            if (suggestions.length > 0) {
+              for (const sourceHandle of sourceHandlesToAdd) {
+                bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+              }
+            }
+          } else {
+            const variablesList = getVariablesListIfValid(propertyValue);
+            if (variablesList) {
+              const suggestions = getSuggestionsFromVariablesList({
+                propertyPath: variant.variantRule.fromValueOfPropertyPath,
+                nodeId: node.id,
+                nodeLabel,
+                variablesList,
+              });
+
+              if (suggestions.length > 0) {
+                for (const sourceHandle of sourceHandlesToAdd) {
+                  bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+                }
+              }
+            }
           }
         }
       }

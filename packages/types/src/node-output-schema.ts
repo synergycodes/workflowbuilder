@@ -15,7 +15,3 @@ export type OutputProperty = {
   label: string;
   description?: string;
 };
-
-export type NodeSchemaOutput = {
-  properties: Record<string, OutputProperty>;
-};

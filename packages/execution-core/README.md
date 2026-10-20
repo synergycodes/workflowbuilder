@@ -236,6 +236,12 @@ Both failures are thrown as `PermanentNodeExecutionError` (codes `template_malfo
 
 Authors typing references in the workflow builder UI: see the [variable picker guide](https://www.workflowbuilder.io/docs/guides/use-variable-picker/).
 
+## Verdict edits
+
+A completion delivered through `awaitResolution` may carry `edits`, and `updateContext(context, edits)` (in `src/templates/`) is what the runner applies them with. Each key is a template reference with slashes for dots: `nodes/draft-1/output/refundAmount` names what `{{nodes.draft-1.output.refundAmount}}` reads, and the first segment is one of the four namespaces above. The value is a patch: an object merges field by field, a list element by element (the edit's length wins), and anything else, `null` included, replaces what is there; levels the path names but the context lacks are created. Edits apply in key order, once the node's own output has landed, so an edit may patch the deciding node too. `updateContext` is copy-on-write: the wave that produced the values keeps reading its own, the input bags are never written through, and the next wave is built from the patched context.
+
+Edits reach no event: `node_completed` records the verdict's `output` as delivered, and the source node's earlier output stays what it was. A key the runner cannot place throws, so an engine validates keys with `isEditKey` where it accepts the verdict (the Temporal plugin refuses one as `verdict_malformed`).
+
 ## Adding a new workflow engine
 
 1. Implement `WorkflowEnginePort<TNode>` (`submit`, `cancel`, `resolveNode`). To run nodes that park, give the `ActivityRunnerPort` an `awaitResolution` that records the wait before its first `await`; without it a waiting result fails the run with `waiting_unsupported`.

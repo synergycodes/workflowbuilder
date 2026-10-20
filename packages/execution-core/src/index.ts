@@ -38,6 +38,8 @@ export type { NodeExecutor, NodeExecutorRegistry } from './registry/node-executo
 export { resolveExecutor } from './registry/node-executor-registry';
 
 export { resolveTemplate } from './templates/resolve-template';
+export { isEditKey, updateContext } from './templates/update-context';
+export type { ContextEdits } from './templates/update-context';
 
 export { redactSensitive, withRedactedPayloads, REDACTED, SENSITIVE_KEY_RULES } from './redact';
 

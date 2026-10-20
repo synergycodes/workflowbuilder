@@ -14,7 +14,7 @@ import { ControlWrapper } from '../control-wrapper';
 
 function VariableTextAreaControl(props: VariableTextAreaControlProps) {
   const { data, handleChange, path, errors, enabled, uischema, schema } = props;
-  const { placeholder, variablesTypes, disabled } = uischema;
+  const { placeholder, variablesTypes, minRows, disabled } = uischema;
   const { type } = schema;
   const selection = useSingleSelectedElement();
   const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
@@ -24,10 +24,14 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
 
   const isDisabled = !enabled || disabled === true;
 
-  const [inputValue, setInputValue] = useState(data ?? '');
+  const [inputValue, setInputValue] = useState<string>('');
 
   useEffect(() => {
-    setInputValue(data ?? '');
+    if (data == null) {
+      setInputValue('');
+    } else {
+      setInputValue(String(data));
+    }
   }, [data]);
 
   const onBlur = useCallback(
@@ -48,6 +52,7 @@ function VariableTextAreaControl(props: VariableTextAreaControlProps) {
         suggestionGroups={suggestionGroups}
         hasError={errors.length > 0}
         mentionsInputProps={{ disabled: isDisabled, placeholder }}
+        minRows={minRows}
       />
     </ControlWrapper>
   );

@@ -128,7 +128,7 @@ export type VariableTextAreaControlElement = Override<
   {
     type: 'VariableTextArea';
     variablesTypes?: VariableType[];
-  } & Pick<TextAreaProps, 'placeholder' | 'minRows'>
+  } & Pick<TextAreaProps, 'placeholder' | 'minRows' | 'maxRows'>
 >;
 export type VariableTextAreaControlProps = WBControlProps<string, VariableTextAreaControlElement>;
 

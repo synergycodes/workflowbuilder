@@ -41,6 +41,7 @@ export function useNodeDecision(nodeId: string | undefined, proposalSourceNodeId
   const nodeState = useExecutionStore((state) => (nodeId === undefined ? undefined : state.nodeStates[nodeId]));
   const executionId = useExecutionStore((state) => state.executionId);
   const attempt = useExecutionStore((state) => (nodeId === undefined ? 0 : attemptOf(state.events, nodeId)));
+  // Here it is taking an output of source in a new approach it should take current node and get values from all outputs
   const edges = useStore((state) => state.edges);
   const sourceId = nodeId === undefined ? undefined : proposalSourceIdOf(proposalSourceNodeId, edges, nodeId);
   const sourceOutput = useExecutionStore((state) =>

@@ -1,4 +1,5 @@
 import type { VariableDynamicControlElement } from '../features/json-form/controls/variable-dynamic-control/type';
+import type { VariablesListControlElement } from '../features/json-form/controls/variables-list-control/types';
 import {
   type AiToolsControlElement,
   type DatePickerControlElement,
@@ -32,6 +33,7 @@ export type UISchemaControlElement<T extends string = string> = (
   | VariableDynamicControlElement
   | VariableTextControlElement
   | VariableTextAreaControlElement
+  | VariablesListControlElement
   | MessageOnErrorControlElement
 ) & { scope: T; errorIndicatorEnabled?: boolean };
 export type UISchemaControlElementType = UISchemaControlElement['type'];

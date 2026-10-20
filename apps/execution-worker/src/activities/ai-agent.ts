@@ -30,8 +30,9 @@ function isObjectSchema(value: unknown): boolean {
 }
 
 export async function executeAiAgent(node: AiAgentNode, context: ExecutionContext, deps: AiAgentDeps) {
-  const { outputSchema } = node.config;
-  if (outputSchema != null && !isObjectSchema(outputSchema)) {
+  const { expectedSchema } = node.config;
+
+  if (expectedSchema != null && !isObjectSchema(expectedSchema)) {
     throw new PermanentNodeExecutionError(
       'output_schema_invalid',
       'outputSchema must be a JSON Schema of type "object"',
@@ -73,7 +74,8 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
     // multiply model calls (up to 3x per activity attempt).
     maxRetries: 0,
     system: resolvedPrompt,
-    prompt: userPrompt,
+    // Flow without context
+    prompt: '',
     // The AI SDK runs the tool call/execute/continue loop internally up to this many steps.
     ...(tools
       ? {
@@ -87,13 +89,13 @@ export async function executeAiAgent(node: AiAgentNode, context: ExecutionContex
   };
 
   try {
-    if (outputSchema == null) {
+    if (expectedSchema == null) {
       const result = await generateText(call);
       return { output: { response: result.text } };
     }
 
     // Forwarded as-is, and the answer is not validated: only an endpoint that honours json_schema enforces the shape.
-    const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(outputSchema) }) });
+    const result = await generateText({ ...call, output: Output.object({ schema: jsonSchema(expectedSchema) }) });
     // The SDK parses only a `stop` finish; otherwise it throws `No output generated.` without the reason.
     // Transient gets the same attempts as unclassified, and its code reaches `node_failed`.
     if (result.finishReason !== 'stop') {

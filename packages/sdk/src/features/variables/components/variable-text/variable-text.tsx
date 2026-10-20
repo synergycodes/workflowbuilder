@@ -94,6 +94,7 @@ export function VariableText({
   renderGroupItem = defaultRenderGroupItem,
   mentionsInputProps,
   mentionProps,
+  minRows,
 }: VariableTextProps) {
   const { t } = useTranslation();
   const [key, setKey] = useState(crypto.randomUUID());
@@ -302,6 +303,7 @@ export function VariableText({
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}
+      // rows={minRows}
     >
       <Mention
         trigger={trigger}

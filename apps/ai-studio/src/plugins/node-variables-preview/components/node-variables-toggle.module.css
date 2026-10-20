@@ -1,0 +1,154 @@
+.container {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  opacity: 0;
+  margin-bottom: var(--wb-ds-space-100);
+  transition: all var(--wb-public-transition);
+
+  &.container--open,
+  :global(.react-flow__node):hover & {
+    opacity: 1;
+  }
+}
+
+.button {
+  composes: wb-text-label-m-emphasized from global;
+
+  display: inline-flex;
+  padding: var(--wb-ds-space-62) var(--wb-ds-space-150) var(--wb-ds-space-62) var(--wb-ds-space-125);
+  align-items: center;
+  gap: var(--wb-ds-space-75);
+  white-space: nowrap;
+  border-radius: var(--wb-ds-radius-full);
+  border: 1px solid var(--wb-ds-ui-stroke-default);
+  background: var(--wb-ds-canvas-node-bg-primary-default);
+  color: var(--wb-ds-ui-text-subtle-default);
+  transition: all var(--wb-public-transition);
+
+  &:hover {
+    border: 1px solid var(--wb-ds-canvas-node-stroke-hover);
+    background: var(--wb-ds-canvas-node-bg-primary-default);
+    color: var(--wb-ds-ui-text-action-default);
+  }
+
+  &.button--open {
+    border: 1px solid var(--wb-ds-canvas-node-stroke-hover);
+    background: var(--wb-ds-ui-brand-fill-subtle);
+    color: var(--wb-ds-ui-text-action-default);
+  }
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: -1;
+    width: 100%;
+    height: 100%;
+    background: var(--wb-ds-canvas-node-bg-primary-default);
+    border-radius: inherit;
+  }
+
+  * {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+body {
+  &:has([data-tooltip-overlay]) {
+    :global(.workflow-builder-root) {
+      &::before {
+        content: '';
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 100;
+      }
+    }
+  }
+}
+
+.anchor-wrapper {
+  position: absolute;
+  top: var(--wb-ds-space-62);
+  left: 0;
+  width: 100%;
+}
+
+.anchor {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
+/* Tooltip popup itself (hashed class): its inverse bg/text are set on it, not on the portal wrapper */
+[data-tooltip-type]:has(> .dropdown) {
+  padding: 0;
+  border-radius: var(--wb-public-node-border-radius);
+  border: 1px solid var(--wb-ds-ui-stroke-default);
+  background: var(--wb-ds-ui-bg-base);
+  color: var(--wb-public-node-title-subtitle);
+  width: 260px;
+  box-shadow: var(--wb-ds-shadow-ui-l-x) var(--wb-ds-shadow-ui-l-y) var(--wb-ds-shadow-ui-l-blur)
+    var(--wb-ds-shadow-ui-l-spread) var(--wb-ds-shadow-ui-color);
+
+  [class*='_arrow_'] {
+    display: none;
+  }
+}
+
+.dropdown {
+  & + svg {
+    display: none;
+  }
+}
+
+.dropdown-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
+  border-bottom: 1px solid var(--wb-ds-ui-stroke-default);
+}
+
+.dropdown-title {
+  composes: wb-text-title-s-emphasized from global;
+
+  margin: 0;
+  color: var(--wb-ds-ui-text-default);
+}
+
+.dropdown-hint {
+  composes: wb-text-body-s from global;
+}
+
+.dropdown-content {
+  display: grid;
+  padding: var(--wb-ds-space-150);
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: var(--wb-ds-space-100);
+  align-self: stretch;
+  overflow: auto;
+  max-height: 70vh;
+  scrollbar-color: transparent transparent;
+}
+
+.dropdown:hover .dropdown-content {
+  scrollbar-color: var(--wb-ds-ui-text-muted-default) transparent;
+}
+
+.dropdown-content {
+  color: var(--wb-ds-ui-text-subtle-default);
+
+  p {
+    margin: 0;
+  }
+}

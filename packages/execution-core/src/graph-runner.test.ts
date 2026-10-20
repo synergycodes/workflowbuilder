@@ -2086,3 +2086,69 @@ describe('runGraph — waiting results', () => {
     expect(runner.parkedIds()).toEqual(['A']);
   });
 });
+
+describe('runGraph — verdict edits', () => {
+  it('a resolution with edits patches the context the next wave reads, after the decision landed', async () => {
+    const runner = makeGatedRunner({ S: { output: { amount: 80, note: 'keep' } }, A: { waits: true } });
+    const seen: Record<string, Record<string, unknown>> = {};
+    const port: ActivityRunnerPort<TestNode> = {
+      ...runner.port,
+      async executeNode(node, context) {
+        seen[node.id] = { ...context, nodeOutputs: { ...context.nodeOutputs } };
+        return runner.port.executeNode(node, context);
+      },
+    };
+    const events = makeEvents();
+    const input = makeInput([start('S'), trigger('A'), trigger('B')], [edge('e1', 'S', 'A'), edge('e2', 'A', 'B')]);
+    input.global = { total: 1 };
+
+    const run = runGraph(input, port, events.port);
+    await runner.whenParked(1);
+    const decision = { action: 'approve', edits: { 'nodes/S/amount': 120, 'global/total': 3 } };
+    runner.resolveGate('A', { output: decision, edits: decision.edits });
+    const outcome = await run;
+
+    expect(outcome).toEqual({ status: 'completed' });
+    expect(runner.callOrder).toEqual(['S', 'A', 'B']);
+    expect(seen['A']?.['nodeOutputs']).toEqual({ S: { amount: 80, note: 'keep' } });
+    expect(seen['B']?.['nodeOutputs']).toEqual({ S: { amount: 120, note: 'keep' }, A: decision });
+    expect(seen['B']?.['global']).toEqual({ total: 3 });
+    // The input bags are never written through: a replay starts from the same input.
+    expect(input.global).toEqual({ total: 1 });
+  });
+
+  it('an edit may patch the deciding node itself, as the output has landed first', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]), runner.port, events.port);
+    await runner.whenParked(1);
+    runner.resolveGate('A', { output: { verdict: 'ok', draft: 'v1' }, edits: { 'nodes/A/draft': 'v2' } });
+    await run;
+
+    expect(runner.contexts['B']).toEqual({ A: { verdict: 'ok', draft: 'v2' } });
+    expect(events.events.find((event) => event.type === 'node_completed' && event.nodeId === 'A')?.payload).toEqual({
+      output: { verdict: 'ok', draft: 'v1' },
+    });
+  });
+
+  it('two verdicts in one wave apply their edits in node order, so the later node wins a shared path', async () => {
+    const runner = makeGatedRunner({ A: { waits: true }, B: { waits: true } });
+    const events = makeEvents();
+
+    const run = runGraph(
+      makeInput(
+        [start('S'), trigger('A'), trigger('B'), trigger('J')],
+        [edge('e1', 'S', 'A'), edge('e2', 'S', 'B'), edge('e3', 'A', 'J'), edge('e4', 'B', 'J')],
+      ),
+      runner.port,
+      events.port,
+    );
+    await runner.whenParked(2);
+    runner.resolveGate('B', { output: 'b', edits: { 'nodes/S': 'from-B' } });
+    runner.resolveGate('A', { output: 'a', edits: { 'nodes/S': 'from-A' } });
+    await run;
+
+    expect(runner.contexts['J']).toEqual({ S: 'from-B', A: 'a', B: 'b' });
+  });
+});

@@ -43,7 +43,7 @@ function DecisionFieldsControl({ data, handleChange, path, enabled, label }: Con
   const outputSchema = useStore((state) =>
     sourceId === undefined
       ? undefined
-      : state.nodes.find((node) => node.id === sourceId)?.data.properties['outputSchema'],
+      : state.nodes.find((node) => node.id === sourceId)?.data.properties['expectedSchema'],
   );
   // From Run until Reset the sidebar belongs to the run, even if the app bar lifts the canvas lock.
   const isRunShown = useExecutionStore((state) => state.executionId !== undefined);

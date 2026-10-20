@@ -2,6 +2,7 @@ import { NodeType, type PaletteItem } from '@workflowbuilder/sdk';
 
 import { defaultPropertiesData } from './default-properties-data';
 import { type DecisionSchema, schema } from './schema';
+import { schemaOutput } from './schema-output';
 import { uischema } from './uischema';
 
 export const decisionPaletteItem: PaletteItem<DecisionSchema> = {
@@ -13,4 +14,5 @@ export const decisionPaletteItem: PaletteItem<DecisionSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
+  schemaOutput,
 };

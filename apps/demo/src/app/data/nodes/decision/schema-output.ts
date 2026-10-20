@@ -3,18 +3,12 @@ import type { NodeSchemaOutput } from '@workflowbuilder/sdk';
 export const schemaOutput: NodeSchemaOutput = {
   type: 'default',
   bySourceHandle: {
-    every: {
+    success: {
       type: 'object',
       properties: {
-        selectedBranch: {
+        matchedBranch: {
           type: 'string',
-          title: 'Selected Branch',
-          description: 'Label of the branch that was taken',
-        },
-        branchIndex: {
-          type: 'number',
-          title: 'Branch Index',
-          description: 'Zero-based index of the selected branch',
+          title: 'Matched branch sourceHandle',
         },
       },
     },

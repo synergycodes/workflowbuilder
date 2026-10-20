@@ -1,4 +1,4 @@
-import { sharedProperties } from '@workflowbuilder/sdk';
+import { sharedProperties, variableListSchema } from '@workflowbuilder/sdk';
 import type { NodeSchema } from '@workflowbuilder/sdk';
 
 // Opaque to the editor: the backend parses the request, and the decision form reads it with its own reader.
@@ -7,6 +7,8 @@ export const schema = {
   properties: {
     ...sharedProperties,
     decisionRequest: { type: 'object', properties: {} },
+    readOnlyFields: variableListSchema,
+    editableFields: variableListSchema,
   },
   required: ['decisionRequest'],
 } satisfies NodeSchema;

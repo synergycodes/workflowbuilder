@@ -12,7 +12,7 @@ import type { BaseNode, WorkflowDefinition } from '../../../types/src/workflow-e
 // Temporal's V8 sandbox: this file may only pull from the core's sandbox-safe entry
 // (execution-core/src/workflow.ts), never from its root, which also exports code that
 // needs Node.
-export { runGraph } from '../../../execution-core/src/workflow';
+export { isEditKey, runGraph } from '../../../execution-core/src/workflow';
 
 export type {
   ActivityRunnerPort,
@@ -49,6 +49,7 @@ export type CompletedNodeExecution = {
   output: unknown;
   nextPort?: string;
   outcome?: ExecutionOutcome;
+  edits?: Record<string, unknown>;
   waiting?: never;
 };
 

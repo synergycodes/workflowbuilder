@@ -38,6 +38,8 @@ export type VariableTextProps = {
   >;
   mentionProps?: Omit<MentionComponentProps, 'data' | 'displayTransform' | 'renderSuggestion'>;
   hasError?: boolean;
+
+  minRows?: number;
 };
 
 export type VariableMentionData = MentionDataItem & {
