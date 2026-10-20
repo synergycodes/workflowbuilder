@@ -10,7 +10,7 @@ import { copyUiFontAssets } from './font-assets.mjs';
 
 // Packages that must NOT be bundled into the SDK build. Two reasons:
 // 1. Singleton hazards — i18next translation registry, zustand store
-//    identity, immer's `setAutoFreeze` + draft `instanceof`, JsonForms
+//    identity, JsonForms
 //    React contexts, and React itself all break when two copies of the
 //    library exist in the consumer's runtime. Externalizing forces the
 //    build to reference a single installed copy.

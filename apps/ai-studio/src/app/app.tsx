@@ -2,6 +2,7 @@ import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflo
 
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
+import '@workflowbuilder/ui/fonts.css';
 
 import logoDark from '../assets/workflow-builder-logo-white.svg';
 import logoLight from '../assets/workflow-builder-logo.svg';

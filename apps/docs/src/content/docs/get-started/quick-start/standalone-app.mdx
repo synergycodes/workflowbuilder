@@ -186,6 +186,13 @@ None of the three has a built-in default. Any OpenAI-compatible endpoint works: 
 
 Any credential turns TLS on by itself, so `TEMPORAL_TLS` is only needed to force TLS without credentials or to assert plaintext. Contradictions — half an mTLS pair, an API key together with a client certificate, or credentials alongside `TEMPORAL_TLS=false` — are rejected with an explanatory error when the connection opens.
 
+The namespace must already exist on the cluster. The dev cluster from `pnpm infra:up` registers only `default`, so to try another namespace locally, create it first:
+
+```bash
+docker compose -f apps/backend/docker-compose.yml exec temporal \
+  temporal operator namespace create --address temporal:7233 --namespace <name>
+```
+
 Temporal Cloud:
 
 ```dotenv
@@ -214,6 +221,7 @@ The Docker Compose deployment under `deploy/ai-studio/` reads the same variables
 | Temporal UI loads but the `default` namespace is missing                             | Migrations not run                                                                                                   | `pnpm -F backend db:migrate`                                                        |
 | AI Agent node fails with `ai_not_configured`                                         | LLM not configured — the worker starts anyway, only AI nodes are unavailable                                         | Set `AI_API_KEY`, `AI_BASE_URL` and `AI_MODEL` in `apps/execution-worker/.env`.     |
 | Backend or worker exits at boot with a `TEMPORAL_TLS` or `TEMPORAL_TLS_*_PATH` error | Contradictory Temporal settings (half an mTLS pair, API key plus client cert, credentials with `TEMPORAL_TLS=false`) | Remove one side, as the message says. Both `.env` files must carry the same values. |
+| Worker exits at boot with `Namespace <name> is not found`                            | `TEMPORAL_NAMESPACE` names a namespace the cluster has not registered; the dev cluster has only `default`            | Create the namespace (see above) or fix `TEMPORAL_NAMESPACE` in both `.env` files.  |
 | `pnpm dev:demo` shows TypeScript errors but the dev server still starts              | `concurrently` runs typecheck alongside Vite. TS errors are non-fatal                                                | Fix the errors or ignore them temporarily.                                          |
 | Vite acts up after a dependency change                                               | Stale `node_modules/.vite`                                                                                           | `rm -rf node_modules/.vite` and rerun.                                              |
 
