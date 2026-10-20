@@ -5,6 +5,7 @@
     var(--wb-ds-shadow-ui-s-spread) var(--wb-ds-shadow-ui-color);
   --wb-public-list-box-padding: var(--wb-ds-space-50) var(--wb-ds-space-50);
   --wb-public-list-box-gap: var(--wb-ds-space-50);
+  --wb-public-list-box-footer-padding: var(--wb-ds-space-100) var(--wb-ds-space-150) 0;
 }
 
 @layer ui.component {
@@ -54,5 +55,10 @@
     align-items: center;
     align-self: stretch;
     gap: var(--wb-public-list-box-gap);
+  }
+
+  .footer {
+    align-self: stretch;
+    padding: var(--wb-public-list-box-footer-padding);
   }
 }

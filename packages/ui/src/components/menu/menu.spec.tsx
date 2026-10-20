@@ -1,4 +1,4 @@
-import { act } from 'react';
+import { type ReactNode, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
@@ -18,9 +18,9 @@ afterEach(() => {
   container.remove();
 });
 
-function renderMenu(items: Parameters<typeof Menu>[0]['items']) {
+function renderMenu(items: Parameters<typeof Menu>[0]['items'], footer?: ReactNode) {
   act(() => {
-    root.render(<Menu open items={items} />);
+    root.render(<Menu open items={items} footer={footer} />);
   });
 }
 
@@ -44,5 +44,29 @@ describe('Menu selection', () => {
     expect('checked' in radios[0].dataset).toBe(true);
     expect(radios[1].getAttribute('aria-checked')).toBe('false');
     expect('checked' in radios[1].dataset).toBe(false);
+  });
+
+  it('renders only items that define selected as radio items', () => {
+    renderMenu([
+      { label: 'Clean up' },
+      { label: 'Horizontal', selected: true },
+      { label: 'Vertical', selected: false },
+    ]);
+
+    expect(document.querySelector('[role="menuitem"]')?.textContent).toBe('Clean up');
+    const radios = [...document.querySelectorAll<HTMLElement>('[role="menuitemradio"]')];
+    expect(radios.map((item) => item.textContent)).toEqual(['Horizontal', 'Vertical']);
+    expect(radios.map((item) => item.getAttribute('aria-checked'))).toEqual(['true', 'false']);
+  });
+});
+
+describe('Menu footer', () => {
+  it('renders the footer inside the open popup after the items', () => {
+    renderMenu([{ label: 'Edit' }], <button>Footer control</button>);
+
+    const popup = document.querySelector('[role="menu"]');
+    const footer = [...document.querySelectorAll('button')].find((button) => button.textContent === 'Footer control');
+    expect(popup?.contains(footer ?? null)).toBe(true);
+    expect(popup?.lastElementChild?.contains(footer ?? null)).toBe(true);
   });
 });

@@ -24,8 +24,9 @@ export type MenuItemProps = ListItem & {
   tone?: MenuItemTone;
   /**
    * Marks the item as the current choice. When any item of a menu defines
-   * `selected`, the menu renders its items as a radio group
-   * (`menuitemradio` with `aria-checked`) and highlights the selected one.
+   * `selected`, the menu wraps its items in a radio group and renders the
+   * items that define it as `menuitemradio` with `aria-checked`, highlighting
+   * the selected one. Items that leave it undefined stay plain `menuitem`s.
    */
   selected?: boolean;
   onClick?: () => void;
