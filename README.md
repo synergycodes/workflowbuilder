@@ -323,7 +323,7 @@ Technical choices are documented in `*.decision-log.md` files next to the code. 
 The execution backend ships with local-development defaults, so that the first run takes one command:
 
 - an allow-all `AuthPort`: the service refuses to start without the explicit `WB_AUTH_PORT=allow-all` opt-in
-- no tenant isolation and no CORS restrictions
+- no tenant isolation, and CORS answers every browser origin until `ALLOWED_ORIGINS` is set (the deployment in [`deploy/ai-studio`](./deploy/ai-studio/README.md) admits none)
 - the service binds to `127.0.0.1`, and so does the development stack behind `pnpm infra:up`
 - the deployment in [`deploy/ai-studio`](./deploy/ai-studio/README.md) publishes port 8080 on all interfaces with the open API: set `WEB_BIND=127.0.0.1` or put your own authentication in front
 
