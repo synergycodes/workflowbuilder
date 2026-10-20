@@ -27,6 +27,10 @@ const EMPTY_NODE_SUGGESTIONS: Response = {
   },
 };
 
+/**
+ * Builds a node's variable suggestions per source handle from `schemaOutput` (or the deprecated `outputSchema`).
+ * `common` results depend only on the definition and are shared per node type; `custom` ones depend on node data.
+ */
 export function getSuggestionsNodeData({ definition, node }: Params): Response {
   const nodeLabel = getNodeLabelForVariable({ node, definition });
   const bySourceHandle: SuggestionsBySourceHandle = {

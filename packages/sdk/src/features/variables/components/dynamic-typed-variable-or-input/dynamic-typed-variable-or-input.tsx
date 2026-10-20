@@ -78,6 +78,7 @@ export function DynamicTypedVariableOrInput({
           <NavButton
             className={clsx(styles['button-toggle'], 'right-adornment')}
             tooltip={t('variables.typeValue')}
+            aria-label={t('variables.typeValue')}
             onClick={handleToggleMode}
             disabled={isDisabled}
           >
@@ -103,6 +104,7 @@ export function DynamicTypedVariableOrInput({
         suggestionGroupsForType.length > 0 ? (
           <NavButton
             className={clsx(styles['button-toggle'], 'right-adornment')}
+            aria-label={t('variables.pickVariable')}
             onClick={handleToggleMode}
             disabled={isDisabled}
           >

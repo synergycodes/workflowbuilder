@@ -1,5 +1,6 @@
 import type { ValidationResult, Validator } from '@cfworker/json-schema';
 
+import { isPlainObject } from '../../../object';
 import { removeReferenceIsStringErrors } from './remove-reference-is-string-error';
 
 type Params = {
@@ -19,19 +20,18 @@ export function combineValidators({ standardValidator, validationCustomTypes, nu
   return {
     validate: (data: unknown) => {
       // JSONForm calls it with data for enter form byt sometimes also to check one field (ex. rules validation)
-      const formattedData =
-        typeof data === 'object'
-          ? Object.fromEntries(
-              Object.entries(data || {}).flatMap(([key, value]) => {
-                if (!isBlank(value)) {
-                  return [[key, value]];
-                }
-                // The standard validator takes '' as a present string. Here blank text is no value: dropped so
-                // `required` fires, or `null` where the schema says so explicitly.
-                return nullableProperties?.has(key) ? [[key, null]] : [];
-              }),
-            )
-          : data;
+      const formattedData = isPlainObject(data)
+        ? Object.fromEntries(
+            Object.entries(data || {}).flatMap(([key, value]) => {
+              if (!isBlank(value)) {
+                return [[key, value]];
+              }
+              // The standard validator takes '' as a present string. Here blank text is no value: dropped so
+              // `required` fires, or `null` where the schema says so explicitly.
+              return nullableProperties?.has(key) ? [[key, null]] : [];
+            }),
+          )
+        : data;
       const standardResult = standardValidator.validate(formattedData);
       let result = standardResult;
 

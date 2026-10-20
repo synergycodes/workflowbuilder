@@ -13,3 +13,7 @@ export function getByPath<T = unknown>(object: AnyRecord | null | undefined, pat
 
   return result;
 }
+
+export const isPlainObject = (value: unknown): value is Record<string, unknown> => {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+};
