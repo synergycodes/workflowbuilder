@@ -6,7 +6,6 @@ import {
   migrateLegacyHandleIdsOnNodes,
 } from '../../../features/diagram/handles/migrate-legacy-handle-id';
 import { selectSingleSelectedElement } from '../../../features/properties-bar/use-single-selected-element';
-import { refreshAllSuggestions } from '../../../features/variables/stores/core/refresh-suggestions';
 import type { VariableDefinition } from '../../../features/variables/types';
 import type { LayoutDirection } from '../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../node/node-data';
@@ -35,10 +34,6 @@ export function getStoreNode(nodeId: string) {
  * re-validated against its schema before committing — `properties.errors`
  * on the resulting nodes reflects the new validation state.
  *
- * Does not rebuild the variable suggestions index. Call `refreshAllSuggestions()`
- * afterwards if the picker needs fresh variables; a change in node count alone
- * is picked up on its own.
- *
  * @category Store
  */
 export function setStoreNodes(nodes: WorkflowBuilderNode[]) {
@@ -56,10 +51,6 @@ export function getStoreEdges() {
 
 /**
  * Replace all edges in the store with the given list.
- *
- * Does not rebuild the variable suggestions index. Call `refreshAllSuggestions()`
- * afterwards if the picker needs fresh variables; a change in edge count alone
- * is picked up on its own.
  *
  * @category Store
  */
@@ -125,8 +116,6 @@ export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFor
     edges: loadData.edges ? migrateLegacyHandleIdsOnEdges(loadData.edges) : state.edges,
     layoutDirection: loadData.layoutDirection ?? state.layoutDirection,
   }));
-
-  refreshAllSuggestions();
 }
 
 export function getStoreSingleSelected() {

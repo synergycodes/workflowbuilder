@@ -6,7 +6,6 @@ import {
   migrateLegacyHandleIdsOnEdges,
   migrateLegacyHandleIdsOnNodes,
 } from '../../features/diagram/handles/migrate-legacy-handle-id';
-import { refreshAllSuggestions } from '../../features/variables/stores/core/refresh-suggestions';
 import type { VariablesIndex } from '../../features/variables/types';
 import {
   type ConnectionBeingDragged,
@@ -90,8 +89,6 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
         layoutDirection,
         documentName,
       });
-
-      refreshAllSuggestions();
     },
     setDocumentName: (name: string) => {
       set({
