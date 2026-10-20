@@ -40,6 +40,7 @@ export const en = {
     cleanUp: {
       horizontal: 'Clean up (horizontal)',
       vertical: 'Clean up (vertical)',
+      diagram: 'Clean up diagram',
       arrangeHorizontally: 'Arrange horizontally',
       arrangeVertically: 'Arrange vertically',
       chooseDirection: 'Choose layout direction',

@@ -1,5 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { MenuItemProps } from '@workflowbuilder/ui';
+import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Render the menu's `items` inline so we can assert on them without driving the
@@ -19,7 +20,11 @@ vi.mock('@workflowbuilder/ui', () => ({
     { TriggerButton: () => null },
   ),
   NavButton: () => null,
-  Input: () => null,
+  Input: () => <input aria-label="rename" />,
+  Tooltip: Object.assign(({ children }: { children?: ReactNode }) => <>{children}</>, {
+    Trigger: ({ children }: { children?: ReactNode }) => <>{children}</>,
+    Content: ({ children }: { children?: ReactNode }) => (children ? <div role="tooltip">{children}</div> : null),
+  }),
 }));
 
 vi.mock('@workflow-builder/icons', () => ({
@@ -132,5 +137,36 @@ describe('ProjectSelection — Save as PDF', () => {
     render(<ProjectSelection />);
 
     expect(labels()).toEqual([PDF_LABEL, '---', SETTINGS_LABEL]);
+  });
+});
+
+const hoverTitle = (scrollWidth: number, clientWidth: number) => {
+  const title = screen.getByText('Doc');
+  Object.defineProperty(title, 'scrollWidth', { configurable: true, value: scrollWidth });
+  Object.defineProperty(title, 'clientWidth', { configurable: true, value: clientWidth });
+  fireEvent.mouseEnter(title);
+  return title;
+};
+
+describe('ProjectSelection — truncated name tooltip', () => {
+  it('shows the full name when the title is ellipsised', () => {
+    render(<ProjectSelection />);
+    hoverTitle(400, 320);
+
+    expect(screen.getByRole('tooltip').textContent).toBe('Doc');
+  });
+
+  it('shows no tooltip when the name fits', () => {
+    render(<ProjectSelection />);
+    hoverTitle(120, 120);
+
+    expect(screen.queryByRole('tooltip')).toBeNull();
+  });
+
+  it('still switches to the rename input on click', () => {
+    render(<ProjectSelection />);
+    fireEvent.click(hoverTitle(400, 320));
+
+    expect(screen.getByRole('textbox', { name: 'rename' })).toBeDefined();
   });
 });

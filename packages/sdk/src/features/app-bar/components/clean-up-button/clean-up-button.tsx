@@ -1,49 +1,19 @@
 import { CaretDown, Network, TreeStructure } from '@phosphor-icons/react';
 import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
-import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import appBarStyles from '../../app-bar.module.css';
 import styles from './clean-up-button.module.css';
 
-import type { LayoutDirection } from '../../../../node/common';
-import { useStore } from '../../../../store/store';
-import { trackFutureChange } from '../../../changes-tracker/stores/use-changes-tracker-store';
-import { useAppBar } from '../../app-bar-context';
+import { useCleanUp } from './use-clean-up';
 
 export function CleanUpButton() {
   const { t } = useTranslation();
-  const { onCleanUp } = useAppBar();
-  const layoutDirection = useStore((state) => state.layoutDirection);
-  const setLayoutDirection = useStore((state) => state.setLayoutDirection);
-  const isEmptyCanvas = useStore((state) => state.nodes.length === 0);
-  const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
-  const [isPending, setIsPending] = useState<boolean>(false);
+  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
 
-  if (!onCleanUp) {
+  if (!isAvailable) {
     return null;
   }
-
-  const cleanUp = (direction: LayoutDirection) => {
-    if (isPending) {
-      return;
-    }
-
-    const result = onCleanUp(direction);
-    if (result instanceof Promise) {
-      setIsPending(true);
-      result.finally(() => setIsPending(false)).catch(() => {});
-    }
-  };
-
-  const arrange = (direction: LayoutDirection) => {
-    if (isPending) {
-      return;
-    }
-
-    trackFutureChange('layoutDirection', { direction });
-    setLayoutDirection(direction);
-    cleanUp(direction);
-  };
 
   const items: MenuItemProps[] = [
     {
@@ -58,11 +28,10 @@ export function CleanUpButton() {
     },
   ];
 
-  const isDisabled = isEmptyCanvas || isReadOnlyMode;
   const label = t(layoutDirection === 'DOWN' ? 'header.cleanUp.vertical' : 'header.cleanUp.horizontal');
 
   return (
-    <div className={styles['clean-up']}>
+    <div className={`${styles['clean-up']} ${appBarStyles['overflow-control']}`}>
       <NavButton
         size="xs"
         className={styles['main']}

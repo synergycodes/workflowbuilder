@@ -42,6 +42,7 @@ export const pl = {
     cleanUp: {
       horizontal: 'Uporządkuj (poziomo)',
       vertical: 'Uporządkuj (pionowo)',
+      diagram: 'Uporządkuj diagram',
       arrangeHorizontally: 'Ułóż poziomo',
       arrangeVertically: 'Ułóż pionowo',
       chooseDirection: 'Wybierz kierunek układu',

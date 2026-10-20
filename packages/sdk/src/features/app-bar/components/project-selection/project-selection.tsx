@@ -1,5 +1,5 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Input, Menu, type MenuItemProps } from '@workflowbuilder/ui';
+import { Input, Menu, type MenuItemProps, Tooltip } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -43,6 +43,7 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
   const setDocumentName = useStore((state) => state.setDocumentName);
   const [editName, setEditName] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isNameTruncated, setIsNameTruncated] = useState(false);
 
   const { t } = useTranslation();
   const { onSaveAsPdf } = useAppBar();
@@ -98,13 +99,24 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
           autoFocus={true}
         />
       ) : (
-        <span className={styles['title']} onClick={() => !isReadOnlyMode && setEditName(true)}>
-          {documentName}
-        </span>
+        <Tooltip>
+          <Tooltip.Trigger asChild>
+            <span
+              className={styles['title']}
+              onMouseEnter={(event) =>
+                setIsNameTruncated(event.currentTarget.scrollWidth > event.currentTarget.clientWidth)
+              }
+              onClick={() => !isReadOnlyMode && setEditName(true)}
+            >
+              {documentName}
+            </span>
+          </Tooltip.Trigger>
+          <Tooltip.Content>{isNameTruncated ? documentName : null}</Tooltip.Content>
+        </Tooltip>
       )}
       <VersionChip />
       <div className={styles['menu-container']}>
-        <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+        <Menu items={items} placement="bottom-start" open={isMenuOpen} onOpenChange={setIsMenuOpen}>
           <Menu.TriggerButton
             size="xs"
             aria-label={t('tooltips.pickTheProject')}
