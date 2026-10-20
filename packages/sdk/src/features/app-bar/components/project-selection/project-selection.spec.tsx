@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import type { MenuItemProps } from '@workflowbuilder/ui';
-import { describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 // Render the menu's `items` inline so we can assert on them without driving the
 // real menu popover. The component also renders Input and Menu.TriggerButton, so
@@ -9,15 +9,16 @@ vi.mock('@workflowbuilder/ui', () => ({
   Menu: Object.assign(
     ({ items }: { items: MenuItemProps[] }) => (
       <ul>
-        {items.map((item) => (
-          <li key={item.label}>
-            <button onClick={item.onClick}>{item.label}</button>
+        {items.map((item, index) => (
+          <li key={item.label ?? index}>
+            {item.type === 'separator' ? '---' : <button onClick={item.onClick}>{item.label}</button>}
           </li>
         ))}
       </ul>
     ),
     { TriggerButton: () => null },
   ),
+  NavButton: () => null,
   Input: () => null,
 }));
 
@@ -39,7 +40,21 @@ vi.mock('../../../../store/store', () => ({
   ) => selector({ documentName: 'Doc', isReadOnlyMode: false, setDocumentName: () => {} }),
 }));
 
+vi.mock('../../functions/get-controls-dots-items', () => ({
+  getControlsDotsItems: vi.fn(() => [{ label: 'importExport.export' }, { label: 'importExport.import' }]),
+}));
+
+vi.mock('../version-chip/version-chip', () => ({
+  VersionChip: () => null,
+}));
+
+let appBar: { onSaveAsPdf?: () => void } = {};
+vi.mock('../../app-bar-context', () => ({
+  useAppBar: () => appBar,
+}));
+
 const { ProjectSelection } = await import('./project-selection');
+const { getControlsDotsItems } = await import('../../functions/get-controls-dots-items');
 
 const DUPLICATE_LABEL = 'header.projectSelection.duplicateToDrafts';
 const SETTINGS_LABEL = 'common.settings';
@@ -61,5 +76,61 @@ describe('ProjectSelection — "Duplicate to Drafts" visibility', () => {
 
     fireEvent.click(item);
     expect(onDuplicateClick).toHaveBeenCalledTimes(1);
+  });
+});
+
+const labels = () => screen.getAllByRole('listitem').map((li) => li.textContent);
+
+describe('ProjectSelection — menu layout', () => {
+  it('lists Export, Import, a separator, then Settings', () => {
+    render(<ProjectSelection />);
+
+    expect(labels()).toEqual(['importExport.export', 'importExport.import', '---', SETTINGS_LABEL]);
+  });
+
+  it('appends Duplicate to Drafts last when onDuplicateClick is set', () => {
+    render(<ProjectSelection onDuplicateClick={vi.fn()} />);
+
+    expect(labels().at(-1)).toBe(DUPLICATE_LABEL);
+  });
+
+  it('drops the separator when getControlsDotsItems returns nothing', () => {
+    vi.mocked(getControlsDotsItems).mockReturnValueOnce([]);
+    render(<ProjectSelection />);
+
+    expect(labels()).toEqual([SETTINGS_LABEL]);
+  });
+});
+
+describe('ProjectSelection — Save as PDF', () => {
+  const PDF_LABEL = 'header.projectSelection.saveAsPdf';
+
+  beforeEach(() => {
+    appBar = {};
+  });
+
+  it('adds Save as PDF after Import when onSaveAsPdf is set', () => {
+    const onSaveAsPdf = vi.fn();
+    appBar = { onSaveAsPdf };
+    render(<ProjectSelection />);
+
+    expect(labels()).toEqual(['importExport.export', 'importExport.import', PDF_LABEL, '---', SETTINGS_LABEL]);
+
+    fireEvent.click(screen.getByText(PDF_LABEL));
+    expect(onSaveAsPdf).toHaveBeenCalledTimes(1);
+  });
+
+  it('omits Save as PDF without a handler', () => {
+    render(<ProjectSelection />);
+
+    expect(screen.queryByText(PDF_LABEL)).toBeNull();
+  });
+
+  it('keeps the separator when only Save as PDF precedes it', () => {
+    appBar = { onSaveAsPdf: vi.fn() };
+    vi.mocked(getControlsDotsItems).mockReturnValueOnce([]);
+    render(<ProjectSelection />);
+
+    expect(labels()).toEqual([PDF_LABEL, '---', SETTINGS_LABEL]);
   });
 });

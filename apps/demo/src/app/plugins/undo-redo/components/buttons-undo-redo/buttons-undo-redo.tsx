@@ -14,6 +14,7 @@ export function ButtonsUndoRedo() {
     <>
       <NavButton
         aria-label={t('plugins.undoRedo.undo')}
+        size="s"
         onClick={undo}
         disabled={!canUndo || isReadOnlyMode}
         tooltip={t('plugins.undoRedo.undo')}
@@ -21,6 +22,7 @@ export function ButtonsUndoRedo() {
       />
       <NavButton
         aria-label={t('plugins.undoRedo.redo')}
+        size="s"
         onClick={redo}
         disabled={!canRedo || isReadOnlyMode}
         tooltip={t('plugins.undoRedo.redo')}

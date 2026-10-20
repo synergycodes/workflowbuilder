@@ -1,5 +1,5 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Input, Menu } from '@workflowbuilder/ui';
+import { Input, Menu, type MenuItemProps } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -10,6 +10,9 @@ import styles from '../../app-bar.module.css';
 import { openModalWorkflowSettings } from '../../../../features/variables/modals/modal-settings';
 import { useStore } from '../../../../store/store';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
+import { useAppBar } from '../../app-bar-context';
+import { getControlsDotsItems } from '../../functions/get-controls-dots-items';
+import { VersionChip } from '../version-chip/version-chip';
 
 /**
  * Props accepted by {@link ProjectSelection}. Use this when typing a
@@ -20,7 +23,7 @@ import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/ada
  */
 export type ProjectSelectionProps = {
   /**
-   * Optional handler for the kebab menu's "Duplicate to Drafts" item. The item
+   * Optional handler for the name menu's "Duplicate to Drafts" item. The item
    * is rendered only when this is provided — omit it and the item is absent.
    */
   onDuplicateClick?: () => void;
@@ -42,9 +45,21 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   const { t } = useTranslation();
+  const { onSaveAsPdf } = useAppBar();
 
-  const items = useMemo(
-    () => [
+  const items = useMemo<MenuItemProps[]>(() => {
+    const decoratedItems = getControlsDotsItems();
+
+    const leadingItems: MenuItemProps[] = [
+      ...decoratedItems,
+      ...(onSaveAsPdf
+        ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: onSaveAsPdf }]
+        : []),
+    ];
+
+    return [
+      ...leadingItems,
+      ...(leadingItems.length > 0 ? [{ type: 'separator' as const }] : []),
       {
         label: t('common.settings'),
         icon: <Icon name="Gear" />,
@@ -61,9 +76,8 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
             },
           ]
         : []),
-    ],
-    [onDuplicateClick, t],
-  );
+    ];
+  }, [onDuplicateClick, onSaveAsPdf, t]);
 
   return (
     <div className={styles['project-selection']}>
@@ -88,9 +102,14 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
           {documentName}
         </span>
       )}
+      <VersionChip />
       <div className={styles['menu-container']}>
         <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <Menu.TriggerButton aria-label={t('tooltips.pickTheProject')} tooltip={t('tooltips.pickTheProject')}>
+          <Menu.TriggerButton
+            size="xs"
+            aria-label={t('tooltips.pickTheProject')}
+            tooltip={t('tooltips.pickTheProject')}
+          >
             <CaretDown />
           </Menu.TriggerButton>
         </Menu>

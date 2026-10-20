@@ -135,12 +135,12 @@ type CallbackAfter = (args: { params: unknown[]; returnValue: unknown }) => void
 
 A non-exhaustive list (grep `withOptionalFunctionPlugins` in the source for the complete set):
 
-| Function name          | What it does                               |
-| ---------------------- | ------------------------------------------ |
-| `getPaletteData`       | Builds the palette data structure.         |
-| `getTemplates`         | Builds the template list.                  |
-| `trackFutureChange`    | Records an upcoming diagram change.        |
-| `getControlsDotsItems` | Builds the dots-menu items in the app bar. |
+| Function name          | What it does                                                            |
+| ---------------------- | ----------------------------------------------------------------------- |
+| `getPaletteData`       | Builds the palette data structure.                                      |
+| `getTemplates`         | Builds the template list.                                               |
+| `trackFutureChange`    | Records an upcoming diagram change.                                     |
+| `getControlsDotsItems` | Builds the Export / Import items of the menu next to the workflow name. |
 
 ### Return conventions
 

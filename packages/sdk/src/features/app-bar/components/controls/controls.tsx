@@ -1,37 +1,20 @@
-import { DotsThreeVertical } from '@phosphor-icons/react';
-import { Menu, type MenuItemProps } from '@workflowbuilder/ui';
-import { useMemo, useState } from 'react';
-import { useTranslation } from 'react-i18next';
-
 import styles from '../../app-bar.module.css';
 
 import { OptionalAppBarControls } from '../../../plugins-core/components/app/optional-app-bar-controls';
-import { getControlsDotsItems } from '../../functions/get-controls-dots-items';
+import { CleanUpButton } from '../clean-up-button/clean-up-button';
+import { PublishButton } from '../publish-button/publish-button';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
 import { ToggleReadyOnlyMode } from '../toggle-read-only-mode/toggle-read-only-mode';
 
 export function Controls() {
-  const { t } = useTranslation();
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const items: MenuItemProps[] = useMemo(() => getControlsDotsItems(), [t]);
-
   return (
     <div className={styles['controls']}>
       <OptionalAppBarControls>
+        <CleanUpButton />
         <ToggleReadyOnlyMode />
         <ToggleDarkMode />
       </OptionalAppBarControls>
-      {items.length > 0 && (
-        <div className={styles['menu-container']}>
-          <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-            <Menu.TriggerButton aria-label={t('tooltips.menu')} tooltip={t('tooltips.menu')}>
-              <DotsThreeVertical />
-            </Menu.TriggerButton>
-          </Menu>
-        </div>
-      )}
+      <PublishButton />
     </div>
   );
 }

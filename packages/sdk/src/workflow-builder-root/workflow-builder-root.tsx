@@ -9,6 +9,7 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
+import { AppBarProvider } from '../features/app-bar/app-bar-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
@@ -59,6 +60,7 @@ export function WorkflowBuilderRoot({
   name,
   logo,
   logoHref,
+  appBar,
   layoutDirection,
   initialNodes,
   initialEdges,
@@ -149,7 +151,9 @@ export function WorkflowBuilderRoot({
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell>{children}</RootShell>
+        <AppBarProvider value={appBar}>
+          <RootShell>{children}</RootShell>
+        </AppBarProvider>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

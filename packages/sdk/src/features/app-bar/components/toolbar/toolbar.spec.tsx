@@ -2,7 +2,7 @@ import { render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('../../../integration/components/save-button/save-button', () => ({
-  SaveButton: () => null,
+  SaveButton: () => <button>save</button>,
 }));
 
 vi.mock('../../../plugins-core/components/app/optional-app-bar-toolbar', () => ({
@@ -53,5 +53,11 @@ describe('Toolbar branding', () => {
 
     const sources = Array.from(container.querySelectorAll('img'), (img) => img.getAttribute('src'));
     expect(sources).toEqual(['/brand-light.svg', '/brand-dark.svg']);
+  });
+
+  it('renders Save inside the tools slot', () => {
+    render(<Toolbar />);
+
+    expect(screen.getByText('save')).toBeTruthy();
   });
 });

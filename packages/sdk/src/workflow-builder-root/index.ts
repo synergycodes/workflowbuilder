@@ -6,6 +6,8 @@ export type {
   WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderLogo,
+  WorkflowBuilderAppBar,
+  WorkflowBuilderVersion,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderPlugin,
   WorkflowBuilderReactFlowProps,

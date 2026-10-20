@@ -3,8 +3,8 @@
   border-radius: var(--wb-sdk-app-bar-border-radius);
   border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
-  height: auto;
-  padding: 0.75rem 1rem;
+  height: 3.625rem;
+  padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
   pointer-events: all;
   width: 100%;
   align-items: center;
@@ -13,10 +13,11 @@
   .toolbar {
     display: flex;
     align-items: center;
-    gap: 2rem;
+    gap: var(--wb-ds-space-150);
 
     .logo {
       color: var(--wb-sdk-app-bar-logo-color);
+      margin-inline: var(--wb-ds-space-75);
     }
 
     .logo-link {
@@ -28,14 +29,15 @@
     .nav-segment {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--wb-ds-space-100);
     }
   }
 
   .project-selection {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--wb-ds-space-100);
+    padding-inline: var(--wb-ds-space-200);
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -50,7 +52,7 @@
     display: flex;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--wb-ds-space-100);
   }
 }
 
@@ -70,20 +72,30 @@
   min-height: 1em;
   min-width: 1em;
   cursor: pointer;
+  padding: var(--wb-ds-space-137) var(--wb-ds-space-150);
+  border-radius: var(--wb-ds-radius-100);
+
+  &:hover {
+    background: var(--wb-ds-components-nav-button-bg-primary-hover);
+  }
 
   &:empty {
     border-bottom: 1px dotted currentColor;
   }
 }
 
+.version-chip {
+  background-color: var(--wb-ds-ui-bg-inset);
+  color: var(--wb-ds-ui-text-default);
+}
+
 @media screen and (max-width: 800px) {
-  .container {
-    .project-selection {
+  .container .project-selection {
+    .folder-name,
+    .title,
+    .version-chip {
       display: none;
     }
-  }
-  .title {
-    margin-left: 0.5rem;
   }
 }
 
@@ -91,6 +103,7 @@
   display: block;
   max-height: 1.5rem;
   width: auto;
+  margin-inline: var(--wb-ds-space-75);
 }
 
 .logo-image--dark {

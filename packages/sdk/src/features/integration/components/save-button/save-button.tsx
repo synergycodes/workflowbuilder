@@ -23,6 +23,7 @@ export function SaveButton() {
   return (
     <NavButton
       aria-label={t('tooltips.save')}
+      size="s"
       onClick={handleSave}
       tooltip={t('tooltips.save')}
       prefixIcon={

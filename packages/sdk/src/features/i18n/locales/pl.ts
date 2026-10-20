@@ -31,10 +31,32 @@ export const pl = {
     projectSelection: {
       rename: 'Zmień nazwę',
       duplicateToDrafts: 'Duplikuj do wersji roboczych',
+      saveAsPdf: 'Zapisz jako PDF',
+    },
+    version: {
+      draft: 'Wersja robocza v{{number}}',
+      published: 'v{{number}}',
+      publish: 'Opublikuj v{{number}}',
+      publishNoVersion: 'Opublikuj',
+    },
+    cleanUp: {
+      horizontal: 'Uporządkuj (poziomo)',
+      vertical: 'Uporządkuj (pionowo)',
+      arrangeHorizontally: 'Ułóż poziomo',
+      arrangeVertically: 'Ułóż pionowo',
+      chooseDirection: 'Wybierz kierunek układu',
     },
     controls: {
       saveAsImage: 'Zapisz jako obraz',
       archive: 'Archiwizuj',
+    },
+    mode: {
+      edit: 'Tryb edycji',
+      readOnly: 'Tryb tylko do odczytu',
+    },
+    theme: {
+      light: 'Motyw jasny',
+      dark: 'Motyw ciemny',
     },
   },
   palette: {
