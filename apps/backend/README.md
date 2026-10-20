@@ -144,6 +144,15 @@ opened on the first run, so booting does not require Temporal to be reachable.
 For Temporal Cloud, set `TEMPORAL_ADDRESS` to `<namespace>.<accountId>.tmprl.cloud:7233`,
 `TEMPORAL_NAMESPACE` to `<namespace>.<accountId>`, and `TEMPORAL_API_KEY` to your key.
 
+The namespace must already exist on the cluster; a missing one stops the worker at boot with
+`Namespace <name> is not found`. The bundled dev cluster registers only `default`, so to try
+another namespace locally, create it first:
+
+```bash
+docker compose -f apps/backend/docker-compose.yml exec temporal \
+  temporal operator namespace create --address temporal:7233 --namespace <name>
+```
+
 ## Scripts
 
 All scripts run from the monorepo root. Grouped by purpose:
