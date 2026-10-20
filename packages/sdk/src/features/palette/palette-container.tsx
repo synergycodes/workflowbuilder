@@ -28,7 +28,7 @@ export function PaletteContainer() {
   const paletteItems = useStore((state) => state.data);
   const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
 
-  const { draggedItem, zoom, ref, onMouseDown, onDragStart } = usePaletteDragAndDrop(!isReadOnlyMode);
+  const { draggedItem, zoom, ref, onPointerDown, onDragStart } = usePaletteDragAndDrop(!isReadOnlyMode);
 
   useEffect(() => {
     fetchData();
@@ -43,7 +43,7 @@ export function PaletteContainer() {
     >
       <PaletteItems
         items={paletteItems}
-        onMouseDown={onMouseDown}
+        onPointerDown={onPointerDown}
         onDragStart={onDragStart}
         isDisabled={isReadOnlyMode}
       />

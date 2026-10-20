@@ -9,12 +9,12 @@ import { PaletteItem } from './palette-item';
 
 type PaletteItemsProps = {
   onDragStart: (event: DragEvent) => void;
-  onMouseDown: (type: string) => void;
+  onPointerDown: (type: string) => void;
   items: (PaletteItemType | PaletteGroup)[];
   isDisabled?: boolean;
 };
 
-export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = false }: PaletteItemsProps) {
+export function PaletteItems({ items, onDragStart, onPointerDown, isDisabled = false }: PaletteItemsProps) {
   const translateIfPossible = useTranslateIfPossible();
 
   return (
@@ -38,7 +38,7 @@ export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = fal
                     key={item.type}
                     item={item}
                     isDisabled={isDisabled}
-                    onMouseDown={onMouseDown}
+                    onPointerDown={onPointerDown}
                     onDragStart={onDragStart}
                   />
                 ))}
@@ -54,7 +54,7 @@ export function PaletteItems({ items, onDragStart, onMouseDown, isDisabled = fal
             key={item.type}
             item={item}
             isDisabled={isDisabled}
-            onMouseDown={onMouseDown}
+            onPointerDown={onPointerDown}
             onDragStart={onDragStart}
           />
         );
