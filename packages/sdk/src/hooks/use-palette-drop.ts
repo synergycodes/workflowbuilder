@@ -71,17 +71,8 @@ export function usePaletteDrop() {
         return;
       }
 
-      alert(JSON.stringify(json));
-
       const draggingItem = JSON.parse(json) as DraggingItem;
       const { type } = draggingItem;
-
-      alert(
-        JSON.stringify({
-          position,
-          type,
-        }),
-      );
 
       dropNode(position, type);
     },
