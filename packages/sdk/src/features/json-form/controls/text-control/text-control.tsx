@@ -39,7 +39,7 @@ function TextControl(props: TextControlProps) {
       const number_ = Number(trimmed);
       handleChange(path, Number.isNaN(number_) ? undefined : number_);
     } else {
-      handleChange(path, trimmed);
+      handleChange(path, inputValue);
     }
   }
 
