@@ -10,8 +10,8 @@ import {
 } from '../use-variable-suggestions-store';
 import { getVariableBySourceHandlesForNode } from './get-node-variables-suggestions';
 
-function suggestion(id: string, display = id): VariableSuggestion {
-  return { id, display, label: id, type: 'string' };
+function suggestion(id: string, display = id, label = id): VariableSuggestion {
+  return { id, display, label, type: 'string' };
 }
 
 // Shape kept under commonByType: node id and label replaced with placeholders
@@ -19,11 +19,12 @@ function shared(key: string): VariableSuggestion {
   return suggestion(
     `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.${key}`,
     `${NODE_LABEL_FOR_COMMON_NODE_DATA}${VARIABLE_DELIMITER}${key}`,
+    key,
   );
 }
 
 function resolved(nodeId: string, label: string, key: string): VariableSuggestion {
-  return suggestion(`nodes.${nodeId}.${key}`, `${label}${VARIABLE_DELIMITER}${key}`);
+  return suggestion(`nodes.${nodeId}.${key}`, `${label}${VARIABLE_DELIMITER}${key}`, key);
 }
 
 function customNode(bySourceHandle: SuggestionsBySourceHandle): SuggestionsNodeData {
