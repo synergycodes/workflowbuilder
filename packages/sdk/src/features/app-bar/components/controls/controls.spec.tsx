@@ -1,10 +1,10 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import i18n from 'i18next';
 import { StrictMode } from 'react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
-import { resetWorkflowStore } from '../../../../store/store';
+import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { useModalStore } from '../../../modals/stores/use-modal-store';
 import { registerComponentDecorator } from '../../../plugins-core/adapters/adapter-components';
@@ -53,6 +53,11 @@ function openDotsMenu() {
   fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
 }
 
+// Base UI's switch builds a PointerEvent on click, which jsdom does not define.
+if (!('PointerEvent' in globalThis)) {
+  vi.stubGlobal('PointerEvent', MouseEvent);
+}
+
 beforeEach(() => {
   resetWorkflowStore();
 });
@@ -84,7 +89,13 @@ describe('Controls builtInControls', () => {
     const { container: shown } = renderInRoot(<Controls />, {
       builtInControls: { readOnlyToggle: true, themeToggle: false },
     });
-    expect(shown.querySelectorAll('[role="switch"]')).toHaveLength(1);
+    const switches = shown.querySelectorAll('[role="switch"]');
+    expect(switches).toHaveLength(1);
+
+    // The one switch left is the read-only one: flipping it changes the store, not the theme.
+    fireEvent.click(switches[0]!);
+    expect(useStore.getState().isReadOnly).toBe(true);
+    expect(document.documentElement.dataset.theme).toBeUndefined();
   });
 
   it('themeToggle:false hides the dark-mode switch; true (the default) shows it', () => {
@@ -97,7 +108,13 @@ describe('Controls builtInControls', () => {
     const { container: shown } = renderInRoot(<Controls />, {
       builtInControls: { themeToggle: true, readOnlyToggle: false },
     });
-    expect(shown.querySelectorAll('[role="switch"]')).toHaveLength(1);
+    const switches = shown.querySelectorAll('[role="switch"]');
+    expect(switches).toHaveLength(1);
+
+    // The one switch left is the theme one: flipping it changes the theme, not the store.
+    fireEvent.click(switches[0]!);
+    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(useStore.getState().isReadOnly).toBe(false);
   });
 
   it('export and import both false hide the dots menu button; either true shows it', () => {
