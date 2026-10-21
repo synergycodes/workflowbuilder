@@ -35,7 +35,7 @@ export async function runFromCanvas(): Promise<void> {
   }
 
   const { executionId, temporalUiUrl } = (await response.json()) as RunResponse;
-  runStarted(executionId, temporalUiUrl, amount);
+  runStarted(temporalUiUrl);
 
   stream = new EventSource(`/api/runs/${executionId}/events`);
   stream.addEventListener('message', (message) => {

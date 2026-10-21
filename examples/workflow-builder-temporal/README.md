@@ -1,26 +1,29 @@
 # Workflow Builder on Temporal
 
-Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workflow Execution: every node becomes an Activity, retries and history come from Temporal, and the canvas shows each node's status live.
+Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workflow Execution: every node becomes an Activity, retries and history come from Temporal, and this sample's run plugin marks each node's status on the canvas (the Workflow Builder SDK ships no run status view; this is example code).
 
-This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram authored in the [Workflow Builder](https://www.workflowbuilder.io) editor. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned. An optional editor lets you change the diagram and watch nodes light up while Temporal runs them.
+This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram drawn in the [Workflow Builder](https://www.workflowbuilder.io) editor. You press **Run** on the canvas and watch the nodes light up while Temporal runs them. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned.
 
-![A finished run in the editor: green on every node Temporal executed, grey on the branch it skipped](docs/editor-run.png)
+![A finished run in the editor: green on every node the run executed, grey on the branch it skipped](docs/editor-run.png)
 
 ## What runs where
 
 ```
-editor (browser, optional)  --POST canvas snapshot-->  worker + bridge (npm start)  -->  Temporal (temporal server start-dev)
-        ^                                                     |  executors: trigger, action, decision
-        +----------- SSE: node events ------------------------+  store: prints events, streams them to the editor
+editor (browser, npm run dev)  --POST canvas snapshot-->  bridge  -->  Temporal (temporal server start-dev)
+        ^                                                    |  worker + bridge in one process (npm start)
+        |                                                    |  executors: trigger, action, decision
+        +----------- SSE: node events -----------------------+  store: prints events, streams them to the editor
 
 npm run workflow  ---- reads shared/diagram.json, starts one run, waits for it ---->  Temporal
 ```
 
+The editor posts the canvas to the bridge, the bridge starts a Workflow Execution on Temporal, the Worker runs it node by node, and the store streams every node event back to the editor. `npm run workflow` is the same run without a browser.
+
 Three folders:
 
-- `shared/` is what the two processes agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the coin flip (`amount.ts`).
+- `editor/` is the browser app: Workflow Builder with a **Run** button.
 - `worker/` is the Node side: the Temporal Worker with the plugin, the bridge the editor talks to, and the CLI client.
-- `editor/` is the optional browser app.
+- `shared/` is what the two sides agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the coin flip (`amount.ts`).
 
 The diagram:
 
@@ -67,13 +70,14 @@ temporal server start-dev --port 7234 --ui-port 8234
 ```
 
 and set the addresses, which [`worker/src/config.ts`](worker/src/config.ts) reads, for both npm
-commands below. On macOS and Linux, put them in front of each command:
+commands in `worker/`: `npm start` below and `npm run workflow` in
+[Without a browser](#without-a-browser). On macOS and Linux, put them in front of each command:
 
 ```bash
 # terminal 2
 TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm start
 
-# terminal 3
+# without a browser
 TEMPORAL_ADDRESS=127.0.0.1:7234 TEMPORAL_UI_ORIGIN=http://localhost:8234 npm run workflow
 ```
 
@@ -83,11 +87,11 @@ On Windows (PowerShell), set them in each terminal first; they last until you cl
 # terminal 2
 $env:TEMPORAL_ADDRESS='127.0.0.1:7234'; $env:TEMPORAL_UI_ORIGIN='http://localhost:8234'; npm start
 
-# terminal 3
+# without a browser
 $env:TEMPORAL_ADDRESS='127.0.0.1:7234'; $env:TEMPORAL_UI_ORIGIN='http://localhost:8234'; npm run workflow
 ```
 
-Terminal 2, the Worker:
+Terminal 2, the Worker and the bridge, one process:
 
 ```bash
 cd worker
@@ -102,14 +106,47 @@ worker polling task queue "workflow-execution" on 127.0.0.1:7233
 bridge listening on http://127.0.0.1:3210
 ```
 
-Terminal 3, one run of the diagram. Each run draws an amount between 1 and 200, and the decision node
-routes on it, so about half the runs take each branch. Also from `worker/`:
+Terminal 3, the editor. From the sample folder:
+
+```bash
+cd editor
+npm install
+npm run dev
+```
+
+Open the printed URL (Vite defaults to <http://localhost:5173>). The editor opens the diagram, named "Temporal sample". Click **Run**.
+
+## What you see on the canvas and in Temporal UI
+
+While the run is going, the button reads **Running…**. Each node shows a spinner while its Activity runs, then a check. `Send email` spins through both attempts, and the branch that was not taken turns grey.
+
+Each run draws an amount between 1 and 200 and sends it as the trigger payload. The decision node routes on it, so about half the runs take each branch: run it a few times and the grey node swaps sides.
+
+A small run panel appears below the app bar, in line with the Nodes Library and Properties bars. It shows the run's status (Starting, Running, Completed, Failed, Cancelled, Incomplete, or Error) and a **Temporal UI** link to the run, and it stays until the next run or a **Reset**. If something goes wrong, a snackbar shows the message and stays until you close it, start another run or press **Reset**: the bridge cannot be reached or rejects the request, the event stream is lost, or the run ends failed, cancelled or incomplete. When the run exists, the snackbar also has an **Open in Temporal UI** button. A completed run shows no snackbar.
+
+Terminal 2 prints every event the store receives, the same lines shown in [Without a browser](#without-a-browser).
+
+Open the **Temporal UI** link. The run is one Workflow Execution. Each node is an `executeNode` Activity with the node's label as its Summary. Click `Send email`: attempt 1 failed with `mail_server_busy`, attempt 2 succeeded. The retry is Temporal's, governed by the plugin's default node profile (10 minutes, 2 attempts), not by anything in this sample. The Workflow input carries the amount the run was given.
+
+The pruned branch leaves no trace here: when the amount is above 100 there is an Activity for `Escalate to a human` and none at all for `Auto-approve`, because the workflow decided against that branch and never scheduled it.
+
+![A completed run's Event History in Compact view: an executeNode Activity per node with its label as Summary, Send email on attempt 2, and none for Auto-approve](docs/temporal-ui-event-history.png)
+
+## Change the diagram and run again
+
+Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette. Then click **Run** again: the bridge runs whatever is on the canvas. Every diagram with one start node and no loops runs on the plugin's one `runWorkflow`, so the Worker keeps running unchanged; only a new node type needs Worker code.
+
+The editor keeps your canvas in the browser between visits. **Reset** asks first, then puts back the nodes and edges from [`shared/diagram.json`](shared/diagram.json), which is also the diagram `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
+
+## Without a browser
+
+`npm run workflow` submits [`shared/diagram.json`](shared/diagram.json) and waits for the run, which is handy for a quick check and shows the store's raw output. Keep terminals 1 and 2 running, and in another terminal, from `worker/`:
 
 ```bash
 npm run workflow
 ```
 
-Expected in terminal 3:
+Expected:
 
 ```
 amount 130
@@ -147,33 +184,11 @@ until the amount comes out at 100 or below, and lines 7 to 10 take the other bra
 [734af0c9] #10 node_completed (action-3) {"output":{"delivered":true,"attempt":1,"message":"Approved automatically"}}
 ```
 
-## What you will see in Temporal UI
-
-Open the `watch it:` link. The run is one Workflow Execution. Each node is an Activity named after its label, because the plugin sets the node's label as the activity summary. Click `Send email`: attempt 1 failed with `mail_server_busy`, attempt 2 succeeded. The retry is Temporal's, governed by the plugin's default node profile (10 minutes, 2 attempts), not by anything in this sample. The Workflow input carries the amount the run was given.
-
-The pruned branch leaves no trace here: there is an Activity for `Escalate to a human` and none at all for `Auto-approve`, because the workflow decided against that branch and never scheduled it.
-
-![The Send email activity with two attempts](docs/temporal-ui-retry.png)
-
-## Optional: run it from the canvas
-
-Keep terminals 1 and 2 running. The editor posts the canvas to the worker's bridge and reads events back from it. From the sample folder:
-
-```bash
-cd editor
-npm install
-npm run dev
-```
-
-Open the printed URL (Vite defaults to <http://localhost:5173>). The editor opens with the same diagram. Click **Run on Temporal**: the amount is drawn for that run and shown beside the button. Each node shows a spinner while its Activity runs, then a check; `Send email` spins through both attempts, and the branch that was not taken turns grey. Run it a few times and the grey node swaps sides. The **Temporal UI** link opens the run.
-
-Then change things. Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette.
-
-The editor keeps your canvas in the browser between visits. **Reset diagram** puts back the diagram in [`shared/diagram.json`](shared/diagram.json), which is also the one `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
+The `watch it:` link opens the same run in Temporal UI as the editor's **Temporal UI** link.
 
 ## How it works
 
-Six places carry the whole integration. Each has a comment where the reason is not visible in the code.
+Eight places carry the whole integration: six in the Worker, two in the editor. Each has a comment where the reason is not visible in the code.
 
 1. [`worker/src/workflows.ts`](worker/src/workflows.ts) re-exports `runWorkflow`. Temporal bundles workflow code from one module, so a plugin cannot register its workflow for you; the re-export is how the bundle picks it up.
 2. [`worker/src/worker.ts`](worker/src/worker.ts) creates `WorkflowBuilderPlugin({ executors, store })` and hands it to `Worker.create`. The plugin contributes the activities that execute a graph. Connection, task queue, and shutdown stay yours.
@@ -181,6 +196,10 @@ Six places carry the whole integration. Each has a comment where the reason is n
 4. [`worker/src/evaluate-branches.ts`](worker/src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions all hold wins, and a branch with no conditions always holds, so it belongs last. (The reference worker in the Workflow Builder repository never matches an empty branch; this sample prefers the rule you can read off the canvas.)
 5. [`worker/src/store.ts`](worker/src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same. The first terminal status a run reaches is final: a late `running` or `waiting`, or a second terminal status, can still arrive and is dropped.
 6. [`worker/src/to-definition.ts`](worker/src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. A node is the run's start when its data carries `isStartNode: true`, which the editor copies from the palette item on drop. The plugin knows nothing about React Flow; this file is the only glue.
+7. [`editor/src/nodes/`](editor/src/nodes/) holds the palette items. A palette item's `type` is the key of its executor in `worker/src/executors.ts`. The trigger sets `isStartNode: true` and declares an `outputSchema`, so a decision node's condition editor offers `amount` and `customer` in its variable picker. The decision node is built on the SDK's decision template, which gives it the branches you edit on the node and in the properties panel.
+8. [`editor/src/execution/`](editor/src/execution/) is the run plugin. It puts the **Run** button in the SDK's `OptionalAppBarControls` slot, the run panel in `OptionalAppChildren` and the node markers in `OptionalNodeContent`, and raises an error snackbar with `showSnackbar()` when a run fails. On **Run** it takes the canvas with `getStoreDataForIntegration()`, posts it to the bridge with the run's trigger payload, and follows the run's events over Server-Sent Events.
+
+[`editor/src/app.tsx`](editor/src/app.tsx) mounts the editor with these plugins and an `isValidConnection` that refuses any edge into the start node.
 
 [`worker/src/client.ts`](worker/src/client.ts) starts a run through `TemporalWorkflowEngine` from `@workflowbuilder/temporal/client` and then waits on an ordinary Temporal workflow handle. [`worker/src/bridge.ts`](worker/src/bridge.ts) does the same for the editor over HTTP and streams the store's events back as Server-Sent Events.
 
@@ -197,6 +216,7 @@ Six places carry the whole integration. Each has a comment where the reason is n
 
 - [`@workflowbuilder/temporal` on npm](https://www.npmjs.com/package/@workflowbuilder/temporal): profiles, node labels in Event History, versioning and replay.
 - [Workflow Builder documentation](https://www.workflowbuilder.io/docs/overview/)
+- [Run on Temporal guide](https://www.workflowbuilder.io/docs/guides/use-with-temporal/)
 - [Temporal TypeScript SDK](https://docs.temporal.io/develop/typescript)
 
 ## License

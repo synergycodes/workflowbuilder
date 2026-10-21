@@ -26,7 +26,7 @@ export function ResetButton() {
   return (
     <button type="button" className="reset-button" disabled={busy} onClick={reset}>
       <ArrowCounterClockwiseIcon size={16} />
-      Reset diagram
+      Reset
     </button>
   );
 }

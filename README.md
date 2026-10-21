@@ -107,7 +107,7 @@ Workflow Builder is made by [Synergy Codes](https://www.synergycodes.com/): 15+ 
 
 **In the hosted demo:** open **Templates** in the palette, pick **Refund Review** and press **Run**. The AI drafts a refund, the run stops at the review step, and you decide. The demo is shared and rate-limited.
 
-Want to see a diagram execute on Temporal without Docker? The [Temporal sample](examples/workflow-builder-temporal/) runs one from the terminal and, optionally, from the canvas.
+Want to draw a workflow on the canvas and run it as a durable Temporal Workflow Execution, without Docker? Start with the [Temporal sample](examples/workflow-builder-temporal/).
 
 ### Path A. Embed the SDK
 

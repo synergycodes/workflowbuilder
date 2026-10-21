@@ -24,8 +24,8 @@ Workflow Builder is a React SDK for building and embedding visual workflow edito
 
 It provides a ready-made workflow editor UI, including canvas, nodes, edges, layout, forms, and configuration panels, so you don't have to build workflow UX from scratch.
 
-Workflow Builder focuses exclusively on the **frontend editor layer**.
-Execution, orchestration, and business logic remain fully under your control.
+The SDK is the **frontend editor layer**.
+Execution is optional: run diagrams on your own engine or with the `@workflowbuilder/temporal` plugin. Business logic (your node executors) always stays under your control.
 
 Ready to try it? Start with the [Quick Start guide](/get-started/quick-start/standalone-app/).
 
@@ -44,7 +44,7 @@ Ready to try it? Start with the [Quick Start guide](/get-started/quick-start/sta
 
 ## Scope
 
-Workflow Builder focuses exclusively on the frontend editor layer. The SDK outputs workflow definitions as JSON that your own backend consumes and executes. For in-editor execution, the optional [Flow Runner](/plugins/flow-runner/) plugin (Enterprise) can traverse the workflow graph and run node functions directly.
+The SDK is the frontend editor layer. It outputs workflow definitions as JSON that your own backend consumes and executes. For in-editor execution, the optional [Flow Runner](/plugins/flow-runner/) plugin (Enterprise) can traverse the workflow graph and run node functions directly. The [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin runs diagrams as durable Temporal Workflow Executions, see [Run on Temporal](/guides/use-with-temporal/).
 
 ## Typical use cases
 

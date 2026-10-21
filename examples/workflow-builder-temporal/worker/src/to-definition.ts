@@ -7,8 +7,13 @@ import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
 // and `{ sourceNodeId, targetNodeId }` per edge. This is the only glue in the sample.
 export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: string): WorkflowDefinition<SampleNode> {
   const nodes = snapshot.nodes.map((node) => toNode(node, node.data.isStartNode === true));
-  if (!nodes.some((node) => node.role === 'start')) {
+  const startNodes = nodes.filter((node) => node.role === 'start');
+  if (startNodes.length === 0) {
     throw new Error('The diagram has no start node. Add a trigger node from the palette.');
+  }
+  if (startNodes.length > 1) {
+    const ids = startNodes.map((node) => node.id).join(', ');
+    throw new Error(`The diagram has ${startNodes.length} start nodes, but exactly one is allowed: ${ids}.`);
   }
 
   return { workflowId, nodes, edges: snapshot.edges.map(toEdge) };

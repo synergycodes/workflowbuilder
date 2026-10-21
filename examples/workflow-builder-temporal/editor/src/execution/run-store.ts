@@ -1,3 +1,4 @@
+import { closeSnackbar, showSnackbar } from '@workflowbuilder/sdk';
 import { create } from 'zustand';
 
 import { type RunEvent, TERMINAL_STATUSES } from '../../../shared/protocol';
@@ -7,8 +8,6 @@ export type RunPhase = 'idle' | 'starting' | 'running' | 'completed' | 'incomple
 
 export type RunState = {
   phase: RunPhase;
-  amount?: number;
-  executionId?: string;
   temporalUiUrl?: string;
   message?: string;
   nodeStatuses: Record<string, NodeRunStatus>;
@@ -18,19 +17,43 @@ const IDLE: RunState = { phase: 'idle', nodeStatuses: {} };
 
 export const useRunStore = create<RunState>(() => IDLE);
 
+let failureSnackbarKey: string | undefined;
+
+function showFailure(): void {
+  const { phase, message, temporalUiUrl } = useRunStore.getState();
+  failureSnackbarKey = showSnackbar({
+    variant: 'error',
+    title: phase === 'error' ? 'Could not run the diagram' : `Run ${phase}`,
+    subtitle: message,
+    ...(temporalUiUrl && {
+      buttonLabel: 'Open in Temporal UI',
+      onButtonClick: () => globalThis.open(temporalUiUrl, '_blank', 'noreferrer'),
+    }),
+    autoHideDuration: null,
+  });
+}
+
+function hideFailure(): void {
+  if (failureSnackbarKey) closeSnackbar(failureSnackbarKey);
+  failureSnackbarKey = undefined;
+}
+
 export function runStarting(): void {
+  hideFailure();
   useRunStore.setState({ ...IDLE, phase: 'starting' }, true);
 }
 
-export function runStarted(executionId: string, temporalUiUrl: string, amount: number): void {
-  useRunStore.setState({ phase: 'running', executionId, temporalUiUrl, amount });
+export function runStarted(temporalUiUrl: string): void {
+  useRunStore.setState({ phase: 'running', temporalUiUrl });
 }
 
 export function runErrored(message: string): void {
   useRunStore.setState({ phase: 'error', message });
+  showFailure();
 }
 
 export function runCleared(): void {
+  hideFailure();
   useRunStore.setState(IDLE, true);
 }
 
@@ -44,18 +67,22 @@ const NODE_STATUS_BY_EVENT: Record<string, NodeRunStatus> = {
 // A retried activity emits no event, so a node keeps spinning through its attempts. The
 // terminal status is written after the terminal event, so ending on it loses nothing.
 export function applyRunEvent(event: RunEvent): void {
-  useRunStore.setState((state) => {
-    if (event.kind === 'status') {
-      return TERMINAL_STATUSES.has(event.status)
-        ? { phase: event.status as RunPhase, message: event.errorMessage }
-        : {};
-    }
-    const status = NODE_STATUS_BY_EVENT[event.type];
-    if (!status || !event.nodeId) return {};
-    return { nodeStatuses: { ...state.nodeStatuses, [event.nodeId]: status } };
-  });
+  if (event.kind === 'status') {
+    if (!TERMINAL_STATUSES.has(event.status) || isRunOver(useRunStore.getState().phase)) return;
+    useRunStore.setState({ phase: event.status as RunPhase, message: event.errorMessage });
+    if (event.status !== 'completed') showFailure();
+    return;
+  }
+  const status = NODE_STATUS_BY_EVENT[event.type];
+  const { nodeId } = event;
+  if (!status || !nodeId) return;
+  useRunStore.setState((state) => ({ nodeStatuses: { ...state.nodeStatuses, [nodeId]: status } }));
 }
 
 export function isRunOver(phase: RunPhase): boolean {
   return TERMINAL_STATUSES.has(phase) || phase === 'error';
+}
+
+export function isRunFailure(phase: RunPhase): boolean {
+  return isRunOver(phase) && phase !== 'completed';
 }

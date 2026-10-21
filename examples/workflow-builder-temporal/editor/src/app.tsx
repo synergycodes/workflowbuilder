@@ -18,7 +18,7 @@ const { nodes: initialNodes, edges: initialEdges } = defaultDiagram();
 export function App() {
   return (
     <WorkflowBuilder.Root
-      name="Workflow Builder on Temporal"
+      name="Temporal sample"
       nodeTypes={nodeTypes}
       initialNodes={initialNodes}
       initialEdges={initialEdges}
