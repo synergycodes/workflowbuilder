@@ -40,7 +40,7 @@ This PR delivers the S effort; L is deferred as a separate larger work item.
 
 - **Cons**
   - **No real auth yet.** A user who does opt out of loopback is still operating an open server. The `HOST` override does not prevent foot-gunning, only signals it.
-  - **`cors()` is still wide open.** It only matters if someone bypasses the binding. Restricting CORS depends on having a notion of "trusted origin", which depends on auth.
+  - **CORS is open while `ALLOWED_ORIGINS` is unset.** It only matters if someone bypasses the binding; the deploy sets the variable, local dev leaves it unset because the frontend runs on another port.
   - **Postgres credentials are still the default `wb:wb`.** Out of scope for this PR — credential rotation belongs with the auth work.
 
 ## Status
