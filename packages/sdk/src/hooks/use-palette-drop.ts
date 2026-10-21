@@ -9,6 +9,7 @@ import type { BaseNodeProperties } from '../node/node-schema';
 import { NodeType } from '../node/node-types';
 import { useStore } from '../store/store';
 import { dataFormat } from '../utils/consts';
+import { generateId } from '../utils/generate-id';
 import { getNodeAddChange } from '../utils/get-node-add-change';
 import { resolveReactFlowNodeType } from '../utils/resolve-react-flow-node-type';
 import { useTranslateIfPossible } from './use-translate-if-possible';
@@ -48,7 +49,7 @@ export function usePaletteDrop() {
 
       const reactFlowNodeType = resolveReactFlowNodeType(type, templateType, getCustomNodeTemplates());
 
-      const newNodeId = crypto.randomUUID();
+      const newNodeId = generateId();
       trackFutureChange('addNode', { nodeType: type });
       resetSelectedElements();
       onNodesChange(getNodeAddChange(reactFlowNodeType, position, data, newNodeId));
@@ -66,7 +67,9 @@ export function usePaletteDrop() {
       });
 
       const json = event.dataTransfer?.getData(dataFormat);
-      if (!json) return;
+      if (!json) {
+        return;
+      }
 
       const draggingItem = JSON.parse(json) as DraggingItem;
       const { type } = draggingItem;
