@@ -34,8 +34,8 @@ export function getAvailableVariablesByNodeId({
   // BFS backward through edges to find all ancestor nodes
   const ancestors = getNodeAncestors(nodeId, edges);
 
-  const groupsByLabel: {
-    [label: string]: VariableSuggestionGroup;
+  const groupsByNodeId: {
+    [nodeId: string]: VariableSuggestionGroup;
   } = {};
 
   for (const ancestor of ancestors) {
@@ -66,16 +66,16 @@ export function getAvailableVariablesByNodeId({
       includeTypes,
     });
 
-    const uniqueSuggestions = groupsByLabel[nodeLabel]?.suggestions
-      ? filterSuggestionsDuplicates([...groupsByLabel[nodeLabel].suggestions, ...filteredSuggestions])
+    const uniqueSuggestions = groupsByNodeId[nodeId]?.suggestions
+      ? filterSuggestionsDuplicates([...groupsByNodeId[nodeId].suggestions, ...filteredSuggestions])
       : filteredSuggestions;
 
-    groupsByLabel[nodeLabel] = {
+    groupsByNodeId[nodeId] = {
       label: nodeLabel,
       icon: node.data.icon,
       suggestions: uniqueSuggestions,
     };
   }
 
-  return Object.values(groupsByLabel);
+  return Object.values(groupsByNodeId);
 }

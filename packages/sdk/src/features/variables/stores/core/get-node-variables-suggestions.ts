@@ -5,6 +5,7 @@ import {
   NODE_LABEL_FOR_COMMON_NODE_DATA,
   SPECIAL_SOURCE_HANDLE_KEYWORDS,
 } from '../../constants';
+import { filterSuggestionsDuplicates } from '../../utils/core/filter-suggestions-duplicates';
 import { SUGGESTION_NODE_TYPE, type SuggestionsBySourceHandle } from '../types';
 import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '../use-variable-suggestions-store';
 
@@ -74,14 +75,14 @@ export const getNodeVariablesSuggestions = (params: {
     suggestions = bySourceHandle[sourceHandle];
   }
 
-  const isErrorBranch = sourceHandle.includes(SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR);
+  const isErrorBranch = sourceHandle.toLowerCase().includes(SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR);
 
-  suggestions = [
+  suggestions = filterSuggestionsDuplicates([
     ...(suggestions || []),
     ...(bySourceHandle[SPECIAL_SOURCE_HANDLE_KEYWORDS.EVERY] || []),
     ...(bySourceHandle[isErrorBranch ? SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR : SPECIAL_SOURCE_HANDLE_KEYWORDS.SUCCESS] ||
       []),
-  ];
+  ]);
 
   return suggestions;
 };
