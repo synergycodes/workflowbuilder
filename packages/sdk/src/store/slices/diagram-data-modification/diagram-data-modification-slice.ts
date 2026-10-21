@@ -1,9 +1,11 @@
 import { type OnEdgesChange, type OnNodesChange, applyEdgeChanges, applyNodeChanges } from '@xyflow/react';
-import { type Draft, produce } from 'immer';
+import { type Draft, Immer } from 'immer';
 
 import type { EdgeData, NodeData, WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../node/node-data';
 import type { GetDiagramState, SetDiagramState } from '../../store';
 import { removeElements } from './remove-elements';
+
+const { produce } = new Immer({ autoFreeze: false });
 
 export type DiagramDataModificationState = {
   onNodesChange: OnNodesChange<WorkflowBuilderNode>;

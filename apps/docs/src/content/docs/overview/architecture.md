@@ -51,7 +51,6 @@ packages/sdk/src/
 │   ├── resolve-integration.ts          #   integration-discriminated-union → flat shape helper
 │   ├── root-shell.tsx                  #   internal subtree under StoreContext.Provider
 │   └── index.ts                        #   barrel re-export
-├── bootstrap-immer.ts          # First-loaded side-effect: disables immer auto-freeze
 ├── bootstrap.ts                # Module-level init (i18next, modals + i18n plugins)
 ├── index.ts                    # Curated public barrel + compound `WorkflowBuilder` namespace
 ├── components/                 # Reusable UI primitives (forms, sidebar, loader)
