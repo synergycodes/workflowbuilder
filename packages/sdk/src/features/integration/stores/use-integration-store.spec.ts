@@ -4,7 +4,13 @@ import type { WorkflowBuilderNode } from '../../../node/node-data';
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
-import { getStoreSavingStatus, loadData, setStoreSavingStatus, useIntegrationStore } from './use-integration-store';
+import {
+  getStoreSavingStatus,
+  loadData,
+  resetIntegrationStore,
+  setStoreSavingStatus,
+  useIntegrationStore,
+} from './use-integration-store';
 
 vi.mock('@workflowbuilder/ui', () => ({
   SnackbarType: { SUCCESS: 'SUCCESS', ERROR: 'ERROR', INFO: 'INFO', WARNING: 'WARNING' },
@@ -66,11 +72,19 @@ describe('use-integration-store', () => {
       expect(loadData({ name: 'demo', nodes: [] })).toEqual({ isEmpty: true });
     });
 
-    it('shows success snackbar when data is provided', () => {
-      loadData({ nodes: [] });
+    it('shows the restore snackbar when the loaded data has nodes', () => {
+      loadData({ nodes: [node] });
       expect(vi.mocked(showTranslatedSnackbar)).toHaveBeenCalledWith(
         expect.objectContaining({ title: 'restoreDiagramSuccess' }),
       );
+    });
+
+    it('applies a name alone, or an empty nodes array, without the restore snackbar', () => {
+      loadData({ name: 'demo' });
+      loadData({ name: 'demo', nodes: [] });
+
+      expect(vi.mocked(setStoreDataFromIntegration)).toHaveBeenCalledTimes(2);
+      expect(vi.mocked(showTranslatedSnackbar)).not.toHaveBeenCalled();
     });
 
     it('sets savingStatus to waiting when data is provided', () => {
@@ -87,6 +101,17 @@ describe('use-integration-store', () => {
       loadData({ nodes: [] });
       // [] is falsy via Boolean([]) === true... wait, [] is truthy in JS
       expect(vi.mocked(setStoreDataFromIntegration)).toHaveBeenCalled();
+    });
+  });
+
+  describe('resetIntegrationStore', () => {
+    it('puts the status back to disabled, as before the first load', () => {
+      loadData({ nodes: [node] });
+      setStoreSavingStatus('saved');
+
+      resetIntegrationStore();
+
+      expect(getStoreSavingStatus()).toBe('disabled');
     });
   });
 

@@ -11,9 +11,9 @@ export function composeMenuItems(
   builtIns: MenuItemProps[],
   registered: readonly RegisteredMenuItem[],
 ): MenuItemProps[] {
-  const registeredItems: MenuItemProps[] = registered.map(({ id: _id, ...item }) => item);
-  if (builtIns.length === 0 || registeredItems.length === 0) {
-    return [...builtIns, ...registeredItems];
+  // The registry id keys the row, so an own label may repeat a built-in one in any language.
+  if (builtIns.length === 0 || registered.length === 0) {
+    return [...builtIns, ...registered];
   }
-  return [...builtIns, { type: 'separator' }, ...registeredItems];
+  return [...builtIns, { type: 'separator' }, ...registered];
 }

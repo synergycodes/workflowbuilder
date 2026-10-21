@@ -39,6 +39,18 @@ describe('IntegrationContextWrapper', () => {
     vi.mocked(getStoreSavingStatus).mockReturnValue('waiting');
   });
 
+  it('returns error without calling onSave while the initial load has not finished', async () => {
+    vi.mocked(getStoreSavingStatus).mockReturnValue('disabled');
+    const mockOnSave = vi.fn();
+    const onSave = renderAndGetOnSave(mockOnSave);
+
+    const result = await act(() => onSave({ isAutoSave: true }));
+
+    expect(result).toBe('error');
+    expect(mockOnSave).not.toHaveBeenCalled();
+    expect(vi.mocked(setStoreSavingStatus)).not.toHaveBeenCalled();
+  });
+
   it('returns alreadyStarted without calling onSave when already saving', async () => {
     vi.mocked(getStoreSavingStatus).mockReturnValue('saving');
     const mockOnSave = vi.fn();
