@@ -12,9 +12,10 @@ type Props = MenuItemProps & {
   radio?: boolean;
 };
 
-// `selected` is consumed by `Menu` (radio group value); it is destructured here so
-// it never reaches the DOM element.
+// `selected` and `id` are consumed by `Menu` (radio group value, row key); they are
+// destructured here so they never reach the DOM element.
 export function MenuItem({
+  id: _id,
   icon,
   label,
   disabled,

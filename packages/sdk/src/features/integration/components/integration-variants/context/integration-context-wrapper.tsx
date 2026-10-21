@@ -34,6 +34,11 @@ export function IntegrationContextWrapper({ onSave, children }: Props) {
     async (savingParams) => {
       const savingStatus = getStoreSavingStatus();
 
+      // 'disabled' until loadData ran: a save before that would send the reset, empty store over the stored diagram.
+      if (savingStatus === 'disabled') {
+        return 'error';
+      }
+
       if (savingStatus === 'saving') {
         return 'alreadyStarted';
       }

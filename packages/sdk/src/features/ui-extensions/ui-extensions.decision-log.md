@@ -111,6 +111,10 @@ Design decisions a reader of the code should know:
 - **The store field renames are a major changeset.** SDK 3.0.0 shipped on 02.10.2026, before this
   landed, so the pending major becomes 4.0.0 unless the old names return as aliases and the
   changeset drops to minor. That call stays with the release owner.
+- **A save is refused until the initial load finished.** `handleIntegrationSave` returns `'error'`
+  while the saving status is still `'disabled'`, and Root resets that status on every mount. Auto-save
+  and the save on tab close now run in every layout, so without the guard a tab closed during a slow
+  `api` load would send the reset, empty store to the save endpoint.
 - **The read-only guard moved into `openTemplateSelectorModal`, not only into the `openTemplates`
   action.** `TemplateSelector` replaces the whole diagram through `setDiagramModel` without
   checking read-only mode itself. Before this change the palette's Templates button had a
@@ -183,9 +187,6 @@ Design decisions a reader of the code should know:
 A few findings from building this model are tracked as separate, smaller pieces of work rather
 than folded into this release:
 
-- The UI library's `Menu` keys its rows by `label`, so two registered menu items that happen to
-  share a label collide in React's reconciliation instead of being told apart by identity
-  (follow-up: menu-item-identity).
 - There is no dev-time warning when a decorator targets one of the three now-deprecated slot names
   (`OptionalAppBarTools`, `OptionalAppBarControls`, `OptionalFooterContent`) or decorates the
   deprecated `getControlsDotsItems` through `registerFunctionDecorator`. The three slot names are
@@ -195,9 +196,6 @@ than folded into this release:
   on that internal symbol would not reach them either. Only `onDuplicateClick` and
   `onMenuHeaderClick` carry the tag today, because both are properties of an exported public type
   (follow-up: deprecated-slot-warning).
-- The "Saved data has been restored" snackbar fires for any successful load, including a load that
-  carried only a `name` prop and no stored nodes; it should fire only when data actually came back
-  from storage or an API (follow-up: restore-toast-source).
 - The palette has no designed empty state for "every node was filtered out by `paletteFilter`"; it
   currently just shows an empty list (follow-up: palette-empty-state).
 - Public type names such as `PropertiesBar` vs. `PropertiesPanel` are inconsistent across the
@@ -213,3 +211,6 @@ than folded into this release:
 - `openImportModal` and the Settings modal do not check read-only mode, unlike every other path
   that changes the persisted model; closing that gap is the design document's decision 24, tracked
   as its own task (follow-up: read-only-import-settings).
+- Auto-save has no switch: with `EditorRuntime` owning it, a view that must never save (a run view,
+  a preview) can only pass an `onDataSave` that rejects. A prop on Root, or an `autoSave: false` on
+  the integration, would make that explicit (follow-up: auto-save-opt-out).

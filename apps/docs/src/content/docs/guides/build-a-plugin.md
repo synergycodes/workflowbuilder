@@ -226,7 +226,7 @@ These are deliberate limits of the model, not bugs:
 - **Content from a node's properties form lives with the form.** It mounts only while the panel is expanded and that tab is active, and unmounts with the form; content meant to be always present belongs in the app tree instead.
 - **An empty area, or a menu with no items, disappears**, and a collapsed sidebar shows only its title and the expand button; its own header content and menu disappear with the rest.
 - **Two `…Content` components in the same area both render; nothing merges them.** Two buttons added from two different places both show up, in mount order.
-- **A `…MenuItem`'s label must be unique among all rows of that menu, built-in or not.** The underlying `Menu` keys every row by its `label`, so a registered item named the same as a built-in row (e.g. a second "Export" in the app bar menu) collides in React's reconciliation just as two registered items sharing a label would, instead of appearing as separate rows.
+- **A `…MenuItem` may repeat a built-in label.** Every registered row is keyed by its own identity, so a second "Export" next to the built-in one shows as a separate row rather than colliding with it. Whether two rows with the same text make sense is the app's call.
 - **A canvas node template is the wrong place** for any of these components: it renders once per node on the canvas, not once for the app.
 
 ## `registerFunctionDecorator`
