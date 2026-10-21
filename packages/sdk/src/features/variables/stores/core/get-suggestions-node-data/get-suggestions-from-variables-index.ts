@@ -25,7 +25,7 @@ type Params = ParamsForGlobal | ParamsForNode;
 /**
  * Produces a list of suggestions generated from `variablesIndex` (used by global variables and the build schema control).
  */
-export const getSuggestionsFromVariableIndex = ({ variablesIndex, ...props }: Params): VariableSuggestion[] => {
+export const getSuggestionsFromVariablesIndex = ({ variablesIndex, ...props }: Params): VariableSuggestion[] => {
   const suggestions: VariableSuggestion[] = Object.values(variablesIndex)
     .filter(filterEmpty)
     .map((definition) => {

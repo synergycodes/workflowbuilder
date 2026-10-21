@@ -8,7 +8,7 @@ import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-in
 import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
 import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
 import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
-import { getSuggestionsFromVariableIndex } from './get-suggestions-from-variables-index';
+import { getSuggestionsFromVariablesIndex } from './get-suggestions-from-variables-index';
 
 type Params = {
   definition: PaletteItem;
@@ -165,7 +165,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
         const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
 
         if (variablesIndex) {
-          const suggestions = getSuggestionsFromVariableIndex({
+          const suggestions = getSuggestionsFromVariablesIndex({
             variablesIndex,
             nodeId: node.id,
             nodeLabel,

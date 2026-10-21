@@ -5,7 +5,7 @@ import type { VariableType } from '../../../node/node-output-schema';
 import { useStore } from '../../../store/store';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
 import { VARIABLES_TYPES_EMPTY } from '../constants';
-import { getSuggestionsFromVariableIndex } from '../stores/core/get-suggestions-node-data/get-suggestions-from-variables-index';
+import { getSuggestionsFromVariablesIndex } from '../stores/core/get-suggestions-node-data/get-suggestions-from-variables-index';
 import { useVariablesSuggestionsStore } from '../stores/use-variable-suggestions-store';
 import { filterSuggestionsByTypes } from '../utils/core/filter-suggestions-by-types';
 import { getAvailableVariablesByNodeId } from '../utils/core/get-available-variables-by-node-id';
@@ -30,7 +30,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
   const { t } = useTranslation();
 
   const globalSuggestionsGroups = useMemo(() => {
-    const suggestions: VariableSuggestion[] = getSuggestionsFromVariableIndex({
+    const suggestions: VariableSuggestion[] = getSuggestionsFromVariablesIndex({
       variablesIndex: globalVariables,
       variant: 'global',
     });
