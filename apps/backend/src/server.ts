@@ -2,14 +2,15 @@ import { serve } from '@hono/node-server';
 import 'dotenv/config';
 import { Hono } from 'hono';
 import { bodyLimit } from 'hono/body-limit';
-import { cors } from 'hono/cors';
 
 import { AllowAllAuthPort, AuthDeniedError, type AuthPort, createAuthMiddleware, makeAssertAuthorized } from './auth';
 import { runMigrations } from './db/migrate';
 import { env } from './env';
 import { logger } from './logger';
+import { createCorsMiddleware } from './middleware/cors';
 import { isListingRefused, refuseListing } from './middleware/listing-guard';
 import { createRateLimitMiddleware } from './middleware/rate-limit';
+import { createSecurityHeadersMiddleware } from './middleware/security-headers';
 import type { BackendEnv } from './routes/backend-env';
 import { createDecisionRoutes } from './routes/decision';
 import { createExecutionsRoutes } from './routes/executions';
@@ -32,7 +33,12 @@ const tenantPort: TenantContextPort = new NoopTenantContextPort();
 
 const app = new Hono<BackendEnv>();
 
-app.use('/*', cors());
+// TRUST_PROXY already means a proxy stands in front; in this stack it is the one that terminates TLS.
+app.use('/*', createSecurityHeadersMiddleware({ behindTlsProxy: env.TRUST_PROXY }));
+app.use('/*', createCorsMiddleware(env.ALLOWED_ORIGINS));
+if (env.ALLOWED_ORIGINS === null) {
+  logger.warn('cors open to every origin: set ALLOWED_ORIGINS before exposing this backend');
+}
 // Reject request bodies larger than 1 MB to prevent memory exhaustion
 app.use('/api/*', bodyLimit({ maxSize: 1024 * 1024 }));
 
