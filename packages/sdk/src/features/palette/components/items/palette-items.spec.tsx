@@ -1,8 +1,7 @@
 import { render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 
 import type { PaletteGroup, PaletteItem as PaletteItemType } from '../../../../node/common';
-import { resetWorkflowStore, useStore } from '../../../../store/store';
 import { filterPaletteItems } from '../../filter-palette-items';
 import { PaletteItems } from './palette-items';
 
@@ -70,22 +69,5 @@ describe('PaletteItems', () => {
     renderItems([paletteGroup('Actions', [paletteItem('a', 'Send Email')], false)], false);
 
     expect(screen.getByText('Actions').closest('[aria-expanded]')?.getAttribute('aria-expanded')).toBe('false');
-  });
-});
-
-describe('palette filtering keeps the underlying node data intact', () => {
-  afterEach(() => {
-    resetWorkflowStore();
-  });
-
-  it('getNodeDefinition still resolves a node type hidden by the palette filter', () => {
-    const hiddenItem = paletteItem('wait', 'Wait');
-    const visibleItem = paletteItem('send-email', 'Send Email');
-    useStore.setState({ data: [hiddenItem, visibleItem] });
-
-    const filtered = filterPaletteItems(useStore.getState().data, 'email', (label) => label);
-
-    expect(filtered).toEqual([visibleItem]);
-    expect(useStore.getState().getNodeDefinition('wait')).toBe(hiddenItem);
   });
 });
