@@ -21,6 +21,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
   memo(
     ({
       icon,
+      accent,
       label,
       description,
       selected = false,
@@ -30,7 +31,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
     }: WorkflowNodeTemplateProps<MultiPortProperties>) => {
       const status = data?.properties.status ?? statusOptions.active.value;
 
-      const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+      const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
       const barClassName = clsx(styles['status-bar'], statusClass[status] ?? styles['status-draft']);
 
       const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
@@ -43,7 +44,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
           <div className={barClassName} />
           <NodePanel.Root selected={selected} disabled={disabled}>
             <NodePanel.Header>
-              <NodeIcon icon={iconElement} disabled={disabled} />
+              <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
               <NodeDescription label={label} description={description} disabled={disabled} />
             </NodePanel.Header>
             <NodePanel.Handles isVisible={showHandles}>

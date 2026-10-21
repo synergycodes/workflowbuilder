@@ -16,7 +16,12 @@ vi.mock('../diagram/nodes/start-node-template/start-node-template', () => ({
 }));
 vi.mock('../diagram/nodes/workflow-node-template/workflow-node-template', () => ({
   WorkflowNodeTemplate: (props: WorkflowNodeTemplateProps) => (
-    <div data-testid="built-in-template" data-selected={props.selected} data-disabled={props.disabled}>
+    <div
+      data-testid="built-in-template"
+      data-selected={props.selected}
+      data-disabled={props.disabled}
+      data-accent={props.accent}
+    >
       {props.label}
     </div>
   ),
@@ -88,6 +93,14 @@ describe('NodePreviewContainer', () => {
     const element = screen.getByTestId('built-in-template');
     expect(element.dataset.selected).toBe('false');
     expect(element.dataset.disabled).toBe('true');
+  });
+
+  it('passes the accent of the definition to the template', () => {
+    mockNodeDefinition = { ...baseDefinition, accent: 'green' };
+
+    render(<NodePreviewContainer type="multi-port" />);
+
+    expect(screen.getByTestId('built-in-template').dataset.accent).toBe('green');
   });
 
   it('renders nothing when the palette type is unknown', () => {

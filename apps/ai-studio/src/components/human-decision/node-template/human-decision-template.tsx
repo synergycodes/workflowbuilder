@@ -34,6 +34,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
     ({
       id,
       icon,
+      accent,
       label,
       description,
       data,
@@ -43,7 +44,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       showHandles = true,
       isValid,
     }: WorkflowNodeTemplateProps<HumanDecisionProperties>) => {
-      const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+      const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
       const decisionRequest = data?.properties.decisionRequest;
       const actions = useMemo(() => routedActions(decisionRequest), [decisionRequest]);
 
@@ -53,7 +54,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       return (
         <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header>
-            <NodeIcon icon={iconElement} disabled={disabled} />
+            <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
