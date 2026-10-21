@@ -9,7 +9,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@workflowbuilder/sdk": "2.2.0",
+    "@workflowbuilder/sdk": "3.0.0",
     "@xyflow/react": "12.10.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
