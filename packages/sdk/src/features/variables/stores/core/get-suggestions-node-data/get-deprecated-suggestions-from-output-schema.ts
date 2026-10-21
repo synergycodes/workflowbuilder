@@ -18,7 +18,7 @@ type Params = {
  * The newer version uses a schema similar to the Node schema, but also supports handling responses
  * by source handle (the error port does not receive successful variables).
  *
- * `outputSchema` will be removed in the next major release (3.0).
+ * `outputSchema` will be removed in the next major release (4.0).
  */
 export function getDeprecatedSuggestionsFromOutputSchema({
   nodeId,

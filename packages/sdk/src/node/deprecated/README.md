@@ -1,6 +1,6 @@
 # Migrating `outputSchema` → `schemaOutput`
 
-`PaletteItem.outputSchema` (`DeprecatedNodeOutputSchema`) is deprecated and will be removed in **3.0**. Replace it with `PaletteItem.schemaOutput` (`NodeSchemaOutput`).
+`PaletteItem.outputSchema` (`DeprecatedNodeOutputSchema`) is deprecated and will be removed in **4.0**. Replace it with `PaletteItem.schemaOutput` (`NodeSchemaOutput`).
 
 Why: the new format is a JSON Schema (same dialect as `NodeSchema`), supports nested objects, and scopes variables **per source handle** — the `error` port no longer advertises `success` variables.
 
