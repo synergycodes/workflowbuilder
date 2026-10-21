@@ -26,9 +26,12 @@ export const useIntegrationStore = create<IntegrationStore>()(
 
 export function loadData(loadData: Partial<IntegrationDataFormat>): { isEmpty: boolean } {
   const hasAnyData = Object.values(loadData).some(Boolean);
+  const isEmpty = !loadData.nodes?.length;
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
-
+  }
+  // A name alone is applied silently: the welcome template selector follows for an empty diagram.
+  if (!isEmpty) {
     showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,
@@ -40,7 +43,12 @@ export function loadData(loadData: Partial<IntegrationDataFormat>): { isEmpty: b
     lastSaveAttemptTimestamp: Date.now(),
   });
 
-  return { isEmpty: !loadData.nodes?.length };
+  return { isEmpty };
+}
+
+/** Back to 'disabled' for a new Root mount: the store is module-level, so a remount would otherwise start as loaded. */
+export function resetIntegrationStore() {
+  useIntegrationStore.setState({ savingStatus: 'disabled', lastSaveAttemptTimestamp: Date.now() });
 }
 
 export function getStoreSavingStatus() {

@@ -21,7 +21,7 @@ export type AreaSlot = { element: HTMLElement | null };
  * @category Components
  */
 export type UiMenuItemProps = {
-  /** The row's text; unique within one menu. */
+  /** The row's text. It may repeat another row's label; the item is told apart by identity. */
   label: string;
   /** Shown before the label. */
   icon?: ReactNode;

@@ -18,20 +18,33 @@ describe('composeMenuItems', () => {
     expect(composeMenuItems(builtIns, [])).toEqual(builtIns);
   });
 
-  it('returns only the registered items, ids dropped, when there are no built-ins', () => {
+  it('returns only the registered items, ids kept as row keys, when there are no built-ins', () => {
     const registered = [registeredItem({ id: 'a', label: 'First' }), registeredItem({ id: 'b', label: 'Second' })];
 
-    expect(composeMenuItems([], registered)).toEqual([{ label: 'First' }, { label: 'Second' }]);
+    expect(composeMenuItems([], registered)).toEqual([
+      { id: 'a', label: 'First' },
+      { id: 'b', label: 'Second' },
+    ]);
   });
 
-  it('puts built-ins first, then one separator, then registered items with their ids dropped', () => {
+  it('puts built-ins first, then one separator, then registered items with their ids kept', () => {
     const builtIns = [{ label: 'Export' }];
     const registered = [registeredItem({ id: 'a', label: 'Custom', tone: 'critical', disabled: true })];
 
     expect(composeMenuItems(builtIns, registered)).toEqual([
       { label: 'Export' },
       { type: 'separator' },
-      { label: 'Custom', tone: 'critical', disabled: true },
+      { id: 'a', label: 'Custom', tone: 'critical', disabled: true },
     ]);
+  });
+
+  it('an own item may repeat a built-in label: the id tells the rows apart', () => {
+    const builtIns = [{ label: 'Settings' }];
+    const registered = [registeredItem({ id: 'own-settings', label: 'Settings' })];
+
+    const items = composeMenuItems(builtIns, registered);
+
+    expect(items.map((item) => item.label)).toEqual(['Settings', undefined, 'Settings']);
+    expect(items.map((item) => item.id ?? item.label)).toEqual(['Settings', undefined, 'own-settings']);
   });
 });
