@@ -6,6 +6,7 @@ import { resetWorkflowStore } from '../../../../store/store';
 import type { OnSave } from '../../../../types/integration';
 import '../../../i18n/index';
 import { IntegrationContextWrapper } from '../../../integration/components/integration-variants/context/integration-context-wrapper';
+import { useIntegrationStore } from '../../../integration/stores/use-integration-store';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { Toolbar } from './toolbar';
 
@@ -21,6 +22,8 @@ function SaveNowButton() {
 
 function renderToolbar(onSave: OnSave, save?: boolean) {
   resetWorkflowStore();
+  // As after the initial load: saves are refused while the status is still 'disabled'.
+  useIntegrationStore.setState({ savingStatus: 'waiting', lastSaveAttemptTimestamp: Date.now() });
   return renderInRoot(
     <IntegrationContextWrapper onSave={onSave}>
       <SaveNowButton />
