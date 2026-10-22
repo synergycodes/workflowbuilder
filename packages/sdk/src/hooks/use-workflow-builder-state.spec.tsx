@@ -113,20 +113,20 @@ describe('useWorkflowBuilderState', () => {
     expect(state.current().layoutDirection).toBe('DOWN');
   });
 
-  it('documentName follows the store', () => {
+  it('workflowName follows the store', () => {
     const state = renderState();
 
-    act(() => useStore.setState({ documentName: 'Onboarding' }));
+    act(() => useStore.setState({ workflowName: 'Onboarding' }));
 
-    expect(state.current().documentName).toBe('Onboarding');
+    expect(state.current().workflowName).toBe('Onboarding');
   });
 
-  it("documentName is '' when the store holds null", () => {
-    act(() => useStore.setState({ documentName: null }));
+  it("workflowName is '' when the store holds null", () => {
+    act(() => useStore.setState({ workflowName: null }));
 
     const state = renderState();
 
-    expect(state.current().documentName).toBe('');
+    expect(state.current().workflowName).toBe('');
   });
 
   it('returns the same object while nothing changed', () => {

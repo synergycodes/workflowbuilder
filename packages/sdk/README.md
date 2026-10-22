@@ -48,7 +48,7 @@ export function App() {
 }
 ```
 
-The editor renders with the default layout (top bar, palette, canvas, properties panel) and persists state to `localStorage` automatically (the default `integration` strategy). The palette is empty until you pass `nodeTypes` — see [`<Root>` props](#workflowbuilderroot-props), the [Add a custom node type guide](https://www.workflowbuilder.io/docs/guides/add-a-custom-node/), and the [node schemas reference](https://www.workflowbuilder.io/docs/node-schemas/) for how to design the data and UI schemas.
+The editor renders with the default layout (editor header, palette, canvas, properties panel) and persists state to `localStorage` automatically (the default `integration` strategy). The palette is empty until you pass `nodeTypes` — see [`<Root>` props](#workflowbuilderroot-props), the [Add a custom node type guide](https://www.workflowbuilder.io/docs/guides/add-a-custom-node/), and the [node schemas reference](https://www.workflowbuilder.io/docs/node-schemas/) for how to design the data and UI schemas.
 
 Copy-paste-ready node implementations live in the source repo at [`apps/demo/src/app/data/nodes/`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes). Each folder is a self-contained node type with 4 files (`<name>.ts`, `default-properties-data.ts`, `schema.ts`, `uischema.ts`). Available examples: `trigger`, `action`, `decision`, `conditional`, `delay`, `notification`, `multi-port`, `ai-agent` — each documented on the [built-in nodes reference](https://www.workflowbuilder.io/docs/nodes/). Drop the folder into your app, import the node definition, and pass it to `nodeTypes`.
 
@@ -59,7 +59,7 @@ Pass subcomponents as children to skip the default layout and place each part wh
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
   <header>
-    <WorkflowBuilder.TopBar />
+    <WorkflowBuilder.EditorHeader />
   </header>
   <aside>
     <WorkflowBuilder.Palette />
@@ -82,9 +82,9 @@ To add custom overlays alongside the default layout, mount it explicitly:
 </WorkflowBuilder.Root>
 ```
 
-Each subcomponent is also exported under a named alias (`WorkflowBuilderTopBar`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
+Each subcomponent is also exported under a named alias (`WorkflowBuilderEditorHeader`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
-If you omit `<WorkflowBuilder.TopBar />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / read-only / theme / layout-direction from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-app-bar).
+If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / read-only / theme / layout-direction from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-editor-header).
 
 ## `<WorkflowBuilder.Root>` props
 
@@ -108,15 +108,15 @@ If you omit `<WorkflowBuilder.TopBar />`, read state with [`useWorkflowBuilderSt
 | `integration`       | `WorkflowBuilderIntegration`       | Data source / sink. Defaults to `localStorage`.                                                                                                                                                                                                                                                                 |
 | `onStart`           | `(context) => void`                | Runs once after the initial diagram load with a `WorkflowBuilderStartContext` (`{ isEmpty, openTemplates }`). The default opens the template selector for an empty diagram; a custom handler replaces it, so the selector opens only when the handler calls `openTemplates`.                                    |
 | `name`              | `string`                           | Workflow name shown in the header.                                                                                                                                                                                                                                                                              |
-| `logo`              | `WorkflowBuilderLogo`              | Replaces the built-in app-bar logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                        |
-| `logoHref`          | `string`                           | Wraps the app-bar logo in a link opened in a new tab.                                                                                                                                                                                                                                                           |
+| `logo`              | `WorkflowBuilderLogo`              | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                  |
+| `logoHref`          | `string`                           | Wraps the editor header logo in a link opened in a new tab.                                                                                                                                                                                                                                                     |
 | `layoutDirection`   | `'DOWN' \| 'RIGHT'`                | Initial flow direction.                                                                                                                                                                                                                                                                                         |
 | `initialNodes`      | `WorkflowBuilderNode[]`            | Starting diagram nodes.                                                                                                                                                                                                                                                                                         |
 | `initialEdges`      | `WorkflowBuilderEdge[]`            | Starting diagram edges.                                                                                                                                                                                                                                                                                         |
 | `isValidConnection` | `WorkflowBuilderIsValidConnection` | Validate connections as the user draws them. See [Connection validation](#connection-validation). **Stable reference required.**                                                                                                                                                                                |
 | `reactFlowProps`    | `WorkflowBuilderReactFlowProps`    | Advanced escape hatch for the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props). Treat as static config (runtime value changes may not apply immediately).                                                                                                                |
-| `builtInControls`   | `BuiltInControls`                  | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `documentRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
-| `children`          | `ReactNode`                        | Custom layout. Omit for the default floating-overlay layout (top bar, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                                                                                              |
+| `builtInControls`   | `BuiltInControls`                  | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
+| `children`          | `ReactNode`                        | Custom layout. Omit for the default floating-overlay layout (editor header, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                                                                                        |
 
 Exact prop types come from the auto-generated [`WorkflowBuilderRootProps`](https://www.workflowbuilder.io/docs/api/core/workflowbuilderrootprops/) reference. For how and when to reach for each prop, see [Configuring the editor](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/).
 
@@ -145,8 +145,8 @@ Full guide: [Persistence strategies on the docs site](https://www.workflowbuilde
 
 The SDK exposes three extension points. Pass plugin functions to the `plugins` prop:
 
-- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`). The app bar, the palette and the properties panel have no slots; own UI there uses the `…Content` components (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below). A decorator on a slot that 4.0 removed logs a warning naming its replacement and renders nothing.
-- **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call. The app bar's menu is not one of them: add items with `AppBarMenuItem` and hide `export` / `import` through `builtInControls`.
+- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`). The editor header, the palette and the properties panel have no slots; own UI there uses the `…Content` components (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below). A decorator on a slot that 4.0 removed logs a warning naming its replacement and renders nothing.
+- **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call. The editor header's menu is not one of them: add items with `EditorHeaderMenuItem` and hide `export` / `import` through `builtInControls`.
 - **Translations** (`registerPluginTranslation`). Extend i18next keys with plugin-specific strings.
 
 ```tsx
@@ -171,7 +171,7 @@ Full guide: [Build a plugin](https://www.workflowbuilder.io/docs/guides/build-a-
 
 ## The built-in interface: state, actions, and your own UI
 
-Your own UI in the app bar, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesBar` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`.)
+Your own UI in the editor header, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesPanel` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`.)
 
 | You want to…                        | Use                                                                                                                                                |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -180,7 +180,7 @@ Your own UI in the app bar, the palette and the properties panel does not go thr
 | hide a built-in control             | a key in `builtInControls` on `<WorkflowBuilder.Root>`                                                                                             |
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem`                                                                       |
 
-A plugin has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the `OptionalAppChildren` slot shown above, and that component uses these components inside it. Six `…Content` components cover the app bar, palette and properties-panel areas (`AppBarToolsContent`, `AppBarControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`); three `…MenuItem` components add an item to a built-in menu (`ProjectMenuItem`, `AppBarMenuItem`, `PropertiesPanelMenuItem`).
+A plugin has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the `OptionalAppChildren` slot shown above, and that component uses these components inside it. Six `…Content` components cover the editor header, palette and properties-panel areas (`EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`); three `…MenuItem` components add an item to a built-in menu (`WorkflowMenuItem`, `EditorHeaderMenuItem`, `PropertiesPanelMenuItem`).
 
 Each `…Content` component also takes an optional `place`, `'before'` (the default) or `'after'`, to stand before or after the area's whole built-in group instead of only before it, as a block that never lands between two built-in controls.
 
@@ -188,7 +188,7 @@ Hiding a control never removes what it does: the action and its keyboard shortcu
 
 ```tsx
 import {
-  AppBarToolsContent,
+  EditorHeaderToolsContent,
   PaletteFooterContent,
   WorkflowBuilder,
   useWorkflowBuilderActions,
@@ -200,9 +200,9 @@ function App() {
   return (
     <WorkflowBuilder.Root builtInControls={{ templates: false }}>
       <WorkflowBuilder.DefaultLayout />
-      <AppBarToolsContent>
+      <EditorHeaderToolsContent>
         <TemplatesButton />
-      </AppBarToolsContent>
+      </EditorHeaderToolsContent>
       <PaletteFooterContent>
         <Button size="s" variant="ghost-secondary" onClick={openMarketplace}>
           Marketplace
@@ -223,7 +223,7 @@ function TemplatesButton() {
 }
 ```
 
-This hides the built-in Templates button in the palette footer, adds a replacement in the app bar, and puts a Marketplace button where Templates used to be.
+This hides the built-in Templates button in the palette footer, adds a replacement in the editor header, and puts a Marketplace button where Templates used to be.
 
 Full guide, including the model's boundaries (mount order, read-only, duplicates): [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add).
 

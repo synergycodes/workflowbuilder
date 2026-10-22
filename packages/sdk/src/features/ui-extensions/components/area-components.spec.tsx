@@ -13,8 +13,8 @@ import { OptionalAppChildren } from '../../plugins-core/components/app/optional-
 import { PropertiesBar } from '../../properties-bar/components/properties-bar/properties-bar';
 import { renderInRoot } from '../test-utils';
 import type { AreaId, AreaPlace, UiExtensionRegistry } from '../ui-extension-registry';
-import { AppBarControlsContent } from './app-bar-controls-content';
-import { AppBarToolsContent } from './app-bar-tools-content';
+import { EditorHeaderControlsContent } from './app-bar-controls-content';
+import { EditorHeaderToolsContent } from './app-bar-tools-content';
 import { PaletteFooterContent } from './palette-footer-content';
 import { PaletteHeaderContent } from './palette-header-content';
 import { PropertiesPanelFooterContent } from './properties-panel-footer-content';
@@ -101,8 +101,8 @@ type AreaCase = {
 
 const AREA_CASES: AreaCase[] = [
   {
-    name: 'AppBarToolsContent',
-    Content: AppBarToolsContent,
+    name: 'EditorHeaderToolsContent',
+    Content: EditorHeaderToolsContent,
     area: 'appBarTools',
     container: APP_BAR_TOOLS,
     builtIn: () => screen.getByRole('button', { name: 'Save' }),
@@ -110,8 +110,8 @@ const AREA_CASES: AreaCase[] = [
     lastBuiltIn: () => screen.getByRole('button', { name: 'Save' }),
   },
   {
-    name: 'AppBarControlsContent',
-    Content: AppBarControlsContent,
+    name: 'EditorHeaderControlsContent',
+    Content: EditorHeaderControlsContent,
     area: 'appBarControls',
     container: APP_BAR_CONTROLS,
     builtIn: () => screen.getByRole('button', { name: /Change Language/i }),
@@ -197,11 +197,11 @@ describe('area content components', () => {
     },
   );
 
-  it('AppBarControlsContent with place="after" stays before the menu button', () => {
+  it('EditorHeaderControlsContent with place="after" stays before the menu button', () => {
     renderHosts(
-      <AppBarControlsContent place="after">
+      <EditorHeaderControlsContent place="after">
         <button type="button">Last</button>
-      </AppBarControlsContent>,
+      </EditorHeaderControlsContent>,
     );
 
     expect(isBefore(screen.getByRole('button', { name: 'Last' }), screen.getByRole('button', { name: 'Menu' }))).toBe(

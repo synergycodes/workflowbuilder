@@ -27,9 +27,9 @@ describe('useRegisteredMenuItems', () => {
     renderInRoot(
       <>
         <MenuLabels menu="appBar" />
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Duplicate" />
-        <RegisteredMenuItem menu="project" componentName="ProjectMenuItem" label="Rename" />
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Share" />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" />
+        <RegisteredMenuItem menu="project" componentName="WorkflowMenuItem" label="Rename" />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Share" />
       </>,
     );
 
@@ -41,7 +41,7 @@ describe('useRegisteredMenuItems', () => {
     function LateItem() {
       const [isShown, setIsShown] = useState(false);
       return isShown ? (
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Later" />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Later" />
       ) : (
         <button type="button" onClick={() => setIsShown(true)}>
           Add
@@ -72,7 +72,7 @@ describe('useRegisteredMenuItems', () => {
     render(
       <StrictMode>
         <Probe />
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Duplicate" />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" />
       </StrictMode>,
     );
 

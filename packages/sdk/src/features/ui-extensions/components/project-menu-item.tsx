@@ -1,8 +1,8 @@
 import { RegisteredMenuItem } from '../registered-menu-item';
-import type { UiMenuItemProps } from '../ui-extension-registry';
+import type { WorkflowBuilderMenuItemProps } from '../ui-extension-registry';
 
 /**
- * Adds one item to the project menu (the caret menu next to the document name in the app bar)
+ * Adds one item to the workflow menu (the caret menu next to the workflow name in the editor header)
  * after the built-in items (Settings, and Duplicate to Drafts when wired), behind a separator.
  * Renders nothing itself. Render it anywhere under `<WorkflowBuilder.Root>`.
  *
@@ -10,6 +10,6 @@ import type { UiMenuItemProps } from '../ui-extension-registry';
  *
  * @category Components
  */
-export function ProjectMenuItem(props: UiMenuItemProps) {
-  return <RegisteredMenuItem menu="project" componentName="ProjectMenuItem" {...props} />;
+export function WorkflowMenuItem(props: WorkflowBuilderMenuItemProps) {
+  return <RegisteredMenuItem menu="project" componentName="WorkflowMenuItem" {...props} />;
 }

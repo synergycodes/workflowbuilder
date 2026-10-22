@@ -17,7 +17,7 @@ import { WorkflowBuilderRoot } from './workflow-builder-root';
 
 /**
  * Workflow Builder compound component. Mount `<WorkflowBuilder.Root>` at the
- * top of the editor subtree; compose with `.TopBar`, `.Palette`, `.Canvas`,
+ * top of the editor subtree; compose with `.EditorHeader`, `.Palette`, `.Canvas`,
  * `.PropertiesPanel`, or `.DefaultLayout` as children (or omit children to
  * get the default floating-overlay layout).
  *
@@ -31,7 +31,7 @@ import { WorkflowBuilderRoot } from './workflow-builder-root';
  */
 export const WorkflowBuilder = Object.freeze({
   Root: WorkflowBuilderRoot,
-  TopBar: AppBarContainer,
+  EditorHeader: AppBarContainer,
   Palette: PaletteContainer,
   Canvas: DiagramContainer,
   PropertiesPanel: PropertiesBarContainer,
@@ -43,7 +43,7 @@ export const WorkflowBuilder = Object.freeze({
 // dedicated JSDoc per symbol on IDE hover use these; both forms resolve
 // to the same component, picked by whichever style the caller prefers.
 export { WorkflowBuilderRoot } from './workflow-builder-root';
-export { AppBarContainer as WorkflowBuilderTopBar } from './features/app-bar/app-bar-container';
+export { AppBarContainer as WorkflowBuilderEditorHeader } from './features/app-bar/app-bar-container';
 export { PaletteContainer as WorkflowBuilderPalette } from './features/palette/palette-container';
 export { DiagramContainer as WorkflowBuilderCanvas } from './features/diagram/diagram';
 export { PropertiesBarContainer as WorkflowBuilderPropertiesPanel } from './features/properties-bar/properties-bar-container';
@@ -68,21 +68,22 @@ export type { BuiltInControl, BuiltInControls } from './features/ui-extensions/b
 // Built-in interface areas: own content next to the built-in controls
 // =============================================================================
 
-export { AppBarToolsContent } from './features/ui-extensions/components/app-bar-tools-content';
-export { AppBarControlsContent } from './features/ui-extensions/components/app-bar-controls-content';
+export { EditorHeaderToolsContent } from './features/ui-extensions/components/app-bar-tools-content';
+export { EditorHeaderControlsContent } from './features/ui-extensions/components/app-bar-controls-content';
 export { PaletteHeaderContent } from './features/ui-extensions/components/palette-header-content';
 export { PaletteFooterContent } from './features/ui-extensions/components/palette-footer-content';
 export { PropertiesPanelHeaderContent } from './features/ui-extensions/components/properties-panel-header-content';
 export { PropertiesPanelFooterContent } from './features/ui-extensions/components/properties-panel-footer-content';
+export type { WorkflowBuilderAreaContentProps } from './features/ui-extensions/ui-extension-registry';
 
 // =============================================================================
-// Built-in menus: own items next to the project, app bar and properties panel menus
+// Built-in menus: own items next to the workflow, editor header and properties panel menus
 // =============================================================================
 
-export { ProjectMenuItem } from './features/ui-extensions/components/project-menu-item';
-export { AppBarMenuItem } from './features/ui-extensions/components/app-bar-menu-item';
+export { WorkflowMenuItem } from './features/ui-extensions/components/project-menu-item';
+export { EditorHeaderMenuItem } from './features/ui-extensions/components/app-bar-menu-item';
 export { PropertiesPanelMenuItem } from './features/ui-extensions/components/properties-panel-menu-item';
-export type { UiMenuItemProps } from './features/ui-extensions/ui-extension-registry';
+export type { WorkflowBuilderMenuItemProps } from './features/ui-extensions/ui-extension-registry';
 
 // =============================================================================
 // Plugin API — decorators, function hooks, translations
@@ -152,8 +153,8 @@ export { FormControlWithLabel } from './components/form/form-control-with-label/
 // `DiagramContainer` value is only available through `WorkflowBuilder.Canvas`
 // or the `WorkflowBuilderCanvas` named alias above — same component, two
 // public paths. The `Props` type stays exported so decorators can type
-// `registerComponentDecorator<DiagramContainerProps>('DiagramContainer', …)`.
-export type { DiagramContainerProps } from './features/diagram/diagram';
+// `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`.
+export type { WorkflowBuilderCanvasProps } from './features/diagram/diagram';
 export { EnhancedBaseEdge } from './features/diagram/edges/enhanced-base-edge/enhanced-base-edge';
 export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-label-renderer';
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
@@ -163,10 +164,9 @@ export {
 } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
-export { PropertiesBar } from './features/properties-bar/components/properties-bar/properties-bar';
-export type { PropertiesBarProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
+export type { WorkflowBuilderPropertiesPanelProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
-export type { WorkflowNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
+export type { WorkflowBuilderNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';
 export { defineNodeTemplate } from './utils/define-node-template';
 
 // =============================================================================

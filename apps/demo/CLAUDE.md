@@ -35,7 +35,7 @@ Plugins live in `src/app/plugins/<plugin-name>/` and register via SDK decorators
 
 Plugin signature is `() => void` and the function runs once on first mount of `<WorkflowBuilder.Root plugins={[...]} />` (invoked synchronously inside a `useRef`-guarded first-render branch; deduplicated by `name` on strict-mode double-invoke).
 
-To add UI to the app bar, the palette or the properties panel, use the `…Content` / `…MenuItem` components and `builtInControls`, not a decorator - see the SDK's [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add). A decorator on a slot that SDK 4.0 removed logs a warning naming its replacement and renders nothing.
+To add UI to the editor header, the palette or the properties panel, use the `…Content` / `…MenuItem` components and `builtInControls`, not a decorator - see the SDK's [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add). A decorator on a slot that SDK 4.0 removed logs a warning naming its replacement and renders nothing.
 
 Reference plugins:
 

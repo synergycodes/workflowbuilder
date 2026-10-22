@@ -28,14 +28,14 @@ Every prop is optional. The **Type** column links to the auto-generated [SDK API
 | `jsonForm`          | [`WorkflowBuilderJsonFormConfig`](/api/plugins/workflowbuilderjsonformconfig/)             | Custom JSONForms renderers, cells, and translations for the properties panel. See [Custom JsonForms control](/guides/custom-jsonforms-control/).                                                                                                                                                                |
 | `plugins`           | [`WorkflowBuilderPlugin[]`](/api/plugins/workflowbuilderplugin/)                           | Plugin initializer functions, each called once on first mount. See [Build a plugin](/guides/build-a-plugin/).                                                                                                                                                                                                   |
 | `name`              | `string`                                                                                   | Workflow name shown in the header and included in saved data.                                                                                                                                                                                                                                                   |
-| `logo`              | `WorkflowBuilderLogo`                                                                      | Replaces the built-in app-bar logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                        |
-| `logoHref`          | `string`                                                                                   | Wraps the app-bar logo (built-in or custom) in a link opened in a new tab.                                                                                                                                                                                                                                      |
+| `logo`              | `WorkflowBuilderLogo`                                                                      | Replaces the built-in editor header logo: an image URL, `{ light, dark }` per-theme URLs, or a custom element.                                                                                                                                                                                                  |
+| `logoHref`          | `string`                                                                                   | Wraps the editor header logo (built-in or custom) in a link opened in a new tab.                                                                                                                                                                                                                                |
 | `layoutDirection`   | [`LayoutDirection`](/api/types/layoutdirection/)                                           | Initial flow direction, `'DOWN'` or `'RIGHT'`. Defaults to `'DOWN'`.                                                                                                                                                                                                                                            |
 | `initialNodes`      | [`WorkflowBuilderNode[]`](/api/types/workflowbuildernode/)                                 | Initial nodes for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                    |
 | `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                                 | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                    |
 | `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/)          | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                                                                                                                                                               |
 | `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)                | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                                                                                                                                                             |
-| `builtInControls`   | [`BuiltInControls`](/api/core/builtincontrols/)                                            | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `documentRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
+| `builtInControls`   | [`BuiltInControls`](/api/core/builtincontrols/)                                            | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
 | `children`          | `ReactNode`                                                                                | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                                                                                                                                                             |
 
 ## Compound subcomponents
@@ -44,7 +44,7 @@ Build your own layout by composing the namespaced subcomponents:
 
 | Component                         | Renders                                                     |
 | --------------------------------- | ----------------------------------------------------------- |
-| `WorkflowBuilder.TopBar`          | App-bar with name, controls, toolbar.                       |
+| `WorkflowBuilder.EditorHeader`    | Editor header with the workflow name, controls, toolbar.    |
 | `WorkflowBuilder.Palette`         | Palette of node types (draggable).                          |
 | `WorkflowBuilder.Canvas`          | xyflow canvas with nodes, edges, drag-drop.                 |
 | `WorkflowBuilder.PropertiesPanel` | Properties sidebar driven by JsonForms.                     |
@@ -55,7 +55,7 @@ Pass children to skip the default layout and compose your own:
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
   <header>
-    <WorkflowBuilder.TopBar />
+    <WorkflowBuilder.EditorHeader />
   </header>
   <aside>
     <WorkflowBuilder.Palette />
@@ -78,20 +78,22 @@ To extend the default layout instead of replacing it (e.g. add a banner alongsid
 </WorkflowBuilder.Root>
 ```
 
-## Custom toolbar without the app bar
+## Custom toolbar without the editor header
 
-`<WorkflowBuilder.TopBar />` ships the save, import / export, settings, read-only, theme, and language controls, plus the document name and its rename control. When you omit it from a custom layout, read the same state with `useWorkflowBuilderState()` and reach the same commands through `useWorkflowBuilderActions()`. Call both from any descendant of `<WorkflowBuilder.Root>` and wire them to your own buttons:
+The editor header is the editor's own bar, not the host app's. When you embed the editor in an app, keep the app's global navigation (account menu, app switcher, breadcrumbs) in the app, and never repeat it in the editor header. If the editor header does not fit your layout, hide single controls with [`builtInControls`](/guides/build-a-plugin/#built-in-interface-hide-move-add), or leave `<WorkflowBuilder.EditorHeader />` out of a custom layout and build your own from the state and actions below.
+
+`<WorkflowBuilder.EditorHeader />` ships the save, import / export, settings, read-only, theme, and language controls, plus the workflow name and its rename control. When you omit it from a custom layout, read the same state with `useWorkflowBuilderState()` and reach the same commands through `useWorkflowBuilderActions()`. Call both from any descendant of `<WorkflowBuilder.Root>` and wire them to your own buttons:
 
 ```tsx
 import { useWorkflowBuilderActions, useWorkflowBuilderState } from '@workflowbuilder/sdk';
 
 function MyToolbar() {
-  const { isReadOnly, documentName } = useWorkflowBuilderState();
+  const { isReadOnly, workflowName } = useWorkflowBuilderState();
   const actions = useWorkflowBuilderActions();
 
   return (
     <header>
-      <input value={documentName} onChange={(event) => actions.renameDocument(event.target.value)} />
+      <input value={workflowName} onChange={(event) => actions.setWorkflowName(event.target.value)} />
       <button onClick={actions.save}>Save</button>
       <button onClick={actions.openImport}>Import</button>
       <button onClick={actions.openExport}>Export</button>
@@ -101,20 +103,20 @@ function MyToolbar() {
       <button onClick={actions.deleteSelection}>Delete</button>
       <button onClick={actions.openSettings}>Settings</button>
       <button onClick={actions.toggleReadOnly}>Read-only</button>
-      <button onClick={actions.toggleDarkMode}>Theme</button>
+      <button onClick={actions.toggleTheme}>Theme</button>
       <button onClick={actions.togglePropertiesPanel}>Properties</button>
     </header>
   );
 }
 ```
 
-`useWorkflowBuilderState()` returns `isReadOnly`, `theme`, `language`, `isPaletteOpen`, `isPropertiesPanelOpen`, `paletteFilter`, `layoutDirection` and `documentName`; see [`WorkflowBuilderState`](/api/hooks/workflowbuilderstate/) for the full shape. `useWorkflowBuilderActions()` returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
+`useWorkflowBuilderState()` returns `isReadOnly`, `theme`, `language`, `isPaletteOpen`, `isPropertiesPanelOpen`, `paletteFilter`, `layoutDirection` and `workflowName`; see [`WorkflowBuilderState`](/api/hooks/workflowbuilderstate/) for the full shape. `useWorkflowBuilderActions()` returns a stable object, so you can pass any callback straight to an event handler. See [`WorkflowBuilderActions`](/api/hooks/workflowbuilderactions/) for the full action list. A few notes:
 
 - Call both from a descendant of `<WorkflowBuilder.Root>`. `save` reads the active [integration strategy](#integration-strategies) through context, so outside Root `save()` logs an error and resolves to `'error'`. `deleteSelection` does nothing until `<WorkflowBuilder.Canvas />` has mounted.
-- Besides the app bar's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control the bar does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
-- `openTemplates`, `renameDocument`, `deleteSelection`, `setLayoutDirection` and `toggleLayoutDirection` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openImport` and `openSettings`, which do change the persisted diagram (a full replace, and the global variables respectively) but are not read-only-guarded today. Hide them explicitly where that matters, e.g. `builtInControls={{ import: canEdit, settings: canEdit }}`.
+- Besides the editor header's commands, the actions hook also covers the palette and the properties panel: `togglePalette`/`setPaletteOpen`, `togglePropertiesPanel`/`setPropertiesPanelOpen`, `setPaletteFilter` (filters the palette's node list by a case-insensitive match on each item's translated label, without touching node definitions, validation or forms), `setLanguage`, and layout-direction control the editor header does not surface: `setLayoutDirection('RIGHT' | 'DOWN')` (idempotent) and `toggleLayoutDirection({ flipPositions?, fitView? })`. `flipPositions` mirrors each node's `x`/`y` as a naive axis swap. It is not auto-layout and ignores node sizes, so pair it with `fitView`. That is why it lives only on the toggle, not on `setLayoutDirection`.
+- `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection` and `toggleLayoutDirection` change the persisted diagram, so they do nothing while `isReadOnly` is `true`, the same guard the built-in buttons apply. Every other action, including `save`, `openExport`, the theme toggle and both sidebar toggles, always runs; this includes `openImport` and `openSettings`, which do change the persisted diagram (a full replace, and the global variables respectively) but are not read-only-guarded today. Hide them explicitly where that matters, e.g. `builtInControls={{ import: canEdit, settings: canEdit }}`.
 - To select from your own controls, use `useSetSelection()`: `setSelection({ nodeIds, edgeIds })` replaces the selection as a click does, and returns `false` when the canvas lacks any of the ids.
-- The top bar also shows and edits the document name. Read it with `useWorkflowBuilderState()`'s `documentName` and change it with `useWorkflowBuilderActions()`'s `renameDocument(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
+- The editor header also shows and edits the workflow name. Read it with `useWorkflowBuilderState()`'s `workflowName` and change it with `useWorkflowBuilderActions()`'s `setWorkflowName(name)`, up to 128 characters; a longer name is ignored (with a console warning) rather than truncated, and the call does nothing in read-only mode.
 
 ## Node types
 
@@ -147,7 +149,7 @@ The SDK ships no default palette — `nodeTypes` must be supplied for the palett
 
 By default every node uses the SDK's built-in renderer (a header with one input and one output handle) and every edge uses the built-in `'labelEdge'`. Override either per type, without writing a plugin:
 
-- `nodeTemplates` maps a palette `type` string to a React component. Matching nodes render your component instead of the default. The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/).
+- `nodeTemplates` maps a palette `type` string to a React component. Matching nodes render your component instead of the default. The component receives [`WorkflowBuilderNodeTemplateProps`](/api/components/workflowbuildernodetemplateprops/).
 - `edgeTemplates` maps an `edge.type` string to a React component receiving ReactFlow's `EdgeProps`. Unlike node templates, edge components need no adapter. They drop straight into ReactFlow's edge-type map.
 
 ```tsx

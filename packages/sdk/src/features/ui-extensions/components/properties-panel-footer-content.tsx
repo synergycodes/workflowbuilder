@@ -1,6 +1,5 @@
-import type { PropsWithChildren } from 'react';
-
 import { AreaContent } from '../area-content';
+import type { WorkflowBuilderAreaContentProps } from '../ui-extension-registry';
 
 /**
  * Renders its children in the properties panel footer, below the scrolling content. The content
@@ -26,7 +25,7 @@ import { AreaContent } from '../area-content';
  *
  * @category Components
  */
-export function PropertiesPanelFooterContent({ place, children }: PropsWithChildren<{ place?: 'before' | 'after' }>) {
+export function PropertiesPanelFooterContent({ place, children }: WorkflowBuilderAreaContentProps) {
   return (
     <AreaContent area="propertiesPanelFooter" componentName="PropertiesPanelFooterContent" place={place}>
       {children}

@@ -27,11 +27,11 @@ export type PropertiesBarItem = {
  * `deleteEdgeLabel`), the active tab + change handler, and an optional
  * `tabs` array for extra tabs alongside the default "Properties" tab.
  * The Delete button shows only with `onDeleteClick`; a decorator on the
- * `'PropertiesBar'` slot that sets it to `undefined` removes the button.
+ * `'PropertiesPanel'` slot that sets it to `undefined` removes the button.
  *
  * @category Components
  */
-export type PropertiesBarProps = PropertiesBarBaseProps & {
+export type WorkflowBuilderPropertiesPanelProps = PropertiesBarBaseProps & {
   headerLabel: string;
   deleteNodeLabel: string;
   deleteEdgeLabel: string;

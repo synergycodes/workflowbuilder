@@ -1,6 +1,5 @@
-import type { PropsWithChildren } from 'react';
-
 import { AreaContent } from '../area-content';
+import type { WorkflowBuilderAreaContentProps } from '../ui-extension-registry';
 
 /**
  * Renders its children in the palette footer, with the built-in Templates button. The content
@@ -25,7 +24,7 @@ import { AreaContent } from '../area-content';
  *
  * @category Components
  */
-export function PaletteFooterContent({ place, children }: PropsWithChildren<{ place?: 'before' | 'after' }>) {
+export function PaletteFooterContent({ place, children }: WorkflowBuilderAreaContentProps) {
   return (
     <AreaContent area="paletteFooter" componentName="PaletteFooterContent" place={place}>
       {children}

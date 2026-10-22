@@ -2,22 +2,35 @@
 const REMOVED_SLOTS = new Map<string, string>([
   [
     'OptionalAppBarTools',
-    'Render <AppBarToolsContent> instead; builtInControls={{ save: false }} hides the Save button.',
+    'Render <EditorHeaderToolsContent> instead; builtInControls={{ save: false }} hides the Save button.',
   ],
-  ['OptionalAppBarControls', 'Render <AppBarControlsContent> instead.'],
+  ['OptionalAppBarControls', 'Render <EditorHeaderControlsContent> instead.'],
   ['OptionalFooterContent', 'Render <PaletteFooterContent> instead.'],
   [
     'ProjectSelection',
-    'Add menu items with <ProjectMenuItem>, hide Settings and renaming with builtInControls, and build an own title from useWorkflowBuilderState().documentName with renameDocument and openSettings from useWorkflowBuilderActions().',
+    'Add menu items with <WorkflowMenuItem>, hide Settings and renaming with builtInControls, and build an own title from useWorkflowBuilderState().workflowName with setWorkflowName and openSettings from useWorkflowBuilderActions().',
   ],
 ]);
 
-const REMOVED_FUNCTIONS = new Map<string, string>([
-  ['getControlsDotsItems', 'Add items with <AppBarMenuItem> and hide Export and Import with builtInControls.'],
+const RENAMED_SLOTS = new Map<string, { slot: string; propsType: string }>([
+  ['PropertiesBar', { slot: 'PropertiesPanel', propsType: 'WorkflowBuilderPropertiesPanelProps' }],
+  ['DiagramContainer', { slot: 'Canvas', propsType: 'WorkflowBuilderCanvasProps' }],
 ]);
 
-/** Warns, naming the replacement, and returns `true` when 4.0 removed the slot. */
+const REMOVED_FUNCTIONS = new Map<string, string>([
+  ['getControlsDotsItems', 'Add items with <EditorHeaderMenuItem> and hide Export and Import with builtInControls.'],
+]);
+
+/** Warns, naming the replacement, and returns `true` when 4.0 removed or renamed the slot. */
 export function warnIfRemovedSlot(slot: string): boolean {
+  const renamed = RENAMED_SLOTS.get(slot);
+  if (renamed !== undefined) {
+    console.warn(
+      `[@workflowbuilder/sdk] The '${slot}' slot was renamed to '${renamed.slot}' in 4.0, so this decorator is ignored. Register it on '${renamed.slot}', typed with ${renamed.propsType}.`,
+    );
+    return true;
+  }
+
   const replacement = REMOVED_SLOTS.get(slot);
   if (replacement === undefined) return false;
   console.warn(

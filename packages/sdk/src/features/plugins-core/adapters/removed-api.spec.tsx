@@ -34,12 +34,12 @@ afterEach(() => {
 
 describe('registerComponentDecorator with a slot 4.0 removed', () => {
   it.each([
-    ['OptionalAppBarTools', ['AppBarToolsContent', 'builtInControls={{ save: false }}']],
-    ['OptionalAppBarControls', ['AppBarControlsContent']],
+    ['OptionalAppBarTools', ['EditorHeaderToolsContent', 'builtInControls={{ save: false }}']],
+    ['OptionalAppBarControls', ['EditorHeaderControlsContent']],
     ['OptionalFooterContent', ['PaletteFooterContent']],
     [
       'ProjectSelection',
-      ['ProjectMenuItem', 'builtInControls', 'useWorkflowBuilderState', 'useWorkflowBuilderActions'],
+      ['WorkflowMenuItem', 'builtInControls', 'useWorkflowBuilderState', 'useWorkflowBuilderActions'],
     ],
   ])('%s warns naming the replacement and registers nothing', (slot, replacements) => {
     const warn = silenceWarnings();
@@ -51,25 +51,39 @@ describe('registerComponentDecorator with a slot 4.0 removed', () => {
   });
 });
 
+describe('registerComponentDecorator with a slot 4.0 renamed', () => {
+  it.each([
+    ['PropertiesBar', 'PropertiesPanel', 'WorkflowBuilderPropertiesPanelProps'],
+    ['DiagramContainer', 'Canvas', 'WorkflowBuilderCanvasProps'],
+  ])('%s warns naming %s and its props type, and registers nothing', (slot, newSlot, propsType) => {
+    const warn = silenceWarnings();
+
+    registerComponentDecorator(slot, { name: NAME, modifyProps: (props: object) => props });
+
+    expectOneWarningNaming(warn, `'${slot}'`, `'${newSlot}'`, propsType);
+    expect(hasRegisteredComponentDecorator(slot, NAME)).toBeFalsy();
+  });
+});
+
 describe('registerFunctionDecorator with getControlsDotsItems', () => {
-  it('warns naming AppBarMenuItem and builtInControls', () => {
+  it('warns naming EditorHeaderMenuItem and builtInControls', () => {
     const warn = silenceWarnings();
 
     registerFunctionDecorator('getControlsDotsItems', { name: NAME, callback: () => {} });
 
-    expectOneWarningNaming(warn, "'getControlsDotsItems'", 'AppBarMenuItem', 'builtInControls');
+    expectOneWarningNaming(warn, "'getControlsDotsItems'", 'EditorHeaderMenuItem', 'builtInControls');
   });
 });
 
 describe('a prop 4.0 removed reaching its component', () => {
   afterEach(() => {
     // Registering the name again replaces the entry, and an entry without `modifyProps` changes nothing.
-    registerComponentDecorator('PropertiesBar', { name: NAME });
+    registerComponentDecorator('PropertiesPanel', { name: NAME });
   });
 
   it('onMenuHeaderClick injected through modifyProps warns once, naming PropertiesPanelMenuItem, and adds no menu button', () => {
     const warn = silenceWarnings();
-    registerComponentDecorator('PropertiesBar', {
+    registerComponentDecorator('PropertiesPanel', {
       name: NAME,
       modifyProps: (props: object) => ({ ...props, onMenuHeaderClick: vi.fn() }),
     });
@@ -87,18 +101,18 @@ describe('a prop 4.0 removed reaching its component', () => {
       />,
     );
 
-    expectOneWarningNaming(warn, 'onMenuHeaderClick', 'PropertiesBar', 'PropertiesPanelMenuItem');
+    expectOneWarningNaming(warn, 'onMenuHeaderClick', 'PropertiesPanel', 'PropertiesPanelMenuItem');
     expect(screen.getByText('Review')).not.toBeNull();
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
   });
 
-  it('onDuplicateClick on ProjectSelection warns once, naming ProjectMenuItem, and adds no menu item', () => {
+  it('onDuplicateClick on ProjectSelection warns once, naming WorkflowMenuItem, and adds no menu item', () => {
     const warn = silenceWarnings();
     resetWorkflowStore();
 
     renderInRoot(<ProjectSelection {...{ onDuplicateClick: vi.fn() }} />, { builtInControls: { settings: false } });
 
-    expectOneWarningNaming(warn, 'onDuplicateClick', 'ProjectSelection', 'ProjectMenuItem');
+    expectOneWarningNaming(warn, 'onDuplicateClick', 'ProjectSelection', 'WorkflowMenuItem');
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
   });
 });

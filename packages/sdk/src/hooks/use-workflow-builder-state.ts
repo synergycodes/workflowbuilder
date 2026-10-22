@@ -36,11 +36,11 @@ export type WorkflowBuilderState = {
   paletteFilter: string;
   layoutDirection: LayoutDirection;
   /** `''` until a diagram is loaded or named. */
-  documentName: string;
+  workflowName: string;
 };
 
 /**
- * Reads the state behind the built-in toggles of the app bar, the palette and the properties panel,
+ * Reads the state behind the built-in toggles of the editor header, the palette and the properties panel,
  * for a custom control that shows it. Change it with `useWorkflowBuilderActions()`. The result
  * keeps its identity until one of its fields changes.
  *
@@ -62,7 +62,7 @@ export function useWorkflowBuilderState(): WorkflowBuilderState {
   const isPropertiesPanelOpen = useStore((state) => state.isPropertiesPanelOpen);
   const paletteFilter = useStore((state) => state.paletteFilter);
   const layoutDirection = useStore((state) => state.layoutDirection);
-  const documentName = useStore((state) => state.documentName) ?? '';
+  const workflowName = useStore((state) => state.workflowName) ?? '';
   const { theme } = useTheme();
   const { i18n } = useTranslation();
   const language = toWorkflowBuilderLanguage(i18n.resolvedLanguage ?? i18n.language?.split('-')[0]);
@@ -76,9 +76,9 @@ export function useWorkflowBuilderState(): WorkflowBuilderState {
       isPropertiesPanelOpen,
       paletteFilter,
       layoutDirection,
-      documentName,
+      workflowName,
     }),
-    [isReadOnly, theme, language, isPaletteOpen, isPropertiesPanelOpen, paletteFilter, layoutDirection, documentName],
+    [isReadOnly, theme, language, isPaletteOpen, isPropertiesPanelOpen, paletteFilter, layoutDirection, workflowName],
   );
 }
 

@@ -50,8 +50,8 @@ const pluginRegistryComponents = new Map<
  * without forking the editor. Common slots include `'OptionalAppChildren'`,
  * `'OptionalNodeContent'`, and others — see the
  * [Build a plugin](/docs/guides/build-a-plugin/) guide for the authoritative
- * list. Own UI in the app bar, the palette and the properties panel does not
- * go through a slot (`'PropertiesBar'` still takes a props decorator, for the
+ * list. Own UI in the editor header, the palette and the properties panel does not
+ * go through a slot (`'PropertiesPanel'` still takes a props decorator, for the
  * panel's `tabs`, labels and `onDeleteClick`): see `useWorkflowBuilderState()`,
  * `useWorkflowBuilderActions()`, `builtInControls`, and the `…Content` /
  * `…MenuItem` components instead. A slot that 4.0 removed logs a warning

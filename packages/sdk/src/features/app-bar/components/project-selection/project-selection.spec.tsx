@@ -42,13 +42,13 @@ vi.mock('../../../../features/variables/modals/modal-settings', () => ({
 }));
 
 vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(selector: (state: { documentName: string; isReadOnly: boolean }) => T) =>
-    selector({ documentName: 'Doc', isReadOnly: false }),
+  useStore: <T,>(selector: (state: { workflowName: string; isReadOnly: boolean }) => T) =>
+    selector({ workflowName: 'Doc', isReadOnly: false }),
 }));
 
-const renameDocument = vi.fn();
+const setWorkflowName = vi.fn();
 vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
-  useWorkflowBuilderActions: () => ({ renameDocument }),
+  useWorkflowBuilderActions: () => ({ setWorkflowName }),
 }));
 
 const { ProjectSelection } = await import('./project-selection');
@@ -65,16 +65,16 @@ describe('ProjectSelection: menu', () => {
 });
 
 describe('ProjectSelection: inline rename', () => {
-  it('typing a new name calls the renameDocument action, not setDocumentName directly', () => {
+  it('typing a new name calls the setWorkflowName action, not the store setter directly', () => {
     render(<ProjectSelection />);
 
     fireEvent.click(screen.getByText('Doc'));
     fireEvent.change(screen.getByLabelText('document name'), { target: { value: 'New Name' } });
 
-    expect(renameDocument).toHaveBeenCalledWith('New Name');
+    expect(setWorkflowName).toHaveBeenCalledWith('New Name');
   });
 
-  it('an open rename input closes when documentRename is hidden', () => {
+  it('an open rename input closes when workflowRename is hidden', () => {
     const { rerender } = render(
       <BuiltInControlsProvider value={{}}>
         <ProjectSelection />
@@ -85,7 +85,7 @@ describe('ProjectSelection: inline rename', () => {
     expect(screen.getByLabelText('document name')).toBeDefined();
 
     rerender(
-      <BuiltInControlsProvider value={{ documentRename: false }}>
+      <BuiltInControlsProvider value={{ workflowRename: false }}>
         <ProjectSelection />
       </BuiltInControlsProvider>,
     );

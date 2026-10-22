@@ -16,16 +16,16 @@ registerComponentDecorator('OptionalHooks', {
 
 Wrap the call in an exported `plugin(): void` function (your `plugin-exports.ts`), then add that function to the `plugins` array passed to `<WorkflowBuilder.Root>` in `apps/demo/src/app/app.tsx`.
 
-## Adding a button to the app bar
+## Adding a button to the editor header
 
 A plugin has no JSX of its own, so it mounts one component through `OptionalAppChildren`, and that component places the button with a `…Content` component:
 
 ```tsx
 const YourAppBarButton = () => {
   return (
-    <AppBarToolsContent>
+    <EditorHeaderToolsContent>
       <button>Click me</button>
-    </AppBarToolsContent>
+    </EditorHeaderToolsContent>
   );
 };
 

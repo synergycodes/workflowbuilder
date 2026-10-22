@@ -7,7 +7,7 @@ import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { useModalStore } from '../../../modals/stores/use-modal-store';
 import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
-import { ProjectMenuItem } from '../../../ui-extensions/components/project-menu-item';
+import { WorkflowMenuItem } from '../../../ui-extensions/components/project-menu-item';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { ProjectSelection } from './project-selection';
 
@@ -17,14 +17,14 @@ afterEach(() => {
 
 function resetWithDocumentName(name = 'My Diagram') {
   resetWorkflowStore();
-  useStore.setState({ documentName: name });
+  useStore.setState({ workflowName: name });
 }
 
 function renderProjectSelection(builtInControls: BuiltInControls, ownItem?: string) {
   resetWithDocumentName();
   return renderInRoot(
     <>
-      {ownItem && <ProjectMenuItem label={ownItem} />}
+      {ownItem && <WorkflowMenuItem label={ownItem} />}
       <ProjectSelection />
     </>,
     { builtInControls },
@@ -36,11 +36,11 @@ function openProjectMenu() {
 }
 
 // Calls the action directly, bypassing the title's own click-to-edit UI: the test for
-// `documentRename: false` proves the action keeps working while that UI is hidden.
+// `workflowRename: false` proves the action keeps working while that UI is hidden.
 function RenameButton() {
-  const { renameDocument } = useWorkflowBuilderActions();
+  const { setWorkflowName } = useWorkflowBuilderActions();
   return (
-    <button type="button" onClick={() => renameDocument('Renamed Elsewhere')}>
+    <button type="button" onClick={() => setWorkflowName('Renamed Elsewhere')}>
       Rename
     </button>
   );
@@ -79,7 +79,7 @@ describe('ProjectSelection builtInControls', () => {
   it('settings:false hides the Settings item and the caret (nothing else in the menu)', () => {
     renderProjectSelection({ settings: false });
 
-    // No ProjectMenuItem either, so the menu has nothing left to show: the trigger itself is gone.
+    // No WorkflowMenuItem either, so the menu has nothing left to show: the trigger itself is gone.
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
   });
 
@@ -90,7 +90,7 @@ describe('ProjectSelection builtInControls', () => {
     expect(screen.getByText('Settings')).not.toBeNull();
   });
 
-  it('settings:false with a ProjectMenuItem keeps the caret, showing only that item', () => {
+  it('settings:false with a WorkflowMenuItem keeps the caret, showing only that item', () => {
     renderProjectSelection({ settings: false }, 'Duplicate');
 
     openProjectMenu();
@@ -98,14 +98,14 @@ describe('ProjectSelection builtInControls', () => {
     expect(screen.getByText('Duplicate')).not.toBeNull();
   });
 
-  it('documentRename:false renders a plain, non-interactive title; renameDocument still works through the action', () => {
+  it('workflowRename:false renders a plain, non-interactive title; setWorkflowName still works through the action', () => {
     resetWithDocumentName();
     const { unmount } = renderInRoot(
       <>
         <RenameButton />
         <ProjectSelection />
       </>,
-      { builtInControls: { documentRename: false } },
+      { builtInControls: { workflowRename: false } },
     );
 
     const title = screen.getByText('My Diagram');
@@ -126,7 +126,7 @@ describe('ProjectSelection builtInControls', () => {
         <RenameButton />
         <ProjectSelection />
       </>,
-      { builtInControls: { documentRename: true } },
+      { builtInControls: { workflowRename: true } },
     );
     const editableTitle = screen.getByText('My Diagram');
     expect(editableTitle.className).toMatch(/title-editable/);

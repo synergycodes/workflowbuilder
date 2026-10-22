@@ -84,7 +84,7 @@ describe('useWorkflowBuilderActions', () => {
       edges: [],
       selectedNodesIds: [],
       selectedEdgesIds: [],
-      documentName: '',
+      workflowName: '',
       reactFlowInstance: undefined,
     });
   });
@@ -257,51 +257,51 @@ describe('useWorkflowBuilderActions', () => {
     });
   });
 
-  describe('renameDocument', () => {
+  describe('setWorkflowName', () => {
     it('writes the store name', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
 
-      actions.current!.renameDocument('My Workflow');
+      actions.current!.setWorkflowName('My Workflow');
 
-      expect(useStore.getState().documentName).toBe('My Workflow');
+      expect(useStore.getState().workflowName).toBe('My Workflow');
     });
 
     it('accepts an empty name', () => {
-      useStore.setState({ documentName: 'My Workflow' });
+      useStore.setState({ workflowName: 'My Workflow' });
       const { actions } = renderHook(useWorkflowBuilderActions);
 
-      actions.current!.renameDocument('');
+      actions.current!.setWorkflowName('');
 
-      expect(useStore.getState().documentName).toBe('');
+      expect(useStore.getState().workflowName).toBe('');
     });
 
     it('accepts a name of exactly 128 characters', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
       const name = 'a'.repeat(128);
 
-      actions.current!.renameDocument(name);
+      actions.current!.setWorkflowName(name);
 
-      expect(useStore.getState().documentName).toBe(name);
+      expect(useStore.getState().workflowName).toBe(name);
     });
 
     it('ignores a name over 128 characters and warns', () => {
       const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
       const { actions } = renderHook(useWorkflowBuilderActions);
 
-      actions.current!.renameDocument('a'.repeat(129));
+      actions.current!.setWorkflowName('a'.repeat(129));
 
-      expect(useStore.getState().documentName).toBe('');
+      expect(useStore.getState().workflowName).toBe('');
       expect(warnSpy).toHaveBeenCalledTimes(1);
       warnSpy.mockRestore();
     });
 
     it('is a no-op in read-only mode', () => {
-      useStore.setState({ isReadOnly: true, documentName: 'My Workflow' });
+      useStore.setState({ isReadOnly: true, workflowName: 'My Workflow' });
       const { actions } = renderHook(useWorkflowBuilderActions);
 
-      actions.current!.renameDocument('Renamed');
+      actions.current!.setWorkflowName('Renamed');
 
-      expect(useStore.getState().documentName).toBe('My Workflow');
+      expect(useStore.getState().workflowName).toBe('My Workflow');
     });
   });
 
@@ -339,7 +339,7 @@ describe('useWorkflowBuilderActions', () => {
       actions.current!.togglePalette();
       actions.current!.togglePropertiesPanel();
       actions.current!.setPaletteFilter('email');
-      actions.current!.toggleDarkMode();
+      actions.current!.toggleTheme();
 
       expect(onSave).toHaveBeenCalledWith({ isAutoSave: false });
       expect(openExportModal).toHaveBeenCalledTimes(1);
@@ -420,14 +420,14 @@ describe('useWorkflowBuilderActions', () => {
       expect(document.documentElement.dataset.theme).toBe('dark');
     });
 
-    it('toggleDarkMode flips theme', () => {
+    it('toggleTheme flips theme', () => {
       const { actions } = renderHook(useWorkflowBuilderActions);
       expect(getTheme()).toBe('light');
 
-      actions.current!.toggleDarkMode();
+      actions.current!.toggleTheme();
       expect(getTheme()).toBe('dark');
 
-      actions.current!.toggleDarkMode();
+      actions.current!.toggleTheme();
       expect(getTheme()).toBe('light');
     });
   });

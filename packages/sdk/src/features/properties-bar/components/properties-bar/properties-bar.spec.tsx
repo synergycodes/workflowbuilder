@@ -12,7 +12,7 @@ import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
 import { PropertiesPanelFooterContent } from '../../../ui-extensions/components/properties-panel-footer-content';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { PropertiesBar } from './properties-bar';
-import type { PropertiesBarProps } from './properties-bar.types';
+import type { WorkflowBuilderPropertiesPanelProps } from './properties-bar.types';
 
 const node = {
   id: 'node-1',
@@ -33,7 +33,7 @@ function NodeForm() {
 }
 
 // Custom tabs keep the node's own properties form, and its store, out of the test.
-const tabs: PropertiesBarProps['tabs'] = [
+const tabs: WorkflowBuilderPropertiesPanelProps['tabs'] = [
   {
     label: 'Decision',
     value: 'decision',
@@ -46,7 +46,7 @@ const tabs: PropertiesBarProps['tabs'] = [
   },
 ];
 
-type PanelProps = Partial<PropertiesBarProps> & { initialTab: 'decision' | 'other' };
+type PanelProps = Partial<WorkflowBuilderPropertiesPanelProps> & { initialTab: 'decision' | 'other' };
 
 function Panel({ initialTab, ...props }: PanelProps) {
   const [selectedTab, setSelectedTab] = useState<string>(initialTab);
@@ -188,7 +188,7 @@ describe('PropertiesBar open state', () => {
   });
 
   it('setPropertiesPanelOpen(true) with no selection shows nothing until one element is selected', () => {
-    act(() => useStore.getState().setIsPropertiesPanelOpen(true));
+    act(() => useStore.getState().setPropertiesPanelOpen(true));
     const { rerenderPanel } = renderPanel({ initialTab: 'decision', selection: null });
 
     expect(screen.queryByText('Form')).toBeNull();
