@@ -174,7 +174,7 @@ const plugin = new WorkflowBuilderPlugin<MyNode>({
 });
 ```
 
-Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Then start runs and, when a person decides, resume the parked step from your service:
+Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Your mapper turns the editor's diagram into the `definition` the plugin runs, see [Run on Temporal](https://www.workflowbuilder.io/docs/guides/use-with-temporal/). Then start runs and, when a person decides, resume the parked step from your service:
 
 ```ts
 import { Client, Connection } from '@temporalio/client';
