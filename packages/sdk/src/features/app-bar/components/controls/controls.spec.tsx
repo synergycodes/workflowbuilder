@@ -7,10 +7,8 @@ import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builde
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { useModalStore } from '../../../modals/stores/use-modal-store';
-import { registerComponentDecorator } from '../../../plugins-core/adapters/adapter-components';
 import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../../../ui-extensions/built-in-controls-context';
-import { AppBarMenuItem } from '../../../ui-extensions/components/app-bar-menu-item';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { Controls } from './controls';
 
@@ -165,29 +163,5 @@ describe('Controls builtInControls', () => {
     openDotsMenu();
     expect(screen.getByText('Export')).not.toBeNull();
     expect(screen.queryByText('Import')).toBeNull();
-  });
-});
-
-describe('Controls registered menu items', () => {
-  const PRODUCER = 'controls-spec-menu-item-producer';
-
-  afterEach(() => {
-    // Registering a name again replaces the entry, and an entry without content renders nothing.
-    registerComponentDecorator('OptionalAppBarControls', { name: PRODUCER });
-  });
-
-  it('an OptionalAppBarControls decorator rendering an AppBarMenuItem with an inline icon and onClick renders a bounded number of times', () => {
-    let producerRenders = 0;
-    function MenuItemProducer() {
-      producerRenders += 1;
-      return <AppBarMenuItem label="From a decorator" icon={<span />} onClick={() => {}} />;
-    }
-    registerComponentDecorator('OptionalAppBarControls', { name: PRODUCER, content: MenuItemProducer });
-
-    expect(() => renderInRoot(<Controls />)).not.toThrow();
-
-    expect(producerRenders).toBeLessThanOrEqual(2);
-    openDotsMenu();
-    expect(screen.getByText('From a decorator')).not.toBeNull();
   });
 });

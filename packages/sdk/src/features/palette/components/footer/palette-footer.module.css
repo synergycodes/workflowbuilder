@@ -1,7 +1,0 @@
-@layer ui.base, ui.component;
-
-@layer ui.component {
-  .deprecated-slot {
-    display: contents;
-  }
-}

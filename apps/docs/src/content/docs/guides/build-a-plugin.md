@@ -72,17 +72,14 @@ type ComponentDecoratorOptions<P = object> =
 
 ### Available slots
 
-| Slot name                | Where it renders                                                                                                 |
-| ------------------------ | ---------------------------------------------------------------------------------------------------------------- |
-| `OptionalAppBarControls` | **Deprecated.** App bar, control buttons area. Use [`AppBarControlsContent`](#built-in-interface-hide-move-add). |
-| `OptionalAppBarTools`    | **Deprecated.** App bar, toolbar area. Use [`AppBarToolsContent`](#built-in-interface-hide-move-add).            |
-| `OptionalAppChildren`    | App-level children (portals, providers)                                                                          |
-| `OptionalEdgeProperties` | Edge properties panel                                                                                            |
-| `OptionalFooterContent`  | **Deprecated.** Palette footer. Use [`PaletteFooterContent`](#built-in-interface-hide-move-add).                 |
-| `OptionalHooks`          | Invisible provider/hook slot                                                                                     |
-| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)                                                                            |
+| Slot name                | Where it renders                        |
+| ------------------------ | --------------------------------------- |
+| `OptionalAppChildren`    | App-level children (portals, providers) |
+| `OptionalEdgeProperties` | Edge properties panel                   |
+| `OptionalHooks`          | Invisible provider/hook slot            |
+| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)   |
 
-Deprecated slots keep working; removal comes in a later major. The same goes for `PropertiesPanelFooter`, the 3.0.0 name of `PropertiesPanelFooterContent`. See [Built-in interface: hide, move, add](#built-in-interface-hide-move-add) for the app bar, the palette and the properties panel.
+The app bar, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
 
 ### Example
 
@@ -111,7 +108,7 @@ This decorator just mounts `MyCustomButton` once, as the model's ["A plugin that
 
 ### Typing `modifyProps`
 
-Pass the slot's props type as the type parameter so `modifyProps` is checked against the actual host's prop shape. Slots that target a built-in component export a matching `*Props` type from the SDK barrel — for example, `DiagramContainerProps` for the `'DiagramContainer'` slot, [`ProjectSelectionProps`](/api/components/projectselectionprops/) for `'ProjectSelection'`, and [`PropertiesBarProps`](/api/components/propertiesbarprops/) for `'PropertiesBar'`.
+Pass the slot's props type as the type parameter so `modifyProps` is checked against the actual host's prop shape. Slots that target a built-in component export a matching `*Props` type from the SDK barrel — for example, `DiagramContainerProps` for the `'DiagramContainer'` slot and [`PropertiesBarProps`](/api/components/propertiesbarprops/) for `'PropertiesBar'`.
 
 ```tsx
 import { registerComponentDecorator } from '@workflowbuilder/sdk';
@@ -131,7 +128,7 @@ For a custom slot you control, type the parameter with your component's own prop
 
 ## Built-in interface: hide, move, add
 
-Your own UI in the app bar, the palette and the properties panel does **not** go through `registerComponentDecorator`; it uses a separate, simpler model (the `PropertiesBar` and `ProjectSelection` slots still take a props decorator, for the panel's `tabs`, labels and `onDeleteClick`, and that keeps working): read state with `useWorkflowBuilderState()`, run a command with `useWorkflowBuilderActions()`, hide a built-in control with a key in `builtInControls` on `<WorkflowBuilder.Root>`, and add your own UI with a `…Content` or `…MenuItem` component rendered under `<WorkflowBuilder.Root>`. A plugin function has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the unrelated, still-current `OptionalAppChildren` slot, and that component uses `…Content`/`…MenuItem` inside it (see ["A plugin that adds UI"](#a-plugin-that-adds-ui) below).
+Your own UI in the app bar, the palette and the properties panel does **not** go through `registerComponentDecorator`; it uses a separate, simpler model (the `PropertiesBar` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`): read state with `useWorkflowBuilderState()`, run a command with `useWorkflowBuilderActions()`, hide a built-in control with a key in `builtInControls` on `<WorkflowBuilder.Root>`, and add your own UI with a `…Content` or `…MenuItem` component rendered under `<WorkflowBuilder.Root>`. A plugin function has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the unrelated, still-current `OptionalAppChildren` slot, and that component uses `…Content`/`…MenuItem` inside it (see ["A plugin that adds UI"](#a-plugin-that-adds-ui) below).
 
 | You want to…                        | Use                                                                          |
 | ----------------------------------- | ---------------------------------------------------------------------------- |
@@ -176,7 +173,7 @@ This renders, left to right: `ReadOnlySwitch`, `ShareButton`, the rebuilt `Theme
 
 ### Placing content before or after the built-ins
 
-Every `…Content` component accepts an optional `place`, `'before'` by default (as in every example above) or `'after'`. `place="after"` renders past the area's whole built-in group, including any `place: 'after'` decorator still registered on that area's deprecated slot. In `AppBarControlsContent` the after-content still stands ahead of the kebab-menu trigger. In the sidebar headers it becomes a second full-width row at the end of the header, under the tabs when the properties panel shows them. Either way, content lands before or after the whole built-in group as one block; it can never land between two built-in controls.
+Every `…Content` component accepts an optional `place`, `'before'` by default (as in every example above) or `'after'`. `place="after"` renders past the area's whole built-in group. In `AppBarControlsContent` the after-content still stands ahead of the kebab-menu trigger. In the sidebar headers it becomes a second full-width row at the end of the header, under the tabs when the properties panel shows them. Either way, content lands before or after the whole built-in group as one block; it can never land between two built-in controls.
 
 ```tsx
 import { AppBarToolsContent } from '@workflowbuilder/sdk';
@@ -248,12 +245,13 @@ type CallbackAfter = (args: { params: unknown[]; returnValue: unknown }) => void
 
 A non-exhaustive list (grep `withOptionalFunctionPlugins` in the source for the complete set):
 
-| Function name          | What it does                                                                                                                                                                          |
-| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `getPaletteData`       | Builds the palette data structure.                                                                                                                                                    |
-| `getTemplates`         | Builds the template list.                                                                                                                                                             |
-| `trackFutureChange`    | Records an upcoming diagram change.                                                                                                                                                   |
-| `getControlsDotsItems` | **Deprecated**, still runs. Builds the app bar's kebab-menu items. Use [`AppBarMenuItem`](#built-in-interface-hide-move-add), and hide `export` / `import` through `builtInControls`. |
+| Function name       | What it does                        |
+| ------------------- | ----------------------------------- |
+| `getPaletteData`    | Builds the palette data structure.  |
+| `getTemplates`      | Builds the template list.           |
+| `trackFutureChange` | Records an upcoming diagram change. |
+
+The app bar's kebab menu is not a decorable function: add items with [`AppBarMenuItem`](#built-in-interface-hide-move-add) and hide `export` / `import` through `builtInControls`.
 
 ### Return conventions
 

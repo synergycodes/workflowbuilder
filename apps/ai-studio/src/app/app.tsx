@@ -1,4 +1,4 @@
-import { type BuiltInControls, WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
+import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
 
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
@@ -32,11 +32,8 @@ const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer, de
 // A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
-// Deliberately, for now: no Delete button in the properties panel for any selection; deleting stays on the keys.
-const builtInControls: BuiltInControls = { delete: false };
-
 export function App({ opened }: { opened: OpenedSource }) {
-  const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+  const { name, initialNodes, initialEdges, integration, builtInControls, plugins } = rootPropsFor(opened);
   const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
   const isRunView = opened.kind === 'execution';
 

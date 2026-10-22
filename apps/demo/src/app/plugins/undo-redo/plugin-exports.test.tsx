@@ -41,7 +41,7 @@ describe('undo/redo plugin', () => {
     const save = labels.indexOf('Save');
     expect(save).toBeGreaterThanOrEqual(0);
     expect(labels.slice(save, save + 3)).toEqual(['Save', 'Undo', 'Redo']);
-    // The deprecated OptionalAppBarTools slot renders the buttons straight into the nav segment.
+    // The buttons come through the tools area, so they sit in its target, not loose in the nav segment.
     const undo = container.querySelector('button[aria-label="Undo"]');
     expect(undo?.parentElement?.matches('[class*="target"]')).toBe(true);
   });

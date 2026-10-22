@@ -24,8 +24,6 @@ You can compare it with your local version.
 
 If you want to see how the plugin logic works in a smaller example, we have prepared a showcase repository: https://github.com/synergycodes/optional-plugins-demo
 
-> **Note:** `OptionalAppBarTools`, `OptionalAppBarControls` and `OptionalFooterContent` (used as example slots in some of the sections below) are deprecated in favor of the SDK's `…Content` components (`AppBarToolsContent`, `AppBarControlsContent`, `PaletteFooterContent`, …) and `builtInControls`. They keep working. See [Built-in interface: hide, move, add](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#built-in-interface-hide-move-add) for the current way to add UI to the app bar, the palette or the properties panel.
-
 ## How to add plugin?
 
 1. Create your plugin directory, for example: `plugins/example`.
@@ -82,15 +80,15 @@ Go to `apps/demo/src/app/app.tsx` and remove the plugin's import and its entry f
 
 ### How do I change the position of a plugin?
 
-You have place and priority. Set place: 'before' to add your component before the content. The priority determines which plugin is shown first.
+A `…Content` component takes `place`: `'before'` (the default) puts your content before the area's built-in controls, `'after'` puts it after them. Two components in the same area render in mount order.
 
-```ts
-registerComponentDecorator('OptionalFooterContent', {
-  content: ExampleComponent,
-  place: 'after',
-  priority: 1,
-});
+```tsx
+<PaletteFooterContent place="after">
+  <ExampleComponent />
+</PaletteFooterContent>
 ```
+
+A decorator on a slot (`OptionalNodeContent`, `OptionalEdgeProperties`, …) takes `place` and `priority` instead: `place` sets where it renders relative to the slot's host, and a higher `priority` is shown first.
 
 ### How to modify properties with an optional plugin?
 
@@ -116,9 +114,8 @@ registerComponentDecorator<DiagramContainerProps>('DiagramContainer', {
 Set the `name` property for the injected content:
 
 ```tsx
-registerComponentDecorator('OptionalAppBarControls', {
-  content: TreeButton,
-  place: 'before',
+registerComponentDecorator('OptionalAppChildren', {
+  content: TreeControls,
   name: 'TreeButton',
 });
 ```
@@ -126,7 +123,7 @@ registerComponentDecorator('OptionalAppBarControls', {
 Use the `name` property:
 
 ```ts
-const wasTreePluginAdded = hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton');
+const wasTreePluginAdded = hasRegisteredComponentDecorator('OptionalAppChildren', 'TreeButton');
 ```
 
 ### How to add a plugin conditionally?
@@ -135,9 +132,8 @@ In your `plugin-exports.ts` file, you can add an if statement.
 
 ```tsx
 if (SHOULD_ADD_TREE_BUTTON === true) {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: TreeButton,
-    place: 'before',
+  registerComponentDecorator('OptionalAppChildren', {
+    content: TreeControls,
   });
 }
 ```
@@ -147,9 +143,8 @@ if (SHOULD_ADD_TREE_BUTTON === true) {
 Set `name` property.
 
 ```tsx
-registerComponentDecorator('OptionalAppBarControls', {
-  content: TreeButton,
-  place: 'before',
+registerComponentDecorator('OptionalAppChildren', {
+  content: TreeControls,
   name: 'TreeButton',
 });
 ```
@@ -157,10 +152,9 @@ registerComponentDecorator('OptionalAppBarControls', {
 Use `name` property.
 
 ```tsx
-if (hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton')) {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: SecondTreeButton,
-    place: 'before',
+if (hasRegisteredComponentDecorator('OptionalAppChildren', 'TreeButton')) {
+  registerComponentDecorator('OptionalAppChildren', {
+    content: SecondTreeControls,
   });
 }
 ```

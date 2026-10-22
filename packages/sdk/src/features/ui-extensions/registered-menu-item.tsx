@@ -3,7 +3,7 @@ import { useCallback, useId, useLayoutEffect, useRef } from 'react';
 
 import { useUiExtensionRegistry } from './ui-extension-context';
 import type { MenuId, UiMenuItemProps } from './ui-extension-registry';
-import { usePlacementWarning } from './use-placement-warning';
+import { useWarnOnce } from './use-warn-once';
 
 type RegisteredMenuItemProps = UiMenuItemProps & {
   menu: MenuId;
@@ -27,11 +27,11 @@ export function RegisteredMenuItem({
   const registry = useUiExtensionRegistry();
   const nodeId = useNodeId();
   const id = useId();
-  usePlacementWarning(
+  useWarnOnce(
     registry === null,
     `[@workflowbuilder/sdk] <${componentName}> adds no menu item outside <WorkflowBuilder.Root>.`,
   );
-  usePlacementWarning(
+  useWarnOnce(
     nodeId !== null,
     `[@workflowbuilder/sdk] <${componentName}> is rendered inside a canvas node, so every node adds its own item. Render it once, outside the canvas.`,
   );
