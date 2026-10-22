@@ -1,10 +1,11 @@
 import { act, render } from '@testing-library/react';
-import { useRef } from 'react';
+import i18n from 'i18next';
+import { StrictMode, useRef } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
-import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
+import { IntegrationContextWrapper } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
 import type * as OpenTemplateSelectorModalModule from '../features/modals/template-selector/open-template-selector-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
@@ -40,13 +41,7 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
   trackFutureChange: vi.fn(),
 }));
 
-const changeLanguage = vi.fn();
-// A stable `i18n` object reference: the hook's useMemo depends on it, so a new
-// object identity on every render would defeat the memoization-identity tests.
-const i18nStub = { changeLanguage };
-vi.mock('react-i18next', () => ({
-  useTranslation: () => ({ i18n: i18nStub }),
-}));
+const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue((() => '') as never);
 
 function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('success' as const)) {
   const captured: { current: T | null } = { current: null };
@@ -56,13 +51,13 @@ function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('s
     return null;
   }
 
-  render(
-    <IntegrationContext.Provider value={{ onSave }}>
+  const view = render(
+    <IntegrationContextWrapper onSave={onSave}>
       <Consumer />
-    </IntegrationContext.Provider>,
+    </IntegrationContextWrapper>,
   );
 
-  return { actions: captured, onSave };
+  return { actions: captured, onSave, unmount: view.unmount };
 }
 
 describe('useWorkflowBuilderActions', () => {
@@ -533,8 +528,74 @@ describe('useWorkflowBuilderActions', () => {
     });
   });
 
+  describe('kept after the render', () => {
+    it('do nothing once the Root unmounts, and save resolves error without calling onSave', async () => {
+      const { actions, onSave, unmount } = renderHook(useWorkflowBuilderActions);
+      const kept = actions.current!;
+
+      unmount();
+      kept.togglePalette();
+      kept.setWorkflowName('stale');
+      kept.openSettings();
+
+      expect(await kept.save()).toBe('error');
+      expect(onSave).not.toHaveBeenCalled();
+      expect(useStore.getState().isPaletteOpen).toBe(false);
+      expect(useStore.getState().workflowName).toBe('');
+      expect(openModalWorkflowSettings).not.toHaveBeenCalled();
+    });
+
+    it('keep working after the StrictMode simulated unmount and remount', async () => {
+      const onSave = vi.fn().mockResolvedValue('success' as const);
+      const seen: WorkflowBuilderActions[] = [];
+
+      function Consumer() {
+        seen.push(useWorkflowBuilderActions());
+        return null;
+      }
+
+      render(
+        <StrictMode>
+          <IntegrationContextWrapper onSave={onSave}>
+            <Consumer />
+          </IntegrationContextWrapper>
+        </StrictMode>,
+      );
+      act(() => seen[0].togglePalette());
+
+      expect(useStore.getState().isPaletteOpen).toBe(true);
+      expect(await seen[0].save()).toBe('success');
+    });
+
+    it('save goes through the integration passed on the latest render', async () => {
+      const firstOnSave = vi.fn().mockResolvedValue('success' as const);
+      const secondOnSave = vi.fn().mockResolvedValue('success' as const);
+      const seen: WorkflowBuilderActions[] = [];
+
+      function Consumer() {
+        seen.push(useWorkflowBuilderActions());
+        return null;
+      }
+
+      const { rerender } = render(
+        <IntegrationContextWrapper onSave={firstOnSave}>
+          <Consumer />
+        </IntegrationContextWrapper>,
+      );
+      rerender(
+        <IntegrationContextWrapper onSave={secondOnSave}>
+          <Consumer />
+        </IntegrationContextWrapper>,
+      );
+      await seen[0].save();
+
+      expect(firstOnSave).not.toHaveBeenCalled();
+      expect(secondOnSave).toHaveBeenCalledWith({ isAutoSave: false });
+    });
+  });
+
   describe('identity', () => {
-    it('returns a stable object reference across re-renders when dependencies are unchanged', () => {
+    it('returns the same object across re-renders', () => {
       const seen: WorkflowBuilderActions[] = [];
       const onSave = vi.fn().mockResolvedValue('success' as const);
 
@@ -547,15 +608,15 @@ describe('useWorkflowBuilderActions', () => {
       }
 
       const { rerender } = render(
-        <IntegrationContext.Provider value={{ onSave }}>
+        <IntegrationContextWrapper onSave={onSave}>
           <Consumer />
-        </IntegrationContext.Provider>,
+        </IntegrationContextWrapper>,
       );
 
       rerender(
-        <IntegrationContext.Provider value={{ onSave }}>
+        <IntegrationContextWrapper onSave={onSave}>
           <Consumer />
-        </IntegrationContext.Provider>,
+        </IntegrationContextWrapper>,
       );
 
       expect(seen.length).toBe(2);
@@ -572,9 +633,9 @@ describe('useWorkflowBuilderActions', () => {
       }
 
       const { rerender } = render(
-        <IntegrationContext.Provider value={{ onSave }}>
+        <IntegrationContextWrapper onSave={onSave}>
           <Consumer />
-        </IntegrationContext.Provider>,
+        </IntegrationContextWrapper>,
       );
 
       act(() => {
@@ -584,9 +645,9 @@ describe('useWorkflowBuilderActions', () => {
       });
 
       rerender(
-        <IntegrationContext.Provider value={{ onSave }}>
+        <IntegrationContextWrapper onSave={onSave}>
           <Consumer />
-        </IntegrationContext.Provider>,
+        </IntegrationContextWrapper>,
       );
 
       expect(seen.length).toBe(2);

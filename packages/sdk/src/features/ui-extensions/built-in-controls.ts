@@ -22,8 +22,8 @@ export type BuiltInControl =
  * Which built-in controls `<WorkflowBuilder.Root>` shows. A missing key shows the control, `false`
  * hides it. Hiding only removes the control: what it does stays available. The palette starts
  * collapsed, so hiding `paletteToggle` means it never opens unless the app calls
- * `setPaletteOpen(true)` itself; hiding `propertiesPanelToggle` leaves the same dead end once the
- * panel is collapsed, unless the app calls `setPropertiesPanelOpen(true)`.
+ * `setPaletteOpen(true)` itself, e.g. from `onLoad`; hiding `propertiesPanelToggle` leaves the same
+ * dead end once the panel is collapsed, unless the app calls `setPropertiesPanelOpen(true)`.
  *
  * @category Core
  */

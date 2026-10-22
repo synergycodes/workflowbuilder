@@ -69,7 +69,7 @@ function mount(opened: OpenedSource) {
         strategy={strategy}
         endpoints={endpoints}
         onDataSave={onDataSave}
-        onStart={() => {}}
+        onLoad={() => {}}
         name={props.name}
         nodes={props.initialNodes}
         edges={props.initialEdges}
