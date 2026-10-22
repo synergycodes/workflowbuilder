@@ -21,11 +21,25 @@ export type MenuId = 'project' | 'appBar' | 'propertiesPanel';
 export type AreaSlot = { element: HTMLElement | null };
 
 /**
- * Props of {@link ProjectMenuItem}, {@link AppBarMenuItem} and {@link PropertiesPanelMenuItem}.
+ * Props of {@link EditorHeaderToolsContent}, {@link EditorHeaderControlsContent},
+ * {@link PaletteHeaderContent}, {@link PaletteFooterContent}, {@link PropertiesPanelHeaderContent}
+ * and {@link PropertiesPanelFooterContent}.
  *
  * @category Components
  */
-export type UiMenuItemProps = {
+export type WorkflowBuilderAreaContentProps = {
+  /** Rendered in the area. */
+  children?: ReactNode;
+  /** `'after'` renders the content after the area's built-in controls. Defaults to `'before'`. */
+  place?: 'before' | 'after';
+};
+
+/**
+ * Props of {@link WorkflowMenuItem}, {@link EditorHeaderMenuItem} and {@link PropertiesPanelMenuItem}.
+ *
+ * @category Components
+ */
+export type WorkflowBuilderMenuItemProps = {
   /** The row's text. It may repeat another row's label; the item is told apart by identity. */
   label: string;
   /** Shown before the label. */
@@ -38,7 +52,7 @@ export type UiMenuItemProps = {
   disabled?: boolean;
 };
 
-export type RegisteredMenuItem = UiMenuItemProps & { id: string };
+export type RegisteredMenuItem = WorkflowBuilderMenuItemProps & { id: string };
 
 /**
  * External store for one mounted Root, read through `useSyncExternalStore`. Every change replaces

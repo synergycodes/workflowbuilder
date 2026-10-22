@@ -78,7 +78,7 @@ Known limits:
 
 - Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it. The welcome disclaimer tells visitors so and asks them not to enter personal or confidential data.
 - A reload after the run finished still shows it, read-only, until Reset, because the URL still names it.
-- The run view is read-only through the run lock only. The app bar's read-only switch lifts it, and edits made then are saved nowhere.
+- The run view is read-only through the run lock only. The editor header's read-only switch lifts it, and edits made then are saved nowhere.
 - Autosave and the save on close keep a workflow's edits, so a reload no longer discards them; undo is the only way back.
 - Before the first save, only edits the editor tracks count. The decision node's Add branch is not tracked, and the SDK reports a node moved with the keyboard only as a node change, which does not count; a tab whose only edit is either drops it on close unless Save runs first.
 - The graph is drawn as stored. A draft saved through the API in a shape the editor cannot draw ends on the error screen; one that draws wrongly shows wrongly.

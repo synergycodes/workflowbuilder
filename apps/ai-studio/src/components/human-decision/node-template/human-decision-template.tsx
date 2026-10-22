@@ -1,5 +1,5 @@
 import { Icon, OptionalNodeContent, defineNodeTemplate, getHandleId } from '@workflowbuilder/sdk';
-import type { NodeDataProperties, WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import type { NodeDataProperties, WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
@@ -42,7 +42,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
       layoutDirection = 'RIGHT',
       showHandles = true,
       isValid,
-    }: WorkflowNodeTemplateProps<HumanDecisionProperties>) => {
+    }: WorkflowBuilderNodeTemplateProps<HumanDecisionProperties>) => {
       const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
       const decisionRequest = data?.properties.decisionRequest;
       const actions = useMemo(() => routedActions(decisionRequest), [decisionRequest]);

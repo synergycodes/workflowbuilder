@@ -1,5 +1,5 @@
 /**
- * Key of a built-in control in the app bar, the palette or the properties panel, as used in
+ * Key of a built-in control in the editor header, the palette or the properties panel, as used in
  * {@link BuiltInControls}.
  *
  * @category Core
@@ -10,7 +10,7 @@ export type BuiltInControl =
   | 'themeToggle'
   | 'languageSelector'
   | 'settings'
-  | 'documentRename'
+  | 'workflowRename'
   | 'export'
   | 'import'
   | 'templates'

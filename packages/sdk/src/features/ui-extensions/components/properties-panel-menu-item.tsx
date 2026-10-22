@@ -1,5 +1,5 @@
 import { RegisteredMenuItem } from '../registered-menu-item';
-import type { UiMenuItemProps } from '../ui-extension-registry';
+import type { WorkflowBuilderMenuItemProps } from '../ui-extension-registry';
 
 /**
  * Adds one item to the properties panel header's menu, after any built-in items there, behind a
@@ -11,6 +11,6 @@ import type { UiMenuItemProps } from '../ui-extension-registry';
  *
  * @category Components
  */
-export function PropertiesPanelMenuItem(props: UiMenuItemProps) {
+export function PropertiesPanelMenuItem(props: WorkflowBuilderMenuItemProps) {
   return <RegisteredMenuItem menu="propertiesPanel" componentName="PropertiesPanelMenuItem" {...props} />;
 }

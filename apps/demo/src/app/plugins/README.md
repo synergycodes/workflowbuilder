@@ -96,9 +96,9 @@ With the modifyProps property, you can change the properties passed to the plugi
 
 ```tsx
 import { registerComponentDecorator } from '@workflowbuilder/sdk';
-import type { DiagramContainerProps } from '@workflowbuilder/sdk';
+import type { WorkflowBuilderCanvasProps } from '@workflowbuilder/sdk';
 
-registerComponentDecorator<DiagramContainerProps>('DiagramContainer', {
+registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', {
   modifyProps: (props) => ({
     ...props,
     edgeTypes: {

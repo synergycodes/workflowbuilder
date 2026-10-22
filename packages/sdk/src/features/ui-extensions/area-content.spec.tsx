@@ -52,7 +52,7 @@ describe('AreaContent', () => {
         <AreaTarget area="appBarTools" />
         <AreaTarget area="paletteFooter" />
         <section aria-label="Producer">
-          <AreaContent area="appBarTools" componentName="AppBarToolsContent">
+          <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent">
             <button type="button">Mine</button>
           </AreaContent>
         </section>
@@ -70,7 +70,7 @@ describe('AreaContent', () => {
 
     render(
       <StrictMode>
-        <AreaContent area="appBarTools" componentName="AppBarToolsContent">
+        <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent">
           <button type="button">Mine</button>
         </AreaContent>
       </StrictMode>,
@@ -78,7 +78,7 @@ describe('AreaContent', () => {
 
     expect(screen.queryByRole('button', { name: 'Mine' })).toBeNull();
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<AppBarToolsContent>'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<EditorHeaderToolsContent>'));
   });
 
   it('warns outside Root in a production build too', () => {
@@ -86,12 +86,12 @@ describe('AreaContent', () => {
     const warn = silenceWarnings();
 
     render(
-      <AreaContent area="appBarTools" componentName="AppBarToolsContent">
+      <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent">
         <button type="button">Mine</button>
       </AreaContent>,
     );
 
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<AppBarToolsContent>'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<EditorHeaderToolsContent>'));
   });
 
   it('warns when rendered inside a canvas node', () => {
@@ -142,7 +142,7 @@ describe('AreaContent', () => {
     const { registry } = renderInRoot(
       <>
         <AreaTarget area="appBarControls" />
-        <AreaContent area="appBarControls" componentName="AppBarControlsContent">
+        <AreaContent area="appBarControls" componentName="EditorHeaderControlsContent">
           {false}
         </AreaContent>
       </>,
@@ -155,7 +155,7 @@ describe('AreaContent', () => {
     const { registry } = renderInRoot(
       <>
         <AreaTarget area="appBarTools" />
-        <AreaContent area="appBarTools" componentName="AppBarToolsContent">
+        <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent">
           <button type="button">Mine</button>
         </AreaContent>
       </>,
@@ -171,7 +171,7 @@ describe('AreaContent', () => {
       <>
         <AreaTarget area="appBarTools" />
         <div onClick={onClick}>
-          <AreaContent area="appBarTools" componentName="AppBarToolsContent">
+          <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent">
             <button type="button">Mine</button>
           </AreaContent>
         </div>

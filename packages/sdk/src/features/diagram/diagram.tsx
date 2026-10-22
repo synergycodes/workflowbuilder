@@ -52,12 +52,12 @@ const SDK_DEFAULT_FLOW_PROPS = {
 
 /**
  * Props accepted by {@link DiagramContainer}. Use this when typing a
- * `registerComponentDecorator<DiagramContainerProps>('DiagramContainer', …)`
+ * `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`
  * call.
  *
  * @category Components
  */
-export type DiagramContainerProps = {
+export type WorkflowBuilderCanvasProps = {
   /**
    * Extra edge types forwarded to ReactFlow alongside the built-in `'labelEdge'`
    * and any Root-level `edgeTemplates`. Merged last, so a key here intentionally
@@ -72,9 +72,9 @@ export type DiagramContainerProps = {
  * wires up selection / drag / connect / delete behaviour against the SDK's
  * store. Re-exported publicly as `DiagramContainer` and as
  * `WorkflowBuilder.Canvas`; mount it directly when assembling a custom
- * layout, or decorate via `registerComponentDecorator<DiagramContainerProps>('DiagramContainer', …)`.
+ * layout, or decorate via `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`.
  */
-function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
+function DiagramContainerComponent({ edgeTypes = {} }: WorkflowBuilderCanvasProps) {
   const {
     nodes,
     edges,
@@ -218,8 +218,8 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
  * Public canvas component. Mount directly via `<DiagramContainer />` /
  * `<WorkflowBuilder.Canvas />` when assembling a custom layout, or decorate
  * the slot through
- * `registerComponentDecorator<DiagramContainerProps>('DiagramContainer', …)`.
+ * `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`.
  *
  * @category Components
  */
-export const DiagramContainer = withOptionalComponentPlugins(DiagramContainerComponent, 'DiagramContainer');
+export const DiagramContainer = withOptionalComponentPlugins(DiagramContainerComponent, 'Canvas');

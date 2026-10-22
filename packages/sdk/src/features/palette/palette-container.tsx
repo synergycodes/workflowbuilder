@@ -45,7 +45,7 @@ export function PaletteContainer() {
     <Sidebar
       className={styles['sidebar']}
       isExpanded={isPaletteOpen}
-      header={<PaletteHeader onClick={() => setPaletteOpen()} isPaletteOpen={isPaletteOpen} />}
+      header={<PaletteHeader onClick={() => setPaletteOpen(!isPaletteOpen)} isPaletteOpen={isPaletteOpen} />}
       footer={<PaletteFooter onTemplateClick={openTemplateSelectorModal} />}
     >
       <PaletteItems

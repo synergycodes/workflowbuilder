@@ -15,8 +15,8 @@ import { type Theme, getTheme, setTheme } from './theme';
 import { useFitView } from './use-fit-view';
 import type { WorkflowBuilderLanguage } from './use-workflow-builder-state';
 
-/** Longest `renameDocument` accepts; longer names are ignored (see {@link WorkflowBuilderActions.renameDocument}). */
-const MAX_DOCUMENT_NAME_LENGTH = 128;
+/** Longest `setWorkflowName` accepts; longer names are ignored (see {@link WorkflowBuilderActions.setWorkflowName}). */
+const MAX_WORKFLOW_NAME_LENGTH = 128;
 
 /**
  * Optional side effects for a layout-direction *toggle*.
@@ -39,15 +39,15 @@ export type LayoutChangeOptions = {
 
 /**
  * Imperative action surface for a custom layout that omits
- * `<WorkflowBuilder.TopBar />`. Mirrors every command the built-in app bar
+ * `<WorkflowBuilder.EditorHeader />`. Mirrors every command the built-in editor header
  * exposes (`save`, modal openers, read-only and theme toggles) and adds
- * programmatic layout-direction control, which the bar itself does not offer.
+ * programmatic layout-direction control, which the header itself does not offer.
  *
  * Stable across renders while the active integration and the mounted
  * React Flow instance are stable (`deleteSelection` and the layout actions
  * close over that instance).
  *
- * Actions that change the persisted diagram (`renameDocument`, `deleteSelection`,
+ * Actions that change the persisted diagram (`setWorkflowName`, `deleteSelection`,
  * `setLayoutDirection`, `toggleLayoutDirection`) or open the template picker
  * (`openTemplates`) do nothing while the editor is in read-only mode.
  *
@@ -79,7 +79,7 @@ export type WorkflowBuilderActions = {
   /** Filter the palette's node list by a case-insensitive match on each item's translated label. */
   setPaletteFilter: (query: string) => void;
   /** Flip the editor theme between `'light'` and `'dark'`. */
-  toggleDarkMode: () => void;
+  toggleTheme: () => void;
   /** Set the editor theme explicitly. */
   setTheme: (theme: Theme) => void;
   /**
@@ -103,17 +103,17 @@ export type WorkflowBuilderActions = {
   /** Switch the active editor language. */
   setLanguage: (code: WorkflowBuilderLanguage) => void;
   /**
-   * Rename the current document. An empty name is allowed; a name longer
+   * Rename the current workflow. An empty name is allowed; a name longer
    * than 128 characters is ignored (with a console warning) rather than
    * truncated.
    */
-  renameDocument: (name: string) => void;
+  setWorkflowName: (name: string) => void;
 };
 
 /**
  * Returns a stable object of action callbacks: every command the built-in
- * `<WorkflowBuilder.TopBar />` offers, plus programmatic layout-direction
- * control. Use it from a custom header / toolbar when omitting the bar.
+ * `<WorkflowBuilder.EditorHeader />` offers, plus programmatic layout-direction
+ * control. Use it from a custom header or toolbar when omitting the editor header.
  *
  * Must be called from a descendant of `<WorkflowBuilder.Root>`: `save` reads the active
  * integration through React context, so outside Root `save()` logs an error and resolves
@@ -138,7 +138,7 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
   const { onSave } = useContext(IntegrationContext);
   const setStoreReadOnly = useStore((s) => s.setReadOnly);
   const setStorePaletteOpen = useStore((s) => s.setPaletteOpen);
-  const setStorePropertiesPanelOpen = useStore((s) => s.setIsPropertiesPanelOpen);
+  const setStorePropertiesPanelOpen = useStore((s) => s.setPropertiesPanelOpen);
   const setStorePaletteFilter = useStore((s) => s.setPaletteFilter);
   const setStoreLayoutDirection = useStore((s) => s.setLayoutDirection);
   const fitView = useFitView();
@@ -156,10 +156,10 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
       openExport: openExportModal,
       openTemplates: openTemplateSelectorModal,
 
-      toggleReadOnly: () => setStoreReadOnly(),
+      toggleReadOnly: () => setStoreReadOnly(!useStore.getState().isReadOnly),
       setReadOnly: (value) => setStoreReadOnly(value),
 
-      togglePalette: () => setStorePaletteOpen(),
+      togglePalette: () => setStorePaletteOpen(!useStore.getState().isPaletteOpen),
       setPaletteOpen: (open) => setStorePaletteOpen(open),
 
       togglePropertiesPanel: () => setStorePropertiesPanelOpen(!useStore.getState().isPropertiesPanelOpen),
@@ -167,7 +167,7 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
 
       setPaletteFilter: (query) => setStorePaletteFilter(query),
 
-      toggleDarkMode: () => setTheme(getTheme() === 'light' ? 'dark' : 'light'),
+      toggleTheme: () => setTheme(getTheme() === 'light' ? 'dark' : 'light'),
       setTheme: (theme) => setTheme(theme),
 
       setLayoutDirection: (direction) => {
@@ -207,17 +207,17 @@ export function useWorkflowBuilderActions(): WorkflowBuilderActions {
         void i18n.changeLanguage(code);
       },
 
-      renameDocument: (name) => {
+      setWorkflowName: (name) => {
         if (isReadOnly()) return;
 
-        if (name.length > MAX_DOCUMENT_NAME_LENGTH) {
+        if (name.length > MAX_WORKFLOW_NAME_LENGTH) {
           console.warn(
-            `[@workflowbuilder/sdk] renameDocument: ignored a name longer than ${MAX_DOCUMENT_NAME_LENGTH} characters.`,
+            `[@workflowbuilder/sdk] setWorkflowName: ignored a name longer than ${MAX_WORKFLOW_NAME_LENGTH} characters.`,
           );
           return;
         }
 
-        useStore.getState().setDocumentName(name);
+        useStore.getState().setWorkflowName(name);
       },
     }),
     [

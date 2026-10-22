@@ -9,8 +9,8 @@ import { ProjectSelection } from '../../app-bar/components/project-selection/pro
 import '../../i18n/index';
 import { PropertiesBar } from '../../properties-bar/components/properties-bar/properties-bar';
 import { renderInRoot } from '../test-utils';
-import { AppBarMenuItem } from './app-bar-menu-item';
-import { ProjectMenuItem } from './project-menu-item';
+import { EditorHeaderMenuItem } from './app-bar-menu-item';
+import { WorkflowMenuItem } from './project-menu-item';
 import { PropertiesPanelMenuItem } from './properties-panel-menu-item';
 
 const node = {
@@ -48,11 +48,11 @@ beforeEach(() => {
   resetWorkflowStore();
 });
 
-describe('AppBarMenuItem', () => {
+describe('EditorHeaderMenuItem', () => {
   it('appears after Export and Import behind a separator', () => {
     renderInRoot(
       <>
-        <AppBarMenuItem label="Custom" />
+        <EditorHeaderMenuItem label="Custom" />
         <Controls />
       </>,
       { builtInControls: { export: true, import: true } },
@@ -66,7 +66,7 @@ describe('AppBarMenuItem', () => {
   it('with export and import hidden the registered item is the only item and there is no separator', () => {
     renderInRoot(
       <>
-        <AppBarMenuItem label="Custom" />
+        <EditorHeaderMenuItem label="Custom" />
         <Controls />
       </>,
       { builtInControls: { export: false, import: false } },
@@ -86,11 +86,11 @@ describe('a menu with no items', () => {
   });
 });
 
-describe('ProjectMenuItem', () => {
+describe('WorkflowMenuItem', () => {
   it('appears after Settings', () => {
     renderInRoot(
       <>
-        <ProjectMenuItem label="Custom" />
+        <WorkflowMenuItem label="Custom" />
         <ProjectSelection />
       </>,
     );
@@ -128,7 +128,7 @@ describe('prop change other than the label', () => {
     function Panel({ disabled }: { disabled: boolean }) {
       return (
         <>
-          <AppBarMenuItem label="Custom" disabled={disabled} />
+          <EditorHeaderMenuItem label="Custom" disabled={disabled} />
           <Controls />
         </>
       );

@@ -25,7 +25,7 @@ describe('undo/redo plugin', () => {
       root.render(
         <StrictMode>
           <WorkflowBuilder.Root plugins={[plugin]}>
-            <WorkflowBuilder.TopBar />
+            <WorkflowBuilder.EditorHeader />
           </WorkflowBuilder.Root>
         </StrictMode>,
       ),

@@ -7,7 +7,7 @@ import { RegisteredMenuItem } from './registered-menu-item';
 import { renderInRoot } from './test-utils';
 
 function NodeWithMenuItem() {
-  return <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Per node" />;
+  return <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Per node" />;
 }
 
 const nodeTypes = { withMenuItem: NodeWithMenuItem };
@@ -24,7 +24,7 @@ describe('RegisteredMenuItem', () => {
     const onClick = vi.fn();
     function Menu({ withItem }: { withItem: boolean }) {
       return withItem ? (
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Duplicate" onClick={onClick} />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" onClick={onClick} />
       ) : null;
     }
     const { registry, rerender } = renderInRoot(<Menu withItem />);
@@ -46,11 +46,11 @@ describe('RegisteredMenuItem', () => {
         <>
           <RegisteredMenuItem
             menu="project"
-            componentName="ProjectMenuItem"
+            componentName="WorkflowMenuItem"
             label={firstLabel}
             disabled={isFirstDisabled}
           />
-          <RegisteredMenuItem menu="project" componentName="ProjectMenuItem" label="Second" />
+          <RegisteredMenuItem menu="project" componentName="WorkflowMenuItem" label="Second" />
         </>
       );
     }
@@ -70,7 +70,7 @@ describe('RegisteredMenuItem', () => {
       return (
         <RegisteredMenuItem
           menu="appBar"
-          componentName="AppBarMenuItem"
+          componentName="EditorHeaderMenuItem"
           label="Item"
           onClick={() => clicks.push(round)}
         />
@@ -95,7 +95,7 @@ describe('RegisteredMenuItem', () => {
       return (
         <RegisteredMenuItem
           menu="appBar"
-          componentName="AppBarMenuItem"
+          componentName="EditorHeaderMenuItem"
           label="Item"
           onClick={withHandler ? onClick : undefined}
         />
@@ -134,12 +134,12 @@ describe('RegisteredMenuItem', () => {
 
     render(
       <StrictMode>
-        <RegisteredMenuItem menu="appBar" componentName="AppBarMenuItem" label="Duplicate" />
+        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" />
       </StrictMode>,
     );
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<AppBarMenuItem>'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<EditorHeaderMenuItem>'));
   });
 
   it('warns when rendered inside a canvas node', () => {
@@ -157,7 +157,7 @@ describe('RegisteredMenuItem', () => {
     const { registry } = renderInRoot(<ReactFlow nodes={nodes} nodeTypes={nodeTypes} />);
 
     expect(registry.getMenuItems('appBar').map(({ label }) => label)).toEqual(['Per node']);
-    const itemWarnings = warn.mock.calls.filter(([message]) => String(message).includes('<AppBarMenuItem>'));
+    const itemWarnings = warn.mock.calls.filter(([message]) => String(message).includes('<EditorHeaderMenuItem>'));
     expect(itemWarnings).toHaveLength(1);
     expect(String(itemWarnings[0][0])).toContain('canvas node');
   });

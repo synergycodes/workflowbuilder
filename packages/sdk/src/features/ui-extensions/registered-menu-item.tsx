@@ -2,10 +2,10 @@ import { useNodeId } from '@xyflow/react';
 import { useCallback, useId, useLayoutEffect, useRef } from 'react';
 
 import { useUiExtensionRegistry } from './ui-extension-context';
-import type { MenuId, UiMenuItemProps } from './ui-extension-registry';
+import type { MenuId, WorkflowBuilderMenuItemProps } from './ui-extension-registry';
 import { useWarnOnce } from './use-warn-once';
 
-type RegisteredMenuItemProps = UiMenuItemProps & {
+type RegisteredMenuItemProps = WorkflowBuilderMenuItemProps & {
   menu: MenuId;
   /** The public component's name, for placement warnings. */
   componentName: string;

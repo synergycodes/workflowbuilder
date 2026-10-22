@@ -1,7 +1,7 @@
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
-import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
 import type {
   JsonFormsCellExtension,
   JsonFormsRendererExtension,
@@ -15,12 +15,12 @@ import type { OnSaveExternal } from '../types/integration';
 /**
  * Per-node-type custom template registry. Keys are `data.type` values from
  * the palette; values are React components that take
- * {@link WorkflowNodeTemplateProps} and replace the default node renderer
+ * {@link WorkflowBuilderNodeTemplateProps} and replace the default node renderer
  * for matching nodes.
  *
  * @category Components
  */
-export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<WorkflowNodeTemplateProps>>;
+export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<WorkflowBuilderNodeTemplateProps>>;
 
 /**
  * Per-edge-type custom renderer registry. Keys are `edge.type` values; values
@@ -175,7 +175,7 @@ export type WorkflowBuilderReactFlowProps = Omit<
 >;
 
 /**
- * App-bar logo accepted by `<WorkflowBuilder.Root>`: an image URL, per-theme
+ * Editor header logo accepted by `<WorkflowBuilder.Root>`: an image URL, per-theme
  * image URLs, or a custom element.
  *
  * @category Core
@@ -251,14 +251,14 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * the template selector opens only when the handler calls `openTemplates`.
    */
   onStart?: (context: WorkflowBuilderStartContext) => void;
-  /** Workflow name displayed in the app bar and persisted with the diagram. */
+  /** Workflow name displayed in the editor header and persisted with the diagram. */
   name?: string;
   /**
-   * Replaces the built-in Workflow Builder logo in the app bar: an image URL,
+   * Replaces the built-in Workflow Builder logo in the editor header: an image URL,
    * `{ light, dark }` per-theme image URLs, or a custom element rendered as-is.
    */
   logo?: WorkflowBuilderLogo;
-  /** Wraps the app-bar logo (built-in or custom) in a link opened in a new tab. */
+  /** Wraps the editor header logo (built-in or custom) in a link opened in a new tab. */
   logoHref?: string;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
@@ -284,8 +284,8 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
   /**
-   * Hides built-in controls of the app bar, the palette and the properties panel. Keys: `save`,
-   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `documentRename`, `export`,
+   * Hides built-in controls of the editor header, the palette and the properties panel. Keys: `save`,
+   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`,
    * `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`. Every key defaults to
    * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
    * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard

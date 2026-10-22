@@ -16,8 +16,8 @@ export type PaletteState = {
   data: PaletteItemOrGroup[];
   fetchDataStatus: StatusType;
   draggedItem: DraggingItem | null;
-  setPaletteOpen: (value?: boolean) => void;
-  setIsPropertiesPanelOpen: (open: boolean) => void;
+  setPaletteOpen: (value: boolean) => void;
+  setPropertiesPanelOpen: (open: boolean) => void;
   setPaletteFilter: (query: string) => void;
   fetchData: () => void;
   setDraggedItem: (item: DraggingItem | null) => void;
@@ -37,10 +37,10 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
     },
     setPaletteOpen: (value) => {
       set({
-        isPaletteOpen: value ?? !get().isPaletteOpen,
+        isPaletteOpen: value,
       });
     },
-    setIsPropertiesPanelOpen: (open) => {
+    setPropertiesPanelOpen: (open) => {
       set({ isPropertiesPanelOpen: open });
     },
     setPaletteFilter: (query) => {

@@ -1,6 +1,5 @@
-import type { PropsWithChildren } from 'react';
-
 import { AreaContent } from '../area-content';
+import type { WorkflowBuilderAreaContentProps } from '../ui-extension-registry';
 
 /**
  * Renders its children in the palette header. The content renders as a full-width row under the
@@ -25,7 +24,7 @@ import { AreaContent } from '../area-content';
  *
  * @category Components
  */
-export function PaletteHeaderContent({ place, children }: PropsWithChildren<{ place?: 'before' | 'after' }>) {
+export function PaletteHeaderContent({ place, children }: WorkflowBuilderAreaContentProps) {
   return (
     <AreaContent area="paletteHeader" componentName="PaletteHeaderContent" place={place}>
       {children}

@@ -6,7 +6,7 @@ import { useStore } from '../store/store';
 
 /**
  * Returns a callback that animates the diagram view to fit all nodes,
- * accounting for the editor's app bar / palette / property panel bounds.
+ * accounting for the editor header, palette and properties panel bounds.
  *
  * Common triggers: after auto-layout, after loading a new diagram,
  * after a "fit view" toolbar button click. Uses a single

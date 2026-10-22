@@ -1,6 +1,5 @@
-import type { PropsWithChildren } from 'react';
-
 import { AreaContent } from '../area-content';
+import type { WorkflowBuilderAreaContentProps } from '../ui-extension-registry';
 
 /**
  * Renders its children in the properties panel header. The content renders as a full-width row
@@ -25,7 +24,7 @@ import { AreaContent } from '../area-content';
  *
  * @category Components
  */
-export function PropertiesPanelHeaderContent({ place, children }: PropsWithChildren<{ place?: 'before' | 'after' }>) {
+export function PropertiesPanelHeaderContent({ place, children }: WorkflowBuilderAreaContentProps) {
   return (
     <AreaContent area="propertiesPanelHeader" componentName="PropertiesPanelHeaderContent" place={place}>
       {children}

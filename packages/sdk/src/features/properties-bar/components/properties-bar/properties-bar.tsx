@@ -13,17 +13,17 @@ import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 import { EdgeProperties } from '../edge-properties/edge-properties';
 import { PropertiesBarHeader } from '../header/properties-bar-header';
 import { NodeProperties } from '../node-properties/node-properties';
-import type { PropertiesBarItem, PropertiesBarProps } from './properties-bar.types';
+import type { PropertiesBarItem, WorkflowBuilderPropertiesPanelProps } from './properties-bar.types';
 import { renderComponent } from './render-component';
 
 /**
  * Right-hand sidebar that displays and edits properties of the currently
  * selected node or edge. Mounted automatically by the editor's app shell.
  *
- * @internal — not part of the public API; use {@link PropertiesBarProps}
- * to type a decorator on the `'PropertiesBar'` slot instead.
+ * @internal — not part of the public API; use {@link WorkflowBuilderPropertiesPanelProps}
+ * to type a decorator on the `'PropertiesPanel'` slot instead.
  */
-function PropertiesBarComponent(props: PropertiesBarProps) {
+function PropertiesBarComponent(props: WorkflowBuilderPropertiesPanelProps) {
   const {
     selection,
     onDeleteClick,
@@ -37,11 +37,11 @@ function PropertiesBarComponent(props: PropertiesBarProps) {
   // A `modifyProps` decorator can still inject the prop 4.0 removed.
   useWarnOnce(
     'onMenuHeaderClick' in props,
-    removedPropertyWarning('onMenuHeaderClick', 'PropertiesBar', 'PropertiesPanelMenuItem'),
+    removedPropertyWarning('onMenuHeaderClick', 'PropertiesPanel', 'PropertiesPanelMenuItem'),
   );
   const { t } = useTranslation();
   const isPropertiesBarOpen = useStore((state) => state.isPropertiesPanelOpen);
-  const setIsPropertiesBarOpen = useStore((state) => state.setIsPropertiesPanelOpen);
+  const setIsPropertiesBarOpen = useStore((state) => state.setPropertiesPanelOpen);
   const isDeleteVisible = useIsBuiltInControlVisible('delete');
 
   const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
@@ -119,7 +119,7 @@ function PropertiesBarComponent(props: PropertiesBarProps) {
 }
 
 /**
- * @internal Decorate via {@link registerComponentDecorator}`<PropertiesBarProps>('PropertiesBar', …)`
+ * @internal Decorate via {@link registerComponentDecorator}`<WorkflowBuilderPropertiesPanelProps>('PropertiesPanel', …)`
  * — direct mounts aren't supported and aren't part of the public API.
  */
-export const PropertiesBar = withOptionalComponentPlugins(PropertiesBarComponent, 'PropertiesBar');
+export const PropertiesBar = withOptionalComponentPlugins(PropertiesBarComponent, 'PropertiesPanel');

@@ -20,8 +20,8 @@ import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 /**
  * App-bar component that shows the current document's folder name + title
  * and lets the user rename the document inline. Mounted by the editor's app
- * bar; own menu items come through {@link ProjectMenuItem}, and
- * `builtInControls` hides `settings` and `documentRename`.
+ * bar; own menu items come through {@link WorkflowMenuItem}, and
+ * `builtInControls` hides `settings` and `workflowRename`.
  *
  * @internal — not part of the public API.
  */
@@ -29,15 +29,15 @@ export function ProjectSelection(props: object) {
   // The props are empty since 4.0; the check catches an `onDuplicateClick` a caller still passes.
   useWarnOnce(
     'onDuplicateClick' in props,
-    removedPropertyWarning('onDuplicateClick', 'ProjectSelection', 'ProjectMenuItem'),
+    removedPropertyWarning('onDuplicateClick', 'ProjectSelection', 'WorkflowMenuItem'),
   );
-  const documentName = useStore((state) => state.documentName || '');
+  const workflowName = useStore((state) => state.workflowName || '');
   const isReadOnly = useStore((store) => store.isReadOnly);
-  const { renameDocument } = useWorkflowBuilderActions();
+  const { setWorkflowName } = useWorkflowBuilderActions();
   const [editName, setEditName] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const isSettingsVisible = useIsBuiltInControlVisible('settings');
-  const isDocumentRenameVisible = useIsBuiltInControlVisible('documentRename');
+  const isDocumentRenameVisible = useIsBuiltInControlVisible('workflowRename');
   const registeredItems = useRegisteredMenuItems('project');
 
   const { t } = useTranslation();
@@ -66,8 +66,8 @@ export function ProjectSelection(props: object) {
       <span className={styles['folder-name']}>{t('header.folderName')} /</span>
       {editName && isDocumentRenameVisible && !isReadOnly ? (
         <Input
-          value={documentName}
-          onChange={(event) => renameDocument(event.target.value)}
+          value={workflowName}
+          onChange={(event) => setWorkflowName(event.target.value)}
           onBlur={() => setEditName(false)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -81,7 +81,7 @@ export function ProjectSelection(props: object) {
           className={clsx(styles['title'], { [styles['title-editable']]: isDocumentRenameVisible && !isReadOnly })}
           onClick={isDocumentRenameVisible && !isReadOnly ? () => setEditName(true) : undefined}
         >
-          {documentName}
+          {workflowName}
         </span>
       )}
       {items.length > 0 && (

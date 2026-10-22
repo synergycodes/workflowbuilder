@@ -1,12 +1,11 @@
-import type { PropsWithChildren } from 'react';
-
 import { AreaContent } from '../area-content';
+import type { WorkflowBuilderAreaContentProps } from '../ui-extension-registry';
 
 /**
- * Renders its children in the app bar, after the logo, in line with the built-in Save button. The
+ * Renders its children in the editor header, after the logo, in line with the built-in Save button. The
  * content renders before the built-in Save button; with `place="after"` it renders after it.
  * Render it anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component or in
- * a node's properties form. In a custom layout without the app bar it renders nothing, which is
+ * a node's properties form. In a custom layout without the editor header it renders nothing, which is
  * not an error.
  *
  * The children stay in the tree where they were rendered: the parent's state and context survive
@@ -16,16 +15,16 @@ import { AreaContent } from '../area-content';
  *
  * @example
  * ```tsx
- * <AppBarToolsContent>
+ * <EditorHeaderToolsContent>
  *   <Button size="s" variant="ghost-secondary" onClick={openTemplates}>Templates</Button>
- * </AppBarToolsContent>
+ * </EditorHeaderToolsContent>
  * ```
  *
  * @category Components
  */
-export function AppBarToolsContent({ place, children }: PropsWithChildren<{ place?: 'before' | 'after' }>) {
+export function EditorHeaderToolsContent({ place, children }: WorkflowBuilderAreaContentProps) {
   return (
-    <AreaContent area="appBarTools" componentName="AppBarToolsContent" place={place}>
+    <AreaContent area="appBarTools" componentName="EditorHeaderToolsContent" place={place}>
       {children}
     </AreaContent>
   );

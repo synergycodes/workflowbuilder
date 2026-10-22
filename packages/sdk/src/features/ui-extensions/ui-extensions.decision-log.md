@@ -203,9 +203,6 @@ than folded into this release:
 
 - The palette has no designed empty state for "every node was filtered out by `paletteFilter`"; it
   currently just shows an empty list (follow-up: palette-empty-state).
-- Public type names such as `PropertiesBar` vs. `PropertiesPanel` are inconsistent across the
-  surface this model adds to, and a naming pass across the whole public API would catch more than
-  just these (follow-up: public-type-naming).
 - The built-in controls themselves are not individually exported as components, which would let a
   consumer compose a custom row from built-ins and their own content instead of only hiding and
   rebuilding from scratch (follow-up: built-in-control-components).

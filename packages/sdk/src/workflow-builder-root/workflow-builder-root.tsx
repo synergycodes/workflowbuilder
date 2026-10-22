@@ -41,7 +41,7 @@ import type {
  * @example Custom layout
  * ```tsx
  * <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
- *   <header><WorkflowBuilder.TopBar /></header>
+ *   <header><WorkflowBuilder.EditorHeader /></header>
  *   <aside><WorkflowBuilder.Palette /></aside>
  *   <main><WorkflowBuilder.Canvas /></main>
  *   <aside><WorkflowBuilder.PropertiesPanel /></aside>
