@@ -1,4 +1,5 @@
 import type {
+  BuiltInControls,
   OnSaveExternal,
   WorkflowBuilderEdge,
   WorkflowBuilderIntegration,
@@ -9,7 +10,6 @@ import type {
 import { saveDraftOf } from '../adapters/save-workflow-draft';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
-import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
 import type { OpenedSource } from './open-from-url';
 
@@ -21,14 +21,18 @@ export const neverSaves: OnSaveExternal = () =>
 // Module-level, and one props object per opened source below: the run lock re-applies itself whenever the
 // editor's save callback changes identity.
 const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves };
-const LOCAL_PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
-const RUN_VIEW_PLUGINS: WorkflowBuilderPlugin[] = [...LOCAL_PLUGINS, runViewPlugin];
+const PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
+// Deliberately, for now: no Delete button in the properties panel for any selection; deleting stays on the keys.
+const EDITOR_CONTROLS: BuiltInControls = { delete: false };
+// A run is never saved (`neverSaves` refuses the editor's save), so the Save button goes too.
+const RUN_VIEW_CONTROLS: BuiltInControls = { ...EDITOR_CONTROLS, save: false };
 
 type RootProps = {
   name: string;
   initialNodes: WorkflowBuilderNode[];
   initialEdges: WorkflowBuilderEdge[];
   integration?: WorkflowBuilderIntegration;
+  builtInControls: BuiltInControls;
   plugins: WorkflowBuilderPlugin[];
 };
 
@@ -50,7 +54,8 @@ function buildRootProps(opened: OpenedSource): RootProps {
         name: flagship.name,
         initialNodes: flagship.diagram.nodes,
         initialEdges: flagship.diagram.edges,
-        plugins: LOCAL_PLUGINS,
+        builtInControls: EDITOR_CONTROLS,
+        plugins: PLUGINS,
       };
     }
     case 'workflow': {
@@ -59,7 +64,8 @@ function buildRootProps(opened: OpenedSource): RootProps {
         initialNodes: opened.diagram.nodes,
         initialEdges: opened.diagram.edges,
         integration: { strategy: 'props', onDataSave: saveDraftOf(opened.workflowId) },
-        plugins: LOCAL_PLUGINS,
+        builtInControls: EDITOR_CONTROLS,
+        plugins: PLUGINS,
       };
     }
     case 'execution': {
@@ -68,7 +74,8 @@ function buildRootProps(opened: OpenedSource): RootProps {
         initialNodes: opened.diagram.nodes,
         initialEdges: opened.diagram.edges,
         integration: RUN_VIEW_INTEGRATION,
-        plugins: RUN_VIEW_PLUGINS,
+        builtInControls: RUN_VIEW_CONTROLS,
+        plugins: PLUGINS,
       };
     }
   }

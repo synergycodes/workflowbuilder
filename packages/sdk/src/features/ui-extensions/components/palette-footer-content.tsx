@@ -4,10 +4,9 @@ import { AreaContent } from '../area-content';
 
 /**
  * Renders its children in the palette footer, with the built-in Templates button. The content
- * renders before the built-in Templates button and before anything added through the deprecated
- * `OptionalFooterContent` slot. With `place="after"` it renders after the Templates button and
- * after content from the deprecated slot. The footer shows only while the palette is expanded and
- * lays its content out in a column, so two buttons side by side need a container of their own.
+ * renders before the built-in Templates button; with `place="after"` it renders after it. The
+ * footer shows only while the palette is expanded and lays its content out in a column, so two
+ * buttons side by side need a container of their own.
  * Render it anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component or in a
  * node's properties form. In a custom layout without the palette it renders nothing, which is not
  * an error.

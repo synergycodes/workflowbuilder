@@ -74,16 +74,6 @@ function isBefore(first: Element, second: Element) {
 }
 
 const PLUGIN = 'area-components-spec-plugin';
-const BEFORE = 'area-components-spec-before';
-const AFTER = 'area-components-spec-after';
-
-function Before() {
-  return <button type="button">Before</button>;
-}
-
-function After() {
-  return <button type="button">After</button>;
-}
 
 beforeEach(() => {
   resetWorkflowStore();
@@ -92,14 +82,7 @@ beforeEach(() => {
 
 afterEach(() => {
   // Registering a name again replaces the entry, and an entry without content renders nothing.
-  for (const slot of [
-    'OptionalAppChildren',
-    'OptionalAppBarTools',
-    'OptionalAppBarControls',
-    'OptionalFooterContent',
-  ]) {
-    for (const name of [PLUGIN, BEFORE, AFTER]) registerComponentDecorator(slot, { name });
-  }
+  registerComponentDecorator('OptionalAppChildren', { name: PLUGIN });
   vi.restoreAllMocks();
 });
 
@@ -173,12 +156,6 @@ const AREA_CASES: AreaCase[] = [
   },
 ];
 
-const DEPRECATED_SLOT_CASES = [
-  { slot: 'OptionalAppBarTools', area: 'appBarTools' },
-  { slot: 'OptionalAppBarControls', area: 'appBarControls' },
-  { slot: 'OptionalFooterContent', area: 'paletteFooter' },
-].map(({ slot, area }) => ({ slot, ...AREA_CASES.find((areaCase) => areaCase.area === area)! }));
-
 describe('area content components', () => {
   it.each(AREA_CASES)(
     '$name renders in its area from the app tree',
@@ -232,25 +209,6 @@ describe('area content components', () => {
     );
   });
 
-  it.each(DEPRECATED_SLOT_CASES)(
-    '$name with place="after" renders after the after-content of a deprecated $slot decorator',
-    ({ slot, Content, area, lastBuiltIn }) => {
-      registerComponentDecorator(slot, { name: AFTER, place: 'after', content: After });
-
-      const { registry } = renderHosts(
-        <Content place="after">
-          <button type="button">Mine</button>
-        </Content>,
-      );
-
-      const mine = screen.getByRole('button', { name: 'Mine' });
-      const after = screen.getByRole('button', { name: 'After' });
-      expect(mine.parentElement).toBe(targetOf(registry, area, 'after'));
-      expect(isBefore(lastBuiltIn(), after)).toBe(true);
-      expect(isBefore(after, mine)).toBe(true);
-    },
-  );
-
   it('content from a plugin mounted through OptionalAppChildren renders', () => {
     function PluginControls() {
       return (
@@ -265,37 +223,6 @@ describe('area content components', () => {
 
     expect(within(targetOf(registry, 'paletteHeader')).getByRole('button', { name: 'Import nodes' })).toBeTruthy();
   });
-
-  it.each(DEPRECATED_SLOT_CASES)(
-    'a deprecated $slot decorator and $name render together in the documented order, the slot output unwrapped',
-    ({ slot, Content, area, builtIn }) => {
-      registerComponentDecorator(slot, { name: BEFORE, place: 'before', content: Before });
-      registerComponentDecorator(slot, { name: AFTER, place: 'after', content: After });
-
-      const { registry } = renderHosts(
-        <Content>
-          <button type="button">Mine</button>
-        </Content>,
-      );
-
-      const target = targetOf(registry, area);
-      const container = target.parentElement!;
-      // The palette footer keeps its deprecated slot in a `display: contents` element, so bare text
-      // or an <input> from the slot still counts as footer content; layout-wise it is not a wrapper.
-      const slotHost = area === 'paletteFooter' ? container.children[1]! : container;
-      const firstSlotChild = area === 'paletteFooter' ? slotHost.firstElementChild : target.nextElementSibling;
-      const before = screen.getByRole('button', { name: 'Before' });
-      const after = screen.getByRole('button', { name: 'After' });
-      expect(target.children).toHaveLength(1);
-      expect(target.firstElementChild).toBe(screen.getByRole('button', { name: 'Mine' }));
-      expect(container.children[0]).toBe(target);
-      expect(firstSlotChild).toBe(before);
-      expect(after.parentElement).toBe(slotHost);
-      expect(container.contains(builtIn())).toBe(true);
-      expect(isBefore(before, builtIn())).toBe(true);
-      expect(isBefore(builtIn(), after)).toBe(true);
-    },
-  );
 
   it('an empty area adds no visible element', () => {
     const { registry } = renderHosts();

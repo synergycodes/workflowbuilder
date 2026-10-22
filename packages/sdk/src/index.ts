@@ -73,10 +73,7 @@ export { AppBarControlsContent } from './features/ui-extensions/components/app-b
 export { PaletteHeaderContent } from './features/ui-extensions/components/palette-header-content';
 export { PaletteFooterContent } from './features/ui-extensions/components/palette-footer-content';
 export { PropertiesPanelHeaderContent } from './features/ui-extensions/components/properties-panel-header-content';
-export {
-  PropertiesPanelFooter,
-  PropertiesPanelFooterContent,
-} from './features/ui-extensions/components/properties-panel-footer-content';
+export { PropertiesPanelFooterContent } from './features/ui-extensions/components/properties-panel-footer-content';
 
 // =============================================================================
 // Built-in menus: own items next to the project, app bar and properties panel menus
@@ -166,8 +163,6 @@ export {
 } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
-export { ProjectSelection } from './features/app-bar/components/project-selection/project-selection';
-export type { ProjectSelectionProps } from './features/app-bar/components/project-selection/project-selection';
 export { PropertiesBar } from './features/properties-bar/components/properties-bar/properties-bar';
 export type { PropertiesBarProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';

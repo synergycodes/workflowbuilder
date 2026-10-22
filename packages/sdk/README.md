@@ -145,8 +145,8 @@ Full guide: [Persistence strategies on the docs site](https://www.workflowbuilde
 
 The SDK exposes three extension points. Pass plugin functions to the `plugins` prop:
 
-- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`). Three slots are **deprecated**, each in favor of a `…Content` component (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below); they keep working: `OptionalAppBarControls` → `AppBarControlsContent`, `OptionalAppBarTools` → `AppBarToolsContent`, `OptionalFooterContent` → `PaletteFooterContent`.
-- **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call. `getControlsDotsItems` is **deprecated**, still runs, in favor of `AppBarMenuItem` plus hiding `export` / `import` through `builtInControls`.
+- **Component decorators** (`registerComponentDecorator`). Inject UI into named slots: `OptionalAppChildren`, `OptionalEdgeProperties`, `OptionalHooks` (invisible provider slot), `OptionalNodeContent` (receives `nodeId`). The app bar, the palette and the properties panel have no slots; own UI there uses the `…Content` components (see [The built-in interface](#the-built-in-interface-state-actions-and-your-own-ui) below). A decorator on a slot that 4.0 removed logs a warning naming its replacement and renders nothing.
+- **Function decorators** (`registerFunctionDecorator`). Observe or wrap SDK internals (e.g. `trackFutureChange`) before / after / wrapping the call. The app bar's menu is not one of them: add items with `AppBarMenuItem` and hide `export` / `import` through `builtInControls`.
 - **Translations** (`registerPluginTranslation`). Extend i18next keys with plugin-specific strings.
 
 ```tsx
@@ -171,7 +171,7 @@ Full guide: [Build a plugin](https://www.workflowbuilder.io/docs/guides/build-a-
 
 ## The built-in interface: state, actions, and your own UI
 
-Your own UI in the app bar, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesBar` and `ProjectSelection` slots still take a props decorator, for the panel's `tabs`, labels and `onDeleteClick`; that keeps working.)
+Your own UI in the app bar, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesBar` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`.)
 
 | You want to…                        | Use                                                                                                                                                |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |

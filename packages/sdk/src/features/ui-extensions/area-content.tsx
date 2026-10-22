@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 
 import { useAreaSlot, useUiExtensionRegistry } from './ui-extension-context';
 import type { AreaId, AreaPlace } from './ui-extension-registry';
-import { usePlacementWarning } from './use-placement-warning';
+import { useWarnOnce } from './use-warn-once';
 
 export type AreaContentProps = PropsWithChildren<{
   area: AreaId;
@@ -22,11 +22,11 @@ export type AreaContentProps = PropsWithChildren<{
 export function AreaContent({ area, componentName, place = 'before', children }: AreaContentProps) {
   const registry = useUiExtensionRegistry();
   const nodeId = useNodeId();
-  usePlacementWarning(
+  useWarnOnce(
     registry === null,
     `[@workflowbuilder/sdk] <${componentName}> renders nothing outside <WorkflowBuilder.Root>.`,
   );
-  usePlacementWarning(
+  useWarnOnce(
     nodeId !== null,
     `[@workflowbuilder/sdk] <${componentName}> is rendered inside a canvas node, so every node adds its own copy. Render it once, outside the canvas.`,
   );

@@ -147,17 +147,6 @@ describe('prop change other than the label', () => {
   });
 });
 
-describe('onMenuHeaderClick', () => {
-  it('still fires when no items are registered', () => {
-    const onMenuHeaderClick = vi.fn();
-    renderInRoot(propertiesBarWithSelection({ onMenuHeaderClick }));
-
-    fireEvent.click(screen.getByRole('button', { name: 'Menu' }));
-
-    expect(onMenuHeaderClick).toHaveBeenCalledTimes(1);
-  });
-});
-
 describe('the properties panel while collapsed', () => {
   it('shows no menu trigger for a registered item when there is no selection', () => {
     renderInRoot(
@@ -180,13 +169,6 @@ describe('the properties panel while collapsed', () => {
     expect(screen.getByRole('button', { name: 'Menu' })).not.toBeNull();
 
     fireEvent.click(screen.getByRole('button', { name: 'Close properties bar' }));
-
-    expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
-  });
-
-  it('shows no dots button for onMenuHeaderClick when there is no selection', () => {
-    const onMenuHeaderClick = vi.fn();
-    renderInRoot(propertiesBarWithSelection({ onMenuHeaderClick, selection: null }));
 
     expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
   });

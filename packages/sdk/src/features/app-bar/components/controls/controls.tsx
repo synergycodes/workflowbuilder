@@ -6,17 +6,15 @@ import { useTranslation } from 'react-i18next';
 import styles from '../../app-bar.module.css';
 
 import { LanguageSelector } from '../../../i18n/components/language-selector/language-selector';
-import { OptionalAppBarControls } from '../../../plugins-core/components/app/optional-app-bar-controls';
 import { AreaTarget } from '../../../ui-extensions/area-target';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
 import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
-import { getControlsDotsItems } from '../../functions/get-controls-dots-items';
+import { getAppBarMenuItems } from '../../functions/get-app-bar-menu-items';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
 import { ToggleReadyOnlyMode } from '../toggle-read-only-mode/toggle-read-only-mode';
 
-// Reads the registered items apart from `Controls`, which renders the deprecated slot's decorators:
-// a decorator that renders an `AppBarMenuItem` would otherwise re-render on its own registration.
+// Its own component, so a menu registration re-renders the menu and not the whole controls row.
 function AppBarMenu() {
   const { t } = useTranslation();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -25,9 +23,9 @@ function AppBarMenu() {
   const registeredItems = useRegisteredMenuItems('appBar');
 
   // `t` isn't read in the body, but its identity changing on language change is the only
-  // signal that the translated labels `getControlsDotsItems` returns need recomputing.
+  // signal that the translated labels `getAppBarMenuItems` returns need recomputing.
   const items: MenuItemProps[] = useMemo(
-    () => composeMenuItems(getControlsDotsItems({ export: isExportVisible, import: isImportVisible }), registeredItems),
+    () => composeMenuItems(getAppBarMenuItems({ export: isExportVisible, import: isImportVisible }), registeredItems),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [t, isExportVisible, isImportVisible, registeredItems],
   );
@@ -53,11 +51,9 @@ export function Controls() {
   return (
     <div className={styles['controls']}>
       <AreaTarget area="appBarControls" />
-      <OptionalAppBarControls>
-        {isLanguageSelectorVisible && <LanguageSelector />}
-        {isReadOnlyToggleVisible && <ToggleReadyOnlyMode />}
-        {isThemeToggleVisible && <ToggleDarkMode />}
-      </OptionalAppBarControls>
+      {isLanguageSelectorVisible && <LanguageSelector />}
+      {isReadOnlyToggleVisible && <ToggleReadyOnlyMode />}
+      {isThemeToggleVisible && <ToggleDarkMode />}
       <AreaTarget area="appBarControls" place="after" />
       <AppBarMenu />
     </div>

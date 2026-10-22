@@ -33,11 +33,3 @@ export function PropertiesPanelFooterContent({ place, children }: PropsWithChild
     </AreaContent>
   );
 }
-
-/**
- * The 3.0.0 name of {@link PropertiesPanelFooterContent}; same behaviour.
- *
- * @deprecated Use {@link PropertiesPanelFooterContent}. Removal comes in a later major.
- * @category Components
- */
-export const PropertiesPanelFooter = PropertiesPanelFooterContent;

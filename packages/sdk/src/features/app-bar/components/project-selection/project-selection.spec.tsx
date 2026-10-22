@@ -53,26 +53,14 @@ vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
 
 const { ProjectSelection } = await import('./project-selection');
 
-const DUPLICATE_LABEL = 'header.projectSelection.duplicateToDrafts';
 const SETTINGS_LABEL = 'common.settings';
 
-describe('ProjectSelection: "Duplicate to Drafts" visibility', () => {
-  it('omits the item when no onDuplicateClick is provided (default editor)', () => {
+describe('ProjectSelection: menu', () => {
+  it('shows Settings as the only built-in item', () => {
     render(<ProjectSelection />);
 
     expect(screen.getByText(SETTINGS_LABEL)).toBeDefined();
-    expect(screen.queryByText(DUPLICATE_LABEL)).toBeNull();
-  });
-
-  it('renders the item and wires the handler when onDuplicateClick is provided', () => {
-    const onDuplicateClick = vi.fn();
-    render(<ProjectSelection onDuplicateClick={onDuplicateClick} />);
-
-    const item = screen.getByText(DUPLICATE_LABEL);
-    expect(item).toBeDefined();
-
-    fireEvent.click(item);
-    expect(onDuplicateClick).toHaveBeenCalledTimes(1);
+    expect(screen.getAllByRole('button')).toHaveLength(1);
   });
 });
 

@@ -5,7 +5,7 @@ import { useEffect, useRef } from 'react';
  * `import.meta.env.DEV`: the build inlines that flag, so a gate would hide the warning from the
  * consumers it addresses.
  */
-export function usePlacementWarning(condition: boolean, message: string): void {
+export function useWarnOnce(condition: boolean, message: string): void {
   const hasWarned = useRef(false);
 
   useEffect(() => {

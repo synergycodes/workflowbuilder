@@ -140,7 +140,7 @@ Design decisions a reader of the code should know:
   `RootShell` before this change; it only moved into the same leaf for the same render-isolation
   reason, not because it newly became Root-level.
 
-- **Placement warnings are not gated on a dev flag.** `usePlacementWarning` warns unconditionally
+- **Placement warnings are not gated on a dev flag.** `usePlacementWarning` (now `useWarnOnce`) warns unconditionally
   instead of checking `import.meta.env.DEV`. The SDK ships as a pre-built bundle; the build tool
   that would strip a `DEV`-gated branch runs once, at SDK build time, against the SDK's own
   environment, not again in each consumer's app build, so gating here would silently hide the
@@ -156,6 +156,20 @@ Design decisions a reader of the code should know:
   context; reach for a decorator only to intercept or modify a slot the SDK already renders
   (`DiagramContainer`, `PropertiesBar`, the diagram-level `Optional*` slots), which `…Content`
   components cannot do.
+
+- **4.0 removed the old API.** The three slots the app bar and the palette footer carried
+  (`OptionalAppBarTools`, `OptionalAppBarControls`, `OptionalFooterContent`), the
+  `getControlsDotsItems` function decorator, `onDuplicateClick` on the project menu,
+  `onMenuHeaderClick` on the properties panel and the `PropertiesPanelFooter` alias are gone; the
+  model above is the only way. Each use logs a `console.warn` naming its replacement, in production
+  too (`plugins-core/adapters/removed-api.ts`): a decorator on a removed slot or function registers
+  nothing, and a removed prop that still reaches its component (through `modifyProps`) is ignored.
+  The `'ProjectSelection'` slot went with them, and `ProjectSelection` and `ProjectSelectionProps`
+  left the barrel (Piotr Błaszczyk, 21.10.2026): the props type had one field, `onDuplicateClick`,
+  so without it `modifyProps` had nothing to change, and keeping the slot only for
+  `wrapper`/`before`/`after` would have left one old mechanism in the top bar. The cost: the
+  document title as a whole cannot be hidden in 4.0. Neither demo nor AI Studio decorated this
+  slot. The bullets above that place own content relative to a deprecated slot describe 3.x.
 
 ## Alternatives
 
@@ -187,15 +201,6 @@ Design decisions a reader of the code should know:
 A few findings from building this model are tracked as separate, smaller pieces of work rather
 than folded into this release:
 
-- There is no dev-time warning when a decorator targets one of the three now-deprecated slot names
-  (`OptionalAppBarTools`, `OptionalAppBarControls`, `OptionalFooterContent`) or decorates the
-  deprecated `getControlsDotsItems` through `registerFunctionDecorator`. The three slot names are
-  bare strings with no symbol anywhere in the source to attach a tag to.
-  `getControlsDotsItems` does have a symbol (`get-controls-dots-items.tsx`'s exported const), but it
-  is internal, not part of the SDK barrel; a consumer names it by string too, so a `@deprecated` tag
-  on that internal symbol would not reach them either. Only `onDuplicateClick` and
-  `onMenuHeaderClick` carry the tag today, because both are properties of an exported public type
-  (follow-up: deprecated-slot-warning).
 - The palette has no designed empty state for "every node was filtered out by `paletteFilter`"; it
   currently just shows an empty list (follow-up: palette-empty-state).
 - Public type names such as `PropertiesBar` vs. `PropertiesPanel` are inconsistent across the

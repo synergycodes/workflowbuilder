@@ -6,8 +6,10 @@ import styles from './properties-bar.module.css';
 import { Sidebar } from '../../../../components/sidebar/sidebar';
 import { useStore } from '../../../../store/store';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
+import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
 import { AreaTarget } from '../../../ui-extensions/area-target';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
+import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 import { EdgeProperties } from '../edge-properties/edge-properties';
 import { PropertiesBarHeader } from '../header/properties-bar-header';
 import { NodeProperties } from '../node-properties/node-properties';
@@ -21,17 +23,22 @@ import { renderComponent } from './render-component';
  * @internal — not part of the public API; use {@link PropertiesBarProps}
  * to type a decorator on the `'PropertiesBar'` slot instead.
  */
-function PropertiesBarComponent({
-  selection,
-  onMenuHeaderClick,
-  onDeleteClick,
-  headerLabel,
-  deleteNodeLabel,
-  deleteEdgeLabel,
-  selectedTab,
-  onTabChange,
-  tabs = [],
-}: PropertiesBarProps) {
+function PropertiesBarComponent(props: PropertiesBarProps) {
+  const {
+    selection,
+    onDeleteClick,
+    headerLabel,
+    deleteNodeLabel,
+    deleteEdgeLabel,
+    selectedTab,
+    onTabChange,
+    tabs = [],
+  } = props;
+  // A `modifyProps` decorator can still inject the prop 4.0 removed.
+  useWarnOnce(
+    'onMenuHeaderClick' in props,
+    removedPropertyWarning('onMenuHeaderClick', 'PropertiesBar', 'PropertiesPanelMenuItem'),
+  );
   const { t } = useTranslation();
   const isPropertiesBarOpen = useStore((state) => state.isPropertiesPanelOpen);
   const setIsPropertiesBarOpen = useStore((state) => state.setIsPropertiesPanelOpen);
@@ -88,7 +95,6 @@ function PropertiesBarComponent({
             onTogglePropertiesBar={onToggleExpand}
             header={headerLabel}
             name={name ?? ''}
-            onDotsClick={onMenuHeaderClick}
           />
           {isExpanded && <AreaTarget area="propertiesPanelHeader" />}
           {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}

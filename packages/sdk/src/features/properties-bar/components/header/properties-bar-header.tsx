@@ -18,7 +18,6 @@ type Props = {
   /** Whether the panel currently shows its content, as opposed to its collapsed rail. */
   isExpanded: boolean;
   onTogglePropertiesBar: () => void;
-  onDotsClick?: () => void;
 };
 
 export function PropertiesBarHeader({
@@ -28,7 +27,6 @@ export function PropertiesBarHeader({
   header,
   hasSelection,
   name,
-  onDotsClick,
 }: Props) {
   const { t } = useTranslation();
   const isPropertiesPanelToggleVisible = useIsBuiltInControlVisible('propertiesPanelToggle');
@@ -61,14 +59,6 @@ export function PropertiesBarHeader({
             </Menu.TriggerButton>
           </Menu>
         </div>
-      )}
-      {isExpanded && items.length === 0 && onDotsClick && (
-        <NavButton
-          aria-label={menuLabel}
-          size="s"
-          onClick={onDotsClick}
-          prefixIcon={<Icon name="DotsThreeVertical" />}
-        />
       )}
     </div>
   );

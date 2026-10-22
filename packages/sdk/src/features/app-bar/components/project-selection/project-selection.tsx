@@ -11,37 +11,26 @@ import styles from '../../app-bar.module.css';
 import { openModalWorkflowSettings } from '../../../../features/variables/modals/modal-settings';
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { useStore } from '../../../../store/store';
-import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
+import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
 import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
-
-/**
- * Props accepted by {@link ProjectSelection}. Use this when typing a
- * `registerComponentDecorator<ProjectSelectionProps>('ProjectSelection', …)`
- * call.
- *
- * @category Components
- */
-export type ProjectSelectionProps = {
-  /**
-   * Optional handler for the kebab menu's "Duplicate to Drafts" item. The item
-   * is rendered only when this is provided — omit it and the item is absent.
-   *
-   * @deprecated Use {@link ProjectMenuItem} instead.
-   */
-  onDuplicateClick?: () => void;
-};
+import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 
 /**
  * App-bar component that shows the current document's folder name + title
- * and lets the user rename the document inline. Mounted automatically by
- * the editor's app bar.
+ * and lets the user rename the document inline. Mounted by the editor's app
+ * bar; own menu items come through {@link ProjectMenuItem}, and
+ * `builtInControls` hides `settings` and `documentRename`.
  *
- * @internal — not part of the public API; use {@link ProjectSelectionProps}
- * to type a decorator on the `'ProjectSelection'` slot instead.
+ * @internal — not part of the public API.
  */
-function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) {
+export function ProjectSelection(props: object) {
+  // The props are empty since 4.0; the check catches an `onDuplicateClick` a caller still passes.
+  useWarnOnce(
+    'onDuplicateClick' in props,
+    removedPropertyWarning('onDuplicateClick', 'ProjectSelection', 'ProjectMenuItem'),
+  );
   const documentName = useStore((state) => state.documentName || '');
   const isReadOnly = useStore((store) => store.isReadOnly);
   const { renameDocument } = useWorkflowBuilderActions();
@@ -66,21 +55,10 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
                 },
               ]
             : []),
-          // Rendered only when the host wires a handler; without one it would be a
-          // dead no-op item, so we leave it out entirely.
-          ...(onDuplicateClick
-            ? [
-                {
-                  label: t('header.projectSelection.duplicateToDrafts'),
-                  icon: <Icon name="Cards" />,
-                  onClick: onDuplicateClick,
-                },
-              ]
-            : []),
         ],
         registeredItems,
       ),
-    [isSettingsVisible, onDuplicateClick, t, registeredItems],
+    [isSettingsVisible, t, registeredItems],
   );
 
   return (
@@ -118,9 +96,3 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
     </div>
   );
 }
-
-/**
- * @internal Decorate via {@link registerComponentDecorator}`<ProjectSelectionProps>('ProjectSelection', …)`
- * — direct mounts aren't supported and aren't part of the public API.
- */
-export const ProjectSelection = withOptionalComponentPlugins(ProjectSelectionComponent, 'ProjectSelection');

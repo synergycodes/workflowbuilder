@@ -1,12 +1,13 @@
 import { fireEvent, screen } from '@testing-library/react';
 import i18n from 'i18next';
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { useModalStore } from '../../../modals/stores/use-modal-store';
 import type { BuiltInControls } from '../../../ui-extensions/built-in-controls';
+import { ProjectMenuItem } from '../../../ui-extensions/components/project-menu-item';
 import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { ProjectSelection } from './project-selection';
 
@@ -19,9 +20,15 @@ function resetWithDocumentName(name = 'My Diagram') {
   useStore.setState({ documentName: name });
 }
 
-function renderProjectSelection(builtInControls: BuiltInControls, onDuplicateClick?: () => void) {
+function renderProjectSelection(builtInControls: BuiltInControls, ownItem?: string) {
   resetWithDocumentName();
-  return renderInRoot(<ProjectSelection onDuplicateClick={onDuplicateClick} />, { builtInControls });
+  return renderInRoot(
+    <>
+      {ownItem && <ProjectMenuItem label={ownItem} />}
+      <ProjectSelection />
+    </>,
+    { builtInControls },
+  );
 }
 
 function openProjectMenu() {
@@ -72,7 +79,7 @@ describe('ProjectSelection builtInControls', () => {
   it('settings:false hides the Settings item and the caret (nothing else in the menu)', () => {
     renderProjectSelection({ settings: false });
 
-    // No onDuplicateClick either, so the menu has nothing left to show: the trigger itself is gone.
+    // No ProjectMenuItem either, so the menu has nothing left to show: the trigger itself is gone.
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
   });
 
@@ -83,12 +90,12 @@ describe('ProjectSelection builtInControls', () => {
     expect(screen.getByText('Settings')).not.toBeNull();
   });
 
-  it('settings:false with onDuplicateClick still set keeps the caret, showing only Duplicate to Drafts', () => {
-    renderProjectSelection({ settings: false }, vi.fn());
+  it('settings:false with a ProjectMenuItem keeps the caret, showing only that item', () => {
+    renderProjectSelection({ settings: false }, 'Duplicate');
 
     openProjectMenu();
     expect(screen.queryByText('Settings')).toBeNull();
-    expect(screen.getByText('Duplicate to Drafts')).not.toBeNull();
+    expect(screen.getByText('Duplicate')).not.toBeNull();
   });
 
   it('documentRename:false renders a plain, non-interactive title; renameDocument still works through the action', () => {
