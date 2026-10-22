@@ -35,3 +35,7 @@ The editor requests `load` once on mount and POSTs the diagram to `save` (the fl
 You will usually want that with the `<Component />` solution (see the [React component quick-start](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/)). Pass `integration={{ strategy: 'props', onDataSave }}` with `name`, `initialNodes` and `initialEdges`.
 
 This is also a good approach if you decide to build the Workflow Builder as a package that will be installed in your React application.
+
+#### 💾 Automatic saves
+
+With every strategy the editor saves on its own after a change that comes more than 10 seconds after the last successful save, and when the tab closes, but only when the data the integration receives differs from what was loaded or last saved successfully. `IntegrationContextWrapper` compares that data, serialised, with a snapshot the integration store records on load and on each successful save. Pass `autoSave: false` on the integration to turn both automatic saves off; the floppy disk and `save()` still write.

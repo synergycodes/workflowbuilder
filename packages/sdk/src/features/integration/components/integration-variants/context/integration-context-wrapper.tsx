@@ -4,7 +4,13 @@ import { createWorkflowBuilderActions } from '../../../../../hooks/create-workfl
 import type { WorkflowBuilderActions } from '../../../../../hooks/use-workflow-builder-actions';
 import type { OnSave } from '../../../../../types/integration';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
-import { getStoreSavingStatus, setStoreSavingStatus } from '../../../stores/use-integration-store';
+import {
+  getStoreDataSnapshot,
+  getStoreSavingStatus,
+  hasUnsavedChanges,
+  setStoreSavedData,
+  setStoreSavingStatus,
+} from '../../../stores/use-integration-store';
 import { showSnackbarSaveErrorIfNeeded } from '../../../utils/show-snackbar';
 
 /*
@@ -29,21 +35,27 @@ export const IntegrationContext = createContext<IntegrationContextType>({
   actions: createWorkflowBuilderActions({ save: () => missingOnSave({ isAutoSave: false }), isActive: () => true }),
 });
 
-type Props = PropsWithChildren<{ onSave: OnSave }>;
+type Props = PropsWithChildren<{ onSave: OnSave; autoSave: boolean }>;
 
-type Session = { onSave: OnSave; isMounted: boolean };
+type Session = { onSave: OnSave; autoSave: boolean; isMounted: boolean };
 
-export function IntegrationContextWrapper({ onSave, children }: Props) {
-  const sessionRef = useRef<Session>({ onSave, isMounted: false });
+export function IntegrationContextWrapper({ onSave, autoSave, children }: Props) {
+  const sessionRef = useRef<Session>({ onSave, autoSave, isMounted: false });
 
   useLayoutEffect(() => {
     sessionRef.current.onSave = onSave;
-  }, [onSave]);
+    sessionRef.current.autoSave = autoSave;
+  }, [onSave, autoSave]);
 
   const [value] = useState<IntegrationContextType>(() => {
     const isActive = () => sessionRef.current.isMounted;
-    const save: OnSave = (savingParams) =>
-      isActive() ? saveThroughIntegration(sessionRef.current.onSave, savingParams, isActive) : Promise.resolve('error');
+    const save: OnSave = (savingParams) => {
+      if (!isActive()) return Promise.resolve('error');
+      if (savingParams?.isAutoSave && !(sessionRef.current.autoSave && hasUnsavedChanges())) {
+        return Promise.resolve('success');
+      }
+      return saveThroughIntegration(sessionRef.current.onSave, savingParams, isActive);
+    };
 
     return {
       onSave: save,
@@ -94,6 +106,7 @@ const saveThroughIntegration = async (onSave: OnSave, savingParams: Parameters<O
 
   setStoreSavingStatus('saving');
 
+  const sentData = getStoreDataSnapshot();
   const didSaveStatus = await onSave(savingParams);
 
   if (!isActive()) {
@@ -102,6 +115,7 @@ const saveThroughIntegration = async (onSave: OnSave, savingParams: Parameters<O
 
   if (didSaveStatus === 'success') {
     setStoreSavingStatus('saved');
+    setStoreSavedData(sentData);
 
     if (!savingParams?.isAutoSave) {
       trackFutureChange('manualSave');

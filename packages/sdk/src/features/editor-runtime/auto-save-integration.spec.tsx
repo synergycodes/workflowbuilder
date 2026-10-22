@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { resetWorkflowStore } from '../../store/store';
+import { resetWorkflowStore, useStore } from '../../store/store';
 import type { OnSaveExternal } from '../../types/integration';
 import { WorkflowBuilderRoot } from '../../workflow-builder-root/workflow-builder-root';
 import { trackFutureChange, useChangesTrackerStore } from '../changes-tracker/stores/use-changes-tracker-store';
@@ -49,12 +49,12 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-async function renderAndTriggerAutoSave(builtInControls?: BuiltInControls) {
+async function renderAndTriggerAutoSave(builtInControls?: BuiltInControls, autoSave?: boolean) {
   const onDataSave: OnSaveExternal = vi.fn().mockResolvedValue('success');
 
   render(
     <StrictMode>
-      <WorkflowBuilderRoot integration={{ strategy: 'props', onDataSave }} builtInControls={builtInControls}>
+      <WorkflowBuilderRoot integration={{ strategy: 'props', onDataSave, autoSave }} builtInControls={builtInControls}>
         <CustomHeader />
         <DiagramContainer />
       </WorkflowBuilderRoot>
@@ -68,6 +68,7 @@ async function renderAndTriggerAutoSave(builtInControls?: BuiltInControls) {
   });
 
   act(() => {
+    useStore.getState().setWorkflowName('Changed');
     trackFutureChange('nodeChange');
   });
 
@@ -90,5 +91,11 @@ describe('Auto-save without a top bar', () => {
     const onDataSave = await renderAndTriggerAutoSave({ save: false });
 
     expect(onDataSave).toHaveBeenCalledWith(expect.anything(), { isAutoSave: true });
+  });
+
+  it('autoSave: false does not save after a change', async () => {
+    const onDataSave = await renderAndTriggerAutoSave(undefined, false);
+
+    expect(onDataSave).not.toHaveBeenCalled();
   });
 });

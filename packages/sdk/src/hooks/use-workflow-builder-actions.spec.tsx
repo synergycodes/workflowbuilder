@@ -35,6 +35,9 @@ vi.mock('../features/variables/modals/modal-settings', () => ({
 vi.mock('@/features/integration/stores/use-integration-store', () => ({
   getStoreSavingStatus: vi.fn(),
   setStoreSavingStatus: vi.fn(),
+  getStoreDataSnapshot: vi.fn(),
+  hasUnsavedChanges: vi.fn(() => true),
+  setStoreSavedData: vi.fn(),
 }));
 
 vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
@@ -52,7 +55,7 @@ function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('s
   }
 
   const view = render(
-    <IntegrationContextWrapper onSave={onSave}>
+    <IntegrationContextWrapper onSave={onSave} autoSave>
       <Consumer />
     </IntegrationContextWrapper>,
   );
@@ -556,7 +559,7 @@ describe('useWorkflowBuilderActions', () => {
 
       render(
         <StrictMode>
-          <IntegrationContextWrapper onSave={onSave}>
+          <IntegrationContextWrapper onSave={onSave} autoSave>
             <Consumer />
           </IntegrationContextWrapper>
         </StrictMode>,
@@ -578,12 +581,12 @@ describe('useWorkflowBuilderActions', () => {
       }
 
       const { rerender } = render(
-        <IntegrationContextWrapper onSave={firstOnSave}>
+        <IntegrationContextWrapper onSave={firstOnSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );
       rerender(
-        <IntegrationContextWrapper onSave={secondOnSave}>
+        <IntegrationContextWrapper onSave={secondOnSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );
@@ -608,13 +611,13 @@ describe('useWorkflowBuilderActions', () => {
       }
 
       const { rerender } = render(
-        <IntegrationContextWrapper onSave={onSave}>
+        <IntegrationContextWrapper onSave={onSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );
 
       rerender(
-        <IntegrationContextWrapper onSave={onSave}>
+        <IntegrationContextWrapper onSave={onSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );
@@ -633,7 +636,7 @@ describe('useWorkflowBuilderActions', () => {
       }
 
       const { rerender } = render(
-        <IntegrationContextWrapper onSave={onSave}>
+        <IntegrationContextWrapper onSave={onSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );
@@ -645,7 +648,7 @@ describe('useWorkflowBuilderActions', () => {
       });
 
       rerender(
-        <IntegrationContextWrapper onSave={onSave}>
+        <IntegrationContextWrapper onSave={onSave} autoSave>
           <Consumer />
         </IntegrationContextWrapper>,
       );

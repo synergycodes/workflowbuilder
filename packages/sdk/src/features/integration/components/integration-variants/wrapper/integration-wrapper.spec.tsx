@@ -27,7 +27,14 @@ type WrapperProps = {
 function wrapperElement({ isLoaded, loadFailed = false, onLoad }: WrapperProps) {
   return (
     <StrictMode>
-      <IntegrationWrapper isLoaded={isLoaded} loadFailed={loadFailed} onLoad={onLoad} nodes={nodes} onSave={vi.fn()} />
+      <IntegrationWrapper
+        isLoaded={isLoaded}
+        loadFailed={loadFailed}
+        onLoad={onLoad}
+        nodes={nodes}
+        onSave={vi.fn()}
+        autoSave
+      />
     </StrictMode>
   );
 }

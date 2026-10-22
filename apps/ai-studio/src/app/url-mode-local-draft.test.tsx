@@ -1,4 +1,4 @@
-import { getStoreNodes, useChangesTrackerStore, useStore } from '@workflowbuilder/sdk';
+import { type OnSaveExternal, getStoreNodes, useChangesTrackerStore, useStore } from '@workflowbuilder/sdk';
 import { act, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -62,13 +62,14 @@ let fetchMock: ReturnType<typeof vi.fn>;
 
 function mount(opened: OpenedSource) {
   const props = rootPropsFor(opened);
-  const { strategy, endpoints, onDataSave } = resolveIntegration(props.integration);
+  const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(props.integration);
   act(() =>
     root.render(
       <RuntimeIntegrationWrapper
         strategy={strategy}
         endpoints={endpoints}
         onDataSave={onDataSave}
+        autoSave={autoSave}
         onLoad={() => {}}
         name={props.name}
         nodes={props.initialNodes}
@@ -125,14 +126,16 @@ beforeEach(() => {
 afterEach(() => {
   act(() => root.unmount());
   container.remove();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
   vi.useRealTimers();
 });
 
 describe('the local draft in URL mode', () => {
-  it('is written in local mode when the page closes, so the checks below can see a write', async () => {
+  it('is written in local mode when the page closes after an edit, so the checks below can see a write', async () => {
     mount({ kind: 'local' });
 
+    moveFirstNode();
     await leaveThePage();
 
     expect(localStorage.getItem(LOCAL_DRAFT_KEY)).not.toBe(otherLocalDraft);
@@ -181,11 +184,20 @@ describe('the local draft in URL mode', () => {
     expect(showSnackbarSaveErrorIfNeeded).toHaveBeenCalledWith({ isAutoSave: false });
   });
 
-  it('a run from the link has no Save button, saves nowhere and leaves the local draft alone', async () => {
-    mount({ kind: 'execution', executionId: RUN, diagram });
+  it('a run from the link has no Save button, never calls its save callback on its own and leaves the local draft alone', async () => {
+    const opened: OpenedSource = { kind: 'execution', executionId: RUN, diagram };
+    const integration = rootPropsFor(opened).integration as { onDataSave: OnSaveExternal };
+    const onDataSave = vi.spyOn(integration, 'onDataSave');
+    mount(opened);
 
     expect(container.querySelectorAll('button')).toHaveLength(0);
+    moveFirstNode();
+    await act(async () => {
+      await save?.(true);
+    });
     await leaveThePage();
+
+    expect(onDataSave).not.toHaveBeenCalled();
     expect(draftPatches()).toHaveLength(0);
     expect(localStorage.getItem(LOCAL_DRAFT_KEY)).toBe(otherLocalDraft);
   });

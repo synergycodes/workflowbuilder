@@ -20,7 +20,7 @@ export const neverSaves: OnSaveExternal = () =>
 
 // Module-level, and one props object per opened source below: the run lock re-applies itself whenever the
 // editor's save callback changes identity.
-const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves };
+const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves, autoSave: false };
 const PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
 // Deliberately, for now: no Delete button in the properties panel for any selection; deleting stays on the keys.
 const EDITOR_CONTROLS: BuiltInControls = { delete: false };
