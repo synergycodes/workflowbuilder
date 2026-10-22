@@ -4,27 +4,33 @@ export type Theme = 'dark' | 'light';
 
 type Listener = () => void;
 
+type ControlledTheme = { theme: Theme; onChange: (theme: Theme) => void };
+
 const listeners = new Set<Listener>();
 
-function applyToDom(theme: Theme): void {
-  if (typeof document === 'undefined') return;
-  document.documentElement.dataset.theme = theme;
-}
+let controlled: ControlledTheme | null = null;
 
-export function getTheme(): Theme {
+function readPersistedTheme(): Theme {
   if (typeof localStorage === 'undefined') return 'light';
   const stored = localStorage.getItem(THEME_KEY);
   return stored === 'dark' || stored === 'light' ? stored : 'light';
 }
 
+export function getTheme(): Theme {
+  return controlled ? controlled.theme : readPersistedTheme();
+}
+
 export function setTheme(theme: Theme): void {
-  const current = getTheme();
-  if (current === theme) return;
+  // Controlled: the host owns the value and passes the new one back in.
+  if (controlled) {
+    if (controlled.theme !== theme) controlled.onChange(theme);
+    return;
+  }
+
+  if (readPersistedTheme() === theme) return;
 
   localStorage.setItem(THEME_KEY, theme);
-  applyToDom(theme);
-
-  for (const listener of listeners) listener();
+  notifyThemeChange();
 }
 
 export function subscribeTheme(listener: Listener): () => void {
@@ -35,13 +41,14 @@ export function subscribeTheme(listener: Listener): () => void {
 }
 
 /**
- * Reflect the persisted theme on the DOM. Idempotent and SSR-safe (no-op when
- * `document` is absent). Call once from the editor root's client-side mount
- * effect so a saved non-default theme paints on first load without waiting for
- * a `setTheme` toggle, including custom layouts that omit the app bar. Kept off
- * the module's top level on purpose: a side effect at import would crash any
- * server-side import of the SDK and could be dropped by tree-shaking.
+ * Store the host-controlled theme, or `null` to fall back to the persisted one.
+ * Written by Root during render, so it never notifies: updating subscribers mid-render
+ * is a React error. Root calls `notifyThemeChange()` from an effect instead.
  */
-export function initTheme(): void {
-  applyToDom(getTheme());
+export function setControlledTheme(theme: Theme | null, onChange: ((theme: Theme) => void) | null): void {
+  controlled = theme && onChange ? { theme, onChange } : null;
+}
+
+export function notifyThemeChange(): void {
+  for (const listener of listeners) listener();
 }

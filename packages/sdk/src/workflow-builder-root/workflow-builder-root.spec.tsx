@@ -27,6 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
+import { setControlledTheme } from '../hooks/theme';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -71,7 +72,7 @@ beforeEach(() => {
   setIsValidConnection(null);
   setReactFlowProps(null);
   localStorage.clear();
-  delete document.documentElement.dataset.theme;
+  setControlledTheme(null, null);
 });
 
 describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
@@ -139,10 +140,8 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     second.unmount();
   });
 
-  it('paints the persisted theme on the DOM at mount, even without an app bar', () => {
-    // The theme paint moved off `theme.ts` module level (which crashed SSR
-    // imports) into a Root mount effect. A saved non-default theme must still
-    // reach `document` on first render, with no app-bar toggle mounted.
+  it('never writes the theme to <html> at mount', () => {
+    // The host owns <html>; the SDK keeps its theme on its own elements.
     localStorage.setItem('wb-theme', 'dark');
 
     render(
@@ -151,7 +150,7 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
       </StrictMode>,
     );
 
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(document.documentElement.dataset.theme).toBeUndefined();
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

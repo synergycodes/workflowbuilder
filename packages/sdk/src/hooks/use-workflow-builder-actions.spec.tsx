@@ -7,7 +7,7 @@ import { openImportModal } from '../features/integration/components/import-expor
 import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { useStore } from '../store/store';
-import { getTheme } from './theme';
+import { getTheme, setControlledTheme } from './theme';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
 
 vi.mock('../features/integration/components/import-export/export-modal/open-export-modal', () => ({
@@ -54,13 +54,12 @@ describe('useWorkflowBuilderActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
-    delete document.documentElement.dataset.theme;
+    setControlledTheme(null, null);
     useStore.setState({ isReadOnlyMode: false, layoutDirection: 'RIGHT', nodes: [], reactFlowInstance: undefined });
   });
 
   afterEach(() => {
     localStorage.clear();
-    delete document.documentElement.dataset.theme;
   });
 
   describe('save', () => {
@@ -138,7 +137,6 @@ describe('useWorkflowBuilderActions', () => {
       actions.current!.setTheme('dark');
 
       expect(getTheme()).toBe('dark');
-      expect(document.documentElement.dataset.theme).toBe('dark');
     });
 
     it('toggleDarkMode flips theme', () => {
