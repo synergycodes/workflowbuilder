@@ -6,7 +6,7 @@ import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice
 import type { IntegrationDataFormat } from '../../../types/integration';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 
-type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
+type IntegrationSavingStatus = 'disabled' | 'loadFailed' | 'waiting' | 'saving' | 'saved' | 'notSaved';
 
 type IntegrationStore = {
   savingStatus: IntegrationSavingStatus;
@@ -24,14 +24,17 @@ export const useIntegrationStore = create<IntegrationStore>()(
   ),
 );
 
-export function loadData(loadData: Partial<IntegrationDataFormat>): { isEmpty: boolean } {
+export function loadData(
+  loadData: Partial<IntegrationDataFormat>,
+  { loadFailed = false }: { loadFailed?: boolean } = {},
+): { isEmpty: boolean } {
   const hasAnyData = Object.values(loadData).some(Boolean);
   const isEmpty = !loadData.nodes?.length;
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
   }
   // A name alone is applied silently: the welcome template selector follows for an empty diagram.
-  if (!isEmpty) {
+  if (!isEmpty && !loadFailed) {
     showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,
@@ -39,7 +42,7 @@ export function loadData(loadData: Partial<IntegrationDataFormat>): { isEmpty: b
   }
 
   useIntegrationStore.setState({
-    savingStatus: 'waiting',
+    savingStatus: loadFailed ? 'loadFailed' : 'waiting',
     lastSaveAttemptTimestamp: Date.now(),
   });
 

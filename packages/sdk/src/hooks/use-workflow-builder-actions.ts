@@ -1,22 +1,10 @@
-import { useContext, useMemo } from 'react';
-import { useTranslation } from 'react-i18next';
+import { useContext } from 'react';
 
-import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
-import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
-import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import type { LayoutDirection } from '../node/common';
-import { getStoreSelection } from '../store/slices/diagram-selection/actions';
-import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
-import { useStore } from '../store/store';
 import type { DidSaveStatus } from '../types/integration';
-import { type Theme, getTheme, setTheme } from './theme';
-import { useFitView } from './use-fit-view';
+import type { Theme } from './theme';
 import type { WorkflowBuilderLanguage } from './use-workflow-builder-state';
-
-/** Longest `setWorkflowName` accepts; longer names are ignored (see {@link WorkflowBuilderActions.setWorkflowName}). */
-const MAX_WORKFLOW_NAME_LENGTH = 128;
 
 /**
  * Optional side effects for a layout-direction *toggle*.
@@ -43,9 +31,10 @@ export type LayoutChangeOptions = {
  * exposes (`save`, modal openers, read-only and theme toggles) and adds
  * programmatic layout-direction control, which the header itself does not offer.
  *
- * Stable across renders while the active integration and the mounted
- * React Flow instance are stable (`deleteSelection` and the layout actions
- * close over that instance).
+ * The same object for the whole Root mount: every action reads the current canvas,
+ * integration and read-only mode when it is called, so it is safe to keep, e.g. from
+ * `onLoad`. Once the Root unmounts, every action does nothing and `save()` resolves
+ * `'error'` without sending data.
  *
  * Actions that change the persisted diagram (`setWorkflowName`, `deleteSelection`,
  * `setLayoutDirection`, `toggleLayoutDirection`) or open the template picker
@@ -111,7 +100,7 @@ export type WorkflowBuilderActions = {
 };
 
 /**
- * Returns a stable object of action callbacks: every command the built-in
+ * Returns the Root's action object, the same one `onLoad` receives: every command the built-in
  * `<WorkflowBuilder.EditorHeader />` offers, plus programmatic layout-direction
  * control. Use it from a custom header or toolbar when omitting the editor header.
  *
@@ -135,101 +124,5 @@ export type WorkflowBuilderActions = {
  * @category Hooks
  */
 export function useWorkflowBuilderActions(): WorkflowBuilderActions {
-  const { onSave } = useContext(IntegrationContext);
-  const setStoreReadOnly = useStore((s) => s.setReadOnly);
-  const setStorePaletteOpen = useStore((s) => s.setPaletteOpen);
-  const setStorePropertiesPanelOpen = useStore((s) => s.setPropertiesPanelOpen);
-  const setStorePaletteFilter = useStore((s) => s.setPaletteFilter);
-  const setStoreLayoutDirection = useStore((s) => s.setLayoutDirection);
-  const fitView = useFitView();
-  const reactFlowInstance = useStore((s) => s.reactFlowInstance);
-  const { i18n } = useTranslation();
-
-  const isReadOnly = () => useStore.getState().isReadOnly;
-
-  return useMemo<WorkflowBuilderActions>(
-    () => ({
-      save: () => onSave({ isAutoSave: false }),
-
-      openSettings: openModalWorkflowSettings,
-      openImport: openImportModal,
-      openExport: openExportModal,
-      openTemplates: openTemplateSelectorModal,
-
-      toggleReadOnly: () => setStoreReadOnly(!useStore.getState().isReadOnly),
-      setReadOnly: (value) => setStoreReadOnly(value),
-
-      togglePalette: () => setStorePaletteOpen(!useStore.getState().isPaletteOpen),
-      setPaletteOpen: (open) => setStorePaletteOpen(open),
-
-      togglePropertiesPanel: () => setStorePropertiesPanelOpen(!useStore.getState().isPropertiesPanelOpen),
-      setPropertiesPanelOpen: (open) => setStorePropertiesPanelOpen(open),
-
-      setPaletteFilter: (query) => setStorePaletteFilter(query),
-
-      toggleTheme: () => setTheme(getTheme() === 'light' ? 'dark' : 'light'),
-      setTheme: (theme) => setTheme(theme),
-
-      setLayoutDirection: (direction) => {
-        if (isReadOnly()) return;
-        setStoreLayoutDirection(direction);
-      },
-      toggleLayoutDirection: ({ flipPositions, fitView: doFitView } = {}) => {
-        if (isReadOnly()) return;
-
-        setStoreLayoutDirection(useStore.getState().layoutDirection === 'RIGHT' ? 'DOWN' : 'RIGHT');
-
-        // Naive x/y mirror. Goes through setStoreNodes so the nodes stay on
-        // the same mutation path as the rest of the editor (schema re-validation
-        // included); positions can't change validation, but consistency matters
-        // more than the redundant pass.
-        if (flipPositions) {
-          setStoreNodes(
-            getStoreNodes().map((node) => ({ ...node, position: { x: node.position.y, y: node.position.x } })),
-          );
-        }
-
-        if (doFitView) fitView();
-      },
-
-      deleteSelection: () => {
-        if (isReadOnly()) return;
-
-        const { nodes, edges } = getStoreSelection();
-        if (nodes.length === 0 && edges.length === 0) return;
-
-        // `onBeforeDelete` in `diagram.tsx` shows the confirmation modal and
-        // records the undo entry, the same path the Delete key goes through.
-        void reactFlowInstance?.deleteElements({ nodes, edges });
-      },
-
-      setLanguage: (code) => {
-        void i18n.changeLanguage(code);
-      },
-
-      setWorkflowName: (name) => {
-        if (isReadOnly()) return;
-
-        if (name.length > MAX_WORKFLOW_NAME_LENGTH) {
-          console.warn(
-            `[@workflowbuilder/sdk] setWorkflowName: ignored a name longer than ${MAX_WORKFLOW_NAME_LENGTH} characters.`,
-          );
-          return;
-        }
-
-        useStore.getState().setWorkflowName(name);
-      },
-    }),
-    [
-      onSave,
-      setStoreReadOnly,
-      setStorePaletteOpen,
-      setStorePropertiesPanelOpen,
-      setStorePaletteFilter,
-      setStoreLayoutDirection,
-      fitView,
-      reactFlowInstance,
-      i18n,
-    ],
-  );
+  return useContext(IntegrationContext).actions;
 }

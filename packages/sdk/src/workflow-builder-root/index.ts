@@ -5,10 +5,10 @@ export type {
   WorkflowBuilderIsValidConnection,
   WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderJsonFormConfig,
+  WorkflowBuilderLoadContext,
   WorkflowBuilderLogo,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderPlugin,
   WorkflowBuilderReactFlowProps,
   WorkflowBuilderRootProps,
-  WorkflowBuilderStartContext,
 } from './workflow-builder-root.types';

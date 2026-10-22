@@ -37,7 +37,9 @@ The runtime handles two operations:
 | Component mounts | `GET endpoints.load` — loads the initial diagram     |
 | User saves       | `POST endpoints.save` — persists the current diagram |
 
-The initial diagram is fetched from `endpoints.load`. `initialNodes` / `initialEdges` on `<WorkflowBuilder.Root>` are used as the first frame (before the fetch resolves) and as a fallback when the load endpoint fails — non-2xx responses and network errors leave the editor showing whatever you passed in. Pass them if you want a meaningful skeleton instead of an empty canvas during load.
+The initial diagram is fetched from `endpoints.load`. When nothing is stored yet, answer with a 2xx status and an empty body, `null` or `{}`: the editor then starts with an empty diagram (or with `initialNodes` / `initialEdges`, if you pass them) and saves normally.
+
+A non-2xx response, a network error or a body that is not JSON is a failed load. The editor stays usable and shows `initialNodes` / `initialEdges`, but it refuses to save for the rest of that mount, so it never overwrites the diagram it could not load. `onLoad` receives `loadFailed: true`, so you can tell the user; see [Load behavior](/guides/configuring-the-editor/#load-behavior).
 
 ## Authenticating requests
 

@@ -8,6 +8,7 @@ import type {
   PluginTranslationResource,
 } from '../features/json-form/extension-registry';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
+import type { WorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -183,15 +184,24 @@ export type WorkflowBuilderReactFlowProps = Omit<
 export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
 
 /**
- * What `onStart` on `<WorkflowBuilder.Root>` receives once the initial diagram load finished.
+ * What `onLoad` on `<WorkflowBuilder.Root>` receives once the initial load finished.
  *
  * @category Core
  */
-export type WorkflowBuilderStartContext = {
+export type WorkflowBuilderLoadContext = {
   /** True when the initial load produced no nodes. A `name` alone does not make the diagram non-empty. */
   isEmpty: boolean;
-  /** The same action as `useWorkflowBuilderActions().openTemplates`; a no-op in read-only mode. */
-  openTemplates: () => void;
+  /**
+   * True when the `api` load request failed; always `false` for `localStorage` and `props`. The
+   * editor stays usable, but refuses to save for the rest of this Root mount, so nothing can
+   * overwrite the copy on the server that could not be loaded.
+   */
+  loadFailed: boolean;
+  /**
+   * The same actions as `useWorkflowBuilderActions()`. Safe to keep after the handler returns: they
+   * act on this Root while it is mounted and do nothing once it unmounts.
+   */
+  actions: WorkflowBuilderActions;
 };
 
 /**
@@ -246,11 +256,11 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   /**
    * Runs once per Root mount, after the initial load of the active integration: for `localStorage`
    * and `props` right after mount, for `api` once the load request settled, also when it failed.
-   * Defaults to `({ isEmpty, openTemplates }) => { if (isEmpty) openTemplates(); }`, which offers
-   * the template selector for an empty diagram. A custom handler replaces the default entirely, so
-   * the template selector opens only when the handler calls `openTemplates`.
+   * Defaults to `({ isEmpty, loadFailed, actions }) => { if (isEmpty && !loadFailed) actions.openTemplates(); }`,
+   * which offers the template selector for an empty diagram. A custom handler replaces the default
+   * entirely, so the template selector opens only when the handler calls `actions.openTemplates()`.
    */
-  onStart?: (context: WorkflowBuilderStartContext) => void;
+  onLoad?: (context: WorkflowBuilderLoadContext) => void;
   /** Workflow name displayed in the editor header and persisted with the diagram. */
   name?: string;
   /**
@@ -290,9 +300,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
    * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
    * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding
-   * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself; hiding
-   * `propertiesPanelToggle` leaves the same dead end once that panel is collapsed, unless the app
-   * calls `setPropertiesPanelOpen(true)`.
+   * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself, e.g.
+   * from `onLoad`; hiding `propertiesPanelToggle` leaves the same dead end once that panel is
+   * collapsed, unless the app calls `setPropertiesPanelOpen(true)`.
    *
    * Changes apply on the next render. An inline object works, but a new object re-renders every
    * built-in control, so prefer a stable reference (a module constant or `useMemo`).

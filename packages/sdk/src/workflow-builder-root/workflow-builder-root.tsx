@@ -14,7 +14,7 @@ import { resetIntegrationStore } from '../features/integration/stores/use-integr
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
-import { defaultOnStart } from './default-on-start';
+import { defaultOnLoad } from './default-on-load';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
 import type {
@@ -58,7 +58,7 @@ export function WorkflowBuilderRoot({
   plugins,
   jsonForm,
   integration,
-  onStart,
+  onLoad,
   name,
   logo,
   logoHref,
@@ -148,7 +148,7 @@ export function WorkflowBuilderRoot({
       strategy={strategy}
       endpoints={endpoints}
       onDataSave={onDataSave}
-      onStart={onStart ?? defaultOnStart}
+      onLoad={onLoad ?? defaultOnLoad}
       name={name}
       layoutDirection={layoutDirection}
       nodes={initialNodes}

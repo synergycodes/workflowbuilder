@@ -1,46 +1,48 @@
-import { type PropsWithChildren, useEffect, useRef } from 'react';
+import { type PropsWithChildren, useContext, useEffect, useRef } from 'react';
 
 import type { IntegrationDataFormatOptional, OnSave } from '../../../../../types/integration';
-import type { WorkflowBuilderStartContext } from '../../../../../workflow-builder-root/workflow-builder-root.types';
-import { openTemplateSelectorModal } from '../../../../modals/template-selector/open-template-selector-modal';
+import type { WorkflowBuilderLoadContext } from '../../../../../workflow-builder-root/workflow-builder-root.types';
 import { loadData } from '../../../stores/use-integration-store';
-import { IntegrationContextWrapper } from '../context/integration-context-wrapper';
+import { IntegrationContext, IntegrationContextWrapper } from '../context/integration-context-wrapper';
 
-type Props = PropsWithChildren<
-  IntegrationDataFormatOptional & {
-    isLoaded: boolean;
-    onStart: (context: WorkflowBuilderStartContext) => void;
-    onSave: OnSave;
-  }
->;
+type InitialLoadProps = IntegrationDataFormatOptional & {
+  isLoaded: boolean;
+  loadFailed: boolean;
+  onLoad: (context: WorkflowBuilderLoadContext) => void;
+};
 
-export function IntegrationWrapper({
-  children,
+type Props = PropsWithChildren<InitialLoadProps & { onSave: OnSave }>;
+
+export function IntegrationWrapper({ children, onSave, ...initialLoadProps }: Props) {
+  return (
+    <IntegrationContextWrapper onSave={onSave}>
+      {children}
+      <InitialLoad {...initialLoadProps} />
+    </IntegrationContextWrapper>
+  );
+}
+
+function InitialLoad({
   isLoaded,
-  onStart,
+  loadFailed,
+  onLoad,
   name,
   globalVariables,
   layoutDirection,
   nodes,
   edges,
-  onSave,
-}: Props) {
-  const hasStartedRef = useRef(false);
+}: InitialLoadProps) {
+  const { actions } = useContext(IntegrationContext);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     // Once per mount: a later run would load the initial data over the user's edits.
-    if (!isLoaded || hasStartedRef.current) return;
-    hasStartedRef.current = true;
+    if (!isLoaded || hasLoadedRef.current) return;
+    hasLoadedRef.current = true;
 
-    const { isEmpty } = loadData({
-      name,
-      layoutDirection,
-      globalVariables,
-      nodes,
-      edges,
-    });
-    onStart({ isEmpty, openTemplates: openTemplateSelectorModal });
-  }, [isLoaded, onStart, edges, globalVariables, layoutDirection, name, nodes]);
+    const { isEmpty } = loadData({ name, layoutDirection, globalVariables, nodes, edges }, { loadFailed });
+    onLoad({ isEmpty, loadFailed, actions });
+  }, [isLoaded, loadFailed, onLoad, actions, edges, globalVariables, layoutDirection, name, nodes]);
 
-  return <IntegrationContextWrapper onSave={onSave}>{children}</IntegrationContextWrapper>;
+  return null;
 }

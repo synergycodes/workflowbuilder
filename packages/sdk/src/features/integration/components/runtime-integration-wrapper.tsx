@@ -7,7 +7,7 @@ import type {
   OnSave,
   OnSaveExternal,
 } from '../../../types/integration';
-import type { WorkflowBuilderStartContext } from '../../../workflow-builder-root/workflow-builder-root.types';
+import type { WorkflowBuilderLoadContext } from '../../../workflow-builder-root/workflow-builder-root.types';
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../utils/show-snackbar';
 import { IntegrationWrapper } from './integration-variants/wrapper/integration-wrapper';
 
@@ -18,7 +18,7 @@ type Props = PropsWithChildren<
     strategy: IntegrationStrategy;
     endpoints?: { load: string; save: string };
     onDataSave?: OnSaveExternal;
-    onStart: (context: WorkflowBuilderStartContext) => void;
+    onLoad: (context: WorkflowBuilderLoadContext) => void;
   }
 >;
 
@@ -26,7 +26,7 @@ export function RuntimeIntegrationWrapper({
   strategy,
   endpoints,
   onDataSave,
-  onStart,
+  onLoad,
   name: nameProperty,
   globalVariables: globalVariablesProperty,
   layoutDirection: layoutDirectionProperty,
@@ -45,13 +45,15 @@ export function RuntimeIntegrationWrapper({
   );
 
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
 
   useEffect(() => {
     if (strategy === 'api' && endpoints?.load) {
       let isObsolete = false;
-      fetchDiagram(endpoints.load).then((data) => {
+      fetchDiagram(endpoints.load).then((result) => {
         if (isObsolete) return;
-        if (data) setData(data);
+        if (!result.ok) setLoadFailed(true);
+        else if (result.data) setData(result.data);
         setIsLoaded(true);
       });
       return () => {
@@ -122,7 +124,8 @@ export function RuntimeIntegrationWrapper({
       nodes={nodes}
       edges={edges}
       isLoaded={isLoaded}
-      onStart={onStart}
+      loadFailed={loadFailed}
+      onLoad={onLoad}
       onSave={handleSave}
     >
       {children}
@@ -147,12 +150,15 @@ function readStoredDiagram(): IntegrationDataFormatOptional | undefined {
   }
 }
 
-async function fetchDiagram(url: string): Promise<IntegrationDataFormatOptional | undefined> {
+async function fetchDiagram(
+  url: string,
+): Promise<{ ok: true; data: IntegrationDataFormatOptional | null } | { ok: false }> {
   try {
     const response = await fetch(url);
-    if (!response.ok) return;
-    return (await response.json()) as IntegrationDataFormatOptional | undefined;
+    if (!response.ok) return { ok: false };
+    const body = await response.text();
+    return { ok: true, data: body.trim() ? (JSON.parse(body) as IntegrationDataFormatOptional | null) : null };
   } catch {
-    return;
+    return { ok: false };
   }
 }

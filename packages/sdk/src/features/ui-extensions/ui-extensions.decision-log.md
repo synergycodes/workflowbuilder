@@ -115,6 +115,24 @@ Design decisions a reader of the code should know:
   while the saving status is still `'disabled'`, and Root resets that status on every mount. Auto-save
   and the save on tab close now run in every layout, so without the guard a tab closed during a slow
   `api` load would send the reset, empty store to the save endpoint.
+- **The load hook is `onLoad`, not `onStart`.** "Start" already names the start node of a workflow, the
+  node a run begins at, so `onStart` read as a hook about that node. The hook fires when the initial load
+  of the integration finished, and `onLoad` says so. `onStart` never shipped, so it has no alias.
+- **`onLoad` hands over the full actions, not a single `openTemplates`.** What a host does after the
+  load varies: open the palette when `paletteToggle` is hidden, show its own welcome screen, save
+  right away. One action per need would grow the context with every request. The context carries
+  the same object as `useWorkflowBuilderActions()`, so a host may also keep it, e.g. in a ref outside
+  Root, which covers the need for a separate imperative handle. That is why every action reads the
+  canvas, the integration and read-only mode when it is called, and why the actions of an
+  unmounted Root do nothing: the store is shared across Root mounts, so a kept `save` would
+  otherwise send the next Root's diagram through the old integration.
+- **A failed `api` load refuses saves for the rest of the mount.** A failed load used to look like an
+  empty diagram: the template selector opened, saving was on, and the first auto-save overwrote the
+  workflow on the server that could not be loaded. Saving now resolves `'error'` without sending
+  data (decided by Piotr Błaszczyk, 21.10.2026). The editor stays usable and no loader stays on
+  screen, so the user does not lose the session; what to show is the host's call through
+  `loadFailed`. A `200` with an empty body still counts as an empty diagram, so an endpoint that
+  has nothing stored yet can still be saved to.
 - **The read-only guard moved into `openTemplateSelectorModal`, not only into the `openTemplates`
   action.** `TemplateSelector` replaces the whole diagram through `setDiagramModel` without
   checking read-only mode itself. Before this change the palette's Templates button had a

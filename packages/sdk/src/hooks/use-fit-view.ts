@@ -2,6 +2,7 @@ import type { FitViewOptions } from '@xyflow/react';
 import { useCallback } from 'react';
 
 import { FIT_VIEW_BASE_PADDING, FIT_VIEW_DURATION_TIME, FIT_VIEW_MAX_ZOOM } from '../features/diagram/diagram.const';
+import type { WorkflowBuilderReactFlowInstance } from '../node/common';
 import { useStore } from '../store/store';
 
 /**
@@ -20,22 +21,24 @@ import { useStore } from '../store/store';
 export function useFitView() {
   const reactFlowInstance = useStore((store) => store.reactFlowInstance);
 
-  const fitView = useCallback(() => {
-    requestAnimationFrame(() => {
-      const scale = reactFlowInstance?.getZoom() ?? 1;
-      const padding = getPadding(scale);
-
-      if (reactFlowInstance) {
-        reactFlowInstance.fitView({
-          duration: FIT_VIEW_DURATION_TIME,
-          maxZoom: FIT_VIEW_MAX_ZOOM,
-          padding,
-        });
-      }
-    });
-  }, [reactFlowInstance]);
+  const fitView = useCallback(() => fitDiagramView(reactFlowInstance), [reactFlowInstance]);
 
   return fitView;
+}
+
+export function fitDiagramView(reactFlowInstance: WorkflowBuilderReactFlowInstance | null) {
+  requestAnimationFrame(() => {
+    const scale = reactFlowInstance?.getZoom() ?? 1;
+    const padding = getPadding(scale);
+
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView({
+        duration: FIT_VIEW_DURATION_TIME,
+        maxZoom: FIT_VIEW_MAX_ZOOM,
+        padding,
+      });
+    }
+  });
 }
 
 function getPadding(scale: number) {

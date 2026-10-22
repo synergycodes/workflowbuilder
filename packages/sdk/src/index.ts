@@ -60,7 +60,7 @@ export type {
   WorkflowBuilderIsValidConnection,
   WorkflowBuilderIsValidConnectionParams,
   WorkflowBuilderReactFlowProps,
-  WorkflowBuilderStartContext,
+  WorkflowBuilderLoadContext,
 } from './workflow-builder-root';
 export type { BuiltInControl, BuiltInControls } from './features/ui-extensions/built-in-controls';
 
