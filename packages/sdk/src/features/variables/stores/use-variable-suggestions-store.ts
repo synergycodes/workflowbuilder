@@ -1,12 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 
-import type { SuggestionsBySourceHandle, SuggestionsNodeData } from './types';
+import type { CommonNodeSuggestion, SuggestionsNodeData } from './types';
 
 export type VariablesSuggestionsStore = {
   lastUpdateIndex: number;
   commonByType: {
-    [nodeType: string]: SuggestionsBySourceHandle | undefined;
+    [nodeType: string]: CommonNodeSuggestion | undefined;
   };
   byNodeId: {
     [nodeId: string]: SuggestionsNodeData | undefined;

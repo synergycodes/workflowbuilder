@@ -1,21 +1,34 @@
 import { truncate } from '../../../../utils/text';
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
-import {
-  NODE_ID_FOR_COMMON_NODE_DATA,
-  NODE_LABEL_FOR_COMMON_NODE_DATA,
-  SPECIAL_SOURCE_HANDLE_KEYWORDS,
-} from '../../constants';
+import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA, SOURCE_HANDLE_TYPE } from '../../constants';
 import { filterSuggestionsDuplicates } from '../../utils/core/filter-suggestions-duplicates';
-import { SUGGESTION_NODE_TYPE, type SuggestionsBySourceHandle } from '../types';
+import { type NodeVariablesSuggestions, SUGGESTION_NODE_TYPE } from '../types';
 import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '../use-variable-suggestions-store';
 
 type UndefinedNotIndexed = undefined;
 
-// General getter for all variables from a node, divided by source handles
+// Placeholders stored under commonByType become this node's id and label
+function resolveCommonNodePlaceholders<T extends { [key: string]: VariableSuggestion[] | undefined }>(
+  suggestionsByKey: T,
+  node: { nodeId: string; nodeLabel: string },
+): T {
+  return Object.fromEntries(
+    Object.entries(suggestionsByKey).map(([key, suggestions = []]) => [
+      key,
+      suggestions.map((suggestion) => ({
+        ...suggestion,
+        display: suggestion.display.replace(NODE_LABEL_FOR_COMMON_NODE_DATA, truncate(node.nodeLabel, 15)),
+        id: suggestion.id.replace(NODE_ID_FOR_COMMON_NODE_DATA, node.nodeId),
+      })),
+    ]),
+  ) as T;
+}
+
+// General getter for all variables from a node, by source handle and by source handle type
 export const getVariableBySourceHandlesForNode = (params: {
   nodeId: string;
   cachedStore?: VariablesSuggestionsStore;
-}): SuggestionsBySourceHandle | UndefinedNotIndexed => {
+}): NodeVariablesSuggestions | UndefinedNotIndexed => {
   // Pass the store if you want to call this function multiple times
   const store = params.cachedStore ?? useVariablesSuggestionsStore.getState();
 
@@ -25,32 +38,18 @@ export const getVariableBySourceHandlesForNode = (params: {
     return undefined;
   }
 
-  let bySourceHandle: SuggestionsBySourceHandle | undefined;
-
   if (nodeData.type === SUGGESTION_NODE_TYPE.CUSTOM) {
-    bySourceHandle = nodeData.bySourceHandle;
-  } else if (nodeData.type === SUGGESTION_NODE_TYPE.COMMON) {
-    // Some nodes (with the same type) have suggestions stored in shared place and need adjustment
-    bySourceHandle = Object.entries(store.commonByType[nodeData.nodeType] || {}).reduce(
-      (stack: SuggestionsBySourceHandle, [sourceHandle, suggestions = []]) => {
-        stack[sourceHandle] = suggestions.map((suggestion) => ({
-          ...suggestion,
-          display: suggestion.display.replace(NODE_LABEL_FOR_COMMON_NODE_DATA, truncate(nodeData.nodeLabel, 15)),
-          id: suggestion.id.replace(NODE_ID_FOR_COMMON_NODE_DATA, params.nodeId),
-        }));
-
-        return stack;
-      },
-      {},
-    );
+    return { bySourceHandle: nodeData.bySourceHandle, bySourceHandleType: nodeData.bySourceHandleType };
   }
 
-  if (bySourceHandle) {
-    return bySourceHandle;
-  }
+  // Some nodes (with the same type) have suggestions stored in shared place and need adjustment
+  const commonSuggestions = store.commonByType[nodeData.nodeType];
+  const node = { nodeId: params.nodeId, nodeLabel: nodeData.nodeLabel };
 
-  // Not indexed
-  return undefined;
+  return {
+    bySourceHandle: resolveCommonNodePlaceholders(commonSuggestions?.bySourceHandle || {}, node),
+    bySourceHandleType: resolveCommonNodePlaceholders(commonSuggestions?.bySourceHandleType || {}, node),
+  };
 };
 
 // Getter for variables of picked node available from picked sourceHandle
@@ -60,29 +59,20 @@ export const getNodeVariablesSuggestions = (params: {
   // Pass one store if you want to call it multiple times
   cachedStore?: VariablesSuggestionsStore;
 }): VariableSuggestion[] | UndefinedNotIndexed => {
-  const bySourceHandle = getVariableBySourceHandlesForNode(params);
+  const nodeSuggestions = getVariableBySourceHandlesForNode(params);
 
   // Not indexed
-  if (!bySourceHandle) {
+  if (!nodeSuggestions) {
     return undefined;
   }
 
-  let suggestions: VariableSuggestion[] | UndefinedNotIndexed = undefined;
-
+  const { bySourceHandle, bySourceHandleType } = nodeSuggestions;
   const sourceHandle = params.sourceHandle || '';
+  const isErrorBranch = sourceHandle.toLowerCase().includes(SOURCE_HANDLE_TYPE.ERROR);
 
-  if (Array.isArray(bySourceHandle[sourceHandle])) {
-    suggestions = bySourceHandle[sourceHandle];
-  }
-
-  const isErrorBranch = sourceHandle.toLowerCase().includes(SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR);
-
-  suggestions = filterSuggestionsDuplicates([
-    ...(suggestions || []),
-    ...(bySourceHandle[SPECIAL_SOURCE_HANDLE_KEYWORDS.EVERY] || []),
-    ...(bySourceHandle[isErrorBranch ? SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR : SPECIAL_SOURCE_HANDLE_KEYWORDS.SUCCESS] ||
-      []),
+  return filterSuggestionsDuplicates([
+    ...(bySourceHandle[sourceHandle] || []),
+    ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
+    ...(bySourceHandleType[isErrorBranch ? SOURCE_HANDLE_TYPE.ERROR : SOURCE_HANDLE_TYPE.SUCCESS] || []),
   ]);
-
-  return suggestions;
 };

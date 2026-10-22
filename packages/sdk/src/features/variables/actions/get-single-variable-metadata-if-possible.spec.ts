@@ -78,20 +78,25 @@ describe('getSingleVariableMetadataIfPossible', () => {
   describe('previous node variables', () => {
     const nodeId = 'node-1';
 
-    it('resolves a suggestion from a custom-indexed node regardless of its source handle', () => {
+    it('resolves a suggestion of a custom-indexed node stored by source handle or by source handle type', () => {
       useStore.setState({ nodes: [createNode(nodeId)] });
       useVariablesSuggestionsStore.setState({
         byNodeId: {
           [nodeId]: {
             type: SUGGESTION_NODE_TYPE.CUSTOM,
-            bySourceHandle: {
-              success: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')],
+            bySourceHandle: { left: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')] },
+            bySourceHandleType: {
               error: [createSuggestion(`nodes.${nodeId}.error.message`, 'Error message', 'string')],
             },
           },
         },
       });
 
+      expect(getSingleVariableMetadataIfPossible(`{{nodes.${nodeId}.output}}`)).toEqual({
+        label: 'Output',
+        type: 'string',
+        reference: `{{nodes.${nodeId}.output}}`,
+      });
       expect(getSingleVariableMetadataIfPossible(`{{nodes.${nodeId}.error.message}}`)).toEqual({
         label: 'Error message',
         type: 'string',
@@ -104,13 +109,16 @@ describe('getSingleVariableMetadataIfPossible', () => {
       useVariablesSuggestionsStore.setState({
         commonByType: {
           http: {
-            success: [
-              createSuggestion(
-                `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.status`,
-                `${NODE_LABEL_FOR_COMMON_NODE_DATA} · status`,
-                'number',
-              ),
-            ],
+            bySourceHandle: {
+              success: [
+                createSuggestion(
+                  `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.status`,
+                  `${NODE_LABEL_FOR_COMMON_NODE_DATA} · status`,
+                  'number',
+                ),
+              ],
+            },
+            bySourceHandleType: {},
           },
         },
         byNodeId: {
@@ -130,7 +138,8 @@ describe('getSingleVariableMetadataIfPossible', () => {
         byNodeId: {
           [nodeId]: {
             type: SUGGESTION_NODE_TYPE.CUSTOM,
-            bySourceHandle: { success: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')] },
+            bySourceHandle: { left: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')] },
+            bySourceHandleType: {},
           },
         },
       });
@@ -150,7 +159,8 @@ describe('getSingleVariableMetadataIfPossible', () => {
         byNodeId: {
           [nodeId]: {
             type: SUGGESTION_NODE_TYPE.CUSTOM,
-            bySourceHandle: { success: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')] },
+            bySourceHandle: { left: [createSuggestion(`nodes.${nodeId}.output`, 'Output', 'string')] },
+            bySourceHandleType: {},
           },
         },
       });

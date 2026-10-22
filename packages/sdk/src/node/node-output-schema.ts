@@ -1,5 +1,7 @@
 import type { JsonSchema7 } from '@jsonforms/core';
 
+import type { SourceHandleType } from '../features/variables/constants';
+
 export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date';
 
 export type VariableType = VariableTypePrimitive | 'object' | 'array';
@@ -25,9 +27,10 @@ export const OUTPUT_SCHEMA_TYPE = {
 
 export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
 
+export type PropertiesBySourceHandleType = Partial<Record<SourceHandleType, JsonSchema7>>;
+
 export type PropertiesBySourceHandle = {
   [sourceHandle: string]: JsonSchema7 | undefined;
-  every?: JsonSchema7;
 };
 
 export type OutputVariant =
@@ -37,25 +40,29 @@ export type OutputVariant =
         | {
             onlyIfPropertyNameEquals: { path: string; value: string | number };
           };
-      bySourceHandle: PropertiesBySourceHandle;
+      bySourceHandle?: PropertiesBySourceHandle;
+      bySourceHandleType?: PropertiesBySourceHandleType;
     }
   | {
       variantRule: {
         onlyIfPropertyNameEquals: { path: string; value: string | number };
         fromValueOfPropertyPath: string;
-        toSourceHandles: string[];
+        toSourceHandles: string[] | undefined;
+        toSourceHandlesTypes: SourceHandleType[] | undefined;
       };
     }
   | {
       variantRule: {
         fromValueOfPropertyPath: string;
-        toSourceHandles: string[];
+        toSourceHandles: string[] | undefined;
+        toSourceHandlesTypes: SourceHandleType[] | undefined;
       };
     };
 
 export type NodeSchemaOutputDefault = {
   type: 'default';
-  bySourceHandle: PropertiesBySourceHandle;
+  bySourceHandle?: PropertiesBySourceHandle;
+  bySourceHandleType?: PropertiesBySourceHandleType;
 };
 
 export type NodeSchemaOutputVariant = {

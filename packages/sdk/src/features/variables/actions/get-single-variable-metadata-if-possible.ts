@@ -56,13 +56,16 @@ export function getSingleVariableMetadataIfPossible(
       return;
     }
 
-    const variablesBySourceHandles = getVariableBySourceHandlesForNode({ nodeId: node.id });
+    const nodeSuggestions = getVariableBySourceHandlesForNode({ nodeId: node.id });
 
-    if (!variablesBySourceHandles) {
+    if (!nodeSuggestions) {
       return;
     }
 
-    const allSuggestions = Object.values(variablesBySourceHandles).flatMap((suggestions) => suggestions || []);
+    const allSuggestions = [
+      ...Object.values(nodeSuggestions.bySourceHandle),
+      ...Object.values(nodeSuggestions.bySourceHandleType),
+    ].flatMap((suggestions) => suggestions || []);
 
     const suggestion = allSuggestions.find((suggestion) => suggestion.id === referenceWithoutBrackets);
     if (suggestion) {

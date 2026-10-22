@@ -187,7 +187,7 @@ describe('getSuggestionsNodeData', () => {
           variantRule: {
             onlyIfPropertyNameEquals: { path: 'mode', value: 'custom' },
             fromValueOfPropertyPath: 'outputs',
-            toSourceHandles: ['success'],
+            toSourceHandlesTypes: ['success'],
           },
         },
       ]);

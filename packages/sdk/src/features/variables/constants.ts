@@ -136,12 +136,12 @@ export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
 export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
 
 /**
- * Bucket keys in `bySourceHandle` (docs guide "Use Variable Picker" § Add schemaOutput). `error` is a substring
- * match on the handle name. A variable in several buckets must keep one type: duplicates are dropped by id,
- * not resolved per handle. See variables-referencing-strategy.decision-log.md § 3.
+ * Keys of `bySourceHandleType`, resolved from the handle id: `settled` always, `error` if the id contains `error`,
+ * `success` otherwise. See variables-referencing-strategy.decision-log.md § 3.
  */
-export const SPECIAL_SOURCE_HANDLE_KEYWORDS = {
-  EVERY: 'every',
+export const SOURCE_HANDLE_TYPE = {
+  SETTLED: 'settled',
   SUCCESS: 'success',
   ERROR: 'error',
 } as const;
+export type SourceHandleType = (typeof SOURCE_HANDLE_TYPE)[keyof typeof SOURCE_HANDLE_TYPE];

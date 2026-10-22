@@ -3,9 +3,16 @@ import type { WorkflowBuilderNode } from '../../../../../node/node-data';
 import { OUTPUT_SCHEMA_TYPE } from '../../../../../node/node-output-schema';
 import { filterEmpty } from '../../../../../utils/array';
 import { getByPath } from '../../../../../utils/object';
+import { SOURCE_HANDLE_TYPE } from '../../../constants';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
+import { getIsSourceHandleType } from '../../../utils/guards/get-is-source-handle-type';
 import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-index-if-valid';
-import { SUGGESTION_NODE_TYPE, type SuggestionNodeType, type SuggestionsBySourceHandle } from '../../types';
+import {
+  SUGGESTION_NODE_TYPE,
+  type SuggestionNodeType,
+  type SuggestionsBySourceHandle,
+  type SuggestionsBySourceHandleType,
+} from '../../types';
 import { getDeprecatedSuggestionsFromOutputSchema } from './get-deprecated-suggestions-from-output-schema';
 import { getSuggestionsFromSchemaOutput } from './get-suggestions-from-schema-output';
 import { getSuggestionsFromVariablesIndex } from './get-suggestions-from-variables-index';
@@ -18,13 +25,13 @@ type Params = {
 type Response = {
   type: SuggestionNodeType;
   bySourceHandle: SuggestionsBySourceHandle;
+  bySourceHandleType: SuggestionsBySourceHandleType;
 };
 
 const EMPTY_NODE_SUGGESTIONS: Response = {
   type: SUGGESTION_NODE_TYPE.CUSTOM,
-  bySourceHandle: {
-    every: [],
-  },
+  bySourceHandle: {},
+  bySourceHandleType: {},
 };
 
 /**
@@ -33,16 +40,15 @@ const EMPTY_NODE_SUGGESTIONS: Response = {
  */
 export function getSuggestionsNodeData({ definition, node }: Params): Response {
   const nodeLabel = getNodeLabelForVariable({ node, definition });
-  const bySourceHandle: SuggestionsBySourceHandle = {
-    every: [],
-  };
+  const bySourceHandle: SuggestionsBySourceHandle = {};
+  const bySourceHandleType: SuggestionsBySourceHandleType = {};
 
   if (!definition?.schemaOutput?.type) {
     // outputSchema is deprecated and will be removed in future versions
     if (definition?.outputSchema?.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
       // The old format doesn't return the same value for all handles
-      bySourceHandle['every'] = [
-        ...(bySourceHandle['every'] || []),
+      bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] = [
+        ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
         ...getDeprecatedSuggestionsFromOutputSchema({
           nodeId: node.id,
           nodeLabel,
@@ -53,6 +59,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       return {
         type: SUGGESTION_NODE_TYPE.COMMON,
         bySourceHandle,
+        bySourceHandleType,
       };
     }
 
@@ -73,8 +80,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       });
 
       if (variant) {
-        bySourceHandle['every'] = [
-          ...(bySourceHandle['every'] || []),
+        bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] = [
+          ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
           ...getDeprecatedSuggestionsFromOutputSchema({
             nodeId: node.id,
             nodeLabel,
@@ -85,12 +92,14 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
         return {
           type: SUGGESTION_NODE_TYPE.CUSTOM,
           bySourceHandle,
+          bySourceHandleType,
         };
       }
 
       return {
         type: SUGGESTION_NODE_TYPE.CUSTOM,
         bySourceHandle: {},
+        bySourceHandleType: {},
       };
     }
 
@@ -99,7 +108,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
 
   // Node that always returns the same variables
   if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
-    for (const [sourceHandle, properties] of Object.entries(definition.schemaOutput.bySourceHandle)) {
+    for (const [sourceHandle, properties] of Object.entries(definition.schemaOutput.bySourceHandle || {})) {
       if (properties) {
         bySourceHandle[sourceHandle] = [
           ...(bySourceHandle[sourceHandle] || []),
@@ -112,9 +121,22 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       }
     }
 
+    for (const [sourceHandleType, properties] of Object.entries(definition.schemaOutput.bySourceHandleType || {})) {
+      if (properties && getIsSourceHandleType(sourceHandleType)) {
+        bySourceHandleType[sourceHandleType] = [
+          ...(bySourceHandleType[sourceHandleType] || []),
+          ...getSuggestionsFromSchemaOutput({
+            nodeId: node.id,
+            nodeLabel,
+            properties,
+          }),
+        ];
+      }
+    }
     return {
       type: SUGGESTION_NODE_TYPE.COMMON,
       bySourceHandle,
+      bySourceHandleType,
     };
   }
 
@@ -139,10 +161,25 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     for (const variant of variantsMatchingDataPropertyValue) {
       // Default variables by sourceHandle
       if ('bySourceHandle' in variant) {
-        for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle)) {
+        for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle || {})) {
           if (properties) {
             bySourceHandle[sourceHandle] = [
               ...(bySourceHandle[sourceHandle] || []),
+              ...getSuggestionsFromSchemaOutput({
+                nodeId: node.id,
+                nodeLabel,
+                properties,
+              }),
+            ];
+          }
+        }
+      }
+
+      if ('bySourceHandleType' in variant) {
+        for (const [sourceHandleType, properties] of Object.entries(variant.bySourceHandleType || {})) {
+          if (properties && getIsSourceHandleType(sourceHandleType)) {
+            bySourceHandleType[sourceHandleType] = [
+              ...(bySourceHandleType[sourceHandleType] || []),
               ...getSuggestionsFromSchemaOutput({
                 nodeId: node.id,
                 nodeLabel,
@@ -162,8 +199,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
 
         const variablesIndex = getVariablesIndexIfValid(maybeVariablesIndex);
 
-        const sourceHandlesToAdd = variant.variantRule.toSourceHandles;
-
         if (variablesIndex) {
           const suggestions = getSuggestionsFromVariablesIndex({
             variablesIndex,
@@ -172,8 +207,12 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
             variant: 'nodes',
           });
 
-          for (const sourceHandle of sourceHandlesToAdd) {
+          for (const sourceHandle of variant.variantRule.toSourceHandles || []) {
             bySourceHandle[sourceHandle] = [...(bySourceHandle[sourceHandle] || []), ...suggestions];
+          }
+
+          for (const sourceHandleType of variant.variantRule.toSourceHandlesTypes || []) {
+            bySourceHandleType[sourceHandleType] = [...(bySourceHandleType[sourceHandleType] || []), ...suggestions];
           }
         }
       }
@@ -182,6 +221,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return {
       type: SUGGESTION_NODE_TYPE.CUSTOM,
       bySourceHandle,
+      bySourceHandleType,
     };
   }
 

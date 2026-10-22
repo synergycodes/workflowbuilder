@@ -18,7 +18,7 @@ function refreshNodesSuggestions(nodes: WorkflowBuilderNode[], initialStore: Var
 
     if (definition) {
       const nodeLabel = getNodeLabelForVariable({ node, definition });
-      const { type, bySourceHandle } = getSuggestionsNodeData({ node, definition });
+      const { type, bySourceHandle, bySourceHandleType } = getSuggestionsNodeData({ node, definition });
 
       currentStore = setVariablesSuggestionsNodeData({
         type,
@@ -26,6 +26,7 @@ function refreshNodesSuggestions(nodes: WorkflowBuilderNode[], initialStore: Var
         nodeType: node.data.type,
         nodeLabel,
         bySourceHandle,
+        bySourceHandleType,
         cachedStore: currentStore,
         shouldOnlyPassedStore: true,
       });

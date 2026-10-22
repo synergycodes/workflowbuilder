@@ -33,6 +33,7 @@ describe('getStringVariableTypeIfPossible', () => {
               { id: `nodes.${nodeId}.count`, display: 'count', label: 'count', type: 'number' },
             ],
           },
+          bySourceHandleType: {},
         },
       },
     });

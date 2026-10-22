@@ -19,10 +19,21 @@ function suggestion(key: string): VariableSuggestion {
   };
 }
 
+// Shape kept under commonByType: node id and label replaced with placeholders
+function shared(key: string): VariableSuggestion {
+  return {
+    id: `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.${key}`,
+    display: `${NODE_LABEL_FOR_COMMON_NODE_DATA}${VARIABLE_DELIMITER}${key}`,
+    label: key,
+    type: 'string',
+  };
+}
+
 const update = {
   nodeId: NODE_ID,
   nodeType: NODE_TYPE,
   nodeLabel: NODE_LABEL,
+  bySourceHandleType: {},
   cachedStore: undefined,
   shouldOnlyPassedStore: false,
 } as const;
@@ -36,20 +47,15 @@ describe('setVariablesSuggestionsNodeData', () => {
     setVariablesSuggestionsNodeData({
       ...update,
       type: SUGGESTION_NODE_TYPE.COMMON,
-      bySourceHandle: { every: [suggestion('result')] },
+      bySourceHandle: { left: [suggestion('result')] },
+      bySourceHandleType: { success: [suggestion('status')] },
     });
 
     const { commonByType, byNodeId } = useVariablesSuggestionsStore.getState();
 
     expect(commonByType[NODE_TYPE]).toStrictEqual({
-      every: [
-        {
-          id: `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.result`,
-          display: `${NODE_LABEL_FOR_COMMON_NODE_DATA}${VARIABLE_DELIMITER}result`,
-          label: 'result',
-          type: 'string',
-        },
-      ],
+      bySourceHandle: { left: [shared('result')] },
+      bySourceHandleType: { success: [shared('status')] },
     });
     expect(byNodeId[NODE_ID]).toStrictEqual({
       type: SUGGESTION_NODE_TYPE.COMMON,
@@ -65,7 +71,11 @@ describe('setVariablesSuggestionsNodeData', () => {
 
     const { commonByType, byNodeId } = useVariablesSuggestionsStore.getState();
 
-    expect(byNodeId[NODE_ID]).toStrictEqual({ type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle });
+    expect(byNodeId[NODE_ID]).toStrictEqual({
+      type: SUGGESTION_NODE_TYPE.CUSTOM,
+      bySourceHandle,
+      bySourceHandleType: {},
+    });
     expect(commonByType).toStrictEqual({});
   });
 

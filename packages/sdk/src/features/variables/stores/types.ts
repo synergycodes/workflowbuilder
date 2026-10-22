@@ -1,11 +1,21 @@
 import type { VariableSuggestion } from '../components/variable-text/variable-text.types';
-import type { SPECIAL_SOURCE_HANDLE_KEYWORDS } from '../constants';
+import type { SourceHandleType } from '../constants';
 
 export type SuggestionsBySourceHandle = {
   [sourceHandle: string]: VariableSuggestion[] | undefined;
-  [SPECIAL_SOURCE_HANDLE_KEYWORDS.EVERY]?: VariableSuggestion[];
-  [SPECIAL_SOURCE_HANDLE_KEYWORDS.SUCCESS]?: VariableSuggestion[];
-  [SPECIAL_SOURCE_HANDLE_KEYWORDS.ERROR]?: VariableSuggestion[];
+};
+
+export type SuggestionsBySourceHandleType = Partial<Record<SourceHandleType, VariableSuggestion[]>>;
+
+export type NodeVariablesSuggestions = {
+  bySourceHandle: SuggestionsBySourceHandle;
+  bySourceHandleType: SuggestionsBySourceHandleType;
+};
+
+// Shared per node type; node id and label are placeholders resolved on read
+export type CommonNodeSuggestion = {
+  bySourceHandle: SuggestionsBySourceHandle;
+  bySourceHandleType: SuggestionsBySourceHandleType;
 };
 
 export const SUGGESTION_NODE_TYPE = {
@@ -25,4 +35,5 @@ export type SuggestionsNodeData =
       // Custom setup for nodes that require configuration based on data in node
       type: typeof SUGGESTION_NODE_TYPE.CUSTOM;
       bySourceHandle: SuggestionsBySourceHandle;
+      bySourceHandleType: SuggestionsBySourceHandleType;
     };

@@ -21,7 +21,7 @@ const fetchNode = {
   schema: { type: 'object', properties: {} },
   schemaOutput: {
     type: 'default',
-    bySourceHandle: { every: { type: 'object', properties: { result: { type: 'string', title: 'Result' } } } },
+    bySourceHandleType: { settled: { type: 'object', properties: { result: { type: 'string', title: 'Result' } } } },
   },
 } as unknown as PaletteItem;
 
@@ -37,7 +37,9 @@ const triggerNode = {
     variants: [
       {
         variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'timed' } },
-        bySourceHandle: { every: { type: 'object', properties: { startDate: { type: 'string', title: 'Start' } } } },
+        bySourceHandleType: {
+          settled: { type: 'object', properties: { startDate: { type: 'string', title: 'Start' } } },
+        },
       },
     ],
   },

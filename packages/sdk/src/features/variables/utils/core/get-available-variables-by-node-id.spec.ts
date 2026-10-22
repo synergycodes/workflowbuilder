@@ -4,7 +4,7 @@ import { setCustomPaletteNodes } from '../../../../data/palette';
 import type { PaletteItem } from '../../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../../components/variable-text/variable-text.types';
-import { SUGGESTION_NODE_TYPE, type SuggestionsBySourceHandle } from '../../stores/types';
+import { type NodeVariablesSuggestions, SUGGESTION_NODE_TYPE } from '../../stores/types';
 import {
   emptyVariablesSuggestionsStore,
   useVariablesSuggestionsStore,
@@ -42,12 +42,17 @@ function suggestion(id: string, type: VariableSuggestion['type'] = 'string'): Va
   return { id, display: id, label: id, type };
 }
 
-function index(byNodeId: Record<string, SuggestionsBySourceHandle>) {
+// Reachable from every handle of the node
+function settled(...suggestions: VariableSuggestion[]): Partial<NodeVariablesSuggestions> {
+  return { bySourceHandleType: { settled: suggestions } };
+}
+
+function index(byNodeId: Record<string, Partial<NodeVariablesSuggestions>>) {
   useVariablesSuggestionsStore.setState({
     byNodeId: Object.fromEntries(
-      Object.entries(byNodeId).map(([nodeId, bySourceHandle]) => [
+      Object.entries(byNodeId).map(([nodeId, { bySourceHandle = {}, bySourceHandleType = {} }]) => [
         nodeId,
-        { type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle },
+        { type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle, bySourceHandleType },
       ]),
     ),
   });
@@ -81,19 +86,19 @@ beforeEach(() => {
 
 describe('getAvailableVariablesByNodeId', () => {
   it('returns no groups without a node id', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     expect(available(undefined, [node('parent'), node('target')], [edge('parent', 'target')])).toEqual([]);
   });
 
   it('returns no groups for a node without ancestors', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     expect(available('target', [node('parent'), node('target')], [edge('target', 'parent')])).toEqual([]);
   });
 
   it('groups the suggestions of a direct ancestor under the node label and icon', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     const groups = available(
       'target',
@@ -105,7 +110,7 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('falls back to the definition label when the node has none', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     const groups = available('target', [node('parent'), node('target')], [edge('parent', 'target')]);
 
@@ -113,7 +118,7 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('includes transitive ancestors, direct parents first', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] }, grand: { every: [suggestion('nodes.grand.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')), grand: settled(suggestion('nodes.grand.a')) });
 
     const groups = available(
       'target',
@@ -126,13 +131,13 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('skips an ancestor that is not among the nodes', () => {
-    index({ ghost: { every: [suggestion('nodes.ghost.a')] } });
+    index({ ghost: settled(suggestion('nodes.ghost.a')) });
 
     expect(available('target', [node('target')], [edge('ghost', 'target')])).toEqual([]);
   });
 
   it('skips an ancestor whose definition has no output schema', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     expect(available('target', [node('parent', { type: 'bare' }), node('target')], [edge('parent', 'target')])).toEqual(
       [],
@@ -140,7 +145,7 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('skips an ancestor without a definition', () => {
-    index({ parent: { every: [suggestion('nodes.parent.a')] } });
+    index({ parent: settled(suggestion('nodes.parent.a')) });
 
     expect(
       available('target', [node('parent', { type: 'unknown' }), node('target')], [edge('parent', 'target')]),
@@ -154,7 +159,11 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('resolves suggestions by the source handle the edge leaves from', () => {
-    index({ parent: { left: [suggestion('nodes.parent.left')], right: [suggestion('nodes.parent.right')] } });
+    index({
+      parent: {
+        bySourceHandle: { left: [suggestion('nodes.parent.left')], right: [suggestion('nodes.parent.right')] },
+      },
+    });
 
     const groups = available('target', [node('parent'), node('target')], [edge('parent', 'target', 'right')]);
 
@@ -164,9 +173,8 @@ describe('getAvailableVariablesByNodeId', () => {
   it('merges a node reached through two handles into one group without duplicates', () => {
     index({
       parent: {
-        every: [suggestion('nodes.parent.shared')],
-        left: [suggestion('nodes.parent.left')],
-        right: [suggestion('nodes.parent.right')],
+        bySourceHandle: { left: [suggestion('nodes.parent.left')], right: [suggestion('nodes.parent.right')] },
+        bySourceHandleType: { settled: [suggestion('nodes.parent.shared')] },
       },
     });
 
@@ -181,7 +189,7 @@ describe('getAvailableVariablesByNodeId', () => {
   });
 
   it('merges ancestors sharing a label into one group', () => {
-    index({ p1: { every: [suggestion('nodes.p1.a')] }, p2: { every: [suggestion('nodes.p2.a')] } });
+    index({ p1: settled(suggestion('nodes.p1.a')), p2: settled(suggestion('nodes.p2.a')) });
 
     const groups = available(
       'target',
@@ -195,13 +203,11 @@ describe('getAvailableVariablesByNodeId', () => {
 
   it('filters suggestions by excluded and included types', () => {
     index({
-      parent: {
-        every: [
-          suggestion('nodes.parent.text', 'string'),
-          suggestion('nodes.parent.count', 'number'),
-          suggestion('nodes.parent.flag', 'boolean'),
-        ],
-      },
+      parent: settled(
+        suggestion('nodes.parent.text', 'string'),
+        suggestion('nodes.parent.count', 'number'),
+        suggestion('nodes.parent.flag', 'boolean'),
+      ),
     });
 
     const groups = available('target', [node('parent'), node('target')], [edge('parent', 'target')], {

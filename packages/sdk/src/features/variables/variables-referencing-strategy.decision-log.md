@@ -57,7 +57,7 @@ The nature of the most common diagrams in Workflow Builder can result in differe
 
 ### 3. Special source-handle buckets in `bySourceHandle`
 
-Besides entries keyed by real source handle ids, `bySourceHandle` accepts three optional bucket keys (`SPECIAL_SOURCE_HANDLE_KEYWORDS` in `constants.ts`): `every` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. None of them is required; a handle's own entry is always used on its own. The `error` check is a substring match on the handle id, so `onError` and `error-1` both count as error handles.
+Besides entries keyed by real source handle ids, `bySourceHandle` accepts three optional bucket keys (`SOURCE_HANDLE_TYPE` in `constants.ts`): `every` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. None of them is required; a handle's own entry is always used on its own. The `error` check is a substring match on the handle id, so `onError` and `error-1` both count as error handles.
 
 Suggestions from several buckets are merged per handle and de-duplicated by variable id. The type is taken from whichever copy survives; it is not resolved per handle. A variable that sits in more than one bucket must therefore declare the same type in each.
 
