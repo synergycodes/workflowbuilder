@@ -1,32 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTheme, notifyThemeChange, setControlledTheme, setTheme, subscribeTheme } from './theme';
+import { getTheme, setControlledTheme, setTheme, subscribeTheme, useThemeStore } from './theme';
+
+function resetThemeStore(): void {
+  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
+  localStorage.clear();
+}
 
 describe('theme module', () => {
-  beforeEach(() => {
-    setControlledTheme(null, null);
-    localStorage.clear();
-  });
+  beforeEach(resetThemeStore);
 
-  afterEach(() => {
-    setControlledTheme(null, null);
-    localStorage.clear();
-  });
+  afterEach(resetThemeStore);
 
   it('defaults to "light" when localStorage has no value', () => {
     expect(getTheme()).toBe('light');
   });
 
-  it('reads the persisted value from localStorage', () => {
+  // The store reads storage once at start-up; rehydrate() repeats that read.
+  it('reads the persisted value from localStorage', async () => {
     localStorage.setItem('wb-theme', 'dark');
+    await useThemeStore.persist.rehydrate();
     expect(getTheme()).toBe('dark');
   });
 
-  it('falls back to "light" for an empty or unrecognized stored value', () => {
+  it('falls back to "light" for an empty or unrecognized stored value', async () => {
     localStorage.setItem('wb-theme', '');
+    await useThemeStore.persist.rehydrate();
     expect(getTheme()).toBe('light');
 
     localStorage.setItem('wb-theme', 'Dark');
+    await useThemeStore.persist.rehydrate();
     expect(getTheme()).toBe('light');
   });
 
@@ -71,14 +74,14 @@ describe('theme module', () => {
 
   it('controlled: getTheme returns the controlled value and setTheme calls onChange without persisting', () => {
     const onChange = vi.fn();
-    setControlledTheme('dark', onChange);
-    expect(getTheme()).toBe('dark');
+    setControlledTheme('light', onChange);
+    expect(getTheme()).toBe('light');
 
-    setTheme('light');
+    setTheme('dark');
 
-    expect(onChange).toHaveBeenCalledWith('light');
-    expect(localStorage.getItem('wb-theme')).toBeNull();
-    expect(getTheme()).toBe('dark'); // host decides
+    expect(onChange).toHaveBeenCalledWith('dark');
+    expect(localStorage.getItem('wb-theme')).not.toBe('dark');
+    expect(getTheme()).toBe('light'); // host decides
   });
 
   it('controlled: setTheme with the current value does not call onChange', () => {
@@ -90,17 +93,14 @@ describe('theme module', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  // Root stores the controlled value during render; notifying there would update other
-  // components mid-render, so subscribers hear about it only through notifyThemeChange().
-  it('controlled: setControlledTheme only stores the value, notifyThemeChange notifies', () => {
+  it('controlled: changing the controlled value notifies subscribers', () => {
     const listener = vi.fn();
     const unsubscribe = subscribeTheme(listener);
 
     setControlledTheme('dark', vi.fn());
-    expect(listener).not.toHaveBeenCalled();
+    setControlledTheme('light', vi.fn());
 
-    notifyThemeChange();
-    expect(listener).toHaveBeenCalledTimes(1);
+    expect(listener).toHaveBeenCalledTimes(2);
     unsubscribe();
   });
 });

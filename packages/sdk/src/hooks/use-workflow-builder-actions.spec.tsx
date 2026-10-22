@@ -7,7 +7,7 @@ import { openImportModal } from '../features/integration/components/import-expor
 import { IntegrationContext } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { useStore } from '../store/store';
-import { getTheme, setControlledTheme } from './theme';
+import { getTheme, useThemeStore } from './theme';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
 
 vi.mock('../features/integration/components/import-export/export-modal/open-export-modal', () => ({
@@ -53,8 +53,8 @@ function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('s
 describe('useWorkflowBuilderActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
     localStorage.clear();
-    setControlledTheme(null, null);
     useStore.setState({ isReadOnlyMode: false, layoutDirection: 'RIGHT', nodes: [], reactFlowInstance: undefined });
   });
 
