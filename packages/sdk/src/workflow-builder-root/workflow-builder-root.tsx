@@ -10,9 +10,11 @@ import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
+import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
+import { defaultOnStart } from './default-on-start';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
 import type {
@@ -56,6 +58,7 @@ export function WorkflowBuilderRoot({
   plugins,
   jsonForm,
   integration,
+  onStart,
   name,
   logo,
   logoHref,
@@ -64,6 +67,7 @@ export function WorkflowBuilderRoot({
   initialEdges,
   isValidConnection,
   reactFlowProps,
+  builtInControls,
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -89,17 +93,18 @@ export function WorkflowBuilderRoot({
   //     which notifies subscribers; doing that during render risks React's
   //     "cannot update a component while rendering a different component" path
   //     for any external `useStore` subscriber (the store is global now).
-  //   - `useEffect` is out: passive effects fire children-first, so the
-  //     descendant `IntegrationWrapper.loadData` (a `useEffect`) would run
-  //     BEFORE a Root-level `useEffect`, and the reset would wipe the diagram
-  //     it just loaded. Layout effects fire before any passive effect, so a
-  //     Root `useLayoutEffect` reset is guaranteed to precede `loadData`.
+  //   - `useEffect` is out: passive effects fire children-first, so a
+  //     descendant's mount `useEffect` would run BEFORE a Root-level
+  //     `useEffect`, and the reset would wipe whatever it wrote to the store.
+  //     Layout effects fire before any passive effect, so a Root
+  //     `useLayoutEffect` reset is guaranteed to precede `loadData`.
   //
   // Empty deps → mount-only: a re-render must NOT reset (that would discard
   // user edits); a true unmount → remount gets a fresh reset, which is exactly
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
+    resetIntegrationStore();
   }, []);
 
   // Paint the persisted theme on the DOM once, client-side. Lives here (not at
@@ -143,13 +148,14 @@ export function WorkflowBuilderRoot({
       strategy={strategy}
       endpoints={endpoints}
       onDataSave={onDataSave}
+      onStart={onStart ?? defaultOnStart}
       name={name}
       layoutDirection={layoutDirection}
       nodes={initialNodes}
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell>{children}</RootShell>
+        <RootShell builtInControls={builtInControls}>{children}</RootShell>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

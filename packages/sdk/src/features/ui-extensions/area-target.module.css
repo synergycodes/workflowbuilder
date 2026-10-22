@@ -1,0 +1,12 @@
+@layer ui.base, ui.component;
+
+@layer ui.component {
+  /* Zero specificity, so a host's class sets the display without depending on stylesheet order. */
+  :where(.target) {
+    display: contents;
+  }
+
+  .target:empty {
+    display: none;
+  }
+}

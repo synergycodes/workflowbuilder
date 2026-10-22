@@ -78,7 +78,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
   const {
     nodes,
     edges,
-    isReadOnlyMode,
+    isReadOnly,
     onNodesChange,
     onEdgesChange,
     onEdgeMouseEnter,
@@ -156,7 +156,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
 
   const onBeforeDelete: OnBeforeDelete<WorkflowBuilderNode, WorkflowBuilderEdge> = useCallback(
     async ({ nodes, edges }) => {
-      if (isReadOnlyMode) {
+      if (isReadOnly) {
         return false;
       }
 
@@ -176,7 +176,7 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
         });
       });
     },
-    [isReadOnlyMode, openDeleteConfirmationModal],
+    [isReadOnly, openDeleteConfirmationModal],
   );
 
   return (
@@ -204,8 +204,8 @@ function DiagramContainerComponent({ edgeTypes = {} }: DiagramContainerProps) {
         onDragOver={onDragOver}
         onDrop={onDrop}
         connectionLineComponent={TemporaryEdge}
-        nodesConnectable={!isReadOnlyMode}
-        nodesDraggable={!isReadOnlyMode}
+        nodesConnectable={!isReadOnly}
+        nodesDraggable={!isReadOnly}
         isValidConnection={isValidConnection}
       >
         <Background color="var(--wb-ds-ui-bg-canvas-dots)" bgColor="var(--wb-public-background-color)" />

@@ -3,12 +3,14 @@ import { useEffect } from 'react';
 import styles from './palette-container.module.css';
 
 import { Sidebar } from '../../components/sidebar/sidebar';
+import { useTranslateIfPossible } from '../../hooks/use-translate-if-possible';
 import { useStore } from '../../store/store';
 import { openTemplateSelectorModal } from '../modals/template-selector/open-template-selector-modal';
 import { DraggedItem } from './components/dragged-item/dragged-item';
 import { PaletteFooter } from './components/footer/palette-footer';
 import { PaletteHeader } from './components/header/palette-header';
 import { PaletteItems } from './components/items/palette-items';
+import { filterPaletteItems } from './filter-palette-items';
 import { usePaletteDragAndDrop } from './hooks/use-palette-drag-and-drop';
 import { NodePreviewContainer } from './node-preview-container';
 
@@ -21,14 +23,19 @@ import { NodePreviewContainer } from './node-preview-container';
  * @category Components
  */
 export function PaletteContainer() {
-  const toggleSidebar = useStore((state) => state.toggleSidebar);
+  const setPaletteOpen = useStore((state) => state.setPaletteOpen);
   const fetchData = useStore((state) => state.fetchData);
 
-  const isSidebarExpanded = useStore((state) => state.isSidebarExpanded);
+  const isPaletteOpen = useStore((state) => state.isPaletteOpen);
   const paletteItems = useStore((state) => state.data);
-  const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
+  const paletteFilter = useStore((state) => state.paletteFilter);
+  const isReadOnly = useStore((state) => state.isReadOnly);
+  const translateIfPossible = useTranslateIfPossible();
 
-  const { draggedItem, zoom, ref, onMouseDown, onDragStart } = usePaletteDragAndDrop(!isReadOnlyMode);
+  const { draggedItem, zoom, ref, onMouseDown, onDragStart } = usePaletteDragAndDrop(!isReadOnly);
+
+  const isFiltering = paletteFilter.trim() !== '';
+  const filteredItems = filterPaletteItems(paletteItems, paletteFilter, (label) => translateIfPossible(label) || label);
 
   useEffect(() => {
     fetchData();
@@ -37,15 +44,16 @@ export function PaletteContainer() {
   return (
     <Sidebar
       className={styles['sidebar']}
-      isExpanded={isSidebarExpanded}
-      header={<PaletteHeader onClick={() => toggleSidebar()} isSidebarExpanded={isSidebarExpanded} />}
+      isExpanded={isPaletteOpen}
+      header={<PaletteHeader onClick={() => setPaletteOpen()} isPaletteOpen={isPaletteOpen} />}
       footer={<PaletteFooter onTemplateClick={openTemplateSelectorModal} />}
     >
       <PaletteItems
-        items={paletteItems}
+        items={filteredItems}
         onMouseDown={onMouseDown}
         onDragStart={onDragStart}
-        isDisabled={isReadOnlyMode}
+        isDisabled={isReadOnly}
+        isFiltering={isFiltering}
       />
       {draggedItem && (
         <DraggedItem ref={ref} zoom={zoom}>

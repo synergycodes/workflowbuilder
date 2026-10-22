@@ -3,6 +3,7 @@ import { act, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { EditorRuntime } from '../../../../packages/sdk/src/features/editor-runtime/editor-runtime';
 import { IntegrationContext } from '../../../../packages/sdk/src/features/integration/components/integration-variants/context/integration-context-wrapper';
 import { RuntimeIntegrationWrapper } from '../../../../packages/sdk/src/features/integration/components/runtime-integration-wrapper';
 import { SaveButton } from '../../../../packages/sdk/src/features/integration/components/save-button/save-button';
@@ -68,6 +69,7 @@ function mount(opened: OpenedSource) {
         strategy={strategy}
         endpoints={endpoints}
         onDataSave={onDataSave}
+        onStart={() => {}}
         name={props.name}
         nodes={props.initialNodes}
         edges={props.initialEdges}
@@ -76,6 +78,7 @@ function mount(opened: OpenedSource) {
           <SaveButton />
         </OptionalAppBarTools>
         <SaveHandle />
+        <EditorRuntime />
       </RuntimeIntegrationWrapper>,
     ),
   );

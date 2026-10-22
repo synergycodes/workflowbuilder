@@ -46,22 +46,24 @@ const pluginRegistryComponents = new Map<
  * Decorate a named slot — add UI before/after/around it or transform its props.
  *
  * Slots are mount points the SDK exposes for plugins to inject custom UI
- * without forking the editor. Common slots include `'OptionalAppBarControls'`,
+ * without forking the editor. Common slots include `'OptionalAppChildren'`,
  * `'OptionalNodeContent'`, and others — see the
  * [Build a plugin](/docs/guides/build-a-plugin/) guide for the authoritative
- * list.
+ * list. Own UI in the app bar, the palette and the properties panel does not
+ * go through a slot (`'PropertiesBar'` and `'ProjectSelection'` still take a
+ * props decorator): see `useWorkflowBuilderState()`, `useWorkflowBuilderActions()`,
+ * `builtInControls`, and the `…Content` / `…MenuItem` components instead.
  *
  * Safe to call more than once; pass `plugin.name` to deduplicate.
  *
- * @param componentName - Slot identifier (e.g. `'OptionalAppBarControls'`).
+ * @param componentName - Slot identifier (e.g. `'OptionalAppChildren'`).
  * @param plugin - Decorator configuration. See {@link ComponentDecoratorOptions}.
  *
  * @example
  * ```ts
- * registerComponentDecorator('OptionalAppBarControls', {
- *   content: MyButton,
- *   place: 'after',
- *   name: 'analytics-button',
+ * registerComponentDecorator('OptionalAppChildren', {
+ *   content: MyWidget,
+ *   name: 'analytics-widget',
  * });
  * ```
  *

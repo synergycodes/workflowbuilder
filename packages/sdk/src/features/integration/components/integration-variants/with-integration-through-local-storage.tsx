@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { getStoreDataForIntegration } from '../../../../store/slices/diagram-slice/actions';
 import type { IntegrationDataFormatOptional, OnSave } from '../../../../types/integration';
+import { defaultOnStart } from '../../../../workflow-builder-root/default-on-start';
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../../utils/show-snackbar';
 import { IntegrationWrapper } from './wrapper/integration-wrapper';
 
@@ -59,6 +60,8 @@ export function withIntegrationThroughLocalStorage<WProps extends object>(
         layoutDirection={layoutDirection}
         nodes={nodes}
         edges={edges}
+        isLoaded
+        onStart={defaultOnStart}
         onSave={handleSave}
       >
         <WrappedComponent {...props} />

@@ -7,6 +7,7 @@ import type {
   JsonFormsRendererExtension,
   PluginTranslationResource,
 } from '../features/json-form/extension-registry';
+import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -52,8 +53,8 @@ export type WorkflowBuilderEdgeTemplates = Record<string, ComponentType<EdgeProp
  * @example
  * ```ts
  * const myPlugin: WorkflowBuilderPlugin = () => {
- *   registerComponentDecorator('OptionalAppBarTools', {
- *     content: MyButton,
+ *   registerComponentDecorator('OptionalAppChildren', {
+ *     content: MyWidget,
  *     name: 'my-plugin',
  *   });
  * };
@@ -182,6 +183,18 @@ export type WorkflowBuilderReactFlowProps = Omit<
 export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
 
 /**
+ * What `onStart` on `<WorkflowBuilder.Root>` receives once the initial diagram load finished.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderStartContext = {
+  /** True when the initial load produced no nodes. A `name` alone does not make the diagram non-empty. */
+  isEmpty: boolean;
+  /** The same action as `useWorkflowBuilderActions().openTemplates`; a no-op in read-only mode. */
+  openTemplates: () => void;
+};
+
+/**
  * Props accepted by `<WorkflowBuilder.Root>`.
  *
  * @category Core
@@ -230,6 +243,14 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   jsonForm?: WorkflowBuilderJsonFormConfig;
   /** Persistence strategy. Defaults to `{ strategy: 'localStorage' }`. */
   integration?: WorkflowBuilderIntegration;
+  /**
+   * Runs once per Root mount, after the initial load of the active integration: for `localStorage`
+   * and `props` right after mount, for `api` once the load request settled, also when it failed.
+   * Defaults to `({ isEmpty, openTemplates }) => { if (isEmpty) openTemplates(); }`, which offers
+   * the template selector for an empty diagram. A custom handler replaces the default entirely, so
+   * the template selector opens only when the handler calls `openTemplates`.
+   */
+  onStart?: (context: WorkflowBuilderStartContext) => void;
   /** Workflow name displayed in the app bar and persisted with the diagram. */
   name?: string;
   /**
@@ -262,4 +283,24 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * changes may not apply immediately.
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
+  /**
+   * Hides built-in controls of the app bar, the palette and the properties panel. Keys: `save`,
+   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `documentRename`, `export`,
+   * `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`. Every key defaults to
+   * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
+   * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
+   * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding
+   * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself; hiding
+   * `propertiesPanelToggle` leaves the same dead end once that panel is collapsed, unless the app
+   * calls `setPropertiesPanelOpen(true)`.
+   *
+   * Changes apply on the next render. An inline object works, but a new object re-renders every
+   * built-in control, so prefer a stable reference (a module constant or `useMemo`).
+   *
+   * @example
+   * ```tsx
+   * <WorkflowBuilder.Root builtInControls={{ delete: canEdit }} />
+   * ```
+   */
+  builtInControls?: BuiltInControls;
 }>;

@@ -1,5 +1,7 @@
-.container {
-  display: flex;
-  flex-direction: column;
-  gap: 0.625rem;
+@layer ui.base, ui.component;
+
+@layer ui.component {
+  .deprecated-slot {
+    display: contents;
+  }
 }
