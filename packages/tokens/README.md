@@ -14,8 +14,9 @@ Not published to npm (`private: true`); consumed only as a workspace build step.
    under `dist/tokens/`.
 4. `src/tokens-to-css.ts` - runs each set through [Style Dictionary](https://styledictionary.com/)
    (with `@tokens-studio/sd-transforms`) to emit `dist/<theme>.css` files. Canvas is scoped
-   to `:root`; Tokens and Effects are scoped to `html[data-theme='light']` or
-   `html[data-theme='dark']`. Font-size, space, radius, and size primitives are emitted in rem.
+   to `:root`; Tokens and Effects are scoped to `[data-wb-theme='light']` or
+   `[data-wb-theme='dark']`; the SDK sets that attribute on its own root, standalone UI users
+   set it on any ancestor. Font-size, space, radius, and size primitives are emitted in rem.
    A broken token reference fails the build (`brokenReferences: 'throw'`).
 5. `src/generate-css-bundle.ts` - inlines the primitive and theme CSS into a single
    self-contained `dist/tokens.css` (no `@import`, so the file survives being copied out

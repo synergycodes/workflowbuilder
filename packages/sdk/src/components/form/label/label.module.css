@@ -1,7 +1,7 @@
 @layer ui.base, ui.component;
 
 @layer ui.base {
-  :root {
+  [data-wb-theme] {
     --wb-public-form-label-color: var(--wb-ds-ui-text-subtle-default);
     --wb-public-form-label-asterisk-color: var(--wb-ds-ui-text-critical-default);
   }

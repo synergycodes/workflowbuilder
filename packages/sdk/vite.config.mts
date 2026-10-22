@@ -6,6 +6,7 @@ import { type Plugin, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
+import { layerRootDefaultsPlugin } from '../ui/postcss-layer-root-defaults.mjs';
 import { copyUiFontAssets } from './font-assets.mjs';
 
 // Packages that must NOT be bundled into the SDK build. Two reasons:
@@ -126,6 +127,11 @@ export default defineConfig(({ command }) => ({
     alias: {
       '@/assets': path.resolve(import.meta.dirname, 'src/assets'),
       '@': path.resolve(import.meta.dirname, 'src'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: [layerRootDefaultsPlugin()],
     },
   },
   // Inline `process.env.NODE_ENV` at SDK build time. The SDK bundles deps

@@ -51,7 +51,9 @@ function isPublicDefault(declaration: Declaration): boolean {
   const rule = declaration.parent;
   if (
     rule?.type !== 'rule' ||
-    !rule.selectors.every((selector) => /^(?::root|html)(?:\[[^\]]+\]|[.#][\w-]+)*$/.test(selector.trim()))
+    !rule.selectors.every((selector) =>
+      /^\[data-wb-theme(?:='(?:light|dark)')?\](?:\[[^\]]+\]|[.#][\w-]+)*$/.test(selector.trim()),
+    )
   )
     return false;
 
@@ -99,9 +101,18 @@ for (const { path: directory, ownsLayerContract } of directories) {
         (declaration.prop.startsWith('--wb-') &&
           !sanctionedPrefixes.some((prefix) => declaration.prop.startsWith(prefix)));
       if (invalidNamespace) add(file, declaration, 'Unsanctioned variable namespace');
+      // Themed tokens resolve against inherited primitives, so the palette must stay on :root.
+      const parentSelector = declaration.parent?.type === 'rule' ? declaration.parent.selector.trim() : '';
+      if (declaration.prop.startsWith('--wb-ds-colors-') && parentSelector !== ':root') {
+        add(file, declaration, 'Palette primitive off :root');
+      }
+      // The build plugin skips hand-layered and raw-concatenated blocks, so a default can still reach :root.
+      if (/^--wb-(?:public|sdk)-/.test(declaration.prop) && parentSelector.startsWith(':root')) {
+        add(file, declaration, 'Default on :root cannot resolve themed tokens');
+      }
       // Only this package declares the public defaults consumers override, so only here does
-      // "must sit on :root inside ui.base" hold. A consumer bundle setting a public variable on
-      // its own component subtree is a scoped override, not a default.
+      // "must sit on [data-wb-theme] inside ui.base" hold. A consumer bundle setting a public variable
+      // on its own component subtree is a scoped override, not a default.
       if (ownsLayerContract && declaration.prop.startsWith('--wb-public-') && !isPublicDefault(declaration)) {
         add(file, declaration, 'Mis-scoped public variable default');
       }

@@ -1,5 +1,5 @@
 @layer ui.base {
-  :root {
+  [data-wb-theme] {
     --wb-public-font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
     --wb-public-font-family-mono: ui-monospace, 'Cascadia Mono', monospace;
   }

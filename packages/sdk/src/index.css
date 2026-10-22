@@ -12,9 +12,10 @@
    its index.css here would bundle every rule twice. */
 @import '@xyflow/react/dist/style.css' layer(ui.base);
 
-/* Layered, so an unlayered consumer override wins whatever the load order. */
+/* Layered, so an unlayered consumer override wins whatever the load order.
+   On [data-wb-theme], not :root, so var(--wb-ds-…) resolves where the themed tokens live. */
 @layer ui.base {
-  :root {
+  [data-wb-theme] {
     --wb-public-transition: 0.1s ease-in;
     --wb-public-background-color: var(--wb-ds-ui-bg-canvas);
     --wb-public-scroll-width: 0.375rem;
