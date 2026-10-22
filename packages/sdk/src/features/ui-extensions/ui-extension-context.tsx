@@ -2,6 +2,7 @@ import { type PropsWithChildren, createContext, useContext, useRef, useSyncExter
 
 import {
   type AreaId,
+  type AreaPlace,
   type AreaSlot,
   EMPTY_SLOT,
   type MenuId,
@@ -33,9 +34,9 @@ export function useUiExtensionRegistry(): UiExtensionRegistry | null {
   return useContext(UiExtensionContext);
 }
 
-export function useAreaSlot(area: AreaId): AreaSlot {
+export function useAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot {
   const registry = useUiExtensionRegistry();
-  const getSnapshot = () => (registry ? registry.getAreaSlot(area) : EMPTY_SLOT);
+  const getSnapshot = () => (registry ? registry.getAreaSlot(area, place) : EMPTY_SLOT);
 
   return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
 }

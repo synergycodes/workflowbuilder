@@ -87,6 +87,20 @@ Design decisions a reader of the code should know:
   next to the check that gates the rest of the header, instead of being duplicated between the two
   files.
 
+- **`place` is an optional, backwards-compatible addition on top of this model, kept in its own
+  commit so it can be dropped on its own if this branch does not ship for release.** Every
+  `…Content` component already defaults to `place: 'before'`, so no existing call site changes
+  behavior; `place: 'after'` only adds a second slot per area. In the three areas that still carry a
+  deprecated decorator slot (`appBarTools`, `appBarControls`, `paletteFooter`), the after-target's
+  `<AreaTarget />` renders as a sibling placed after that slot closes, not threaded through the
+  slot's own before/wrapper/after machinery (`withOptionalComponentPlugins` in
+  `adapter-components.tsx`). A `place: 'wrapper'` decorator registered on that slot wraps everything
+  it renders, built-in control included; putting the after-target inside the slot instead of past it
+  would let a `wrapper` decorator aimed at the built-in control wrap own content that has nothing to
+  do with it. Standing after the whole slot (or, in the three areas with no slot, after the built-in
+  controls directly) keeps the two mechanisms independent: a `wrapper` decorator still only ever
+  touches the built-in control, and `place: 'after'` content renders exactly where it asked to.
+
 - **The palette footer's deprecated slot sits in a `display: contents` element.** The Sidebar hides
   a footer whose direct children are all `:empty`; bare text or an `<input>` from the slot is not a
   non-empty element, so a footer with such content vanished. The wrapper is non-empty whenever the

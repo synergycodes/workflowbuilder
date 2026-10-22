@@ -30,6 +30,7 @@ export function PaletteFooter({ onTemplateClick }: Props) {
           )}
         </OptionalFooterContent>
       </div>
+      <AreaTarget area="paletteFooter" place="after" />
     </>
   );
 }

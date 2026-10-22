@@ -58,6 +58,7 @@ export function Controls() {
         {isReadOnlyToggleVisible && <ToggleReadyOnlyMode />}
         {isThemeToggleVisible && <ToggleDarkMode />}
       </OptionalAppBarControls>
+      <AreaTarget area="appBarControls" place="after" />
       <AppBarMenu />
     </div>
   );
