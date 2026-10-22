@@ -7,16 +7,17 @@ type OperandContext = Pick<ExecutionContext, 'triggerPayload' | 'nodeOutputs'>;
 const REFERENCE = /\{\{([^}]*)\}\}/g;
 const PATH = /^\s*(nodes|trigger)\.([\w-]+(?:\.[\w-]+)*)\s*$/;
 
-// First branch whose rows all hold wins, and a branch with no rows always holds, so it belongs
-// last. The reference worker in this repo never matches an empty branch; this rule is the one you
-// can read off the canvas.
+// The editor appends new branches after "Otherwise" and cannot reorder them, so a branch with no
+// rows is the fallback wherever it sits: the first branch whose rows hold wins, else the first empty one.
 export function pickBranch(branches: SampleDecisionBranch[], context: OperandContext): SampleDecisionBranch {
-  const winner = branches.find((branch) => conditionsHold(branch.conditions, context));
+  const winner =
+    branches.find((branch) => branch.conditions.length > 0 && conditionsHold(branch.conditions, context)) ??
+    branches.find((branch) => branch.conditions.length === 0);
 
   if (!winner) {
     throw new PermanentNodeExecutionError(
       'no_branch_matched',
-      `None of the ${branches.length} branch(es) matched. Add a last branch with no conditions to catch everything else.`,
+      `None of the ${branches.length} branch(es) matched. Add a branch with no conditions to catch everything else.`,
     );
   }
 

@@ -4,7 +4,7 @@ import type { DiagramSnapshot, SnapshotEdge, SnapshotNode } from '../../shared/p
 import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
 
 // The editor's snapshot is React Flow data; the plugin wants `{ id, type, config }` per node
-// and `{ sourceNodeId, targetNodeId }` per edge. This is the only glue in the sample.
+// and `{ sourceNodeId, targetNodeId }` per edge. This is the only place the sample translates between the two.
 export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: string): WorkflowDefinition<SampleNode> {
   const nodes = snapshot.nodes.map((node) => toNode(node, node.data.isStartNode === true));
   const startNodes = nodes.filter((node) => node.role === 'start');
