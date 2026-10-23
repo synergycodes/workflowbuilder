@@ -84,7 +84,8 @@ Or from a real run against a local stack, for a scenario the harness cannot stag
 before committing it. The first event carries the `WorkflowExecutionInput`, including the
 `variables` and `global` bags, and a recording from a real run also carries every `executeNode`
 argument set and result, every accepted verdict, every node's `config`, and the text of every
-error. All of it is recorded verbatim. The harness recordings carry only empty bags and a synthetic graph.
+error. All of it is recorded verbatim. The harness recordings carry only empty bags and a
+synthetic graph.
 
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
@@ -106,10 +107,7 @@ A scenario still worth adding: two nodes parked in one wave, resolved one after 
 
 `v0-` was the pre-release baseline, recorded before the package published its first
 version; those files went with the 0.1.0 release, so a recording that lands under `v0-`
-today means the version variable was forgotten. The one exception is
-`v0-parked-decision.json`, the pre-release recording of the parked path, which has not
-shipped. The release PR that first records `<version>-parked-decision.json` deletes it
-once the new recording replays. Every release records every scenario again under the version
+today means the version variable was forgotten. Every release records every scenario again under the version
 it ships, in the release PR right after `pnpm release:version temporal`:
 
 ```bash
@@ -123,17 +121,10 @@ this way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Published recordings**: since 0.1.0, a red replay is a compatibility break with runs that may be
-sitting in someone's Event History for days. Guard the change with `patched()`, or
-declare a major with a note to drain in-flight runs first. Do not re-record: that throws
+Every committed recording is published, so a red replay is a compatibility break with runs
+that may be sitting in someone's Event History for days. Guard the change with `patched()`,
+or declare a major with a note to drain in-flight runs first. Do not re-record: that throws
 away the only evidence of what the published version actually did.
-
-**The remaining pre-release recording**, `v0-parked-decision.json`, guards a path that has
-not shipped. A red replay is a design signal: read the change first, and if the new command
-genuinely belongs on that path, re-record it with `REPLAY_HISTORY_OVERWRITE=1` and say so
-in the commit message. `patched()` is not needed and no major is due for that unshipped path.
-Follow the replacement rule in [Rules once files live here](#rules-once-files-live-here);
-published-recording rules apply from then on.
 
 ### Reading the change
 
