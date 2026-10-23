@@ -59,7 +59,8 @@ src/
 ├── ports/
 │   ├── workflow-engine.port.ts   # submit(), cancel(), resolveNode() — implemented by adapters (TemporalWorkflowEngine, …)
 │   ├── activity-runner.port.ts   # executeNode() via proxyActivities; optional awaitResolution() inside the workflow
-│   └── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
+│   ├── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
+│   └── versioning.port.ts        # isPatched() — implemented by the Temporal adapter via patched()
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
 └── templates/               # Variable/expression interpolation (`{{ nodes.x.output }}`)
 ```

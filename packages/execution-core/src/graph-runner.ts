@@ -15,6 +15,7 @@ import { extractDeepestError } from './errors';
 import type { ExecutionContext } from './execution-context';
 import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
+import type { VersioningPort } from './ports/versioning.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
@@ -43,6 +44,8 @@ export type RunGraphOutcome =
   | { status: 'incomplete'; deadEnds: DeadEnd[] }
   | { status: 'failed'; error: { message: string; code?: string } };
 
+const LATEST_CODE: VersioningPort = { isPatched: () => true };
+
 // Topological scheduler. A node becomes ready only when ALL of its incoming
 // edges are resolved (predecessor either completed via a live route, or was
 // pruned by a decision node's nextPort). Ready nodes within the same wave
@@ -60,6 +63,7 @@ export async function runGraph<TNode extends BaseNode>(
   input: WorkflowExecutionInput<TNode>,
   runner: ActivityRunnerPort<TNode>,
   rawEvents: EventEmitterPort,
+  versioning: VersioningPort = LATEST_CODE,
 ): Promise<RunGraphOutcome> {
   // Every payload is redacted before it crosses the emit boundary — event history
   // (DB, SSE, Temporal's own history via activity args) is immutable, so secrets
@@ -70,7 +74,9 @@ export async function runGraph<TNode extends BaseNode>(
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
   await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
-  await setAdvisoryStatus(events, input.executionId, 'running');
+  if (versioning.isPatched('wb-running-status-at-start')) {
+    await setAdvisoryStatus(events, input.executionId, 'running');
+  }
 
   const entry = resolveStartNode(input.definition.nodes, inDegree);
   if ('error' in entry) {

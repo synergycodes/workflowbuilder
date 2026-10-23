@@ -12,6 +12,7 @@ import { NodeExecutionError, PermanentNodeExecutionError } from './errors';
 import { runGraph } from './graph-runner';
 import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
+import type { PatchId, VersioningPort } from './ports/versioning.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { reconstructNodeInputs } from './reconstruct-node-inputs';
 import { REDACTED } from './redact';
@@ -685,12 +686,12 @@ describe('runGraph — replay safety (sandbox-safe)', () => {
     expect(consoleSpies.error).not.toHaveBeenCalled();
   }
 
-  it('exposes exactly 3 parameters — re-adding `logger?` would silently break replay', () => {
-    // Type-level pin: `Parameters<typeof runGraph>` must stay length 3. An
-    // optional 4th param (`logger?: LoggerPort`) would still be length 3 at
-    // runtime because optionals don't bump `Function.prototype.length`, but
-    // `expectTypeOf` catches the tuple shape at compile time.
-    expectTypeOf<Parameters<typeof runGraph>['length']>().toEqualTypeOf<3>();
+  it('takes four ports and no logger — adding `logger?` would silently break replay', () => {
+    // Type-level pin: optionals don't bump `Function.prototype.length`, so only the tuple
+    // shape catches a logger slipped in as a 5th param or in place of the versioning port.
+    expectTypeOf<Parameters<typeof runGraph>['length']>().toEqualTypeOf<3 | 4>();
+    expectTypeOf<Parameters<typeof runGraph>[3]>().toEqualTypeOf<VersioningPort | undefined>();
+    expectTypeOf<keyof VersioningPort>().toEqualTypeOf<'isPatched'>();
   });
 
   it('a successful multi-node run writes nothing to console', async () => {
@@ -1754,6 +1755,33 @@ describe('runGraph — run status', () => {
     expect(outcome).toEqual({ status: 'completed' });
     expect(runner.callOrder).toEqual(['A', 'B']);
     expect(events.statuses.map((entry) => entry.status)).toEqual(['running', 'completed']);
+  });
+
+  it('a run recorded before the running-at-start patch writes running only on a resume', async () => {
+    const runner = makeGatedRunner({ A: { waits: true } });
+    const events = makeEvents();
+    // The id is stored in Event History by the Temporal adapter, so it is pinned verbatim.
+    const asked: PatchId[] = [];
+    const recordedBeforePatch: VersioningPort = {
+      isPatched(patchId) {
+        asked.push(patchId);
+        return false;
+      },
+    };
+
+    const run = runGraph(
+      makeInput([start('A'), trigger('B')], [edge('e1', 'A', 'B')]),
+      runner.port,
+      events.port,
+      recordedBeforePatch,
+    );
+    await runner.whenParked(1);
+    expect(asked).toEqual(['wb-running-status-at-start']);
+    expect(events.statuses).toEqual([{ status: 'waiting' }]);
+
+    runner.resolveGate('A', { output: 'approved' });
+    expect(await run).toEqual({ status: 'completed' });
+    expect(events.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
   });
 });
 
