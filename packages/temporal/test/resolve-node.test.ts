@@ -64,7 +64,7 @@ describe('resolveNode through the engine port', () => {
     executionId: string,
     definition: WorkflowDefinition<PauseTestNode>,
   ) {
-    await engine.submit({
+    const started = await engine.submit({
       workflowId: definition.workflowId,
       executionId,
       definition,
@@ -72,6 +72,7 @@ describe('resolveNode through the engine port', () => {
       variables: {},
       global: {},
     });
+    expect(started).toEqual({});
     return env.client.workflow.getHandle(executionWorkflowId(executionId));
   }
 
