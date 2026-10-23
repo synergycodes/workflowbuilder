@@ -74,15 +74,15 @@ export async function runGraph<TNode extends BaseNode>(
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
   await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
-  if (versioning.isPatched('wb-running-status-at-start')) {
-    await setAdvisoryStatus(events, input.executionId, 'running');
-  }
-
   const entry = resolveStartNode(input.definition.nodes, inDegree);
   if ('error' in entry) {
     return await failExecution(input.executionId, events, { message: entry.error });
   }
   const startNode = entry.startNode;
+
+  if (versioning.isPatched('wb-running-status-at-start')) {
+    await setAdvisoryStatus(events, input.executionId, 'running');
+  }
 
   // pendingPredecessors counts incoming edges not yet resolved (completed OR pruned).
   // liveIncoming counts incoming edges that resolved via a non-pruned route.

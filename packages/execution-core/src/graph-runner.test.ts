@@ -456,7 +456,8 @@ describe('runGraph — topological scheduling', () => {
     expect(outcome).toEqual({ status: 'failed', error: { message } });
     expect(runner.callOrder).toEqual([]);
     expect(events.events.map((event) => event.type)).toEqual(['execution_started', 'execution_failed']);
-    expect(events.statuses.at(-1)).toEqual({ status: 'failed', errorMessage: message });
+    // No node can run, so the run never reports running and the store stamps no start.
+    expect(events.statuses).toEqual([{ status: 'failed', errorMessage: message }]);
   });
 
   it('cycle reachable from an entrypoint fails the workflow with a stalled-node message', async () => {
