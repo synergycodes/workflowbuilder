@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 
@@ -6,7 +6,7 @@ import { describe, expect, it, vi } from 'vitest';
 const i18nState = { language: 'en', resolvedLanguage: 'en', changeLanguage: vi.fn() };
 
 // Render the Menu's trigger (children) so the displayed language code is queryable.
-type MenuItemLike = { label?: string; selected?: boolean };
+type MenuItemLike = { label?: string; selected?: boolean; onClick?: () => void };
 
 vi.mock('@workflowbuilder/ui', () => ({
   Menu: ({ children, items }: { children?: ReactNode; items: MenuItemLike[] }) => (
@@ -14,7 +14,7 @@ vi.mock('@workflowbuilder/ui', () => ({
       {children}
       <ul>
         {items.map((item) => (
-          <li key={item.label} data-selected={item.selected ? '' : undefined}>
+          <li key={item.label} data-selected={item.selected ? '' : undefined} onClick={item.onClick}>
             {item.label}
           </li>
         ))}
@@ -34,6 +34,11 @@ vi.mock('@workflow-builder/icons', () => ({
 
 vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key, i18n: i18nState }),
+}));
+
+const setLanguage = vi.fn();
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => ({ setLanguage }),
 }));
 
 const { LanguageSelector } = await import('./language-selector');
@@ -67,5 +72,16 @@ describe('LanguageSelector — label reflects the resolved language', () => {
 
     expect(Object.hasOwn(screen.getByText('Polski').dataset, 'selected')).toBe(true);
     expect(Object.hasOwn(screen.getByText('English').dataset, 'selected')).toBe(false);
+  });
+
+  it('picking a language calls the setLanguage action, not i18n.changeLanguage directly', () => {
+    i18nState.language = 'en';
+    i18nState.resolvedLanguage = 'en';
+
+    render(<LanguageSelector />);
+    fireEvent.click(screen.getByText('Polski'));
+
+    expect(setLanguage).toHaveBeenCalledWith('pl');
+    expect(i18nState.changeLanguage).not.toHaveBeenCalled();
   });
 });

@@ -2,7 +2,7 @@
 
 There are a few ways you may want to integrate **Workflow Builder** with the rest of your system.
 
-By default, Workflow Builder is a standalone app and saves data to local storage (check: `/components/integration-variants/with-integration-through-local-storage.tsx`).
+By default, Workflow Builder saves data to local storage. The `integration` prop of `<WorkflowBuilder.Root>` picks the strategy, and `/components/runtime-integration-wrapper.tsx` implements all three (`localStorage`, `api`, `props`).
 
 This works well for a demo application but may not meet your needs of a real-world deployment.
 
@@ -26,14 +26,12 @@ By default, data is saved to localStorage, which can make sense for some open ap
 
 #### 🌐 Workflow Builder working with API
 
-If you wish to load and save diagrams from a specific endpoint, a solution is prepared for you. Switch the strategy to .API in `/components/with-integration.tsx`.
+If you wish to load and save diagrams from a specific endpoint, a solution is prepared for you. Pass `integration={{ strategy: 'api', endpoints: { load, save } }}` to `<WorkflowBuilder.Root>`.
 
-After you switch, you can save the diagram (by clicking the floppy disk) and check the Network tab in your console. The request will go to non-existing endpoints, but the implementation is in place.
-
-You can check it here `/components/integration-variants/with-integration-through-api.tsx`.
+The editor requests `load` once on mount and POSTs the diagram to `save` (the floppy disk, auto-save, or `save()` from `useWorkflowBuilderActions()`). If the load request fails, the editor refuses to save for the rest of that Root mount, so it never overwrites the copy on the server, and `onLoad` receives `loadFailed: true`.
 
 #### 💠 Workflow Builder working with `{...props}`
 
-You will usually want that with the `<Component />` solution (see the [React component quick-start](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/)). Switch the strategy to .PROPS in `/components/with-integration.tsx`.
+You will usually want that with the `<Component />` solution (see the [React component quick-start](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/)). Pass `integration={{ strategy: 'props', onDataSave }}` with `name`, `initialNodes` and `initialEdges`.
 
 This is also a good approach if you decide to build the Workflow Builder as a package that will be installed in your React application.

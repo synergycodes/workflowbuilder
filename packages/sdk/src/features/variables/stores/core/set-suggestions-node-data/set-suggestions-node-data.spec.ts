@@ -65,7 +65,7 @@ describe('setVariablesSuggestionsNodeData', () => {
   });
 
   it('stores a custom node under byNodeId as-is and leaves commonByType untouched', () => {
-    const bySourceHandle = { every: [suggestion('result')] };
+    const bySourceHandle = { left: [suggestion('result')] };
 
     setVariablesSuggestionsNodeData({ ...update, type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle });
 

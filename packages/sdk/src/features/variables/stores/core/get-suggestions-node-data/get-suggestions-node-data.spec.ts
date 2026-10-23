@@ -9,6 +9,8 @@ import { getSuggestionsNodeData } from './get-suggestions-node-data';
 
 const NODE_ID = 'node-1';
 
+const EMPTY = { type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle: {}, bySourceHandleType: {} };
+
 function definition(overrides: Record<string, unknown>): PaletteItem {
   return {
     type: 'fetch',
@@ -51,28 +53,22 @@ const ref = (key: string) => `nodes.${NODE_ID}.${key}`;
 
 describe('getSuggestionsNodeData', () => {
   it('returns empty custom suggestions when the definition declares no output', () => {
-    expect(getSuggestionsNodeData({ definition: definition({}), node: node() })).toStrictEqual({
-      type: SUGGESTION_NODE_TYPE.CUSTOM,
-      bySourceHandle: { every: [] },
-    });
+    expect(getSuggestionsNodeData({ definition: definition({}), node: node() })).toStrictEqual(EMPTY);
   });
 
   it('returns empty custom suggestions for an unknown schemaOutput type', () => {
     expect(
       getSuggestionsNodeData({ definition: definition({ schemaOutput: { type: 'unknown' } }), node: node() }),
-    ).toStrictEqual({
-      type: SUGGESTION_NODE_TYPE.CUSTOM,
-      bySourceHandle: { every: [] },
-    });
+    ).toStrictEqual(EMPTY);
   });
 
   it('forwards the node label to the suggestions', () => {
-    const { bySourceHandle } = getSuggestionsNodeData({
-      definition: definition({ schemaOutput: { type: 'default', bySourceHandle: { every: schema('result') } } }),
+    const { bySourceHandleType } = getSuggestionsNodeData({
+      definition: definition({ schemaOutput: { type: 'default', bySourceHandleType: { settled: schema('result') } } }),
       node: node({ label: 'My fetch' }),
     });
 
-    expect(bySourceHandle.every?.[0]?.display).toMatch(/^My fetch/);
+    expect(bySourceHandleType.settled?.[0]?.display).toMatch(/^My fetch/);
   });
 
   describe('schemaOutput default', () => {
@@ -85,89 +81,152 @@ describe('getSuggestionsNodeData', () => {
       });
 
       expect(result.type).toBe(SUGGESTION_NODE_TYPE.COMMON);
-      expect(idsOf(result.bySourceHandle.every)).toEqual([]);
       expect(idsOf(result.bySourceHandle.success)).toEqual([ref('result')]);
       expect(idsOf(result.bySourceHandle.error)).toEqual([ref('message')]);
+      expect(result.bySourceHandleType).toStrictEqual({});
+    });
+
+    it('indexes handle types separately from handle ids', () => {
+      const result = getSuggestionsNodeData({
+        definition: definition({
+          schemaOutput: {
+            type: 'default',
+            bySourceHandle: { success: schema('result') },
+            bySourceHandleType: { settled: schema('status'), error: schema('message') },
+          },
+        }),
+        node: node(),
+      });
+
+      expect(idsOf(result.bySourceHandle.success)).toEqual([ref('result')]);
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('status')]);
+      expect(idsOf(result.bySourceHandleType.error)).toEqual([ref('message')]);
+      expect(result.bySourceHandleType.success).toBeUndefined();
+    });
+
+    it('ignores unknown handle types', () => {
+      const result = getSuggestionsNodeData({
+        definition: definition({ schemaOutput: { type: 'default', bySourceHandleType: { every: schema('result') } } }),
+        node: node(),
+      });
+
+      expect(result.bySourceHandleType).toStrictEqual({});
     });
 
     it('skips handles without a schema', () => {
       const result = getSuggestionsNodeData({
         definition: definition({
-          schemaOutput: { type: 'default', bySourceHandle: { every: schema('result'), error: undefined } },
+          schemaOutput: {
+            type: 'default',
+            bySourceHandle: { success: schema('result'), error: undefined },
+            bySourceHandleType: { settled: schema('status'), error: undefined },
+          },
         }),
         node: node(),
       });
 
-      expect(Object.keys(result.bySourceHandle)).toEqual(['every']);
+      expect(Object.keys(result.bySourceHandle)).toEqual(['success']);
+      expect(Object.keys(result.bySourceHandleType)).toEqual(['settled']);
     });
 
     it('takes precedence over the deprecated outputSchema', () => {
       const result = getSuggestionsNodeData({
         definition: definition({
-          schemaOutput: { type: 'default', bySourceHandle: { every: schema('fresh') } },
+          schemaOutput: { type: 'default', bySourceHandleType: { settled: schema('fresh') } },
           outputSchema: { type: 'default', properties: flat('stale') },
         }),
         node: node(),
       });
 
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('fresh')]);
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('fresh')]);
     });
   });
 
   describe('schemaOutput variant', () => {
     it('always includes a variant without a rule as custom suggestions', () => {
       const result = getSuggestionsNodeData({
-        definition: variantDefinition([{ variantRule: undefined, bySourceHandle: { every: schema('result') } }]),
+        definition: variantDefinition([{ variantRule: undefined, bySourceHandle: { success: schema('result') } }]),
         node: node(),
       });
 
       expect(result.type).toBe(SUGGESTION_NODE_TYPE.CUSTOM);
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('result')]);
+      expect(idsOf(result.bySourceHandle.success)).toEqual([ref('result')]);
     });
 
     it('includes a variant only when the property at the rule path equals the rule value', () => {
       const definition = variantDefinition([
         {
           variantRule: { onlyIfPropertyNameEquals: { path: 'options.mode', value: 'json' } },
-          bySourceHandle: { every: schema('parsed') },
+          bySourceHandle: { success: schema('parsed') },
         },
       ]);
       const matching = getSuggestionsNodeData({ definition, node: node({ options: { mode: 'json' } }) });
       const other = getSuggestionsNodeData({ definition, node: node({ options: { mode: 'text' } }) });
 
-      expect(idsOf(matching.bySourceHandle.every)).toEqual([ref('parsed')]);
-      expect(idsOf(other.bySourceHandle.every)).toEqual([]);
+      expect(idsOf(matching.bySourceHandle.success)).toEqual([ref('parsed')]);
+      expect(other.bySourceHandle.success).toBeUndefined();
     });
 
     it('merges every matching variant into the same handle in declaration order', () => {
       const result = getSuggestionsNodeData({
         definition: variantDefinition([
-          { variantRule: undefined, bySourceHandle: { every: schema('first') } },
+          { variantRule: undefined, bySourceHandle: { success: schema('first') } },
           {
             variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'json' } },
-            bySourceHandle: { every: schema('second') },
+            bySourceHandle: { success: schema('second') },
           },
           {
             variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'text' } },
-            bySourceHandle: { every: schema('skipped') },
+            bySourceHandle: { success: schema('skipped') },
           },
         ]),
         node: node({ mode: 'json' }),
       });
 
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('first'), ref('second')]);
+      expect(idsOf(result.bySourceHandle.success)).toEqual([ref('first'), ref('second')]);
     });
 
-    it('adds variables read from a node property to every listed handle', () => {
+    it('merges the handle types of every matching variant', () => {
       const result = getSuggestionsNodeData({
         definition: variantDefinition([
-          { variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandles: ['success', 'every'] } },
+          { variantRule: undefined, bySourceHandleType: { settled: schema('first') } },
+          {
+            variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'json' } },
+            bySourceHandleType: { settled: schema('second'), error: schema('message') },
+          },
+        ]),
+        node: node({ mode: 'json' }),
+      });
+
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('first'), ref('second')]);
+      expect(idsOf(result.bySourceHandleType.error)).toEqual([ref('message')]);
+      expect(result.bySourceHandle).toStrictEqual({});
+    });
+
+    it('adds variables read from a node property to each listed handle', () => {
+      const result = getSuggestionsNodeData({
+        definition: variantDefinition([
+          { variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandles: ['success', 'error'] } },
         ]),
         node: node({ outputs: { a: variable('a'), b: variable('b') } }),
       });
 
       expect(idsOf(result.bySourceHandle.success)).toEqual([ref('a'), ref('b')]);
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('a'), ref('b')]);
+      expect(idsOf(result.bySourceHandle.error)).toEqual([ref('a'), ref('b')]);
+      expect(result.bySourceHandleType).toStrictEqual({});
+    });
+
+    it('adds variables read from a node property to each listed handle type', () => {
+      const result = getSuggestionsNodeData({
+        definition: variantDefinition([
+          { variantRule: { fromValueOfPropertyPath: 'outputs', toSourceHandlesTypes: ['settled', 'error'] } },
+        ]),
+        node: node({ outputs: { a: variable('a') } }),
+      });
+
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('a')]);
+      expect(idsOf(result.bySourceHandleType.error)).toEqual([ref('a')]);
+      expect(result.bySourceHandle).toStrictEqual({});
     });
 
     it('adds nothing when the property does not hold a valid variables index', () => {
@@ -178,7 +237,7 @@ describe('getSuggestionsNodeData', () => {
         node: node({ outputs: { a: { id: 'a' } } }),
       });
 
-      expect(result.bySourceHandle).toStrictEqual({ every: [] });
+      expect(result).toStrictEqual(EMPTY);
     });
 
     it('gates variables read from a property by the equality rule', () => {
@@ -195,8 +254,8 @@ describe('getSuggestionsNodeData', () => {
       const matching = getSuggestionsNodeData({ definition, node: node({ mode: 'custom', outputs }) });
       const other = getSuggestionsNodeData({ definition, node: node({ mode: 'fixed', outputs }) });
 
-      expect(idsOf(matching.bySourceHandle.success)).toEqual([ref('a')]);
-      expect(other.bySourceHandle.success).toBeUndefined();
+      expect(idsOf(matching.bySourceHandleType.success)).toEqual([ref('a')]);
+      expect(other.bySourceHandleType.success).toBeUndefined();
     });
 
     it('appends property variables after schema variables on a shared handle', () => {
@@ -213,15 +272,16 @@ describe('getSuggestionsNodeData', () => {
   });
 
   describe('deprecated outputSchema', () => {
-    it('indexes default properties under every as common suggestions', () => {
+    it('indexes default properties under settled as common suggestions', () => {
       const result = getSuggestionsNodeData({
         definition: definition({ outputSchema: { type: 'default', properties: flat('result', 'status') } }),
         node: node(),
       });
 
       expect(result.type).toBe(SUGGESTION_NODE_TYPE.COMMON);
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('result'), ref('status')]);
-      expect(Object.keys(result.bySourceHandle)).toEqual(['every']);
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('result'), ref('status')]);
+      expect(Object.keys(result.bySourceHandleType)).toEqual(['settled']);
+      expect(result.bySourceHandle).toStrictEqual({});
     });
 
     it('uses only the first variant whose rule matches the node property', () => {
@@ -243,7 +303,7 @@ describe('getSuggestionsNodeData', () => {
       });
 
       expect(result.type).toBe(SUGGESTION_NODE_TYPE.CUSTOM);
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('json')]);
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('json')]);
     });
 
     it('treats a variant without a rule as a match', () => {
@@ -257,7 +317,7 @@ describe('getSuggestionsNodeData', () => {
         node: node({ mode: 'anything' }),
       });
 
-      expect(idsOf(result.bySourceHandle.every)).toEqual([ref('fallback')]);
+      expect(idsOf(result.bySourceHandleType.settled)).toEqual([ref('fallback')]);
     });
 
     it('compares the rule value strictly', () => {
@@ -273,7 +333,7 @@ describe('getSuggestionsNodeData', () => {
         node: node({ count: 1 }),
       });
 
-      expect(result.bySourceHandle.every).toBeUndefined();
+      expect(result.bySourceHandleType.settled).toBeUndefined();
     });
 
     it('returns custom suggestions without handles when no variant matches', () => {
@@ -289,7 +349,7 @@ describe('getSuggestionsNodeData', () => {
         node: node({ mode: 'json' }),
       });
 
-      expect(result).toStrictEqual({ type: SUGGESTION_NODE_TYPE.CUSTOM, bySourceHandle: {} });
+      expect(result).toStrictEqual(EMPTY);
     });
   });
 });

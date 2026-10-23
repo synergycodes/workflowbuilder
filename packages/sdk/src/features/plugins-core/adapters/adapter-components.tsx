@@ -2,6 +2,7 @@ import { type ReactNode } from 'react';
 import type React from 'react';
 import { memo, useMemo } from 'react';
 
+import { warnIfRemovedSlot } from './removed-api';
 import { registerDecorator } from './utils/register-decorator';
 import { sortByPriority } from './utils/sort-by-priority';
 
@@ -46,28 +47,34 @@ const pluginRegistryComponents = new Map<
  * Decorate a named slot — add UI before/after/around it or transform its props.
  *
  * Slots are mount points the SDK exposes for plugins to inject custom UI
- * without forking the editor. Common slots include `'OptionalAppBarControls'`,
+ * without forking the editor. Common slots include `'OptionalAppChildren'`,
  * `'OptionalNodeContent'`, and others — see the
  * [Build a plugin](/docs/guides/build-a-plugin/) guide for the authoritative
- * list.
+ * list. Own UI in the editor header, the palette and the properties panel does not
+ * go through a slot (`'PropertiesPanel'` still takes a props decorator, for the
+ * panel's `tabs`, labels and `onDeleteClick`): see `useWorkflowBuilderState()`,
+ * `useWorkflowBuilderActions()`, `builtInControls`, and the `…Content` /
+ * `…MenuItem` components instead. A slot that 4.0 removed logs a warning
+ * naming its replacement and registers nothing.
  *
  * Safe to call more than once; pass `plugin.name` to deduplicate.
  *
- * @param componentName - Slot identifier (e.g. `'OptionalAppBarControls'`).
+ * @param componentName - Slot identifier (e.g. `'OptionalAppChildren'`).
  * @param plugin - Decorator configuration. See {@link ComponentDecoratorOptions}.
  *
  * @example
  * ```ts
- * registerComponentDecorator('OptionalAppBarControls', {
- *   content: MyButton,
- *   place: 'after',
- *   name: 'analytics-button',
+ * registerComponentDecorator('OptionalAppChildren', {
+ *   content: MyWidget,
+ *   name: 'analytics-widget',
  * });
  * ```
  *
  * @category Plugins
  */
 export function registerComponentDecorator<P>(componentName: string, plugin: ComponentDecoratorOptions<P>) {
+  if (warnIfRemovedSlot(componentName)) return;
+
   const resolvedName = plugin.name ?? ((plugin as DecoratorWithContent)?.content as { name: string })?.name;
 
   registerDecorator(pluginRegistryComponents, componentName, { ...plugin, name: resolvedName });

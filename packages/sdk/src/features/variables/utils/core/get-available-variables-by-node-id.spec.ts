@@ -188,7 +188,7 @@ describe('getAvailableVariablesByNodeId', () => {
     expect(idsOf(groups[0])).toEqual(['nodes.parent.left', 'nodes.parent.shared', 'nodes.parent.right']);
   });
 
-  it('merges ancestors sharing a label into one group', () => {
+  it('keeps ancestors sharing a label in separate groups', () => {
     index({ p1: settled(suggestion('nodes.p1.a')), p2: settled(suggestion('nodes.p2.a')) });
 
     const groups = available(
@@ -197,8 +197,8 @@ describe('getAvailableVariablesByNodeId', () => {
       [edge('p1', 'target'), edge('p2', 'target')],
     );
 
-    expect(labelsOf(groups)).toEqual(['Fetch']);
-    expect(idsOf(groups[0])).toEqual(['nodes.p1.a', 'nodes.p2.a']);
+    expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch']);
+    expect(groups.map(idsOf)).toEqual([['nodes.p1.a'], ['nodes.p2.a']]);
   });
 
   it('filters suggestions by excluded and included types', () => {

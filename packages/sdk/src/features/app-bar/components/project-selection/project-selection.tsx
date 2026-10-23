@@ -1,5 +1,6 @@
 import { CaretDown } from '@phosphor-icons/react';
 import { Input, Menu } from '@workflowbuilder/ui';
+import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
@@ -7,74 +8,66 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from '../../app-bar.module.css';
 
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { useStore } from '../../../../store/store';
-import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
+import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
+import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
+import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
+import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
+import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 import { openModalWorkflowSettings } from '../../../variables/modals/global/modal-settings';
 
 /**
- * Props accepted by {@link ProjectSelection}. Use this when typing a
- * `registerComponentDecorator<ProjectSelectionProps>('ProjectSelection', …)`
- * call.
- *
- * @category Components
- */
-export type ProjectSelectionProps = {
-  /**
-   * Optional handler for the kebab menu's "Duplicate to Drafts" item. The item
-   * is rendered only when this is provided — omit it and the item is absent.
-   */
-  onDuplicateClick?: () => void;
-};
-
-/**
  * App-bar component that shows the current document's folder name + title
- * and lets the user rename the document inline. Mounted automatically by
- * the editor's app bar.
+ * and lets the user rename the document inline. Mounted by the editor's app
+ * bar; own menu items come through {@link WorkflowMenuItem}, and
+ * `builtInControls` hides `settings` and `workflowRename`.
  *
- * @internal — not part of the public API; use {@link ProjectSelectionProps}
- * to type a decorator on the `'ProjectSelection'` slot instead.
+ * @internal — not part of the public API.
  */
-function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) {
-  const documentName = useStore((state) => state.documentName || '');
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
-  const setDocumentName = useStore((state) => state.setDocumentName);
+export function ProjectSelection(props: object) {
+  // The props are empty since 4.0; the check catches an `onDuplicateClick` a caller still passes.
+  useWarnOnce(
+    'onDuplicateClick' in props,
+    removedPropertyWarning('onDuplicateClick', 'ProjectSelection', 'WorkflowMenuItem'),
+  );
+  const workflowName = useStore((state) => state.workflowName || '');
+  const isReadOnly = useStore((store) => store.isReadOnly);
+  const { setWorkflowName } = useWorkflowBuilderActions();
   const [editName, setEditName] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const isSettingsVisible = useIsBuiltInControlVisible('settings');
+  const isDocumentRenameVisible = useIsBuiltInControlVisible('workflowRename');
+  const registeredItems = useRegisteredMenuItems('project');
 
   const { t } = useTranslation();
 
   const items = useMemo(
-    () => [
-      {
-        label: t('common.settings'),
-        icon: <Icon name="Gear" />,
-        onClick: openModalWorkflowSettings,
-      },
-      // Rendered only when the host wires a handler; without one it would be a
-      // dead no-op item, so we leave it out entirely.
-      ...(onDuplicateClick
-        ? [
-            {
-              label: t('header.projectSelection.duplicateToDrafts'),
-              icon: <Icon name="Cards" />,
-              onClick: onDuplicateClick,
-            },
-          ]
-        : []),
-    ],
-    [onDuplicateClick, t],
+    () =>
+      composeMenuItems(
+        [
+          ...(isSettingsVisible
+            ? [
+                {
+                  label: t('common.settings'),
+                  icon: <Icon name="Gear" />,
+                  onClick: openModalWorkflowSettings,
+                },
+              ]
+            : []),
+        ],
+        registeredItems,
+      ),
+    [isSettingsVisible, t, registeredItems],
   );
 
   return (
     <div className={styles['project-selection']}>
       <span className={styles['folder-name']}>{t('header.folderName')} /</span>
-      {editName && !isReadOnlyMode ? (
+      {editName && isDocumentRenameVisible && !isReadOnly ? (
         <Input
-          value={documentName}
-          onChange={(event) => {
-            if (event.target.value.length > 128) return;
-            setDocumentName(event.target.value);
-          }}
+          value={workflowName}
+          onChange={(event) => setWorkflowName(event.target.value)}
           onBlur={() => setEditName(false)}
           onKeyDown={(event) => {
             if (event.key === 'Enter') {
@@ -84,23 +77,22 @@ function ProjectSelectionComponent({ onDuplicateClick }: ProjectSelectionProps) 
           autoFocus={true}
         />
       ) : (
-        <span className={styles['title']} onClick={() => !isReadOnlyMode && setEditName(true)}>
-          {documentName}
+        <span
+          className={clsx(styles['title'], { [styles['title-editable']]: isDocumentRenameVisible && !isReadOnly })}
+          onClick={isDocumentRenameVisible && !isReadOnly ? () => setEditName(true) : undefined}
+        >
+          {workflowName}
         </span>
       )}
-      <div className={styles['menu-container']}>
-        <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
-          <Menu.TriggerButton aria-label={t('tooltips.pickTheProject')} tooltip={t('tooltips.pickTheProject')}>
-            <CaretDown />
-          </Menu.TriggerButton>
-        </Menu>
-      </div>
+      {items.length > 0 && (
+        <div className={styles['menu-container']}>
+          <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <Menu.TriggerButton aria-label={t('tooltips.pickTheProject')} tooltip={t('tooltips.pickTheProject')}>
+              <CaretDown />
+            </Menu.TriggerButton>
+          </Menu>
+        </div>
+      )}
     </div>
   );
 }
-
-/**
- * @internal Decorate via {@link registerComponentDecorator}`<ProjectSelectionProps>('ProjectSelection', …)`
- * — direct mounts aren't supported and aren't part of the public API.
- */
-export const ProjectSelection = withOptionalComponentPlugins(ProjectSelectionComponent, 'ProjectSelection');

@@ -1,3 +1,4 @@
+import { warnIfRemovedFunction } from './removed-api';
 import { registerDecorator } from './utils/register-decorator';
 import { sortByPriority } from './utils/sort-by-priority';
 
@@ -42,7 +43,8 @@ const pluginRegistryCallbacks = new Map<string, FunctionDecoratorOptions[]>();
  * Common decoration targets: `'trackFutureChange'` (state-mutation tracking),
  * diagram-listener emitters, save callbacks. See the
  * [Build a plugin](/docs/guides/build-a-plugin/) guide for the authoritative
- * list of decoratable functions.
+ * list of decoratable functions. A function that 4.0 removed logs a warning
+ * naming its replacement and registers nothing.
  *
  * Safe to call more than once; pass `plugin.name` to deduplicate.
  *
@@ -58,6 +60,8 @@ const pluginRegistryCallbacks = new Map<string, FunctionDecoratorOptions[]>();
  * @category Plugins
  */
 export function registerFunctionDecorator(functionName: string, plugin: FunctionDecoratorOptions) {
+  if (warnIfRemovedFunction(functionName)) return;
+
   const resolvedName = plugin.name ?? plugin.callback.name;
 
   registerDecorator(pluginRegistryCallbacks, functionName, { ...plugin, name: resolvedName });

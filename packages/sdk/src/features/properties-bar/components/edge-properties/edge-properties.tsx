@@ -18,7 +18,7 @@ export function EdgeProperties({ edge }: Props) {
   const { label } = data;
 
   const setEdgeData = useStore((state) => state.setEdgeData);
-  const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
+  const isReadOnly = useStore((state) => state.isReadOnly);
 
   const [input, setInput] = useState(label);
 
@@ -37,7 +37,7 @@ export function EdgeProperties({ edge }: Props) {
     <div className={styles['container']}>
       <OptionalEdgeProperties>
         <FormControlWithLabel label="Label">
-          <Input value={input || ''} onChange={onChange} disabled={isReadOnlyMode} />
+          <Input value={input || ''} onChange={onChange} disabled={isReadOnly} />
         </FormControlWithLabel>
       </OptionalEdgeProperties>
     </div>

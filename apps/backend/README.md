@@ -117,6 +117,8 @@ returns 501, and the worker runs everything except AI Agent nodes. See
 
 When `server.ts` runs the `AllowAllAuthPort`, the two collection routes, `GET /api/workflows` and `GET /api/executions`, answer `403 listing_disabled` unless `ENABLE_WB_LISTING=true`: a workflow or a run is then private only while its random id stays unlisted, so a forgotten variable must not list every id. With any other `AuthPort` the variable is not read, and the port authorizes `workflows:list` and `executions:list` itself. The local `.env.example` sets it; the deploy leaves it unset. A new collection route goes into `LISTING_PATHS` in `src/middleware/listing-guard.ts`.
 
+`ALLOWED_ORIGINS` lists the browser origins the API answers cross-origin calls from, comma-separated (`http://127.0.0.1:4201,http://localhost:4201`; each entry is reduced to its origin, and one that is not a URL stops the boot). Unset admits every origin, which suits local development with the frontend on another port, and logs a warning at boot; an empty value admits none, which is what the reference deployment sets because nginx serves the SPA and `/api` on one origin. The responses also carry the headers a scanner grades on (`src/middleware/security-headers.ts`): a Content Security Policy that lets nothing load or frame the API, `nosniff`, `X-Frame-Options: DENY` and HSTS, the last on the assumption that TLS terminates in front of the backend. The SPA's own policy is documented in [`deploy/ai-studio/README.md`](../../deploy/ai-studio/README.md), "Security headers".
+
 ### Connecting to a secured Temporal cluster
 
 The defaults above open a plaintext connection to the bundled dev cluster. Everything about the
@@ -141,6 +143,15 @@ opened on the first run, so booting does not require Temporal to be reachable.
 
 For Temporal Cloud, set `TEMPORAL_ADDRESS` to `<namespace>.<accountId>.tmprl.cloud:7233`,
 `TEMPORAL_NAMESPACE` to `<namespace>.<accountId>`, and `TEMPORAL_API_KEY` to your key.
+
+The namespace must already exist on the cluster; a missing one stops the worker at boot with
+`Namespace <name> is not found`. The bundled dev cluster registers only `default`, so to try
+another namespace locally, create it first:
+
+```bash
+docker compose -f apps/backend/docker-compose.yml exec temporal \
+  temporal operator namespace create --address temporal:7233 --namespace <name>
+```
 
 ## Scripts
 

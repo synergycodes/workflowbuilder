@@ -51,14 +51,13 @@ packages/sdk/src/
 │   ├── resolve-integration.ts          #   integration-discriminated-union → flat shape helper
 │   ├── root-shell.tsx                  #   internal subtree under StoreContext.Provider
 │   └── index.ts                        #   barrel re-export
-├── bootstrap-immer.ts          # First-loaded side-effect: disables immer auto-freeze
 ├── bootstrap.ts                # Module-level init (i18next, modals + i18n plugins)
 ├── index.ts                    # Curated public barrel + compound `WorkflowBuilder` namespace
 ├── components/                 # Reusable UI primitives (forms, sidebar, loader)
 ├── data/                       # Default palette + templates registries
 ├── features/                   # Feature modules (key modules shown)
 │   ├── default-layout/         #   Default floating-overlay layout (exported as WorkflowBuilder.DefaultLayout)
-│   ├── app-bar/                #   <WorkflowBuilder.TopBar>
+│   ├── app-bar/                #   <WorkflowBuilder.EditorHeader>
 │   ├── palette/                #   <WorkflowBuilder.Palette>
 │   ├── diagram/                #   <WorkflowBuilder.Canvas> + React Flow integration
 │   ├── properties-bar/         #   <WorkflowBuilder.PropertiesPanel>
@@ -83,7 +82,7 @@ Workflow Builder is plugin-based. The SDK exposes a small set of extension point
 
 | Extension point                                                          | What it does                                                  |
 | ------------------------------------------------------------------------ | ------------------------------------------------------------- |
-| [`registerComponentDecorator`](/api/plugins/registercomponentdecorator/) | Wrap a named slot (app bar control, node section, …).         |
+| [`registerComponentDecorator`](/api/plugins/registercomponentdecorator/) | Wrap a named slot (editor header control, node section, …).   |
 | [`registerFunctionDecorator`](/api/plugins/registerfunctiondecorator/)   | Hook before/after a named SDK action.                         |
 | [`registerPluginTranslation`](/api/plugins/registerplugintranslation/)   | Merge translations into the SDK's `plugins.*` i18n namespace. |
 | `<WorkflowBuilder.Root jsonForm={{ renderers, cells, translations }} />` | Add custom JsonForms renderers / cells.                       |

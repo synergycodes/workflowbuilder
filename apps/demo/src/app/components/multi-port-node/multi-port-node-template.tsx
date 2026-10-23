@@ -1,5 +1,5 @@
 import { Icon, defineNodeTemplate, getHandleId, statusOptions } from '@workflowbuilder/sdk';
-import type { NodeDataProperties, WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import type { NodeDataProperties, WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
 import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
@@ -27,7 +27,7 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
       disabled = false,
       data,
       showHandles = true,
-    }: WorkflowNodeTemplateProps<MultiPortProperties>) => {
+    }: WorkflowBuilderNodeTemplateProps<MultiPortProperties>) => {
       const status = data?.properties.status ?? statusOptions.active.value;
 
       const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);

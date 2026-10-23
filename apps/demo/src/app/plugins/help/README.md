@@ -6,4 +6,4 @@ Removal of this plugin will result in an application without the watermark in th
 
 The application can run without this folder by using stub files.
 
-If you want to remove references to the stubs, you can also delete the line where it was imported from: `apps/demo/src/app/features/plugins-core/index.ts`
+If you want to remove references to the stubs, you can also delete the line where it is registered: `helpPlugin` in the `plugins` array of `apps/demo/src/app/app.tsx`, together with its import.

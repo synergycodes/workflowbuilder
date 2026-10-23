@@ -46,7 +46,7 @@ const getTypeOptions = (
 };
 
 export function ConditionsFormField(props: ConditionsFormFieldProps) {
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
   const { condition, onChange, onRemove, shouldShowOperator = false, shouldShowValidation, suggestionGroups } = props;
   const [{ xType, comparisonsOperators }, setTypeOptions] = useState(getTypeOptions(condition.x));
 
@@ -128,7 +128,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             isError={shouldShowValidation && errors.y}
             type={xType}
             suggestionGroups={suggestionGroups}
-            isDisabled={isReadOnlyMode}
+            isDisabled={isReadOnly}
           />
         </div>
         <NavButton

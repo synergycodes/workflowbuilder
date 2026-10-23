@@ -5,9 +5,8 @@ import { devtools } from 'zustand/middleware';
 import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import type { IntegrationDataFormat } from '../../../types/integration';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
-import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 
-type IntegrationSavingStatus = 'disabled' | 'waiting' | 'saving' | 'saved' | 'notSaved';
+type IntegrationSavingStatus = 'disabled' | 'loadFailed' | 'waiting' | 'saving' | 'saved' | 'notSaved';
 
 type IntegrationStore = {
   savingStatus: IntegrationSavingStatus;
@@ -25,24 +24,34 @@ export const useIntegrationStore = create<IntegrationStore>()(
   ),
 );
 
-export function loadData(loadData: Partial<IntegrationDataFormat>) {
+export function loadData(
+  loadData: Partial<IntegrationDataFormat>,
+  { loadFailed = false }: { loadFailed?: boolean } = {},
+): { isEmpty: boolean } {
   const hasAnyData = Object.values(loadData).some(Boolean);
+  const isEmpty = !loadData.nodes?.length;
   if (hasAnyData) {
     setStoreDataFromIntegration(loadData);
-
+  }
+  // A name alone is applied silently: the welcome template selector follows for an empty diagram.
+  if (!isEmpty && !loadFailed) {
     showTranslatedSnackbar({
       title: 'restoreDiagramSuccess',
       variant: SnackbarType.SUCCESS,
     });
-  } else {
-    // Welcome modal for no data
-    openTemplateSelectorModal();
   }
 
   useIntegrationStore.setState({
-    savingStatus: 'waiting',
+    savingStatus: loadFailed ? 'loadFailed' : 'waiting',
     lastSaveAttemptTimestamp: Date.now(),
   });
+
+  return { isEmpty };
+}
+
+/** Back to 'disabled' for a new Root mount: the store is module-level, so a remount would otherwise start as loaded. */
+export function resetIntegrationStore() {
+  useIntegrationStore.setState({ savingStatus: 'disabled', lastSaveAttemptTimestamp: Date.now() });
 }
 
 export function getStoreSavingStatus() {

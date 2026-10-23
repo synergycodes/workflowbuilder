@@ -10,11 +10,11 @@ import { AiAgentNodeTemplate } from '../diagram/nodes/ai-agent-node-template/ai-
 import { DecisionNodeTemplate } from '../diagram/nodes/decision-node-template/decision-node-template';
 import { StartNodeTemplate } from '../diagram/nodes/start-node-template/start-node-template';
 import {
+  type WorkflowBuilderNodeTemplateProps,
   WorkflowNodeTemplate,
-  type WorkflowNodeTemplateProps,
 } from '../diagram/nodes/workflow-node-template/workflow-node-template';
 
-type NodeTemplateRegistry = Record<string, ComponentType<WorkflowNodeTemplateProps>>;
+type NodeTemplateRegistry = Record<string, ComponentType<WorkflowBuilderNodeTemplateProps>>;
 
 // Built-in templates registered against their NodeType discriminator.
 // Custom templates win on key collision (the lookup in NodePreview checks

@@ -208,9 +208,9 @@ describe('the Response format in the properties panel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
 
-  const renderPanel = (properties: Record<string, unknown>, isReadOnlyMode = false) => {
+  const renderPanel = (properties: Record<string, unknown>, isReadOnly = false) => {
     const node = aiAgentNode('draft-1', properties);
-    act(() => useStore.setState({ data: [aiAgentPaletteItem as PaletteItem], nodes: [node], isReadOnlyMode }));
+    act(() => useStore.setState({ data: [aiAgentPaletteItem as PaletteItem], nodes: [node], isReadOnly }));
     act(() => root.render(<NodeProperties node={node} />));
   };
 
@@ -237,7 +237,7 @@ describe('the Response format in the properties panel', () => {
     await settle();
     act(() => root.unmount());
     container.remove();
-    useStore.setState({ data: [], nodes: [], isReadOnlyMode: false });
+    useStore.setState({ data: [], nodes: [], isReadOnly: false });
   });
 
   it('renders the node uischema element with this control', () => {

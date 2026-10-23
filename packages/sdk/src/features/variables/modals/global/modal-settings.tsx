@@ -42,7 +42,7 @@ function ModalWorkflowSettings({ isReadOnly }: Props) {
 }
 
 export function openModalWorkflowSettings() {
-  const isReadOnly = useStore.getState().isReadOnlyMode;
+  const isReadOnly = useStore.getState().isReadOnly;
 
   openModal({
     content: <ModalWorkflowSettings isReadOnly={isReadOnly} />,

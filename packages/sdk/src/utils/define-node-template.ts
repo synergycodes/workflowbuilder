@@ -1,6 +1,6 @@
 import type { ComponentType } from 'react';
 
-import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
 
 /**
  * Erases the per-schema `P` parameter from a typed node template so it can
@@ -16,7 +16,7 @@ import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workfl
  * type MultiPortProperties = NodeDataProperties<typeof multiPortSchema>;
  *
  * export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
- *   memo(({ data }: WorkflowNodeTemplateProps<MultiPortProperties>) => {
+ *   memo(({ data }: WorkflowBuilderNodeTemplateProps<MultiPortProperties>) => {
  *     const status = data?.properties.status ?? 'active';
  *     return <NodePanel.Root>…</NodePanel.Root>;
  *   }),
@@ -26,7 +26,7 @@ import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workfl
  * @category Components
  */
 export function defineNodeTemplate<P>(
-  template: ComponentType<WorkflowNodeTemplateProps<P>>,
-): ComponentType<WorkflowNodeTemplateProps> {
-  return template as unknown as ComponentType<WorkflowNodeTemplateProps>;
+  template: ComponentType<WorkflowBuilderNodeTemplateProps<P>>,
+): ComponentType<WorkflowBuilderNodeTemplateProps> {
+  return template as unknown as ComponentType<WorkflowBuilderNodeTemplateProps>;
 }
