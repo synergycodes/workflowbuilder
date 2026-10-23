@@ -62,6 +62,7 @@ interface CorpusStats {
   members: number;
   typedocBuiltAt: string;
   gitHead: string;
+  docsRevision?: string;
   // Versions of the documented packages at build time, e.g. { sdk: '3.0.0' }.
   versions: Record<string, string>;
   buildMs: number;
@@ -81,7 +82,7 @@ function readDocs(file: string): DocsSnapshot {
   if (!existsSync(file)) throw new Error(`Missing docs data ${file}; ${REBUILD_HINT}`);
   let parsed: (Partial<DocsSnapshot> & { format?: unknown }) | null;
   try {
-    parsed = JSON.parse(readFileSync(file, 'utf8')) as (Partial<DocsSnapshot> & { format?: unknown }) | null;
+    parsed = JSON.parse(readFileSync(file, 'utf8'));
   } catch (error) {
     throw new Error(
       `Docs data ${file} is not valid JSON (${error instanceof Error ? error.message : error}); ${REBUILD_HINT}`,
@@ -207,6 +208,7 @@ export async function buildCorpus(options: BuildCorpusOptions = {}): Promise<Cor
       members: symbolEngine.memberCount,
       typedocBuiltAt: manifest.builtAt,
       gitHead: manifest.gitHead,
+      docsRevision: docsData.revision,
       versions: manifest.versions,
       buildMs: Math.round(performance.now() - started),
     },

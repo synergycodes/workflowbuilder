@@ -5,6 +5,7 @@ import { unified } from 'unified';
 
 import { type MdxRule, mdxComponents as defaultComponents } from '../config/mdx-components.js';
 import { githubUrl } from './doc-ids.js';
+import { FENCE } from './fences.js';
 import { CSS_VARIABLES_LABEL, CSS_VARIABLE_PREFIX } from './generated-content.js';
 
 interface Position {
@@ -55,7 +56,6 @@ interface Edit {
 
 const MAX_PARTIAL_DEPTH = 5;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-const FENCE = /^\s*(```|~~~)/;
 const NODE_SOURCE_DIRECTORY = 'apps/demo/src/app/data/nodes';
 const JSX_COMMENT = /^\s*\/\*[\s\S]*\*\/\s*$/;
 const JSON_IMPORT = /import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]([^'"]+\.json)['"]/g;

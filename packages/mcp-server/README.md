@@ -77,7 +77,7 @@ The search index is built from that data at startup, in 100-200 ms, so ranking a
 | `src/__fixtures__/` | Small checked-in docs and TypeDoc JSON used by the tests. `pnpm --filter @workflowbuilder/mcp fixtures:update` regenerates the JSON.            |
 | `scripts/`          | `generate-docs-data.ts` and `generate-typedoc.ts` (build steps), `smoke.ts`, `smoke-package.ts`, `check-packed-build.ts`, `update-fixtures.ts`. |
 
-Only the modules `src/index.ts` imports are compiled to `dist`. The MDX parsers (`remark-*`, `unified`, `yaml`, `github-slugger`) are devDependencies, so the server must not import anything from `src/corpus/load-docs.ts` or the loaders behind it; `smoke:package` fails if it does.
+Only the modules `src/index.ts` imports are compiled to `dist`. The MDX parsers (`remark-*`, `unified`, `yaml`, `github-slugger`) are devDependencies, so the server must not import anything from `src/corpus/load-docs.ts` or the loaders behind it. `pnpm lint` rejects such an import, and `smoke:package` fails if one gets through.
 
 ### Notes
 

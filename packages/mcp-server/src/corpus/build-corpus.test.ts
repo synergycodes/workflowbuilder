@@ -2,8 +2,13 @@ import { cpSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { FIXTURE_DOCS_ROOT, buildFixtureCorpus, loadFixtureDocs } from '../__fixtures__/fixtures.js';
-import { DOCS_FORMAT, serializeDocs } from './build-corpus.js';
+import {
+  FIXTURE_CORPUS_OPTIONS,
+  FIXTURE_DOCS_ROOT,
+  buildFixtureCorpus,
+  loadFixtureDocs,
+} from '../__fixtures__/fixtures.js';
+import { DOCS_FORMAT, buildCorpus, serializeDocs } from './build-corpus.js';
 
 const TYPEDOC_FIXTURES = path.join(FIXTURE_DOCS_ROOT, '..', 'typedoc');
 const REBUILD_HINT = /pnpm --filter @workflowbuilder\/mcp build/;
@@ -67,15 +72,18 @@ describe('buildCorpus data checks', () => {
 
 describe('buildCorpus docs snapshot', () => {
   let directory: string;
+  let docsFile: string;
   beforeEach(() => {
     directory = mkdtempSync(path.join(tmpdir(), 'wb-docs-snapshot-'));
+    docsFile = path.join(directory, 'docs.json');
   });
   afterEach(() => rmSync(directory, { recursive: true, force: true }));
 
+  const buildFromDisk = () => buildCorpus({ ...FIXTURE_CORPUS_OPTIONS, docsFile });
+
   it('serves a snapshot read from disk like the one loaded in memory', async () => {
-    const docsFile = path.join(directory, 'docs.json');
     writeFileSync(docsFile, serializeDocs(await loadFixtureDocs()));
-    const fromDisk = await buildFixtureCorpus({ docs: undefined, docsFile });
+    const fromDisk = await buildFromDisk();
     const inMemory = await buildFixtureCorpus();
 
     expect(fromDisk.stats.pages).toBe(inMemory.stats.pages);
@@ -86,27 +94,22 @@ describe('buildCorpus docs snapshot', () => {
   });
 
   it('fails with a rebuild hint when the docs data is missing', async () => {
-    await expect(buildFixtureCorpus({ docs: undefined, docsFile: path.join(directory, 'docs.json') })).rejects.toThrow(
-      REBUILD_HINT,
-    );
+    await expect(buildFromDisk()).rejects.toThrow(REBUILD_HINT);
   });
 
   it.each(['{oops', '{}', 'null'])('fails with a rebuild hint on the docs data %s', async (payload) => {
-    const docsFile = path.join(directory, 'docs.json');
     writeFileSync(docsFile, payload);
-    await expect(buildFixtureCorpus({ docs: undefined, docsFile })).rejects.toThrow(REBUILD_HINT);
+    await expect(buildFromDisk()).rejects.toThrow(REBUILD_HINT);
   });
 
   it('refuses a snapshot written in another format', async () => {
-    const docsFile = path.join(directory, 'docs.json');
     writeFileSync(docsFile, JSON.stringify({ ...(await loadFixtureDocs()), format: DOCS_FORMAT + 1 }));
-    await expect(buildFixtureCorpus({ docs: undefined, docsFile })).rejects.toThrow(/format/);
+    await expect(buildFromDisk()).rejects.toThrow(/format/);
   });
 
   it('refuses a snapshot with no pages instead of serving empty results', async () => {
-    const docsFile = path.join(directory, 'docs.json');
     writeFileSync(docsFile, serializeDocs({ pages: [], sections: [], chunks: [], docsBySymbolName: {} }));
-    await expect(buildFixtureCorpus({ docs: undefined, docsFile })).rejects.toThrow(/has no pages/);
+    await expect(buildFromDisk()).rejects.toThrow(/has no pages/);
   });
 });
 

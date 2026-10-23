@@ -8,6 +8,7 @@ import { DATA_DIR, MANIFEST_FILE, REPO_ROOT, TYPEDOC_DIR } from '../src/paths.js
 import { unresolvedTargets } from '../src/symbols/referenced-types.js';
 import { type TypedocReflection, topLevelCount } from '../src/symbols/typedoc-types.js';
 import { TYPEDOC_FLAGS, TYPEDOC_RUNS, type TypedocRun } from '../src/typedoc-runs.js';
+import { gitHead } from './git-head.js';
 
 const execFileAsync = promisify(execFile);
 const require = createRequire(import.meta.url);
@@ -22,15 +23,6 @@ async function typedocBin() {
   const metadata = JSON.parse(await readFile(packageJsonPath, 'utf8')) as TypedocPackage;
   const bin = typeof metadata.bin === 'string' ? metadata.bin : metadata.bin.typedoc;
   return { binPath: path.resolve(path.dirname(packageJsonPath), bin), version: metadata.version };
-}
-
-async function gitHead() {
-  try {
-    const { stdout } = await execFileAsync('git', ['rev-parse', '--short', 'HEAD'], { cwd: REPO_ROOT });
-    return stdout.trim();
-  } catch {
-    return 'unknown';
-  }
 }
 
 async function runTypedoc(
@@ -85,7 +77,7 @@ async function main() {
 
   const manifest = {
     builtAt: new Date().toISOString(),
-    gitHead: await gitHead(),
+    gitHead: gitHead() ?? 'unknown',
     typedocVersion: version,
     packages,
     versions,

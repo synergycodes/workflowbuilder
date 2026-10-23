@@ -29,7 +29,7 @@ export function githubUrl(kind: 'blob' | 'tree', revision: string, repoPath: str
   return `${GITHUB_REPO}/${kind}/${revision}/${repoPath}`;
 }
 
-export function readmeUrl(packageName: string, fileName: string, anchor?: string, revision = 'main') {
+export function readmeUrl(packageName: string, fileName: string, anchor: string | undefined, revision: string) {
   const hash = anchor && anchor !== INTRO_ANCHOR ? `#${anchor}` : '';
   return `${githubUrl('blob', revision, `packages/${packageName}/${fileName}`)}${hash}`;
 }

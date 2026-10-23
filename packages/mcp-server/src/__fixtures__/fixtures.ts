@@ -53,15 +53,19 @@ export function loadFixtureDocs(overrides: Partial<LoadDocsOptions> = {}) {
   return loadDocs({ docsRoot: FIXTURE_DOCS_ROOT, packageDocs: [], uiComponents: FIXTURE_COMPONENTS, ...overrides });
 }
 
+export const FIXTURE_CORPUS_OPTIONS: BuildCorpusOptions = {
+  typedocDirectory: FIXTURE_TYPEDOC_DIRECTORY,
+  manifestFile: path.join(here, 'missing-manifest.json'),
+  packages: FIXTURE_PACKAGES,
+};
+
 export async function buildFixtureCorpus({
   packageDocs = [],
   ...overrides
 }: Partial<BuildCorpusOptions> & Pick<LoadDocsOptions, 'packageDocs'> = {}) {
   return buildCorpus({
     docs: await loadFixtureDocs({ packageDocs, onWarning: overrides.onWarning }),
-    typedocDirectory: FIXTURE_TYPEDOC_DIRECTORY,
-    manifestFile: path.join(here, 'missing-manifest.json'),
-    packages: FIXTURE_PACKAGES,
+    ...FIXTURE_CORPUS_OPTIONS,
     ...overrides,
   });
 }

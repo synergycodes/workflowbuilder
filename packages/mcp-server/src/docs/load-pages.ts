@@ -6,6 +6,7 @@ import { type ChunkingConfig, chunking as defaultChunking } from '../config/chun
 import { chunkPage } from './chunk.js';
 import { cleanDocument, splitFrontmatter } from './clean-mdx.js';
 import { pageIdFromPath, pageUrl } from './doc-ids.js';
+import { mapOutsideFences } from './fences.js';
 import type { DocChunk, DocPage, DocSection } from './types.js';
 
 interface LoadPagesOptions {
@@ -34,24 +35,17 @@ interface Frontmatter {
 }
 
 const DEFAULT_SKIPPED_ROOT_DIRECTORIES = ['api', 'ui-api'];
-const FENCE = /^\s*(```|~~~)/;
 const RELATIVE_LINK = /(?<!!)(\[[^\]]*\]\()(\.{1,2}\/[^)\s]*)((?:\s+"[^"]*")?\))/g;
 
 // A served page has no folder to resolve `./trigger/` against, so the link becomes the site path get_doc accepts.
 export function resolveRelativeLinks(markdown: string, pageId: string) {
   const base = new URL(pageId === 'index' ? '/' : `/${pageId}/`, 'https://site.invalid');
-  let inFence = false;
-  return markdown
-    .split('\n')
-    .map((line) => {
-      if (FENCE.test(line)) inFence = !inFence;
-      if (inFence) return line;
-      return line.replaceAll(RELATIVE_LINK, (_match, open: string, target: string, close: string) => {
-        const url = new URL(target, base);
-        return `${open}${url.pathname}${url.hash}${close}`;
-      });
-    })
-    .join('\n');
+  return mapOutsideFences(markdown, (line) =>
+    line.replaceAll(RELATIVE_LINK, (_match, open: string, target: string, close: string) => {
+      const url = new URL(target, base);
+      return `${open}${url.pathname}${url.hash}${close}`;
+    }),
+  );
 }
 
 function listFiles(root: string, skippedRoot: readonly string[]) {

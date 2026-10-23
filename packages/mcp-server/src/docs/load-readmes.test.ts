@@ -101,7 +101,9 @@ describe('loadReadmes robustness', () => {
 
 describe('rewriteRelativeLinks', () => {
   it('keeps same-page anchors and links that leave the repo', () => {
-    expect(rewriteRelativeLinks('[a](#x) [b](../../../x.md)', 'sdk', 'README.md')).toBe('[a](#x) [b](../../../x.md)');
+    expect(rewriteRelativeLinks('[a](#x) [b](../../../x.md)', 'sdk', 'README.md', 'main')).toBe(
+      '[a](#x) [b](../../../x.md)',
+    );
   });
 });
 

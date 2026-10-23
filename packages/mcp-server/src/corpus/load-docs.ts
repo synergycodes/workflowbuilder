@@ -103,5 +103,6 @@ export async function loadDocs(options: LoadDocsOptions = {}): Promise<DocsSnaps
     sections: [...loaded.sections, ...readmes.sections],
     chunks: [...loaded.chunks, ...readmes.chunks],
     docsBySymbolName: Object.fromEntries(docsBySymbolName),
+    revision: options.revision,
   };
 }

@@ -6,8 +6,14 @@ import { tmpdir } from 'node:os';
 import path from 'node:path';
 
 import { PACKAGE_ROOT } from '../src/paths.js';
+import { GET_DOC_TOOL } from '../src/tools/get-doc/index.js';
+import { GET_SYMBOL_TOOL } from '../src/tools/get-symbol/index.js';
+import { SEARCH_DOCS_TOOL } from '../src/tools/search-docs/index.js';
+import { SEARCH_SYMBOLS_TOOL } from '../src/tools/search-symbols/index.js';
 
-const EXPECTED_TOOLS = ['get_doc', 'get_symbol', 'search_docs', 'search_symbols'];
+const EXPECTED_TOOLS = [GET_DOC_TOOL, GET_SYMBOL_TOOL, SEARCH_DOCS_TOOL, SEARCH_SYMBOLS_TOOL]
+  .map((tool) => tool.name)
+  .sort();
 
 // pnpm and npm are .cmd shims on Windows, which only start through a shell; quote what the shell would split.
 function run(command: string, commandArguments: string[], cwd: string) {

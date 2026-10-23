@@ -4,6 +4,7 @@ import path from 'node:path';
 import { type ChunkingConfig, chunking as defaultChunking } from '../config/chunking.js';
 import { chunkPage } from './chunk.js';
 import { INTRO_ANCHOR, githubUrl, readmeId, readmeUrl } from './doc-ids.js';
+import { FENCE, mapOutsideFences } from './fences.js';
 import type { DocChunk, DocPage, DocSection } from './types.js';
 
 export interface PackageDocsSource {
@@ -30,7 +31,6 @@ interface LoadedReadmes {
 }
 
 const TITLE = /^# +(.+?)(?:\s+#+)?\s*$/;
-const FENCE = /^\s*(```|~~~)/;
 const MARKDOWN_LINK = /(!?\[[^\]]*\]\()([^)\s]+)((?:\s+"[^"]*")?\))/g;
 const ABSOLUTE = /^([a-z][a-z0-9+.-]*:|#|\/\/)/i;
 
@@ -56,27 +56,21 @@ function firstHeading(markdown: string) {
   }
 }
 
-export function rewriteRelativeLinks(markdown: string, packageName: string, fileName: string, revision = 'main') {
+export function rewriteRelativeLinks(markdown: string, packageName: string, fileName: string, revision: string) {
   const fileDirectory = path.posix.dirname(`packages/${packageName}/${fileName}`);
-  let inFence = false;
-  return markdown
-    .split('\n')
-    .map((line) => {
-      if (FENCE.test(line)) inFence = !inFence;
-      if (inFence) return line;
-      return line.replaceAll(MARKDOWN_LINK, (match, open: string, target: string, close: string) => {
-        if (ABSOLUTE.test(target)) return match;
-        const hashIndex = target.indexOf('#');
-        const file = hashIndex === -1 ? target : target.slice(0, hashIndex);
-        const hash = hashIndex === -1 ? '' : target.slice(hashIndex);
-        if (file === '') return match;
-        const resolved = path.posix.normalize(path.posix.join(fileDirectory, file));
-        if (resolved.startsWith('..')) return match;
-        const kind = path.posix.extname(resolved) === '' ? 'tree' : 'blob';
-        return `${open}${githubUrl(kind, revision, resolved)}${hash}${close}`;
-      });
-    })
-    .join('\n');
+  return mapOutsideFences(markdown, (line) =>
+    line.replaceAll(MARKDOWN_LINK, (match, open: string, target: string, close: string) => {
+      if (ABSOLUTE.test(target)) return match;
+      const hashIndex = target.indexOf('#');
+      const file = hashIndex === -1 ? target : target.slice(0, hashIndex);
+      const hash = hashIndex === -1 ? '' : target.slice(hashIndex);
+      if (file === '') return match;
+      const resolved = path.posix.normalize(path.posix.join(fileDirectory, file));
+      if (resolved.startsWith('..')) return match;
+      const kind = path.posix.extname(resolved) === '' ? 'tree' : 'blob';
+      return `${open}${githubUrl(kind, revision, resolved)}${hash}${close}`;
+    }),
+  );
 }
 
 export function loadReadmes(options: LoadReadmesOptions): LoadedReadmes {
