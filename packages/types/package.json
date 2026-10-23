@@ -9,5 +9,8 @@
   },
   "exports": {
     "./*": "./src/*.ts"
+  },
+  "dependencies": {
+    "@jsonforms/core": "^3.4.0"
   }
 }

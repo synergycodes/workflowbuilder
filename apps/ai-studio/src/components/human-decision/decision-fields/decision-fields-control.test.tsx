@@ -149,7 +149,7 @@ describe('the decision fields control in the real properties panel', () => {
     resetExecution();
     dataUpdates = 0;
     unsubscribe = useChangesTrackerStore.subscribe((state) => {
-      if (state.lastChangeName === 'dataUpdate') dataUpdates += 1;
+      if (state.lastChangeName === 'dataUpdateNode') dataUpdates += 1;
     });
     container = document.createElement('div');
     document.body.append(container);

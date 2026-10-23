@@ -22,7 +22,7 @@ export const humanDecisionPaletteItem: PaletteItem<HumanDecisionSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
-  // The completion's output is the decision, so `{{ nodes.<id>.action }}` resolves downstream.
+  // The completion's output is the decision, so `{{nodes.<id>.action}}` resolves downstream.
   outputSchema: {
     type: 'default',
     properties: {

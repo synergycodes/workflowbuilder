@@ -10,6 +10,17 @@
   --wb-sdk-variable-backdrop: color-mix(in srgb, var(--wb-public-modal-backdrop-background), transparent 50%);
 }
 
+.container:has(+ :global(.right-adornment)) {
+  .control {
+    padding-right: 2rem;
+
+    > div {
+      /* Div inside with highlighted variables takes full width anyway and this hides it below adornment */
+      mask: linear-gradient(to right, white, white calc(100% - 3rem), transparent calc(100% - 2rem), transparent);
+    }
+  }
+}
+
 .control {
   position: relative;
   border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
@@ -115,6 +126,7 @@
   flex-direction: column;
   overflow: hidden;
   padding: 0.5rem 0 0;
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
 }
 
 body:has(.suggestionsContainer) {
@@ -142,6 +154,7 @@ body:has(.suggestionsContainer) {
 
 .suggestionsTitle {
   composes: wb-text-body-s-emphasized from global;
+
   color: var(--wb-ds-ui-text-default);
 }
 
@@ -169,13 +182,13 @@ body:has(.suggestionsContainer) {
 
 .groupHeader {
   composes: wb-text-body-s-emphasized from global;
-  color: var(--wb-ds-ui-text-default);
   display: flex;
-  color: var(--wb-ds-ui-text-default);
+  display: flex;
   align-items: center;
   gap: var(--wb-ds-space-50);
   flex: 1 0 0;
   padding: 6px;
+  color: var(--wb-ds-ui-text-default);
 }
 
 .iconWrapper {

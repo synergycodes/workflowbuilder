@@ -3,7 +3,7 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { setCustomPaletteNodes } from '../../data/palette';
 import { getNodeErrors } from './get-node-errors';
 import { mockNodeDelay } from './get-node-errors.mock';
-import { workflowBuilderValidator } from './workflow-builder-validator';
+import { workflowBuilderValidator } from './workflow-builder-validator/workflow-builder-validator';
 
 const delayDefinition = {
   type: 'delay',

@@ -37,7 +37,7 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock('../../../../features/variables/modals/modal-settings', () => ({
+vi.mock('../../../../features/variables/modals/global/modal-settings', () => ({
   openModalWorkflowSettings: vi.fn(),
 }));
 

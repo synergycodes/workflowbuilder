@@ -14,7 +14,7 @@
 
 Net effect: the engine adapter was swappable per `WorkflowEnginePort`, but the node vocabulary was not. Anyone wanting to ship a different workflow product on this codebase had to fork the core, fork the types package, and rewrite backend mappers. The package's stated purpose ("generic graph-runner mechanism") and its actual surface area diverged.
 
-A separate dead-code observation: `packages/types/src/workflow-execution/node-output-schemas.ts` exported an `executionNodeOutputSchemas` map keyed by `'ai-studio/*'` with zero readers in the repo. It was infrastructure for a feature nobody was using.
+A separate dead-code observation: `packages/types/src/workflow-execution/node-output-schemas.ts` exported an `executionNodeSchemaOutputs` map keyed by `'ai-studio/*'` with zero readers in the repo. It was infrastructure for a feature nobody was using.
 
 ## Decision
 

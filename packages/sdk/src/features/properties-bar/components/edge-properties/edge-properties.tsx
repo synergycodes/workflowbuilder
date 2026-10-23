@@ -6,6 +6,7 @@ import styles from './edge-properties.module.css';
 import { FormControlWithLabel } from '../../../../components/form/form-control-with-label/form-control-with-label';
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
 import { useStore } from '../../../../store/store';
+import { trackFutureChange } from '../../../changes-tracker/stores/use-changes-tracker-store';
 import { OptionalEdgeProperties } from '../../../plugins-core/components/app/optional-edge-properties';
 
 type Props = {
@@ -28,6 +29,7 @@ export function EdgeProperties({ edge }: Props) {
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const { value } = event.target;
     setInput(value);
+    trackFutureChange('dataUpdateEdge', { id });
     setEdgeData(id, { label: value });
   };
 
