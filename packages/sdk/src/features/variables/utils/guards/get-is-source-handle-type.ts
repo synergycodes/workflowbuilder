@@ -1,5 +1,4 @@
-import { SOURCE_HANDLE_TYPE } from '../../constants';
-import type { SourceHandleType } from '../../constants';
+import { SOURCE_HANDLE_TYPE, type SourceHandleType } from '@workflow-builder/types/node-output-schema';
 
 const SOURCE_HANDLE_TYPES = new Set<string>(Object.values(SOURCE_HANDLE_TYPE));
 

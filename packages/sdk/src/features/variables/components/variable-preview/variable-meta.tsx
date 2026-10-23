@@ -1,8 +1,9 @@
 import clsx from 'clsx';
 
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import styles from './variable-meta.module.css';
 
-import type { VariableType } from '../../../../node/node-output-schema';
 import { variableTypeInfoByType } from '../../constants';
 
 type Props = {

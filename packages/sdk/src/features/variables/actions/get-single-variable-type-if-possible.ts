@@ -1,4 +1,5 @@
-import type { VariableType } from '../../../node/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import type { MaybeVariableReference } from '../types';
 import { getSingleVariableMetadataIfPossible } from './get-single-variable-metadata-if-possible';
 

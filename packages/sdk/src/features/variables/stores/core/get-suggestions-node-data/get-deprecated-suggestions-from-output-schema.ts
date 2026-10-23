@@ -1,4 +1,5 @@
-import type { FlattenedPropertiesIndex } from '../../../../../node/node-output-schema';
+import type { FlattenedPropertiesIndex } from '@workflow-builder/types/node-output-schema';
+
 import { filterEmpty } from '../../../../../utils/array';
 import { keyToLabel, truncate } from '../../../../../utils/text';
 import type { VariableSuggestion } from '../../../components/variable-text/variable-text.types';

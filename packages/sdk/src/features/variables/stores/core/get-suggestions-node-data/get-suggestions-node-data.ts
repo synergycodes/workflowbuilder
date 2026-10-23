@@ -1,9 +1,9 @@
+import { OUTPUT_SCHEMA_TYPE, SOURCE_HANDLE_TYPE } from '@workflow-builder/types/node-output-schema';
+
 import type { PaletteItem } from '../../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../../node/node-data';
-import { OUTPUT_SCHEMA_TYPE } from '../../../../../node/node-output-schema';
 import { filterEmpty } from '../../../../../utils/array';
 import { getByPath } from '../../../../../utils/object';
-import { SOURCE_HANDLE_TYPE } from '../../../constants';
 import { getNodeLabelForVariable } from '../../../utils/diagram/get-node-label-for-variable';
 import { getIsSourceHandleType } from '../../../utils/guards/get-is-source-handle-type';
 import { getVariablesIndexIfValid } from '../../../utils/guards/get-variables-index-if-valid';

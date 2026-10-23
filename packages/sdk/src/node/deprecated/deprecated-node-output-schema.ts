@@ -1,4 +1,4 @@
-import type { FlattenedPropertiesIndex } from '../node-output-schema';
+import type { FlattenedPropertiesIndex } from '@workflow-builder/types/node-output-schema';
 
 export type DeprecatedOutputVariant = {
   variantRule:

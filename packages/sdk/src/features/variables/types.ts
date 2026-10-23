@@ -1,4 +1,4 @@
-import type { VariableTypePrimitive } from '../../node/node-output-schema';
+import type { VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
 
 export type VariableReference = `{{${string}}}`;
 

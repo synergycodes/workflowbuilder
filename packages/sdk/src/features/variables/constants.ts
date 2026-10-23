@@ -134,14 +134,3 @@ export const VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT: VariableType[] = [...VARIABLES_
 export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
 
 export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
-
-/**
- * Keys of `bySourceHandleType`, resolved from the handle id: `settled` always, `error` if the id contains `error`,
- * `success` otherwise. See variables-referencing-strategy.decision-log.md § 3.
- */
-export const SOURCE_HANDLE_TYPE = {
-  SETTLED: 'settled',
-  SUCCESS: 'success',
-  ERROR: 'error',
-} as const;
-export type SourceHandleType = (typeof SOURCE_HANDLE_TYPE)[keyof typeof SOURCE_HANDLE_TYPE];

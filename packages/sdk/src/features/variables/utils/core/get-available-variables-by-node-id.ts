@@ -1,5 +1,6 @@
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
-import type { VariableType } from '../../../../node/node-output-schema';
 import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';
 import type { VariableSuggestionGroup } from '../../components/variable-text/variable-text.types';
 import { getNodeVariablesSuggestions } from '../../stores/core/get-node-variables-suggestions';

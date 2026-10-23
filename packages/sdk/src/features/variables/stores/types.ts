@@ -1,5 +1,6 @@
+import type { SourceHandleType } from '@workflow-builder/types/node-output-schema';
+
 import type { VariableSuggestion } from '../components/variable-text/variable-text.types';
-import type { SourceHandleType } from '../constants';
 
 export type SuggestionsBySourceHandle = {
   [sourceHandle: string]: VariableSuggestion[] | undefined;

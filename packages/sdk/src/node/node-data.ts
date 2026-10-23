@@ -1,10 +1,11 @@
 import type { Edge, Node } from '@xyflow/react';
 
+import type { NodeSchemaOutput } from '@workflow-builder/types/node-output-schema';
+
 import type { NodeDataProperties } from '../types/default-properties';
 import type { UISchema } from '../types/uischema';
 import type { IconType } from './common';
 import type { DeprecatedNodeOutputSchema } from './deprecated/deprecated-node-output-schema';
-import type { NodeSchemaOutput } from './node-output-schema';
 import type { BaseNodeProperties, NodeSchema } from './node-schema';
 import type { NodeType } from './node-types';
 

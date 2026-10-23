@@ -1,6 +1,8 @@
+import { SOURCE_HANDLE_TYPE } from '@workflow-builder/types/node-output-schema';
+
 import { truncate } from '../../../../utils/text';
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
-import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA, SOURCE_HANDLE_TYPE } from '../../constants';
+import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA } from '../../constants';
 import { filterSuggestionsDuplicates } from '../../utils/core/filter-suggestions-duplicates';
 import { type NodeVariablesSuggestions, SUGGESTION_NODE_TYPE } from '../types';
 import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '../use-variable-suggestions-store';

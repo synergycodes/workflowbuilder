@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { VariableType } from '../../../../node/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/node-output-schema';
+
 import { getIsSupportedVariableType } from './get-is-supported-variable-type';
 
 const supportedTypes: VariableType[] = ['string', 'number', 'boolean', 'datetime', 'date', 'object', 'array'];

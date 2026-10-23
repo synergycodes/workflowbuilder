@@ -1,4 +1,5 @@
-import { getVariableTypeIfPrimitive } from '../../../../node/node-output-schema';
+import { getVariableTypeIfPrimitive } from '@workflow-builder/types/node-output-schema';
+
 import type { VariableDefinition, VariablesIndex } from '../../types';
 import { getIsSupportedVariableType } from '../json-schema/get-is-supported-variable-type';
 
