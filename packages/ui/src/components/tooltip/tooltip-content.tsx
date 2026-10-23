@@ -1,4 +1,5 @@
 import { Tooltip as BaseTooltip } from '@base-ui/react/tooltip';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import clsx from 'clsx';
 import { forwardRef } from 'react';
 
@@ -20,11 +21,12 @@ export const TooltipContent = forwardRef<
   }
 >(function TooltipContent({ style, tooltipType = 'default', children, className, ...props }, propertyRef) {
   const { side, align } = useTooltipPlacement();
+  const portalContainer = usePortalContainer();
 
   if (!children) return null;
 
   return (
-    <BaseTooltip.Portal>
+    <BaseTooltip.Portal container={portalContainer}>
       <BaseTooltip.Positioner
         className={styles['positioner']}
         side={side}

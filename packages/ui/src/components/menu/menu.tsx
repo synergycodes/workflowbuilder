@@ -1,5 +1,6 @@
 import { Menu as MenuBase } from '@base-ui/react/menu';
 import { Separator } from '@ui/components/separator/separator';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
 import { ReactElement, memo, useState } from 'react';
@@ -63,6 +64,7 @@ export type MenuProps = {
 const MenuRoot = memo(
   ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+    const portalContainer = usePortalContainer();
     const isOpen = open ?? uncontrolledOpen;
     const { side, align } = placementToSideAlign(placement);
     const { sideOffset, alignOffset } = offsetToBaseUI(offset, align);
@@ -87,7 +89,7 @@ const MenuRoot = memo(
         <MenuOpenContext.Provider value={isOpen}>
           {children && <MenuBase.Trigger render={children} />}
         </MenuOpenContext.Provider>
-        <MenuBase.Portal>
+        <MenuBase.Portal container={portalContainer}>
           <MenuBase.Positioner
             side={side}
             align={align}
