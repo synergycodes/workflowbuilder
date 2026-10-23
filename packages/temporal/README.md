@@ -282,7 +282,7 @@ Two notes on the moving parts underneath: Temporal's plugin API is marked experi
 
 ## Testing
 
-[`TESTING.md`](TESTING.md) covers what is tested, what is not, and how CI gates it.
+[`TESTING.md`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/TESTING.md) covers what is tested, what is not, and how CI gates it.
 
 ## License
 
