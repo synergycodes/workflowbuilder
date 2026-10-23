@@ -10,7 +10,7 @@ export function useCleanUp() {
   const layoutDirection = useStore((state) => state.layoutDirection);
   const setLayoutDirection = useStore((state) => state.setLayoutDirection);
   const isEmptyCanvas = useStore((state) => state.nodes.length === 0);
-  const isReadOnlyMode = useStore((state) => state.isReadOnlyMode);
+  const isReadOnly = useStore((state) => state.isReadOnly);
   const [isPending, setIsPending] = useState<boolean>(false);
 
   const cleanUp = (direction: LayoutDirection) => {
@@ -39,7 +39,7 @@ export function useCleanUp() {
     isAvailable: Boolean(onCleanUp),
     layoutDirection,
     isPending,
-    isDisabled: isEmptyCanvas || isReadOnlyMode,
+    isDisabled: isEmptyCanvas || isReadOnly,
     cleanUp,
     arrange,
   };

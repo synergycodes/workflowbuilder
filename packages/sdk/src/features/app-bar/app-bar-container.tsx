@@ -6,8 +6,8 @@ import { ProjectSelection } from './components/project-selection/project-selecti
 import { Toolbar } from './components/toolbar/toolbar';
 
 /**
- * Top bar with toolbar, project selector, and integration controls. Mount
- * via `<WorkflowBuilder.TopBar />` (or the named `<WorkflowBuilderTopBar />`
+ * Editor header with the toolbar, the workflow name and the editor controls. Mount
+ * via `<WorkflowBuilder.EditorHeader />` (or the named `<WorkflowBuilderEditorHeader />`
  * export) inside a custom layout; the default layout already includes it.
  *
  * @category Components

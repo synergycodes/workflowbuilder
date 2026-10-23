@@ -17,6 +17,11 @@ export type MenuItemTone = (typeof MENU_ITEM_TONES)[number];
  */
 export type MenuItemProps = ListItem & {
   /**
+   * Keys the row. Two items with the same `label` need distinct ids; without
+   * one the row is keyed by its `label`.
+   */
+  id?: string;
+  /**
    * Colours the label and icon for a destructive action. The row keeps the
    * background every other row has.
    * @default 'default'

@@ -3,18 +3,19 @@ import { act, useContext } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { Toolbar } from '../../../../packages/sdk/src/features/app-bar/components/toolbar/toolbar';
+import { EditorRuntime } from '../../../../packages/sdk/src/features/editor-runtime/editor-runtime';
 import { IntegrationContext } from '../../../../packages/sdk/src/features/integration/components/integration-variants/context/integration-context-wrapper';
 import { RuntimeIntegrationWrapper } from '../../../../packages/sdk/src/features/integration/components/runtime-integration-wrapper';
-import { SaveButton } from '../../../../packages/sdk/src/features/integration/components/save-button/save-button';
 import {
   showSnackbarSaveErrorIfNeeded,
   showSnackbarSaveSuccessIfNeeded,
 } from '../../../../packages/sdk/src/features/integration/utils/show-snackbar';
-import { OptionalAppBarTools } from '../../../../packages/sdk/src/features/plugins-core/components/app/optional-app-bar-toolbar';
+import { BuiltInControlsProvider } from '../../../../packages/sdk/src/features/ui-extensions/built-in-controls-context';
+import { UiExtensionProvider } from '../../../../packages/sdk/src/features/ui-extensions/ui-extension-context';
 import { resolveIntegration } from '../../../../packages/sdk/src/workflow-builder-root/resolve-integration';
 import { BACKEND_URL } from '../config';
 import { refundReviewFlow } from '../data/refund-review-flow';
-import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import { jsonResponse } from '../test/json-response';
 import type { OpenedSource } from './open-from-url';
 import { rootPropsFor } from './root-props';
@@ -68,14 +69,18 @@ function mount(opened: OpenedSource) {
         strategy={strategy}
         endpoints={endpoints}
         onDataSave={onDataSave}
+        onLoad={() => {}}
         name={props.name}
         nodes={props.initialNodes}
         edges={props.initialEdges}
       >
-        <OptionalAppBarTools>
-          <SaveButton />
-        </OptionalAppBarTools>
+        <BuiltInControlsProvider value={props.builtInControls}>
+          <UiExtensionProvider>
+            <Toolbar />
+          </UiExtensionProvider>
+        </BuiltInControlsProvider>
         <SaveHandle />
+        <EditorRuntime />
       </RuntimeIntegrationWrapper>,
     ),
   );
@@ -124,7 +129,6 @@ afterEach(() => {
   vi.useRealTimers();
 });
 
-// Decorators register for the whole file, so the run view, which registers one, goes last.
 describe('the local draft in URL mode', () => {
   it('is written in local mode when the page closes, so the checks below can see a write', async () => {
     mount({ kind: 'local' });
@@ -178,8 +182,6 @@ describe('the local draft in URL mode', () => {
   });
 
   it('a run from the link has no Save button, saves nowhere and leaves the local draft alone', async () => {
-    runViewPlugin();
-
     mount({ kind: 'execution', executionId: RUN, diagram });
 
     expect(container.querySelectorAll('button')).toHaveLength(0);

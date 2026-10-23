@@ -30,7 +30,6 @@ export const pl = {
     folderName: 'Nazwa folderu',
     projectSelection: {
       rename: 'Zmień nazwę',
-      duplicateToDrafts: 'Duplikuj do wersji roboczych',
       saveAsPdf: 'Zapisz jako PDF',
     },
     version: {

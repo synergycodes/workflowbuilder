@@ -49,7 +49,7 @@ const state = {
   layoutDirection: 'RIGHT' as 'RIGHT' | 'DOWN',
   setLayoutDirection: vi.fn(),
   nodes: [{ id: 'a' }],
-  isReadOnlyMode: false,
+  isReadOnly: false,
 };
 vi.mock('../../../../store/store', () => ({
   useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
@@ -77,7 +77,7 @@ describe('CleanUpButton', () => {
     state.layoutDirection = 'RIGHT';
     state.setLayoutDirection = vi.fn();
     state.nodes = [{ id: 'a' }];
-    state.isReadOnlyMode = false;
+    state.isReadOnly = false;
     trackFutureChange.mockClear();
     appBar = { onCleanUp: vi.fn() };
   });
@@ -128,7 +128,7 @@ describe('CleanUpButton', () => {
   });
 
   it('is disabled in read-only mode', () => {
-    state.isReadOnlyMode = true;
+    state.isReadOnly = true;
     render(<CleanUpButton />);
 
     expect(main().disabled).toBe(true);

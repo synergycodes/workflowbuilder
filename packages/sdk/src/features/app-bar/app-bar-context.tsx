@@ -1,15 +1,21 @@
 import { type ReactNode, createContext, useContext } from 'react';
 
-import type { WorkflowBuilderAppBar } from '../../workflow-builder-root/workflow-builder-root.types';
+import type { WorkflowBuilderEditorHeaderOptions } from '../../workflow-builder-root/workflow-builder-root.types';
 
-const EMPTY_APP_BAR: WorkflowBuilderAppBar = {};
+const EMPTY_APP_BAR: WorkflowBuilderEditorHeaderOptions = {};
 
-const AppBarContext = createContext<WorkflowBuilderAppBar>(EMPTY_APP_BAR);
+const AppBarContext = createContext<WorkflowBuilderEditorHeaderOptions>(EMPTY_APP_BAR);
 
-export function AppBarProvider({ value, children }: { value?: WorkflowBuilderAppBar; children: ReactNode }) {
+export function AppBarProvider({
+  value,
+  children,
+}: {
+  value?: WorkflowBuilderEditorHeaderOptions;
+  children: ReactNode;
+}) {
   return <AppBarContext.Provider value={value ?? EMPTY_APP_BAR}>{children}</AppBarContext.Provider>;
 }
 
-export function useAppBar(): WorkflowBuilderAppBar {
+export function useAppBar(): WorkflowBuilderEditorHeaderOptions {
   return useContext(AppBarContext);
 }

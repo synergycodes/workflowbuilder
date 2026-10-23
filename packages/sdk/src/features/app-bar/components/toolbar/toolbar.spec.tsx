@@ -1,20 +1,19 @@
-import { render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-vi.mock('../../../integration/components/save-button/save-button', () => ({
-  SaveButton: () => <button>save</button>,
-}));
-
-vi.mock('../../../plugins-core/components/app/optional-app-bar-toolbar', () => ({
-  OptionalAppBarTools: ({ children }: { children?: React.ReactNode }) => <>{children}</>,
-}));
+import { setAppBarBranding } from '../../../../data/app-bar-branding';
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { resetWorkflowStore } from '../../../../store/store';
+import type { OnSave } from '../../../../types/integration';
+import '../../../i18n/index';
+import { IntegrationContextWrapper } from '../../../integration/components/integration-variants/context/integration-context-wrapper';
+import { useIntegrationStore } from '../../../integration/stores/use-integration-store';
+import { renderInRoot } from '../../../ui-extensions/test-utils';
+import { Toolbar } from './toolbar';
 
 vi.mock('../../../../assets/workflow-builder-logo.svg?react', () => ({
   default: () => <svg data-testid="built-in-logo" />,
 }));
-
-const { setAppBarBranding } = await import('../../../../data/app-bar-branding');
-const { Toolbar } = await import('./toolbar');
 
 afterEach(() => {
   setAppBarBranding({});
@@ -54,10 +53,53 @@ describe('Toolbar branding', () => {
     const sources = Array.from(container.querySelectorAll('img'), (img) => img.getAttribute('src'));
     expect(sources).toEqual(['/brand-light.svg', '/brand-dark.svg']);
   });
+});
 
-  it('renders Save inside the tools slot', () => {
-    render(<Toolbar />);
+// Calls the action directly, bypassing the toolbar's own Save button.
+function SaveNowButton() {
+  const { save } = useWorkflowBuilderActions();
+  return (
+    <button type="button" onClick={() => void save()}>
+      Save now
+    </button>
+  );
+}
 
-    expect(screen.getByText('save')).toBeTruthy();
+function renderToolbar(onSave: OnSave, save?: boolean) {
+  resetWorkflowStore();
+  // As after the initial load: saves are refused while the status is still 'disabled'.
+  useIntegrationStore.setState({ savingStatus: 'waiting', lastSaveAttemptTimestamp: Date.now() });
+  return renderInRoot(
+    <IntegrationContextWrapper onSave={onSave}>
+      <SaveNowButton />
+      <Toolbar />
+    </IntegrationContextWrapper>,
+    { builtInControls: { save } },
+  );
+}
+
+describe('Toolbar builtInControls', () => {
+  it('save:false hides the Save button; true (the default) shows it', () => {
+    const { unmount } = renderToolbar(
+      vi.fn<OnSave>(async () => 'success'),
+      false,
+    );
+    expect(screen.queryByRole('button', { name: 'Save' })).toBeNull();
+    unmount();
+
+    renderToolbar(
+      vi.fn<OnSave>(async () => 'success'),
+      true,
+    );
+    expect(screen.getByRole('button', { name: 'Save' })).not.toBeNull();
+  });
+
+  it('save:false keeps the save action working', () => {
+    const onSave = vi.fn<OnSave>(async () => 'success');
+    renderToolbar(onSave, false);
+
+    fireEvent.click(screen.getByText('Save now'));
+
+    expect(onSave).toHaveBeenCalledWith({ isAutoSave: false });
   });
 });

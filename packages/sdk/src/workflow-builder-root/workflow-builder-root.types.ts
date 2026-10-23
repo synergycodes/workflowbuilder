@@ -1,12 +1,14 @@
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
-import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
 import type {
   JsonFormsCellExtension,
   JsonFormsRendererExtension,
   PluginTranslationResource,
 } from '../features/json-form/extension-registry';
+import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
+import type { WorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -14,12 +16,12 @@ import type { OnSaveExternal } from '../types/integration';
 /**
  * Per-node-type custom template registry. Keys are `data.type` values from
  * the palette; values are React components that take
- * {@link WorkflowNodeTemplateProps} and replace the default node renderer
+ * {@link WorkflowBuilderNodeTemplateProps} and replace the default node renderer
  * for matching nodes.
  *
  * @category Components
  */
-export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<WorkflowNodeTemplateProps>>;
+export type WorkflowBuilderNodeTemplates = Record<string, ComponentType<WorkflowBuilderNodeTemplateProps>>;
 
 /**
  * Per-edge-type custom renderer registry. Keys are `edge.type` values; values
@@ -52,8 +54,8 @@ export type WorkflowBuilderEdgeTemplates = Record<string, ComponentType<EdgeProp
  * @example
  * ```ts
  * const myPlugin: WorkflowBuilderPlugin = () => {
- *   registerComponentDecorator('OptionalAppBarTools', {
- *     content: MyButton,
+ *   registerComponentDecorator('OptionalAppChildren', {
+ *     content: MyWidget,
  *     name: 'my-plugin',
  *   });
  * };
@@ -174,7 +176,7 @@ export type WorkflowBuilderReactFlowProps = Omit<
 >;
 
 /**
- * App-bar logo accepted by `<WorkflowBuilder.Root>`: an image URL, per-theme
+ * Editor header logo accepted by `<WorkflowBuilder.Root>`: an image URL, per-theme
  * image URLs, or a custom element.
  *
  * @category Core
@@ -182,7 +184,7 @@ export type WorkflowBuilderReactFlowProps = Omit<
 export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
 
 /**
- * Version shown in the app-bar version chip.
+ * Version shown in the editor header version chip.
  *
  * @category Core
  */
@@ -194,11 +196,11 @@ export type WorkflowBuilderVersion = {
 };
 
 /**
- * Host-wired app-bar slots. Each renders only when its field is set.
+ * Host-wired editor header controls. Each renders only when its field is set.
  *
  * @category Core
  */
-export type WorkflowBuilderAppBar = {
+export type WorkflowBuilderEditorHeaderOptions = {
   /**
    * Called with the chosen direction when the user picks Clean up. The SDK has already set and tracked the new
    * direction before calling it; moving (and tracking) the nodes is the host's job.
@@ -210,6 +212,27 @@ export type WorkflowBuilderAppBar = {
   version?: WorkflowBuilderVersion;
   /** Called when the user clicks Publish. */
   onPublish?: () => void;
+};
+
+/**
+ * What `onLoad` on `<WorkflowBuilder.Root>` receives once the initial load finished.
+ *
+ * @category Core
+ */
+export type WorkflowBuilderLoadContext = {
+  /** True when the initial load produced no nodes. A `name` alone does not make the diagram non-empty. */
+  isEmpty: boolean;
+  /**
+   * True when the `api` load request failed; always `false` for `localStorage` and `props`. The
+   * editor stays usable, but refuses to save for the rest of this Root mount, so nothing can
+   * overwrite the copy on the server that could not be loaded.
+   */
+  loadFailed: boolean;
+  /**
+   * The same actions as `useWorkflowBuilderActions()`. Safe to keep after the handler returns: they
+   * act on this Root while it is mounted and do nothing once it unmounts.
+   */
+  actions: WorkflowBuilderActions;
 };
 
 /**
@@ -261,17 +284,25 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   jsonForm?: WorkflowBuilderJsonFormConfig;
   /** Persistence strategy. Defaults to `{ strategy: 'localStorage' }`. */
   integration?: WorkflowBuilderIntegration;
-  /** Workflow name displayed in the app bar and persisted with the diagram. */
+  /**
+   * Runs once per Root mount, after the initial load of the active integration: for `localStorage`
+   * and `props` right after mount, for `api` once the load request settled, also when it failed.
+   * Defaults to `({ isEmpty, loadFailed, actions }) => { if (isEmpty && !loadFailed) actions.openTemplates(); }`,
+   * which offers the template selector for an empty diagram. A custom handler replaces the default
+   * entirely, so the template selector opens only when the handler calls `actions.openTemplates()`.
+   */
+  onLoad?: (context: WorkflowBuilderLoadContext) => void;
+  /** Workflow name displayed in the editor header and persisted with the diagram. */
   name?: string;
   /**
-   * Replaces the built-in Workflow Builder logo in the app bar: an image URL,
+   * Replaces the built-in Workflow Builder logo in the editor header: an image URL,
    * `{ light, dark }` per-theme image URLs, or a custom element rendered as-is.
    */
   logo?: WorkflowBuilderLogo;
-  /** Wraps the app-bar logo (built-in or custom) in a link opened in a new tab. */
+  /** Wraps the editor header logo (built-in or custom) in a link opened in a new tab. */
   logoHref?: string;
-  /** Host-wired app-bar slots: Clean up, Save as PDF, version chip and Publish. Each renders only when its field is set. */
-  appBar?: WorkflowBuilderAppBar;
+  /** Host-wired editor header controls: Clean up, Save as PDF, version chip and Publish. Each renders only when its field is set. */
+  editorHeader?: WorkflowBuilderEditorHeaderOptions;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
   /** Initial nodes rendered on first mount. */
@@ -295,4 +326,24 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * changes may not apply immediately.
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
+  /**
+   * Hides built-in controls of the editor header, the palette and the properties panel. Keys: `save`,
+   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`,
+   * `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`. Every key defaults to
+   * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
+   * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
+   * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding
+   * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself, e.g.
+   * from `onLoad`; hiding `propertiesPanelToggle` leaves the same dead end once that panel is
+   * collapsed, unless the app calls `setPropertiesPanelOpen(true)`.
+   *
+   * Changes apply on the next render. An inline object works, but a new object re-renders every
+   * built-in control, so prefer a stable reference (a module constant or `useMemo`).
+   *
+   * @example
+   * ```tsx
+   * <WorkflowBuilder.Root builtInControls={{ delete: canEdit }} />
+   * ```
+   */
+  builtInControls?: BuiltInControls;
 }>;

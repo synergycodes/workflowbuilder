@@ -5,12 +5,14 @@ import { useTranslation } from 'react-i18next';
 import styles from '../../app-bar.module.css';
 
 import { useTheme } from '../../../../hooks/use-theme';
+import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { useCleanUp } from '../clean-up-button/use-clean-up';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
 
 export function MoreMenu() {
   const { t } = useTranslation();
   const { theme, toggleTheme } = useTheme();
+  const isThemeToggleVisible = useIsBuiltInControlVisible('themeToggle');
   const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
   const disabled = isDisabled || isPending;
   const alignedIcon = <Check aria-hidden visibility="hidden" />;
@@ -37,26 +39,34 @@ export function MoreMenu() {
           disabled,
           onClick: () => arrange('DOWN'),
         },
-        { type: 'separator' },
+        ...(isThemeToggleVisible ? [{ type: 'separator' as const }] : []),
       ]
-    : [
-        {
-          label: t('header.theme.light'),
-          icon: <SunDim />,
-          selected: theme === 'light',
-          onClick: () => theme !== 'light' && toggleTheme(),
-        },
-        {
-          label: t('header.theme.dark'),
-          icon: <Moon />,
-          selected: theme === 'dark',
-          onClick: () => theme !== 'dark' && toggleTheme(),
-        },
-      ];
+    : isThemeToggleVisible
+      ? [
+          {
+            label: t('header.theme.light'),
+            icon: <SunDim />,
+            selected: theme === 'light',
+            onClick: () => theme !== 'light' && toggleTheme(),
+          },
+          {
+            label: t('header.theme.dark'),
+            icon: <Moon />,
+            selected: theme === 'dark',
+            onClick: () => theme !== 'dark' && toggleTheme(),
+          },
+        ]
+      : [];
+  const footer =
+    isAvailable && isThemeToggleVisible ? <ToggleDarkMode className={styles['full-width-picker']} /> : undefined;
+
+  if (items.length === 0) {
+    return null;
+  }
 
   return (
     <div className={styles['more-menu']}>
-      <Menu items={items} footer={isAvailable ? <ToggleDarkMode className={styles['full-width-picker']} /> : undefined}>
+      <Menu items={items} footer={footer}>
         <Menu.TriggerButton size="xs" aria-label={t('tooltips.menu')} tooltip={t('tooltips.menu')}>
           <DotsThreeVertical />
         </Menu.TriggerButton>

@@ -6,15 +6,15 @@ import { useStore } from '../../../../store/store';
 
 export function ToggleReadyOnlyMode() {
   const { t } = useTranslation();
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
-  const setToggleReadOnlyMode = useStore((store) => store.setToggleReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
+  const setReadOnly = useStore((store) => store.setReadOnly);
 
   return (
     <SegmentPicker
       size="extra-small"
       variant="secondary"
-      value={isReadOnlyMode ? 'read-only' : 'edit'}
-      onChange={(_event, value) => setToggleReadOnlyMode(value === 'read-only')}
+      value={isReadOnly ? 'read-only' : 'edit'}
+      onChange={(_event, value) => setReadOnly(value === 'read-only')}
     >
       <SegmentPicker.Item
         value="edit"

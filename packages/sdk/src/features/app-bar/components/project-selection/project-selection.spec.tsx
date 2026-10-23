@@ -3,6 +3,8 @@ import type { MenuItemProps } from '@workflowbuilder/ui';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { BuiltInControlsProvider } from '../../../ui-extensions/built-in-controls-context';
+
 // Render the menu's `items` inline so we can assert on them without driving the
 // real menu popover. The component also renders Input and Menu.TriggerButton, so
 // the mock must expose them too.
@@ -19,8 +21,13 @@ vi.mock('@workflowbuilder/ui', () => ({
     ),
     { TriggerButton: () => null },
   ),
-  NavButton: () => null,
-  Input: () => <input aria-label="rename" />,
+  Input: ({ value, onChange }: { value: string; onChange: (event: { target: { value: string } }) => void }) => (
+    <input
+      aria-label="workflow name"
+      value={value}
+      onChange={(event) => onChange({ target: { value: event.target.value } })}
+    />
+  ),
   Tooltip: Object.assign(({ children }: { children?: ReactNode }) => <>{children}</>, {
     Trigger: ({ children }: { children?: ReactNode }) => <>{children}</>,
     Content: ({ children }: { children?: ReactNode }) => (children ? <div role="tooltip">{children}</div> : null),
@@ -40,13 +47,20 @@ vi.mock('../../../../features/variables/modals/modal-settings', () => ({
 }));
 
 vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(
-    selector: (state: { documentName: string; isReadOnlyMode: boolean; setDocumentName: () => void }) => T,
-  ) => selector({ documentName: 'Doc', isReadOnlyMode: false, setDocumentName: () => {} }),
+  useStore: <T,>(selector: (state: { workflowName: string; isReadOnly: boolean }) => T) =>
+    selector({ workflowName: 'Doc', isReadOnly: false }),
 }));
 
-vi.mock('../../functions/get-controls-dots-items', () => ({
-  getControlsDotsItems: vi.fn(() => [{ label: 'importExport.export' }, { label: 'importExport.import' }]),
+const setWorkflowName = vi.fn();
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => ({ setWorkflowName }),
+}));
+
+vi.mock('../../functions/get-export-import-items', () => ({
+  getExportImportItems: (visible: { export: boolean; import: boolean }) => [
+    ...(visible.export ? [{ label: 'importExport.export' }] : []),
+    ...(visible.import ? [{ label: 'importExport.import' }] : []),
+  ],
 }));
 
 vi.mock('../version-chip/version-chip', () => ({
@@ -59,61 +73,55 @@ vi.mock('../../app-bar-context', () => ({
 }));
 
 const { ProjectSelection } = await import('./project-selection');
-const { getControlsDotsItems } = await import('../../functions/get-controls-dots-items');
 
-const DUPLICATE_LABEL = 'header.projectSelection.duplicateToDrafts';
 const SETTINGS_LABEL = 'common.settings';
-
-describe('ProjectSelection — "Duplicate to Drafts" visibility', () => {
-  it('omits the item when no onDuplicateClick is provided (default editor)', () => {
-    render(<ProjectSelection />);
-
-    expect(screen.getByText(SETTINGS_LABEL)).toBeDefined();
-    expect(screen.queryByText(DUPLICATE_LABEL)).toBeNull();
-  });
-
-  it('renders the item and wires the handler when onDuplicateClick is provided', () => {
-    const onDuplicateClick = vi.fn();
-    render(<ProjectSelection onDuplicateClick={onDuplicateClick} />);
-
-    const item = screen.getByText(DUPLICATE_LABEL);
-    expect(item).toBeDefined();
-
-    fireEvent.click(item);
-    expect(onDuplicateClick).toHaveBeenCalledTimes(1);
-  });
-});
+const PDF_LABEL = 'header.projectSelection.saveAsPdf';
 
 const labels = () => screen.getAllByRole('listitem').map((li) => li.textContent);
 
-describe('ProjectSelection — menu layout', () => {
+beforeEach(() => {
+  appBar = {};
+});
+
+describe('ProjectSelection: menu', () => {
   it('lists Export, Import, a separator, then Settings', () => {
     render(<ProjectSelection />);
 
     expect(labels()).toEqual(['importExport.export', 'importExport.import', '---', SETTINGS_LABEL]);
   });
 
-  it('appends Duplicate to Drafts last when onDuplicateClick is set', () => {
-    render(<ProjectSelection onDuplicateClick={vi.fn()} />);
-
-    expect(labels().at(-1)).toBe(DUPLICATE_LABEL);
-  });
-
-  it('drops the separator when getControlsDotsItems returns nothing', () => {
-    vi.mocked(getControlsDotsItems).mockReturnValueOnce([]);
-    render(<ProjectSelection />);
+  it('drops Export and Import, and the separator, when builtInControls hides them', () => {
+    render(
+      <BuiltInControlsProvider value={{ export: false, import: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
 
     expect(labels()).toEqual([SETTINGS_LABEL]);
   });
-});
 
-describe('ProjectSelection — Save as PDF', () => {
-  const PDF_LABEL = 'header.projectSelection.saveAsPdf';
+  it('drops the separator when Settings is hidden', () => {
+    render(
+      <BuiltInControlsProvider value={{ settings: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
 
-  beforeEach(() => {
-    appBar = {};
+    expect(labels()).toEqual(['importExport.export', 'importExport.import']);
   });
 
+  it('renders no menu when every built-in item is hidden', () => {
+    render(
+      <BuiltInControlsProvider value={{ export: false, import: false, settings: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(screen.queryByRole('list')).toBeNull();
+  });
+});
+
+describe('ProjectSelection: Save as PDF', () => {
   it('adds Save as PDF after Import when onSaveAsPdf is set', () => {
     const onSaveAsPdf = vi.fn();
     appBar = { onSaveAsPdf };
@@ -133,10 +141,44 @@ describe('ProjectSelection — Save as PDF', () => {
 
   it('keeps the separator when only Save as PDF precedes it', () => {
     appBar = { onSaveAsPdf: vi.fn() };
-    vi.mocked(getControlsDotsItems).mockReturnValueOnce([]);
-    render(<ProjectSelection />);
+    render(
+      <BuiltInControlsProvider value={{ export: false, import: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
 
     expect(labels()).toEqual([PDF_LABEL, '---', SETTINGS_LABEL]);
+  });
+});
+
+describe('ProjectSelection: inline rename', () => {
+  it('typing a new name calls the setWorkflowName action, not the store setter directly', () => {
+    render(<ProjectSelection />);
+
+    fireEvent.click(screen.getByText('Doc'));
+    fireEvent.change(screen.getByLabelText('workflow name'), { target: { value: 'New Name' } });
+
+    expect(setWorkflowName).toHaveBeenCalledWith('New Name');
+  });
+
+  it('an open rename input closes when workflowRename is hidden', () => {
+    const { rerender } = render(
+      <BuiltInControlsProvider value={{}}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    fireEvent.click(screen.getByText('Doc'));
+    expect(screen.getByLabelText('workflow name')).toBeDefined();
+
+    rerender(
+      <BuiltInControlsProvider value={{ workflowRename: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(screen.queryByLabelText('workflow name')).toBeNull();
+    expect(screen.getByText('Doc')).toBeDefined();
   });
 });
 
@@ -148,7 +190,7 @@ const hoverTitle = (scrollWidth: number, clientWidth: number) => {
   return title;
 };
 
-describe('ProjectSelection — truncated name tooltip', () => {
+describe('ProjectSelection: truncated name tooltip', () => {
   it('shows the full name when the title is ellipsised', () => {
     render(<ProjectSelection />);
     hoverTitle(400, 320);
@@ -167,6 +209,6 @@ describe('ProjectSelection — truncated name tooltip', () => {
     render(<ProjectSelection />);
     fireEvent.click(hoverTitle(400, 320));
 
-    expect(screen.getByRole('textbox', { name: 'rename' })).toBeDefined();
+    expect(screen.getByRole('textbox', { name: 'workflow name' })).toBeDefined();
   });
 });

@@ -24,6 +24,19 @@ function renderMenu(items: Parameters<typeof Menu>[0]['items'], footer?: ReactNo
   });
 }
 
+describe('Menu item keys', () => {
+  it('two items with the same label and distinct ids render as two rows', () => {
+    renderMenu([
+      { id: 'built-in-settings', label: 'Settings' },
+      { id: 'own-settings', label: 'Settings' },
+    ]);
+
+    const rows = [...document.querySelectorAll<HTMLElement>('[role="menuitem"]')];
+    expect(rows.map((row) => row.textContent)).toEqual(['Settings', 'Settings']);
+    expect(rows.map((row) => row.id)).not.toContain('built-in-settings');
+  });
+});
+
 describe('Menu selection', () => {
   it('renders plain menu items when no item defines selected', () => {
     renderMenu([{ label: 'Edit' }, { label: 'Delete', tone: 'critical' }]);

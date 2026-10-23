@@ -6,8 +6,8 @@ vi.mock('react-i18next', () => ({
 }));
 
 const state = {
-  isReadOnlyMode: false,
-  setToggleReadOnlyMode: vi.fn(),
+  isReadOnly: false,
+  setReadOnly: vi.fn(),
 };
 vi.mock('../../../../store/store', () => ({
   useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
@@ -20,8 +20,8 @@ const readOnly = () => screen.getByRole('button', { name: 'header.mode.readOnly'
 
 describe('ToggleReadyOnlyMode', () => {
   beforeEach(() => {
-    state.isReadOnlyMode = false;
-    state.setToggleReadOnlyMode = vi.fn();
+    state.isReadOnly = false;
+    state.setReadOnly = vi.fn();
   });
 
   it('renders the edit and read-only segments', () => {
@@ -33,7 +33,7 @@ describe('ToggleReadyOnlyMode', () => {
   });
 
   it('marks the segment that matches the store as active', () => {
-    state.isReadOnlyMode = true;
+    state.isReadOnly = true;
     render(<ToggleReadyOnlyMode />);
 
     expect(readOnly().getAttribute('aria-pressed')).toBe('true');
@@ -45,16 +45,16 @@ describe('ToggleReadyOnlyMode', () => {
 
     fireEvent.click(readOnly());
 
-    expect(state.setToggleReadOnlyMode).toHaveBeenCalledExactlyOnceWith(true);
+    expect(state.setReadOnly).toHaveBeenCalledExactlyOnceWith(true);
   });
 
   it('switches back to edit mode from read-only', () => {
-    state.isReadOnlyMode = true;
+    state.isReadOnly = true;
     render(<ToggleReadyOnlyMode />);
 
     fireEvent.click(edit());
 
-    expect(state.setToggleReadOnlyMode).toHaveBeenCalledExactlyOnceWith(false);
+    expect(state.setReadOnly).toHaveBeenCalledExactlyOnceWith(false);
   });
 
   it('ignores a click on the active segment', () => {
@@ -62,6 +62,6 @@ describe('ToggleReadyOnlyMode', () => {
 
     fireEvent.click(edit());
 
-    expect(state.setToggleReadOnlyMode).not.toHaveBeenCalled();
+    expect(state.setReadOnly).not.toHaveBeenCalled();
   });
 });

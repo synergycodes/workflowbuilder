@@ -59,7 +59,7 @@ const state = {
   layoutDirection: 'RIGHT' as 'RIGHT' | 'DOWN',
   setLayoutDirection: vi.fn(),
   nodes: [{ id: 'a' }],
-  isReadOnlyMode: false,
+  isReadOnly: false,
 };
 vi.mock('../../../../store/store', () => ({
   useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
@@ -76,6 +76,7 @@ vi.mock('../../app-bar-context', () => ({
 }));
 
 const { MoreMenu } = await import('./more-menu');
+const { BuiltInControlsProvider } = await import('../../../ui-extensions/built-in-controls-context');
 
 const item = (label: string) => screen.getByText(label) as HTMLButtonElement;
 const itemLabels = () => Array.from(document.querySelectorAll('[role^="menuitem"]'), (element) => element.textContent);
@@ -92,7 +93,7 @@ describe('MoreMenu', () => {
     state.layoutDirection = 'RIGHT';
     state.setLayoutDirection = vi.fn();
     state.nodes = [{ id: 'a' }];
-    state.isReadOnlyMode = false;
+    state.isReadOnly = false;
     trackFutureChange.mockClear();
   });
 
@@ -161,7 +162,7 @@ describe('MoreMenu', () => {
 
   it('disables the clean-up items on an empty canvas or in read-only mode', () => {
     appBar = { onCleanUp: vi.fn() };
-    state.isReadOnlyMode = true;
+    state.isReadOnly = true;
     render(<MoreMenu />);
 
     expect([item(CLEAN_UP), item(HORIZONTAL), item(VERTICAL)].every((button) => button.disabled)).toBe(true);
@@ -193,5 +194,28 @@ describe('MoreMenu', () => {
     fireEvent.click(screen.getByRole('group'));
 
     expect(themeState.toggleTheme).toHaveBeenCalledTimes(1);
+  });
+
+  it('renders nothing when themeToggle is hidden and onCleanUp is not set', () => {
+    const { container } = render(
+      <BuiltInControlsProvider value={{ themeToggle: false }}>
+        <MoreMenu />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(container.innerHTML).toBe('');
+  });
+
+  it('drops the separator and the footer picker when themeToggle is hidden', () => {
+    appBar = { onCleanUp: vi.fn() };
+    render(
+      <BuiltInControlsProvider value={{ themeToggle: false }}>
+        <MoreMenu />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(itemLabels()).toEqual([CLEAN_UP, HORIZONTAL, VERTICAL]);
+    expect(document.querySelector('hr')).toBeNull();
+    expect(screen.queryByRole('group')).toBeNull();
   });
 });
