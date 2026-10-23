@@ -1,29 +1,27 @@
-@layer ui.component {
-  .input {
-    min-width: 0;
-    width: 100%;
-    flex: 1;
-    border: none;
-    background: transparent;
-    padding: 0;
-    color: var(--wb-public-input-color);
+.input {
+  min-width: 0;
+  width: 100%;
+  flex: 1;
+  border: none;
+  background: transparent;
+  padding: 0;
+  color: var(--wb-public-input-color);
 
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 
-    &:focus-visible {
-      outline: none;
-    }
+  &:focus-visible {
+    outline: none;
+  }
 
-    &:disabled {
-      color: var(--wb-public-input-color-disabled);
-      cursor: not-allowed;
-    }
+  &:disabled {
+    color: var(--wb-public-input-color-disabled);
+    cursor: not-allowed;
+  }
 
-    &::placeholder {
-      color: var(--wb-public-input-placeholder-color);
-      opacity: 1;
-    }
+  &::placeholder {
+    color: var(--wb-public-input-placeholder-color);
+    opacity: 1;
   }
 }

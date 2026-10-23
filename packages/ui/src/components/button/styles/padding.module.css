@@ -6,24 +6,22 @@
   --wb-public-button-padding-xs: var(--wb-ds-space-100) var(--wb-ds-space-100);
 }
 
-@layer ui.component {
-  .xl {
-    padding: var(--wb-public-button-padding-xl);
-  }
+.xl {
+  padding: var(--wb-public-button-padding-xl);
+}
 
-  .l {
-    padding: var(--wb-public-button-padding-l);
-  }
+.l {
+  padding: var(--wb-public-button-padding-l);
+}
 
-  .m {
-    padding: var(--wb-public-button-padding-m);
-  }
+.m {
+  padding: var(--wb-public-button-padding-m);
+}
 
-  .s {
-    padding: var(--wb-public-button-padding-s);
-  }
+.s {
+  padding: var(--wb-public-button-padding-s);
+}
 
-  .xs {
-    padding: var(--wb-public-button-padding-xs);
-  }
+.xs {
+  padding: var(--wb-public-button-padding-xs);
 }

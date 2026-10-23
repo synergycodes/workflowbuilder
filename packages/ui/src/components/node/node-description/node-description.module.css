@@ -5,41 +5,39 @@
   --wb-public-node-subtitle-color-disabled: var(--wb-ds-canvas-node-text-disabled);
 }
 
-@layer ui.component {
-  .container {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: flex-start;
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  overflow: hidden;
+  width: 100%;
+  min-width: 0;
+  contain: inline-size;
+
+  .title,
+  .subtitle {
+    text-overflow: ellipsis;
     overflow: hidden;
+    white-space: nowrap;
     width: 100%;
-    min-width: 0;
-    contain: inline-size;
+  }
 
-    .title,
-    .subtitle {
-      text-overflow: ellipsis;
-      overflow: hidden;
-      white-space: nowrap;
-      width: 100%;
-    }
+  .title {
+    color: var(--wb-public-node-title-color);
+  }
 
+  .subtitle {
+    color: var(--wb-public-node-title-subtitle);
+  }
+
+  &.disabled {
     .title {
-      color: var(--wb-public-node-title-color);
+      color: var(--wb-public-node-title-color-disabled);
     }
 
     .subtitle {
-      color: var(--wb-public-node-title-subtitle);
-    }
-
-    &.disabled {
-      .title {
-        color: var(--wb-public-node-title-color-disabled);
-      }
-
-      .subtitle {
-        color: var(--wb-public-node-subtitle-color-disabled);
-      }
+      color: var(--wb-public-node-subtitle-color-disabled);
     }
   }
 }

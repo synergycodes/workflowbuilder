@@ -27,106 +27,104 @@
   --wb-public-checkbox-disabled-icon-color: var(--wb-ds-ui-icon-disabled);
 }
 
-@layer ui.component {
-  .container {
-    position: relative;
-    display: inline-flex;
-    cursor: pointer;
-  }
+.container {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
 
-  .icon {
-    position: absolute;
-    left: 50%;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    display: none;
-    color: var(--wb-public-checkbox-icon-color);
-    line-height: 0;
+.icon {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: none;
+  color: var(--wb-public-checkbox-icon-color);
+  line-height: 0;
 
-    &.medium {
-      svg {
-        width: var(--wb-public-checkbox-icon-size-medium);
-        height: var(--wb-public-checkbox-icon-size-medium);
-      }
-    }
-
-    &.small {
-      svg {
-        width: var(--wb-public-checkbox-icon-size-small);
-        height: var(--wb-public-checkbox-icon-size-small);
-      }
-    }
-
-    &.extra-small {
-      svg {
-        width: var(--wb-public-checkbox-icon-size-extra-small);
-        height: var(--wb-public-checkbox-icon-size-extra-small);
-      }
+  &.medium {
+    svg {
+      width: var(--wb-public-checkbox-icon-size-medium);
+      height: var(--wb-public-checkbox-icon-size-medium);
     }
   }
 
-  .checkbox {
-    appearance: none;
-    display: inline-block;
-    position: relative;
-    margin: 0;
-    border: var(--wb-public-checkbox-border-width) solid var(--wb-public-checkbox-border-color);
-    background-color: var(--wb-public-checkbox-bg);
-    cursor: pointer;
-    vertical-align: middle;
-    transition: all var(--wb-public-transition);
-
-    &:checked,
-    &:indeterminate {
-      background-color: var(--wb-public-checkbox-checked-bg);
-      border-color: transparent;
+  &.small {
+    svg {
+      width: var(--wb-public-checkbox-icon-size-small);
+      height: var(--wb-public-checkbox-icon-size-small);
     }
+  }
 
-    &:checked ~ .icon,
-    &:indeterminate ~ .icon {
-      display: block;
+  &.extra-small {
+    svg {
+      width: var(--wb-public-checkbox-icon-size-extra-small);
+      height: var(--wb-public-checkbox-icon-size-extra-small);
     }
+  }
+}
 
-    &:disabled:checked,
-    &:disabled:indeterminate {
-      background-color: var(--wb-public-checkbox-disabled-bg);
-      border-color: var(--wb-public-checkbox-disabled-border-color);
-    }
+.checkbox {
+  appearance: none;
+  display: inline-block;
+  position: relative;
+  margin: 0;
+  border: var(--wb-public-checkbox-border-width) solid var(--wb-public-checkbox-border-color);
+  background-color: var(--wb-public-checkbox-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all var(--wb-public-transition);
 
-    &:disabled ~ .icon {
-      color: var(--wb-public-checkbox-disabled-icon-color);
-    }
+  &:checked,
+  &:indeterminate {
+    background-color: var(--wb-public-checkbox-checked-bg);
+    border-color: transparent;
+  }
 
-    &:disabled {
-      cursor: auto;
-      background-color: var(--wb-public-checkbox-disabled-bg);
-      border-color: var(--wb-public-checkbox-disabled-border-color);
-    }
+  &:checked ~ .icon,
+  &:indeterminate ~ .icon {
+    display: block;
+  }
 
-    &:focus-visible {
-      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
-        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
-        var(--wb-public-checkbox-focus-border-shadow);
-      border-color: var(--wb-public-checkbox-border-color);
-      outline: none;
-    }
+  &:disabled:checked,
+  &:disabled:indeterminate {
+    background-color: var(--wb-public-checkbox-disabled-bg);
+    border-color: var(--wb-public-checkbox-disabled-border-color);
+  }
 
-    &.medium {
-      width: var(--wb-public-checkbox-size-medium);
-      height: var(--wb-public-checkbox-size-medium);
-      border-radius: var(--wb-public-checkbox-border-radius-medium);
-    }
+  &:disabled ~ .icon {
+    color: var(--wb-public-checkbox-disabled-icon-color);
+  }
 
-    &.small {
-      width: var(--wb-public-checkbox-size-small);
-      height: var(--wb-public-checkbox-size-small);
-      border-radius: var(--wb-public-checkbox-border-radius-small);
-    }
+  &:disabled {
+    cursor: auto;
+    background-color: var(--wb-public-checkbox-disabled-bg);
+    border-color: var(--wb-public-checkbox-disabled-border-color);
+  }
 
-    &.extra-small {
-      width: var(--wb-public-checkbox-size-extra-small);
-      height: var(--wb-public-checkbox-size-extra-small);
-      border-radius: var(--wb-public-checkbox-border-radius-extra-small);
-    }
+  &:focus-visible {
+    box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+      var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
+      var(--wb-public-checkbox-focus-border-shadow);
+    border-color: var(--wb-public-checkbox-border-color);
+    outline: none;
+  }
+
+  &.medium {
+    width: var(--wb-public-checkbox-size-medium);
+    height: var(--wb-public-checkbox-size-medium);
+    border-radius: var(--wb-public-checkbox-border-radius-medium);
+  }
+
+  &.small {
+    width: var(--wb-public-checkbox-size-small);
+    height: var(--wb-public-checkbox-size-small);
+    border-radius: var(--wb-public-checkbox-border-radius-small);
+  }
+
+  &.extra-small {
+    width: var(--wb-public-checkbox-size-extra-small);
+    height: var(--wb-public-checkbox-size-extra-small);
+    border-radius: var(--wb-public-checkbox-border-radius-extra-small);
   }
 }

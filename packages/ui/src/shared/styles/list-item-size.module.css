@@ -7,22 +7,20 @@
   --wb-public-list-item-gap-large: var(--wb-ds-space-150);
 }
 
-@layer ui.component {
-  .large {
-    composes: wb-text-label-l from global;
-    padding: var(--wb-public-list-item-padding-large);
-    gap: var(--wb-public-list-item-gap-large);
-  }
+.large {
+  composes: wb-text-label-l from global;
+  padding: var(--wb-public-list-item-padding-large);
+  gap: var(--wb-public-list-item-gap-large);
+}
 
-  .medium {
-    composes: wb-text-label-m from global;
-    padding: var(--wb-public-list-item-padding-medium);
-    gap: var(--wb-public-list-item-gap-medium);
-  }
+.medium {
+  composes: wb-text-label-m from global;
+  padding: var(--wb-public-list-item-padding-medium);
+  gap: var(--wb-public-list-item-gap-medium);
+}
 
-  .small {
-    composes: wb-text-label-m from global;
-    padding: var(--wb-public-list-item-padding-small);
-    gap: var(--wb-public-list-item-gap-small);
-  }
+.small {
+  composes: wb-text-label-m from global;
+  padding: var(--wb-public-list-item-padding-small);
+  gap: var(--wb-public-list-item-gap-small);
 }

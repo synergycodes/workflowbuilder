@@ -5,11 +5,23 @@ import postcss from 'postcss';
 import { type PrefixStrength, scopePrefixPlugin } from './postcss-scope-prefix.mts';
 
 const VENDORED = /node_modules[\\/](react-day-picker|@xyflow)[\\/]/;
+const BASE = /[\\/]base\.css$/;
 
 async function run(css: string, strength: PrefixStrength, from = '/fake/component.module.css'): Promise<string> {
-  const result = await postcss([scopePrefixPlugin({ strength, vendoredFiles: VENDORED })]).process(css, { from });
+  const result = await postcss([scopePrefixPlugin({ strength, vendoredFiles: VENDORED, baseFiles: BASE })]).process(
+    css,
+    { from },
+  );
   return result.css;
 }
+
+describe('postcss-scope-prefix baseFiles', () => {
+  it('wraps a base file selector in :where() behind the prefix', async () => {
+    expect(await run('.button { color: red }', 'ui', '/x/src/base.css')).toBe(
+      ':is(#wb, .workflow-builder-root) :where(.button) { color: red }',
+    );
+  });
+});
 
 describe('postcss-scope-prefix', () => {
   it('prefixes a component rule with the UI strength', async () => {

@@ -65,7 +65,7 @@ describe('postcss-layer-root-defaults', () => {
   });
 
   it('leaves :root already inside @layer alone', async () => {
-    const input = '@layer ui.component { :root { --x: 1px } }';
+    const input = '@layer ui.base { :root { --x: 1px } }';
     expect(await run(input)).toBe(input);
   });
 

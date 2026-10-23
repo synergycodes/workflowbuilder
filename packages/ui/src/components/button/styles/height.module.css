@@ -6,24 +6,22 @@
   --wb-public-button-height-xs: var(--wb-ds-size-350);
 }
 
-@layer ui.component {
-  .xl {
-    height: var(--wb-public-button-height-xl);
-  }
+.xl {
+  height: var(--wb-public-button-height-xl);
+}
 
-  .l {
-    height: var(--wb-public-button-height-l);
-  }
+.l {
+  height: var(--wb-public-button-height-l);
+}
 
-  .m {
-    height: var(--wb-public-button-height-m);
-  }
+.m {
+  height: var(--wb-public-button-height-m);
+}
 
-  .s {
-    height: var(--wb-public-button-height-s);
-  }
+.s {
+  height: var(--wb-public-button-height-s);
+}
 
-  .xs {
-    height: var(--wb-public-button-height-xs);
-  }
+.xs {
+  height: var(--wb-public-button-height-xs);
 }

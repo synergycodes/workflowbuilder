@@ -25,9 +25,14 @@ const ALREADY_PREFIXED = Object.values(PREFIX).map((prefix) => prefix.replaceAll
 // Allowlist, as in postcss-box-sizing: @keyframes, @font-face, @layer and unknown at-rules are left alone.
 const STYLING_CONTEXTS = new Set(['media', 'supports', 'container']);
 
-type ScopePrefixOptions = { strength: PrefixStrength; vendoredFiles?: RegExp };
+export type ScopePrefixOptions = {
+  strength: PrefixStrength;
+  vendoredFiles?: RegExp;
+  // Base styles every component rule must override: the selector is wrapped in `:where()`.
+  baseFiles?: RegExp;
+};
 
-function prefixSelector(selector: string, prefix: string): string {
+function prefixSelector(selector: string, prefix: string, isBase: boolean): string {
   const trimmed = selector.trim();
   const compact = trimmed.replaceAll(/\s/g, '');
 
@@ -41,15 +46,17 @@ function prefixSelector(selector: string, prefix: string): string {
     return isBare ? selector : prefix.trimEnd() + trimmed;
   }
 
-  return prefix + trimmed;
+  return prefix + (isBase ? `:where(${trimmed})` : trimmed);
 }
 
-function prefixRule(rule: Rule, { strength, vendoredFiles }: ScopePrefixOptions): void {
+function prefixRule(rule: Rule, { strength, vendoredFiles, baseFiles }: ScopePrefixOptions): void {
   if (targetsRoot(rule) || isThemeScopedDefaults(rule)) return;
 
-  const isVendored = vendoredFiles?.test(rule.source?.input.file ?? '') ?? false;
+  const file = rule.source?.input.file ?? '';
+  const isVendored = vendoredFiles?.test(file) ?? false;
+  const isBase = baseFiles?.test(file) ?? false;
   const prefix = PREFIX[isVendored ? 'vendored' : strength];
-  const selectors = rule.selectors.map((selector) => prefixSelector(selector, prefix));
+  const selectors = rule.selectors.map((selector) => prefixSelector(selector, prefix, isBase));
 
   if (selectors.some((selector, index) => selector !== rule.selectors[index])) {
     rule.selectors = selectors;

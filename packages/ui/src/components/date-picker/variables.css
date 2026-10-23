@@ -1,7 +1,6 @@
-/* react-day-picker's own stylesheet joins `ui.base`, so the `ui.component`
-   theming in date-picker.module.css beats it by layer order alone - no
-   specificity tricks, no load-order requirement. */
-@import 'react-day-picker/style.css' layer(ui.base);
+/* Unlayered: scopePrefixPlugin gives these rules the weightless `:where()` prefix (vendoredFiles),
+   so date-picker.module.css theming beats them by specificity, not by load order. */
+@import 'react-day-picker/style.css';
 
 :root {
   --wb-public-date-picker-dropdown-background: var(--wb-ds-ui-bg-base);
