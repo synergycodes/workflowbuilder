@@ -2,8 +2,8 @@ import type { NodeSchemaOutput } from '@workflowbuilder/sdk';
 
 export const schemaOutput: NodeSchemaOutput = {
   type: 'default',
-  bySourceHandle: {
-    every: {
+  bySourceHandleType: {
+    settled: {
       type: 'object',
       properties: {
         selectedBranch: {

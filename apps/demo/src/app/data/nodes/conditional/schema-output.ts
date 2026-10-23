@@ -2,7 +2,7 @@ import type { NodeSchemaOutput } from '@workflowbuilder/sdk';
 
 export const schemaOutput: NodeSchemaOutput = {
   type: 'default',
-  bySourceHandle: {
+  bySourceHandleType: {
     success: {
       type: 'object',
       properties: {

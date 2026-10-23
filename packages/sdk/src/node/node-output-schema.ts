@@ -27,8 +27,13 @@ export const OUTPUT_SCHEMA_TYPE = {
 
 export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
 
+/**
+ * JSON Schema per handle type, resolved from the handle id: `settled` reaches every handle, `error` the handles
+ * whose id contains `error` (`onError`, `error-1`), `success` every other handle.
+ */
 export type PropertiesBySourceHandleType = Partial<Record<SourceHandleType, JsonSchema7>>;
 
+/** JSON Schema per source handle id. A handle receives its own entry plus the matching `bySourceHandleType` buckets. */
 export type PropertiesBySourceHandle = {
   [sourceHandle: string]: JsonSchema7 | undefined;
 };
@@ -47,14 +52,18 @@ export type OutputVariant =
       variantRule: {
         onlyIfPropertyNameEquals: { path: string; value: string | number };
         fromValueOfPropertyPath: string;
+        /** Handle ids that receive the user-defined variables. */
         toSourceHandles: string[] | undefined;
+        /** Handle types that receive them; same keys as `bySourceHandleType`. */
         toSourceHandlesTypes: SourceHandleType[] | undefined;
       };
     }
   | {
       variantRule: {
         fromValueOfPropertyPath: string;
+        /** Handle ids that receive the user-defined variables. */
         toSourceHandles: string[] | undefined;
+        /** Handle types that receive them; same keys as `bySourceHandleType`. */
         toSourceHandlesTypes: SourceHandleType[] | undefined;
       };
     };
@@ -75,9 +84,11 @@ export type NodeSchemaOutputVariant = {
 
 /**
  * The output contract of a node: what downstream nodes can reference as variables.
- * Attach it via `PaletteItem.schemaOutput`. `default` maps each source handle to a
- * JSON Schema (`every` covers all handles); `variant` merges every variant whose rule
- * matches the node's current properties.
+ * Attach it via `PaletteItem.schemaOutput`. `default` maps a JSON Schema to source handles:
+ * `bySourceHandle` by handle id, `bySourceHandleType` by handle type (`settled` for every
+ * handle, `error` for ids containing `error`, `success` for the rest). A handle receives its
+ * own entry plus the matching type buckets; duplicates are dropped by variable id.
+ * `variant` merges every variant whose rule matches the node's current properties.
  *
  * @category Types
  */

@@ -15,18 +15,19 @@ Both fields may coexist during migration; `schemaOutput` wins when present, `out
 
 ## Mapping
 
-| Old (`outputSchema`)                                       | New (`schemaOutput`)                                                                             |
-| ---------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
-| `properties: { key: { type, label, description } }`        | `bySourceHandle.<handle>: { type: 'object', properties: { key: { type, title, description } } }` |
-| flat, dot-notation keys (`'result.status'`)                | nested `properties` (`result: { type: 'object', properties: { status } }`)                       |
-| `label`                                                    | `title`                                                                                          |
-| `type: 'datetime'`                                         | `type: 'string', format: 'date-time'`                                                            |
-| `type: 'date'`                                             | `type: 'string'` (no dedicated mapping yet)                                                      |
-| same variables on every handle                             | `bySourceHandle.every`                                                                           |
-| `variants: { name: { variantRule, properties } }` (record) | `variants: [{ variantRule, bySourceHandle }]` (array)                                            |
-| `variantRule: { dataPropertyName, dataPropertyValue }`     | `variantRule: { onlyIfPropertyNameEquals: { path, value } }` (`path` supports dot notation)      |
-| first matching variant only                                | **all** matching variants are merged                                                             |
-| —                                                          | `variantRule: { fromValueOfPropertyPath, toSourceHandles }` for user-defined output shapes       |
+| Old (`outputSchema`)                                       | New (`schemaOutput`)                                                                                             |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| `properties: { key: { type, label, description } }`        | `bySourceHandle.<handle>: { type: 'object', properties: { key: { type, title, description } } }`                 |
+| flat, dot-notation keys (`'result.status'`)                | nested `properties` (`result: { type: 'object', properties: { status } }`)                                       |
+| `label`                                                    | `title`                                                                                                          |
+| `type: 'datetime'`                                         | `type: 'string', format: 'date-time'`                                                                            |
+| `type: 'date'`                                             | `type: 'string'` (no dedicated mapping yet)                                                                      |
+| same variables on every handle                             | `bySourceHandleType.settled`                                                                                     |
+| —                                                          | `bySourceHandleType.success` / `.error`, resolved from the handle id (`error` substring)                         |
+| `variants: { name: { variantRule, properties } }` (record) | `variants: [{ variantRule, bySourceHandle, bySourceHandleType }]` (array)                                        |
+| `variantRule: { dataPropertyName, dataPropertyValue }`     | `variantRule: { onlyIfPropertyNameEquals: { path, value } }` (`path` supports dot notation)                      |
+| first matching variant only                                | **all** matching variants are merged                                                                             |
+| —                                                          | `variantRule: { fromValueOfPropertyPath, toSourceHandles, toSourceHandlesTypes }` for user-defined output shapes |
 
 ## Example: default
 
@@ -43,7 +44,7 @@ outputSchema: {
 // after — success/error split
 schemaOutput: {
   type: 'default',
-  bySourceHandle: {
+  bySourceHandleType: {
     success: {
       type: 'object',
       properties: { status: { type: 'string', title: 'Status' } },
@@ -56,7 +57,7 @@ schemaOutput: {
 }
 ```
 
-Use `bySourceHandle.every` instead of named handles when the node has a single output or all handles share the shape.
+Use `bySourceHandleType.settled` when the node has a single output or all handles share the shape. `bySourceHandle.<handleId>` targets one handle by its id; a handle gets its own entry plus the matching type buckets.
 
 ## Example: variant
 
@@ -82,14 +83,14 @@ schemaOutput: {
   variants: [
     {
       variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'text' } },
-      bySourceHandle: {
-        every: { type: 'object', properties: { text: { type: 'string', title: 'Text' } } },
+      bySourceHandleType: {
+        settled: { type: 'object', properties: { text: { type: 'string', title: 'Text' } } },
       },
     },
     {
       variantRule: { onlyIfPropertyNameEquals: { path: 'mode', value: 'json' } },
-      bySourceHandle: {
-        every: { type: 'object', properties: { data: { type: 'object', title: 'Data' } } },
+      bySourceHandleType: {
+        settled: { type: 'object', properties: { data: { type: 'object', title: 'Data' } } },
       },
     },
   ],
@@ -101,5 +102,5 @@ A variant with `variantRule: undefined` always matches — use it for variables 
 ## Gotchas
 
 - Variable references are unchanged (`{{nodeId.result.status}}`), so existing diagrams keep working.
-- If a node previously exposed error fields on every handle, moving them to `bySourceHandle.error` is a behaviour change for downstream nodes on the success path — intended, but check templates.
+- If a node previously exposed error fields on every handle, moving them to `bySourceHandleType.error` is a behaviour change for downstream nodes on the success path — intended, but check templates.
 - Reference: `apps/demo/src/app/data/nodes/*/schema-output.ts`; `action/action.ts` still carries the old format as a side-by-side example.

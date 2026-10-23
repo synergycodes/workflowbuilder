@@ -5,8 +5,8 @@ export const schemaOutput: NodeSchemaOutput = {
   variants: [
     {
       variantRule: undefined,
-      bySourceHandle: {
-        every: {
+      bySourceHandleType: {
+        settled: {
           type: 'object',
           properties: {
             eventType: {
@@ -28,7 +28,7 @@ export const schemaOutput: NodeSchemaOutput = {
       variantRule: {
         onlyIfPropertyNameEquals: { path: 'type', value: 'timeBasedTrigger' },
       },
-      bySourceHandle: {
+      bySourceHandleType: {
         success: {
           type: 'object',
           properties: {
@@ -57,7 +57,7 @@ export const schemaOutput: NodeSchemaOutput = {
       variantRule: {
         onlyIfPropertyNameEquals: { path: 'type', value: 'eventBasedTrigger' },
       },
-      bySourceHandle: {
+      bySourceHandleType: {
         success: {
           type: 'object',
           properties: {

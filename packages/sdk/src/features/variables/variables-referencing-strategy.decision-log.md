@@ -55,18 +55,19 @@ The nature of the most common diagrams in Workflow Builder can result in differe
 
 - Limited Support for Database-Like Diagrams: This approach does not support diagrams where variables are passed between nodes through edges, similar to how data flows between nodes in database-like systems. In such cases, variables would need to be explicitly propagated through the graph rather than being defined per input field.
 
-### 3. Special source-handle buckets in `bySourceHandle`
+### 3. Handle-type buckets in `bySourceHandleType`
 
-Besides entries keyed by real source handle ids, `bySourceHandle` accepts three optional bucket keys (`SOURCE_HANDLE_TYPE` in `constants.ts`): `every` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. None of them is required; a handle's own entry is always used on its own. The `error` check is a substring match on the handle id, so `onError` and `error-1` both count as error handles.
+`bySourceHandle` is keyed by real source handle ids. `bySourceHandleType` is a separate map keyed by handle type (`SOURCE_HANDLE_TYPE` in `constants.ts`), resolved from the handle id at read time: `settled` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. Both maps are optional; a handle's own entry is always used on its own. The `error` check is a case-insensitive substring match on the handle id, so `onError` and `error-1` both count as error handles.
 
-Suggestions from several buckets are merged per handle and de-duplicated by variable id. The type is taken from whichever copy survives; it is not resolved per handle. A variable that sits in more than one bucket must therefore declare the same type in each.
+Suggestions from the handle's own entry and the matching buckets are merged per handle and de-duplicated by variable id. The type is taken from whichever copy survives; it is not resolved per handle. A variable that sits in more than one place must therefore declare the same type in each.
 
 #### Consequences
 
 ##### Pros
 
-- Nodes with a success / error split declare the shared part once in `every` and only the branch-specific properties per bucket.
+- Nodes with a success / error split declare the shared part once in `settled` and only the branch-specific properties per bucket.
 - Handle ids stay free-form; a node author does not have to register handles anywhere else for the picker to work.
+- Type keys cannot collide with handle ids: a handle named `success` and the `success` bucket live in different maps.
 
 ##### Cons
 
