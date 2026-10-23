@@ -1,4 +1,4 @@
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 import { typesForDate } from '../components/dynamic-typed-input/constants';
 

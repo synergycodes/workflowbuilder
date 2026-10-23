@@ -1,6 +1,7 @@
-import { type VariableTypePrimitive, getVariableTypeIfPrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 import { getIsStringNumber } from '../../../utils/validation/get-is-string-number';
+import { getVariableTypeIfPrimitive } from '../utils/guards/get-variable-type-if-primitive';
 import { getSingleVariableTypeIfPossible } from './get-single-variable-type-if-possible';
 
 /**

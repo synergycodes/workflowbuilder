@@ -1,4 +1,6 @@
-import type { MaybeVariableReference, VariableReference } from '../../types';
+import type { VariableReference } from '@workflow-builder/types/variables';
+
+import type { MaybeVariableReference } from '../../types';
 import { getIsStringVariableReference } from './get-is-string-variable-reference';
 
 export function getVariableReferenceIfPossible(value: MaybeVariableReference): VariableReference | undefined {

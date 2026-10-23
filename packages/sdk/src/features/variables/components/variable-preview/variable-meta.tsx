@@ -1,6 +1,6 @@
 import clsx from 'clsx';
 
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import styles from './variable-meta.module.css';
 

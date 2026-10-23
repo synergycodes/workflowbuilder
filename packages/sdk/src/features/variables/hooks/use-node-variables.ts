@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import { useStore } from '../../../store/store';
 import type { VariableSuggestion, VariableSuggestionGroup } from '../components/variable-text/variable-text.types';

@@ -8,7 +8,8 @@ describe('getVariableReferences', () => {
   it.each([
     ['{{global.total}}', 'global.total'],
     ['{{nodes.abc.output.nested}}', 'nodes.abc.output.nested'],
-    ['{{a}}', 'a'],
+    ['{{trigger.payload.id}}', 'trigger.payload.id'],
+    ['{{variables.count}}', 'variables.count'],
   ])('splits a bracketed reference: %j', (value, withoutBrackets) => {
     expect(getVariableReferences(value)).toEqual({ reference: value, referenceWithoutBrackets: withoutBrackets });
   });
@@ -16,7 +17,8 @@ describe('getVariableReferences', () => {
   it.each([
     ['global.total', '{{global.total}}'],
     ['nodes.abc.output.nested', '{{nodes.abc.output.nested}}'],
-    ['a', '{{a}}'],
+    ['trigger.payload.id', '{{trigger.payload.id}}'],
+    ['variables.count', '{{variables.count}}'],
   ])('wraps a bare key in brackets: %j', (value, reference) => {
     expect(getVariableReferences(value)).toEqual({ reference, referenceWithoutBrackets: value });
   });
@@ -33,6 +35,9 @@ describe('getVariableReferences', () => {
   });
 
   it.each([
+    '{{a}}',
+    'a',
+    '{{unknown.a}}',
     '{{a}} {{b}}',
     '{{a}}{{b}}',
     '{{a}} text',

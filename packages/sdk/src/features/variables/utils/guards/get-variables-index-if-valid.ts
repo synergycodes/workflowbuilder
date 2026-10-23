@@ -1,7 +1,6 @@
-import { getVariableTypeIfPrimitive } from '@workflow-builder/types/node-output-schema';
-
 import type { VariableDefinition, VariablesIndex } from '../../types';
 import { getIsSupportedVariableType } from '../json-schema/get-is-supported-variable-type';
+import { getVariableTypeIfPrimitive } from './get-variable-type-if-primitive';
 
 const getIsPlainObject = (value: unknown): value is Record<string, unknown> => {
   return typeof value === 'object' && value !== null && !Array.isArray(value);

@@ -1,4 +1,4 @@
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
 

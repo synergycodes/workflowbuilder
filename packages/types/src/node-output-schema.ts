@@ -1,5 +1,7 @@
 import type { JsonSchema7 } from '@jsonforms/core';
 
+import type { VariableType } from './variables';
+
 /**
  * Keys of `bySourceHandleType`, resolved from the handle id: `settled` always, `error` if the id contains `error`,
  * `success` otherwise. See variables-referencing-strategy.decision-log.md § 3.
@@ -10,18 +12,6 @@ export const SOURCE_HANDLE_TYPE = {
   ERROR: 'error',
 } as const;
 export type SourceHandleType = (typeof SOURCE_HANDLE_TYPE)[keyof typeof SOURCE_HANDLE_TYPE];
-
-export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date';
-
-export type VariableType = VariableTypePrimitive | 'object' | 'array';
-
-export function getVariableTypeIfPrimitive(type: VariableType): VariableTypePrimitive | undefined {
-  if (type === 'object' || type === 'array') {
-    return;
-  }
-
-  return type;
-}
 
 export type OutputProperty = {
   type: VariableType;

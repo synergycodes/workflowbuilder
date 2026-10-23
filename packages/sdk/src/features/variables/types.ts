@@ -1,6 +1,4 @@
-import type { VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
-
-export type VariableReference = `{{${string}}}`;
+import type { VariableReference, VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 export type MaybeVariableReference = VariableReference | (string & {}) | undefined;
 

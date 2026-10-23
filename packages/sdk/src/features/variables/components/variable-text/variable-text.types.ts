@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react';
 import type { MentionComponentProps, MentionDataItem, MentionsInputProps } from 'react-mentions-ts';
 
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import type { IconType } from '../../../../node/common';
 

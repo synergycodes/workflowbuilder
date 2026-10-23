@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import { getIsSupportedVariableType } from './get-is-supported-variable-type';
 

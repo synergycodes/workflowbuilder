@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 import styles from './dynamic-typed-input.module.css';
 

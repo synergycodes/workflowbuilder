@@ -1,4 +1,4 @@
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
 import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';

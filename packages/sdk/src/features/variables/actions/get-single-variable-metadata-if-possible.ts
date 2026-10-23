@@ -1,4 +1,4 @@
-import type { VariableType } from '@workflow-builder/types/node-output-schema';
+import type { VariableType } from '@workflow-builder/types/variables';
 
 import { getNodeByIdAction } from '../../../store-get-actions/stores/use-store-get-actions';
 import { useStore } from '../../../store/store';

@@ -1,4 +1,4 @@
-import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START } from '../../constants';
+import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START, VARIABLE_REFERENCE_KEYS } from '../../constants';
 import type { MaybeVariableReference } from '../../types';
 
 export function getIsStringVariableReference(value: MaybeVariableReference): boolean {
@@ -22,7 +22,12 @@ export function getIsStringVariableReference(value: MaybeVariableReference): boo
     `${VARIABLE_BRACKETS_START}${valueTrimmed.replaceAll(VARIABLE_BRACKETS_START, '').replaceAll(VARIABLE_BRACKETS_END, '')}${VARIABLE_BRACKETS_END}` ===
     valueTrimmed;
   if (isOnlyOneVariable) {
-    return true;
+    const hasKnownPrefix = VARIABLE_REFERENCE_KEYS.some((key) =>
+      valueTrimmed.startsWith(`${VARIABLE_BRACKETS_START}${key}.`),
+    );
+    if (hasKnownPrefix) {
+      return true;
+    }
   }
 
   return false;

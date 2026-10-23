@@ -1,4 +1,4 @@
-import type { VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 import { getIsValidDate } from '../../../utils/validation/get-is-valid-date';
 import { getStringVariableTypeIfPossible } from '../actions/get-string-variable-type-if-possible';

@@ -1,4 +1,4 @@
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 export const NODE_ID_FOR_COMMON_NODE_DATA = '<NODE_ID>';
 export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<NODE_LABEL>';
@@ -78,6 +78,18 @@ export const VARIABLE_GLOBAL_KEY = 'global';
  * @category Constants
  */
 export const VARIABLE_NODES_KEY = 'nodes';
+
+export const VARIABLE_TRIGGER_KEY = 'trigger';
+
+export const VARIABLE_VARIABLES_KEY = 'variables';
+
+/** Mirrors the `VariableReference` union in `./types`; keep both in sync. */
+export const VARIABLE_REFERENCE_KEYS = [
+  VARIABLE_GLOBAL_KEY,
+  VARIABLE_TRIGGER_KEY,
+  VARIABLE_NODES_KEY,
+  VARIABLE_VARIABLES_KEY,
+] as const;
 
 type VariableTypeOption = {
   type: VariableType;

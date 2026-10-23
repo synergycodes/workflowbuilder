@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
 
 import type { WBControlProps } from '../../../../types/controls';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
