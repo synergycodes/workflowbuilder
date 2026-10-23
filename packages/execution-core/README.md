@@ -230,6 +230,8 @@ Every payload — inputs, outputs, errors — passes through `redactSensitive` (
 
 A modifier triggers **only when the resolved value is strictly `undefined`** - the namespace, node, or one of the dot-path segments does not exist on the live context. `null`, `''`, and `0` count as real values and pass through unchanged. The default literal is single-quoted and cannot contain a single quote; use `?` when you need an empty fallback.
 
+A reference is parsed exactly as the variable picker stores it: `{{namespace.path}}` with no whitespace inside the braces and no empty path segment. `{{ nodes.x }}`, `{{nodes.x }}` and `{{nodes.x? }}` are malformed; whitespace is tolerated only around the `|` and `:` of the default modifier. The namespaces are the ones `VariableReference` (`@workflow-builder/types/variables`) declares.
+
 The strict default is deliberate: a typo in a prompt template should fail the run, not silently leak a broken token into an LLM. The opt-in modifiers exist for fields where the absence of a value is a legitimate runtime state (an optional trigger field, an output that only exists on one branch of a decision).
 
 Both failures are thrown as `PermanentNodeExecutionError` (codes `template_malformed` and `template_unresolved`), so the engine does not retry the node: a retried node receives the same context, and a reference that failed once fails identically every time.

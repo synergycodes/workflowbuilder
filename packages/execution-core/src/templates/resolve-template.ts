@@ -11,8 +11,21 @@
 // Keeping plain `{{x.y}}` strict is deliberate: a typo in a prompt template
 // should fail loudly during development. The safe forms are an opt-in for
 // authors who genuinely expect a value to be absent some of the time.
+import type { VariableReference } from '@workflow-builder/types/variables';
+
 import { PermanentNodeExecutionError } from '../errors';
 import type { ExecutionContext } from '../execution-context';
+
+type NamespaceOf<Reference> = Reference extends `{{${infer Namespace}.${string}}}` ? Namespace : never;
+type Namespace = NamespaceOf<VariableReference>;
+
+// Exhaustive over `VariableReference`: a namespace added to the type fails to compile here.
+const SOURCE_BY_NAMESPACE: Record<Namespace, (context: ExecutionContext) => unknown> = {
+  nodes: (context) => context.nodeOutputs,
+  trigger: (context) => context.triggerPayload,
+  variables: (context) => context.variables,
+  global: (context) => context.global,
+};
 
 // Two-stage parse: the OUTER regex catches anything that *looks* like a
 // template reference (a `{{namespace.…}}` block with a dot — the marker of
@@ -26,45 +39,45 @@ import type { ExecutionContext } from '../execution-context';
 // `{{}}`, `{{ }}`, `{{x}}` (no dot) are NOT caught by the outer regex — they
 // do not declare a namespace path, so we treat them as plain text.
 //
+// The `\s*` after `{{` is wider than the grammar on purpose: `{{ nodes.x }}`
+// carries authoring intent, so it is caught here and rejected by the inner
+// parse instead of leaking into the prompt.
+//
 // The body matcher `(?:[^}]|\}(?!\}))*` allows single `}` (e.g. inside a
 // default value: `default:'a } b'`) but stops at `}}`, the actual delimiter.
 const OUTER_TEMPLATE_REGEX = /\{\{\s*\w+\.(?:[^}]|\}(?!\}))*\}\}/g;
 
+// The reference is a `VariableReference` exactly as the variable picker stores
+// it: `{{namespace.path}}` with no whitespace inside the braces. Whitespace is
+// tolerated only around the `|` and `:` of the default modifier.
+//
 // Anatomy of the inner parse regex (anchored to the whole token):
-//   ^\{\{                  opening delimiter
-//   \s*                    tolerate whitespace inside the braces
-//   (?<namespace>\w+)      nodes | trigger | variables | global
+//   ^\{\{                  opening delimiter, the namespace follows immediately
+//   (?<namespace>\w+)      nodes | trigger | variables | global (checked against SOURCE_BY_NAMESPACE)
 //   \.
-//   (?<path>[\w.-]+?)      dot-path: word chars, '.', '-' (kebab slugs).
-//                          Anything outside this class is a typo and falls
-//                          through to the 'Malformed template reference'
-//                          branch rather than silently passing as an
-//                          unresolvable key.
-//   \s*
+//   (?<path>[\w-]+(?:\.[\w-]+)*)
+//                          dot-path of non-empty segments: word chars and '-'
+//                          (kebab slugs, nanoid ids). Anything else is a typo
+//                          and falls through to the 'Malformed template
+//                          reference' branch rather than silently passing as
+//                          an unresolvable key.
 //   (?:                    optional modifier
-//     (?<safe>\?)          '?' safe-navigation marker, OR
+//     (?<safe>\?)          '?' safe-navigation marker, glued to the path, OR
 //     |
-//     \|\s*default\s*:\s*'(?<default>[^']*)'   single-quoted default (no nested ')
+//     \s*\|\s*default\s*:\s*'(?<default>[^']*)'   single-quoted default (no nested ')
 //   )?
-//   \s*
-//   \}\}$                  closing delimiter
+//   \}\}$                  closing delimiter, immediately after the path or modifier
 const PARSE_REGEX =
-  /^\{\{\s*(?<namespace>\w+)\.(?<path>[\w.-]+?)\s*(?:(?<safe>\?)|\|\s*default\s*:\s*'(?<default>[^']*)')?\s*\}\}$/;
+  /^\{\{(?<namespace>\w+)\.(?<path>[\w-]+(?:\.[\w-]+)*)(?:(?<safe>\?)|\s*\|\s*default\s*:\s*'(?<default>[^']*)')?\}\}$/;
 
 export function resolveTemplate(template: string, context: ExecutionContext): string {
   return template.replaceAll(OUTER_TEMPLATE_REGEX, (match) => {
-    const groups = PARSE_REGEX.exec(match)?.groups;
-    if (!groups) {
-      throw new PermanentNodeExecutionError('template_malformed', `Malformed template reference: ${match}`);
-    }
-    const { namespace, path, safe, default: defaultValue } = groups;
+    const { namespace, path, fallback } = parseReference(match);
 
-    const source = resolveNamespace(namespace!, context, match);
-    const value = getNestedValue(source, path!);
+    const value = getNestedValue(SOURCE_BY_NAMESPACE[namespace](context), path);
 
     if (value === undefined) {
-      if (safe === '?') return '';
-      if (defaultValue !== undefined) return defaultValue;
+      if (fallback !== undefined) return fallback;
       throw new PermanentNodeExecutionError('template_unresolved', `Unresolved template reference: ${match}`);
     }
 
@@ -72,27 +85,32 @@ export function resolveTemplate(template: string, context: ExecutionContext): st
   });
 }
 
-function resolveNamespace(namespace: string, context: ExecutionContext, match: string): unknown {
-  switch (namespace) {
-    case 'nodes': {
-      return context.nodeOutputs;
-    }
-    case 'trigger': {
-      return context.triggerPayload;
-    }
-    case 'variables': {
-      return context.variables;
-    }
-    case 'global': {
-      return context.global;
-    }
-    default: {
-      throw new PermanentNodeExecutionError(
-        'template_unresolved',
-        `Unresolved template reference: ${match} (unknown namespace "${namespace}")`,
-      );
-    }
+type ParsedReference = {
+  namespace: Namespace;
+  path: string;
+  // Substituted when the path resolves to `undefined`; absent for a strict reference.
+  fallback: string | undefined;
+};
+
+function parseReference(match: string): ParsedReference {
+  const groups = PARSE_REGEX.exec(match)?.groups;
+  if (!groups) {
+    throw new PermanentNodeExecutionError('template_malformed', `Malformed template reference: ${match}`);
   }
+  const { namespace, path, safe, default: defaultValue } = groups;
+
+  if (!isNamespace(namespace)) {
+    throw new PermanentNodeExecutionError(
+      'template_unresolved',
+      `Unresolved template reference: ${match} (unknown namespace "${namespace}")`,
+    );
+  }
+
+  return { namespace, path, fallback: safe === '?' ? '' : defaultValue };
+}
+
+function isNamespace(value: string): value is Namespace {
+  return Object.hasOwn(SOURCE_BY_NAMESPACE, value);
 }
 
 function getNestedValue(object: unknown, path: string): unknown {

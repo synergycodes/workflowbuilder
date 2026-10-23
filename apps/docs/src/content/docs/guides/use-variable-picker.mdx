@@ -51,6 +51,8 @@ Summarize the following request from {{nodes.trigger-1.payload.customer.name}}:
 
 The path syntax does not support array indexing, filters, or transforms - only nested key access on objects.
 
+The braces hug the reference: `{{ nodes.x }}` is not a reference and fails the run as malformed. Only the `|` and `:` of the `default` modifier (see [Missing values](#missing-values)) may be surrounded by spaces. The chip's `{{ Label · Property }}` label is the editor view only; the stored form has no spaces.
+
 ## Namespaces
 
 The SDK only stores these references as text on the diagram. Actual values are filled in later, when the workflow runs.

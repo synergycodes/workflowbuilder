@@ -50,6 +50,15 @@ describe('resolveTemplate — plain {{x.y}} (strict, throws on missing)', () => 
     });
     expect(resolveTemplate('{{nodes.a}} {{trigger.b}} {{variables.c}} {{global.d}}', context)).toBe('1 2 3 4');
   });
+
+  it('accepts the ids the picker emits: kebab slugs and nanoid-style ids', () => {
+    const context = makeContext({ nodeOutputs: { 'writer-1': { response: 'a' }, '-Xy_9': { out: 'b' } } });
+    expect(resolveTemplate('{{nodes.writer-1.response}} {{nodes.-Xy_9.out}}', context)).toBe('a b');
+  });
+
+  it('does not resolve a namespace off Object.prototype', () => {
+    expect(() => resolveTemplate('{{constructor.name}}', makeContext())).toThrow(/unknown namespace "constructor"/);
+  });
 });
 
 describe("resolveTemplate — safe-navigation {{x.y?}} (returns '')", () => {
@@ -72,10 +81,6 @@ describe("resolveTemplate — safe-navigation {{x.y?}} (returns '')", () => {
   it('still resolves the actual value when present (modifier is a fallback, not a coercer)', () => {
     const context = makeContext({ nodeOutputs: { writer: 'hello' } });
     expect(resolveTemplate('{{nodes.writer?}}', context)).toBe('hello');
-  });
-
-  it('tolerates whitespace before the closing braces', () => {
-    expect(resolveTemplate('{{nodes.missing? }}', makeContext())).toBe('');
   });
 });
 
@@ -228,7 +233,7 @@ describe('resolveTemplate — malformed templates throw loudly', () => {
   });
 
   it('non-identifier chars in the dot-path throw Malformed, not Unresolved', () => {
-    // The picker only emits paths shaped like `\w[-\w]*(\.\w[-\w]*)*`. Anything
+    // The picker only emits paths shaped like `[\w-]+(\.[\w-]+)*`. Anything
     // else (`:`, `,`, `[`, `]`, array indexing, sigils) is a typo, not a
     // legitimately-missing reference. Surfacing it as Malformed tells the
     // operator the *syntax* is wrong, not that data is absent - different
@@ -237,6 +242,27 @@ describe('resolveTemplate — malformed templates throw loudly', () => {
     expect(() => resolveTemplate('{{nodes.foo,bar}}', makeContext())).toThrow(/Malformed template reference/);
     expect(() => resolveTemplate('{{nodes.foo[0]}}', makeContext())).toThrow(/Malformed template reference/);
     expect(() => resolveTemplate('{{nodes.foo*bar}}', makeContext())).toThrow(/Malformed template reference/);
+  });
+
+  it.each(['{{nodes..foo}}', '{{nodes.foo.}}', '{{nodes.foo..bar}}'])(
+    'an empty path segment throws: %j',
+    (template) => {
+      expect(() => resolveTemplate(template, makeContext())).toThrow(/Malformed template reference/);
+    },
+  );
+
+  it.each([
+    '{{ nodes.foo}}',
+    '{{nodes.foo }}',
+    '{{ nodes.foo }}',
+    '{{nodes.foo ?}}',
+    '{{nodes.foo? }}',
+    "{{nodes.foo | default:'tbd' }}",
+  ])('whitespace inside the braces throws, the reference is stored without it: %j', (template) => {
+    // A reference is exactly what the picker stores: `{{namespace.path}}`.
+    // Only the `|` and `:` of the default modifier may be surrounded by whitespace.
+    const context = makeContext({ nodeOutputs: { foo: 'present' } });
+    expect(() => resolveTemplate(template, context)).toThrow(/Malformed template reference/);
   });
 });
 
