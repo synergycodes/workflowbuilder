@@ -158,7 +158,7 @@ git rm --ignore-unmatch -- 'packages/temporal/test/replay/histories/v0-*.json'
 pnpm --filter @workflowbuilder/temporal test
 ```
 
-The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists. Earlier released sets stay: a run recorded by that version may still be waiting in someone's Event History. `v0-` files are recordings of code no release had shipped yet; once the version's own set replays they add nothing, so the release PR deletes them and runs the tests once more. A forgotten `REPLAY_HISTORY_VERSION` writes `v0-` files, or fails on the ones that exist; the pre-merge check below catches both. The rules are in `packages/temporal/test/replay/README.md`.
+The first run writes `packages/temporal/test/replay/histories/$VERSION-<scenario>.json` next to the earlier sets and leaves those untouched; it refuses to overwrite a recording that already exists. Earlier released sets stay: a run recorded by that version may still be waiting in someone's Event History. `v0-` files are recordings of code no release had shipped yet; once the version's own set replays they add nothing, so the release PR deletes them and runs the tests once more. A forgotten `REPLAY_HISTORY_VERSION` writes `v0-` files, or fails on the ones that exist; the pre-merge checklist below catches both at review. The rules are in `packages/temporal/test/replay/README.md`.
 
 #### Reformat the generated CHANGELOG section
 
@@ -224,7 +224,7 @@ In the PR diff you should see, and nothing else under `packages/`:
 - `packages/<pkg>/package.json`: version bump
 - `packages/<pkg>/CHANGELOG.md`: new Keep-a-Changelog section (dated `## [X.Y.Z]` heading, `### Added` / `### Changed` / `### Fixed` groupings, link reference at the bottom), reformatted from the raw Changesets output
 - `.changeset/*.md`: deletions, only of the files that named `<pkg>`
-- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, the deletion of every `v0-*.json`, and no new `v0-` file
+- `packages/temporal/test/replay/histories/X.Y.Z-*.json` (temporal only): one recording per scenario for the version being released, the deletion of every `v0-*.json` there was, and no new `v0-` file
 - Nothing else. Internal dependencies use `workspace:*`, which Changesets leaves alone, and `pnpm-lock.yaml` does not record workspace versions
 
 A version bump in any other `package.json` means `changeset version` was run directly instead of through `release:version`. Redo the branch.

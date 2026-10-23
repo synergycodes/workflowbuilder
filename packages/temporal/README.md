@@ -173,7 +173,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-The run status moves to `running` as soon as the run starts, right after `execution_started`; a run started before 0.3.0 keeps its old sequence and writes it only on a resume. While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Every `waiting` and `running` write is advisory: it can land after a cancel, even after the terminal status, so a store must not let it replace a cancel it recorded or a terminal status.
+The run status moves to `running` when the run starts, right after `execution_started` and the start-node check; a graph that fails that check goes straight to `failed`. A run started before 0.3.0 keeps its old sequence and writes `running` only on a resume. While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. That `waiting` and the `running` after it are written once the workflow has started accepting a verdict for the node, so acting on either is never too early. Every `waiting` and `running` write is advisory: it can land after a cancel, even after the terminal status, so a store must not let it replace a cancel it recorded or a terminal status.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
@@ -215,7 +215,7 @@ This package carries two contracts, not one. The API is the ordinary semver surf
 | minor   | additions only           | histories still replay; new behaviour sits behind `patched()`       |
 | major   | breaking changes allowed | replay may break, and the release notes say to drain in-flight runs |
 
-Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions. Each `patched()` id lives in `@workflow-builder/execution-core` as a `PatchId`, with the version it came from; one can go only with a major whose notes ask to drain the runs that predate it.
+Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions. It holds forward only: a worker rolled back below a version cannot replay the runs that version started, so do not roll back while such runs are open. Each `patched()` id lives in `@workflow-builder/execution-core` as a `PatchId`, with the version it came from; one can go only with a major whose notes ask to drain the runs that predate it.
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
 

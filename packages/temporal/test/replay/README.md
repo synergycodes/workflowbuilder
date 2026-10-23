@@ -99,17 +99,11 @@ A `v0-` recording comes from code no release has shipped yet. It guards unreleas
 between releases: a new scenario gets its first recording here, and a change behind
 `patched()` re-records the `v0-` set, which then covers the new path while the released
 sets cover the old one. Every release records every scenario again under the version it ships, in the
-release PR right after `pnpm release:version temporal`:
+release PR right after `pnpm release:version temporal`. The commands live in one place,
+`packages/RELEASE.md` § "Release procedure (maintainer)", and the release script prints them.
 
-```bash
-REPLAY_HISTORY_VERSION=<version> UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
-pnpm --filter @workflowbuilder/temporal test
-git rm --ignore-unmatch -- 'packages/temporal/test/replay/histories/v0-*.json'
-pnpm --filter @workflowbuilder/temporal test
-```
-
-The first run writes `<version>-<scenario>.json` next to the earlier files and leaves them
-untouched; the second replays everything, old sets included. Once the version's own set
+The recording run writes `<version>-<scenario>.json` next to the earlier files and leaves them
+untouched; the next run replays everything, old sets included. Once the version's own set
 replays, the `v0-` files describe nothing the release does not, so the release PR deletes
 them and runs the tests once more. Each release adds its own set this way, and rule 2 keeps
 the earlier released ones where they are. The set is recorded rather than renamed from `v0-`:

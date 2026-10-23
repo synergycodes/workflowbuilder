@@ -43,9 +43,9 @@ function shouldRecord(scenario: ReplayScenario): boolean {
   return requested === '1' || requestedScenarios.includes(scenario.name);
 }
 
-// The prefix files a recording under the version that recorded it, so older versions keep
-// their histories next to newer ones. `v0` is the pre-release baseline; ./README.md says
-// when to record under a released version instead.
+// The prefix files a recording under the version that recorded it, so older versions keep their
+// histories next to newer ones. `v0` holds recordings of code no release has shipped; ./README.md
+// says when to record under a released version instead.
 const RECORD_PREFIX = process.env.REPLAY_HISTORY_VERSION ?? 'v0';
 
 function historyFile(scenario: ReplayScenario): URL {

@@ -110,7 +110,7 @@ export type DecisionRequest = {
   proposalSourceNodeId?: string;
   /**
    * Absent means the node waits forever. Nothing enforces it yet: the engine arms no timer, so the node waits
-   * for a verdict either way.
+   * for a verdict either way (follow-up: decision-deadline-timer).
    */
   deadline?: DecisionDeadline;
 };
