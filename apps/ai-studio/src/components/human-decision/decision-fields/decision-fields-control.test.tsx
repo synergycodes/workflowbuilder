@@ -18,6 +18,7 @@ import { refundReviewFlow, refundReviewRequest } from '../../../data/refund-revi
 import { useRunLocksCanvas } from '../../../hooks/use-run-locks-canvas';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { defaultDecisionRequest } from '../../../nodes/human-decision/default-properties-data';
+import { reviewPaletteItem } from '../../../nodes/review';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import {
   applyConnectionLost,
@@ -118,8 +119,8 @@ function edge(source: string): WorkflowBuilderEdge {
   };
 }
 
-function Host() {
-  const node = useStore((state) => state.nodes.find((candidate) => candidate.id === HUMAN));
+function Host({ nodeId = HUMAN }: { nodeId?: string }) {
+  const node = useStore((state) => state.nodes.find((candidate) => candidate.id === nodeId));
   return node ? <NodeProperties node={node} /> : null;
 }
 
@@ -128,7 +129,8 @@ function RunLock() {
   return null;
 }
 
-const storedProperties = () => useStore.getState().nodes.find((node) => node.id === HUMAN)?.data.properties;
+const storedProperties = (nodeId = HUMAN) =>
+  useStore.getState().nodes.find((node) => node.id === nodeId)?.data.properties;
 const runStatus = () => useExecutionStore.getState().status;
 const storedSchema = () => (storedProperties()?.['decisionRequest'] as { schema: unknown }).schema;
 
@@ -178,15 +180,15 @@ describe('the decision fields control in the real properties panel', () => {
       ?.parentElement?.parentElement?.querySelector<HTMLInputElement | HTMLTextAreaElement>('input, textarea') ??
     undefined;
 
-  async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[]) {
+  async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[], nodeId = HUMAN) {
     useStore.setState({
       nodes,
       edges,
-      selectedNodesIds: [HUMAN],
+      selectedNodesIds: [nodeId],
       selectedEdgesIds: [],
-      data: [humanDecisionPaletteItem as never],
+      data: [humanDecisionPaletteItem as never, reviewPaletteItem as never],
     });
-    act(() => root.render(<Host />));
+    act(() => root.render(<Host nodeId={nodeId} />));
     await settle();
   }
 
@@ -353,14 +355,17 @@ describe('the decision fields control in the real properties panel', () => {
 
   describe('on the "Refund Review" template', () => {
     const template = refundReviewFlow.value.diagram;
-    const renderTemplate = (nodes: WorkflowBuilderNode[] = template.nodes) => renderPanel(nodes, template.edges);
+    // The first decider: a Review node, so the panel is exercised on both palette types.
+    const DECIDER = 'review-1';
+    const renderTemplate = (nodes: WorkflowBuilderNode[] = template.nodes) =>
+      renderPanel(nodes, template.edges, DECIDER);
 
     // What the backend answers at decision time: the snapshot the run carries, then the submitted edits.
     function answerTo(edits: Record<string, unknown>): string {
       const { nodes, edges } = useStore.getState();
       const parsed = workflowSnapshotSchema.safeParse(structuredClone({ nodes, edges }));
       if (!parsed.success) throw new Error(`snapshot refused: ${JSON.stringify(parsed.error.issues)}`);
-      const found = findDecisionRequest(parsed.data, HUMAN);
+      const found = findDecisionRequest(parsed.data, DECIDER);
       if (found.error !== undefined) throw new Error(found.error);
       return validateSubmittedDecision(found.request, { action: 'approve', edits }).error?.code ?? 'accepted';
     }
@@ -408,7 +413,7 @@ describe('the decision fields control in the real properties panel', () => {
 
         await choose(key, mode);
 
-        const request = storedProperties()?.['decisionRequest'];
+        const request = storedProperties(DECIDER)?.['decisionRequest'];
         const parsed = decisionRequestSchema.safeParse(request);
         expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
         expect(answerTo({ [key]: edit[key] })).toBe(ANSWER[mode]);
@@ -421,7 +426,7 @@ describe('the decision fields control in the real properties panel', () => {
       await choose('orderDate', 'editable');
       await choose('internalReasoning', 'readOnly');
 
-      expect(storedProperties()?.['decisionRequest']).not.toBe(refundReviewRequest);
+      expect(storedProperties(DECIDER)?.['decisionRequest']).not.toBe(refundReviewRequest);
       expect(refundReviewRequest.schema).toEqual({
         type: 'object',
         properties: {
@@ -441,7 +446,7 @@ describe('the decision fields control in the real properties panel', () => {
       act(() => {
         setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
         applyEvent(event({ type: 'node_completed', nodeId: 'draft-1', payload: { output: templateOutput } }));
-        applyEvent(event({ type: 'node_waiting', nodeId: HUMAN }));
+        applyEvent(event({ type: 'node_waiting', nodeId: DECIDER }));
       });
       await settle();
 
