@@ -1,5 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1260" height="558" viewBox="0 0 840 372" role="img" aria-labelledby="title">
-  <title id="title">Arrows top to bottom follow a run: your React app sends the diagram to your server; your server, through the Workflow Builder TemporalWorkflowEngine, starts a run on the Temporal Service; Temporal sends tasks to your Worker, where the WorkflowBuilderPlugin walks the graph and calls your executors; the Worker returns results; your Worker writes run events to your database; optionally, the events go back to the canvas</title>
+  <title id="title">Arrows from left to right follow a run: your React app sends the diagram to your server; your server, through the Workflow Builder TemporalWorkflowEngine, starts a run on the Temporal Service; Temporal sends tasks to your Worker, where the WorkflowBuilderPlugin walks the graph and calls your executors; the Worker returns results; your Worker writes run events to your database; optionally, the events go back to the canvas</title>
   <style>
     text { font-family: ui-sans-serif, system-ui, 'Segoe UI', Roboto, sans-serif; }
     .title { font-size: 13px; font-weight: 600; text-anchor: middle; }
