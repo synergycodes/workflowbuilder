@@ -6,7 +6,7 @@
 
 ## Context
 
-The AI agent node (`ai-agent.ts`, this directory) can call a web search tool. The AI SDK drives that as an agentic loop: the model asks for a search, the worker runs it, the result goes back to the model, and the model either asks again or answers. `generateText` runs the whole cycle internally, capped at four steps (`stopWhen: stepCountIs(MAX_TOOL_STEPS)`).
+The AI agent node (`ai-agent.ts`, this directory) can call a web search tool. The AI SDK drives that as an agentic loop: the model asks for a search, the worker runs it, the result goes back to the model, and the model either asks again or answers. `generateText` runs the whole cycle internally, capped at four steps (`stopWhen: stepCountIs(MAX_TOOL_STEPS)`). The loop exists only when tools are on, which needs both the node's `webSearch` flag and a `TAVILY_API_KEY`; without them the executor makes one model call. The last allowed step runs with `toolChoice: 'none'` (`prepareStep`), so the loop ends on an answer rather than on a pending search. With an `outputSchema`, an answer that finishes on anything but `stop` fails the node as a transient `structured_output_incomplete`.
 
 `@workflowbuilder/temporal` schedules exactly one `executeNode` Activity per node, so the entire loop — every model call and every search — runs inside that one Activity. Temporal's integration guide allows this, but its rule of thumb is "Activities as close to the tool call as possible", and a reviewer will ask why the loop is not split. This log is the answer; the code alone cannot show it.
 
@@ -20,7 +20,7 @@ Keep the loop inside the node's single Activity.
 
 ## What it costs
 
-An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed. Three caps already bound the bill:
+An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed, so a worker that dies mid-loop loses every finished step the same way, and costs the wait on top: a node profile carries no `heartbeatTimeout`, so Temporal notices the dead worker only when `startToCloseTimeout` expires, 10 minutes by default. Three caps already bound the bill:
 
 | Cap                  | Where                                    | Effect                                                        |
 | -------------------- | ---------------------------------------- | ------------------------------------------------------------- |
@@ -28,7 +28,7 @@ An Activity retry starts the executor from scratch. Every model call and every s
 | `maxRetries: 0`      | the `generateText` call in `ai-agent.ts` | The AI SDK never retries on its own; Temporal owns retries    |
 | `maximumAttempts: 2` | `DEFAULT_NODE_ACTIVITY_PROFILE` (plugin) | At most two attempts per node unless a profile says otherwise |
 
-Worst case per node is therefore eight model generations and eight searches. The loop also has to fit the node profile's `startToCloseTimeout`, 10 minutes by default; a deployment that needs more room declares a profile for `ai-studio/ai-agent` through `createRunWorkflow({ nodeActivityProfiles })` and hands the same map to the plugin.
+Worst case per node is therefore eight model generations. Searches happen in at most three of those steps per attempt, but their count has no such bound: the cap counts steps, not tool calls, and one step can ask for several searches at once, which the AI SDK runs in parallel. The loop also has to fit the node profile's `startToCloseTimeout`, 10 minutes by default; a deployment that needs more room declares a profile for `ai-studio/ai-agent` through `createRunWorkflow({ nodeActivityProfiles })` and hands the same map to the plugin. The same profile is where a deployment rules the re-run out altogether: `retry.maximumAttempts: 1` makes the first attempt the whole budget.
 
 Failure classification (`provider-error.ts`) applies to the loop as a whole, because `generateText` throws once for the whole cycle: a model call that gets a 401 on the third step is permanent and stops the node; a 429 on any model call retries the whole node. A failed search never fails the node: `web-search.ts` hands the error back to the model as the tool result, and the model decides what to do with it.
 
@@ -37,6 +37,8 @@ Failure classification (`provider-error.ts`) applies to the loop as a whole, bec
 - **One Activity per tool call, loop driven from the workflow** — rejected for now. The workflow would own the conversation state and a per-node Activity sequence that `runGraph` does not model, and every intermediate message would land in Event History. It is the right shape once a tool has side effects, not before.
 - **Child workflow per agent node** — rejected. Same history growth plus a second workflow type to version and replay; nothing here needs its own cancellation or timeout scope.
 - **Heartbeat details as a checkpoint inside the Activity** — rejected. Resuming a partial model conversation from `heartbeatDetails` means rebuilding the SDK's loop by hand, which is the first alternative in disguise.
+
+None of this applies to a fixed sequence of model calls: split it into one node per call and each becomes its own Activity that Temporal records and resumes. Only a loop whose length the model decides at run time has to stay inside one node, because the graph cannot express it: a cycle fails the run and none of its nodes ever executes. An edge back into the start node is rejected by the start-node check before the first wave; any other cycle never becomes ready and ends the run with `Workflow stalled`.
 
 ## When to revisit
 
