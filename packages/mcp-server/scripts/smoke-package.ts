@@ -32,7 +32,8 @@ try {
   const tarball = readdirSync(directory).find((name) => name.endsWith('.tgz'));
   if (!tarball) throw new Error('pnpm pack produced no tarball');
   writeFileSync(path.join(directory, 'package.json'), '{ "private": true }\n');
-  run('npm', ['install', `./${tarball}`, '--omit=dev', '--no-audit', '--no-fund'], directory);
+  // Refuses install scripts: this installs unpinned registry code, and the server needs none of them to start.
+  run('npm', ['install', `./${tarball}`, '--omit=dev', '--ignore-scripts', '--no-audit', '--no-fund'], directory);
 
   // `--no` refuses a registry download, so this starts the tarball just installed, through its bin entry.
   const transport = new StdioClientTransport({

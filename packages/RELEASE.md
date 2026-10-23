@@ -33,7 +33,7 @@ git add .changeset && git commit -m "chore(mcp): changeset for the sdk X.Y.Z sna
 pnpm release:version sdk mcp # add ui and temporal when the script names them
 ```
 
-Then tag each package with `pnpm release:tag`. A docs-only change reaches mcp with its next release. Its startup log lists the package versions it documents.
+Then tag each package with `pnpm release:tag`. Releasing the SDK, the UI or the Temporal plugin without mcp leaves the snapshot on npm documenting the previous API; `release:version` prints a reminder in its plan when that happens. A docs-only change reaches mcp with its next release. Its startup log lists the package versions it documents.
 
 The docs site has a page for mcp ("Use with AI assistants") that tells readers to run `npx @workflowbuilder/mcp`, and the npm README links to that page. Until mcp's first version is on npm, deploy the site (step 8) only right after that first publish, not before.
 
@@ -83,6 +83,8 @@ release  ───────────────●───────�
 Applies to `@workflowbuilder/mcp` today, and to any package added later (`@workflowbuilder/ui` went this way for 1.0.0). npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
 
 `@workflowbuilder/temporal` 0.1.0 was published by hand and has no scoped tag or GitHub Release; 0.2.0 is the first release that runs `release-temporal.yml`, so confirm its trusted publisher on npmjs.com before tagging.
+
+For `@workflowbuilder/mcp` the release PR carries every package the script names in step 2: the snapshot labels the API with the versions in `package.json`, and on `main` that API runs ahead of npm by whatever sits in `.changeset/`. The first mcp release is therefore also a release of each of the SDK, the UI and the Temporal plugin that has version changes pending, whatever size those changes are: `pnpm release:version sdk ui temporal mcp` when all three do. The only way to release mcp alone is a release branch cut from `release` instead of `main` (its tip is the code of the versions on npm, with no changesets pending) with the mcp commits cherry-picked onto it; today that is every commit that introduced `packages/mcp-server`, because none of them has reached `release` yet.
 
 The whole sequence:
 

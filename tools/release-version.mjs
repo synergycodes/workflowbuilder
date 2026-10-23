@@ -142,6 +142,16 @@ console.log('Will leave untouched (their changesets stay in .changeset/):');
 for (const name of ignore) console.log(`  ${name}  (${pendingFor(name)?.changesets.length ?? 0} pending)`);
 if (ignore.length === 0) console.log('  (none: every publishable package is being released)');
 
+// The snapshot on npm goes stale when a package it documents is released without it: a reminder, not a stop.
+for (const [snapshot, documented] of Object.entries(SNAPSHOTS)) {
+  const releasing = documented.filter((name) => targets.includes(name));
+  if (targets.includes(snapshot) || releasing.length === 0) continue;
+  console.log(
+    `\n⚠ ${snapshot} is not in this release, so its version on npm keeps documenting the previous ${releasing.map(shortName).join(', ')} API.` +
+      `\n  For a fresh snapshot, add a patch changeset for ${shortName(snapshot)} and run: pnpm release:version ${[...targets, snapshot].map(shortName).join(' ')}`,
+  );
+}
+
 if (dryRun) {
   console.log('\nDry run. No files changed.');
   process.exit(0);

@@ -53,6 +53,11 @@ jobs:
         # Snapshots the docs and the API of the tagged commit into dist/data.
         run: pnpm --filter @workflowbuilder/mcp build
 
+      - name: Pack with the publish-time checks
+        # What `publish` meets in prepack, proven before the OIDC job: dist/ stamped with this commit, tree clean.
+        working-directory: packages/mcp-server
+        run: pnpm pack --pack-destination "$RUNNER_TEMP"
+
       - name: Smoke test against the real docs and API
         run: pnpm --filter @workflowbuilder/mcp smoke
 

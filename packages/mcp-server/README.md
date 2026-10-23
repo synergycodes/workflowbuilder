@@ -64,7 +64,7 @@ The build reads the repo and writes everything the server needs to `dist/data`; 
 - `typedoc/*.json` and `manifest.json`: the public API, the declaration counts and the documented package versions.
 - `build.json`: the commit `tsc` compiled `dist/*.js` from.
 
-The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit, and a working tree with uncommitted or untracked files, since the build would have snapshotted them. `smoke:package` skips the clean-tree check (`WB_MCP_PACK_ALLOW_DIRTY=1`), so it runs on work in progress.
+The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit, and a working tree with uncommitted or untracked files, since the build would have snapshotted them. `smoke:package` skips the clean-tree check (`WB_MCP_PACK_ALLOW_DIRTY=1`), so it runs on work in progress; CI packs once more without it after every build, so the full check is proven before a tag.
 
 ### Layout
 

@@ -2,7 +2,8 @@ import { buildCorpus } from '../src/corpus/build-corpus.js';
 import { callTool, createToolRegistry } from '../src/server.js';
 import { TYPEDOC_RUNS } from '../src/typedoc-runs.js';
 
-const EXPECTED_PAGES = 80;
+// A floor, not the exact count: a new docs page must pass here, a snapshot that lost pages must not.
+const MIN_PAGES = 80;
 // Locally 100-200 ms; the headroom is for shared CI runners, where a release runs this too.
 const MAX_CORPUS_BUILD_MS = 3000;
 const DOCUMENTED_PACKAGES = TYPEDOC_RUNS.map((run) => run.packageName);
@@ -32,7 +33,7 @@ console.error(
   `smoke: ${stats.pages} pages, ${stats.chunks} chunks, ${stats.symbols} symbols, ${stats.members} members, corpus built in ${stats.buildMs} ms`,
 );
 
-check(stats.pages === EXPECTED_PAGES, `expected ${EXPECTED_PAGES} pages, found ${stats.pages}`);
+check(stats.pages >= MIN_PAGES, `expected at least ${MIN_PAGES} pages, found ${stats.pages}`);
 check(warnings.length === 0, `${warnings.length} corpus warning(s), the TypeDoc data is inconsistent`);
 check(stats.buildMs < MAX_CORPUS_BUILD_MS, `corpus build took ${stats.buildMs} ms, limit ${MAX_CORPUS_BUILD_MS} ms`);
 check(
