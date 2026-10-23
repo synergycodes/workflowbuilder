@@ -1,7 +1,7 @@
-import type { Client } from '@temporalio/client';
-import { describe, expect, it, vi } from 'vitest';
+import { type Client, Connection } from '@temporalio/client';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { TemporalWorkflowEngine } from '../src/client/index';
+import { TemporalWorkflowEngine, lazyClient } from '../src/client/index';
 import type { BaseNode, WorkflowExecutionInput } from '../src/core-contract';
 
 const INPUT: WorkflowExecutionInput<BaseNode> = {
@@ -34,6 +34,13 @@ function deferred<T>() {
     reject = fail;
   });
   return { promise, resolve, reject };
+}
+
+// Stands in for what Connection.lazy returns, so no test opens a real channel.
+function fakeConnection(check: () => Promise<void>) {
+  const connection = { ensureConnected: vi.fn(check), close: vi.fn(async () => {}) };
+  vi.spyOn(Connection, 'lazy').mockReturnValue(connection as unknown as Connection);
+  return connection;
 }
 
 describe('TemporalWorkflowEngine connection', () => {
@@ -82,6 +89,35 @@ describe('TemporalWorkflowEngine connection', () => {
     expect(start).toHaveBeenCalledTimes(2);
   });
 
+  it('accepts a plain-JS factory that returns a Client synchronously', async () => {
+    const { client, start } = fakeClient();
+    const factory = vi.fn(() => client) as unknown as () => Promise<Client>;
+    const engine = new TemporalWorkflowEngine({ client: factory });
+
+    await engine.submit(INPUT);
+    await engine.submit(INPUT);
+
+    expect(factory).toHaveBeenCalledTimes(1);
+    expect(start).toHaveBeenCalledTimes(2);
+  });
+
+  it('turns a factory that throws synchronously into a rejection, and connects again on the next call', async () => {
+    const { client, start } = fakeClient();
+    const factory = vi
+      .fn<() => Promise<Client>>()
+      .mockImplementationOnce(() => {
+        throw new Error('bad address');
+      })
+      .mockResolvedValueOnce(client);
+    const engine = new TemporalWorkflowEngine({ client: factory });
+
+    await expect(engine.submit(INPUT)).rejects.toThrow('bad address');
+    await engine.submit(INPUT);
+
+    expect(factory).toHaveBeenCalledTimes(2);
+    expect(start).toHaveBeenCalledTimes(1);
+  });
+
   it('fails every call waiting on a failed attempt, and the call after them connects again', async () => {
     const { client, start } = fakeClient();
     const connecting = deferred<Client>();
@@ -101,5 +137,35 @@ describe('TemporalWorkflowEngine connection', () => {
 
     expect(factory).toHaveBeenCalledTimes(2);
     expect(start).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('lazyClient', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('closes every connection whose check fails, so an outage leaves no channel open', async () => {
+    const connection = fakeConnection(async () => {
+      throw new Error('connect ECONNREFUSED');
+    });
+    const engine = new TemporalWorkflowEngine({ client: lazyClient({ address: '127.0.0.1:1' }) });
+
+    await expect(engine.cancel('e-1')).rejects.toThrow('connect ECONNREFUSED');
+    await expect(engine.cancel('e-2')).rejects.toThrow('connect ECONNREFUSED');
+
+    expect(connection.ensureConnected).toHaveBeenCalledTimes(2);
+    expect(connection.close).toHaveBeenCalledTimes(2);
+  });
+
+  it('keeps a connection that answers and hands the client options through', async () => {
+    const connection = fakeConnection(async () => {});
+
+    const client = await lazyClient({ address: '127.0.0.1:1' }, { namespace: 'tenant-a' })();
+
+    expect(Connection.lazy).toHaveBeenCalledWith({ address: '127.0.0.1:1' });
+    expect(client.connection).toBe(connection);
+    expect(client.options.namespace).toBe('tenant-a');
+    expect(connection.close).not.toHaveBeenCalled();
   });
 });

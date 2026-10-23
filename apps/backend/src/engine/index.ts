@@ -1,5 +1,4 @@
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 import type { WorkflowEnginePort } from '@workflow-builder/execution-core/workflow';
 import { temporalConfig } from '@workflow-builder/temporal-connection';
@@ -17,10 +16,7 @@ export function getWorkflowEngine(): WorkflowEnginePort<BaseNode> {
     engine = new TemporalWorkflowEngine({
       // A factory rather than a ready client: the connection is opened on the first
       // submit, so booting the backend does not require Temporal to be reachable.
-      client: async () => {
-        const connection = await Connection.connect(temporal.connection);
-        return new Client({ connection, namespace: temporal.namespace });
-      },
+      client: lazyClient(temporal.connection, { namespace: temporal.namespace }),
     });
   }
   return engine;

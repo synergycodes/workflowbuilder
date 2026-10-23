@@ -119,13 +119,13 @@ A permanent failure is not retried at all. A transient one retries up to the pro
 ## Client
 
 ```ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
-  // A ready Client, or a factory awaited on first use so process start does not
-  // depend on Temporal being reachable. A failed attempt is retried on the next call.
-  client: async () => new Client({ connection: await Connection.connect({ address }) }),
+  // A ready Client, or a factory awaited on first use so process start does not depend on
+  // Temporal being reachable. A failed attempt is retried on the next call; lazyClient closes
+  // the connection of each failed attempt, which a factory built on Connection.connect would leak.
+  client: lazyClient({ address }, { namespace }),
 });
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
@@ -144,7 +144,7 @@ The engine and the worker default to the same task queue (`workflow-execution`).
 Three things are deliberately yours, and knowing which they are makes debugging much easier:
 
 - **It does not bundle the workflow.** See `workflows.ts` above.
-- **It does not open the connection.** Connection, TLS and credentials stay in your code.
+- **It does not configure the connection.** Address, TLS and credentials stay in your code; `lazyClient` only opens a connection from the options you pass it.
 - **It does not own storage.** Persistence arrives through the `store` port, so any database works.
 
 ## Entry points
@@ -152,7 +152,7 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 | Import                               | Use it for                                                                                                           |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, the `RUN_WORKFLOW_NAME` and `RESOLVE_NODE_UPDATE_NAME` constants, types |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                                                    |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts; `lazyClient` for a client factory                                 |
 | `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update                          |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
