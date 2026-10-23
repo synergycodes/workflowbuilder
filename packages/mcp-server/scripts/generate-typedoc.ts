@@ -5,9 +5,11 @@ import path from 'node:path';
 import { promisify } from 'node:util';
 
 import { DATA_DIR, MANIFEST_FILE, REPO_ROOT, TYPEDOC_DIR } from '../src/paths.js';
+import { type ExternalTupleValues, inlineConstTupleIndexes } from '../src/symbols/const-tuples.js';
 import { unresolvedTargets } from '../src/symbols/referenced-types.js';
 import { type TypedocReflection, topLevelCount } from '../src/symbols/typedoc-types.js';
 import { TYPEDOC_FLAGS, TYPEDOC_RUNS, type TypedocRun } from '../src/typedoc-runs.js';
+import { createTupleValueReader } from './const-tuple-values.js';
 import { gitHead } from './git-head.js';
 
 const execFileAsync = promisify(execFile);
@@ -60,17 +62,34 @@ async function runReferencedTypedoc(binPath: string, run: TypedocRun, project: T
   }
 }
 
+// After the referenced run, which still needs the original queries to find the files they point into.
+async function inlineTupleIndexes(run: TypedocRun, tupleValues: ExternalTupleValues) {
+  let rewritten = 0;
+  for (const suffix of ['', '.referenced']) {
+    const file = path.resolve(TYPEDOC_DIR, `${run.packageName}${suffix}.json`);
+    const project = JSON.parse(await readFile(file, 'utf8').catch(() => 'null')) as TypedocReflection | null;
+    if (!project) continue;
+    const count = inlineConstTupleIndexes(project, tupleValues);
+    if (count > 0) await writeFile(file, JSON.stringify(project));
+    rewritten += count;
+  }
+  return rewritten;
+}
+
 async function main() {
   await mkdir(TYPEDOC_DIR, { recursive: true });
   const { binPath, version } = await typedocBin();
   const outputs = await Promise.all(TYPEDOC_RUNS.map((run) => runTypedoc(binPath, run)));
+  const tupleValues = createTupleValueReader();
 
   const packages: Record<string, number> = {};
   const versions: Record<string, string> = {};
+  const inlined: Record<string, number> = {};
   for (const [index, run] of TYPEDOC_RUNS.entries()) {
     const project = JSON.parse(await readFile(outputs[index], 'utf8'));
     packages[run.packageName] = topLevelCount(project, run.entryPoints.length > 1);
     await runReferencedTypedoc(binPath, run, project);
+    inlined[run.packageName] = await inlineTupleIndexes(run, tupleValues);
     const packageJson = path.resolve(REPO_ROOT, path.dirname(run.tsconfig), 'package.json');
     versions[run.packageName] = (JSON.parse(await readFile(packageJson, 'utf8')) as { version: string }).version;
   }
@@ -84,7 +103,9 @@ async function main() {
   };
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(MANIFEST_FILE, JSON.stringify(manifest, undefined, 2) + '\n');
-  console.error(`typedoc: ${JSON.stringify(packages)} ${JSON.stringify(versions)} (typedoc ${version})`);
+  console.error(
+    `typedoc: ${JSON.stringify(packages)} ${JSON.stringify(versions)}, tuple types inlined ${JSON.stringify(inlined)} (typedoc ${version})`,
+  );
 }
 
 await main();

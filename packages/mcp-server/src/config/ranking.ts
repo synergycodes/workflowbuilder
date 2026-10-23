@@ -60,6 +60,8 @@ export const ranking: { docs: DocsRanking; symbols: SymbolsRanking } = {
     // A bare "ui" or "sdk" is not listed: such words are also ordinary terms of other packages' symbols.
     packageWords: {
       temporal: 'temporal',
+      // Only the Temporal plugin runs in a worker, yet no export names it. A synonym such as plugin pulls in SDK plugins.
+      worker: 'temporal',
       '@workflowbuilder/ui': 'ui',
       'ui library': 'ui',
       'ui package': 'ui',

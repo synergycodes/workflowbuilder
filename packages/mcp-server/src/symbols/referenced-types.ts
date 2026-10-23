@@ -3,7 +3,7 @@ import type { TypedocExternalTarget, TypedocReflection, TypedocType } from './ty
 // Reflection ids restart at 0 in every TypeDoc run; the offset keeps a merged second run from colliding with the first.
 export const ID_OFFSET = 1_000_000;
 
-function walk(node: unknown, visit: (object: Record<string, unknown>) => void) {
+export function walk(node: unknown, visit: (object: Record<string, unknown>) => void) {
   if (Array.isArray(node)) {
     for (const item of node) walk(item, visit);
     return;
