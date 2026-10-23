@@ -96,9 +96,9 @@ temporal workflow show --workflow-id execution-<id> --output json > histories/<v
 ## Versions and the `v0-` prefix
 
 A `v0-` recording comes from code no release has shipped yet. It guards unreleased changes
-between releases: a change that breaks replay on purpose removes the released sets it no
-longer replays and records a `v0-` set in their place, so every scenario still has a
-recording. Every release records every scenario again under the version it ships, in the
+between releases: a new scenario gets its first recording here, and a change behind
+`patched()` re-records the `v0-` set, which then covers the new path while the released
+sets cover the old one. Every release records every scenario again under the version it ships, in the
 release PR right after `pnpm release:version temporal`:
 
 ```bash
@@ -119,10 +119,9 @@ a recording has to come from the exact code that ships.
 
 **Published recordings**: a red replay is a compatibility break with runs that may be
 sitting in someone's Event History for days. Guard the change with `patched()`, or
-declare a major with a note to drain in-flight runs first; before 1.0 a minor may carry
-that note instead. Do not re-record: that throws away the only evidence of what the
-published version actually did. A release that breaks replay on purpose removes the sets it
-no longer replays in the same change, and its release notes name them.
+declare a major with a note to drain in-flight runs first. `runGraph` reaches `patched()`
+through `VersioningPort`; `wb-running-status-at-start` is the example. Do not re-record:
+that throws away the only evidence of what the published version actually did.
 
 **`v0-` recordings** guard code that has not shipped. A red replay is a design signal: read
 the change first, and if the new command genuinely belongs on that path, re-record the
