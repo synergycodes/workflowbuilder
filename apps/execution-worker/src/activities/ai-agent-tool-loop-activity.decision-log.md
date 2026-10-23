@@ -30,7 +30,7 @@ An Activity retry starts the executor from scratch. Every model call and every s
 
 Worst case per node is therefore eight model generations and eight searches. The loop also has to fit the node profile's `startToCloseTimeout`, 10 minutes by default; a deployment that needs more room declares a profile for `ai-studio/ai-agent` through `createRunWorkflow({ nodeActivityProfiles })` and hands the same map to the plugin.
 
-Failure classification (`provider-error.ts`) applies to the loop as a whole, because `generateText` throws once for the whole cycle: a 401 on the third step is permanent and stops the node; a 429 anywhere in the loop retries the whole node.
+Failure classification (`provider-error.ts`) applies to the loop as a whole, because `generateText` throws once for the whole cycle: a model call that gets a 401 on the third step is permanent and stops the node; a 429 on any model call retries the whole node. A failed search never fails the node: `web-search.ts` hands the error back to the model as the tool result, and the model decides what to do with it.
 
 ## Alternative Options Considered
 
