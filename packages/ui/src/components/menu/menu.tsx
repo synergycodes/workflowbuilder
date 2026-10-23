@@ -2,7 +2,7 @@ import { Menu as MenuBase } from '@base-ui/react/menu';
 import { Separator } from '@ui/components/separator/separator';
 import { ItemSize } from '@ui/shared/types/item-size';
 import clsx from 'clsx';
-import { ReactElement, memo, useState } from 'react';
+import { ReactElement, ReactNode, memo, useState } from 'react';
 
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
 
@@ -58,10 +58,15 @@ export type MenuProps = {
    * `Menu.TriggerButton` renders an icon-only trigger that follows the open state.
    */
   children?: ReactElement;
+  /**
+   * Content rendered inside the popup below the items, outside the radio group.
+   * Use it for a control that belongs to the menu but is not an item.
+   */
+  footer?: ReactNode;
 };
 
 const MenuRoot = memo(
-  ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {
+  ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange, footer }: MenuProps) => {
     const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
     const isOpen = open ?? uncontrolledOpen;
     const { side, align } = placementToSideAlign(placement);
@@ -72,7 +77,7 @@ const MenuRoot = memo(
       item.type === 'separator' ? (
         <Separator key={index} />
       ) : (
-        <MenuItem key={item.id ?? item.label} {...item} radio={hasSelection} size={size} />
+        <MenuItem key={item.id ?? item.label} {...item} radio={item.selected !== undefined} size={size} />
       ),
     );
 
@@ -103,6 +108,7 @@ const MenuRoot = memo(
               ) : (
                 renderedItems
               )}
+              {footer && <div className={listBoxStyles['footer']}>{footer}</div>}
             </MenuBase.Popup>
           </MenuBase.Positioner>
         </MenuBase.Portal>

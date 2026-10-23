@@ -116,7 +116,7 @@ const AREA_CASES: AreaCase[] = [
     container: APP_BAR_CONTROLS,
     builtIn: () => screen.getByRole('button', { name: /Change Language/i }),
     position: 'before',
-    lastBuiltIn: () => screen.getAllByRole('switch').at(-1)!,
+    lastBuiltIn: () => screen.getByRole('button', { name: 'Dark theme' }),
   },
   {
     name: 'PaletteHeaderContent',

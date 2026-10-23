@@ -14,7 +14,7 @@ import borderRadiusStyles from './border-radius-size.module.css';
 import styles from './segment-picker.module.css';
 
 import { Item, type SegmentPickerItemProps } from './item/segment-picker-item';
-import type { SegmentPickerShape } from './types';
+import type { SegmentPickerShape, SegmentPickerVariant } from './types';
 import { SegmentPickerContext } from './utils/context';
 import { getValidShape } from './utils/get-valid-shape';
 
@@ -42,6 +42,8 @@ export type SegmentPickerPropsBase = {
    * @default 'default'
    */
   shape?: SegmentPickerShape;
+  /** @default 'primary' */
+  variant?: SegmentPickerVariant;
   className?: string;
   onChange?: (event: MouseEvent<HTMLButtonElement>, value: string) => void;
 };
@@ -63,7 +65,10 @@ type SegmentPickerComponent = ForwardRefExoticComponent<SegmentPickerProps & Ref
 };
 
 export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
-  ({ children, value, defaultValue, size = 'medium', shape = 'default', className, onChange }, ref) => {
+  (
+    { children, value, defaultValue, size = 'medium', shape = 'default', variant = 'primary', className, onChange },
+    ref,
+  ) => {
     const validShape = getValidShape(shape, children);
     const isControlled = value !== undefined;
     const [internalValue, setInternalValue] = useState<string | undefined>(defaultValue);
@@ -85,10 +90,20 @@ export const SegmentPicker = forwardRef<HTMLDivElement, SegmentPickerProps>(
           onSelect: handleSelect,
           size: NAV_BUTTON_SIZE_BY_SEGMENT_PICKER_SIZE[size],
           shape: validShape,
+          variant,
           navVariant: NAV_BUTTON_VARIANT_BY_SEGMENT_PICKER_SHAPE[validShape],
         }}
       >
-        <div ref={ref} className={clsx(styles['container'], styles[validShape], borderRadiusStyles[size], className)}>
+        <div
+          ref={ref}
+          className={clsx(
+            styles['container'],
+            styles[validShape],
+            styles[variant],
+            borderRadiusStyles[size],
+            className,
+          )}
+        >
           {children}
         </div>
       </SegmentPickerContext.Provider>

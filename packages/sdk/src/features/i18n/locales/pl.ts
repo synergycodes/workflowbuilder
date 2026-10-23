@@ -30,10 +30,33 @@ export const pl = {
     folderName: 'Nazwa folderu',
     projectSelection: {
       rename: 'Zmień nazwę',
+      saveAsPdf: 'Zapisz jako PDF',
+    },
+    version: {
+      draft: 'Wersja robocza v{{number}}',
+      published: 'v{{number}}',
+      publish: 'Opublikuj v{{number}}',
+      publishNoVersion: 'Opublikuj',
+    },
+    cleanUp: {
+      horizontal: 'Uporządkuj (poziomo)',
+      vertical: 'Uporządkuj (pionowo)',
+      diagram: 'Uporządkuj diagram',
+      arrangeHorizontally: 'Ułóż poziomo',
+      arrangeVertically: 'Ułóż pionowo',
+      chooseDirection: 'Wybierz kierunek układu',
     },
     controls: {
       saveAsImage: 'Zapisz jako obraz',
       archive: 'Archiwizuj',
+    },
+    mode: {
+      edit: 'Tryb edycji',
+      readOnly: 'Tryb tylko do odczytu',
+    },
+    theme: {
+      light: 'Motyw jasny',
+      dark: 'Motyw ciemny',
     },
   },
   palette: {

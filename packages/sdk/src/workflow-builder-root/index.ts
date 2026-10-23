@@ -1,6 +1,7 @@
 export { WorkflowBuilderRoot } from './workflow-builder-root';
 export type {
   WorkflowBuilderEdgeTemplates,
+  WorkflowBuilderEditorHeaderOptions,
   WorkflowBuilderIntegration,
   WorkflowBuilderIsValidConnection,
   WorkflowBuilderIsValidConnectionParams,
@@ -11,4 +12,5 @@ export type {
   WorkflowBuilderPlugin,
   WorkflowBuilderReactFlowProps,
   WorkflowBuilderRootProps,
+  WorkflowBuilderVersion,
 } from './workflow-builder-root.types';

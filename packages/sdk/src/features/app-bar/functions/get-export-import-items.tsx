@@ -6,7 +6,7 @@ import { Icon } from '@workflow-builder/icons';
 import { openExportModal } from '../../integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../../integration/components/import-export/import-modal/open-import-modal';
 
-export function getAppBarMenuItems(visible: { export: boolean; import: boolean }): MenuItemProps[] {
+export function getExportImportItems(visible: { export: boolean; import: boolean }): MenuItemProps[] {
   return [
     ...(visible.export
       ? [
