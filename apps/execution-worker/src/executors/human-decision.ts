@@ -1,9 +1,9 @@
 // The completion arrives through POST /api/executions/:id/decision, never through this executor.
 import { type NodeExecutionResult, PermanentNodeExecutionError } from '@workflow-builder/execution-core';
 
-import type { HumanDecisionNode } from '../domain/ai-studio-nodes';
+import type { HumanDecisionNode, ReviewNode } from '../domain/ai-studio-nodes';
 
-export function executeHumanDecision(node: HumanDecisionNode): NodeExecutionResult {
+export function executeHumanDecision(node: HumanDecisionNode | ReviewNode): NodeExecutionResult {
   if (node.decisionRequest === undefined) {
     throw new PermanentNodeExecutionError(
       'decision_request_missing',
