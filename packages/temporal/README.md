@@ -119,13 +119,13 @@ A permanent failure is not retried at all. A transient one retries up to the pro
 ## Client
 
 ```ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
-  // A ready Client, or a factory awaited on first use so process start does not
-  // depend on Temporal being reachable.
-  client: async () => new Client({ connection: await Connection.connect({ address }) }),
+  // A ready Client, or a factory awaited on first use so process start does not depend on
+  // Temporal being reachable. A failed attempt is retried on the next call; lazyClient closes
+  // the connection of each failed attempt, which a factory built on Connection.connect would leak.
+  client: lazyClient({ address }, { namespace }),
 });
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
@@ -144,7 +144,7 @@ The engine and the worker default to the same task queue (`workflow-execution`).
 Three things are deliberately yours, and knowing which they are makes debugging much easier:
 
 - **It does not bundle the workflow.** See `workflows.ts` above.
-- **It does not open the connection.** Connection, TLS and credentials stay in your code.
+- **It does not configure the connection.** Address, TLS and credentials stay in your code; `lazyClient` only opens a connection from the options you pass it.
 - **It does not own storage.** Persistence arrives through the `store` port, so any database works.
 
 ## Entry points
@@ -152,7 +152,7 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 | Import                               | Use it for                                                                                                           |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, the `RUN_WORKFLOW_NAME` and `RESOLVE_NODE_UPDATE_NAME` constants, types |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                                                    |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts; `lazyClient` for a client factory                                 |
 | `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update                          |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
@@ -173,7 +173,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Both are also advisory: a write can land after a cancel, even after the terminal status, so a store must not let either replace a cancel it recorded or a terminal status.
+The run status moves to `running` when the run starts, right after `execution_started` and the start-node check; a graph that fails that check goes straight to `failed`. A run started before 0.3.0 keeps its old sequence and writes `running` only on a resume. While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. That `waiting` and the `running` after it are written once the workflow has started accepting a verdict for the node, so acting on either is never too early. Every `waiting` and `running` write is advisory: it can land after a cancel, even after the terminal status, so a store must not let it replace a cancel it recorded or a terminal status.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
@@ -215,7 +215,7 @@ This package carries two contracts, not one. The API is the ordinary semver surf
 | minor   | additions only           | histories still replay; new behaviour sits behind `patched()`       |
 | major   | breaking changes allowed | replay may break, and the release notes say to drain in-flight runs |
 
-Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions.
+Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions. It holds forward only: a worker rolled back below a version cannot replay the runs that version started, so do not roll back while such runs are open. Each `patched()` id lives in `@workflow-builder/execution-core` as a `PatchId`, with the version it came from; one can go only with a major whose notes ask to drain the runs that predate it.
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
 

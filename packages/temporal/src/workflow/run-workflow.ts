@@ -11,6 +11,7 @@ import {
   condition,
   defineUpdate,
   isCancellation,
+  patched,
   proxyActivities,
   setHandler,
 } from '@temporalio/workflow';
@@ -106,7 +107,7 @@ async function runGraphWith(
   let outcome: RunGraphOutcome;
 
   try {
-    outcome = await runGraph(input, runner, events);
+    outcome = await runGraph(input, runner, events, { isPatched: patched });
   } catch (error) {
     if (isCancellation(error)) {
       // Root scope is cancelled — shield cleanup so these activities aren't
