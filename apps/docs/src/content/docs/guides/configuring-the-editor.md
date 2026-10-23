@@ -168,9 +168,9 @@ Declare both maps at module scope. Recreating them on every render busts ReactFl
 
 ```ts
 type WorkflowBuilderIntegration =
-  | { strategy?: 'localStorage' }
-  | { strategy: 'api'; endpoints: { load: string; save: string } }
-  | { strategy: 'props'; onDataSave: OnSaveExternal };
+  | { strategy?: 'localStorage'; autoSave?: boolean }
+  | { strategy: 'api'; endpoints: { load: string; save: string }; autoSave?: boolean }
+  | { strategy: 'props'; onDataSave: OnSaveExternal; autoSave?: boolean };
 ```
 
 | Strategy       | Initial data                                     | Save target                     | Use when                             |
@@ -178,6 +178,16 @@ type WorkflowBuilderIntegration =
 | `localStorage` | Browser `localStorage['workflowBuilderDiagram']` | Same key in `localStorage`      | Prototyping, demos, default behavior |
 | `api`          | `GET` to `endpoints.load`                        | `POST` JSON to `endpoints.save` | Backend-managed persistence          |
 | `props`        | `initialNodes` / `initialEdges` instance props   | `onDataSave` callback           | Host app manages persistence itself  |
+
+### Automatic saves
+
+With every strategy the editor saves on its own twice: after a change that comes more than 10 seconds after the last successful save, and when the user closes or leaves the page. An automatic save writes only unsaved changes, meaning anything that changed the data the integration receives (nodes, edges, the workflow name, global variables, the layout direction) since the load or the last successful save. Loading, selecting and moving the viewport are not changes, so a tab the user only looked at never writes and cannot overwrite work saved in another tab. A failed save leaves the changes unsaved, and the next automatic save sends them.
+
+`autoSave: false` turns both automatic saves off, for example in a preview or a read-only run view. The Save button and `actions.save()` still write. A change of `autoSave` after mount applies from the next automatic save.
+
+```tsx
+<WorkflowBuilder.Root integration={{ strategy: 'props', onDataSave, autoSave: false }} />
+```
 
 ### `localStorage`
 

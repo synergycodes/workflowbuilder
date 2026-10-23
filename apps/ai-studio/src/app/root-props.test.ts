@@ -34,7 +34,7 @@ describe('rootPropsFor', () => {
   it('opens a run under a short run name, off localStorage, with Save hidden', () => {
     const props = rootPropsFor(executionSource);
 
-    expect(props.integration).toMatchObject({ strategy: 'props' });
+    expect(props.integration).toMatchObject({ strategy: 'props', autoSave: false });
     expect(props.name).toBe('Run 7c9e6679');
     expect(props.builtInControls).toMatchObject({ save: false });
   });

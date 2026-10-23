@@ -2,7 +2,7 @@ import { act, render } from '@testing-library/react';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { resetWorkflowStore } from '../../store/store';
+import { resetWorkflowStore, useStore } from '../../store/store';
 import { WorkflowBuilderRoot } from '../../workflow-builder-root/workflow-builder-root';
 import '../i18n/index';
 
@@ -66,7 +66,7 @@ afterEach(() => {
 });
 
 describe('auto-save before the initial load settled', () => {
-  it('a tab closed while the api load is pending sends nothing; after the load it saves', async () => {
+  it('a tab closed while the api load is pending sends nothing; after the load it saves a change', async () => {
     const { fetchMock, pendingLoads } = stubFetchWithPendingLoad();
     await renderRoot();
 
@@ -74,6 +74,7 @@ describe('auto-save before the initial load settled', () => {
     expect(savesSent(fetchMock)).toHaveLength(0);
 
     await settleLoad(pendingLoads);
+    act(() => useStore.getState().setWorkflowName('Changed'));
     await closeTheTab();
     expect(savesSent(fetchMock)).toHaveLength(1);
   });
@@ -87,6 +88,7 @@ describe('auto-save before the initial load settled', () => {
     const second = stubFetchWithPendingLoad();
     await renderRoot();
 
+    act(() => useStore.getState().setWorkflowName('Changed'));
     await closeTheTab();
     expect(savesSent(second.fetchMock)).toHaveLength(0);
   });

@@ -70,15 +70,21 @@ export type WorkflowBuilderPlugin = () => void;
  * variant applies. `integration` is itself optional — omitting it picks the
  * `localStorage` default.
  *
+ * `autoSave` controls the automatic saves of every variant: the save after a
+ * change that comes more than 10 seconds after the last successful save, and
+ * the save on tab close. Defaults to `true`. They write only
+ * unsaved changes, so an editor that was only looked at never writes. `false`
+ * turns both off; the built-in Save button and `actions.save()` still write.
+ *
  * @category Integration
  */
 export type WorkflowBuilderIntegration =
   /** Default — save to browser localStorage under `'workflowBuilderDiagram'`. Selected when `integration` is omitted entirely or set to `{}`. */
-  | { strategy?: 'localStorage' }
+  | { strategy?: 'localStorage'; autoSave?: boolean }
   /** REST persistence — SDK issues `GET endpoints.load` and `POST endpoints.save` on every save event. */
-  | { strategy: 'api'; endpoints: { load: string; save: string } }
+  | { strategy: 'api'; endpoints: { load: string; save: string }; autoSave?: boolean }
   /** Host-managed — SDK invokes `onDataSave` with the diagram payload on every save event; the host owns where it lands. */
-  | { strategy: 'props'; onDataSave: OnSaveExternal };
+  | { strategy: 'props'; onDataSave: OnSaveExternal; autoSave?: boolean };
 
 /**
  * JsonForms extensions registered with the editor: custom renderers, cell

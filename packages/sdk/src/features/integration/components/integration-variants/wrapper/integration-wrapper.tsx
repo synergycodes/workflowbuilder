@@ -11,11 +11,11 @@ type InitialLoadProps = IntegrationDataFormatOptional & {
   onLoad: (context: WorkflowBuilderLoadContext) => void;
 };
 
-type Props = PropsWithChildren<InitialLoadProps & { onSave: OnSave }>;
+type Props = PropsWithChildren<InitialLoadProps & { onSave: OnSave; autoSave: boolean }>;
 
-export function IntegrationWrapper({ children, onSave, ...initialLoadProps }: Props) {
+export function IntegrationWrapper({ children, onSave, autoSave, ...initialLoadProps }: Props) {
   return (
-    <IntegrationContextWrapper onSave={onSave}>
+    <IntegrationContextWrapper onSave={onSave} autoSave={autoSave}>
       {children}
       <InitialLoad {...initialLoadProps} />
     </IntegrationContextWrapper>

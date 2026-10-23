@@ -141,13 +141,14 @@ export function WorkflowBuilderRoot({
   setReactFlowProps(reactFlowProps ?? null);
   setAppBarBranding({ logo, logoHref });
 
-  const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
+  const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
   return (
     <RuntimeIntegrationWrapper
       strategy={strategy}
       endpoints={endpoints}
       onDataSave={onDataSave}
+      autoSave={autoSave}
       onLoad={onLoad ?? defaultOnLoad}
       name={name}
       layoutDirection={layoutDirection}
