@@ -27,7 +27,7 @@ export interface LoadDocsOptions {
   uiSourceRoot?: string;
   chunking?: ChunkingConfig;
   skipRootDirectories?: readonly string[];
-  // Branch or commit that links into the repo point at; the build passes the commit it snapshots.
+  // Branch or commit that links into the repo point at; the build passes the commit it snapshots, the default is main.
   revision?: string;
   // A page that cannot be loaded is skipped and reported here; the default writes to stderr.
   onWarning?: (message: string) => void;
@@ -61,6 +61,7 @@ export async function loadDocs(options: LoadDocsOptions = {}): Promise<DocsSnaps
   const components = options.uiComponents ?? (await loadUiComponents(options.uiComponentsFile ?? UI_COMPONENTS_FILE));
   const bySlug = new Map(components.map((component) => [component.slug, component]));
   const uiSourceRoot = options.uiSourceRoot ?? UI_SOURCE_ROOT;
+  const linkRevision = options.revision ?? 'main';
 
   const loaded = loadPages({
     root: docsRoot,
@@ -71,7 +72,7 @@ export async function loadDocs(options: LoadDocsOptions = {}): Promise<DocsSnaps
     chunking: options.chunking,
     skipRootDirectories: options.skipRootDirectories,
     onWarning: warn,
-    revision: options.revision,
+    revision: linkRevision,
     cssVariables: (slug) => {
       const component = bySlug.get(slug);
       return component ? readCssVariables(uiSourceRoot, component, components) : undefined;
@@ -81,7 +82,7 @@ export async function loadDocs(options: LoadDocsOptions = {}): Promise<DocsSnaps
   const readmes = loadReadmes({
     sources: options.packageDocs ?? defaultPackageDocs(),
     chunking: options.chunking,
-    revision: options.revision,
+    revision: linkRevision,
     onWarning: warn,
   });
 

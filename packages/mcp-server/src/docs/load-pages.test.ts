@@ -14,7 +14,7 @@ const propsTypes = (slug: string) => {
 };
 
 describe('loadPages', () => {
-  const loaded = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes });
+  const loaded = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes, revision: 'main' });
 
   it('lists pages in sorted path order and skips api, ui-api and underscore files', () => {
     expect(loaded.pages.map((page) => page.id)).toEqual([
@@ -69,7 +69,7 @@ describe('loadPages', () => {
   });
 
   it('is deterministic', () => {
-    const again = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes });
+    const again = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes, revision: 'main' });
     expect(again.chunks.map((item) => item.chunkId)).toEqual(loaded.chunks.map((item) => item.chunkId));
   });
 
@@ -78,6 +78,7 @@ describe('loadPages', () => {
     const result = loadPages({
       root: FIXTURE_MALFORMED_ROOT,
       propsTypes,
+      revision: 'main',
       onWarning: (message) => warnings.push(message),
     });
     expect(result.pages.map((page) => page.id)).toEqual(['good']);
@@ -101,6 +102,7 @@ describe('loadPages', () => {
     const result = loadPages({
       root: FIXTURE_DUPLICATE_ROOT,
       propsTypes,
+      revision: 'main',
       onWarning: (message) => warnings.push(message),
     });
     expect(result.pages.map((page) => page.id)).toEqual(['foo']);
@@ -110,7 +112,7 @@ describe('loadPages', () => {
 
   it('writes skipped pages to stderr by default', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    loadPages({ root: FIXTURE_DUPLICATE_ROOT, propsTypes });
+    loadPages({ root: FIXTURE_DUPLICATE_ROOT, propsTypes, revision: 'main' });
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^wb-docs: skipped foo\/index\.md/));
     spy.mockRestore();
   });
@@ -119,6 +121,7 @@ describe('loadPages', () => {
     const loaded = loadPages({
       root: FIXTURE_DOCS_ROOT,
       propsTypes,
+      revision: 'main',
       cssVariables: (slug) =>
         slug === 'button' ? ['--wb-public-button-color', '--wb-public-button-gap (spacing)'] : undefined,
     });

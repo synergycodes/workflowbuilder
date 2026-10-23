@@ -1,9 +1,11 @@
 import { buildCorpus } from '../src/corpus/build-corpus.js';
 import { callTool, createToolRegistry } from '../src/server.js';
+import { TYPEDOC_RUNS } from '../src/typedoc-runs.js';
 
 const EXPECTED_PAGES = 80;
-const MAX_CORPUS_BUILD_MS = 1000;
-const DOCUMENTED_PACKAGES = ['sdk', 'ui', 'temporal'];
+// Locally 100-200 ms; the headroom is for shared CI runners, where a release runs this too.
+const MAX_CORPUS_BUILD_MS = 3000;
+const DOCUMENTED_PACKAGES = TYPEDOC_RUNS.map((run) => run.packageName);
 
 const failures: string[] = [];
 

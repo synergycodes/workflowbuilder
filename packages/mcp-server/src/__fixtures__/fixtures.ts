@@ -64,8 +64,8 @@ export async function buildFixtureCorpus({
   ...overrides
 }: Partial<BuildCorpusOptions> & Pick<LoadDocsOptions, 'packageDocs'> = {}) {
   return buildCorpus({
-    docs: await loadFixtureDocs({ packageDocs, onWarning: overrides.onWarning }),
     ...FIXTURE_CORPUS_OPTIONS,
     ...overrides,
+    docs: overrides.docs ?? (await loadFixtureDocs({ packageDocs, onWarning: overrides.onWarning })),
   });
 }

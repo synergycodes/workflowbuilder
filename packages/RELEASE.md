@@ -101,7 +101,7 @@ The whole sequence:
    pnpm publish --access public --no-git-checks
    ```
 
-   The tree has to be clean because the mcp build snapshots the files on disk, untracked ones included: a local draft under `apps/docs` would ship. mcp's `prepack` refuses a `dist/` that is missing or was built from another commit. `--no-git-checks` is needed because pnpm expects to publish from `main`. `pnpm publish`, never `npm publish`: only pnpm resolves the `catalog:` and `workspace:` specifiers. This one version carries no provenance attestation; the ones CI publishes will.
+   The tree has to be clean because the mcp build snapshots the files on disk, untracked ones included: a local draft under `apps/docs` would ship. mcp's `prepack` refuses a `dist/` that is missing or was built from another commit, and a tree that is not clean. `--no-git-checks` is needed because pnpm expects to publish from `main`. `pnpm publish`, never `npm publish`: only pnpm resolves the `catalog:` and `workspace:` specifiers. This one version carries no provenance attestation; the ones CI publishes will.
 
 4. **Register the trusted publisher and disallow tokens** for the new package (§ One-time setup, step 2).
 5. **Tag as usual**: `pnpm release:tag <pkg>`. The workflow runs its checks, sees the version already on npm, skips the publish step and creates the GitHub Release from the CHANGELOG. That run proves the tag trigger, the build and the release-notes extraction end to end; the OIDC exchange itself gets its first real run on the next version.

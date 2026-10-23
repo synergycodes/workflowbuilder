@@ -19,8 +19,7 @@ export interface PackageDocsSource {
 interface LoadReadmesOptions {
   sources: readonly PackageDocsSource[];
   chunking?: ChunkingConfig;
-  // Branch or commit the GitHub urls point at; defaults to main.
-  revision?: string;
+  revision: string;
   onWarning?: (message: string) => void;
 }
 
@@ -75,7 +74,7 @@ export function rewriteRelativeLinks(markdown: string, packageName: string, file
 
 export function loadReadmes(options: LoadReadmesOptions): LoadedReadmes {
   const warn = options.onWarning ?? ((message: string) => console.error(`wb-docs: ${message}`));
-  const revision = options.revision ?? 'main';
+  const { revision } = options;
   const pages: DocPage[] = [];
   const sections: DocSection[] = [];
   const chunks: DocChunk[] = [];

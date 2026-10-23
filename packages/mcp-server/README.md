@@ -62,20 +62,21 @@ The build reads the repo and writes everything the server needs to `dist/data`; 
 
 - `docs.json`: the docs pages (`apps/docs/src/content/docs`) and the package READMEs, cleaned and chunked, with GitHub links pinned to the commit it was built from. Cleaning and chunking happen here, so after editing docs or `src/config/chunking.ts`, `src/config/mdx-components.ts` or the loaders in `src/docs/` (`chunk.ts`, `clean-mdx.ts`, `load-*.ts`), run `docs-data` and restart the session.
 - `typedoc/*.json` and `manifest.json`: the public API, the declaration counts and the documented package versions.
+- `build.json`: the commit `tsc` compiled `dist/*.js` from.
 
-The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit.
+The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit, and a working tree with uncommitted or untracked files, since the build would have snapshotted them. `smoke:package` skips the clean-tree check (`WB_MCP_PACK_ALLOW_DIRTY=1`), so it runs on work in progress.
 
 ### Layout
 
-| Path                | Contents                                                                                                                                        |
-| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/config/`       | The tunable surface: ranking, synonyms, response budgets (read at startup), chunking and MDX rules (read by `docs-data`).                       |
-| `src/docs/`         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                                                |
-| `src/symbols/`      | TypeDoc extraction, the type printer and the symbol search engine.                                                                              |
-| `src/corpus/`       | `loadDocs()` reads the repo at build time; `buildCorpus()` indexes `dist/data` and is shared by the server and the smoke test.                  |
-| `src/tools/`        | One folder per tool: `tool.config.ts` (schema and description), validator, handler.                                                             |
-| `src/__fixtures__/` | Small checked-in docs and TypeDoc JSON used by the tests. `pnpm --filter @workflowbuilder/mcp fixtures:update` regenerates the JSON.            |
-| `scripts/`          | `generate-docs-data.ts` and `generate-typedoc.ts` (build steps), `smoke.ts`, `smoke-package.ts`, `check-packed-build.ts`, `update-fixtures.ts`. |
+| Path                | Contents                                                                                                                                                          |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/config/`       | The tunable surface: ranking, synonyms, response budgets (read at startup), chunking and MDX rules (read by `docs-data`).                                         |
+| `src/docs/`         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                                                                  |
+| `src/symbols/`      | TypeDoc extraction, the type printer and the symbol search engine.                                                                                                |
+| `src/corpus/`       | `loadDocs()` reads the repo at build time; `buildCorpus()` indexes `dist/data` and is shared by the server and the smoke test.                                    |
+| `src/tools/`        | One folder per tool: `tool.config.ts` (schema and description), validator, handler.                                                                               |
+| `src/__fixtures__/` | Small checked-in docs and TypeDoc JSON used by the tests. `pnpm --filter @workflowbuilder/mcp fixtures:update` regenerates the JSON.                              |
+| `scripts/`          | `generate-docs-data.ts` and `generate-typedoc.ts` (build steps), `smoke.ts`, `smoke-package.ts`, `check-packed-build.ts`, `stamp-build.ts`, `update-fixtures.ts`. |
 
 Only the modules `src/index.ts` imports are compiled to `dist`. The MDX parsers (`remark-*`, `unified`, `yaml`, `github-slugger`) are devDependencies, so the server must not import anything from `src/corpus/load-docs.ts` or the loaders behind it. `pnpm lint` rejects such an import, and `smoke:package` fails if one gets through.
 

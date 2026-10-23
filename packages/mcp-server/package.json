@@ -40,7 +40,7 @@
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-    "build": "pnpm clean && tsc -p tsconfig.build.json && tsx scripts/generate-docs-data.ts && tsx scripts/generate-typedoc.ts",
+    "build": "pnpm clean && tsc -p tsconfig.build.json && tsx scripts/stamp-build.ts && tsx scripts/generate-docs-data.ts && tsx scripts/generate-typedoc.ts",
     "docs-data": "tsx scripts/generate-docs-data.ts",
     "typedoc": "tsx scripts/generate-typedoc.ts",
     "prepack": "tsx scripts/check-packed-build.ts",

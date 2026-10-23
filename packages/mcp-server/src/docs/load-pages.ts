@@ -15,8 +15,7 @@ interface LoadPagesOptions {
   chunking?: ChunkingConfig;
   skipRootDirectories?: readonly string[];
   cssVariables?: (slug: string) => readonly string[] | undefined;
-  // Branch or commit that links into the repo point at; defaults to main.
-  revision?: string;
+  revision: string;
   // A page that cannot be loaded is skipped and reported here; the default writes to stderr.
   onWarning?: (message: string) => void;
 }

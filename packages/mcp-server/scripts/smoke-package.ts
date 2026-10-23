@@ -19,7 +19,9 @@ const EXPECTED_TOOLS = [GET_DOC_TOOL, GET_SYMBOL_TOOL, SEARCH_DOCS_TOOL, SEARCH_
 function run(command: string, commandArguments: string[], cwd: string) {
   const shell = process.platform === 'win32';
   const quoted = shell ? commandArguments.map((value) => (/\s/.test(value) ? `"${value}"` : value)) : commandArguments;
-  execFileSync(command, quoted, { cwd, stdio: ['ignore', 'ignore', 'inherit'], shell });
+  // The pack runs on work in progress, so prepack skips its clean-tree check (scripts/check-packed-build.ts).
+  const env = { ...process.env, WB_MCP_PACK_ALLOW_DIRTY: '1' };
+  execFileSync(command, quoted, { cwd, env, stdio: ['ignore', 'ignore', 'inherit'], shell });
 }
 
 const failures: string[] = [];
@@ -68,7 +70,12 @@ try {
 } catch (error) {
   failures.push(error instanceof Error ? error.message : String(error));
 } finally {
-  rmSync(directory, { recursive: true, force: true });
+  // On Windows the server outlives the npx shim for a moment and keeps the directory locked.
+  try {
+    rmSync(directory, { recursive: true, force: true, maxRetries: 10, retryDelay: 200 });
+  } catch (error) {
+    console.error(`smoke:package: could not remove ${directory}: ${error instanceof Error ? error.message : error}`);
+  }
 }
 
 for (const failure of failures) console.error(`smoke:package: FAIL ${failure}`);

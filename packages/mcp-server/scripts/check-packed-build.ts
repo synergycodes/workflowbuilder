@@ -1,32 +1,58 @@
-import { existsSync } from 'node:fs';
+import { execFileSync } from 'node:child_process';
+import { existsSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 
-import { buildCorpus } from '../src/corpus/build-corpus.js';
-import { PACKAGE_ROOT } from '../src/paths.js';
+import { BUILD_FILE, DOCS_FILE, MANIFEST_FILE, PACKAGE_ROOT, REPO_ROOT, TYPEDOC_DIR } from '../src/paths.js';
+import { TYPEDOC_RUNS } from '../src/typedoc-runs.js';
 import { gitHead } from './git-head.js';
 
-// Runs as prepack: pack and publish take dist/ as it is on disk, with no build of their own.
-async function problem(): Promise<string | undefined> {
-  if (!existsSync(path.join(PACKAGE_ROOT, 'dist/index.js'))) return 'dist/index.js is missing';
+const REBUILD = 'run `pnpm --filter @workflowbuilder/mcp build` first';
+// smoke:package packs work in progress on purpose; a publish never sets this.
+const ALLOW_DIRTY = 'WB_MCP_PACK_ALLOW_DIRTY';
 
-  const warnings: string[] = [];
-  let corpus: Awaited<ReturnType<typeof buildCorpus>>;
+function stampedRevision(file: string, field: string) {
   try {
-    corpus = await buildCorpus({ onWarning: (message) => warnings.push(message) });
-  } catch (error) {
-    return error instanceof Error ? error.message : String(error);
+    const value = (JSON.parse(readFileSync(file, 'utf8')) as Record<string, unknown>)[field];
+    return typeof value === 'string' ? value : undefined;
+  } catch {
+    return;
   }
-  if (warnings.length > 0) return warnings.join('; ');
-
-  const head = gitHead() ?? 'an unreadable HEAD';
-  const { docsRevision, gitHead: typedocHead } = corpus.stats;
-  if (docsRevision !== head)
-    return `dist/data/docs.json was built at ${docsRevision ?? 'an unknown commit'}, HEAD is ${head}`;
-  if (typedocHead !== head) return `dist/data/typedoc was built at ${typedocHead}, HEAD is ${head}`;
 }
 
-const found = await problem();
+// Runs as prepack: pack and publish take dist/ as it is on disk, with no build of their own.
+function problem(): string | undefined {
+  const required = [
+    path.join(PACKAGE_ROOT, 'dist/index.js'),
+    BUILD_FILE,
+    DOCS_FILE,
+    MANIFEST_FILE,
+    ...TYPEDOC_RUNS.map((run) => path.join(TYPEDOC_DIR, `${run.packageName}.json`)),
+  ];
+  const missing = required.find((file) => !existsSync(file));
+  if (missing) return `${path.relative(PACKAGE_ROOT, missing)} is missing; ${REBUILD}`;
+
+  const head = gitHead();
+  if (!head) return 'git cannot read HEAD';
+  const stamps: [string, string][] = [
+    [BUILD_FILE, 'revision'],
+    [DOCS_FILE, 'revision'],
+    [MANIFEST_FILE, 'gitHead'],
+  ];
+  for (const [file, field] of stamps) {
+    const revision = stampedRevision(file, field);
+    if (revision !== head) {
+      return `${path.relative(PACKAGE_ROOT, file)} was built at ${revision ?? 'an unknown commit'}, HEAD is ${head}; ${REBUILD}`;
+    }
+  }
+
+  if (process.env[ALLOW_DIRTY]) return;
+  // The build snapshots files on disk, untracked ones included, so a dirty tree would ship content HEAD lacks.
+  const status = execFileSync('git', ['status', '--porcelain'], { cwd: REPO_ROOT, encoding: 'utf8' }).trimEnd();
+  if (status) return `the working tree is not clean; commit or remove these, then rebuild:\n${status}`;
+}
+
+const found = problem();
 if (found) {
-  console.error(`prepack: ${found}; run \`pnpm --filter @workflowbuilder/mcp build\` first`);
+  console.error(`prepack: ${found}`);
   process.exitCode = 1;
 }

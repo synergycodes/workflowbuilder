@@ -13,7 +13,7 @@ const propsTypes = (slug: string) => {
 };
 
 function clean(source: string, readPartial: (file: string) => string = () => '') {
-  return cleanDocument(source, '.mdx', { filePath: FILE, readPartial, propsTypes });
+  return cleanDocument(source, '.mdx', { filePath: FILE, readPartial, propsTypes, revision: 'main' });
 }
 
 const readPackageJson = (file: string) => (file.endsWith('package.json') ? '{"engines":{"node":"22.1.0"}}' : '');
@@ -61,6 +61,7 @@ describe('mdx cleaning rules', () => {
       filePath: FILE,
       readPartial: () => '',
       propsTypes,
+      revision: 'main',
       cssVariables: (slug) => (slug === 'button' ? ['--wb-public-a', '--wb-public-b'] : undefined),
     });
     expect(text.trim()).toBe('CSS variables you can override (each name starts with --wb-public-): a, b');
@@ -142,6 +143,7 @@ describe('mdx cleaning rules', () => {
       filePath: FILE,
       readPartial: () => '',
       propsTypes,
+      revision: 'main',
       components: { Callout: { action: 'replace', template: '[callout]' } },
     });
     expect(text.trim()).toBe('[callout]');
@@ -155,6 +157,7 @@ describe('markdown files', () => {
       filePath: FILE,
       readPartial: () => '',
       propsTypes,
+      revision: 'main',
     });
     expect(text).toContain('<div>tag</div>');
     expect(text).toContain('{braces}');

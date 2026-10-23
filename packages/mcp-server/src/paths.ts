@@ -15,3 +15,4 @@ export const DATA_DIR = path.resolve(PACKAGE_ROOT, 'dist/data');
 export const DOCS_FILE = path.resolve(DATA_DIR, 'docs.json');
 export const TYPEDOC_DIR = path.resolve(DATA_DIR, 'typedoc');
 export const MANIFEST_FILE = path.resolve(DATA_DIR, 'manifest.json');
+export const BUILD_FILE = path.resolve(DATA_DIR, 'build.json');
