@@ -13,7 +13,7 @@ export const aiAgentPaletteItem: PaletteItem<AiAgentSchema> = {
   defaultPropertiesData,
   schema,
   uischema,
-  // Lets `{{ nodes.<id>.response }}` references resolve to a real mention instead of a "missing mention" pill.
+  // Lets `{{nodes.<id>.response}}` references resolve to a real mention instead of a "missing mention" pill.
   // Only a plain-text node has `response`; a structured node's fields are not listed here.
   outputSchema: {
     type: 'default',

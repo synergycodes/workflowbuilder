@@ -126,7 +126,7 @@ export async function runGraph<TNode extends BaseNode>(
         // Never reached is a different state from deliberately skipped.
         if (result.abort === true || policy === 'fail') continue;
         // 'continue' and 'errorRoute' absorb the error into nodeOutputs so downstream
-        // nodes can inspect it via the standard `{{ nodes.<id>.output }}` path.
+        // nodes can inspect it via the standard `{{nodes.<id>.output}}` path.
         const errorOutput =
           result.code === undefined
             ? { error: { message: result.message } }

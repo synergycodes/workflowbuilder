@@ -83,7 +83,7 @@ export const VARIABLE_TRIGGER_KEY = 'trigger';
 
 export const VARIABLE_VARIABLES_KEY = 'variables';
 
-/** Mirrors the `VariableReference` union in `./types`; keep both in sync. */
+/** Mirrors the `VariableReference` union in `@workflow-builder/types/variables`; keep both in sync. */
 export const VARIABLE_REFERENCE_KEYS = [
   VARIABLE_GLOBAL_KEY,
   VARIABLE_TRIGGER_KEY,

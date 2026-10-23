@@ -101,6 +101,6 @@ A variant with `variantRule: undefined` always matches — use it for variables 
 
 ## Gotchas
 
-- Variable references are unchanged (`{{nodeId.result.status}}`), so existing diagrams keep working.
+- Variable references are unchanged (`{{nodes.<nodeId>.result.status}}`), so existing diagrams keep working.
 - If a node previously exposed error fields on every handle, moving them to `bySourceHandleType.error` is a behaviour change for downstream nodes on the success path — intended, but check templates.
 - Reference: `apps/demo/src/app/data/nodes/*/schema-output.ts`; `action/action.ts` still carries the old format as a side-by-side example.

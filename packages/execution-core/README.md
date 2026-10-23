@@ -61,7 +61,7 @@ src/
 │   ├── activity-runner.port.ts   # executeNode() via proxyActivities; optional awaitResolution() inside the workflow
 │   └── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
-└── templates/               # Variable/expression interpolation (`{{ nodes.x.output }}`)
+└── templates/               # Variable/expression interpolation (`{{nodes.x.output}}`)
 ```
 
 Concrete executors and node configs live in the worker package that consumes them — see [`apps/execution-worker`](../../apps/execution-worker) for the AI Studio reference setup (`ai-studio/trigger`, `ai-studio/ai-agent`, `ai-studio/decision`) which builds against this core.
