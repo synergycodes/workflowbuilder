@@ -7,7 +7,9 @@ between releases at all.
 
 `replay.test.ts` is the harness. It starts a real Temporal (an in-memory dev server via
 `@temporalio/testing`), runs every scenario in `../fixtures/replay-scenarios.ts`, and then
-does three separate things with what came back:
+does four separate things. The first three read what came back from that run. The fourth
+runs every scenario a second time under a different worker configuration, so the file
+performs two live executions per scenario:
 
 1. **Counts the scheduled activities per type.** One `executeNode` per node that ran, one
    `emitEvent` per emitted event, one `updateStatus` per status write (the terminal one; a
@@ -21,10 +23,19 @@ does three separate things with what came back:
    never made. It goes through `Worker.runReplayHistories`, so one broken history reports
    alongside the others instead of hiding them. It also insists that every scenario has a
    recording and every recording belongs to a scenario; the version prefix is free.
+4. **Runs every scenario again with the workflow cache off** (`maxCachedWorkflows: 0`), so
+   every workflow task replays from the first event instead of resuming, and re-checks
+   the counts from (1) and what the store received. No sticky queue is used at all in
+   this mode, so a side effect that runs on replay shows up as an extra activity or write.
 
-Only (3) survives a change to the runner, which is why (3) is the one that matters at
-review time. (2) passes even on a broken change, because the history it checks was
-recorded by the same broken code.
+(3) is the only check that can catch a break against code that is already deployed, because
+it is the only one comparing the current code to a recording it did not make. (2) cannot:
+the history it replays was recorded by the same code moments earlier.
+
+(4) is not in that bucket. It re-runs the scenario live and checks two of its four
+assertions against hand-written fixture expectations, and it is the only check that
+exercises the uncached path at all. What it cannot see is a cross-version break, since it
+only ever runs the current code.
 
 ## The scenarios
 
@@ -73,7 +84,8 @@ Or from a real run against a local stack, for a scenario the harness cannot stag
 before committing it. The first event carries the `WorkflowExecutionInput`, including the
 `variables` and `global` bags, and a recording from a real run also carries every `executeNode`
 argument set and result, every accepted verdict, every node's `config`, and the text of every
-error. All of it is recorded verbatim. The harness recordings carry only empty bags and a synthetic graph.
+error. All of it is recorded verbatim. The harness recordings carry only empty bags and a
+synthetic graph.
 
 ```bash
 temporal workflow show --workflow-id execution-<id> --output json > histories/<version>-<scenario>.json
@@ -95,10 +107,7 @@ A scenario still worth adding: two nodes parked in one wave, resolved one after 
 
 `v0-` was the pre-release baseline, recorded before the package published its first
 version; those files went with the 0.1.0 release, so a recording that lands under `v0-`
-today means the version variable was forgotten. The one exception is
-`v0-parked-decision.json`, the pre-release recording of the parked path, which has not
-shipped. The release PR that first records `<version>-parked-decision.json` deletes it
-once the new recording replays. Every release records every scenario again under the version
+today means the version variable was forgotten. Every release records every scenario again under the version
 it ships, in the release PR right after `pnpm release:version temporal`:
 
 ```bash
@@ -112,17 +121,10 @@ this way, and rule 2 keeps the earlier ones where they are.
 
 ## What a red cross-version test means
 
-**Published recordings**: since 0.1.0, a red replay is a compatibility break with runs that may be
-sitting in someone's Event History for days. Guard the change with `patched()`, or
-declare a major with a note to drain in-flight runs first. Do not re-record: that throws
+Every committed recording is published, so a red replay is a compatibility break with runs
+that may be sitting in someone's Event History for days. Guard the change with `patched()`,
+or declare a major with a note to drain in-flight runs first. Do not re-record: that throws
 away the only evidence of what the published version actually did.
-
-**The remaining pre-release recording**, `v0-parked-decision.json`, guards a path that has
-not shipped. A red replay is a design signal: read the change first, and if the new command
-genuinely belongs on that path, re-record it with `REPLAY_HISTORY_OVERWRITE=1` and say so
-in the commit message. `patched()` is not needed and no major is due for that unshipped path.
-Follow the replacement rule in [Rules once files live here](#rules-once-files-live-here);
-published-recording rules apply from then on.
 
 ### Reading the change
 
