@@ -22,7 +22,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`            | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
 | `pnpm build`                     | -    | Build the demo app                                                                                       |
 | `pnpm test`                      | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
-| `pnpm check`                     | -    | Lint + typecheck + format + knip                                                                         |
+| `pnpm check`                     | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
 | `pnpm release:version <pkg>`     | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
 | `pnpm release:tag <pkg>`         | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
 

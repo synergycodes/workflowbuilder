@@ -1,4 +1,4 @@
-import { PropertiesPanelFooter } from '@workflowbuilder/sdk';
+import { PropertiesPanelFooterContent } from '@workflowbuilder/sdk';
 import { Button } from '@workflowbuilder/ui';
 import { useState } from 'react';
 
@@ -35,7 +35,7 @@ export function DecisionVerdict({
 
   return (
     <>
-      <PropertiesPanelFooter>
+      <PropertiesPanelFooterContent>
         <div className={styles['verdict']}>
           {message && (
             <p role="alert" className={styles['message']}>
@@ -60,7 +60,7 @@ export function DecisionVerdict({
             </Button>
           </div>
         </div>
-      </PropertiesPanelFooter>
+      </PropertiesPanelFooterContent>
       {reject && (
         <RejectDialog
           reject={reject}

@@ -608,6 +608,21 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(await codeOf(response)).toBe('internal_error');
   });
 
+  // Publish and execute refuse a deadline now; a run started before that still carries one.
+  it('a run stored with a deadline stays decidable, so the publish refusal strands no parked run', async () => {
+    const storedSnapshot = structuredClone(snapshot);
+    const review = storedSnapshot.nodes.find((node) => node.id === 'review-1')?.data.properties as {
+      decisionRequest: Record<string, unknown>;
+    };
+    review.decisionRequest.deadline = { after: '3d', policy: 'reject' };
+    program({ ...waitingExecution, workflowSnapshotJson: storedSnapshot });
+
+    const response = await decide(buildApp(allowAll()), approveBody);
+
+    expect(response.status).toBe(200);
+    expect(engineMock.resolveNode).toHaveBeenCalledTimes(1);
+  });
+
   it('a stored snapshot that no longer parses is a backend fault: 500', async () => {
     program({ ...waitingExecution, workflowSnapshotJson: { nodes: 'broken' } });
     const errorSpy = vi.spyOn(console, 'error').mockImplementation(() => {});

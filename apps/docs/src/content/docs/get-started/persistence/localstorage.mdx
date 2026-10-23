@@ -43,7 +43,7 @@ On first visit, when no data exists in `localStorage`, the editor falls back to 
 
 ## Auto-save on close
 
-Workflow Builder hooks into the browser's `beforeunload` event and triggers a save when the user closes or navigates away from the page. This ensures the diagram is not lost between sessions.
+Workflow Builder hooks into the browser's `beforeunload` event and saves unsaved changes when the user closes or navigates away from the page, so the diagram is not lost between sessions. A tab where nothing changed writes nothing, so it does not overwrite work saved from another tab. `autoSave: false` turns this off; see [Automatic saves](/guides/configuring-the-editor/#automatic-saves).
 
 ## Limitations
 
