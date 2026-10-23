@@ -6,6 +6,6 @@
     "noEmit": false,
     "sourceMap": false
   },
-  "include": ["src"],
-  "exclude": ["**/*.test.ts", "src/__fixtures__"]
+  // Only what the server imports is emitted. The MDX loaders run at build time through tsx and stay out of dist.
+  "include": ["src/index.ts"]
 }

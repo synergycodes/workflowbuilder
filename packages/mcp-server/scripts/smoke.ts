@@ -1,8 +1,9 @@
 import { buildCorpus } from '../src/corpus/build-corpus.js';
 import { callTool, createToolRegistry } from '../src/server.js';
 
-const EXPECTED_PAGES = 79;
-const MAX_CORPUS_BUILD_MS = 3000;
+const EXPECTED_PAGES = 80;
+const MAX_CORPUS_BUILD_MS = 1000;
+const DOCUMENTED_PACKAGES = ['sdk', 'ui', 'temporal'];
 
 const failures: string[] = [];
 
@@ -30,8 +31,12 @@ console.error(
 );
 
 check(stats.pages === EXPECTED_PAGES, `expected ${EXPECTED_PAGES} pages, found ${stats.pages}`);
-check(warnings.length === 0, `${warnings.length} corpus warning(s), a page or TypeDoc file was skipped`);
+check(warnings.length === 0, `${warnings.length} corpus warning(s), the TypeDoc data is inconsistent`);
 check(stats.buildMs < MAX_CORPUS_BUILD_MS, `corpus build took ${stats.buildMs} ms, limit ${MAX_CORPUS_BUILD_MS} ms`);
+check(
+  DOCUMENTED_PACKAGES.every((name) => /^\d+\.\d+\.\d+/.test(stats.versions[name] ?? '')),
+  `the manifest lacks a documented version: ${JSON.stringify(stats.versions)}`,
+);
 
 const symbolSearch = (await call(registry, 'search_symbols', { query: 'WorkflowBuilderRootProps' })) as {
   results: { id: string }[];

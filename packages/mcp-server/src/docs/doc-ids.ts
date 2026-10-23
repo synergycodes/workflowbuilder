@@ -1,5 +1,3 @@
-import GithubSlugger from 'github-slugger';
-
 import { BASE, SITE } from '../config/site.js';
 
 export const INTRO_ANCHOR = '_intro';
@@ -36,11 +34,6 @@ export function sectionId(pageId: string, anchor: string) {
 
 export function chunkId(section: string, index: number) {
   return index === 0 ? section : `${section}~${index + 1}`;
-}
-
-export function createAnchorSlugger() {
-  const slugger = new GithubSlugger();
-  return (headingText: string) => slugger.slug(headingText);
 }
 
 const SITE_ORIGIN = /^https?:\/\/(www\.)?workflowbuilder\.io/i;

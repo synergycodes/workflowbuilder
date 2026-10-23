@@ -222,19 +222,29 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Lint
-        run: pnpm --filter mcp-server lint
+        run: pnpm --filter @workflowbuilder/mcp lint
 
       - name: Typecheck
-        run: pnpm --filter mcp-server typecheck
+        run: pnpm --filter @workflowbuilder/mcp typecheck
 
       - name: Test
-        run: pnpm --filter mcp-server test
+        run: pnpm --filter @workflowbuilder/mcp test
 
       - name: Build
-        run: pnpm --filter mcp-server build
+        run: pnpm --filter @workflowbuilder/mcp build
 
       - name: Smoke test against the real docs and API
-        run: pnpm --filter mcp-server smoke
+        run: pnpm --filter @workflowbuilder/mcp smoke
+
+      - name: Smoke test the packed package outside the repo
+        # Installs the tarball with production dependencies only and starts it through npx, the way
+        # consumers do. Fails when the server imports a build-time module or dist/data is missing.
+        run: pnpm --filter @workflowbuilder/mcp smoke:package
+
+      - name: Verify the published shape
+        # Version pinned so a tool release cannot redden PRs on its own.
+        working-directory: packages/mcp-server
+        run: pnpm dlx publint@0.3.24
 
   deploy-compose:
     name: Deploy compose files parse

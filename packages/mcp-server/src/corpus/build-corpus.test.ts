@@ -2,10 +2,10 @@ import { cpSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 
-import { FIXTURE_DOCS_ROOT, buildFixtureCorpus } from '../__fixtures__/fixtures.js';
-import { buildCorpus } from './build-corpus.js';
+import { FIXTURE_DOCS_ROOT, buildFixtureCorpus, loadFixtureDocs } from '../__fixtures__/fixtures.js';
 
 const TYPEDOC_FIXTURES = path.join(FIXTURE_DOCS_ROOT, '..', 'typedoc');
+const REBUILD_HINT = /pnpm --filter @workflowbuilder\/mcp build/;
 
 describe('buildCorpus data checks', () => {
   let directory: string;
@@ -31,7 +31,8 @@ describe('buildCorpus data checks', () => {
     writeFileSync(path.join(directory, 'alpha.json'), payload);
     const { corpus, warnings } = await build();
     expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toMatch(/^TypeDoc data for alpha .*pnpm --filter mcp-server build/);
+    expect(warnings[0]).toMatch(/^TypeDoc data for alpha /);
+    expect(warnings[0]).toMatch(REBUILD_HINT);
     expect(corpus.symbols.symbols.has('sdk:WidgetProps')).toBe(false);
     expect(corpus.symbols.symbols.has('ui:Button')).toBe(true);
   });
@@ -40,7 +41,8 @@ describe('buildCorpus data checks', () => {
     writeFileSync(path.join(directory, 'alpha.referenced.json'), '{"trunc');
     const { corpus, warnings } = await build();
     expect(warnings).toHaveLength(1);
-    expect(warnings[0]).toMatch(/^TypeDoc data for alpha.referenced .*pnpm --filter mcp-server build/);
+    expect(warnings[0]).toMatch(/^TypeDoc data for alpha.referenced /);
+    expect(warnings[0]).toMatch(REBUILD_HINT);
     expect(corpus.symbols.symbols.has('sdk:WidgetProps')).toBe(true);
   });
 
@@ -55,6 +57,44 @@ describe('buildCorpus data checks', () => {
     const { warnings } = await build('{oops');
     expect(warnings).toEqual([expect.stringContaining('manifest')]);
   });
+
+  it('reports the documented package versions from the manifest', async () => {
+    const { corpus } = await build(JSON.stringify({ versions: { sdk: '3.0.0', ui: '1.0.0', temporal: '0.2.0' } }));
+    expect(corpus.stats.versions).toEqual({ sdk: '3.0.0', ui: '1.0.0', temporal: '0.2.0' });
+  });
+});
+
+describe('buildCorpus docs snapshot', () => {
+  let directory: string;
+  beforeEach(() => {
+    directory = mkdtempSync(path.join(tmpdir(), 'wb-docs-snapshot-'));
+  });
+  afterEach(() => rmSync(directory, { recursive: true, force: true }));
+
+  it('serves a snapshot read from disk like the one loaded in memory', async () => {
+    const docsFile = path.join(directory, 'docs.json');
+    writeFileSync(docsFile, JSON.stringify(await loadFixtureDocs()));
+    const fromDisk = await buildFixtureCorpus({ docs: undefined, docsFile });
+    const inMemory = await buildFixtureCorpus();
+
+    expect(fromDisk.stats.pages).toBe(inMemory.stats.pages);
+    expect(fromDisk.stats.chunks).toBe(inMemory.stats.chunks);
+    const ids = (corpus: typeof inMemory) => corpus.docs.search('button props', 5).map((hit) => hit.chunk.chunkId);
+    expect(ids(fromDisk)).toEqual(ids(inMemory));
+    expect(fromDisk.symbols.symbols.get('ui:Button')?.docs).toEqual(['guides/props']);
+  });
+
+  it('fails with a rebuild hint when the docs data is missing', async () => {
+    await expect(buildFixtureCorpus({ docs: undefined, docsFile: path.join(directory, 'docs.json') })).rejects.toThrow(
+      REBUILD_HINT,
+    );
+  });
+
+  it.each(['{oops', '{}', 'null'])('fails with a rebuild hint on the docs data %s', async (payload) => {
+    const docsFile = path.join(directory, 'docs.json');
+    writeFileSync(docsFile, payload);
+    await expect(buildFixtureCorpus({ docs: undefined, docsFile })).rejects.toThrow(REBUILD_HINT);
+  });
 });
 
 describe('buildCorpus', () => {
@@ -65,6 +105,7 @@ describe('buildCorpus', () => {
     expect(stats.symbols).toBe(symbols.symbols.size);
     expect(stats.members).toBe(symbols.memberCount);
     expect(stats.typedocBuiltAt).toBe('unknown');
+    expect(stats.versions).toEqual({});
   });
 
   it('links ui symbols to the pages whose PropsTable names them', async () => {
@@ -75,15 +116,7 @@ describe('buildCorpus', () => {
   });
 
   it('fails with a rebuild hint when TypeDoc data is missing', async () => {
-    await expect(buildFixtureCorpus({ typedocDirectory: FIXTURE_DOCS_ROOT })).rejects.toThrow(
-      /pnpm --filter mcp-server build/,
-    );
-  });
-
-  it('fails when the docs root is missing', async () => {
-    await expect(buildCorpus({ docsRoot: `${FIXTURE_DOCS_ROOT}-missing`, uiComponents: [] })).rejects.toThrow(
-      /Docs root not found/,
-    );
+    await expect(buildFixtureCorpus({ typedocDirectory: FIXTURE_DOCS_ROOT })).rejects.toThrow(REBUILD_HINT);
   });
 
   it('applies injected ranking and synonyms without an index rebuild path', async () => {

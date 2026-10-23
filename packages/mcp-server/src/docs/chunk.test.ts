@@ -1,4 +1,4 @@
-import { chunkPage } from './chunk.js';
+import { chunkPage, createAnchorSlugger } from './chunk.js';
 
 const base = { pageId: 'guides/page', title: 'Page', description: 'Page description.' };
 const config = { maxChunkTokens: 1000, splitAtH3: true, indexCode: true };
@@ -6,6 +6,19 @@ const config = { maxChunkTokens: 1000, splitAtH3: true, indexCode: true };
 function chunk(markdown: string, overrides: Partial<typeof config> = {}, extra: { badge?: string } = {}) {
   return chunkPage({ ...base, ...extra, markdown }, { ...config, ...overrides });
 }
+
+describe('anchors', () => {
+  it('slugs plain and code headings', () => {
+    const slug = createAnchorSlugger();
+    expect(slug('Props reference')).toBe('props-reference');
+    expect(slug('`registerComponentDecorator`')).toBe('registercomponentdecorator');
+  });
+
+  it('suffixes duplicate headings', () => {
+    const slug = createAnchorSlugger();
+    expect([slug('Same'), slug('Same'), slug('Same')]).toEqual(['same', 'same-1', 'same-2']);
+  });
+});
 
 describe('sections', () => {
   it('treats text before the first H2 as the intro', () => {

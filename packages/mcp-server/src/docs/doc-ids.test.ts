@@ -1,7 +1,6 @@
 import {
   InvalidDocRefError,
   chunkId,
-  createAnchorSlugger,
   normalizeDocRef,
   pageIdFromPath,
   pageUrl,
@@ -37,19 +36,6 @@ describe('page ids and urls', () => {
   it('splits a section id', () => {
     expect(splitSectionId('guides/a#props')).toEqual({ pageId: 'guides/a', anchor: 'props' });
     expect(splitSectionId('guides/a')).toEqual({ pageId: 'guides/a', anchor: undefined });
-  });
-});
-
-describe('anchors', () => {
-  it('slugs plain and code headings', () => {
-    const slug = createAnchorSlugger();
-    expect(slug('Props reference')).toBe('props-reference');
-    expect(slug('`registerComponentDecorator`')).toBe('registercomponentdecorator');
-  });
-
-  it('suffixes duplicate headings', () => {
-    const slug = createAnchorSlugger();
-    expect([slug('Same'), slug('Same'), slug('Same')]).toEqual(['same', 'same-1', 'same-2']);
   });
 });
 

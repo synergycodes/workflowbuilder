@@ -1,18 +1,52 @@
 {
-  "name": "@workflow-builder/mcp-server",
+  "name": "@workflowbuilder/mcp",
   "version": "0.0.0",
-  "private": true,
+  "description": "MCP server that gives AI coding assistants the Workflow Builder docs and the public API of @workflowbuilder/sdk, @workflowbuilder/ui and @workflowbuilder/temporal, bundled for offline search.",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "mcp-server",
+    "ai",
+    "documentation",
+    "workflow",
+    "workflow-builder"
+  ],
+  "author": "Synergy Codes",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/synergycodes/workflowbuilder",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/synergycodes/workflowbuilder.git",
+    "directory": "packages/mcp-server"
+  },
+  "bugs": {
+    "url": "https://github.com/synergycodes/workflowbuilder/issues"
+  },
   "type": "module",
   "bin": {
-    "wb-docs": "./dist/index.js"
+    "workflowbuilder-mcp": "./dist/index.js"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE",
+    "CHANGELOG.md"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "scripts": {
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
-    "build": "pnpm clean && tsc -p tsconfig.build.json && tsx scripts/generate-typedoc.ts",
+    "build": "pnpm clean && tsc -p tsconfig.build.json && tsx scripts/generate-docs-data.ts && tsx scripts/generate-typedoc.ts",
+    "docs-data": "tsx scripts/generate-docs-data.ts",
     "typedoc": "tsx scripts/generate-typedoc.ts",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "smoke": "tsx scripts/smoke.ts",
+    "smoke:package": "tsx scripts/smoke-package.ts",
     "fixtures:update": "tsx scripts/update-fixtures.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
@@ -22,21 +56,21 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.27.1",
-    "github-slugger": "^2.0.0",
-    "mdast-util-to-string": "^4.0.0",
     "minisearch": "^7.2.0",
-    "remark-mdx": "^3.1.1",
-    "remark-parse": "^11.0.0",
-    "unified": "^11.0.5",
-    "yaml": "^2.8.4",
     "zod": "^3.25.76"
   },
   "devDependencies": {
     "@types/mdast": "^4.0.4",
     "@types/node": "^22.12.0",
+    "github-slugger": "^2.0.0",
+    "mdast-util-to-string": "^4.0.0",
+    "remark-mdx": "^3.1.1",
+    "remark-parse": "^11.0.0",
     "tsx": "^4.19.3",
     "typedoc": "^0.28.9",
     "typescript": "~5.6.3",
-    "vitest": "^3.0.4"
+    "unified": "^11.0.5",
+    "vitest": "^3.0.4",
+    "yaml": "^2.8.4"
   }
 }

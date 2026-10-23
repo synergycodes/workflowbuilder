@@ -74,16 +74,25 @@ async function main() {
   const outputs = await Promise.all(TYPEDOC_RUNS.map((run) => runTypedoc(binPath, run)));
 
   const packages: Record<string, number> = {};
+  const versions: Record<string, string> = {};
   for (const [index, run] of TYPEDOC_RUNS.entries()) {
     const project = JSON.parse(await readFile(outputs[index], 'utf8'));
     packages[run.packageName] = topLevelCount(project, run.entryPoints.length > 1);
     await runReferencedTypedoc(binPath, run, project);
+    const packageJson = path.resolve(REPO_ROOT, path.dirname(run.tsconfig), 'package.json');
+    versions[run.packageName] = (JSON.parse(await readFile(packageJson, 'utf8')) as { version: string }).version;
   }
 
-  const manifest = { builtAt: new Date().toISOString(), gitHead: await gitHead(), typedocVersion: version, packages };
+  const manifest = {
+    builtAt: new Date().toISOString(),
+    gitHead: await gitHead(),
+    typedocVersion: version,
+    packages,
+    versions,
+  };
   await mkdir(DATA_DIR, { recursive: true });
   await writeFile(MANIFEST_FILE, JSON.stringify(manifest, undefined, 2) + '\n');
-  console.error(`typedoc: ${JSON.stringify(packages)} (typedoc ${version})`);
+  console.error(`typedoc: ${JSON.stringify(packages)} ${JSON.stringify(versions)} (typedoc ${version})`);
 }
 
 await main();
