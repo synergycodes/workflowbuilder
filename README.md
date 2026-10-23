@@ -107,6 +107,8 @@ Workflow Builder is made by [Synergy Codes](https://www.synergycodes.com/): 15+ 
 
 **In the hosted demo:** open **Templates** in the palette, pick **Refund Review** and press **Run**. The AI drafts a refund, the run stops at the review step, and you decide. The demo is shared and rate-limited.
 
+Want to draw a workflow on the canvas and run it as a durable Temporal Workflow Execution, without Docker? Start with the [Temporal sample](examples/workflow-builder-temporal/).
+
 ### Path A. Embed the SDK
 
 Install the SDK and its peer dependencies from npm. No clone, no Docker.
@@ -172,7 +174,7 @@ const plugin = new WorkflowBuilderPlugin<MyNode>({
 });
 ```
 
-Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Then start runs and, when a person decides, resume the parked step from your service:
+Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Your mapper turns the editor's diagram into the `definition` the plugin runs, see [Run on Temporal](https://www.workflowbuilder.io/docs/guides/use-with-temporal/). Then start runs and, when a person decides, resume the parked step from your service:
 
 ```ts
 import { Client, Connection } from '@temporalio/client';

@@ -39,7 +39,7 @@ Everything that touches nodes is parameterized over `TNode extends BaseNode`. `B
 ```ts
 import type { BaseNode } from '@workflow-builder/types/workflow-execution/execution-model';
 
-type MyNode = { id: string; type: 'my/source' | 'my/transform'; config: { /* … */ } };
+type MyNode = BaseNode & { type: 'my/source' | 'my/transform'; config: { /* … */ } };
 
 const registry: NodeExecutorRegistry<MyNode> = {
   'my/source':    (node, ctx) => /* … */,
