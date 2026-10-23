@@ -1,5 +1,3 @@
-@layer ui.base, ui.component;
-
 @layer ui.base {
   [data-wb-theme] {
     --wb-public-form-label-color: var(--wb-ds-ui-text-subtle-default);
@@ -7,38 +5,36 @@
   }
 }
 
-@layer ui.component {
-  .container {
-    display: flex;
-    gap: 0.25rem;
-    color: var(--wb-public-form-label-color);
-    align-items: center;
+.container {
+  display: flex;
+  gap: 0.25rem;
+  color: var(--wb-public-form-label-color);
+  align-items: center;
 
-    .label {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      width: 100%;
-    }
-
-    svg {
-      width: 0.625rem;
-      height: 0.625rem;
-      min-width: 0.625rem;
-
-      color: var(--wb-public-form-label-asterisk-color);
-    }
+  .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
   }
 
-  .large {
-    composes: wb-text-body-s from global;
-  }
+  svg {
+    width: 0.625rem;
+    height: 0.625rem;
+    min-width: 0.625rem;
 
-  .medium,
-  .small {
-    composes: wb-text-label-s from global;
+    color: var(--wb-public-form-label-asterisk-color);
   }
-  .title {
-    font-weight: 600;
-  }
+}
+
+.large {
+  composes: wb-text-body-s from global;
+}
+
+.medium,
+.small {
+  composes: wb-text-label-s from global;
+}
+.title {
+  font-weight: 600;
 }

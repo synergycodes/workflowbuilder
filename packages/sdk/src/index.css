@@ -1,16 +1,15 @@
-/* The @layer declaration and every @import must precede any rule.
+/* The @layer statement and every @import must precede any rule.
 
-   `ui` is the only top-level layer on purpose: layer order is fixed by first
-   mention anywhere in the document and UI chunk CSS can parse before this
-   file, so a second top-level layer would let load order invert the cascade.
-   See packages/ui/css-layers.md. */
-@layer ui.base, ui.component;
+   `ui.base` is the only layer and holds variable defaults only; everything that
+   paints is unlayered and gets its scope prefix from postcss-scope-prefix. */
+@layer ui.base;
 
 @import '@workflowbuilder/ui/tokens.css';
 
 /* @workflowbuilder/ui styles arrive through the JS module graph - importing
-   its index.css here would bundle every rule twice. */
-@import '@xyflow/react/dist/style.css' layer(ui.base);
+   its index.css here would bundle every rule twice.
+   React Flow is unlayered: the build gives it the weightless vendored prefix, so SDK overrides win. */
+@import '@xyflow/react/dist/style.css';
 
 /* Layered, so an unlayered consumer override wins whatever the load order.
    On [data-wb-theme], not :root, so var(--wb-ds-…) resolves where the themed tokens live. */
@@ -25,45 +24,45 @@
   }
 }
 
-/* Layered, so the UI library's own rules (e.g. `cursor: auto` on a disabled button) still win. */
-@layer ui.base {
-  .workflow-builder-root ::-webkit-scrollbar {
-    width: var(--wb-public-scroll-width);
-  }
-  .workflow-builder-root ::-webkit-scrollbar-track {
-    border-radius: var(--wb-public-scroll-radius);
-    background: var(--wb-public-scroll-track-color);
-  }
-  .workflow-builder-root ::-webkit-scrollbar-thumb {
-    border-radius: var(--wb-public-scroll-radius);
-    background: var(--wb-public-scroll-thumb-color);
-  }
-  .workflow-builder-root input[type='number'],
-  .workflow-builder-root input[type='time'] {
-    -webkit-appearance: textfield;
-    -moz-appearance: textfield;
-    appearance: textfield;
-  }
-  .workflow-builder-root input[type='number']::-webkit-inner-spin-button,
-  .workflow-builder-root input[type='number']::-webkit-outer-spin-button {
-    -webkit-appearance: none;
-  }
-  .workflow-builder-root input[type='time']::-webkit-calendar-picker-indicator {
-    display: none;
-  }
-  .workflow-builder-root button {
-    cursor: pointer;
-  }
-  .react-flow.is-segment-dragged * {
-    cursor: copy;
-  }
-  .workflow-builder-root {
-    *,
-    *::before,
-    *::after {
-      box-sizing: border-box;
-    }
-  }
+/* Named after the scope instead of prefixed, so they stay below every component rule
+   (the UI's disabled-button `cursor: auto` still wins) while beating a host's element resets. */
+.workflow-builder-root ::-webkit-scrollbar {
+  width: var(--wb-public-scroll-width);
+}
+.workflow-builder-root ::-webkit-scrollbar-track {
+  border-radius: var(--wb-public-scroll-radius);
+  background: var(--wb-public-scroll-track-color);
+}
+.workflow-builder-root ::-webkit-scrollbar-thumb {
+  border-radius: var(--wb-public-scroll-radius);
+  background: var(--wb-public-scroll-thumb-color);
+}
+.workflow-builder-root input[type='number'],
+.workflow-builder-root input[type='time'] {
+  -webkit-appearance: textfield;
+  -moz-appearance: textfield;
+  appearance: textfield;
+}
+.workflow-builder-root input[type='number']::-webkit-inner-spin-button,
+.workflow-builder-root input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+}
+.workflow-builder-root input[type='time']::-webkit-calendar-picker-indicator {
+  display: none;
+}
+.workflow-builder-root button {
+  cursor: pointer;
+}
+.react-flow.is-segment-dragged * {
+  cursor: copy;
+}
+
+/* Weightless default: SDK elements and host components rendered inside the editor get border-box,
+   and any rule that sets box-sizing itself wins. */
+:where(.workflow-builder-root) *,
+:where(.workflow-builder-root) *::before,
+:where(.workflow-builder-root) *::after {
+  box-sizing: border-box;
 }
 
 /* Unlayered, so a host reset in a cascade layer (Tailwind base, normalize) cannot resize or recolour the editor box. */
