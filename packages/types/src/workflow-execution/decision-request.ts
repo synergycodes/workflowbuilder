@@ -20,17 +20,17 @@ type DecisionActionBase = {
   label: string;
 };
 
-/** Accepts the proposal, edited or not: the run continues on `port`. Exactly one per request. */
+/** Accepts the proposal, edited or not: the run continues on `port`. One or more per request, each on its own port. */
 export type ResumeDecisionAction = DecisionActionBase & {
   effect: 'resume';
   /** Required: the id of the output handle the run continues on. Never `errorRoute`. */
   port: string;
 };
 
-/** Rejects the proposal: the run continues on `port`. At most one per request. */
+/** Rejects the proposal: the run continues on `port`. At most one per request, and the only action that records an outcome. */
 export type RejectDecisionAction = DecisionActionBase & {
   effect: 'reject';
-  /** Required: the id of the output handle the run continues on. Must differ from the resume port. */
+  /** Required: the id of the output handle the run continues on. No other routed action may share it. */
   port: string;
   /** Whether the decider must give a reason. Defaults to `false`. */
   reasonRequired: boolean;
@@ -92,7 +92,10 @@ export type Decision = {
 export type DecisionRequest = {
   /** Shape version of the request. A future shape change bumps it. */
   version: 1;
-  /** Actions offered to the decider: exactly one `resume`, at most one `reject`, at most one `rerun-source`. */
+  /**
+   * Actions offered to the decider: one or more `resume`, at most one `reject`, at most one
+   * `rerun-source`. Every routed action has its own port.
+   */
   actions: DecisionAction[];
   /**
    * JSON Schema of the decision form. `readOnly: true` marks a field the decider cannot
