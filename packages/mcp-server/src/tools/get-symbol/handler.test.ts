@@ -196,10 +196,16 @@ describe('get_symbol', () => {
     it('does not resolve a prefix for another package', async () => {
       await expect(handler({ name: 'ui:WidgetProps' })).rejects.toThrow('Symbol not found');
     });
+
+    it('accepts the id from search_symbols under the parameter id', async () => {
+      expect(((await handler({ id: 'sdk:WidgetProps' })) as { id: string }).id).toBe('sdk:WidgetProps');
+    });
   });
 
   it.each([
     [{}, 'Name parameter is required'],
+    [{ id: ' ' }, 'cannot be empty'],
+    [{ name: 'sdk:WidgetProps', id: 'sdk:WidgetProps' }, 'Unknown parameter: id'],
     [{ name: ' ' }, 'cannot be empty'],
     [{ name: 'a'.repeat(201) }, 'too long'],
   ])('rejects %j', async (input, message) => {
