@@ -1,0 +1,67 @@
+---
+title: Basic guide
+description: A guide that uses many components.
+sidebar:
+  badge: Enterprise
+---
+
+import { TabItem, Tabs } from '@astrojs/starlight/components';
+
+import Embed from '@/components/embed.astro';
+
+Intro text with `<Tabs>` in inline code and a {frontmatterValue} expression.
+
+<Embed client:visible />
+
+## Install
+
+<Tabs>
+  <TabItem label="npm">
+
+```bash
+npm install thing
+```
+
+  </TabItem>
+  <TabItem label="pnpm">
+
+```bash
+pnpm add thing
+```
+
+  </TabItem>
+</Tabs>
+
+import Late from './late.astro';
+
+## Media
+
+![diagram of nodes](./diagram.png)
+
+<Image src={img} alt="photo alt" />
+
+<VideoCard title="Intro video" url="https://example.test" />
+
+<YoutubeEmbed videoId="abc" />
+
+<EnterpriseNote />
+
+<CssVariablesTable slug="button" />
+
+<Aside type="note">Keep **this** text.</Aside>
+
+```tsx
+<Tabs>
+  <TabItem label="kept">{value}</TabItem>
+</Tabs>
+```
+
+## Duplicate
+
+### Same
+
+First.
+
+### Same
+
+Second.
