@@ -11,7 +11,7 @@ backend route  ──▶  WorkflowEnginePort<TNode>  ──┐
                                                   ├──▶  TemporalWorkflowEngine  ──▶  Temporal
                                                   └──▶  (future) InMemoryEngine, BullMQEngine, …
 
-worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort)
+worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort, VersioningPort?)
                                                   │
                                                   └──▶  consumer's NodeExecutorRegistry<TNode>
 ```
@@ -243,6 +243,7 @@ Authors typing references in the workflow builder UI: see the [variable picker g
 2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalWorkflowEngine` for the new adapter).
 3. Make sure your engine wires `runGraph` (or equivalent traversal) to its activity primitives.
 4. Translate a `{ status: 'failed' }` outcome from `runGraph` into your engine's own failure vocabulary. `runGraph` never throws for node failures — it reports them by return value — so an adapter that ignores the outcome will close failed runs as successful. See `run-workflow.ts` for the Temporal case, which raises `ApplicationFailure.nonRetryable` (only a `TemporalFailure` fails a Workflow Execution; anything else fails the workflow _task_ and retries it forever).
+5. An engine that replays recorded runs passes `runGraph` a `VersioningPort` backed by its own versioning primitive (Temporal: `{ isPatched: patched }` in `run-workflow.ts`). The default answers true for every patch and fits only an engine with no recorded runs.
 
 ## Replay determinism
 

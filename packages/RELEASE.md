@@ -154,7 +154,7 @@ It refuses to run anywhere but a `release-*` branch (hyphenated because the `rel
 VERSION=$(node -p "require('./packages/temporal/package.json').version")
 REPLAY_HISTORY_VERSION=$VERSION UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
 pnpm --filter @workflowbuilder/temporal test
-git rm --ignore-unmatch packages/temporal/test/replay/histories/v0-*.json
+git rm --ignore-unmatch -- 'packages/temporal/test/replay/histories/v0-*.json'
 pnpm --filter @workflowbuilder/temporal test
 ```
 

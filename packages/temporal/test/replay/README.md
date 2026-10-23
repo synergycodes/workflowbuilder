@@ -104,7 +104,7 @@ release PR right after `pnpm release:version temporal`:
 ```bash
 REPLAY_HISTORY_VERSION=<version> UPDATE_REPLAY_HISTORIES=1 pnpm --filter @workflowbuilder/temporal test
 pnpm --filter @workflowbuilder/temporal test
-git rm packages/temporal/test/replay/histories/v0-*.json
+git rm --ignore-unmatch -- 'packages/temporal/test/replay/histories/v0-*.json'
 pnpm --filter @workflowbuilder/temporal test
 ```
 
