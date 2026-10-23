@@ -5,7 +5,7 @@ This catalogue records CSS failure classes that have affected Workflow Builder b
 The checker runs over this package's `dist` and over any extra dist directory passed as an
 argument. Two checks apply only to this package's own output, because this package owns those
 contracts: layer coverage (with the order statement and the known-name check) and the
-`:root`-in-`ui.base` placement of public defaults. A consumer bundle ships its own unlayered
+`[data-wb-theme]`-in-`ui.base` placement of public defaults. A consumer bundle ships its own unlayered
 component CSS and may set a public variable on its own subtree as a scoped override, which is a
 legitimate pattern rather than a mis-scoped default. Every other check applies everywhere.
 
@@ -81,13 +81,33 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 ## Mis-scoped public variable default
 
-**What breaks** - A public default on a component selector can outrank a consumer's `:root` override, so the documented customization appears not to work.
+**What breaks** - A public default on a component selector can outrank a consumer's `.workflow-builder-root` override, so the documented customization appears not to work.
 
 **Why it is silent** - Both declarations and values are valid; selector and layer precedence choose the package default.
 
-**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must target the root element itself, written as either `:root` or `html` and optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer ui.base`. Component rules should consume public variables rather than redefine them. Both root spellings are accepted because they match the same element; the repo writes theme scopes as `html[data-theme='...']`.
+**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must be the theme attribute itself, `[data-wb-theme]` or `[data-wb-theme='light' | 'dark']`, optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer ui.base`. That is the element carrying the themed tokens the default reads, and the element a consumer override on `.workflow-builder-root` targets. Component rules should consume public variables rather than redefine them.
 
 **Automated?** - Yes, for this package's dist only. `Mis-scoped public variable default` validates the selector and nearest layer for every public-property declaration. A consumer bundle setting a public variable on a component subtree is not flagged, so that case still needs a human: ask whether the variable is meant to stay consumer-controllable at that level. The SDK's node templates set `--wb-public-node-gap: 0` this way. Per the maintainer, those templates are starting examples rather than a supported surface, so the scoped override is intended there; the same shape elsewhere would be worth questioning.
+
+## Default on `:root`
+
+**What breaks** - A `--wb-public-*` or `--wb-sdk-*` default declared on `:root` resolves its `var(--wb-ds-…)` value on `<html>`, where the themed tokens do not exist, so the variable is invalid and the component loses that color, radius, or size.
+
+**Why it is silent** - A custom property is resolved on the element that declares it; an unresolvable reference makes it invalid at computed-value time without any error.
+
+**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. The defaults plugin moves top-level variable-only `:root` blocks to `[data-wb-theme]`, but it skips blocks already wrapped in `@layer` and files concatenated without PostCSS (`globals.css`, `typography.css`), so those must be written on `[data-wb-theme]` by hand.
+
+**Automated?** - Yes, in every checked dist. `Default on :root cannot resolve themed tokens` flags any such declaration.
+
+## Design token moved off `:root`
+
+**What breaks** - Primitive and Canvas tokens (`--wb-ds-*` without a theme) leave `:root`, so anything resolving them by inheritance outside the editor root, or before the theme attribute is set, loses its value.
+
+**Why it is silent** - The tokens still exist inside the editor, so most of the UI looks right.
+
+**How to spot it** - Search dist for `--wb-ds-` declarations under a bare `[data-wb-theme]` selector. Themed tokens always carry a value (`[data-wb-theme='light' | 'dark']`); the bare attribute is the defaults plugin's rewrite target, so a token there means the plugin rewrote a token block. The plugin skips any block that declares `--wb-ds-*`.
+
+**Automated?** - Yes, in every checked dist. `Design token moved off :root` flags any such declaration.
 
 ## Broken package export target
 

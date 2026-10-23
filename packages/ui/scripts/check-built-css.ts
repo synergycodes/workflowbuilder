@@ -101,10 +101,11 @@ for (const { path: directory, ownsLayerContract } of directories) {
         (declaration.prop.startsWith('--wb-') &&
           !sanctionedPrefixes.some((prefix) => declaration.prop.startsWith(prefix)));
       if (invalidNamespace) add(file, declaration, 'Unsanctioned variable namespace');
-      // Themed tokens resolve against inherited primitives, so the palette must stay on :root.
+      // Themed tokens sit on [data-wb-theme='light'|'dark']; the bare attribute is the defaults plugin's
+      // rewrite target, so a design token there means primitives or Canvas tokens left :root.
       const parentSelector = declaration.parent?.type === 'rule' ? declaration.parent.selector.trim() : '';
-      if (declaration.prop.startsWith('--wb-ds-colors-') && parentSelector !== ':root') {
-        add(file, declaration, 'Palette primitive off :root');
+      if (declaration.prop.startsWith('--wb-ds-') && parentSelector === '[data-wb-theme]') {
+        add(file, declaration, 'Design token moved off :root');
       }
       // The build plugin skips hand-layered and raw-concatenated blocks, so a default can still reach :root.
       if (/^--wb-(?:public|sdk)-/.test(declaration.prop) && parentSelector.startsWith(':root')) {

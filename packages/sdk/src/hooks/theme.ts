@@ -13,9 +13,15 @@ type ThemeStore = {
 
 type PersistedTheme = Pick<ThemeStore, 'persisted'>;
 
+const DEFAULT_THEME: Theme = 'light';
+
 function isTheme(value: unknown): value is Theme {
   return value === 'dark' || value === 'light';
 }
+
+// persist calls setItem after every setState; writing only when `persisted` differs from what this
+// tab last read or wrote keeps controlled-mode updates from overwriting another tab's choice.
+let lastStored: Theme = DEFAULT_THEME;
 
 // Keeps the bare 'dark' | 'light' string that 3.x stored, so saved themes survive the upgrade.
 // Guarded so a server-side import of the SDK never touches localStorage.
@@ -23,10 +29,13 @@ const themeStorage: PersistStorage<PersistedTheme> = {
   getItem: (name) => {
     if (typeof localStorage === 'undefined') return null;
     const stored = localStorage.getItem(name);
-    return isTheme(stored) ? { state: { persisted: stored } } : null;
+    lastStored = isTheme(stored) ? stored : DEFAULT_THEME;
+    return { state: { persisted: lastStored } };
   },
   setItem: (name, value) => {
-    if (typeof localStorage !== 'undefined') localStorage.setItem(name, value.state.persisted);
+    if (value.state.persisted === lastStored) return;
+    lastStored = value.state.persisted;
+    if (typeof localStorage !== 'undefined') localStorage.setItem(name, lastStored);
   },
   removeItem: (name) => {
     if (typeof localStorage !== 'undefined') localStorage.removeItem(name);
@@ -35,7 +44,7 @@ const themeStorage: PersistStorage<PersistedTheme> = {
 
 // Separate from the workflow store: Root resets that one on every mount.
 export const useThemeStore = create<ThemeStore>()(
-  persist((): ThemeStore => ({ persisted: 'light', controlled: null, onChange: null }), {
+  persist((): ThemeStore => ({ persisted: DEFAULT_THEME, controlled: null, onChange: null }), {
     name: THEME_KEY,
     storage: themeStorage,
     partialize: ({ persisted }) => ({ persisted }),
@@ -70,5 +79,5 @@ export function subscribeTheme(listener: () => void): () => void {
  * Notifies subscribers synchronously, so Root must call it from an effect, never during render.
  */
 export function setControlledTheme(theme: Theme | null, onChange: ((theme: Theme) => void) | null): void {
-  useThemeStore.setState(theme && onChange ? { controlled: theme, onChange } : { controlled: null, onChange: null });
+  useThemeStore.setState(theme ? { controlled: theme, onChange } : { controlled: null, onChange: null });
 }

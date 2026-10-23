@@ -27,7 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
-import { setControlledTheme } from '../hooks/theme';
+import { setControlledTheme, useThemeStore } from '../hooks/theme';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -67,12 +67,16 @@ function makeNode(id: string): WorkflowBuilderNode {
 // Reset before each test (not after): at this point the previous test's
 // renders are already unmounted, so the reset's store update never reaches a
 // still-mounted subscriber outside `act(...)`.
+function htmlAttributes(): string[] {
+  return Array.from(document.documentElement.attributes, ({ name, value }) => `${name}=${value}`);
+}
+
 beforeEach(() => {
   resetWorkflowStore();
   setIsValidConnection(null);
   setReactFlowProps(null);
-  localStorage.clear();
   setControlledTheme(null, null);
+  localStorage.clear();
 });
 
 describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
@@ -140,9 +144,11 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     second.unmount();
   });
 
-  it('never writes the theme to <html> at mount', () => {
-    // The host owns <html>; the SDK keeps its theme on its own elements.
+  it('never writes to <html> at mount', async () => {
+    // The host owns <html>; the SDK keeps its theme and language on its own elements.
     localStorage.setItem('wb-theme', 'dark');
+    await useThemeStore.persist.rehydrate();
+    const htmlAttributesBefore = htmlAttributes();
 
     render(
       <StrictMode>
@@ -150,7 +156,7 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
       </StrictMode>,
     );
 
-    expect(document.documentElement.dataset.theme).toBeUndefined();
+    expect(htmlAttributes()).toEqual(htmlAttributesBefore);
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

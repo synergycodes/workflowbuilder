@@ -34,6 +34,11 @@ function targetsRoot(rule: Rule): boolean {
   return rule.selectors.some((selector) => selector.trim().startsWith(':root'));
 }
 
+// Design tokens (primitives, Canvas) must stay on :root: themed tokens resolve against them by inheritance.
+function declaresDesignTokens(rule: Rule): boolean {
+  return rule.nodes.some((node) => node.type === 'decl' && node.prop.startsWith('--wb-ds-'));
+}
+
 export function isThemeScopedDefaults(rule: Rule): boolean {
   return rule.selectors.every((selector) => THEME_SCOPE_SELECTOR.test(selector.trim())) && isVariableOnlyRule(rule);
 }
@@ -51,7 +56,7 @@ export function layerRootDefaultsPlugin(): Plugin {
           for (const rule of topLevelDefaults) {
             // Grouped or qualified `:root` keeps its selector: rewriting it would drop the
             // qualifier (a dark-only block would apply in light mode).
-            if (rule.selector.trim() === ':root' && isVariableOnlyRule(rule)) {
+            if (rule.selector.trim() === ':root' && isVariableOnlyRule(rule) && !declaresDesignTokens(rule)) {
               rule.selector = THEME_SCOPE;
             }
 

@@ -52,11 +52,16 @@ import '@workflowbuilder/ui/tokens.css';
 
 ### 🎛️ Apply the Theme
 
-To make the styles use proper variables, include data-theme (light or dark) attribute in <html>:
+Wrap the components in an element that carries the `workflow-builder-root` class and the
+`data-wb-theme` attribute (`light` or `dark`). The theme tokens and component defaults are
+declared on that element, so nothing is written to your `<html>`:
 
 ```html
-<html data-theme="light"></html>
+<div class="workflow-builder-root" data-wb-theme="light">…</div>
 ```
+
+Popups (Select, Menu, Tooltip, DatePicker, Modal) render into `document.body` unless you wrap the
+components in `PortalContainerProvider` with a container that carries the same class and attribute.
 
 ### 🧱 Use components
 
@@ -84,10 +89,13 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 `@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
+Override on `.workflow-builder-root`, the element that carries `data-wb-theme`. An override on `:root`
+does not apply, because the defaults are declared on that element itself.
+
 Override a generated design token:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-ds-ui-bg-base: #40ba12;
 }
 ```
@@ -95,7 +103,7 @@ Override a generated design token:
 Or scope a public override to one component:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-date-picker-dropdown-background: #40ba12;
 }
 ```

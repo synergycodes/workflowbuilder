@@ -21,6 +21,11 @@ describe('postcss-layer-root-defaults', () => {
     expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { [data-wb-theme] { --wb-public-x: var(--wb-ds-y) }}');
   });
 
+  it('keeps a design-token :root block on :root (still layered)', async () => {
+    const output = await run(':root { --wb-ds-space-100: 0.5rem }');
+    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { :root { --wb-ds-space-100: 0.5rem }}');
+  });
+
   it('keeps a :root block that sets a non-custom property on :root (still layered)', async () => {
     const output = await run(':root { --a: 1px; color: red }');
     expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { :root { --a: 1px; color: red } }');

@@ -24,10 +24,12 @@ describe('theme module', () => {
   });
 
   it('falls back to "light" for an empty or unrecognized stored value', async () => {
+    useThemeStore.setState({ persisted: 'dark' });
     localStorage.setItem('wb-theme', '');
     await useThemeStore.persist.rehydrate();
     expect(getTheme()).toBe('light');
 
+    useThemeStore.setState({ persisted: 'dark' });
     localStorage.setItem('wb-theme', 'Dark');
     await useThemeStore.persist.rehydrate();
     expect(getTheme()).toBe('light');
@@ -91,6 +93,22 @@ describe('theme module', () => {
     setTheme('dark');
 
     expect(onChange).not.toHaveBeenCalled();
+  });
+
+  it('controlled updates do not write to storage', () => {
+    setControlledTheme('dark', vi.fn());
+    setControlledTheme('light', vi.fn());
+
+    expect(localStorage.getItem('wb-theme')).toBeNull();
+  });
+
+  it('controlled: a theme without onChange pins the value', () => {
+    setControlledTheme('light', null);
+
+    setTheme('dark');
+
+    expect(getTheme()).toBe('light');
+    expect(localStorage.getItem('wb-theme')).not.toBe('dark');
   });
 
   it('controlled: changing the controlled value notifies subscribers', () => {
