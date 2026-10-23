@@ -207,34 +207,36 @@ Lifting the barrier later is an additive engine change: same events, same update
 
 ## What Event History records
 
-Temporal writes every argument you give it into Event History. Replay reads that record back, so nothing can change it later. The record lives while the run is open, then for the namespace's retention period after the run closes.
+Temporal writes every argument you give it into Event History. Replay reads that record back, so nothing can change it later. The record lives while the run is open, then for the namespace's retention period after the run closes. A parked run has no timeout, so it stays open until a verdict, a cancel or a terminate: whatever it recorded stays readable for the whole wait, then for the retention period.
 
 This package hands Temporal:
 
-- The workflow input. It carries the whole graph definition, so every node's `config` is in the record before the first node runs.
+- The workflow input. It carries the whole graph definition, so every node is in the record before the first node runs: its `config`, `label` and `decisionRequest` included.
 - The arguments and the return value of every `executeNode` call. The arguments are the node, `variables`, `global`, `triggerPayload`, and the output of every node that finished before the current wave started.
-- The arguments of every `updateStatus` call, including the `errorMessage` of a failed run.
+- The input of every accepted `resolveNodeUpdate`: the whole `resolution`, including anything a person typed into it. A rejected verdict is not recorded. An accepted one's `output` then travels in every later `executeNode` argument set like any other node output.
+- The arguments of every `updateStatus` call, including the `errorMessage` of a failed run and the `outcome` a verdict declares.
 - The payload of every `emitEvent` call `runGraph` makes. This is the only one that `execution-core` redacts first.
-- The Temporal Summary of every labelled node activity, copied from `node.label`.
+- The Temporal Summary of every labelled node activity, taken from `node.label` and clamped (see [`event-history-labels.md`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/event-history-labels.md)).
 - Every failure: the error's message, type and stack, and the run's own final failure. A classified error also carries a `NodeErrorEnvelope` in `details` and the original error in `cause`.
 
 ### Secrets
 
 **Keep secret values out of everything this package hands Temporal. Only `emitEvent` payloads are redacted; nothing stops a secret anywhere else from reaching Event History.**
 
-Anyone who can open the Temporal UI can read the record. On Temporal Cloud, Temporal stores it on its own infrastructure.
+Without a Payload Codec, anyone who can open the Temporal UI can read the record. On Temporal Cloud, Temporal stores it on its own infrastructure.
 
 **You cannot edit a leaked key out of Event History. You can only delete the whole run, and that leaves whatever your own store holds for it: the event payloads `emitEvent` wrote, the trigger payload, the definition. So rotate the key.**
 
-[`execution-core`](../execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
+[`execution-core`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
 
 Three rules follow:
 
 - **Keep secrets in the worker's own environment.** The reference worker keeps its model key and its search key there.
 - **One secret for the whole installation: capture it at worker start.** An executor is a closure, so capture the value when you build `executors`, as the reference worker does with its keys.
-- **A secret that differs per run or per tenant: capture a resolver, not a value.** A closure built at worker start sees the same value on every call. The executor's second argument is the `ExecutionContext`; key the lookup on `context.executionId` or on a non-secret discriminator your backend puts in `variables`, and resolve the secret inside the executor. Temporal never records what the executor does in its own body. It does record the return value and, for any error, the message, type, stack and `cause`, so keep the secret out of all of them, and out of the node's `config`, which travels in the workflow input.
+- **A secret that differs per run or per tenant: capture a resolver, not a value.** A closure built at worker start sees the same value on every call. The executor's second argument is the `ExecutionContext`; key the lookup on `context.executionId` or on a non-secret discriminator your backend puts in `variables`, and resolve the secret inside the executor. Temporal never records what the executor does in its own body. It does record the return value and, for any error, the message, type, stack and `cause`, so keep the secret out of all of them, and out of the node itself (`config`, `label`, `decisionRequest`), which travels in the workflow input.
+- **A verdict is user input.** Keep secrets out of the decision form, or strip them before the verdict reaches `resolveNode`.
 
-A Payload Codec encrypts payloads before they leave the process. A codec is one part of a data converter, so pass `dataConverter: { payloadCodecs: [codec] }` to `Worker.create`, and the same object to the `Client` you hand `TemporalWorkflowEngine`; nothing in this package stands in the way. The plugin ships no codec of its own (follow-up: temporal-payload-codec).
+A Payload Codec encrypts payloads before they leave the process. A codec is one part of a data converter, so pass `dataConverter: { payloadCodecs: [codec] }` to `Worker.create`, and the same object to the `Client` you hand `TemporalWorkflowEngine`; verdicts go through that `Client` too, so they are covered. A codec leaves failure messages and stacks in plain text unless the same data converter also sets `failureConverter: new DefaultFailureConverter({ encodeCommonAttributes: true })`. The Temporal UI then needs a codec server to show decoded payloads. Nothing in this package stands in the way, and the plugin ships no codec of its own (follow-up: temporal-payload-codec).
 
 ### Payload size and the history budget
 
@@ -242,16 +244,18 @@ Two [server defaults](https://docs.temporal.io/references/dynamic-configuration)
 
 | What                                                                  | Warns at | Fails at | Dynamic config        |
 | --------------------------------------------------------------------- | -------- | -------- | --------------------- |
-| One payload set: an activity's input or result, or the workflow input | 512 KB   | 2 MB     | `limit.blobSize.*`    |
-| Event History size, per run                                           | 10 MB    | 50 MB    | `limit.historySize.*` |
+| One payload set: an activity's input or result, or the workflow input | 512 KiB  | 2 MiB    | `limit.blobSize.*`    |
+| Event History size, per run                                           | 10 MiB   | 50 MiB   | `limit.historySize.*` |
 
-A third default, `limit.historyCount.*`, caps a run at 10,240 events (warn) and 51,200 (fail). A chain costs about 18 events per node, so the size limits bind first unless node outputs are tiny. The continue-as-new suggestion Temporal raises at 4 MB or 4,096 events is inert here: this package never calls `continueAsNew`.
+A third default, `limit.historyCount.*`, caps a run at 10,240 events (warn) and 51,200 (fail). An executed node costs about 18 events, a parked one about 40 and a skipped one 6, so the size limits bind first unless node outputs are tiny. The continue-as-new suggestion Temporal raises at 4 MiB or 4,096 events is inert here: this package never calls `continueAsNew`.
 
 Which limit you reach first depends on the size of your node outputs. `runGraph` gives every node the output of every node that finished before the current wave started, not only the output of its direct predecessors. So node 2 receives one output, node 3 receives two, and so on.
 
-Take a chain of N nodes each returning S bytes. The run writes about N(N+3)S ÷ 2 bytes into history. N(N−1)S ÷ 2 of that is `executeNode` arguments. The remaining 2NS is each output written twice more, once as the activity's result and once in its `node_completed` payload. Above about 45 KB per output the arguments reach 2 MB before history reaches 50 MB. Below that size, history goes first. Every call also carries `triggerPayload`, `variables`, `global` and the node itself regardless of S, and a large trigger payload is the usual reason that matters.
+Take a chain of N nodes each returning S bytes. The run writes about N(N+3)S ÷ 2 bytes into history. N(N−1)S ÷ 2 of that is `executeNode` arguments. The remaining 2NS is each output written twice more, once as the activity's result and once in its `node_completed` payload. Above about 45 KiB per output the arguments reach 2 MiB before history reaches 50 MiB. Below that size, history goes first. Every call also carries `triggerPayload`, `variables`, `global` and the node itself regardless of S, and a large trigger payload is the usual reason that matters. A verdict's `output` counts as that node's S: it is recorded once in the Update instead of as an activity result, then repeated in every later argument set.
 
-At 100 KB per output, the `executeNode` arguments pass 512 KB at node 7. History passes 10 MB at node 13. The arguments pass 2 MB at node 22.
+At 100 KiB per output, the `executeNode` arguments pass 512 KiB at node 7. History passes 10 MiB at node 13. The arguments pass 2 MiB at node 22.
+
+A chain is the gentle case. A wave of W parallel nodes schedules all W in one Workflow Task completion, and each carries the full snapshot, so the completion holds W copies of it. That completion has its own size cap (`workflow_task_completion_size_limit_error` in the namespace limits), and a wide fan-out after a deep prefix can reach it before any single payload does.
 
 What an oversize payload does depends on which one it is. The worker checks each outbound payload before sending it. Over the warn threshold it logs `[TMPRL1103]` at `WARN` and sends anyway. Over the error limit it logs at `ERROR` and fails the task instead. The error limit comes from the namespace. The warn threshold does not. It is the worker's own 512 KiB default, and only `NativeConnectionOptions.payloadLimits` moves it, not `limit.blobSize.warn`. That option is experimental, so expect it to change.
 
