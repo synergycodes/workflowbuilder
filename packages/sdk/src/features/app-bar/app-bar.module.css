@@ -97,10 +97,10 @@
   display: none;
 }
 
-html[data-theme='dark'] .logo-image--light {
+[data-wb-theme='dark'] .logo-image--light {
   display: none;
 }
 
-html[data-theme='dark'] .logo-image--dark {
+[data-wb-theme='dark'] .logo-image--dark {
   display: block;
 }

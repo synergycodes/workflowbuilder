@@ -29,7 +29,7 @@
   --wb-sdk-background-color: var(--wb-ds-colors-acc5-500-10);
 }
 
-html[data-theme='dark'] .container--warning {
+[data-wb-theme='dark'] .container--warning {
   --wb-sdk-color: var(--wb-ds-colors-acc5-200);
 }
 

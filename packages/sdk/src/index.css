@@ -25,52 +25,59 @@
   }
 }
 
+/* Layered, so the UI library's own rules (e.g. `cursor: auto` on a disabled button) still win. */
 @layer ui.base {
-  ::-webkit-scrollbar {
+  .workflow-builder-root ::-webkit-scrollbar {
     width: var(--wb-public-scroll-width);
   }
-  ::-webkit-scrollbar-track {
+  .workflow-builder-root ::-webkit-scrollbar-track {
     border-radius: var(--wb-public-scroll-radius);
     background: var(--wb-public-scroll-track-color);
   }
-  ::-webkit-scrollbar-thumb {
+  .workflow-builder-root ::-webkit-scrollbar-thumb {
     border-radius: var(--wb-public-scroll-radius);
     background: var(--wb-public-scroll-thumb-color);
   }
-  input[type='number'],
-  input[type='time'] {
+  .workflow-builder-root input[type='number'],
+  .workflow-builder-root input[type='time'] {
     -webkit-appearance: textfield;
     -moz-appearance: textfield;
     appearance: textfield;
   }
-  input[type='number']::-webkit-inner-spin-button,
-  input[type='number']::-webkit-outer-spin-button {
+  .workflow-builder-root input[type='number']::-webkit-inner-spin-button,
+  .workflow-builder-root input[type='number']::-webkit-outer-spin-button {
     -webkit-appearance: none;
   }
-  input[type='time']::-webkit-calendar-picker-indicator {
+  .workflow-builder-root input[type='time']::-webkit-calendar-picker-indicator {
     display: none;
   }
-  body {
-    margin: 0;
-    background-color: var(--wb-public-background-color);
-    overflow: hidden;
-  }
-  button {
+  .workflow-builder-root button {
     cursor: pointer;
   }
   .react-flow.is-segment-dragged * {
     cursor: copy;
   }
   .workflow-builder-root {
-    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
-
     *,
     *::before,
     *::after {
       box-sizing: border-box;
     }
   }
-  .workflow-builder-root-shell {
-    display: contents;
-  }
+}
+
+/* Unlayered, so a host reset in a cascade layer (Tailwind base, normalize) cannot resize or recolour the editor box. */
+.workflow-builder-root {
+  color: var(--wb-ds-ui-text-default);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  font-size: 1rem;
+  line-height: normal;
+}
+
+.workflow-builder-root-shell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background-color: var(--wb-public-background-color);
 }

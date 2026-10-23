@@ -53,6 +53,6 @@
   }
 }
 
-html[data-theme='dark'] {
+[data-wb-theme='dark'] {
   --wb-sdk-branch-card-chip-color: var(--wb-ds-colors-acc2-300);
 }

@@ -23,7 +23,7 @@ export function useFitView() {
   const fitView = useCallback(() => {
     requestAnimationFrame(() => {
       const scale = reactFlowInstance?.getZoom() ?? 1;
-      const padding = getPadding(scale);
+      const padding = getPadding(scale, document.querySelector<HTMLElement>('.react-flow'));
 
       if (reactFlowInstance) {
         reactFlowInstance.fitView({
@@ -38,18 +38,17 @@ export function useFitView() {
   return fitView;
 }
 
-function getPadding(scale: number) {
-  const viewportBounds = document.querySelector('#viewport-bounds');
-  const viewportRect = viewportBounds?.getBoundingClientRect();
+export function getPadding(scale: number, canvas: HTMLElement | null): FitViewOptions['padding'] {
+  const viewportRect = document.querySelector('#viewport-bounds')?.getBoundingClientRect();
+  const canvasRect = canvas?.getBoundingClientRect();
 
-  const padding: FitViewOptions['padding'] = viewportRect
-    ? {
-        left: `${viewportRect.left + FIT_VIEW_BASE_PADDING * scale}px`,
-        top: `${viewportRect.top + FIT_VIEW_BASE_PADDING * scale}px`,
-        right: `${window.innerWidth - viewportRect.right + FIT_VIEW_BASE_PADDING * scale}px`,
-        bottom: `${window.innerHeight - viewportRect.bottom + FIT_VIEW_BASE_PADDING * scale}px`,
-      }
-    : `${FIT_VIEW_BASE_PADDING}px`;
+  if (!viewportRect || !canvasRect) return `${FIT_VIEW_BASE_PADDING}px`;
 
-  return padding;
+  const basePadding = FIT_VIEW_BASE_PADDING * scale;
+  return {
+    left: `${viewportRect.left - canvasRect.left + basePadding}px`,
+    top: `${viewportRect.top - canvasRect.top + basePadding}px`,
+    right: `${canvasRect.right - viewportRect.right + basePadding}px`,
+    bottom: `${canvasRect.bottom - viewportRect.bottom + basePadding}px`,
+  };
 }
