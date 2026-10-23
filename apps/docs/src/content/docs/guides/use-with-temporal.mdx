@@ -210,7 +210,7 @@ export type MyNode = TriggerNode | ActionNode | DecisionNode;
 
 ### Map the diagram
 
-The plugin does not read the editor's diagram format, so a mapper turns nodes and edges into a `WorkflowDefinition`, a plain graph of nodes and edges with nothing Temporal-specific in it. It follows three rules. `type` must match an executor key, `label` becomes the node's Summary in Event History, and exactly one node has `role: 'start'`.
+The plugin does not read the editor's diagram format, so a mapper turns nodes and edges into a `WorkflowDefinition`, a plain graph of nodes and edges with nothing Temporal-specific in it. It follows three rules. `type` must match an executor key, `label` becomes the node's Summary in Event History, and exactly one node has `role: 'start'`. The graph must not contain loops. A run whose graph has one fails as stalled, so check for loops in the mapper if the editor allows them.
 
 | From the editor                                | To the definition                       |
 | ---------------------------------------------- | --------------------------------------- |
