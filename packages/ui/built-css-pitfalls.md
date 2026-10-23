@@ -3,11 +3,10 @@
 This catalogue records CSS failure classes that have affected Workflow Builder builds. The labels under **Automated?** match `scripts/check-built-css.ts`, package scripts, or focused tests. Adding, removing, or weakening a check requires updating its section here in the same change.
 
 The checker runs over this package's `dist` and over any extra dist directory passed as an
-argument. Two checks apply only to this package's own output, because this package owns those
-contracts: layer coverage (with the order statement and the known-name check) and the
-`[data-wb-theme]`-in-`ui.base` placement of public defaults. A consumer bundle ships its own unlayered
-component CSS and may set a public variable on its own subtree as a scoped override, which is a
-legitimate pattern rather than a mis-scoped default. Every other check applies everywhere.
+argument (the SDK passes its own). The prefix and layer contract applies to both, because the SDK
+build runs the same `postcss-scope-prefix` plugin. Only the `[data-wb-theme]`-in-`ui.base` placement
+of public defaults is this package's alone: a consumer bundle may set a public variable on its own
+subtree as a scoped override, which is a legitimate pattern rather than a mis-scoped default.
 
 ## Malformed `var()` argument
 
@@ -19,19 +18,29 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 **Automated?** - Yes. `Malformed var() argument` walks declaration values in every checked dist stylesheet.
 
-## Unlayered built CSS
+## Unprefixed built CSS
 
-**What breaks** - A package rule unexpectedly beats layered UI rules regardless of specificity, so consumer overrides or component states stop winning.
+**What breaks** - A rule without the scope prefix is too weak to beat a host page's unlayered resets (Bootstrap's `button`, `.app button`), so the host restyles editor controls, and it can match host elements outside the editor.
 
-**Why it is silent** - The stylesheet is valid; cascade origin and layer precedence produce the wrong winner without a parse error.
+**Why it is silent** - The stylesheet is valid; the host rule simply wins on specificity.
 
-**How to spot it** - Parse dist CSS and inspect root-level rules and at-rules. Only `@layer` blocks and statement-form `@layer` declarations should be direct root children. A statement-form declaration is harmless here because the leading-order check guarantees the canonical order comes first; a stylesheet whose rules only `composes` global roles produces one, since the composed bodies end up empty. See `css-layers.md` for the package contract.
+**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), be a variable-only `:root` / `[data-wb-theme…]` block, or target the editor box itself (`.workflow-builder-root…`). `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from `postcss-scope-prefix.mts`, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
 
-**Automated?** - Yes, for this package's dist only. `Unlayered built CSS` checks direct PostCSS children.
+**Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
+
+## Painting rule inside `@layer`
+
+**What breaks** - A styling rule inside `@layer ui.base` loses to every unlayered host rule regardless of specificity, so a host reset restyles the editor again.
+
+**Why it is silent** - Layer precedence picks the winner without any error.
+
+**How to spot it** - `@layer ui.base` should hold only variable-only rules and `@font-face`. The layer exists so a consumer's `.workflow-builder-root { --wb-public-… }` override beats the shipped defaults; anything that paints belongs outside it, prefixed.
+
+**Automated?** - Yes, in every checked dist. `Painting rule inside @layer` checks every rule inside a layer block, also inside `@media` / `@supports`.
 
 ## Missing leading layer order
 
-**What breaks** - If a component stylesheet names a layer before the canonical order statement, whichever file loads first can establish the wrong order and let `ui.base` beat `ui.component`.
+**What breaks** - Layers registered later outrank earlier ones. If `ui.base` is first named after a consumer's own layers, the shipped variable defaults beat the consumer's layered overrides.
 
 **Why it is silent** - Later order statements remain valid but cannot change the order fixed by the first layer name the browser encountered.
 
@@ -41,7 +50,7 @@ legitimate pattern rather than a mis-scoped default. Every other check applies e
 
 ## Unknown layer name
 
-**What breaks** - A typo such as `ui.components` creates a new layer after the declared order, so it silently wins over the intended layers.
+**What breaks** - A typo such as `ui.bases`, or a leftover `ui.component`, creates a new layer after `ui.base`, so its rules silently outrank the shipped defaults while still losing, being layered, to every unlayered host reset.
 
 **Why it is silent** - CSS permits new layer names at any time and appends them to the existing order.
 
