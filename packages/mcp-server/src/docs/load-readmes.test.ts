@@ -47,6 +47,17 @@ describe('loadReadmes', () => {
     expect(content).toContain('[kept as is](./inside-fence.md)');
   });
 
+  it('points every GitHub url at the given revision', () => {
+    const pinned = loadReadmes({ sources, revision: 'abc123' });
+    const sdk = pinned.pages[0];
+    expect(sdk.url).toBe('https://github.com/synergycodes/workflowbuilder/blob/abc123/packages/sdk/README.md');
+    expect(sdk.content).toContain(
+      '(https://github.com/synergycodes/workflowbuilder/blob/abc123/packages/ui/README.md)',
+    );
+    expect(sdk.content).not.toContain('/main/');
+    expect(normalizeDocRef(`${sdk.url}#install`)).toBe('readme/sdk#install');
+  });
+
   it('warns and continues when a package has no manifest', () => {
     const warnings: string[] = [];
     const result = loadReadmes({

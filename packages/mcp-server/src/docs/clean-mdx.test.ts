@@ -73,9 +73,9 @@ describe('mdx cleaning rules', () => {
     expect(text).not.toContain('<Tab');
   });
 
-  it('replaces NodeDocumentation with the source line', () => {
+  it('replaces NodeDocumentation with a GitHub link to the demo source', () => {
     expect(clean('<NodeDocumentation node="action" />\n').text.trim()).toBe(
-      'Node definition source: apps/demo/src/app/data/nodes/action/ (schema.ts, uischema.ts)',
+      'Node definition source: https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes/action/ (schema.ts, uischema.ts)',
     );
   });
 

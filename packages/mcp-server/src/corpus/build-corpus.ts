@@ -32,10 +32,18 @@ export const PACKAGES: readonly PackageSource[] = [
 export interface DocsSnapshot extends DocsData {
   // UI symbol name -> the pages whose PropsTable documents it.
   docsBySymbolName: Record<string, string[]>;
+  // The commit GitHub links in the snapshot point at.
+  revision?: string;
+}
+
+// Bump when the shape of DocPage, DocSection or DocChunk changes, so a server never reads an older snapshot.
+export const DOCS_FORMAT = 1;
+
+export function serializeDocs(snapshot: DocsSnapshot) {
+  return JSON.stringify({ format: DOCS_FORMAT, ...snapshot });
 }
 
 export interface BuildCorpusOptions {
-  // Defaults to the snapshot read from docsFile.
   docs?: DocsSnapshot;
   docsFile?: string;
   typedocDirectory?: string;
@@ -65,20 +73,31 @@ export interface Corpus {
   stats: CorpusStats;
 }
 
-const REBUILD_HINT = 'run `pnpm --filter @workflowbuilder/mcp build`';
+const REBUILD_HINT =
+  'reinstall @workflowbuilder/mcp (in the workflowbuilder repo: run `pnpm --filter @workflowbuilder/mcp build`)';
 const EMPTY_PROJECT: TypedocReflection = { id: 0, name: '', kind: 1, children: [] };
 
 function readDocs(file: string): DocsSnapshot {
   if (!existsSync(file)) throw new Error(`Missing docs data ${file}; ${REBUILD_HINT}`);
-  let parsed: Partial<DocsSnapshot> | null;
+  let parsed: (Partial<DocsSnapshot> & { format?: unknown }) | null;
   try {
-    parsed = JSON.parse(readFileSync(file, 'utf8')) as Partial<DocsSnapshot> | null;
+    parsed = JSON.parse(readFileSync(file, 'utf8')) as (Partial<DocsSnapshot> & { format?: unknown }) | null;
   } catch (error) {
     throw new Error(
       `Docs data ${file} is not valid JSON (${error instanceof Error ? error.message : error}); ${REBUILD_HINT}`,
     );
   }
-  if (!parsed || !Array.isArray(parsed.pages) || !Array.isArray(parsed.sections) || !Array.isArray(parsed.chunks)) {
+  if (parsed?.format !== DOCS_FORMAT) {
+    throw new Error(
+      `Docs data ${file} is format ${String(parsed?.format)}, this server reads ${DOCS_FORMAT}; ${REBUILD_HINT}`,
+    );
+  }
+  if (
+    !Array.isArray(parsed.pages) ||
+    parsed.pages.length === 0 ||
+    !Array.isArray(parsed.sections) ||
+    !Array.isArray(parsed.chunks)
+  ) {
     throw new Error(`Docs data ${file} has no pages; ${REBUILD_HINT}`);
   }
   return {
@@ -86,6 +105,7 @@ function readDocs(file: string): DocsSnapshot {
     sections: parsed.sections,
     chunks: parsed.chunks,
     docsBySymbolName: parsed.docsBySymbolName ?? {},
+    revision: parsed.revision,
   };
 }
 

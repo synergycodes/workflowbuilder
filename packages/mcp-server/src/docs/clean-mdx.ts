@@ -4,6 +4,7 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import { type MdxRule, mdxComponents as defaultComponents } from '../config/mdx-components.js';
+import { githubUrl } from './doc-ids.js';
 import { CSS_VARIABLES_LABEL, CSS_VARIABLE_PREFIX } from './generated-content.js';
 
 interface Position {
@@ -34,6 +35,8 @@ interface CleanContext {
   // CSS variable names of a documented component; undefined when the component is unknown.
   cssVariables?: (slug: string) => readonly string[] | undefined;
   components?: Record<string, MdxRule>;
+  // Branch or commit that links into the repo point at; defaults to main.
+  revision?: string;
   depth?: number;
 }
 
@@ -212,7 +215,9 @@ function collectEdits(source: string, tree: AstNode, context: CleanContext, slug
       const name = attribute(node, 'node');
       unwrap(
         node,
-        name ? `Node definition source: ${NODE_SOURCE_DIRECTORY}/${name}/ (schema.ts, uischema.ts)\n\n` : '',
+        name
+          ? `Node definition source: ${githubUrl('tree', context.revision ?? 'main', `${NODE_SOURCE_DIRECTORY}/${name}`)}/ (schema.ts, uischema.ts)\n\n`
+          : '',
       );
       return;
     }

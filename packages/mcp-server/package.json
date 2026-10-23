@@ -43,6 +43,7 @@
     "build": "pnpm clean && tsc -p tsconfig.build.json && tsx scripts/generate-docs-data.ts && tsx scripts/generate-typedoc.ts",
     "docs-data": "tsx scripts/generate-docs-data.ts",
     "typedoc": "tsx scripts/generate-typedoc.ts",
+    "prepack": "tsx scripts/check-packed-build.ts",
     "start": "node dist/index.js",
     "dev": "tsx src/index.ts",
     "smoke": "tsx scripts/smoke.ts",

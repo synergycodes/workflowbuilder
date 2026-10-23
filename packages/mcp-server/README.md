@@ -2,7 +2,7 @@
 
 An [MCP](https://modelcontextprotocol.io) server that gives your AI coding assistant the [Workflow Builder](https://www.workflowbuilder.io) docs and the public API of `@workflowbuilder/sdk`, `@workflowbuilder/ui` and `@workflowbuilder/temporal`. The assistant searches the docs and looks up real signatures before it writes code, instead of guessing.
 
-Docs and API data are bundled in the package: no account, no API key, no network calls once it is installed. Requires Node.js 20 or newer.
+Docs and API data are bundled in the package: no account, no API key, and the server makes no network calls. Requires Node.js 20 or newer.
 
 ## Quick start
 
@@ -12,7 +12,7 @@ Claude Code:
 claude mcp add --scope project workflowbuilder-docs -- npx -y @workflowbuilder/mcp
 ```
 
-Cursor (`.cursor/mcp.json`), Claude Desktop (`claude_desktop_config.json`) and other clients that use the `mcpServers` format:
+Claude Desktop (`claude_desktop_config.json`) and other clients that use the `mcpServers` format:
 
 ```json
 {
@@ -25,9 +25,9 @@ Cursor (`.cursor/mcp.json`), Claude Desktop (`claude_desktop_config.json`) and o
 }
 ```
 
-VS Code (`.vscode/mcp.json`) names the key `servers` and needs `"type": "stdio"` in the entry. OpenAI Codex: `codex mcp add workflowbuilder-docs -- npx -y @workflowbuilder/mcp`. On Windows, if your client cannot start `npx`, use `cmd` as the command and `/c npx -y @workflowbuilder/mcp` as the arguments.
+Cursor (`.cursor/mcp.json`) takes the same entry with `"type": "stdio"` added. VS Code (`.vscode/mcp.json`) names the key `servers` and needs `"type": "stdio"` in the entry. OpenAI Codex: `codex mcp add workflowbuilder-docs -- npx -y @workflowbuilder/mcp`. On Windows, if your client cannot start `npx`, use `cmd` as the command and `/c npx -y @workflowbuilder/mcp` as the arguments.
 
-Restart the assistant, then ask something like _"Search the Workflow Builder docs for saving a workflow to a REST API"_. Setup for each client: [Use with AI assistants](https://www.workflowbuilder.io/docs/get-started/ai-assistants/).
+Restart the assistant, then ask something like _"Search the Workflow Builder docs for how to persist workflows with a REST API"_. Setup for each client: [Use with AI assistants](https://www.workflowbuilder.io/docs/get-started/ai-assistants/).
 
 ## Tools
 
@@ -60,22 +60,22 @@ The repo-root `.mcp.json` registers the server as `wb-docs` (`node packages/mcp-
 
 The build reads the repo and writes everything the server needs to `dist/data`; the server never reads the repo:
 
-- `docs.json`: the docs pages (`apps/docs/src/content/docs`) and the package READMEs, cleaned and chunked. After editing docs, run `docs-data` and restart the session.
+- `docs.json`: the docs pages (`apps/docs/src/content/docs`) and the package READMEs, cleaned and chunked, with GitHub links pinned to the commit it was built from. Cleaning and chunking happen here, so after editing docs or `src/config/chunking.ts`, `src/config/mdx-components.ts` or the loaders in `src/docs/` (`chunk.ts`, `clean-mdx.ts`, `load-*.ts`), run `docs-data` and restart the session.
 - `typedoc/*.json` and `manifest.json`: the public API, the declaration counts and the documented package versions.
 
-The search index is built from that data at startup, in 100-200 ms.
+The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit.
 
 ### Layout
 
-| Path                | Contents                                                                                                                             |
-| ------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
-| `src/config/`       | The tunable surface: ranking, synonyms, chunking, response budgets. Plain data, no logic.                                            |
-| `src/docs/`         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                                     |
-| `src/symbols/`      | TypeDoc extraction, the type printer and the symbol search engine.                                                                   |
-| `src/corpus/`       | `loadDocs()` reads the repo at build time; `buildCorpus()` indexes `dist/data` and is shared by the server and the smoke test.       |
-| `src/tools/`        | One folder per tool: `tool.config.ts` (schema and description), validator, handler.                                                  |
-| `src/__fixtures__/` | Small checked-in docs and TypeDoc JSON used by the tests. `pnpm --filter @workflowbuilder/mcp fixtures:update` regenerates the JSON. |
-| `scripts/`          | `generate-docs-data.ts` and `generate-typedoc.ts` (build steps), `smoke.ts`, `smoke-package.ts`, `update-fixtures.ts`.               |
+| Path                | Contents                                                                                                                                        |
+| ------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/config/`       | The tunable surface: ranking, synonyms, response budgets (read at startup), chunking and MDX rules (read by `docs-data`).                       |
+| `src/docs/`         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                                                |
+| `src/symbols/`      | TypeDoc extraction, the type printer and the symbol search engine.                                                                              |
+| `src/corpus/`       | `loadDocs()` reads the repo at build time; `buildCorpus()` indexes `dist/data` and is shared by the server and the smoke test.                  |
+| `src/tools/`        | One folder per tool: `tool.config.ts` (schema and description), validator, handler.                                                             |
+| `src/__fixtures__/` | Small checked-in docs and TypeDoc JSON used by the tests. `pnpm --filter @workflowbuilder/mcp fixtures:update` regenerates the JSON.            |
+| `scripts/`          | `generate-docs-data.ts` and `generate-typedoc.ts` (build steps), `smoke.ts`, `smoke-package.ts`, `check-packed-build.ts`, `update-fixtures.ts`. |
 
 Only the modules `src/index.ts` imports are compiled to `dist`. The MDX parsers (`remark-*`, `unified`, `yaml`, `github-slugger`) are devDependencies, so the server must not import anything from `src/corpus/load-docs.ts` or the loaders behind it; `smoke:package` fails if it does.
 
@@ -83,7 +83,7 @@ Only the modules `src/index.ts` imports are compiled to `dist`. The MDX parsers 
 
 - Ids: pages are `guides/configuring-the-editor`, sections `guides/configuring-the-editor#props-reference`, symbols `sdk:WorkflowBuilderRootProps` and members `sdk:WorkflowBuilderRootProps.nodeTypes`.
 - Package READMEs are docs pages too: `readme/sdk`, `readme/ui`, `readme/temporal`, and any other `.md` a package lists in `package.json` `files` as `readme/<pkg>/<name>` (today `readme/ui/css-layers`; CHANGELOGs are left out). Sections use the same anchors as site pages, urls point at the file on GitHub and relative links are made absolute. They sit in a separate search index, and `readmeWeights` in `src/config/ranking.ts` scales their hits: the sdk and ui READMEs restate site pages, so they rank far below them, while the temporal README is the only place that documents installing the plugin and wiring a worker.
-- Components in `.mdx` are reduced to text by the rules in `src/config/mdx-components.ts`. Demo node schemas are not inlined; the page gets a pointer to the demo folder instead.
+- Components in `.mdx` are reduced to text by the rules in `src/config/mdx-components.ts`. Demo node schemas are not inlined; the page gets a GitHub link to the demo folder instead. Links relative to a page (`./trigger/`) become site paths (`/nodes/trigger/`) that `get_doc` accepts.
 - Temporal exports have no JSDoc, so they rank on name and signature.
 - A docs page that cannot be loaded (bad frontmatter, unclosed JSX, unknown `PropsTable` slug, missing partial, two files with one id) fails `docs-data` and so the build, with one `docs-data: skipped <file>: <reason>` line per page: the package would otherwise ship without it. TypeDoc files that are empty or disagree with `manifest.json` make the server warn on stderr and keep serving.
 - `build` runs TypeDoc twice per package: once for the entry points, and once over the files that declare types the package references without exporting (`dist/data/typedoc/<package>.referenced.json`). `get_symbol` expands aliases of those types and serves them by name with `exported: false`; they are not searchable.

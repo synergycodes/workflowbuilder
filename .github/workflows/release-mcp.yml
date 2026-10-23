@@ -9,39 +9,35 @@ name: Release MCP
 # publisher registered on npmjs.com pointing at THIS workflow file
 # (.github/workflows/release-mcp.yml). npm only offers it on a package that already
 # exists: packages/RELEASE.md § "First release of a new package".
+#
+# Two jobs: `smoke:package` installs the packed tarball's dependencies from the registry without
+# the lockfile, so it runs in `verify`, which cannot mint the OIDC token that `publish` uses.
 
 on:
   push:
     tags:
-      - "@workflowbuilder/mcp@*"
+      - '@workflowbuilder/mcp@*'
   workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
 
 permissions:
-  contents: write # create GitHub Release
-  id-token: write # OIDC for npm Trusted Publisher (and provenance attestation)
+  contents: read
 
 jobs:
-  publish:
-    name: Build and publish to npm
+  verify:
+    name: Check, build and smoke test
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code (at tag)
         uses: actions/checkout@v4
         with:
           submodules: true
-          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+          persist-credentials: false
 
       - name: Set up Node.js
-        # No `registry-url:` here on purpose — see the note in release-sdk.yml.
-        # setup-node's registry-url breaks OIDC by injecting a sentinel token.
-        #
-        # Node 24, not 22: the Trusted Publisher OIDC exchange is performed by the
-        # bundled npm, and only npm 11.x (Node 24) does it natively when no token is
-        # configured. release-sdk.yml was bumped for exactly this reason after the
-        # publish failed on authorization; do not lower it.
+        # Same version as the mcp-server job in pr-check.yml, so smoke:package meets the same npm.
         uses: actions/setup-node@v4
         with:
-          node-version: 24
+          node-version: 22
 
       - name: Enable Corepack
         run: npm i -g corepack@latest
@@ -76,6 +72,45 @@ jobs:
         # Version pinned so a tool release cannot block a publish.
         working-directory: packages/mcp-server
         run: pnpm dlx publint@0.3.24
+
+  publish:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create GitHub Release
+      id-token: write # OIDC for npm Trusted Publisher (and provenance attestation)
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+
+      - name: Set up Node.js
+        # No `registry-url:` here on purpose — see the note in release-sdk.yml.
+        # setup-node's registry-url breaks OIDC by injecting a sentinel token.
+        #
+        # Node 24, not 22: the Trusted Publisher OIDC exchange is performed by the
+        # bundled npm, and only npm 11.x (Node 24) does it natively when no token is
+        # configured. release-sdk.yml was bumped for exactly this reason after the
+        # publish failed on authorization; do not lower it.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        # The same commit `verify` built and tested; only lockfile code runs in this job.
+        run: pnpm --filter @workflowbuilder/mcp build
 
       - name: Verify version matches tag
         # Tag `@workflowbuilder/mcp@X.Y.Z` must match packages/mcp-server/package.json

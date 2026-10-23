@@ -4,7 +4,7 @@ import {
   FIXTURE_DUPLICATE_ROOT,
   FIXTURE_MALFORMED_ROOT,
 } from '../__fixtures__/fixtures.js';
-import { loadPages } from './load-pages.js';
+import { loadPages, resolveRelativeLinks } from './load-pages.js';
 
 const propsTypes = (slug: string) => {
   const component = FIXTURE_COMPONENTS.find((candidate) => candidate.slug === slug);
@@ -62,7 +62,9 @@ describe('loadPages', () => {
   it('inlines the partial and the node documentation line', () => {
     const props = loaded.pages.find((page) => page.id === 'guides/props');
     expect(props?.content).toContain('Partial **note** about paths.');
-    expect(props?.content).toContain('Node definition source: apps/demo/src/app/data/nodes/action/');
+    expect(props?.content).toContain(
+      'Node definition source: https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes/action/',
+    );
     expect(props?.content).toContain('Props: see get_symbol ui:LabelButtonProps, ui:IconButtonProps');
   });
 
@@ -123,5 +125,20 @@ describe('loadPages', () => {
     expect(loaded.pages.find((page) => page.id === 'guides/basic')?.content).toContain(
       'CSS variables you can override (each name starts with --wb-public-): button-color, button-gap (spacing)',
     );
+  });
+});
+
+describe('resolveRelativeLinks', () => {
+  it('turns links relative to the page into site paths', () => {
+    expect(resolveRelativeLinks('| [Trigger](./trigger/) | x |', 'nodes')).toBe('| [Trigger](/nodes/trigger/) | x |');
+    expect(resolveRelativeLinks('[Up](../theming/#tokens)', 'get-started/persistence')).toBe(
+      '[Up](/get-started/theming/#tokens)',
+    );
+    expect(resolveRelativeLinks('[Home](./guides/)', 'index')).toBe('[Home](/guides/)');
+  });
+
+  it('leaves absolute links, images and fenced code alone', () => {
+    const markdown = '[a](/guides/a/) [b](https://x.dev) ![i](./i.png)\n```\n[c](./c/)\n```';
+    expect(resolveRelativeLinks(markdown, 'nodes')).toBe(markdown);
   });
 });

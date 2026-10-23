@@ -5,7 +5,7 @@ description: Give Claude Code, Cursor, VS Code, Codex and other AI coding assist
 
 AI coding assistants do not know the Workflow Builder API from their training data, so they guess, and the guesses look plausible but do not compile. `@workflowbuilder/mcp` is an [MCP](https://modelcontextprotocol.io) server that lets your assistant search these docs and look up the exact public API of `@workflowbuilder/sdk`, `@workflowbuilder/ui` and `@workflowbuilder/temporal` before it writes code.
 
-The docs and the API reference are bundled in the package. No account, no API key, no network calls once it is installed.
+The docs and the API reference are bundled in the package. No account, no API key, and the server makes no network calls.
 
 ## Add it to your assistant
 
@@ -17,7 +17,7 @@ You need Node.js 20 or newer. Every client below starts the server with `npx -y 
 claude mcp add --scope project workflowbuilder-docs -- npx -y @workflowbuilder/mcp
 ```
 
-`--scope project` writes the server to `.mcp.json` in your repository, so everyone who works on it gets the server. Without the flag, the server is added for you only.
+`--scope project` writes the server to `.mcp.json` in your repository, so everyone who works on it gets the server. Without the flag, the server is added only for you, in this project. Use `--scope user` to have it in every project.
 
 ### Cursor
 
@@ -88,16 +88,16 @@ On Windows, if your client cannot start `npx`, use `cmd` as the command and `/c 
 
 ## Check that it works
 
-Ask your assistant something like _"Search the Workflow Builder docs for saving a workflow to a REST API"_. It should call `search_docs` and answer from the [REST API persistence](/get-started/persistence/rest-api/) page.
+Ask your assistant something like _"Search the Workflow Builder docs for how to persist workflows with a REST API"_. It should call `search_docs` and answer from the [REST API persistence](/get-started/persistence/rest-api/) page.
 
 ## What your assistant can do with it
 
-| Tool             | What it does                                                                                                |
-| ---------------- | ----------------------------------------------------------------------------------------------------------- |
-| `search_docs`    | Searches these docs and the package READMEs, and returns the matching sections.                             |
-| `get_doc`        | Reads a whole page or one section, also from a docs link such as `/get-started/theming/`.                   |
-| `search_symbols` | Searches the exports of the SDK, the UI library and the Temporal plugin.                                    |
-| `get_symbol`     | Returns a symbol's signature, description, members and the import statement to use, e.g. `WorkflowBuilder`. |
+| Tool             | What it does                                                                                                         |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------- |
+| `search_docs`    | Searches these docs and the package READMEs, and returns the matching sections.                                      |
+| `get_doc`        | Reads a whole page or one section, also from a docs link such as `/get-started/theming/`.                            |
+| `search_symbols` | Searches the exports of the SDK, the UI library and the Temporal plugin.                                             |
+| `get_symbol`     | Returns a symbol's signature, description, members and the import statement to use, e.g. `WorkflowBuilderRootProps`. |
 
 ## Versions
 

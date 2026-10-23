@@ -3,10 +3,10 @@ name: PR Check
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Two things are gated here: the published packages
 # @workflowbuilder/sdk, @workflowbuilder/ui (plus its private
-# @workflowbuilder/ui-tokens build) and @workflowbuilder/temporal, and the
-# execution pipeline (execution-core, backend, execution-worker) — whose
-# determinism tests guard Temporal replay safety and so must not be able to
-# regress silently. Plus the deploy compose files, which ship to the demo VM on
+# @workflowbuilder/ui-tokens build), @workflowbuilder/temporal and
+# @workflowbuilder/mcp, and the execution pipeline (execution-core, backend,
+# execution-worker) — whose determinism tests guard Temporal replay safety and
+# so must not be able to regress silently. Plus the deploy compose files, which ship to the demo VM on
 # every deploy, the deploy Dockerfile's air-gap boundary (every RUN after
 # `pnpm fetch` must be --network=none), and global format consistency.
 # apps/docs has its own path-filtered workflow (pr-check-docs.yml); demo and

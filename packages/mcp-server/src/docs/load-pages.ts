@@ -14,6 +14,8 @@ interface LoadPagesOptions {
   chunking?: ChunkingConfig;
   skipRootDirectories?: readonly string[];
   cssVariables?: (slug: string) => readonly string[] | undefined;
+  // Branch or commit that links into the repo point at; defaults to main.
+  revision?: string;
   // A page that cannot be loaded is skipped and reported here; the default writes to stderr.
   onWarning?: (message: string) => void;
 }
@@ -32,6 +34,25 @@ interface Frontmatter {
 }
 
 const DEFAULT_SKIPPED_ROOT_DIRECTORIES = ['api', 'ui-api'];
+const FENCE = /^\s*(```|~~~)/;
+const RELATIVE_LINK = /(?<!!)(\[[^\]]*\]\()(\.{1,2}\/[^)\s]*)((?:\s+"[^"]*")?\))/g;
+
+// A served page has no folder to resolve `./trigger/` against, so the link becomes the site path get_doc accepts.
+export function resolveRelativeLinks(markdown: string, pageId: string) {
+  const base = new URL(pageId === 'index' ? '/' : `/${pageId}/`, 'https://site.invalid');
+  let inFence = false;
+  return markdown
+    .split('\n')
+    .map((line) => {
+      if (FENCE.test(line)) inFence = !inFence;
+      if (inFence) return line;
+      return line.replaceAll(RELATIVE_LINK, (_match, open: string, target: string, close: string) => {
+        const url = new URL(target, base);
+        return `${open}${url.pathname}${url.hash}${close}`;
+      });
+    })
+    .join('\n');
+}
 
 function listFiles(root: string, skippedRoot: readonly string[]) {
   const files: string[] = [];
@@ -130,12 +151,13 @@ function loadPage(options: LoadPagesOptions, file: string, pageId: string) {
     readPartial: (partialPath) => readFileSync(partialPath, 'utf8'),
     propsTypes: options.propsTypes,
     cssVariables: options.cssVariables,
+    revision: options.revision,
   });
 
   const title = typeof frontmatter.title === 'string' ? frontmatter.title : titleCase(pageId);
   const description = typeof frontmatter.description === 'string' ? frontmatter.description : '';
   const badge = badgeOf(frontmatter);
-  const markdown = cleaned.text.trim();
+  const markdown = resolveRelativeLinks(cleaned.text, pageId).trim();
   const chunked = chunkPage({ pageId, title, description, badge, markdown }, options.chunking ?? defaultChunking);
 
   const seenSections = new Set<string>();

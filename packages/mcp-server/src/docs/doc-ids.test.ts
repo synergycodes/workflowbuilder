@@ -59,6 +59,10 @@ describe('normalizeDocRef', () => {
       'https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/README.md?plain=1#worker',
       'readme/temporal#worker',
     ],
+    [
+      'https://github.com/synergycodes/workflowbuilder/blob/c1ca7580/packages/temporal/README.md#worker',
+      'readme/temporal#worker',
+    ],
     ['guides/a#Props-Table', 'guides/a#props-table'],
   ])('normalizes %s to %s', (input, expected) => {
     expect(normalizeDocRef(input)).toBe(expected);
