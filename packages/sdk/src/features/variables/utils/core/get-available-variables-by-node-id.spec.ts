@@ -188,17 +188,41 @@ describe('getAvailableVariablesByNodeId', () => {
     expect(idsOf(groups[0])).toEqual(['nodes.parent.left', 'nodes.parent.shared', 'nodes.parent.right']);
   });
 
-  it('keeps ancestors sharing a label in separate groups', () => {
-    index({ p1: settled(suggestion('nodes.p1.a')), p2: settled(suggestion('nodes.p2.a')) });
+  it('numbers the labels of ancestors sharing a label, keeping separate groups', () => {
+    index({ p1: settled(suggestion('nodes.p1.a')), p2: settled(suggestion('nodes.p2.a')), p3: settled() });
 
     const groups = available(
       'target',
-      [node('p1'), node('p2'), node('target')],
-      [edge('p1', 'target'), edge('p2', 'target')],
+      [node('p1'), node('p2'), node('p3'), node('target')],
+      [edge('p1', 'target'), edge('p2', 'target'), edge('p3', 'target')],
     );
 
-    expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch']);
-    expect(groups.map(idsOf)).toEqual([['nodes.p1.a'], ['nodes.p2.a']]);
+    expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch (2)', 'Fetch (3)']);
+    expect(groups.map(idsOf)).toEqual([['nodes.p1.a'], ['nodes.p2.a'], []]);
+  });
+
+  it('skips a numbered label another ancestor already carries', () => {
+    index({ p1: settled(), p2: settled(), p3: settled() });
+
+    const groups = available(
+      'target',
+      [node('p1'), node('p2', { label: 'Fetch (2)' }), node('p3'), node('target')],
+      [edge('p1', 'target'), edge('p2', 'target'), edge('p3', 'target')],
+    );
+
+    expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch (2)', 'Fetch (3)']);
+  });
+
+  it('keeps one label for a node reached through two handles', () => {
+    index({ parent: settled(), other: settled() });
+
+    const groups = available(
+      'target',
+      [node('parent'), node('other'), node('target')],
+      [edge('parent', 'target', 'left'), edge('other', 'target'), edge('parent', 'target', 'right')],
+    );
+
+    expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch (2)']);
   });
 
   it('filters suggestions by excluded and included types', () => {

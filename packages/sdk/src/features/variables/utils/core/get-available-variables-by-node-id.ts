@@ -38,6 +38,8 @@ export function getAvailableVariablesByNodeId({
   const groupsByNodeId: {
     [nodeId: string]: VariableSuggestionGroup;
   } = {};
+  // react-mentions-ts splits groups by label, so two nodes sharing one would merge into a single group
+  const usedLabels = new Set<string>();
 
   for (const ancestor of ancestors) {
     // Source handle is important because source handle from Source named error and success should returns different variables
@@ -52,7 +54,8 @@ export function getAvailableVariablesByNodeId({
       continue;
     }
 
-    const nodeLabel = getNodeLabelForVariable({ node, definition });
+    const nodeLabel =
+      groupsByNodeId[nodeId]?.label ?? uniqueLabel(getNodeLabelForVariable({ node, definition }), usedLabels);
 
     const suggestions =
       getNodeVariablesSuggestions({
@@ -79,4 +82,14 @@ export function getAvailableVariablesByNodeId({
   }
 
   return Object.values(groupsByNodeId);
+}
+
+// Two ancestors with the same label become "Fetch", "Fetch (2)", "Fetch (3)"
+function uniqueLabel(label: string, usedLabels: Set<string>): string {
+  let candidate = label;
+  for (let n = 2; usedLabels.has(candidate); n++) {
+    candidate = `${label} (${n})`;
+  }
+  usedLabels.add(candidate);
+  return candidate;
 }
