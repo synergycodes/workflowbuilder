@@ -63,7 +63,6 @@ export const getNodeVariablesSuggestions = (params: {
 }): VariableSuggestion[] | UndefinedNotIndexed => {
   const nodeSuggestions = getVariableBySourceHandlesForNode(params);
 
-  // Not indexed
   if (!nodeSuggestions) {
     return undefined;
   }

@@ -11,22 +11,9 @@ type Params = {
 };
 
 /**
- * Strips JSON Schema errors caused by variable references used in place of literal values.
- *
- * Why: form fields may hold a reference like `{{global.email}}` instead of a real value.
- * The schema still says `format: 'email'`, `type: 'number'`, `minimum: 1`, etc., so the validator
- * reports a type/format error for the placeholder string. Those errors are false positives:
- * the control has already checked that the reference itself is valid, and the real value is only
- * known at execution time (the engine is responsible for rejecting/clamping it then).
- *
- * What is handled (top-level properties only, nested paths are not supported yet):
- * - string property that is exactly one reference -> errors pointing at that property are removed;
- * - array of strings where every failing item is a reference -> all errors for that property are removed;
- * - arrays of objects are left untouched (needs per-item error mapping in the control);
- * - conditional schemas (`allOf` / `if`): once detailed errors are gone only the generic
- *   "does not match subschema" errors remain, so they are dropped too.
- *
- * Mutates and returns the given `result`; sets `valid` to `true` when no errors are left.
+ * Strips schema errors whose value is a whole-string variable reference (`{{global.email}}`):
+ * the real value is known only at run time, so the engine, not the form, judges it.
+ * Mutates `result`. Scope and limits: variable-references-and-date-types.decision-log.md § 1.
  */
 export function removeReferenceIsStringErrors({ result, data }: Params): ValidationResult {
   if (result.valid) {
@@ -37,14 +24,6 @@ export function removeReferenceIsStringErrors({ result, data }: Params): Validat
     if (typeof value === 'string') {
       const isSingleVariable = getIsStringVariableReference(value);
 
-      /*
-        The default validator expects an email or a number, but instead receives a string with a reference to a variable,
-        such as {{global.variable}}. In such cases, we remove the error, trusting that the control has already ensured the variable is valid.
-
-        But we often cannot know the actual value at validation time. For example, we may receive a variable that contains
-        a number while the schema defines minimum and maximum values. The engine executing the workflow should handle invalid input,
-        either by returning an error or clamping the value, depending on the graph.
-      */
       if (isSingleVariable) {
         result.errors = removeErrorFromErrorsList({ errors: result.errors, propertyName, mode: 'exact' });
       }
@@ -56,7 +35,7 @@ export function removeReferenceIsStringErrors({ result, data }: Params): Validat
       if (allArrayErrors.length > 0) {
         const isArrayOfStrings = value.every((item) => typeof item === 'string');
 
-        // We can have values that are arrays of objects that require more development (also for control to show errors in the correct item)
+        // Arrays of objects stay untouched: the control cannot yet map an error to its item.
         if (isArrayOfStrings) {
           const allValuesArrayErrors = allArrayErrors
             .map((error) => {
@@ -110,10 +89,7 @@ export function removeReferenceIsStringErrors({ result, data }: Params): Validat
   }
 
   if (result.errors.length > 0) {
-    /* 
-      We can create conditional validation using allOf, but the code above removes the detailed error messages,
-      leaving only the errors related to the condition.
-    */
+    // With the detailed errors gone, `allOf` / `if` leave only "does not match subschema" behind.
     const areAllErrorsLeftMetaErrors = result.errors.every((error) => ['allOf', 'if'].includes(error.keyword));
     if (areAllErrorsLeftMetaErrors) {
       result.errors = [];

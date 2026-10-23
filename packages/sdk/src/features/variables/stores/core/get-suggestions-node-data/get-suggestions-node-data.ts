@@ -106,7 +106,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return EMPTY_NODE_SUGGESTIONS;
   }
 
-  // Node that always returns the same variables
   if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
     for (const [sourceHandle, properties] of Object.entries(definition.schemaOutput.bySourceHandle || {})) {
       if (properties) {
@@ -140,7 +139,6 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     };
   }
 
-  // From variants (they have rules based on data inside the node)
   if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
     const variantsMatchingDataPropertyValue = Object.values(definition.schemaOutput.variants)
       .filter((variant) => {
@@ -153,13 +151,11 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
           }
         }
 
-        // No rule is always a match
         return true;
       })
       .filter(filterEmpty);
 
     for (const variant of variantsMatchingDataPropertyValue) {
-      // Default variables by sourceHandle
       if ('bySourceHandle' in variant) {
         for (const [sourceHandle, properties] of Object.entries(variant.bySourceHandle || {})) {
           if (properties) {

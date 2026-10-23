@@ -8,7 +8,7 @@ Demo composes the SDK with a curated palette, templates, and ~13 plugins. It is 
 
 ## Node anatomy
 
-Each node type lives in `src/app/data/nodes/<node-name>/`. Canonical pattern is 4 files:
+Each node type lives in `src/app/data/nodes/<node-name>/`. Canonical pattern is 4 files plus an optional `schema-output.ts`:
 
 | File                         | Purpose                                                                               |
 | ---------------------------- | ------------------------------------------------------------------------------------- |
@@ -16,12 +16,13 @@ Each node type lives in `src/app/data/nodes/<node-name>/`. Canonical pattern is 
 | `schema.ts`                  | JSON Schema with `satisfies NodeSchema`; spreads `sharedProperties` from the SDK      |
 | `uischema.ts`                | UI Schema using `getScope<Schema>` for type-safe scopes                               |
 | `default-properties-data.ts` | Defaults aligned with the schema                                                      |
+| `schema-output.ts`           | Optional `NodeSchemaOutput` for the variable picker; absent in `multi-port`           |
 
 Nodes are registered in `src/app/data/palette.ts` (flat array of `PaletteItem`).
 
 `sharedProperties`, `statusOptions`, `generalInformation`, and `globalControls` come from `@workflowbuilder/sdk`, not a local shared folder.
 
-`action/` is the canonical reference (`src/app/data/nodes/action/`). `delay/` deviates with two extra files (`select-options.ts`, `conditional-validation.ts`) for if-then-else schema validation — only use when the canonical 4-file pattern can't express the case.
+`action/` is the canonical reference (`src/app/data/nodes/action/`). It deliberately keeps the deprecated `outputSchema` inline as the old-format example, with the new format beside it in `schema-output.ts` (not imported); see `packages/sdk/src/node/deprecated/README.md`. `delay/` deviates with two extra files (`select-options.ts`, `conditional-validation.ts`) for if-then-else schema validation — only use when the canonical pattern can't express the case.
 
 ## Plugin model
 

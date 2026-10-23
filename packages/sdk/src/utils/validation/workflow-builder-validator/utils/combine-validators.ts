@@ -19,7 +19,7 @@ const isBlank = (value: unknown) => typeof value === 'string' && value.trim() ==
 export function combineValidators({ standardValidator, validationCustomTypes, nullableProperties }: Params): Validator {
   return {
     validate: (data: unknown) => {
-      // JSONForm calls it with data for enter form byt sometimes also to check one field (ex. rules validation)
+      // jsonforms passes the whole form here, but its rule engine also passes a single field value.
       const formattedData = isPlainObject(data)
         ? Object.fromEntries(
             Object.entries(data || {}).flatMap(([key, value]) => {

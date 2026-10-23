@@ -93,8 +93,6 @@ export function DynamicTypedInput({
         className={className}
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
-        // Adornment here doesn't make sense since we show variable picker above
-        // endAdornment={endAdornment}
         onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
         state={isError ? 'critical' : 'default'}
         placeholder={placeholder ?? t('variables.placeholderTypeString')}
@@ -135,7 +133,6 @@ export function DynamicTypedInput({
           onChange={(_event, value) => {
             onChange(value as string);
 
-            // It's the most reliable method to call
             if (onBlur) {
               onBlur(value as string);
             }
@@ -167,7 +164,6 @@ export function DynamicTypedInput({
             const newValue = getISODate(date);
             onChange(newValue);
 
-            // It's the most reliable method to call
             if (onBlur) {
               onBlur(newValue);
             }
@@ -198,12 +194,10 @@ export function DynamicTypedInput({
 
             onChange(newValue);
 
-            // It's the most reliable method to call
             if (onBlur) {
               onBlur(newValue);
             }
           }}
-          // Add "HH:mm" to debug time
           valueFormat="dd-MM-yyyy"
           placeholder="DD-MM-YYYY"
           disabled={disabled}

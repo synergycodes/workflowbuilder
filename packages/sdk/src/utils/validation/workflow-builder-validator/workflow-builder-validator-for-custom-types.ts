@@ -8,13 +8,9 @@ type CustomSchema = {
 };
 
 /**
- * Validator for non-standard JSON Schema types used by WorkflowBuilder.
- *
- * WorkflowBuilder accepts custom `date` / `datetime` property types in node schemas
- * (rendered as a date picker instead of a plain string field). These types are not
- * part of JSON Schema, so `@cfworker/json-schema` rejects them. The main validator
- * splits such properties out of the schema and delegates them here, where a value is
- * accepted if it is a valid date string or a single variable reference (`{{var}}`).
+ * Validates the non-JSON-Schema `date` / `datetime` properties the main validator splits out.
+ * A value passes as a valid date string or a single variable reference.
+ * See variable-references-and-date-types.decision-log.md § 2.
  */
 export function getValidationForCustomTypes(schema: Schema): (data: unknown) => {
   valid: boolean;

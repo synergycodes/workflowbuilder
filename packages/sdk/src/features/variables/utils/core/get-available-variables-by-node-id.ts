@@ -32,7 +32,6 @@ export function getAvailableVariablesByNodeId({
 
   const variableSuggestionsStore = useVariablesSuggestionsStore.getState();
 
-  // BFS backward through edges to find all ancestor nodes
   const ancestors = getNodeAncestors(nodeId, edges);
 
   const groupsByNodeId: {
