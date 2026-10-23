@@ -30,7 +30,7 @@ export function isVariableOnlyRule(rule: Rule): boolean {
 }
 
 // Also grouped (`:root, .fallback`) or qualified (`:root[data-theme='dark']`).
-function targetsRoot(rule: Rule): boolean {
+export function targetsRoot(rule: Rule): boolean {
   return rule.selectors.some((selector) => selector.trim().startsWith(':root'));
 }
 
