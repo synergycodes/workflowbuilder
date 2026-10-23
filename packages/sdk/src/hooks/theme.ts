@@ -3,6 +3,7 @@ import { type PersistStorage, persist } from 'zustand/middleware';
 
 const THEME_KEY = 'wb-theme';
 
+/** The editor's color theme. */
 export type Theme = 'dark' | 'light';
 
 type ThemeStore = {

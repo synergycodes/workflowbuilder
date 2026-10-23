@@ -34,6 +34,8 @@ Every prop is optional. The **Type** column links to the auto-generated [SDK API
 | `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                        | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                        |
 | `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/) | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                   |
 | `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)       | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                 |
+| `theme`             | `'light' \| 'dark'`                                                               | Controlled theme: the editor shows the host's value and never saves its own. Pass `onThemeChange` to follow the editor's toggle; without it the theme is pinned.    |
+| `onThemeChange`     | `(theme: Theme) => void`                                                          | Called with the requested theme when the user toggles it while `theme` is controlled.                                                                               |
 | `children`          | `ReactNode`                                                                       | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                 |
 
 ## Compound subcomponents

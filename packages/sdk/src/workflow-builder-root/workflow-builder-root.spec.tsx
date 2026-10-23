@@ -27,7 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
-import { setControlledTheme, useThemeStore } from '../hooks/theme';
+import { getTheme, setControlledTheme, setTheme, useThemeStore } from '../hooks/theme';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -157,6 +157,30 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     );
 
     expect(htmlAttributes()).toEqual(htmlAttributesBefore);
+  });
+
+  it('controlled theme: forwards `theme` to the theme module and routes toggles to onThemeChange', () => {
+    const onThemeChange = vi.fn();
+
+    render(
+      <StrictMode>
+        <WorkflowBuilderRoot theme="dark" onThemeChange={onThemeChange} />
+      </StrictMode>,
+    );
+    expect(getTheme()).toBe('dark');
+
+    act(() => setTheme('light'));
+
+    expect(onThemeChange).toHaveBeenCalledWith('light');
+    expect(localStorage.getItem('wb-theme')).not.toBe('light');
+  });
+
+  it('releases theme control on unmount', () => {
+    const { unmount } = render(<WorkflowBuilderRoot theme="dark" />);
+
+    unmount();
+
+    expect(useThemeStore.getState().controlled).toBeNull();
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

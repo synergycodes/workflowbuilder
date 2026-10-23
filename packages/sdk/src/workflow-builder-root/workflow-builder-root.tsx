@@ -11,6 +11,7 @@ import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-conf
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { setControlledTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
@@ -63,6 +64,8 @@ export function WorkflowBuilderRoot({
   initialEdges,
   isValidConnection,
   reactFlowProps,
+  theme,
+  onThemeChange,
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -101,6 +104,19 @@ export function WorkflowBuilderRoot({
     resetWorkflowStore();
   }, []);
 
+  // Latest callback in a ref: hosts often pass an inline function, which must not re-run the effect.
+  const onThemeChangeRef = useRef(onThemeChange);
+  useLayoutEffect(() => {
+    onThemeChangeRef.current = onThemeChange;
+  });
+
+  // setControlledTheme notifies subscribers, so it runs in a layout effect, never during render.
+  useLayoutEffect(() => {
+    setControlledTheme(theme ?? null, (nextTheme) => onThemeChangeRef.current?.(nextTheme));
+  }, [theme]);
+
+  useLayoutEffect(() => () => setControlledTheme(null, null), []);
+
   // Runtime config — write the latest prop values into module-level holders
   // synchronously in render, NOT in `useEffect`. Children read the holders
   // during their own first render (e.g. the palette resolver), so an effect
@@ -138,7 +154,7 @@ export function WorkflowBuilderRoot({
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell>{children}</RootShell>
+        <RootShell theme={theme}>{children}</RootShell>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

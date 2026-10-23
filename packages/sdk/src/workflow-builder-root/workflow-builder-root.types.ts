@@ -7,6 +7,7 @@ import type {
   JsonFormsRendererExtension,
   PluginTranslationResource,
 } from '../features/json-form/extension-registry';
+import type { Theme } from '../hooks/theme';
 import type { LayoutDirection, PaletteItemOrGroup, TemplateModel } from '../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../node/node-data';
 import type { OnSaveExternal } from '../types/integration';
@@ -262,4 +263,14 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * changes may not apply immediately.
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
+  /**
+   * Controlled theme. When set, the editor renders this value and never persists its own; pass
+   * `onThemeChange` to follow the editor's theme toggle. Without it the theme is pinned.
+   */
+  theme?: Theme;
+  /**
+   * Called with the requested theme when the user toggles it (app bar or
+   * `useWorkflowBuilderActions().setTheme`) while `theme` is controlled.
+   */
+  onThemeChange?: (theme: Theme) => void;
 }>;
