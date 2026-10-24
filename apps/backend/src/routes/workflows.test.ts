@@ -291,7 +291,11 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 
 const dialect = new PgDialect();
 
-function captureExecuteUpdate(): { set?: Record<string, unknown>; where?: SQL } {
+// `closed` is what `.returning()` yields: the row when the guard matched, nothing when the worker moved it first.
+function captureExecuteUpdate(closed: () => Promise<{ id: string }[]> = async () => [{ id: 'e-1' }]): {
+  set?: Record<string, unknown>;
+  where?: SQL;
+} {
   const captured: { set?: Record<string, unknown>; where?: SQL } = {};
   databaseMock.update.mockImplementation(() => ({
     set: (values: Record<string, unknown>) => {
@@ -299,7 +303,7 @@ function captureExecuteUpdate(): { set?: Record<string, unknown>; where?: SQL } 
       return {
         where: (where: SQL) => {
           captured.where = where;
-          return chainResolving([]);
+          return { returning: closed };
         },
       };
     },
@@ -337,15 +341,41 @@ describe('createWorkflowsRoutes - execute when the engine does not take the star
     expect(update.set?.finishedAt).toBeInstanceOf(Date);
   });
 
-  it('closes the run only while it is still pending', async () => {
+  it('closes the run only while it is still pending, or cancelling from a Stop sent during the start', async () => {
     engineMock.submit.mockRejectedValueOnce(new Error('unavailable'));
     const update = captureExecuteUpdate();
 
     await execute();
 
     const rendered = dialect.sqlToQuery(update.where!);
-    expect(rendered.sql).toBe('("executions"."id" = $1 and "executions"."status" = $2)');
-    expect(rendered.params).toEqual(['e-1', 'pending']);
+    expect(rendered.sql).toBe('("executions"."id" = $1 and "executions"."status" in ($2, $3))');
+    expect(rendered.params).toEqual(['e-1', 'pending', 'cancelling']);
+  });
+
+  it('answers 202 when the worker already moved the run: the engine took the start without confirming it', async () => {
+    engineMock.submit.mockRejectedValueOnce(new Error('Failed to start Workflow'));
+    captureExecuteUpdate(async () => []);
+
+    const response = await execute();
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({
+      executionId: 'e-1',
+      status: 'pending',
+      streamUrl: '/api/executions/e-1/stream',
+    });
+  });
+
+  it('still answers 503 with the execution id when closing the run fails', async () => {
+    engineMock.submit.mockRejectedValueOnce(new Error('unavailable'));
+    captureExecuteUpdate(async () => {
+      throw new Error('connection terminated');
+    });
+
+    const response = await execute();
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'execution_start_failed', executionId: 'e-1' });
   });
 
   it('answers 202 and writes nothing more when the engine takes the start', async () => {

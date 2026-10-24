@@ -1,4 +1,4 @@
-import { and, eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -246,22 +246,37 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
       });
     } catch (error) {
       const message = formatErrorChain(error);
-      logger.error('execute did not start', { workflowId, executionId: execution.id, error: message });
-      // Only the worker moves a run out of 'pending', and it never hears of a run that did not start.
-      // A start the engine took but never confirmed runs under this 'failed' row (follow-up: run-claim-at-start).
-      const now = new Date();
-      await database
-        .update(executions)
-        .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
-        .where(and(eq(executions.id, execution.id), eq(executions.status, 'pending')));
-      return c.json(
-        {
-          code: 'execution_start_failed',
-          message: 'The execution engine did not accept the run',
+      logger.error('execute start not confirmed', { workflowId, executionId: execution.id, error: message });
+      // The worker never hears of a run that did not start, and a Stop during the start leaves a 'cancelling'
+      // nothing closes. Zero rows: the worker moved the run, so the engine took the start without confirming it.
+      // If this write lands first instead, the run goes on under 'failed' (follow-up: run-claim-at-start).
+      let workerTookRun = false;
+      try {
+        const now = new Date();
+        const closed = await database
+          .update(executions)
+          .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
+          .where(and(eq(executions.id, execution.id), inArray(executions.status, ['pending', 'cancelling'])))
+          .returning({ id: executions.id });
+        workerTookRun = closed.length === 0;
+      } catch (closeError) {
+        logger.error('execute could not close the run', {
+          workflowId,
           executionId: execution.id,
-        },
-        503,
-      );
+          error: formatErrorChain(closeError),
+        });
+      }
+      if (!workerTookRun) {
+        return c.json(
+          {
+            code: 'execution_start_failed',
+            message: 'The execution engine did not accept the run',
+            executionId: execution.id,
+          },
+          503,
+        );
+      }
+      logger.warn('execute start unconfirmed, but the worker has the run', { workflowId, executionId: execution.id });
     }
 
     return c.json(
