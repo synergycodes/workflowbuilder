@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -7,6 +7,7 @@ import { database } from '../db/client';
 import { executions, workflows } from '../db/schema';
 import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
 import { getWorkflowEngine } from '../engine';
+import { formatErrorChain } from '../format-error-chain';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
 import type { BackendEnv } from './backend-env';
@@ -234,14 +235,34 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
 
     const definition = mapToExecutionModel(workflowId, snapshotParse.snapshot);
 
-    await getWorkflowEngine().submit({
-      workflowId,
-      executionId: execution.id,
-      definition,
-      triggerPayload: body.triggerPayload ?? {},
-      variables: {}, // server-side globals (secrets, env) populated here later
-      global: {},
-    });
+    try {
+      await getWorkflowEngine().submit({
+        workflowId,
+        executionId: execution.id,
+        definition,
+        triggerPayload: body.triggerPayload ?? {},
+        variables: {}, // server-side globals (secrets, env) populated here later
+        global: {},
+      });
+    } catch (error) {
+      const message = formatErrorChain(error);
+      logger.error('execute did not start', { workflowId, executionId: execution.id, error: message });
+      // Only the worker moves a run out of 'pending', and it never hears of a run that did not start.
+      // A start the engine took but never confirmed runs under this 'failed' row (follow-up: run-claim-at-start).
+      const now = new Date();
+      await database
+        .update(executions)
+        .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
+        .where(and(eq(executions.id, execution.id), eq(executions.status, 'pending')));
+      return c.json(
+        {
+          code: 'execution_start_failed',
+          message: 'The execution engine did not accept the run',
+          executionId: execution.id,
+        },
+        503,
+      );
+    }
 
     return c.json(
       {
