@@ -141,7 +141,7 @@ the team.`,
           segments: [],
           properties: {
             label: 'Senior Review',
-            description: 'A second person decides the escalated refund.',
+            description: 'A senior reviewer decides the escalated refund.',
             decisionRequest: seniorReviewRequest,
           },
           type: humanDecisionNodeType,
