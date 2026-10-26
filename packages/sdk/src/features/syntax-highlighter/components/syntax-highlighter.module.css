@@ -24,7 +24,8 @@
   --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-colors-blue-500);
 }
 
-/* It shows a tooltip indicating that editing is blocked when disabled */
+/* Hides Ace's 'Editing is disabled' tooltip. SyntaxHighlighter mounts it in the SDK portal, so this scoped rule reaches it
+   without hiding a host page's own Ace tooltips. */
 :global(.ace_tooltip) {
   display: none !important;
 }

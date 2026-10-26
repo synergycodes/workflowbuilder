@@ -217,3 +217,17 @@
 .wb-text-node-l-emphasized {
   font-weight: 600;
 }
+
+/* No component declares these, so without a reset a host's `.app button { text-transform: uppercase }` reaches
+   our controls. `revert` restores the browser default; as a base-file rule it loses to any component rule. */
+button,
+input,
+textarea,
+select,
+a {
+  text-transform: revert;
+  letter-spacing: revert;
+  word-spacing: revert;
+  text-shadow: revert;
+  text-decoration: revert;
+}

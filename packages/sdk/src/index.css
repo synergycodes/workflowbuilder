@@ -65,8 +65,9 @@
   box-sizing: border-box;
 }
 
-/* Unlayered, so a host reset in a cascade layer (Tailwind base, normalize) cannot resize or recolour the editor box. */
-.workflow-builder-root {
+/* Prefixed like a component rule, so a host's generic rule (`.app div { font: inherit }`) cannot restyle the editor's
+   base text. Hosts change the font through `--wb-public-font-family`. */
+:is(#wb, .workflow-builder-root).workflow-builder-root {
   color: var(--wb-ds-ui-text-default);
   font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   font-size: 1rem;
