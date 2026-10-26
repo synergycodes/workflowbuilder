@@ -1,0 +1,10 @@
+/* The editor fills its parent; the host gives that parent a height. */
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}

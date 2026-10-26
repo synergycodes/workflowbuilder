@@ -118,13 +118,11 @@ export default defineConfig({
           typeDoc: STRICT_TYPEDOC,
         }),
       ],
-      // `@workflowbuilder/ui` styles are safe to load globally: everything is
-      // layered (no global reset), classes are hashed or opt-in, and tokens.css
-      // defines `--wb-*` custom properties on `:root` and `html[data-theme]`.
-      // Starlight toggles the latter, so the live component showcases follow the
-      // docs light/dark theme. index.css is required at document level:
-      // Modal/Menu/Select/Tooltip/DatePicker portal their popups to body,
-      // outside the shadow roots that carry the preview styles.
+      // `@workflowbuilder/ui` styles are safe to load globally: every rule is
+      // scoped to `.workflow-builder-root` and themed tokens to `[data-wb-theme]`,
+      // so Starlight's own markup is untouched. index.css is required at document
+      // level for popups, which leave the examples' shadow roots; ComponentPreview
+      // gives them a scoped, themed box.
       customCss: [
         './src/styles/custom.css',
         '@workflowbuilder/ui/styles.css',

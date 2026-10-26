@@ -1,14 +1,15 @@
-html[data-theme='light'] {
+[data-wb-theme='light'] {
   --ai-studio-edge-color--active: var(--wb-ds-colors-green-400);
   --ai-studio-status-color--completed: var(--wb-ds-colors-green-400);
 }
 
-html[data-theme='dark'] {
+[data-wb-theme='dark'] {
   --ai-studio-edge-color--active: var(--wb-ds-colors-green-200);
   --ai-studio-status-color--completed: var(--wb-ds-colors-green-200);
 }
 
-:root {
+/* Here, not on :root: these resolve themed tokens, which exist only on the editor box. */
+[data-wb-theme] {
   --ai-studio-status-color--waiting: var(--wb-ds-ui-text-info-default);
   --ai-studio-status-color--incomplete: var(--wb-ds-ui-text-warning-default);
   --ai-studio-status-color--failed: var(--wb-ds-ui-text-critical-default);
