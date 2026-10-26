@@ -459,6 +459,14 @@ describe('decisionRequestSchema', () => {
     expect(issues.map((issue) => issue.domain)).toEqual([undefined, undefined]);
   });
 
+  it('reports a reserved port once per action and never as shared', () => {
+    const issues = issuesOf(
+      request({ actions: [{ ...approve, port: 'errorRoute' }, { ...hold, port: 'errorRoute' }, reject] }),
+    );
+
+    expect(issues.map((issue) => issue.domain?.issue)).toEqual(['port_reserved', 'port_reserved']);
+  });
+
   it('reports three blank ports as three empty-port issues, without a duplicate-port issue riding along', () => {
     const issues = issuesOf(
       request({

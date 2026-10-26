@@ -136,8 +136,8 @@ export const decisionRequestSchema = rejectingOwnProtoKey(
           seenSingleEffects.add(action.effect);
         }
 
-        // A blank port already answered `port_empty`; two of them must not also read as shared.
-        if (action.effect !== 'rerun-source' && isNotBlank(action.port)) {
+        // A port refused on its own (blank or reserved) is not also reported as shared.
+        if (action.effect !== 'rerun-source' && isNotBlank(action.port) && action.port !== 'errorRoute') {
           if (seenPorts.has(action.port)) {
             context.addIssue(decisionIssue('duplicate_port', ['actions', index, 'port'], action.port));
           }
