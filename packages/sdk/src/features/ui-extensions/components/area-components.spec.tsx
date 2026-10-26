@@ -296,6 +296,6 @@ describe('area content components', () => {
     expect(screen.queryByRole('button', { name: 'Docs' })).toBeNull();
     expect(registry.getAreaSlot('propertiesPanelHeader').element).toBeNull();
     expect(registry.getAreaSlot('propertiesPanelHeader', 'after').element).toBeNull();
-    expect(screen.getByText('Properties')).toBeTruthy();
+    expect(screen.getByText('Review')).toBeTruthy();
   });
 });
