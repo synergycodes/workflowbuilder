@@ -4,6 +4,14 @@
 
 ### Date: 26.05.2025
 
+> **Superseded in part (02.10.2026, noted 26.10.2026).** The separation from UI state stands. The claims that validation is "driven solely by the JSON Schema" and that the same schema can be checked externally "with a standard AJV validator" no longer hold. The form's verdict deviates from a standard validator in three places, all under `packages/sdk/src/utils/validation/workflow-builder-validator/`:
+>
+> 1. Blank text (`''` or whitespace) in a top-level property is a missing value, so `required` fires; where the property's `type` lists `null` it becomes `null`, so string keywords such as `minLength` and `format` do not apply (`utils/combine-validators.ts`).
+> 2. A whole-string variable reference (`{{global.email}}`) passes whatever the property's `type` or `format` says; its errors are stripped after validation (`utils/remove-reference-is-string-error.ts`).
+> 3. `date` and `datetime` are accepted as property types; a standard validator fails every value of such a property (`workflow-builder-validator-for-custom-types.ts`).
+>
+> A standard validator run on the same schema and data is stricter on 1 and 2 and fails outright on 3. Details and limits: `variable-references-and-date-types.decision-log.md` next to those files.
+
 ## Context
 
 In the JSON Form implementation, we faced a challenge in managing **validation** in combination with the **UI schema** that defines visibility and enable/disable conditions for controls. Specifically:
@@ -70,4 +78,4 @@ We decided to **fully separate validation from UI state**. This means:
 
 ## Status
 
-Accepted
+Accepted. Superseded in part on 02.10.2026, see the note at the top.

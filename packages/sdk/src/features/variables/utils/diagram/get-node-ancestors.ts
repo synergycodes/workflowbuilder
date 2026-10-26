@@ -5,6 +5,10 @@ type AncestorConnection = {
   sourceHandle?: string | undefined;
 };
 
+/**
+ * Every upstream source and handle pair reachable through incoming edges, nearest first.
+ * A node wired through two handles appears once per handle; cycles terminate.
+ */
 export function getNodeAncestors(nodeId: string, edges: WorkflowBuilderEdge[]): AncestorConnection[] {
   const ancestors = new Map<string, AncestorConnection>();
 

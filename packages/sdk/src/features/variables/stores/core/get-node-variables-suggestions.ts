@@ -9,7 +9,7 @@ import { type VariablesSuggestionsStore, useVariablesSuggestionsStore } from '..
 
 type UndefinedNotIndexed = undefined;
 
-// Placeholders stored under commonByType become this node's id and label
+/** Swaps the `commonByType` placeholders in suggestion ids and displays for this node's id and label. */
 function resolveCommonNodePlaceholders<T extends { [key: string]: VariableSuggestion[] | undefined }>(
   suggestionsByKey: T,
   node: { nodeId: string; nodeLabel: string },
@@ -26,7 +26,10 @@ function resolveCommonNodePlaceholders<T extends { [key: string]: VariableSugges
   ) as T;
 }
 
-// General getter for all variables from a node, by source handle and by source handle type
+/**
+ * A node's suggestions by source handle and by source handle type.
+ * Nodes without their own entry get the shared `commonByType` entry resolved to their id and label.
+ */
 export const getVariableBySourceHandlesForNode = (params: {
   nodeId: string;
   cachedStore?: VariablesSuggestionsStore;
@@ -54,7 +57,10 @@ export const getVariableBySourceHandlesForNode = (params: {
   };
 };
 
-// Getter for variables of picked node available from picked sourceHandle
+/**
+ * Suggestions reachable from one source handle of a node: the handle's own, the settled ones,
+ * and the error or success ones depending on the handle. Undefined when the node is not indexed.
+ */
 export const getNodeVariablesSuggestions = (params: {
   nodeId: string;
   sourceHandle: string | undefined;
