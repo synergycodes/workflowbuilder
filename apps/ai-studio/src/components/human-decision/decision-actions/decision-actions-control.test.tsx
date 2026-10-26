@@ -275,12 +275,12 @@ describe('the decider actions control in the real properties panel', () => {
   it('locks the switches while the canvas is in the app bar read-only mode', async () => {
     await renderPanel([human(defaultDecisionRequest)]);
 
-    act(() => useStore.getState().setToggleReadOnlyMode(true));
+    act(() => useStore.getState().setReadOnly(true));
     expect(toggle('reject')?.hasAttribute('data-disabled')).toBe(true);
     expect(toggle('reasonRequired')?.hasAttribute('data-disabled')).toBe(true);
     expect(checkbox('reject')?.disabled).toBe(true);
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     expect(toggle('reject')?.hasAttribute('data-disabled')).toBe(false);
     expect(checkbox('reject')?.disabled).toBe(false);
   });
@@ -300,7 +300,7 @@ describe('the decider actions control in the real properties panel', () => {
     act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
     expect(sectionHeader()).toBeUndefined();
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     act(() => applyEvent(event({ type: 'node_waiting', nodeId: HUMAN })));
     expect(sectionHeader()).toBeUndefined();
 
