@@ -1,4 +1,5 @@
 import { env } from '../env';
+import { formatErrorChain } from '../format-error-chain';
 import { logger as backendLogger } from '../logger';
 
 const logger = backendLogger.child({ component: 'turnstile' });
@@ -35,9 +36,7 @@ export async function verifyTurnstileToken(token: string, remoteIp?: string): Pr
     }
     return result.success === true;
   } catch (error) {
-    logger.error('turnstile verification error', {
-      error: error instanceof Error ? error.message : String(error),
-    });
+    logger.error('turnstile verification error', { error: formatErrorChain(error) });
     return false;
   }
 }
