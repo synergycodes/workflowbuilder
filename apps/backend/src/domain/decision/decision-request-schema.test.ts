@@ -112,7 +112,14 @@ describe('decisionRequestSchema', () => {
       }),
     );
 
-    expect(parsed.actions).toEqual([approve, reject, askAgain]);
+    expect(parsed.actions).toEqual([{ ...approve, reasonRequired: false }, reject, askAgain]);
+  });
+
+  it('keeps reasonRequired on a resume action and defaults it to false', () => {
+    const parsed = decisionRequestSchema.parse(request({ actions: [{ ...approve, reasonRequired: true }, hold] }));
+
+    expect(parsed.actions[0]).toMatchObject({ reasonRequired: true });
+    expect(parsed.actions[1]).toMatchObject({ reasonRequired: false });
   });
 
   it('keeps unknown keys at every level', () => {

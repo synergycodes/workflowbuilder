@@ -157,7 +157,7 @@ describe('workflowSnapshotSchema: decision requests', () => {
     });
 
     expect(parsed.nodes[1]!.data.properties?.decisionRequest?.actions).toEqual([
-      approve,
+      { ...approve, reasonRequired: false },
       { ...askAgain, maxIterations: 3 },
     ]);
   });
@@ -689,7 +689,10 @@ describe('mapToExecutionModel', () => {
 
     expect(result.nodes[1]!.decisionRequest).toEqual({
       ...request,
-      actions: [request.actions[0], { ...request.actions[1], maxIterations: 3 }],
+      actions: [
+        { ...request.actions[0], reasonRequired: false },
+        { ...request.actions[1], maxIterations: 3 },
+      ],
     });
     expect(result.nodes[1]!.config).toEqual({ foo: 1 });
     expect(result.nodes[1]!.label).toBe('Review');

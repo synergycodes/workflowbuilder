@@ -579,6 +579,42 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     expect(completion).not.toHaveProperty('outcome');
   });
 
+  it('answers 400 reason_required for a flagged resume action without a reason, and routes it on its port with one', async () => {
+    const flagged = structuredClone(snapshot);
+    const review = flagged.nodes.find((node) => node.id === 'review-1')?.data.properties as {
+      decisionRequest: { actions: Record<string, unknown>[] };
+    };
+    review.decisionRequest.actions[1].reasonRequired = true;
+    program({ ...waitingExecution, workflowSnapshotJson: flagged });
+
+    const refused = await decide(buildApp(allowAll()), { nodeId: 'review-1', attempt: 1, action: 'hold' });
+
+    expect(refused.status).toBe(400);
+    const refusal = await bodyOf(refused);
+    expect(refusal.code).toBe('invalid_decision');
+    expect(refusal.details?.[0]).toMatchObject({ code: 'reason_required', path: ['reason'] });
+    expect(engineMock.resolveNode).not.toHaveBeenCalled();
+
+    program({ ...waitingExecution, workflowSnapshotJson: flagged });
+    const accepted = await decide(buildApp(allowAll()), {
+      nodeId: 'review-1',
+      attempt: 1,
+      action: 'hold',
+      reason: 'missing invoice',
+    });
+
+    expect(accepted.status).toBe(200);
+    expect(engineMock.resolveNode.mock.calls[0]?.[0]?.resolution).toMatchObject({ nextPort: 'source:inner:held' });
+  });
+
+  it('decides a resume action of a request stored without the flag, with no reason', async () => {
+    program(waitingExecution);
+
+    const response = await decide(buildApp(allowAll()), { nodeId: 'review-1', attempt: 1, action: 'hold' });
+
+    expect(response.status).toBe(200);
+  });
+
   it('edits ride on any resume action, not only the first', async () => {
     program(waitingExecution);
 

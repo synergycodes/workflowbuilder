@@ -25,6 +25,8 @@ export type ResumeDecisionAction = DecisionActionBase & {
   effect: 'resume';
   /** Required: the id of the output handle the run continues on. Never `errorRoute`. */
   port: string;
+  /** Whether the decider must give a reason. Defaults to `false`. */
+  reasonRequired: boolean;
 };
 
 /** Rejects the proposal: the run continues on `port`. At most one per request, and the only action that records an outcome. */

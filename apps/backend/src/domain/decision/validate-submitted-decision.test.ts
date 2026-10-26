@@ -10,10 +10,23 @@ import {
   validateSubmittedDecision,
 } from './validate-submitted-decision';
 
-const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
+const approve = {
+  name: 'approve',
+  label: 'Approve',
+  effect: 'resume',
+  port: 'approved',
+  reasonRequired: false,
+} as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', maxIterations: 3 } as const;
-const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held' } as const;
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held', reasonRequired: false } as const;
+const escalate = {
+  name: 'escalate',
+  label: 'Escalate',
+  effect: 'resume',
+  port: 'source:inner:escalated',
+  reasonRequired: true,
+} as const;
 
 // As the parser leaves it: defaults present, every action explicit.
 function requestWith(overrides: Partial<DecisionRequest> = {}): DecisionRequest {
@@ -214,6 +227,22 @@ describe('validateSubmittedDecision', () => {
       call: { action: 'reject', reason: '   ' },
       code: 'reason_required',
       value: 'reject',
+      path: ['reason'],
+    },
+    {
+      name: 'a resume action that requires a reason, without one',
+      request: requestWith({ actions: [approve, escalate] }),
+      call: { action: 'escalate' },
+      code: 'reason_required',
+      value: 'escalate',
+      path: ['reason'],
+    },
+    {
+      name: 'a resume action that requires a reason, with a blank one',
+      request: requestWith({ actions: [approve, escalate] }),
+      call: { action: 'escalate', reason: '   ' },
+      code: 'reason_required',
+      value: 'escalate',
       path: ['reason'],
     },
     {
@@ -444,6 +473,22 @@ describe('validateSubmittedDecision', () => {
 
     expect(readOnlyFirst.error).toMatchObject({ code: 'field_not_editable', path: ['edits', 'orderDate'] });
     expect(unknownFirst.error).toMatchObject({ code: 'unknown_field', path: ['edits', 'discount'] });
+  });
+
+  it('accepts a resume action that requires a reason and records the reason', () => {
+    const result = validateSubmittedDecision(requestWith({ actions: [approve, escalate] }), {
+      action: 'escalate',
+      reason: 'Needs a senior look',
+    });
+
+    expect(result.error).toBeUndefined();
+    expect(result.decision).toMatchObject({ action: 'escalate', effect: 'resume', reason: 'Needs a senior look' });
+  });
+
+  it('accepts a resume action without the flag and without a reason', () => {
+    const result = validateSubmittedDecision(requestWith({ actions: [approve, hold] }), { action: 'hold' });
+
+    expect(result.error).toBeUndefined();
   });
 
   it('records the action by name and returns the matched action beside the decision', () => {

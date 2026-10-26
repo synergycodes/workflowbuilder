@@ -41,6 +41,7 @@ const resumeActionSchema = z.looseObject({
   ...actionBase,
   effect: z.literal('resume'),
   port: portSchema,
+  reasonRequired: z.boolean().default(false),
 });
 
 const rejectActionSchema = z.looseObject({
