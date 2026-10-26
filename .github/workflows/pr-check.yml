@@ -7,10 +7,12 @@ name: PR Check
 # execution pipeline (execution-core, backend, execution-worker) — whose
 # determinism tests guard Temporal replay safety and so must not be able to
 # regress silently. Plus the deploy compose files, which ship to the demo VM on
-# every deploy, and global format consistency. apps/docs has its own path-filtered workflow
-# (pr-check-docs.yml); demo and ai-studio are not built or type-checked here — they're
-# internal and have their own broken-state tolerances — but their CSS goes
-# through the style lint below like every other workspace's.
+# every deploy, the deploy Dockerfile's air-gap boundary (every RUN after
+# `pnpm fetch` must be --network=none), and global format consistency.
+# apps/docs has its own path-filtered workflow (pr-check-docs.yml); demo and
+# ai-studio are not built or type-checked here — they're internal and have their
+# own broken-state tolerances — but their CSS goes through the style lint below
+# like every other workspace's.
 
 # PRs into main and release get checks. Add an integration branch here for
 # the time it is the base of stacked PRs.
@@ -62,6 +64,9 @@ jobs:
 
       - name: Test tools
         run: pnpm test:tools
+
+      - name: Air-gap boundary of the deploy Dockerfile
+        run: pnpm check:offline-build
 
   sdk:
     name: SDK lint + typecheck + test + build
@@ -192,6 +197,44 @@ jobs:
           if echo "$CHANGED" | grep -qE '^packages/ui/' && ! added_changeset_for '@workflowbuilder/sdk'; then
             echo "::warning title=Missing changeset::packages/ui changed with no new changeset for @workflowbuilder/sdk. The SDK build inlines @workflowbuilder/ui, so anything SDK consumers can see needs a changeset for the SDK as well."
           fi
+
+  mcp-server:
+    name: MCP docs server lint + typecheck + test + build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter mcp-server lint
+
+      - name: Typecheck
+        run: pnpm --filter mcp-server typecheck
+
+      - name: Test
+        run: pnpm --filter mcp-server test
+
+      - name: Build
+        run: pnpm --filter mcp-server build
+
+      - name: Smoke test against the real docs and API
+        run: pnpm --filter mcp-server smoke
 
   deploy-compose:
     name: Deploy compose files parse

@@ -26,7 +26,10 @@ export default {
     'apps/icons': {
       entry: ['index.ts', 'src/generate-icons.ts'],
       project: '**/*.{ts,tsx}',
-      ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
+      // svgr is run as a binary from generate-icons.ts, never imported, so knip
+      // cannot see it. Removing it sends the icons build back to fetching svgr
+      // over the network on every run.
+      ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
     },
     'apps/tools': {
       entry: ['src/scripts/*.ts'],
@@ -82,6 +85,11 @@ export default {
     'packages/tokens': {
       entry: ['src/index.ts'],
       project: ['src/**/*.ts', 'config.ts'],
+    },
+    'packages/mcp-server': {
+      entry: ['src/index.ts', 'scripts/*.ts'],
+      // The fixture sources are TypeDoc input, read through the generated JSON next to them.
+      project: ['src/**/*.ts', 'scripts/**/*.ts', '!src/__fixtures__/typedoc-src/**'],
     },
     'packages/temporal': {
       // test/fixtures/workflows.ts is an entry in its own right: the bundling test

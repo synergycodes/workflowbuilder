@@ -1,0 +1,8 @@
+{
+  "name": "@workflowbuilder/ui",
+  "files": [
+    "dist",
+    "README.md",
+    "css-layers.md"
+  ]
+}

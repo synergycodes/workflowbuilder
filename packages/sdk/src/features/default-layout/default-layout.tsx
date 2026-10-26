@@ -9,7 +9,7 @@ import { PaletteContainerLazy } from '../palette/palette-container-lazy';
 import { PropertiesBarContainerLazy } from '../properties-bar/properties-bar-container-lazy';
 
 /**
- * Default editor layout — floating overlay with top bar, left palette,
+ * Default editor layout — floating overlay with the editor header, left palette,
  * right properties panel, and a full-screen canvas underneath. Rendered
  * automatically by `<WorkflowBuilder.Root>` when no children are passed.
  *

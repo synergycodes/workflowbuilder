@@ -7,6 +7,7 @@ import type {
   OnSave,
   OnSaveExternal,
 } from '../../../types/integration';
+import type { WorkflowBuilderLoadContext } from '../../../workflow-builder-root/workflow-builder-root.types';
 import { showSnackbarSaveErrorIfNeeded, showSnackbarSaveSuccessIfNeeded } from '../utils/show-snackbar';
 import { IntegrationWrapper } from './integration-variants/wrapper/integration-wrapper';
 
@@ -17,6 +18,8 @@ type Props = PropsWithChildren<
     strategy: IntegrationStrategy;
     endpoints?: { load: string; save: string };
     onDataSave?: OnSaveExternal;
+    autoSave: boolean;
+    onLoad: (context: WorkflowBuilderLoadContext) => void;
   }
 >;
 
@@ -24,6 +27,8 @@ export function RuntimeIntegrationWrapper({
   strategy,
   endpoints,
   onDataSave,
+  autoSave,
+  onLoad,
   name: nameProperty,
   globalVariables: globalVariablesProperty,
   layoutDirection: layoutDirectionProperty,
@@ -41,35 +46,28 @@ export function RuntimeIntegrationWrapper({
     }),
   );
 
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [loadFailed, setLoadFailed] = useState(false);
+
   useEffect(() => {
-    if (strategy === 'localStorage') {
-      const stored = localStorage.getItem(localStorageDiagramKey);
-      if (!stored) return;
-      try {
-        const parsed = JSON.parse(stored) as IntegrationDataFormatOptional;
-        setData({
-          name: parsed.name,
-          globalVariables: parsed.globalVariables,
-          layoutDirection: parsed.layoutDirection,
-          nodes: parsed.nodes,
-          edges: parsed.edges,
-        });
-      } catch {
-        //
-      }
-    } else if (strategy === 'api' && endpoints?.load) {
-      (async () => {
-        try {
-          const response = await fetch(endpoints.load);
-          if (!response.ok) return;
-          const data = (await response.json()) as IntegrationDataFormatOptional | undefined;
-          if (data) setData(data);
-        } catch {
-          //
-        }
-      })();
+    if (strategy === 'api' && endpoints?.load) {
+      let isObsolete = false;
+      fetchDiagram(endpoints.load).then((result) => {
+        if (isObsolete) return;
+        if (!result.ok) setLoadFailed(true);
+        else if (result.data) setData(result.data);
+        setIsLoaded(true);
+      });
+      return () => {
+        isObsolete = true;
+      };
     }
-    // 'props' strategy: initial data comes from props, already set in useState initializer
+
+    if (strategy === 'localStorage') {
+      const stored = readStoredDiagram();
+      if (stored) setData(stored);
+    }
+    setIsLoaded(true);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSave: OnSave = useCallback(
@@ -127,9 +125,43 @@ export function RuntimeIntegrationWrapper({
       layoutDirection={layoutDirection}
       nodes={nodes}
       edges={edges}
+      isLoaded={isLoaded}
+      loadFailed={loadFailed}
+      onLoad={onLoad}
       onSave={handleSave}
+      autoSave={autoSave}
     >
       {children}
     </IntegrationWrapper>
   );
+}
+
+function readStoredDiagram(): IntegrationDataFormatOptional | undefined {
+  const stored = localStorage.getItem(localStorageDiagramKey);
+  if (!stored) return;
+  try {
+    const parsed = JSON.parse(stored) as IntegrationDataFormatOptional;
+    return {
+      name: parsed.name,
+      globalVariables: parsed.globalVariables,
+      layoutDirection: parsed.layoutDirection,
+      nodes: parsed.nodes,
+      edges: parsed.edges,
+    };
+  } catch {
+    return;
+  }
+}
+
+async function fetchDiagram(
+  url: string,
+): Promise<{ ok: true; data: IntegrationDataFormatOptional | null } | { ok: false }> {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) return { ok: false };
+    const body = await response.text();
+    return { ok: true, data: body.trim() ? (JSON.parse(body) as IntegrationDataFormatOptional | null) : null };
+  } catch {
+    return { ok: false };
+  }
 }

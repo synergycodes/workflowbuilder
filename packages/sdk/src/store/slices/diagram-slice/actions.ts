@@ -99,7 +99,7 @@ export function getStoreDataForIntegration(params: GetStoreDataParams = {}): Int
   const state = useStore.getState();
 
   return {
-    name: state.documentName || '',
+    name: state.workflowName || '',
     globalVariables: state.globalVariables || {},
     // It removes selected, dynamic points from avoid nodes etc.
     nodes: shouldSkipDynamicValues ? skipDynamicValuesInNodes(state.nodes) : state.nodes,
@@ -110,7 +110,7 @@ export function getStoreDataForIntegration(params: GetStoreDataParams = {}): Int
 
 export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFormat>) {
   useStore.setState((state) => ({
-    documentName: loadData.name ?? state.documentName,
+    workflowName: loadData.name ?? state.workflowName,
     globalVariables: loadData.globalVariables || state.globalVariables,
     nodes: (loadData.nodes ? migrateLegacyHandleIdsOnNodes(loadData.nodes) : state.nodes).map(getNodeWithErrors),
     edges: loadData.edges ? migrateLegacyHandleIdsOnEdges(loadData.edges) : state.edges,

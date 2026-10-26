@@ -35,7 +35,7 @@ beforeEach(() => {
 
 describe('useConnect — read-only mode', () => {
   beforeEach(() => {
-    useStore.setState({ isReadOnlyMode: true });
+    useStore.setState({ isReadOnly: true });
   });
 
   it('onConnect makes no store mutation and warns the user', () => {

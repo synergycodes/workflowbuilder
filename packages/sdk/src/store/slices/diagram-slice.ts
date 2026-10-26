@@ -21,15 +21,15 @@ export type DiagramState = {
   nodes: WorkflowBuilderNode[];
   edges: WorkflowBuilderEdge[];
   reactFlowInstance: WorkflowBuilderReactFlowInstance | null;
-  documentName: string | null;
+  workflowName: string | null;
   globalVariables: VariablesIndex;
-  isReadOnlyMode: boolean;
+  isReadOnly: boolean;
   layoutDirection: LayoutDirection;
   onConnect: OnConnect;
   onInit: (instance: WorkflowBuilderReactFlowInstance) => void;
-  setDocumentName: (name: string) => void;
+  setWorkflowName: (name: string) => void;
   setDiagramModel: (model?: DiagramModel, options?: { skipIfNotEmpty?: boolean }) => void;
-  setToggleReadOnlyMode: (value?: boolean) => void;
+  setReadOnly: (value: boolean) => void;
   setLayoutDirection: (value: LayoutDirection) => void;
   setConnectionBeingDragged: (nodeId: string | null, handleId: string | null) => void;
   connectionBeingDragged: ConnectionBeingDragged | null;
@@ -43,9 +43,9 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
     nodes: [],
     edges: [],
     reactFlowInstance: null,
-    documentName: null,
+    workflowName: null,
     globalVariables: {},
-    isReadOnlyMode: false,
+    isReadOnly: false,
     layoutDirection: 'RIGHT' as LayoutDirection,
     connectionBeingDragged: null,
     draggedSegmentDestinationId: null,
@@ -68,8 +68,8 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
     },
     setDiagramModel: (model?: DiagramModel, options?: { skipIfNotEmpty?: boolean }) => {
       if (options?.skipIfNotEmpty) {
-        const { documentName, nodes } = get();
-        const isEmpty = !documentName && nodes.length === 0;
+        const { workflowName, nodes } = get();
+        const isEmpty = !workflowName && nodes.length === 0;
 
         if (!isEmpty) {
           return;
@@ -78,7 +78,7 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
 
       const nodes = migrateLegacyHandleIdsOnNodes(model?.diagram.nodes.map(getNodeWithErrors) || []);
       const edges = migrateLegacyHandleIdsOnEdges(model?.diagram.edges || []);
-      const documentName = model?.name || 'Untitled';
+      const workflowName = model?.name || 'Untitled';
       const layoutDirection = model?.layoutDirection || 'RIGHT';
 
       trackFutureChange('setDiagramModel');
@@ -87,17 +87,17 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
         nodes,
         edges,
         layoutDirection,
-        documentName,
+        workflowName,
       });
     },
-    setDocumentName: (name: string) => {
+    setWorkflowName: (name: string) => {
       set({
-        documentName: name,
+        workflowName: name,
       });
     },
-    setToggleReadOnlyMode: (value?: boolean) => {
+    setReadOnly: (value: boolean) => {
       set({
-        isReadOnlyMode: value ?? !get().isReadOnlyMode,
+        isReadOnly: value,
       });
     },
     setLayoutDirection: (value: LayoutDirection) => {
