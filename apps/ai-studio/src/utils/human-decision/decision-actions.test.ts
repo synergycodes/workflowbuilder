@@ -26,6 +26,13 @@ describe('offeredActions', () => {
     ]);
   });
 
+  it('offers one action per name: a repeated name keeps the first', () => {
+    expect(offeredActions([approve, { ...approve, label: 'Again' }, reject])?.resumes).toEqual([
+      { name: 'approve', label: 'Approve' },
+    ]);
+    expect(offeredActions([approve, { ...reject, name: 'approve' }])?.reject).toBeUndefined();
+  });
+
   it('carries reasonRequired from the reject action', () => {
     expect(offeredActions([approve, { ...reject, reasonRequired: true }])?.reject?.reasonRequired).toBe(true);
   });

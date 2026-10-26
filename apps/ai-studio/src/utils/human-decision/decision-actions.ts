@@ -25,35 +25,19 @@ function isReject(entry: unknown): entry is Record<string, unknown> {
 
 // Authored node data: only the array is proven. A `rerun-source` action is left out: the endpoint answers 501 for it.
 export function offeredActions(actions: readonly unknown[]): OfferedActions | undefined {
-  const resumes: ResumeOffer[] = [];
-  let reject: RejectOffer | undefined;
-  let rejectSeen = false;
-  const seen = new Set<string>();
-  for (const entry of actions.filter(isPlainObject)) {
-    const effect = entry['effect'];
-    if (effect === 'reject') {
-      const isFirst = !rejectSeen;
-      rejectSeen = true;
-      // A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
-      if (!isFirst || !hasText(entry['port'])) {
-        continue;
-      }
-    } else if (effect !== 'resume') {
-      continue;
-    }
-    const offer = offerOf(entry);
-    // Publish refuses a repeated name, but the form reads the canvas node and the backend decides by the first action
-    // of a name, so a later namesake is left out here too.
-    if (offer === undefined || seen.has(offer.name)) {
-      continue;
-    }
-    seen.add(offer.name);
-    if (effect === 'resume') {
-      resumes.push(offer);
-    } else {
-      reject = { ...offer, reasonRequired: entry['reasonRequired'] === true };
-    }
-  }
+  // The form keys a button and an open dialog by name, so a name is offered once.
+  const named = actions
+    .filter(isPlainObject)
+    // A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
+    .filter((entry) => entry['effect'] === 'resume' || (isReject(entry) && hasText(entry['port'])))
+    .filter((entry) => hasText(entry['name']))
+    .filter((entry, index, all) => all.findIndex((other) => other['name'] === entry['name']) === index);
+  const resumes = named.filter((entry) => entry['effect'] === 'resume').map((entry) => offerOf(entry) as Offer);
+  const rejectEntry = named.find((entry) => entry['effect'] === 'reject');
+  const reject = rejectEntry && {
+    ...(offerOf(rejectEntry) as Offer),
+    reasonRequired: rejectEntry['reasonRequired'] === true,
+  };
   return resumes.length === 0 ? undefined : { resumes, reject };
 }
 
