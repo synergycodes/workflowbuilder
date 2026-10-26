@@ -21,6 +21,12 @@ describe('postcss-scope-prefix baseFiles', () => {
       ':is(#wb, .workflow-builder-root) :where(.button) { color: red }',
     );
   });
+
+  it('keeps a pseudo-element outside :where(), where browsers accept it', async () => {
+    expect(await run('.button::after, .link:hover:before { color: red }', 'ui', '/x/src/base.css')).toBe(
+      ':is(#wb, .workflow-builder-root) :where(.button)::after, :is(#wb, .workflow-builder-root) :where(.link:hover):before { color: red }',
+    );
+  });
 });
 
 describe('postcss-scope-prefix', () => {

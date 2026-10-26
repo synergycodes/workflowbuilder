@@ -3,7 +3,7 @@ import path from 'node:path';
 
 import postcss, { AtRule, type ChildNode, type Declaration, type Node, type Root, type Rule } from 'postcss';
 
-import { isVariableOnlyRule } from '../postcss-layer-root-defaults.mjs';
+import { isThemeScopedDefaults, isVariableOnlyRule, targetsRoot } from '../postcss-layer-root-defaults.mjs';
 import { PREFIX } from '../postcss-scope-prefix.mjs';
 
 const packageDirectory = path.resolve(import.meta.dirname, '..');
@@ -82,9 +82,7 @@ function isScoped(selector: string): boolean {
 }
 
 function isDefaultsBlock(rule: Rule): boolean {
-  return (
-    isVariableOnlyRule(rule) && rule.selectors.every((selector) => /^(?::root|\[data-wb-theme)/.test(selector.trim()))
-  );
+  return isVariableOnlyRule(rule) && (targetsRoot(rule) || isThemeScopedDefaults(rule));
 }
 
 function checkUnlayered(container: Root | AtRule, report: Report): void {

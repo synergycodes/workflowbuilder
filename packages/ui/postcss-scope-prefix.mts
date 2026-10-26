@@ -22,6 +22,9 @@ export const PREFIX: Record<PrefixStrength, string> = {
 // Whitespace-free: the UI dist the SDK build re-reads is minified.
 const ALREADY_PREFIXED = Object.values(PREFIX).map((prefix) => prefix.replaceAll(/\s/g, ''));
 
+// Invalid inside :where(), which would drop the rule; includes the legacy single-colon forms.
+const TRAILING_PSEUDO_ELEMENT = /(?:::[\w-]+(?:\([^)]*\))?|:(?:before|after|first-line|first-letter))$/i;
+
 // Allowlist, as in postcss-box-sizing: @keyframes, @font-face, @layer and unknown at-rules are left alone.
 const STYLING_CONTEXTS = new Set(['media', 'supports', 'container']);
 
@@ -46,7 +49,9 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
     return isBare ? selector : prefix.trimEnd() + trimmed;
   }
 
-  return prefix + (isBase ? `:where(${trimmed})` : trimmed);
+  if (!isBase) return prefix + trimmed;
+  const pseudoElement = TRAILING_PSEUDO_ELEMENT.exec(trimmed)?.[0] ?? '';
+  return `${prefix}:where(${trimmed.slice(0, trimmed.length - pseudoElement.length)})${pseudoElement}`;
 }
 
 function prefixRule(rule: Rule, { strength, vendoredFiles, baseFiles }: ScopePrefixOptions): void {

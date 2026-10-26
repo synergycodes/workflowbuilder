@@ -52,6 +52,10 @@ describe('checkStylesheet', () => {
     );
   });
 
+  it('rejects an unprefixed variable override under a theme', () => {
+    expect(problems("@layer ui.base;\n[data-wb-theme='dark'] .x { --a: 1 }")).toMatch(/Unprefixed built CSS/);
+  });
+
   it('requires the layer order statement first', () => {
     expect(problems(':is(#wb, .workflow-builder-root) .a { color: red }')).toMatch(/Missing leading layer order/);
   });
