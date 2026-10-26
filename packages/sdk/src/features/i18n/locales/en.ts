@@ -70,6 +70,7 @@ export const en = {
   },
   propertiesBar: {
     label: 'Properties',
+    edge: 'Link',
     deleteNode: 'Delete node',
     deleteEdge: 'Delete edge',
   },
