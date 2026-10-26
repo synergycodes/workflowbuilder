@@ -1,98 +1,118 @@
-@layer ui.component {
-  .container {
-    background: transparent;
-    border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
-    color: var(--wb-public-input-root-color);
-    cursor: pointer;
-    width: 100%;
+.container {
+  background: transparent;
+  border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
+  color: var(--wb-public-input-root-color);
+  cursor: pointer;
+  width: 100%;
 
-    &[aria-expanded='true'] {
-      border-color: var(--wb-public-input-root-border-color-focus);
-    }
-
-    &.container--error {
-      background-color: var(--wb-public-input-root-background-color-critical);
-      border-color: var(--wb-public-input-root-border-color-critical);
-      color: var(--wb-public-input-root-color-critical);
-    }
-
-    &:disabled,
-    &[data-disabled] {
-      background-color: var(--wb-public-input-root-background-color-disabled);
-      color: var(--wb-public-input-root-color-disabled);
-      cursor: auto;
-    }
-
-    &.container--placeholder {
-      opacity: 0.5;
-    }
+  &[aria-expanded='true'] {
+    border-color: var(--wb-public-input-root-border-color-focus);
   }
 
-  .trigger-label {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  &.container--error {
+    background-color: var(--wb-public-input-root-background-color-critical);
+    border-color: var(--wb-public-input-root-border-color-critical);
+    color: var(--wb-public-input-root-color-critical);
   }
 
-  .calendar {
-    composes: wb-text-body-s from global;
-    font-size: var(--wb-ds-font-size-150);
-    font-weight: 400;
-    line-height: 130%;
-    background: var(--wb-public-date-picker-dropdown-background);
-    border: var(--wb-ds-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
-    border-radius: var(--wb-ds-radius-100);
-    box-shadow: var(--wb-public-date-picker-dropdown-box-shadow);
-    color: var(--wb-public-date-picker-color);
+  &:disabled,
+  &[data-disabled] {
+    background-color: var(--wb-public-input-root-background-color-disabled);
+    color: var(--wb-public-input-root-color-disabled);
+    cursor: auto;
   }
 
-  /*
-   * react-day-picker theming. The library's own style.css is imported into
-   * `ui.base` (see variables.css), so these `ui.component` rules win by layer
-   * order alone - load order and specificity don't matter.
-   * `.calendar` is the Popover popup that wraps the calendar.
-   */
-  .calendar :global(.rdp-root) {
-    --rdp-day_button-border-radius: var(--wb-ds-radius-75);
-    --rdp-selected-border: none;
-    --rdp-today-color: var(--wb-public-date-picker-date-today-color);
-    /* retheme react-day-picker's accent (range
-       endpoints, focus rings) to our token instead. */
-    --rdp-accent-color: var(--wb-public-date-picker-date-today-color);
+  &.container--placeholder {
+    opacity: 0.5;
   }
+}
 
-  .calendar :global(.rdp-day_button) {
-    transition: background-color 0.12s ease;
-  }
+.trigger-label {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
 
-  .calendar :global(.rdp-weekday) {
-    font-size: var(--wb-ds-font-size-150);
-    font-weight: 400;
-    line-height: 130%;
-  }
+.calendar {
+  composes: wb-text-body-s from global;
+  font-size: var(--wb-ds-font-size-150);
+  font-weight: 400;
+  line-height: 130%;
+  background: var(--wb-public-date-picker-dropdown-background);
+  border: var(--wb-ds-size-12) solid var(--wb-public-date-picker-dropdown-border-color);
+  border-radius: var(--wb-ds-radius-100);
+  box-shadow: var(--wb-public-date-picker-dropdown-box-shadow);
+  color: var(--wb-public-date-picker-color);
+}
 
-  .calendar :global(.rdp-month_caption) {
-    font-size: var(--wb-ds-font-size-150);
-    font-weight: 600;
-    line-height: 130%;
-  }
+/* react-day-picker theming; `.calendar` is the Popover popup that wraps the calendar. */
+.calendar :global(.rdp-root) {
+  --rdp-day_button-border-radius: var(--wb-ds-radius-75);
+  --rdp-day_button-width: 42px;
+  --rdp-day_button-height: 42px;
+  --rdp-nav_button-width: 2.25rem;
+  --rdp-nav_button-height: 2.25rem;
+  --rdp-selected-border: none;
+  --rdp-today-color: var(--wb-public-date-picker-date-today-color);
+  /* retheme react-day-picker's accent (range
+     endpoints, focus rings) to our token instead. */
+  --rdp-accent-color: var(--wb-public-date-picker-date-today-color);
+}
 
-  /* month-nav chevrons: react-day-picker paints them with --rdp-accent-color;
-     render them as a neutral nav control so both arrows match each other and the
-     rest of the calendar. */
-  .calendar :global(.rdp-chevron) {
-    fill: var(--wb-public-date-picker-nav-color);
-  }
+/* react-day-picker's CSS is weightless here (vendored), so a host rule like `.app button { all: unset }`
+   would collapse its buttons; their box is restated at component strength. */
+.calendar :global(.rdp-day_button),
+.calendar :global(.rdp-button_next),
+.calendar :global(.rdp-button_previous) {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+}
 
-  .calendar :global(.rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover) {
-    background-color: var(--wb-public-date-picker-date-hover-background-color);
-  }
+.calendar :global(.rdp-day_button) {
+  width: var(--rdp-day_button-width);
+  height: var(--rdp-day_button-height);
+  border-radius: var(--rdp-day_button-border-radius);
+  transition: background-color 0.12s ease;
+}
 
-  .calendar :global(.rdp-selected .rdp-day_button) {
-    background-color: var(--wb-public-date-picker-date-selected-background-color);
-    color: var(--wb-public-date-picker-date-selected-color);
-    font-size: var(--wb-ds-font-size-150);
-    font-weight: 600;
-    line-height: 130%;
-  }
+.calendar :global(.rdp-button_next),
+.calendar :global(.rdp-button_previous) {
+  width: var(--rdp-nav_button-width);
+  height: var(--rdp-nav_button-height);
+  border: none;
+  background: none;
+}
+
+.calendar :global(.rdp-weekday) {
+  font-size: var(--wb-ds-font-size-150);
+  font-weight: 400;
+  line-height: 130%;
+}
+
+.calendar :global(.rdp-month_caption) {
+  font-size: var(--wb-ds-font-size-150);
+  font-weight: 600;
+  line-height: 130%;
+}
+
+/* month-nav chevrons: react-day-picker paints them with --rdp-accent-color;
+   render them as a neutral nav control so both arrows match each other and the
+   rest of the calendar. */
+.calendar :global(.rdp-chevron) {
+  fill: var(--wb-public-date-picker-nav-color);
+}
+
+.calendar :global(.rdp-day:not(.rdp-disabled):not(.rdp-selected) .rdp-day_button:hover) {
+  background-color: var(--wb-public-date-picker-date-hover-background-color);
+}
+
+.calendar :global(.rdp-selected .rdp-day_button) {
+  background-color: var(--wb-public-date-picker-date-selected-background-color);
+  color: var(--wb-public-date-picker-date-selected-color);
+  font-size: var(--wb-ds-font-size-150);
+  font-weight: 600;
+  line-height: 130%;
 }

@@ -2,34 +2,32 @@
   --wb-public-collapsible-transition-duration: 0.2s;
 }
 
-@layer ui.component {
-  .expand-button {
-    z-index: 10;
+.expand-button {
+  z-index: 10;
 
-    svg {
-      transition: transform var(--wb-public-collapsible-transition-duration) ease;
-    }
-
-    &.expanded {
-      svg {
-        transform: rotate(180deg);
-      }
-    }
+  svg {
+    transition: transform var(--wb-public-collapsible-transition-duration) ease;
   }
 
-  .content-wrapper {
-    display: grid;
-    grid-template-rows: 0fr;
-    overflow: hidden;
-    transition: grid-template-rows var(--wb-public-collapsible-transition-duration) ease;
-
-    &.expanded {
-      overflow: unset;
-      grid-template-rows: 1fr;
+  &.expanded {
+    svg {
+      transform: rotate(180deg);
     }
+  }
+}
 
-    .content {
-      min-height: 0;
-    }
+.content-wrapper {
+  display: grid;
+  grid-template-rows: 0fr;
+  overflow: hidden;
+  transition: grid-template-rows var(--wb-public-collapsible-transition-duration) ease;
+
+  &.expanded {
+    overflow: unset;
+    grid-template-rows: 1fr;
+  }
+
+  .content {
+    min-height: 0;
   }
 }

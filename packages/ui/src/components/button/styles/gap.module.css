@@ -6,24 +6,22 @@
   --wb-public-button-gap-xs: var(--wb-ds-space-100);
 }
 
-@layer ui.component {
-  .xl {
-    gap: var(--wb-public-button-gap-xl);
-  }
+.xl {
+  gap: var(--wb-public-button-gap-xl);
+}
 
-  .l {
-    gap: var(--wb-public-button-gap-l);
-  }
+.l {
+  gap: var(--wb-public-button-gap-l);
+}
 
-  .m {
-    gap: var(--wb-public-button-gap-m);
-  }
+.m {
+  gap: var(--wb-public-button-gap-m);
+}
 
-  .s {
-    gap: var(--wb-public-button-gap-s);
-  }
+.s {
+  gap: var(--wb-public-button-gap-s);
+}
 
-  .xs {
-    gap: var(--wb-public-button-gap-xs);
-  }
+.xs {
+  gap: var(--wb-public-button-gap-xs);
 }

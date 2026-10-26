@@ -1,3 +1,4 @@
+import { PortalContainerProvider } from '@workflowbuilder/ui';
 import { type ReactNode, useEffect, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 
@@ -7,8 +8,8 @@ import previewCss from '../../../../../packages/ui/tmp/docs-preview.css?raw';
 
 // Examples render in a shadow root so Starlight's rules cannot reach them and
 // the library's cannot leak out. Inherited and custom properties still cross
-// the boundary - that is how the docs theme reaches the examples. Inside a
-// shadow root `:root` matches nothing, hence the retarget to `:host`.
+// the boundary - that is how the themed tokens on the host reach the examples.
+// Inside a shadow root `:root` matches nothing, hence the retarget to `:host`.
 // The boundary also stops the docs' own stylesheets, so example layout lives
 // here as `Stack` and `Row` rather than in per-example CSS modules.
 const shadowCss = `${previewCss.replaceAll(':root', ':host')}
@@ -26,6 +27,7 @@ function Row({ children }: { children: ReactNode }) {
 
 export function ComponentPreview({ children }: { children: ReactNode }) {
   const hostRef = useRef<HTMLDivElement>(null);
+  const popupRef = useRef<HTMLDivElement | null>(null);
   const [shadow, setShadow] = useState<ShadowRoot | null>(null);
 
   useEffect(() => {
@@ -38,11 +40,28 @@ export function ComponentPreview({ children }: { children: ReactNode }) {
     setShadow(root);
   }, [shadow]);
 
+  // Popups leave the shadow root for the document, where only this box gives them the scope and theme.
+  useEffect(() => {
+    const popups = document.createElement('div');
+    popups.className = 'workflow-builder-root';
+    popups.dataset.wbTheme = 'dark';
+    document.body.append(popups);
+    popupRef.current = popups;
+    return () => popups.remove();
+  }, []);
+
   return (
     <div className={styles.stage}>
       <div className={styles.spotlight}>
-        <div ref={hostRef} className={styles.host}>
-          {shadow ? createPortal(children, shadow) : null}
+        <div ref={hostRef} className={styles.host} data-wb-theme="dark">
+          {shadow
+            ? createPortal(
+                <PortalContainerProvider container={popupRef}>
+                  <div className="workflow-builder-root">{children}</div>
+                </PortalContainerProvider>,
+                shadow,
+              )
+            : null}
         </div>
       </div>
     </div>

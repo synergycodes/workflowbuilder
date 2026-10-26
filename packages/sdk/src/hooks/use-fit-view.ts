@@ -29,7 +29,8 @@ export function useFitView() {
 export function fitDiagramView(reactFlowInstance: WorkflowBuilderReactFlowInstance | null) {
   requestAnimationFrame(() => {
     const scale = reactFlowInstance?.getZoom() ?? 1;
-    const padding = getPadding(scale);
+    // One editor per page; scoped to it because the host page can have its own React Flow canvas.
+    const padding = getPadding(scale, document.querySelector('.workflow-builder-root-shell') ?? document);
 
     if (reactFlowInstance) {
       reactFlowInstance.fitView({
@@ -41,18 +42,17 @@ export function fitDiagramView(reactFlowInstance: WorkflowBuilderReactFlowInstan
   });
 }
 
-function getPadding(scale: number) {
-  const viewportBounds = document.querySelector('#viewport-bounds');
-  const viewportRect = viewportBounds?.getBoundingClientRect();
+export function getPadding(scale: number, editor: ParentNode): FitViewOptions['padding'] {
+  const viewportRect = editor.querySelector('#viewport-bounds')?.getBoundingClientRect();
+  const canvasRect = editor.querySelector('.react-flow')?.getBoundingClientRect();
 
-  const padding: FitViewOptions['padding'] = viewportRect
-    ? {
-        left: `${viewportRect.left + FIT_VIEW_BASE_PADDING * scale}px`,
-        top: `${viewportRect.top + FIT_VIEW_BASE_PADDING * scale}px`,
-        right: `${window.innerWidth - viewportRect.right + FIT_VIEW_BASE_PADDING * scale}px`,
-        bottom: `${window.innerHeight - viewportRect.bottom + FIT_VIEW_BASE_PADDING * scale}px`,
-      }
-    : `${FIT_VIEW_BASE_PADDING}px`;
+  if (!viewportRect || !canvasRect) return `${FIT_VIEW_BASE_PADDING}px`;
 
-  return padding;
+  const basePadding = FIT_VIEW_BASE_PADDING * scale;
+  return {
+    left: `${viewportRect.left - canvasRect.left + basePadding}px`,
+    top: `${viewportRect.top - canvasRect.top + basePadding}px`,
+    right: `${canvasRect.right - viewportRect.right + basePadding}px`,
+    bottom: `${canvasRect.bottom - viewportRect.bottom + basePadding}px`,
+  };
 }

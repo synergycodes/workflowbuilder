@@ -1,5 +1,7 @@
 import type { ChildNode, Document, Plugin, Root, Rule } from 'postcss';
 
+import { isThemeScopedDefaults } from './postcss-layer-root-defaults.mjs';
+
 /**
  * PostCSS plugin that adds `box-sizing: border-box` to every styling rule
  * in CSS Module files (*.module.css). This ensures all library
@@ -44,20 +46,17 @@ export function boxSizingPlugin(): Plugin {
           if (!file.endsWith('.module.css')) return;
 
           root.walkRules((rule) => {
-            if (targetsRoot(rule)) return;
+            // Default blocks (`:root`, bare `[data-wb-theme…]`) style no element.
+            if (targetsRoot(rule) || isThemeScopedDefaults(rule)) return;
             if (!isPlainStylingContext(rule)) return;
 
-            const hasDeclarations = rule.nodes?.some(
-              (node) => node.type === 'decl',
-            );
+            const hasDeclarations = rule.nodes?.some((node) => node.type === 'decl');
 
             // Skip rules that only contain nested rules (no declarations).
             // Adding box-sizing to such container rules would leak to unintended elements
             if (!hasDeclarations) return;
 
-            const hasBoxSizing = rule.nodes?.some(
-              (node) => node.type === 'decl' && node.prop === 'box-sizing',
-            );
+            const hasBoxSizing = rule.nodes?.some((node) => node.type === 'decl' && node.prop === 'box-sizing');
 
             if (!hasBoxSizing) {
               rule.prepend({ prop: 'box-sizing', value: 'border-box' });

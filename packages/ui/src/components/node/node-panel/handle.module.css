@@ -11,92 +11,81 @@
   --wb-public-node-port-border-color-hover: var(--wb-ds-canvas-port-stroke-active);
 }
 
-@layer ui.component {
-  .handle-wrapper {
-    & .header {
-      position: relative;
+.handle-wrapper {
+  & .header {
+    position: relative;
 
-      :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
-        top: calc(var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-border-size) + 0.75rem);
-      }
-      :global(.react-flow__handle.react-flow__handle-right) {
-        box-sizing: content-box;
-        right: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
-      }
-
-      :global(.react-flow__handle.react-flow__handle-left) {
-        box-sizing: content-box;
-        left: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
-      }
+    :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
+      top: calc(var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-border-size) + 0.75rem);
     }
-
-    :global(.react-flow__handle.react-flow__handle-top) {
+    :global(.react-flow__handle.react-flow__handle-right) {
       box-sizing: content-box;
-      top: 0;
-      transform: translate(-50%, -50%);
+      right: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
     }
 
-    :global(.react-flow__handle.react-flow__handle-bottom) {
+    :global(.react-flow__handle.react-flow__handle-left) {
       box-sizing: content-box;
-      bottom: 0;
-      transform: translate(-50%, 50%);
+      left: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
     }
+  }
 
-    :global(.react-flow__handle) {
-      box-sizing: content-box;
-      width: var(--wb-public-node-port-size);
-      height: var(--wb-public-node-port-size);
-      min-width: 0;
-      min-height: 0;
+  :global(.react-flow__handle.react-flow__handle-top) {
+    box-sizing: content-box;
+    top: 0;
+    transform: translate(-50%, -50%);
+  }
 
-      background: var(--wb-public-node-port-background-color);
-      border: var(--wb-public-node-port-border-size) solid var(--wb-public-node-port-border-color);
+  :global(.react-flow__handle.react-flow__handle-bottom) {
+    box-sizing: content-box;
+    bottom: 0;
+    transform: translate(-50%, 50%);
+  }
 
-      transition-property: background-color, border-color, width, height;
-      transition-timing-function: ease-in-out;
-      transition-duration: 0.1s;
-    }
+  :global(.react-flow__handle) {
+    box-sizing: content-box;
+    width: var(--wb-public-node-port-size);
+    height: var(--wb-public-node-port-size);
+    min-width: 0;
+    min-height: 0;
 
-    :global(.react-flow__handle::before) {
-      content: '';
+    background: var(--wb-public-node-port-background-color);
+    border: var(--wb-public-node-port-border-size) solid var(--wb-public-node-port-border-color);
 
-      position: absolute;
-      width: var(--wb-public-node-port-boundary-size);
-      height: var(--wb-public-node-port-boundary-size);
+    transition-property: background-color, border-color, width, height;
+    transition-timing-function: ease-in-out;
+    transition-duration: 0.1s;
+  }
 
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
+  :global(.react-flow__handle::before) {
+    content: '';
 
-      border-radius: 50%;
-    }
+    position: absolute;
+    width: var(--wb-public-node-port-boundary-size);
+    height: var(--wb-public-node-port-boundary-size);
 
-    /* State rules repeat the base rule's content-box opt-out: the build
-       injects border-box per rule, so an undeclared box-sizing here would
-       shrink the handle in exactly these states. */
-    /* .connectingto is assigned by proximity (connectionRadius), so :hover cannot cover the target. */
-    :global(.connectingfrom),
-    :global(.connectingto.valid) {
-      box-sizing: content-box;
-      background: var(--wb-public-node-port-background-color-hover);
-      border-color: var(--wb-public-node-port-border-color-hover);
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 
-      width: var(--wb-public-node-port-size-hover);
-      height: var(--wb-public-node-port-size-hover);
-    }
+    border-radius: 50%;
+  }
 
-    :global(.react-flow__handle) {
-      &:hover {
-        box-sizing: content-box;
-        background-color: var(--wb-public-node-port-background-color-hover);
-        border-color: var(--wb-public-node-port-border-color-hover);
+  /* State rules repeat the base rule's content-box opt-out: the build
+     injects border-box per rule, so an undeclared box-sizing here would
+     shrink the handle in exactly these states. */
+  /* .connectingto is assigned by proximity (connectionRadius), so :hover cannot cover the target. */
+  :global(.connectingfrom),
+  :global(.connectingto.valid) {
+    box-sizing: content-box;
+    background: var(--wb-public-node-port-background-color-hover);
+    border-color: var(--wb-public-node-port-border-color-hover);
 
-        width: var(--wb-public-node-port-size-hover);
-        height: var(--wb-public-node-port-size-hover);
-      }
-    }
+    width: var(--wb-public-node-port-size-hover);
+    height: var(--wb-public-node-port-size-hover);
+  }
 
-    &:hover :global(.react-flow__handle.connectionindicator) {
+  :global(.react-flow__handle) {
+    &:hover {
       box-sizing: content-box;
       background-color: var(--wb-public-node-port-background-color-hover);
       border-color: var(--wb-public-node-port-border-color-hover);
@@ -104,5 +93,14 @@
       width: var(--wb-public-node-port-size-hover);
       height: var(--wb-public-node-port-size-hover);
     }
+  }
+
+  &:hover :global(.react-flow__handle.connectionindicator) {
+    box-sizing: content-box;
+    background-color: var(--wb-public-node-port-background-color-hover);
+    border-color: var(--wb-public-node-port-border-color-hover);
+
+    width: var(--wb-public-node-port-size-hover);
+    height: var(--wb-public-node-port-size-hover);
   }
 }

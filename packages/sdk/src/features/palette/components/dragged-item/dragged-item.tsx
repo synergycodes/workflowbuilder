@@ -4,6 +4,7 @@ import { createPortal } from 'react-dom';
 import styles from './dragged-item.module.css';
 
 import { isChrome, isFirefox, isOpera, isSafari } from '../../../../utils/browser';
+import { useOptionalSdkSurfaces } from '../../../../workflow-builder-root/sdk-surfaces';
 
 type DraggedItemProps = {
   zoom: number;
@@ -11,6 +12,8 @@ type DraggedItemProps = {
 
 export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedItemProps>>(
   ({ children, zoom }: PropsWithChildren<DraggedItemProps>, ref) => {
+    const surfaces = useOptionalSdkSurfaces();
+
     function getStyles() {
       if (isSafari && !isOpera && !isChrome) {
         return zoom > 1 ? { zoom: `${zoom}` } : { scale: `${zoom}` };
@@ -27,7 +30,7 @@ export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedI
       <div ref={ref} className={`${styles['container']} workflow-builder-root`} style={getStyles()}>
         {children}
       </div>,
-      document.body,
+      surfaces?.portal ?? document.body,
     );
   },
 );

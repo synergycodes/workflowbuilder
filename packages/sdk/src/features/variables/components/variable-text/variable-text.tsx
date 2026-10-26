@@ -9,7 +9,9 @@ import styles from './variable-text.module.css';
 
 import type { VariableType } from '../../../../node/node-output-schema';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
+import { useOptionalSdkSurfaces } from '../../../../workflow-builder-root/sdk-surfaces';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
+import { OverlayAttribute } from './overlay-attribute';
 import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
 
 const DEFAULT_TRIGGER = '{{';
@@ -147,6 +149,7 @@ function SuggestionsContainer({
 
   return (
     <div className={styles['suggestionsContainer']} onMouseDown={preventBlur}>
+      <OverlayAttribute kind="variable-picker" />
       <div className={styles['suggestionsHeader']}>
         <span className={styles['suggestionsTitle']}>{title}</span>
         <NavButton
@@ -178,6 +181,7 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
+  const portal = useOptionalSdkSurfaces()?.portal ?? undefined;
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
@@ -281,6 +285,7 @@ export function VariableText({
       singleLine={singleLine}
       classNames={classNames}
       customSuggestionsContainer={suggestionsContainer}
+      suggestionsPortalHost={portal}
       {...mentionsInputProps}
     >
       <Mention

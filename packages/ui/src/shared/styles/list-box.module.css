@@ -7,52 +7,50 @@
   --wb-public-list-box-gap: var(--wb-ds-space-50);
 }
 
-@layer ui.component {
-  /* Applied to the Base UI Positioner — keep it free of visuals and
-     animation: Base UI sets data-starting-style/data-ending-style on the
-     Popup element only, so transition rules here would never fire. */
-  .popup {
-    margin-top: 0.25rem;
-    z-index: 10000;
+/* Applied to the Base UI Positioner — keep it free of visuals and
+   animation: Base UI sets data-starting-style/data-ending-style on the
+   Popup element only, so transition rules here would never fire. */
+.popup {
+  margin-top: 0.25rem;
+  z-index: 10000;
+}
+
+/* Applied to the Base UI Popup, which carries the transition state
+   attributes (same pattern as Tooltip.Popup and Dialog.Popup). */
+.list-box {
+  display: flex;
+  padding: var(--wb-public-list-box-padding);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--wb-public-list-box-gap);
+  max-height: 200px;
+  overflow-y: auto;
+  overflow-x: hidden;
+
+  margin: 0;
+
+  border-radius: var(--wb-public-list-box-border-radius);
+  background: var(--wb-public-list-box-background-color);
+  box-shadow: var(--wb-public-list-box-box-shadow);
+
+  transition:
+    opacity 150ms ease-out,
+    transform 150ms ease-out;
+  transform-origin: top;
+
+  &[data-starting-style],
+  &[data-ending-style] {
+    opacity: 0;
+    transform: scaleY(0.96);
   }
+}
 
-  /* Applied to the Base UI Popup, which carries the transition state
-     attributes (same pattern as Tooltip.Popup and Dialog.Popup). */
-  .list-box {
-    display: flex;
-    padding: var(--wb-public-list-box-padding);
-    flex-direction: column;
-    align-items: center;
-    gap: var(--wb-public-list-box-gap);
-    max-height: 200px;
-    overflow-y: auto;
-    overflow-x: hidden;
-
-    margin: 0;
-
-    border-radius: var(--wb-public-list-box-border-radius);
-    background: var(--wb-public-list-box-background-color);
-    box-shadow: var(--wb-public-list-box-box-shadow);
-
-    transition:
-      opacity 150ms ease-out,
-      transform 150ms ease-out;
-    transform-origin: top;
-
-    &[data-starting-style],
-    &[data-ending-style] {
-      opacity: 0;
-      transform: scaleY(0.96);
-    }
-  }
-
-  /* A Base UI RadioGroup wraps the items in its own div[role="group"], which
-     would otherwise swallow the popup's column gap. */
-  .group {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    align-self: stretch;
-    gap: var(--wb-public-list-box-gap);
-  }
+/* A Base UI RadioGroup wraps the items in its own div[role="group"], which
+   would otherwise swallow the popup's column gap. */
+.group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  align-self: stretch;
+  gap: var(--wb-public-list-box-gap);
 }

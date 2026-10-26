@@ -12,7 +12,8 @@ import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
-import { initTheme } from '../hooks/theme';
+import { resetModalStore } from '../features/modals/stores/use-modal-store';
+import { setControlledTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
 import { resolveIntegration } from './resolve-integration';
@@ -67,6 +68,8 @@ export function WorkflowBuilderRoot({
   initialEdges,
   isValidConnection,
   reactFlowProps,
+  theme,
+  onThemeChange,
   builtInControls,
   children,
 }: WorkflowBuilderRootProps) {
@@ -105,17 +108,21 @@ export function WorkflowBuilderRoot({
   useLayoutEffect(() => {
     resetWorkflowStore();
     resetIntegrationStore();
+    return resetModalStore;
   }, []);
 
-  // Paint the persisted theme on the DOM once, client-side. Lives here (not at
-  // `theme.ts` module level) so a server-side import of the SDK never touches
-  // `document` / `localStorage`. `useLayoutEffect` runs before first paint, so
-  // a saved non-default theme shows without a flash; it never runs on the
-  // server. Idempotent, so a second Root mount (or strict-mode double-invoke)
-  // is a harmless no-op.
+  // Latest callback in a ref: hosts often pass an inline function, which must not re-run the effect.
+  const onThemeChangeRef = useRef(onThemeChange);
   useLayoutEffect(() => {
-    initTheme();
-  }, []);
+    onThemeChangeRef.current = onThemeChange;
+  });
+
+  // setControlledTheme notifies subscribers, so it runs in a layout effect, never during render.
+  useLayoutEffect(() => {
+    setControlledTheme(theme ?? null, (nextTheme) => onThemeChangeRef.current?.(nextTheme));
+  }, [theme]);
+
+  useLayoutEffect(() => () => setControlledTheme(null, null), []);
 
   // Runtime config — write the latest prop values into module-level holders
   // synchronously in render, NOT in `useEffect`. Children read the holders
@@ -156,7 +163,9 @@ export function WorkflowBuilderRoot({
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell builtInControls={builtInControls}>{children}</RootShell>
+        <RootShell theme={theme} builtInControls={builtInControls}>
+          {children}
+        </RootShell>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

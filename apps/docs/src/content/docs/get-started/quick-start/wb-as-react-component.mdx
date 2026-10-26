@@ -96,6 +96,21 @@ function App() {
 }
 ```
 
+The editor fills its parent, so the parent needs a height. For a full-window editor, add this to
+your global stylesheet (for an editor inside a panel, give that panel a height instead):
+
+```css
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+```
+
 ## TypeScript
 
 All public types are exported from `@workflowbuilder/sdk`. The full

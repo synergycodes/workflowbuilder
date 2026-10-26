@@ -1,5 +1,3 @@
-@layer ui.component {
-  .item:not(.circle) {
-    width: 100%;
-  }
+.item:not(.circle) {
+  width: 100%;
 }

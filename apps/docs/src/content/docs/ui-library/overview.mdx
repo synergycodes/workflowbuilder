@@ -30,12 +30,12 @@ The package has six style surfaces:
 - **`@workflowbuilder/ui`** is the root barrel. It provides every component and
   all component and global CSS, but not the design token values.
 - **`@workflowbuilder/ui/<component>`** provides one component and only that
-  component's CSS. Add `styles.css` for the global reset, typography and fonts,
+  component's CSS. Add `styles.css` for the typography classes and fonts,
   and `tokens.css` for the design tokens.
 - **`@workflowbuilder/ui/index.css`** provides all component and global CSS,
   including typography and fonts, but not the design token values.
-- **`@workflowbuilder/ui/styles.css`** provides the global reset, typography and
-  fonts, but no component CSS or design token values.
+- **`@workflowbuilder/ui/styles.css`** provides the typography classes and
+  fonts, but no component CSS, design token values or page-level reset.
 - **`@workflowbuilder/ui/fonts.css`** provides the font faces, but no global,
   component or design token rules.
 - **`@workflowbuilder/ui/tokens.css`** provides the design token values, but no
@@ -98,11 +98,37 @@ import { DatePicker } from '@workflowbuilder/ui/date-picker';
 
 ## Theming
 
-Theme-specific design tokens are keyed on `html[data-theme]`, so set it to `light` or `dark` to
-switch themes (this is also how these docs theme the live examples):
+Wrap the components in an element with the `workflow-builder-root` class and a `data-wb-theme`
+attribute set to `light` or `dark`. Theme-specific tokens and component defaults are declared on
+that element, which is also how these docs theme the live examples:
 
 ```html
-<html data-theme="light"></html>
+<div class="workflow-builder-root" data-wb-theme="light">…</div>
 ```
+
+Popups render under `<body>`. To give them the theme too, wrap the components in
+`PortalContainerProvider`; its `container` prop is a React ref to an element with the same class
+and attribute:
+
+```tsx
+import { PortalContainerProvider } from '@workflowbuilder/ui';
+import { useRef } from 'react';
+
+export function Panel() {
+  const popups = useRef<HTMLDivElement>(null);
+
+  return (
+    <>
+      {/* Before the components, so the ref is set when a popup that starts open mounts. */}
+      <div ref={popups} className="workflow-builder-root" data-wb-theme="light" />
+      <div className="workflow-builder-root" data-wb-theme="light">
+        <PortalContainerProvider container={popups}>{/* components */}</PortalContainerProvider>
+      </div>
+    </>
+  );
+}
+```
+
+Write overrides on `.workflow-builder-root`.
 
 Override a generated `--wb-ds-*` design token to retune colors, spacing, or radii across the UI. For a single component, use a `--wb-public-*` override; component pages include generated tables for component-local variables.

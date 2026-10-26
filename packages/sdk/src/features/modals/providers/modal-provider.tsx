@@ -1,17 +1,18 @@
 import { Modal } from '@workflowbuilder/ui';
-import { useEffect, useRef, useState } from 'react';
-import { createPortal } from 'react-dom';
+import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { forEachSurface, useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfaces';
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
-// Read by variable-text.module.css to suppress its own backdrop.
-const MODAL_OPEN_BODY_CLASS = 'wb-modal-open';
+// Set on the SDK root and portal container; read by variable-text.module.css to suppress its own backdrop.
+const MODAL_OPEN_CLASS = 'wb-modal-open';
 
 export function ModalProvider() {
   const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.isOpen);
   const modal = useModalStore((state) => state.modal);
+  const surfaces = useOptionalSdkSurfaces();
 
   // The store clears `modal` on close - keep it for the exit transition.
   const lastModalRef = useRef(modal);
@@ -23,41 +24,29 @@ export function ModalProvider() {
   }, [modal]);
 
   useEffect(() => {
-    document.body.classList.toggle(MODAL_OPEN_BODY_CLASS, isOpen);
+    if (!surfaces) return;
+    forEachSurface(surfaces, (element) => element.classList.toggle(MODAL_OPEN_CLASS, isOpen));
     return () => {
-      document.body.classList.remove(MODAL_OPEN_BODY_CLASS);
+      forEachSurface(surfaces, (element) => element.classList.remove(MODAL_OPEN_CLASS));
     };
-  }, [isOpen]);
-
-  // The portal touches `document` on every render - keep it out of SSR.
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  }, [surfaces, isOpen]);
 
   const activeModal = modal ?? lastModalRef.current;
 
-  if (!mounted) return null;
-
   // Transitions only run when `open` toggles on an already-mounted root.
   return (
-    <>
-      {createPortal(
-        <Modal
-          size="large"
-          open={isOpen && !!modal}
-          icon={activeModal?.icon}
-          onClose={activeModal?.isCloseButtonVisible ? closeModal : undefined}
-          closeLabel={t('common.close')}
-          title={activeModal?.title || ''}
-          footer={activeModal?.footer}
-          footerVariant={activeModal?.footerVariant}
-          className="workflow-builder-root"
-        >
-          {activeModal?.content}
-        </Modal>,
-        document.body,
-      )}
-    </>
+    <Modal
+      size="large"
+      open={isOpen && !!modal}
+      icon={activeModal?.icon}
+      onClose={activeModal?.isCloseButtonVisible ? closeModal : undefined}
+      closeLabel={t('common.close')}
+      title={activeModal?.title || ''}
+      footer={activeModal?.footer}
+      footerVariant={activeModal?.footerVariant}
+      className="workflow-builder-root"
+    >
+      {activeModal?.content}
+    </Modal>
   );
 }

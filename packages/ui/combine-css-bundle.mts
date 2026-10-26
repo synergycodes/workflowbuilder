@@ -3,6 +3,18 @@ import { createRequire } from 'node:module';
 import path from 'node:path';
 import type { Plugin } from 'vite';
 
+import postcss from 'postcss';
+
+import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mjs';
+import { type ScopePrefixOptions, scopePrefixPlugin } from './postcss-scope-prefix.mjs';
+
+// Shared by the Vite pipeline and the raw styles.css step, so both outputs prefix the same way.
+export const UI_SCOPE_PREFIX_OPTIONS: ScopePrefixOptions = {
+  strength: 'ui',
+  vendoredFiles: /node_modules[\\/](react-day-picker|@xyflow)[\\/]/,
+  baseFiles: /[\\/](typography\.css|base-button\.module\.css)$/,
+};
+
 /**
  * Post-build CSS steps for the multi-entry library bundle. See css-layers.md.
  *
@@ -212,7 +224,7 @@ function writeCombinedStylesheet(
 ) {
   const assetsDirectory = assetsDirectoryOf(distributionDirectory);
 
-  // Within a layer, file order only breaks ties between equal-specificity rules.
+  // File order only breaks ties between equal-specificity rules.
   const styles = cssFilesIn(assetsDirectory)
     .map((file) => fs.readFileSync(path.resolve(assetsDirectory, file), 'utf8'))
     .join('\n');
@@ -224,11 +236,18 @@ function writeCombinedStylesheet(
 }
 
 function writeGlobalStylesheet(distributionDirectory: string, stylesDirectory: string, fontStyles: string) {
-  const globals = ['layers.css', 'globals.css', 'typography.css']
+  const globals = ['layers.css', 'globals.css']
     .map((file) => fs.readFileSync(path.resolve(stylesDirectory, file), 'utf8'))
     .join('\n');
 
-  fs.writeFileSync(path.resolve(distributionDirectory, 'styles.css'), `${globals}\n${fontStyles}`);
+  // Bypasses Vite, so typography gets the defaults layer and the prefix here.
+  const typographyPath = path.resolve(stylesDirectory, 'typography.css');
+  const typography = postcss([layerRootDefaultsPlugin(), scopePrefixPlugin(UI_SCOPE_PREFIX_OPTIONS)]).process(
+    fs.readFileSync(typographyPath, 'utf8'),
+    { from: typographyPath },
+  ).css;
+
+  fs.writeFileSync(path.resolve(distributionDirectory, 'styles.css'), `${globals}\n${typography}\n${fontStyles}`);
 }
 
 function appendFontStylesToEntryChunk(distributionDirectory: string, fontStyles: string) {

@@ -6,7 +6,7 @@
   --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-colors-blue-500);
 }
 
-html[data-theme='light'] {
+[data-wb-theme='light'] {
   --wb-sdk-syntax-highlighter-color: var(--wb-ds-colors-gray-600);
   --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-colors-acc5-700);
   --wb-sdk-syntax-highlighter-color-variable-value: var(--wb-ds-colors-acc1-600);
@@ -14,7 +14,7 @@ html[data-theme='light'] {
   --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-ui-text-subtle-default);
 }
 
-html[data-theme='dark'] {
+[data-wb-theme='dark'] {
   --wb-sdk-syntax-highlighter-color: var(--wb-ds-colors-gray-200);
   --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-colors-orange-300);
   --wb-sdk-syntax-highlighter-color-variable-value: var(
@@ -24,7 +24,8 @@ html[data-theme='dark'] {
   --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-colors-blue-500);
 }
 
-/* It shows a tooltip indicating that editing is blocked when disabled */
+/* Hides Ace's 'Editing is disabled' tooltip. SyntaxHighlighter mounts it in the SDK portal, so this scoped rule reaches it
+   without hiding a host page's own Ace tooltips. */
 :global(.ace_tooltip) {
   display: none !important;
 }

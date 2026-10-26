@@ -4,7 +4,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 
 import '../features/i18n/index';
 import { resetWorkflowStore, useStore } from '../store/store';
-import { setTheme } from './theme';
+import { setTheme, useThemeStore } from './theme';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from './use-workflow-builder-state';
 
 function renderState() {
@@ -32,7 +32,7 @@ beforeEach(async () => {
 
 afterEach(() => {
   localStorage.clear();
-  delete document.documentElement.dataset.theme;
+  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
 });
 
 describe('useWorkflowBuilderState', () => {

@@ -10,21 +10,19 @@
   --wb-public-node-icon-container-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
 }
 
-@layer ui.component {
-  .container {
-    display: flex;
-    padding: var(--wb-public-node-icon-padding);
-    justify-content: center;
-    align-items: center;
-    color: var(--wb-public-node-icon-color);
+.container {
+  display: flex;
+  padding: var(--wb-public-node-icon-padding);
+  justify-content: center;
+  align-items: center;
+  color: var(--wb-public-node-icon-color);
 
-    border-radius: var(--wb-public-node-icon-border-radius);
-    border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
-    background: var(--wb-public-node-icon-container-background-color);
+  border-radius: var(--wb-public-node-icon-border-radius);
+  border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
+  background: var(--wb-public-node-icon-container-background-color);
 
-    &.disabled {
-      color: var(--wb-public-node-icon-color-disabled);
-      background: var(--wb-public-node-icon-container-background-color-disabled);
-    }
+  &.disabled {
+    color: var(--wb-public-node-icon-color-disabled);
+    background: var(--wb-public-node-icon-container-background-color-disabled);
   }
 }

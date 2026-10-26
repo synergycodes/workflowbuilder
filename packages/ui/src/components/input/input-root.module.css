@@ -1,75 +1,73 @@
-@layer ui.component {
-  .input-root {
-    display: flex;
-    align-items: center;
-    cursor: text;
-    background-color: var(--wb-public-input-root-background-color);
-    border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
-    color: var(--wb-public-input-root-icon-color);
+.input-root {
+  display: flex;
+  align-items: center;
+  cursor: text;
+  background-color: var(--wb-public-input-root-background-color);
+  border: var(--wb-public-input-root-border-size) solid var(--wb-public-input-root-border-color);
+  color: var(--wb-public-input-root-icon-color);
 
-    &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
-      border-color: var(--wb-public-input-root-border-color-hover);
-    }
-
-    &[data-state='critical']:not([data-disabled]) {
-      background-color: var(--wb-public-input-root-background-color-critical);
-      border-color: var(--wb-public-input-root-border-color-critical);
-    }
-
-    &[data-state='success']:not([data-disabled]) {
-      background-color: var(--wb-public-input-root-background-color-success);
-      border-color: var(--wb-public-input-root-border-color-success);
-    }
-
-    &[data-state='read-only']:not([data-disabled]),
-    &[data-disabled] {
-      background-color: var(--wb-public-input-root-background-color-disabled);
-      border-color: var(--wb-public-input-root-border-color);
-    }
-
-    &[data-disabled] {
-      color: var(--wb-public-input-root-color-disabled);
-      cursor: not-allowed;
-    }
-
-    &:not([data-disabled]):focus-within {
-      border-color: var(--wb-public-input-root-border-color-focus);
-    }
+  &[data-state='default']:not([data-disabled]):not(:focus-within):hover {
+    border-color: var(--wb-public-input-root-border-color-hover);
   }
 
-  .icon,
-  .clear {
-    display: inline-flex;
-    flex: 0 0 auto;
-    align-items: center;
-    justify-content: center;
+  &[data-state='critical']:not([data-disabled]) {
+    background-color: var(--wb-public-input-root-background-color-critical);
+    border-color: var(--wb-public-input-root-border-color-critical);
   }
 
-  .icon svg,
-  .clear svg {
-    width: var(--wb-ds-size-200);
-    height: var(--wb-ds-size-200);
+  &[data-state='success']:not([data-disabled]) {
+    background-color: var(--wb-public-input-root-background-color-success);
+    border-color: var(--wb-public-input-root-border-color-success);
   }
 
-  .clear {
-    padding: 0;
-    border: none;
-    background: transparent;
-    color: inherit;
-    cursor: pointer;
+  &[data-state='read-only']:not([data-disabled]),
+  &[data-disabled] {
+    background-color: var(--wb-public-input-root-background-color-disabled);
+    border-color: var(--wb-public-input-root-border-color);
+  }
 
-    &:hover:not(:disabled) {
-      color: var(--wb-public-input-color);
-    }
+  &[data-disabled] {
+    color: var(--wb-public-input-root-color-disabled);
+    cursor: not-allowed;
+  }
 
-    &:focus-visible {
-      border-radius: var(--wb-ds-radius-25);
-      outline: var(--wb-ds-size-12) solid var(--wb-ds-ui-focus-ring);
-      outline-offset: var(--wb-ds-size-25);
-    }
+  &:not([data-disabled]):focus-within {
+    border-color: var(--wb-public-input-root-border-color-focus);
+  }
+}
 
-    &:disabled {
-      cursor: not-allowed;
-    }
+.icon,
+.clear {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon svg,
+.clear svg {
+  width: var(--wb-ds-size-200);
+  height: var(--wb-ds-size-200);
+}
+
+.clear {
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+
+  &:hover:not(:disabled) {
+    color: var(--wb-public-input-color);
+  }
+
+  &:focus-visible {
+    border-radius: var(--wb-ds-radius-25);
+    outline: var(--wb-ds-size-12) solid var(--wb-ds-ui-focus-ring);
+    outline-offset: var(--wb-ds-size-25);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
   }
 }

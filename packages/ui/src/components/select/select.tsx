@@ -1,4 +1,5 @@
 import { Select as SelectBase } from '@base-ui/react/select';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import type { ReactNode, SyntheticEvent } from 'react';
@@ -120,6 +121,8 @@ export function Select({
     className,
   );
 
+  const portalContainer = usePortalContainer();
+
   return (
     <Field
       id={id}
@@ -155,7 +158,7 @@ export function Select({
                 )}
               </SelectBase.Value>
             </SelectBase.Trigger>
-            <SelectBase.Portal>
+            <SelectBase.Portal container={portalContainer}>
               <SelectBase.Positioner
                 className={clsx(listBoxStyles['popup'], style['popup'])}
                 alignItemWithTrigger={false}

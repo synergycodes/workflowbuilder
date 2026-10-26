@@ -117,20 +117,18 @@
   padding: 0.5rem 0 0;
 }
 
-body:has(.suggestionsContainer) {
-  &::before {
-    content: '';
-    position: fixed;
-    width: 100vw;
-    height: 100dvh;
-    background-color: var(--wb-sdk-variable-backdrop);
-    z-index: 200;
-  }
+/* On the shell, which clips it (position: relative; overflow: hidden), so only the editor dims. */
+:global(.workflow-builder-root-shell)[data-wb-overlay='variable-picker']::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-color: var(--wb-sdk-variable-backdrop);
+  z-index: 200;
+}
 
-  /* Modal already dims the page; don't stack a second backdrop. */
-  &:global(.wb-modal-open)::before {
-    display: none;
-  }
+/* Modal already dims the editor; don't stack a second backdrop. */
+:global(.workflow-builder-root-shell.wb-modal-open)[data-wb-overlay='variable-picker']::before {
+  display: none;
 }
 
 .suggestionsHeader {

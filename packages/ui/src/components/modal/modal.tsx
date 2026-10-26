@@ -1,6 +1,7 @@
 import { Dialog } from '@base-ui/react/dialog';
 import { X } from '@phosphor-icons/react';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import type { WithIcon } from '@ui/shared/types/with-icon';
 import clsx from 'clsx';
 import { type ReactNode, forwardRef } from 'react';
@@ -76,6 +77,8 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
     },
     ref,
   ) => {
+    const portalContainer = usePortalContainer();
+
     return (
       <Dialog.Root
         open={open}
@@ -85,7 +88,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
           }
         }}
       >
-        <Dialog.Portal>
+        <Dialog.Portal container={portalContainer}>
           <Dialog.Backdrop className={styles['backdrop']} />
           {/* The popup is the dialog window itself, not a full-screen wrapper:
               Base UI closes on a press outside the popup, and a wrapper

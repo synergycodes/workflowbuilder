@@ -13,19 +13,19 @@ export const config: Config = {
     },
     {
       set: 'Tokens/Dark',
-      selector: "html[data-theme='dark']",
+      selector: "[data-wb-theme='dark']",
     },
     {
       set: 'Tokens/Light',
-      selector: "html[data-theme='light']",
+      selector: "[data-wb-theme='light']",
     },
     {
       set: 'Effects/dark',
-      selector: "html[data-theme='dark']",
+      selector: "[data-wb-theme='dark']",
     },
     {
       set: 'Effects/light',
-      selector: "html[data-theme='light']",
+      selector: "[data-wb-theme='light']",
     },
   ],
 };
