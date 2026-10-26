@@ -2,6 +2,7 @@ import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflo
 
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
+import '@workflowbuilder/ui/fonts.css';
 
 import logoDark from '../assets/workflow-builder-logo-white.svg';
 import logoLight from '../assets/workflow-builder-logo.svg';
@@ -32,7 +33,7 @@ const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer, de
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 export function App({ opened }: { opened: OpenedSource }) {
-  const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+  const { name, initialNodes, initialEdges, integration, builtInControls, plugins } = rootPropsFor(opened);
   const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
   const isRunView = opened.kind === 'execution';
 
@@ -50,6 +51,7 @@ export function App({ opened }: { opened: OpenedSource }) {
       jsonForm={jsonForm}
       diagramTemplates={aiStudioTemplates}
       isValidConnection={isValidConnection}
+      builtInControls={builtInControls}
       plugins={plugins}
     >
       <WorkflowBuilder.DefaultLayout />

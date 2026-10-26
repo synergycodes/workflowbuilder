@@ -10,7 +10,7 @@ import { AiNodeContainer } from '../nodes/ai-node-container';
 import { DecisionNodeContainer } from '../nodes/decision-node-container';
 import { NodeContainer } from '../nodes/node-container';
 import { StartContainer } from '../nodes/start-node-container';
-import type { WorkflowNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
 import { useNodeAccent } from './use-node-accent';
 
 const BUILT_IN_KEYS: ReadonlySet<string> = new Set<string>([
@@ -20,13 +20,13 @@ const BUILT_IN_KEYS: ReadonlySet<string> = new Set<string>([
   NodeType.DecisionNode,
 ]);
 
-// Wraps a consumer's WorkflowNodeTemplateProps-shaped component so ReactFlow,
+// Wraps a consumer's WorkflowBuilderNodeTemplateProps-shaped component so ReactFlow,
 // which calls it with NodeProps<WorkflowBuilderNode>, can render it on the
 // canvas. Mirrors the data extraction the built-in NodeContainer does for
 // WorkflowNodeTemplate (id, header fields, data, selected, isValid,
 // layoutDirection) minus NodeAsPortWrapper, which stays opt-in for consumers
 // that need drag-to-create connections on the node body.
-function adaptCustomNodeTemplate(Template: ComponentType<WorkflowNodeTemplateProps>) {
+function adaptCustomNodeTemplate(Template: ComponentType<WorkflowBuilderNodeTemplateProps>) {
   const Adapter = memo(({ id, data, selected }: NodeProps<WorkflowBuilderNode>) => {
     const { icon, properties, type } = data;
     const { label = '', description = '' } = properties;

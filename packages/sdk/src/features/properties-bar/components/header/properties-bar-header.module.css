@@ -13,3 +13,7 @@
     min-width: 0;
   }
 }
+
+.menu-container {
+  position: relative;
+}

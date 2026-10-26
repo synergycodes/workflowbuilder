@@ -1,8 +1,8 @@
 import type { ComponentType } from 'react';
 
-import type { WorkflowNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../features/diagram/nodes/workflow-node-template/workflow-node-template';
 
-type NodeTemplateComponent = ComponentType<WorkflowNodeTemplateProps>;
+type NodeTemplateComponent = ComponentType<WorkflowBuilderNodeTemplateProps>;
 
 const EMPTY: Readonly<Record<string, NodeTemplateComponent>> = Object.freeze({});
 

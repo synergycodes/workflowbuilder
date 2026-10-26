@@ -1,4 +1,5 @@
-import { NavButton } from '@workflowbuilder/ui';
+import { Menu, NavButton } from '@workflowbuilder/ui';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
@@ -8,19 +9,27 @@ import styles from './properties-bar-header.module.css';
 import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
 import { useStore } from '../../../../store/store';
+import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
+import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
+import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
 import type { SingleSelectedElement } from '../../use-single-selected-element';
 import { NodeHeading } from './node-heading';
 
 type Props = {
   selection: SingleSelectedElement | null;
   headerLabel: string;
+  /** Whether the panel currently shows its content, as opposed to its collapsed rail. */
   isOpen: boolean;
   onTogglePropertiesBar: () => void;
-  onDotsClick?: () => void;
 };
 
-export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePropertiesBar, onDotsClick }: Props) {
+export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePropertiesBar }: Props) {
   const { t } = useTranslation();
+  const isPropertiesPanelToggleVisible = useIsBuiltInControlVisible('propertiesPanelToggle');
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const registeredItems = useRegisteredMenuItems('propertiesPanel');
+  const items = useMemo(() => composeMenuItems([], registeredItems), [registeredItems]);
+  const menuLabel = t('tooltips.menu');
   const toggleLabel = isOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar');
 
   return (
@@ -28,22 +37,25 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
       <div className={styles['heading']}>
         <SelectionHeading selection={selection} headerLabel={headerLabel} />
       </div>
-      {onDotsClick && (
+      {isOpen && items.length > 0 && (
+        <div className={styles['menu-container']}>
+          <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
+            <Menu.TriggerButton aria-label={menuLabel} tooltip={menuLabel} size="s">
+              <Icon name="DotsThreeVertical" />
+            </Menu.TriggerButton>
+          </Menu>
+        </div>
+      )}
+      {isPropertiesPanelToggleVisible && (
         <NavButton
-          aria-label={t('tooltips.menu')}
+          aria-label={toggleLabel}
           size="s"
-          onClick={onDotsClick}
-          prefixIcon={<Icon name="DotsThreeVertical" />}
+          onClick={onTogglePropertiesBar}
+          tooltip={toggleLabel}
+          disabled={!selection}
+          prefixIcon={<Icon name="SidebarSimple" />}
         />
       )}
-      <NavButton
-        aria-label={toggleLabel}
-        size="s"
-        onClick={onTogglePropertiesBar}
-        tooltip={toggleLabel}
-        disabled={!selection}
-        prefixIcon={<Icon name="SidebarSimple" />}
-      />
     </div>
   );
 }

@@ -8,21 +8,21 @@ export function ButtonsUndoRedo() {
   const { t } = useTranslation();
   const canUndo = useUndoRedoStore((store) => store.past.length > 0);
   const canRedo = useUndoRedoStore((store) => store.future.length > 0);
-  const isReadOnlyMode = useStore((store) => store.isReadOnlyMode);
+  const isReadOnly = useStore((store) => store.isReadOnly);
 
   return (
     <>
       <NavButton
         aria-label={t('plugins.undoRedo.undo')}
         onClick={undo}
-        disabled={!canUndo || isReadOnlyMode}
+        disabled={!canUndo || isReadOnly}
         tooltip={t('plugins.undoRedo.undo')}
         prefixIcon={<Icon name="ArrowUUpLeft" />}
       />
       <NavButton
         aria-label={t('plugins.undoRedo.redo')}
         onClick={redo}
-        disabled={!canRedo || isReadOnlyMode}
+        disabled={!canRedo || isReadOnly}
         tooltip={t('plugins.undoRedo.redo')}
         prefixIcon={<Icon name="ArrowUUpRight" />}
       />

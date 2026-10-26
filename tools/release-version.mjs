@@ -11,7 +11,7 @@
 //                                              ship the SDK although UI, compiled into it, has pending changesets
 //
 // Full procedure: packages/RELEASE.md.
-import { existsSync, readFileSync, rmSync } from 'node:fs';
+import { readFileSync, readdirSync, rmSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import os from 'node:os';
 import path from 'node:path';
@@ -170,9 +170,11 @@ function printReplayInstructions(release) {
     `      REPLAY_HISTORY_VERSION=${release.version} UPDATE_REPLAY_HISTORIES=1 pnpm --filter ${release.name} test`,
   );
   console.log(`      pnpm --filter ${release.name} test`);
-  const legacyRecording = path.join(ROOT, release.directory, 'test/replay/histories/v0-parked-decision.json');
-  const legacyNote = existsSync(legacyRecording)
-    ? `; delete v0-parked-decision.json once ${release.version}-parked-decision.json replays`
-    : '';
-  console.log(`    (${release.directory}/test/replay/README.md${legacyNote})`);
+  const histories = path.join(ROOT, release.directory, 'test/replay/histories');
+  if (readdirSync(histories).some((file) => file.startsWith('v0-'))) {
+    console.log(`    Once the ${release.version} set replays, delete the v0- recordings and run the tests again:`);
+    console.log(`      git rm --ignore-unmatch -- '${release.directory}/test/replay/histories/v0-*.json'`);
+    console.log(`      pnpm --filter ${release.name} test`);
+  }
+  console.log(`    (${release.directory}/test/replay/README.md)`);
 }

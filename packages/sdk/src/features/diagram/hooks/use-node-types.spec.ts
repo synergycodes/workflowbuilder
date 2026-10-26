@@ -6,7 +6,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { setCustomNodeTemplates } from '../../../data/node-templates';
 import type { LayoutDirection, PaletteItem } from '../../../node/common';
 import { NodeType } from '../../../node/node-types';
-import type { WorkflowNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../nodes/workflow-node-template/workflow-node-template';
 
 vi.mock('../nodes/node-container', () => ({ NodeContainer: () => null }));
 vi.mock('../nodes/start-node-container', () => ({ StartContainer: () => null }));
@@ -71,7 +71,7 @@ describe('useNodeTypes', () => {
 
   it('forwards isValid (computed from properties errors) to the custom template', () => {
     const received: { isValid?: boolean }[] = [];
-    function Recorder(props: WorkflowNodeTemplateProps) {
+    function Recorder(props: WorkflowBuilderNodeTemplateProps) {
       received.push({ isValid: props.isValid });
       return null;
     }
@@ -96,7 +96,7 @@ describe('useNodeTypes', () => {
 
   it('forwards layoutDirection from the store to the custom template', () => {
     const received: { layoutDirection?: LayoutDirection }[] = [];
-    function Recorder(props: WorkflowNodeTemplateProps) {
+    function Recorder(props: WorkflowBuilderNodeTemplateProps) {
       received.push({ layoutDirection: props.layoutDirection });
       return null;
     }
@@ -117,7 +117,7 @@ describe('useNodeTypes', () => {
 
   it('forwards the accent from the definition of data.type to the custom template', () => {
     const received: { accent?: string }[] = [];
-    function Recorder(props: WorkflowNodeTemplateProps) {
+    function Recorder(props: WorkflowBuilderNodeTemplateProps) {
       received.push({ accent: props.accent });
       return null;
     }

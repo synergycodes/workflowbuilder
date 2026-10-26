@@ -45,7 +45,7 @@ The undo/redo stack is powered by the [Undo/Redo plugin](/plugins/undo-redo/).
 
 ## Auto-save
 
-Workflow Builder automatically persists workflow changes in the background without interrupting the user experience. The system saves data before the user exits the application, preventing accidental data loss. The save destination depends on the integration strategy:
+Workflow Builder automatically persists workflow changes in the background without interrupting the user experience: after a change that comes more than 10 seconds after the last save, and before the user exits the application. It writes only unsaved changes, so a tab the user only looked at never writes. `autoSave: false` on the integration turns this off; see [Automatic saves](/guides/configuring-the-editor/#automatic-saves). The save destination depends on the integration strategy:
 
 - **localStorage** - saves to `localStorage` under the key `workflowBuilderDiagram`, making it suitable for prototypes and single-user setups
 - **REST API** - POSTs the diagram JSON to your endpoint, supporting production-grade, multi-user environments
