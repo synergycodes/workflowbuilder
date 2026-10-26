@@ -31,7 +31,7 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
  * their schema's shape without casts:
  *
  * ```ts
- * type MyProps = WorkflowNodeTemplateProps<NodeDataProperties<MySchema>>;
+ * type MyProps = WorkflowBuilderNodeTemplateProps<NodeDataProperties<MySchema>>;
  * ```
  *
  * Defaults to the wide `BaseNodeProperties & Record<string, unknown>` so
@@ -39,7 +39,7 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
  *
  * @category Components
  */
-export type WorkflowNodeTemplateProps<P = BaseNodeProperties & Record<string, unknown>> = {
+export type WorkflowBuilderNodeTemplateProps<P = BaseNodeProperties & Record<string, unknown>> = {
   id: string;
   icon: IconType;
   label: string;
@@ -67,7 +67,7 @@ const WorkflowNodeTemplateComponent = memo(
     showHandles = true,
     isValid,
     children,
-  }: WorkflowNodeTemplateProps) => {
+  }: WorkflowBuilderNodeTemplateProps) => {
     const { t } = useTranslation();
     const isCanvasNode = showHandles;
 

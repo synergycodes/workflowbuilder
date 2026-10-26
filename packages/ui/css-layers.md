@@ -1,5 +1,7 @@
 # CSS layers and scoping
 
+Why it is built this way, with the rejected alternatives: `style-boundary.decision-log.md`.
+
 `@workflowbuilder/ui` (and the SDK, which follows the same model) uses one cascade layer, for
 variables only:
 

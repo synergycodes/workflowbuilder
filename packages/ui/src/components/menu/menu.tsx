@@ -74,7 +74,7 @@ const MenuRoot = memo(
       item.type === 'separator' ? (
         <Separator key={index} />
       ) : (
-        <MenuItem key={item.label} {...item} radio={hasSelection} size={size} />
+        <MenuItem key={item.id ?? item.label} {...item} radio={hasSelection} size={size} />
       ),
     );
 

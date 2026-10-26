@@ -44,4 +44,15 @@ describe('updateExecutionStatus', () => {
       expect(await statusesKeptAgainst(status)).toEqual([...TERMINAL_EXECUTION_STATUSES]);
     },
   );
+
+  it('stamps started_at on the first running write only, so a resume does not move the start', async () => {
+    queries.length = 0;
+    await database.updateExecutionStatus('execution-1', 'running');
+    const query = queries[0];
+    if (query === undefined) throw new Error('updateExecutionStatus sent no query');
+
+    const stamp = query.strings.findIndex((part) => part.trimEnd().endsWith('started_at = CASE WHEN'));
+    expect(query.values[stamp]).toBe('running');
+    expect(query.strings[stamp + 1]).toMatch(/^ = 'running' AND started_at IS NULL THEN now\(\) ELSE started_at END,/);
+  });
 });

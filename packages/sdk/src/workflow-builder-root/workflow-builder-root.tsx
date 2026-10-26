@@ -10,10 +10,12 @@ import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
+import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { resetModalStore } from '../features/modals/stores/use-modal-store';
 import { setControlledTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
+import { defaultOnLoad } from './default-on-load';
 import { resolveIntegration } from './resolve-integration';
 import { RootShell } from './root-shell';
 import type {
@@ -40,7 +42,7 @@ import type {
  * @example Custom layout
  * ```tsx
  * <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
- *   <header><WorkflowBuilder.TopBar /></header>
+ *   <header><WorkflowBuilder.EditorHeader /></header>
  *   <aside><WorkflowBuilder.Palette /></aside>
  *   <main><WorkflowBuilder.Canvas /></main>
  *   <aside><WorkflowBuilder.PropertiesPanel /></aside>
@@ -57,6 +59,7 @@ export function WorkflowBuilderRoot({
   plugins,
   jsonForm,
   integration,
+  onLoad,
   name,
   logo,
   logoHref,
@@ -67,6 +70,7 @@ export function WorkflowBuilderRoot({
   reactFlowProps,
   theme,
   onThemeChange,
+  builtInControls,
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -92,17 +96,18 @@ export function WorkflowBuilderRoot({
   //     which notifies subscribers; doing that during render risks React's
   //     "cannot update a component while rendering a different component" path
   //     for any external `useStore` subscriber (the store is global now).
-  //   - `useEffect` is out: passive effects fire children-first, so the
-  //     descendant `IntegrationWrapper.loadData` (a `useEffect`) would run
-  //     BEFORE a Root-level `useEffect`, and the reset would wipe the diagram
-  //     it just loaded. Layout effects fire before any passive effect, so a
-  //     Root `useLayoutEffect` reset is guaranteed to precede `loadData`.
+  //   - `useEffect` is out: passive effects fire children-first, so a
+  //     descendant's mount `useEffect` would run BEFORE a Root-level
+  //     `useEffect`, and the reset would wipe whatever it wrote to the store.
+  //     Layout effects fire before any passive effect, so a Root
+  //     `useLayoutEffect` reset is guaranteed to precede `loadData`.
   //
   // Empty deps → mount-only: a re-render must NOT reset (that would discard
   // user edits); a true unmount → remount gets a fresh reset, which is exactly
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
+    resetIntegrationStore();
     return resetModalStore;
   }, []);
 
@@ -143,20 +148,24 @@ export function WorkflowBuilderRoot({
   setReactFlowProps(reactFlowProps ?? null);
   setAppBarBranding({ logo, logoHref });
 
-  const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
+  const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
   return (
     <RuntimeIntegrationWrapper
       strategy={strategy}
       endpoints={endpoints}
       onDataSave={onDataSave}
+      autoSave={autoSave}
+      onLoad={onLoad ?? defaultOnLoad}
       name={name}
       layoutDirection={layoutDirection}
       nodes={initialNodes}
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell theme={theme}>{children}</RootShell>
+        <RootShell theme={theme} builtInControls={builtInControls}>
+          {children}
+        </RootShell>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

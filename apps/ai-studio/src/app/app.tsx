@@ -33,7 +33,7 @@ const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer, de
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 export function App({ opened }: { opened: OpenedSource }) {
-  const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+  const { name, initialNodes, initialEdges, integration, builtInControls, plugins } = rootPropsFor(opened);
   const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
   const isRunView = opened.kind === 'execution';
 
@@ -51,6 +51,7 @@ export function App({ opened }: { opened: OpenedSource }) {
       jsonForm={jsonForm}
       diagramTemplates={aiStudioTemplates}
       isValidConnection={isValidConnection}
+      builtInControls={builtInControls}
       plugins={plugins}
     >
       <WorkflowBuilder.DefaultLayout />

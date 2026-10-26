@@ -6,6 +6,7 @@ import { z } from 'zod';
 import { aiConfig, retiredAiVariables } from '@workflow-builder/ai-config';
 
 import type { AssertAuthorized } from '../auth';
+import { formatErrorChain } from '../format-error-chain';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
 import type { BackendEnv } from './backend-env';
@@ -80,7 +81,7 @@ export function createVisualizeRoutes(assertAuthorized: AssertAuthorized): Hono<
       });
       return c.json({ output: result.text.trim() });
     } catch (error) {
-      logger.error('adapt failed', { error: error instanceof Error ? error.message : String(error) });
+      logger.error('adapt failed', { error: formatErrorChain(error) });
       return c.json({ code: 'adapt_failed', message: 'Could not adapt the content.' }, 502);
     }
   });

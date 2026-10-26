@@ -1,88 +1,87 @@
-import { act, render } from '@testing-library/react';
-import i18n from 'i18next';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { StrictMode } from 'react';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import '../features/i18n/index';
-import { setTheme, useThemeStore } from '../hooks/theme';
-import { RootShell } from './root-shell';
+import { AreaTarget } from '../features/ui-extensions/area-target';
+import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
+import { useIsBuiltInControlVisible } from '../features/ui-extensions/built-in-controls-context';
+import { useUiExtensionRegistry } from '../features/ui-extensions/ui-extension-context';
+import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
+import { useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
+import { WorkflowBuilderRoot } from './workflow-builder-root';
 
-vi.mock('@workflowbuilder/ui', () => ({
-  PortalContainerProvider: ({ children }: { children?: ReactNode }) => <>{children}</>,
-}));
-vi.mock('../features/default-layout/default-layout', () => ({ DefaultLayout: () => null }));
-vi.mock('../features/snackbar/snackbar-container', () => ({ SnackbarContainer: () => null }));
-vi.mock('../features/integration/components/app-loader/app-loader-container', () => ({
-  AppLoaderContainer: () => null,
-}));
-vi.mock('../features/plugins-core/components/app/optional-hooks', () => ({ OptionalHooks: () => null }));
-vi.mock('../features/plugins-core/components/app/optional-app-children', () => ({
-  OptionalAppChildren: () => null,
+// Loading the diagram is not what these tests are about, and it would open the template selector.
+vi.mock('../features/integration/components/runtime-integration-wrapper', () => ({
+  RuntimeIntegrationWrapper: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
 
-function shell(): HTMLElement {
-  return document.querySelector<HTMLElement>('.workflow-builder-root-shell')!;
-}
-
-function portals(): NodeListOf<HTMLElement> {
-  return document.body.querySelectorAll<HTMLElement>(':scope > .wb-portal');
-}
-
-beforeEach(() => {
-  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
+afterEach(() => {
   localStorage.clear();
+  delete document.documentElement.dataset.theme;
 });
 
-afterEach(async () => {
-  await i18n.changeLanguage('en');
-  document.documentElement.removeAttribute('lang');
-});
+function ControlVisibility() {
+  const isDeleteVisible = useIsBuiltInControlVisible('delete');
+  const isSaveVisible = useIsBuiltInControlVisible('save');
+  return <output>{`delete:${isDeleteVisible} save:${isSaveVisible}`}</output>;
+}
 
-describe('RootShell', () => {
-  it('puts theme and lang on the root box and one portal container, never on <html>', () => {
-    useThemeStore.setState({ persisted: 'dark' });
+function renderRoot(children: ReactNode, builtInControls?: BuiltInControls) {
+  const root = (controls?: BuiltInControls) => (
+    <StrictMode>
+      <WorkflowBuilderRoot builtInControls={controls}>{children}</WorkflowBuilderRoot>
+    </StrictMode>
+  );
+  const view = render(root(builtInControls));
+  return { ...view, rerenderRoot: (controls?: BuiltInControls) => view.rerender(root(controls)) };
+}
 
-    render(<RootShell />);
+describe('WorkflowBuilderRoot UI extension providers', () => {
+  it('builtInControls reaches the built-in controls; a missing key stays visible', () => {
+    const { container } = renderRoot(<ControlVisibility />, { delete: false });
 
-    expect(shell().dataset.wbTheme).toBe('dark');
-    expect(shell().getAttribute('lang')).toBe(i18n.language);
-    expect(portals()).toHaveLength(1);
-    expect(portals()[0].classList.contains('workflow-builder-root')).toBe(true);
-    expect(portals()[0].dataset.wbTheme).toBe('dark');
-    expect(document.documentElement.dataset.wbTheme).toBeUndefined();
+    expect(container.querySelector('output')?.textContent).toBe('delete:false save:true');
   });
 
-  it('shows the theme prop on the first render', () => {
-    render(<RootShell theme="dark" />);
+  it('a new builtInControls value applies on re-render', () => {
+    const { container, rerenderRoot } = renderRoot(<ControlVisibility />, { delete: false });
 
-    expect(shell().dataset.wbTheme).toBe('dark');
+    rerenderRoot({ save: false });
+
+    expect(container.querySelector('output')?.textContent).toBe('delete:true save:false');
   });
 
-  it('removes the portal container on unmount', () => {
-    const { unmount } = render(<RootShell />);
+  it('a second Root mount starts with an empty registry', () => {
+    const renders: { registry: UiExtensionRegistry; element: HTMLElement | null }[] = [];
+    function ToolsHost() {
+      const registry = useUiExtensionRegistry()!;
+      renders.push({ registry, element: registry.getAreaSlot('appBarTools').element });
+      return <AreaTarget area="appBarTools" />;
+    }
+    const first = renderRoot(<ToolsHost />);
+    const firstRegistry = renders[0].registry;
+    expect(firstRegistry.getAreaSlot('appBarTools').element).not.toBeNull();
+    first.unmount();
+    renders.length = 0;
 
-    unmount();
+    renderRoot(<ToolsHost />);
 
-    expect(document.body.querySelector('.wb-portal')).toBeNull();
+    expect(renders[0].registry).not.toBe(firstRegistry);
+    expect(renders[0].element).toBeNull();
   });
 
-  it('mirrors a theme change onto both surfaces', () => {
-    render(<RootShell />);
+  it('openSettings shows the modal in a Root with only a custom header and no canvas', () => {
+    function CustomHeader() {
+      const { openSettings } = useWorkflowBuilderActions();
+      return <button onClick={openSettings}>Open settings</button>;
+    }
 
-    act(() => setTheme('dark'));
+    renderRoot(<CustomHeader />);
 
-    expect(shell().dataset.wbTheme).toBe('dark');
-    expect(portals()[0].dataset.wbTheme).toBe('dark');
-  });
+    fireEvent.click(screen.getByText('Open settings'));
 
-  it('mirrors a language change onto both surfaces and leaves <html lang> alone', async () => {
-    document.documentElement.lang = 'de';
-    render(<RootShell />);
-
-    await act(() => i18n.changeLanguage('pl'));
-
-    expect(shell().getAttribute('lang')).toBe('pl');
-    expect(portals()[0].getAttribute('lang')).toBe('pl');
-    expect(document.documentElement.lang).toBe('de');
+    expect(screen.getByRole('dialog')).not.toBeNull();
   });
 });

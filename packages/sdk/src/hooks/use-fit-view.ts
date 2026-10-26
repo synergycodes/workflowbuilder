@@ -2,12 +2,12 @@ import type { FitViewOptions } from '@xyflow/react';
 import { useCallback } from 'react';
 
 import { FIT_VIEW_BASE_PADDING, FIT_VIEW_DURATION_TIME, FIT_VIEW_MAX_ZOOM } from '../features/diagram/diagram.const';
+import type { WorkflowBuilderReactFlowInstance } from '../node/common';
 import { useStore } from '../store/store';
-import { useOptionalSdkSurfaces } from '../workflow-builder-root/sdk-surfaces';
 
 /**
  * Returns a callback that animates the diagram view to fit all nodes,
- * accounting for the editor's app bar / palette / property panel bounds.
+ * accounting for the editor header, palette and properties panel bounds.
  *
  * Common triggers: after auto-layout, after loading a new diagram,
  * after a "fit view" toolbar button click. Uses a single
@@ -20,27 +20,28 @@ import { useOptionalSdkSurfaces } from '../workflow-builder-root/sdk-surfaces';
  */
 export function useFitView() {
   const reactFlowInstance = useStore((store) => store.reactFlowInstance);
-  const surfaces = useOptionalSdkSurfaces();
 
-  const fitView = useCallback(() => {
-    requestAnimationFrame(() => {
-      const scale = reactFlowInstance?.getZoom() ?? 1;
-      const padding = getPadding(scale, surfaces?.root.current ?? document);
-
-      if (reactFlowInstance) {
-        reactFlowInstance.fitView({
-          duration: FIT_VIEW_DURATION_TIME,
-          maxZoom: FIT_VIEW_MAX_ZOOM,
-          padding,
-        });
-      }
-    });
-  }, [reactFlowInstance, surfaces]);
+  const fitView = useCallback(() => fitDiagramView(reactFlowInstance), [reactFlowInstance]);
 
   return fitView;
 }
 
-// Looked up inside the editor box: the host page can have its own React Flow canvas.
+export function fitDiagramView(reactFlowInstance: WorkflowBuilderReactFlowInstance | null) {
+  requestAnimationFrame(() => {
+    const scale = reactFlowInstance?.getZoom() ?? 1;
+    // One editor per page; scoped to it because the host page can have its own React Flow canvas.
+    const padding = getPadding(scale, document.querySelector('.workflow-builder-root-shell') ?? document);
+
+    if (reactFlowInstance) {
+      reactFlowInstance.fitView({
+        duration: FIT_VIEW_DURATION_TIME,
+        maxZoom: FIT_VIEW_MAX_ZOOM,
+        padding,
+      });
+    }
+  });
+}
+
 export function getPadding(scale: number, editor: ParentNode): FitViewOptions['padding'] {
   const viewportRect = editor.querySelector('#viewport-bounds')?.getBoundingClientRect();
   const canvasRect = editor.querySelector('.react-flow')?.getBoundingClientRect();

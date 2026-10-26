@@ -29,6 +29,7 @@ export type {
   WaitingNodeExecution,
 } from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';
+export type { PatchId, VersioningPort } from './ports/versioning.port';
 export type { LoggerPort, LogBindings } from './ports/logger.port';
 
 export { createConsoleLogger } from './console-logger';

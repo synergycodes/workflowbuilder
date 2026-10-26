@@ -6,31 +6,44 @@ import { OptionalAppChildren } from '../features/plugins-core/components/app/opt
 import { OptionalHooks } from '../features/plugins-core/components/app/optional-hooks';
 
 import { DefaultLayout } from '../features/default-layout/default-layout';
+import { EditorRuntime } from '../features/editor-runtime/editor-runtime';
 import { AppLoaderContainer } from '../features/integration/components/app-loader/app-loader-container';
+import { ModalProvider } from '../features/modals/providers/modal-provider';
 import { SnackbarContainer } from '../features/snackbar/snackbar-container';
+import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
+import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../features/ui-extensions/built-in-controls-context';
+import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { type Theme, selectTheme, useThemeStore } from '../hooks/theme';
 import { type SdkSurfaces, SdkSurfacesProvider } from './sdk-surfaces';
 
 type RootShellProps = {
   theme?: Theme;
+  builtInControls?: BuiltInControls;
   children?: ReactNode;
 };
 
 /**
  * Internal subtree rendered inside the Root's integration + ReactFlow
- * providers. Hosts the global overlay (snackbar, app loader, plugin
- * hooks/children) and falls back to `<DefaultLayout />` when the Root has no
- * `children` prop.
+ * providers. Provides the Root's `builtInControls` and its UI extension
+ * registry, mounts `<EditorRuntime />` and the rest of the global overlay
+ * (snackbar, modal container, app loader, plugin hooks/children), and falls
+ * back to `<DefaultLayout />` when the Root has no `children` prop.
  */
-export function RootShell({ theme, children }: RootShellProps) {
+export function RootShell({ theme, builtInControls, children }: RootShellProps) {
   return (
-    <SurfacesRoot theme={theme}>
-      {children ?? <DefaultLayout />}
-      <SnackbarContainer />
-      <AppLoaderContainer />
-      <OptionalHooks />
-      <OptionalAppChildren />
-    </SurfacesRoot>
+    <BuiltInControlsProvider value={builtInControls ?? EMPTY_CONTROLS}>
+      <UiExtensionProvider>
+        <SurfacesRoot theme={theme}>
+          {children ?? <DefaultLayout />}
+          <EditorRuntime />
+          <SnackbarContainer />
+          <ModalProvider />
+          <AppLoaderContainer />
+          <OptionalHooks />
+          <OptionalAppChildren />
+        </SurfacesRoot>
+      </UiExtensionProvider>
+    </BuiltInControlsProvider>
   );
 }
 
