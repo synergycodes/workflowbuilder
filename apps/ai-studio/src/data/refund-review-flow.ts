@@ -120,7 +120,7 @@ preventing a repeat. Keep your reasoning about the policy for the team, not for 
 
 A first reviewer escalated the refund instead of approving it. The context holds the draft
 (refundAmount, orderDate, replyDraft, internalReasoning) and their decision record, whose edits hold
-every field they corrected and whose comment says why they escalated.
+every field they corrected and whose reason says why they escalated.
 
 Re-propose the refund in the same shape, for a senior reviewer. An edited value wins over the draft,
 and orderDate stays as it is. Write internalReasoning as the escalation note: why it was escalated, in
@@ -161,8 +161,9 @@ the team.`,
 
 A person approved the refund, straight away or after an escalation. The context holds the draft
 (refundAmount, orderDate, replyDraft, internalReasoning), an escalation brief in the same shape when
-there was one, and one decision record per person who decided; the latest record's edits hold every
-field that person corrected. An edited value wins over the brief, and the brief wins over the draft.
+there was one, and one decision record per person who decided. Only the latest record's edits count,
+the senior reviewer's after an escalation, since the brief already holds the earlier corrections.
+Those edits win over the brief, and the brief wins over the draft.
 internalReasoning is for the team: leave it out.
 
 Send replyDraft to the customer as the confirmation, keeping its wording. Change it only where the
