@@ -4,30 +4,30 @@ export const capitalizeFirstLetter = (text: string | undefined = '') =>
 export const truncate = (text: string, maxLength: number) =>
   text.length > maxLength ? `${text.slice(0, maxLength)}...` : text;
 
-const snakeCaseToPascalCase = (text: string): string => {
-  const textWithoutSpaces = text.replaceAll(' ', '_');
-  if (textWithoutSpaces.includes('_') === false) {
-    return text;
-  }
+/**
+ * Digits stay in the word they touch (`2nd`, `line1`); separators and case changes split words.
+ * Latin letters and digits only, anything else is dropped.
+ */
+const WORD_REGEX = /[A-Z]+\d*(?![a-z])|[A-Z]?[a-z]+\d*|\d+[a-z]*/g;
 
-  return textWithoutSpaces
-    .split('_')
+const splitWords = (text: string): string[] => {
+  const hasSeparator = /[\s_]/.test(text);
+
+  return text
+    .split(/[\s_]+/)
     .filter(Boolean)
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join('');
+    .map((segment) => (hasSeparator ? segment.charAt(0).toUpperCase() + segment.slice(1).toLowerCase() : segment))
+    .flatMap((segment) => segment.match(WORD_REGEX) ?? []);
 };
 
 export const keyToLabel = (key: string): string => {
   if (!key) {
     return '';
   }
-  const pascalCaseKey = snakeCaseToPascalCase(key);
 
-  // Only non-diacritics are acceptable.
-  const words = pascalCaseKey.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+/g) ?? [];
-  return words
+  return splitWords(key)
     .map((word, index) => {
-      if (/^[A-Z]+$/.test(word)) {
+      if (/^[A-Z]+\d*$/.test(word)) {
         // Preserve acronyms like ID, HTML, API
         return word;
       }
@@ -58,12 +58,7 @@ export const pathToLabel = (path: string): string => {
   return keyToLabel(path);
 };
 
-export const labelToSnakeCase = (label: string) => {
-  // Normalization guessing the best strategy
-  const labelToUse = label.replaceAll(' ', '_');
-  const pascalCaseLabel = snakeCaseToPascalCase(labelToUse);
-
-  const words = pascalCaseLabel.match(/[A-Z]+(?![a-z])|[A-Z]?[a-z]+|\d+/g) ?? [];
-
-  return words.map((word) => word.toLowerCase()).join('_');
-};
+export const labelToSnakeCase = (label: string) =>
+  splitWords(label)
+    .map((word) => word.toLowerCase())
+    .join('_');

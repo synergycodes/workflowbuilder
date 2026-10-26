@@ -22,10 +22,6 @@ type Response = {
   variablesKey: string;
 };
 
-/**
- * Variable suggestions a node's form can pick from: the global group, then its upstream nodes' groups,
- * filtered by type. `variablesKey` changes with the set of suggestion ids, so it can key a memo or element.
- */
 export function useNodeVariables(nodeId: string | undefined, options?: Options): Response {
   const { excludeTypes = VARIABLES_TYPES_EMPTY, includeTypes = VARIABLES_TYPES_EMPTY } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);
