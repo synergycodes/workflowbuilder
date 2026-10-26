@@ -102,6 +102,7 @@ describe('sourceHintOf', () => {
 describe('isEveryFieldHidden', () => {
   const stored = { type: 'object', properties: { summary: { type: 'string', title: 'Summary' } } };
   const readOnlyDate = { type: 'object', properties: { orderDate: { type: 'string', readOnly: true } } };
+  const storedUnshowable = { type: 'object', properties: { meta: { type: 'object' } } };
 
   it.each([
     ['no rows', undefined, empty, false],
@@ -109,6 +110,7 @@ describe('isEveryFieldHidden', () => {
     ['a source that declares fields, one Read-only', outputSchema, readOnlyDate, false],
     ['only fields the source does not declare', undefined, stored, false],
     ['declared fields all Hidden, plus a stored field the source does not declare', outputSchema, stored, false],
+    ['declared fields all Hidden, plus a stored field the form cannot show', outputSchema, storedUnshowable, true],
     ['a source that declares no field the form can show', { type: 'object', properties: {} }, empty, false],
   ] as const)('%s', (_case, source, schema, expected) => {
     expect(isEveryFieldHidden(fieldRows(source, schema), schema)).toBe(expected);
