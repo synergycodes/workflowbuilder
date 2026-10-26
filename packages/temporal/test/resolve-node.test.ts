@@ -92,7 +92,7 @@ describe('resolveNode through the engine port', () => {
 
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
     expect(harness.inputsSeen.after.gate).toBe('approved');
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
 
     // The server answers for a closed run on its own; no worker is involved.
     expect(await engine.resolveNode({ executionId, nodeId: 'gate', resolution: { output: 'late' } })).toMatchObject({
@@ -140,7 +140,7 @@ describe('resolveNode through the engine port', () => {
     expect(harness.inputsSeen.join['gate-a']).toBe('first');
     expect(harness.inputsSeen.join['gate-b']).toBe('b-verdict');
     expect(harness.executed.filter((id) => id === 'join')).toHaveLength(1);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   }, 120_000);
 
   it('with no worker the verdict answers delivery_timeout at the deadline; the retry lands, or hears that the first one did', async () => {
@@ -186,6 +186,6 @@ describe('resolveNode through the engine port', () => {
     }
     expect(harness.inputsSeen.after.gate).toBe(retry?.error === undefined ? 'retry' : 'first attempt');
     expect(harness.executed).toEqual(['start', 'gate', 'after']);
-    expect(store.statuses.map((entry) => entry.status)).toEqual(['waiting', 'running', 'completed']);
+    expect(store.statuses.map((entry) => entry.status)).toEqual(['running', 'waiting', 'running', 'completed']);
   }, 120_000);
 });

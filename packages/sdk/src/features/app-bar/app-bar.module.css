@@ -69,6 +69,12 @@
   composes: wb-text-body-m from global;
   min-height: 1em;
   min-width: 1em;
+}
+
+/* Only applied while `workflowRename` is visible and the editor isn't read-only: a plain
+   title (the `workflowRename: false` case) carries neither the pointer cursor nor the
+   empty-name placeholder underline, since neither affordance applies. */
+.title-editable {
   cursor: pointer;
 
   &:empty {

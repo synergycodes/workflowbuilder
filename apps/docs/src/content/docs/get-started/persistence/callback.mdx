@@ -47,6 +47,8 @@ type OnSaveParams = { isAutoSave?: boolean };
 
 `savingParams.isAutoSave` is `true` when the save was triggered automatically (for example, before the user leaves the page). In that case, success and error notifications are suppressed. When `false` or `undefined`, the save was triggered by the user clicking Save and a snackbar is shown.
 
+The editor calls `onDataSave` automatically only when the diagram has unsaved changes, and never with `autoSave: false`; see [Automatic saves](/guides/configuring-the-editor/#automatic-saves).
+
 ## Data format
 
 The `data` object passed to `onDataSave` has the following shape:

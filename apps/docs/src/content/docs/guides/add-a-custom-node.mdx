@@ -221,7 +221,7 @@ npm install @workflowbuilder/ui
 
 ```tsx
 import { Icon, getHandleId } from '@workflowbuilder/sdk';
-import type { WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import type { WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
 import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
@@ -235,7 +235,7 @@ export const MyNodeTemplate = memo(
     selected = false,
     disabled = false,
     showHandles = true,
-  }: WorkflowNodeTemplateProps) => {
+  }: WorkflowBuilderNodeTemplateProps) => {
     const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
@@ -263,7 +263,7 @@ export const MyNodeTemplate = memo(
 
 The example composes the node from `@workflowbuilder/ui` primitives (`NodePanel.Root`, `NodePanel.Header`, `NodePanel.Handles`) — the same building blocks Workflow Builder uses for its own node renderers, so the result matches the editor's visual language out of the box.
 
-The component receives [`WorkflowNodeTemplateProps`](/api/components/workflownodetemplateprops/), including the palette item's `accent`; `NodeIcon` sets the glyph size, so render the icon with `size="inherit"`. Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
+The component receives [`WorkflowBuilderNodeTemplateProps`](/api/components/workflowbuildernodetemplateprops/), including the palette item's `accent`; `NodeIcon` sets the glyph size, so render the icon with `size="inherit"`. Use [`getHandleId`](/api/utilities/gethandleid/) for handle IDs and pass `innerId` when a node has more than one handle of the same type. If your template needs typed access to `data.properties`, wrap the component in [`defineNodeTemplate`](/api/components/definenodetemplate/) to bind a schema-derived properties type.
 
 Wire it through the `nodeTemplates` prop on `<WorkflowBuilder.Root>`:
 

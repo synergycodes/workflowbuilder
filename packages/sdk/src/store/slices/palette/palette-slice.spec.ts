@@ -46,7 +46,7 @@ describe('getNodeDefinition', () => {
     setCustomPaletteNodes([definition]);
 
     for (let update = 0; update < 3; update++) {
-      useStore.setState({ isSidebarExpanded: update % 2 === 0 });
+      useStore.setState({ isPaletteOpen: update % 2 === 0 });
       useStore.getState().getNodeDefinition(definition.type);
     }
 

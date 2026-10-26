@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 
 import { refundReviewFlow } from '../data/refund-review-flow';
 import { supportTriageFlow } from '../data/support-triage-flow';
-import { plugin as runViewPlugin } from '../plugins/run-view/plugin';
 import type { OpenedSource } from './open-from-url';
 import { neverSaves, rootPropsFor } from './root-props';
 
@@ -19,7 +18,7 @@ describe('rootPropsFor', () => {
 
     expect(props.integration).toBeUndefined();
     expect(props.initialNodes).toBe(supportTriageFlow.value.diagram.nodes);
-    expect(props.plugins).not.toContain(runViewPlugin);
+    expect(props.builtInControls.save).not.toBe(false);
   });
 
   it("opens a workflow under its name, off localStorage, with the editor's own Save button", () => {
@@ -29,15 +28,15 @@ describe('rootPropsFor', () => {
     expect(props.name).toBe('Refund desk');
     expect(props.initialNodes).toBe(diagram.nodes);
     expect(props.initialEdges).toBe(diagram.edges);
-    expect(props.plugins).not.toContain(runViewPlugin);
+    expect(props.builtInControls.save).not.toBe(false);
   });
 
   it('opens a run under a short run name, off localStorage, with Save hidden', () => {
     const props = rootPropsFor(executionSource);
 
-    expect(props.integration).toMatchObject({ strategy: 'props' });
+    expect(props.integration).toMatchObject({ strategy: 'props', autoSave: false });
     expect(props.name).toBe('Run 7c9e6679');
-    expect(props.plugins).toContain(runViewPlugin);
+    expect(props.builtInControls).toMatchObject({ save: false });
   });
 
   it('hands every render the same props for one opened source', () => {

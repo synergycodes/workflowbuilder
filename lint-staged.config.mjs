@@ -18,4 +18,5 @@ export default {
     (files) => `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
     (files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`,
   ],
+  'deploy/ai-studio/Dockerfile': () => 'node tools/check-offline-build.mjs',
 };
