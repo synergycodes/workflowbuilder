@@ -165,19 +165,20 @@ export function VariableText({
           <div className={styles['suggestionsHeader']}>
             <span className={styles['suggestionsTitle']}>{title}</span>
             <NavButton
+              aria-label={t('common.close')}
+              tooltip={t('common.close')}
+              prefixIcon={<Icon name="X" />}
               onMouseDown={(event: React.MouseEvent) => {
                 event.stopPropagation();
                 handleClose();
               }}
-            >
-              <Icon name="X" />
-            </NavButton>
+            />
           </div>
           {cloneElement(ul, {}, grouped)}
         </div>
       );
     },
-    [handleClose],
+    [handleClose, t],
   );
 
   const displayTransform = useCallback(
