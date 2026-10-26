@@ -193,6 +193,25 @@ describe('the decider actions control in the real properties panel', () => {
     expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
   });
 
+  it('an edge from the Rejected port of another Human node leaves this one without a path', async () => {
+    const other = { ...human(defaultDecisionRequest), id: 'human-2', position: { x: 350, y: 200 } };
+    await renderPanel([human(defaultDecisionRequest), other], [{ ...edgeFrom(REJECTED), source: other.id }]);
+
+    expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
+  });
+
+  it('a stored reject without a port shows Reject off, and turning it on leaves a single reject', async () => {
+    const portless = { ...defaultRejectAction, port: undefined };
+    await renderPanel([human({ ...defaultDecisionRequest, actions: [approveAction, portless] })]);
+
+    expect(isOn('reject')).toBe(false);
+    expect(hints()).toEqual([OUTPUT_HINTS.single]);
+
+    await flip('reject');
+
+    expect(storedRequest()?.actions).toEqual([approveAction, defaultRejectAction]);
+  });
+
   it('turning Reject off is one undo step: the request keeps Approve alone and the rest as it was', async () => {
     await renderPanel([human(defaultDecisionRequest)]);
 
