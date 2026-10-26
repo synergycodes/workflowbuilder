@@ -102,12 +102,11 @@ Workflow Builder is made by [Synergy Codes](https://www.synergycodes.com/): 15+ 
 | See a run end to end, with a human decision   | [Hosted AI Studio](https://aistudio.workflowbuilder.io/)                                              | none          | no     |
 | Put the editor in your React app              | [A. Embed the SDK](#path-a-embed-the-sdk)                                                             | ~1 min        | no     |
 | Orchestrate what your users draw, on Temporal | [D. Add workflow orchestration on your Temporal](#path-d-add-workflow-orchestration-on-your-temporal) | your Temporal | no     |
+| Try the Temporal plugin on your machine       | [Temporal sample](examples/workflow-builder-temporal/)                                                | Temporal CLI  | no     |
 | Run the whole stack on your machine           | [C. Run the full stack demo](#path-c-run-the-full-stack-demo)                                         | ~10 min       | yes    |
 | Explore the editor alone from this repo       | [B. Try the demo](#path-b-try-the-demo)                                                               | ~2 min        | no     |
 
 **In the hosted demo:** open **Templates** in the palette, pick **Refund Review** and press **Run**. The AI drafts a refund, the run stops at the review step, and you decide. The demo is shared and rate-limited.
-
-Want to draw a workflow on the canvas and run it as a durable Temporal Workflow Execution, without Docker? Start with the [Temporal sample](examples/workflow-builder-temporal/).
 
 ### Path A. Embed the SDK
 
