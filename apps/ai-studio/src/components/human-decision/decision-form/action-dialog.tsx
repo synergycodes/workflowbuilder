@@ -21,7 +21,7 @@ type Props = {
   onConfirm: () => void;
 };
 
-/** Asks for the text an action is sent with before it is sent. What was typed stays in the draft when the person cancels. */
+/** Asks for the text an action is sent with before it is sent. Controlled: the caller keeps the text, so Cancel loses nothing. */
 export function ActionDialog({
   open,
   title,

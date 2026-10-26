@@ -9,11 +9,10 @@ type Props = {
   schema: JsonSchema;
   values: Record<string, unknown>;
   reason: string | undefined;
-  comment: string | undefined;
 };
 
-/** A decision already made: the values it settled, read-only, and the reason or comment when one was given. */
-export function DecisionRecord({ schema, values, reason, comment }: Props) {
+/** A decision already made: the values it settled, read-only, and the reason when one was given. */
+export function DecisionRecord({ schema, values, reason }: Props) {
   return (
     <div className={styles['record']} data-decision-record>
       {/* A settled decision is not checked again: an emptied or missing field is part of what was decided. */}
@@ -21,11 +20,6 @@ export function DecisionRecord({ schema, values, reason, comment }: Props) {
       {reason !== undefined && (
         <FormControlWithLabel label="Reason">
           <p className={styles['value']}>{reason}</p>
-        </FormControlWithLabel>
-      )}
-      {comment !== undefined && (
-        <FormControlWithLabel label="Comment">
-          <p className={styles['value']}>{comment}</p>
         </FormControlWithLabel>
       )}
     </div>

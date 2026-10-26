@@ -1,22 +1,14 @@
 import { hasText } from '../has-text';
 import { isPlainObject } from '../is-plain-object';
 
-type Offer = { name: string; label: string };
-
-export type ResumeOffer = Offer;
-
-export type RejectOffer = Offer & { reasonRequired: boolean };
+export type ActionOffer = { name: string; label: string; reasonRequired: boolean };
 
 /** What the decider can do: every resume action in the request's order, never empty, and the reject when there is one. */
-export type OfferedActions = { resumes: ResumeOffer[]; reject: RejectOffer | undefined };
+export type OfferedActions = { resumes: [ActionOffer, ...ActionOffer[]]; reject: ActionOffer | undefined };
 
-function offerOf(entry: Record<string, unknown> | undefined): Offer | undefined {
-  const name = entry?.['name'];
-  if (!hasText(name)) {
-    return undefined;
-  }
-  const label = entry?.['label'];
-  return { name, label: hasText(label) ? label : name };
+function offerOf(entry: Record<string, unknown>, name: string): ActionOffer {
+  const label = entry['label'];
+  return { name, label: hasText(label) ? label : name, reasonRequired: entry['reasonRequired'] === true };
 }
 
 function isReject(entry: unknown): entry is Record<string, unknown> {
@@ -30,15 +22,13 @@ export function offeredActions(actions: readonly unknown[]): OfferedActions | un
     .filter(isPlainObject)
     // A reject without a port has no handle on the canvas and Publish refuses it, so it counts as off.
     .filter((entry) => entry['effect'] === 'resume' || (isReject(entry) && hasText(entry['port'])))
-    .filter((entry) => hasText(entry['name']))
-    .filter((entry, index, all) => all.findIndex((other) => other['name'] === entry['name']) === index);
-  const resumes = named.filter((entry) => entry['effect'] === 'resume').map((entry) => offerOf(entry) as Offer);
-  const rejectEntry = named.find((entry) => entry['effect'] === 'reject');
-  const reject = rejectEntry && {
-    ...(offerOf(rejectEntry) as Offer),
-    reasonRequired: rejectEntry['reasonRequired'] === true,
-  };
-  return resumes.length === 0 ? undefined : { resumes, reject };
+    .flatMap((entry) =>
+      hasText(entry['name']) ? [{ effect: entry['effect'], offer: offerOf(entry, entry['name']) }] : [],
+    )
+    .filter(({ offer }, index, all) => all.findIndex((other) => other.offer.name === offer.name) === index);
+  const [first, ...further] = named.filter(({ effect }) => effect === 'resume').map(({ offer }) => offer);
+  const reject = named.find(({ effect }) => effect === 'reject')?.offer;
+  return first === undefined ? undefined : { resumes: [first, ...further], reject };
 }
 
 export function rejectPortOf(actions: readonly unknown[]): string | undefined {

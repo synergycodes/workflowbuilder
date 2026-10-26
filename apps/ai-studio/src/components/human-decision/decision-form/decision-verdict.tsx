@@ -4,39 +4,30 @@ import { useState } from 'react';
 
 import styles from './decision-verdict.module.css';
 
-import type { OfferedActions, ResumeOffer } from '../../../utils/human-decision/decision-actions';
+import type { ActionOffer, OfferedActions } from '../../../utils/human-decision/decision-actions';
 import { ActionDialog } from './action-dialog';
 
 type Props = {
   actions: OfferedActions;
-  reason: string;
-  /** By the resume action's name. */
-  comments: Record<string, string>;
+  reasonOf: (name: string) => string;
   isResumeBlocked: boolean;
   isBusy: boolean;
   isAccepted: boolean;
   message: string | undefined;
-  onReasonChange: (reason: string) => void;
-  onCommentChange: (name: string, comment: string) => void;
-  onResume: (resume: ResumeOffer, comment?: string) => void;
-  onReject: () => void;
+  onReasonChange: (name: string, reason: string) => void;
+  onResume: (resume: ActionOffer) => void;
+  onReject: (reject: ActionOffer) => void;
 };
 
-/**
- * The verdict half of the form, in the panel's footer: the actions the decider may take, mirrored from the request's
- * order so the first resume action is the primary button on the right. A rejection asks for its reason first, and a
- * further resume action for a comment.
- */
+/** The verdict half of the decision form. */
 export function DecisionVerdict({
   actions: { resumes, reject },
-  reason,
-  comments,
+  reasonOf,
   isResumeBlocked,
   isBusy,
   isAccepted,
   message,
   onReasonChange,
-  onCommentChange,
   onResume,
   onReject,
 }: Props) {
@@ -44,6 +35,16 @@ export function DecisionVerdict({
   // By name: the request is read again on every render, and names are unique within it.
   const [asking, setAsking] = useState<string | undefined>();
   const close = () => setAsking(undefined);
+  const resumeButton = (resume: ActionOffer, variant: 'primary' | 'secondary') => (
+    <Button
+      key={resume.name}
+      variant={variant}
+      disabled={isBusy || isResumeBlocked}
+      onClick={() => (resume.reasonRequired ? setAsking(resume.name) : onResume(resume))}
+    >
+      {resume.reasonRequired ? `${resume.label}…` : resume.label}
+    </Button>
+  );
 
   return (
     <>
@@ -65,23 +66,10 @@ export function DecisionVerdict({
                 {`${reject.label}…`}
               </Button>
             )}
-            {[...further].reverse().map((resume) => (
-              <Button
-                key={resume.name}
-                variant="secondary"
-                disabled={isBusy || isResumeBlocked}
-                onClick={() => setAsking(resume.name)}
-              >
-                {`${resume.label}…`}
-              </Button>
-            ))}
+            {[...further].reverse().map((resume) => resumeButton(resume, 'secondary'))}
             {/* A disabled button does not say why, and its state trails the form's debounced report, so on a touch screen
                 the first tap after a correction is lost (follow-up: decision-form-blocked-button-a11y). */}
-            {first && (
-              <Button variant="primary" disabled={isBusy || isResumeBlocked} onClick={() => onResume(first)}>
-                {first.label}
-              </Button>
-            )}
+            {resumeButton(first, 'primary')}
           </div>
         </div>
       </PropertiesPanelFooterContent>
@@ -95,36 +83,37 @@ export function DecisionVerdict({
           confirmLabel="Confirm Rejection"
           confirmVariant="critical"
           isConfirmBlocked={isBusy}
-          text={reason}
-          onTextChange={onReasonChange}
+          text={reasonOf(reject.name)}
+          onTextChange={(next) => onReasonChange(reject.name, next)}
           onCancel={close}
           onConfirm={() => {
             close();
-            onReject();
+            onReject(reject);
           }}
         />
       )}
-      {further.map((resume) => (
-        <ActionDialog
-          key={resume.name}
-          open={asking === resume.name}
-          title={resume.label}
-          fieldLabel="Comment"
-          placeholder="Explain why this path was chosen…"
-          // The contract leaves a comment optional; the editor asks for one on every resume action past the first.
-          required
-          confirmLabel={`Confirm ${resume.label}`}
-          confirmVariant="primary"
-          isConfirmBlocked={isBusy || isResumeBlocked}
-          text={comments[resume.name] ?? ''}
-          onTextChange={(next) => onCommentChange(resume.name, next)}
-          onCancel={close}
-          onConfirm={() => {
-            close();
-            onResume(resume, comments[resume.name] ?? '');
-          }}
-        />
-      ))}
+      {resumes
+        .filter((resume) => resume.reasonRequired)
+        .map((resume) => (
+          <ActionDialog
+            key={resume.name}
+            open={asking === resume.name}
+            title={resume.label}
+            fieldLabel="Reason"
+            placeholder="Explain why this path was chosen…"
+            required
+            confirmLabel={`Confirm ${resume.label}`}
+            confirmVariant="primary"
+            isConfirmBlocked={isBusy || isResumeBlocked}
+            text={reasonOf(resume.name)}
+            onTextChange={(next) => onReasonChange(resume.name, next)}
+            onCancel={close}
+            onConfirm={() => {
+              close();
+              onResume(resume);
+            }}
+          />
+        ))}
     </>
   );
 }

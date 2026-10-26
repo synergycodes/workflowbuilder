@@ -96,8 +96,7 @@ export type DecisionRequest = {
   version: 1;
   /**
    * Actions offered to the decider: one or more `resume`, at most one `reject`, at most one
-   * `rerun-source`. Every routed action has its own port. Order matters to a client: AI Studio
-   * offers the first `resume` action as its primary button.
+   * `rerun-source`. Every routed action has its own port. Their order is kept as authored.
    */
   actions: DecisionAction[];
   /**
