@@ -62,7 +62,7 @@ The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiat
 
 ### Trying several resume actions on the local stack
 
-A review with two normal outcomes and a rejection: `complete` and `incomplete` are both `resume` actions, each on its own port with its own next node; `reject` has no edge, which is a deliberate end. The run below never reaches an AI node. Save this as `review.json`:
+A review with two normal outcomes and a rejection: `complete` and `incomplete` are both `resume` actions, each on its own port with its own next node; `reject` has no edge, which is a deliberate end. `reasonRequired` may stand on any action with a port and defaults to `false`; here `reject` sets it. The run below never reaches an AI node. Save this as `review.json`:
 
 ```json
 {
@@ -179,7 +179,7 @@ curl -s -X POST localhost:3001/api/executions/$RUN/decision -H 'content-type: ap
   -d '{"nodeId":"review-1","attempt":1,"action":"incomplete"}' | jq .effect
 # "resume"
 curl -s localhost:3001/api/executions/$RUN | jq '{status, outcome}'
-# { "status": "completed", "outcome": null }: the run took the incomplete branch and no outcome was declared
+# { "status": "completed", "outcome": null }: the run took the incomplete branch and no outcome was declared; repeat until it is
 ```
 
 A second run decided with `"action":"complete"` takes the other branch; one decided with `"action":"reject"` needs a `reason` and ends with `"outcome": "rejected"`. AI Studio opens the workflow at `?workflowId=$WF` and the run at `?executionId=$RUN`: the canvas draws one handle per routed action, while the decision form offers the first `resume` action only, for now.

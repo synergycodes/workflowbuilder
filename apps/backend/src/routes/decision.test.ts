@@ -117,9 +117,6 @@ const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'sour
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'source:inner:rejected' };
 const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source' };
 
-// source-1 feeds two deciding nodes. review-1 offers two resume actions and all three effects, and takes a
-// reject without a reason; review-2 keeps one resume action and requires a reason. after-1 hangs off
-// review-1's approved port.
 const snapshot = {
   nodes: [
     { id: 'source-1', data: { type: 'product/any', properties: {} } },
@@ -584,7 +581,8 @@ describe('POST /api/executions/:id/decision - delivery', () => {
     const review = flagged.nodes.find((node) => node.id === 'review-1')?.data.properties as {
       decisionRequest: { actions: Record<string, unknown>[] };
     };
-    review.decisionRequest.actions[1].reasonRequired = true;
+    const held = review.decisionRequest.actions.find((action) => action.name === 'hold');
+    if (held) held.reasonRequired = true;
     program({ ...waitingExecution, workflowSnapshotJson: flagged });
 
     const refused = await decide(buildApp(allowAll()), { nodeId: 'review-1', attempt: 1, action: 'hold' });
