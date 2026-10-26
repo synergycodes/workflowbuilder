@@ -13,9 +13,9 @@ type HandlesAlignment = NonNullable<ComponentProps<typeof NodePanel.Handles>['al
 // being re-derived per template.
 //
 // This helper alone does NOT make ports align across nodes. The visual
-// stability of the resulting port Y depends on a companion global CSS rule in
-// `packages/sdk/src/index.css` (search WB-192): the formula picks 'header' for
-// horizontal flow, then the CSS pin anchors the port to the NodeIcon's
+// stability of the resulting port Y depends on the header port `top` rule in
+// `packages/ui/src/components/node/node-panel/handle.module.css`: the formula picks
+// 'header' for horizontal flow, then the CSS pin anchors the port to the NodeIcon's
 // vertical center so multi-line descriptions don't shift it. Both layers must
 // stay in sync; removing either reintroduces the bug.
 export function getHandlesAlignment({ layoutDirection }: { layoutDirection: LayoutDirection }): HandlesAlignment {

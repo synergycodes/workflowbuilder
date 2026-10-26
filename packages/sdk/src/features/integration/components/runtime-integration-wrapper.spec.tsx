@@ -28,7 +28,7 @@ const onLoad = vi.fn();
 const storeData = { name: 'diagram', globalVariables: {}, nodes: [], edges: [], layoutDirection: 'RIGHT' as const };
 const localStorageKey = 'workflowBuilderDiagram';
 
-type WrapperProps = Omit<React.ComponentProps<typeof RuntimeIntegrationWrapper>, 'onLoad'>;
+type WrapperProps = Omit<React.ComponentProps<typeof RuntimeIntegrationWrapper>, 'onLoad' | 'autoSave'>;
 
 function integrationWrapperCalls() {
   return vi.mocked(IntegrationWrapper).mock.calls.map(([props]) => props);
@@ -46,7 +46,7 @@ function deferFetch() {
 }
 
 function getOnSave(props: WrapperProps) {
-  render(<RuntimeIntegrationWrapper onLoad={onLoad} {...props} />);
+  render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave {...props} />);
   return vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0].onSave;
 }
 
@@ -67,7 +67,13 @@ describe('RuntimeIntegrationWrapper', () => {
   describe('strategy: localStorage', () => {
     it('passes initial props to IntegrationWrapper on first render', () => {
       render(
-        <RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" name="initial" layoutDirection="DOWN" />,
+        <RuntimeIntegrationWrapper
+          onLoad={onLoad}
+          autoSave
+          strategy="localStorage"
+          name="initial"
+          layoutDirection="DOWN"
+        />,
       );
       const firstCall = vi.mocked(IntegrationWrapper).mock.calls[0][0];
       expect(firstCall.name).toBe('initial');
@@ -79,7 +85,7 @@ describe('RuntimeIntegrationWrapper', () => {
       localStorage.setItem(localStorageKey, JSON.stringify(stored));
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" />);
       });
 
       const lastCall = vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0];
@@ -90,7 +96,7 @@ describe('RuntimeIntegrationWrapper', () => {
       localStorage.setItem(localStorageKey, '{invalid}');
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" name="initial" />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" name="initial" />);
       });
 
       const lastCall = vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0];
@@ -98,7 +104,7 @@ describe('RuntimeIntegrationWrapper', () => {
     });
 
     it('passes isLoaded false on the first render and forwards onLoad', () => {
-      render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" />);
+      render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" />);
 
       const [firstCall] = integrationWrapperCalls();
       expect(firstCall.isLoaded).toBe(false);
@@ -109,7 +115,7 @@ describe('RuntimeIntegrationWrapper', () => {
       localStorage.setItem(localStorageKey, JSON.stringify({ name: 'from-storage', nodes: [], edges: [] }));
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" name="initial" />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" name="initial" />);
       });
 
       const loadedCalls = integrationWrapperCalls().filter(({ isLoaded }) => isLoaded);
@@ -119,7 +125,7 @@ describe('RuntimeIntegrationWrapper', () => {
 
     it('sets isLoaded with the initial props when nothing is stored', async () => {
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="localStorage" name="initial" />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="localStorage" name="initial" />);
       });
 
       const lastCall = integrationWrapperCalls().at(-1)!;
@@ -161,7 +167,7 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: true, text: () => Promise.resolve(JSON.stringify({})) });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} />);
       });
 
       expect(mockFetch).toHaveBeenCalledWith('/api/load');
@@ -172,7 +178,7 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: true, text: () => Promise.resolve(JSON.stringify(apiData)) });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} />);
       });
 
       const lastCall = vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0];
@@ -184,7 +190,9 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: false });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} name="initial" />);
+        render(
+          <RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} name="initial" />,
+        );
       });
 
       const lastCall = vi.mocked(IntegrationWrapper).mock.calls.at(-1)![0];
@@ -195,7 +203,7 @@ describe('RuntimeIntegrationWrapper', () => {
       const pending = deferFetch();
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} />);
       });
       expect(integrationWrapperCalls().at(-1)!.isLoaded).toBe(false);
 
@@ -212,7 +220,9 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: false });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} name="initial" />);
+        render(
+          <RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} name="initial" />,
+        );
       });
 
       const lastCall = integrationWrapperCalls().at(-1)!;
@@ -225,7 +235,9 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockRejectedValue(new Error('network'));
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} name="initial" />);
+        render(
+          <RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} name="initial" />,
+        );
       });
 
       const lastCall = integrationWrapperCalls().at(-1)!;
@@ -238,7 +250,7 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: true, text: () => Promise.resolve('<html>') });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} />);
       });
 
       expect(integrationWrapperCalls().at(-1)!.loadFailed).toBe(true);
@@ -248,7 +260,9 @@ describe('RuntimeIntegrationWrapper', () => {
       mockFetch.mockResolvedValue({ ok: true, text: () => Promise.resolve(body) });
 
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} name="initial" />);
+        render(
+          <RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} name="initial" />,
+        );
       });
 
       const lastCall = integrationWrapperCalls().at(-1)!;
@@ -263,7 +277,7 @@ describe('RuntimeIntegrationWrapper', () => {
       await act(async () => {
         render(
           <StrictMode>
-            <RuntimeIntegrationWrapper onLoad={onLoad} strategy="api" endpoints={endpoints} />
+            <RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="api" endpoints={endpoints} />
           </StrictMode>,
         );
       });
@@ -375,7 +389,15 @@ describe('RuntimeIntegrationWrapper', () => {
 
     it('sets isLoaded after mount with the props data', async () => {
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="props" onDataSave={vi.fn()} name="from-props" />);
+        render(
+          <RuntimeIntegrationWrapper
+            onLoad={onLoad}
+            autoSave
+            strategy="props"
+            onDataSave={vi.fn()}
+            name="from-props"
+          />,
+        );
       });
 
       const lastCall = integrationWrapperCalls().at(-1)!;
@@ -386,7 +408,7 @@ describe('RuntimeIntegrationWrapper', () => {
 
     it('does not fetch anything on mount', async () => {
       await act(async () => {
-        render(<RuntimeIntegrationWrapper onLoad={onLoad} strategy="props" onDataSave={vi.fn()} />);
+        render(<RuntimeIntegrationWrapper onLoad={onLoad} autoSave strategy="props" onDataSave={vi.fn()} />);
       });
 
       expect(mockFetch).not.toHaveBeenCalled();

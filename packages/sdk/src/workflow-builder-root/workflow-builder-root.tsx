@@ -13,6 +13,7 @@ import { RuntimeIntegrationWrapper } from '../features/integration/components/ru
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { initTheme } from '../hooks/theme';
+import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
 import { resolveIntegration } from './resolve-integration';
@@ -105,6 +106,7 @@ export function WorkflowBuilderRoot({
   useLayoutEffect(() => {
     resetWorkflowStore();
     resetIntegrationStore();
+    loadNodeDefinitions();
   }, []);
 
   // Paint the persisted theme on the DOM once, client-side. Lives here (not at
@@ -141,13 +143,14 @@ export function WorkflowBuilderRoot({
   setReactFlowProps(reactFlowProps ?? null);
   setAppBarBranding({ logo, logoHref });
 
-  const { strategy, endpoints, onDataSave } = resolveIntegration(integration);
+  const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
   return (
     <RuntimeIntegrationWrapper
       strategy={strategy}
       endpoints={endpoints}
       onDataSave={onDataSave}
+      autoSave={autoSave}
       onLoad={onLoad ?? defaultOnLoad}
       name={name}
       layoutDirection={layoutDirection}

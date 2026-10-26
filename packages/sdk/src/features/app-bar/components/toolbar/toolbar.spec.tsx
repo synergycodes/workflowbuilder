@@ -70,7 +70,7 @@ function renderToolbar(onSave: OnSave, save?: boolean) {
   // As after the initial load: saves are refused while the status is still 'disabled'.
   useIntegrationStore.setState({ savingStatus: 'waiting', lastSaveAttemptTimestamp: Date.now() });
   return renderInRoot(
-    <IntegrationContextWrapper onSave={onSave}>
+    <IntegrationContextWrapper onSave={onSave} autoSave>
       <SaveNowButton />
       <Toolbar />
     </IntegrationContextWrapper>,

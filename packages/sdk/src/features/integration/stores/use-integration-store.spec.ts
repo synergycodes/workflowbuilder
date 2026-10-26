@@ -1,13 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkflowBuilderNode } from '../../../node/node-data';
-import { setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
+import { getStoreDataForIntegration, setStoreDataFromIntegration } from '../../../store/slices/diagram-slice/actions';
 import { showTranslatedSnackbar } from '../../../utils/show-translated-snackbar';
 import { openTemplateSelectorModal } from '../../modals/template-selector/open-template-selector-modal';
 import {
   getStoreSavingStatus,
+  hasUnsavedChanges,
   loadData,
   resetIntegrationStore,
+  setStoreSavedData,
   setStoreSavingStatus,
   useIntegrationStore,
 } from './use-integration-store';
@@ -18,6 +20,7 @@ vi.mock('@workflowbuilder/ui', () => ({
 
 vi.mock('@/store/slices/diagram-slice/actions', () => ({
   setStoreDataFromIntegration: vi.fn(),
+  getStoreDataForIntegration: vi.fn(() => ({ name: 'loaded' })),
 }));
 
 vi.mock('@/features/modals/template-selector/open-template-selector-modal', () => ({
@@ -101,6 +104,25 @@ describe('use-integration-store', () => {
       loadData({ nodes: [] });
       // [] is falsy via Boolean([]) === true... wait, [] is truthy in JS
       expect(vi.mocked(setStoreDataFromIntegration)).toHaveBeenCalled();
+    });
+  });
+
+  describe('hasUnsavedChanges', () => {
+    it('is false right after a load, and true once the data an integration receives differs', () => {
+      loadData({ name: 'loaded' });
+      expect(hasUnsavedChanges()).toBe(false);
+
+      vi.mocked(getStoreDataForIntegration).mockReturnValueOnce({ name: 'renamed' } as never);
+      expect(hasUnsavedChanges()).toBe(true);
+    });
+
+    it('compares with the data recorded by the last successful save', () => {
+      loadData({ name: 'loaded' });
+      setStoreSavedData(JSON.stringify({ name: 'saved' }));
+      expect(hasUnsavedChanges()).toBe(true);
+
+      vi.mocked(getStoreDataForIntegration).mockReturnValueOnce({ name: 'saved' } as never);
+      expect(hasUnsavedChanges()).toBe(false);
     });
   });
 

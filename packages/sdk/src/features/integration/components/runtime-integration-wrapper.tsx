@@ -18,6 +18,7 @@ type Props = PropsWithChildren<
     strategy: IntegrationStrategy;
     endpoints?: { load: string; save: string };
     onDataSave?: OnSaveExternal;
+    autoSave: boolean;
     onLoad: (context: WorkflowBuilderLoadContext) => void;
   }
 >;
@@ -26,6 +27,7 @@ export function RuntimeIntegrationWrapper({
   strategy,
   endpoints,
   onDataSave,
+  autoSave,
   onLoad,
   name: nameProperty,
   globalVariables: globalVariablesProperty,
@@ -127,6 +129,7 @@ export function RuntimeIntegrationWrapper({
       loadFailed={loadFailed}
       onLoad={onLoad}
       onSave={handleSave}
+      autoSave={autoSave}
     >
       {children}
     </IntegrationWrapper>

@@ -133,6 +133,19 @@ Design decisions a reader of the code should know:
   screen, so the user does not lose the session; what to show is the host's call through
   `loadFailed`. A `200` with an empty body still counts as an empty diagram, so an endpoint that
   has nothing stored yet can still be saved to.
+- **Automatic saves write only unsaved changes.** The save on tab close used to write whatever the
+  editor held, so a second tab left open untouched overwrote, on close, the work saved from another
+  tab. An unsaved change is anything that changed the data the integration receives since the load
+  or the last successful save (decided by Piotr Błaszczyk, 21.10.2026). The editor compares that data,
+  serialised, with a snapshot taken on load and from what each successful save sent, instead of
+  reading the changes tracker: the tracker does not see a rename, a variable or a layout direction
+  change, and it ticks for the canvas measuring its nodes and for a selecting click. The rule covers
+  only automatic saves; a manual save always writes. Writes a host makes outside the integration,
+  such as AI Studio's Run patching the draft, are not part of the snapshot.
+- **`autoSave` is a field of the integration, not a Root prop.** Whether the editor may write on its
+  own is a property of where it writes, next to the strategy. A view that must never write on its
+  own, such as AI Studio's run view, used to need an `onDataSave` that rejects; `autoSave: false`
+  says it directly, and the Save button and `actions.save()` still write.
 - **The read-only guard moved into `openTemplateSelectorModal`, not only into the `openTemplates`
   action.** `TemplateSelector` replaces the whole diagram through `setDiagramModel` without
   checking read-only mode itself. Before this change the palette's Templates button had a
@@ -231,6 +244,3 @@ than folded into this release:
 - `openImportModal` and the Settings modal do not check read-only mode, unlike every other path
   that changes the persisted model; closing that gap is the design document's decision 24, tracked
   as its own task (follow-up: read-only-import-settings).
-- Auto-save has no switch: with `EditorRuntime` owning it, a view that must never save (a run view,
-  a preview) can only pass an `onDataSave` that rejects. A prop on Root, or an `autoSave: false` on
-  the integration, would make that explicit (follow-up: auto-save-opt-out).
