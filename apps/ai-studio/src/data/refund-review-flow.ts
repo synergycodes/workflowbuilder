@@ -34,14 +34,11 @@ export const refundReviewRequest = {
 export const seniorReviewRequest = {
   ...defaultDecisionRequest,
   schema: {
-    type: 'object',
+    ...refundReviewRequest.schema,
     properties: {
-      refundAmount: { type: 'number', title: 'Refund amount' },
-      orderDate: { type: 'string', title: 'Order date', readOnly: true },
-      replyDraft: { type: 'string', title: 'Reply draft' },
+      ...refundReviewRequest.schema.properties,
       internalReasoning: { type: 'string', title: 'Internal reasoning', readOnly: true },
     },
-    required: ['refundAmount'],
   },
 } satisfies DecisionRequest;
 
