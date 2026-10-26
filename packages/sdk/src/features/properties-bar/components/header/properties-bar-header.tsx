@@ -90,7 +90,7 @@ function SelectedNodeHeading({ node }: { node: WorkflowBuilderNode }) {
     <NodeHeading
       label={label || typeLabel || node.data.type}
       subtitle={label ? typeLabel : undefined}
-      icon={definition?.icon ?? node.data.icon}
+      icon={node.data.icon ?? definition?.icon}
       accent={definition?.accent}
     />
   );

@@ -30,7 +30,7 @@ export type PropertiesBarItem = {
  * `'PropertiesPanel'` slot that sets it to `undefined` removes the button.
  *
  * The header shows the selected node's icon, label and type label, or the
- * selected edge's icon, label and "Link". `onMenuHeaderClick` adds a menu button to it.
+ * selected edge's icon, label and "Link".
  *
  * @category Components
  */

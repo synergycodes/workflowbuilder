@@ -198,7 +198,7 @@ describe('PropertiesBar header', () => {
 
     expect(screen.getByText('Review')).not.toBeNull();
     expect(screen.getByText('Action')).not.toBeNull();
-    expect(nodeIcon(container)?.getAttribute('style')).toContain('--wb-public-node-icon-color-violet');
+    expect(nodeIcon(container, 'Lightning')?.getAttribute('style')).toContain('--wb-public-node-icon-color-violet');
     expect(screen.queryByText('Properties')).toBeNull();
   });
 
@@ -210,11 +210,17 @@ describe('PropertiesBar header', () => {
     expect(screen.queryByText('Runs an action')).toBeNull();
   });
 
-  it('prefers the icon of the node definition over the one saved on the node', () => {
+  it('shows the icon saved on the node, as the canvas does, over the one of its definition', () => {
     const { container } = renderHeader();
 
+    expect(container.querySelector('[data-icon="Lightning"]')).not.toBeNull();
+    expect(container.querySelector('[data-icon="Play"]')).toBeNull();
+  });
+
+  it('falls back to the icon of the node definition when the node has none saved', () => {
+    const { container } = renderHeader(withNodeData({ icon: undefined }));
+
     expect(container.querySelector('[data-icon="Play"]')).not.toBeNull();
-    expect(container.querySelector('[data-icon="Lightning"]')).toBeNull();
   });
 
   it('titles a node without a label with its type label, without a subtitle', () => {
