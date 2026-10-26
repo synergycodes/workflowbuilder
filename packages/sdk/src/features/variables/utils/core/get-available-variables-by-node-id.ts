@@ -1,5 +1,4 @@
-import type { VariableType } from '@workflow-builder/types/variables';
-
+import type { VariableType } from '../../../../core-contract';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
 import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';
 import type { VariableSuggestionGroup } from '../../components/variable-text/variable-text.types';

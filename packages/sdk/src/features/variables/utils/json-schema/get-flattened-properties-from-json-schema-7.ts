@@ -1,7 +1,6 @@
 import type { JsonSchema7 } from '@jsonforms/core';
 
-import type { FlattenedPropertiesIndex } from '@workflow-builder/types/node-output-schema';
-
+import type { FlattenedPropertiesIndex } from '../../../../core-contract';
 import { getIsSupportedVariableType } from './get-is-supported-variable-type';
 
 type Params = {

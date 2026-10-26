@@ -1,7 +1,6 @@
 import type { Edge, Node } from '@xyflow/react';
 
-import type { NodeSchemaOutput } from '@workflow-builder/types/node-output-schema';
-
+import type { NodeSchemaOutput } from '../core-contract';
 import type { NodeDataProperties } from '../types/default-properties';
 import type { UISchema } from '../types/uischema';
 import type { IconType } from './common';

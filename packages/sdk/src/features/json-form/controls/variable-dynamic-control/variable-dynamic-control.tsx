@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
-
+import type { VariableType, VariableTypePrimitive } from '../../../../core-contract';
 import type { WBControlProps } from '../../../../types/controls';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';

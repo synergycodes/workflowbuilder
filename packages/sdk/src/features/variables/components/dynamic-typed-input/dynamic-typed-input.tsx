@@ -3,10 +3,9 @@ import clsx from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { VariableTypePrimitive } from '@workflow-builder/types/variables';
-
 import styles from './dynamic-typed-input.module.css';
 
+import type { VariableTypePrimitive } from '../../../../core-contract';
 import { getDateIfValid, getISODate, getTimeFromDateIfValid, setDateWithTimeFromTime } from '../../../../utils/time';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { getIsValidDate, getIsValidTime } from '../../../../utils/validation/get-is-valid-date';

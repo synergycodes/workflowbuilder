@@ -1,7 +1,6 @@
 import type { InputProps } from '@workflowbuilder/ui';
 
-import type { VariableTypePrimitive } from '@workflow-builder/types/variables';
-
+import type { VariableTypePrimitive } from '../../../../core-contract';
 import type { BaseControlElement } from '../../../../types/controls';
 import type { Override } from '../../../../types/utils';
 

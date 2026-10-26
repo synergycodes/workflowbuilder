@@ -1,6 +1,6 @@
 import type { SelectItem } from '@workflowbuilder/ui';
 
-import type { VariableType } from '@workflow-builder/types/variables';
+import type { VariableType } from '../../../../core-contract';
 
 export const typesForDate: VariableType[] = ['date', 'datetime'];
 

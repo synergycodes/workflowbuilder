@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { SOURCE_HANDLE_TYPE } from '@workflow-builder/types/node-output-schema';
-import type { SourceHandleType } from '@workflow-builder/types/node-output-schema';
-
+import { SOURCE_HANDLE_TYPE, type SourceHandleType } from '../../../../core-contract';
 import { getIsSourceHandleType } from './get-is-source-handle-type';
 
 describe('getIsSourceHandleType', () => {

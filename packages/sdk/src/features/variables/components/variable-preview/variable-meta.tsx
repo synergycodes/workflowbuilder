@@ -1,9 +1,8 @@
 import clsx from 'clsx';
 
-import type { VariableType } from '@workflow-builder/types/variables';
-
 import styles from './variable-meta.module.css';
 
+import type { VariableType } from '../../../../core-contract';
 import { variableTypeInfoByType } from '../../constants';
 
 type Props = {

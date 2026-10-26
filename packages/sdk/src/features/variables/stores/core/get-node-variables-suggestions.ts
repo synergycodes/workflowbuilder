@@ -1,5 +1,4 @@
-import { SOURCE_HANDLE_TYPE } from '@workflow-builder/types/node-output-schema';
-
+import { SOURCE_HANDLE_TYPE } from '../../../../core-contract';
 import { truncate } from '../../../../utils/text';
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
 import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA } from '../../constants';

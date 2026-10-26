@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
-
+import type { VariableType, VariableTypePrimitive } from '../../../../core-contract';
 import { getVariableTypeIfPrimitive } from './get-variable-type-if-primitive';
 
 const primitiveTypes: VariableTypePrimitive[] = ['string', 'number', 'boolean', 'datetime', 'date'];

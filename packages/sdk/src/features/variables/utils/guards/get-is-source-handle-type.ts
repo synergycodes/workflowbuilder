@@ -1,4 +1,4 @@
-import { SOURCE_HANDLE_TYPE, type SourceHandleType } from '@workflow-builder/types/node-output-schema';
+import { SOURCE_HANDLE_TYPE, type SourceHandleType } from '../../../../core-contract';
 
 const SOURCE_HANDLE_TYPES = new Set<string>(Object.values(SOURCE_HANDLE_TYPE));
 

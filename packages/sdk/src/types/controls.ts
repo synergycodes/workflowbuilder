@@ -1,8 +1,7 @@
 import type { ControlElement, ControlProps as JsonFormsControlProps } from '@jsonforms/core';
 import type { InputProps, TextAreaProps } from '@workflowbuilder/ui';
 
-import type { VariableType } from '@workflow-builder/types/variables';
-
+import type { VariableType } from '../core-contract';
 import type { ComparisonOperator, LogicalOperator } from '../features/variables/constants';
 import type { FieldSchema } from '../node/node-schema';
 import type { UISchemaRule } from './rules';

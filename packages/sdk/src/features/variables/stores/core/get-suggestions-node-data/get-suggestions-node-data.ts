@@ -1,5 +1,4 @@
-import { OUTPUT_SCHEMA_TYPE, SOURCE_HANDLE_TYPE } from '@workflow-builder/types/node-output-schema';
-
+import { OUTPUT_SCHEMA_TYPE, SOURCE_HANDLE_TYPE } from '../../../../../core-contract';
 import type { PaletteItem } from '../../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../../node/node-data';
 import { filterEmpty } from '../../../../../utils/array';

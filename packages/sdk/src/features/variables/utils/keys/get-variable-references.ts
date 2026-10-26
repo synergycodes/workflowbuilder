@@ -1,5 +1,4 @@
-import type { VariableReference } from '@workflow-builder/types/variables';
-
+import type { VariableReference } from '../../../../core-contract';
 import { VARIABLE_BRACKETS_END, VARIABLE_BRACKETS_START } from '../../constants';
 import type { MaybeVariableReference } from '../../types';
 import { getIsStringVariableReferenceStart } from './get-is-string-variable-reference';
