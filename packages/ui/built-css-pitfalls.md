@@ -104,7 +104,7 @@ subtree as a scoped override, which is a legitimate pattern rather than a mis-sc
 
 **Why it is silent** - A custom property is resolved on the element that declares it; an unresolvable reference makes it invalid at computed-value time without any error.
 
-**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. The defaults plugin moves top-level variable-only `:root` blocks to `[data-wb-theme]`, but it skips blocks already wrapped in `@layer` and files concatenated without PostCSS (`globals.css`, `typography.css`), so those must be written on `[data-wb-theme]` by hand.
+**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. The defaults plugin moves top-level variable-only `:root` blocks to `[data-wb-theme]`, but it skips blocks already wrapped in `@layer` and files concatenated without PostCSS (`globals.css`), so those must be written on `[data-wb-theme]` by hand.
 
 **Automated?** - Yes, in every checked dist. `Default on :root cannot resolve themed tokens` flags any such declaration.
 

@@ -32,8 +32,8 @@ yarn add @workflowbuilder/ui
 ### 🎨 Import styles
 
 Import components from the package root (the recommended default). Their styles,
-including the global layer order, reset, and typography, are injected
-automatically, so you only need to add the design tokens:
+including the layer order and typography, are injected automatically, so you only
+need to add the design tokens:
 
 ```css
 @import '@workflowbuilder/ui/tokens.css';
@@ -47,8 +47,8 @@ import '@workflowbuilder/ui/tokens.css';
 > `import { DatePicker } from '@workflowbuilder/ui/date-picker'`. That
 > injects only the component's own CSS. Every stylesheet carries the cascade
 > layer order, so import order doesn't matter; add
-> `import '@workflowbuilder/ui/styles.css'` once if you also want the global
-> reset and typography.
+> `import '@workflowbuilder/ui/styles.css'` once if you also want the
+> typography classes.
 
 ### 🎛️ Apply the Theme
 
@@ -108,23 +108,19 @@ Or scope a public override to one component:
 }
 ```
 
-### `@workflowbuilder/ui` css layers
+### How the styles are scoped
 
-`@workflowbuilder/ui` uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to separate its styles from yours. By default, CSS styles outside of any layer take precedence over what `@workflowbuilder/ui` defines, so your styles will always win the specificity war. You can customize `@workflowbuilder/ui` components with simple `input {}`.
+Every component rule starts with `:is(#wb, .workflow-builder-root)`, so it applies only inside
+the wrapper and carries the weight of one id selector. Page-wide resets such as
+`button { all: unset }` or Bootstrap's reboot do not reach the components.
 
-```css
-@layer ui.component {
-  .separator {
-    /* … */
-  }
-}
-```
+Variable defaults and `@font-face` sit in one cascade layer, `@layer ui.base;`, so your
+unlayered overrides on `.workflow-builder-root` win whatever the load order.
 
-Default `@workflowbuilder/ui` order:
-
-```css
-@layer ui.base, ui.component;
-```
+Variables are the supported way to customize. To override a component rule directly, outweigh
+it with an id of your own plus the class, for example
+`#app .workflow-builder-root .my-input { … }`, or use `!important`. Component class names are
+generated and can change between releases.
 
 # 🛠️ Development
 

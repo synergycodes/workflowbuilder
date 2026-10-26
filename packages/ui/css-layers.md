@@ -1,75 +1,80 @@
-# CSS layers
+# CSS layers and scoping
 
-`@workflowbuilder/ui` emits all of its styles into two ordered cascade layers:
+`@workflowbuilder/ui` (and the SDK, which follows the same model) uses one cascade layer, for
+variables only:
 
 ```css
-@layer ui.base, ui.component;
+@layer ui.base;
 ```
 
-`ui.base` holds resets, primitives, and vendored third-party stylesheets
-(react-day-picker); `ui.component` holds component styles. Declaring the order
-before any rule from either layer guarantees that `ui.component` always wins
-over `ui.base`, and that unlayered consumer styles win over both.
+`ui.base` holds variable defaults (primitives on `:root`, themed tokens and `--wb-public-*`
+defaults on `[data-wb-theme]`) and `@font-face`. Every rule that paints is unlayered and scoped
+by a selector prefix.
+
+## Why the defaults stay layered
+
+A consumer override on `.workflow-builder-root` is unlayered, so it beats the layered default
+declared on the same element whatever the load order, including a lazily loaded component
+stylesheet that arrives later. Sources keep the plain top-level `:root { … }` convention; the
+build moves themed and public defaults to `[data-wb-theme]` and wraps them
+(`postcss-layer-root-defaults.mts` for component CSS, the token-copy transform in
+`vite.config.mts` for the generated token files).
+
+## Why painting rules are unlayered
+
+A layered rule loses to every unlayered rule on the page, so a host reset (`button { all: unset }`,
+Bootstrap's reboot, Tailwind's preflight) restyled the editor in 3.x. Unlayered and prefixed, our
+rules win by specificity instead.
+
+## The prefix ladder
+
+`postcss-scope-prefix.mts` prefixes every selector at build time:
+
+| Source                                                  | Prefix                                                    | Added weight                     |
+| ------------------------------------------------------- | --------------------------------------------------------- | -------------------------------- |
+| Vendored CSS (react-day-picker, `@xyflow`)              | `:where(.workflow-builder-root) `                         | (0,0,0)                          |
+| Base files (`typography.css`, `base-button.module.css`) | `:is(#wb, .workflow-builder-root) :where(…)`              | (1,0,0), own selector weightless |
+| UI components                                           | `:is(#wb, .workflow-builder-root) `                       | (1,0,0)                          |
+| SDK modules                                             | `:is(#wb, .workflow-builder-root).workflow-builder-root ` | (1,1,0)                          |
+
+`#wb` is a made-up id: `:is()` takes the weight of its heaviest argument, so the rule gets an
+id's weight while only the class has to match. The ladder makes vendored CSS lose to our
+theming, base styles lose to every component rule, and UI rules lose to SDK overrides, without
+depending on stylesheet order. Host rules without an id or `!important` lose to all but the
+vendored rules.
+
+The plugin leaves alone: rules inside `@layer`, `@keyframes` and `@font-face`; `:root…` and bare
+`[data-wb-theme…]` variable blocks; selectors that already carry a prefix (compared without
+whitespace, since the UI dist the SDK re-reads is minified); and selectors that start with
+`.workflow-builder-root`, the editor box itself. A `[data-wb-theme…] .x` selector gets the
+prefix glued on, because the attribute sits on the box.
 
 ## Establishing the order
 
-The order is fixed by the **first** `@layer` declaration the browser sees, so
-the declaration must load before any component rule. To make that hold on
-every path, the build (`combine-css-bundle.mts`) stamps the full order
-statement at the top of **every** emitted stylesheet - the combined
-`index.css`, `styles.css`, and each per-component file in `dist/assets/`.
-Duplicate statements are no-ops (the first occurrence fixes the order, later
-ones confirm it), so any import order and any bundler is safe:
+The order is fixed by the **first** `@layer` declaration the browser sees. The build
+(`combine-css-bundle.mts`) stamps `@layer ui.base;` at the top of **every** emitted stylesheet
+(the combined `index.css`, `styles.css`, and each per-component file in `dist/assets/`).
+Duplicate statements are no-ops, so any import order and any bundler is safe, and a single
+built file copied out of the package stays self-contained.
 
-- importing from the package root just works - whichever injected chunk
-  stylesheet loads first carries the statement;
-- per-component subpath imports just work for the same reason (import
-  `@workflowbuilder/ui/styles.css` once if you also want the reset and
-  typography);
-- copying a single built file out of the package keeps it self-contained.
+Do **not** replace the stamped statement with a shared `@import`: a relative import breaks
+silently when a file is copied out alone, and constructed stylesheets ignore `@import`.
 
-Do **not** replace the stamped statement with a shared `@import`: a relative
-import breaks silently when a file is copied out alone, and constructed
-stylesheets ignore `@import` entirely.
-
-`scripts/check-built-css.ts` fails the build if any dist stylesheet stops
-leading with the statement, uses an unknown layer name, or ships rules outside
-`@layer`.
-
-## One top-level layer across the ecosystem
-
-`ui` is deliberately the ONLY top-level layer, in this package and in the
-SDK's `index.css` alike. Layer order is fixed by the first mention anywhere in
-the document, and stylesheets here arrive through the JS module graph - so
-with two independent order declarations (say `reset, ext-lib, ui` in one file
-and `ui.base, ui.component` in another) the effective order would depend on
-which file parses first. Everything that must lose to component styles
-(third-party CSS such as xyflow, the SDK's reset block) joins `ui.base`
-instead of getting its own top-level layer, and every stylesheet opens with
-the identical `@layer ui.base, ui.component;` statement.
-
-## Variable defaults
-
-`:root` blocks with variable defaults (`--wb-public-*` in component sources,
-the `--wb-ds-*` design tokens copied from `@workflowbuilder/ui-tokens`) ship
-inside `ui.base`. Layered declarations lose to any unlayered consumer CSS, so
-a plain `:root { --wb-ds-…: … }` override in an app always wins - even when a
-lazily loaded component stylesheet arrives after it. Sources keep the plain
-top-level `:root { … }` convention; the build does the wrapping
-(`postcss-layer-root-defaults.mts` for component CSS, the token-copy transform
-in `vite.config.mts` for the generated token files).
+`scripts/check-stylesheet.ts` (run by `check-built-css.ts` on both dists) fails the build on a
+missing order statement, an unknown layer name, a painting rule inside `@layer`, or an
+unprefixed rule outside it. See `built-css-pitfalls.md`.
 
 ## box-sizing
 
-`box-sizing: border-box` is injected into every styling rule of every
-`*.module.css` at build time by `postcss-box-sizing.mts` - you will not find
-the declarations in source. Rationale and rejected alternatives:
-`postcss-box-sizing.decision-log.md`.
+In this package `box-sizing: border-box` is injected into every styling rule of every
+`*.module.css` at build time by `postcss-box-sizing.mts`; you will not find the declarations
+in source (rationale: `postcss-box-sizing.decision-log.md`). The SDK does not run that plugin;
+it ships one weightless `:where(.workflow-builder-root) *` rule, so host `box-sizing` rules win
+inside custom nodes and panels.
 
 ## Third-party CSS
 
-Stylesheets we don't author join `ui.base` at import time, e.g.
-`@import 'react-day-picker/style.css' layer(ui.base);` (see
-`date-picker/variables.css`). Their defaults then lose to our `ui.component`
-theming by layer order alone - no unlayered escape hatches, no specificity
-arithmetic against upstream selectors.
+Stylesheets we don't author are imported unlayered (`@import 'react-day-picker/style.css';` in
+`date-picker/variables.css`, `@xyflow/react/dist/style.css` in the SDK) and prefixed with the
+vendored, weightless form. Their own selectors still beat bare host tag resets, and our themed
+rules beat them by the ladder above.

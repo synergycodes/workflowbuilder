@@ -168,6 +168,7 @@ export default defineConfig({
             },
             { label: 'Theming', link: '/get-started/theming/' },
             { label: 'Side effects & limitations', link: '/get-started/side-effects/' },
+            { label: 'Upgrade to 4.0', link: '/get-started/upgrade-to-4/' },
             { label: 'Upgrade to 3.0', link: '/get-started/upgrade-to-3/' },
           ],
         },
