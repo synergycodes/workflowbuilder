@@ -19,7 +19,7 @@ describe('reviewDecisionRequest', () => {
     expect(ports).not.toContain('errorRoute');
   });
 
-  it('is a version 1 request: two resume actions, one reject that needs a reason, no rerun, an empty form, no proposal source', () => {
+  it('is a version 1 request: two resume actions and a reject, Escalate and Reject need a reason, no rerun, an empty form, no proposal source', () => {
     expect(reviewDecisionRequest.version).toBe(1);
     expect(reviewDecisionRequest.actions.map((action) => action.name)).toEqual(['approve', 'escalate', 'reject']);
     expect(reviewDecisionRequest.actions.map((action) => action.effect)).toEqual(['resume', 'resume', 'reject']);
