@@ -20,7 +20,7 @@ export const reviewDecisionRequest = {
       label: 'Escalate',
       effect: 'resume',
       port: getHandleId({ handleType: 'source', innerId: 'escalated' }),
-      reasonRequired: false,
+      reasonRequired: true,
     },
     {
       name: 'reject',

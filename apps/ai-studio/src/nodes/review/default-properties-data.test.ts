@@ -23,7 +23,7 @@ describe('reviewDecisionRequest', () => {
     expect(reviewDecisionRequest.version).toBe(1);
     expect(reviewDecisionRequest.actions.map((action) => action.name)).toEqual(['approve', 'escalate', 'reject']);
     expect(reviewDecisionRequest.actions.map((action) => action.effect)).toEqual(['resume', 'resume', 'reject']);
-    expect(reviewDecisionRequest.actions[2]).toMatchObject({ effect: 'reject', reasonRequired: true });
+    expect(reviewDecisionRequest.actions.map((action) => action.reasonRequired)).toEqual([false, true, true]);
     expect(reviewDecisionRequest.schema).toEqual({ type: 'object', properties: {} });
     expect(reviewDecisionRequest).not.toHaveProperty('proposalSourceNodeId');
     expect(reviewDecisionRequest).not.toHaveProperty('deadline');
