@@ -19,8 +19,8 @@ function resolveCommonNodePlaceholders<T extends { [key: string]: VariableSugges
       key,
       suggestions.map((suggestion) => ({
         ...suggestion,
-        display: suggestion.display.replace(NODE_LABEL_FOR_COMMON_NODE_DATA, truncate(node.nodeLabel, 15)),
-        id: suggestion.id.replace(NODE_ID_FOR_COMMON_NODE_DATA, node.nodeId),
+        display: suggestion.display.replaceAll(NODE_LABEL_FOR_COMMON_NODE_DATA, truncate(node.nodeLabel, 15)),
+        id: suggestion.id.replaceAll(NODE_ID_FOR_COMMON_NODE_DATA, node.nodeId),
       })),
     ]),
   ) as T;

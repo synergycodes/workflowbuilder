@@ -1,7 +1,15 @@
 import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables';
 
-export const NODE_ID_FOR_COMMON_NODE_DATA = '<NODE_ID>';
-export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<NODE_LABEL>';
+/**
+ * Sentinel stored in `commonByType` suggestion ids; swapped for the real node id via `replaceAll` on read.
+ * Trusted never to appear in a real node id, so no escaping is done.
+ */
+export const NODE_ID_FOR_COMMON_NODE_DATA = '<<NODE_ID>>';
+/**
+ * Sentinel stored in `commonByType` suggestion displays; swapped for the real node label via `replaceAll` on read.
+ * Trusted never to appear in a real node label, so no escaping is done.
+ */
+export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<<NODE_LABEL>>';
 
 export const LOGICAL_OPERATOR = {
   OR: 'OR',

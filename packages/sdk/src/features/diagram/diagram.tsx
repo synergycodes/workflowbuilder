@@ -24,7 +24,6 @@ import type { WorkflowBuilderReactFlowProps } from '../../workflow-builder-root/
 import { trackFutureChange } from '../changes-tracker/stores/use-changes-tracker-store';
 import { useDeleteConfirmation } from '../modals/delete-confirmation/use-delete-confirmation';
 import { withOptionalComponentPlugins } from '../plugins-core/adapters/adapter-components';
-import { useVariablesSync } from '../variables/hooks/use-variables-sync';
 import { deleteKeyCode } from './const';
 import { SNAP_GRID, SNAP_IS_ACTIVE } from './diagram.const';
 import { TemporaryEdge } from './edges/temporary-edge/temporary-edge';
@@ -126,8 +125,6 @@ function DiagramContainerComponent({ edgeTypes = {} }: WorkflowBuilderCanvasProp
     },
     [onDropFromPalette],
   );
-
-  useVariablesSync();
 
   const { onConnect, onConnectStart, onConnectEnd } = useConnect();
 
