@@ -966,7 +966,7 @@ describe.each([
     });
   });
 
-  describe('a further resume action', () => {
+  describe('several resume actions', () => {
     it('sits between the reject and the first resume action, which stays rightmost', () => {
       parkHumanOne();
       render(withEscalate());
