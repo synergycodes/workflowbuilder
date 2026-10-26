@@ -11,7 +11,7 @@
 // Keeping plain `{{x.y}}` strict is deliberate: a typo in a prompt template
 // should fail loudly during development. The safe forms are an opt-in for
 // authors who genuinely expect a value to be absent some of the time.
-import type { VariableReference } from '@workflow-builder/types/variables';
+import type { VariableReference } from '@workflow-builder/types/variables/variables';
 
 import { PermanentNodeExecutionError } from '../errors';
 import type { ExecutionContext } from '../execution-context';
