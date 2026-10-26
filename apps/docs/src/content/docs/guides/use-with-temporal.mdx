@@ -13,41 +13,43 @@ import architectureImg from '@/assets/temporal/architecture.svg';
 import editorRunImg from '@/assets/temporal/editor-run.png';
 import eventHistoryImg from '@/assets/temporal/temporal-ui-event-history.png';
 
-With the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin, a diagram drawn in the Workflow Builder editor runs as a durable [Temporal](https://temporal.io) Workflow Execution. Every diagram runs on the same Workflow, so a new diagram needs no new Temporal code and no Worker deploy. Only a new node type does.
+With the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin, a diagram drawn in the Workflow Builder editor runs as a durable [Temporal](https://temporal.io) Workflow Execution. A diagram is the workflow people draw in the editor: its nodes and edges, saved as JSON. Every diagram runs on the same Temporal Workflow, so a new diagram needs no new Temporal code. You redeploy your Worker, the Node.js process that runs that code, only when you add a node type or change what a node does.
 
-This guide walks through each part of the setup: the editor, your server and your Worker, then running it and what to settle before production. A [ready example](#try-the-example) runs the whole setup on your machine.
+To start from working code instead, the [ready example](#try-the-example) runs the whole setup on your machine.
 
 ## How Workflow Builder works with Temporal
 
-Workflow Builder gives you the editor where people draw a workflow and the Temporal Workflow that runs it. Temporal keeps each run durable. You write the code that connects the editor to the Workflow and the business logic behind each node.
+Workflow Builder is an open-source framework for workflow orchestration in your product. Besides the editor SDK and the Temporal plugin that this guide uses, it includes a reference execution backend and AI Studio, a demo app that shows each run live on the canvas.
 
 <Image
   src={architectureImg}
-  alt="Arrows from left to right follow a run. Your React app, with the Workflow Builder editor and your Run button, sends the diagram to your server, where your mapper turns it into a definition and the Workflow Builder TemporalWorkflowEngine starts a run on the Temporal Service. Temporal sends tasks to your Worker, where the Workflow Builder plugin (WorkflowBuilderPlugin) walks the graph and calls your executors, and the Worker returns results. Your store adapter writes run events to your database, which can send them back to the canvas as optional run markers."
+  alt="Arrows from left to right follow a run. Your React app, with the Workflow Builder editor and your Run button, sends the diagram to your backend, where your mapper turns it into a definition and the Workflow Builder TemporalWorkflowEngine starts a run on the Temporal Service. Temporal sends tasks to your Worker, where the Workflow Builder plugin (WorkflowBuilderPlugin) walks the graph and calls your executors, and the Worker returns results. Your store writes run events to your database, which can send them back to the canvas as optional run markers."
 />
 
-Running a Workflow Builder diagram on Temporal takes two packages from Workflow Builder. The first is the editor (`@workflowbuilder/sdk`), which runs in your React app, where people draw and configure the diagram. The second is the Temporal plugin (`@workflowbuilder/temporal`), which runs in your Worker and owns how a diagram executes. It walks the graph, schedules one `executeNode` Activity per node the run reaches, follows the branch each decision node picks and reports every step to your store. The same package gives your server `TemporalWorkflowEngine`, which starts the run.
+Three parts work together in a run.
 
-Temporal is the durable execution platform that keeps the state of each run and records every step in Event History, so a run survives a crashed Worker. The Temporal Service hands tasks to your Worker and runs none of your code.
+**Workflow Builder** gives you two packages. The editor SDK (`@workflowbuilder/sdk`) runs in your React app, where people draw and configure the diagram. The Temporal plugin (`@workflowbuilder/temporal`) runs in your Worker. It walks the graph and runs each node the run reaches as its own `executeNode` Activity, Temporal's unit of work with its own timeout and retries, so a failed node is retried without re-running the rest. It follows the branch each branching node picks and reports every step to your store. The same package gives your backend a client, `TemporalWorkflowEngine`, which starts runs, cancels them and delivers decisions.
 
-The code that connects the editor to the Workflow and the business logic behind each node are yours. Your server maps the diagram to a definition and starts the run. One executor per node type holds that node's logic, and a store decides where run events land. Connection, credentials and deployment stay in your code. Node code runs in your Worker, never inside the Temporal Service, and the editor never talks to Temporal directly.
+**Temporal** keeps the state of each run and records every step in Event History, so a run survives a crashed or restarted Worker. The Temporal Service hands tasks to your Worker and runs none of your code.
+
+**Your code** connects the editor to the Workflow and holds the business logic. Your backend maps the diagram to a definition and starts the run. One executor per node type does that node's work, and a store writes run events to your database. Connection, credentials and deployment stay in your code, and the editor never talks to Temporal directly.
 
 | On the canvas                      | On Temporal                                                                         |
 | ---------------------------------- | ----------------------------------------------------------------------------------- |
 | A diagram, each time it runs       | One Workflow Execution of `runWorkflow`, with Workflow Id `execution-<executionId>` |
 | A node                             | One `executeNode` Activity                                                          |
-| The node's title                   | The Activity's Summary in Event History                                             |
-| The node's `type` in the palette   | The executor that runs it in your Worker                                            |
+| The node's label                   | The Activity's Summary in Event History                                             |
+| The node's `type`                  | The executor that runs it in your Worker                                            |
 | Values set in the properties panel | The node's `config`, passed to its executor                                         |
-| A decision node's branch           | The `nextPort` its executor returns. Branches not taken are never scheduled         |
+| A branching node's branch          | The `nextPort` its executor returns. Branches not taken are never scheduled         |
 | The start node                     | `role: 'start'`, where the run begins                                               |
 
 ## Prerequisites
 
-Before you start, set up the editor, a Node.js project for your server and Worker, and a Temporal Service to run against.
+Before you start, set up the editor, a Node.js project for your backend and Worker, and a Temporal Service to run against.
 
-- **Editor:** an app with the Workflow Builder SDK, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
-- **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your server and Worker. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
+- **Editor:** an app with the Workflow Builder SDK 3.x, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
+- **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your backend and Worker. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
 - **Temporal Service:** the [Temporal CLI](https://docs.temporal.io/cli/setup-cli) for local work, or any Temporal Service.
 
 ## Setup
@@ -62,11 +64,11 @@ The `@temporalio/*` packages are peers of the plugin and must all be one version
 
 ## In the editor
 
-The editor is your app with the Workflow Builder SDK. Two things in it matter for a run: the node types in its palette and a way to start the run.
+The editor is your app with the Workflow Builder SDK. Two things in it matter for a run: the node types people can drag onto the canvas, which the SDK calls the palette, and a way to start the run.
 
 ### Node types
 
-Each palette item's `type` is the key of its executor in the Worker, so the palette and the Worker share one list of node types. Mark the item a run starts from with `isStartNode: true`, and the editor copies the flag onto the node when it is dropped. A decision node built on the `NodeType.DecisionNode` template generates one handle per branch, and its executor returns the handle of the branch the run takes. See [Add a custom node](/guides/add-a-custom-node/) for the rest of a palette item.
+The `type` you give a palette item is also the key of its executor in the Worker, so the editor and the Worker share one list of node types. Mark the item a run starts from with `isStartNode: true`, and the editor copies the flag onto the node when it is dropped. A branching node built on the `NodeType.DecisionNode` template generates one handle per branch, and its executor returns the handle of the branch the run takes. See [Add a custom node](/guides/add-a-custom-node/) for the rest of a palette item.
 
 ```ts
 // editor: nodes/trigger.ts
@@ -90,7 +92,7 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
 
 ### Start a run
 
-A [plugin](/guides/build-a-plugin/) adds a Run button to the app bar. It reads the diagram with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and posts it to your server.
+An [editor plugin](/guides/build-a-plugin/) adds a Run button to the app bar. It reads the diagram with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and posts it to your backend.
 
 ```tsx
 // editor: run-on-temporal.tsx
@@ -109,7 +111,7 @@ function RunButton() {
         showSnackbar({ variant: 'error', title: 'Could not run the diagram', subtitle: await response.text() });
       }
     } catch {
-      showSnackbar({ variant: 'error', title: 'Could not reach the server' });
+      showSnackbar({ variant: 'error', title: 'Could not reach the backend' });
     }
   }
 
@@ -129,7 +131,9 @@ export function runOnTemporal(): void {
 }
 ```
 
-Pass the Run button plugin to the editor with `<WorkflowBuilder.Root plugins={[runOnTemporal]} />`. The snippet targets SDK 3.x. SDK 4.0 removes the `OptionalAppBarControls` slot, so there you register the decorator on `OptionalAppChildren` and wrap the button in `EditorHeaderControlsContent`. A browser that posts JSON to another origin sends a CORS preflight first, so serve the editor and the server from one origin, for example with a Vite proxy:
+Pass the plugin to the editor with `<WorkflowBuilder.Root plugins={[runOnTemporal]} />`.
+
+A browser sends a CORS preflight before it posts JSON to another origin, and the backend in this guide does not answer it. Serve the editor and the backend from one origin instead, for example with a Vite proxy:
 
 ```ts
 // editor: vite.config.ts
@@ -142,9 +146,9 @@ export default defineConfig({
 });
 ```
 
-## On your server
+## On your backend
 
-The server receives the diagram from the editor, turns it into a definition the plugin can run, and starts the run.
+Your backend receives the diagram from the editor, maps it to a definition the plugin can run and starts the run with `TemporalWorkflowEngine`, the plugin's client.
 
 ```ts
 // server.ts
@@ -186,15 +190,15 @@ createServer(async (request, response) => {
 }).listen(3210);
 ```
 
-One `catch` is enough to keep the process up. The example's [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) also tells a bad diagram (400) from a Temporal error (502).
+The engine calls the client factory on the first run and keeps the result, so your backend can start before Temporal does. If that first connection fails, every later run gets the same error until you restart the backend. A single `catch` keeps the process up, and the example's [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) also tells a bad diagram (400) from a Temporal error (502).
 
 ### Get the diagram
 
-The Run button sends the diagram's nodes and edges in the request body. If your backend already saves diagrams (see [Persistence](/get-started/persistence/rest-api/)), the server can load the diagram by `workflowId` instead.
+The Run button sends the diagram's nodes and edges in the request body. If your backend already saves diagrams (see [Persistence](/get-started/persistence/rest-api/)), it can load the diagram by `workflowId` instead.
 
 ### Describe your node types
 
-The mapper and the Worker share one type with a variant per node type in the palette.
+The mapper and the Worker share one type with a variant per node type.
 
 ```ts
 // nodes.ts
@@ -210,7 +214,13 @@ export type MyNode = TriggerNode | ActionNode | DecisionNode;
 
 ### Map the diagram
 
-The plugin does not read the editor's diagram format, so a mapper turns nodes and edges into a `WorkflowDefinition`, a plain graph of nodes and edges with nothing Temporal-specific in it. It follows three rules. `type` must match an executor key, `label` becomes the node's Summary in Event History, and exactly one node has `role: 'start'`. The graph must not contain loops. A run whose graph has one fails as stalled, so check for loops in the mapper if the editor allows them.
+The plugin does not read the editor's diagram format, so a mapper turns nodes and edges into a `WorkflowDefinition`, a plain graph of nodes and edges with nothing Temporal-specific in it. `type` must match an executor key, and `label` becomes the node's Summary in Event History. The graph has to meet these rules, or the run fails:
+
+- Exactly one node has `role: 'start'`, and no edge leads into it.
+- Every other node has at least one incoming edge. A node left unconnected on the canvas fails the run before any node executes.
+- The graph has no loops. A run whose graph has one fails as stalled.
+
+Check these rules in the mapper if the editor allows such diagrams. The example blocks edges into the start node in the editor with `isValidConnection`, see its [`app.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/app.tsx).
 
 | From the editor                                | To the definition                       |
 | ---------------------------------------------- | --------------------------------------- |
@@ -262,11 +272,27 @@ A complete version with validation is in the example's [`to-definition.ts`](http
 
 ### Start the run
 
-`engine.submit` in [`server.ts`](#on-your-server) starts the run on Temporal. `workflowId` names your diagram. It is not the Temporal Workflow Id, which the plugin sets to `execution-<executionId>`. A new `executionId` identifies each run of the diagram. Values in `variables` land in Event History unredacted, so make sure to keep secrets in the Worker's environment.
+`engine.submit` in [`server.ts`](#on-your-backend) starts the run. `workflowId` names your diagram, and a new `executionId` identifies each run of it. `triggerPayload` is the data the run starts with, and executors read it as `context.triggerPayload` (the example passes an amount and a customer name). `global` holds the global variables defined in the editor, and `variables` holds values your backend adds at start. All three are stored in Event History as they are, so keep secrets in the Worker's environment.
+
+### Cancel a run and deliver a decision
+
+The same engine stops a run and delivers a person's decision to a run that waits for one (see [Executors](#executors)).
+
+```ts
+await engine.cancel(executionId);
+
+const { error } = await engine.resolveNode({
+  executionId,
+  nodeId: 'approval-1',
+  resolution: { output: { approved: true }, nextPort: 'approved' },
+});
+```
+
+`resolution` is what the waiting node would otherwise return itself: its `output` and, for a node with branches, the `nextPort` to follow. When the run refuses a decision, `resolveNode` returns `error` with a code instead of throwing. For example, `verdict_already_delivered` means the node was already decided and `node_not_waiting` means it is not waiting, so your backend can tell the person why.
 
 ## In your Worker
 
-The Worker is a Node.js process you run. The Temporal plugin runs inside it. Its Workflow walks the diagram, and its `executeNode` Activity calls your executor for each node. You give it the executors, a store and a one-line `workflows.ts`.
+The Worker is the Node.js process that runs your Temporal code, and the Temporal plugin runs inside it. The plugin's Workflow walks the diagram, and its `executeNode` Activity calls your executor for each node. You give it the executors, a store and a `workflows.ts` module.
 
 ```ts
 // worker.ts
@@ -315,13 +341,30 @@ The `workflowsPath` above points at a module that has to export the plugin's Wor
 export { runWorkflow } from '@workflowbuilder/temporal/workflow';
 ```
 
+Keep the export named `runWorkflow`, because the client starts the Workflow by that name.
+
+If you give some node types their own timeout and retry settings (`nodeActivityProfiles`), pass the same map to the plugin, next to `executors` and `store`, and build the Workflow from it in this file:
+
+```ts
+// workflows.ts
+import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
+
+import { nodeActivityProfiles } from './node-activity-profiles';
+
+export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
+```
+
+The plugin only checks the map when the Worker starts. The Workflow is what applies it, because Temporal takes an Activity's timeout and retry policy from the Workflow that schedules it. A map given only to the plugin passes the deploy, and every node runs with the default profile: 2 attempts, each limited to 10 minutes. The [package README](https://www.npmjs.com/package/@workflowbuilder/temporal) shows the format of the map.
+
 ### Executors
 
-An executor is a function that runs one node type, and it is the only place where you write what your nodes do. Executors are keyed by the palette `type` (see [Node types](#node-types)). Pass your node union to the plugin as its type parameter, and TypeScript refuses to compile until every node type has an executor.
+An executor is a function that runs one node type, and it is the only place where you write what your nodes do. Executors are keyed by node `type` (see [Node types](#node-types)). Pass your node union to the plugin as its type parameter, and TypeScript refuses to compile until every node type has an executor.
 
-Each executor returns `{ output }`. A branching node also returns `nextPort`, the `sourceHandle` of the edge the run follows. Take it from the node's config and never hardcode it. The example's [`evaluate-branches.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/evaluate-branches.ts) shows one way to pick a branch.
+Each executor returns `{ output }`. A branching node also returns `nextPort`, the `sourceHandle` of the edge the run follows. Take it from the node's config, where the editor keeps the handle id of each branch (in the example, `source:inner:review`), instead of hardcoding it. The example's [`evaluate-branches.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/evaluate-branches.ts) shows one way to pick a branch.
 
-An executor can also pause the run to wait for a human-in-the-loop decision. It returns `{ waiting: true }`, the run waits in Temporal without holding a Worker, and your server delivers the decision with `engine.resolveNode`. See [Pausing a run for a human](https://www.npmjs.com/package/@workflowbuilder/temporal#pausing-a-run-for-a-human).
+If an executor throws, Temporal retries that node's Activity. By default a node gets 2 attempts, each limited to 10 minutes. Throw `PermanentNodeExecutionError` when another attempt cannot help, for example after a 404, and the node fails at once. `TransientNodeExecutionError` marks an error worth retrying, and an error of any other type is retried the same way.
+
+An executor can also pause the run until a person decides. It returns `{ waiting: true }`, the run waits in Temporal without holding a Worker, and your backend delivers the decision with `engine.resolveNode` (see [Cancel a run and deliver a decision](#cancel-a-run-and-deliver-a-decision)). More in [Pausing a run for a human](https://www.npmjs.com/package/@workflowbuilder/temporal#pausing-a-run-for-a-human).
 
 ### Store
 
@@ -331,11 +374,11 @@ Both methods run in Activities, so a retried write can arrive twice. Make `(exec
 
 ## See the run on the canvas
 
-Your store receives an event each time a node starts, completes, fails or is skipped. Stream these events back to the editor and mark each node with a component decorator in the `OptionalNodeContent` slot. The SDK does not ship a run status view, so this part is yours. The example streams the events in [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) and draws the markers in [`node-markers.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/execution/node-markers.tsx).
+Your store receives an event each time a node starts, completes, fails, is skipped or starts waiting for a decision. To show the run on the canvas, stream these events back to the editor and mark each node with a component decorator in the `OptionalNodeContent` slot. The editor SDK has no run view of its own. The example draws one status marker per node: it streams the events in [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) and draws the markers in [`node-markers.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/execution/node-markers.tsx).
+
+AI Studio has a fuller run view, with an execution log and a Decide button for waiting nodes. Its code is in [`apps/ai-studio/src/components/execution`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/execution) and [`apps/ai-studio/src/components/human-decision`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/human-decision), and the reference backend in [`apps/backend`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/backend) streams the events to it. Both are reference code for local development, and the backend has no authentication.
 
 ## Run it
-
-Start the parts in order, run a diagram, and check the result in Temporal UI.
 
 ### Run your app
 
@@ -345,7 +388,7 @@ A run started without a polling Worker waits in Temporal UI with no error, so ke
 
 1. Start Temporal with `temporal server start-dev`.
 2. Start your Worker.
-3. Start your server.
+3. Start your backend.
 4. Open the editor and click **Run**.
 5. Open Temporal UI at `http://localhost:8233`.
 
@@ -359,13 +402,13 @@ If your setup does not behave as expected, compare it with the ready example, a 
 npx degit synergycodes/workflowbuilder/examples/workflow-builder-temporal workflow-builder-temporal
 ```
 
-Then start each part in its own terminal, from the `workflow-builder-temporal` folder. In the example, the server and the Worker are one process: `worker.ts` also starts the bridge that the editor posts to.
+Then start each part in its own terminal, from the `workflow-builder-temporal` folder. In the example, the backend and the Worker are one process: `worker.ts` also starts the bridge that the editor posts to.
 
 ```bash title="Terminal 1: Temporal"
 temporal server start-dev
 ```
 
-```bash title="Terminal 2: Worker and server"
+```bash title="Terminal 2: Worker and backend"
 cd worker && npm install && npm start
 ```
 
@@ -373,7 +416,7 @@ cd worker && npm install && npm start
 cd editor && npm install && npm run dev
 ```
 
-Open the editor and click **Run**. In the example's editor, nodes light up as Temporal runs them, and the branch not taken turns grey. The **Temporal UI** link in the run panel below the app bar opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
+Open the editor and click **Run**. In the example's editor, each node gets a status marker as Temporal runs it, and the branch not taken turns grey. The **Temporal UI** link in the run panel under the app bar opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
 
 <Image
   src={editorRunImg}
@@ -382,7 +425,7 @@ Open the editor and click **Run**. In the example's editor, nodes light up as Te
 
 ### What you see in Temporal UI
 
-Temporal UI shows how the diagram maps onto Temporal. The diagram is one Workflow Execution, and each node is an `executeNode` Activity with the node label as its Summary. The `emitEvent` and `updateStatus` Activities between them are the plugin writing to your store. A successful run is Completed, with one `executeNode` Activity per executed node.
+Temporal UI shows how the diagram maps onto Temporal. Each run of the diagram is one Workflow Execution, and each node is an `executeNode` Activity with the node label as its Summary. The `emitEvent` and `updateStatus` Activities between them are the plugin writing to your store. A successful run is Completed, with one `executeNode` Activity per executed node. **Send email** shows attempt 2, because the example fails that node's first attempt on purpose (`simulateOutage` in its config) so you can see Temporal retry it.
 
 <Image
   src={eventHistoryImg}
@@ -391,9 +434,7 @@ Temporal UI shows how the diagram maps onto Temporal. The diagram is one Workflo
 
 ## Production
 
-Before production, settle where Temporal runs and how to protect the data it stores.
-
-Run against [Temporal Cloud](https://docs.temporal.io/cloud) or a [self-hosted Temporal Service](https://docs.temporal.io/self-hosted-guide). The Temporal plugin does not open the connection, so the address, TLS and API key go into `NativeConnection.connect` in your Worker and `Connection.connect` in your server.
+Run against [Temporal Cloud](https://docs.temporal.io/cloud) or a [self-hosted Temporal Service](https://docs.temporal.io/self-hosted-guide). The Temporal plugin does not open the connection, so the address, TLS and API key go into `NativeConnection.connect` in your Worker and `Connection.connect` in your backend.
 
 Each executed node adds its `executeNode` Activity and two `emitEvent` Activities (node started, node completed or failed) to Event History, and a skipped node adds one `emitEvent`. The plugin does not use Continue-As-New, so size very large diagrams against Temporal's [Event History limits](https://docs.temporal.io/workflow-execution/limits).
 
