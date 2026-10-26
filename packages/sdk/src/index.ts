@@ -134,6 +134,7 @@ export type {
   DiagramModel,
   IconType,
   LayoutDirection,
+  NodeIconAccent,
   PaletteItem,
   PaletteItemOrGroup,
   TemplateModel,
