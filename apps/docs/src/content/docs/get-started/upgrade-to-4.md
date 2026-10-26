@@ -6,7 +6,7 @@ sidebar:
 ---
 
 Version 4.0 draws a boundary between the editor's styles and the host page's. In 3.x the SDK
-stylesheet set `data-theme` on `<html>`, reset `<body>`, and kept its component rules in a
+wrote `data-theme` to `<html>`, reset `<body>`, and kept its component rules in a
 cascade layer that any plain host rule could beat. In 4.0 the SDK changes nothing outside its
 own element, and its rules are scoped to that element with enough weight to survive host
 resets such as Bootstrap's reboot, Tailwind's preflight or `button { all: unset }`.
@@ -18,8 +18,10 @@ variables or style editor internals, if your code reads the editor's theme, or i
 
 ## Give the editor a sized parent
 
-The SDK no longer sets `height`, `margin` or `overflow` on `<body>`. The editor fills its
-parent, so the parent needs a height, or the editor renders 0px tall. For a full-window editor:
+The SDK no longer sets `margin`, `overflow` or `background-color` on `<body>`, and the canvas no
+longer sizes itself to the window. The editor fills its parent, so the parent needs a height, or
+the editor renders 0px tall. If your page background came from the SDK, set it yourself. For a
+full-window editor:
 
 ```css
 html,
@@ -36,6 +38,12 @@ body {
 For an editor inside a panel, give that panel a height instead (`height: 600px`, a flex or grid
 track) and leave the page alone. In a custom layout the same applies to the element around
 `<WorkflowBuilder.Canvas />`: the canvas fills it.
+
+The editor element is now a real box with `position: relative` and `overflow: hidden`, where
+3.x laid its children out against the page. Absolutely positioned content inside
+`<WorkflowBuilder.Root>` (custom layouts, plugin overlays) is placed against the editor and
+clipped at its edges. Render anything that must reach past the editor through a portal, or use
+`position: fixed`.
 
 ## Move variable overrides to `.workflow-builder-root`
 
@@ -55,9 +63,10 @@ elements that use it:
 }
 ```
 
-This applies to `--wb-public-*` and to the semantic `--wb-ds-*` tokens (`--wb-ds-ui-*`,
-`--wb-ds-components-*`, `--wb-ds-canvas-*`). Primitive colour and size tokens such as
-`--wb-ds-colors-acc1-500` still work on `:root`. The editor's popups (menus, selects, tooltips,
+This applies to `--wb-public-*` and to the themed `--wb-ds-*` tokens (those that differ between
+light and dark). Tokens that live on `:root`, such as primitives like `--wb-ds-colors-acc1-500`
+and the canvas geometry, still work there, but `.workflow-builder-root` is the one place that
+works for every `--wb-*` override. The editor's popups (menus, selects, tooltips,
 modals, date pickers) render in a container that carries the same class, so one block reaches
 them too. The override wins whatever the stylesheet order, because the editor's defaults sit
 in a cascade layer and yours do not.
@@ -97,9 +106,11 @@ Without `onThemeChange`, the theme is fixed at the value you pass.
 ## Overriding editor internals
 
 In 3.x any plain host rule beat the editor's layered rules, so `.my-app button { … }` could
-restyle the editor's buttons by accident, and a reset could break them. In 4.0 every editor
-rule carries the weight of one id selector. Plain host rules, resets included, no longer reach
-the editor.
+restyle the editor's buttons by accident, and a reset could break them. In 4.0 every rule the
+SDK and the UI library author carries the weight of one id selector, so plain host rules, resets
+included, no longer reach them. The bundled third-party stylesheets (React Flow's canvas,
+react-day-picker's calendar) keep their own selectors' weight, so a host rule with a class and an
+element, such as `.app button { … }`, can still reach those internals.
 
 Variables remain the supported way to change the look. When you need to override an editor
 element directly, outweigh its rule with an id of your own plus the editor's class, or use
@@ -126,13 +137,17 @@ The UI library's rules are scoped the same way. Components rendered outside
 ```
 
 Popups render under `<body>` by default, outside that wrapper. Give them a container with the
-same class and theme, and pass it to `PortalContainerProvider` around your components. Inside
+same class and theme, and pass a ref to it to `PortalContainerProvider` around your components
+(example in the [UI Library overview](/ui-library/overview/#theming)). Inside
 `<WorkflowBuilder.Root>` the SDK does both for you.
 
 ## Known limits
 
 - **Id selectors and `!important` in host CSS still win.** A host rule with an id, such as
   `#app button { … }`, outweighs the editor's rules if it matches inside the editor.
+- **Third-party internals keep their own weight.** React Flow's canvas and react-day-picker's
+  calendar rules are bundled as they are, so a host rule with a class, such as
+  `.app button { … }`, can still reach them.
 - **The editor follows the root font size.** Sizes are in `rem`, so a host that scales
   `html { font-size: 62.5% }` scales the editor with it. The editor is designed for the
   browser default of 16px.

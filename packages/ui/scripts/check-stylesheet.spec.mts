@@ -72,6 +72,10 @@ describe('checkStylesheet', () => {
     );
   });
 
+  it('accepts a themed public default in minified form', () => {
+    expect(problems('@layer ui.base;@layer ui.base{[data-wb-theme=dark]{--wb-public-x:1px}}')).toBe('');
+  });
+
   it('checks public default placement only where the package owns it', () => {
     const scopedOverride = '@layer ui.base;\n:is(#wb, .workflow-builder-root) .node { --wb-public-node-gap: 0 }';
     expect(problems(scopedOverride, ui)).toMatch(/Mis-scoped public variable default/);

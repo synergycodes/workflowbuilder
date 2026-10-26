@@ -61,7 +61,27 @@ declared on that element, so nothing is written to your `<html>`:
 ```
 
 Popups (Select, Menu, Tooltip, DatePicker, Modal) render into `document.body` unless you wrap the
-components in `PortalContainerProvider` with a container that carries the same class and attribute.
+components in `PortalContainerProvider`. Its `container` prop is a React ref to an element that
+carries the same class and attribute:
+
+```tsx
+import { PortalContainerProvider } from '@workflowbuilder/ui';
+import { useRef } from 'react';
+
+export function Panel() {
+  const popups = useRef<HTMLDivElement>(null);
+
+  return (
+    <>
+      {/* Before the components, so the ref is set when a popup that starts open mounts. */}
+      <div ref={popups} className="workflow-builder-root" data-wb-theme="light" />
+      <div className="workflow-builder-root" data-wb-theme="light">
+        <PortalContainerProvider container={popups}>{/* components */}</PortalContainerProvider>
+      </div>
+    </>
+  );
+}
+```
 
 ### 🧱 Use components
 
@@ -112,7 +132,9 @@ Or scope a public override to one component:
 
 Every component rule starts with `:is(#wb, .workflow-builder-root)`, so it applies only inside
 the wrapper and carries the weight of one id selector. Page-wide resets such as
-`button { all: unset }` or Bootstrap's reboot do not reach the components.
+`button { all: unset }` or Bootstrap's reboot do not reach the components. The bundled
+react-day-picker stylesheet keeps its own selectors' weight, so a host rule with a class, such as
+`.app button { … }`, can still reach the calendar's internals.
 
 Variable defaults and `@font-face` sit in one cascade layer, `@layer ui.base;`, so your
 unlayered overrides on `.workflow-builder-root` win whatever the load order.

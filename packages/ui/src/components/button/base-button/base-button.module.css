@@ -14,6 +14,11 @@
   color: var(--wb-public-button-color);
   border: unset;
   cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  text-decoration: none;
 
   &:where(:focus-visible) {
     box-shadow:

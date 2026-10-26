@@ -2,14 +2,8 @@ import type { AtRule, Plugin, Root, Rule } from 'postcss';
 
 import { isThemeScopedDefaults, targetsRoot } from './postcss-layer-root-defaults.mjs';
 
-/**
- * PostCSS plugin that scopes every selector to the editor and gives it enough
- * weight to beat a host page's unlayered resets (Bootstrap reboot, `.app button`).
- *
- * `:is(#wb, …)` takes the specificity of its heaviest argument, so the made-up
- * `#wb` adds id weight while only `.workflow-builder-root` has to match.
- * Rules still inside `@layer` are the deliberately weak defaults and stay as they are.
- */
+// Scopes every selector to the editor with enough weight to beat host resets; the made-up `#wb` only adds
+// weight, `.workflow-builder-root` is what matches. Ladder and skips: css-layers.md, "The prefix ladder".
 
 export type PrefixStrength = 'vendored' | 'ui' | 'sdk';
 
@@ -22,8 +16,9 @@ export const PREFIX: Record<PrefixStrength, string> = {
 // Whitespace-free: the UI dist the SDK build re-reads is minified.
 const ALREADY_PREFIXED = Object.values(PREFIX).map((prefix) => prefix.replaceAll(/\s/g, ''));
 
-// Invalid inside :where(), which would drop the rule; includes the legacy single-colon forms.
-const TRAILING_PSEUDO_ELEMENT = /(?:::[\w-]+(?:\([^)]*\))?|:(?:before|after|first-line|first-letter))$/i;
+// A pseudo-element and any state after it (`::after:hover`) are invalid inside :where(), which would drop
+// the rule; includes the legacy single-colon forms.
+const PSEUDO_ELEMENT_TAIL = /(?:::[\w-]+(?:\([^)]*\))?|:(?:before|after|first-line|first-letter)(?![\w-])).*$/i;
 
 // Allowlist, as in postcss-box-sizing: @keyframes, @font-face, @layer and unknown at-rules are left alone.
 const STYLING_CONTEXTS = new Set(['media', 'supports', 'container']);
@@ -43,14 +38,12 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
   // The editor box itself (shell geometry, overlay backdrop): a descendant prefix would never match it.
   if (trimmed.startsWith('.workflow-builder-root') || trimmed.startsWith(':root')) return selector;
 
-  if (trimmed.startsWith('[data-wb-theme')) {
-    const isBare = trimmed.indexOf(']') === trimmed.length - 1;
-    // The theme attribute sits on the box, so the scope class is glued on, not a descendant.
-    return isBare ? selector : prefix.trimEnd() + trimmed;
-  }
+  // The theme attribute sits on the box, so the scope class is glued on, not a descendant.
+  // Bare variable-only blocks never get here: prefixRule leaves them as defaults.
+  if (trimmed.startsWith('[data-wb-theme')) return prefix.trimEnd() + trimmed;
 
   if (!isBase) return prefix + trimmed;
-  const pseudoElement = TRAILING_PSEUDO_ELEMENT.exec(trimmed)?.[0] ?? '';
+  const pseudoElement = PSEUDO_ELEMENT_TAIL.exec(trimmed)?.[0] ?? '';
   return `${prefix}:where(${trimmed.slice(0, trimmed.length - pseudoElement.length)})${pseudoElement}`;
 }
 

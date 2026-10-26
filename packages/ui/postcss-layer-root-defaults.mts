@@ -1,23 +1,7 @@
 import type { Plugin, Rule } from 'postcss';
 
-/**
- * PostCSS plugin that moves top-level variable defaults onto `[data-wb-theme]`
- * and wraps them in `@layer ui.base`.
- *
- * A custom property whose value contains `var()` is resolved on the element
- * that declares it, so defaults must sit on the same element as the themed
- * tokens they reference: `[data-wb-theme]`, which the SDK sets on its own root
- * and portal container. A variable-only `:root { … }` block is rewritten to
- * that selector; `[data-wb-theme…] { … }` written directly is kept as is.
- *
- * Layered declarations lose to unlayered CSS regardless of source order, so a
- * consumer's `.workflow-builder-root { --wb-public-…: … }` override always
- * beats the shipped default - even when a lazily loaded component stylesheet
- * arrives after the override. Unlayered defaults would win or lose by load order.
- *
- * Applied at build time (like the @layer order stamp) so sources keep the
- * plain `:root { … }` authoring convention.
- */
+// Moves variable-only `:root` defaults onto `[data-wb-theme]` inside `@layer ui.base`, so sources keep
+// writing `:root { … }`. Why: css-layers.md, "Why the defaults stay layered".
 
 const THEME_SCOPE = '[data-wb-theme]';
 

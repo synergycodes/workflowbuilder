@@ -10,26 +10,44 @@ function boxAt(left: number, top: number, right: number, bottom: number): HTMLEl
   return element;
 }
 
+function editorWith(canvas: HTMLElement): HTMLElement {
+  const editor = document.createElement('div');
+  canvas.classList.add('react-flow');
+  const bounds = boxAt(300, 150, 700, 550);
+  bounds.id = 'viewport-bounds';
+  editor.append(canvas, bounds);
+  return editor;
+}
+
+const expected = {
+  left: `${200 + FIT_VIEW_BASE_PADDING}px`,
+  top: `${100 + FIT_VIEW_BASE_PADDING}px`,
+  right: `${200 + FIT_VIEW_BASE_PADDING}px`,
+  bottom: `${100 + FIT_VIEW_BASE_PADDING}px`,
+};
+
 afterEach(() => {
   document.body.replaceChildren();
 });
 
 describe('getPadding', () => {
   it('computes padding relative to the canvas box, not the window', () => {
-    const canvas = boxAt(100, 50, 900, 650);
-    const bounds = boxAt(300, 150, 700, 550);
-    bounds.id = 'viewport-bounds';
-    document.body.append(bounds);
+    const editor = editorWith(boxAt(100, 50, 900, 650));
+    document.body.append(editor);
 
-    expect(getPadding(1, canvas)).toEqual({
-      left: `${200 + FIT_VIEW_BASE_PADDING}px`,
-      top: `${100 + FIT_VIEW_BASE_PADDING}px`,
-      right: `${200 + FIT_VIEW_BASE_PADDING}px`,
-      bottom: `${100 + FIT_VIEW_BASE_PADDING}px`,
-    });
+    expect(getPadding(1, editor)).toEqual(expected);
+  });
+
+  it("ignores a host page's own React Flow canvas placed before the editor", () => {
+    const hostCanvas = boxAt(0, 0, 200, 200);
+    hostCanvas.className = 'react-flow';
+    const editor = editorWith(boxAt(100, 50, 900, 650));
+    document.body.append(hostCanvas, editor);
+
+    expect(getPadding(1, editor)).toEqual(expected);
   });
 
   it('falls back to the base padding when the canvas is not mounted', () => {
-    expect(getPadding(1, null)).toBe(`${FIT_VIEW_BASE_PADDING}px`);
+    expect(getPadding(1, document.createElement('div'))).toBe(`${FIT_VIEW_BASE_PADDING}px`);
   });
 });

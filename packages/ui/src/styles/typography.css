@@ -52,6 +52,15 @@
   font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
 }
 
+/* Set on every role, so a host's `.app button { text-transform: uppercase }` cannot restyle our text controls. */
+[class*='wb-text-'] {
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
+  text-decoration: none;
+}
+
 .wb-text-display-s,
 .wb-text-display-m,
 .wb-text-display-l,
@@ -216,18 +225,4 @@
 .wb-text-node-m-emphasized,
 .wb-text-node-l-emphasized {
   font-weight: 600;
-}
-
-/* No component declares these, so without a reset a host's `.app button { text-transform: uppercase }` reaches
-   our controls. `revert` restores the browser default; as a base-file rule it loses to any component rule. */
-button,
-input,
-textarea,
-select,
-a {
-  text-transform: revert;
-  letter-spacing: revert;
-  word-spacing: revert;
-  text-shadow: revert;
-  text-decoration: revert;
 }

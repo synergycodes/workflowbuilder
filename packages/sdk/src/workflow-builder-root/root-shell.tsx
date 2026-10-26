@@ -44,19 +44,19 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
   const language = i18n.language;
 
   const rootRef = useRef<HTMLDivElement>(null);
-  const portalRef = useRef<HTMLDivElement | null>(null);
   const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+  // A new object once the container exists: Base UI reads a ref's `.current` once per object,
+  // and a popup open on the first commit would otherwise settle on document.body.
+  const portalContainer = useMemo(() => ({ current: portal }), [portal]);
 
   useLayoutEffect(() => {
     const container = document.createElement('div');
     container.className = 'workflow-builder-root wb-portal';
     document.body.append(container);
-    portalRef.current = container;
     setPortal(container);
 
     return () => {
       container.remove();
-      portalRef.current = null;
       setPortal(null);
     };
   }, []);
@@ -77,7 +77,7 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
       lang={language}
     >
       <SdkSurfacesProvider value={surfaces}>
-        <PortalContainerProvider container={portalRef}>{children}</PortalContainerProvider>
+        <PortalContainerProvider container={portalContainer}>{children}</PortalContainerProvider>
       </SdkSurfacesProvider>
     </div>
   );

@@ -11,6 +11,7 @@ import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-conf
 import { setCustomTemplates } from '../data/templates';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { resetModalStore } from '../features/modals/stores/use-modal-store';
 import { setControlledTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { resolveIntegration } from './resolve-integration';
@@ -102,6 +103,7 @@ export function WorkflowBuilderRoot({
   // the sequential-workflow behavior we want.
   useLayoutEffect(() => {
     resetWorkflowStore();
+    return resetModalStore;
   }, []);
 
   // Latest callback in a ref: hosts often pass an inline function, which must not re-run the effect.

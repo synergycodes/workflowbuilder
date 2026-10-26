@@ -22,6 +22,12 @@ describe('postcss-scope-prefix baseFiles', () => {
     );
   });
 
+  it('keeps a pseudo-element followed by a state outside :where()', async () => {
+    expect(await run('.button::after:hover { color: red }', 'ui', '/x/src/base.css')).toBe(
+      ':is(#wb, .workflow-builder-root) :where(.button)::after:hover { color: red }',
+    );
+  });
+
   it('keeps a pseudo-element outside :where(), where browsers accept it', async () => {
     expect(await run('.button::after, .link:hover:before { color: red }', 'ui', '/x/src/base.css')).toBe(
       ':is(#wb, .workflow-builder-root) :where(.button)::after, :is(#wb, .workflow-builder-root) :where(.link:hover):before { color: red }',
@@ -54,6 +60,12 @@ describe('postcss-scope-prefix', () => {
   it('prefixes a variable-only component rule so it keeps pace with its base rule', async () => {
     expect(await run("[data-wb-theme='dark'] .warning { --c: red }", 'sdk')).toBe(
       ":is(#wb, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] .warning { --c: red }",
+    );
+  });
+
+  it('compounds a painting rule on the bare themed box', async () => {
+    expect(await run("[data-wb-theme='dark'] { color-scheme: dark }", 'sdk')).toBe(
+      ":is(#wb, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] { color-scheme: dark }",
     );
   });
 

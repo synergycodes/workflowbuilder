@@ -66,12 +66,16 @@
 }
 
 /* Prefixed like a component rule, so a host's generic rule (`.app div { font: inherit }`) cannot restyle the editor's
-   base text. Hosts change the font through `--wb-public-font-family`. */
+   base text, and host ancestors' inherited text properties stop here. Hosts change the font through `--wb-public-font-family`. */
 :is(#wb, .workflow-builder-root).workflow-builder-root {
   color: var(--wb-ds-ui-text-default);
   font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
   font-size: 1rem;
   line-height: normal;
+  text-transform: none;
+  letter-spacing: normal;
+  word-spacing: normal;
+  text-shadow: none;
 }
 
 .workflow-builder-root-shell {

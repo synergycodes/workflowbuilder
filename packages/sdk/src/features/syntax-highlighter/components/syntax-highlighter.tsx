@@ -17,7 +17,7 @@ import { useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfa
 // worker per mount, from a blob: URL a Content Security Policy blocks. The default is global.
 ace.config.setDefaultValue('session', 'useWorker', false);
 
-type Tooltip = { destroy: () => void };
+type Tooltip = { hide: () => void; destroy: () => void };
 // Not in Ace's public types; its read-only handler reuses `editor.hoverTooltip` when one is set.
 type EditorWithTooltip = Ace.Editor & { hoverTooltip?: Tooltip | null };
 const { HoverTooltip } = ace.require('ace/tooltip') as { HoverTooltip: new (parent: HTMLElement) => Tooltip };
@@ -44,6 +44,7 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
     return () => {
       // Turning read-only off makes Ace destroy and clear it first.
       if (editor.hoverTooltip !== tooltip) return;
+      tooltip.hide();
       tooltip.destroy();
       editor.hoverTooltip = null;
     };

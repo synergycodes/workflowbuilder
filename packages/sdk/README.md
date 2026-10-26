@@ -34,6 +34,8 @@ Requires React 18 or 19. Everything else the SDK needs (JsonForms, i18next, imme
 
 ## Upgrading
 
+Moving from 3.x to 4.0? See the [4.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/): the editor now needs a sized parent, and `--wb-*` overrides move to `.workflow-builder-root`.
+
 Moving from 2.3.0 to 3.0? See the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/).
 
 ## Quick start
@@ -45,6 +47,20 @@ import '@workflowbuilder/sdk/style.css';
 
 export function App() {
   return <WorkflowBuilder.Root name="my-workflow" />;
+}
+```
+
+The editor fills its parent, so the parent needs a height. For a full-window editor, add to your global stylesheet:
+
+```css
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
 }
 ```
 
@@ -267,9 +283,11 @@ element and on the popup container, so dark-mode styles for custom nodes use
 
 **What still reaches the editor.** Editor rules carry the weight of one id selector, so plain
 host rules and resets (Bootstrap's reboot, Tailwind's preflight, `button { all: unset }`) do
-not restyle it. Three things still do:
+not restyle it. These still do:
 
 - host rules with an id or `!important` that match inside the editor;
+- host rules with a class, such as `.app button { … }`, on the bundled third-party internals (React
+  Flow's canvas, react-day-picker's calendar), which keep their own selectors' weight;
 - the root font size: sizes are in `rem` and assume the browser default of 16px;
 - `box-sizing`: the editor's `border-box` default has zero weight, so any host rule wins.
 

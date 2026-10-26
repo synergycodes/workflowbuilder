@@ -50,11 +50,11 @@ Both light and dark mode tokens are defined separately, so you can customize eac
 
 ## Light and dark mode
 
-Workflow Builder supports both light and dark modes out of the box, controlled by the `prefers-color-scheme` media query or a toggle.
+Workflow Builder supports both light and dark modes out of the box. The editor starts light, has a theme toggle in its top bar, and remembers the user's choice in `localStorage` (`wb-theme`). A host can drive the theme itself through the `theme` and `onThemeChange` props on `<WorkflowBuilder.Root>`, for example to follow `prefers-color-scheme`. The active theme is set as `data-wb-theme` on the editor element.
 
 ## Styled components on headless foundations
 
-Workflow Builder ships with a complete default theme, but the underlying components come from [`@workflowbuilder/ui`](/ui-library/overview/), our component library built on the headless [Base UI](https://base-ui.com/) primitives. The styled layer is fully tokenized and scoped to the editor, so you can retheme it through the `--wb-ds-*` design tokens, and the host page's own CSS neither leaks in nor gets restyled. The visual layer is fully separate from the functional layer.
+Workflow Builder ships with a complete default theme, but the underlying components come from [`@workflowbuilder/ui`](/ui-library/overview/), our component library built on the headless [Base UI](https://base-ui.com/) primitives. The styled layer is fully tokenized and scoped to the editor, so you can retheme it through the `--wb-ds-*` design tokens, and the host page's styles stay out of it and untouched by it, within the limits listed in [Upgrade to 4.0](/get-started/upgrade-to-4/#known-limits). The visual layer is fully separate from the functional layer.
 
 ## White-label support
 

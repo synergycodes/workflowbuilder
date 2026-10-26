@@ -65,7 +65,8 @@ function isPublicDefault(declaration: Declaration): boolean {
   if (
     rule?.type !== 'rule' ||
     !rule.selectors.every((selector) =>
-      /^\[data-wb-theme(?:='(?:light|dark)')?\](?:\[[^\]]+\]|[.#][\w-]+)*$/.test(selector.trim()),
+      // Quotes optional: the minifier writes `[data-wb-theme=dark]`.
+      /^\[data-wb-theme(?:=(?:'[^']*'|"[^"]*"|[\w-]+))?\](?:\[[^\]]+\]|[.#][\w-]+)*$/.test(selector.trim()),
     )
   )
     return false;
