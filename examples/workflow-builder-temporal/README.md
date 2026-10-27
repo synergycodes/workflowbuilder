@@ -156,11 +156,12 @@ run completed
 ```
 
 Expected in terminal 2, the store printing what the workflow emitted. Temporal's own `Activity failed`
-warning for the first attempt appears between lines 4 and 5, and the `decision-1` config line is long
+warning for the first attempt appears between events #4 and #5, and the `decision-1` config line is long
 because it carries the branches as authored:
 
 ```
 [878ca8cc] # 1 execution_started {"workflowId":"workflow-builder-temporal-sample"}
+[878ca8cc] status running
 [878ca8cc] # 2 node_started (trigger-1) {"config":{"description":"Workflow entry point","status":"active"},"visibleNodeIds":[]}
 [878ca8cc] # 3 node_completed (trigger-1) {"output":{"amount":130,"customer":"Ada"}}
 [878ca8cc] # 4 node_started (action-1) {"config":{"description":"Notify the customer","status":"active","message":"Thanks for reaching out - we are on it!","simulateOutage":true},"visibleNodeIds":["trigger-1"]}
@@ -175,7 +176,7 @@ because it carries the branches as authored:
 ```
 
 Only `Send email` carries `"attempt":2`: it is the one node with the outage switch on. Run it again
-until the amount comes out at 100 or below, and lines 7 to 10 take the other branch instead:
+until the amount comes out at 100 or below, and events #7 to #10 take the other branch instead:
 
 ```
 [734af0c9] # 7 node_completed (decision-1) {"output":{"branch":"Otherwise","sourceHandle":"source:inner:otherwise"}}

@@ -1,7 +1,7 @@
-import { Client, Connection } from '@temporalio/client';
+import type { Client } from '@temporalio/client';
 import { NativeConnection, Worker } from '@temporalio/worker';
 import { WorkflowBuilderPlugin } from '@workflowbuilder/temporal';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 import { fileURLToPath } from 'node:url';
 
 import { closeBridge, startBridge } from './bridge';
@@ -26,11 +26,14 @@ const worker = await Worker.create({
 
 // The editor never talks to Temporal itself. It posts a canvas snapshot here and reads the
 // store's events back, so the browser needs one origin and no Temporal client.
-let bridgeConnection: Connection | undefined;
+// The engine connects on the first run and again after a failed attempt, and lazyClient closes
+// the connection of each failed one. The client that connects is kept so shutdown can close it.
+const connectBridge = lazyClient({ address: TEMPORAL_ADDRESS }, { namespace: TEMPORAL_NAMESPACE });
+let bridgeClient: Client | undefined;
 const engine = new TemporalWorkflowEngine({
   client: async () => {
-    bridgeConnection = await Connection.connect({ address: TEMPORAL_ADDRESS });
-    return new Client({ connection: bridgeConnection, namespace: TEMPORAL_NAMESPACE });
+    bridgeClient = await connectBridge();
+    return bridgeClient;
   },
 });
 const bridge = startBridge({ engine, store, port: BRIDGE_PORT });
@@ -40,6 +43,6 @@ try {
   await worker.run();
 } finally {
   await closeBridge(bridge);
-  await bridgeConnection?.close();
+  await bridgeClient?.connection.close();
   await workerConnection.close();
 }

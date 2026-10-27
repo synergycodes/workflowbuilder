@@ -176,11 +176,11 @@ const plugin = new WorkflowBuilderPlugin<MyNode>({
 Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Your mapper turns the editor's diagram into the `definition` the plugin runs, see [Run on Temporal](https://www.workflowbuilder.io/docs/guides/use-with-temporal/). Then start runs and, when a person decides, resume the parked step from your service:
 
 ```ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
-  client: async () => new Client({ connection: await Connection.connect({ address }) }),
+  // Connects on the first call and again after a failed attempt.
+  client: lazyClient({ address }),
 });
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });

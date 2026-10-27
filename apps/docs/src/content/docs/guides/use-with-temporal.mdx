@@ -152,15 +152,14 @@ Your backend receives the diagram from the editor, maps it to a definition the p
 
 ```ts
 // server.ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 import { randomUUID } from 'node:crypto';
 import { createServer } from 'node:http';
 
 import { toDefinition } from './to-definition';
 
 const engine = new TemporalWorkflowEngine({
-  client: async () => new Client({ connection: await Connection.connect({ address: process.env.TEMPORAL_ADDRESS }) }),
+  client: lazyClient({ address: process.env.TEMPORAL_ADDRESS }),
 });
 
 createServer(async (request, response) => {
@@ -190,7 +189,7 @@ createServer(async (request, response) => {
 }).listen(3210);
 ```
 
-The engine calls the client factory on the first run and keeps the result, so your backend can start before Temporal does. If that first connection fails, every later run gets the same error until you restart the backend. A single `catch` keeps the process up, and the example's [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) also tells a bad diagram (400) from a Temporal error (502).
+The engine connects on its first call, not when your backend starts, so your backend can start before Temporal does. If the connection fails, that call throws and the next call tries again. `lazyClient` closes the connection of each failed attempt, which a factory built on `Connection.connect` would leave open. A single `catch` keeps the process up, and the example's [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) also tells a bad diagram (400) from a Temporal error (502).
 
 ### Get the diagram
 
@@ -368,7 +367,7 @@ An executor can also pause the run until a person decides. It returns `{ waiting
 
 ### Store
 
-The store is where run events and statuses land, so your app can show them. Implement `emitExecutionEvent` and `updateExecutionStatus` against any database.
+The store is where run events and statuses land, so your app can show them. Implement `emitExecutionEvent` and `updateExecutionStatus` against any database. The status becomes `running` as soon as a run starts, before its first node, so this is where you can record when the run started.
 
 Both methods run in Activities, so a retried write can arrive twice. Make `(executionId, sequence)` unique, so a duplicate event is rejected. Keep the first terminal status a run reaches and ignore a `running` or `waiting` that arrives after it. Keep the `outcome` that arrives with `completed`, because it is the run's result.
 
@@ -434,7 +433,7 @@ Temporal UI shows how the diagram maps onto Temporal. Each run of the diagram is
 
 ## Production
 
-Run against [Temporal Cloud](https://docs.temporal.io/cloud) or a [self-hosted Temporal Service](https://docs.temporal.io/self-hosted-guide). The Temporal plugin does not open the connection, so the address, TLS and API key go into `NativeConnection.connect` in your Worker and `Connection.connect` in your backend.
+Run against [Temporal Cloud](https://docs.temporal.io/cloud) or a [self-hosted Temporal Service](https://docs.temporal.io/self-hosted-guide). The Temporal plugin does not configure the connection. The address, TLS and API key go into `NativeConnection.connect` in your Worker and into `lazyClient` in your backend. A namespace other than `default` goes into `Worker.create` and into the second argument of `lazyClient`, `{ namespace }`.
 
 Each executed node adds its `executeNode` Activity and two `emitEvent` Activities (node started, node completed or failed) to Event History, and a skipped node adds one `emitEvent`. The plugin does not use Continue-As-New, so size very large diagrams against Temporal's [Event History limits](https://docs.temporal.io/workflow-execution/limits).
 
