@@ -80,7 +80,8 @@ function isPublicDefault(declaration: Declaration): boolean {
 function isScoped(selector: string): boolean {
   const compact = selector.replaceAll(/\s/g, '');
   return (
-    scopePrefixes.some((prefix) => compact.startsWith(prefix)) || /^\.workflow-builder-root(?![\w-])/.test(compact)
+    scopePrefixes.some((prefix) => compact.startsWith(prefix)) ||
+    /^\.workflow-builder-root(?![\w-])/.test(selector.trim())
   );
 }
 
