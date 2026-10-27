@@ -192,7 +192,7 @@ type DecisionNode = BaseNode & { type: 'decision'; config: { decisionBranches: B
 export type MyNode = TriggerNode | ActionNode | DecisionNode;
 ```
 
-`Branch` is what the editor saves for each branch of a decision node. The example's [`nodes.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/nodes.ts) also lists the comparison operators.
+`Branch` is what the editor saves for each branch of a branching node. The example's [`nodes.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/nodes.ts) also lists the comparison operators.
 
 ### Map the diagram
 

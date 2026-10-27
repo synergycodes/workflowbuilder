@@ -12,7 +12,7 @@ export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: stri
   const nodes = snapshot.nodes.map(toNode);
   const startNodes = nodes.filter((node) => node.role === 'start');
   if (startNodes.length === 0) {
-    throw new Error('The diagram has no start node. Add a trigger node from the palette.');
+    throw new Error('The diagram has no start node. Add a trigger node from the Nodes Library.');
   }
   if (startNodes.length > 1) {
     const ids = startNodes.map((node) => node.id).join(', ');

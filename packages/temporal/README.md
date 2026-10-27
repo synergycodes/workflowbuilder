@@ -107,6 +107,8 @@ const plugin = new WorkflowBuilderPlugin({ executors, store, nodeActivityProfile
 // workflows.ts
 import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
 
+import { nodeActivityProfiles } from './node-activity-profiles';
+
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
