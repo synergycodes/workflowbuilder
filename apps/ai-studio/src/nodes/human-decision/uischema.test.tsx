@@ -82,7 +82,7 @@ describe('the Human task properties panel', () => {
       edges,
       selectedNodesIds: [HUMAN],
       selectedEdgesIds: [],
-      data: [humanDecisionPaletteItem as never],
+      data: [humanDecisionPaletteItem],
     });
     act(() => root.render(<Host />));
     await settle();
