@@ -41,7 +41,7 @@ export type NodeDefinition<T extends NodeSchema> = {
    * outputSchema will be removed in the next major release (4.0).
    */
   outputSchema?: DeprecatedNodeOutputSchema;
-  /** icon color on the canvas and in the palette, resolved by node type and never saved into the diagram */
+  /** icon color on the canvas, palette and Properties header; resolved by node type, never saved into the diagram */
   accent?: NodeIconAccent;
 } & Required<Omit<BaseNodeProperties, 'errors' | 'customErrors'>> &
   Pick<NodeData, 'type' | 'icon' | 'templateType' | 'isStartNode'>;
@@ -75,5 +75,6 @@ export type NodeData<T = BaseNodeProperties & Record<string, unknown>> = {
 
 export type EdgeData = {
   label?: string;
+  /** Drawn in place of the label on a `labelEdge`, and shown in the Properties panel header. */
   icon?: IconType;
 };

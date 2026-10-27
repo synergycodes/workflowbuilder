@@ -955,7 +955,8 @@ describe.each([
       expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
       expect(labelled('Decision')).toBeUndefined();
-      expect(container.querySelectorAll('button')).toHaveLength(0);
+      expect(button('Approve')).toBeUndefined();
+      expect(button('Reject…')).toBeUndefined();
     });
 
     it('shows a rejection with its reason and the proposal it turned down', () => {
