@@ -14,20 +14,17 @@ import { ExecutionLogPanel } from '../components/execution/log-panel';
 import { decisionActionsRenderer } from '../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../components/human-decision/decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
-import { HumanDecisionNodeTemplate } from '../components/human-decision/node-template/human-decision-template';
 import { DecisionWaitingSnackbar } from '../components/human-decision/waiting-snackbar/decision-waiting-snackbar';
 import { OpenNotices } from '../components/open-from-url/open-notices';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
+import { nodeTemplates } from '../data/node-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
 import { supportTriageFlow } from '../data/support-triage-flow';
-import { humanDecisionNodeType } from '../nodes/human-decision';
 import type { OpenedSource } from './open-from-url';
 import { rootPropsFor } from './root-props';
 
 const flagship = supportTriageFlow.value;
 
-// Module-level: `nodeTemplates` must keep the same reference across renders.
-const nodeTemplates = { [humanDecisionNodeType]: HumanDecisionNodeTemplate };
 const jsonForm = {
   renderers: [decisionFormRenderer, responseControlRenderer, decisionFieldsRenderer, decisionActionsRenderer],
 };
