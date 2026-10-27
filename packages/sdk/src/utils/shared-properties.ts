@@ -1,4 +1,5 @@
-import { NODE_ERROR_POLICIES, type NodeErrorPolicy } from '../core-contract';
+import { NODE_ERROR_POLICIES, type NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
+
 import type { BaseNodePropertiesSchema } from '../node/node-schema';
 
 /**

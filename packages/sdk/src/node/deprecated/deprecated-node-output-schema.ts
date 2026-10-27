@@ -1,4 +1,4 @@
-import type { FlattenedPropertiesIndex } from '../../core-contract';
+import type { FlattenedPropertiesIndex } from '@workflow-builder/types/variables/node-output-schema';
 
 export type DeprecatedOutputVariant = {
   variantRule:

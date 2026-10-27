@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react';
 import type { MentionComponentProps, MentionDataItem, MentionsInputProps } from 'react-mentions-ts';
 
-import type { VariableType } from '../../../../core-contract';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
+
 import type { IconType } from '../../../../node/common';
 
 export type VariableSuggestion = {

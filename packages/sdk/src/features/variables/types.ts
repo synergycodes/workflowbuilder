@@ -1,4 +1,4 @@
-import type { VariableReference, VariableTypePrimitive } from '../../core-contract';
+import type { VariableReference, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 export type MaybeVariableReference = VariableReference | (string & {}) | undefined;
 

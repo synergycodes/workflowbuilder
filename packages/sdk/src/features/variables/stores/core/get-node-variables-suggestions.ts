@@ -1,4 +1,3 @@
-import { SOURCE_HANDLE_TYPE } from '../../../../core-contract';
 import { truncate } from '../../../../utils/text';
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
 import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA } from '../../constants';
@@ -74,11 +73,13 @@ export const getNodeVariablesSuggestions = (params: {
 
   const { bySourceHandle, bySourceHandleType } = nodeSuggestions;
   const sourceHandle = params.sourceHandle || '';
-  const isErrorBranch = sourceHandle.toLowerCase().includes(SOURCE_HANDLE_TYPE.ERROR);
+  // 'error' is the magic phrase used to determine whether
+  // a branch represents an error or a successful execution.
+  const isErrorBranch = sourceHandle.toLowerCase().includes('error');
 
   return filterSuggestionsDuplicates([
     ...(bySourceHandle[sourceHandle] || []),
-    ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
-    ...(bySourceHandleType[isErrorBranch ? SOURCE_HANDLE_TYPE.ERROR : SOURCE_HANDLE_TYPE.SUCCESS] || []),
+    ...(bySourceHandleType['settled'] || []),
+    ...(bySourceHandleType[isErrorBranch ? 'error' : 'success'] || []),
   ]);
 };

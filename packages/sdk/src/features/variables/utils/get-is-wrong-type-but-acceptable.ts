@@ -1,4 +1,5 @@
-import type { VariableTypePrimitive } from '../../../core-contract';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+
 import { getIsValidDate } from '../../../utils/validation/get-is-valid-date';
 import { getStringVariableTypeIfPossible } from '../actions/get-string-variable-type-if-possible';
 import { acceptedBooleanValues, typesForDate } from '../components/dynamic-typed-input/constants';

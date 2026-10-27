@@ -1,4 +1,4 @@
-import type { VariableType } from '../../../../core-contract';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
 
 /*
   Keys must cover VariableType - `satisfies` breaks the build when a new type is added.

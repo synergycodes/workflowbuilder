@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import type { VariableType } from '../../../../core-contract';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
+
 import { getIsSupportedVariableType } from './get-is-supported-variable-type';
 
 const supportedTypes: VariableType[] = ['string', 'number', 'boolean', 'datetime', 'date', 'object', 'array'];

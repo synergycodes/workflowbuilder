@@ -1,4 +1,5 @@
-import type { VariableTypePrimitive } from '../../../core-contract';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+
 import { getIsStringNumber } from '../../../utils/validation/get-is-string-number';
 import { getVariableTypeIfPrimitive } from '../utils/guards/get-variable-type-if-primitive';
 import { getSingleVariableTypeIfPossible } from './get-single-variable-type-if-possible';

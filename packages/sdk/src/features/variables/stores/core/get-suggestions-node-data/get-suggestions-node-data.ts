@@ -1,4 +1,3 @@
-import { OUTPUT_SCHEMA_TYPE, SOURCE_HANDLE_TYPE } from '../../../../../core-contract';
 import type { PaletteItem } from '../../../../../node/common';
 import type { WorkflowBuilderNode } from '../../../../../node/node-data';
 import { filterEmpty } from '../../../../../utils/array';
@@ -44,10 +43,10 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
 
   if (!definition?.schemaOutput?.type) {
     // outputSchema is deprecated and will be removed in future versions
-    if (definition?.outputSchema?.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
+    if (definition?.outputSchema?.type === 'default') {
       // The old format doesn't return the same value for all handles
-      bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] = [
-        ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
+      bySourceHandleType['settled'] = [
+        ...(bySourceHandleType['settled'] || []),
         ...getDeprecatedSuggestionsFromOutputSchema({
           nodeId: node.id,
           nodeLabel,
@@ -62,7 +61,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       };
     }
 
-    if (definition?.outputSchema?.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
+    if (definition?.outputSchema?.type === 'variant') {
       // The old format accepted only one rule at the time, newer merges multiple rules
       const variant = Object.values(definition.outputSchema.variants).find((variant) => {
         if (!variant?.variantRule) {
@@ -79,8 +78,8 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
       });
 
       if (variant) {
-        bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] = [
-          ...(bySourceHandleType[SOURCE_HANDLE_TYPE.SETTLED] || []),
+        bySourceHandleType['settled'] = [
+          ...(bySourceHandleType['settled'] || []),
           ...getDeprecatedSuggestionsFromOutputSchema({
             nodeId: node.id,
             nodeLabel,
@@ -105,7 +104,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     return EMPTY_NODE_SUGGESTIONS;
   }
 
-  if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.DEFAULT) {
+  if (definition.schemaOutput.type === 'default') {
     for (const [sourceHandle, properties] of Object.entries(definition.schemaOutput.bySourceHandle || {})) {
       if (properties) {
         bySourceHandle[sourceHandle] = [
@@ -138,7 +137,7 @@ export function getSuggestionsNodeData({ definition, node }: Params): Response {
     };
   }
 
-  if (definition.schemaOutput.type === OUTPUT_SCHEMA_TYPE.VARIANT) {
+  if (definition.schemaOutput.type === 'variant') {
     const variantsMatchingDataPropertyValue = Object.values(definition.schemaOutput.variants)
       .filter((variant) => {
         if (variant.variantRule && 'onlyIfPropertyNameEquals' in variant.variantRule) {

@@ -1,4 +1,4 @@
-import type { VariableType, VariableTypePrimitive } from '../../core-contract';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 /**
  * Sentinel stored in `commonByType` suggestion ids; swapped for the real node id via `replaceAll` on read.

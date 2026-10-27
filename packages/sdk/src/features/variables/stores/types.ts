@@ -1,4 +1,5 @@
-import type { SourceHandleType } from '../../../core-contract';
+import type { SourceHandleType } from '@workflow-builder/types/variables/node-output-schema';
+
 import type { VariableSuggestion } from '../components/variable-text/variable-text.types';
 
 export type SuggestionsBySourceHandle = {

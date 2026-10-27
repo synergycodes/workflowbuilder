@@ -1,4 +1,5 @@
-import type { VariableType } from '../../../../core-contract';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
+
 import type { VariableSuggestion } from '../../components/variable-text/variable-text.types';
 
 type Params = {

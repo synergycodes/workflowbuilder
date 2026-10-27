@@ -4,10 +4,10 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './conditions-form-field.module.css';
 
-import type { VariableTypePrimitive } from '../../../../../core-contract';
 import { DynamicTypedVariableOrInput } from '../../../../../features/variables/components/dynamic-typed-variable-or-input/dynamic-typed-variable-or-input';
 import { VariableText } from '../../../../../features/variables/components/variable-text/variable-text';
 import type { VariableSuggestionGroup } from '../../../../../features/variables/components/variable-text/variable-text.types';

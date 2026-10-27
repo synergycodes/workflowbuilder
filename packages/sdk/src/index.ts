@@ -307,7 +307,12 @@ export type { UISchemaElement } from './types/uischema';
 export { VARIABLE_NODES_KEY } from './features/variables/constants';
 
 // Documented in the docs guide "Use Variable Picker"; the type's JSDoc carries the API reference.
-export type { NodeSchemaOutput, VariableType, VariableTypePrimitive, VariableReference } from './core-contract';
+export type {
+  VariableType,
+  VariableTypePrimitive,
+  VariableReference,
+} from '@workflow-builder/types/variables/variables';
+export type { NodeSchemaOutput, SourceHandleType } from '@workflow-builder/types/variables/node-output-schema';
 export { useNodeVariables } from './features/variables/hooks/use-node-variables';
 // Non-React counterpart of `useNodeVariables`; `undefined` until the node is indexed.
 export { getNodeVariablesSuggestions } from './features/variables/stores/core/get-node-variables-suggestions';

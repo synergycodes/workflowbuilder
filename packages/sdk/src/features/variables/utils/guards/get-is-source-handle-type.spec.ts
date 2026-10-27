@@ -1,10 +1,11 @@
 import { describe, expect, it } from 'vitest';
 
-import { SOURCE_HANDLE_TYPE, type SourceHandleType } from '../../../../core-contract';
+import type { SourceHandleType } from '@workflow-builder/types/variables/node-output-schema';
+
 import { getIsSourceHandleType } from './get-is-source-handle-type';
 
 describe('getIsSourceHandleType', () => {
-  it.each(Object.values(SOURCE_HANDLE_TYPE))('should accept %s', (type) => {
+  it.each(['settled', 'success', 'error'])('should accept %s', (type) => {
     expect(getIsSourceHandleType(type)).toBe(true);
   });
 
@@ -50,7 +51,7 @@ describe('getIsSourceHandleType', () => {
     if (getIsSourceHandleType(value)) {
       const narrowed: SourceHandleType = value;
 
-      expect(narrowed).toBe(SOURCE_HANDLE_TYPE.SUCCESS);
+      expect(narrowed).toBe('success');
     } else {
       expect.unreachable();
     }

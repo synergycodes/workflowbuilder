@@ -6,23 +6,13 @@ import type { VariableType } from './variables';
  * Keys of `bySourceHandleType`, resolved from the handle id: `settled` always, `error` if the id contains `error`,
  * `success` otherwise. See variables-referencing-strategy.decision-log.md § 3.
  */
-export const SOURCE_HANDLE_TYPE = {
-  SETTLED: 'settled',
-  SUCCESS: 'success',
-  ERROR: 'error',
-} as const;
-export type SourceHandleType = (typeof SOURCE_HANDLE_TYPE)[keyof typeof SOURCE_HANDLE_TYPE];
+export type SourceHandleType = 'settled' | 'success' | 'error';
 
 export type OutputProperty = {
   type: VariableType;
   label?: string;
   description?: string;
 };
-
-export const OUTPUT_SCHEMA_TYPE = {
-  DEFAULT: 'default',
-  VARIANT: 'variant',
-} as const;
 
 export type FlattenedPropertiesIndex = Record<string, OutputProperty>;
 

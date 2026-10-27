@@ -1,4 +1,5 @@
-import type { VariableType } from '../../../core-contract';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
+
 import type { MaybeVariableReference } from '../types';
 import { getSingleVariableMetadataIfPossible } from './get-single-variable-metadata-if-possible';
 

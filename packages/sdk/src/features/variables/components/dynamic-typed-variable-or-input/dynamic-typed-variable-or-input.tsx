@@ -4,10 +4,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-variable-or-input.module.css';
 
-import type { VariableTypePrimitive } from '../../../../core-contract';
 import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
 import { getIsStringVariableReference } from '../../utils/keys/get-is-string-variable-reference';
