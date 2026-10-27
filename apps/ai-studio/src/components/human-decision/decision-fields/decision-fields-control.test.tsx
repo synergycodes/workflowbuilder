@@ -187,7 +187,7 @@ describe('the decision fields control in the real properties panel', () => {
       edges,
       selectedNodesIds: [nodeId],
       selectedEdgesIds: [],
-      data: [humanDecisionPaletteItem as never, reviewPaletteItem as never],
+      data: [humanDecisionPaletteItem, reviewPaletteItem],
     });
     act(() => root.render(<Host nodeId={nodeId} />));
     await settle();

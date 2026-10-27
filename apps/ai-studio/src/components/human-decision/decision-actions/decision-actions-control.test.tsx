@@ -63,7 +63,7 @@ function edgeFrom(sourceHandle: string): WorkflowBuilderEdge {
 }
 
 function Host() {
-  const node = useStore((state) => state.nodes.find((candidate) => candidate.id === HUMAN));
+  const node = useStore((state) => state.nodes.find((candidate) => candidate.id === state.selectedNodesIds[0]));
   return node ? <NodeProperties node={node} /> : null;
 }
 
@@ -72,10 +72,10 @@ function RunLock() {
   return null;
 }
 
-const storedRequest = () =>
-  useStore.getState().nodes.find((node) => node.id === HUMAN)?.data.properties['decisionRequest'] as
-    | typeof defaultDecisionRequest
-    | undefined;
+const storedRequest = () => {
+  const { nodes, selectedNodesIds } = useStore.getState();
+  return nodes.find((node) => node.id === selectedNodesIds[0])?.data.properties['decisionRequest'];
+};
 
 // JsonForms debounces onChange by 10 ms.
 const settle = () =>
@@ -110,13 +110,13 @@ describe('the decider actions control in the real properties panel', () => {
     resetExecution();
   });
 
-  async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[] = []) {
+  async function renderPanel(nodes: WorkflowBuilderNode[], edges: WorkflowBuilderEdge[] = [], selected = HUMAN) {
     useStore.setState({
       nodes,
       edges,
-      selectedNodesIds: [HUMAN],
+      selectedNodesIds: [selected],
       selectedEdgesIds: [],
-      data: [humanDecisionPaletteItem as never],
+      data: [humanDecisionPaletteItem],
     });
     act(() => root.render(<Host />));
     await settle();
@@ -209,7 +209,7 @@ describe('the decider actions control in the real properties panel', () => {
 
     await flip('reject');
 
-    expect(storedRequest()?.actions).toEqual([approveAction, defaultRejectAction]);
+    expect(storedRequest()).toEqual(defaultDecisionRequest);
   });
 
   it('turning Reject off is one undo step: the request keeps Approve alone and the rest as it was', async () => {
@@ -218,8 +218,7 @@ describe('the decider actions control in the real properties panel', () => {
     await flip('reject');
 
     expect(trackedChanges).toBe(1);
-    expect(storedRequest()?.actions).toEqual([approveAction]);
-    expect(storedRequest()?.schema).toBe(defaultDecisionRequest.schema);
+    expect(storedRequest()).toEqual(withoutReject);
     expect(isOn('reject')).toBe(false);
     expect(row('reject')?.textContent).toContain('single output');
     expect(descriptionOf('reject')).toBe('single output');
@@ -229,7 +228,7 @@ describe('the decider actions control in the real properties panel', () => {
     act(() => undo());
     await settle();
 
-    expect(storedRequest()?.actions).toEqual(defaultDecisionRequest.actions);
+    expect(storedRequest()).toEqual(defaultDecisionRequest);
     expect(isOn('reject')).toBe(true);
     expect(useUndoRedoStore.getState().past).toEqual([]);
   });
@@ -240,8 +239,8 @@ describe('the decider actions control in the real properties panel', () => {
     await flip('reject');
 
     expect(trackedChanges).toBe(1);
-    expect(storedRequest()?.actions).toEqual([approveAction, defaultRejectAction]);
-    expect(storedRequest()?.actions[1]).toMatchObject({ port: REJECTED, reasonRequired: true });
+    expect(storedRequest()).toEqual(defaultDecisionRequest);
+    expect(storedRequest()).toMatchObject({ actions: [approveAction, { port: REJECTED, reasonRequired: true }] });
     expect(isOn('reasonRequired')).toBe(true);
     expect(hints()).toEqual([OUTPUT_HINTS.unwired]);
   });
@@ -252,7 +251,10 @@ describe('the decider actions control in the real properties panel', () => {
     await flip('reasonRequired');
 
     expect(trackedChanges).toBe(1);
-    expect(storedRequest()?.actions[1]).toEqual({ ...defaultRejectAction, reasonRequired: false });
+    expect(storedRequest()).toEqual({
+      ...defaultDecisionRequest,
+      actions: [approveAction, { ...defaultRejectAction, reasonRequired: false }],
+    });
     expect(isOn('reasonRequired')).toBe(false);
     expect(row('reasonRequired')?.textContent).toContain('optional');
     expect(descriptionOf('reasonRequired')).toBe('optional');
@@ -260,7 +262,7 @@ describe('the decider actions control in the real properties panel', () => {
     await flip('reasonRequired');
 
     expect(trackedChanges).toBe(2);
-    expect(storedRequest()?.actions[1]).toEqual(defaultRejectAction);
+    expect(storedRequest()).toEqual(defaultDecisionRequest);
   });
 
   it.each([
@@ -276,9 +278,9 @@ describe('the decider actions control in the real properties panel', () => {
     expect(parsed.success, parsed.success ? '' : JSON.stringify(parsed.error.issues)).toBe(true);
   });
 
-  it('on the "Refund Review" template, Rejected has a path, and turning Reject off keeps the request valid', async () => {
+  it('on the "Refund Review" template, Senior Review\'s Rejected has a path, and turning Reject off keeps the request valid', async () => {
     const { nodes, edges } = refundReviewFlow.value.diagram;
-    await renderPanel(nodes, edges);
+    await renderPanel(nodes, edges, 'senior-1');
 
     expect(hints()).toEqual([OUTPUT_HINTS.wired]);
 
