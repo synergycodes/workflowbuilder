@@ -13,6 +13,7 @@ export const defaultDecisionRequest = {
       label: 'Approve',
       effect: 'resume',
       port: getHandleId({ handleType: 'source', innerId: 'approved' }),
+      reasonRequired: false,
     },
     {
       name: 'reject',
