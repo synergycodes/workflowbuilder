@@ -8,17 +8,14 @@ import {
 } from '@workflowbuilder/sdk';
 
 import { DIAGRAM_NAME, defaultDiagram } from '../diagram';
-import { runCleared, useRunStore } from '../execution/run-store';
+import { isRunBusy, runCleared, useRunStore } from '../execution/run-store';
 
 const CONFIRMATION = 'Discard the diagram on the canvas and load the one this sample ships with?';
 
-// Mounted through the SDK's OptionalAppChildren slot and shown in the editor header, beside the
-// Run button.
 export function ResetButton() {
-  const phase = useRunStore((state) => state.phase);
+  const busy = useRunStore((state) => isRunBusy(state.phase));
   const fitView = useFitView();
   const { setWorkflowName } = useWorkflowBuilderActions();
-  const busy = phase === 'starting' || phase === 'running';
 
   function reset() {
     if (!globalThis.confirm(CONFIRMATION)) return;

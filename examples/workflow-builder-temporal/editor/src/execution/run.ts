@@ -1,7 +1,7 @@
 import { getStoreDataForIntegration } from '@workflowbuilder/sdk';
 
-import { drawAmount } from '../../../shared/amount';
 import type { RunEvent, RunRequest, RunResponse } from '../../../shared/protocol';
+import { drawTriggerPayload } from '../../../shared/trigger-payload';
 import { applyRunEvent, isRunOver, runErrored, runStarted, runStarting, useRunStore } from './run-store';
 
 let stream: EventSource | undefined;
@@ -20,11 +20,8 @@ async function startRun(): Promise<void> {
   stream?.close();
   runStarting();
 
-  // The decision node routes on this. Left to chance, about half the runs take each branch.
-  const amount = drawAmount();
-
   const { nodes, edges } = getStoreDataForIntegration();
-  const request: RunRequest = { nodes, edges, triggerPayload: { amount, customer: 'Ada' } };
+  const request: RunRequest = { nodes, edges, triggerPayload: drawTriggerPayload() };
 
   let response: Response;
   try {
@@ -47,15 +44,16 @@ async function startRun(): Promise<void> {
   const { executionId, temporalUiUrl } = (await response.json()) as RunResponse;
   runStarted(temporalUiUrl);
 
-  stream = new EventSource(`/api/runs/${executionId}/events`);
-  stream.addEventListener('message', (message) => {
+  const source = new EventSource(`/api/runs/${executionId}/events`);
+  stream = source;
+  source.addEventListener('message', (message) => {
     applyRunEvent(JSON.parse(String(message.data)) as RunEvent);
-    if (isRunOver(useRunStore.getState().phase)) stream?.close();
+    if (isRunOver(useRunStore.getState().phase)) source.close();
   });
   // While the browser reconnects (CONNECTING), the bridge replays the run's history, so only a
   // stream the browser gave up on (CLOSED) is lost.
-  stream.addEventListener('error', () => {
-    if (isRunOver(useRunStore.getState().phase) || stream?.readyState !== EventSource.CLOSED) return;
+  source.addEventListener('error', () => {
+    if (isRunOver(useRunStore.getState().phase) || source.readyState !== EventSource.CLOSED) return;
     runErrored('Lost the event stream. Is the worker still running?');
   });
 }

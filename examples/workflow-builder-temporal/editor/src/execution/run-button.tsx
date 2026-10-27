@@ -2,13 +2,12 @@ import { PlayIcon } from '@phosphor-icons/react';
 import { EditorHeaderControlsContent } from '@workflowbuilder/sdk';
 
 import { runFromCanvas } from './run';
-import { isRunFailure, useRunStore } from './run-store';
+import { isRunBusy, isRunFailure, useRunStore } from './run-store';
 
-// Mounted through the SDK's OptionalAppChildren slot and shown in the editor header. Only the
-// button lives there; the run's status sits in the run panel.
+// Only the button goes in the editor header; the run's status sits in the run panel.
 export function RunButton() {
   const phase = useRunStore((state) => state.phase);
-  const busy = phase === 'starting' || phase === 'running';
+  const busy = isRunBusy(phase);
 
   return (
     <EditorHeaderControlsContent>

@@ -24,8 +24,6 @@ const worker = await Worker.create({
   plugins: [plugin],
 });
 
-// The editor never talks to Temporal itself. It posts a canvas snapshot here and reads the
-// store's events back, so the browser needs one origin and no Temporal client.
 // The engine connects on the first run and again after a failed attempt, and lazyClient closes
 // the connection of each failed one. The client that connects is kept so shutdown can close it.
 const connectBridge = lazyClient({ address: TEMPORAL_ADDRESS }, { namespace: TEMPORAL_NAMESPACE });
@@ -36,7 +34,8 @@ const engine = new TemporalWorkflowEngine({
     return bridgeClient;
   },
 });
-// Awaited before worker.run(), so a busy port stops the process before it takes any task.
+// The editor posts its canvas here and reads the store's events back, so the browser needs no
+// Temporal client. Awaited before worker.run(), so a busy port stops the process before it takes any task.
 const bridge = await startBridge({ engine, store, port: BRIDGE_PORT });
 
 console.log(`worker polling task queue "${plugin.taskQueue}" on ${TEMPORAL_ADDRESS}`);

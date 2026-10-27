@@ -2,8 +2,8 @@ import { CheckCircleIcon, type Icon, SkipForwardIcon, SpinnerGapIcon, XCircleIco
 
 import { type NodeRunStatus, useRunStore } from './run-store';
 
-// Mounted in the SDK's OptionalNodeContent slot, once per node. `props` are the slot's own
-// props; the slot passes the node id so a decorator can scope itself to one node.
+// `props` are the OptionalNodeContent slot's own; it passes the node id so a decorator can
+// scope itself to one node.
 type Props = { props?: { nodeId: string } };
 
 const ICONS: Record<NodeRunStatus, Icon> = {

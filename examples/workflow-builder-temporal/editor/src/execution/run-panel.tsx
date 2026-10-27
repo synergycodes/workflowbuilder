@@ -13,7 +13,7 @@ const PHASE_LABEL: Record<RunPhase, string> = {
   error: 'Error',
 };
 
-// Mounted in the SDK's OptionalAppChildren slot. Shows the last run until the next one starts.
+// Shows the last run until the next one starts.
 export function RunPanel() {
   const phase = useRunStore((state) => state.phase);
   const temporalUiUrl = useRunStore((state) => state.temporalUiUrl);

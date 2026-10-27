@@ -1,10 +1,10 @@
 import { closeSnackbar, showSnackbar } from '@workflowbuilder/sdk';
 import { create } from 'zustand';
 
-import { type RunEvent, TERMINAL_STATUSES } from '../../../shared/protocol';
+import { type RunEvent, type TerminalStatus, isTerminalStatus } from '../../../shared/protocol';
 
 export type NodeRunStatus = 'running' | 'completed' | 'failed' | 'skipped';
-export type RunPhase = 'idle' | 'starting' | 'running' | 'completed' | 'incomplete' | 'failed' | 'cancelled' | 'error';
+export type RunPhase = 'idle' | 'starting' | 'running' | TerminalStatus | 'error';
 
 export type RunState = {
   phase: RunPhase;
@@ -68,8 +68,8 @@ const NODE_STATUS_BY_EVENT: Record<string, NodeRunStatus> = {
 // terminal status is written after the terminal event, so ending on it loses nothing.
 export function applyRunEvent(event: RunEvent): void {
   if (event.kind === 'status') {
-    if (!TERMINAL_STATUSES.has(event.status) || isRunOver(useRunStore.getState().phase)) return;
-    useRunStore.setState({ phase: event.status as RunPhase, message: event.errorMessage });
+    if (!isTerminalStatus(event.status)) return;
+    useRunStore.setState({ phase: event.status, message: event.errorMessage });
     if (event.status !== 'completed') showFailure();
     return;
   }
@@ -79,8 +79,12 @@ export function applyRunEvent(event: RunEvent): void {
   useRunStore.setState((state) => ({ nodeStatuses: { ...state.nodeStatuses, [nodeId]: status } }));
 }
 
+export function isRunBusy(phase: RunPhase): boolean {
+  return phase === 'starting' || phase === 'running';
+}
+
 export function isRunOver(phase: RunPhase): boolean {
-  return TERMINAL_STATUSES.has(phase) || phase === 'error';
+  return isTerminalStatus(phase) || phase === 'error';
 }
 
 export function isRunFailure(phase: RunPhase): boolean {

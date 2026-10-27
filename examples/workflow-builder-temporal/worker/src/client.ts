@@ -4,13 +4,10 @@ import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
 import { randomUUID } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 
-import { drawAmount } from '../../shared/amount';
 import type { DiagramSnapshot } from '../../shared/protocol';
+import { drawTriggerPayload } from '../../shared/trigger-payload';
 import { TEMPORAL_ADDRESS, TEMPORAL_NAMESPACE, WORKFLOW_ID, temporalUiUrl } from './config';
 import { snapshotToDefinition } from './to-definition';
-
-// The decision node routes on this. Left to chance, about half the runs take each branch.
-const amount = drawAmount();
 
 const snapshot = JSON.parse(
   await readFile(new URL('../../shared/diagram.json', import.meta.url), 'utf8'),
@@ -24,22 +21,24 @@ const client = new Client({
 const engine = new TemporalWorkflowEngine({ client });
 
 const executionId = randomUUID();
+const triggerPayload = drawTriggerPayload();
 await engine.submit({
   workflowId: WORKFLOW_ID,
   executionId,
   definition,
-  triggerPayload: { amount, customer: 'Ada' },
+  triggerPayload,
   variables: {},
   global: {},
 });
 
-console.log(`amount ${amount}`);
-console.log(`started ${executionWorkflowId(executionId)}`);
+const workflowId = executionWorkflowId(executionId);
+console.log(`amount ${triggerPayload.amount}`);
+console.log(`started ${workflowId}`);
 console.log(`watch it: ${temporalUiUrl(executionId)}`);
 
 // The engine starts the run by name and returns at once. Waiting for the outcome is ordinary
 // Temporal client code, so the sample shows it as such.
-const handle = client.workflow.getHandle(executionWorkflowId(executionId));
+const handle = client.workflow.getHandle(workflowId);
 try {
   await handle.result();
   console.log('run completed');

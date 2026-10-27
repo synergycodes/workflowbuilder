@@ -16,7 +16,9 @@ export type DecisionNode = BaseNode & {
 
 export type SampleNode = TriggerNode | ActionNode | DecisionNode;
 
-export const SAMPLE_NODE_TYPES = ['trigger', 'action', 'decision'] as const satisfies readonly SampleNode['type'][];
+// Keyed by node type, so a variant added to SampleNode does not compile until it is listed here.
+const SAMPLE_NODE_TYPES: Record<SampleNode['type'], true> = { trigger: true, action: true, decision: true };
+export const sampleNodeTypes = Object.keys(SAMPLE_NODE_TYPES);
 
 // The SDK does not export its DecisionBranch type, so the worker declares the shape it reads.
 export type SampleComparisonOperator =
@@ -39,12 +41,11 @@ export type SampleCondition = {
 };
 
 export type SampleDecisionBranch = {
-  id: string;
   sourceHandle: string;
   label: string;
   conditions: SampleCondition[];
 };
 
 export function isSampleNodeType(type: string): type is SampleNode['type'] {
-  return (SAMPLE_NODE_TYPES as readonly string[]).includes(type);
+  return Object.hasOwn(SAMPLE_NODE_TYPES, type);
 }

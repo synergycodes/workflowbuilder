@@ -23,7 +23,7 @@ Three folders:
 
 - `editor/` is the browser app: Workflow Builder with a **Run** button.
 - `worker/` is the Node side: the Temporal Worker with the plugin, the bridge the editor talks to, and the CLI client.
-- `shared/` is what the two sides agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the coin flip (`amount.ts`).
+- `shared/` is what the two sides agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the random trigger payload (`trigger-payload.ts`).
 
 The diagram:
 

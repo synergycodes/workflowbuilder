@@ -2,7 +2,7 @@ import type { WorkflowDefinition, WorkflowEnginePort } from '@workflowbuilder/te
 import { randomUUID } from 'node:crypto';
 import { type IncomingMessage, type Server, type ServerResponse, createServer } from 'node:http';
 
-import { type RunEvent, type RunRequest, type RunResponse, TERMINAL_STATUSES } from '../../shared/protocol';
+import { type RunEvent, type RunRequest, type RunResponse, isTerminalStatus } from '../../shared/protocol';
 import { WORKFLOW_ID, temporalUiUrl } from './config';
 import type { SampleNode } from './nodes';
 import type { RunStore } from './store';
@@ -31,10 +31,6 @@ export function startBridge({ engine, store, port }: BridgeOptions): Promise<Ser
       }
       sendJson(response, 404, { message: `No route for ${request.method} ${path}` });
     } catch (error) {
-      if (error instanceof BadRequestError) {
-        sendJson(response, 400, { message: error.message });
-        return;
-      }
       console.error(`bridge: ${request.method} ${path} failed`, error);
       sendJson(response, 502, { message: describeError(error) });
     }
@@ -49,9 +45,7 @@ export function startBridge({ engine, store, port }: BridgeOptions): Promise<Ser
       );
     });
     server.listen(port, '127.0.0.1', () => {
-      const address = server.address();
-      const bound = typeof address === 'object' && address ? address.port : port;
-      console.log(`bridge listening on http://127.0.0.1:${bound}`);
+      console.log(`bridge listening on http://127.0.0.1:${port}`);
       resolve(server);
     });
   });
@@ -65,14 +59,15 @@ export function closeBridge(server: Server): Promise<void> {
   });
 }
 
-class BadRequestError extends Error {}
-
 async function startRun(
   request: IncomingMessage,
   response: ServerResponse,
   engine: WorkflowEnginePort<SampleNode>,
 ): Promise<void> {
-  const raw = await readBody(request);
+  request.setEncoding('utf8');
+  let raw = '';
+  for await (const chunk of request) raw += chunk;
+
   let body: Partial<RunRequest>;
   let definition: WorkflowDefinition<SampleNode>;
   try {
@@ -82,7 +77,8 @@ async function startRun(
     }
     definition = snapshotToDefinition({ nodes: body.nodes, edges: body.edges }, WORKFLOW_ID);
   } catch (error) {
-    throw new BadRequestError(error instanceof Error ? error.message : String(error));
+    sendJson(response, 400, { message: error instanceof Error ? error.message : String(error) });
+    return;
   }
 
   const executionId = randomUUID();
@@ -109,7 +105,7 @@ function streamEvents(response: ServerResponse, store: RunStore, executionId: st
   const send = (event: RunEvent) => {
     if (response.writableEnded) return;
     response.write(`data: ${JSON.stringify(event)}\n\n`);
-    if (event.kind === 'status' && TERMINAL_STATUSES.has(event.status)) response.end();
+    if (event.kind === 'status' && isTerminalStatus(event.status)) response.end();
   };
 
   // Replay first: the browser subscribes after the run has started, so the first events are
@@ -118,18 +114,6 @@ function streamEvents(response: ServerResponse, store: RunStore, executionId: st
   if (response.writableEnded) return;
   const unsubscribe = store.subscribe(executionId, send);
   response.on('close', unsubscribe);
-}
-
-function readBody(request: IncomingMessage): Promise<string> {
-  return new Promise((resolve, reject) => {
-    let body = '';
-    request.setEncoding('utf8');
-    request.on('data', (chunk: string) => {
-      body += chunk;
-    });
-    request.on('end', () => resolve(body));
-    request.on('error', reject);
-  });
 }
 
 // Temporal's client reports a failed start as "Failed to start Workflow", with the reason as its cause.
