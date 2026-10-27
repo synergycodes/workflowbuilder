@@ -26,7 +26,8 @@ export type DecisionDraft = {
   values?: Record<string, unknown>;
   /** The fields the form showed, so a field the draft was not taken under starts from the proposal. */
   fields?: string[];
-  reason?: string;
+  /** By the action's name, the reject's included. */
+  reasons?: Record<string, string>;
 };
 
 /** Where the decision sent for a wait stands until the run records it. */
