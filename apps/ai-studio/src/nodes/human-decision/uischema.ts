@@ -5,13 +5,14 @@ import type { HumanDecisionSchema } from './schema';
 
 const scope = getScope<HumanDecisionSchema>;
 
-// Deadline, rerun and action labels are not authorable yet (follow-up: decision-request-properties-ui).
+// Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
 export const decisionActionsElement = {
   type: 'DecisionActions',
   scope: scope('properties.decisionRequest'),
   label: 'Decider actions',
 } as unknown as UISchema;
 
+// Deadline, rerun and action labels are not authorable yet (follow-up: decision-request-properties-ui).
 export const uischema = {
   type: 'VerticalLayout',
   elements: [
@@ -34,7 +35,6 @@ export const uischema = {
         },
       ],
     },
-    // Custom elements: the `UISchema` union is closed (follow-up: uischema-custom-element-typing).
     {
       type: 'DecisionFields',
       scope: scope('properties.decisionRequest'),
