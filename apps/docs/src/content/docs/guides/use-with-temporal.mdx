@@ -23,7 +23,7 @@ Workflow Builder is an open-source framework for workflow orchestration in your 
 
 <Image
   src={architectureImg}
-  alt="Arrows from left to right follow a run. Your React app, with the Workflow Builder editor and your Run button, sends the diagram to your backend, where your mapper turns it into a definition and the Workflow Builder TemporalWorkflowEngine starts a run on the Temporal Service. Temporal sends tasks to your Worker, where the Workflow Builder plugin (WorkflowBuilderPlugin) walks the graph and calls your executors, and the Worker returns results. Your store writes run events to your database, which can send them back to the canvas as optional run markers."
+  alt="Arrows from left to right follow a run. Your React app, with the Workflow Builder editor and your Run button, sends the diagram to your backend, where your mapper turns it into a definition and the Workflow Builder TemporalWorkflowEngine starts a run on the Temporal Service. Temporal sends tasks to your Worker, where the Workflow Builder plugin (WorkflowBuilderPlugin) runs its Workflow, runWorkflow, which walks the graph and calls your executors, and the Worker returns results. Your store writes run events to your database, which can send them back to the canvas as optional run markers."
 />
 
 Three parts work together in a run.
@@ -49,7 +49,7 @@ Three parts work together in a run.
 Before you start, set up the editor, a Node.js project for your backend and Worker, and a Temporal Service to run against.
 
 - **Editor:** an app with the Workflow Builder SDK 4.x, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
-- **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your backend and Worker. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
+- **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your backend and Worker. The snippets assume you run TypeScript with [tsx](https://tsx.is), as the example does: relative imports have no extension, and `workflowsPath` points at `workflows.ts`. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
 - **Temporal Service:** the [Temporal CLI](https://docs.temporal.io/cli/setup-cli) for local work, or any Temporal Service.
 
 ## Setup
@@ -206,13 +206,16 @@ The mapper and the Worker share one type with a variant per node type.
 // nodes.ts
 import type { BaseNode } from '@workflowbuilder/temporal';
 
-type Branch = { label: string; sourceHandle: string };
+type Condition = { x: string; comparisonOperator: string; y: string; logicalOperator: 'AND' | 'OR' };
+type Branch = { label: string; sourceHandle: string; conditions: Condition[] };
 
 type TriggerNode = BaseNode & { type: 'trigger'; config: Record<string, unknown> };
 type ActionNode = BaseNode & { type: 'action'; config: { message: string } };
 type DecisionNode = BaseNode & { type: 'decision'; config: { decisionBranches: Branch[] } };
 export type MyNode = TriggerNode | ActionNode | DecisionNode;
 ```
+
+`Branch` is what the editor saves for each branch of a decision node. The example's [`nodes.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/nodes.ts) also lists the comparison operators.
 
 ### Map the diagram
 
@@ -224,15 +227,16 @@ The plugin does not read the editor's diagram format, so a mapper turns nodes an
 
 Check these rules in the mapper if the editor allows such diagrams. The example blocks edges into the start node in the editor with `isValidConnection`, see its [`app.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/app.tsx).
 
-| From the editor                                | To the definition                       |
-| ---------------------------------------------- | --------------------------------------- |
-| node `id`                                      | `id`                                    |
-| `data.type`                                    | `type`, the executor key                |
-| `data.properties` without `label` and `errors` | `config`                                |
-| `data.properties.label`                        | `label`, the Summary in Event History   |
-| `data.isStartNode`                             | `role: 'start'`                         |
-| edge `source`, `target`                        | `sourceNodeId`, `targetNodeId`          |
-| edge `sourceHandle`                            | `sourceHandle`, what `nextPort` matches |
+| From the editor                                               | To the definition                                    |
+| ------------------------------------------------------------- | ---------------------------------------------------- |
+| node `id`                                                     | `id`                                                 |
+| `data.type`                                                   | `type`, the executor key                             |
+| `data.properties` without `label`, `errorPolicy` and `errors` | `config`                                             |
+| `data.properties.label`                                       | `label`, the Summary in Event History                |
+| `data.properties.errorPolicy`                                 | `errorPolicy`, what the run does when the node fails |
+| `data.isStartNode`                                            | `role: 'start'`                                      |
+| edge `source`, `target`                                       | `sourceNodeId`, `targetNodeId`                       |
+| edge `sourceHandle`                                           | `sourceHandle`, what `nextPort` matches              |
 
 ```ts
 // to-definition.ts
@@ -250,13 +254,14 @@ export function toDefinition(diagram: Diagram, workflowId: string): WorkflowDefi
   return {
     workflowId,
     nodes: diagram.nodes.map((node) => {
-      const { label, ...config } = node.data.properties ?? {};
+      const { label, errorPolicy, ...config } = node.data.properties ?? {};
       delete config.errors; // the editor's form validation state, not configuration
       return {
         id: node.id,
         type: node.data.type,
         config,
         label,
+        errorPolicy, // set by the SDK's errorPolicyProperty; the runner reads it here, not in config
         ...(node.data.isStartNode ? { role: 'start' } : {}),
       } as MyNode;
     }),
@@ -274,7 +279,7 @@ A complete version with validation is in the example's [`to-definition.ts`](http
 
 ### Start the run
 
-`engine.submit` in [`server.ts`](#on-your-backend) starts the run. `workflowId` names your diagram, and a new `executionId` identifies each run of it. `triggerPayload` is the data the run starts with, and executors read it as `context.triggerPayload` (the example passes an amount and a customer name). `global` holds the global variables defined in the editor, and `variables` holds values your backend adds at start. All three are stored in Event History as they are, so keep secrets in the Worker's environment.
+`engine.submit` in [`server.ts`](#on-your-backend) starts the run. `workflowId` names your diagram, and a new `executionId` identifies each run of it. `triggerPayload` is the data the run starts with, and executors read it as `context.triggerPayload` (the example passes an amount and a customer name). `global` is meant for the editor's global variables, but the Run button above sends only the nodes and edges, so pass `{}` unless your executors read them. `variables` holds values your backend adds at start. All three are stored in Event History as they are, so keep secrets in the Worker's environment.
 
 ### Cancel a run and deliver a decision
 
@@ -356,13 +361,15 @@ import { nodeActivityProfiles } from './node-activity-profiles';
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
+The map's module becomes part of the Workflow bundle, so it may import only from `@workflowbuilder/temporal/workflow`, which also exports `DEFAULT_NODE_ACTIVITY_PROFILE` and the `NodeActivityProfiles` type. The package's root entry pulls in `@temporalio/activity`, and the Worker then refuses to bundle the Workflow.
+
 The plugin only checks the map when the Worker starts. The Workflow is what applies it, because Temporal takes an Activity's timeout and retry policy from the Workflow that schedules it. A map given only to the plugin passes the deploy, and every node runs with the default profile: 2 attempts, each limited to 10 minutes. The [package README](https://www.npmjs.com/package/@workflowbuilder/temporal) shows the format of the map.
 
 ### Executors
 
 An executor is a function that runs one node type, and it is the only place where you write what your nodes do. Executors are keyed by node `type` (see [Node types](#node-types)). Pass your node union to the plugin as its type parameter, and TypeScript refuses to compile until every node type has an executor.
 
-Each executor returns `{ output }`. A branching node also returns `nextPort`, the `sourceHandle` of the edge the run follows. Take it from the node's config, where the editor keeps the handle id of each branch (in the example, `source:inner:review`), instead of hardcoding it. The example's [`evaluate-branches.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/evaluate-branches.ts) shows one way to pick a branch.
+Each executor returns `{ output }`. A branching node also returns `nextPort`, the `sourceHandle` of the edge the run follows. Take it from the node's config, where the editor keeps the handle id of each branch (in the example, `source:inner:review`), instead of hardcoding it. If `nextPort` names a handle with no edge, the run ends with status `incomplete`, while Temporal shows the Workflow Execution as Completed. The example's [`evaluate-branches.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/evaluate-branches.ts) shows one way to pick a branch.
 
 If an executor throws, Temporal retries that node's Activity. By default a node gets 2 attempts, each limited to 10 minutes. Throw `PermanentNodeExecutionError` when another attempt cannot help, for example after a 404, and the node fails at once. `TransientNodeExecutionError` marks an error worth retrying, and an error of any other type is retried the same way.
 
@@ -370,9 +377,9 @@ An executor can also pause the run until a person decides. It returns `{ waiting
 
 ### Store
 
-The store is where run events and statuses land, so your app can show them. Implement `emitExecutionEvent` and `updateExecutionStatus` against any database. The status becomes `running` as soon as a run starts, before its first node, so this is where you can record when the run started.
+The store is where run events and statuses land, so your app can show them. Implement `emitExecutionEvent` and `updateExecutionStatus` against any database. The status becomes `running` as soon as a run starts, before its first node, so the first `running` is where you can record when the run started. A later one means a paused run resumed.
 
-Both methods run in Activities, so a retried write can arrive twice. Make `(executionId, sequence)` unique, so a duplicate event is rejected. Keep the first terminal status a run reaches and ignore a `running` or `waiting` that arrives after it. Keep the `outcome` that arrives with `completed`, because it is the run's result.
+Both methods run in Activities, so a retried write can arrive twice. Make `(executionId, sequence)` unique and ignore a duplicate without an error, for example with `ON CONFLICT DO NOTHING`. A store that throws on it fails every retry of that write, and the run with it. Keep the first terminal status a run reaches and ignore a `running` or `waiting` that arrives after it. Keep the `outcome` that arrives with `completed`, because it is the run's result.
 
 ## See the run on the canvas
 

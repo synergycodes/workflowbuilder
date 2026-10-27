@@ -102,9 +102,11 @@ npm start
 Expected, between Temporal's own startup lines:
 
 ```
-worker polling task queue "workflow-execution" on 127.0.0.1:7233
 bridge listening on http://127.0.0.1:3210
+worker polling task queue "workflow-execution" on 127.0.0.1:7233
 ```
+
+If port 3210 is taken, the process stops with a message saying so. Set `BRIDGE_PORT`, as in [Make it yours](#make-it-yours).
 
 Terminal 3, the editor. From the sample folder:
 
@@ -136,7 +138,7 @@ The pruned branch leaves no trace here: when the amount is above 100 there is an
 
 Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the Nodes Library. Then click **Run** again: the bridge runs whatever is on the canvas. Every diagram with one start node, no unconnected nodes and no loops runs on the plugin's one `runWorkflow`, so the Worker keeps running unchanged; only a new node type needs Worker code.
 
-The editor keeps your canvas in the browser between visits. **Reset** asks first, then puts back the nodes and edges from [`shared/diagram.json`](shared/diagram.json), which is also the diagram `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
+The editor keeps your canvas in the browser between visits. **Reset** asks first, then puts back the name "Temporal sample" and the nodes and edges from [`shared/diagram.json`](shared/diagram.json), which is also the diagram `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
 
 ## Without a browser
 
@@ -211,7 +213,7 @@ Eight places carry the whole integration: six in the Worker, two in the editor. 
 - **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the three connections: the worker and the bridge in `worker/src/worker.ts`, the CLI in `worker/src/client.ts`. To move the bridge off port 3210, set the same `BRIDGE_PORT` for `npm start` and `npm run dev`.
 - **Toggle the outage.** Every Action has a _Simulate an outage on the first attempt_ switch. Turn it on for `Auto-approve` and that node retries too.
 - **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Conditions read only `{{trigger.*}}` and `{{nodes.*}}`; the worker does not resolve `{{global.*}}` variables.
-- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. In a database, make `(executionId, sequence)` unique, so an event written twice by a retried Activity is rejected. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it. Keep the `outcome` that arrives with `completed` as well: it is the run's result.
+- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. In a database, make `(executionId, sequence)` unique and ignore a duplicate without an error, as `createRunStore()` does: an event written twice by a retried Activity must not fail the write, or every retry fails and the run with it. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it. Keep the `outcome` that arrives with `completed` as well: it is the run's result.
 
 ## Learn more
 

@@ -1,3 +1,5 @@
+import { existsSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 // Workspace lint-staged configs re-export this file and run commands from
@@ -5,14 +7,21 @@ import { fileURLToPath } from 'node:url';
 // so the root ignore file must be passed explicitly.
 const prettierIgnore = fileURLToPath(new URL('.prettierignore', import.meta.url));
 
-// The example is copied out with degit, so it cannot carry a lint-staged config that runs tools it never installs.
-// Its files get their own block below and are kept out of the generic globs (root tsc, stylelint).
+// The example has no package.json at its root (editor/ and worker/ are two npm projects), so it has
+// no lint-staged config of its own. Its files get their own block below and are kept out of the
+// generic globs (root tsc, stylelint).
 const temporalExample = fileURLToPath(new URL('examples/workflow-builder-temporal/', import.meta.url));
 const isTemporalExample = (file) => /[/\\]examples[/\\]workflow-builder-temporal[/\\]/.test(file);
 const outsideTemporalExample = (task) => (files) => {
   const rest = files.filter((file) => !isTemporalExample(file));
   return rest.length > 0 ? task(rest) : [];
 };
+// Each sub-project resolves its packages from its own node_modules, so one that is not installed is skipped.
+const typecheckTemporal = (project) => (files) =>
+  files.some((file) => [project, 'shared'].includes(path.relative(temporalExample, file).split(/[/\\]/)[0])) &&
+  existsSync(`${temporalExample}${project}/node_modules`)
+    ? `tsc --noEmit -p "${temporalExample}${project}/tsconfig.json"`
+    : [];
 
 /**
  * @type {import('lint-staged').Configuration}
@@ -32,8 +41,8 @@ export default {
     `prettier --write --ignore-path "${prettierIgnore}" --log-level=silent ${files.join(' ')}`,
   'examples/workflow-builder-temporal/**/*.{ts,tsx}': [
     (files) => `eslint --max-warnings=0 --fix ${files.join(' ')}`,
-    () => `tsc --noEmit -p "${temporalExample}worker/tsconfig.json"`,
-    () => `tsc --noEmit -p "${temporalExample}editor/tsconfig.json"`,
+    typecheckTemporal('worker'),
+    typecheckTemporal('editor'),
   ],
   'deploy/ai-studio/Dockerfile': () => 'node tools/check-offline-build.mjs',
 };

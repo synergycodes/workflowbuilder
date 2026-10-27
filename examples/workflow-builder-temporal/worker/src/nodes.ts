@@ -1,7 +1,7 @@
 import type { BaseNode } from '@workflowbuilder/temporal';
 
 // One variant per palette item in the editor. `config` is what the properties panel
-// saved, minus the label, which the mapper lifts onto the node itself.
+// saved, minus the label and error policy, which the mapper lifts onto the node itself.
 type SharedConfig = { description?: string; status?: string };
 
 export type TriggerNode = BaseNode & { type: 'trigger'; config: SharedConfig };

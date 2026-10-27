@@ -2,7 +2,7 @@ import type { WorkflowDefinition, WorkflowEnginePort } from '@workflowbuilder/te
 import { randomUUID } from 'node:crypto';
 import { type IncomingMessage, type Server, type ServerResponse, createServer } from 'node:http';
 
-import type { RunEvent, RunRequest, RunResponse } from '../../shared/protocol';
+import { type RunEvent, type RunRequest, type RunResponse, TERMINAL_STATUSES } from '../../shared/protocol';
 import { WORKFLOW_ID, temporalUiUrl } from './config';
 import type { SampleNode } from './nodes';
 import type { RunStore } from './store';
@@ -16,7 +16,7 @@ export type BridgeOptions = {
 
 const EVENTS_PATH = /^\/api\/runs\/([^/]+)\/events$/;
 
-export function startBridge({ engine, store, port }: BridgeOptions): Server {
+export function startBridge({ engine, store, port }: BridgeOptions): Promise<Server> {
   const server = createServer(async (request, response) => {
     const path = new URL(request.url ?? '/', 'http://localhost').pathname;
     try {
@@ -31,17 +31,30 @@ export function startBridge({ engine, store, port }: BridgeOptions): Server {
       }
       sendJson(response, 404, { message: `No route for ${request.method} ${path}` });
     } catch (error) {
-      const status = error instanceof BadRequestError ? 400 : 502;
-      sendJson(response, status, { message: error instanceof Error ? error.message : String(error) });
+      if (error instanceof BadRequestError) {
+        sendJson(response, 400, { message: error.message });
+        return;
+      }
+      console.error(`bridge: ${request.method} ${path} failed`, error);
+      sendJson(response, 502, { message: describeError(error) });
     }
   });
 
-  server.listen(port, '127.0.0.1', () => {
-    const address = server.address();
-    const bound = typeof address === 'object' && address ? address.port : port;
-    console.log(`bridge listening on http://127.0.0.1:${bound}`);
+  return new Promise((resolve, reject) => {
+    server.once('error', (error: NodeJS.ErrnoException) => {
+      reject(
+        error.code === 'EADDRINUSE'
+          ? new Error(`Port ${port} is in use. Stop what holds it, or set BRIDGE_PORT for npm start and npm run dev.`)
+          : error,
+      );
+    });
+    server.listen(port, '127.0.0.1', () => {
+      const address = server.address();
+      const bound = typeof address === 'object' && address ? address.port : port;
+      console.log(`bridge listening on http://127.0.0.1:${bound}`);
+      resolve(server);
+    });
   });
-  return server;
 }
 
 // An open event stream keeps `close()` waiting forever, so drop every connection first.
@@ -92,11 +105,17 @@ function streamEvents(response: ServerResponse, store: RunStore, executionId: st
     'Cache-Control': 'no-cache',
     Connection: 'keep-alive',
   });
-  const send = (event: RunEvent) => response.write(`data: ${JSON.stringify(event)}\n\n`);
+  // A terminal status is the run's last event, so the stream ends with it.
+  const send = (event: RunEvent) => {
+    if (response.writableEnded) return;
+    response.write(`data: ${JSON.stringify(event)}\n\n`);
+    if (event.kind === 'status' && TERMINAL_STATUSES.has(event.status)) response.end();
+  };
 
   // Replay first: the browser subscribes after the run has started, so the first events are
   // already in the store's history.
   for (const event of store.history(executionId)) send(event);
+  if (response.writableEnded) return;
   const unsubscribe = store.subscribe(executionId, send);
   response.on('close', unsubscribe);
 }
@@ -111,6 +130,12 @@ function readBody(request: IncomingMessage): Promise<string> {
     request.on('end', () => resolve(body));
     request.on('error', reject);
   });
+}
+
+// Temporal's client reports a failed start as "Failed to start Workflow", with the reason as its cause.
+function describeError(error: unknown): string {
+  if (!(error instanceof Error)) return String(error);
+  return error.cause instanceof Error ? `${error.message}: ${error.cause.message}` : error.message;
 }
 
 function sendJson(response: ServerResponse, status: number, payload: unknown): void {

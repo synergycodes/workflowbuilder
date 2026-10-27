@@ -53,6 +53,7 @@ export function createRunStore(): RunStore {
       listeners.set(executionId, set);
       return () => {
         set.delete(listener);
+        if (set.size === 0 && listeners.get(executionId) === set) listeners.delete(executionId);
       };
     },
 

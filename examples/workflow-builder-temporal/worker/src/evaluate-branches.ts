@@ -67,7 +67,8 @@ function valueAtPath(root: unknown, path: string): unknown {
   let current = root;
 
   for (const key of path.split('.')) {
-    if (current === null || typeof current !== 'object') return undefined;
+    // Own keys only, or `{{trigger.constructor}}` would resolve off Object.prototype.
+    if (current === null || typeof current !== 'object' || !Object.hasOwn(current, key)) return undefined;
     current = (current as Record<string, unknown>)[key];
   }
 
@@ -83,16 +84,16 @@ function compare(left: string, operator: SampleComparisonOperator, right: string
       return left !== right;
     }
     case 'isGreaterThan': {
-      return Number(left) > Number(right);
+      return toNumber(left) > toNumber(right);
     }
     case 'isLessThan': {
-      return Number(left) < Number(right);
+      return toNumber(left) < toNumber(right);
     }
     case 'isGreaterThanOrEqual': {
-      return Number(left) >= Number(right);
+      return toNumber(left) >= toNumber(right);
     }
     case 'isLessThanOrEqual': {
-      return Number(left) <= Number(right);
+      return toNumber(left) <= toNumber(right);
     }
     case 'isContaining': {
       return left.toLowerCase().includes(right.toLowerCase());
@@ -113,4 +114,14 @@ function compare(left: string, operator: SampleComparisonOperator, right: string
       );
     }
   }
+}
+
+// Number('') is 0 and NaN compares false, so either would quietly pick the wrong branch.
+function toNumber(operand: string): number {
+  const value = Number(operand);
+  if (operand.trim() === '' || Number.isNaN(value)) {
+    throw new PermanentNodeExecutionError('operand_not_a_number', `Expected a number, got "${operand}".`);
+  }
+
+  return value;
 }

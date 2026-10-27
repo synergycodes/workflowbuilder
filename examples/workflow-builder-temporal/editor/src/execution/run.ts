@@ -6,7 +6,17 @@ import { applyRunEvent, isRunOver, runErrored, runStarted, runStarting, useRunSt
 
 let stream: EventSource | undefined;
 
+// The Run button does not await this, so anything thrown has to end the run here, or the
+// header buttons stay disabled until a reload.
 export async function runFromCanvas(): Promise<void> {
+  try {
+    await startRun();
+  } catch (error) {
+    runErrored(`Could not start the run: ${error instanceof Error ? error.message : String(error)}`);
+  }
+}
+
+async function startRun(): Promise<void> {
   stream?.close();
   runStarting();
 

@@ -36,7 +36,8 @@ const engine = new TemporalWorkflowEngine({
     return bridgeClient;
   },
 });
-const bridge = startBridge({ engine, store, port: BRIDGE_PORT });
+// Awaited before worker.run(), so a busy port stops the process before it takes any task.
+const bridge = await startBridge({ engine, store, port: BRIDGE_PORT });
 
 console.log(`worker polling task queue "${plugin.taskQueue}" on ${TEMPORAL_ADDRESS}`);
 try {
