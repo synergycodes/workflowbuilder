@@ -9,6 +9,8 @@ export const aiAgentPaletteItem: PaletteItem<AiAgentSchema> = {
   description: 'Run an LLM prompt',
   type: 'ai-studio/ai-agent',
   icon: 'AiAgent',
+  // Renders the generic node template, which has no gradient default.
+  accent: 'violet-gradient',
   templateType: NodeType.Node,
   defaultPropertiesData,
   schema,

@@ -1,196 +1,267 @@
-.panel {
+.dock {
   position: fixed;
-  bottom: 1rem;
+  bottom: var(--wb-ds-space-150);
   /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
-  right: var(--log-panel-right, 1rem);
-  width: 30rem;
-  max-width: calc(100vw - 3rem);
-  max-height: 26.875rem;
-  background: var(--wb-sdk-app-bar-background);
-  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
-  border-radius: var(--wb-sdk-app-bar-border-radius);
-  color: var(--wb-ds-ui-text-default);
+  left: var(--log-dock-left, var(--wb-ds-space-150));
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
+  right: var(--log-dock-right, var(--wb-ds-space-150));
+  z-index: 10;
   display: flex;
   flex-direction: column;
-  z-index: 10;
-  font-size: 0.75rem;
-  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  min-width: 0;
+  container-type: inline-size;
+  background: var(--wb-ds-ui-bg-base);
+  border: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-default);
+  border-radius: var(--wb-ds-radius-150);
+  box-shadow: var(--wb-ds-shadow-ui-m-x) var(--wb-ds-shadow-ui-m-y) var(--wb-ds-shadow-ui-m-blur)
+    var(--wb-ds-shadow-ui-m-spread) var(--wb-ds-shadow-ui-color);
+  color: var(--wb-ds-ui-text-default);
   overflow: hidden;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
 }
 
-.panel--collapsed {
-  max-height: unset;
+/* Inside the dock rather than over its edge: the dock clips its overflow for the rounded corners. */
+.resize {
+  position: absolute;
+  inset: 0 0 auto;
+  z-index: 1;
+  height: var(--wb-ds-size-100);
+  cursor: ns-resize;
+  touch-action: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0 var(--wb-ds-space-150) auto;
+    height: var(--wb-ds-size-25);
+    border-radius: var(--wb-ds-radius-full);
+    background: transparent;
+    transition: background 0.1s;
+  }
+
+  &:hover::after,
+  &:active::after,
+  &:focus-visible::after {
+    background: var(--wb-ds-ui-brand-border);
+  }
+
+  &:focus-visible {
+    outline: none;
+  }
 }
 
 .header {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding: 0.5rem 0.75rem;
+  gap: var(--wb-ds-space-150);
+  min-height: 2.625rem;
+  padding: var(--wb-ds-space-75) var(--wb-ds-space-150) var(--wb-ds-space-75) var(--wb-ds-space-75);
+  border-bottom: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-divider);
   cursor: pointer;
   user-select: none;
-  border-bottom: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   flex-shrink: 0;
 }
 
-.panel--collapsed .header {
+.dock--collapsed .header {
   border-bottom: none;
 }
 
-.title {
-  font-weight: 600;
-  font-size: 0.75rem;
-  flex: 1;
-}
-
 .toggle {
-  font-size: 0.6rem;
-  opacity: 0.5;
-}
+  display: inline-flex;
+  align-items: center;
+  gap: var(--wb-ds-space-100);
+  padding: var(--wb-ds-space-62) var(--wb-ds-space-125) var(--wb-ds-space-62) var(--wb-ds-space-75);
+  border: none;
+  border-radius: var(--wb-ds-radius-75);
+  background: none;
+  font-size: var(--wb-ds-font-size-162);
+  line-height: 1;
+  color: var(--wb-ds-ui-text-default);
+  cursor: pointer;
 
-.body {
-  overflow-y: auto;
-  flex: 1;
-  padding: 0.25rem 0;
-}
+  &:hover {
+    background: var(--wb-ds-ui-bg-inset-subtle);
+  }
 
-.event {
-  padding: 0.375rem 0.75rem;
-  border-bottom: 0.0625rem solid color-mix(in srgb, var(--wb-sdk-app-bar-border-color), transparent 50%);
-
-  &:last-child {
-    border-bottom: none;
+  &:focus-visible {
+    outline: var(--wb-ds-size-25) solid var(--wb-ds-ui-stroke-focus);
+    outline-offset: var(--wb-ds-size-25);
   }
 }
 
-.event--toggleable {
+.caret {
+  display: grid;
+  place-items: center;
+  width: var(--wb-ds-size-200);
+  height: var(--wb-ds-size-200);
+  color: var(--wb-ds-ui-text-muted-default);
+  transition: transform 0.15s;
+
+  svg {
+    width: 0.875rem;
+    height: 0.875rem;
+  }
+}
+
+.dock--collapsed .caret {
+  transform: rotate(180deg);
+}
+
+.chip {
+  color: var(--ai-studio-status-color--tone);
+  background: color-mix(in srgb, var(--ai-studio-status-color--tone), transparent 88%);
+}
+
+.chip--running {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--running);
+}
+
+.chip--completed {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--completed);
+}
+
+.chip--waiting {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--human);
+}
+
+.chip--failed {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--failed);
+}
+
+.chip--warning,
+.chip--incomplete {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--incomplete);
+}
+
+.chip--branch,
+.chip--join,
+.chip--skipped,
+.chip--info,
+.chip--neutral {
+  --ai-studio-status-color--tone: var(--wb-ds-ui-text-subtle-default);
+}
+
+.body {
+  /* The bounds of clampBodyHeight in log-panel.tsx, repeated so a shorter window still applies them. */
+  /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx when resized */
+  height: clamp(7.5rem, var(--log-body-height, 12.5rem), 60vh);
+  overflow-y: auto;
+  padding: var(--wb-ds-space-75) var(--wb-ds-space-100) var(--wb-ds-space-100);
+}
+
+.row {
+  display: grid;
+  grid-template-columns: auto auto 1fr;
+  align-items: start;
+  column-gap: var(--wb-ds-space-112);
+  row-gap: var(--wb-ds-space-25);
+  padding: var(--wb-ds-space-62) var(--wb-ds-space-100);
+  border-radius: var(--wb-ds-radius-100);
+  line-height: 1.45;
+
+  &:hover {
+    background: var(--wb-ds-ui-bg-inset-subtle);
+  }
+}
+
+.row--toggleable {
   cursor: pointer;
 }
 
-.event-header {
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-}
-
-.badge {
-  font-size: 0.65rem;
-  font-weight: 600;
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.25rem;
-  background: color-mix(in srgb, currentColor, transparent 85%);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  white-space: nowrap;
-}
-
-.badge--execution_started,
-.badge--execution_completed,
-.badge--node_completed {
-  color: var(--ai-studio-status-color--completed);
-}
-
-.badge--node_started,
-.badge--node_skipped {
-  color: var(--wb-ds-ui-text-subtle-default);
-}
-
-.badge--node_waiting {
-  color: var(--ai-studio-status-color--waiting);
-}
-
-.badge--execution_incomplete {
-  color: var(--ai-studio-status-color--incomplete);
-}
-
-.badge--node_failed,
-.badge--execution_failed {
-  color: var(--ai-studio-status-color--failed);
-}
-
-.badge--execution_cancelled {
-  color: var(--wb-ds-ui-text-subtle-default);
-}
-
-.node-id {
-  font-family: monospace;
-  font-size: 0.65rem;
-  opacity: 0.5;
-}
-
-.reason {
-  font-size: 0.65rem;
-  font-style: italic;
-  opacity: 0.55;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
 .time {
-  margin-left: auto;
-  font-size: 0.65rem;
-  opacity: 0.45;
-  white-space: nowrap;
+  font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
+  font-size: 0.625rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--wb-ds-ui-text-muted-default);
+  padding-top: 0.125rem;
+}
+
+.status {
+  margin-top: 0.0625rem;
+}
+
+.title,
+.message {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.45;
+}
+
+.title {
+  font-weight: 500;
+}
+
+.message {
+  grid-column: 3;
+  font-size: var(--wb-ds-font-size-137);
+  color: var(--wb-ds-ui-text-subtle-default);
+  white-space: pre-line;
 }
 
 .detail {
-  margin-top: 0.25rem;
-  padding: 0.375rem 0.5rem;
-  background: color-mix(in srgb, var(--wb-sdk-app-bar-border-color), transparent 70%);
-  border-radius: 0.25rem;
+  grid-column: 3;
+  margin-top: var(--wb-ds-space-62);
+  padding: var(--wb-ds-space-75) var(--wb-ds-space-112);
+  background: var(--ai-studio-log-detail-bg);
+  border: var(--wb-ds-size-12) solid var(--wb-ds-ui-stroke-default);
+  border-radius: var(--wb-ds-radius-100);
+  font-family: var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace);
+  font-size: 0.625rem;
+  color: var(--wb-ds-ui-text-subtle-default);
   white-space: pre-wrap;
   word-break: break-word;
-  line-height: 1.5;
-  font-size: 0.7rem;
-}
-
-.detail--expanded {
   max-height: 20rem;
   overflow-y: auto;
 }
 
-.status {
-  font-size: 0.65rem;
-  font-weight: 500;
-  padding: 0.1rem 0.35rem;
-  border-radius: 0.25rem;
+.detail--clamped {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  line-clamp: 3;
+  overflow: hidden;
 }
 
-.status--idle {
-  opacity: 0.4;
+.row--highlighted,
+.row--highlighted:hover {
+  background: var(--wb-ds-ui-bg-selected);
 }
 
-.status--pending,
-.status--running,
-.status--completed {
-  color: var(--ai-studio-status-color--completed);
-  background: var(--ai-studio-status-bg--completed);
-}
-
-.status--waiting {
-  color: var(--ai-studio-status-color--waiting);
-  background: var(--ai-studio-status-bg--waiting);
-}
-
-.status--incomplete,
-.status--disconnected {
-  color: var(--ai-studio-status-color--incomplete);
-  background: var(--ai-studio-status-bg--incomplete);
-}
-
-.status--failed {
-  color: var(--ai-studio-status-color--failed);
+.row--failed,
+.row--failed:hover {
   background: var(--ai-studio-status-bg--failed);
+  box-shadow: inset 0.1875rem 0 0 var(--ai-studio-status-color--failed);
+
+  .title {
+    color: var(--ai-studio-status-color--failed);
+    font-weight: 700;
+  }
 }
 
-.status--cancelled,
-.status--cancelling {
-  opacity: 0.5;
+.row--failed.row--highlighted {
+  box-shadow:
+    inset 0.1875rem 0 0 var(--ai-studio-status-color--failed),
+    0 0 0 var(--wb-ds-size-12) var(--wb-ds-ui-stroke-focus);
 }
 
-.event--highlighted {
-  background: color-mix(in srgb, var(--wb-ds-colors-acc1-500), transparent 88%);
-  box-shadow: inset 0.1875rem 0 0 var(--wb-ds-colors-acc1-500);
+/* Wide dock: time · status · block · message on one line, detail below. */
+@container (min-width: 51.25rem) {
+  .row {
+    grid-template-columns: 4rem auto minmax(11.25rem, 16.25rem) 1fr;
+    column-gap: var(--wb-ds-space-150);
+  }
+
+  .title {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .message {
+    grid-column: 4;
+    grid-row: 1;
+  }
+
+  .detail {
+    grid-column: 1 / -1;
+  }
 }

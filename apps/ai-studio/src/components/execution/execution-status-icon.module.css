@@ -1,0 +1,82 @@
+.icon {
+  display: inline-grid;
+  place-items: center;
+  flex-shrink: 0;
+  border-radius: var(--wb-ds-radius-full);
+  color: var(--ai-studio-status-color--tone);
+  background: color-mix(in srgb, var(--ai-studio-status-color--tone), transparent 88%);
+
+  /* Phosphor sizes by width/height attributes, which a class rule overrides. */
+  svg {
+    width: 70%;
+    height: 70%;
+  }
+}
+
+.s {
+  /* missing token */
+  width: 0.9375rem;
+  height: 0.9375rem;
+}
+
+.m {
+  width: var(--wb-ds-size-250);
+  height: var(--wb-ds-size-250);
+}
+
+.running {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--running);
+}
+
+.completed {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--completed);
+}
+
+.waiting {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--human);
+}
+
+.failed {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--failed);
+}
+
+.warning {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--incomplete);
+}
+
+.incomplete {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--incomplete);
+}
+
+.branch,
+.join,
+.info {
+  --ai-studio-status-color--tone: var(--ai-studio-status-color--running);
+}
+
+.skipped,
+.neutral {
+  --ai-studio-status-color--tone: var(--wb-ds-ui-text-muted-default);
+}
+
+.dot {
+  width: 30%;
+  height: 30%;
+  border-radius: var(--wb-ds-radius-full);
+  background: currentColor;
+}
+
+/* Phosphor draws the split and merge top to bottom; the diagram flows left to right. */
+.rightward {
+  transform: rotate(-90deg);
+}
+
+.spin {
+  animation: spin 1.6s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
