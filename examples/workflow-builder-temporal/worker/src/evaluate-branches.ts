@@ -102,10 +102,10 @@ function compare(left: string, operator: SampleComparisonOperator, right: string
       return !left.toLowerCase().includes(right.toLowerCase());
     }
     case 'isBefore': {
-      return Date.parse(left) < Date.parse(right);
+      return toDate(left) < toDate(right);
     }
     case 'isAfter': {
-      return Date.parse(left) > Date.parse(right);
+      return toDate(left) > toDate(right);
     }
     default: {
       throw new PermanentNodeExecutionError(
@@ -121,6 +121,16 @@ function toNumber(operand: string): number {
   const value = Number(operand);
   if (operand.trim() === '' || Number.isNaN(value)) {
     throw new PermanentNodeExecutionError('operand_not_a_number', `Expected a number, got "${operand}".`);
+  }
+
+  return value;
+}
+
+// Date.parse gives NaN for a non-date, which would quietly pick the wrong branch for the same reason.
+function toDate(operand: string): number {
+  const value = Date.parse(operand);
+  if (Number.isNaN(value)) {
+    throw new PermanentNodeExecutionError('operand_not_a_date', `Expected a date, got "${operand}".`);
   }
 
   return value;

@@ -37,11 +37,11 @@ This grammar is narrower than Temporal's own, which parses durations with the `m
 
 ## One constant, both sides
 
-Declare the map once and hand the same constant to both sides. The workflow needs it in order to schedule activities; the plugin needs it only to check it early.
+Declare the map once and hand the same constant to both sides. The workflow needs it in order to schedule activities; the plugin needs it only to check it early. Because `workflows.ts` imports the map, its module ends up in the workflow bundle and imports from `/workflow` too: the root entry brings in `@temporalio/activity`, which the bundler refuses.
 
 ```ts
 // node-activity-profiles.ts
-import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal';
+import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal/workflow';
 
 export const nodeActivityProfiles: NodeActivityProfiles = {
   'my-product/ai-agent': { startToCloseTimeout: '30m', retry: { maximumAttempts: 3 } },

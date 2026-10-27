@@ -89,8 +89,6 @@ Node activities default to 10 minutes and 2 attempts. To give some node types th
 ```ts
 // node-activity-profiles.ts
 import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal/workflow';
-// workflows.ts
-import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
 
 export const nodeActivityProfiles: NodeActivityProfiles = {
   // A thinking-mode model needs room; keep an explicit retry cap.
@@ -98,9 +96,16 @@ export const nodeActivityProfiles: NodeActivityProfiles = {
   // Change one field and inherit the rest.
   'my-product/decision': { ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30s' },
 };
+```
 
+```ts
 // worker.ts
 const plugin = new WorkflowBuilderPlugin({ executors, store, nodeActivityProfiles });
+```
+
+```ts
+// workflows.ts
+import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
 
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
