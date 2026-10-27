@@ -48,13 +48,13 @@ Three parts work together in a run.
 
 Before you start, set up the editor, a Node.js project for your backend and Worker, and a Temporal Service to run against.
 
-- **Editor:** an app with the Workflow Builder SDK 4.x, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
+- **Editor:** an app with the Workflow Builder SDK, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
 - **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your backend and Worker. The snippets assume you run TypeScript with [tsx](https://tsx.is), as the example does: relative imports have no extension, and `workflowsPath` points at `workflows.ts`. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
 - **Temporal Service:** the [Temporal CLI](https://docs.temporal.io/cli/setup-cli) for local work, or any Temporal Service.
 
 ## Setup
 
-Everything installs in your Node.js project with one command. The editor needs no new packages, only the Run button from [In the editor](#in-the-editor).
+Everything installs in your Node.js project with one command. The editor needs no new packages, only the function from [Start a run](#start-a-run).
 
 ```bash
 npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
@@ -92,49 +92,26 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
 
 ### Start a run
 
-An [editor plugin](/guides/build-a-plugin/) adds a Run button to the editor header. It reads the diagram with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and posts it to your backend.
+A run starts when your app posts the diagram to your backend. [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) returns the diagram from the editor, and `runDiagram` sends its nodes and edges.
 
-```tsx
-// editor: run-on-temporal.tsx
-import {
-  EditorHeaderControlsContent,
-  getStoreDataForIntegration,
-  registerComponentDecorator,
-  showSnackbar,
-} from '@workflowbuilder/sdk';
+```ts
+// editor: run-diagram.ts
+import { getStoreDataForIntegration } from '@workflowbuilder/sdk';
 
-function RunButton() {
-  async function run() {
-    const { nodes, edges } = getStoreDataForIntegration();
-    try {
-      const response = await fetch('/api/runs', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ nodes, edges }),
-      });
-      if (!response.ok) {
-        showSnackbar({ variant: 'error', title: 'Could not run the diagram', subtitle: await response.text() });
-      }
-    } catch {
-      showSnackbar({ variant: 'error', title: 'Could not reach the backend' });
-    }
-  }
-
-  return (
-    <EditorHeaderControlsContent>
-      <button type="button" title="Run the diagram on Temporal" onClick={() => void run()}>
-        Run
-      </button>
-    </EditorHeaderControlsContent>
-  );
-}
-
-export function runOnTemporal(): void {
-  registerComponentDecorator('OptionalAppChildren', { content: RunButton, name: 'run-on-temporal' });
+export async function runDiagram(): Promise<string> {
+  const { nodes, edges } = getStoreDataForIntegration();
+  const response = await fetch('/api/runs', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ nodes, edges }),
+  });
+  if (!response.ok) throw new Error(await response.text());
+  const { executionId } = (await response.json()) as { executionId: string };
+  return executionId;
 }
 ```
 
-The `OptionalAppChildren` slot only mounts `RunButton`, and `EditorHeaderControlsContent` places the button in the editor header. Pass the plugin to the editor with `<WorkflowBuilder.Root plugins={[runOnTemporal]} />`.
+Call `runDiagram` from a Run button anywhere on the page with the editor. `getStoreDataForIntegration()` reads the editor's store, not a component, so the button can sit outside the editor. To place it inside the editor, add it with an [editor plugin](/guides/build-a-plugin/). The example does this in [`run-button.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/execution/run-button.tsx) and [`plugin.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/execution/plugin.ts). The `executionId` that `runDiagram` returns identifies the run, for example to [show it on the canvas](#see-the-run-on-the-canvas).
 
 A browser sends a CORS preflight before it posts JSON to another origin, and the backend in this guide does not answer it. Serve the editor and the backend from one origin instead, for example with a Vite proxy:
 
@@ -196,7 +173,7 @@ The engine connects on its first call, not when your backend starts, so your bac
 
 ### Get the diagram
 
-The Run button sends the diagram's nodes and edges in the request body. If your backend already saves diagrams (see [Persistence](/get-started/persistence/rest-api/)), it can load the diagram by `workflowId` instead.
+`runDiagram` sends the diagram's nodes and edges in the request body. If your backend already saves diagrams (see [Persistence](/get-started/persistence/rest-api/)), it can load the diagram by `workflowId` instead.
 
 ### Describe your node types
 
@@ -279,7 +256,7 @@ A complete version with validation is in the example's [`to-definition.ts`](http
 
 ### Start the run
 
-`engine.submit` in [`server.ts`](#on-your-backend) starts the run. `workflowId` names your diagram, and a new `executionId` identifies each run of it. `triggerPayload` is the data the run starts with, and executors read it as `context.triggerPayload` (the example passes an amount and a customer name). `global` is meant for the editor's global variables, but the Run button above sends only the nodes and edges, so pass `{}` unless your executors read them. `variables` holds values your backend adds at start. All three are stored in Event History as they are, so keep secrets in the Worker's environment.
+`engine.submit` in [`server.ts`](#on-your-backend) starts the run. `workflowId` names your diagram, and a new `executionId` identifies each run of it. `triggerPayload` is the data the run starts with, and executors read it as `context.triggerPayload` (the example passes an amount and a customer name). `global` is meant for the editor's global variables, but `runDiagram` above sends only the nodes and edges, so pass `{}` unless your executors read them. `variables` holds values your backend adds at start. All three are stored in Event History as they are, so keep secrets in the Worker's environment.
 
 ### Cancel a run and deliver a decision
 
@@ -425,7 +402,7 @@ cd worker && npm install && npm start
 cd editor && npm install && npm run dev
 ```
 
-Open the editor and click **Run**. In the example's editor, each node gets a status marker as Temporal runs it, and the branch not taken turns grey. The **Temporal UI** link in the run panel under the editor header opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
+Open the editor and click **Run**. In the example's editor, each node gets a status marker as Temporal runs it, and the branch not taken turns grey. The **Temporal UI** link in the run panel opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
 
 <Image
   src={editorRunImg}

@@ -56,7 +56,7 @@
   <g class="own">
     <rect x="20" y="146" width="176" height="48" rx="8"/>
     <text class="title" x="108" y="166">Run button</text>
-    <text class="sub" x="108" y="182">a small editor plugin</text>
+    <text class="sub" x="108" y="182">posts the diagram</text>
   </g>
   <g class="own">
     <rect x="20" y="204" width="176" height="48" rx="8"/>
