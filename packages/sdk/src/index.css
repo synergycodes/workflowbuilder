@@ -78,10 +78,16 @@
   text-shadow: none;
 }
 
-.workflow-builder-root-shell {
+/* Glued sdk prefix: the box's geometry must beat a host's generic `.app div { position: static }`. */
+:is(#wb, .workflow-builder-root).workflow-builder-root-shell {
   position: relative;
   width: 100%;
   height: 100%;
   overflow: hidden;
   background-color: var(--wb-public-background-color);
+}
+
+/* No box of its own, so a host's body layout (flex gap, `body > div { min-height }`) never sees it. */
+:is(#wb, .workflow-builder-root).wb-portal {
+  display: contents;
 }

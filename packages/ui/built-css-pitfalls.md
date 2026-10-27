@@ -24,7 +24,7 @@ subtree as a scoped override, which is a legitimate pattern rather than a mis-sc
 
 **Why it is silent** - The stylesheet is valid; the host rule simply wins on specificity.
 
-**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), be a variable-only `:root` / `[data-wb-theme…]` block, or target the editor box itself (`.workflow-builder-root…`). `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from `postcss-scope-prefix.mts`, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
+**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), be a variable-only `:root` / `[data-wb-theme…]` block, or be a scoped reset under the bare root class (`.workflow-builder-root button`, matched at a class boundary). The editor box's own rules carry the glued SDK prefix (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from `postcss-scope-prefix.mts`, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
 
 **Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
 

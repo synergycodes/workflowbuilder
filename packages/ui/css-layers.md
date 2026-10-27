@@ -47,8 +47,11 @@ vendored rules.
 
 The plugin leaves alone: rules inside `@layer`, `@keyframes` and `@font-face`; `:root…` and bare
 `[data-wb-theme…]` variable blocks; selectors that already carry a prefix (compared without
-whitespace, since the UI dist the SDK re-reads is minified); and selectors that start with
-`.workflow-builder-root`, the editor box itself. A `[data-wb-theme…] .x` selector gets the
+whitespace, since the UI dist the SDK re-reads is minified); and the scoped resets that start
+with the bare root class (`.workflow-builder-root button`), matched at a class boundary so
+`.workflow-builder-root-shell` does not count. Rules on the editor box itself are written with
+the glued prefix by hand (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`), since
+a descendant prefix would never match the box. A `[data-wb-theme…] .x` selector gets the
 prefix glued on, because the attribute sits on the box.
 
 ## Establishing the order

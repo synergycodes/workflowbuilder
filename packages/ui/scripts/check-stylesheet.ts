@@ -76,10 +76,12 @@ function isPublicDefault(declaration: Declaration): boolean {
   return ancestor instanceof AtRule && ancestor.params.trim() === 'ui.base';
 }
 
-// Editor-box rules (shell geometry, overlay backdrop) name the scope themselves.
+// Scoped resets name the bare root class; `.workflow-builder-root-shell` is not it and carries the glued prefix.
 function isScoped(selector: string): boolean {
   const compact = selector.replaceAll(/\s/g, '');
-  return scopePrefixes.some((prefix) => compact.startsWith(prefix)) || compact.startsWith('.workflow-builder-root');
+  return (
+    scopePrefixes.some((prefix) => compact.startsWith(prefix)) || /^\.workflow-builder-root(?![\w-])/.test(compact)
+  );
 }
 
 function isDefaultsBlock(rule: Rule): boolean {

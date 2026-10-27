@@ -118,7 +118,7 @@
 }
 
 /* On the shell, which clips it (position: relative; overflow: hidden), so only the editor dims. */
-:global(.workflow-builder-root-shell)[data-wb-overlay='variable-picker']::before {
+:global(:is(#wb, .workflow-builder-root).workflow-builder-root-shell)[data-wb-overlay='variable-picker']::before {
   content: '';
   position: absolute;
   inset: 0;
@@ -127,7 +127,9 @@
 }
 
 /* Modal already dims the editor; don't stack a second backdrop. */
-:global(.workflow-builder-root-shell.wb-modal-open)[data-wb-overlay='variable-picker']::before {
+:global(
+    :is(#wb, .workflow-builder-root).workflow-builder-root-shell.wb-modal-open
+  )[data-wb-overlay='variable-picker']::before {
   display: none;
 }
 

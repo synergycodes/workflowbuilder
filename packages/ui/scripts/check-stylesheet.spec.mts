@@ -46,10 +46,17 @@ describe('checkStylesheet', () => {
     expect(problems('@layer ui.base;\n@layer ui.component { .a { color: red } }')).toMatch(/Unknown layer name/);
   });
 
-  it('allows the editor-box rules and variable blocks unprefixed', () => {
-    expect(problems('@layer ui.base;\n.workflow-builder-root-shell { position: relative }\n:root { --p: 1px }')).toBe(
-      '',
+  it('allows root-scoped resets and variable blocks unprefixed', () => {
+    expect(problems('@layer ui.base;\n.workflow-builder-root button { cursor: pointer }\n:root { --p: 1px }')).toBe('');
+  });
+
+  it('rejects a bare shell rule: the root class ends at a class boundary', () => {
+    expect(problems('@layer ui.base;\n.workflow-builder-root-shell { position: relative }')).toMatch(
+      /Unprefixed built CSS/,
     );
+    expect(
+      problems('@layer ui.base;\n:is(#wb,.workflow-builder-root).workflow-builder-root-shell { position: relative }'),
+    ).toBe('');
   });
 
   it('rejects an unprefixed variable override under a theme', () => {

@@ -35,8 +35,9 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
   const compact = trimmed.replaceAll(/\s/g, '');
 
   if (ALREADY_PREFIXED.some((done) => compact.startsWith(done))) return selector;
-  // The editor box itself (shell geometry, overlay backdrop): a descendant prefix would never match it.
-  if (trimmed.startsWith('.workflow-builder-root') || trimmed.startsWith(':root')) return selector;
+  // Scoped resets under the bare root class keep one class of weight on purpose. The class boundary keeps
+  // `.workflow-builder-root-shell` out: the box's own rules are written with the glued prefix by hand.
+  if (/^\.workflow-builder-root(?![\w-])/.test(trimmed) || trimmed.startsWith(':root')) return selector;
 
   // The theme attribute sits on the box, so the scope class is glued on, not a descendant.
   // Bare variable-only blocks never get here: prefixRule leaves them as defaults.

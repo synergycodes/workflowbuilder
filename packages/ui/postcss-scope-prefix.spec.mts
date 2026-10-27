@@ -107,8 +107,13 @@ describe('postcss-scope-prefix', () => {
     expect(await run(minified, 'sdk')).toBe(minified);
   });
 
-  it('leaves the shell rules alone', async () => {
-    const input = '.workflow-builder-root-shell { position: relative }';
-    expect(await run(input, 'sdk')).toBe(input);
+  it('skips the bare root class only: scoped resets stay, a shell rule must carry the glued prefix by hand', async () => {
+    const reset = '.workflow-builder-root button { cursor: pointer }';
+    expect(await run(reset, 'sdk')).toBe(reset);
+    expect(await run('.workflow-builder-root-shell { position: relative }', 'sdk')).toBe(
+      ':is(#wb, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell { position: relative }',
+    );
+    const glued = ':is(#wb, .workflow-builder-root).workflow-builder-root-shell { position: relative }';
+    expect(await run(glued, 'sdk')).toBe(glued);
   });
 });

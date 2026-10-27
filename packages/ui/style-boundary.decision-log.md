@@ -248,6 +248,13 @@ Geometry is on the shell class, not on `.workflow-builder-root`. The root class 
 container, the modal popup and the drag preview, and geometry there would paint a full-height box under
 `<body>`.
 
+The shell rule and the picker backdrop carry the glued sdk prefix,
+`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`, at (1,2,0). At one class of weight a host's
+`.app div { position: static; overflow: visible; height: auto }` collapsed the box, let the canvas spill over
+host content and let the backdrop escape to dim the host page. The prefixer and the checker match the bare
+root class at a class boundary, so a `.workflow-builder-root-shell` rule no longer passes as scoped; only
+the cosmetic resets (`.workflow-builder-root button`, scrollbars, inputs) keep one class of weight on purpose.
+
 The remaining global rules (scrollbars, number and time inputs, button cursor) are scoped under the
 root. `wb-modal-open` is toggled on the shell and the popup container, never on `<body>`.
 
@@ -269,6 +276,11 @@ Because the container carries the root class and the theme attribute, prefixed r
 roles, tokens and host overrides on `.workflow-builder-root` all reach popups with no extra work. The
 container is not positioned and has no `transform`, `isolation` or `zoom`, so popup positioning and
 stacking behave as they did under `<body>`.
+
+The container is `display: contents`: it generates no box, so a host's body layout never sees it. As a
+plain block it was an extra flex child under `body { display: flex; gap }` and a blank full-viewport
+section under `body > div { min-height: 100vh }`, with no popup open. Class, theme, `lang` and inherited
+properties still reach the popups, which are positioned fixed or by floating-ui and need no box.
 
 ### 4.6 Theme and language
 
