@@ -1,5 +1,9 @@
 import type { SourceHandleType } from '@workflow-builder/types/variables/node-output-schema';
 
+/**
+ * Using Record that way ensures every SourceHandleType value is explicitly included.
+ * Adding a new type without adding it here will cause a compile-time error.
+ */
 const ALL_SOURCE_HANDLE_TYPES: Record<SourceHandleType, true> = {
   success: true,
   error: true,
