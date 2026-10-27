@@ -34,7 +34,7 @@
   white-space: nowrap;
 }
 
-/* Lined up with the SDK's Nodes Library and Properties bars: same top, height, border and radius. */
+/* Lined up with the SDK's Nodes Library and Properties panels: same top, height, border and radius. */
 .run-panel {
   position: fixed;
   top: 6rem;

@@ -7,11 +7,9 @@ import { RunButton } from './run-button';
 import { RunPanel } from './run-panel';
 
 export function executionPlugin(): void {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: RunButton,
-    place: 'before',
-    name: 'run-on-temporal',
-  });
+  // OptionalAppChildren mounts RunButton once; EditorHeaderControlsContent inside it puts the button
+  // in the editor header.
+  registerComponentDecorator('OptionalAppChildren', { content: RunButton, name: 'run-on-temporal' });
   registerComponentDecorator('OptionalAppChildren', { content: RunPanel, name: 'run-panel' });
   registerComponentDecorator('OptionalNodeContent', { content: NodeRunMarker, place: 'after', name: 'run-markers' });
 }

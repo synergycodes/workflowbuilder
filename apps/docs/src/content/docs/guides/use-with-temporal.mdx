@@ -48,7 +48,7 @@ Three parts work together in a run.
 
 Before you start, set up the editor, a Node.js project for your backend and Worker, and a Temporal Service to run against.
 
-- **Editor:** an app with the Workflow Builder SDK 3.x, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
+- **Editor:** an app with the Workflow Builder SDK 4.x, see [Quick Start](/get-started/quick-start/wb-as-react-component/).
 - **Node.js project:** TypeScript, Node.js 20.3+ and ESM (`"type": "module"`), for your backend and Worker. Keep it separate from the editor app, because the Worker runs in Node.js, not in the browser.
 - **Temporal Service:** the [Temporal CLI](https://docs.temporal.io/cli/setup-cli) for local work, or any Temporal Service.
 
@@ -92,11 +92,16 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
 
 ### Start a run
 
-An [editor plugin](/guides/build-a-plugin/) adds a Run button to the app bar. It reads the diagram with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and posts it to your backend.
+An [editor plugin](/guides/build-a-plugin/) adds a Run button to the editor header. It reads the diagram with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and posts it to your backend.
 
 ```tsx
 // editor: run-on-temporal.tsx
-import { getStoreDataForIntegration, registerComponentDecorator, showSnackbar } from '@workflowbuilder/sdk';
+import {
+  EditorHeaderControlsContent,
+  getStoreDataForIntegration,
+  registerComponentDecorator,
+  showSnackbar,
+} from '@workflowbuilder/sdk';
 
 function RunButton() {
   async function run() {
@@ -116,22 +121,20 @@ function RunButton() {
   }
 
   return (
-    <button type="button" title="Run the diagram on Temporal" onClick={() => void run()}>
-      Run
-    </button>
+    <EditorHeaderControlsContent>
+      <button type="button" title="Run the diagram on Temporal" onClick={() => void run()}>
+        Run
+      </button>
+    </EditorHeaderControlsContent>
   );
 }
 
 export function runOnTemporal(): void {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: RunButton,
-    place: 'before',
-    name: 'run-on-temporal',
-  });
+  registerComponentDecorator('OptionalAppChildren', { content: RunButton, name: 'run-on-temporal' });
 }
 ```
 
-Pass the plugin to the editor with `<WorkflowBuilder.Root plugins={[runOnTemporal]} />`.
+The `OptionalAppChildren` slot only mounts `RunButton`, and `EditorHeaderControlsContent` places the button in the editor header. Pass the plugin to the editor with `<WorkflowBuilder.Root plugins={[runOnTemporal]} />`.
 
 A browser sends a CORS preflight before it posts JSON to another origin, and the backend in this guide does not answer it. Serve the editor and the backend from one origin instead, for example with a Vite proxy:
 
@@ -415,7 +418,7 @@ cd worker && npm install && npm start
 cd editor && npm install && npm run dev
 ```
 
-Open the editor and click **Run**. In the example's editor, each node gets a status marker as Temporal runs it, and the branch not taken turns grey. The **Temporal UI** link in the run panel under the app bar opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
+Open the editor and click **Run**. In the example's editor, each node gets a status marker as Temporal runs it, and the branch not taken turns grey. The **Temporal UI** link in the run panel under the editor header opens the run. The markers and the run panel are the example's own code, not part of Workflow Builder, see [See the run on the canvas](#see-the-run-on-the-canvas).
 
 <Image
   src={editorRunImg}
@@ -424,7 +427,7 @@ Open the editor and click **Run**. In the example's editor, each node gets a sta
 
 ### What you see in Temporal UI
 
-Temporal UI shows how the diagram maps onto Temporal. Each run of the diagram is one Workflow Execution, and each node is an `executeNode` Activity with the node label as its Summary. The `emitEvent` and `updateStatus` Activities between them are the plugin writing to your store. A successful run is Completed, with one `executeNode` Activity per executed node. **Send email** shows attempt 2, because the example fails that node's first attempt on purpose (`simulateOutage` in its config) so you can see Temporal retry it.
+Temporal UI shows how the diagram maps onto Temporal. Each run of the diagram is one Workflow Execution, and each node is an `executeNode` Activity with the node label as its Summary. The `emitEvent` and `updateStatus` Activities between them are the plugin writing to your store. The `core_patch` Marker near the start records that the run started on plugin code from 0.3.0 or later, so a Worker replays it on the same code path. A successful run is Completed, with one `executeNode` Activity per executed node. **Send email** shows attempt 2, because the example fails that node's first attempt on purpose (`simulateOutage` in its config) so you can see Temporal retry it.
 
 <Image
   src={eventHistoryImg}
