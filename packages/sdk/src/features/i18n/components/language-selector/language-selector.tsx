@@ -5,32 +5,31 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-type Language = {
-  code: string;
-  label: string;
-};
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { SUPPORTED_LANGUAGES, type WorkflowBuilderLanguage } from '../../../../hooks/use-workflow-builder-state';
 
-const languages: Language[] = [
-  { code: 'en', label: 'English' },
-  { code: 'pl', label: 'Polski' },
-];
+const LANGUAGE_LABELS: Record<WorkflowBuilderLanguage, string> = {
+  en: 'English',
+  pl: 'Polski',
+};
 
 export function LanguageSelector() {
   const { t, i18n } = useTranslation();
+  const { setLanguage } = useWorkflowBuilderActions();
 
   const resolvedCode = i18n.resolvedLanguage ?? i18n.language?.split('-')[0];
-  const currentLanguage = languages.find((lang) => lang.code === resolvedCode) || languages[0];
-  const visibleCode = currentLanguage.code.toUpperCase();
+  const currentCode = SUPPORTED_LANGUAGES.find((code) => code === resolvedCode) ?? SUPPORTED_LANGUAGES[0];
+  const visibleCode = currentCode.toUpperCase();
 
   const languageItems: MenuItemProps[] = useMemo(
     () =>
-      languages.map(({ code, label }) => ({
-        label,
+      SUPPORTED_LANGUAGES.map((code) => ({
+        label: LANGUAGE_LABELS[code],
         icon: <Icon name="FlagBanner" />,
-        selected: code === currentLanguage.code,
-        onClick: () => i18n.changeLanguage(code),
+        selected: code === currentCode,
+        onClick: () => setLanguage(code),
       })),
-    [i18n, currentLanguage.code],
+    [currentCode, setLanguage],
   );
 
   return (

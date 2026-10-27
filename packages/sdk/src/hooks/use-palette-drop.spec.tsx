@@ -93,3 +93,11 @@ describe('usePaletteDrop — start-node flag', () => {
     expect(node.data.isStartNode).toBe(true);
   });
 });
+
+describe('usePaletteDrop — accent', () => {
+  it('does not copy the accent onto the dropped node', () => {
+    const node = dropFromPalette(paletteItem({ accent: 'violet' }));
+
+    expect(node.data).not.toHaveProperty('accent');
+  });
+});

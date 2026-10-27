@@ -1,20 +1,31 @@
 import { getPaletteData } from '../../../data/palette';
-import {
-  type DraggingItem,
-  type PaletteGroup,
-  type PaletteItem,
-  type PaletteItemOrGroup,
-  StatusType,
-} from '../../../node/common';
+import { type DraggingItem, type PaletteItem, type PaletteItemOrGroup, StatusType } from '../../../node/common';
+import { getNodesDefinitionsByType } from '../../../utils/validation/get-nodes-definitions-by-type';
 import type { GetDiagramState, SetDiagramState } from '../../store';
 import { refreshNodesErrorsIfNeeded } from '../diagram-slice/actions';
 
+let definitionsSource: PaletteItemOrGroup[] | undefined;
+let definitionsByType = new Map<string, PaletteItem>();
+
+function getDefinitionsByType(palette: PaletteItemOrGroup[]) {
+  if (palette !== definitionsSource) {
+    definitionsSource = palette;
+    definitionsByType = new Map(Object.entries(getNodesDefinitionsByType(palette)));
+  }
+
+  return definitionsByType;
+}
+
 export type PaletteState = {
-  isSidebarExpanded: boolean;
+  isPaletteOpen: boolean;
+  isPropertiesPanelOpen: boolean;
+  paletteFilter: string;
   data: PaletteItemOrGroup[];
   fetchDataStatus: StatusType;
   draggedItem: DraggingItem | null;
-  toggleSidebar: (value?: boolean) => void;
+  setPaletteOpen: (value: boolean) => void;
+  setPropertiesPanelOpen: (open: boolean) => void;
+  setPaletteFilter: (query: string) => void;
   fetchData: () => void;
   setDraggedItem: (item: DraggingItem | null) => void;
   getNodeDefinition: (nodeType: string) => PaletteItem | undefined;
@@ -22,17 +33,25 @@ export type PaletteState = {
 
 export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): PaletteState {
   return {
-    isSidebarExpanded: false,
+    isPaletteOpen: false,
+    isPropertiesPanelOpen: true,
+    paletteFilter: '',
     data: [],
     fetchDataStatus: StatusType.Idle,
     draggedItem: null,
     setDraggedItem: (item) => {
       set({ draggedItem: item });
     },
-    toggleSidebar: (value) => {
+    setPaletteOpen: (value) => {
       set({
-        isSidebarExpanded: value ?? !get().isSidebarExpanded,
+        isPaletteOpen: value,
       });
+    },
+    setPropertiesPanelOpen: (open) => {
+      set({ isPropertiesPanelOpen: open });
+    },
+    setPaletteFilter: (query) => {
+      set({ paletteFilter: query });
     },
     fetchData: () => {
       set({ fetchDataStatus: StatusType.Loading });
@@ -50,24 +69,6 @@ export function usePaletteSlice(set: SetDiagramState, get: GetDiagramState): Pal
       // those pending state updates, not just the current microtask queue.
       setTimeout(() => refreshNodesErrorsIfNeeded(), 0);
     },
-    getNodeDefinition: (nodeType) => {
-      const { data } = get();
-
-      const nodeDefinition = data.find((itemOrGroup) => (itemOrGroup as PaletteItem)?.type === nodeType);
-
-      if (nodeDefinition) {
-        return nodeDefinition as PaletteItem;
-      }
-
-      const groupWithNodeDefinition = data.find((itemOrGroup) =>
-        ((itemOrGroup as unknown as PaletteGroup)?.groupItems || []).some(({ type }) => type === nodeType),
-      );
-
-      if (groupWithNodeDefinition) {
-        return (groupWithNodeDefinition as unknown as PaletteGroup)?.groupItems.find(({ type }) => type === nodeType);
-      }
-
-      return;
-    },
+    getNodeDefinition: (nodeType) => getDefinitionsByType(get().data).get(nodeType),
   };
 }

@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './ai-agent-node-template.module.css';
 
-import type { IconType, LayoutDirection } from '../../../../node/common';
+import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
 import { getHandleId } from '../../handles/get-handle-id';
@@ -21,6 +21,7 @@ import { ToolInfo } from './components/tool-info/tool-info';
 type Props = {
   id: string;
   icon: IconType;
+  accent?: NodeIconAccent;
   label: string;
   description: string;
   selected?: boolean;
@@ -39,6 +40,8 @@ type Props = {
 export const AiAgentNodeTemplate = memo(
   ({
     icon,
+    // The agent had its gradient before accents existed; a definition without one keeps it.
+    accent = 'violet-gradient',
     label,
     description,
     selected = false,
@@ -59,7 +62,7 @@ export const AiAgentNodeTemplate = memo(
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
@@ -67,7 +70,7 @@ export const AiAgentNodeTemplate = memo(
       <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
         <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header className={styles['header']}>
-            <NodeIcon className={styles['icon']} icon={iconElement} disabled={disabled} />
+            <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <Collapsible.Button />}
           </NodePanel.Header>

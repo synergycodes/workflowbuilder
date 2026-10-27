@@ -41,7 +41,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
         : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
     // Rendered in place: without the properties panel the real one has no footer to render into.
-    PropertiesPanelFooter: ({ children }: { children?: ReactNode }) => (
+    PropertiesPanelFooterContent: ({ children }: { children?: ReactNode }) => (
       <div data-properties-panel-footer>{children}</div>
     ),
   };
@@ -955,7 +955,8 @@ describe.each([
       expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
       expect(labelled('Decision')).toBeUndefined();
-      expect(container.querySelectorAll('button')).toHaveLength(0);
+      expect(button('Approve')).toBeUndefined();
+      expect(button('Reject…')).toBeUndefined();
     });
 
     it('shows a rejection with its reason and the proposal it turned down', () => {

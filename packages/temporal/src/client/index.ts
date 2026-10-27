@@ -17,14 +17,16 @@ import type {
 import type { ResolveNodeUpdateInput, runWorkflow } from '../workflow/run-workflow';
 import { mapResolveNodeError } from './resolve-node-result';
 
+export { lazyClient } from './lazy-client';
+
 // Without a worker nobody validates an update, and the RPC would wait for the server's
 // own limit. The deadline settles nothing about the update: it may already be accepted,
 // or reach the next worker later, so a resend may hear verdict_already_delivered.
 const DEFAULT_RESOLVE_TIMEOUT_MS = 10_000;
 
 export type TemporalWorkflowEngineOptions = {
-  // A ready client, or a factory awaited once on first use. The factory form keeps
-  // process start independent of Temporal being reachable.
+  // A ready client, or a factory awaited on first use and again after a failed attempt.
+  // The factory form keeps process start independent of Temporal being reachable.
   client: Client | (() => Promise<Client>);
   // Must match the queue the worker serves — default on both sides is DEFAULT_TASK_QUEUE.
   taskQueue?: string;
@@ -91,8 +93,15 @@ export class TemporalWorkflowEngine<TNode extends BaseNode = BaseNode> implement
 
   private client(): Promise<Client> {
     if (!this.clientPromise) {
-      this.clientPromise =
-        typeof this.clientSource === 'function' ? this.clientSource() : Promise.resolve(this.clientSource);
+      const source = this.clientSource;
+      // A plain-JS factory may return a Client or throw synchronously; both settle as a promise here.
+      const attempt = new Promise<Client>((resolve) => resolve(typeof source === 'function' ? source() : source));
+      // Forgotten on failure, so the next call connects again instead of repeating this error until restart.
+      const pending = attempt.catch((error: unknown) => {
+        if (this.clientPromise === pending) this.clientPromise = undefined;
+        throw error;
+      });
+      this.clientPromise = pending;
     }
     return this.clientPromise;
   }

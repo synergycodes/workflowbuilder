@@ -2,6 +2,7 @@ import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflo
 
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
+import '@workflowbuilder/ui/fonts.css';
 
 import logoDark from '../assets/workflow-builder-logo-white.svg';
 import logoLight from '../assets/workflow-builder-logo.svg';
@@ -10,6 +11,7 @@ import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
+import { decisionActionsRenderer } from '../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../components/human-decision/decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
 import { HumanDecisionNodeTemplate } from '../components/human-decision/node-template/human-decision-template';
@@ -26,13 +28,15 @@ const flagship = supportTriageFlow.value;
 
 // Module-level: `nodeTemplates` must keep the same reference across renders.
 const nodeTemplates = { [humanDecisionNodeType]: HumanDecisionNodeTemplate };
-const jsonForm = { renderers: [decisionFormRenderer, responseControlRenderer, decisionFieldsRenderer] };
+const jsonForm = {
+  renderers: [decisionFormRenderer, responseControlRenderer, decisionFieldsRenderer, decisionActionsRenderer],
+};
 
 // A start node is where the run begins, so it can never be a connection target.
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 export function App({ opened }: { opened: OpenedSource }) {
-  const { name, initialNodes, initialEdges, integration, plugins } = rootPropsFor(opened);
+  const { name, initialNodes, initialEdges, integration, builtInControls, plugins } = rootPropsFor(opened);
   const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
   const isRunView = opened.kind === 'execution';
 
@@ -50,6 +54,7 @@ export function App({ opened }: { opened: OpenedSource }) {
       jsonForm={jsonForm}
       diagramTemplates={aiStudioTemplates}
       isValidConnection={isValidConnection}
+      builtInControls={builtInControls}
       plugins={plugins}
     >
       <WorkflowBuilder.DefaultLayout />

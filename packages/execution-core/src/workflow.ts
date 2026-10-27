@@ -28,3 +28,4 @@ export type {
   WaitingNodeExecution,
 } from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';
+export type { PatchId, VersioningPort } from './ports/versioning.port';

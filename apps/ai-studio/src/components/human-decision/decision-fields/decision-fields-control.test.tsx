@@ -27,8 +27,9 @@ import {
   useExecutionStore,
 } from '../../../stores/use-execution-store';
 import { FIELD_MODES } from '../../../utils/human-decision/decision-fields';
+import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFormRenderer } from '../decision-form/decision-form-control';
-import { decisionFieldsRenderer } from './decision-fields-control';
+import { ALL_HIDDEN_HINT, SOURCE_HINTS, decisionFieldsRenderer } from './decision-fields-control';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
@@ -64,7 +65,7 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
 
 const HUMAN = 'human-1';
 
@@ -190,7 +191,7 @@ describe('the decision fields control in the real properties panel', () => {
     await settle();
   }
 
-  const renderRefund = (decisionRequest: unknown = defaultDecisionRequest) =>
+  const renderPaletteNode = (decisionRequest: unknown = defaultDecisionRequest) =>
     renderPanel([agent('draft-1', refundOutput), human(decisionRequest)], [edge('draft-1')]);
 
   async function choose(key: string, mode: string) {
@@ -204,14 +205,14 @@ describe('the decision fields control in the real properties panel', () => {
   }
 
   it("lists the source's fields in its order, every one Hidden on a node fresh from the palette", async () => {
-    await renderRefund();
+    await renderPaletteNode();
 
     expect(rowKeys()).toEqual(['refundAmount', 'orderDate', 'replyDraft', 'internalReasoning']);
     expect(selects().map((select) => select.value)).toEqual(Array.from({ length: 4 }, () => 'hidden'));
   });
 
   it('a pick is one undo step and stores the contract shape, leaving the rest of the node alone', async () => {
-    await renderRefund();
+    await renderPaletteNode();
 
     await choose('orderDate', 'readOnly');
 
@@ -228,7 +229,7 @@ describe('the decision fields control in the real properties panel', () => {
 
   // Base UI reports a click on the selected item as a change; the stored entry lacks the source's title on purpose.
   it('picking the mode a row already shows writes nothing', async () => {
-    await renderRefund({
+    await renderPaletteNode({
       ...defaultDecisionRequest,
       schema: { type: 'object', properties: { orderDate: { type: 'string', readOnly: true } } },
     });
@@ -239,17 +240,17 @@ describe('the decision fields control in the real properties panel', () => {
   });
 
   it('locks the dropdowns while the canvas is in the app bar read-only mode', async () => {
-    await renderRefund();
+    await renderPaletteNode();
 
-    act(() => useStore.getState().setToggleReadOnlyMode(true));
+    act(() => useStore.getState().setReadOnly(true));
     expect(selects().every((select) => select.disabled)).toBe(true);
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     expect(selects().every((select) => !select.disabled)).toBe(true);
   });
 
   it('steps aside from Run until Reset, section header included, even with the canvas lock lifted', async () => {
-    await renderRefund();
+    await renderPaletteNode();
     act(() =>
       root.render(
         <>
@@ -264,7 +265,7 @@ describe('the decision fields control in the real properties panel', () => {
     expect(runStatus()).toBe('pending');
     expect(sectionHeader()).toBeUndefined();
 
-    act(() => useStore.getState().setToggleReadOnlyMode(false));
+    act(() => useStore.getState().setReadOnly(false));
     act(() => applyEvent(event({ type: 'node_waiting', nodeId: HUMAN })));
     expect(sectionHeader()).toBeUndefined();
 
@@ -309,24 +310,77 @@ describe('the decision fields control in the real properties panel', () => {
     schema: { type: 'object', properties: { replyDraft: { type: 'string', title: 'Reply draft' } } },
   };
   const rowLabels = () => rows().map((row) => row.querySelector('span')?.textContent);
+  const hints = () =>
+    [...container.querySelectorAll<HTMLElement>('[data-decision-fields] [data-hint]')].map((hint) => ({
+      variant: hint.dataset['hint'],
+      text: hint.textContent,
+    }));
 
-  it('with nothing connected, says to connect a block and keeps listing the stored fields', async () => {
+  const statusRegion = () => container.querySelector('[data-decision-fields]')?.lastElementChild;
+
+  it('with every field Hidden, a warning in the status region below the rows says none is visible, and nothing above', async () => {
+    await renderPaletteNode();
+
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+    expect(statusRegion()?.getAttribute('role')).toBe('status');
+    expect(statusRegion()?.querySelector('[data-hint]')?.textContent).toBe(ALL_HIDDEN_HINT);
+  });
+
+  it('setting one field to Read-only clears the all-hidden warning and leaves the status region empty', async () => {
+    await renderPaletteNode();
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+
+    await choose('orderDate', 'readOnly');
+
+    expect(hints()).toEqual([]);
+    expect(statusRegion()?.getAttribute('role')).toBe('status');
+    expect(statusRegion()?.childElementCount).toBe(0);
+  });
+
+  it('with the source switched to Plain text after every field was Hidden, only the noFields warning shows', async () => {
+    await renderPaletteNode();
+    expect(hints()).toEqual([{ variant: 'warning', text: ALL_HIDDEN_HINT }]);
+
+    act(() =>
+      useStore.setState({
+        nodes: useStore
+          .getState()
+          .nodes.map((node) =>
+            node.id === 'draft-1'
+              ? { ...node, data: { ...node.data, properties: { ...node.data.properties, outputSchema: undefined } } }
+              : node,
+          ),
+      }),
+    );
+    await settle();
+
+    expect(hints()).toEqual([SOURCE_HINTS.noFields]);
+  });
+
+  it('with nothing connected, a neutral hint says nothing leads in, and keeps listing the stored fields', async () => {
     await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
 
-    expect(container.textContent).toContain('Connect a block before this one');
-    expect(container.textContent).not.toContain('declares no output fields');
+    expect(hints()).toEqual([SOURCE_HINTS.unconnected]);
+    expect(container.querySelector('[data-decision-fields] [data-hint]')?.hasAttribute('role')).toBe(false);
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
-  it('with two predecessors and no declared source, says several blocks lead in and lists the stored fields', async () => {
+  it('with nothing connected, Run does not start, as the hint says: the backend refuses the snapshot', async () => {
+    await renderPanel([agent('draft-1', refundOutput), human(stored)], []);
+
+    const { nodes, edges } = useStore.getState();
+    const parsed = workflowSnapshotSchema.safeParse(structuredClone({ nodes, edges }));
+    expect(parsed.success).toBe(false);
+    expect(JSON.stringify(parsed.error?.issues)).toContain('source_missing');
+  });
+
+  it('with two predecessors and no declared source, a neutral hint says several blocks lead in', async () => {
     await renderPanel(
       [agent('draft-1', refundOutput), agent('draft-2', refundOutput), human(stored)],
       [edge('draft-1'), edge('draft-2')],
     );
 
-    expect(container.textContent).toContain('Several blocks lead into this one');
-    expect(container.textContent).not.toContain('Connect a block before this one');
-    expect(container.textContent).not.toContain('declares no output fields');
+    expect(hints()).toEqual([SOURCE_HINTS.ambiguous]);
     expect(rowLabels()).toEqual(['Reply draft (not in the source)']);
   });
 
@@ -334,8 +388,7 @@ describe('the decision fields control in the real properties panel', () => {
     const ghost = { ...refundReviewRequest, proposalSourceNodeId: 'ghost' };
     await renderPanel([agent('draft-1', refundOutput), human(ghost)], [edge('draft-1')]);
 
-    expect(container.textContent).not.toContain('declares no output fields');
-    expect(container.textContent).not.toContain('Connect a block before this one');
+    expect(hints()).toEqual([]);
     expect(rowLabels()).toEqual([
       'Refund amount (not in the source)',
       'Order date (not in the source)',
@@ -347,8 +400,7 @@ describe('the decision fields control in the real properties panel', () => {
     const ghost = { ...refundReviewRequest, proposalSourceNodeId: 'ghost' };
     await renderPanel([agent('draft-1', refundOutput), human(ghost)], []);
 
-    expect(container.textContent).toContain('Connect a block before this one');
-    expect(container.textContent).not.toContain('declares no output fields');
+    expect(hints()).toEqual([SOURCE_HINTS.unconnected]);
   });
 
   describe('on the "Refund Review" template', () => {
@@ -384,12 +436,13 @@ describe('the decision fields control in the real properties panel', () => {
       internalReasoning: 'Duplicate charge, refunded in full.',
     };
 
-    it("lists the draft's four fields under their titles, in the draft's order, with the template's picks", async () => {
+    it("lists the draft's four fields under their titles, in the draft's order, with the template's picks and no hint", async () => {
       await renderTemplate();
 
       expect(rowLabels()).toEqual(['Refund amount', 'Order date', 'Reply draft', 'Internal reasoning']);
       expect(selects().map((select) => select.value)).toEqual(['required', 'readOnly', 'editable', 'hidden']);
-      expect(container.textContent).not.toContain('declares no output fields');
+      expect(hints()).toEqual([]);
+      expect(statusRegion()?.getAttribute('role')).toBe('status');
     });
 
     it('as shipped, the backend refuses an edit to the read-only and the hidden field and takes the rest', async () => {
@@ -459,11 +512,10 @@ describe('the decision fields control in the real properties panel', () => {
         node.id === 'draft-1' ? { ...node, data: { ...node.data, properties: change(node.data.properties) } } : node,
       );
 
-    it('with the draft on Plain text, says it declares no fields and keeps listing the stored ones', async () => {
+    it('with the draft on Plain text, a warning says it declares no fields, and the stored ones stay listed', async () => {
       await renderTemplate(withDraftProperties((properties) => ({ ...properties, outputSchema: undefined })));
 
-      expect(container.textContent).toContain('declares no output fields');
-      expect(container.textContent).not.toContain('Connect a block before this one');
+      expect(hints()).toEqual([SOURCE_HINTS.noFields]);
       expect(rowLabels()).toEqual([
         'Refund amount (not in the source)',
         'Order date (not in the source)',
@@ -476,7 +528,7 @@ describe('the decision fields control in the real properties panel', () => {
 
       await renderTemplate(withDraftProperties((properties) => ({ ...properties, outputSchema: amountOnly })));
 
-      expect(container.textContent).not.toContain('declares no output fields');
+      expect(hints()).toEqual([]);
       expect(rowLabels()).toEqual([
         'Refund amount',
         'Order date (not in the source)',

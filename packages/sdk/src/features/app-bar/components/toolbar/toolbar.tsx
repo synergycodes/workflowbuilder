@@ -7,7 +7,8 @@ import Logo from '../../../../assets/workflow-builder-logo.svg?react';
 import { getAppBarBranding } from '../../../../data/app-bar-branding';
 import type { WorkflowBuilderLogo } from '../../../../workflow-builder-root/workflow-builder-root.types';
 import { SaveButton } from '../../../integration/components/save-button/save-button';
-import { OptionalAppBarTools } from '../../../plugins-core/components/app/optional-app-bar-toolbar';
+import { AreaTarget } from '../../../ui-extensions/area-target';
+import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 
 function renderLogo(logo: WorkflowBuilderLogo | undefined): ReactNode {
   if (logo == null) {
@@ -30,6 +31,7 @@ function renderLogo(logo: WorkflowBuilderLogo | undefined): ReactNode {
 export function Toolbar() {
   const { logo: customLogo, logoHref } = getAppBarBranding();
   const logo = renderLogo(customLogo);
+  const isSaveVisible = useIsBuiltInControlVisible('save');
 
   return (
     <div className={styles['toolbar']}>
@@ -41,9 +43,9 @@ export function Toolbar() {
         logo
       )}
       <div className={styles['nav-segment']}>
-        <OptionalAppBarTools>
-          <SaveButton />
-        </OptionalAppBarTools>
+        <AreaTarget area="appBarTools" />
+        {isSaveVisible && <SaveButton />}
+        <AreaTarget area="appBarTools" place="after" />
       </div>
     </div>
   );
