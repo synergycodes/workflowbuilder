@@ -104,7 +104,7 @@ import { nodeActivityProfiles } from './node-activity-profiles';
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
-Keep the export named `runWorkflow`: that is the name the client starts. Entries are whole profiles, so a node type either has a complete entry or gets `DEFAULT_NODE_ACTIVITY_PROFILE`. A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`. `workflows.ts` pulls the map's module into the workflow bundle, so that module imports only from `@workflowbuilder/temporal/workflow`: the root entry brings in `@temporalio/activity`, which the bundler refuses.
+Keep the export named `runWorkflow`: that is the name the client starts. Entries are whole profiles, so a node type either has a complete entry or gets `DEFAULT_NODE_ACTIVITY_PROFILE`. A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`. That module ends up in the workflow bundle, so it imports from `@workflowbuilder/temporal/workflow` too (see [Entry points](#entry-points)).
 
 **Use one constant on both sides.** The plugin validates the map at `Worker.create`, so a bad profile fails the deploy. `createRunWorkflow` alone validates only on the first workflow activation, and a map handed to the plugin but not to `createRunWorkflow` gives you a green deploy with every node on the default profile.
 
