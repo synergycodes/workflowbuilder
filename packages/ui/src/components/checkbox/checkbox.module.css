@@ -1,0 +1,132 @@
+:root {
+  --wb-public-checkbox-size-medium: 1.25rem;
+  --wb-public-checkbox-size-small: 1.125rem;
+  --wb-public-checkbox-size-extra-small: var(--wb-ds-size-200);
+
+  --wb-public-checkbox-icon-size-medium: 0.875rem;
+  --wb-public-checkbox-icon-size-small: var(--wb-ds-size-150);
+  --wb-public-checkbox-icon-size-extra-small: 0.625rem;
+
+  --wb-public-checkbox-border-radius-medium: var(--wb-ds-radius-50);
+  --wb-public-checkbox-border-radius-small: var(--wb-ds-radius-50);
+  --wb-public-checkbox-border-radius-extra-small: var(--wb-ds-radius-50);
+
+  --wb-public-checkbox-border-width: var(--wb-ds-size-12);
+
+  --wb-public-checkbox-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-bg: var(--wb-ds-ui-bg-base);
+  --wb-public-checkbox-icon-color: var(--wb-ds-ui-text-onaccent-default);
+
+  --wb-public-checkbox-checked-bg: var(--wb-ds-components-selector-fill-checked);
+
+  --wb-public-checkbox-focus-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-focus-border-shadow: var(--wb-ds-shadow-ui-focus);
+
+  --wb-public-checkbox-disabled-bg: var(--wb-ds-ui-bg-inset);
+  --wb-public-checkbox-disabled-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-checkbox-disabled-icon-color: var(--wb-ds-ui-icon-disabled);
+}
+
+@layer ui.component {
+  .container {
+    position: relative;
+    display: inline-flex;
+    cursor: pointer;
+  }
+
+  .icon {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    display: none;
+    color: var(--wb-public-checkbox-icon-color);
+    line-height: 0;
+
+    &.medium {
+      svg {
+        width: var(--wb-public-checkbox-icon-size-medium);
+        height: var(--wb-public-checkbox-icon-size-medium);
+      }
+    }
+
+    &.small {
+      svg {
+        width: var(--wb-public-checkbox-icon-size-small);
+        height: var(--wb-public-checkbox-icon-size-small);
+      }
+    }
+
+    &.extra-small {
+      svg {
+        width: var(--wb-public-checkbox-icon-size-extra-small);
+        height: var(--wb-public-checkbox-icon-size-extra-small);
+      }
+    }
+  }
+
+  .checkbox {
+    appearance: none;
+    display: inline-block;
+    position: relative;
+    margin: 0;
+    border: var(--wb-public-checkbox-border-width) solid var(--wb-public-checkbox-border-color);
+    background-color: var(--wb-public-checkbox-bg);
+    cursor: pointer;
+    vertical-align: middle;
+    transition: all var(--wb-public-transition);
+
+    &:checked,
+    &:indeterminate {
+      background-color: var(--wb-public-checkbox-checked-bg);
+      border-color: transparent;
+    }
+
+    &:checked ~ .icon,
+    &:indeterminate ~ .icon {
+      display: block;
+    }
+
+    &:disabled:checked,
+    &:disabled:indeterminate {
+      background-color: var(--wb-public-checkbox-disabled-bg);
+      border-color: var(--wb-public-checkbox-disabled-border-color);
+    }
+
+    &:disabled ~ .icon {
+      color: var(--wb-public-checkbox-disabled-icon-color);
+    }
+
+    &:disabled {
+      cursor: auto;
+      background-color: var(--wb-public-checkbox-disabled-bg);
+      border-color: var(--wb-public-checkbox-disabled-border-color);
+    }
+
+    &:focus-visible {
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
+        var(--wb-public-checkbox-focus-border-shadow);
+      border-color: var(--wb-public-checkbox-border-color);
+      outline: none;
+    }
+
+    &.medium {
+      width: var(--wb-public-checkbox-size-medium);
+      height: var(--wb-public-checkbox-size-medium);
+      border-radius: var(--wb-public-checkbox-border-radius-medium);
+    }
+
+    &.small {
+      width: var(--wb-public-checkbox-size-small);
+      height: var(--wb-public-checkbox-size-small);
+      border-radius: var(--wb-public-checkbox-border-radius-small);
+    }
+
+    &.extra-small {
+      width: var(--wb-public-checkbox-size-extra-small);
+      height: var(--wb-public-checkbox-size-extra-small);
+      border-radius: var(--wb-public-checkbox-border-radius-extra-small);
+    }
+  }
+}

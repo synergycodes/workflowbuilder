@@ -1,4 +1,4 @@
-import { Separator } from '@synergycodes/overflow-ui';
+import { Separator } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './sidebar.module.css';
@@ -21,10 +21,10 @@ export function Sidebar({ isExpanded, children, className, header, footer, conte
           <Separator />
           <div className={clsx(styles.content, contentClassName)}>{children}</div>
           {footer && (
-            <>
+            <div className={styles['footer-area']}>
               <Separator />
               <div className={styles.footer}>{footer}</div>
-            </>
+            </div>
           )}
         </>
       )}

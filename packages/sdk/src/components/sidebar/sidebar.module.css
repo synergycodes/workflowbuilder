@@ -1,3 +1,5 @@
+@layer ui.base, ui.component;
+
 @layer ui.component {
   .sidebar {
     height: min-content;
@@ -6,13 +8,13 @@
     align-items: center;
     justify-content: space-between;
     pointer-events: all;
-    border-radius: var(--wb-sidebar-border-radius);
-    background: var(--wb-sidebar-background);
-    color: var(--wb-sidebar-text-color);
+    border-radius: var(--wb-sdk-sidebar-border-radius);
+    background: var(--wb-sdk-sidebar-background);
+    color: var(--wb-sdk-sidebar-text-color);
     display: flex;
     flex-direction: column;
-    padding: var(--wb-sidebar-vertical-padding) 0;
-    border: 1px solid var(--wb-sidebar-border-color);
+    padding: var(--wb-sdk-sidebar-vertical-padding) 0;
+    border: 1px solid var(--wb-sdk-sidebar-border-color);
 
     .header,
     .footer,
@@ -21,13 +23,13 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      padding: 0 var(--wb-sidebar-horizontal-padding);
+      padding: 0 var(--wb-sdk-sidebar-horizontal-padding);
     }
 
     .header {
       display: flex;
       gap: 1rem;
-      margin-bottom: var(--wb-sidebar-content-gap);
+      margin-bottom: var(--wb-sdk-sidebar-content-gap);
 
       &:last-child {
         margin-bottom: 0;
@@ -38,17 +40,29 @@
       flex: 1;
       overflow-y: auto;
       overflow-x: hidden;
-      padding-top: var(--wb-sidebar-content-gap);
-      padding-bottom: var(--wb-sidebar-content-gap);
+      padding-top: var(--wb-sdk-sidebar-content-gap);
+      padding-bottom: var(--wb-sdk-sidebar-content-gap);
     }
 
     .footer {
-      margin-top: var(--wb-sidebar-content-gap);
+      margin-top: var(--wb-sdk-sidebar-content-gap);
+      gap: var(--wb-ds-space-100);
+    }
+
+    .footer-area {
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Hides the footer area, separator included, while every direct child of `.footer` is empty. */
+    .footer-area:not(:has(> .footer > :not(:empty))) {
+      display: none;
     }
 
     &.expanded {
       height: 100%;
-      width: var(--wb-sidebar-expanded-width);
+      width: var(--wb-sdk-sidebar-expanded-width);
       box-sizing: border-box;
     }
   }

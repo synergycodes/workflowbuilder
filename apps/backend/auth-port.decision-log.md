@@ -21,19 +21,21 @@ This decision log records the structural piece (scope L from [`local-dev-binding
 
 ## Actions covered today
 
-| Action              | Resource                             |
-| ------------------- | ------------------------------------ |
-| `workflows:create`  | `{ kind: 'workflows' }`              |
-| `workflows:list`    | `{ kind: 'workflows' }`              |
-| `workflows:read`    | `{ kind: 'workflow', workflowId }`   |
-| `workflows:update`  | `{ kind: 'workflow', workflowId }`   |
-| `workflows:publish` | `{ kind: 'workflow', workflowId }`   |
-| `workflows:execute` | `{ kind: 'workflow', workflowId }`   |
-| `executions:read`   | `{ kind: 'execution', executionId }` |
-| `executions:stream` | `{ kind: 'execution', executionId }` |
-| `executions:cancel` | `{ kind: 'execution', executionId }` |
+| Action              | Resource                                          |
+| ------------------- | ------------------------------------------------- |
+| `workflows:create`  | `{ kind: 'workflows' }`                           |
+| `workflows:list`    | `{ kind: 'workflows' }`                           |
+| `workflows:read`    | `{ kind: 'workflow', workflowId }`                |
+| `workflows:update`  | `{ kind: 'workflow', workflowId }`                |
+| `workflows:publish` | `{ kind: 'workflow', workflowId }`                |
+| `workflows:execute` | `{ kind: 'workflow', workflowId }`                |
+| `executions:list`   | `{ kind: 'executions' }`                          |
+| `executions:read`   | `{ kind: 'execution', executionId }`              |
+| `executions:stream` | `{ kind: 'execution', executionId }`              |
+| `executions:cancel` | `{ kind: 'execution', executionId }`              |
+| `executions:decide` | `{ kind: 'execution', executionId, attributes? }` |
 
-Per-row resource kinds (`workflow`, `execution`) also accept an optional `attributes: Record<string, unknown>`. Routes that already loaded the row can pass it through so ABAC ports do not need to refetch. Pure RBAC ports ignore the field. Routes that load before authorize is wired (see follow-ups on data scoping) will start using it without a breaking change.
+Per-row resource kinds (`workflow`, `execution`) also accept an optional `attributes: Record<string, unknown>`. Routes that already loaded the row can pass it through so ABAC ports do not need to refetch. Pure RBAC ports ignore the field. The decision route is the first to load before it authorizes: `attributes` is `{ workflowId, tenantId, status }`, absent when the row does not exist, and a deny is answered before the 404. Hiding which ids exist depends on the port: it must deny when `attributes` is absent too, or a caller learns that 404 means unknown and 403 means someone else's.
 
 ## Alternative Options Considered
 
@@ -93,9 +95,9 @@ Token expiry mid-stream is not handled by the seam. `identify` runs once per req
 
 ## CORS for a real port
 
-`server.ts` mounts `cors()` with its defaults: `origin: '*'`, `credentials: false`, no explicit `allowHeaders`. That works for the permissive default but breaks both common real-port shapes:
+`middleware/cors.ts` mounts Hono's `cors()`: `ALLOWED_ORIGINS` supplies `origin` (unset admits every origin), `credentials` stays `false` and `allowHeaders` echoes whatever the preflight asks for. That works for the permissive default but breaks both common real-port shapes:
 
-- **Bearer JWT adapters.** Browser preflight strips `Authorization` unless the server returns it in `Access-Control-Allow-Headers`. Configure `cors({ allowHeaders: ['Authorization', 'Content-Type'], origin: <your frontend origin> })`.
+- **Bearer JWT adapters.** Browser preflight strips `Authorization` unless the server returns it in `Access-Control-Allow-Headers`. Set `ALLOWED_ORIGINS` to your frontend origin and, if you pin `allowHeaders` in `middleware/cors.ts`, include `Authorization` and `Content-Type`.
 - **Cookie session adapters.** Cookies require `credentials: true` on the server (`Access-Control-Allow-Credentials: true`) and matching `withCredentials: true` on `fetch` / `EventSource`. The wildcard origin is also illegal once credentials are on; you must list the frontend origin(s) explicitly.
 
 Both are operator-side concerns, but plan the CORS change at the same time you swap the port - shipping a real `AuthPort` without updating CORS produces a baffling "preflight rejected" error.
@@ -156,7 +158,7 @@ export class JwtAuthPort implements AuthPort {
     const roles = (caller.attributes?.roles as string[] | undefined) ?? [];
 
     // Reads are open to any authenticated user.
-    if (action.endsWith(':read') || action === 'workflows:list' || action === 'executions:stream') {
+    if (action.endsWith(':read') || action.endsWith(':list') || action === 'executions:stream') {
       return true;
     }
 

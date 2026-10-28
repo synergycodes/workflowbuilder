@@ -1,4 +1,4 @@
-import { NodeAsPortWrapper } from '@synergycodes/overflow-ui';
+import { NodeAsPortWrapper } from '@workflowbuilder/ui';
 import { type Node, type NodeProps, Position } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 
@@ -30,6 +30,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
   const layoutDirection = useStore((store) => store.layoutDirection);
   const connectionBeingDragged = useStore((store) => store.connectionBeingDragged);
   const nodeDefinition = useStore((store) => store.getNodeDefinition(type));
+  const accent = nodeDefinition?.accent;
 
   const selectedModelOption = useMemo(() => {
     if (!chatModel || !nodeDefinition) {
@@ -57,6 +58,7 @@ export const AiNodeContainer = memo(({ id, data, selected }: Props) => {
         label={label}
         description={description}
         icon={icon}
+        accent={accent}
         chatModel={selectedModelOption}
         memoryModel={selectedMemoryOptions}
         selectedTools={data.properties.tools}

@@ -1,0 +1,114 @@
+import { Menu as MenuBase } from '@base-ui/react/menu';
+import { Separator } from '@ui/components/separator/separator';
+import { ItemSize } from '@ui/shared/types/item-size';
+import clsx from 'clsx';
+import { ReactElement, memo, useState } from 'react';
+
+import listBoxStyles from '@ui/shared/styles/list-box.module.css';
+
+import { MenuItem } from './menu-item';
+import { MenuOpenContext } from './menu-open-context';
+import { MenuTriggerButton } from './menu-trigger-button';
+import { type MenuPlacement, type OffsetOptions, offsetToBaseUI, placementToSideAlign } from './placement';
+import { MenuItemProps } from './types';
+
+export type { OffsetAxes, OffsetOptions, MenuPlacement } from './placement';
+
+export type MenuProps = {
+  /**
+   * Array of menu items to be rendered in the menu.
+   * Each item can be either a regular menu item or a separator.
+   */
+  items: MenuItemProps[];
+
+  /**
+   * Size variant for the menu items.
+   * @default 'medium'
+   */
+  size?: ItemSize;
+
+  /**
+   * The preferred placement of the menu relative to its trigger element.
+   * Uses Floating UI placement options.
+   * @default 'bottom-end'
+   */
+  placement?: MenuPlacement | undefined;
+
+  /**
+   * Controls whether the menu is open or closed.
+   * When omitted, the menu's open state will be managed internally
+   * and toggled by clicking on the `children` trigger element.
+   */
+  open?: boolean | undefined;
+
+  /**
+   * Callback fired when the component requests to be opened or closed.
+   * Receives the next open state and the native event that triggered the
+   * change (if any).
+   */
+  onOpenChange?: (open: boolean, event?: Event) => void;
+
+  /**
+   * Distance between a popup and the trigger element
+   */
+  offset?: OffsetOptions;
+  /**
+   * The trigger element that will open the menu when clicked.
+   * This element will be wrapped in a button with appropriate ARIA attributes.
+   * `Menu.TriggerButton` renders an icon-only trigger that follows the open state.
+   */
+  children?: ReactElement;
+};
+
+const MenuRoot = memo(
+  ({ items, size = 'medium', placement = 'bottom-end', children, open, offset, onOpenChange }: MenuProps) => {
+    const [uncontrolledOpen, setUncontrolledOpen] = useState(false);
+    const isOpen = open ?? uncontrolledOpen;
+    const { side, align } = placementToSideAlign(placement);
+    const { sideOffset, alignOffset } = offsetToBaseUI(offset, align);
+    const hasSelection = items.some((item) => item.selected !== undefined);
+    const selectedValue = items.find((item) => item.selected)?.label ?? null;
+    const renderedItems = items.map((item, index) =>
+      item.type === 'separator' ? (
+        <Separator key={index} />
+      ) : (
+        <MenuItem key={item.id ?? item.label} {...item} radio={hasSelection} size={size} />
+      ),
+    );
+
+    return (
+      <MenuBase.Root
+        open={open}
+        onOpenChange={(nextOpen, eventDetails) => {
+          setUncontrolledOpen(nextOpen);
+          onOpenChange?.(nextOpen, eventDetails.event);
+        }}
+      >
+        <MenuOpenContext.Provider value={isOpen}>
+          {children && <MenuBase.Trigger render={children} />}
+        </MenuOpenContext.Provider>
+        <MenuBase.Portal>
+          <MenuBase.Positioner
+            side={side}
+            align={align}
+            sideOffset={sideOffset}
+            alignOffset={alignOffset}
+            className={clsx(listBoxStyles['popup'])}
+          >
+            <MenuBase.Popup className={listBoxStyles['list-box']}>
+              {hasSelection ? (
+                <MenuBase.RadioGroup value={selectedValue} className={listBoxStyles['group']}>
+                  {renderedItems}
+                </MenuBase.RadioGroup>
+              ) : (
+                renderedItems
+              )}
+            </MenuBase.Popup>
+          </MenuBase.Positioner>
+        </MenuBase.Portal>
+      </MenuBase.Root>
+    );
+  },
+);
+
+export const Menu = Object.assign(MenuRoot, { TriggerButton: MenuTriggerButton });

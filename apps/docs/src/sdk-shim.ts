@@ -3,9 +3,8 @@
 // Docs only loads the SDK transitively, via the eager glob in
 // `node-documentation.astro` that pulls in apps/demo's per-node
 // `schema.ts` / `uischema.ts`. The full SDK barrel imports `index.css`,
-// which applies a global reset (body overflow:hidden, Poppins on every
-// element) intended for full-viewport editor apps. That reset breaks
-// the docs layout (no page scroll, wrong fonts).
+// whose body overflow reset is intended for full-viewport editor apps and
+// prevents the docs page from scrolling.
 //
 // This shim re-exports only the symbols the demo schemas actually use,
 // directly from the SDK source files, bypassing the barrel and its CSS

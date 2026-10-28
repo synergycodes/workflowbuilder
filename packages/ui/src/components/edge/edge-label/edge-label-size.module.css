@@ -1,0 +1,119 @@
+:root {
+  --wb-public-edge-label-medium-label-padding: calc(
+      var(--wb-ds-canvas-edge-label-m-v-pad-1) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-canvas-edge-label-m-h-pad-1) - var(--wb-public-edge-label-border-size));
+  --wb-public-edge-label-small-label-padding: calc(
+      var(--wb-ds-canvas-edge-label-s-v-pad-1) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-canvas-edge-label-s-h-pad-1) - var(--wb-public-edge-label-border-size));
+  --wb-public-edge-label-extra-small-label-padding: calc(
+      var(--wb-ds-canvas-edge-label-xs-v-pad-1) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-space-125) - var(--wb-public-edge-label-border-size));
+
+  --wb-public-edge-label-medium-icon-padding: calc(
+    var(--wb-ds-canvas-edge-label-m-v-pad-2) - var(--wb-public-edge-label-border-size)
+  );
+  --wb-public-edge-label-small-icon-padding: calc(
+    var(--wb-ds-canvas-edge-label-s-v-pad-2) - var(--wb-public-edge-label-border-size)
+  );
+  --wb-public-edge-label-extra-small-icon-padding: calc(
+    var(--wb-ds-canvas-edge-label-xs-v-pad-2) - var(--wb-public-edge-label-border-size)
+  );
+
+  --wb-public-edge-label-medium-content-padding: calc(
+      var(--wb-ds-canvas-edge-label-m-v-pad-2) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-canvas-edge-label-m-h-pad-2) - var(--wb-public-edge-label-border-size));
+  --wb-public-edge-label-small-content-padding: calc(
+      var(--wb-ds-canvas-edge-label-s-v-pad-2) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-canvas-edge-label-s-h-pad-2) - var(--wb-public-edge-label-border-size));
+  --wb-public-edge-label-extra-small-content-padding: calc(
+      var(--wb-ds-canvas-edge-label-xs-v-pad-2) - var(--wb-public-edge-label-border-size)
+    )
+    calc(var(--wb-ds-canvas-edge-label-xs-h-pad-2) - var(--wb-public-edge-label-border-size));
+
+  --wb-public-edge-label-medium-border-radius: var(--wb-ds-canvas-edge-label-m-radius);
+  --wb-public-edge-label-small-border-radius: var(--wb-ds-canvas-edge-label-s-radius);
+  --wb-public-edge-label-extra-small-border-radius: var(--wb-ds-canvas-edge-label-xs-radius);
+
+  --wb-public-edge-label-medium-icon-size: 1.125rem;
+  --wb-public-edge-label-small-icon-size: 1rem;
+  --wb-public-edge-label-extra-small-icon-size: 0.875rem;
+}
+
+@layer ui.component {
+  .medium {
+    border-radius: var(--wb-public-edge-label-medium-border-radius);
+    composes: wb-text-label-m from global;
+
+    svg {
+      width: var(--wb-public-edge-label-medium-icon-size);
+      height: var(--wb-public-edge-label-medium-icon-size);
+    }
+  }
+
+  .small {
+    border-radius: var(--wb-public-edge-label-small-border-radius);
+    composes: wb-text-label-m from global;
+
+    svg {
+      width: var(--wb-public-edge-label-small-icon-size);
+      height: var(--wb-public-edge-label-small-icon-size);
+    }
+  }
+
+  .extra-small {
+    border-radius: var(--wb-public-edge-label-extra-small-border-radius);
+    composes: wb-text-label-s from global;
+
+    svg {
+      width: var(--wb-public-edge-label-extra-small-icon-size);
+      height: var(--wb-public-edge-label-extra-small-icon-size);
+    }
+  }
+
+  .text {
+    &.medium {
+      padding: var(--wb-public-edge-label-medium-label-padding);
+    }
+
+    &.small {
+      padding: var(--wb-public-edge-label-small-label-padding);
+    }
+
+    &.extra-small {
+      padding: var(--wb-public-edge-label-extra-small-label-padding);
+    }
+  }
+
+  .icon {
+    &.medium {
+      padding: var(--wb-public-edge-label-medium-icon-padding);
+    }
+
+    &.small {
+      padding: var(--wb-public-edge-label-small-icon-padding);
+    }
+
+    &.extra-small {
+      padding: var(--wb-public-edge-label-extra-small-icon-padding);
+    }
+  }
+
+  .compound {
+    &.medium {
+      padding: var(--wb-public-edge-label-medium-content-padding);
+    }
+
+    &.small {
+      padding: var(--wb-public-edge-label-small-content-padding);
+    }
+
+    &.extra-small {
+      padding: var(--wb-public-edge-label-extra-small-content-padding);
+    }
+  }
+}

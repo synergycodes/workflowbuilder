@@ -1,0 +1,135 @@
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: rgba(8, 10, 14, 0.55);
+  backdrop-filter: blur(2px);
+}
+
+.card {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  max-height: 100%;
+  overflow-y: auto;
+  padding: 2rem;
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+  background: var(--wb-ds-ui-bg-base);
+  border: 0.0625rem solid var(--wb-ds-ui-stroke-default);
+  border-radius: var(--wb-sdk-app-bar-border-radius);
+  box-shadow: 0 1.25rem 3.75rem rgba(0, 0, 0, 0.25);
+  color: var(--wb-ds-ui-text-default);
+}
+
+.close {
+  position: absolute;
+  top: 0.9rem;
+  right: 0.9rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  border: none;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--wb-ds-ui-text-muted-default);
+  cursor: pointer;
+}
+
+.close:hover {
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-ui-text-default);
+}
+
+.heading {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+  margin-bottom: 0.9rem;
+}
+
+.icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  flex-shrink: 0;
+  border-radius: 0.6rem;
+  background: var(--wb-ds-ui-bg-elevated);
+  color: var(--wb-ds-colors-acc1-500);
+}
+
+.title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: var(--wb-ds-ui-text-default);
+}
+
+.body {
+  margin: 0 0 1.5rem;
+  font-size: 0.92rem;
+  line-height: 1.6;
+  color: var(--wb-ds-ui-text-subtle-default);
+}
+
+.body p {
+  margin: 0 0 0.7rem;
+}
+
+.body p:last-child {
+  margin-bottom: 0;
+}
+
+.body strong {
+  color: var(--wb-ds-ui-text-default);
+  font-weight: 600;
+}
+
+.cta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  border: none;
+  border-radius: 0.625rem;
+  background: var(--wb-ds-colors-acc1-500);
+  color: #ffffff;
+  font-size: 0.95rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+}
+
+.cta:hover {
+  background: var(--wb-ds-colors-acc1-600);
+}
+
+.reopen {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 2.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
+  border-radius: 50%;
+  background: var(--wb-sdk-app-bar-background);
+  color: var(--wb-ds-ui-text-subtle-default);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.reopen:hover {
+  color: var(--wb-ds-colors-acc1-500);
+}

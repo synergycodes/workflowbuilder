@@ -1,14 +1,41 @@
+// Single source of truth for "the run is over" — the worker derives its terminal
+// SQL guard, the backend its stream-close gates, and ai-studio its EventSource
+// close conditions from these tuples. Adding a terminal state is a one-line change
+// here; the literal types update automatically via `(typeof …)[number]`, and the
+// unions below are composed from them so the lists cannot drift apart.
+export const TERMINAL_EXECUTION_STATUSES = ['completed', 'incomplete', 'failed', 'cancelled'] as const;
+
+export type TerminalExecutionStatus = (typeof TERMINAL_EXECUTION_STATUSES)[number];
+
+export const TERMINAL_EXECUTION_EVENT_TYPES = [
+  'execution_completed',
+  'execution_incomplete',
+  'execution_failed',
+  'execution_cancelled',
+] as const;
+
+export type TerminalExecutionEventType = (typeof TERMINAL_EXECUTION_EVENT_TYPES)[number];
+
+// A terminal event is the durable fact; the status row is derived state that can lag
+// it (the worker writes them in two separate activities). This map is the one place
+// that correspondence is written down; `satisfies` keeps it total over the tuple.
+export const TERMINAL_EVENT_TO_STATUS = {
+  execution_completed: 'completed',
+  execution_incomplete: 'incomplete',
+  execution_failed: 'failed',
+  execution_cancelled: 'cancelled',
+} as const satisfies Record<TerminalExecutionEventType, TerminalExecutionStatus>;
+
 export type ExecutionEventType =
   | 'execution_started'
   | 'node_started'
   | 'node_waiting'
   | 'node_completed'
   | 'node_failed'
+  | 'node_skipped'
   | 'branch_spawned'
   | 'branches_joined'
-  | 'execution_completed'
-  | 'execution_failed'
-  | 'execution_cancelled';
+  | TerminalExecutionEventType;
 
 export type ExecutionStartedPayload = {
   workflowId: string;
@@ -26,8 +53,20 @@ export type BranchesJoinedPayload = {
   mergedPathIds: string[];
 };
 
+export type NodeStartedPayload = {
+  config: unknown;
+  // Ids of the nodes whose outputs were visible when this node started.
+  visibleNodeIds: string[];
+};
+
 export type NodeCompletedPayload = {
   output: unknown;
+};
+
+export type NodeSkipReason = 'branch_not_taken' | 'upstream_skipped' | 'error_route_not_taken';
+
+export type NodeSkippedPayload = {
+  reason: NodeSkipReason;
 };
 
 export type ExecutionErrorPayload = {
@@ -35,15 +74,36 @@ export type ExecutionErrorPayload = {
     message: string;
     code?: string;
     details?: unknown;
+    attempt?: number;
   };
 };
 
+// A business result a node's completion declares for the run. Open strings, not enums:
+// `rejected` and `human` are the values written today, `timer` once a deadline can decide.
+export type ExecutionOutcome = {
+  value: string;
+  resolvedBy: string;
+};
+
+// The outcome a run recorded, with the node whose completion declared it.
+export type ExecutionOutcomeRecord = ExecutionOutcome & { nodeId: string };
+
 export type ExecutionCompletedPayload = {
   result?: unknown;
+  outcome?: ExecutionOutcomeRecord;
 };
 
 export type ExecutionCancelledPayload = {
   reason?: string;
+};
+
+export type DeadEnd = {
+  nodeId: string;
+  port: string;
+};
+
+export type ExecutionIncompletePayload = {
+  deadEnds: DeadEnd[];
 };
 
 type BaseEvent = {
@@ -64,6 +124,8 @@ export type ExecutionStartedEvent = BaseEvent & {
 
 export type NodeStartedEvent = NodeEvent & {
   type: 'node_started';
+  // Optional: events recorded before inputs were captured have no payload.
+  payload?: NodeStartedPayload;
 };
 
 export type NodeWaitingEvent = NodeEvent & {
@@ -81,6 +143,11 @@ export type NodeFailedEvent = NodeEvent & {
   payload: ExecutionErrorPayload;
 };
 
+export type NodeSkippedEvent = NodeEvent & {
+  type: 'node_skipped';
+  payload: NodeSkippedPayload;
+};
+
 export type BranchSpawnedEvent = NodeEvent & {
   type: 'branch_spawned';
   payload: BranchSpawnedPayload;
@@ -94,6 +161,11 @@ export type BranchesJoinedEvent = NodeEvent & {
 export type ExecutionCompletedEvent = BaseEvent & {
   type: 'execution_completed';
   payload?: ExecutionCompletedPayload;
+};
+
+export type ExecutionIncompleteEvent = BaseEvent & {
+  type: 'execution_incomplete';
+  payload: ExecutionIncompletePayload;
 };
 
 export type ExecutionFailedEvent = BaseEvent & {
@@ -112,9 +184,11 @@ export type ExecutionEvent =
   | NodeWaitingEvent
   | NodeCompletedEvent
   | NodeFailedEvent
+  | NodeSkippedEvent
   | BranchSpawnedEvent
   | BranchesJoinedEvent
   | ExecutionCompletedEvent
+  | ExecutionIncompleteEvent
   | ExecutionFailedEvent
   | ExecutionCancelledEvent;
 
@@ -125,4 +199,4 @@ export type ExecutionSnapshot = {
   events: ExecutionEvent[];
 };
 
-export type ExecutionStatus = 'pending' | 'running' | 'completed' | 'failed' | 'cancelling' | 'cancelled';
+export type ExecutionStatus = 'pending' | 'running' | 'waiting' | 'cancelling' | TerminalExecutionStatus;

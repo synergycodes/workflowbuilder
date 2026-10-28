@@ -1,0 +1,32 @@
+---
+title: Status
+description: A small visual indicator for a validation status.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { StatusExample } from '../../../../components/ui-examples/status';
+
+A `Status` displays a small visual indicator based on a validation status. When
+the status is `invalid` it renders a circular badge with an exclamation mark;
+otherwise it renders nothing.
+
+<StatusExample client:visible />
+
+## Usage
+
+```tsx
+import { Status } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Status status="invalid" />;
+}
+```
+
+## Props
+
+<PropsTable slug="status" />
+
+## CSS variables
+
+<CssVariablesTable slug="status" />

@@ -28,7 +28,6 @@ export const en = {
     folderName: 'Folder Name',
     projectSelection: {
       rename: 'Rename',
-      duplicateToDrafts: 'Duplicate to Drafts',
     },
     controls: {
       saveAsImage: 'Save as image',
@@ -71,6 +70,7 @@ export const en = {
   },
   propertiesBar: {
     label: 'Properties',
+    edge: 'Link',
     deleteNode: 'Delete node',
     deleteEdge: 'Delete edge',
   },
@@ -101,6 +101,7 @@ export const en = {
     label: 'Title',
   },
   conditions: {
+    add: 'Add condition',
     title: 'Conditional Editor',
     subtitle: 'Define Your Conditional Rules',
     cancel: 'Cancel',
@@ -159,7 +160,7 @@ export const en = {
     cantRemoveOnlyOption: "You can't remove the only option",
     addOption: 'Add Option',
     menu: 'Menu',
-    pickTheProject: 'Pick the project',
+    pickTheProject: 'Project actions',
     openPalette: 'Open palette',
     closePalette: 'Close palette',
     openPropertiesBar: 'Open properties bar',
@@ -181,6 +182,7 @@ export const en = {
     wrongDiagramFormat: 'Wrong diagram format',
     contentCopied: 'Content copied to clipboard',
     variablesListIsEmpty: 'The list of available variables is empty.',
+    cantEditReadOnlyMode: 'Editing is blocked in read-only mode.',
   },
   workflowsSettings: {
     modalTitle: 'Settings',

@@ -1,7 +1,40 @@
-# How to change css tokens?
+# How to change CSS tokens?
 
-You can use our enterprise version with available figma design kit. We store tokens (colors) in `packages/sdk/src/index.css`, you'll find a CSS import: `@import '@synergycodes/overflow-ui/tokens.css';` with our figma you replace that import with generated from figma desing kit.
+`@workflowbuilder/ui` resolves colors, spacing, and radii through generated
+`--wb-ds-*` design tokens defined in `@workflowbuilder/ui/tokens.css` and
+hand-authored `--wb-public-*` component overrides. Its shipped defaults live
+inside the `ui.base` cascade layer, so a plain unlayered override in your own
+stylesheet always wins - import order does not matter.
 
-Alternatively, if you want to stay with community version and do not pay for the licenses, you can look inside `node_modules` at `packages/sdk/node_modules/@synergycodes/overflow-ui/dist/tokens.css`, check the variable names, and manually set some or all of the colors in your repository to overwrite them.
+## Consuming from npm (SDK or UI package)
 
-`@synergycodes/overflow-ui` is our library for UI elements [overflow-ui](https://github.com/synergycodes/overflow-ui)
+Override the variables you care about in any stylesheet of your app:
+
+```css
+:root {
+  --wb-ds-components-button-solid-primary-default: #0f62fe;
+  --wb-ds-ui-bg-inset: #f4f4f4;
+  --wb-public-date-picker-dropdown-background: #fff;
+}
+```
+
+Discover design-token names in `node_modules/@workflowbuilder/ui/dist/tokens.css`
+and UI component overrides in `node_modules/@workflowbuilder/ui/dist/index.css`.
+UI component pages also include generated tables for component-local variables.
+Theme-specific values are keyed on `html[data-theme='light' | 'dark']`, so scope
+your overrides the same way when they should apply to one theme only.
+
+## Working in this monorepo
+
+The source of truth is `packages/tokens/tokens.json` (a Figma Tokens Studio
+export) plus the build in `packages/tokens/src`. Edit the export (or re-export
+from Figma) and run `pnpm build:ui`.
+
+Do **not** edit `packages/ui/dist/tokens.css` - it is generated output and the
+next build overwrites it.
+
+## Enterprise
+
+The enterprise version ships a Figma design kit; its generated stylesheet
+replaces the `@import '@workflowbuilder/ui/tokens.css';` line in
+`packages/sdk/src/index.css`.

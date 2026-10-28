@@ -1,0 +1,13 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2022"],
+    "types": ["node"],
+    "target": "es2022",
+    "module": "es2022",
+    // src/core-contract.ts reaches into the sibling source-only packages by relative
+    // path (see the comment there), so the compilation root has to span them.
+    "rootDir": "../.."
+  },
+  "include": ["src", "test", "tsup.config.ts"]
+}

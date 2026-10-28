@@ -5,9 +5,9 @@
   height: 2.5rem;
 }
 
-.date-picker,
 .container--select {
-  border-radius: var(--ax-public-input-border-radius-medium);
+  position: relative;
+  border-radius: var(--wb-public-input-border-radius-m);
 
   > div > button {
     min-height: 2.5rem;
@@ -15,33 +15,20 @@
   }
 }
 
+.date-picker {
+  border-radius: var(--wb-public-input-border-radius-m);
+  min-height: 2.5rem;
+  text-align: left;
+}
+
 .date-with-reset-container {
   position: relative;
-}
-
-.cursor-pointer {
-  cursor: pointer;
-}
-
-.reset-button {
-  position: absolute;
-  top: var(--ax-token-spacing-input-m-v-pad);
-  right: var(--ax-token-spacing-input-m-h-pad);
-  cursor: pointer;
-}
-
-.container--select {
-  position: relative;
-
-  > select {
-    min-height: 41px;
-  }
 }
 
 .adornment--select {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad) + 1rem + var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150) + 1rem + var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }
@@ -49,7 +36,7 @@
 .adornment--date {
   position: absolute;
   top: 50%;
-  right: calc(var(--ax-token-spacing-input-m-h-pad));
+  right: calc(var(--wb-ds-space-150));
   transform: translateY(-50%);
   z-index: 1;
 }

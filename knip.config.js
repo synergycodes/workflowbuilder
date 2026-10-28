@@ -26,7 +26,10 @@ export default {
     'apps/icons': {
       entry: ['index.ts', 'src/generate-icons.ts'],
       project: '**/*.{ts,tsx}',
-      ignoreDependencies: ['@phosphor-icons/core', '@svgr/core'],
+      // svgr is run as a binary from generate-icons.ts, never imported, so knip
+      // cannot see it. Removing it sends the icons build back to fetching svgr
+      // over the network on every run.
+      ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
     },
     'apps/tools': {
       entry: ['src/scripts/*.ts'],
@@ -38,9 +41,6 @@ export default {
     'packages/sdk': {
       entry: ['src/index.ts', 'src/**/*.{ts,tsx}', 'vite.config.mts'],
       project: ['src/**/*.{ts,tsx}', 'vite.config.mts'],
-      // @fontsource/poppins is consumed via @import statements in src/index.css.
-      // Knip only walks JS/TS, so it can't see the CSS reference.
-      ignoreDependencies: ['@fontsource/poppins'],
     },
     'apps/backend': {
       entry: ['src/server.ts', 'drizzle.config.ts'],
@@ -48,13 +48,66 @@ export default {
     'packages/execution-core': {
       entry: ['src/index.ts'],
     },
+    'packages/ai-config': {
+      entry: ['src/index.ts'],
+    },
+    'packages/temporal-connection': {
+      // test/fixtures/tls-probe-workflow.ts is handed to Temporal's bundler by path, so nothing imports it
+      entry: ['src/index.ts', 'test/fixtures/tls-probe-workflow.ts'],
+      project: ['src/**/*.ts', 'test/**/*.ts'],
+      // Never imported here, but Temporal's workflow bundler resolves it from this
+      // workspace while compiling the test fixture.
+      ignoreDependencies: ['@temporalio/workflow'],
+    },
     'apps/execution-worker': {
-      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows/run-workflow.ts'],
+      entry: ['src/engines/temporal/worker.ts', 'src/engines/temporal/workflows.ts'],
+      // @temporalio/workflow is never imported by this app's code, but Temporal's
+      // workflow bundler resolves it from *here* while compiling workflows.ts (the
+      // re-exported runner imports it), so it has to be installed in this workspace.
+      // Removing it makes the bundler fail at worker startup, not at build time.
+      // @temporalio/plugin is a peer of @workflowbuilder/temporal that this app has to satisfy; the
+      // plugin instance comes from @workflowbuilder/temporal, so the name is never imported here.
+      ignoreDependencies: ['@temporalio/workflow', '@temporalio/plugin'],
     },
     'apps/docs': {
       entry: ['astro.config.mjs', 'src/components/**/*.astro'],
       project: ['**/*.{mjs,ts,astro}'],
       ignoreDependencies: ['@iconify-json/ph'],
+    },
+    'packages/ui': {
+      entry: ['src/index.ts', 'vite.config.mts', 'scripts/check-built-css.ts'],
+      project: ['src/**/*.{ts,tsx}', '*.mts', 'scripts/**/*.ts'],
+      // Built tokens are copied by relative path (../tokens/dist) in vite.config,
+      // and the fontsource families feed the post-build font generator - real
+      // dependencies knip's JS/TS walk cannot see.
+      ignoreDependencies: ['@workflowbuilder/ui-tokens', '@fontsource/poppins', '@fontsource/inter'],
+    },
+    'packages/tokens': {
+      entry: ['src/index.ts'],
+      project: ['src/**/*.ts', 'config.ts'],
+    },
+    'packages/mcp-server': {
+      entry: ['src/index.ts', 'scripts/*.ts'],
+      // The fixture sources are TypeDoc input, read through the generated JSON next to them.
+      project: ['src/**/*.ts', 'scripts/**/*.ts', '!src/__fixtures__/typedoc-src/**'],
+    },
+    'packages/temporal': {
+      // test/fixtures/workflows.ts is an entry in its own right: the bundling test
+      // hands it to Temporal's workflow bundler by path, so nothing imports it.
+      entry: [
+        'src/index.ts',
+        'src/client/index.ts',
+        'src/workflow/index.ts',
+        'tsup.config.ts',
+        'test/fixtures/workflows.ts',
+      ],
+      project: ['src/**/*.ts', 'test/**/*.ts', 'tsup.config.ts'],
+      // Both are bundled into dist through src/core-contract.ts, which imports them
+      // by relative path (see the note there), so the workspace deps are real even
+      // though they are never imported by name. @temporalio/worker is an optional peer
+      // (a consumer that runs a Worker supplies it) that only the tests import, from the
+      // devDependency; knip flags every referenced optional peer, so it is listed here.
+      ignoreDependencies: ['@workflow-builder/execution-core', '@workflow-builder/types', '@temporalio/worker'],
     },
   },
 };

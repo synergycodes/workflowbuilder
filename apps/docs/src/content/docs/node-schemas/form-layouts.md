@@ -97,11 +97,11 @@ Text-only elements that don't bind to a property. Use them when the property pan
 
 Plain text label — uses the editor's default body styling.
 
-| Prop       | Type     | Required | Notes                                                                                          |
-| ---------- | -------- | -------- | ---------------------------------------------------------------------------------------------- |
-| `text`     | string   | yes      | The label text.                                                                                |
-| `required` | boolean  | no       | Append a `*` to indicate the following section contains required fields.                       |
-| `size`     | ItemSize | no       | Visual size — `'small'`, `'medium'` (default), `'large'`. Type re-exported from `overflow-ui`. |
+| Prop       | Type     | Required | Notes                                                                                                  |
+| ---------- | -------- | -------- | ------------------------------------------------------------------------------------------------------ |
+| `text`     | string   | yes      | The label text.                                                                                        |
+| `required` | boolean  | no       | Append a `*` to indicate the following section contains required fields.                               |
+| `size`     | ItemSize | no       | Visual size — `'small'`, `'medium'` (default), `'large'`. Type re-exported from `@workflowbuilder/ui`. |
 
 ```ts
 { type: 'Label', text: 'Connection details' }
@@ -109,20 +109,26 @@ Plain text label — uses the editor's default body styling.
 
 ### `RichText`
 
-Same as `Label`, but renders Markdown — bold, italics, inline links. Useful for short instructional copy that needs formatting.
+Same as `Label`, but renders a small subset of HTML for short instructional copy that needs formatting.
 
 | Prop       | Type     | Required | Notes                      |
 | ---------- | -------- | -------- | -------------------------- |
-| `text`     | string   | yes      | Markdown source.           |
+| `text`     | string   | yes      | HTML source.               |
 | `required` | boolean  | no       | Same semantics as `Label`. |
 | `size`     | ItemSize | no       | Same semantics as `Label`. |
 
 ```ts
 {
   type: 'RichText',
-  text: 'See the [authentication guide](https://example.com/auth) for setup steps.',
+  text: 'See the <a href="https://example.com/auth" target="_blank" rel="noopener noreferrer">authentication guide</a> for setup steps.',
 }
 ```
+
+The `text` is sanitized with [DOMPurify](https://github.com/cure53/DOMPurify) before it renders. Only `b`, `strong`, `i`, `em`, `u`, `s`, `code`, `br` and `a` (with `href`, `target`, `rel`) are kept. Every other tag and attribute is removed, including `<script>`, `on*` event handlers and `javascript:` URLs.
+
+:::caution[Node definitions are trusted input]
+The SDK treats a node's `schema` and `uischema` as code written by the app author. `RichText` is the only element that renders HTML, and it is sanitized. Other strings in a definition are not checked for malicious content, so review any node definition from a third party before you register it.
+:::
 
 ## Combining layouts
 

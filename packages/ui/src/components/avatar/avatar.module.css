@@ -1,0 +1,43 @@
+:root {
+  --wb-public-avatar-border-color: var(--wb-ds-components-text-field-stroke-default); /* missing token */
+  --wb-public-avatar-background-color: var(--wb-ds-colors-blue-500); /* missing token */
+  --wb-public-avatar-border-size: 0.0625rem;
+}
+
+@layer ui.component {
+  .container {
+    border: var(--wb-public-avatar-border-size) solid var(--wb-public-avatar-border-color);
+    background-color: var(--wb-public-avatar-background-color);
+    border-radius: 50%;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &.extra-large {
+      width: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-600) + 2 * var(--wb-public-avatar-border-size));
+    }
+
+    &.large {
+      width: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-400) + 2 * var(--wb-public-avatar-border-size));
+    }
+
+    &.medium {
+      width: calc(var(--wb-ds-size-300) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-300) + 2 * var(--wb-public-avatar-border-size));
+    }
+
+    &.small {
+      width: calc(var(--wb-ds-size-225) + 2 * var(--wb-public-avatar-border-size));
+      height: calc(var(--wb-ds-size-225) + 2 * var(--wb-public-avatar-border-size));
+    }
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+}

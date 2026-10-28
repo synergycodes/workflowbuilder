@@ -1,13 +1,14 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
 import styles from './ai-agent-node-template.module.css';
 
-import type { IconType, LayoutDirection } from '../../../../node/common';
+import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
 import { getHandleId } from '../../handles/get-handle-id';
@@ -20,9 +21,12 @@ import { ToolInfo } from './components/tool-info/tool-info';
 type Props = {
   id: string;
   icon: IconType;
+  accent?: NodeIconAccent;
   label: string;
   description: string;
   selected?: boolean;
+  /** Render the Node Disabled variant (palette entries that cannot be added). */
+  disabled?: boolean;
   isConnecting?: boolean;
   showHandles?: boolean;
   chatModel?: ItemOption | undefined;
@@ -36,9 +40,12 @@ type Props = {
 export const AiAgentNodeTemplate = memo(
   ({
     icon,
+    // The agent had its gradient before accents existed; a definition without one keeps it.
+    accent = 'violet-gradient',
     label,
     description,
     selected = false,
+    disabled = false,
     showHandles = true,
     chatModel,
     memoryModel,
@@ -47,6 +54,7 @@ export const AiAgentNodeTemplate = memo(
     layoutDirection = 'RIGHT',
     onAddTool,
   }: Props) => {
+    const { t } = useTranslation();
     const isCanvasNode = showHandles;
     const handleTargetId = getHandleId({ handleType: 'target' });
     const handleSourceId = getHandleId({ handleType: 'source' });
@@ -54,16 +62,16 @@ export const AiAgentNodeTemplate = memo(
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <Collapsible>
-        <NodePanel.Root selected={selected}>
+      <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
+        <NodePanel.Root selected={selected} disabled={disabled}>
           <NodePanel.Header className={styles['header']}>
-            <NodeIcon className={styles['icon']} icon={iconElement} />
-            <NodeDescription label={label} description={description} />
+            <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
+            <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>

@@ -1,45 +1,46 @@
 import { CaretDown } from '@phosphor-icons/react';
-import { Menu, type MenuItemProps, NavButton } from '@synergycodes/overflow-ui';
+import { Menu, type MenuItemProps, NavButton } from '@workflowbuilder/ui';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-import styles from './language-selector.module.css';
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { SUPPORTED_LANGUAGES, type WorkflowBuilderLanguage } from '../../../../hooks/use-workflow-builder-state';
 
-type Language = {
-  code: string;
-  label: string;
+const LANGUAGE_LABELS: Record<WorkflowBuilderLanguage, string> = {
+  en: 'English',
+  pl: 'Polski',
 };
-
-const languages: Language[] = [
-  { code: 'en', label: 'English' },
-  { code: 'pl', label: 'Polski' },
-];
 
 export function LanguageSelector() {
   const { t, i18n } = useTranslation();
+  const { setLanguage } = useWorkflowBuilderActions();
 
-  const currentLanguage = languages.find((lang) => lang.code === i18n.language) || languages[0];
+  const resolvedCode = i18n.resolvedLanguage ?? i18n.language?.split('-')[0];
+  const currentCode = SUPPORTED_LANGUAGES.find((code) => code === resolvedCode) ?? SUPPORTED_LANGUAGES[0];
+  const visibleCode = currentCode.toUpperCase();
 
   const languageItems: MenuItemProps[] = useMemo(
     () =>
-      languages.map(({ code, label }) => ({
-        label,
+      SUPPORTED_LANGUAGES.map((code) => ({
+        label: LANGUAGE_LABELS[code],
         icon: <Icon name="FlagBanner" />,
-        onClick: () => i18n.changeLanguage(code),
+        selected: code === currentCode,
+        onClick: () => setLanguage(code),
       })),
-    [i18n],
+    [currentCode, setLanguage],
   );
 
   return (
     <>
       <Menu items={languageItems} size="small">
-        <NavButton tooltip={t('tooltips.changeLanguage')}>
-          <>
-            <span className={styles['title']}>{currentLanguage.code.toUpperCase()}</span>
-            <CaretDown />
-          </>
+        <NavButton
+          aria-label={`${visibleCode} - ${t('tooltips.changeLanguage')}`}
+          suffixIcon={<CaretDown />}
+          tooltip={t('tooltips.changeLanguage')}
+        >
+          {visibleCode}
         </NavButton>
       </Menu>
     </>

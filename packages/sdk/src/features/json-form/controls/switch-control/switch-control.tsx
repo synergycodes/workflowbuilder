@@ -1,4 +1,4 @@
-import { Switch } from '@synergycodes/overflow-ui';
+import { Switch } from '@workflowbuilder/ui';
 
 import type { SwitchControlProps } from '../../types/controls';
 import { createControlRenderer } from '../../utils/rendering';
@@ -8,7 +8,7 @@ function SwitchControl(props: SwitchControlProps) {
   const { data, handleChange, path, enabled, uischema } = props;
   const isDisabled = !enabled || uischema.disabled === true;
 
-  function onChange(checked: boolean, _event: React.ChangeEvent<HTMLInputElement>) {
+  function onChange(checked: boolean) {
     handleChange(path, checked);
   }
 

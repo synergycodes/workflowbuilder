@@ -1,6 +1,6 @@
-import { NodeDescription, NodeIcon, NodePanel } from '@synergycodes/overflow-ui';
 import { Icon, defineNodeTemplate, getHandleId, statusOptions } from '@workflowbuilder/sdk';
-import type { NodeDataProperties, WorkflowNodeTemplateProps } from '@workflowbuilder/sdk';
+import type { NodeDataProperties, WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -21,15 +21,17 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
   memo(
     ({
       icon,
+      accent,
       label,
       description,
       selected = false,
+      disabled = false,
       data,
       showHandles = true,
-    }: WorkflowNodeTemplateProps<MultiPortProperties>) => {
+    }: WorkflowBuilderNodeTemplateProps<MultiPortProperties>) => {
       const status = data?.properties.status ?? statusOptions.active.value;
 
-      const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+      const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
       const barClassName = clsx(styles['status-bar'], statusClass[status] ?? styles['status-draft']);
 
       const handleTargetTopId = getHandleId({ handleType: 'target', innerId: 'top' });
@@ -40,10 +42,10 @@ export const MultiPortNodeTemplate = defineNodeTemplate<MultiPortProperties>(
       return (
         <div className={styles['wrapper']}>
           <div className={barClassName} />
-          <NodePanel.Root selected={selected}>
+          <NodePanel.Root selected={selected} disabled={disabled}>
             <NodePanel.Header>
-              <NodeIcon icon={iconElement} />
-              <NodeDescription label={label} description={description} />
+              <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
+              <NodeDescription label={label} description={description} disabled={disabled} />
             </NodePanel.Header>
             <NodePanel.Handles isVisible={showHandles}>
               <Handle id={handleTargetTopId} type="target" position={Position.Top} />

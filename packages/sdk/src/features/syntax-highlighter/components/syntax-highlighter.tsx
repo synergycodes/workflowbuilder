@@ -1,5 +1,6 @@
 // sort-imports-ignore
 import clsx from 'clsx';
+import ace from 'ace-builds';
 // https://securingsincity.github.io/react-ace/
 import AceEditor from 'react-ace';
 import 'ace-builds/src-noconflict/ext-language_tools';
@@ -8,6 +9,10 @@ import 'ace-builds/src-noconflict/mode-javascript';
 import 'ace-builds/src-noconflict/theme-github_light_default';
 
 import styles from './syntax-highlighter.module.css';
+
+// react-ace sets the mode before `setOptions`, so `useWorker: false` alone still starts one
+// worker per mount, from a blob: URL a Content Security Policy blocks. The default is global.
+ace.config.setDefaultValue('session', 'useWorker', false);
 
 export type SyntaxHighlighterProps = {
   value: string;
@@ -27,8 +32,6 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         mode={mode}
         theme="github_light_default"
         onChange={onChange}
-        fontSize={12}
-        lineHeight={16}
         showPrintMargin={false}
         showGutter={false}
         highlightActiveLine={false}
@@ -36,12 +39,14 @@ export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
         readOnly={isDisabled}
         width="100%"
         height="auto"
+        fontSize={12}
         style={{
           textIndent: 'none',
           minHeight: '1rem',
           boxSizing: 'border-box',
         }}
         setOptions={{
+          fontFamily: "var(--wb-public-font-family-mono, ui-monospace, 'Cascadia Mono', monospace)",
           useWorker: false,
           enableBasicAutocompletion: false,
           enableLiveAutocompletion: false,

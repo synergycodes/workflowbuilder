@@ -30,7 +30,6 @@ export const pl = {
     folderName: 'Nazwa folderu',
     projectSelection: {
       rename: 'Zmień nazwę',
-      duplicateToDrafts: 'Duplikuj do wersji roboczych',
     },
     controls: {
       saveAsImage: 'Zapisz jako obraz',
@@ -73,6 +72,7 @@ export const pl = {
   },
   propertiesBar: {
     label: 'Właściwości',
+    edge: 'Połączenie',
     deleteNode: 'Usuń węzeł',
     deleteEdge: 'Usuń krawędź',
   },
@@ -123,7 +123,7 @@ export const pl = {
     cantRemoveOnlyOption: 'Nie możesz usunąć jedynej opcji',
     addOption: 'Dodaj opcję',
     menu: 'Menu',
-    pickTheProject: 'Wybierz projekt',
+    pickTheProject: 'Akcje projektu',
     openPalette: 'Otwórz paletę',
     closePalette: 'Zamknij paletę',
     openPropertiesBar: 'Otwórz panel właściwości',
@@ -145,6 +145,7 @@ export const pl = {
     wrongDiagramFormat: 'Nieprawidłowy format diagramu',
     contentCopied: 'Treść skopiowana do schowka',
     variablesListIsEmpty: 'Lista dostępnych zmiennych jest pusta.',
+    cantEditReadOnlyMode: 'Edycja jest zablokowana w trybie tylko do odczytu.',
   },
   aiTools: {
     title: 'Narzędzia agenta AI',
@@ -159,6 +160,7 @@ export const pl = {
     label: 'Tytuł',
   },
   conditions: {
+    add: 'Dodaj warunek',
     title: 'Edytor Warunków',
     subtitle: 'Zdefiniuj Reguły Warunkowe',
     cancel: 'Anuluj',

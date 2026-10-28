@@ -1,0 +1,142 @@
+name: Deploy AI Studio
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: 'Image tag (defaults to short SHA)'
+        required: false
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  REGISTRY: ${{ vars.AZURE_REGISTRY_NAME }}.azurecr.io
+  APP: wb-ai-studio
+
+jobs:
+  build-and-push:
+    runs-on: ubuntu-latest
+    outputs:
+      image_tag: ${{ steps.tag.outputs.value }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Resolve image tag
+        id: tag
+        run: |
+          TAG="${{ inputs.image_tag || github.sha }}"
+          echo "value=${TAG::7}" >> "$GITHUB_OUTPUT"
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Log in to ACR
+        run: az acr login --name ${{ vars.AZURE_REGISTRY_NAME }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build and push runtime image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/ai-studio/Dockerfile
+          target: runtime
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.APP }}:${{ steps.tag.outputs.value }}-runtime
+            ${{ env.REGISTRY }}/${{ env.APP }}:latest-runtime
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP }}:latest-runtime
+          cache-to: type=inline
+
+      - name: Build and push web image
+        uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: deploy/ai-studio/Dockerfile
+          target: web
+          push: true
+          tags: |
+            ${{ env.REGISTRY }}/${{ env.APP }}:${{ steps.tag.outputs.value }}-web
+            ${{ env.REGISTRY }}/${{ env.APP }}:latest-web
+          cache-from: type=registry,ref=${{ env.REGISTRY }}/${{ env.APP }}:latest-web
+          cache-to: type=inline
+          build-args: |
+            VITE_BACKEND_URL=
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Log in to Azure
+        uses: azure/login@v2
+        with:
+          client-id: ${{ vars.AZURE_CLIENT_ID }}
+          tenant-id: ${{ vars.AZURE_TENANT_ID }}
+          subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
+
+      # The VM runs the repo's compose files, shipped here on every deploy (base64,
+      # so the script stays free of quoting). Compose is run from the project
+      # directory, not with -f: that is what applies docker-compose.override.yml
+      # by default.
+      #
+      # .env is generated in full from the repo secrets/vars on every deploy,
+      # so nothing on the VM is edited by hand. It holds the image tags too: an
+      # export dies with this shell, and the next `docker compose up -d worker`
+      # on the VM would fall back to the local ai-studio-* names.
+      - name: Refresh docker compose on Azure VM
+        env:
+          IMAGE: ${{ env.REGISTRY }}/${{ env.APP }}:${{ needs.build-and-push.outputs.image_tag }}
+          # repo-level secrets for credentials, vars for the rest — no `environment:`,
+          # which would change the OIDC subject the Azure federated credential trusts
+          AI_API_KEY: ${{ secrets.AI_API_KEY }}
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+          APP_DB_PASSWORD: ${{ secrets.APP_DB_PASSWORD }}
+          TEMPORAL_DB_PASSWORD: ${{ secrets.TEMPORAL_DB_PASSWORD }}
+          AI_BASE_URL: ${{ vars.AI_BASE_URL }}
+          AI_MODEL: ${{ vars.AI_MODEL }}
+          RATE_LIMIT_EXECUTE_PER_MINUTE: ${{ vars.RATE_LIMIT_EXECUTE_PER_MINUTE || '10' }}
+          RATE_LIMIT_EXECUTE_PER_DAY: ${{ vars.RATE_LIMIT_EXECUTE_PER_DAY || '50' }}
+        run: |
+          # the databases keep the password they were created with — an empty one
+          # would fall back to the compose default and lock the apps out
+          : "${APP_DB_PASSWORD:?set secret APP_DB_PASSWORD}" "${TEMPORAL_DB_PASSWORD:?set secret TEMPORAL_DB_PASSWORD}"
+          # .env is generated in full on every deploy; single quotes keep values literal
+          ENV_B64=$(for k in AI_API_KEY AI_BASE_URL AI_MODEL TAVILY_API_KEY \
+                RATE_LIMIT_EXECUTE_PER_MINUTE RATE_LIMIT_EXECUTE_PER_DAY \
+                APP_DB_PASSWORD TEMPORAL_DB_PASSWORD; do
+              printf "%s='%s'\n" "$k" "${!k}"
+            done | cat - <(printf "RUNTIME_IMAGE='%s'\nWEB_IMAGE='%s'\n" "$IMAGE-runtime" "$IMAGE-web") | base64 -w0)
+          COMPOSE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.yml)
+          OVERRIDE_B64=$(base64 -w0 deploy/ai-studio/docker-compose.override.yml)
+          SCRIPT=$(cat <<EOF
+          set -e
+          cd /app/ai-studio
+          echo "$COMPOSE_B64" | base64 -d > docker-compose.yml
+          echo "$OVERRIDE_B64" | base64 -d > docker-compose.override.yml
+          (umask 077; echo "$ENV_B64" | base64 -d > .env)
+          az acr login --name ${{ vars.AZURE_REGISTRY_NAME }}
+          docker compose pull
+          docker compose up -d --no-build --force-recreate --remove-orphans
+          echo DEPLOY_SCRIPT_SUCCEEDED
+          EOF
+          )
+          OUTPUT=$(az vm run-command invoke \
+            --name ${{ vars.AI_STUDIO_VM_NAME }} \
+            --resource-group ${{ vars.AI_STUDIO_VM_RG }} \
+            --command-id RunShellScript \
+            --scripts "$SCRIPT")
+          echo "$OUTPUT"
+          echo "$OUTPUT" | grep -q DEPLOY_SCRIPT_SUCCEEDED

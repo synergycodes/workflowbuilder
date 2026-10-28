@@ -1,0 +1,20 @@
+/* react-day-picker's own stylesheet joins `ui.base`, so the `ui.component`
+   theming in date-picker.module.css beats it by layer order alone - no
+   specificity tricks, no load-order requirement. */
+@import 'react-day-picker/style.css' layer(ui.base);
+
+:root {
+  --wb-public-date-picker-dropdown-background: var(--wb-ds-ui-bg-base);
+  --wb-public-date-picker-dropdown-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-public-date-picker-dropdown-box-shadow: 0px 4px 20px var(--wb-ds-shadow-ui-color);
+
+  --wb-public-date-picker-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-date-picker-header-background: var(--wb-ds-ui-bg-elevated);
+  --wb-public-date-picker-date-header-color: var(--wb-ds-ui-text-muted-default);
+  --wb-public-date-picker-nav-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-date-picker-date-outside-color: var(--wb-ds-ui-text-ghost-default);
+  --wb-public-date-picker-date-hover-background-color: var(--wb-ds-components-datepicker-bg-secondary);
+  --wb-public-date-picker-date-selected-background-color: var(--wb-ds-components-datepicker-bg-primary);
+  --wb-public-date-picker-date-selected-color: var(--wb-ds-ui-text-default);
+  --wb-public-date-picker-date-today-color: var(--wb-ds-ui-stroke-highlight);
+}

@@ -1,0 +1,60 @@
+---
+import { STARTER_FILE, STARTER_FORK_URL, STARTER_PROJECT, STARTER_TITLE } from '../config';
+
+// `corp=1` makes StackBlitz send its own isolation headers. That works only on a
+// page which is itself cross-origin isolated. `staticwebapp.config.json` grants
+// isolation to one route, so render this component only there. Anywhere else the
+// embed shows "Unable to run Embedded Project".
+const embedParams = new URLSearchParams({
+  ctl: '1',
+  embed: '1',
+  corp: '1',
+  view: 'preview',
+  terminalHeight: '20',
+  startScript: 'dev',
+  title: STARTER_TITLE,
+  file: STARTER_FILE,
+});
+
+// The frame uses `/github/`, not `/fork/github/`, so it does not make a project
+// per visitor. The link below the frame forks instead.
+const embedUrl = `https://stackblitz.com/github/${STARTER_PROJECT}?${embedParams}`;
+---
+
+<div class="stackblitz-embed not-content">
+  <iframe
+    src={embedUrl}
+    title={`${STARTER_TITLE} on StackBlitz`}
+    loading="lazy"
+    allow="cross-origin-isolated"
+    referrerpolicy="strict-origin-when-cross-origin"></iframe>
+  {
+    /* Full-size link, and the way out when the frame cannot start. StackBlitz
+     supports embeds in Chromium browsers only, and the failure is silent, so
+     there is nothing to detect and nothing to fall back to automatically. */
+  }
+  <p class="escape-hatch">
+    <a href={STARTER_FORK_URL} target="_blank" rel="noopener noreferrer">Open on StackBlitz</a>
+  </p>
+</div>
+
+<style>
+  .stackblitz-embed {
+    margin-block: 1.5rem;
+  }
+
+  iframe {
+    display: block;
+    /* Capped against the viewport, so it fits a short laptop screen. */
+    block-size: min(70vh, 40rem);
+    inline-size: 100%;
+    border: 0;
+    border-radius: 0.5rem;
+  }
+
+  .escape-hatch {
+    margin-block: 0.5rem 0;
+    font-size: var(--sl-text-sm);
+    text-align: end;
+  }
+</style>

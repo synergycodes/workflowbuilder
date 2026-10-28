@@ -29,8 +29,8 @@ type GetHandleIdOptions = {
   /**
    * @deprecated Handle IDs are scoped to the owning node by xyflow, so
    * `nodeId` is no longer part of the returned string. Accepted to keep
-   * 2.0.0 call sites compiling and ignored at runtime. Will be removed in
-   * the next major (3.0).
+   * 2.0.0 call sites compiling and ignored at runtime. Kept through 3.x;
+   * removed in 4.0.
    */
   nodeId?: string;
 };

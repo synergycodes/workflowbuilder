@@ -1,0 +1,66 @@
+:root {
+  --wb-public-select-border-size: var(--wb-ds-size-12);
+  --wb-public-select-button-color: var(--wb-ds-ui-text-default);
+  --wb-public-select-button-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-select-button-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
+  --wb-public-select-button-focus-ring-color: var(--wb-ds-shadow-ui-focus);
+  --wb-public-select-button-color-disabled: var(--wb-ds-ui-text-disabled);
+  --wb-public-select-button-background-color-disabled: var(--wb-ds-ui-bg-inset);
+
+  --wb-public-select-button-background-color-error: var(--wb-ds-components-text-field-bg-primary-critical);
+  --wb-public-select-button-border-color-error: var(--wb-ds-components-text-field-stroke-critical);
+  --wb-public-select-button-color-error: var(--wb-ds-ui-text-critical-default);
+}
+
+@layer ui.component {
+  .container {
+    display: flex;
+    width: 100%;
+    min-width: 100px;
+    align-items: center;
+    /* Push the caret to the far edge: Base UI's Select.Value wraps the value in
+       an inline span, so the inner container's width:100% resolves against that
+       span and cannot stretch - without this, the caret hugs the text. */
+    justify-content: space-between;
+    background-color: transparent;
+    cursor: pointer;
+
+    color: var(--wb-public-select-button-color);
+
+    border: var(--wb-public-select-border-size) solid var(--wb-public-select-button-border-color);
+
+    &:not(:hover) {
+      transition: all var(--wb-public-transition);
+    }
+
+    &[data-popup-open] {
+      border-color: var(--wb-public-select-button-border-color-focus);
+    }
+
+    &.container--error {
+      background-color: var(--wb-public-select-button-background-color-error);
+      border-color: var(--wb-public-select-button-border-color-error);
+      color: var(--wb-public-select-button-color-error);
+    }
+
+    &:focus-visible {
+      border-color: var(--wb-public-select-button-border-color-focus);
+      outline: none;
+      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
+        var(--wb-public-select-button-focus-ring-color);
+    }
+
+    &:disabled {
+      background-color: var(--wb-public-select-button-background-color-disabled);
+      color: var(--wb-public-select-button-color-disabled);
+      cursor: auto;
+    }
+
+    svg {
+      width: 1rem;
+      height: 1rem;
+      min-width: 1rem;
+    }
+  }
+}

@@ -1,19 +1,22 @@
 :root {
-  --wb-node-section-gap: 0.75rem;
-  --wb-node-section-padding: 0.625rem;
-  --wb-node-section-border-radius: 0.5rem;
-  --wb-node-section-border-color: var(--ax-ui-stroke-primary-default);
-  --wb-node-section-border-width: 0.0625rem;
+  --wb-sdk-node-section-gap: var(--wb-ds-canvas-node-body-gap);
+  --wb-sdk-node-section-padding: var(--wb-ds-canvas-node-body-h-pad);
+  --wb-sdk-node-section-vertical-padding: var(--wb-ds-canvas-node-body-v-pad);
+  --wb-sdk-node-section-border-radius: var(--wb-ds-canvas-node-body-radius);
+  --wb-sdk-node-section-border-color: var(--wb-ds-canvas-node-stroke-default);
+  --wb-sdk-node-section-border-width: 0.0625rem;
 }
 
 .container {
+  --wb-sdk-connectable-item-inset: calc(var(--wb-sdk-node-section-padding) + var(--wb-sdk-node-section-border-width));
+
   display: flex;
   flex-direction: column;
-  gap: var(--wb-node-section-gap);
-  border-radius: var(--wb-node-section-border-radius);
-  padding: var(--wb-node-section-padding);
-  border: var(--wb-node-section-border-width) solid var(--wb-node-section-border-color);
-  color: var(--ax-txt-primary-default);
+  gap: var(--wb-sdk-node-section-gap);
+  border-radius: var(--wb-sdk-node-section-border-radius);
+  padding: var(--wb-sdk-node-section-vertical-padding) var(--wb-sdk-node-section-padding);
+  border: var(--wb-sdk-node-section-border-width) solid var(--wb-sdk-node-section-border-color);
+  color: var(--wb-ds-ui-text-default);
 
-  composes: ax-public-h10 from global;
+  composes: wb-text-body-s-emphasized from global;
 }

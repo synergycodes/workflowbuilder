@@ -1,0 +1,50 @@
+---
+title: Input
+description: A single-line text field with icons, explicit states, and four sizes.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { InputExample } from '../../../../components/ui-examples/input';
+
+An `Input` is a single-line text field for collecting short, free-form text. It
+supports prefix and suffix icons, a clear affordance, four letter sizes, and the
+`default`, `critical`, `success`, and `read-only` states. A read-only field stays
+focusable so its value can be selected and copied.
+
+<InputExample client:visible />
+
+## Usage
+
+```tsx
+import { Input } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+function Example() {
+  const [value, setValue] = useState('');
+  const hasError = value.length > 0 && value.length < 3;
+
+  return (
+    <Input
+      size="m"
+      state={hasError ? 'critical' : 'default'}
+      label="Project name"
+      helperText={hasError ? 'Enter at least three characters' : 'Shown throughout the workspace'}
+      isRequired
+      placeholder="Type something"
+      value={value}
+      onChange={(event) => setValue(event.target.value)}
+      onClear={() => setValue('')}
+      clearLabel="Clear project name"
+    />
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="input" />
+
+## CSS variables
+
+<CssVariablesTable slug="input" />

@@ -1,0 +1,15 @@
+@layer ui.component {
+  .xl {
+    composes: wb-text-label-xl-emphasized from global;
+  }
+
+  .l {
+    composes: wb-text-label-l-emphasized from global;
+  }
+
+  .m,
+  .s,
+  .xs {
+    composes: wb-text-label-m-emphasized from global;
+  }
+}

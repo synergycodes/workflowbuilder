@@ -1,0 +1,87 @@
+import { fireEvent, render, screen } from '@testing-library/react';
+import type { ReactNode } from 'react';
+import { describe, expect, it, vi } from 'vitest';
+
+// Controllable i18n stub — each test sets `language` / `resolvedLanguage`.
+const i18nState = { language: 'en', resolvedLanguage: 'en', changeLanguage: vi.fn() };
+
+// Render the Menu's trigger (children) so the displayed language code is queryable.
+type MenuItemLike = { label?: string; selected?: boolean; onClick?: () => void };
+
+vi.mock('@workflowbuilder/ui', () => ({
+  Menu: ({ children, items }: { children?: ReactNode; items: MenuItemLike[] }) => (
+    <div>
+      {children}
+      <ul>
+        {items.map((item) => (
+          <li key={item.label} data-selected={item.selected ? '' : undefined} onClick={item.onClick}>
+            {item.label}
+          </li>
+        ))}
+      </ul>
+    </div>
+  ),
+  NavButton: ({ 'aria-label': ariaLabel, children }: { 'aria-label'?: string; children?: ReactNode }) => (
+    <button type="button" aria-label={ariaLabel}>
+      {children}
+    </button>
+  ),
+}));
+
+vi.mock('@workflow-builder/icons', () => ({
+  Icon: () => null,
+}));
+
+vi.mock('react-i18next', () => ({
+  useTranslation: () => ({ t: (key: string) => key, i18n: i18nState }),
+}));
+
+const setLanguage = vi.fn();
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => ({ setLanguage }),
+}));
+
+const { LanguageSelector } = await import('./language-selector');
+
+describe('LanguageSelector — label reflects the resolved language', () => {
+  it('shows PL for a regional Polish locale that resolves to pl (regression: used to show EN)', () => {
+    i18nState.language = 'pl-PL';
+    i18nState.resolvedLanguage = 'pl';
+
+    render(<LanguageSelector />);
+
+    expect(screen.getByText('PL')).toBeTruthy();
+    expect(screen.getByRole('button', { name: 'PL - tooltips.changeLanguage' })).toBeTruthy();
+    expect(screen.queryByText('EN')).toBeNull();
+  });
+
+  it('shows EN for english', () => {
+    i18nState.language = 'en';
+    i18nState.resolvedLanguage = 'en';
+
+    render(<LanguageSelector />);
+
+    expect(screen.getByText('EN')).toBeTruthy();
+  });
+
+  it('marks the current language as the selected menu item', () => {
+    i18nState.language = 'pl';
+    i18nState.resolvedLanguage = 'pl';
+
+    render(<LanguageSelector />);
+
+    expect(Object.hasOwn(screen.getByText('Polski').dataset, 'selected')).toBe(true);
+    expect(Object.hasOwn(screen.getByText('English').dataset, 'selected')).toBe(false);
+  });
+
+  it('picking a language calls the setLanguage action, not i18n.changeLanguage directly', () => {
+    i18nState.language = 'en';
+    i18nState.resolvedLanguage = 'en';
+
+    render(<LanguageSelector />);
+    fireEvent.click(screen.getByText('Polski'));
+
+    expect(setLanguage).toHaveBeenCalledWith('pl');
+    expect(i18nState.changeLanguage).not.toHaveBeenCalled();
+  });
+});

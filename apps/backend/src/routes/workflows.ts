@@ -1,18 +1,22 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
-import type { AssertAuthorized, AuthVariables } from '../auth';
+import type { AssertAuthorized } from '../auth';
 import { database } from '../db/client';
 import { executions, workflows } from '../db/schema';
 import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
-import { workflowSnapshotSchema } from '../domain/mapper/snapshot-schema';
 import { getWorkflowEngine } from '../engine';
+import { formatErrorChain } from '../format-error-chain';
 import { logger as backendLogger } from '../logger';
-import type { TenantVariables } from '../tenant';
+import { guardExecution } from '../security/execution-guard';
+import type { BackendEnv } from './backend-env';
+import { formatValidationDetails, parseSnapshot } from './snapshot-validation';
 
 const logger = backendLogger.child({ component: 'workflows-route' });
 
+// Both write schemas store a draft as sent, so on a public deployment anyone can save one the editor
+// cannot draw. (follow-up: validate-workflow-drafts)
 const createWorkflowSchema = z.object({
   name: z.string().min(1).max(200),
   draftJson: z.unknown().optional(),
@@ -27,18 +31,8 @@ const executeSchema = z.object({
   triggerPayload: z.record(z.string(), z.unknown()).optional(),
 });
 
-function formatValidationDetails(error: z.ZodError) {
-  return error.issues.map((issue) => ({
-    path: issue.path,
-    message: issue.message,
-    code: issue.code,
-  }));
-}
-
-export function createWorkflowsRoutes(
-  assertAuthorized: AssertAuthorized,
-): Hono<{ Variables: AuthVariables & TenantVariables }> {
-  const routes = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<BackendEnv> {
+  const routes = new Hono<BackendEnv>();
 
   routes.post('/', async (c) => {
     await assertAuthorized(c, 'workflows:create', { kind: 'workflows' });
@@ -152,6 +146,12 @@ export function createWorkflowsRoutes(
       return c.json({ code: 'workflow_not_found', message: 'Workflow not found' }, 404);
     }
 
+    // A null draft is not validated; publishing it clears `publishedJson`, as before.
+    if (existing.draftJson !== null) {
+      const parsed = parseSnapshot(c, existing.draftJson, { workflowId, sourceVersion: 'draft' });
+      if (parsed.response !== undefined) return parsed.response;
+    }
+
     const [workflow] = await database
       .update(workflows)
       .set({
@@ -169,6 +169,12 @@ export function createWorkflowsRoutes(
     const workflowId = c.req.param('id');
 
     await assertAuthorized(c, 'workflows:execute', { kind: 'workflow', workflowId });
+
+    // The one endpoint that spends real LLM budget, so it carries the abuse gate.
+    const blocked = await guardExecution(c);
+    if (blocked) {
+      return blocked;
+    }
 
     const parsed = z.safeParse(executeSchema, await c.req.json());
     if (!parsed.success) {
@@ -191,26 +197,12 @@ export function createWorkflowsRoutes(
 
     const snapshotJson = body.sourceVersion === 'published' ? workflow.publishedJson : workflow.draftJson;
 
-    if (!snapshotJson) {
+    if (snapshotJson === null) {
       return c.json({ code: 'published_version_missing', message: `No ${body.sourceVersion} version available` }, 400);
     }
 
-    const snapshotParsed = z.safeParse(workflowSnapshotSchema, snapshotJson);
-    if (!snapshotParsed.success) {
-      logger.warn('snapshot invalid', {
-        workflowId,
-        sourceVersion: body.sourceVersion,
-        error: { issues: formatValidationDetails(snapshotParsed.error) },
-      });
-      return c.json(
-        {
-          code: 'invalid_snapshot',
-          message: 'Workflow snapshot failed validation',
-          details: formatValidationDetails(snapshotParsed.error),
-        },
-        400,
-      );
-    }
+    const snapshotParse = parseSnapshot(c, snapshotJson, { workflowId, sourceVersion: body.sourceVersion });
+    if (snapshotParse.response !== undefined) return snapshotParse.response;
 
     // Propagate tenant identity from the HTTP boundary onto the execution row.
     // The worker reads it back via subquery for event tagging (see worker
@@ -241,16 +233,51 @@ export function createWorkflowsRoutes(
       sourceVersion: body.sourceVersion,
     });
 
-    const definition = mapToExecutionModel(workflowId, snapshotParsed.data);
+    const definition = mapToExecutionModel(workflowId, snapshotParse.snapshot);
 
-    await getWorkflowEngine().submit({
-      workflowId,
-      executionId: execution.id,
-      definition,
-      triggerPayload: body.triggerPayload ?? {},
-      variables: {}, // server-side globals (secrets, env) populated here later
-      global: {},
-    });
+    try {
+      await getWorkflowEngine().submit({
+        workflowId,
+        executionId: execution.id,
+        definition,
+        triggerPayload: body.triggerPayload ?? {},
+        variables: {},
+        global: {},
+      });
+    } catch (error) {
+      const message = formatErrorChain(error);
+      logger.error('execute start not confirmed', { workflowId, executionId: execution.id, error: message });
+      // The worker never hears of a run that did not start, and a Stop during the start leaves a 'cancelling'
+      // nothing closes. Zero rows: the worker moved the run, so the engine took the start without confirming it.
+      // If this write lands first instead, the run goes on under 'failed' (follow-up: run-claim-at-start).
+      let workerTookRun = false;
+      try {
+        const now = new Date();
+        const closed = await database
+          .update(executions)
+          .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
+          .where(and(eq(executions.id, execution.id), inArray(executions.status, ['pending', 'cancelling'])))
+          .returning({ id: executions.id });
+        workerTookRun = closed.length === 0;
+      } catch (closeError) {
+        logger.error('execute could not close the run', {
+          workflowId,
+          executionId: execution.id,
+          error: formatErrorChain(closeError),
+        });
+      }
+      if (!workerTookRun) {
+        return c.json(
+          {
+            code: 'execution_start_failed',
+            message: 'The execution engine did not accept the run',
+            executionId: execution.id,
+          },
+          503,
+        );
+      }
+      logger.warn('execute start unconfirmed, but the worker has the run', { workflowId, executionId: execution.id });
+    }
 
     return c.json(
       {

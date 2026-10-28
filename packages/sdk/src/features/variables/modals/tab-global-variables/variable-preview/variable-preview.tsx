@@ -1,4 +1,4 @@
-import { NavButton } from '@synergycodes/overflow-ui';
+import { NavButton } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 
@@ -29,18 +29,26 @@ export function VariablePreview({ id, onEdit, onRemove }: Props) {
         <VariableMeta name={variable.name} type={variable.type} />
         <div className={styles['actions']}>
           {onEdit && (
-            <NavButton tooltip={t('common.edit')} onClick={onEdit} size="extra-small">
-              <Icon name="PencilSimple" />
-            </NavButton>
+            <NavButton
+              aria-label={t('common.edit')}
+              tooltip={t('common.edit')}
+              onClick={onEdit}
+              size="xs"
+              prefixIcon={<Icon name="PencilSimple" />}
+            />
           )}
           {onRemove && (
-            <NavButton tooltip={t('common.remove')} onClick={onRemove} size="extra-small">
-              <Icon name="Trash" />
-            </NavButton>
+            <NavButton
+              aria-label={t('common.remove')}
+              tooltip={t('common.remove')}
+              onClick={onRemove}
+              size="xs"
+              prefixIcon={<Icon name="Trash" />}
+            />
           )}
         </div>
       </div>
-      <p className={clsx('ax-public-p11', styles['description'])}>{variable.description}</p>
+      <p className={clsx('wb-text-body-s', styles['description'])}>{variable.description}</p>
     </div>
   );
 }

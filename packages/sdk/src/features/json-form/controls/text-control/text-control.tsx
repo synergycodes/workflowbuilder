@@ -1,4 +1,4 @@
-import { Input } from '@synergycodes/overflow-ui';
+import { Input } from '@workflowbuilder/ui';
 import { useEffect, useState } from 'react';
 
 import type { TextControlProps } from '../../types/controls';
@@ -51,7 +51,7 @@ function TextControl(props: TextControlProps) {
         value={inputValue}
         onChange={onChange}
         onBlur={onBlur}
-        error={hasErrors}
+        state={hasErrors ? 'critical' : 'default'}
         disabled={isDisabled}
         placeholder={placeholder}
       />

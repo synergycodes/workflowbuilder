@@ -1,4 +1,6 @@
 // About actions: apps/demo/src/app/store/README.md
+import { isDeepEqual } from 'remeda';
+
 import {
   migrateLegacyHandleIdsOnEdges,
   migrateLegacyHandleIdsOnNodes,
@@ -8,7 +10,7 @@ import type { VariableDefinition } from '../../../features/variables/types';
 import type { LayoutDirection } from '../../../node/common';
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../node/node-data';
 import type { IntegrationDataFormat } from '../../../types/integration';
-import { getNodeWithErrors } from '../../../utils/validation/get-node-errors';
+import { getNodeWithErrors, getNodesWithErrors } from '../../../utils/validation/get-node-errors';
 import { useStore } from '../../store';
 import { skipDynamicValuesInEdges, skipDynamicValuesInNodes } from './utils/dynamic-values';
 
@@ -86,9 +88,9 @@ type GetStoreDataParams = {
  * persistable payload to the host — e.g. inside a `props`-strategy
  * `onDataSave` callback or before posting to a custom backend.
  *
- * Dynamic, runtime-only values (selection, computed avoid-edge points,
- * …) are stripped by default; pass `shouldSkipDynamicValues: false` if
- * you specifically need the live values.
+ * Dynamic, runtime-only values (selection, measured node sizes, the dragging
+ * flag, computed avoid-edge points, …) are stripped by default; pass
+ * `shouldSkipDynamicValues: false` if you specifically need the live values.
  *
  * @category Store
  */
@@ -97,7 +99,7 @@ export function getStoreDataForIntegration(params: GetStoreDataParams = {}): Int
   const state = useStore.getState();
 
   return {
-    name: state.documentName || '',
+    name: state.workflowName || '',
     globalVariables: state.globalVariables || {},
     // It removes selected, dynamic points from avoid nodes etc.
     nodes: shouldSkipDynamicValues ? skipDynamicValuesInNodes(state.nodes) : state.nodes,
@@ -108,7 +110,7 @@ export function getStoreDataForIntegration(params: GetStoreDataParams = {}): Int
 
 export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFormat>) {
   useStore.setState((state) => ({
-    documentName: loadData.name ?? state.documentName,
+    workflowName: loadData.name ?? state.workflowName,
     globalVariables: loadData.globalVariables || state.globalVariables,
     nodes: (loadData.nodes ? migrateLegacyHandleIdsOnNodes(loadData.nodes) : state.nodes).map(getNodeWithErrors),
     edges: loadData.edges ? migrateLegacyHandleIdsOnEdges(loadData.edges) : state.edges,
@@ -120,6 +122,27 @@ export function getStoreSingleSelected() {
   const state = useStore.getState();
 
   return selectSingleSelectedElement(state);
+}
+
+/**
+ * Revalidates all nodes in the store and updates their JSON schema validation errors if needed.
+ *
+ * Compares current nodes with revalidated ones and only updates state when errors change,
+ * avoiding unnecessary re-renders.
+ *
+ * @category Store
+ */
+export function refreshNodesErrorsIfNeeded() {
+  const stateNodes = useStore.getState().nodes;
+  const stateNodesWithRefreshedErrors = getNodesWithErrors(stateNodes);
+
+  if (isDeepEqual(stateNodes, stateNodesWithRefreshedErrors)) {
+    return;
+  }
+
+  useStore.setState({
+    nodes: stateNodesWithRefreshedErrors,
+  });
 }
 
 export function saveVariableDefinition(definition: VariableDefinition) {

@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "tsx watch --env-file=.env ./src/server.ts",
     "start": "tsx --env-file=.env ./src/server.ts",
+    "start:prod": "tsx ./src/server.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint",
     "lint:fix": "eslint --fix",
@@ -16,14 +17,21 @@
     "db:studio": "drizzle-kit studio"
   },
   "dependencies": {
+    "@ai-sdk/openai-compatible": "catalog:",
     "@hono/node-server": "^1.14.0",
-    "@temporalio/client": "^1.11.0",
+    "@temporalio/client": "catalog:",
+    "@workflow-builder/ai-config": "workspace:*",
     "@workflow-builder/execution-core": "workspace:*",
+    "@workflow-builder/temporal-connection": "workspace:*",
     "@workflow-builder/types": "workspace:*",
+    "@workflowbuilder/temporal": "workspace:*",
+    "ai": "catalog:",
     "dotenv": "^17.4.2",
     "drizzle-orm": "^0.44.0",
     "hono": "^4.7.0",
     "postgres": "^3.4.5",
+    "remeda": "^2.19.2",
+    "tsx": "^4.19.3",
     "zod": "^4.3.6"
   },
   "devDependencies": {

@@ -1,4 +1,4 @@
-import type { SelectItem } from '@synergycodes/overflow-ui';
+import type { SelectItem } from '@workflowbuilder/ui';
 
 import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
 

@@ -1,0 +1,8 @@
+{
+  "plugins": {
+    "undoRedo": {
+      "undo": "Cofnij",
+      "redo": "Ponów"
+    }
+  }
+}

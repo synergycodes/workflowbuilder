@@ -1,12 +1,13 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@synergycodes/overflow-ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
 import styles from './workflow-node-template.module.css';
 
-import type { IconType, LayoutDirection } from '../../../../node/common';
+import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';
 import type { BaseNodeProperties } from '../../../../node/node-schema';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
@@ -21,7 +22,7 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
  * see [Add a custom node](/docs/guides/add-a-custom-node/) for the
  * full pattern.
  *
- * `id`, `icon`, `label`, `description` define the header. `selected` /
+ * `id`, `icon`, `accent`, `label`, `description` define the header. `selected` /
  * `isValid` drive visual state. `showHandles` toggles the connection
  * dots; `layoutDirection` controls which sides those dots sit on.
  * `children` are rendered inside a collapsible body section.
@@ -30,7 +31,7 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
  * their schema's shape without casts:
  *
  * ```ts
- * type MyProps = WorkflowNodeTemplateProps<NodeDataProperties<MySchema>>;
+ * type MyProps = WorkflowBuilderNodeTemplateProps<NodeDataProperties<MySchema>>;
  * ```
  *
  * Defaults to the wide `BaseNodeProperties & Record<string, unknown>` so
@@ -38,13 +39,17 @@ import { getHandlesAlignment } from '../../handles/get-handles-alignment';
  *
  * @category Components
  */
-export type WorkflowNodeTemplateProps<P = BaseNodeProperties & Record<string, unknown>> = {
+export type WorkflowBuilderNodeTemplateProps<P = BaseNodeProperties & Record<string, unknown>> = {
   id: string;
   icon: IconType;
+  /** Icon color from the node definition, filled in by the SDK for canvas and palette renders. */
+  accent?: NodeIconAccent;
   label: string;
   description: string;
   data?: NodeData<P>;
   selected?: boolean;
+  /** Render the Node Disabled variant (palette entries that cannot be added). */
+  disabled?: boolean;
   layoutDirection?: LayoutDirection;
   isConnecting?: boolean;
   showHandles?: boolean;
@@ -56,14 +61,17 @@ const WorkflowNodeTemplateComponent = memo(
   ({
     id,
     icon,
+    accent,
     label,
     description,
     layoutDirection = 'RIGHT',
     selected = false,
+    disabled = false,
     showHandles = true,
     isValid,
     children,
-  }: WorkflowNodeTemplateProps) => {
+  }: WorkflowBuilderNodeTemplateProps) => {
+    const { t } = useTranslation();
     const isCanvasNode = showHandles;
 
     const handleTargetId = getHandleId({ handleType: 'target' });
@@ -72,16 +80,16 @@ const WorkflowNodeTemplateComponent = memo(
     const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
     const handleSourcePosition = getHandlePosition({ direction: layoutDirection, handleType: 'source' });
 
-    const iconElement = useMemo(() => <Icon name={icon} size="large" />, [icon]);
+    const iconElement = useMemo(() => <Icon name={icon} size="inherit" />, [icon]);
 
     const handlesAlignment = getHandlesAlignment({ layoutDirection });
 
     return (
-      <Collapsible>
-        <NodePanel.Root selected={selected} className={styles['content']}>
+      <Collapsible expandLabel={t('common.expand')} collapseLabel={t('common.collapse')}>
+        <NodePanel.Root selected={selected} disabled={disabled} className={styles['content']}>
           <NodePanel.Header>
-            <NodeIcon icon={iconElement} />
-            <NodeDescription label={label} description={description} />
+            <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
+            <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>

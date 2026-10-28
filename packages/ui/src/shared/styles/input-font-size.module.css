@@ -1,0 +1,20 @@
+@layer ui.component {
+  .l {
+    composes: wb-text-label-l from global;
+  }
+
+  .m,
+  .s,
+  .xs {
+    composes: wb-text-label-m from global;
+  }
+
+  .large {
+    composes: wb-text-label-l from global;
+  }
+
+  .medium,
+  .small {
+    composes: wb-text-label-m from global;
+  }
+}

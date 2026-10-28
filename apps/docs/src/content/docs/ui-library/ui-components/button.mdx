@@ -1,0 +1,31 @@
+---
+title: Button
+description: A flexible, type-safe action button with variants and sizes.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { ButtonExample } from '../../../../components/ui-examples/button';
+
+`Button` renders its label from `children` and accepts optional `prefixIcon` and
+`suffixIcon` props. Use the `square` or `round` shape for icon-only buttons.
+
+<ButtonExample client:visible />
+
+## Usage
+
+```tsx
+import { Button } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Button variant="primary">Submit</Button>;
+}
+```
+
+## Props
+
+<PropsTable slug="button" />
+
+## CSS variables
+
+<CssVariablesTable slug="button" />

@@ -16,6 +16,8 @@ import { Image } from 'astro:assets';
 
 import wbOverviewImg from '@/assets/wb-overview.webp';
 
+import { STARTER_FORK_URL } from '@/config';
+
 <Image src={wbOverviewImg} alt="Workflow Builder - canvas, node palette, and properties panel" />
 
 Workflow Builder is a React SDK for building and embedding visual workflow editors into your application. It is available in open-source and enterprise editions.
@@ -55,7 +57,7 @@ Workflow Builder is commonly used to:
 
 ## Live demo
 
-[Open the live demo](https://app.workflowbuilder.io) to try Workflow Builder in your browser, or [contact us](https://www.workflowbuilder.io/contact) for a guided walkthrough.
+[Open the live demo](https://app.workflowbuilder.io) to try Workflow Builder in your browser. To read and edit the code, open the <a href={STARTER_FORK_URL} target="_blank" rel="noopener noreferrer">runnable starter in StackBlitz</a> — a minimal React app that embeds the SDK. For a guided walkthrough, [contact us](https://www.workflowbuilder.io/contact).
 
 ## See also
 

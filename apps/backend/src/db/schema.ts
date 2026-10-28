@@ -30,6 +30,9 @@ export const executions = pgTable(
     startedAt: timestamp('started_at', { withTimezone: true }),
     finishedAt: timestamp('finished_at', { withTimezone: true }),
     errorMessage: text('error_message'),
+    // Open strings, not enums: the vocabulary is the product's.
+    outcome: text('outcome'),
+    resolvedBy: text('resolved_by'),
     createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
     updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   },

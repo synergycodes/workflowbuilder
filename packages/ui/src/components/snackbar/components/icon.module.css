@@ -1,0 +1,34 @@
+@layer ui.component {
+  .container {
+    display: flex;
+    align-self: flex-start;
+    padding-top: var(--wb-ds-space-25);
+
+    &.center {
+      align-self: center;
+      padding-top: 0;
+    }
+
+    .status {
+      width: 1.375rem;
+      height: 1.375rem;
+      color: var(--wb-public-snackbar-default-icon-color);
+
+      &.success {
+        color: var(--wb-public-snackbar-success-icon-color);
+      }
+
+      &.error {
+        color: var(--wb-public-snackbar-error-icon-color);
+      }
+
+      &.warning {
+        color: var(--wb-public-snackbar-warning-icon-color);
+      }
+
+      &.info {
+        color: var(--wb-public-snackbar-info-icon-color);
+      }
+    }
+  }
+}

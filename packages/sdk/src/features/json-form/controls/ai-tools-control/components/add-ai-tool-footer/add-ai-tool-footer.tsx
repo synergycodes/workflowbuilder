@@ -1,4 +1,4 @@
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 
 import styles from './add-ai-tool-footer.module.css';
 
@@ -11,7 +11,7 @@ type Props = {
 export function AddAiToolFooter({ onCancelClick }: Props) {
   return (
     <div className={styles['footer']}>
-      <Button variant="secondary" onClick={onCancelClick}>
+      <Button variant="ghost-secondary" onClick={onCancelClick}>
         Cancel
       </Button>
       <Button variant="primary" type="submit" form={FORM_TOOLS_NAME}>

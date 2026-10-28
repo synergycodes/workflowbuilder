@@ -1,4 +1,4 @@
-import { TextArea } from '@synergycodes/overflow-ui';
+import { TextArea } from '@workflowbuilder/ui';
 import React, { Suspense } from 'react';
 
 import type { SyntaxHighlighterProps } from './syntax-highlighter';

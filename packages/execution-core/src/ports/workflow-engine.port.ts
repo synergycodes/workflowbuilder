@@ -1,17 +1,49 @@
 import type { BaseNode, WorkflowDefinition } from '@workflow-builder/types/workflow-execution/execution-model';
 
+import type { CompletedNodeExecution } from './activity-runner.port';
+
 export type WorkflowExecutionInput<TNode extends BaseNode> = {
   workflowId: string;
   executionId: string;
   definition: WorkflowDefinition<TNode>;
   triggerPayload: Record<string, unknown>;
+  // Non-secret server-side run config (`variables`) and the builder's global variables
+  // (`global`). Everything in either reaches Temporal Event History unredacted. See the
+  // `@workflowbuilder/temporal` README, "What Event History records".
   variables: Record<string, unknown>;
   global: Record<string, unknown>;
+};
+
+// The refusals a verdict can meet, declared once. The engine's own validator answers
+// with the first group; the delivery itself answers with the second.
+const VERDICT_REJECTIONS = [
+  'verdict_malformed',
+  'verdict_for_unknown_node',
+  'verdict_already_delivered',
+  'node_not_waiting',
+] as const;
+const DELIVERY_REJECTIONS = ['run_not_found', 'delivery_timeout'] as const;
+export const RESOLVE_NODE_REJECTIONS = [...VERDICT_REJECTIONS, ...DELIVERY_REJECTIONS] as const;
+
+export type VerdictRejection = (typeof VERDICT_REJECTIONS)[number];
+export type ResolveNodeRejection = (typeof RESOLVE_NODE_REJECTIONS)[number];
+
+export type ResolveNodeResult = { error?: undefined } | { error: { code: ResolveNodeRejection; message: string } };
+
+export type ResolveNodeInput = {
+  executionId: string;
+  nodeId: string;
+  resolution: CompletedNodeExecution;
 };
 
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 // TNode is opaque to the backend — only the worker narrows it to concrete types.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
+  // Resolves once the engine holds the run. A throw means the start was not confirmed.
+  // The engine may still have taken the run, so a caller must not assume it is not running.
   submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
   cancel(executionId: string): Promise<void>;
+  // Delivers the completion a parked node waits for. Refusals are results, not throws;
+  // anything else that goes wrong is thrown.
+  resolveNode(input: ResolveNodeInput): Promise<ResolveNodeResult>;
 }

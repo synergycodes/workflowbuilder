@@ -42,3 +42,7 @@ export function getNodeWithErrors(node: WorkflowBuilderNode) {
     },
   };
 }
+
+export function getNodesWithErrors(nodes: WorkflowBuilderNode[]): WorkflowBuilderNode[] {
+  return nodes.map(getNodeWithErrors);
+}

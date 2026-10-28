@@ -1,0 +1,111 @@
+:root {
+  --wb-public-node-port-boundary-size: 3.125rem;
+  --wb-public-node-port-size: 0.25rem;
+  --wb-public-node-port-size-hover: 0.75rem;
+  --wb-public-node-port-border-size: 0.125rem;
+
+  --wb-public-node-port-background-color: var(--wb-ds-canvas-port-fill-default);
+  --wb-public-node-port-border-color: var(--wb-ds-canvas-port-stroke-default);
+
+  --wb-public-node-port-background-color-hover: var(--wb-ds-canvas-port-fill-active);
+  --wb-public-node-port-border-color-hover: var(--wb-ds-canvas-port-stroke-active);
+}
+
+@layer ui.component {
+  .handle-wrapper {
+    & .header {
+      position: relative;
+
+      :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
+        top: calc(
+          var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-border-size) +
+            var(--wb-public-node-icon-glyph-size) / 2
+        );
+      }
+      :global(.react-flow__handle.react-flow__handle-right) {
+        box-sizing: content-box;
+        right: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
+      }
+
+      :global(.react-flow__handle.react-flow__handle-left) {
+        box-sizing: content-box;
+        left: calc(-1 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)));
+      }
+    }
+
+    :global(.react-flow__handle.react-flow__handle-top) {
+      box-sizing: content-box;
+      top: 0;
+      transform: translate(-50%, -50%);
+    }
+
+    :global(.react-flow__handle.react-flow__handle-bottom) {
+      box-sizing: content-box;
+      bottom: 0;
+      transform: translate(-50%, 50%);
+    }
+
+    :global(.react-flow__handle) {
+      box-sizing: content-box;
+      width: var(--wb-public-node-port-size);
+      height: var(--wb-public-node-port-size);
+      min-width: 0;
+      min-height: 0;
+
+      background: var(--wb-public-node-port-background-color);
+      border: var(--wb-public-node-port-border-size) solid var(--wb-public-node-port-border-color);
+
+      transition-property: background-color, border-color, width, height;
+      transition-timing-function: ease-in-out;
+      transition-duration: 0.1s;
+    }
+
+    :global(.react-flow__handle::before) {
+      content: '';
+
+      position: absolute;
+      width: var(--wb-public-node-port-boundary-size);
+      height: var(--wb-public-node-port-boundary-size);
+
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+
+      border-radius: 50%;
+    }
+
+    /* State rules repeat the base rule's content-box opt-out: the build
+       injects border-box per rule, so an undeclared box-sizing here would
+       shrink the handle in exactly these states. */
+    /* .connectingto is assigned by proximity (connectionRadius), so :hover cannot cover the target. */
+    :global(.connectingfrom),
+    :global(.connectingto.valid) {
+      box-sizing: content-box;
+      background: var(--wb-public-node-port-background-color-hover);
+      border-color: var(--wb-public-node-port-border-color-hover);
+
+      width: var(--wb-public-node-port-size-hover);
+      height: var(--wb-public-node-port-size-hover);
+    }
+
+    :global(.react-flow__handle) {
+      &:hover {
+        box-sizing: content-box;
+        background-color: var(--wb-public-node-port-background-color-hover);
+        border-color: var(--wb-public-node-port-border-color-hover);
+
+        width: var(--wb-public-node-port-size-hover);
+        height: var(--wb-public-node-port-size-hover);
+      }
+    }
+
+    &:hover :global(.react-flow__handle.connectionindicator) {
+      box-sizing: content-box;
+      background-color: var(--wb-public-node-port-background-color-hover);
+      border-color: var(--wb-public-node-port-border-color-hover);
+
+      width: var(--wb-public-node-port-size-hover);
+      height: var(--wb-public-node-port-size-hover);
+    }
+  }
+}

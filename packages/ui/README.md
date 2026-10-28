@@ -1,0 +1,163 @@
+# @workflowbuilder/ui
+
+Workflow Builder's component library: accessible, themeable React UI primitives - button, input, select, modal, menu, date picker, switch, tooltip, and more - built on [Base UI](https://base-ui.com), plus diagram building blocks (node and edge parts) for visual editors.
+
+Developed and maintained by **[Synergy Codes](https://www.synergycodes.com/)**.
+
+## Quick Start: 3-Minute Guide
+
+### 📦 Installation
+
+Use one of the commands below to add **`@workflowbuilder/ui`** to your project:
+
+```bash
+npm install @workflowbuilder/ui
+```
+
+```bash
+pnpm add @workflowbuilder/ui
+```
+
+```bash
+yarn add @workflowbuilder/ui
+```
+
+> **Peers &amp; dependencies.** The only peer dependencies are `react` and
+> `react-dom` (bring your own). `@base-ui/react` (pinned to `1.7.0`) is a regular
+> dependency, so it installs automatically — no need to add it yourself. The
+> component dependencies `date-fns`, `react-day-picker` and `clsx` are bundled
+> into the package; `@phosphor-icons/react`, `react-textarea-autosize` and
+> `@base-ui/react` are regular dependencies resolved from your `node_modules`.
+
+### 🎨 Import styles
+
+Import components from the package root (the recommended default). Their styles,
+including the global layer order, reset, and typography, are injected
+automatically, so you only need to add the design tokens:
+
+```css
+@import '@workflowbuilder/ui/tokens.css';
+```
+
+```tsx
+import '@workflowbuilder/ui/tokens.css';
+```
+
+> **Subpath imports.** You can also import a single component directly, e.g.
+> `import { DatePicker } from '@workflowbuilder/ui/date-picker'`. That
+> injects only the component's own CSS. Every stylesheet carries the cascade
+> layer order, so import order doesn't matter; add
+> `import '@workflowbuilder/ui/styles.css'` once if you also want the global
+> reset and typography.
+
+### 🎛️ Apply the Theme
+
+To make the styles use proper variables, include data-theme (light or dark) attribute in <html>:
+
+```html
+<html data-theme="light"></html>
+```
+
+### 🧱 Use components
+
+```tsx
+import { Input } from '@workflowbuilder/ui';
+
+// …
+
+<Input value={value} onChange={onChange} />;
+```
+
+## Overview
+
+Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` provides a unified set of designed, ready-to-use components: buttons, inputs, accordions, node templates, and more — all built to work seamlessly together.
+
+## Features
+
+- Unified Component System: Seamlessly integrated UI and diagram components
+- Ready-to-use Components: Comprehensive set of pre-built components
+- Token-based Customization: Easy theming through CSS variables
+- Developer-friendly: Focus on developer experience and productivity
+- React Flow Compatible: Perfect for React Flow users with pre-built node templates that match React Flow's styling
+
+## Customization
+
+`@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
+
+Override a generated design token:
+
+```css
+:root {
+  --wb-ds-ui-bg-base: #40ba12;
+}
+```
+
+Or scope a public override to one component:
+
+```css
+:root {
+  --wb-public-date-picker-dropdown-background: #40ba12;
+}
+```
+
+### `@workflowbuilder/ui` css layers
+
+`@workflowbuilder/ui` uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to separate its styles from yours. By default, CSS styles outside of any layer take precedence over what `@workflowbuilder/ui` defines, so your styles will always win the specificity war. You can customize `@workflowbuilder/ui` components with simple `input {}`.
+
+```css
+@layer ui.component {
+  .separator {
+    /* … */
+  }
+}
+```
+
+Default `@workflowbuilder/ui` order:
+
+```css
+@layer ui.base, ui.component;
+```
+
+# 🛠️ Development
+
+Run these from the monorepo root.
+
+Install dependencies:
+
+```bash
+pnpm i
+```
+
+Build the library (runs the built-CSS guard afterwards):
+
+```bash
+pnpm --filter @workflowbuilder/ui build
+```
+
+Rebuild on change while developing:
+
+```bash
+pnpm --filter @workflowbuilder/ui dev
+```
+
+Run the unit tests:
+
+```bash
+pnpm --filter @workflowbuilder/ui test
+```
+
+To see components rendered live, start the documentation site with `pnpm dev:docs` and open its UI Library gallery.
+
+### 📣 Important Note on Underlying Technology
+
+> **`@workflowbuilder/ui` is built on top of [Base UI](https://base-ui.com), a headless component library that focuses on accessibility and logic, while leaving the styling up to us.**
+>
+> Thanks to Base UI, `@workflowbuilder/ui` provides components that are **accessible by default** and **fully customizable** through our design tokens.
+>
+> The library was previously published as `@synergycodes/overflow-ui` on the now-deprecated [MUI Base](https://v6.mui.com/base-ui/getting-started/) stack. The library was rebuilt on Base UI and moved under the `@workflowbuilder/ui` name; [CHANGELOG.md](https://github.com/synergycodes/workflowbuilder/blob/main/packages/ui/CHANGELOG.md) has what changed in the move.
+
+## Showcase
+
+**[Workflow Builder](https://www.workflowbuilder.io/)** is a frontend-focused starter app for building workflows, offering core features, best practices, and easy backend integration for faster client delivery.
+
+https://www.workflowbuilder.io/

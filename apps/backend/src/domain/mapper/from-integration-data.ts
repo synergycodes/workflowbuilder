@@ -1,7 +1,10 @@
+import { isDefined, pickBy } from 'remeda';
+
 import {
   type BaseNode,
   NODE_ERROR_POLICIES,
   type NodeErrorPolicy,
+  type NodeRole,
   type WorkflowDefinition,
   type WorkflowEdgeDefinition,
 } from '@workflow-builder/types/workflow-execution/execution-model';
@@ -25,19 +28,27 @@ export function mapToExecutionModel(workflowId: string, data: WorkflowSnapshot):
   return { workflowId, nodes, edges };
 }
 
-// `errorPolicy` is authored in the UI as a regular JSONForms property
-// (via `sharedProperties` in the SDK), so it arrives nested in
-// `data.properties`. The runner expects it at the top level of `BaseNode`,
-// so we lift it here and keep `config` free of runner-only fields.
+// Lifts what an engine reads out of `data.properties`: `label`, `errorPolicy` (from the SDK's
+// `sharedProperties`) and `decisionRequest` (validated and defaulted by the parse, unchecked here).
+// `role` comes from `data.isStartNode` beside the properties; `description` stays in `config`.
 function mapNode(node: FrontendNode): BaseNode {
-  const { errorPolicy: rawErrorPolicy, ...config } = node.data.properties ?? {};
+  // Spread first, so only own keys are read. The parse keeps unknown keys, and an own
+  // `__proto__` among them would leave the properties inheriting fields no schema saw;
+  // this is the one read that would turn such a field into a real one on the way out.
+  const { errorPolicy: rawErrorPolicy, label: rawLabel, decisionRequest, ...config } = { ...node.data.properties };
   const errorPolicy = isErrorPolicy(rawErrorPolicy) ? rawErrorPolicy : undefined;
+  const label = isNonEmptyString(rawLabel) ? rawLabel.trim() : undefined;
+  const role: NodeRole | undefined = node.data.isStartNode === true ? 'start' : undefined;
   return {
     id: node.id,
     type: node.data.type,
     config,
-    ...(errorPolicy === undefined ? {} : { errorPolicy }),
+    ...pickBy({ label, errorPolicy, decisionRequest, role }, isDefined),
   };
+}
+
+function isNonEmptyString(value: unknown): value is string {
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 function isErrorPolicy(value: unknown): value is NodeErrorPolicy {

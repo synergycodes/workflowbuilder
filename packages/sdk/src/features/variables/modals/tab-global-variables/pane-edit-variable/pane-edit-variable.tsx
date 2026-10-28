@@ -39,7 +39,7 @@ export function PaneEditVariable({ className, setActivePane, id }: Props) {
   return (
     <div className={clsx(className)}>
       <TabHeader title="workflowsSettings.tab.editVariable" onGoBack={() => setActivePane(VARIABLE_PANE.LIST)} />
-      {!variable && t('variables.variableNotFound')}
+      {!variable && <span className="wb-text-body-m">{t('variables.variableNotFound')}</span>}
       {variable && (
         <VariableForm
           variant={nodesWithVariable.length > 0 ? 'edit-limited' : 'edit'}

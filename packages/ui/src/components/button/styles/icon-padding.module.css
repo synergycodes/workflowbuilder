@@ -1,0 +1,29 @@
+:root {
+  --wb-public-button-icon-padding-xl: var(--wb-ds-space-150);
+  --wb-public-button-icon-padding-l: var(--wb-ds-space-137);
+  --wb-public-button-icon-padding-m: var(--wb-ds-space-112);
+  --wb-public-button-icon-padding-s: var(--wb-ds-space-87);
+  --wb-public-button-icon-padding-xs: var(--wb-ds-space-75);
+}
+
+@layer ui.component {
+  .xl {
+    padding: var(--wb-public-button-icon-padding-xl);
+  }
+
+  .l {
+    padding: var(--wb-public-button-icon-padding-l);
+  }
+
+  .m {
+    padding: var(--wb-public-button-icon-padding-m);
+  }
+
+  .s {
+    padding: var(--wb-public-button-icon-padding-s);
+  }
+
+  .xs {
+    padding: var(--wb-public-button-icon-padding-xs);
+  }
+}

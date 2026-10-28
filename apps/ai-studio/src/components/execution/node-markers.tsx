@@ -3,7 +3,7 @@ import { Icon } from '@workflowbuilder/sdk';
 
 import styles from './node-markers.module.css';
 
-import { selectNode, useExecutionStore } from '../../stores/use-execution-store';
+import { setLogCollapsed, useExecutionStore } from '../../stores/use-execution-store';
 
 type Props = {
   props?: {
@@ -15,14 +15,17 @@ export function ExecutionNodeMarkers({ props }: Props) {
   const nodeId = props?.nodeId ?? '';
   const nodeState = useExecutionStore((s) => s.nodeStates[nodeId]);
 
-  if (!nodeState || nodeState.status === 'idle') return null;
+  // Only a decision node waits, and its template says so in its own footer.
+  if (!nodeState || nodeState.status === 'idle' || nodeState.status === 'waiting') return null;
 
-  const isClickable = nodeState.status === 'completed' || nodeState.status === 'failed';
+  const isClickable =
+    nodeState.status === 'completed' || nodeState.status === 'failed' || nodeState.status === 'skipped';
 
+  // The click also selects the node on the canvas, which drives the log highlight.
   return (
     <div
       className={`${styles['container']} ${isClickable ? styles['container--clickable'] : ''}`}
-      onClick={isClickable ? () => selectNode(nodeId) : undefined}
+      onClick={isClickable ? () => setLogCollapsed(false) : undefined}
     >
       {nodeState.status === 'running' && (
         <span className={`${styles['icon']} ${styles['icon--running']}`}>
@@ -37,6 +40,11 @@ export function ExecutionNodeMarkers({ props }: Props) {
       {nodeState.status === 'failed' && (
         <span className={`${styles['icon']} ${styles['icon--failed']}`}>
           <Icon name="WarningDiamond" />
+        </span>
+      )}
+      {nodeState.status === 'skipped' && (
+        <span className={`${styles['icon']} ${styles['icon--skipped']}`}>
+          <Icon name="SkipForward" />
         </span>
       )}
     </div>

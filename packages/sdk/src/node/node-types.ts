@@ -1,11 +1,11 @@
 /**
- * Built-in template categories the editor recognises. Drives diagram
- * validation rules (e.g. exactly one start node, decision branches),
- * the variable picker's traversal, and rendering choices in the default
- * node template.
+ * Built-in visual templates the editor ships. A palette item picks one via
+ * `NodeDefinition.templateType`, and the editor renders the node with the
+ * matching template on the canvas and in the palette preview.
  *
- * Custom node types declare their template type via this enum so the
- * editor can apply the matching rules.
+ * Rendering only: `StartNode` styles a node as an entry point but does not
+ * make it one. Whether a node starts a workflow is declared separately by
+ * {@link NodeData.isStartNode}.
  *
  * @category Types
  */

@@ -11,7 +11,13 @@
 > `<WorkflowBuilder.Root>`. References below to `Editor`, `createWorkflowBuilder`,
 > `WorkflowBuilderConfig`, `WorkflowBuilderInstance` describe symbols that no
 > longer exist; see current SDK exports in `packages/sdk/src/index.ts` for the
-> post-refactor surface. The notes are retained for historical context only.
+> post-refactor surface. The UI library was later swapped from the npm package
+> `@synergycodes/overflow-ui` to the in-repo `@workflowbuilder/ui`: the
+> `overflow-ui-css` Vite alias and the `@import` layout in sections 3-4 no
+> longer exist, and the "Vite doesn't extract CSS from bundled node_modules"
+> claim in section 3 turned out to be false (bundled chunk CSS imports ARE
+> extracted - the SDK now relies on exactly that). The notes are retained for
+> historical context only.
 
 ## Context
 

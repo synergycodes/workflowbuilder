@@ -1,0 +1,12 @@
+@layer ui.component {
+  .is-connection-target .react-flow__handle.target::before {
+    content: '';
+    position: absolute;
+    /* stylelint-disable csstools/value-no-unknown-custom-properties -- set from node-as-port-wrapper.tsx inline style */
+    width: var(--node-as-port-width);
+    height: var(--node-as-port-height);
+    transform: var(--node-as-port-position);
+    /* stylelint-enable csstools/value-no-unknown-custom-properties */
+    border-radius: 0;
+  }
+}

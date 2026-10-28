@@ -4,6 +4,8 @@
 
 ### Date: 29.04.2026
 
+> **Update 15.09.2026.** The throw is now a `PermanentNodeExecutionError` (a subclass of the `NodeExecutionError` described below), so the engine adapter stops the node on its first attempt instead of retrying a verdict that cannot change. The executor itself moved to `apps/execution-worker/src/executors/decision.ts`. The "Explicit default" alternative rejected below is the tracked follow-up `decision-default-branch`.
+
 ## Context
 
 The decision executor at `packages/execution-core/src/executors/decision.ts:21–29` was routing execution down `decisionBranches[0]` whenever no branch's conditions matched — silently. No log, no error event, no `node_failed`. The `matchedBranch` in the output reflected the silent fallback, so an event-log audit looked identical to a successful match.

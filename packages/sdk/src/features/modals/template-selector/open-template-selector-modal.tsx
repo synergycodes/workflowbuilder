@@ -7,10 +7,12 @@ import { openModal } from '../stores/use-modal-store';
 import { TemplateSelector } from './template-selector';
 
 export function openTemplateSelectorModal() {
+  if (useStore.getState().isReadOnly) return;
+
   openModal({
     content: <TemplateSelector />,
     icon: <Icon name="Cube" />,
-    title: i18n.t('plugins.help.header'),
+    title: i18n.t('templateSelector.title'),
     onModalClosed: () => useStore.getState().setDiagramModel(undefined, { skipIfNotEmpty: true }),
   });
 }

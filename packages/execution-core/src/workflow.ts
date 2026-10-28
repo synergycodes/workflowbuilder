@@ -7,11 +7,25 @@
 export type { BaseNode, NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
 
 export { runGraph } from './graph-runner';
+export type { RunGraphOutcome } from './graph-runner';
 
 export { NodeExecutionError } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './ports/workflow-engine.port';
-export type { ActivityRunnerPort, NodeExecutionResult } from './ports/activity-runner.port';
+export type {
+  ResolveNodeInput,
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  VerdictRejection,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './ports/workflow-engine.port';
+export type {
+  ActivityRunnerPort,
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';
+export type { PatchId, VersioningPort } from './ports/versioning.port';

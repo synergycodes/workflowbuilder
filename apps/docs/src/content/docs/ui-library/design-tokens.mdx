@@ -1,0 +1,79 @@
+---
+title: Design tokens
+description: How @workflowbuilder/ui turns Figma design tokens into the --wb-ds-* CSS custom properties that style every component.
+---
+
+Every `@workflowbuilder/ui` component uses generated `--wb-ds-*` design tokens for
+shared visual decisions. Components also expose hand-authored `--wb-public-*`
+variables whose defaults may reference tokens or component-specific values.
+
+## The pipeline
+
+Tokens live in the private `@workflowbuilder/ui-tokens` package (`packages/tokens`)
+and are compiled to CSS with [Style Dictionary](https://styledictionary.com/):
+
+```
+tokens.json            # Figma export: the design-token source of truth
+   │  (style-dictionary, packages/tokens/src)
+   ▼
+primitives-mode-1.css  # raw scales (colors, spacing, radius, …) on :root
+canvas-value.css       # canvas tokens on :root
+tokens-light.css       # semantic tokens, scoped to html[data-theme='light']
+tokens-dark.css        # semantic tokens, scoped to html[data-theme='dark']
+effects-light.css      # shadow tokens, scoped to html[data-theme='light']
+effects-dark.css       # shadow tokens, scoped to html[data-theme='dark']
+   │
+   ▼
+tokens.css             # the six above, bundled - this is what you import
+```
+
+`tokens.json` is exported from Figma and contains six token sets:
+**Primitives/Mode 1**, **Tokens/Light**, **Tokens/Dark**, **Canvas/value**,
+**Effects/light**, and **Effects/dark**.
+Style Dictionary flattens each into kebab-cased CSS variables:
+
+- **Primitives** become `--wb-ds-colors-*`, `--wb-ds-space-*`, `--wb-ds-radius-*`, etc.
+  on `:root` - the raw palette and scales.
+- **Tokens/Light** and **Tokens/Dark** become the _semantic_ layer
+  (`--wb-ds-ui-*`, `--wb-ds-components-*`, …), each scoped to
+  `html[data-theme='light']` / `html[data-theme='dark']` so a single attribute
+  switch reskins everything.
+- **Effects** carry the shadow values per theme; **Canvas** styles the diagram
+  surface.
+
+Components reference the semantic tokens, which in turn reference the primitives.
+
+## Using the tokens
+
+Import the bundled stylesheet once and set a theme on `<html>`:
+
+```ts
+import '@workflowbuilder/ui/tokens.css';
+```
+
+```html
+<html data-theme="light">
+  <!-- or "dark" -->
+</html>
+```
+
+## Customizing
+
+There are three override levels, from broadest to most local:
+
+1. **Primitives** (`--wb-ds-colors-*`, `--wb-ds-space-*`, …) - retune the palette/scales globally.
+2. **Semantic tokens** (`--wb-ds-ui-*`, `--wb-ds-components-*`, …) - re-map meaning (e.g. make "primary" green).
+3. **Component variables** (`--wb-public-*`) - tweak a single component; component pages include generated tables for component-local variables.
+
+For the enterprise path you replace `tokens.json` with one generated from your
+own Figma design kit and rebuild; the generated design-token surface stays the same.
+
+## Regenerating
+
+The CSS is rebuilt from `tokens.json` whenever the package is built - on
+`pnpm install` (via the package's `prepare` script) and as part of
+`pnpm build:ui` / `pnpm build:lib`. To rebuild explicitly:
+
+```sh
+pnpm --filter @workflowbuilder/ui-tokens build
+```

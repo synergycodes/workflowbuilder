@@ -1,4 +1,4 @@
-import { Button, Checkbox } from '@synergycodes/overflow-ui';
+import { Button, Checkbox } from '@workflowbuilder/ui';
 import type { Edge, Node } from '@xyflow/react';
 import { useState } from 'react';
 import { Trans, useTranslation } from 'react-i18next';
@@ -56,10 +56,10 @@ export function DeleteConfirmationButtons({ onDeleteClick, onCancelClick }: Dele
 
   return (
     <div className={styles['buttons']}>
-      <Button variant="secondary" onClick={onCancelClick}>
+      <Button variant="ghost-secondary" onClick={onCancelClick}>
         {t('deleteConfirmation.cancel')}
       </Button>
-      <Button onClick={onDeleteClick} size="medium" variant="error" autoFocus>
+      <Button onClick={onDeleteClick} size="m" variant="critical" autoFocus>
         {t('deleteConfirmation.delete')}
       </Button>
     </div>

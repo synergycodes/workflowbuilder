@@ -165,6 +165,11 @@ Together they make missing documentation a CI-time failure rather than a silent 
 
 The sidebar still has to be updated by hand whenever a new `@category` appears in source. PR 3 introduces a parity check (`apps/docs/scripts/check-sidebar-categories.mjs`) wired into `pnpm build:docs` to catch the drift automatically.
 
+## UI API Reference and watch mode (2026-09-29)
+
+- **Second instance.** `createStarlightTypeDocPlugin()` adds a UI API Reference for `@workflowbuilder/ui` under UI Library, output `ui-api/`. Its entry point (`src/generated/ui-types.ts`) and sidebar groups (`src/generated/ui-api-categories.json`) are written by `scripts/generate-ui-api.mjs` from the types the UI Props tables link to. Both instances share one options object (`STRICT_TYPEDOC` in `astro.config.mjs`); the SDK group is now labelled "SDK API Reference".
+- **`watch` only under `astro dev`.** In watch mode TypeDoc waits for a TypeScript error to be fixed instead of failing, so `watch: true` made `astro build` hang on any type error in the documented source. `watch` is now `process.env.NODE_ENV === 'development'`, which Astro sets before loading the config for `astro dev` only. Astro keeps a preset `NODE_ENV`, so `NODE_ENV=development astro build` (or `astro build --devOutput`) still watches and can hang; CI and deploy do not set it.
+
 ## Deferred (post-PR 2)
 
 - **`@since` plugin port from ngDiagram.** Useful once the SDK starts shipping versioned releases. Today the SDK is `0.0.0` (private), so per-symbol `@since` tags would just spam frontmatter. Revisit when the SDK gets its first published version.

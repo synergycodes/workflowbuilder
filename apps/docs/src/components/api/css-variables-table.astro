@@ -1,0 +1,79 @@
+---
+// CSS custom properties of a UI component, generated from source into ui-api.json.
+import data from '../../generated/ui-api.json';
+
+interface CssVariable {
+  name: string;
+  kind: 'color' | 'size';
+  comment: string;
+}
+
+const { slug } = Astro.props as { slug: string };
+const entry = (data as Record<string, { cssVariables: CssVariable[] }>)[slug];
+if (!entry) {
+  throw new Error(
+    `ui-api.json has no entry for slug "${slug}" - check the slug against COMPONENTS in generate-ui-api.mjs`,
+  );
+}
+const cssVariables = entry?.cssVariables ?? [];
+
+const groups = [
+  { label: 'Color', vars: cssVariables.filter((v) => v.kind === 'color') },
+  { label: 'Size', vars: cssVariables.filter((v) => v.kind !== 'color') },
+].filter((group) => group.vars.length > 0);
+---
+
+{
+  cssVariables.length === 0 ? (
+    <p>This component does not expose its own CSS variables.</p>
+  ) : (
+    <div class="cssvars">
+      {groups.map((group) => (
+        <section class="group">
+          <h3 class="group-label">{group.label}</h3>
+          {group.vars.map((cssVariable) => (
+            <div class="var">
+              <code>{cssVariable.name}</code>
+              {cssVariable.comment && <span class="note">{cssVariable.comment}</span>}
+            </div>
+          ))}
+        </section>
+      ))}
+    </div>
+  )
+}
+
+<style>
+  .cssvars {
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+    margin-top: 1rem;
+  }
+  .group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  .group-label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: var(--sl-color-gray-3);
+  }
+  .var {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+  }
+  .var code {
+    font-size: 0.8125rem;
+  }
+  .note {
+    color: var(--sl-color-gray-3);
+    font-size: 0.8125rem;
+  }
+</style>

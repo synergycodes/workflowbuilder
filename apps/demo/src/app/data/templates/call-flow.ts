@@ -13,10 +13,10 @@ const diagram: DiagramModel = {
           segments: [],
           properties: { label: 'Incoming Call', description: 'Trigger', dataSource: 'Time-based Trigger' },
           type: 'trigger',
+          isStartNode: true,
           icon: 'Lightning',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '6e4c57e4-4136-4aa4-a183-43679b1f7170',
@@ -34,7 +34,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'a845d12e-0852-4809-96ce-334159e100fe',
@@ -52,7 +51,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '65706043-b1d2-4600-b918-3b82ff5dfc13',
@@ -70,7 +68,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'c187ef68-0fb8-47da-9a62-310afe91bfaa',
@@ -88,8 +85,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: 'b2a4b7a7-1900-4218-aea4-902de2e4eb51',
@@ -107,7 +102,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '09c67367-8d0d-44ae-bf4e-66b36f5c389f',
@@ -125,7 +119,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'b01ced25-ca06-47c7-a14f-21e5a0200a61',
@@ -143,8 +136,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: 'f1d785cc-1715-4b27-97e4-59347f08e660',
@@ -162,7 +153,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '6c3fca17-a1d4-4008-8a72-605d91eb7fd6',
@@ -180,7 +170,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: '6c0ecb78-cd09-4728-8dc7-414ab1c42ea2',
@@ -198,8 +187,6 @@ const diagram: DiagramModel = {
           icon: 'ListChecks',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: '18562830-da0b-443e-a859-79cb95473f59',
@@ -217,7 +204,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'bc34e3ae-6dd2-4543-8efe-190863df49e6',
@@ -235,8 +221,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: '6ab2c9e2-7e1e-4061-83ea-83a88aa246eb',
@@ -254,8 +238,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: 'feb863db-de51-4aee-8746-f9e02d993cb7',
@@ -273,8 +255,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: '456f755a-a1fe-4e18-a850-802cf28b4cf5',
@@ -292,7 +272,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
       },
       {
         id: 'cd9ae822-5ae4-4fe0-b876-760d460faf0e',
@@ -310,8 +289,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
       {
         id: '53f8322b-96ef-4775-824a-020f02cccd20',
@@ -329,8 +306,6 @@ const diagram: DiagramModel = {
           icon: 'PlayCircle',
         },
         selected: false,
-        measured: { width: 258, height: 64 },
-        dragging: false,
       },
     ],
     edges: [

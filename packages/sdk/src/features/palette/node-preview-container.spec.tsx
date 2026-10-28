@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setCustomNodeTemplates } from '../../data/node-templates';
 import type { PaletteItem } from '../../node/common';
-import type { WorkflowNodeTemplateProps } from '../diagram/nodes/workflow-node-template/workflow-node-template';
+import type { WorkflowBuilderNodeTemplateProps } from '../diagram/nodes/workflow-node-template/workflow-node-template';
 
 vi.mock('../diagram/nodes/ai-agent-node-template/ai-agent-node-template', () => ({
   AiAgentNodeTemplate: () => null,
@@ -15,7 +15,16 @@ vi.mock('../diagram/nodes/start-node-template/start-node-template', () => ({
   StartNodeTemplate: () => null,
 }));
 vi.mock('../diagram/nodes/workflow-node-template/workflow-node-template', () => ({
-  WorkflowNodeTemplate: (props: WorkflowNodeTemplateProps) => <div data-testid="built-in-template">{props.label}</div>,
+  WorkflowNodeTemplate: (props: WorkflowBuilderNodeTemplateProps) => (
+    <div
+      data-testid="built-in-template"
+      data-selected={props.selected}
+      data-disabled={props.disabled}
+      data-accent={props.accent}
+    >
+      {props.label}
+    </div>
+  ),
 }));
 
 let mockNodeDefinition: PaletteItem | undefined;
@@ -59,7 +68,7 @@ describe('NodePreviewContainer', () => {
   });
 
   it('renders the custom template when one is registered for the palette type', () => {
-    function CustomStub(props: WorkflowNodeTemplateProps) {
+    function CustomStub(props: WorkflowBuilderNodeTemplateProps) {
       return <div data-testid="custom-template">{`${props.label}|${props.description}|${props.id}`}</div>;
     }
     setCustomNodeTemplates({ 'multi-port': CustomStub });
@@ -76,6 +85,22 @@ describe('NodePreviewContainer', () => {
 
     expect(screen.getByTestId('built-in-template')).toBeDefined();
     expect(screen.queryByTestId('custom-template')).toBeNull();
+  });
+
+  it('passes the disabled node state to the template and never renders it selected', () => {
+    render(<NodePreviewContainer type="multi-port" disabled />);
+
+    const element = screen.getByTestId('built-in-template');
+    expect(element.dataset.selected).toBe('false');
+    expect(element.dataset.disabled).toBe('true');
+  });
+
+  it('passes the accent of the definition to the template', () => {
+    mockNodeDefinition = { ...baseDefinition, accent: 'green' };
+
+    render(<NodePreviewContainer type="multi-port" />);
+
+    expect(screen.getByTestId('built-in-template').dataset.accent).toBe('green');
   });
 
   it('renders nothing when the palette type is unknown', () => {

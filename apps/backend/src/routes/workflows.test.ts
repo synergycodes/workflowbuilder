@@ -1,3 +1,5 @@
+import type { SQL } from 'drizzle-orm';
+import { PgDialect } from 'drizzle-orm/pg-core';
 import { Hono } from 'hono';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -10,7 +12,8 @@ import {
   createAuthMiddleware,
   makeAssertAuthorized,
 } from '../auth';
-import { type TenantContext, type TenantVariables, createTenantMiddleware } from '../tenant';
+import { type TenantContext, createTenantMiddleware } from '../tenant';
+import type { BackendEnv } from './backend-env';
 import { createWorkflowsRoutes } from './workflows';
 
 // ---- module mocks -----------------------------------------------------------
@@ -99,7 +102,7 @@ function denyAll(): AuthPort {
 // `c.var.tenant`. `tenant` is what the configured TenantContextPort resolves
 // to (null = single-tenant reference default).
 function buildAppWithTenant(port: AuthPort, tenant: TenantContext | null) {
-  const app = new Hono<{ Variables: AuthVariables & TenantVariables }>();
+  const app = new Hono<BackendEnv>();
   app.use('*', createAuthMiddleware(port));
   app.use('*', createTenantMiddleware({ resolve: vi.fn(async () => tenant) }));
   app.route('/api/workflows', createWorkflowsRoutes(makeAssertAuthorized(port)));
@@ -230,6 +233,18 @@ describe('createWorkflowsRoutes - deny short-circuits before any DB access', () 
   });
 });
 
+describe('createWorkflowsRoutes - GET /:id', () => {
+  it('answers 200 with the row', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+
+    const response = await app.request('/api/workflows/7c9e6679-7425-40de-944b-e07fc1f90ae7');
+
+    expect(response.status).toBe(200);
+    expect(await response.json()).toMatchObject({ id: 'w-1', name: 'demo' });
+  });
+});
+
 // ---- tenant propagation on execute -----------------------------------------
 //
 // The resolved tenant is stamped onto the executions row (the worker's event
@@ -266,5 +281,397 @@ describe('createWorkflowsRoutes - execute propagates tenant identity', () => {
 
     expect(insert.values?.tenantId).toBeNull();
     expect(engineMock.submit).toHaveBeenCalledWith(expect.objectContaining({ variables: {} }));
+  });
+});
+
+// ---- a start the engine does not take ----------------------------------------
+//
+// The chain proxy discards call arguments, so this mock records what reaches `.set()` and
+// `.where()`, and the WHERE is asserted as rendered SQL.
+
+const dialect = new PgDialect();
+
+// `closed` is what `.returning()` yields: the row when the guard matched, nothing when the worker moved it first.
+function captureExecuteUpdate(closed: () => Promise<{ id: string }[]> = async () => [{ id: 'e-1' }]): {
+  set?: Record<string, unknown>;
+  where?: SQL;
+} {
+  const captured: { set?: Record<string, unknown>; where?: SQL } = {};
+  databaseMock.update.mockImplementation(() => ({
+    set: (values: Record<string, unknown>) => {
+      captured.set = values;
+      return {
+        where: (where: SQL) => {
+          captured.where = where;
+          return { returning: closed };
+        },
+      };
+    },
+  }));
+  return captured;
+}
+
+function execute() {
+  return executeRequest(buildAppWithTenant(allowAll(vi.fn(async () => true)), null));
+}
+
+describe('createWorkflowsRoutes - execute when the engine does not take the start', () => {
+  beforeEach(() => {
+    databaseMock.select.mockReturnValue(chainResolving([fakeWorkflow]));
+    captureExecuteInsert();
+  });
+
+  it('closes the run as failed and answers 503 with a fixed message and the execution id', async () => {
+    const transport = new Error('14 UNAVAILABLE: connect ECONNREFUSED 10.0.0.5:7233');
+    engineMock.submit.mockRejectedValueOnce(new Error('Failed to start Workflow', { cause: transport }));
+    const update = captureExecuteUpdate();
+
+    const response = await execute();
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      code: 'execution_start_failed',
+      message: 'The execution engine did not accept the run',
+      executionId: 'e-1',
+    });
+    expect(update.set).toMatchObject({
+      status: 'failed',
+      errorMessage: 'Failed to start Workflow: 14 UNAVAILABLE: connect ECONNREFUSED 10.0.0.5:7233',
+    });
+    expect(update.set?.finishedAt).toBeInstanceOf(Date);
+  });
+
+  it('closes the run only while it is still pending, or cancelling from a Stop sent during the start', async () => {
+    engineMock.submit.mockRejectedValueOnce(new Error('unavailable'));
+    const update = captureExecuteUpdate();
+
+    await execute();
+
+    const rendered = dialect.sqlToQuery(update.where!);
+    expect(rendered.sql).toBe('("executions"."id" = $1 and "executions"."status" in ($2, $3))');
+    expect(rendered.params).toEqual(['e-1', 'pending', 'cancelling']);
+  });
+
+  it('answers 202 when the worker already moved the run: the engine took the start without confirming it', async () => {
+    engineMock.submit.mockRejectedValueOnce(new Error('Failed to start Workflow'));
+    captureExecuteUpdate(async () => []);
+
+    const response = await execute();
+
+    expect(response.status).toBe(202);
+    expect(await response.json()).toEqual({
+      executionId: 'e-1',
+      status: 'pending',
+      streamUrl: '/api/executions/e-1/stream',
+    });
+  });
+
+  it('still answers 503 with the execution id when closing the run fails', async () => {
+    engineMock.submit.mockRejectedValueOnce(new Error('unavailable'));
+    captureExecuteUpdate(async () => {
+      throw new Error('connection terminated');
+    });
+
+    const response = await execute();
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toMatchObject({ code: 'execution_start_failed', executionId: 'e-1' });
+  });
+
+  it('answers 202 and writes nothing more when the engine takes the start', async () => {
+    const response = await execute();
+
+    expect(response.status).toBe(202);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+});
+
+// ---- snapshot validation on publish and execute -----------------------------
+// Never on draft save: a draft is legitimately mid-edit.
+
+function snapshotWithDecisionActions(
+  actions: unknown[],
+  properties: Record<string, unknown> = {},
+  request: Record<string, unknown> = {},
+) {
+  return {
+    nodes: [
+      { id: 'src', data: { type: 'product/any' } },
+      {
+        id: 'review',
+        data: {
+          type: 'product/any',
+          properties: { decisionRequest: { version: 1, actions, schema: { type: 'object', properties }, ...request } },
+        },
+      },
+    ],
+    edges: [{ id: 'e1', source: 'src', target: 'review' }],
+  };
+}
+
+const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
+const hold = { name: 'hold', label: 'Put on hold', effect: 'resume', port: 'held' };
+const validDecisionSnapshot = snapshotWithDecisionActions([approve]);
+const twoResumesSnapshot = snapshotWithDecisionActions([approve, hold]);
+const sharedPortSnapshot = snapshotWithDecisionActions([approve, { ...hold, port: 'approved' }]);
+const portlessResumeSnapshot = snapshotWithDecisionActions([{ name: 'approve', label: 'Approve', effect: 'resume' }]);
+const deadlineSnapshot = snapshotWithDecisionActions([approve], {}, { deadline: { after: '3d', policy: 'reject' } });
+
+type InvalidSnapshotBody = {
+  code: string;
+  details: { path: (string | number)[]; code?: string; domainCode?: string; params?: Record<string, string> }[];
+};
+
+function allowAllApp() {
+  return buildApp(allowAll(vi.fn(async () => true)));
+}
+
+function publish(app: ReturnType<typeof buildApp>) {
+  return app.request('/api/workflows/w-1/publish', { method: 'POST' });
+}
+
+function jsonRequest(app: ReturnType<typeof buildApp>, path: string, method: string, body: unknown) {
+  return app.request(path, { method, body: JSON.stringify(body), headers: { 'content-type': 'application/json' } });
+}
+
+describe('createWorkflowsRoutes - snapshot validation on publish', () => {
+  it('rejects a draft with a broken decision request and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: sharedPortSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.port',
+    );
+    // Beside zod's `code` and the English message, the identifier a client keys on and its value.
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'duplicate_port', params: { value: 'approved' } });
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses a resume action without a port as a structural issue at the port, and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: portlessResumeSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.0.port',
+    );
+    expect(detail).toMatchObject({ code: 'invalid_type' });
+    expect(detail).not.toHaveProperty('domainCode');
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses a rerun-source action that carries a port, naming the port', async () => {
+    const askAgain = { name: 'ask-again', label: 'Ask again', effect: 'rerun-source', port: 'again' };
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: snapshotWithDecisionActions([approve, askAgain]) }]),
+    );
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    const detail = body.details.find(
+      (candidate) => candidate.path.join('.') === 'nodes.1.data.properties.decisionRequest.actions.1.port',
+    );
+    expect(detail).toMatchObject({ code: 'custom', domainCode: 'port_not_allowed' });
+    expect(detail?.params).toEqual({});
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('refuses a decision request with a deadline, which nothing enforces yet, and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: deadlineSnapshot }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details).toEqual([
+      expect.objectContaining({
+        path: ['nodes', 1, 'data', 'properties', 'decisionRequest', 'deadline'],
+        domainCode: 'deadline_not_supported',
+      }),
+    ]);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('accepts a draft with a valid decision request and returns the row', async () => {
+    const published = { ...fakeWorkflow, draftJson: validDecisionSnapshot, publishedJson: validDecisionSnapshot };
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: validDecisionSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([published]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+    expect(await response.json()).toMatchObject({ id: 'w-1', publishedJson: validDecisionSnapshot });
+  });
+
+  it('accepts a draft whose decision request offers two resume actions on their own ports', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: twoResumesSnapshot }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, publishedJson: twoResumesSnapshot }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('accepts a form whose properties carry no type, as JSON Schema allows', async () => {
+    const draftJson = snapshotWithDecisionActions([approve], {
+      status: { enum: ['open', 'closed'] },
+      amount: { $ref: '#/$defs/money' },
+      nickname: { type: ['string', 'null'] },
+    });
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, publishedJson: draftJson }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('still publishes a workflow without a draft, unvalidated', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  // The falsy scalars used to short-circuit execute into published_version_missing while
+  // publish went on to validate them; only null means "no version".
+  it.each([
+    { name: 'a broken decision request', draftJson: sharedPortSnapshot },
+    { name: 'a decision request without a port', draftJson: portlessResumeSnapshot },
+    { name: 'a decision request with a deadline', draftJson: deadlineSnapshot },
+    { name: 'an empty string', draftJson: '' },
+    { name: 'zero', draftJson: 0 },
+    { name: 'false', draftJson: false },
+  ])('answers with the same body execute gives for $name', async ({ draftJson }) => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson }]));
+
+    const publishResponse = await publish(allowAllApp());
+    const publishBody = await publishResponse.json();
+    const executeResponse = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(executeResponse.status).toBe(400);
+    expect(await executeResponse.json()).toEqual(publishBody);
+    expect(databaseMock.insert).not.toHaveBeenCalled();
+    expect(engineMock.submit).not.toHaveBeenCalled();
+  });
+});
+
+describe('createWorkflowsRoutes - draft save never validates the snapshot', () => {
+  it('stores a draft with a broken decision request', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: sharedPortSnapshot }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: sharedPortSnapshot,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---- own __proto__ keys in a stored draft -------------------------------------
+// A draft is stored as sent, so it can carry one.
+
+const poisonedDraft = JSON.parse(
+  '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":' +
+    '{"__proto__":{"decisionRequest":{"version":99,"actions":[{"effect":"bogus"}],"schema":"x"}}}}}],"edges":[]}',
+);
+
+describe('createWorkflowsRoutes - own __proto__ key in the draft', () => {
+  it('publish answers 400 invalid_snapshot pointing at the key and writes nothing', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details.map((detail) => detail.path.join('.'))).toEqual(['nodes.0.data.properties.__proto__']);
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('draft save still stores it', async () => {
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: poisonedDraft }]));
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/draft', 'PATCH', {
+      draftJson: poisonedDraft,
+    });
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+});
+
+// ---- deeply nested drafts -----------------------------------------------------
+// Depth is the client's to choose, and only the body limit caps it.
+
+const DEEP = 20_000;
+
+function deepDraft(leaf: string): unknown {
+  return JSON.parse(
+    '{"nodes":[{"id":"n1","data":{"type":"product/any","properties":{"deep":' +
+      '['.repeat(DEEP) +
+      leaf +
+      ']'.repeat(DEEP) +
+      '}}}],"edges":[]}',
+  );
+}
+
+describe('createWorkflowsRoutes - a draft nested deeper than a call stack', () => {
+  it('publishes a clean one', async () => {
+    databaseMock.select.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('') }]));
+    databaseMock.update.mockReturnValue(chainResolving([{ ...fakeWorkflow, draftJson: null }]));
+
+    const response = await publish(allowAllApp());
+
+    expect(response.status).toBe(200);
+    expect(databaseMock.update).toHaveBeenCalledTimes(1);
+  });
+
+  it('refuses one hiding an own __proto__ key at the bottom, and points at it', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await publish(allowAllApp());
+    const body = (await response.json()) as InvalidSnapshotBody;
+
+    expect(response.status).toBe(400);
+    expect(body.code).toBe('invalid_snapshot');
+    expect(body.details[0]?.path.slice(0, 5)).toEqual(['nodes', 0, 'data', 'properties', 'deep']);
+    expect(body.details[0]?.path.at(-1)).toBe('__proto__');
+    expect(databaseMock.update).not.toHaveBeenCalled();
+  });
+
+  it('answers execute the same way', async () => {
+    databaseMock.select.mockReturnValue(
+      chainResolving([{ ...fakeWorkflow, draftJson: deepDraft('{"__proto__":{}}') }]),
+    );
+
+    const response = await jsonRequest(allowAllApp(), '/api/workflows/w-1/execute', 'POST', {
+      sourceVersion: 'draft',
+    });
+
+    expect(response.status).toBe(400);
+    expect(((await response.json()) as InvalidSnapshotBody).code).toBe('invalid_snapshot');
+    expect(engineMock.submit).not.toHaveBeenCalled();
   });
 });

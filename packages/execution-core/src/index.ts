@@ -1,14 +1,35 @@
 export type { BaseNode, NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
 
 export { runGraph } from './graph-runner';
+export type { RunGraphOutcome } from './graph-runner';
 
-export { NodeExecutionError } from './errors';
+export {
+  NodeExecutionError,
+  PermanentNodeExecutionError,
+  TransientNodeExecutionError,
+  classifyNodeError,
+} from './errors';
+export type { NodeErrorClassification, NodeErrorEnvelope } from './errors';
 
 export type { ExecutionContext } from './execution-context';
 
-export type { WorkflowEnginePort, WorkflowExecutionInput } from './ports/workflow-engine.port';
-export type { ActivityRunnerPort, NodeExecutionResult } from './ports/activity-runner.port';
+export { RESOLVE_NODE_REJECTIONS } from './ports/workflow-engine.port';
+export type {
+  ResolveNodeInput,
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  VerdictRejection,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './ports/workflow-engine.port';
+export type {
+  ActivityRunnerPort,
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from './ports/activity-runner.port';
 export type { EventEmitterPort } from './ports/event-emitter.port';
+export type { PatchId, VersioningPort } from './ports/versioning.port';
 export type { LoggerPort, LogBindings } from './ports/logger.port';
 
 export { createConsoleLogger } from './console-logger';
@@ -18,3 +39,8 @@ export type { NodeExecutor, NodeExecutorRegistry } from './registry/node-executo
 export { resolveExecutor } from './registry/node-executor-registry';
 
 export { resolveTemplate } from './templates/resolve-template';
+
+export { redactSensitive, withRedactedPayloads, REDACTED, SENSITIVE_KEY_RULES } from './redact';
+
+export { reconstructNodeInputs } from './reconstruct-node-inputs';
+export type { NodeInputEventSource, ReconstructedNodeInputs } from './reconstruct-node-inputs';

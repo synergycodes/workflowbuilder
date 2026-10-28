@@ -1,0 +1,201 @@
+:root {
+  --wb-public-modal-width: 26.25rem;
+  --wb-public-modal-border-radius: var(--wb-ds-radius-200);
+  --wb-public-modal-padding: var(--wb-ds-space-200);
+
+  --wb-public-modal-description-size: var(--wb-ds-font-size-125);
+  --wb-public-modal-description-line-height: 100%;
+
+  --wb-public-modal-icon-padding: var(--wb-ds-space-112);
+  --wb-public-modal-content-padding: var(--wb-ds-space-300) var(--wb-ds-space-200);
+  --wb-public-modal-footer-padding: var(--wb-ds-space-0) var(--wb-ds-space-200) var(--wb-ds-space-200)
+    var(--wb-ds-space-200);
+
+  --wb-public-modal-background: var(--wb-ds-ui-bg-base);
+  --wb-public-modal-backdrop-background: var(--wb-ds-colors-gray-900);
+  --wb-public-modal-header-background: var(--wb-ds-ui-bg-elevated);
+  --wb-public-modal-header-border-color: var(--wb-ds-ui-stroke-default);
+  --wb-public-modal-title-color: var(--wb-ds-ui-text-default);
+  --wb-public-modal-description-color: var(--wb-ds-ui-text-subtle-default);
+  --wb-public-modal-icon-background: var(--wb-ds-ui-brand-fill);
+  --wb-public-modal-icon-color: var(--wb-ds-ui-text-onaccent-default);
+  --wb-public-modal-content-background: var(--wb-ds-ui-bg-base);
+  --wb-public-modal-footer-border-color: var(--wb-ds-ui-stroke-default);
+
+  --wb-public-modal-large-width: 30rem;
+  --wb-public-modal-large-padding: var(--wb-ds-space-300);
+  --wb-public-modal-large-title-size: var(--wb-ds-font-size-225);
+  --wb-public-modal-large-title-line-height: 130%;
+  --wb-public-modal-large-icon-padding: var(--wb-ds-space-137);
+
+  --wb-public-modal-box-shadow: var(--wb-ds-shadow-ui-l-x) var(--wb-ds-shadow-ui-l-y) var(--wb-ds-shadow-ui-l-blur)
+    var(--wb-ds-shadow-ui-l-spread) var(--wb-ds-shadow-ui-color);
+
+  --wb-public-modal-gap: var(--wb-ds-space-150);
+  --wb-public-modal-gap-large: var(--wb-ds-space-150);
+
+  --wb-public-modal-icon-border-radius: var(--wb-ds-radius-75);
+  --wb-public-modal-icon-border-radius-large: var(--wb-ds-radius-100);
+
+  --wb-public-modal-content-gap: var(--wb-ds-space-50);
+}
+
+@layer ui.component {
+  .backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    /* Just below the dialog window: at a lower value the host's own panels
+       stack above it, so they stay undimmed and swallow the clicks that should
+       dismiss the dialog. */
+    z-index: 1000;
+    inset: 0;
+    background-color: color-mix(in srgb, var(--wb-public-modal-backdrop-background), transparent 50%);
+
+    transition: opacity 200ms ease;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+    }
+  }
+
+  .modal {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    display: flex;
+    flex-direction: column;
+    max-height: calc(100dvh - var(--wb-ds-space-600));
+    background-color: var(--wb-public-modal-background);
+    border-radius: var(--wb-public-modal-border-radius);
+    width: var(--wb-public-modal-width);
+    outline: none;
+    box-shadow: var(--wb-public-modal-box-shadow);
+
+    transition:
+      opacity 200ms ease,
+      transform 200ms ease;
+
+    &[data-starting-style],
+    &[data-ending-style] {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(0.96);
+    }
+  }
+
+  .header {
+    display: flex;
+    flex-shrink: 0;
+    padding: var(--wb-public-modal-padding);
+    justify-content: space-between;
+    align-items: center;
+    border-radius: var(--wb-public-modal-border-radius) var(--wb-public-modal-border-radius) 0 0;
+    border-bottom: var(--wb-ds-size-12) solid var(--wb-public-modal-header-border-color);
+    background: var(--wb-public-modal-header-background);
+  }
+
+  .title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: var(--wb-ds-space-150);
+  }
+
+  .title-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--wb-ds-space-150);
+  }
+
+  .icon {
+    display: flex;
+    padding: var(--wb-public-modal-icon-padding);
+    justify-content: center;
+    align-items: center;
+    border-radius: var(--wb-public-modal-icon-border-radius);
+    background: var(--wb-public-modal-icon-background);
+    color: var(--wb-public-modal-icon-color);
+  }
+
+  .title {
+    margin: 0;
+    color: var(--wb-public-modal-title-color);
+  }
+
+  .description {
+    color: var(--wb-public-modal-description-color);
+    font-size: var(--wb-public-modal-description-size);
+    font-style: normal;
+    font-weight: 400;
+    line-height: var(--wb-public-modal-description-line-height);
+    margin: 0;
+  }
+
+  .content {
+    display: flex;
+    padding: var(--wb-public-modal-content-padding);
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: var(--wb-public-modal-content-gap);
+    align-self: stretch;
+    min-height: 0;
+    overflow: auto;
+    background: var(--wb-public-modal-content-background);
+    border-radius: var(--wb-public-modal-border-radius);
+  }
+
+  .footer {
+    display: flex;
+    flex-shrink: 0;
+    padding: var(--wb-public-modal-footer-padding);
+    justify-content: space-between;
+    align-items: center;
+    align-self: stretch;
+
+    &.separated {
+      border-top: var(--wb-ds-size-12) solid var(--wb-public-modal-footer-border-color);
+    }
+  }
+
+  .large {
+    width: var(--wb-public-modal-large-width);
+
+    .header {
+      padding: var(--wb-public-modal-large-padding);
+
+      .title-wrapper {
+        gap: var(--wb-public-modal-gap-large);
+      }
+    }
+
+    .title {
+      font-size: var(--wb-public-modal-large-title-size);
+      line-height: var(--wb-public-modal-large-title-line-height);
+    }
+
+    .icon {
+      padding: var(--wb-public-modal-large-icon-padding);
+      border-radius: var(--wb-public-modal-icon-border-radius-large);
+    }
+
+    .content {
+      padding: var(--wb-public-modal-large-padding);
+    }
+
+    .footer {
+      &.separated {
+        padding: var(--wb-public-modal-large-padding);
+      }
+
+      &.integrated {
+        padding: 0 var(--wb-public-modal-large-padding) var(--wb-public-modal-large-padding)
+          var(--wb-public-modal-large-padding);
+      }
+    }
+  }
+}

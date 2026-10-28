@@ -1,0 +1,41 @@
+---
+title: Nav Button
+description: A compact navigation button with explicit content slots and a selected state.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NavButtonExample } from '../../../../components/ui-examples/nav-button';
+
+`NavButton` renders its label from `children` and accepts optional `prefixIcon`
+and `suffixIcon` props. Omit `children` and provide `prefixIcon` for an icon-only
+button. Use `variant` to select square or round styling; icon-only buttons also
+support the no-background `plain` variant.
+
+The `isSelected` prop renders the persistent Pressed state, including while the
+button is hovered. The mouse-down `:active` state uses a separate Active token.
+
+<NavButtonExample client:visible />
+
+## Usage
+
+```tsx
+import { House } from '@phosphor-icons/react';
+import { NavButton } from '@workflowbuilder/ui';
+
+function Example() {
+  return (
+    <NavButton isSelected prefixIcon={<House />}>
+      Overview
+    </NavButton>
+  );
+}
+```
+
+## Props
+
+<PropsTable slug="nav-button" />
+
+## CSS variables
+
+<CssVariablesTable slug="nav-button" />

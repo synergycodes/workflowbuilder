@@ -48,15 +48,15 @@ const sidebarRe = /autogenerate:\s*\{\s*directory:\s*['"]api\/([^'"\s/]+)['"]/g;
 const config = readFileSync(astroConfigPath, 'utf8');
 for (const match of config.matchAll(sidebarRe)) sidebarCategories.add(match[1]);
 
-const missing = [...sourceCategories].filter((c) => !sidebarCategories.has(c));
-const stale = [...sidebarCategories].filter((c) => !sourceCategories.has(c));
+const missing = [...sourceCategories].filter((category) => !sidebarCategories.has(category));
+const stale = [...sidebarCategories].filter((category) => !sourceCategories.has(category));
 
 if (missing.length > 0) {
   console.error('error: @category tags in packages/sdk/src have no matching sidebar entry.\n');
   for (const category of missing) {
     console.error(`  - api/${category}`);
   }
-  console.error('\nAdd a matching entry under "API Reference" in apps/docs/astro.config.mjs:');
+  console.error('\nAdd a matching entry under "SDK API Reference" in apps/docs/astro.config.mjs:');
   for (const category of missing) {
     console.error(`  { label: '${category}', collapsed: true, autogenerate: { directory: 'api/${category}' } },`);
   }

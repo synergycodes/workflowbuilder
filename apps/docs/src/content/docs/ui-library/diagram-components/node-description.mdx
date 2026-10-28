@@ -1,0 +1,54 @@
+---
+title: NodeDescription
+description: Textual title and subtitle block inside a node.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeDescriptionExample } from '../../../../components/ui-examples/node-description';
+
+`NodeDescription` renders a node's textual content - a `label` shown as the title
+and an optional `description` shown as the subtitle. It uses the library's
+typography classes so the text matches the rest of the editor, and is typically
+placed in a [`NodePanel.Header`](/ui-library/diagram-components/node-panel/)
+alongside a [`NodeIcon`](/ui-library/diagram-components/node-icon/).
+
+<NodeDescriptionExample client:visible />
+
+## Usage
+
+```tsx
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
+
+function NodeHeader({ icon, label, description }) {
+  return (
+    <NodePanel.Header>
+      <NodeIcon icon={icon} />
+      <NodeDescription label={label} description={description} />
+    </NodePanel.Header>
+  );
+}
+```
+
+## Truncation
+
+Both lines are single-line. Text that does not fit the node width is cut with an ellipsis and the
+full text is available through the element's native tooltip (`title`). The block never widens its
+node: a node keeps the design width and grows in height only through its body content.
+
+That last property comes from `contain: inline-size`, so the block contributes nothing to its
+parent's width. Render it inside an ancestor with a definite inline size (`NodePanel.Header` inside
+the 241px shell qualifies); in an `inline-flex` or `fit-content` wrapper it collapses to zero width.
+
+## Disabled
+
+`disabled` mutes both lines with the Node Disabled text color. The node templates pass it
+down together with `NodePanel.Root` and `NodeIcon`, so a whole node switches state at once.
+
+## Props
+
+<PropsTable slug="node-description" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-description" />

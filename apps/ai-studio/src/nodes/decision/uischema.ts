@@ -18,10 +18,5 @@ export const uischema: UISchema = {
       type: 'DecisionBranches',
       scope: scope('properties.decisionBranches'),
     },
-    {
-      type: 'Select',
-      scope: scope('properties.errorPolicy'),
-      label: 'Error Policy',
-    },
   ],
 };

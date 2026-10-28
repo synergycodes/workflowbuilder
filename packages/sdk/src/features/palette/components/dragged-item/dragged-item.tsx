@@ -24,7 +24,7 @@ export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedI
     }
 
     return createPortal(
-      <div ref={ref} className={styles['container']} style={getStyles()}>
+      <div ref={ref} className={`${styles['container']} workflow-builder-root`} style={getStyles()}>
         {children}
       </div>,
       document.body,

@@ -1,0 +1,80 @@
+:root {
+  --wb-public-node-width: 241px;
+  --wb-public-node-height: 100%;
+  --wb-public-node-border-size: 0.0625rem;
+
+  --wb-public-node-padding: var(--wb-ds-canvas-node-head-h-pad);
+  --wb-public-node-gap: var(--wb-ds-canvas-node-head-gap);
+  --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
+
+  --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
+  --wb-public-node-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-border-hover-color: var(--wb-ds-canvas-node-stroke-hover);
+
+  --wb-public-node-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
+
+  --wb-public-node-border-color-selected: var(--wb-ds-canvas-node-stroke-hover);
+  --wb-public-node-box-shadow-selected: var(--wb-ds-shadow-canvas-focus-ring-node-x)
+    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
+    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--wb-ds-canvas-node-focus-ring-active);
+}
+
+@layer ui.component {
+  .node-panel-wrapper:hover .container:not(.disabled) {
+    background: var(--wb-public-node-hover-background-color);
+    border-color: var(--wb-public-node-border-hover-color);
+  }
+
+  .container {
+    display: flex;
+    width: var(--wb-public-node-width);
+    height: var(--wb-public-node-height);
+    padding: var(--wb-public-node-padding);
+    gap: var(--wb-public-node-gap);
+    align-items: center;
+    flex-direction: column;
+
+    border-radius: var(--wb-public-node-border-radius);
+    border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+    background: var(--wb-public-node-background-color);
+
+    &.selected {
+      border-color: var(--wb-public-node-border-color-selected);
+      box-shadow: var(--wb-public-node-box-shadow-selected);
+    }
+
+    &.disabled {
+      background: var(--wb-public-node-background-color-disabled);
+    }
+
+    &:not(:hover) {
+      transition:
+        border-color var(--wb-public-transition),
+        box-shadow var(--wb-public-transition);
+    }
+
+    .header-wrapper {
+      width: 100%;
+    }
+
+    .header-container {
+      display: flex;
+      gap: 0.5rem;
+      align-items: center;
+    }
+
+    .header-container,
+    .content-container {
+      width: 100%;
+    }
+
+    .header-container,
+    .content-container,
+    .handles-container {
+      &:empty {
+        display: none;
+      }
+    }
+  }
+}

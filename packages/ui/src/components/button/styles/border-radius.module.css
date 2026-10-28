@@ -1,0 +1,34 @@
+:root {
+  --wb-public-button-border-radius-xl: var(--wb-ds-radius-100);
+  --wb-public-button-border-radius-l: var(--wb-ds-radius-100);
+  --wb-public-button-border-radius-m: var(--wb-ds-radius-75);
+  --wb-public-button-border-radius-s: var(--wb-ds-radius-50);
+  --wb-public-button-border-radius-xs: var(--wb-ds-radius-50);
+  --wb-public-button-border-radius-round: var(--wb-ds-radius-full);
+}
+
+@layer ui.component {
+  .xl {
+    border-radius: var(--wb-public-button-border-radius-xl);
+  }
+
+  .l {
+    border-radius: var(--wb-public-button-border-radius-l);
+  }
+
+  .m {
+    border-radius: var(--wb-public-button-border-radius-m);
+  }
+
+  .s {
+    border-radius: var(--wb-public-button-border-radius-s);
+  }
+
+  .xs {
+    border-radius: var(--wb-public-button-border-radius-xs);
+  }
+
+  .round {
+    border-radius: var(--wb-public-button-border-radius-round);
+  }
+}

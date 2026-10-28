@@ -1,4 +1,4 @@
-import { NavButton, SegmentPicker, Select } from '@synergycodes/overflow-ui';
+import { NavButton, SegmentPicker, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -91,9 +91,12 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
           [styles['container-error']]: shouldShowValidation && (!condition.x || !condition.y),
         })}
       >
-        <NavButton onClick={() => {}} tooltip={t('tooltips.menu')}>
-          <Icon name="DotsSixVertical" />
-        </NavButton>
+        <NavButton
+          aria-label={t('tooltips.menu')}
+          onClick={() => {}}
+          tooltip={t('tooltips.menu')}
+          prefixIcon={<Icon name="DotsSixVertical" />}
+        />
         <div className={styles['inputs-container']}>
           <VariableText
             className={styles['input']}
@@ -124,9 +127,12 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             suggestionGroups={suggestionGroups}
           />
         </div>
-        <NavButton onClick={onRemove} tooltip={t('tooltips.menu')}>
-          <Icon name="X" />
-        </NavButton>
+        <NavButton
+          aria-label={t('common.remove')}
+          onClick={onRemove}
+          tooltip={t('common.remove')}
+          prefixIcon={<Icon name="X" />}
+        />
       </div>
     </>
   );

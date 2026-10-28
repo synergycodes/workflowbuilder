@@ -1,4 +1,4 @@
-import { DatePicker, Input, Select } from '@synergycodes/overflow-ui';
+import { DatePicker, Input, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
@@ -88,9 +88,7 @@ export function DynamicTypedInput({
         className={className}
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
-        // Adornment here doesn't make sense since we show variable picker above
-        // endAdornment={endAdornment}
-        error={isError || isInvalidNumberValue}
+        state={isError || isInvalidNumberValue ? 'critical' : 'default'}
         placeholder={
           placeholder ??
           t(baseType === 'number' ? 'variables.placeholderTypeNumber' : 'variables.placeholderTypeString')
@@ -104,13 +102,13 @@ export function DynamicTypedInput({
     return (
       <div className={styles['container--select']}>
         <Select
+          error={isError}
           className={className}
           value={value}
           items={itemsForBoolean}
           onChange={(_event, value) => onChange(value as string)}
           placeholder={placeholder}
           disabled={disabled}
-          error={isError}
         />
         {endAdornment && <span className={styles['adornment--select']}>{endAdornment}</span>}
       </div>
@@ -121,6 +119,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['date-with-reset-container']}>
         <DatePicker
+          error={isError}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={getDateIfValid(value)}
@@ -129,9 +128,8 @@ export function DynamicTypedInput({
 
             onChange(date.toISOString());
           }}
-          valueFormat={'DD-MM-YYYY'}
+          valueFormat={'dd-MM-yyyy'}
           placeholder={placeholder || 'DD-MM-YYYY'}
-          error={isError}
           disabled={disabled}
         />
         {endAdornment && <span className={styles['adornment--date']}>{endAdornment}</span>}
@@ -145,6 +143,7 @@ export function DynamicTypedInput({
     return (
       <div className={styles['row']}>
         <DatePicker
+          error={isError}
           key={value}
           className={clsx(styles['date-picker'], className)}
           value={date}
@@ -153,18 +152,18 @@ export function DynamicTypedInput({
             onChange(date.toISOString());
             setTime(getTimeFromDateIfValid(date.toISOString()));
           }}
-          valueFormat="DD-MM-YYYY"
+          valueFormat="dd-MM-yyyy"
           placeholder="DD-MM-YYYY"
           // Uncomment to see times in value
           // valueFormat="DD-MM-YYYY HH:mm"
           // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
-          error={isError}
         />
         <Input
           className={className}
           value={time}
           placeholder="HH:mm"
+          suffixIcon={endAdornment}
           onChange={(event) => {
             const value = (event.target.value as string).slice(0, 5);
             if (value.length < 5) {
@@ -190,8 +189,7 @@ export function DynamicTypedInput({
             }
           }}
           disabled={disabled || !date}
-          error={isError}
-          endAdornment={endAdornment}
+          state={isError ? 'critical' : 'default'}
         />
       </div>
     );

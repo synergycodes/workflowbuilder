@@ -1,5 +1,5 @@
 ---
-title: API Reference
+title: SDK API Reference
 description: Auto-generated reference for every public export from @workflowbuilder/sdk.
 sidebar:
   hidden: true
@@ -11,21 +11,21 @@ For walkthroughs, integration patterns, and design rationale, see the hand-writt
 
 ## Categories
 
-| Section                               | What's in it                                                                                                                                                                |
-| ------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [Core](/docs/api/core/)               | `WorkflowBuilder` compound component, `WorkflowBuilderRoot`, and the props / plugin / integration types it accepts.                                                         |
-| [Plugins](/docs/api/plugins/)         | The three `register*` extension points + their option types.                                                                                                                |
-| [Components](/docs/api/components/)   | UI building blocks — edge / node primitives, plus `*Props` types you reach for when typing decorators on built-in slots (`DiagramContainerProps`, `PropertiesBarProps`, …). |
-| [Hooks](/docs/api/hooks/)             | React hooks (`useStore` selectors, `useFitView`, change-tracker, …).                                                                                                        |
-| [Store](/docs/api/store/)             | One-shot store accessors (`getStoreNodes` / `setStoreNodes`, selection helpers, `openModal`).                                                                               |
-| [Listeners](/docs/api/listeners/)     | Diagram event hooks — `addNodeChangedListener`, `addNodeDragStartListener` and their pairs.                                                                                 |
-| [Forms](/docs/api/forms/)             | Form-authoring helpers — `getScope`, `DynamicCondition`, `ComparisonOperator`.                                                                                              |
-| [Integration](/docs/api/integration/) | Persistence-strategy types and save-callback shapes.                                                                                                                        |
-| [Types](/docs/api/types/)             | Domain types — `NodeData`, `NodeSchema`, `UISchema`, `PaletteItem`, …                                                                                                       |
-| [Utilities](/docs/api/utilities/)     | Reusable schema fragments + small helpers (`getHandleId`, `sharedProperties`, `DeepPartial`).                                                                               |
-| [Constants](/docs/api/constants/)     | Edge-routing constants and reserved keys.                                                                                                                                   |
-| [i18n](/docs/api/i18n/)               | `TranslationKey` for type-safe `t(...)` calls.                                                                                                                              |
-| [Icons](/docs/api/icons/)             | `Icon` component + `WBIcon` name union.                                                                                                                                     |
+| Section                               | What's in it                                                                                                                                                                                      |
+| ------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Core](/docs/api/core/)               | `WorkflowBuilder` compound component, `WorkflowBuilderRoot`, and the props / plugin / integration types it accepts.                                                                               |
+| [Plugins](/docs/api/plugins/)         | The three `register*` extension points + their option types.                                                                                                                                      |
+| [Components](/docs/api/components/)   | UI building blocks — edge / node primitives, plus `*Props` types you reach for when typing decorators on built-in slots (`WorkflowBuilderCanvasProps`, `WorkflowBuilderPropertiesPanelProps`, …). |
+| [Hooks](/docs/api/hooks/)             | React hooks (`useStore` selectors, `useFitView`, change-tracker, …).                                                                                                                              |
+| [Store](/docs/api/store/)             | One-shot store accessors (`getStoreNodes` / `setStoreNodes`, selection helpers, `openModal`).                                                                                                     |
+| [Listeners](/docs/api/listeners/)     | Diagram event hooks — `addNodeChangedListener`, `addNodeDragStartListener` and their pairs.                                                                                                       |
+| [Forms](/docs/api/forms/)             | Form-authoring helpers (`getScope`, `DynamicCondition`) + re-exported JsonForms primitives for custom renderers (`withJsonForms*Props`, testers, `ControlProps`, …).                              |
+| [Integration](/docs/api/integration/) | Persistence-strategy types and save-callback shapes.                                                                                                                                              |
+| [Types](/docs/api/types/)             | Domain types — `NodeData`, `NodeSchema`, `UISchema`, `PaletteItem`, …                                                                                                                             |
+| [Utilities](/docs/api/utilities/)     | Reusable schema fragments + small helpers (`getHandleId`, `sharedProperties`, `DeepPartial`).                                                                                                     |
+| [Constants](/docs/api/constants/)     | Edge-routing constants and reserved keys.                                                                                                                                                         |
+| [i18n](/docs/api/i18n/)               | `TranslationKey` for type-safe `t(...)` calls.                                                                                                                                                    |
+| [Icons](/docs/api/icons/)             | `Icon` component + `WBIcon` name union.                                                                                                                                                           |
 
 ## How this is generated
 

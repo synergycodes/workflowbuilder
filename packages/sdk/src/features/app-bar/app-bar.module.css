@@ -1,7 +1,7 @@
 .container {
-  background: var(--wb-app-bar-background);
-  border-radius: var(--wb-app-bar-border-radius);
-  border: 0.0625rem solid var(--wb-app-bar-border-color);
+  background: var(--wb-sdk-app-bar-background);
+  border-radius: var(--wb-sdk-app-bar-border-radius);
+  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
   height: auto;
   padding: 0.75rem 1rem;
@@ -16,7 +16,13 @@
     gap: 2rem;
 
     .logo {
-      color: var(--wb-app-bar-logo-color);
+      color: var(--wb-sdk-app-bar-logo-color);
+    }
+
+    .logo-link {
+      display: inline-flex;
+      align-items: center;
+      color: inherit;
     }
 
     .nav-segment {
@@ -53,15 +59,22 @@
 }
 
 .folder-name {
-  color: var(--wb-app-bar-folder-name-color);
-  composes: ax-public-p9 from global;
+  color: var(--wb-sdk-app-bar-folder-name-color);
+  composes: wb-text-body-m from global;
+  white-space: nowrap;
 }
 
 .title {
-  color: var(--wb-app-bar-diagram-title-color);
-  composes: ax-public-p9 from global;
+  color: var(--wb-sdk-app-bar-diagram-title-color);
+  composes: wb-text-body-m from global;
   min-height: 1em;
   min-width: 1em;
+}
+
+/* Only applied while `workflowRename` is visible and the editor isn't read-only: a plain
+   title (the `workflowRename: false` case) carries neither the pointer cursor nor the
+   empty-name placeholder underline, since neither affordance applies. */
+.title-editable {
   cursor: pointer;
 
   &:empty {
@@ -78,4 +91,22 @@
   .title {
     margin-left: 0.5rem;
   }
+}
+
+.logo-image {
+  display: block;
+  max-height: 1.5rem;
+  width: auto;
+}
+
+.logo-image--dark {
+  display: none;
+}
+
+html[data-theme='dark'] .logo-image--light {
+  display: none;
+}
+
+html[data-theme='dark'] .logo-image--dark {
+  display: block;
 }

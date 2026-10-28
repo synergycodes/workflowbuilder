@@ -5,8 +5,6 @@ sidebar:
   order: 5
 ---
 
-import FilePathsDisclaimer from '../../../partials/_file-paths-disclaimer.mdx';
-
 This example shows the minimal steps to save and load a diagram from a database using the API integration strategy.
 
 ## Backend endpoint
@@ -36,24 +34,21 @@ app.post('/api/workflow', (request, response) => {
 
 ## Frontend integration
 
-<FilePathsDisclaimer />
+Point the `api` integration strategy at your endpoints:
 
-Use the API integration strategy in Workflow Builder and point it at your endpoints:
-
-```typescript
-// <root>/features/integration/components/
-// integration-variants/with-integration-through-api.tsx
-
-// Load - replace the fetch URL:
-const response = await fetch('/api/workflow');
-
-// Save - replace the fetch URL and method:
-const response = await fetch('/api/workflow', {
-  method: 'POST',
-  headers: { 'Content-Type': 'application/json' },
-  body: JSON.stringify(data),
-});
+```tsx
+<WorkflowBuilder.Root
+  integration={{
+    strategy: 'api',
+    endpoints: { load: '/api/workflow', save: '/api/workflow' },
+  }}
+  onLoad={({ loadFailed }) => {
+    if (loadFailed) showLoadError();
+  }}
+/>
 ```
+
+The editor sends a `GET` to `load` once on mount and a `POST` with the diagram as JSON to `save`. If the load request fails, the editor stays usable but refuses to save for the rest of that mount, so it never overwrites the stored diagram it could not load. `onLoad` tells you about it with `loadFailed`; what to show the user is up to you.
 
 ## The diagram data
 

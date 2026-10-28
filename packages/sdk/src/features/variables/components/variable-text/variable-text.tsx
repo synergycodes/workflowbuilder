@@ -1,4 +1,4 @@
-import { NavButton, SnackbarType } from '@synergycodes/overflow-ui';
+import { NavButton, SnackbarType } from '@workflowbuilder/ui';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
@@ -8,7 +8,7 @@ import { Icon } from '@workflow-builder/icons';
 import styles from './variable-text.module.css';
 
 import type { VariableType } from '../../../../node/node-output-schema';
-import { showSnackbar } from '../../../../utils/show-snackbar';
+import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
 import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
 
@@ -105,6 +105,7 @@ function SuggestionsContainer({
   renderGroupHeader: (group: VariableSuggestionGroup) => ReactNode;
   children: ReactElement;
 }) {
+  const { t } = useTranslation();
   const ul = children as ReactElement<{ children?: ReactElement[]; className?: string }>;
   const items = ul.props.children;
 
@@ -149,13 +150,13 @@ function SuggestionsContainer({
       <div className={styles['suggestionsHeader']}>
         <span className={styles['suggestionsTitle']}>{title}</span>
         <NavButton
+          aria-label={t('common.close')}
           onMouseDown={(event: React.MouseEvent) => {
             event.stopPropagation();
             handleClose();
           }}
-        >
-          <Icon name="X" />
-        </NavButton>
+          prefixIcon={<Icon name="X" />}
+        />
       </div>
       {cloneElement(ul, {}, grouped)}
     </div>
@@ -235,7 +236,7 @@ export function VariableText({
   const onMentionsChange = useCallback(
     ({ value }: { value: string }) => {
       if (value.endsWith(VARIABLE_BRACKETS_START) && mentionData.length === 0) {
-        showSnackbar({
+        showTranslatedSnackbar({
           title: 'variablesListIsEmpty',
           subtitle: 'variables.variablesListIsEmptyHint',
           variant: SnackbarType.WARNING,

@@ -78,6 +78,15 @@ describe('drainEventsSince', () => {
     expect(result.lastSequence).toBe(2);
   });
 
+  it('flags terminal when the last fetched event is execution_incomplete', async () => {
+    const fetch = fixedFetcher([makeEvent('exec-1', 1), makeEvent('exec-1', 2, 'execution_incomplete')]);
+
+    const result = await drainEventsSince('exec-1', 0, fetch, async () => {});
+
+    expect(result.reachedTerminal).toBe(true);
+    expect(result.lastSequence).toBe(2);
+  });
+
   it('write failure stops the drain and pins the cursor at the last successful write', async () => {
     const fetch = fixedFetcher([makeEvent('exec-1', 1), makeEvent('exec-1', 2), makeEvent('exec-1', 3)]);
     let calls = 0;

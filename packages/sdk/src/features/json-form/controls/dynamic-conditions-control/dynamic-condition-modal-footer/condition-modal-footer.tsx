@@ -1,4 +1,4 @@
-import { Button } from '@synergycodes/overflow-ui';
+import { Button } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 type Props = {
@@ -10,7 +10,7 @@ export function ConditionModalFooter({ closeModal, handleConfirm }: Props) {
   const { t } = useTranslation();
   return (
     <>
-      <Button variant="secondary" onClick={closeModal} type="button">
+      <Button variant="ghost-secondary" onClick={closeModal} type="button">
         {t('conditions.cancel')}
       </Button>
       <Button onClick={handleConfirm}>{t('conditions.confirm')}</Button>

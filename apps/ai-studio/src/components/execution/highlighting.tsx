@@ -33,12 +33,13 @@ export function ExecutionHighlighting() {
     const nonIdleNodes = new Set<string>();
 
     for (const [nodeId, state] of Object.entries(nodeStates) as [string, NodeExecutionState][]) {
-      if (state.status !== 'idle') {
+      if (state.status !== 'idle' && state.status !== 'skipped') {
         nonIdleNodes.add(nodeId);
       }
 
       switch (state.status) {
-        case 'running': {
+        case 'running':
+        case 'waiting': {
           byStatus.running.push(nodeId);
           break;
         }

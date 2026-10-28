@@ -1,13 +1,5 @@
-.icon {
-  background: linear-gradient(158deg, #5360f9 8.25%, #852bec 91.09%), #151516;
-
-  & svg path {
-    stroke: white;
-  }
-}
-
 .root {
-  --ax-public-node-gap: 0;
+  --wb-public-node-gap: 0;
 }
 
 .content {
@@ -23,14 +15,14 @@
   }
 
   .selected-model-icon {
-    background-color: var(--ax-txt-primary-default);
-    color: var(--ax-txt-primary-inverse);
+    background-color: var(--wb-ds-ui-text-default);
+    color: var(--wb-ds-ui-text-inverse-default);
     outline: none;
   }
 
   .selected-memory-icon {
-    color: var(--ax-txt-primary-white);
-    background-color: var(--ax-button-gray-bg-default);
+    color: var(--wb-ds-ui-text-onaccent-default);
+    background-color: var(--wb-ds-components-button-solid-gray-default);
     outline: none;
   }
 }
