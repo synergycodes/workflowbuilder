@@ -92,7 +92,7 @@ description: Frequently asked questions about Workflow Builder for developers.
 ## Technical
 
 11. **How do I install Workflow Builder?**
-    Workflow Builder is not distributed as an npm package. You receive access to the source repository and clone it directly. See the [Quick Start](/get-started/quick-start/standalone-app/) guide.
+    The SDK is available on npm as `@workflowbuilder/sdk`; the reference apps and backend run from the repository. See the [Quick Start](/get-started/quick-start/standalone-app/) guide.
 
 12. **What technologies and libraries are used?**
     Workflow Builder is built on a modern, modular tech stack:
@@ -126,9 +126,7 @@ description: Frequently asked questions about Workflow Builder for developers.
 ## Updates and Versioning
 
 18. **What happens when a new major version is released?**
-    Your integration does not break when we release a new version. You own the source code - it is in your repository, not pulled from a registry. New releases are delivered as source updates that you can review, diff, and adopt at your own pace.
-
-    If you have customized nodes, styles, or plugins, those changes live in your codebase and are unaffected by our releases. When you choose to upgrade, you merge our changes into your fork the same way you would handle any dependency update - with full visibility into what changed.
+    Nothing changes until you upgrade. If you install the SDK from npm, you choose when to bump the dependency; follow the [changelog](https://github.com/synergycodes/workflowbuilder/blob/main/packages/sdk/CHANGELOG.md) and the [upgrade guide](/get-started/upgrade-to-3/) for breaking changes. If you maintain a fork of the source, review and merge upstream changes at your own pace.
 
 19. **How do I prevent users from breaking production workflows?**
     Workflow Builder gives you the building blocks; safeguards are implemented on your side. Common patterns teams use:

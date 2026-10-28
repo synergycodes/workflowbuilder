@@ -27,20 +27,48 @@ If you want to see how the plugin logic works in a smaller example, we have prep
 ## How to add plugin?
 
 1. Create your plugin directory, for example: `plugins/example`.
-2. Add your `<ExampleComponent />` to `plugins/example/components/example-component.tsx`.
-3. In `plugins/example/plugin-exports` import dependencies and add:
+2. Add your `<ExampleComponent />` to `plugins/example/components/example-component.tsx`:
 
-```ts
-registerComponentDecorator('OptionalFooterContent', {
-  content: ExampleComponent,
-  place: 'after',
-});
+```tsx
+export function ExampleComponent() {
+  return <button>Example</button>;
+}
 ```
 
-4. Import your plugin to `apps/demo/src/app/features/plugins-core/index.ts` with line `import '@/plugins/example/plugin-exports';`
-5. Refresh the page.
+3. Add `<ExampleControls />` to `plugins/example/components/example-controls/example-controls.tsx`, placing `ExampleComponent` where you want it to show up:
 
-Your component should now be displayed in the left sidebar (palette) footer.
+```tsx
+import { PaletteFooterContent } from '@workflowbuilder/sdk';
+
+import { ExampleComponent } from '../example-component';
+
+export function ExampleControls() {
+  return (
+    <PaletteFooterContent>
+      <ExampleComponent />
+    </PaletteFooterContent>
+  );
+}
+```
+
+4. In `plugins/example/plugin-exports.ts`, mount it through `OptionalAppChildren` (a plugin file is `.ts`, so the JSX itself lives in the `.tsx` components above):
+
+```ts
+import { registerComponentDecorator } from '@workflowbuilder/sdk';
+
+import { ExampleControls } from './components/example-controls/example-controls';
+
+export function plugin(): void {
+  registerComponentDecorator('OptionalAppChildren', {
+    content: ExampleControls,
+  });
+}
+```
+
+5. Import your plugin into `apps/demo/src/app/app.tsx` and add it to the `plugins` array passed to `<WorkflowBuilder.Root>`, the same way the existing plugins there are wired in: `import { plugin as examplePlugin } from './plugins/example/plugin-exports';`, then add `examplePlugin` to the `plugins={[...]}` list.
+6. Refresh the page.
+
+Your component should now be displayed in the left sidebar (palette) footer, before the built-in Templates button.
 
 ### How to remove plugin?
 
@@ -48,19 +76,19 @@ Simply remove the folder of your plugin and restart the application. It will sti
 
 #### How to remove "Fallback used for missing plugin..."?
 
-Go to `apps/demo/src/app/features/plugins-core/index.ts` and remove the import there.
+Go to `apps/demo/src/app/app.tsx` and remove the plugin's import and its entry from the `plugins` array.
 
 ### How do I change the position of a plugin?
 
-You have place and priority. Set place: 'before' to add your component before the content. The priority determines which plugin is shown first.
+A `…Content` component takes `place`: `'before'` (the default) puts your content before the area's built-in controls, `'after'` puts it after them. Two components in the same area render in mount order.
 
-```ts
-registerComponentDecorator('OptionalFooterContent', {
-  content: ExampleComponent,
-  place: 'after',
-  priority: 1,
-});
+```tsx
+<PaletteFooterContent place="after">
+  <ExampleComponent />
+</PaletteFooterContent>
 ```
+
+A decorator on a slot (`OptionalNodeContent`, `OptionalEdgeProperties`, …) takes `place` and `priority` instead: `place` sets where it renders relative to the slot's host, and a higher `priority` is shown first.
 
 ### How to modify properties with an optional plugin?
 
@@ -68,9 +96,9 @@ With the modifyProps property, you can change the properties passed to the plugi
 
 ```tsx
 import { registerComponentDecorator } from '@workflowbuilder/sdk';
-import type { DiagramContainerProps } from '@workflowbuilder/sdk';
+import type { WorkflowBuilderCanvasProps } from '@workflowbuilder/sdk';
 
-registerComponentDecorator<DiagramContainerProps>('DiagramContainer', {
+registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', {
   modifyProps: (props) => ({
     ...props,
     edgeTypes: {
@@ -86,9 +114,8 @@ registerComponentDecorator<DiagramContainerProps>('DiagramContainer', {
 Set the `name` property for the injected content:
 
 ```tsx
-registerComponentDecorator('OptionalAppBarControls', {
-  content: TreeButton,
-  place: 'before',
+registerComponentDecorator('OptionalAppChildren', {
+  content: TreeControls,
   name: 'TreeButton',
 });
 ```
@@ -96,7 +123,7 @@ registerComponentDecorator('OptionalAppBarControls', {
 Use the `name` property:
 
 ```ts
-const wasTreePluginAdded = hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton');
+const wasTreePluginAdded = hasRegisteredComponentDecorator('OptionalAppChildren', 'TreeButton');
 ```
 
 ### How to add a plugin conditionally?
@@ -105,9 +132,8 @@ In your `plugin-exports.ts` file, you can add an if statement.
 
 ```tsx
 if (SHOULD_ADD_TREE_BUTTON === true) {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: TreeButton,
-    place: 'before',
+  registerComponentDecorator('OptionalAppChildren', {
+    content: TreeControls,
   });
 }
 ```
@@ -117,9 +143,8 @@ if (SHOULD_ADD_TREE_BUTTON === true) {
 Set `name` property.
 
 ```tsx
-registerComponentDecorator('OptionalAppBarControls', {
-  content: TreeButton,
-  place: 'before',
+registerComponentDecorator('OptionalAppChildren', {
+  content: TreeControls,
   name: 'TreeButton',
 });
 ```
@@ -127,12 +152,11 @@ registerComponentDecorator('OptionalAppBarControls', {
 Use `name` property.
 
 ```tsx
-if (hasRegisteredComponentDecorator('OptionalAppBarControls', 'TreeButton')) {
-  registerComponentDecorator('OptionalAppBarControls', {
-    content: SecondTreeButton,
-    place: 'before',
+if (hasRegisteredComponentDecorator('OptionalAppChildren', 'TreeButton')) {
+  registerComponentDecorator('OptionalAppChildren', {
+    content: SecondTreeControls,
   });
 }
 ```
 
-The order in which plugins are imported in @features/plugins-core/index is important.
+The order in which plugins are listed in `app.tsx`'s `plugins` array is important.

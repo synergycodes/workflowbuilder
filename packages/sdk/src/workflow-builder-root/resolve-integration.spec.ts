@@ -11,6 +11,7 @@ describe('resolveIntegration', () => {
       strategy: 'localStorage',
       endpoints: undefined,
       onDataSave: undefined,
+      autoSave: true,
     });
   });
 
@@ -19,6 +20,7 @@ describe('resolveIntegration', () => {
       strategy: 'localStorage',
       endpoints: undefined,
       onDataSave: undefined,
+      autoSave: true,
     });
   });
 
@@ -28,6 +30,7 @@ describe('resolveIntegration', () => {
       strategy: 'api',
       endpoints,
       onDataSave: undefined,
+      autoSave: true,
     });
   });
 
@@ -36,6 +39,15 @@ describe('resolveIntegration', () => {
       strategy: 'props',
       endpoints: undefined,
       onDataSave,
+      autoSave: true,
     });
+  });
+
+  it('passes autoSave: false through with every strategy', () => {
+    expect(resolveIntegration({ autoSave: false }).autoSave).toBe(false);
+    expect(resolveIntegration({ strategy: 'api', endpoints: { load: '', save: '' }, autoSave: false }).autoSave).toBe(
+      false,
+    );
+    expect(resolveIntegration({ strategy: 'props', onDataSave, autoSave: false }).autoSave).toBe(false);
   });
 });

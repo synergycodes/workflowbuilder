@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import { type DecisionIssueCode, decisionIssueMessage } from '../decision/decision-issues';
 import { mapToExecutionModel } from './from-integration-data';
-import { workflowSnapshotSchema } from './snapshot-schema';
+import { admittedSnapshotSchema, workflowSnapshotSchema } from './snapshot-schema';
 
 describe('workflowSnapshotSchema', () => {
   it('accepts a structurally valid snapshot regardless of node type vocabulary', () => {
@@ -157,7 +157,7 @@ describe('workflowSnapshotSchema: decision requests', () => {
     });
 
     expect(parsed.nodes[1]!.data.properties?.decisionRequest?.actions).toEqual([
-      approve,
+      { ...approve, reasonRequired: false },
       { ...askAgain, maxIterations: 3 },
     ]);
   });
@@ -194,7 +194,7 @@ describe('workflowSnapshotSchema: decision requests', () => {
       edges: [edge('src', 'review')],
     };
 
-    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decisionRequest.actions.1.effect');
+    expect(issuePaths(snapshot)).toContain('nodes.1.data.properties.decisionRequest.actions.1.port');
   });
 
   it('rejects `decisionRequest: null`; absent is the only way to carry no request', () => {
@@ -409,6 +409,40 @@ describe('workflowSnapshotSchema: decision requests', () => {
     const snapshot = { nodes: [node('src', { errorPolicy: 'continue' })], edges: [] };
 
     expect(issuePaths(snapshot)).toEqual([]);
+  });
+});
+
+describe('admittedSnapshotSchema', () => {
+  const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' };
+  const withDeadline = {
+    nodes: [
+      node('src'),
+      node('review', {
+        decisionRequest: {
+          version: 1,
+          actions: [approve],
+          schema: { type: 'object', properties: {} },
+          deadline: { after: '3d', policy: 'reject' },
+        },
+      }),
+    ],
+    edges: [edge('src', 'review')],
+  };
+
+  it('refuses a decision request with a deadline, naming the deadline', () => {
+    const result = admittedSnapshotSchema.safeParse(withDeadline);
+
+    expect(result.error?.issues).toEqual([
+      expect.objectContaining({
+        path: ['nodes', 1, 'data', 'properties', 'decisionRequest', 'deadline'],
+        message: decisionIssueMessage('deadline_not_supported'),
+        params: { issue: 'deadline_not_supported' },
+      }),
+    ]);
+  });
+
+  it('leaves the snapshot a stored run is read back with free to carry one', () => {
+    expect(workflowSnapshotSchema.safeParse(withDeadline).success).toBe(true);
   });
 });
 
@@ -655,7 +689,10 @@ describe('mapToExecutionModel', () => {
 
     expect(result.nodes[1]!.decisionRequest).toEqual({
       ...request,
-      actions: [request.actions[0], { ...request.actions[1], maxIterations: 3 }],
+      actions: [
+        { ...request.actions[0], reasonRequired: false },
+        { ...request.actions[1], maxIterations: 3 },
+      ],
     });
     expect(result.nodes[1]!.config).toEqual({ foo: 1 });
     expect(result.nodes[1]!.label).toBe('Review');

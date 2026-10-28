@@ -106,6 +106,68 @@ describe('execute rate limits', () => {
   });
 });
 
+describe('ENABLE_WB_LISTING', () => {
+  // Off unless opted in: a deployment whose only secret is the random id must not list every id.
+  it('lists on true', async () => {
+    const env = await loadEnv({ ENABLE_WB_LISTING: 'true' });
+
+    expect(env.ENABLE_WB_LISTING).toBe(true);
+  });
+
+  it.each(['TRUE', 'True', '1', 'yes', 'enabled', ''])('does not list on %s', async (value) => {
+    const env = await loadEnv({ ENABLE_WB_LISTING: value });
+
+    expect(env.ENABLE_WB_LISTING).toBe(false);
+  });
+
+  it('does not list when unset', async () => {
+    const env = await loadEnv({});
+
+    expect(env.ENABLE_WB_LISTING).toBe(false);
+  });
+});
+
+describe('ALLOWED_ORIGINS', () => {
+  // Unset means local dev with the frontend on another port, so every origin is let in.
+  it('allows every origin when unset', async () => {
+    const env = await loadEnv({});
+
+    expect(env.ALLOWED_ORIGINS).toBeNull();
+  });
+
+  it('allows no cross-origin caller when empty', async () => {
+    const env = await loadEnv({ ALLOWED_ORIGINS: '' });
+
+    expect(env.ALLOWED_ORIGINS).toEqual([]);
+  });
+
+  it('reads a comma-separated list, trimmed, with empty entries dropped', async () => {
+    const env = await loadEnv({ ALLOWED_ORIGINS: ' https://studio.example.com, http://localhost:4201,, ' });
+
+    expect(env.ALLOWED_ORIGINS).toEqual(['https://studio.example.com', 'http://localhost:4201']);
+  });
+
+  // The browser sends a bare lower-case origin, so an entry copied from the address bar must still match.
+  it('reduces each entry to its origin', async () => {
+    const env = await loadEnv({ ALLOWED_ORIGINS: 'https://Studio.example.com/, http://localhost:4201/app?x=1' });
+
+    expect(env.ALLOWED_ORIGINS).toEqual(['https://studio.example.com', 'http://localhost:4201']);
+  });
+
+  it('refuses an entry that is not a URL', async () => {
+    await expect(loadEnv({ ALLOWED_ORIGINS: 'studio.example.com' })).rejects.toThrow(/ALLOWED_ORIGINS/);
+  });
+
+  // `localhost:4201` parses with `localhost:` as its scheme and the opaque origin "null",
+  // which would admit requests from sandboxed iframes and file:// pages.
+  it.each(['localhost:4201', 'ftp://studio.example.com'])(
+    'refuses %s, which is not an http(s) origin',
+    async (entry) => {
+      await expect(loadEnv({ ALLOWED_ORIGINS: entry })).rejects.toThrow(/not an http\(s\) origin/);
+    },
+  );
+});
+
 describe('TURNSTILE_SECRET_KEY', () => {
   it('reads a secret that is set', async () => {
     const env = await loadEnv({ TURNSTILE_SECRET_KEY: 'secret' });

@@ -1,7 +1,5 @@
 import type { ComponentType } from 'react';
 
-import styles from './node-preview.module.css';
-
 import { getCustomNodeTemplates } from '../../data/node-templates';
 import { useTranslateIfPossible } from '../../hooks/use-translate-if-possible';
 import type { PaletteItem } from '../../node/common';
@@ -12,11 +10,11 @@ import { AiAgentNodeTemplate } from '../diagram/nodes/ai-agent-node-template/ai-
 import { DecisionNodeTemplate } from '../diagram/nodes/decision-node-template/decision-node-template';
 import { StartNodeTemplate } from '../diagram/nodes/start-node-template/start-node-template';
 import {
+  type WorkflowBuilderNodeTemplateProps,
   WorkflowNodeTemplate,
-  type WorkflowNodeTemplateProps,
 } from '../diagram/nodes/workflow-node-template/workflow-node-template';
 
-type NodeTemplateRegistry = Record<string, ComponentType<WorkflowNodeTemplateProps>>;
+type NodeTemplateRegistry = Record<string, ComponentType<WorkflowBuilderNodeTemplateProps>>;
 
 // Built-in templates registered against their NodeType discriminator.
 // Custom templates win on key collision (the lookup in NodePreview checks
@@ -54,7 +52,7 @@ type NodePreviewProps = NodeStateProps & {
 };
 
 function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
-  const { type, icon, label, description, templateType = NodeType.Node } = nodeDefinition;
+  const { type, icon, accent, label, description, templateType = NodeType.Node } = nodeDefinition;
 
   const translateIfPossible = useTranslateIfPossible();
 
@@ -66,16 +64,15 @@ function NodePreview({ nodeDefinition, disabled }: NodePreviewProps) {
   const TemplateComponent = custom[templateKey] ?? BUILT_IN_TEMPLATES[templateKey] ?? BUILT_IN_TEMPLATES[NodeType.Node];
 
   return (
-    <div className={styles['preview']}>
-      <TemplateComponent
-        icon={icon}
-        label={nodeLabel}
-        description={nodeDescription}
-        showHandles={false}
-        selected={false}
-        disabled={disabled}
-        id={''}
-      />
-    </div>
+    <TemplateComponent
+      icon={icon}
+      accent={accent}
+      label={nodeLabel}
+      description={nodeDescription}
+      showHandles={false}
+      selected={false}
+      disabled={disabled}
+      id={''}
+    />
   );
 }

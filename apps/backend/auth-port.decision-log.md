@@ -95,9 +95,9 @@ Token expiry mid-stream is not handled by the seam. `identify` runs once per req
 
 ## CORS for a real port
 
-`server.ts` mounts `cors()` with its defaults: `origin: '*'`, `credentials: false`, no explicit `allowHeaders`. That works for the permissive default but breaks both common real-port shapes:
+`middleware/cors.ts` mounts Hono's `cors()`: `ALLOWED_ORIGINS` supplies `origin` (unset admits every origin), `credentials` stays `false` and `allowHeaders` echoes whatever the preflight asks for. That works for the permissive default but breaks both common real-port shapes:
 
-- **Bearer JWT adapters.** Browser preflight strips `Authorization` unless the server returns it in `Access-Control-Allow-Headers`. Configure `cors({ allowHeaders: ['Authorization', 'Content-Type'], origin: <your frontend origin> })`.
+- **Bearer JWT adapters.** Browser preflight strips `Authorization` unless the server returns it in `Access-Control-Allow-Headers`. Set `ALLOWED_ORIGINS` to your frontend origin and, if you pin `allowHeaders` in `middleware/cors.ts`, include `Authorization` and `Content-Type`.
 - **Cookie session adapters.** Cookies require `credentials: true` on the server (`Access-Control-Allow-Credentials: true`) and matching `withCredentials: true` on `fetch` / `EventSource`. The wildcard origin is also illegal once credentials are on; you must list the frontend origin(s) explicitly.
 
 Both are operator-side concerns, but plan the CORS change at the same time you swap the port - shipping a real `AuthPort` without updating CORS produces a baffling "preflight rejected" error.
