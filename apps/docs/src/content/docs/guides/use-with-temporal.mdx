@@ -54,7 +54,7 @@ Before you start, set up the editor, a Node.js project for your backend and Work
 
 ## Setup
 
-Everything installs in your Node.js project with one command. The editor needs no new packages, only the function from [Start a run](#start-a-run).
+Everything installs in your Node.js project with one command. The editor needs no new packages, only the function from [Send the diagram](#send-the-diagram).
 
 ```bash
 npm install @workflowbuilder/temporal @temporalio/worker @temporalio/activity @temporalio/client @temporalio/workflow @temporalio/plugin
@@ -90,9 +90,9 @@ export const trigger: PaletteItem<TriggerNodeSchema> = {
 };
 ```
 
-### Start a run
+### Send the diagram
 
-A run starts when your app posts the diagram to your backend. [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) returns the diagram from the editor, and `runDiagram` sends its nodes and edges.
+`runDiagram` reads the diagram data with [`getStoreDataForIntegration()`](/api/store/getstoredataforintegration/) and sends only its nodes and edges to your backend, which starts the run.
 
 ```ts
 // editor: run-diagram.ts
