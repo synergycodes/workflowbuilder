@@ -37,7 +37,7 @@ This grammar is narrower than Temporal's own, which parses durations with the `m
 
 ## One constant, both sides
 
-Declare the map once and hand the same constant to both sides. The workflow needs it in order to schedule activities; the plugin needs it only to check it early. Because `workflows.ts` imports the map, its module ends up in the workflow bundle and imports from `/workflow` too: the root entry brings in `@temporalio/activity`, which the bundler refuses.
+Declare the map once and hand the same constant to both sides. The workflow needs it in order to schedule activities; the plugin needs it only to check it early. `workflows.ts` imports this map, so its file becomes part of the workflow bundle. Import from `@workflowbuilder/temporal/workflow` there, not from the package root: only `/workflow` is safe in the workflow sandbox, and a root import stops the worker at startup.
 
 ```ts
 // node-activity-profiles.ts
