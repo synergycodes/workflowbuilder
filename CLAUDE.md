@@ -171,8 +171,6 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 | `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                                                                    |
 | `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                                                                       |
 | `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                                                                                   |
-| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                                                                         |
-| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                                                                               |
 | `/wb.changeset <bump> "<summary>"` | Add a changeset for a published package (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**`, `packages/ui/**` or `packages/temporal/**` |
 
 ### Releasing the `@workflowbuilder/*` packages
@@ -225,15 +223,3 @@ The skills under `.claude/commands/wb.*.md` mix three kinds of content:
 When executing a skill, if a snippet contradicts the canonical reference (or the live SDK source), **canonical wins**. Snippets are starting points; live code is truth.
 
 **Self-heal**: if you spot drift while executing a skill, refresh the affected snippet in the skill file as part of your change. Bundle it with the user's task in the same commit (or a follow-up commit titled `docs: refresh /wb.<name> snippet for <change>`). Frequent small refreshes are healthy — stale snippets accumulate friction.
-
-### ClickUp MCP
-
-`.mcp.json` holds only the `wb-docs` docs server. ClickUp MCP is configured in your own Claude Code MCP settings, using the official remote server at `https://mcp.clickup.com/mcp`.
-
-First-time setup in Claude Code:
-
-1. Open a Claude Code session in this repo.
-2. Run `/mcp`.
-3. Authenticate the `clickup` server via the OAuth flow.
-
-The project provides a `/wb.task` wrapper command that uses ClickUp MCP to fetch assigned tasks or a specific task by ticket.
