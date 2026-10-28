@@ -20,7 +20,7 @@ Keep the loop inside the node's single Activity.
 
 ## What it costs
 
-An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed, so a worker that dies mid-loop loses every finished step the same way, and costs the wait on top: a node profile carries no `heartbeatTimeout`, so Temporal notices the dead worker only when `startToCloseTimeout` expires, 10 minutes by default. Three caps already bound the bill:
+An Activity retry starts the executor from scratch. Every model call and every search made in the failed attempt runs again; nothing inside the loop is checkpointed, so a worker that dies mid-loop loses every finished step the same way, and costs the wait on top: the default node profile sets no `heartbeatTimeout`, so Temporal notices the dead worker only when `startToCloseTimeout` expires, 10 minutes by default. Three caps already bound the bill:
 
 | Cap                  | Where                                    | Effect                                                        |
 | -------------------- | ---------------------------------------- | ------------------------------------------------------------- |

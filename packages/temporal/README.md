@@ -229,7 +229,7 @@ Without a Payload Codec, anyone who can open the Temporal UI can read the record
 
 [`execution-core`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
 
-Three rules follow:
+Four rules follow:
 
 - **Keep secrets in the worker's own environment.** The reference worker keeps its model key and its search key there.
 - **One secret for the whole installation: capture it at worker start.** An executor is a closure, so capture the value when you build `executors`, as the reference worker does with its keys.
