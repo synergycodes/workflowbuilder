@@ -9,6 +9,7 @@
 //   pnpm release:version temporal --dry-run    print the plan, change nothing
 //   pnpm release:version sdk --allow-unreleased-bundled
 //                                              ship the SDK although UI, compiled into it, has pending changesets
+//                                              (likewise mcp, whose snapshot documents sdk, ui and temporal)
 //
 // Full procedure: packages/RELEASE.md.
 import { readFileSync, readdirSync, rmSync } from 'node:fs';
@@ -23,6 +24,11 @@ const USAGE = 'Usage: pnpm release:version <package> [<package>…] [--dry-run] 
 // Packages compiled into another package's dist. A change in the bundled one reaches consumers
 // with the next release of the bundling one, whether or not the bundled one was released.
 const BUNDLES = { '@workflowbuilder/sdk': ['@workflowbuilder/ui'] };
+// Packages whose dist snapshots the API and docs of others, labelled with their package.json versions.
+// Released alone, the snapshot would present unreleased API under the version that is on npm.
+const SNAPSHOTS = {
+  '@workflowbuilder/mcp': ['@workflowbuilder/sdk', '@workflowbuilder/ui', '@workflowbuilder/temporal'],
+};
 // Packages with a replay contract: each release records the replay histories under its version.
 const RECORDS_REPLAY_HISTORIES = new Set(['@workflowbuilder/temporal']);
 const CHANGESET_PACKAGE = createRequire(import.meta.url).resolve('@changesets/cli/package.json');
@@ -110,6 +116,20 @@ for (const target of targets) {
   }
 }
 
+for (const target of targets) {
+  const unreleased = (SNAPSHOTS[target] ?? []).filter((name) => {
+    const pending = pendingFor(name);
+    return pending && pending.newVersion !== pending.oldVersion && !targets.includes(name);
+  });
+  if (unreleased.length === 0 || flags['allow-unreleased-bundled']) continue;
+  fail(
+    `${target} snapshots the API of ${unreleased.join(', ')}, which ${unreleased.length === 1 ? 'has' : 'have'} pending version changes: ` +
+      'the snapshot would document that unreleased API under the version on npm. ' +
+      `Release them together (pnpm release:version ${[...targets, ...unreleased].map(shortName).join(' ')}) ` +
+      'or pass --allow-unreleased-bundled to ship anyway.',
+  );
+}
+
 // ---------- Plan ----------
 
 console.log('Will version:');
@@ -121,6 +141,16 @@ for (const name of targets) {
 console.log('Will leave untouched (their changesets stay in .changeset/):');
 for (const name of ignore) console.log(`  ${name}  (${pendingFor(name)?.changesets.length ?? 0} pending)`);
 if (ignore.length === 0) console.log('  (none: every publishable package is being released)');
+
+// The snapshot on npm goes stale when a package it documents is released without it: a reminder, not a stop.
+for (const [snapshot, documented] of Object.entries(SNAPSHOTS)) {
+  const releasing = documented.filter((name) => targets.includes(name));
+  if (targets.includes(snapshot) || releasing.length === 0) continue;
+  console.log(
+    `\n⚠ ${snapshot} is not in this release, so its version on npm keeps documenting the previous ${releasing.map(shortName).join(', ')} API.` +
+      `\n  For a fresh snapshot, add a patch changeset for ${shortName(snapshot)} and run: pnpm release:version ${[...targets, snapshot].map(shortName).join(' ')}`,
+  );
+}
 
 if (dryRun) {
   console.log('\nDry run. No files changed.');

@@ -160,6 +160,7 @@ export default defineConfig({
           label: 'Get Started',
           items: [
             { label: 'Quick Start', autogenerate: { directory: 'get-started/quick-start' } },
+            { label: 'Use with AI assistants', link: '/get-started/ai-assistants/' },
             {
               label: 'Persistence',
               items: [

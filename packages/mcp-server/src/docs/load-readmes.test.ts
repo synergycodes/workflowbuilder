@@ -13,7 +13,7 @@ const sources = [
 const BLOB = 'https://github.com/synergycodes/workflowbuilder/blob/main';
 
 describe('loadReadmes', () => {
-  const loaded = loadReadmes({ sources });
+  const loaded = loadReadmes({ sources, revision: 'main' });
 
   it('indexes README and the other shipped markdown files, not the changelog or unshipped files', () => {
     expect(loaded.pages.map((page) => page.id)).toEqual(['readme/sdk', 'readme/ui', 'readme/ui/css-layers']);
@@ -47,10 +47,22 @@ describe('loadReadmes', () => {
     expect(content).toContain('[kept as is](./inside-fence.md)');
   });
 
+  it('points every GitHub url at the given revision', () => {
+    const pinned = loadReadmes({ sources, revision: 'abc123' });
+    const sdk = pinned.pages[0];
+    expect(sdk.url).toBe('https://github.com/synergycodes/workflowbuilder/blob/abc123/packages/sdk/README.md');
+    expect(sdk.content).toContain(
+      '(https://github.com/synergycodes/workflowbuilder/blob/abc123/packages/ui/README.md)',
+    );
+    expect(sdk.content).not.toContain('/main/');
+    expect(normalizeDocRef(`${sdk.url}#install`)).toBe('readme/sdk#install');
+  });
+
   it('warns and continues when a package has no manifest', () => {
     const warnings: string[] = [];
     const result = loadReadmes({
       sources: [{ name: 'gone', root: path.join(FIXTURE_PACKAGES_ROOT, 'gone'), title: 'gone' }, ...sources],
+      revision: 'main',
       onWarning: (message) => warnings.push(message),
     });
     expect(warnings).toHaveLength(1);
@@ -68,9 +80,9 @@ function packageWith(files: Record<string, string>, listed: string[]) {
 describe('loadReadmes robustness', () => {
   it('takes the first heading outside code fences and keeps a trailing #', () => {
     const source = packageWith({ 'README.md': '```sh\n# comment\n```\n\n# Using C#\n' }, []);
-    expect(loadReadmes({ sources: [source] }).pages[0].title).toBe('Using C#');
+    expect(loadReadmes({ sources: [source], revision: 'main' }).pages[0].title).toBe('Using C#');
     const closed = packageWith({ 'README.md': '# Closed ##\n' }, []);
-    expect(loadReadmes({ sources: [closed] }).pages[0].title).toBe('Closed');
+    expect(loadReadmes({ sources: [closed], revision: 'main' }).pages[0].title).toBe('Closed');
   });
 
   it('indexes one page per readme id and skips a file that cannot be read', () => {
@@ -82,7 +94,7 @@ describe('loadReadmes robustness', () => {
     unlinkSync(path.join(source.root, 'notes.md'));
     mkdirSync(path.join(source.root, 'gone.md'));
     const warnings: string[] = [];
-    const loaded = loadReadmes({ sources: [source], onWarning: (message) => warnings.push(message) });
+    const loaded = loadReadmes({ sources: [source], revision: 'main', onWarning: (message) => warnings.push(message) });
     expect(loaded.pages.map((page) => page.id)).toEqual(['readme/pkg']);
     expect(warnings.some((message) => message.includes('gone.md'))).toBe(true);
   });
@@ -90,7 +102,9 @@ describe('loadReadmes robustness', () => {
 
 describe('rewriteRelativeLinks', () => {
   it('keeps same-page anchors and links that leave the repo', () => {
-    expect(rewriteRelativeLinks('[a](#x) [b](../../../x.md)', 'sdk', 'README.md')).toBe('[a](#x) [b](../../../x.md)');
+    expect(rewriteRelativeLinks('[a](#x) [b](../../../x.md)', 'sdk', 'README.md', 'main')).toBe(
+      '[a](#x) [b](../../../x.md)',
+    );
   });
 });
 

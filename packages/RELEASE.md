@@ -4,24 +4,38 @@ Maintainer-only procedure for every package published from this repo. Consumer d
 
 The flow is **A+ (Changesets + commitlint + release branch + tag-triggered CI publish)** — adapted from [synergycodes/ng-diagram](https://github.com/synergycodes/ng-diagram) (defensive pre-publish checks, npm-view idempotency) plus Changesets for automated version/CHANGELOG management.
 
-This repo publishes **three** packages. Each has its own **scoped** release tag and its own workflow, and each is released on its own, when its maintainer decides:
+This repo publishes **four** packages. Each has its own **scoped** release tag and its own workflow, and each is released on its own, when its maintainer decides:
 
 | Package                     | Tag format                        | Workflow                                 | Status                                               |
 | --------------------------- | --------------------------------- | ---------------------------------------- | ---------------------------------------------------- |
 | `@workflowbuilder/sdk`      | `@workflowbuilder/sdk@X.Y.Z`      | `.github/workflows/release-sdk.yml`      | on npm                                               |
-| `@workflowbuilder/ui`       | `@workflowbuilder/ui@X.Y.Z`       | `.github/workflows/release-ui.yml`       | not on npm yet, see § First release of a new package |
+| `@workflowbuilder/ui`       | `@workflowbuilder/ui@X.Y.Z`       | `.github/workflows/release-ui.yml`       | on npm                                               |
 | `@workflowbuilder/temporal` | `@workflowbuilder/temporal@X.Y.Z` | `.github/workflows/release-temporal.yml` | on npm                                               |
+| `@workflowbuilder/mcp`      | `@workflowbuilder/mcp@X.Y.Z`      | `.github/workflows/release-mcp.yml`      | not on npm yet, see § First release of a new package |
 
 Two rules keep the packages independent of each other:
 
 1. **Version through `pnpm release:version <pkg>`, never through bare `pnpm changeset version`.** The bare command bumps every package that has a pending changeset, so releasing one package would land an unpublished version bump of its siblings on `release`. The script computes the `--ignore` list (every publishable package you did not name), refuses to run when the named package has nothing pending, and leaves the other packages' changesets in `.changeset/` for their own release. Naming several packages releases them together.
 2. **Tag through `pnpm release:tag <pkg>`, never through `pnpm changeset tag` or `git push --tags`.** The tag push is the release. The script checks that you are on the tip of `release`, that the version has CHANGELOG notes and no tag yet, asks, and pushes exactly one tag by name.
 
-Both scripts live in `tools/` and accept the short name (`sdk`, `ui`, `temporal`) or the full one. `<pkg>` below stands for the package being released. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the packages don't collide.)
+Both scripts live in `tools/` and accept the short name (`sdk`, `ui`, `temporal`, `mcp`) or the full one. `<pkg>` below stands for the package being released. (The old single-package `v*` tag scheme has been retired - scoped tags are required so the packages don't collide.)
 
-`@workflowbuilder/temporal` has one extra consideration the other two do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version. See `packages/temporal/README.md` § "Versioning and replay".
+`@workflowbuilder/temporal` has one extra consideration the other packages do not: it bundles the private `@workflow-builder/execution-core` and `@workflow-builder/types` into its `dist`, so a behaviour change in either ships to consumers through this release. It also carries a replay contract - a patch or minor must still replay an Event History recorded by an older version. See `packages/temporal/README.md` § "Versioning and replay".
 
 `@workflowbuilder/sdk` has the same shape with `@workflowbuilder/ui`: the UI is compiled into the SDK bundle (it is not among the SDK's externals or dependencies), so a UI change reaches SDK consumers with the next SDK release whether or not the UI itself was released. `release:version` stops when you release the SDK while the UI has pending changesets, and `pr-check.yml` warns when `packages/ui` changes without a changeset for the SDK.
+
+`@workflowbuilder/mcp` lives in `packages/mcp-server`. It is the docs MCP server for AI assistants, and its build snapshots `apps/docs`, the package READMEs and the public API of the other three packages from the commit it is published from. The snapshot labels that API with the versions in each `package.json`, so it is only right when every one of those packages is released with it or has nothing pending. `release:version` therefore stops when you release mcp while the SDK, the UI or the Temporal plugin has pending version changes, and names the packages to add. A typical release, from `main`:
+
+```bash
+git checkout -b release-sdk-X.Y.Z
+pnpm changeset add --empty   # edit: '@workflowbuilder/mcp': patch, "Docs and API reference for @workflowbuilder/sdk X.Y.Z"
+git add .changeset && git commit -m "chore(mcp): changeset for the sdk X.Y.Z snapshot"
+pnpm release:version sdk mcp # add ui and temporal when the script names them
+```
+
+Then tag each package with `pnpm release:tag`. Releasing the SDK, the UI or the Temporal plugin without mcp leaves the snapshot on npm documenting the previous API; `release:version` prints a reminder in its plan when that happens. A docs-only change reaches mcp with its next release. Its startup log lists the package versions it documents.
+
+The docs site has a page for mcp ("Use with AI assistants") that tells readers to run `npx @workflowbuilder/mcp`, and the npm README links to that page. Until mcp's first version is on npm, deploy the site (step 8) only right after that first publish, not before.
 
 ## Mental model
 
@@ -48,7 +62,7 @@ release  ───────────────●───────�
    - Publisher: **GitHub Actions**
    - Organization or user: `synergycodes`
    - Repository: `workflowbuilder`
-   - Workflow filename: `release-sdk.yml` for `@workflowbuilder/sdk`, `release-ui.yml` for `@workflowbuilder/ui`, `release-temporal.yml` for `@workflowbuilder/temporal`
+   - Workflow filename: `release-sdk.yml` for `@workflowbuilder/sdk`, `release-ui.yml` for `@workflowbuilder/ui`, `release-temporal.yml` for `@workflowbuilder/temporal`, `release-mcp.yml` for `@workflowbuilder/mcp`
    - Environment name: _(leave empty)_
 
    Then, on the same page under "Publishing access", pick **"Require two-factor authentication and disallow tokens"**. Trusted publishers keep working (they authenticate with OIDC, not with tokens) and nothing else can publish the package.
@@ -66,30 +80,34 @@ release  ───────────────●───────�
 
 ## First release of a new package
 
-Applies to `@workflowbuilder/ui` today, and to any package added later. npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
+Applies to `@workflowbuilder/mcp` today, and to any package added later (`@workflowbuilder/ui` went this way for 1.0.0). npm registers a trusted publisher on an existing package's settings page and offers no place to do it for a name that is not in the registry yet, so the first version is published from a maintainer's machine and everything after it goes through CI. Checked 2026-09-17 against [npm's trusted publishing docs](https://docs.npmjs.com/trusted-publishers/), which only describe the per-package page, and against community reports that the first publish needs a login or token ([GitHub community thread](https://github.com/orgs/community/discussions/176761), [npmdigest guide](https://npmdigest.com/guides/npm-trusted-publishing)). Before following the manual path, have an org owner open the npm UI and try to add the trusted publisher for the unpublished name: if the form accepts it, skip step 3, and the tag workflow publishes the first version with provenance.
 
 `@workflowbuilder/temporal` 0.1.0 was published by hand and has no scoped tag or GitHub Release; 0.2.0 is the first release that runs `release-temporal.yml`, so confirm its trusted publisher on npmjs.com before tagging.
+
+For `@workflowbuilder/mcp` the release PR carries every package the script names in step 2: the snapshot labels the API with the versions in `package.json`, and on `main` that API runs ahead of npm by whatever sits in `.changeset/`. The first mcp release is therefore also a release of each of the SDK, the UI and the Temporal plugin that has version changes pending, whatever size those changes are: `pnpm release:version sdk ui temporal mcp` when all three do. The only way to release mcp alone is a release branch cut from `release` instead of `main` (its tip is the code of the versions on npm, with no changesets pending) with the mcp commits cherry-picked onto it; today that is every commit that introduced `packages/mcp-server`, because none of them has reached `release` yet.
 
 The whole sequence:
 
 1. **Make the package publishable on `main`** in an ordinary PR: drop `"private": true`, check that `package.json` has `publishConfig.access: public`, `files`, `repository.directory` and `license`, that `LICENSE` and `CHANGELOG.md` sit next to it, and that `CHANGELOG.md` contains nothing but the `# Changelog` heading (see "Reformat the generated CHANGELOG section" for why). Every README link that leaves the package directory has to be an absolute GitHub URL: npm renders the README, and a relative `../` link is dead there.
-2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>`, rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` sits at `0.1.0` in `package.json` with a major changeset pending, so its first publish is `1.0.0`, and its hand-written `## [1.0.0]` section is where the generated bullets land). Fold the hand-written notes into the generated section rather than shipping two.
+2. **Cut the release PR** exactly as in § Release procedure: `pnpm release:version <pkg>` (for mcp, together with the packages the script names), rewrite the generated section into Keep a Changelog form, PR into `release`, merge. If the package already has pending changesets, the first version on npm is what they add up to, not the number in a hand-written section (`@workflowbuilder/ui` sat at `0.1.0` in `package.json` with a major changeset pending, so its first publish was `1.0.0`, and its hand-written `## [1.0.0]` section was where the generated bullets landed). Fold the hand-written notes into the generated section rather than shipping two.
 3. **Publish from the release head**, logged in to npm (`npm login`) as a member of the `workflowbuilder` org with 2FA enabled:
 
    ```bash
    git checkout release && git pull
+   git status --porcelain                       # must print nothing
    pnpm install --frozen-lockfile
    pnpm --filter @workflowbuilder/<pkg> build   # build:lib for the SDK, pnpm build:ui for UI
-   cd packages/<pkg>
+   pnpm --filter @workflowbuilder/mcp smoke:package   # mcp only
+   cd packages/<pkg>                            # packages/mcp-server for mcp
    pnpm publish --dry-run --no-git-checks       # read the file list one more time
    pnpm publish --access public --no-git-checks
    ```
 
-   `--no-git-checks` is needed because pnpm expects to publish from `main`. `pnpm publish`, never `npm publish`: only pnpm resolves the `catalog:` and `workspace:` specifiers. This one version carries no provenance attestation; the ones CI publishes will.
+   The tree has to be clean because the mcp build snapshots the files on disk, untracked ones included: a local draft under `apps/docs` would ship. mcp's `prepack` refuses a `dist/` that is missing or was built from another commit, and a tree that is not clean. `--no-git-checks` is needed because pnpm expects to publish from `main`. `pnpm publish`, never `npm publish`: only pnpm resolves the `catalog:` and `workspace:` specifiers. This one version carries no provenance attestation; the ones CI publishes will.
 
 4. **Register the trusted publisher and disallow tokens** for the new package (§ One-time setup, step 2).
 5. **Tag as usual**: `pnpm release:tag <pkg>`. The workflow runs its checks, sees the version already on npm, skips the publish step and creates the GitHub Release from the CHANGELOG. That run proves the tag trigger, the build and the release-notes extraction end to end; the OIDC exchange itself gets its first real run on the next version.
-6. **Sync back** (§ Release procedure, step 6) and drop the "not on npm yet" wording for the package from the table above and from `CLAUDE.md`.
+6. **Sync back** (§ Release procedure, step 6) and drop the "not on npm yet" wording for the package from the table above and from `CLAUDE.md`. For mcp, deploy the docs site now (§ Release procedure, step 8): its "Use with AI assistants" page and the npm README's link to it both wait for this publish.
 
 ## Daily flow (every PR touching a published package)
 
@@ -233,7 +251,7 @@ Local smoke before approving:
 
 ```bash
 pnpm --filter @workflowbuilder/<pkg> build   # build:lib for the SDK, pnpm build:ui for UI
-cd packages/<pkg>
+cd packages/<pkg>                            # packages/mcp-server for mcp
 pnpm publish --dry-run --no-git-checks
 ```
 
@@ -285,7 +303,7 @@ The workflow `.github/workflows/release-<pkg>.yml`:
 
 1. Checks out the tag.
 2. Runs lint + typecheck + test on the package (defensive — if any fails, no publish).
-3. Builds the package. `@workflowbuilder/temporal` additionally runs `publint` and `@arethetypeswrong/cli` on the packed tarball.
+3. Builds the package. `@workflowbuilder/temporal` additionally runs `publint` and `@arethetypeswrong/cli` on the packed tarball. `@workflowbuilder/mcp` runs steps 2-3 with its smoke tests and `publint` in a separate `verify` job that cannot request the npm OIDC token, because `smoke:package` installs registry code outside the lockfile; the publish job then rebuilds the same commit.
 4. Verifies the tag version matches `packages/<pkg>/package.json` (catches "pushed wrong tag").
 5. Checks if `@workflowbuilder/<pkg>@X.Y.Z` is already on npm (idempotency — re-pushing tag won't fail). Only npm's `E404` counts as "not there"; a registry that cannot be reached fails the run instead of sending it into a publish.
 6. Extracts the CHANGELOG section for this version (`pnpm release:notes <pkg>`). A missing or empty section stops the run here, before anything reaches npm.

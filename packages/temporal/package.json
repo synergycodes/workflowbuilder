@@ -42,7 +42,9 @@
     "dist",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "activity-profiles.md",
+    "event-history-labels.md"
   ],
   "exports": {
     ".": {

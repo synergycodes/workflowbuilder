@@ -4,6 +4,8 @@ import remarkParse from 'remark-parse';
 import { unified } from 'unified';
 
 import { type MdxRule, mdxComponents as defaultComponents } from '../config/mdx-components.js';
+import { githubUrl } from './doc-ids.js';
+import { FENCE } from './fences.js';
 import { CSS_VARIABLES_LABEL, CSS_VARIABLE_PREFIX } from './generated-content.js';
 
 interface Position {
@@ -34,6 +36,7 @@ interface CleanContext {
   // CSS variable names of a documented component; undefined when the component is unknown.
   cssVariables?: (slug: string) => readonly string[] | undefined;
   components?: Record<string, MdxRule>;
+  revision: string;
   depth?: number;
 }
 
@@ -52,7 +55,6 @@ interface Edit {
 
 const MAX_PARTIAL_DEPTH = 5;
 const FRONTMATTER = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/;
-const FENCE = /^\s*(```|~~~)/;
 const NODE_SOURCE_DIRECTORY = 'apps/demo/src/app/data/nodes';
 const JSX_COMMENT = /^\s*\/\*[\s\S]*\*\/\s*$/;
 const JSON_IMPORT = /import\s+([A-Za-z_$][\w$]*)\s+from\s+['"]([^'"]+\.json)['"]/g;
@@ -212,7 +214,9 @@ function collectEdits(source: string, tree: AstNode, context: CleanContext, slug
       const name = attribute(node, 'node');
       unwrap(
         node,
-        name ? `Node definition source: ${NODE_SOURCE_DIRECTORY}/${name}/ (schema.ts, uischema.ts)\n\n` : '',
+        name
+          ? `Node definition source: ${githubUrl('tree', context.revision, `${NODE_SOURCE_DIRECTORY}/${name}`)}/ (schema.ts, uischema.ts)\n\n`
+          : '',
       );
       return;
     }

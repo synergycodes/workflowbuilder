@@ -12,9 +12,10 @@ async function main() {
     version: string;
   };
   const corpus = await buildCorpus();
-  const { pages, chunks, symbols, members, typedocBuiltAt, gitHead, buildMs } = corpus.stats;
+  const { pages, chunks, symbols, members, typedocBuiltAt, gitHead, versions, buildMs } = corpus.stats;
+  const documented = Object.entries(versions).map(([name, packageVersion]) => `${name} ${packageVersion}`);
   console.error(
-    `wb-docs ready: ${pages} pages, ${chunks} chunks, ${symbols} symbols (${members} members), typedoc built ${typedocBuiltAt} at ${gitHead}, indexed in ${buildMs} ms`,
+    `wb-docs ${version} ready: ${pages} pages, ${chunks} chunks, ${symbols} symbols (${members} members), documents ${documented.join(', ') || 'unknown versions'}, data built ${typedocBuiltAt} at ${gitHead}, indexed in ${buildMs} ms`,
   );
 
   const server = createMcpServer(createToolRegistry(corpus), version);

@@ -2,7 +2,8 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 import { buildCorpus } from '../corpus/build-corpus.js';
-import type { BuildCorpusOptions, PackageSource, UiComponent } from '../corpus/build-corpus.js';
+import type { BuildCorpusOptions, PackageSource } from '../corpus/build-corpus.js';
+import { type LoadDocsOptions, type UiComponent, loadDocs } from '../corpus/load-docs.js';
 import type { ExtractInput } from '../symbols/extract-symbols.js';
 import type { TypedocReflection } from '../symbols/typedoc-types.js';
 
@@ -48,14 +49,23 @@ export async function fixtureExtractInput(
   return { packageName, project: await readFixtureTypedoc(name), importPath: FIXTURE_IMPORT_PATHS[name] };
 }
 
-export function buildFixtureCorpus(overrides: Partial<BuildCorpusOptions> = {}) {
+export function loadFixtureDocs(overrides: Partial<LoadDocsOptions> = {}) {
+  return loadDocs({ docsRoot: FIXTURE_DOCS_ROOT, packageDocs: [], uiComponents: FIXTURE_COMPONENTS, ...overrides });
+}
+
+export const FIXTURE_CORPUS_OPTIONS: BuildCorpusOptions = {
+  typedocDirectory: FIXTURE_TYPEDOC_DIRECTORY,
+  manifestFile: path.join(here, 'missing-manifest.json'),
+  packages: FIXTURE_PACKAGES,
+};
+
+export async function buildFixtureCorpus({
+  packageDocs = [],
+  ...overrides
+}: Partial<BuildCorpusOptions> & Pick<LoadDocsOptions, 'packageDocs'> = {}) {
   return buildCorpus({
-    docsRoot: FIXTURE_DOCS_ROOT,
-    packageDocs: [],
-    typedocDirectory: FIXTURE_TYPEDOC_DIRECTORY,
-    manifestFile: path.join(here, 'missing-manifest.json'),
-    packages: FIXTURE_PACKAGES,
-    uiComponents: FIXTURE_COMPONENTS,
+    ...FIXTURE_CORPUS_OPTIONS,
     ...overrides,
+    docs: overrides.docs ?? (await loadFixtureDocs({ packageDocs, onWarning: overrides.onWarning })),
   });
 }

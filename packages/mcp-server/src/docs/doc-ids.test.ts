@@ -1,7 +1,6 @@
 import {
   InvalidDocRefError,
   chunkId,
-  createAnchorSlugger,
   normalizeDocRef,
   pageIdFromPath,
   pageUrl,
@@ -40,19 +39,6 @@ describe('page ids and urls', () => {
   });
 });
 
-describe('anchors', () => {
-  it('slugs plain and code headings', () => {
-    const slug = createAnchorSlugger();
-    expect(slug('Props reference')).toBe('props-reference');
-    expect(slug('`registerComponentDecorator`')).toBe('registercomponentdecorator');
-  });
-
-  it('suffixes duplicate headings', () => {
-    const slug = createAnchorSlugger();
-    expect([slug('Same'), slug('Same'), slug('Same')]).toEqual(['same', 'same-1', 'same-2']);
-  });
-});
-
 describe('normalizeDocRef', () => {
   it.each([
     ['https://www.workflowbuilder.io/docs/guides/a/#props', 'guides/a#props'],
@@ -71,6 +57,10 @@ describe('normalizeDocRef', () => {
     ['/guides/a/?x=1#props', 'guides/a#props'],
     [
       'https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/README.md?plain=1#worker',
+      'readme/temporal#worker',
+    ],
+    [
+      'https://github.com/synergycodes/workflowbuilder/blob/c1ca7580/packages/temporal/README.md#worker',
       'readme/temporal#worker',
     ],
     ['guides/a#Props-Table', 'guides/a#props-table'],
