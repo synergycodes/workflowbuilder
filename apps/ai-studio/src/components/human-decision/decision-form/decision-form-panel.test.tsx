@@ -140,7 +140,7 @@ describe('the decision form in the real properties panel, as the selection moves
     useStore.setState({
       nodes: [agent('draft-1'), human('human-1', 'alpha', 'Alpha'), agent('draft-2'), human('human-2', 'beta', 'Beta')],
       edges: [edge('draft-1', 'human-1'), edge('draft-2', 'human-2')],
-      data: [humanDecisionPaletteItem as never],
+      data: [humanDecisionPaletteItem],
     });
     act(() => {
       setExecutionStarted('exec-1', 'http://backend/stream');
