@@ -26,11 +26,6 @@ Each run also keeps per-run state for parked nodes, a `Map` of waits and a `Set`
 
 **Where the guarantee stops.** Replay does not run an Activity again if Temporal recorded its result. A retry does run it again. The plugin schedules one Activity per node, on a profile that allows two attempts by default, so a node executor must accept that it can run more than once. A consumer raises or lowers that per node type through `nodeActivityProfiles`. `emitEvent` and `updateStatus` run on a fixed profile that allows five attempts. The workflow assigns each event its own `sequence` number, so a store can make that write idempotent. The reference worker does this with `ON CONFLICT (execution_id, sequence) DO NOTHING`. No test covers that write.
 
-## Limitations
-
-- **No CI job tests against the newest `@temporalio/*`.** Every job installs the pinned versions. A regression in the SDK therefore appears when someone upgrades, not on a pull request.
-- **Only one `patched()` id exists.** `wb-running-status-at-start` (from 0.3.0), which `runGraph` reaches through `VersioningPort`. Any other change to the emitted command sequence on a path an older run took still needs its own `patched()` id, or a major release that drains the runs in flight first. See [`README.md`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/README.md#versioning-and-replay) § "Versioning and replay".
-
 ## What the suites pin
 
 | Suite                                                                                                                                                                      | Pins                                                                                                                                                                                                                                                                                                                                                                                                                | Gated by    |
