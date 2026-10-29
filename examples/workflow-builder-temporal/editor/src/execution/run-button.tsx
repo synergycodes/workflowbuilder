@@ -1,13 +1,12 @@
 import { PlayIcon } from '@phosphor-icons/react';
 
 import { runFromCanvas } from './run';
-import { isRunFailure, useRunStore } from './run-store';
+import { isRunBusy, isRunFailure, useRunStore } from './run-store';
 
-// Mounted in the SDK's OptionalAppBarControls slot. Only the button lives here: the slot grows
-// under the centred diagram title, so the run's status sits in the run panel instead.
+// Only the button goes in the app bar; the run's status sits in the run panel.
 export function RunButton() {
   const phase = useRunStore((state) => state.phase);
-  const busy = phase === 'starting' || phase === 'running';
+  const busy = isRunBusy(phase);
 
   return (
     <div className="run-controls">

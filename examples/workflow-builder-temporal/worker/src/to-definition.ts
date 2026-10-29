@@ -1,15 +1,18 @@
-import type { WorkflowDefinition, WorkflowEdgeDefinition } from '@workflowbuilder/temporal';
+import type { NodeErrorPolicy, WorkflowDefinition, WorkflowEdgeDefinition } from '@workflowbuilder/temporal';
 
 import type { DiagramSnapshot, SnapshotEdge, SnapshotNode } from '../../shared/protocol';
-import { SAMPLE_NODE_TYPES, type SampleNode, isSampleNodeType } from './nodes';
+import { type SampleNode, isSampleNodeType, sampleNodeTypes } from './nodes';
+
+// The runner reads a node's error policy (the SDK's `errorPolicyProperty`) off the node, not from `config`.
+const ERROR_POLICIES = new Set<unknown>(['fail', 'continue', 'errorRoute'] satisfies NodeErrorPolicy[]);
 
 // The editor's snapshot is React Flow data; the plugin wants `{ id, type, config }` per node
 // and `{ sourceNodeId, targetNodeId }` per edge. This is the only place the sample translates between the two.
 export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: string): WorkflowDefinition<SampleNode> {
-  const nodes = snapshot.nodes.map((node) => toNode(node, node.data.isStartNode === true));
+  const nodes = snapshot.nodes.map(toNode);
   const startNodes = nodes.filter((node) => node.role === 'start');
   if (startNodes.length === 0) {
-    throw new Error('The diagram has no start node. Add a trigger node from the palette.');
+    throw new Error('The diagram has no start node. Add a trigger node from the Nodes Library.');
   }
   if (startNodes.length > 1) {
     const ids = startNodes.map((node) => node.id).join(', ');
@@ -19,13 +22,13 @@ export function snapshotToDefinition(snapshot: DiagramSnapshot, workflowId: stri
   return { workflowId, nodes, edges: snapshot.edges.map(toEdge) };
 }
 
-function toNode(node: SnapshotNode, isStart: boolean): SampleNode {
-  const { type } = node.data;
+function toNode(node: SnapshotNode): SampleNode {
+  const { type, isStartNode } = node.data;
   if (!isSampleNodeType(type)) {
-    throw new Error(`Unknown node type "${type}". This worker has executors for: ${SAMPLE_NODE_TYPES.join(', ')}.`);
+    throw new Error(`Unknown node type "${type}". This worker has executors for: ${sampleNodeTypes.join(', ')}.`);
   }
 
-  const { label, ...config } = node.data.properties ?? {};
+  const { label, errorPolicy, ...config } = node.data.properties ?? {};
   // The editor's validation state, not node configuration.
   delete config.errors;
   return {
@@ -33,7 +36,8 @@ function toNode(node: SnapshotNode, isStart: boolean): SampleNode {
     type,
     config,
     ...(typeof label === 'string' && label.trim() !== '' ? { label: label.trim() } : {}),
-    ...(isStart ? { role: 'start' as const } : {}),
+    ...(ERROR_POLICIES.has(errorPolicy) ? { errorPolicy: errorPolicy as NodeErrorPolicy } : {}),
+    ...(isStartNode === true ? { role: 'start' as const } : {}),
   } as SampleNode;
 }
 

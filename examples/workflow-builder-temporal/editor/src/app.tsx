@@ -2,7 +2,7 @@ import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflo
 
 import '@workflowbuilder/sdk/style.css';
 
-import { defaultDiagram } from './diagram';
+import { DIAGRAM_NAME, defaultDiagram } from './diagram';
 import { executionPlugin } from './execution/plugin';
 import { nodeTypes } from './nodes';
 import { resetPlugin } from './reset/plugin';
@@ -18,7 +18,7 @@ const { nodes: initialNodes, edges: initialEdges } = defaultDiagram();
 export function App() {
   return (
     <WorkflowBuilder.Root
-      name="Temporal sample"
+      name={DIAGRAM_NAME}
       nodeTypes={nodeTypes}
       initialNodes={initialNodes}
       initialEdges={initialEdges}

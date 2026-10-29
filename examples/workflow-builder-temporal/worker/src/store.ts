@@ -1,6 +1,6 @@
 import type { ExecutionStore } from '@workflowbuilder/temporal';
 
-import { type RunEvent, TERMINAL_STATUSES } from '../../shared/protocol';
+import { type RunEvent, isTerminalStatus } from '../../shared/protocol';
 
 type Listener = (event: RunEvent) => void;
 
@@ -10,12 +10,11 @@ export type RunStore = ExecutionStore & {
 };
 
 // The plugin decides what is emitted and in which order; this is where it lands. Here: the
-// terminal, plus anyone subscribed (the bridge's event streams). A real application writes
-// rows here instead. The port is the same.
+// terminal and the bridge's event streams, held in memory until the worker stops. A real
+// application writes rows here instead; the port is the same.
 export function createRunStore(): RunStore {
   const histories = new Map<string, RunEvent[]>();
   const listeners = new Map<string, Set<Listener>>();
-  const terminal = new Set<string>();
 
   function publish(executionId: string, event: RunEvent): boolean {
     const history = histories.get(executionId) ?? [];
@@ -41,8 +40,8 @@ export function createRunStore(): RunStore {
     // `outcome` comes with the terminal 'completed' only; a store that drops it loses the run's result.
     async updateExecutionStatus(executionId, status, errorMessage, outcome) {
       // A late 'running' or 'waiting', or a second terminal status, can follow the first one.
-      if (terminal.has(executionId)) return;
-      if (TERMINAL_STATUSES.has(status)) terminal.add(executionId);
+      const history = histories.get(executionId) ?? [];
+      if (history.some((held) => held.kind === 'status' && isTerminalStatus(held.status))) return;
       console.log(`[${executionId.slice(0, 8)}] status ${status}${errorMessage ? `: ${errorMessage}` : ''}`);
       publish(executionId, { kind: 'status', status, errorMessage, outcome });
     },
@@ -51,9 +50,7 @@ export function createRunStore(): RunStore {
       const set = listeners.get(executionId) ?? new Set<Listener>();
       set.add(listener);
       listeners.set(executionId, set);
-      return () => {
-        set.delete(listener);
-      };
+      return () => set.delete(listener);
     },
 
     history(executionId) {

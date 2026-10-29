@@ -2,6 +2,8 @@ import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '@workflowbuilder/
 
 import diagram from '../../shared/diagram.json';
 
+export const DIAGRAM_NAME = 'Temporal sample';
+
 // One diagram file for both entry points: `npm run workflow` reads it from disk, the editor
 // opens with it. JSON widens the icon names to `string`, hence the cast.
 // A copy per call, so an edited canvas can never write back into the imported module object.

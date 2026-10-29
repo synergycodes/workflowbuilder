@@ -2,7 +2,7 @@
 
 Run a workflow drawn in the Workflow Builder editor as a durable Temporal Workflow Execution: every node becomes an Activity, retries and history come from Temporal, and this sample's run plugin marks each node's status on the canvas (the Workflow Builder SDK ships no run status view; this is example code).
 
-This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram drawn in the [Workflow Builder](https://www.workflowbuilder.io) editor. You press **Run** on the canvas and watch the nodes light up while Temporal runs them. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned.
+This sample wires the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin into a Temporal Worker and executes a five-node diagram drawn in the [Workflow Builder](https://www.workflowbuilder.io) editor. You press **Run** on the canvas, and each node gets a status marker while Temporal runs it. One node fails on its first attempt on purpose, so the retry you see in Event History is a real one, and a decision node routes each run down one of two branches while the other is pruned.
 
 ![A finished run in the editor: green on every node the run executed, grey on the branch it skipped](docs/editor-run.png)
 
@@ -23,7 +23,7 @@ Three folders:
 
 - `editor/` is the browser app: Workflow Builder with a **Run** button.
 - `worker/` is the Node side: the Temporal Worker with the plugin, the bridge the editor talks to, and the CLI client.
-- `shared/` is what the two sides agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the coin flip (`amount.ts`).
+- `shared/` is what the two sides agree on: the diagram (`diagram.json`), the wire types (`protocol.ts`) and the random trigger payload (`trigger-payload.ts`).
 
 The diagram:
 
@@ -102,9 +102,11 @@ npm start
 Expected, between Temporal's own startup lines:
 
 ```
-worker polling task queue "workflow-execution" on 127.0.0.1:7233
 bridge listening on http://127.0.0.1:3210
+worker polling task queue "workflow-execution" on 127.0.0.1:7233
 ```
+
+If port 3210 is taken, the process stops with a message saying so. Set `BRIDGE_PORT`, as in [Make it yours](#make-it-yours).
 
 Terminal 3, the editor. From the sample folder:
 
@@ -122,7 +124,7 @@ While the run is going, the button reads **Running…**. Each node shows a spinn
 
 Each run draws an amount between 1 and 200 and sends it as the trigger payload. The decision node routes on it, so about half the runs take each branch: run it a few times and the grey node swaps sides.
 
-A small run panel appears below the app bar, in line with the Nodes Library and Properties bars. It shows the run's status (Starting, Running, Completed, Failed, Cancelled, Incomplete, or Error) and a **Temporal UI** link to the run, and it stays until the next run or a **Reset**. If something goes wrong, a snackbar shows the message and stays until you close it, start another run or press **Reset**: the bridge cannot be reached or rejects the request, the event stream is lost, or the run ends failed, cancelled or incomplete. When the run exists, the snackbar also has an **Open in Temporal UI** button. A completed run shows no snackbar.
+A small run panel appears below the app bar, in line with the Nodes Library and Properties bars. It shows the run's status (Starting, Running, Completed, Failed, Cancelled, Incomplete, or Error) and a **Temporal UI** link to the run, and it stays until the next run or a **Reset**. If something goes wrong, a snackbar shows the message and stays until you close it, start another run or press **Reset**: the bridge cannot be reached or rejects the request, the event stream is lost, or the run ends failed, cancelled or incomplete. When Temporal itself is down, the message arrives only once the bridge gives up connecting to it, about 20 seconds here, and **Run** stays disabled until then. When the run exists, the snackbar also has an **Open in Temporal UI** button. A completed run shows no snackbar.
 
 Terminal 2 prints every event the store receives, the same lines shown in [Without a browser](#without-a-browser).
 
@@ -134,9 +136,9 @@ The pruned branch leaves no trace here: when the amount is above 100 there is an
 
 ## Change the diagram and run again
 
-Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the palette. Then click **Run** again: the bridge runs whatever is on the canvas. Every diagram with one start node and no loops runs on the plugin's one `runWorkflow`, so the Worker keeps running unchanged; only a new node type needs Worker code.
+Edit a message, turn the outage switch on for another action, select **Needs review?** and edit its branches in the properties panel, or add a node from the Nodes Library. Then click **Run** again: the bridge runs whatever is on the canvas. Every diagram with one start node, no unconnected nodes and no loops runs on the plugin's one `runWorkflow`, so the Worker keeps running unchanged; only a new node type needs Worker code.
 
-The editor keeps your canvas in the browser between visits. **Reset** asks first, then puts back the nodes and edges from [`shared/diagram.json`](shared/diagram.json), which is also the diagram `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
+The editor keeps your canvas in the browser between visits. **Reset** asks first, then puts back the name "Temporal sample" and the nodes and edges from [`shared/diagram.json`](shared/diagram.json), which is also the diagram `npm run workflow` submits. Use it too if a run fails with "The diagram has no start node": a canvas saved by an earlier version of this sample has a trigger without the start flag.
 
 ## Without a browser
 
@@ -156,11 +158,12 @@ run completed
 ```
 
 Expected in terminal 2, the store printing what the workflow emitted. Temporal's own `Activity failed`
-warning for the first attempt appears between lines 4 and 5, and the `decision-1` config line is long
+warning for the first attempt appears between events #4 and #5, and the `decision-1` config line is long
 because it carries the branches as authored:
 
 ```
 [878ca8cc] # 1 execution_started {"workflowId":"workflow-builder-temporal-sample"}
+[878ca8cc] status running
 [878ca8cc] # 2 node_started (trigger-1) {"config":{"description":"Workflow entry point","status":"active"},"visibleNodeIds":[]}
 [878ca8cc] # 3 node_completed (trigger-1) {"output":{"amount":130,"customer":"Ada"}}
 [878ca8cc] # 4 node_started (action-1) {"config":{"description":"Notify the customer","status":"active","message":"Thanks for reaching out - we are on it!","simulateOutage":true},"visibleNodeIds":["trigger-1"]}
@@ -175,7 +178,7 @@ because it carries the branches as authored:
 ```
 
 Only `Send email` carries `"attempt":2`: it is the one node with the outage switch on. Run it again
-until the amount comes out at 100 or below, and lines 7 to 10 take the other branch instead:
+until the amount comes out at 100 or below, and events #7 to #10 take the other branch instead:
 
 ```
 [734af0c9] # 7 node_completed (decision-1) {"output":{"branch":"Otherwise","sourceHandle":"source:inner:otherwise"}}
@@ -193,7 +196,7 @@ Eight places carry the whole integration: six in the Worker, two in the editor. 
 1. [`worker/src/workflows.ts`](worker/src/workflows.ts) re-exports `runWorkflow`. Temporal bundles workflow code from one module, so a plugin cannot register its workflow for you; the re-export is how the bundle picks it up.
 2. [`worker/src/worker.ts`](worker/src/worker.ts) creates `WorkflowBuilderPlugin({ executors, store })` and hands it to `Worker.create`. The plugin contributes the activities that execute each node, and `runWorkflow` from step 1 walks the graph. Connection, task queue, and shutdown stay yours.
 3. [`worker/src/executors.ts`](worker/src/executors.ts) is one function per node type. Executors run inside the plugin's `executeNode` Activity, which is why `action` can read Temporal's attempt number and why throwing `TransientNodeExecutionError` gets it retried while `PermanentNodeExecutionError` does not.
-4. [`worker/src/evaluate-branches.ts`](worker/src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions all hold wins. A branch with no conditions is the fallback wherever it sits, because the editor adds new branches after it and cannot reorder them.
+4. [`worker/src/evaluate-branches.ts`](worker/src/evaluate-branches.ts) picks a branch, and the decision executor returns its handle as `nextPort`. That is what makes the graph branch: the runner fires only the edge whose handle matches, marks the rest `node_skipped`, and if a named port has no edge at all the run ends `incomplete` rather than failing. The first branch whose conditions hold wins. A branch with no conditions is the fallback wherever it sits, because the editor adds new branches after it and cannot reorder them.
 5. [`worker/src/store.ts`](worker/src/store.ts) implements the store port: where events and status changes land. Here they go to the terminal and to the editor's event stream. In your application they go to a database; the port is the same. The first terminal status a run reaches is final: a late `running` or `waiting`, or a second terminal status, can still arrive and is dropped.
 6. [`worker/src/to-definition.ts`](worker/src/to-definition.ts) turns the editor's snapshot into the plugin's `WorkflowDefinition`. A node is the run's start when its data carries `isStartNode: true`, which the editor copies from the palette item on drop. The plugin knows nothing about React Flow; this file is the only place that translates between the two formats.
 7. [`editor/src/nodes/`](editor/src/nodes/) holds the palette items. A palette item's `type` is the key of its executor in `worker/src/executors.ts`. The trigger sets `isStartNode: true` and declares an `outputSchema`, so a decision node's condition editor offers `amount` and `customer` in its variable picker. The decision node is built on the SDK's decision template, which gives it the branches you edit on the node and in the properties panel.
@@ -210,7 +213,7 @@ Eight places carry the whole integration: six in the Worker, two in the editor. 
 - **Point at Temporal Cloud.** `TEMPORAL_ADDRESS`, `TEMPORAL_NAMESPACE`, and `TEMPORAL_UI_ORIGIN` are read in `worker/src/config.ts`. TLS and API keys go on the three connections: the worker and the bridge in `worker/src/worker.ts`, the CLI in `worker/src/client.ts`. To move the bridge off port 3210, set the same `BRIDGE_PORT` for `npm start` and `npm run dev`.
 - **Toggle the outage.** Every Action has a _Simulate an outage on the first attempt_ switch. Turn it on for `Auto-approve` and that node retries too.
 - **Add a branch.** Select **Needs review?**, add a branch on the node or in the properties panel, give it a title and conditions, then drag its new handle to a node. Conditions read only `{{trigger.*}}` and `{{nodes.*}}`; the worker does not resolve `{{global.*}}` variables.
-- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. In a database, make `(executionId, sequence)` unique, so an event written twice by a retried Activity is rejected. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it. Keep the `outcome` that arrives with `completed` as well: it is the run's result.
+- **Persist events.** Replace `createRunStore()` with anything that implements `ExecutionStore`. In a database, make `(executionId, sequence)` unique and ignore a duplicate without an error, as `createRunStore()` does: an event written twice by a retried Activity must not fail the write, or every retry fails and the run with it. Keep its rule that the first terminal status wins: a status that arrives after it must not replace it. Keep the `outcome` that arrives with `completed` as well: it is the run's result.
 
 ## Learn more
 

@@ -34,5 +34,10 @@ export type RunEvent =
   | { kind: 'event'; sequence: number; type: string; nodeId?: string; payload?: unknown }
   | { kind: 'status'; status: string; errorMessage?: string; outcome?: unknown };
 
+const TERMINAL_STATUSES = ['completed', 'incomplete', 'failed', 'cancelled'] as const;
+export type TerminalStatus = (typeof TERMINAL_STATUSES)[number];
+
 // A run is over once it reaches one of these; nothing the plugin sends afterwards replaces it.
-export const TERMINAL_STATUSES: ReadonlySet<string> = new Set(['completed', 'incomplete', 'failed', 'cancelled']);
+export function isTerminalStatus(status: string): status is TerminalStatus {
+  return (TERMINAL_STATUSES as readonly string[]).includes(status);
+}

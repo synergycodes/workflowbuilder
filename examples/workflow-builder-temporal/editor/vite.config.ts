@@ -4,7 +4,7 @@ import { defineConfig } from 'vite';
 export default defineConfig({
   plugins: [react()],
   server: {
-    // shared/ lives one folder up: the diagram, the wire types and the coin flip both processes use.
+    // shared/ lives one folder up: the diagram, the wire types and the trigger payload both processes use.
     fs: { allow: ['..'] },
     // The worker process hosts the bridge; proxying keeps the browser on one origin.
     proxy: {

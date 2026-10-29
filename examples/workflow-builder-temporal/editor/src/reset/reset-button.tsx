@@ -1,22 +1,23 @@
 import { ArrowCounterClockwiseIcon } from '@phosphor-icons/react';
-import { setStoreEdges, setStoreNodes, useFitView } from '@workflowbuilder/sdk';
+import { setStoreEdges, setStoreNodes, useFitView, useStore } from '@workflowbuilder/sdk';
 
-import { defaultDiagram } from '../diagram';
-import { runCleared, useRunStore } from '../execution/run-store';
+import { DIAGRAM_NAME, defaultDiagram } from '../diagram';
+import { isRunBusy, runCleared, useRunStore } from '../execution/run-store';
 
 const CONFIRMATION = 'Discard the diagram on the canvas and load the one this sample ships with?';
 
-// Mounted in the SDK's OptionalAppBarControls slot, beside the Run button.
 export function ResetButton() {
-  const phase = useRunStore((state) => state.phase);
+  const busy = useRunStore((state) => isRunBusy(state.phase));
   const fitView = useFitView();
-  const busy = phase === 'starting' || phase === 'running';
+  const setDocumentName = useStore((state) => state.setDocumentName);
 
   function reset() {
     if (!globalThis.confirm(CONFIRMATION)) return;
     const { nodes, edges } = defaultDiagram();
     setStoreNodes(nodes);
     setStoreEdges(edges);
+    // Another app on this origin can leave its diagram, title included, in the SDK's localStorage key.
+    setDocumentName(DIAGRAM_NAME);
     runCleared();
     fitView();
   }
