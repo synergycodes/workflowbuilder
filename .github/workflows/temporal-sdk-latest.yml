@@ -1,0 +1,88 @@
+name: Temporal SDK latest
+
+# Pull requests test @workflowbuilder/temporal against the @temporalio/* version the lockfile
+# pins. A consumer resolves the published caret range to the newest release instead, so this
+# run tests that release every week and opens an issue when it breaks the plugin.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  # The pull request that edits this file runs it once before it lands.
+  pull_request:
+    paths:
+      - .github/workflows/temporal-sdk-latest.yml
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  temporal-sdk-latest:
+    name: Temporal plugin typecheck + test + build on the newest SDK
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Point the catalog at the newest Temporal SDK
+        id: sdk
+        run: |
+          for pkg in $(grep -oE "^  '@temporalio/[a-z-]+'" pnpm-workspace.yaml | tr -d " '"); do
+            latest=$(npm view "$pkg" version)
+            sed -i "s|^  '$pkg': .*|  '$pkg': $latest|" pnpm-workspace.yaml
+          done
+          grep -E "^  '@temporalio/" pnpm-workspace.yaml
+          echo "version=$(npm view @temporalio/worker version)" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Check that the newest SDK is what got installed
+        # A resolution that kept the pinned version would turn this run green without testing anything.
+        env:
+          VERSION: ${{ steps.sdk.outputs.version }}
+        run: |
+          stale=$(grep -oE "^  '?@temporalio/[a-z-]+@[0-9.]+" pnpm-lock.yaml | tr -d " '" | sort -u | grep -v "@$VERSION$" || true)
+          if [ -n "$stale" ]; then
+            echo "::error::Expected every @temporalio/* package at $VERSION, found:"
+            echo "$stale"
+            exit 1
+          fi
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/temporal typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/temporal test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/temporal build
+
+      - name: Open or update an issue
+        if: failure() && github.event_name == 'schedule'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ steps.sdk.outputs.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          export TITLE="@workflowbuilder/temporal fails against Temporal SDK ${VERSION:-latest}"
+          existing=$(gh issue list --state open --limit 100 --json number,title --jq '[.[] | select(.title == env.TITLE)][0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Still failing: $RUN_URL"
+          else
+            gh issue create --title "$TITLE" --body "The weekly run installed \`@temporalio/*\` ${VERSION:-latest}, the newest release, and the plugin's typecheck, tests or build failed: $RUN_URL
+
+          Pull requests keep testing the version the lockfile pins, so \`main\` stays green. A consumer who installs the plugin today can resolve its peers to ${VERSION:-latest}."
+          fi
