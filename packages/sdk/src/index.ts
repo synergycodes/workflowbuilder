@@ -55,6 +55,8 @@ export type {
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderLogo,
+  WorkflowBuilderEditorHeaderOptions,
+  WorkflowBuilderVersion,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderEdgeTemplates,
   WorkflowBuilderIsValidConnection,
@@ -77,11 +79,10 @@ export { PropertiesPanelFooterContent } from './features/ui-extensions/component
 export type { WorkflowBuilderAreaContentProps } from './features/ui-extensions/ui-extension-registry';
 
 // =============================================================================
-// Built-in menus: own items next to the workflow, editor header and properties panel menus
+// Built-in menus: own items next to the workflow and properties panel menus
 // =============================================================================
 
 export { WorkflowMenuItem } from './features/ui-extensions/components/project-menu-item';
-export { EditorHeaderMenuItem } from './features/ui-extensions/components/app-bar-menu-item';
 export { PropertiesPanelMenuItem } from './features/ui-extensions/components/properties-panel-menu-item';
 export type { WorkflowBuilderMenuItemProps } from './features/ui-extensions/ui-extension-registry';
 

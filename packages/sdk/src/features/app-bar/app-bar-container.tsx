@@ -14,10 +14,12 @@ import { Toolbar } from './components/toolbar/toolbar';
  */
 export function AppBarContainer() {
   return (
-    <div className={styles['container']}>
-      <Toolbar />
-      <ProjectSelection />
-      <Controls />
+    <div className={styles['app-bar']}>
+      <div className={styles['container']}>
+        <Toolbar />
+        <ProjectSelection />
+        <Controls />
+      </div>
     </div>
   );
 }

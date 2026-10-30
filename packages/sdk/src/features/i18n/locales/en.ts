@@ -28,10 +28,33 @@ export const en = {
     folderName: 'Folder Name',
     projectSelection: {
       rename: 'Rename',
+      saveAsPdf: 'Save as PDF',
+    },
+    version: {
+      draft: 'Draft v{{number}}',
+      published: 'v{{number}}',
+      publish: 'Publish v{{number}}',
+      publishNoVersion: 'Publish',
+    },
+    cleanUp: {
+      horizontal: 'Clean up (horizontal)',
+      vertical: 'Clean up (vertical)',
+      diagram: 'Clean up diagram',
+      arrangeHorizontally: 'Arrange horizontally',
+      arrangeVertically: 'Arrange vertically',
+      chooseDirection: 'Choose layout direction',
     },
     controls: {
       saveAsImage: 'Save as image',
       archive: 'Archive',
+    },
+    mode: {
+      edit: 'Edit mode',
+      readOnly: 'Read-only mode',
+    },
+    theme: {
+      light: 'Light theme',
+      dark: 'Dark theme',
     },
   },
   palette: {

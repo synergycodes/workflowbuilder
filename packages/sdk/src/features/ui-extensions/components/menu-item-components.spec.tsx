@@ -4,12 +4,10 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { WorkflowBuilderNode } from '../../../node/node-data';
 import { resetWorkflowStore } from '../../../store/store';
-import { Controls } from '../../app-bar/components/controls/controls';
 import { ProjectSelection } from '../../app-bar/components/project-selection/project-selection';
 import '../../i18n/index';
 import { PropertiesBar } from '../../properties-bar/components/properties-bar/properties-bar';
 import { renderInRoot } from '../test-utils';
-import { EditorHeaderMenuItem } from './app-bar-menu-item';
 import { WorkflowMenuItem } from './project-menu-item';
 import { PropertiesPanelMenuItem } from './properties-panel-menu-item';
 
@@ -48,46 +46,8 @@ beforeEach(() => {
   resetWorkflowStore();
 });
 
-describe('EditorHeaderMenuItem', () => {
-  it('appears after Export and Import behind a separator', () => {
-    renderInRoot(
-      <>
-        <EditorHeaderMenuItem label="Custom" />
-        <Controls />
-      </>,
-      { builtInControls: { export: true, import: true } },
-    );
-
-    openMenu('Menu');
-
-    expect(menuRows()).toEqual(['Export', 'Import', '---', 'Custom']);
-  });
-
-  it('with export and import hidden the registered item is the only item and there is no separator', () => {
-    renderInRoot(
-      <>
-        <EditorHeaderMenuItem label="Custom" />
-        <Controls />
-      </>,
-      { builtInControls: { export: false, import: false } },
-    );
-
-    openMenu('Menu');
-
-    expect(menuRows()).toEqual(['Custom']);
-  });
-});
-
-describe('a menu with no items', () => {
-  it('hides its trigger', () => {
-    renderInRoot(<Controls />, { builtInControls: { export: false, import: false } });
-
-    expect(screen.queryByRole('button', { name: 'Menu' })).toBeNull();
-  });
-});
-
 describe('WorkflowMenuItem', () => {
-  it('appears after Settings', () => {
+  it('appears after the built-in items behind a separator', () => {
     renderInRoot(
       <>
         <WorkflowMenuItem label="Custom" />
@@ -97,7 +57,29 @@ describe('WorkflowMenuItem', () => {
 
     openMenu('Project actions');
 
-    expect(menuRows()).toEqual(['Settings', '---', 'Custom']);
+    expect(menuRows()).toEqual(['Export', 'Import', '---', 'Settings', '---', 'Custom']);
+  });
+
+  it('with every built-in item hidden the registered item is the only item and there is no separator', () => {
+    renderInRoot(
+      <>
+        <WorkflowMenuItem label="Custom" />
+        <ProjectSelection />
+      </>,
+      { builtInControls: { export: false, import: false, settings: false } },
+    );
+
+    openMenu('Project actions');
+
+    expect(menuRows()).toEqual(['Custom']);
+  });
+});
+
+describe('a menu with no items', () => {
+  it('hides its trigger', () => {
+    renderInRoot(<ProjectSelection />, { builtInControls: { export: false, import: false, settings: false } });
+
+    expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
   });
 });
 
@@ -128,16 +110,16 @@ describe('prop change other than the label', () => {
     function Panel({ disabled }: { disabled: boolean }) {
       return (
         <>
-          <EditorHeaderMenuItem label="Custom" disabled={disabled} />
-          <Controls />
+          <WorkflowMenuItem label="Custom" disabled={disabled} />
+          <ProjectSelection />
         </>
       );
     }
     const { rerender } = renderInRoot(<Panel disabled={false} />, {
-      builtInControls: { export: false, import: false },
+      builtInControls: { export: false, import: false, settings: false },
     });
 
-    openMenu('Menu');
+    openMenu('Project actions');
     expect((screen.getByRole('menuitem', { name: 'Custom' }) as HTMLElement).dataset.disabled).toBeUndefined();
 
     rerender(<Panel disabled />);
