@@ -1,0 +1,140 @@
+name: Temporal SDK latest
+
+# Pull requests test @workflowbuilder/temporal against the @temporalio/* version the lockfile
+# pins. A consumer resolves the published caret range to the newest release instead, so this
+# run tests that release every week and keeps one issue open for as long as it breaks the plugin.
+
+on:
+  schedule:
+    - cron: '0 6 * * 1'
+  workflow_dispatch:
+  # The pull request that edits this file runs it once before it lands.
+  pull_request:
+    paths:
+      - .github/workflows/temporal-sdk-latest.yml
+
+permissions:
+  contents: read
+
+env:
+  ISSUE_LABEL: temporal-sdk-latest
+
+jobs:
+  temporal-sdk-latest:
+    name: Temporal plugin typecheck + test + build on the newest SDK
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.sdk.outputs.version }}
+      # Only these three steps test the SDK; an install or registry failure files no issue.
+      failed-step: ${{ steps.typecheck.outcome == 'failure' && 'typecheck' || steps.test.outcome == 'failure' && 'test' || steps.build.outcome == 'failure' && 'build' || '' }}
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          # The tests run a freshly resolved, unpinned @temporalio/* tree: keep the token out of .git/config.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Point the catalog at the newest Temporal SDK
+        id: sdk
+        run: |
+          : > "$RUNNER_TEMP/sdk-versions"
+          for pkg in $(grep -oE "^  '@temporalio/[a-z-]+'" pnpm-workspace.yaml | tr -d " '"); do
+            latest=$(npm view "$pkg" version)
+            test -n "$latest"
+            sed -i "s|^  '$pkg': .*|  '$pkg': $latest|" pnpm-workspace.yaml
+            echo "$pkg $latest" >> "$RUNNER_TEMP/sdk-versions"
+          done
+          test -s "$RUNNER_TEMP/sdk-versions"
+          cat "$RUNNER_TEMP/sdk-versions"
+          version=$(npm view @temporalio/worker version)
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Check that the newest SDK is what got installed
+        # A resolution that kept the pinned version, or a lockfile this grep no longer reads, would
+        # otherwise turn this run green without testing anything.
+        run: |
+          installed=$(grep -oE "^  '?@temporalio/[a-z-]+@[0-9][^(:']*" pnpm-lock.yaml | tr -d " '" | sort -u)
+          while read -r pkg latest; do
+            versions=$(echo "$installed" | grep "^$pkg@" | paste -sd, - || true)
+            if [ "$versions" != "$pkg@$latest" ]; then
+              echo "::error::$pkg should resolve to $latest only. The lockfile has: ${versions:-nothing}"
+              exit 1
+            fi
+          done < "$RUNNER_TEMP/sdk-versions"
+
+      - name: Typecheck
+        id: typecheck
+        run: pnpm --filter @workflowbuilder/temporal typecheck
+
+      - name: Test
+        id: test
+        run: pnpm --filter @workflowbuilder/temporal test
+
+      - name: Build
+        id: build
+        run: pnpm --filter @workflowbuilder/temporal build
+
+  open-issue:
+    name: Open or update the issue
+    needs: temporal-sdk-latest
+    if: failure() && github.event_name != 'pull_request' && needs.temporal-sdk-latest.outputs.failed-step != ''
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Open the issue, or comment on the open one
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.temporal-sdk-latest.outputs.version }}
+          FAILED_STEP: ${{ needs.temporal-sdk-latest.outputs.failed-step }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          gh label create "$ISSUE_LABEL" --color D93F0B --description "The weekly run against the newest Temporal SDK fails" --force
+          existing=$(gh issue list --label "$ISSUE_LABEL" --state open --json number --jq '.[0].number // empty')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body "Still failing on Temporal SDK $VERSION, in the $FAILED_STEP step: $RUN_URL"
+          else
+            gh issue create --label "$ISSUE_LABEL" \
+              --title "@workflowbuilder/temporal fails against the newest Temporal SDK" \
+              --body-file - <<EOF
+          The weekly run installed \`@temporalio/*\` $VERSION, the newest release, and the plugin's $FAILED_STEP step failed: $RUN_URL
+
+          Pull requests keep testing the version the lockfile pins, so \`main\` stays green. A consumer who installs the plugin today can resolve its peers to $VERSION.
+
+          Later runs comment here while the newest release still fails, and close this issue once a run passes.
+          EOF
+          fi
+
+  close-issue:
+    name: Close the issue once the run passes
+    needs: temporal-sdk-latest
+    if: success() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+    steps:
+      - name: Close the open issue
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          VERSION: ${{ needs.temporal-sdk-latest.outputs.version }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          for number in $(gh issue list --label "$ISSUE_LABEL" --state open --json number --jq '.[].number'); do
+            gh issue close "$number" --comment "Passes again on Temporal SDK $VERSION: $RUN_URL"
+          done
