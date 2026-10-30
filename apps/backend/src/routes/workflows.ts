@@ -1,4 +1,4 @@
-import { eq } from 'drizzle-orm';
+import { and, eq, inArray } from 'drizzle-orm';
 import { Hono } from 'hono';
 import { z } from 'zod';
 
@@ -7,6 +7,7 @@ import { database } from '../db/client';
 import { executions, workflows } from '../db/schema';
 import { mapToExecutionModel } from '../domain/mapper/from-integration-data';
 import { getWorkflowEngine } from '../engine';
+import { formatErrorChain } from '../format-error-chain';
 import { logger as backendLogger } from '../logger';
 import { guardExecution } from '../security/execution-guard';
 import type { BackendEnv } from './backend-env';
@@ -234,14 +235,49 @@ export function createWorkflowsRoutes(assertAuthorized: AssertAuthorized): Hono<
 
     const definition = mapToExecutionModel(workflowId, snapshotParse.snapshot);
 
-    await getWorkflowEngine().submit({
-      workflowId,
-      executionId: execution.id,
-      definition,
-      triggerPayload: body.triggerPayload ?? {},
-      variables: {}, // server-side globals (secrets, env) populated here later
-      global: {},
-    });
+    try {
+      await getWorkflowEngine().submit({
+        workflowId,
+        executionId: execution.id,
+        definition,
+        triggerPayload: body.triggerPayload ?? {},
+        variables: {},
+        global: {},
+      });
+    } catch (error) {
+      const message = formatErrorChain(error);
+      logger.error('execute start not confirmed', { workflowId, executionId: execution.id, error: message });
+      // The worker never hears of a run that did not start, and a Stop during the start leaves a 'cancelling'
+      // nothing closes. Zero rows: the worker moved the run, so the engine took the start without confirming it.
+      // If this write lands first instead, the run goes on under 'failed' (follow-up: run-claim-at-start).
+      let workerTookRun = false;
+      try {
+        const now = new Date();
+        const closed = await database
+          .update(executions)
+          .set({ status: 'failed', finishedAt: now, errorMessage: message, updatedAt: now })
+          .where(and(eq(executions.id, execution.id), inArray(executions.status, ['pending', 'cancelling'])))
+          .returning({ id: executions.id });
+        workerTookRun = closed.length === 0;
+      } catch (closeError) {
+        logger.error('execute could not close the run', {
+          workflowId,
+          executionId: execution.id,
+          error: formatErrorChain(closeError),
+        });
+      }
+      if (!workerTookRun) {
+        return c.json(
+          {
+            code: 'execution_start_failed',
+            message: 'The execution engine did not accept the run',
+            executionId: execution.id,
+          },
+          503,
+        );
+      }
+      logger.warn('execute start unconfirmed, but the worker has the run', { workflowId, executionId: execution.id });
+    }
 
     return c.json(
       {

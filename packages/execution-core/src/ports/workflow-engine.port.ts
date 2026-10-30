@@ -7,6 +7,9 @@ export type WorkflowExecutionInput<TNode extends BaseNode> = {
   executionId: string;
   definition: WorkflowDefinition<TNode>;
   triggerPayload: Record<string, unknown>;
+  // Non-secret server-side run config (`variables`) and the builder's global variables
+  // (`global`). Everything in either reaches Temporal Event History unredacted. See the
+  // `@workflowbuilder/temporal` README, "What Event History records".
   variables: Record<string, unknown>;
   global: Record<string, unknown>;
 };
@@ -36,6 +39,8 @@ export type ResolveNodeInput = {
 // Backend calls this; concrete adapters (Temporal, in-memory, …) implement it.
 // TNode is opaque to the backend — only the worker narrows it to concrete types.
 export interface WorkflowEnginePort<TNode extends BaseNode> {
+  // Resolves once the engine holds the run. A throw means the start was not confirmed.
+  // The engine may still have taken the run, so a caller must not assume it is not running.
   submit(input: WorkflowExecutionInput<TNode>): Promise<void>;
   cancel(executionId: string): Promise<void>;
   // Delivers the completion a parked node waits for. Refusals are results, not throws;

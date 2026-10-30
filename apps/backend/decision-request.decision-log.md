@@ -2,7 +2,7 @@
 
 ### Proposed by: Piotr Błaszczyk
 
-### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape)
+### Date: 07.09.2026 (shape), 08.09.2026 (names), 10.09.2026 (endpoint), 17.09.2026 (ports), 21.09.2026 (outcome), 29.09.2026 (failure policy, edit shape), 01.10.2026 (several resume actions), 03.10.2026 (deadline refused)
 
 ## Context
 
@@ -54,6 +54,17 @@ What the endpoint does and answers is in the README. Only the reasons are here.
 25. **A node that carries a request may not use `errorPolicy: 'continue'`.** The runner absorbs such a failure with no port, which lights every non-error edge: a worker without the node's executor, or a `node_completed` write that fails after an accepted verdict, would run approve and reject together. Publish and execute refuse it with `error_policy_continue`; `fail` and `errorRoute` keep failures visible. The rule lives in the backend, not the runner, because the runner deliberately reads no request. Like decision 21 it tightens a schema the decision route re-parses, so a run parked on such a node would answer 500; accepted, because the feature lives on its branch with no run in flight.
 26. **Edits are a patch of the proposal.** The node's output carries them unapplied; whoever reads the decision merges an object field by field and a list element by element. That is why the walk checks only the keys an edit names. A level with `properties` or `items` must therefore keep its shape: `null`, a primitive or the other container could drop the read-only and required children it may hold, so it answers `field_shape_changed`, except `null` where the level's `type` allows it. `null` is the patch's own way to empty a field, and listing it in `type` is the author's consent; any other value would replace the level rather than patch it, even one its `type` lists. Replacement was rejected: it would make every object with a read-only child uneditable as a whole.
 
+## Deadline refused until enforced (03.10.2026)
+
+27. **Publish and execute refuse a request that carries a `deadline`** with `deadline_not_supported`, until a timer enforces it `(follow-up: decision-deadline-timer)`. Accepted, it would wait past the deadline without end. Worse, once the timer lands, a run started with a deadline it never armed would issue a timer command its history lacks and stop replaying. The shape keeps its rules (`after`, `policy: 'reject'`), so lifting the refusal is the only change the timer needs here. The refusal lives in `admittedSnapshotSchema`, which only `parseSnapshot` uses; the decision route re-reads stored snapshots with `workflowSnapshotSchema`, which still accepts one, so no stored run turns undecidable.
+
+## Several resume actions (01.10.2026)
+
+28. **One or more `resume` actions, each its own branch.** A step with two normal outcomes, a review that is complete or incomplete, could not be modelled: the second had to be `reject`, which records `rejected` on the run, and a run keeps the first outcome it declares, so a case put on hold once and processed later read as rejected. `reject` stays at most one, as the only action that records an outcome; a per-action outcome is not in this change. `rerun-source` stays at most one. The route needed nothing: it finds the action by name and routes on that action's port.
+29. **Ports are unique across routed actions.** `duplicate_port` on the later action's port replaces the reject-versus-resume rule: with several resume actions there is no one pair to compare, and the port is what routes, so two actions on one handle would be one branch under two labels. A blank port answers `port_empty` alone, as before.
+30. **A routed action may require a reason.** `reasonRequired` defaults to `false` and may stand on any action with a port; the backend refuses a decision without a reason where it is set. Whether a decider must write something is a validation rule, so it belongs in the contract and holds for every client, not in the order of the actions.
+31. **A parked run still decides.** Unlike decisions 21 and 25 this change only loosens the schema, so a run parked under the old rule still decides.
+
 ## Rejected
 
 - Detecting the node by its type string: the backend would have to learn every product's vocabulary.
@@ -86,7 +97,7 @@ A whitespace-only `reason` counts as missing, and "emptied" means `undefined`, `
 
 ## Not in this change
 
-Further request fields (condition, four-eyes, several decisions), identity and `x-pii` masking, the pending-decision resource, the rerun loop, the deadline timer, authoring the request in the editor `(follow-up: decision-request-properties-ui)`, and the node that actually parks. The runner learns no product's vocabulary by design, so a run stops where a node's executor returns a waiting result, never because a field is present. The node type whose executor does only that, and therefore waits without side effects of its own, was its own task; it shipped as `apps/execution-worker/src/executors/human-decision.ts`.
+Further request fields (condition, four-eyes, several decisions), identity and `x-pii` masking, the pending-decision resource, the rerun loop, the deadline timer, authoring the request in the editor `(follow-up: decision-request-properties-ui)`, and the node that actually parks. The runner learns no product's vocabulary by design, so a run stops where a node's executor returns a waiting result, never because a field is present. The node type whose executor does only that, and therefore waits without side effects of its own, was its own task; it shipped as `apps/execution-worker/src/executors/human-decision.ts`. Offering every resume action to the decider in AI Studio, and a showcase template with two normal outcomes, are the next two slices of the same work.
 
 ## Status
 

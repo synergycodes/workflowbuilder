@@ -9,7 +9,7 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Changelog:** <https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/CHANGELOG.md>
 - **Issues:** <https://github.com/synergycodes/workflowbuilder/issues>
 - **Live demo:** <https://app.workflowbuilder.io/>
-- **Requires:** Node.js 20.3 or newer, ESM. Tested against the `1.23` line of the Temporal TypeScript SDK.
+- **Requires:** Node.js 20.3 or newer, ESM. Tested on every pull request against the `1.23` line of the Temporal TypeScript SDK, and weekly against its newest release.
 - **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
 
 Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. Each node activity carries the node's label as its Summary, so Event History reads like the diagram. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
@@ -80,9 +80,7 @@ Node activities default to 10 minutes and 2 attempts. To give some node types th
 
 ```ts
 // node-activity-profiles.ts
-import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal';
-// workflows.ts
-import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
+import { DEFAULT_NODE_ACTIVITY_PROFILE, type NodeActivityProfiles } from '@workflowbuilder/temporal/workflow';
 
 export const nodeActivityProfiles: NodeActivityProfiles = {
   // A thinking-mode model needs room; keep an explicit retry cap.
@@ -90,14 +88,23 @@ export const nodeActivityProfiles: NodeActivityProfiles = {
   // Change one field and inherit the rest.
   'my-product/decision': { ...DEFAULT_NODE_ACTIVITY_PROFILE, startToCloseTimeout: '30s' },
 };
+```
 
+```ts
 // worker.ts
 const plugin = new WorkflowBuilderPlugin({ executors, store, nodeActivityProfiles });
+```
+
+```ts
+// workflows.ts
+import { createRunWorkflow } from '@workflowbuilder/temporal/workflow';
+
+import { nodeActivityProfiles } from './node-activity-profiles';
 
 export const runWorkflow = createRunWorkflow({ nodeActivityProfiles });
 ```
 
-Keep the export named `runWorkflow`: that is the name the client starts. Entries are whole profiles, so a node type either has a complete entry or gets `DEFAULT_NODE_ACTIVITY_PROFILE`. A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`.
+Keep the export named `runWorkflow`: that is the name the client starts. Entries are whole profiles, so a node type either has a complete entry or gets `DEFAULT_NODE_ACTIVITY_PROFILE`. A `startToCloseTimeout` is a number followed by `ms`, `s`, `m`, `h` or `d`. `node-activity-profiles.ts` ends up in the workflow bundle, so it imports from `@workflowbuilder/temporal/workflow` too (see [Entry points](#entry-points)).
 
 **Use one constant on both sides.** The plugin validates the map at `Worker.create`, so a bad profile fails the deploy. `createRunWorkflow` alone validates only on the first workflow activation, and a map handed to the plugin but not to `createRunWorkflow` gives you a green deploy with every node on the default profile.
 
@@ -119,13 +126,13 @@ A permanent failure is not retried at all. A transient one retries up to the pro
 ## Client
 
 ```ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
-  // A ready Client, or a factory awaited on first use so process start does not
-  // depend on Temporal being reachable.
-  client: async () => new Client({ connection: await Connection.connect({ address }) }),
+  // A ready Client, or a factory awaited on first use so process start does not depend on
+  // Temporal being reachable. A failed attempt is retried on the next call; lazyClient closes
+  // the connection of each failed attempt, which a factory built on Connection.connect would leak.
+  client: lazyClient({ address }, { namespace }),
 });
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });
@@ -144,7 +151,7 @@ The engine and the worker default to the same task queue (`workflow-execution`).
 Three things are deliberately yours, and knowing which they are makes debugging much easier:
 
 - **It does not bundle the workflow.** See `workflows.ts` above.
-- **It does not open the connection.** Connection, TLS and credentials stay in your code.
+- **It does not configure the connection.** Address, TLS and credentials stay in your code; `lazyClient` only opens a connection from the options you pass it.
 - **It does not own storage.** Persistence arrives through the `store` port, so any database works.
 
 ## Entry points
@@ -152,7 +159,7 @@ Three things are deliberately yours, and knowing which they are makes debugging 
 | Import                               | Use it for                                                                                                           |
 | ------------------------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | `@workflowbuilder/temporal`          | Worker side: the plugin, `createActivities`, the `RUN_WORKFLOW_NAME` and `RESOLVE_NODE_UPDATE_NAME` constants, types |
-| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts                                                                    |
+| `@workflowbuilder/temporal/client`   | Starting and cancelling runs, delivering verdicts; `lazyClient` for a client factory                                 |
 | `@workflowbuilder/temporal/workflow` | Sandbox-safe: `runWorkflow` to re-export, event emitter, profiles, the `resolveNode` update                          |
 
 `/workflow` is the only entry point that is safe inside Temporal's V8 sandbox. The split also means a backend that only starts runs never pulls in the worker package and its native binary.
@@ -173,7 +180,7 @@ const plugin = new WorkflowBuilderPlugin({
 });
 ```
 
-While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. Both are written after the workflow has started accepting a verdict for that node, so acting on either is never too early. Both are also advisory: a write can land after a cancel, even after the terminal status, so a store must not let either replace a cancel it recorded or a terminal status.
+The run status moves to `running` when the run starts, right after `execution_started` and the start-node check; a graph that fails that check goes straight to `failed`. A run started before 0.3.0 keeps its old sequence and writes `running` only on a resume. While parked, the store sees a `node_waiting` event for the node and the run status moves to `waiting`. It returns to `running` once the last waiting node has resolved, so two nodes parked at once produce a single `waiting`/`running` transition. That `waiting` and the `running` after it are written once the workflow has started accepting a verdict for the node, so acting on either is never too early. Every `waiting` and `running` write is advisory: it can land after a cancel, even after the terminal status, so a store must not let it replace a cancel it recorded or a terminal status.
 
 The verdict arrives as a Workflow Update, `resolveNodeUpdate`:
 
@@ -205,6 +212,67 @@ Graph traversal is wave-based with a barrier, and the pause does not restructure
 
 Lifting the barrier later is an additive engine change: same events, same update, same statuses.
 
+## What Event History records
+
+Temporal writes every argument you give it into Event History. Replay reads that record back, so nothing can change it later. The record lives while the run is open, then for the namespace's retention period after the run closes. A parked run has no timeout, so it stays open until a verdict, a cancel or a terminate: whatever it recorded stays readable for the whole wait, then for the retention period.
+
+This package hands Temporal:
+
+- The workflow input. It carries the whole graph definition, so every node is in the record before the first node runs: its `config`, `label` and `decisionRequest` included.
+- The arguments and the return value of every `executeNode` call. The arguments are the node, `variables`, `global`, `triggerPayload`, and the output of every node that finished before the current wave started.
+- The input of every accepted `resolveNodeUpdate`: the whole `resolution`, including anything a person typed into it. A rejected verdict is not recorded. An accepted one's `output` then travels in every later `executeNode` argument set like any other node output.
+- The arguments of every `updateStatus` call, including the `errorMessage` of a failed run and the `outcome` a verdict declares.
+- The payload of every `emitEvent` call `runGraph` makes. This is the only one that `execution-core` redacts first.
+- The Temporal Summary of every labelled node activity, taken from `node.label` and clamped (see [`event-history-labels.md`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/event-history-labels.md)).
+- Every failure: the error's message, type and stack, and the run's own final failure. A classified error also carries a `NodeErrorEnvelope` in `details` and the original error in `cause`.
+
+### Secrets
+
+**Keep secret values out of everything this package hands Temporal. Only `emitEvent` payloads are redacted; nothing stops a secret anywhere else from reaching Event History.**
+
+Without a Payload Codec, anyone who can open the Temporal UI can read the record. On Temporal Cloud, Temporal stores it on its own infrastructure.
+
+**You cannot edit a leaked key out of Event History. You can only delete the whole run, and that leaves whatever your own store holds for it: the event payloads `emitEvent` wrote, the trigger payload, the definition. So rotate the key.**
+
+[`execution-core`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/execution-core/README.md#recorded-step-inputs-and-payload-redaction) redacts inside the workflow, before it calls the `emitEvent` activity, and matches by key name. Everything else in the list above stays as written.
+
+Four rules follow:
+
+- **Keep secrets in the worker's own environment.** The reference worker keeps its model key and its search key there.
+- **One secret for the whole installation: capture it at worker start.** An executor is a closure, so capture the value when you build `executors`, as the reference worker does with its keys.
+- **A secret that differs per run or per tenant: capture a resolver, not a value.** A closure built at worker start sees the same value on every call. The executor's second argument is the `ExecutionContext`; key the lookup on `context.executionId` or on a non-secret discriminator your backend puts in `variables`, and resolve the secret inside the executor. Temporal never records what the executor does in its own body. It does record the return value and, for any error, the message, type, stack and `cause`, so keep the secret out of all of them, and out of the node itself (`config`, `label`, `decisionRequest`), which travels in the workflow input.
+- **A verdict is user input.** Keep secrets out of the decision form, or strip them before the verdict reaches `resolveNode`.
+
+A Payload Codec encrypts payloads before they leave the process. A codec is one part of a data converter, so pass `dataConverter: { payloadCodecs: [codec] }` to `Worker.create`, and the same object to the `Client` you hand `TemporalWorkflowEngine`; verdicts go through that `Client` too, so they are covered. A codec leaves failure messages and stacks in plain text unless the same data converter also sets `failureConverter: new DefaultFailureConverter({ encodeCommonAttributes: true })`. The Temporal UI then needs a codec server to show decoded payloads. Nothing in this package stands in the way, and the plugin ships no codec of its own (follow-up: temporal-payload-codec).
+
+### Payload size and the history budget
+
+Two [server defaults](https://docs.temporal.io/references/dynamic-configuration) bound a run. You can raise or lower them on a self-hosted deployment. On [Temporal Cloud](https://docs.temporal.io/cloud/limits) they are fixed.
+
+| What                                                                  | Warns at | Fails at | Dynamic config        |
+| --------------------------------------------------------------------- | -------- | -------- | --------------------- |
+| One payload set: an activity's input or result, or the workflow input | 512 KiB  | 2 MiB    | `limit.blobSize.*`    |
+| Event History size, per run                                           | 10 MiB   | 50 MiB   | `limit.historySize.*` |
+
+A third default, `limit.historyCount.*`, caps a run at 10,240 events (warn) and 51,200 (fail). An executed node costs about 18 events, a parked one about 40 and a skipped one 6, so the size limits bind first unless node outputs are tiny. The continue-as-new suggestion Temporal raises at 4 MiB or 4,096 events is inert here: this package never calls `continueAsNew`.
+
+Which limit you reach first depends on the size of your node outputs. `runGraph` gives every node the output of every node that finished before the current wave started, not only the output of its direct predecessors. So node 2 receives one output, node 3 receives two, and so on.
+
+Take a chain of N nodes each returning S bytes. The run writes about N(N+3)S ÷ 2 bytes into history. N(N−1)S ÷ 2 of that is `executeNode` arguments. The remaining 2NS is each output written twice more, once as the activity's result and once in its `node_completed` payload. Above about 45 KiB per output the arguments reach 2 MiB before history reaches 50 MiB. Below that size, history goes first. Every call also carries `triggerPayload`, `variables`, `global` and the node itself regardless of S, and a large trigger payload is the usual reason that matters. A verdict's `output` counts as that node's S: it is recorded once in the Update instead of as an activity result, then repeated in every later argument set.
+
+At 100 KiB per output, the `executeNode` arguments pass 512 KiB at node 7. History passes 10 MiB at node 13. The arguments pass 2 MiB at node 22.
+
+A chain is the gentle case. A wave of W parallel nodes schedules all W in one Workflow Task completion, and each carries the full snapshot, so the completion holds W copies of it. That completion has its own size cap (`workflow_task_completion_size_limit_error` in the namespace limits), and a wide fan-out after a deep prefix can reach it before any single payload does.
+
+What an oversize payload does depends on which one it is. The worker checks each outbound payload before sending it. Over the warn threshold it logs `[TMPRL1103]` at `WARN` and sends anyway. Over the error limit it logs at `ERROR` and fails the task instead. The error limit comes from the namespace. The warn threshold does not. It is the worker's own 512 KiB default, and only `NativeConnectionOptions.payloadLimits` moves it, not `limit.blobSize.warn`. That option is experimental, so expect it to change.
+
+- **`executeNode` arguments over the limit** fail the Workflow Task. Temporal retries that task forever, so the run hangs, and a deploy does not free it: on replay the arguments are rebuilt from node outputs already in history, so no executor change can shrink them. Terminate the run. On a self-hosted deployment, raising `limit.blobSize.error` on the server and restarting the worker is the alternative.
+- **An `executeNode` return value over the limit** fails the activity attempt. The retry policy re-runs the node, the output is oversize again, and the node fails once the profile's attempts are spent. From there `errorPolicy` decides, as for any other node failure.
+
+`disablePayloadErrorLimit` on the worker skips the check and leaves the limit to the server.
+
+A large model answer is the usual oversize return value. Keep the bulk out of the node's output. Store it where your application already stores blobs, and return only an identifier for it, an S3 key or a row id. The next node then fetches the data itself. This is the claim-check pattern. This package ships no blob store and no fetch helper, so your executor has to do both sides.
+
 ## Versioning and replay
 
 This package carries two contracts, not one. The API is the ordinary semver surface. The second is replay compatibility: a workflow can sit in Event History for days, and a new version of this package has to be able to replay a history that an older version recorded.
@@ -215,9 +283,13 @@ This package carries two contracts, not one. The API is the ordinary semver surf
 | minor   | additions only           | histories still replay; new behaviour sits behind `patched()`       |
 | major   | breaking changes allowed | replay may break, and the release notes say to drain in-flight runs |
 
-Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions.
+Pre-1.0 the API surface may still move between minor versions. It is reviewed deliberately, not incidentally. The replay column has no such exception: a 0.x minor still replays histories recorded by earlier 0.x versions. It holds forward only: a worker rolled back below a version cannot replay the runs that version started, so do not roll back while such runs are open. Each `patched()` id lives in `@workflow-builder/execution-core` as a `PatchId`, with the version it came from; one can go only with a major whose notes ask to drain the runs that predate it.
 
 Two notes on the moving parts underneath: Temporal's plugin API is marked experimental upstream, and this package is deliberately a thin layer over `SimplePlugin` to keep that exposure small. The package ships as ESM only.
+
+## Testing
+
+[`TESTING.md`](https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/TESTING.md) covers what is tested, what is not, and how CI gates it.
 
 ## License
 

@@ -29,7 +29,7 @@ describe('public API surface', () => {
   });
 
   it('the client entry exports exactly this', () => {
-    expect(Object.keys(clientEntry).sort()).toEqual(['TemporalWorkflowEngine']);
+    expect(Object.keys(clientEntry).sort()).toEqual(['TemporalWorkflowEngine', 'lazyClient']);
   });
 
   it('the workflow entry exports exactly this', () => {
