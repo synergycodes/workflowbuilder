@@ -47,6 +47,19 @@ describe('the shared default profiles', () => {
 });
 
 describe('resolveNodeActivityOptions', () => {
+  it('forwards heartbeatTimeout only for a profile that supplies it', () => {
+    const profiles: NodeActivityProfiles = {
+      'test/step': { startToCloseTimeout: '45m', retry: { maximumAttempts: 1 }, heartbeatTimeout: '5s' },
+    };
+
+    expect(resolveNodeActivityOptions(node(), profiles)).toEqual({
+      startToCloseTimeout: '45m',
+      retry: { maximumAttempts: 1 },
+      heartbeatTimeout: '5s',
+    });
+    expect(resolveNodeActivityOptions(node(), {})).not.toHaveProperty('heartbeatTimeout');
+  });
+
   describe('timeouts and retries', () => {
     // Temporal's own default is unlimited retries with backoff, so a resolution bug
     // does not fail loudly, it spends.
