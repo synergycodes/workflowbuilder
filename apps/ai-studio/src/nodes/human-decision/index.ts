@@ -29,8 +29,12 @@ export const humanDecisionPaletteItem: PaletteItem<HumanDecisionSchema> = {
     properties: {
       action: { type: 'string', label: 'Action', description: 'The name of the action the person chose' },
       effect: { type: 'string', label: 'Effect', description: 'resume, resume-with-edits or reject' },
-      edits: { type: 'object', label: 'Edits', description: 'Field values the person corrected before approving' },
-      reason: { type: 'string', label: 'Reason', description: 'Why the person rejected, when the action requires one' },
+      edits: {
+        type: 'object',
+        label: 'Edits',
+        description: 'Field values the person corrected, sent with the chosen action',
+      },
+      reason: { type: 'string', label: 'Reason', description: 'Why the person chose the action, when it requires one' },
       comment: { type: 'string', label: 'Comment', description: 'A note the person left with the decision' },
       resolvedBy: { type: 'string', label: 'Resolved by', description: 'Who settled the decision, such as human' },
     } satisfies Record<keyof Required<Decision>, OutputProperty>,

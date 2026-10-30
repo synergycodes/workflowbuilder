@@ -8,7 +8,7 @@ export function readDecisionOutcome(output: unknown): DecisionOutcome | undefine
   if (!isPlainObject(output) || typeof output['action'] !== 'string') {
     return undefined;
   }
-  const reason = output['reason'];
+  const { reason } = output;
   return {
     edits: isPlainObject(output['edits']) ? output['edits'] : {},
     reason: hasText(reason) ? reason : undefined,

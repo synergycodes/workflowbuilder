@@ -201,6 +201,12 @@ Design decisions a reader of the code should know:
   `wrapper`/`before`/`after` would have left one old mechanism in the top bar. The cost: the
   document title as a whole cannot be hidden in 4.0. Neither demo nor AI Studio decorated this
   slot. The bullets above that place own content relative to a deprecated slot describe 3.x.
+- **The V3 editor header has no menu for `EditorHeaderMenuItem`, so it is gone before 4.0
+  (23.10.2026).** The V3 design moves Export and Import into the workflow menu and shows a ⋮ menu
+  only on narrow headers, where it collects Clean up and the theme. A wide header has no ⋮, so
+  items registered into one would have had nowhere to appear. `WorkflowMenuItem` adds items next
+  to Export and Import instead. The component never shipped, so it gets no warning. The bullets
+  above that mention the app bar's kebab menu describe the model before V3.
 
 ## Alternatives
 

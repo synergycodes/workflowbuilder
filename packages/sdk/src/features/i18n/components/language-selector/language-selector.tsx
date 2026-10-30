@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
+import styles from './language-selector.module.css';
+
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { SUPPORTED_LANGUAGES, type WorkflowBuilderLanguage } from '../../../../hooks/use-workflow-builder-state';
 
@@ -36,11 +38,15 @@ export function LanguageSelector() {
     <>
       <Menu items={languageItems} size="small">
         <NavButton
+          size="xs"
+          className={styles['language-selector']}
           aria-label={`${visibleCode} - ${t('tooltips.changeLanguage')}`}
-          suffixIcon={<CaretDown />}
           tooltip={t('tooltips.changeLanguage')}
         >
-          {visibleCode}
+          <span className={styles['label']}>
+            {visibleCode}
+            <CaretDown className={styles['caret']} />
+          </span>
         </NavButton>
       </Menu>
     </>

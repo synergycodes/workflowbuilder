@@ -137,7 +137,7 @@ Your own UI in the editor header, the palette and the properties panel does **no
 | hide a built-in control             | a key in `builtInControls` on `<WorkflowBuilder.Root>`                       |
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem` |
 
-Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Three `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem`, `EditorHeaderMenuItem`, `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
+Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
 
 ### Hide a control and rebuild it in your own order
 
@@ -169,11 +169,11 @@ function ThemeSwitch() {
 }
 ```
 
-This renders, left to right: `ReadOnlySwitch`, `ShareButton`, the rebuilt `ThemeSwitch` (own content, in JSX order), then the built-in language selector (not hidden here), then the editor header's kebab-menu trigger (shown because Export and Import are still visible). Own content never reorders the built-ins among themselves; it only stands before or after them as a block.
+This renders, left to right: `ReadOnlySwitch`, `ShareButton`, the rebuilt `ThemeSwitch` (own content, in JSX order), then the built-in language selector (not hidden here). Own content never reorders the built-ins among themselves; it only stands before or after them as a block.
 
 ### Placing content before or after the built-ins
 
-Every `…Content` component accepts an optional `place`, `'before'` by default (as in every example above) or `'after'`. `place="after"` renders past the area's whole built-in group. In `EditorHeaderControlsContent` the after-content still stands ahead of the kebab-menu trigger. In the sidebar headers it becomes a second full-width row at the end of the header, under the tabs when the properties panel shows them. Either way, content lands before or after the whole built-in group as one block; it can never land between two built-in controls.
+Every `…Content` component accepts an optional `place`, `'before'` by default (as in every example above) or `'after'`. `place="after"` renders past the area's whole built-in group. In `EditorHeaderControlsContent` the after-content still stands ahead of the ⋮ menu that a narrow editor header shows. In the sidebar headers it becomes a second full-width row at the end of the header, under the tabs when the properties panel shows them. Either way, content lands before or after the whole built-in group as one block; it can never land between two built-in controls.
 
 ```tsx
 import { EditorHeaderToolsContent } from '@workflowbuilder/sdk';
@@ -191,14 +191,14 @@ With the built-in Save button visible, this renders the editor header's tools gr
 A plugin is a `() => void` function with no JSX of its own, so it mounts one component through the (still current) `OptionalAppChildren` slot, and that component uses the same `…Content`/`…MenuItem` components as the app tree:
 
 ```tsx
-export const publishPlugin: WorkflowBuilderPlugin = () => {
-  registerComponentDecorator('OptionalAppChildren', { name: 'publish', content: PublishControls });
+export const sharePlugin: WorkflowBuilderPlugin = () => {
+  registerComponentDecorator('OptionalAppChildren', { name: 'share', content: ShareControls });
 };
 
-function PublishControls() {
+function ShareControls() {
   return (
     <>
-      <EditorHeaderMenuItem label="Publish" onClick={publish} />
+      <WorkflowMenuItem label="Share" onClick={share} />
       <PaletteHeaderContent>
         <Button size="xs" variant="ghost-primary" onClick={openNodeImport}>
           Import nodes
@@ -213,8 +213,8 @@ function PublishControls() {
 
 These are deliberate limits of the model, not bugs:
 
-- **Order is mount order.** A component rendered conditionally (`{canPublish && <EditorHeaderMenuItem … />}`) moves to the end of its area or menu when it remounts.
-- **Own content stands before or after the whole built-in group of its area, never between two built-in controls.** The default `place="before"` puts it immediately ahead of the group in the editor header and the footers, or as a full-width row under the title in the sidebar headers, wide enough for a search field. `place="after"` puts it immediately behind the group instead: still ahead of the kebab-menu trigger in the editor header's controls area, or as a second full-width row at the end of a sidebar header, under the tabs when the properties panel shows them.
+- **Order is mount order.** A component rendered conditionally (`{canShare && <WorkflowMenuItem … />}`) moves to the end of its area or menu when it remounts.
+- **Own content stands before or after the whole built-in group of its area, never between two built-in controls.** The default `place="before"` puts it immediately ahead of the group in the editor header and the footers, or as a full-width row under the title in the sidebar headers, wide enough for a search field. `place="after"` puts it immediately behind the group instead: still ahead of the ⋮ menu in a narrow editor header's controls area, or as a second full-width row at the end of a sidebar header, under the tabs when the properties panel shows them.
 - **The area sets the outer layout.** The editor header lays its content out in a line; the footers lay it out in a column, so two buttons side by side there need a container of their own. Your content adapts to the area it is in; it does not change how the area itself lays out.
 - **Hiding is not blocking.** `builtInControls={{ delete: false }}` removes the button; the Delete key and `deleteSelection()` keep working. Only read-only mode blocks deletion as a whole. `reactFlowProps={{ deleteKeyCode: null }}` disables the key alone: `deleteSelection()` and a decorator's `onDeleteClick` still delete through the same confirmation.
 - **Hiding is app-wide, not per-node.** `builtInControls` hides a control for the whole app; it cannot protect one specific node from deletion. For that, set `deletable: false` on the node itself (a React Flow property), which also blocks the Delete key for that node.
@@ -251,7 +251,7 @@ A non-exhaustive list (grep `withOptionalFunctionPlugins` in the source for the 
 | `getTemplates`      | Builds the template list.           |
 | `trackFutureChange` | Records an upcoming diagram change. |
 
-The editor header's kebab menu is not a decorable function: add items with [`EditorHeaderMenuItem`](#built-in-interface-hide-move-add) and hide `export` / `import` through `builtInControls`.
+The workflow menu's Export and Import items are not a decorable function: add items next to them with [`WorkflowMenuItem`](#built-in-interface-hide-move-add) and hide `export` / `import` through `builtInControls`.
 
 ### Return conventions
 

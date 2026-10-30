@@ -1,5 +1,19 @@
 @layer ui.component {
-  .item:not(.circle) {
+  .item:not(.circle, .secondary) {
     width: 100%;
+  }
+
+  .item.secondary {
+    --nav-button-background-default: var(--wb-ds-components-nav-button-bg-secondary-default);
+    --nav-button-background-hover: var(--wb-ds-components-nav-button-bg-secondary-hover);
+    --nav-button-background-selected: var(--wb-ds-components-nav-button-bg-secondary-active);
+    --nav-button-background-focus: var(--wb-ds-components-nav-button-bg-secondary-focus);
+    --nav-button-background-active: var(--wb-ds-components-nav-button-bg-secondary-pressed);
+    --nav-button-background-disabled: var(--wb-ds-components-nav-button-bg-secondary-disabled);
+    --nav-button-color-default: var(--wb-ds-components-nav-button-icon-secondary-default);
+    --nav-button-color-hover: var(--wb-ds-components-nav-button-icon-secondary-hover);
+    --nav-button-color-selected: var(--wb-ds-components-nav-button-icon-secondary-active);
+    --nav-button-color-active: var(--wb-ds-components-nav-button-icon-secondary-pressed);
+    --nav-button-color-disabled: var(--wb-ds-components-nav-button-icon-secondary-disabled);
   }
 }

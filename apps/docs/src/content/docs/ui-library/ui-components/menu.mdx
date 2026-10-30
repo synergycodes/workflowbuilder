@@ -11,8 +11,9 @@ A `Menu` renders a dropdown list of actions anchored to a trigger element. Each
 entry is a regular item or a separator, and an item can take `tone="critical"`
 for a destructive action such as delete: the label and icon carry the critical
 colour while the row keeps the background every other row has. A menu that offers a choice (for example a language
-switcher) marks the current entry with `selected`; the menu then renders as a
-radio group and highlights that entry.
+switcher) marks the current entry with `selected`; the menu then wraps its items
+in a radio group, and the items that define `selected` render as radio items and
+highlight the current one. Items that leave `selected` undefined stay plain items.
 
 <MenuExample client:visible />
 
@@ -47,6 +48,15 @@ A menu with a current choice:
   ]}
 >
   <Button variant="secondary">EN</Button>
+</Menu>
+```
+
+A menu can also show its own content below the items through `footer`, for a
+control that belongs to the menu but is not an item:
+
+```tsx
+<Menu items={[{ label: 'Edit', onClick: () => {} }]} footer={<SegmentPicker defaultValue="light">…</SegmentPicker>}>
+  <Button variant="secondary">Open menu</Button>
 </Menu>
 ```
 

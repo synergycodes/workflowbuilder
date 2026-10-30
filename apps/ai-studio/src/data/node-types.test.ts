@@ -17,6 +17,7 @@ describe('aiStudioNodeTypes', () => {
       ['ai-studio/ai-agent', 'violet-gradient'],
       ['ai-studio/decision', 'green'],
       ['ai-studio/human-decision', 'violet'],
+      ['ai-studio/review', 'violet'],
       ['ai-studio/trigger', 'orange'],
       ['ai-studio/visualize', 'green'],
     ]);

@@ -66,12 +66,12 @@ describe('registerComponentDecorator with a slot 4.0 renamed', () => {
 });
 
 describe('registerFunctionDecorator with getControlsDotsItems', () => {
-  it('warns naming EditorHeaderMenuItem and builtInControls', () => {
+  it('warns naming WorkflowMenuItem and builtInControls', () => {
     const warn = silenceWarnings();
 
     registerFunctionDecorator('getControlsDotsItems', { name: NAME, callback: () => {} });
 
-    expectOneWarningNaming(warn, "'getControlsDotsItems'", 'EditorHeaderMenuItem', 'builtInControls');
+    expectOneWarningNaming(warn, "'getControlsDotsItems'", 'WorkflowMenuItem', 'builtInControls');
   });
 });
 
@@ -110,7 +110,9 @@ describe('a prop 4.0 removed reaching its component', () => {
     const warn = silenceWarnings();
     resetWorkflowStore();
 
-    renderInRoot(<ProjectSelection {...{ onDuplicateClick: vi.fn() }} />, { builtInControls: { settings: false } });
+    renderInRoot(<ProjectSelection {...{ onDuplicateClick: vi.fn() }} />, {
+      builtInControls: { export: false, import: false, settings: false },
+    });
 
     expectOneWarningNaming(warn, 'onDuplicateClick', 'ProjectSelection', 'WorkflowMenuItem');
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();

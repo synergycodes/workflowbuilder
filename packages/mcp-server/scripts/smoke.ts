@@ -1,7 +1,7 @@
 import { buildCorpus } from '../src/corpus/build-corpus.js';
 import { callTool, createToolRegistry } from '../src/server.js';
 
-const EXPECTED_PAGES = 79;
+const EXPECTED_PAGES = 81;
 const MAX_CORPUS_BUILD_MS = 3000;
 
 const failures: string[] = [];

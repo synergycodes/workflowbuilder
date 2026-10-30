@@ -102,6 +102,7 @@ Workflow Builder is made by [Synergy Codes](https://www.synergycodes.com/): 15+ 
 | See a run end to end, with a human decision   | [Hosted AI Studio](https://aistudio.workflowbuilder.io/)                                              | none          | no     |
 | Put the editor in your React app              | [A. Embed the SDK](#path-a-embed-the-sdk)                                                             | ~1 min        | no     |
 | Orchestrate what your users draw, on Temporal | [D. Add workflow orchestration on your Temporal](#path-d-add-workflow-orchestration-on-your-temporal) | your Temporal | no     |
+| Try the Temporal plugin on your machine       | [Temporal sample](examples/workflow-builder-temporal/)                                                | Temporal CLI  | no     |
 | Run the whole stack on your machine           | [C. Run the full stack demo](#path-c-run-the-full-stack-demo)                                         | ~10 min       | yes    |
 | Explore the editor alone from this repo       | [B. Try the demo](#path-b-try-the-demo)                                                               | ~2 min        | no     |
 
@@ -172,14 +173,14 @@ const plugin = new WorkflowBuilderPlugin<MyNode>({
 });
 ```
 
-Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Then start runs and, when a person decides, resume the parked step from your service:
+Pass the plugin to your Temporal Worker and export `runWorkflow` from your workflows module. Your mapper turns the editor's diagram into the `definition` the plugin runs, see [Run on Temporal](https://www.workflowbuilder.io/docs/guides/use-with-temporal/). Then start runs and, when a person decides, resume the parked step from your service:
 
 ```ts
-import { Client, Connection } from '@temporalio/client';
-import { TemporalWorkflowEngine } from '@workflowbuilder/temporal/client';
+import { TemporalWorkflowEngine, lazyClient } from '@workflowbuilder/temporal/client';
 
 const engine = new TemporalWorkflowEngine({
-  client: async () => new Client({ connection: await Connection.connect({ address }) }),
+  // Connects on the first call and again after a failed attempt.
+  client: lazyClient({ address }),
 });
 
 await engine.submit({ workflowId, executionId, definition, triggerPayload: {}, variables: {}, global: {} });

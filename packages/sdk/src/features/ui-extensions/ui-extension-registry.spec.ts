@@ -56,13 +56,13 @@ describe('createUiExtensionRegistry', () => {
 
   it('upsertMenuItem with an existing id replaces in place and keeps order', () => {
     const registry = createUiExtensionRegistry();
-    registry.upsertMenuItem('appBar', item('a'));
-    registry.upsertMenuItem('appBar', item('b'));
-    const before = registry.getMenuItems('appBar');
+    registry.upsertMenuItem('propertiesPanel', item('a'));
+    registry.upsertMenuItem('propertiesPanel', item('b'));
+    const before = registry.getMenuItems('propertiesPanel');
 
-    registry.upsertMenuItem('appBar', item('a', 'A renamed'));
+    registry.upsertMenuItem('propertiesPanel', item('a', 'A renamed'));
 
-    const after = registry.getMenuItems('appBar');
+    const after = registry.getMenuItems('propertiesPanel');
     expect(after).toEqual([item('a', 'A renamed'), item('b')]);
     expect(after).not.toBe(before);
     expect(registry.getMenuItems('project')).toEqual([]);

@@ -8,12 +8,34 @@ const [approve, reject] = reviewRequest.actions;
 describe('offeredActions', () => {
   it('offers the resume and the reject the request declares', () => {
     expect(offeredActions(reviewRequest.actions)).toEqual({
-      resume: { name: 'approve', label: 'Approve' },
+      resumes: [{ name: 'approve', label: 'Approve', reasonRequired: false }],
       reject: { name: 'reject', label: 'Reject', reasonRequired: false },
     });
   });
 
-  it('carries reasonRequired from the reject action', () => {
+  it('offers every resume action, in the order the request lists them', () => {
+    const escalate = { name: 'escalate', label: 'Escalate', effect: 'resume', port: 'source:inner:escalated' };
+
+    expect(offeredActions([approve, escalate, reject])?.resumes).toEqual([
+      { name: 'approve', label: 'Approve', reasonRequired: false },
+      { name: 'escalate', label: 'Escalate', reasonRequired: false },
+    ]);
+    expect(offeredActions([escalate, reject, approve])?.resumes.map((offer) => offer.name)).toEqual([
+      'escalate',
+      'approve',
+    ]);
+  });
+
+  it('offers one action per name: a repeated name keeps the first', () => {
+    expect(offeredActions([approve, { ...approve, label: 'Again' }, reject])?.resumes).toEqual([
+      { name: 'approve', label: 'Approve', reasonRequired: false },
+    ]);
+    expect(offeredActions([approve, { ...reject, name: 'approve' }])?.reject).toBeUndefined();
+  });
+
+  it('carries reasonRequired from every action, true only for true', () => {
+    expect(offeredActions([{ ...approve, reasonRequired: true }])?.resumes[0]?.reasonRequired).toBe(true);
+    expect(offeredActions([{ ...approve, reasonRequired: 'yes' }])?.resumes[0]?.reasonRequired).toBe(false);
     expect(offeredActions([approve, { ...reject, reasonRequired: true }])?.reject?.reasonRequired).toBe(true);
   });
 
@@ -24,7 +46,10 @@ describe('offeredActions', () => {
   it('leaves out a rerun-source action, which the endpoint refuses with 501', () => {
     const actions = [approve, { name: 'redraft', label: 'Ask again', effect: 'rerun-source' }];
 
-    expect(offeredActions(actions)).toEqual({ resume: { name: 'approve', label: 'Approve' }, reject: undefined });
+    expect(offeredActions(actions)).toEqual({
+      resumes: [{ name: 'approve', label: 'Approve', reasonRequired: false }],
+      reject: undefined,
+    });
   });
 
   it('finds the resume and the reject wherever the request lists them', () => {
@@ -34,7 +59,7 @@ describe('offeredActions', () => {
   });
 
   it('falls back to the action name when the label is blank', () => {
-    expect(offeredActions([{ ...approve, label: '  ' }])?.resume.label).toBe('approve');
+    expect(offeredActions([{ ...approve, label: '  ' }])?.resumes[0]?.label).toBe('approve');
   });
 
   it('offers no reject when the reject has no port to route on', () => {
