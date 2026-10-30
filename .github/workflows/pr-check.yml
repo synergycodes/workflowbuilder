@@ -232,6 +232,44 @@ jobs:
             echo "::warning title=Missing changeset::packages/ui changed with no new changeset for @workflowbuilder/sdk. The SDK build inlines @workflowbuilder/ui, so anything SDK consumers can see needs a changeset for the SDK as well."
           fi
 
+  mcp-server:
+    name: MCP docs server lint + typecheck + test + build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter mcp-server lint
+
+      - name: Typecheck
+        run: pnpm --filter mcp-server typecheck
+
+      - name: Test
+        run: pnpm --filter mcp-server test
+
+      - name: Build
+        run: pnpm --filter mcp-server build
+
+      - name: Smoke test against the real docs and API
+        run: pnpm --filter mcp-server smoke
+
   deploy-compose:
     name: Deploy compose files parse
     runs-on: ubuntu-latest

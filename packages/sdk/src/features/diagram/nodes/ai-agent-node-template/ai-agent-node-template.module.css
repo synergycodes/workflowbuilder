@@ -1,11 +1,3 @@
-.icon {
-  background: linear-gradient(158deg, #5360f9 8.25%, #852bec 91.09%), #151516;
-
-  & svg path {
-    stroke: white;
-  }
-}
-
 .root {
   --wb-public-node-gap: 0;
 }

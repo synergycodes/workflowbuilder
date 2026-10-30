@@ -6,24 +6,25 @@ Visual workflow editor SDK (React) with a reference backend and Temporal-based e
 
 Three onboarding paths (A installs from npm; B, C run the repo locally). README "Get started" covers all three. Path A ("Embed the SDK") installs `@workflowbuilder/sdk` from npm; the README has install + a minimal snippet, and the full guide lives in the [docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/).
 
-| Command                      | Path | What it does                                                                                             |
-| ---------------------------- | ---- | -------------------------------------------------------------------------------------------------------- |
-| `pnpm preflight`             | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents                              |
-| `pnpm dev` / `pnpm dev:demo` | B    | Demo (UI only, port 4200). No backend, no Docker                                                         |
-| `pnpm infra:up`              | C    | Start Postgres + Temporal in Docker. Required before backend/worker                                      |
-| `pnpm -F backend db:migrate` | C    | Apply Drizzle migrations out-of-band (backend also auto-migrates on boot)                                |
-| `pnpm dev:ai-studio`         | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)                                  |
-| `pnpm dev:backend`           | C    | Backend only (debug). Needs infra up                                                                     |
-| `pnpm dev:worker`            | C    | Execution worker only (debug). Needs infra up                                                            |
-| `pnpm infra:down`            | C    | Stop the Docker stack                                                                                    |
-| `pnpm dev:docs`              | -    | Docs site (Astro + Starlight)                                                                            |
-| `pnpm build:lib`             | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two)                  |
-| `pnpm build:temporal`        | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
-| `pnpm build`                 | -    | Build the demo app                                                                                       |
-| `pnpm test`                  | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
-| `pnpm check`                 | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
-| `pnpm release:version <pkg>` | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
-| `pnpm release:tag <pkg>`     | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
+| Command                          | Path | What it does                                                                                             |
+| -------------------------------- | ---- | -------------------------------------------------------------------------------------------------------- |
+| `pnpm preflight`                 | B/C  | Verify Node / pnpm / Docker / ports / `.env` files. Add `--json` for agents                              |
+| `pnpm dev` / `pnpm dev:demo`     | B    | Demo (UI only, port 4200). No backend, no Docker                                                         |
+| `pnpm infra:up`                  | C    | Start Postgres + Temporal in Docker. Required before backend/worker                                      |
+| `pnpm -F backend db:migrate`     | C    | Apply Drizzle migrations out-of-band (backend also auto-migrates on boot)                                |
+| `pnpm dev:ai-studio`             | C    | Full stack: infra + backend (3001) + worker + AI Studio frontend (4201)                                  |
+| `pnpm dev:backend`               | C    | Backend only (debug). Needs infra up                                                                     |
+| `pnpm dev:worker`                | C    | Execution worker only (debug). Needs infra up                                                            |
+| `pnpm infra:down`                | C    | Stop the Docker stack                                                                                    |
+| `pnpm dev:docs`                  | -    | Docs site (Astro + Starlight)                                                                            |
+| `pnpm build:lib`                 | -    | Build the publishable chain: `ui-tokens` -> `ui` -> SDK (`build:ui` does the first two)                  |
+| `pnpm --filter mcp-server build` | -    | Build the docs MCP server; `.mcp.json` starts `wb-docs` from its gitignored `dist/`                      |
+| `pnpm build:temporal`            | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
+| `pnpm build`                     | -    | Build the demo app                                                                                       |
+| `pnpm test`                      | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
+| `pnpm check`                     | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
+| `pnpm release:version <pkg>`     | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
+| `pnpm release:tag <pkg>`         | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
 
 Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` before backend/worker can start; the backend applies pending migrations automatically at boot.
 
@@ -69,6 +70,7 @@ packages/
   execution-core/   - Pure topological graph runner + node executor registry
   temporal/         - @workflowbuilder/temporal published Temporal Plugin (activities + workflow runner); bundles execution-core + types into its dist
   temporal-connection/ - Private, source-only: TEMPORAL_* env -> validated connection options + namespace, one copy shared by backend and worker
+  mcp-server/       - Private `wb-docs` stdio MCP server: searches the docs and the public SDK/UI/Temporal API (registered in `.mcp.json`)
   types/            - Shared TypeScript types
 ```
 
@@ -86,6 +88,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | `packages/ai-config`           | `packages/ai-config/README.md`                                                                                          |
 | `packages/execution-core`      | `packages/execution-core/README.md`                                                                                     |
 | `packages/temporal`            | `packages/temporal/README.md` (+ `packages/temporal/activity-profiles.md`, `packages/temporal/event-history-labels.md`) |
+| `packages/mcp-server`          | `packages/mcp-server/README.md`                                                                                         |
 | `packages/temporal-connection` | `packages/temporal-connection/README.md`                                                                                |
 | `apps/demo`                    | `apps/demo/CLAUDE.md`                                                                                                   |
 | `apps/ai-studio`               | `apps/ai-studio/README.md`                                                                                              |
@@ -168,8 +171,6 @@ If you're new to this repo and want to build your own consumer app or POC, follo
 | `/wb.create-template <name>`       | Scaffold a new diagram template — asks for target app (default `demo`)                                                                                                                    |
 | `/wb.add-execution-handler <type>` | Wire a node type into execution-core + worker registry (global pipeline, no target)                                                                                                       |
 | `/wb.run-locally`                  | Bring up the stack — Path B (`pnpm dev:demo`) or Path C (infra + backend + worker + AI Studio frontend)                                                                                   |
-| `/wb.task`                         | Fetch assigned ClickUp tasks via MCP and recommend one to pick up                                                                                                                         |
-| `/wb.task WB-42`                   | Pick up a specific task with an inline plan                                                                                                                                               |
 | `/wb.changeset <bump> "<summary>"` | Add a changeset for a published package (`patch` / `minor` / `major`) — required before merging consumer-visible changes to `packages/sdk/**`, `packages/ui/**` or `packages/temporal/**` |
 
 ### Releasing the `@workflowbuilder/*` packages
@@ -222,15 +223,3 @@ The skills under `.claude/commands/wb.*.md` mix three kinds of content:
 When executing a skill, if a snippet contradicts the canonical reference (or the live SDK source), **canonical wins**. Snippets are starting points; live code is truth.
 
 **Self-heal**: if you spot drift while executing a skill, refresh the affected snippet in the skill file as part of your change. Bundle it with the user's task in the same commit (or a follow-up commit titled `docs: refresh /wb.<name> snippet for <change>`). Frequent small refreshes are healthy — stale snippets accumulate friction.
-
-### ClickUp MCP
-
-ClickUp MCP is configured for this project in `.mcp.json` using the official remote server at `https://mcp.clickup.com/mcp`.
-
-First-time setup in Claude Code:
-
-1. Open a Claude Code session in this repo.
-2. Run `/mcp`.
-3. Authenticate the `clickup` server via the OAuth flow.
-
-The project provides a `/wb.task` wrapper command that uses ClickUp MCP to fetch assigned tasks or a specific task by ticket.

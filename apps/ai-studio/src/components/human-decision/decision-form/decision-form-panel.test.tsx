@@ -7,12 +7,15 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // SDK internals by path: the public API mounts these only inside a whole <WorkflowBuilder.Root>.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { PropertiesBar } from '../../../../../../packages/sdk/src/features/properties-bar/components/properties-bar/properties-bar';
+import { BuiltInControlsProvider } from '../../../../../../packages/sdk/src/features/ui-extensions/built-in-controls-context';
+import { UiExtensionProvider } from '../../../../../../packages/sdk/src/features/ui-extensions/ui-extension-context';
 import { submitDecision } from '../../../adapters/submit-decision';
 import { humanDecisionNodeType, humanDecisionPaletteItem } from '../../../nodes/human-decision';
 import { plugin } from '../../../plugin';
 import { executionEvent as event } from '../../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../../stores/use-execution-store';
 import { reviewRequest } from '../../../utils/human-decision/review-request.fixture';
+import { decisionActionsRenderer } from '../decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../decision-fields/decision-fields-control';
 import { decisionFormRenderer } from './decision-form-control';
 
@@ -24,7 +27,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
 vi.mock('../../../adapters/submit-decision', () => ({ submitDecision: vi.fn() }));
 const submit = vi.mocked(submitDecision);
 
-registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer]);
+registerCustomRenderers([decisionFormRenderer, decisionFieldsRenderer, decisionActionsRenderer]);
 plugin();
 
 function agent(id: string): WorkflowBuilderNode {
@@ -72,18 +75,24 @@ function edge(source: string, target: string): WorkflowBuilderEdge {
   };
 }
 
-// The SDK's own panel, with AI Studio's decorator on it: one panel, its content kept from one selected node to the next.
+// The SDK's own panel in the Root's providers, with AI Studio's `builtInControls={{ delete: false }}`
+// (set on `<WorkflowBuilder.Root>` in production): one panel, its content kept from one selected
+// node to the next, no Delete button.
 function Host() {
   return (
-    <PropertiesBar
-      selection={useSingleSelectedElement()}
-      headerLabel="Properties"
-      deleteNodeLabel="Delete node"
-      deleteEdgeLabel="Delete edge"
-      selectedTab="properties"
-      onTabChange={() => {}}
-      onDeleteClick={() => {}}
-    />
+    <BuiltInControlsProvider value={{ delete: false }}>
+      <UiExtensionProvider>
+        <PropertiesBar
+          selection={useSingleSelectedElement()}
+          headerLabel="Properties"
+          deleteNodeLabel="Delete node"
+          deleteEdgeLabel="Delete edge"
+          selectedTab="properties"
+          onTabChange={() => {}}
+          onDeleteClick={() => {}}
+        />
+      </UiExtensionProvider>
+    </BuiltInControlsProvider>
   );
 }
 
@@ -131,7 +140,7 @@ describe('the decision form in the real properties panel, as the selection moves
     useStore.setState({
       nodes: [agent('draft-1'), human('human-1', 'alpha', 'Alpha'), agent('draft-2'), human('human-2', 'beta', 'Beta')],
       edges: [edge('draft-1', 'human-1'), edge('draft-2', 'human-2')],
-      data: [humanDecisionPaletteItem as never],
+      data: [humanDecisionPaletteItem],
     });
     act(() => {
       setExecutionStarted('exec-1', 'http://backend/stream');

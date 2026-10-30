@@ -28,7 +28,6 @@ export const en = {
     folderName: 'Folder Name',
     projectSelection: {
       rename: 'Rename',
-      duplicateToDrafts: 'Duplicate to Drafts',
     },
     controls: {
       saveAsImage: 'Save as image',
@@ -71,6 +70,7 @@ export const en = {
   },
   propertiesBar: {
     label: 'Properties',
+    edge: 'Link',
     deleteNode: 'Delete node',
     deleteEdge: 'Delete edge',
   },

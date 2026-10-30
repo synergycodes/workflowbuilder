@@ -21,7 +21,7 @@ Open the printed URL (Vite defaults to http://localhost:5173).
 
 ## What's here
 
-- **`src/app.tsx`** — mounts `<WorkflowBuilder.Root>` with the default layout (top bar,
+- **`src/app.tsx`** — mounts `<WorkflowBuilder.Root>` with the default layout (editor header,
   palette, canvas, properties panel) and `localStorage` persistence.
 - **`src/nodes/`** — three example node types (`trigger`, `action`, `condition`). Each is
   the canonical 4-file pattern: `schema.ts` (data), `uischema.ts` (form),

@@ -11,7 +11,7 @@ backend route  ──▶  WorkflowEnginePort<TNode>  ──┐
                                                   ├──▶  TemporalWorkflowEngine  ──▶  Temporal
                                                   └──▶  (future) InMemoryEngine, BullMQEngine, …
 
-worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort)
+worker         ──▶  runGraph<TNode>(input, ActivityRunnerPort<TNode>, EventEmitterPort, VersioningPort?)
                                                   │
                                                   └──▶  consumer's NodeExecutorRegistry<TNode>
 ```
@@ -59,7 +59,8 @@ src/
 ├── ports/
 │   ├── workflow-engine.port.ts   # submit(), cancel(), resolveNode() — implemented by adapters (TemporalWorkflowEngine, …)
 │   ├── activity-runner.port.ts   # executeNode() via proxyActivities; optional awaitResolution() inside the workflow
-│   └── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
+│   ├── event-emitter.port.ts     # emitEvent(), updateStatus() — implemented by worker via proxyActivities
+│   └── versioning.port.ts        # isPatched() — implemented by the Temporal adapter via patched()
 ├── registry/                # NodeExecutorRegistry<TNode> mapped type + resolveExecutor<TNode>
 └── templates/               # Variable/expression interpolation (`{{ nodes.x.output }}`)
 ```
@@ -214,9 +215,9 @@ On `completed`, `execution_completed` carries `{ outcome: { value, resolvedBy, n
 
 ## Recorded step inputs and payload redaction
 
-Every `node_started` event records what the step was given: `{ config, visibleNodeIds }` — the node's frozen config plus the ids of every output visible at start (the same wave snapshot the executor receives; executors and templates may read any completed node's output, not just direct predecessors). The output _values_ are deliberately not copied: each is already recorded exactly once, at a lower sequence, in its own `node_completed` event — or `node_failed`, for a failure absorbed by errorPolicy `'continue'`/`'errorRoute'` — so copying them would grow Postgres, Temporal history, and the SSE stream quadratically with graph depth while adding no information. `reconstructNodeInputs(events, nodeId)` joins the ids back to the values and returns `{ config, nodeOutputs }`, a faithful record for diagnosing a failure or replaying a step with corrected input. `variables`, `global`, and `triggerPayload` are not recorded: the first is the server-side secrets bag, and the trigger payload is already frozen on the execution row. Events recorded before inputs were captured carry no payload, which is why `NodeStartedEvent.payload` is optional — `reconstructNodeInputs` returns `undefined` for those.
+Every `node_started` event records what the step was given: `{ config, visibleNodeIds }` — the node's frozen config plus the ids of every output visible at start (the same wave snapshot the executor receives; executors and templates may read any completed node's output, not just direct predecessors). The output _values_ are deliberately not copied: each is already recorded exactly once, at a lower sequence, in its own `node_completed` event — or `node_failed`, for a failure absorbed by errorPolicy `'continue'`/`'errorRoute'` — so copying them would grow Postgres, the SSE stream, and Temporal history quadratically with graph depth while adding no information (Temporal history already carries one quadratic term from the `executeNode` arguments; see the [history budget](../temporal/README.md#payload-size-and-the-history-budget)). `reconstructNodeInputs(events, nodeId)` joins the ids back to the values and returns `{ config, nodeOutputs }`, a faithful record for diagnosing a failure or replaying a step with corrected input. `variables`, `global`, and `triggerPayload` are not recorded in the event stream. The first two are identical for every step of the run, and the trigger payload is already frozen on the execution row. All three do travel in every `executeNode` argument set, so Temporal's own history carries them; see the [`@workflowbuilder/temporal` README](../temporal/README.md#what-event-history-records). Events recorded before inputs were captured carry no payload, which is why `NodeStartedEvent.payload` is optional — `reconstructNodeInputs` returns `undefined` for those.
 
-Every payload — inputs, outputs, errors — passes through `redactSensitive` (`redact.ts`) before it crosses `EventEmitterPort`. Event history is immutable on every surface it lands on (Postgres, SSE, and Temporal's own history via activity args), so secrets must never reach it in the first place; redacting inside the runner, before the emit activity, is what keeps all three surfaces clean. Matching is key-based (`SENSITIVE_KEY_RULES`: `apiKey`, `secret`, `password`, `*token`, …) and replaces the whole subtree under a matched key with `'[REDACTED]'`. The walk is copy-on-write — the unredacted objects continue on into execution — and depth-capped (see replay-audit rule 8). Secrets arriving through _values_ rather than keys (e.g. a resolved `{{variables.x}}` template) are not caught; that belongs to the variables feature (follow-up: value-based-redaction). Encrypting Temporal's own history, where `executeNode` activity args still carry real values, is planned separately (follow-up: temporal-payload-codec).
+Every `emitEvent` payload — inputs, outputs, errors — passes through `redactSensitive` (`redact.ts`) before it crosses `EventEmitterPort`. Event history is immutable on every surface it lands on (Postgres, SSE, and Temporal's own history via activity args), so secrets must never reach it in the first place; redacting inside the runner, before the emit activity, is what keeps every emitted payload clean on all three. Matching is key-based (`SENSITIVE_KEY_RULES`: `apiKey`, `secret`, `password`, `*token`, …) and replaces the whole subtree under a matched key with `'[REDACTED]'`. The walk is copy-on-write — the original objects continue on into execution — and depth-capped (see replay-audit rule 8). A secret arriving as a _value_ rather than under a matched key — a resolved template, say — is not caught (follow-up: value-based-redaction). Encrypting Temporal's own history, where `executeNode` activity args still carry real values, is planned separately (follow-up: temporal-payload-codec).
 
 ## Template references
 
@@ -242,6 +243,7 @@ Authors typing references in the workflow builder UI: see the [variable picker g
 2. Wire it up in `apps/backend/src/engine/index.ts` (swap `TemporalWorkflowEngine` for the new adapter).
 3. Make sure your engine wires `runGraph` (or equivalent traversal) to its activity primitives.
 4. Translate a `{ status: 'failed' }` outcome from `runGraph` into your engine's own failure vocabulary. `runGraph` never throws for node failures — it reports them by return value — so an adapter that ignores the outcome will close failed runs as successful. See `run-workflow.ts` for the Temporal case, which raises `ApplicationFailure.nonRetryable` (only a `TemporalFailure` fails a Workflow Execution; anything else fails the workflow _task_ and retries it forever).
+5. An engine that replays recorded runs passes `runGraph` a `VersioningPort` backed by its own versioning primitive (Temporal: `{ isPatched: patched }` in `run-workflow.ts`). The default answers true for every patch and fits only an engine with no recorded runs.
 
 ## Replay determinism
 

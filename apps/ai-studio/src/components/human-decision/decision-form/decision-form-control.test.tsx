@@ -41,7 +41,7 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
         : { node: { id: selection.nodeId, data: { properties: selection.properties } }, edge: null },
     useStore: (selector: (state: { edges: typeof edges }) => unknown) => selector({ edges }),
     // Rendered in place: without the properties panel the real one has no footer to render into.
-    PropertiesPanelFooter: ({ children }: { children?: ReactNode }) => (
+    PropertiesPanelFooterContent: ({ children }: { children?: ReactNode }) => (
       <div data-properties-panel-footer>{children}</div>
     ),
   };
@@ -78,6 +78,34 @@ function refundAmountReadOnly() {
 // A text field the panel sets to Editable and required: a plain `string`, since the pick drops `null` from the type.
 function replyDraftRequired() {
   return { ...reviewRequest, schema: { ...reviewRequest.schema, required: ['refundAmount', 'replyDraft'] } };
+}
+
+// The Review preset's shape: a second resume action between the first and the reject.
+function withEscalate() {
+  const [approve, reject] = reviewRequest.actions;
+  const escalate = {
+    name: 'escalate',
+    label: 'Escalate',
+    effect: 'resume',
+    port: 'source:inner:escalated',
+    reasonRequired: true,
+  };
+  return { ...reviewRequest, actions: [approve, escalate, reject] };
+}
+
+function withEscalateAndHold(reasonRequired = false) {
+  const [approve, escalate, reject] = withEscalate().actions;
+  const hold = { name: 'hold', label: 'Hold', effect: 'resume', port: 'source:inner:held', reasonRequired };
+  return { ...reviewRequest, actions: [approve, escalate, hold, reject] };
+}
+
+function withFlaggedHold() {
+  return withEscalateAndHold(true);
+}
+
+function withFlaggedApprove() {
+  const [approve, reject] = reviewRequest.actions;
+  return { ...reviewRequest, actions: [{ ...approve, reasonRequired: true }, reject] };
 }
 
 const humanOneWait = { executionId: 'exec-1', nodeId: 'human-1', attempt: 1 };
@@ -125,12 +153,12 @@ function sentEdits() {
   return submit.mock.calls[0]?.[1]?.edits;
 }
 
-// The reject dialog renders in a portal on the page, outside the panel.
+// An action dialog renders in a portal on the page, outside the panel.
 function dialog() {
   return document.querySelector<HTMLElement>('[role="dialog"]');
 }
 
-function reasonField() {
+function dialogText() {
   return dialog()?.querySelector('textarea') ?? undefined;
 }
 
@@ -545,7 +573,7 @@ describe.each([
       parkHumanOne();
       commit(fieldOf('Refund amount')!, '120');
       await click(button('Reject…'));
-      commit(reasonField()!, 'Checked with the customer');
+      commit(dialogText()!, 'Checked with the customer');
       await click(dialogButton('Cancel'));
 
       selection.nodeId = 'draft-1';
@@ -556,7 +584,7 @@ describe.each([
       render();
       expect(fieldOf('Refund amount')?.value).toBe('120');
       await click(button('Reject…'));
-      expect(reasonField()?.value).toBe('Checked with the customer');
+      expect(dialogText()?.value).toBe('Checked with the customer');
       await click(dialogButton('Cancel'));
 
       await click(button('Approve'));
@@ -702,10 +730,10 @@ describe.each([
       await click(button('Reject…'));
       expect(dialogButton('Confirm Rejection').disabled).toBe(true);
 
-      commit(reasonField()!, '   ');
+      commit(dialogText()!, '   ');
       expect(dialogButton('Confirm Rejection').disabled).toBe(true);
 
-      commit(reasonField()!, 'Outside the policy');
+      commit(dialogText()!, 'Outside the policy');
 
       expect(dialogButton('Confirm Rejection').disabled).toBe(false);
       await click(dialogButton('Confirm Rejection'));
@@ -818,7 +846,7 @@ describe.each([
       await click(button('Reject…'));
       expect(labelled('Rejection reason')).toBeUndefined();
       expect(dialog()?.textContent).toContain('Rejection reason');
-      commit(reasonField()!, 'Not sure yet');
+      commit(dialogText()!, 'Not sure yet');
       await click(dialogButton('Cancel'));
 
       expect(dialog()).toBeNull();
@@ -829,7 +857,7 @@ describe.each([
       parkHumanOne();
       commit(fieldOf('Refund amount')!, '120');
       await click(button('Reject…'));
-      commit(reasonField()!, 'Outside the policy');
+      commit(dialogText()!, 'Outside the policy');
 
       await click(dialogButton('Confirm Rejection'));
 
@@ -938,6 +966,167 @@ describe.each([
     });
   });
 
+  describe('several resume actions', () => {
+    it('sits between the reject and the first resume action, which stays rightmost', () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
+
+      expect(buttons).toEqual(['Reject…', 'Escalate…', 'Approve']);
+    });
+
+    it('mirrors the request: the last-listed resume action sits next to the reject, the first stays rightmost', () => {
+      parkHumanOne();
+      render(withEscalateAndHold());
+
+      const buttons = [...form()!.querySelectorAll('button')].map((element) => element.textContent?.trim());
+
+      expect(buttons).toEqual(['Reject…', 'Hold', 'Escalate…', 'Approve']);
+    });
+
+    it('sends a resume action without the flag in one click, with no dialog', async () => {
+      parkHumanOne();
+      render(withEscalateAndHold());
+
+      await click(button('Hold'));
+
+      expect(dialog()).toBeNull();
+      expect(submit).toHaveBeenCalledWith(humanOneWait, { action: 'hold', edits: {} });
+    });
+
+    it('opens a dialog from the primary button when the first resume action carries the flag', async () => {
+      parkHumanOne();
+      render(withFlaggedApprove());
+
+      await click(button('Approve…'));
+
+      expect(dialog()).not.toBeNull();
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('asks for a reason in a dialog first, and sends nothing on Cancel', async () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      await click(button('Escalate…'));
+      expect(dialog()?.textContent).toContain('Reason');
+      commit(dialogText()!, 'Not sure yet');
+      await click(dialogButton('Cancel'));
+
+      expect(dialog()).toBeNull();
+      expect(submit).not.toHaveBeenCalled();
+    });
+
+    it('confirms only once the reason is given', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      await click(button('Escalate…'));
+
+      expect(dialogButton('Confirm Escalate').disabled).toBe(true);
+      commit(dialogText()!, '   ');
+      expect(dialogButton('Confirm Escalate').disabled).toBe(true);
+      commit(dialogText()!, 'Needs a senior look');
+
+      expect(dialogButton('Confirm Escalate').disabled).toBe(false);
+    });
+
+    it('sends its own name with the edits and the reason, and closes the dialog', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      commit(fieldOf('Refund amount')!, '120');
+      await click(button('Escalate…'));
+      commit(dialogText()!, 'Needs a senior look');
+
+      await click(dialogButton('Confirm Escalate'));
+
+      expect(submit).toHaveBeenCalledWith(humanOneWait, {
+        action: 'escalate',
+        edits: { refundAmount: 120 },
+        reason: 'Needs a senior look',
+      });
+      expect(dialog()).toBeNull();
+    });
+
+    it('is held back with the first one while a required field is emptied, the reject never', async () => {
+      parkHumanOne();
+      render(withEscalate());
+
+      commit(fieldOf('Refund amount')!, '');
+      await settle();
+
+      expect(button('Approve').disabled).toBe(true);
+      expect(button('Escalate…').disabled).toBe(true);
+      expect(button('Reject…').disabled).toBe(false);
+    });
+
+    it('keeps the reason while the panel shows another node', async () => {
+      parkHumanOne();
+      render(withEscalate());
+      await click(button('Escalate…'));
+      commit(dialogText()!, 'Needs a senior look');
+      await click(dialogButton('Cancel'));
+
+      selection.nodeId = 'draft-1';
+      render(withEscalate());
+      selection.nodeId = 'human-1';
+      render(withEscalate());
+      await click(button('Escalate…'));
+
+      expect(dialogText()?.value).toBe('Needs a senior look');
+    });
+
+    it('keeps a separate reason for each action', async () => {
+      parkHumanOne();
+      render(withFlaggedHold());
+      await click(button('Escalate…'));
+      commit(dialogText()!, 'Needs a senior look');
+      await click(dialogButton('Cancel'));
+
+      await click(button('Hold…'));
+      expect(dialogText()?.value).toBe('');
+      await click(dialogButton('Cancel'));
+      await click(button('Reject…'));
+      expect(dialogText()?.value).toBe('');
+      await click(dialogButton('Cancel'));
+      await click(button('Escalate…'));
+
+      expect(dialogText()?.value).toBe('Needs a senior look');
+    });
+
+    it.each(['constructor', '__proto__'])(
+      'opens empty for an action named after an Object.prototype member: %s',
+      async (name) => {
+        const [approve, reject] = reviewRequest.actions;
+        const named = { name, label: name, effect: 'resume', port: 'source:inner:escalated', reasonRequired: true };
+        parkHumanOne();
+        render({ ...reviewRequest, actions: [approve, named, reject] });
+
+        await click(button(`${name}…`));
+        expect(dialogText()?.value).toBe('');
+        expect(dialogButton(`Confirm ${name}`).disabled).toBe(true);
+        commit(dialogText()!, 'Odd name');
+        await click(dialogButton(`Confirm ${name}`));
+
+        expect(submit).toHaveBeenCalledWith(humanOneWait, { action: name, edits: {}, reason: 'Odd name' });
+      },
+    );
+
+    it('shows the reason it was sent with once the run moves on', () => {
+      parkHumanOne();
+      render(withEscalate());
+      decideHumanOne({
+        action: 'escalate',
+        effect: 'resume',
+        edits: {},
+        reason: 'Needs a senior look',
+        resolvedBy: 'human',
+      });
+
+      expect(valueOf('Reason')).toBe('Needs a senior look');
+    });
+  });
+
   describe('after the decision', () => {
     it('shows the approved values read-only once the run moves on', () => {
       parkHumanOne();
@@ -955,7 +1144,8 @@ describe.each([
       expect(fieldOf('Reply draft')?.value).toBe('Dear customer');
       expect(fieldOf('Reply draft')?.disabled).toBe(true);
       expect(labelled('Decision')).toBeUndefined();
-      expect(container.querySelectorAll('button')).toHaveLength(0);
+      expect(button('Approve')).toBeUndefined();
+      expect(button('Reject…')).toBeUndefined();
     });
 
     it('shows a rejection with its reason and the proposal it turned down', () => {

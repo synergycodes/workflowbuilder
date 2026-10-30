@@ -15,6 +15,7 @@ import { extractDeepestError } from './errors';
 import type { ExecutionContext } from './execution-context';
 import type { ActivityRunnerPort, CompletedNodeExecution } from './ports/activity-runner.port';
 import type { EventEmitterPort } from './ports/event-emitter.port';
+import type { VersioningPort } from './ports/versioning.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
@@ -43,6 +44,8 @@ export type RunGraphOutcome =
   | { status: 'incomplete'; deadEnds: DeadEnd[] }
   | { status: 'failed'; error: { message: string; code?: string } };
 
+const LATEST_CODE: VersioningPort = { isPatched: () => true };
+
 // Topological scheduler. A node becomes ready only when ALL of its incoming
 // edges are resolved (predecessor either completed via a live route, or was
 // pruned by a decision node's nextPort). Ready nodes within the same wave
@@ -60,22 +63,26 @@ export async function runGraph<TNode extends BaseNode>(
   input: WorkflowExecutionInput<TNode>,
   runner: ActivityRunnerPort<TNode>,
   rawEvents: EventEmitterPort,
+  versioning: VersioningPort = LATEST_CODE,
 ): Promise<RunGraphOutcome> {
-  // Every payload is redacted before it crosses the emit boundary — event history
-  // (DB, SSE, Temporal's own history via activity args) is immutable, so secrets
-  // must never reach it in the first place.
+  // Every emitted payload is redacted before it crosses the emit boundary — event
+  // history (DB, SSE, Temporal's record of the emitEvent args) is immutable, so
+  // secrets must never reach it in the first place.
   const events = withRedactedPayloads(rawEvents);
 
   const adjacency = buildAdjacencyMap(input.definition.nodes, input.definition.edges);
   const inDegree = computeInDegrees(input.definition.nodes, input.definition.edges);
 
   await events.emitEvent(input.executionId, 'execution_started', { workflowId: input.workflowId });
-
   const entry = resolveStartNode(input.definition.nodes, inDegree);
   if ('error' in entry) {
     return await failExecution(input.executionId, events, { message: entry.error });
   }
   const startNode = entry.startNode;
+
+  if (versioning.isPatched('wb-running-status-at-start')) {
+    await setAdvisoryStatus(events, input.executionId, 'running');
+  }
 
   // pendingPredecessors counts incoming edges not yet resolved (completed OR pruned).
   // liveIncoming counts incoming edges that resolved via a non-pruned route.
@@ -174,8 +181,9 @@ export async function runGraph<TNode extends BaseNode>(
   }
 
   // Sanity check: any node still 'pending' with unresolved predecessors never became reachable.
-  // Catches cycles reachable from an entrypoint and dangling-edge bugs that would otherwise
-  // surface as a successful completion with parts of the graph never run.
+  // Catches every cycle that avoids the start node (resolveStartNode rejects the rest) and
+  // dangling-edge bugs that would otherwise surface as a successful completion with parts of
+  // the graph never run.
   const stalled: string[] = [];
   for (const [id, pending] of state.pendingPredecessors) {
     if (pending > 0 && state.status.get(id) === 'pending') stalled.push(id);
@@ -394,8 +402,8 @@ async function parkUntilResolved(
   }
 }
 
-// waiting/running are derived, advisory state: a failed write must not cost a park or
-// a delivered verdict. Same rationale as the swallowed node_skipped emit above.
+// waiting/running are derived, advisory state: a failed write must not cost a run, a park
+// or a delivered verdict. Same rationale as the swallowed node_skipped emit above.
 async function setAdvisoryStatus(
   events: EventEmitterPort,
   executionId: string,

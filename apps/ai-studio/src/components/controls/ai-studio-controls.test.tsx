@@ -60,7 +60,7 @@ describe('AiStudioControls', () => {
     startNode.exists = true;
     useNoticesStore.setState({ notices: [] });
     address.leaveRunView.mockClear();
-    useStore.getState().setToggleReadOnlyMode(false);
+    useStore.getState().setReadOnly(false);
     useStore.setState({ nodes: [], edges: [] });
     container = document.createElement('div');
     document.body.append(container);
@@ -319,13 +319,13 @@ describe('AiStudioControls', () => {
 
   it('keeps the canvas read-only while it shows a run, ended or not, and gives it back on reset', () => {
     setRunStatus('waiting');
-    expect(useStore.getState().isReadOnlyMode).toBe(true);
+    expect(useStore.getState().isReadOnly).toBe(true);
 
     setRunStatus('completed');
-    expect(useStore.getState().isReadOnlyMode).toBe(true);
+    expect(useStore.getState().isReadOnly).toBe(true);
 
     act(() => resetExecution());
-    expect(useStore.getState().isReadOnlyMode).toBe(false);
+    expect(useStore.getState().isReadOnly).toBe(false);
   });
 
   describe('without a start node', () => {

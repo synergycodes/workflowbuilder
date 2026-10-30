@@ -26,7 +26,8 @@ export type DecisionDraft = {
   values?: Record<string, unknown>;
   /** The fields the form showed, so a field the draft was not taken under starts from the proposal. */
   fields?: string[];
-  reason?: string;
+  /** By the action's name, the reject's included. */
+  reasons?: Record<string, string>;
 };
 
 /** Where the decision sent for a wait stands until the run records it. */
@@ -158,7 +159,7 @@ export function applyStopRequested() {
 }
 
 // Replayed through the same rule as live events, so a reload shows what live showed. The row seeds
-// the replay: the engine never writes `running` at start and its `waiting` write is advisory.
+// the replay: the engine's `running` and `waiting` writes to it are advisory, so the row can trail the events.
 export function applySnapshot(snapshot: ExecutionSnapshot) {
   const nodeStates: Record<string, NodeExecutionState> = {};
   let status: RunStatus = snapshot.status;
