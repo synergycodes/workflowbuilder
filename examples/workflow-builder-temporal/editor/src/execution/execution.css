@@ -1,0 +1,132 @@
+.run-controls {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-right: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.run-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: var(--wb-ds-ui-brand-fill);
+  color: var(--wb-ds-ui-brand-text-on);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.run-button:disabled {
+  opacity: 0.6;
+  cursor: progress;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Lined up with the SDK's Nodes Library and Properties bars: same top, height, border and radius. */
+.run-panel {
+  position: fixed;
+  top: 6rem;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  height: 3.6rem;
+  padding: 0 1rem;
+  border: 1px solid var(--wb-sdk-app-bar-border-color);
+  border-radius: var(--wb-sdk-app-bar-border-radius);
+  background: var(--wb-sdk-app-bar-background);
+  color: var(--wb-ds-ui-text-default);
+  font-size: 0.875rem;
+}
+
+.run-status {
+  padding: 0.125rem 0.375rem;
+  border-radius: 0.25rem;
+  font-weight: 500;
+}
+
+.run-status--completed {
+  color: var(--wb-ds-components-button-ghost-success-text-default);
+  background: color-mix(in srgb, currentColor, transparent 88%);
+}
+
+.run-status--incomplete,
+.run-status--failed,
+.run-status--error {
+  color: var(--wb-ds-ui-text-critical-default);
+  background: color-mix(in srgb, currentColor, transparent 88%);
+}
+
+.run-status--cancelled {
+  opacity: 0.6;
+}
+
+.run-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  color: inherit;
+}
+
+/* Same spot and size as the SDK's own validity badge, so it reads as a status. */
+.run-marker {
+  position: absolute;
+  top: 0;
+  right: var(--wb-public-status-right);
+  transform: translateY(-50%);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: var(--wb-public-status-size);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+}
+
+.run-marker--running {
+  background: var(--wb-ds-ui-brand-fill);
+  color: var(--wb-ds-ui-brand-text-on);
+}
+
+.run-marker--running svg {
+  animation: run-marker-spin 1s linear infinite;
+}
+
+.run-marker--completed {
+  background: var(--wb-ds-canvas-badge-notify-success-bg-default);
+  color: var(--wb-ds-canvas-badge-notify-success-icon);
+}
+
+.run-marker--failed {
+  background: var(--wb-ds-canvas-badge-notify-critical-bg-default);
+  color: var(--wb-ds-canvas-badge-notify-critical-icon);
+}
+
+.run-marker--skipped {
+  background: var(--wb-ds-ui-icon-subtle-default);
+  color: var(--wb-ds-ui-icon-inverse-default);
+}
+
+.react-flow__node:has(.run-marker--skipped) {
+  opacity: 0.5;
+}
+
+@keyframes run-marker-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}

@@ -325,6 +325,10 @@ gh workflow run deploy-docs.yml --ref release
 
 The same from the browser: Actions → "Deploy docs" → "Run workflow" → branch `release`. What goes live is `apps/docs` as it stands on `release`: the snapshot of `main` from when the last release branch was cut, not `main` as it stands today. To take something back, revert it on `release` and run the workflow again.
 
+### 9. Bump the examples
+
+Each project under `examples/` runs outside the workspace, so it installs the published packages from npm at an exact version. After an SDK or Temporal release, open a PR to `main` that bumps the pin in every `examples/**/package.json` that lists the package, runs `npm install` next to each bumped `package.json` and commits the regenerated `package-lock.json` (CI installs the examples with `npm ci`, which fails on a lockfile that does not match), and update the example code and the docs snippets the release breaks. After a major, run each example once against the new version before merging.
+
 ## Rollback
 
 A published version cannot be overwritten on npm. Options when something went wrong:
