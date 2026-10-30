@@ -1,5 +1,25 @@
 # Changelog
 
+## [0.3.0] - 2026-10-30
+
+A run's status turns `running` the moment it starts, and `TemporalWorkflowEngine` recovers from a failed connection. Event Histories recorded by 0.1.0 and 0.2.0 still replay.
+
+### Added
+
+- `lazyClient(connectionOptions, clientOptions?)` in `@workflowbuilder/temporal/client`: a client factory for `TemporalWorkflowEngine` that closes the connection of a failed attempt, so retries during an outage leave no channel open.
+- `reasonRequired` on a `resume` action, as on a `reject`: the type now carries it on every routed action.
+- `TESTING.md` in the package: what the test suites cover, what they do not, and how CI gates a release.
+
+### Changed
+
+- A run's status moves to `running` as soon as it starts, so `updateExecutionStatus` receives `running` before the first node runs and a store can stamp the start. Runs started on an earlier version keep their old sequence and still replay.
+- The README documents what Event History records, where secrets belong, and the payload and history size limits a run can reach.
+- The README and TESTING.md state that the package is also tested weekly against the newest Temporal TypeScript SDK release.
+
+### Fixed
+
+- `TemporalWorkflowEngine` connects again on the next call after a failed connection attempt, instead of failing every call until the process restarts.
+
 ## [0.2.0] - 2026-10-02
 
 A node can park the run until a verdict from outside resumes it. Event Histories recorded by 0.1.0 still replay; the breaking changes concern custom ports, stores and code that reads node results.
@@ -27,5 +47,6 @@ First release. Run Workflow Builder diagrams as durable Temporal Workflow Execut
 - `PermanentNodeExecutionError` and `TransientNodeExecutionError`: thrown from a node executor, they decide whether a failed node is retried or fails the run at once.
 - Node labels appear as activity summaries in Event History, so a run reads in the Temporal UI the way the diagram reads in the editor.
 
+[0.3.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.3.0
 [0.2.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.2.0
 [0.1.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.1.0
