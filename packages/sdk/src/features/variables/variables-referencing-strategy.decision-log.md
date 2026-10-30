@@ -57,7 +57,7 @@ The nature of the most common diagrams in Workflow Builder can result in differe
 
 ### 3. Handle-type buckets in `bySourceHandleType`
 
-`bySourceHandle` is keyed by real source handle ids. `bySourceHandleType` is a separate map keyed by handle type (`SOURCE_HANDLE_TYPE` in `@workflow-builder/types/node-output-schema`), resolved from the handle id at read time: `settled` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. Both maps are optional; a handle's own entry is always used on its own. The `error` check is a case-insensitive substring match on the handle id, so `onError` and `error-1` both count as error handles.
+`bySourceHandle` is keyed by real source handle ids. `bySourceHandleType` is a separate map keyed by handle type (the `SourceHandleType` string union in `@workflow-builder/types/variables/node-output-schema`), resolved from the handle id at read time: `settled` is merged into every handle, `error` into handles whose id contains `error`, `success` into every other handle. Both maps are optional; a handle's own entry is always used on its own. The `error` check is a case-insensitive substring match on the handle id, so `onError` and `error-1` both count as error handles.
 
 Suggestions from the handle's own entry and the matching buckets are merged per handle and de-duplicated by variable id. The type is taken from whichever copy survives; it is not resolved per handle. A variable that sits in more than one place must therefore declare the same type in each.
 
