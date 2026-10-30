@@ -30,7 +30,55 @@ export function getTimeFromDateIfValid(dateString?: string): undefined | string 
   return format(date, 'HH:mm');
 }
 
-export function setDateWithTimeFromTime(date: Date, timeStamp: string) {
+type DateLike = Date | number | string;
+
+export function getISODate(dateLike: DateLike | null): string {
+  if (!dateLike) {
+    console.warn(`DateString expected but missing`);
+
+    return '';
+  }
+
+  if (typeof (dateLike as Date)?.toISOString === 'function') {
+    return (dateLike as Date)?.toISOString();
+  }
+
+  if (typeof dateLike === 'number') {
+    const date = new Date(dateLike);
+
+    const isValidDate = !Number.isNaN(date.getTime());
+    if (!isValidDate) {
+      console.warn(`DateString doesn't support number`, dateLike);
+      return '';
+    }
+
+    const year = date.getFullYear();
+    const dateISO = date.toISOString();
+    if (year < 1980) {
+      console.warn(`DateString is a number but may be wrong`, dateLike, dateISO);
+    }
+
+    return dateISO;
+  }
+
+  if (typeof dateLike === 'string') {
+    const date = new Date(dateLike);
+
+    if (!Number.isNaN(date.getTime())) {
+      return date.toISOString();
+    }
+
+    console.warn(`DateString doesn't support string`, dateLike);
+
+    return dateLike;
+  }
+
+  console.warn(`DateString doesn't support ISO`, dateLike);
+
+  return dateLike ? dateLike.toString() : '';
+}
+
+export function setDateWithTimeFromTime(date: string | Date, timeStamp: string) {
   if (!date || !timeStamp) {
     return date;
   }

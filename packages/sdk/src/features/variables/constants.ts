@@ -1,6 +1,21 @@
-import type { VariableType, VariableTypePrimitive } from '../../node/node-output-schema';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
-export type LogicalOperator = 'OR' | 'AND';
+/**
+ * Sentinel stored in `commonByType` suggestion ids; swapped for the real node id via `replaceAll` on read.
+ * Trusted never to appear in a real node id, so no escaping is done.
+ */
+export const NODE_ID_FOR_COMMON_NODE_DATA = '<<NODE_ID>>';
+/**
+ * Sentinel stored in `commonByType` suggestion displays; swapped for the real node label via `replaceAll` on read.
+ * Trusted never to appear in a real node label, so no escaping is done.
+ */
+export const NODE_LABEL_FOR_COMMON_NODE_DATA = '<<NODE_LABEL>>';
+
+export const LOGICAL_OPERATOR = {
+  OR: 'OR',
+  AND: 'AND',
+} as const;
+export type LogicalOperator = (typeof LOGICAL_OPERATOR)[keyof typeof LOGICAL_OPERATOR];
 
 /**
  * String literal union of comparison operators recognised by the
@@ -50,6 +65,7 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
 
 export const VARIABLE_BRACKETS_START = '{{';
 export const VARIABLE_BRACKETS_END = '}}';
+export const VARIABLE_DELIMITER = ' · ';
 
 /**
  * Reserved key under which the variable-text control looks up the
@@ -71,13 +87,25 @@ export const VARIABLE_GLOBAL_KEY = 'global';
  */
 export const VARIABLE_NODES_KEY = 'nodes';
 
+export const VARIABLE_TRIGGER_KEY = 'trigger';
+
+export const VARIABLE_VARIABLES_KEY = 'variables';
+
+/** Mirrors the `VariableReference` union in `@workflow-builder/types/variables`; keep both in sync. */
+export const VARIABLE_REFERENCE_KEYS = [
+  VARIABLE_GLOBAL_KEY,
+  VARIABLE_TRIGGER_KEY,
+  VARIABLE_NODES_KEY,
+  VARIABLE_VARIABLES_KEY,
+] as const;
+
 type VariableTypeOption = {
-  type: VariableTypePrimitive;
-  baseType: VariableTypePrimitive;
+  type: VariableType;
+  baseType: VariableType;
   label: string;
 };
 
-export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeOption> = {
+export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = {
   string: {
     type: 'string',
     baseType: 'string',
@@ -103,24 +131,26 @@ export const variableTypeInfoByType: Record<VariableTypePrimitive, VariableTypeO
     baseType: 'datetime',
     label: 'Datetime',
   },
-  // Possible in future?
-  // email: {
-  //   type: 'email',
-  //   baseType: 'string',
-  //   label: 'Email',
-  // },
-  // url: {
-  //   type: 'url',
-  //   baseType: 'string',
-  //   label: 'URL',
-  // },
+  object: {
+    type: 'object',
+    baseType: 'object',
+    label: 'Object',
+  },
+  array: {
+    type: 'array',
+    baseType: 'array',
+    label: 'Array',
+  },
 };
 
-// Remove filter when other formats will be supported
 export const variableTypesOptions: VariableTypeOption[] = Object.values(variableTypeInfoByType).filter(
   ({ type, baseType }) => type === baseType,
 );
 
-export const variablesTypesToExcludeNonPrimitive: VariableType[] = ['object', 'array'];
+export const VARIABLES_TYPES_NOT_PRIMITIVE: VariableType[] = ['object', 'array'];
 
-export const variablesTypesToExcludeInText: VariableType[] = [...variablesTypesToExcludeNonPrimitive, 'boolean'];
+export const VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT: VariableType[] = [...VARIABLES_TYPES_NOT_PRIMITIVE, 'boolean'];
+
+export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
+
+export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope

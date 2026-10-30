@@ -802,7 +802,11 @@ importers:
         specifier: ^3.0.4
         version: 3.0.4(@types/debug@4.1.12)(@types/node@22.12.0)(jiti@2.6.1)(jsdom@26.0.0)(terser@5.51.2)(tsx@4.21.0)(yaml@2.8.4)
 
-  packages/types: {}
+  packages/types:
+    dependencies:
+      '@jsonforms/core':
+        specifier: ^3.4.0
+        version: 3.5.1
 
   packages/ui:
     dependencies:
