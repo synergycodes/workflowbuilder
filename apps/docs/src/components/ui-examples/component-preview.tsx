@@ -27,7 +27,7 @@ function Row({ children }: { children: ReactNode }) {
 
 export function ComponentPreview({ children }: { children: ReactNode }) {
   const hostRef = useRef<HTMLDivElement>(null);
-  const popupRef = useRef<HTMLDivElement | null>(null);
+  const [popups, setPopups] = useState<HTMLDivElement | null>(null);
   const [shadow, setShadow] = useState<ShadowRoot | null>(null);
 
   useEffect(() => {
@@ -42,12 +42,15 @@ export function ComponentPreview({ children }: { children: ReactNode }) {
 
   // Popups leave the shadow root for the document, where only this box gives them the scope and theme.
   useEffect(() => {
-    const popups = document.createElement('div');
-    popups.className = 'workflow-builder-root';
-    popups.dataset.wbTheme = 'dark';
-    document.body.append(popups);
-    popupRef.current = popups;
-    return () => popups.remove();
+    const container = document.createElement('div');
+    container.className = 'workflow-builder-root';
+    container.dataset.wbTheme = 'dark';
+    document.body.append(container);
+    setPopups(container);
+    return () => {
+      container.remove();
+      setPopups(null);
+    };
   }, []);
 
   return (
@@ -56,7 +59,7 @@ export function ComponentPreview({ children }: { children: ReactNode }) {
         <div ref={hostRef} className={styles.host} data-wb-theme="dark">
           {shadow
             ? createPortal(
-                <PortalContainerProvider container={popupRef}>
+                <PortalContainerProvider container={popups}>
                   <div className="workflow-builder-root">{children}</div>
                 </PortalContainerProvider>,
                 shadow,

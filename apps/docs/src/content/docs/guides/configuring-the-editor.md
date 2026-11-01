@@ -52,23 +52,50 @@ Build your own layout by composing the namespaced subcomponents:
 | `WorkflowBuilder.PropertiesPanel` | Properties sidebar driven by JsonForms.                     |
 | `WorkflowBuilder.DefaultLayout`   | The default floating-overlay arrangement of the four above. |
 
-Pass children to skip the default layout and compose your own:
+Pass children to skip the default layout and compose your own. The canvas fills the element around it, so the layout has to give that element a height:
 
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <header>
-    <WorkflowBuilder.EditorHeader />
-  </header>
-  <aside>
-    <WorkflowBuilder.Palette />
-  </aside>
-  <main>
-    <WorkflowBuilder.Canvas />
-  </main>
-  <aside>
-    <WorkflowBuilder.PropertiesPanel />
-  </aside>
+  <div className="editor-layout">
+    <header>
+      <WorkflowBuilder.EditorHeader />
+    </header>
+    <aside>
+      <WorkflowBuilder.Palette />
+    </aside>
+    <main>
+      <WorkflowBuilder.Canvas />
+    </main>
+    <aside>
+      <WorkflowBuilder.PropertiesPanel />
+    </aside>
+  </div>
 </WorkflowBuilder.Root>
+```
+
+```css
+.editor-layout {
+  display: grid;
+  grid-template:
+    'header header header' auto
+    'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+  height: 100%;
+}
+.editor-layout > * {
+  min-height: 0;
+}
+.editor-layout > header {
+  grid-area: header;
+}
+.editor-layout > aside:first-of-type {
+  grid-area: palette;
+}
+.editor-layout > main {
+  grid-area: canvas;
+}
+.editor-layout > aside:last-of-type {
+  grid-area: properties;
+}
 ```
 
 To extend the default layout instead of replacing it (e.g. add a banner alongside), mount `DefaultLayout` explicitly:

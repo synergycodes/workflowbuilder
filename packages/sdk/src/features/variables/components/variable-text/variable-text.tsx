@@ -1,4 +1,4 @@
-import { NavButton, SnackbarType } from '@workflowbuilder/ui';
+import { NavButton, SnackbarType, usePortalContainer } from '@workflowbuilder/ui';
 import { type ReactElement, type ReactNode, cloneElement, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Mention, type MentionDataItem, MentionsInput } from 'react-mentions-ts';
@@ -9,7 +9,6 @@ import styles from './variable-text.module.css';
 
 import type { VariableType } from '../../../../node/node-output-schema';
 import { showTranslatedSnackbar } from '../../../../utils/show-translated-snackbar';
-import { useOptionalSdkSurfaces } from '../../../../workflow-builder-root/sdk-surfaces';
 import { VARIABLE_BRACKETS_START, VARIABLE_NODES_KEY } from '../../constants';
 import { OverlayAttribute } from './overlay-attribute';
 import type { VariableSuggestion, VariableSuggestionGroup, VariableTextProps } from './variable-text.types';
@@ -181,7 +180,7 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
-  const portal = useOptionalSdkSurfaces()?.portal ?? undefined;
+  const portal = usePortalContainer() ?? undefined;
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);

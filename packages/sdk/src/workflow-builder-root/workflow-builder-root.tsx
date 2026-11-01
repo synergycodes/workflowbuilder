@@ -13,6 +13,7 @@ import { RuntimeIntegrationWrapper } from '../features/integration/components/ru
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { resetModalStore } from '../features/modals/stores/use-modal-store';
+import { useWarnOnce } from '../features/ui-extensions/use-warn-once';
 import { setControlledTheme } from '../hooks/theme';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
@@ -110,6 +111,11 @@ export function WorkflowBuilderRoot({
     resetIntegrationStore();
     return resetModalStore;
   }, []);
+
+  useWarnOnce(
+    !!theme && !onThemeChange,
+    '[workflow-builder] `theme` is set without `onThemeChange`, so the theme toggle does nothing. Pass `onThemeChange` to follow it, or hide the toggle with `builtInControls={{ themeToggle: false }}`.',
+  );
 
   // Latest callback in a ref: hosts often pass an inline function, which must not re-run the effect.
   const onThemeChangeRef = useRef(onThemeChange);

@@ -11,7 +11,8 @@ import type * as OpenTemplateSelectorModalModule from '../features/modals/templa
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { useStore } from '../store/store';
-import { getTheme, useThemeStore } from './theme';
+import { getTheme } from './theme';
+import { resetThemeStore } from './theme.test-utils';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
 
 vi.mock('../features/integration/components/import-export/export-modal/open-export-modal', () => ({
@@ -70,7 +71,7 @@ describe('useWorkflowBuilderActions', () => {
     // does); one test below swaps in the real implementation to exercise its
     // internal read-only guard, so restore the plain stub for every other test.
     vi.mocked(openTemplateSelectorModal).mockReset();
-    useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
+    resetThemeStore();
     localStorage.clear();
     useStore.setState({
       isReadOnly: false,

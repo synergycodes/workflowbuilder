@@ -1,10 +1,9 @@
+import { usePortalContainer } from '@workflowbuilder/ui';
 import { SnackbarProvider } from 'notistack';
-
-import { useOptionalSdkSurfaces } from '../../workflow-builder-root/sdk-surfaces';
 
 // No variant components: showSnackbar renders each snackbar through its own `content`.
 export function SnackbarContainer() {
-  const surfaces = useOptionalSdkSurfaces();
+  const portal = usePortalContainer();
 
-  return <SnackbarProvider domRoot={surfaces?.portal ?? undefined} />;
+  return <SnackbarProvider domRoot={portal ?? undefined} />;
 }

@@ -16,6 +16,12 @@ export const PREFIX: Record<PrefixStrength, string> = {
 // Whitespace-free: the UI dist the SDK build re-reads is minified.
 const ALREADY_PREFIXED = Object.values(PREFIX).map((prefix) => prefix.replaceAll(/\s/g, ''));
 
+// The bare root class at a class boundary: `.workflow-builder-root button` yes, `.workflow-builder-root-shell` no.
+// Shared with the built-CSS checker so the plugin's exception and the checker's never drift apart.
+export function startsWithBareRoot(selector: string): boolean {
+  return /^\.workflow-builder-root(?![\w-])/.test(selector.trim());
+}
+
 // A pseudo-element and any state after it (`::after:hover`) are invalid inside :where(), which would drop
 // the rule; includes the legacy single-colon forms.
 const PSEUDO_ELEMENT_TAIL = /(?:::[\w-]+(?:\([^)]*\))?|:(?:before|after|first-line|first-letter)(?![\w-])).*$/i;
@@ -28,6 +34,8 @@ export type ScopePrefixOptions = {
   vendoredFiles?: RegExp;
   // Base styles every component rule must override: the selector is wrapped in `:where()`.
   baseFiles?: RegExp;
+  // Files outside it pass through untouched (an app build also feeds the plugin its own CSS).
+  include?: RegExp;
 };
 
 function prefixSelector(selector: string, prefix: string, isBase: boolean): string {
@@ -35,9 +43,9 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
   const compact = trimmed.replaceAll(/\s/g, '');
 
   if (ALREADY_PREFIXED.some((done) => compact.startsWith(done))) return selector;
-  // Scoped resets under the bare root class keep one class of weight on purpose. The class boundary keeps
-  // `.workflow-builder-root-shell` out: the box's own rules are written with the glued prefix by hand.
-  if (/^\.workflow-builder-root(?![\w-])/.test(trimmed) || trimmed.startsWith(':root')) return selector;
+  // Scoped resets under the bare root class keep one class of weight on purpose; the box's own rules
+  // (`.workflow-builder-root-shell`) are written with the glued prefix by hand.
+  if (startsWithBareRoot(trimmed) || trimmed.startsWith(':root')) return selector;
 
   // The theme attribute sits on the box, so the scope class is glued on, not a descendant.
   // Bare variable-only blocks never get here: prefixRule leaves them as defaults.
@@ -75,6 +83,7 @@ export function scopePrefixPlugin(options: ScopePrefixOptions): Plugin {
     prepare() {
       return {
         OnceExit(root) {
+          if (options.include && !options.include.test(root.source?.input.file ?? '')) return;
           prefixRules(root, options);
         },
       };

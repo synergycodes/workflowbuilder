@@ -15,6 +15,20 @@ function firstRule(css: string): Rule {
   return postcss.parse(css).first as Rule;
 }
 
+describe('postcss-layer-root-defaults include', () => {
+  const plugin = layerRootDefaultsPlugin({ include: /[\\/]sdk[\\/]src[\\/]/ });
+
+  it('layers a file inside include', async () => {
+    const result = await postcss([plugin]).process(':root { --wb-public-x: 1px }', { from: '/x/sdk/src/a.css' });
+    expect(result.css.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { [data-wb-theme] { --wb-public-x: 1px }}');
+  });
+
+  it('leaves a file outside include untouched', async () => {
+    const result = await postcss([plugin]).process(':root { --wb-public-x: 1px }', { from: '/x/apps/demo/src/a.css' });
+    expect(result.css).toBe(':root { --wb-public-x: 1px }');
+  });
+});
+
 describe('postcss-layer-root-defaults', () => {
   it('moves a variable-only :root block onto [data-wb-theme] inside ui.base', async () => {
     const output = await run(':root { --wb-public-x: var(--wb-ds-y) }');

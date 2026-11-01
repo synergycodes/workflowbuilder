@@ -9,6 +9,7 @@ import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mjs';
 import { type ScopePrefixOptions, scopePrefixPlugin } from './postcss-scope-prefix.mjs';
 
 // Shared by the Vite pipeline and the raw styles.css step, so both outputs prefix the same way.
+// Picking the base files by name is to go: they should write `:where()` themselves (follow-up: css-defaults-in-source).
 export const UI_SCOPE_PREFIX_OPTIONS: ScopePrefixOptions = {
   strength: 'ui',
   vendoredFiles: /node_modules[\\/](react-day-picker|@xyflow)[\\/]/,

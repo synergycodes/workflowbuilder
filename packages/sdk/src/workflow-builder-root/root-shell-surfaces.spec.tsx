@@ -4,7 +4,8 @@ import type { ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import '../features/i18n/index';
-import { setTheme, useThemeStore } from '../hooks/theme';
+import { setTheme, usePersistedTheme } from '../hooks/theme';
+import { resetThemeStore } from '../hooks/theme.test-utils';
 import { RootShell } from './root-shell';
 
 vi.mock('@workflowbuilder/ui', () => ({
@@ -30,10 +31,7 @@ function portals(): NodeListOf<HTMLElement> {
   return document.body.querySelectorAll<HTMLElement>(':scope > .wb-portal');
 }
 
-beforeEach(() => {
-  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
-  localStorage.clear();
-});
+beforeEach(resetThemeStore);
 
 afterEach(async () => {
   await i18n.changeLanguage('en');
@@ -42,7 +40,7 @@ afterEach(async () => {
 
 describe('RootShell surfaces', () => {
   it('puts theme and lang on the root box and one portal container, never on <html>', () => {
-    useThemeStore.setState({ persisted: 'dark' });
+    usePersistedTheme.setState({ theme: 'dark' });
 
     render(<RootShell />);
 
@@ -75,6 +73,16 @@ describe('RootShell surfaces', () => {
 
     expect(shell().dataset.wbTheme).toBe('dark');
     expect(portals()[0].dataset.wbTheme).toBe('dark');
+  });
+
+  it('declares the language it shows, not the one requested without a translation', async () => {
+    render(<RootShell />);
+
+    await act(() => i18n.changeLanguage('de-DE'));
+
+    expect(i18n.language).toBe('de-DE');
+    expect(shell().getAttribute('lang')).toBe('en');
+    expect(portals()[0].getAttribute('lang')).toBe('en');
   });
 
   it('mirrors a language change onto both surfaces and leaves <html lang> alone', async () => {

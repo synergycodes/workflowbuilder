@@ -4,7 +4,7 @@ import path from 'node:path';
 import postcss, { AtRule, type ChildNode, type Declaration, type Node, type Root, type Rule } from 'postcss';
 
 import { isThemeScopedDefaults, isVariableOnlyRule, targetsRoot } from '../postcss-layer-root-defaults.mjs';
-import { PREFIX } from '../postcss-scope-prefix.mjs';
+import { PREFIX, startsWithBareRoot } from '../postcss-scope-prefix.mjs';
 
 const packageDirectory = path.resolve(import.meta.dirname, '..');
 const repositoryDirectory = path.resolve(packageDirectory, '../..');
@@ -79,19 +79,23 @@ function isPublicDefault(declaration: Declaration): boolean {
 // Scoped resets name the bare root class; `.workflow-builder-root-shell` is not it and carries the glued prefix.
 function isScoped(selector: string): boolean {
   const compact = selector.replaceAll(/\s/g, '');
-  return (
-    scopePrefixes.some((prefix) => compact.startsWith(prefix)) ||
-    /^\.workflow-builder-root(?![\w-])/.test(selector.trim())
-  );
+  return scopePrefixes.some((prefix) => compact.startsWith(prefix)) || startsWithBareRoot(selector);
 }
 
 function isDefaultsBlock(rule: Rule): boolean {
   return isVariableOnlyRule(rule) && (targetsRoot(rule) || isThemeScopedDefaults(rule));
 }
 
+// A class a *.module.css does not own (root box, popup container, React Flow, Ace, react-day-picker) written
+// without :global() comes out hashed, `._workflow-builder-root_<hash>`, and matches nothing.
+function hasHashedForeignClass(selector: string): boolean {
+  return /\._(?:workflow-builder-root|wb-|react-flow|ace_|rdp-)/.test(selector);
+}
+
 function checkUnlayered(container: Root | AtRule, report: Report): void {
   for (const node of container.nodes ?? []) {
     if (node.type === 'rule') {
+      if (node.selectors.some(hasHashedForeignClass)) report(node, 'Hashed foreign class');
       if (!isDefaultsBlock(node) && !node.selectors.every(isScoped)) report(node, 'Unprefixed built CSS');
     } else if (node.type === 'atrule') {
       if (node.name === 'layer') {

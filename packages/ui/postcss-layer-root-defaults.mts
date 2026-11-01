@@ -1,7 +1,8 @@
 import type { Plugin, Rule } from 'postcss';
 
 // Moves variable-only `:root` defaults onto `[data-wb-theme]` inside `@layer ui.base`, so sources keep
-// writing `:root { … }`. Why: css-layers.md, "Why the defaults stay layered".
+// writing `:root { … }`. Why: css-layers.md, "Why the defaults stay layered". The rewrite is to go: sources
+// should name `[data-wb-theme]` themselves and only the layering stay here (follow-up: css-defaults-in-source).
 
 const THEME_SCOPE = '[data-wb-theme]';
 
@@ -27,12 +28,19 @@ export function isThemeScopedDefaults(rule: Rule): boolean {
   return rule.selectors.every((selector) => THEME_SCOPE_SELECTOR.test(selector.trim())) && isVariableOnlyRule(rule);
 }
 
-export function layerRootDefaultsPlugin(): Plugin {
+export type LayerRootDefaultsOptions = {
+  // Files outside it pass through untouched (an app build also feeds the plugin its own CSS).
+  include?: RegExp;
+};
+
+export function layerRootDefaultsPlugin({ include }: LayerRootDefaultsOptions = {}): Plugin {
   return {
     postcssPlugin: 'postcss-layer-root-defaults',
     prepare() {
       return {
         OnceExit(root, { atRule }) {
+          if (include && !include.test(root.source?.input.file ?? '')) return;
+
           const topLevelDefaults = root.nodes.filter(
             (node): node is Rule => node.type === 'rule' && (targetsRoot(node) || isThemeScopedDefaults(node)),
           );

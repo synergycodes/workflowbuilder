@@ -13,7 +13,7 @@ import { SnackbarContainer } from '../features/snackbar/snackbar-container';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../features/ui-extensions/built-in-controls-context';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
-import { type Theme, selectTheme, useThemeStore } from '../hooks/theme';
+import { type Theme, useTheme } from '../hooks/use-theme';
 import { type SdkSurfaces, SdkSurfacesProvider } from './sdk-surfaces';
 
 type RootShellProps = {
@@ -49,18 +49,17 @@ export function RootShell({ theme, builtInControls, children }: RootShellProps) 
 
 // Owns everything that changes (theme, language, the portal container) and gets the editor as
 // `children`, so those changes re-render the root box and context consumers, not the canvas.
+// The popup container reaches SDK code through the UI library's `usePortalContainer()`.
 function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode }) {
-  const storeTheme = useThemeStore(selectTheme);
+  const { theme: storeTheme } = useTheme();
   // The host's prop is right on the first render; the store catches up in Root's layout effect.
   const activeTheme = theme ?? storeTheme;
   const { i18n } = useTranslation();
-  const language = i18n.language;
+  const language = i18n.resolvedLanguage ?? i18n.language;
 
   const rootRef = useRef<HTMLDivElement>(null);
+  // `null` until the layout effect below creates it; popups wait for it instead of using document.body.
   const [portal, setPortal] = useState<HTMLDivElement | null>(null);
-  // A new object once the container exists: Base UI reads a ref's `.current` once per object,
-  // and a popup open on the first commit would otherwise settle on document.body.
-  const portalContainer = useMemo(() => ({ current: portal }), [portal]);
 
   useLayoutEffect(() => {
     const container = document.createElement('div');
@@ -80,7 +79,7 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
     portal.lang = language;
   }, [portal, activeTheme, language]);
 
-  const surfaces = useMemo<SdkSurfaces>(() => ({ root: rootRef, portal }), [portal]);
+  const surfaces = useMemo<SdkSurfaces>(() => ({ root: rootRef }), []);
 
   return (
     <div
@@ -90,7 +89,7 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
       lang={language}
     >
       <SdkSurfacesProvider value={surfaces}>
-        <PortalContainerProvider container={portalContainer}>{children}</PortalContainerProvider>
+        <PortalContainerProvider container={portal}>{children}</PortalContainerProvider>
       </SdkSurfacesProvider>
     </div>
   );

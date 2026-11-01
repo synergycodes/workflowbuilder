@@ -1,11 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTheme, setControlledTheme, setTheme, subscribeTheme, useThemeStore } from './theme';
-
-function resetThemeStore(): void {
-  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
-  localStorage.clear();
-}
+import { getTheme, setControlledTheme, setTheme, useControlledTheme, usePersistedTheme } from './theme';
+import { resetThemeStore } from './theme.test-utils';
 
 describe('theme module', () => {
   beforeEach(resetThemeStore);
@@ -19,23 +15,23 @@ describe('theme module', () => {
   // The store reads storage once at start-up; rehydrate() repeats that read.
   it('reads the persisted value from localStorage', async () => {
     localStorage.setItem('wb-theme', 'dark');
-    await useThemeStore.persist.rehydrate();
+    await usePersistedTheme.persist.rehydrate();
     expect(getTheme()).toBe('dark');
   });
 
   it('falls back to "light" for an empty or unrecognized stored value', async () => {
-    useThemeStore.setState({ persisted: 'dark' });
+    usePersistedTheme.setState({ theme: 'dark' });
     localStorage.setItem('wb-theme', '');
-    await useThemeStore.persist.rehydrate();
+    await usePersistedTheme.persist.rehydrate();
     expect(getTheme()).toBe('light');
 
-    useThemeStore.setState({ persisted: 'dark' });
+    usePersistedTheme.setState({ theme: 'dark' });
     localStorage.setItem('wb-theme', 'Dark');
-    await useThemeStore.persist.rehydrate();
+    await usePersistedTheme.persist.rehydrate();
     expect(getTheme()).toBe('light');
   });
 
-  it('setTheme persists and never writes to document', () => {
+  it('setTheme persists the bare string and never writes to document', () => {
     setTheme('dark');
 
     expect(localStorage.getItem('wb-theme')).toBe('dark');
@@ -43,9 +39,9 @@ describe('theme module', () => {
     expect(getTheme()).toBe('dark');
   });
 
-  it('setTheme notifies subscribers', () => {
+  it('setTheme notifies subscribers once', () => {
     const listener = vi.fn();
-    const unsubscribe = subscribeTheme(listener);
+    const unsubscribe = usePersistedTheme.subscribe(listener);
 
     setTheme('dark');
 
@@ -56,22 +52,12 @@ describe('theme module', () => {
   it('setTheme does NOT notify subscribers when the value is unchanged', () => {
     setTheme('light');
     const listener = vi.fn();
-    const unsubscribe = subscribeTheme(listener);
+    const unsubscribe = usePersistedTheme.subscribe(listener);
 
     setTheme('light');
 
     expect(listener).not.toHaveBeenCalled();
     unsubscribe();
-  });
-
-  it('unsubscribe removes the listener', () => {
-    const listener = vi.fn();
-    const unsubscribe = subscribeTheme(listener);
-    unsubscribe();
-
-    setTheme('dark');
-
-    expect(listener).not.toHaveBeenCalled();
   });
 
   it('controlled: getTheme returns the controlled value and setTheme calls onChange without persisting', () => {
@@ -95,7 +81,7 @@ describe('theme module', () => {
     expect(onChange).not.toHaveBeenCalled();
   });
 
-  it('controlled updates do not write to storage', () => {
+  it('controlled updates never reach storage', () => {
     setControlledTheme('dark', vi.fn());
     setControlledTheme('light', vi.fn());
 
@@ -113,12 +99,22 @@ describe('theme module', () => {
 
   it('controlled: changing the controlled value notifies subscribers', () => {
     const listener = vi.fn();
-    const unsubscribe = subscribeTheme(listener);
+    const unsubscribe = useControlledTheme.subscribe(listener);
 
     setControlledTheme('dark', vi.fn());
     setControlledTheme('light', vi.fn());
 
     expect(listener).toHaveBeenCalledTimes(2);
     unsubscribe();
+  });
+
+  it('giving the theme back to the editor restores the persisted value', () => {
+    setTheme('dark');
+    setControlledTheme('light', vi.fn());
+    expect(getTheme()).toBe('light');
+
+    setControlledTheme(null, null);
+
+    expect(getTheme()).toBe('dark');
   });
 });

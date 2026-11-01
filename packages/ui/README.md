@@ -61,20 +61,19 @@ declared on that element, so nothing is written to your `<html>`:
 ```
 
 Popups (Select, Menu, Tooltip, DatePicker, Modal) render into `document.body` unless you wrap the
-components in `PortalContainerProvider`. Its `container` prop is a React ref to an element that
-carries the same class and attribute:
+components in `PortalContainerProvider`. Its `container` prop is an element that carries the same
+class and attribute; while it is `null` the popups wait for it instead of using `document.body`:
 
 ```tsx
 import { PortalContainerProvider } from '@workflowbuilder/ui';
-import { useRef } from 'react';
+import { useState } from 'react';
 
 export function Panel() {
-  const popups = useRef<HTMLDivElement>(null);
+  const [popups, setPopups] = useState<HTMLDivElement | null>(null);
 
   return (
     <>
-      {/* Before the components, so the ref is set when a popup that starts open mounts. */}
-      <div ref={popups} className="workflow-builder-root" data-wb-theme="light" />
+      <div ref={setPopups} className="workflow-builder-root" data-wb-theme="light" />
       <div className="workflow-builder-root" data-wb-theme="light">
         <PortalContainerProvider container={popups}>{/* components */}</PortalContainerProvider>
       </div>
@@ -82,6 +81,8 @@ export function Panel() {
   );
 }
 ```
+
+Your own `createPortal` calls inside the provider can read the same element with `usePortalContainer()`.
 
 ### 🧱 Use components
 

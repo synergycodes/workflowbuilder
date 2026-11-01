@@ -28,6 +28,16 @@ subtree as a scoped override, which is a legitimate pattern rather than a mis-sc
 
 **Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
 
+## Hashed foreign class
+
+**What breaks** - A class a `*.module.css` file does not own (the root box, `.wb-portal`, React Flow's `.react-flow__*`, Ace's `.ace_*`, react-day-picker's `.rdp-*`) written without `:global(…)` is hashed by CSS modules like any other class, so the built selector names a class no element has and the rule matches nothing. The area target lost its `display: contents` this way (`:where(.workflow-builder-root) .target`) and header plugin buttons stacked vertically.
+
+**Why it is silent** - The rule is valid and even carries a prefix (the scope plugin does not recognise the hashed root class and adds one), so the checker's prefix rule is satisfied.
+
+**How to spot it** - Search built selectors for `._workflow-builder-root`, `._wb-`, `._react-flow`, `._ace_`, `._rdp-`. In source, every foreign class inside a `*.module.css` must sit in `:global(…)`; CSS modules runs before `postcss-scope-prefix`, so the plugin then sees the plain class.
+
+**Automated?** - Yes, in every checked dist. `Hashed foreign class` checks every rule outside `@layer`, also inside the conditional at-rules.
+
 ## Painting rule inside `@layer`
 
 **What breaks** - A styling rule inside `@layer ui.base` loses to every unlayered host rule regardless of specificity, so a host reset restyles the editor again.

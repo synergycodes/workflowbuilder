@@ -1,6 +1,6 @@
 /* Zero specificity, so a host's class sets the display without depending on stylesheet order. Written with
-   the weightless prefix, which the scope plugin leaves as is. */
-:where(.workflow-builder-root) :where(.target) {
+   the weightless prefix, which the scope plugin leaves as is; :global() keeps CSS modules from hashing it. */
+:where(:global(.workflow-builder-root)) :where(.target) {
   display: contents;
 }
 

@@ -50,6 +50,20 @@ describe('checkStylesheet', () => {
     expect(problems('@layer ui.base;\n.workflow-builder-root button { cursor: pointer }\n:root { --p: 1px }')).toBe('');
   });
 
+  it('rejects a foreign class hashed by CSS modules, even behind a prefix', () => {
+    expect(
+      problems(
+        '@layer ui.base;\n:is(#wb,.workflow-builder-root).workflow-builder-root :where(._workflow-builder-root_14e4s_3) :where(._target_14e4s_3) { display: contents }',
+      ),
+    ).toMatch(/Hashed foreign class/);
+    expect(problems('@layer ui.base;\n:is(#wb,.workflow-builder-root) ._react-flow__handle_ab12c_7 { top: 0 }')).toMatch(
+      /Hashed foreign class/,
+    );
+    expect(problems('@layer ui.base;\n:where(.workflow-builder-root) :where(._target_14e4s_3) { display: contents }')).toBe(
+      '',
+    );
+  });
+
   it('rejects a bare shell rule: the root class ends at a class boundary', () => {
     expect(problems('@layer ui.base;\n.workflow-builder-root-shell { position: relative }')).toMatch(
       /Unprefixed built CSS/,

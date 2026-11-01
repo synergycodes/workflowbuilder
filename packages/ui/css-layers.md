@@ -52,7 +52,10 @@ with the bare root class (`.workflow-builder-root button`), matched at a class b
 `.workflow-builder-root-shell` does not count. Rules on the editor box itself are written with
 the glued prefix by hand (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`), since
 a descendant prefix would never match the box. A `[data-wb-theme…] .x` selector gets the
-prefix glued on, because the attribute sits on the box.
+prefix glued on, because the attribute sits on the box. In a `*.module.css` file any hand-written
+root class (or other foreign class: `.wb-portal`, React Flow, Ace, react-day-picker) goes inside
+`:global(…)`, or CSS modules hashes it and the rule matches nothing; the checker reports a hashed
+foreign class.
 
 ## Establishing the order
 

@@ -34,7 +34,7 @@ Requires React 18 or 19. Everything else the SDK needs (JsonForms, i18next, imme
 
 ## Upgrading
 
-Moving from 3.x to 4.0? See the [4.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/): the editor now needs a sized parent, and `--wb-*` overrides move to `.workflow-builder-root`.
+Moving from 3.x to 4.0? See the [4.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/) for the style changes (the editor now needs a sized parent, and `--wb-*` overrides move to `.workflow-builder-root`) and the [changelog](./CHANGELOG.md) for the renamed and removed API.
 
 Moving from 2.3.0 to 3.0? See the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/).
 
@@ -70,23 +70,50 @@ Copy-paste-ready node implementations live in the source repo at [`apps/demo/src
 
 ## Compose a custom layout
 
-Pass subcomponents as children to skip the default layout and place each part where you want it:
+Pass subcomponents as children to skip the default layout and place each part where you want it. The canvas fills the element around it, so the layout has to give that element a height:
 
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <header>
-    <WorkflowBuilder.EditorHeader />
-  </header>
-  <aside>
-    <WorkflowBuilder.Palette />
-  </aside>
-  <main>
-    <WorkflowBuilder.Canvas />
-  </main>
-  <aside>
-    <WorkflowBuilder.PropertiesPanel />
-  </aside>
+  <div className="editor-layout">
+    <header>
+      <WorkflowBuilder.EditorHeader />
+    </header>
+    <aside>
+      <WorkflowBuilder.Palette />
+    </aside>
+    <main>
+      <WorkflowBuilder.Canvas />
+    </main>
+    <aside>
+      <WorkflowBuilder.PropertiesPanel />
+    </aside>
+  </div>
 </WorkflowBuilder.Root>
+```
+
+```css
+.editor-layout {
+  display: grid;
+  grid-template:
+    'header header header' auto
+    'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+  height: 100%;
+}
+.editor-layout > * {
+  min-height: 0;
+}
+.editor-layout > header {
+  grid-area: header;
+}
+.editor-layout > aside:first-of-type {
+  grid-area: palette;
+}
+.editor-layout > main {
+  grid-area: canvas;
+}
+.editor-layout > aside:last-of-type {
+  grid-area: properties;
+}
 ```
 
 To add custom overlays alongside the default layout, mount it explicitly:
@@ -348,7 +375,9 @@ not restyle it. These still do:
 - host rules with a class, such as `.app button { … }`, on the bundled third-party internals (React
   Flow's canvas, react-day-picker's calendar), which keep their own selectors' weight;
 - the root font size: sizes are in `rem` and assume the browser default of 16px;
-- `box-sizing`: the editor's `border-box` default has zero weight, so any host rule wins.
+- `box-sizing`: the editor's `border-box` default has zero weight, so any host rule wins;
+- properties the editor leaves unset: a host `p { line-height: 2 }` still applies to editor text
+  that sets no line height, because the editor's rules win only for what they declare.
 
 To override an editor element on purpose, outweigh its rule with your own id plus the class,
 for example `#app .workflow-builder-root .my-node-title { … }`, or use `!important`.

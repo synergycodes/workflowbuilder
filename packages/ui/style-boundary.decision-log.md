@@ -256,7 +256,7 @@ root class at a class boundary, so a `.workflow-builder-root-shell` rule no long
 the cosmetic resets (`.workflow-builder-root button`, scrollbars, inputs) keep one class of weight on purpose.
 
 The remaining global rules (scrollbars, number and time inputs, button cursor) are scoped under the
-root. `wb-modal-open` is toggled on the shell and the popup container, never on `<body>`.
+root. `wb-modal-open` is toggled on the shell, never on `<body>`.
 
 ### 4.5 The popup container
 
@@ -269,8 +269,10 @@ The SDK creates one `<div class="workflow-builder-root wb-portal" data-wb-theme=
 - the SDK's own portals: the modal and its backdrop, and the drag preview;
 - the Ace read-only tooltip and the react-mentions variable picker popup (decision 5.13).
 
-`@workflowbuilder/ui` exposes this through `PortalContainerProvider` / `usePortalContainer`. Without a
-provider, components fall back to `document.body`, so standalone use and existing tests keep working.
+`@workflowbuilder/ui` exposes this through `PortalContainerProvider` / `usePortalContainer`: the provider
+takes the element itself, `null` while it does not exist yet. Without a provider, components fall back
+to `document.body`, so standalone use and existing tests keep working. The SDK's own portals read the
+same hook, so the element lives in one context.
 
 Because the container carries the root class and the theme attribute, prefixed rules, `.wb-text-*`
 roles, tokens and host overrides on `.workflow-builder-root` all reach popups with no extra work. The
@@ -286,14 +288,17 @@ properties still reach the popups, which are positioned fixed or by floating-ui 
 
 - `data-wb-theme` and `lang` are written on the shell and on the popup container, and nowhere else. The
   SDK no longer reads or writes anything on `<html>`.
-- The theme lives in a small zustand store. Components that read it subscribe to it, so a theme change
-  re-renders only those components and not the whole tree, as a React context would. The DOM attribute
-  is synced in `useLayoutEffect`, so the first paint is already themed.
+- The theme lives in two small zustand stores: the user's persisted choice and the host's controlled
+  value. Only the first is wired to storage, so a controlled value can never reach `localStorage` and no
+  guard is needed. Components read both through `useTheme()`, so a theme change re-renders only those
+  components and not the whole tree, as a React context would. The DOM attribute is synced in
+  `useLayoutEffect`, so the first paint is already themed.
 - New controlled props on `<WorkflowBuilder.Root>`: `theme="light" | "dark"` and
   `onThemeChange(theme)`. When `theme` is passed, the SDK renders that value, calls `onThemeChange` from
-  its own toggle, and persists nothing. Without it, behaviour is as before: the value is persisted under
-  `localStorage['wb-theme']`, now applied to SDK elements only.
-  `useWorkflowBuilderActions().setTheme` stays as the imperative path.
+  its own toggle, and persists nothing. `theme` without `onThemeChange` pins the value; Root warns once,
+  since the toggle then does nothing, and points at `builtInControls={{ themeToggle: false }}`. Without
+  `theme`, behaviour is as before: the value is persisted under `localStorage['wb-theme']`, now applied
+  to SDK elements only. `useWorkflowBuilderActions().setTheme` stays as the imperative path.
 - `lang` is inherited and valid on any element, so assistive technology gets the editor's language for
   the editor's content while the host keeps its own `<html lang>`.
 
@@ -520,19 +525,21 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
   checker exception.
 - **Cost if wrong:** Ace still injects its own unlayered, `.ace_`-prefixed `<style>` into `<head>` (6.3).
 
-### 5.14 The popup container ref is rebuilt once the container exists; modal state resets on unmount
+### 5.14 The popup container is passed as an element, `null` until it exists; modal state resets on unmount
 
-- **What:** The container element is created in the shell's layout effect and held in React state. Base
-  UI components receive it through a ref object that is rebuilt (`useMemo` on the element) when the
-  element appears. The modal store is reset when the Root unmounts.
-- **Why:** Base UI's `FloatingPortal` resolves `container.current` in a layout effect keyed on the
-  `container` prop's identity, so it reads a given ref object once. The shell's own layout effect runs
-  after its children's, so a popup already open on the first commit would read `null`, fall back to
-  `<body>` and stay there unthemed. A new ref object makes it resolve again. The modal store is a module
-  singleton that outlives the Root: a modal open when the host navigated away came back open on the next
-  mount, on the first commit, which is exactly that case.
-- **Rejected:** a single stable ref (the bug above); a container created at module load (outlives the
-  Root and stays in the host page).
+- **What:** The container element is created in the shell's layout effect and held in React state, and
+  `PortalContainerProvider` receives that state directly. The modal store is reset when the Root
+  unmounts.
+- **Why:** Base UI's `FloatingPortal` treats a `null` container as "wait" and renders nothing until an
+  element arrives, while a ref object is read once per object identity. The shell's own layout effect
+  runs after its children's, so a popup already open on the first commit sees `null` first; as an
+  element it waits, as a ref it would resolve `.current` to `null`, fall back to `<body>` and need a
+  rebuilt ref object to move. The modal store is a module singleton that outlives the Root: a modal
+  open when the host navigated away came back open on the next mount, on the first commit, which is
+  exactly that case.
+- **Rejected:** a ref prop with the object rebuilt on every change (the first version; it worked
+  through a Base UI implementation detail and was about to become public API in `@workflowbuilder/ui`
+  2.0); a container created at module load (outlives the Root and stays in the host page).
 - **Cost if wrong:** none observed; the remount scenario passes in the test bed.
 
 ### 5.15 The SDK prefix is one class above UI, not two IDs

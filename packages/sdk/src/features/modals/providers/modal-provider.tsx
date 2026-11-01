@@ -2,10 +2,10 @@ import { Modal } from '@workflowbuilder/ui';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { forEachSurface, useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfaces';
+import { useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfaces';
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
-// Set on the SDK root and portal container; read by variable-text.module.css to suppress its own backdrop.
+// Set on the SDK root; read by variable-text.module.css to suppress its own backdrop.
 const MODAL_OPEN_CLASS = 'wb-modal-open';
 
 export function ModalProvider() {
@@ -24,11 +24,10 @@ export function ModalProvider() {
   }, [modal]);
 
   useEffect(() => {
-    if (!surfaces) return;
-    forEachSurface(surfaces, (element) => element.classList.toggle(MODAL_OPEN_CLASS, isOpen));
-    return () => {
-      forEachSurface(surfaces, (element) => element.classList.remove(MODAL_OPEN_CLASS));
-    };
+    const root = surfaces?.root.current;
+    if (!root) return;
+    root.classList.toggle(MODAL_OPEN_CLASS, isOpen);
+    return () => root.classList.remove(MODAL_OPEN_CLASS);
   }, [surfaces, isOpen]);
 
   const activeModal = modal ?? lastModalRef.current;

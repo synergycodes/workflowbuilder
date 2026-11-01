@@ -6,9 +6,8 @@ import { type Plugin, defineConfig } from 'vite';
 import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
-import { layerRootDefaultsPlugin } from '../ui/postcss-layer-root-defaults.mjs';
-import { scopePrefixPlugin } from '../ui/postcss-scope-prefix.mjs';
 import { copyUiFontAssets } from './font-assets.mjs';
+import { sdkPostcssPlugins } from './postcss-plugins.mjs';
 
 // Packages that must NOT be bundled into the SDK build. Two reasons:
 // 1. Singleton hazards — i18next translation registry, zustand store
@@ -135,10 +134,7 @@ export default defineConfig(({ command }) => ({
   },
   css: {
     postcss: {
-      plugins: [
-        layerRootDefaultsPlugin(),
-        scopePrefixPlugin({ strength: 'sdk', vendoredFiles: /node_modules[\\/]@xyflow[\\/]/ }),
-      ],
+      plugins: sdkPostcssPlugins(),
     },
   },
   // Inline `process.env.NODE_ENV` at SDK build time. The SDK bundles deps

@@ -27,7 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
-import { getTheme, setControlledTheme, setTheme, useThemeStore } from '../hooks/theme';
+import { getTheme, setControlledTheme, setTheme, useControlledTheme, usePersistedTheme } from '../hooks/theme';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -147,7 +147,7 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
   it('never writes to <html> at mount', async () => {
     // The host owns <html>; the SDK keeps its theme and language on its own elements.
     localStorage.setItem('wb-theme', 'dark');
-    await useThemeStore.persist.rehydrate();
+    await usePersistedTheme.persist.rehydrate();
     const htmlAttributesBefore = htmlAttributes();
 
     render(
@@ -180,7 +180,28 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
 
     unmount();
 
-    expect(useThemeStore.getState().controlled).toBeNull();
+    expect(useControlledTheme.getState().controlled).toBeNull();
+  });
+
+  it('warns once when `theme` is set without `onThemeChange`', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { rerender } = render(<WorkflowBuilderRoot theme="dark" />);
+    rerender(<WorkflowBuilderRoot theme="light" />);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(/onThemeChange/);
+
+    warn.mockRestore();
+  });
+
+  it('does not warn when `onThemeChange` is passed', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<WorkflowBuilderRoot theme="dark" onThemeChange={() => {}} />);
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

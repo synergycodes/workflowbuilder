@@ -11,7 +11,7 @@ import 'ace-builds/src-noconflict/theme-github_light_default';
 
 import styles from './syntax-highlighter.module.css';
 
-import { useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfaces';
+import { usePortalContainer } from '@workflowbuilder/ui';
 
 // react-ace sets the mode before `setOptions`, so `useWorker: false` alone still starts one
 // worker per mount, from a blob: URL a Content Security Policy blocks. The default is global.
@@ -32,7 +32,7 @@ export type SyntaxHighlighterProps = {
 export function SyntaxHighlighter(props: SyntaxHighlighterProps) {
   const { value, onChange, mode = 'json', isDisabled } = props;
   const editorRef = useRef<EditorWithTooltip | null>(null);
-  const portal = useOptionalSdkSurfaces()?.portal;
+  const portal = usePortalContainer();
 
   // Ace mounts its 'Editing is disabled' tooltip on <body> by default, out of reach of the scoped hide rule.
   useEffect(() => {

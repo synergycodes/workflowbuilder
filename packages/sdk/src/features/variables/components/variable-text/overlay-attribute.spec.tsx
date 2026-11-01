@@ -8,7 +8,7 @@ describe('OverlayAttribute', () => {
   it('sets data-wb-overlay on the root while mounted and clears it on unmount', () => {
     const root = document.createElement('div');
     const { unmount } = render(
-      <SdkSurfacesProvider value={{ root: { current: root }, portal: null }}>
+      <SdkSurfacesProvider value={{ root: { current: root } }}>
         <OverlayAttribute kind="variable-picker" />
       </SdkSurfacesProvider>,
     );

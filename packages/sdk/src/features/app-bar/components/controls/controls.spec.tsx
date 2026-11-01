@@ -3,7 +3,8 @@ import i18n from 'i18next';
 import { StrictMode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { getTheme, useThemeStore } from '../../../../hooks/theme';
+import { getTheme } from '../../../../hooks/theme';
+import { resetThemeStore } from '../../../../hooks/theme.test-utils';
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
@@ -63,7 +64,7 @@ beforeEach(() => {
 
 afterEach(() => {
   localStorage.clear();
-  useThemeStore.setState({ persisted: 'light', controlled: null, onChange: null });
+  resetThemeStore();
 });
 
 describe('Controls builtInControls', () => {

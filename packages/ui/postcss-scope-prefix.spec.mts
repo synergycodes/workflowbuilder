@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import postcss from 'postcss';
 
-import { type PrefixStrength, scopePrefixPlugin } from './postcss-scope-prefix.mts';
+import { type PrefixStrength, scopePrefixPlugin, startsWithBareRoot } from './postcss-scope-prefix.mts';
 
 const VENDORED = /node_modules[\\/](react-day-picker|@xyflow)[\\/]/;
 const BASE = /[\\/]base\.css$/;
@@ -32,6 +32,30 @@ describe('postcss-scope-prefix baseFiles', () => {
     expect(await run('.button::after, .link:hover:before { color: red }', 'ui', '/x/src/base.css')).toBe(
       ':is(#wb, .workflow-builder-root) :where(.button)::after, :is(#wb, .workflow-builder-root) :where(.link:hover):before { color: red }',
     );
+  });
+});
+
+describe('startsWithBareRoot', () => {
+  it('matches only the bare root class at a class boundary', () => {
+    expect(startsWithBareRoot('.workflow-builder-root button')).toBe(true);
+    expect(startsWithBareRoot('  .workflow-builder-root')).toBe(true);
+    expect(startsWithBareRoot('.workflow-builder-root-shell')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root-x .a')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-rootx')).toBe(false);
+  });
+});
+
+describe('postcss-scope-prefix include', () => {
+  const plugin = scopePrefixPlugin({ strength: 'sdk', include: /[\\/]sdk[\\/]src[\\/]/ });
+
+  it('prefixes a file inside include', async () => {
+    const result = await postcss([plugin]).process('.panel { color: red }', { from: '/x/sdk/src/panel.module.css' });
+    expect(result.css).toBe(':is(#wb, .workflow-builder-root).workflow-builder-root .panel { color: red }');
+  });
+
+  it('leaves a file outside include untouched', async () => {
+    const result = await postcss([plugin]).process('.panel { color: red }', { from: '/x/apps/demo/src/global.css' });
+    expect(result.css).toBe('.panel { color: red }');
   });
 });
 

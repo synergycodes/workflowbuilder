@@ -26,7 +26,29 @@ describe('PortalContainerProvider', () => {
   it('renders popups into the provided container', () => {
     act(() => {
       root.render(
-        <PortalContainerProvider container={{ current: portal }}>
+        <PortalContainerProvider container={portal}>
+          <Menu open items={[{ label: 'Edit' }]} />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(portal.querySelector('[role="menu"]')).not.toBeNull();
+  });
+
+  it('waits while the container is null, then renders into it once it exists', () => {
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={null}>
+          <Menu open items={[{ label: 'Edit' }]} />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(document.querySelector('[role="menu"]')).toBeNull();
+
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={portal}>
           <Menu open items={[{ label: 'Edit' }]} />
         </PortalContainerProvider>,
       );

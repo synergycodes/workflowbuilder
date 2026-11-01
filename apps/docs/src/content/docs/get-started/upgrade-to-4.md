@@ -1,6 +1,6 @@
 ---
 title: Upgrade to 4.0
-description: What changed between @workflowbuilder/sdk 3.x and 4.0, and how to migrate the host page, theme overrides and custom CSS.
+description: How the 4.0 style boundary of @workflowbuilder/sdk changes the host page, theme overrides and custom CSS, and how to migrate them.
 sidebar:
   order: 6
 ---
@@ -11,10 +11,13 @@ cascade layer that any plain host rule could beat. In 4.0 the SDK changes nothin
 own element, and its rules are scoped to that element with enough weight to survive host
 resets such as Bootstrap's reboot, Tailwind's preflight or `button { all: unset }`.
 
-An editor that sits in a sized container and keeps the default look upgrades by bumping the
-version. Read on if the editor relied on the SDK to size the page, if you override `--wb-*`
-variables or style editor internals, if your code reads the editor's theme, or if you use
-`@workflowbuilder/ui` on its own. `@workflowbuilder/ui` moves to 2.0.0 in the same release.
+This page covers the style boundary only: the host page, `--wb-*` overrides, custom CSS, code
+that reads the editor's theme, and `@workflowbuilder/ui` used on its own. 4.0 also renames and
+removes parts of the SDK's API (the editor header and its slots, store fields, load and auto-save
+behaviour); the
+[changelog](https://github.com/synergycodes/workflowbuilder/blob/main/packages/sdk/CHANGELOG.md)
+lists every breaking change with its replacement. `@workflowbuilder/ui` moves to 2.0.0 in the
+same release.
 
 ## Give the editor a sized parent
 
@@ -137,9 +140,11 @@ The UI library's rules are scoped the same way. Components rendered outside
 ```
 
 Popups render under `<body>` by default, outside that wrapper. Give them a container with the
-same class and theme, and pass a ref to it to `PortalContainerProvider` around your components
+same class and theme, and pass that element to `PortalContainerProvider` around your components
 (example in the [UI Library overview](/ui-library/overview/#theming)). Inside
-`<WorkflowBuilder.Root>` the SDK does both for you.
+`<WorkflowBuilder.Root>` the SDK does both for you. An overlay of your own that you portal out of
+the canvas (a `createPortal` to `document.body`) lands outside the editor and loses its tokens;
+portal it into `usePortalContainer() ?? document.body` instead.
 
 ## Known limits
 
@@ -154,6 +159,9 @@ same class and theme, and pass a ref to it to `PortalContainerProvider` around y
 - **Box sizing is a weak default.** The editor applies `box-sizing: border-box` to its
   contents with zero weight. Any host `box-sizing` rule wins, including inside custom nodes
   and panels.
+- **Properties the editor leaves unset still come from the host.** The editor's rules win only
+  for what they declare; a host rule such as `p { line-height: 2 }` or `span { font-weight: 300 }`
+  still applies to editor text that sets neither.
 
 ## SCSS and Angular
 
