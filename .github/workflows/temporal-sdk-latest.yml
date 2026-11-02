@@ -6,7 +6,8 @@ name: Temporal SDK latest
 
 on:
   schedule:
-    - cron: '0 6 * * 1'
+    # Off the hour: GitHub delays scheduled runs queued at :00 and may drop them under load.
+    - cron: '23 6 * * 1'
   workflow_dispatch:
   # The pull request that edits this file runs it once before it lands.
   pull_request:
