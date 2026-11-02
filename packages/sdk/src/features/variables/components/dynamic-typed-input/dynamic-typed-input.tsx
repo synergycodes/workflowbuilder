@@ -1,19 +1,23 @@
 import { DatePicker, Input, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-input.module.css';
 
-import { getDateIfValid, getISODate, getTimeFromDateIfValid, setDateWithTimeFromTime } from '../../../../utils/time';
+import {
+  getDateIfValid,
+  getDateTimeISO,
+  getDateYYYYMMDD,
+  getTimeHHmm,
+  getTimeHHmmISO,
+} from '../../../../utils/time-iso';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
-import { getIsValidDate, getIsValidTime } from '../../../../utils/validation/get-is-valid-date';
 import { variableTypeInfoByType } from '../../constants';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
 import { getBooleanStringIfPossible } from '../../utils/get-boolean-if-possible';
-import { getIsDateType } from '../../utils/get-is-date-type';
 import { getIsStringVariableReferenceStart } from '../../utils/keys/get-is-string-variable-reference';
 import { VariableText } from '../variable-text/variable-text';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
@@ -33,6 +37,15 @@ type DynamicTypedInputProps = {
   suggestionGroups: VariableSuggestionGroup[];
 };
 
+const TIME_LENGTH = 'HH:mm'.length;
+
+/** The `HH:mm` typed into an uncontrolled time input, or undefined while it is still being typed. */
+const getTypedTime = (input: HTMLInputElement): string | undefined => {
+  const rawTime = input.value.slice(0, TIME_LENGTH);
+
+  return rawTime.length < TIME_LENGTH ? undefined : rawTime;
+};
+
 export function DynamicTypedInput({
   className,
   onChange,
@@ -46,15 +59,8 @@ export function DynamicTypedInput({
   endAdornment,
   suggestionGroups = [],
 }: DynamicTypedInputProps) {
-  const [time, setTime] = useState(getIsDateType(type) ? getTimeFromDateIfValid(value) : undefined);
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (getIsDateType(type)) {
-      setTime(getTimeFromDateIfValid(value));
-    }
-  }, [type, value]);
 
   const suggestionGroupsForString = useMemo(() => {
     if (!variableTypeInfo || typesForInput.includes(variableTypeInfo.type) === false) {
@@ -158,10 +164,9 @@ export function DynamicTypedInput({
             className,
           )}
           value={getDateIfValid(value)}
-          onChange={(value) => {
-            const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
+          onChange={(pickedDate) => {
+            const newValue = getDateYYYYMMDD(pickedDate as Date | null) ?? '';
 
-            const newValue = getISODate(date);
             onChange(newValue);
 
             if (onBlur) {
@@ -177,8 +182,56 @@ export function DynamicTypedInput({
     );
   }
 
+  if (type === 'time') {
+    // Uncontrolled input: a full `HH:mm` is kept as typed and saved as `HH:mm:00+00:00`, anything else clears.
+    const commitTime = (input: HTMLInputElement, emit: (value: string) => void) => {
+      const rawTime = getTypedTime(input);
+
+      if (rawTime === undefined) {
+        return;
+      }
+
+      input.value = getTimeHHmm(rawTime) ?? '';
+      emit(getTimeHHmmISO(rawTime) ?? '');
+    };
+
+    return (
+      <Input
+        // Remounts with the committed clock after a full `HH:mm`
+        key={`time-${value}`}
+        className={clsx(styles['date-picker'], className)}
+        defaultValue={getTimeHHmm(value)}
+        maxLength={TIME_LENGTH}
+        placeholder={placeholder || 'HH:mm'}
+        suffixIcon={endAdornment}
+        onChange={(event) => commitTime(event.target, onChange)}
+        onBlur={onBlur ? (event) => commitTime(event.target, onBlur) : undefined}
+        disabled={disabled}
+        state={isError ? 'critical' : 'default'}
+      />
+    );
+  }
+
   if (type === 'datetime') {
     const date = getDateIfValid(value);
+    const time = getTimeHHmm(value);
+
+    // Uncontrolled input: a full `HH:mm` is kept as typed, anything else snaps to the raw-date time.
+    const commitTime = (input: HTMLInputElement, emit: (value: string) => void) => {
+      const rawTime = getTypedTime(input);
+
+      if (rawTime === undefined) {
+        return;
+      }
+
+      const timeHHmm = getTimeHHmm(rawTime) ?? timeForRawDates;
+
+      input.value = timeHHmm;
+
+      if (date) {
+        emit(getDateTimeISO(date, timeHHmm) ?? '');
+      }
+    };
 
     return (
       <div className={styles['row']}>
@@ -187,10 +240,8 @@ export function DynamicTypedInput({
           key={value}
           className={clsx(styles['date-picker'], styles['date-picker--date'], className)}
           value={date}
-          onChange={(value) => {
-            const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
-
-            const newValue = getISODate(date);
+          onChange={(pickedDate) => {
+            const newValue = getDateTimeISO(pickedDate as Date | null, time, timeForRawDates) ?? '';
 
             onChange(newValue);
 
@@ -203,56 +254,15 @@ export function DynamicTypedInput({
           disabled={disabled}
         />
         <Input
+          // Remounts with the committed clock after a day pick or a full `HH:mm`
+          key={`time-${value}`}
           className={clsx(styles['date-picker'], styles['date-picker--time'], className)}
-          value={time}
+          defaultValue={time}
+          maxLength={TIME_LENGTH}
           placeholder="HH:mm"
           suffixIcon={endAdornment}
-          onChange={(event) => {
-            const value = (event.target.value as string).slice(0, 5);
-            if (value.length < 5) {
-              setTime(value);
-
-              return;
-            }
-
-            if (value.length === 5) {
-              if (getIsValidTime(value)) {
-                setTime(value);
-
-                if (date && getIsValidDate(date)) {
-                  onChange(getISODate(setDateWithTimeFromTime(date, value)));
-                }
-              } else {
-                setTime(timeForRawDates);
-
-                if (date && getIsValidDate(date)) {
-                  onChange(getISODate(setDateWithTimeFromTime(date, timeForRawDates)));
-                }
-              }
-            }
-          }}
-          onBlur={(event) => {
-            if (!onBlur) {
-              return;
-            }
-
-            const value = (event.target.value as string).slice(0, 5);
-            if (value.length === 5) {
-              if (getIsValidTime(value)) {
-                setTime(value);
-
-                if (date && getIsValidDate(date)) {
-                  onBlur(getISODate(setDateWithTimeFromTime(date, value)));
-                }
-              } else {
-                setTime(timeForRawDates);
-
-                if (date && getIsValidDate(date)) {
-                  onBlur(getISODate(setDateWithTimeFromTime(date, timeForRawDates)));
-                }
-              }
-            }
-          }}
+          onChange={(event) => commitTime(event.target, onChange)}
+          onBlur={onBlur ? (event) => commitTime(event.target, onBlur) : undefined}
           disabled={disabled || !date}
           state={isError ? 'critical' : 'default'}
         />

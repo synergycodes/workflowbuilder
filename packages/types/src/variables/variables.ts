@@ -15,7 +15,7 @@ export type VariableReference =
  *
  * @category Types
  */
-export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date';
+export type VariableTypePrimitive = 'string' | 'number' | 'boolean' | 'datetime' | 'date' | 'time';
 
 /**
  * Every type a variable can have: a {@link VariableTypePrimitive} or a nested `object` / `array`.

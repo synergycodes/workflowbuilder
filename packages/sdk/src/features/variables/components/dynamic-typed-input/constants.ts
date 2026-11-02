@@ -4,6 +4,9 @@ import type { VariableType } from '@workflow-builder/types/variables/variables';
 
 export const typesForDate: VariableType[] = ['date', 'datetime'];
 
+/** A time is not a date type (it has no day), but it can read the clock of a datetime. */
+export const typesForTime: VariableType[] = ['time', 'datetime'];
+
 export const typesForInput: VariableType[] = ['string', 'number'];
 
 export const ITEMS_FOR_BOOLEAN_VALUES = {

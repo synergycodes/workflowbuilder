@@ -60,6 +60,7 @@ export const comparisonOperatorsByPrimitiveType: Record<VariableTypePrimitive, C
   number: numberComparisonsOperators,
   boolean: booleanOperators,
   date: dateOperators,
+  time: dateOperators,
   datetime: dateOperators,
 };
 
@@ -125,6 +126,11 @@ export const variableTypeInfoByType: Record<VariableType, VariableTypeOption> = 
     type: 'date',
     baseType: 'date',
     label: 'Date',
+  },
+  time: {
+    type: 'time',
+    baseType: 'time',
+    label: 'Time',
   },
   datetime: {
     type: 'datetime',

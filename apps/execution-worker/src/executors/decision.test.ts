@@ -63,6 +63,36 @@ describe('executeDecision', () => {
     expect(result.nextPort).toBe('yes');
   });
 
+  it('orders bare HH:mm times within the day for isBefore and isAfter', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'after',
+        conditions: [{ x: '09:07', y: '10:00', comparisonOperator: 'isAfter' }],
+      },
+      {
+        sourceHandle: 'before',
+        conditions: [{ x: '09:07', y: '10:00:30', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('before');
+  });
+
+  it('orders a bare time against the clock of a datetime, never against a bare date', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'date',
+        conditions: [{ x: '09:07', y: '2024-01-15', comparisonOperator: 'isBefore' }],
+      },
+      {
+        sourceHandle: 'clock',
+        conditions: [{ x: '09:07', y: '2024-01-15T10:00:00Z', comparisonOperator: 'isBefore' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('clock');
+  });
+
   it('throws a permanent NodeExecutionError with code "no_branch_matched" when nothing matches', () => {
     const node = decisionNode([
       {

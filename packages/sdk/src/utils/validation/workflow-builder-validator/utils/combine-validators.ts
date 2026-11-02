@@ -36,7 +36,7 @@ export function combineValidators({ standardValidator, validationCustomTypes, nu
       let result = standardResult;
 
       /*
-        We support type 'date' 'datetime' in our custom schema, but the default validator does not.
+        We support type 'date' 'datetime' 'time' in our custom schema, but the default validator does not.
         So we run a second validation for those types and combine the results.
       */
       if (validationCustomTypes) {

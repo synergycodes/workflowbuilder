@@ -21,7 +21,8 @@ Both fields may coexist during migration; `schemaOutput` wins when present, `out
 | flat, dot-notation keys (`'result.status'`)                | nested `properties` (`result: { type: 'object', properties: { status } }`)                                       |
 | `label`                                                    | `title`                                                                                                          |
 | `type: 'datetime'`                                         | `type: 'string', format: 'date-time'`                                                                            |
-| `type: 'date'`                                             | `type: 'string'` (no dedicated mapping yet)                                                                      |
+| `type: 'date'`                                             | `type: 'string', format: 'date'`                                                                                 |
+| `type: 'time'`                                             | `type: 'string', format: 'time'`                                                                                 |
 | same variables on every handle                             | `bySourceHandleType.settled`                                                                                     |
 | —                                                          | `bySourceHandleType.success` / `.error`, resolved from the handle id (`error` substring)                         |
 | `variants: { name: { variantRule, properties } }` (record) | `variants: [{ variantRule, bySourceHandle, bySourceHandleType }]` (array)                                        |

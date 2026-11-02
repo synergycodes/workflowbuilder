@@ -8,7 +8,7 @@
 >
 > 1. Blank text (`''` or whitespace) in a top-level property is a missing value, so `required` fires; where the property's `type` lists `null` it becomes `null`, so string keywords such as `minLength` and `format` do not apply (`utils/combine-validators.ts`).
 > 2. A whole-string variable reference (`{{global.email}}`) passes whatever the property's `type` or `format` says; its errors are stripped after validation (`utils/remove-reference-is-string-error.ts`).
-> 3. `date` and `datetime` are accepted as property types; a standard validator fails every value of such a property (`workflow-builder-validator-for-custom-types.ts`).
+> 3. `date`, `datetime` and `time` are accepted as property types; a standard validator fails every value of such a property (`workflow-builder-validator-for-custom-types.ts`).
 >
 > A standard validator run on the same schema and data is stricter on 1 and 2 and fails outright on 3. Details and limits: `variable-references-and-date-types.decision-log.md` next to those files.
 

@@ -1,6 +1,7 @@
 import type { JsonSchema7 } from '@jsonforms/core';
 
 import type { FlattenedPropertiesIndex } from '@workflow-builder/types/variables/node-output-schema';
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import { getIsSupportedVariableType } from './get-is-supported-variable-type';
 
@@ -16,6 +17,24 @@ type ResolvedSchema = {
   schema: JsonSchema7;
   refChain: ReadonlySet<string>;
 };
+
+// https://json-schema.org/understanding-json-schema/reference/type#dates-and-times
+function getVariableTypeForStringFormat(format: string | undefined): VariableTypePrimitive {
+  switch (format) {
+    case 'date': {
+      return 'date';
+    }
+    case 'date-time': {
+      return 'datetime';
+    }
+    case 'time': {
+      return 'time';
+    }
+    default: {
+      return 'string';
+    }
+  }
+}
 
 function decodePointerSegment(segment: string): string {
   return decodeURIComponent(segment).replaceAll('~1', '/').replaceAll('~0', '~');
@@ -96,9 +115,8 @@ function getFlattenedPropertiesFromJsonSchema7Properties({
     const { schema: field, refChain: fieldRefChain } = resolved;
 
     if (getIsSupportedVariableType(field.type)) {
-      const isDate = field.type === 'string' && field.format === 'date-time';
       stack[propertyName] = {
-        type: isDate ? 'datetime' : field.type,
+        type: field.type === 'string' ? getVariableTypeForStringFormat(field.format) : field.type,
         label: field.title || '',
         description: field.description || '',
       };

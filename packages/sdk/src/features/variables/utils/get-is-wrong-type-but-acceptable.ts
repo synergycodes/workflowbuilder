@@ -1,8 +1,9 @@
 import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
+import { getTimeHHmm } from '../../../utils/time-iso';
 import { getIsValidDate } from '../../../utils/validation/get-is-valid-date';
 import { getStringVariableTypeIfPossible } from '../actions/get-string-variable-type-if-possible';
-import { acceptedBooleanValues, typesForDate } from '../components/dynamic-typed-input/constants';
+import { acceptedBooleanValues, typesForDate, typesForTime } from '../components/dynamic-typed-input/constants';
 
 type Params = {
   expectedType?: VariableTypePrimitive;
@@ -21,9 +22,16 @@ export function getIsWrongTypeButAcceptable({ expectedType = 'string', value }: 
     const isStringEqualsToNumber = expectedType === 'string' && valueType === 'number';
     const isBooleanWithStringValue = expectedType === 'boolean' && acceptedBooleanValues.includes(value);
     const isDateDifferentDateType = typesForDate.includes(expectedType) && typesForDate.includes(valueType);
-    const isDateWithStringDate = expectedType && typesForDate.includes(expectedType) && getIsValidDate(value);
+    const isDateWithStringDate = typesForDate.includes(expectedType) && getIsValidDate(value);
+    const isTimeWithDatetime = expectedType === 'time' && typesForTime.includes(valueType);
+    const isTimeWithStringTime = expectedType === 'time' && getTimeHHmm(value) !== undefined;
     const isWrongTypeButAcceptable =
-      isStringEqualsToNumber || isBooleanWithStringValue || isDateDifferentDateType || isDateWithStringDate;
+      isStringEqualsToNumber ||
+      isBooleanWithStringValue ||
+      isDateDifferentDateType ||
+      isDateWithStringDate ||
+      isTimeWithDatetime ||
+      isTimeWithStringTime;
 
     if (!isWrongTypeButAcceptable) {
       return false;

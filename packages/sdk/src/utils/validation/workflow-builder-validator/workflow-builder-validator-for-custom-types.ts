@@ -1,15 +1,16 @@
 import type { OutputUnit, Schema } from '@cfworker/json-schema';
 
 import { getIsStringVariableReference } from '../../../features/variables/utils/keys/get-is-string-variable-reference';
+import { getTimeHHmm } from '../../time-iso';
 import { getIsValidDate } from '../get-is-valid-date';
 
 type CustomSchema = {
-  type: 'datetime' | 'date';
+  type: 'datetime' | 'date' | 'time';
 };
 
 /**
- * Validates the non-JSON-Schema `date` / `datetime` properties the main validator splits out.
- * A value passes as a valid date string or a single variable reference.
+ * Validates the non-JSON-Schema `date` / `datetime` / `time` properties the main validator splits out.
+ * A value passes as a valid date string (`HH:mm` for `time`) or a single variable reference.
  * See variable-references-and-date-types.decision-log.md § 2.
  */
 export function getValidationForCustomTypes(schema: Schema): (data: unknown) => {
@@ -59,7 +60,7 @@ export function getValidationForCustomTypes(schema: Schema): (data: unknown) => 
         });
       }
 
-      if (['date', 'datetime'].includes(fieldSchema.type)) {
+      if (['date', 'datetime', 'time'].includes(fieldSchema.type)) {
         const value = (data as Record<string, unknown>)[propertyName];
         if (typeof value !== 'string') {
           errors.push({
@@ -73,8 +74,8 @@ export function getValidationForCustomTypes(schema: Schema): (data: unknown) => 
         }
 
         const isSingleVariable = getIsStringVariableReference(value);
-        const isValidDate = getIsValidDate(value);
-        if (!isSingleVariable && !isValidDate) {
+        const isValidValue = fieldSchema.type === 'time' ? getTimeHHmm(value) !== undefined : getIsValidDate(value);
+        if (!isSingleVariable && !isValidValue) {
           errors.push({
             error: `Instance does not have required property "${propertyName}".`,
             instanceLocation: '#',

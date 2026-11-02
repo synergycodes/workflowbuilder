@@ -9,6 +9,7 @@ const SUPPORTED_VARIABLE_TYPES = {
   boolean: true,
   datetime: true,
   date: true,
+  time: true,
   object: true,
   array: true,
 } as const satisfies Record<VariableType, true>;

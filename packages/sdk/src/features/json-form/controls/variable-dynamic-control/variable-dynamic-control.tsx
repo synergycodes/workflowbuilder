@@ -19,6 +19,7 @@ type VariableDynamicControlProps = WBControlProps<string, VariableDynamicControl
 const variableTypesForSuggestions: Record<VariableTypePrimitive, VariableType[]> = {
   boolean: ['boolean'],
   date: ['date', 'datetime'],
+  time: ['time', 'datetime'],
   datetime: ['date', 'datetime'],
   number: ['number'],
   string: ['string', 'number', 'date', 'datetime'],
@@ -44,6 +45,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
   }, [data]);
 
   const onChange = useCallback((value: string) => {
+    console.log('NEW VALUE', value);
     setInputValue(value);
   }, []);
 

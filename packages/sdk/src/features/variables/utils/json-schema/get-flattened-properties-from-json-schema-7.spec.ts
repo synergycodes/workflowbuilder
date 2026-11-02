@@ -36,18 +36,20 @@ describe('getFlattenedPropertiesFromJsonSchema7', () => {
     });
   });
 
-  it('maps a string with date-time format to datetime and keeps other formats as string', () => {
+  it('maps the date-time, date and time formats to their variable types and keeps other formats as string', () => {
     const result = getFlattenedPropertiesFromJsonSchema7({
       type: 'object',
       properties: {
         createdAt: { type: 'string', format: 'date-time' },
         birthday: { type: 'string', format: 'date' },
+        startsAt: { type: 'string', format: 'time' },
         email: { type: 'string', format: 'email' },
       },
     });
 
     expect(result.createdAt.type).toBe('datetime');
-    expect(result.birthday.type).toBe('string');
+    expect(result.birthday.type).toBe('date');
+    expect(result.startsAt.type).toBe('time');
     expect(result.email.type).toBe('string');
   });
 

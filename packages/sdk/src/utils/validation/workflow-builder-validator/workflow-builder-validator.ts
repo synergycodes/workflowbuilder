@@ -102,7 +102,9 @@ const getValidator = (object: object): Validator => {
       [key, value],
     ) => {
       const isCustomProperty =
-        typeof value !== 'boolean' && typeof value.type === 'string' && ['datetime', 'date'].includes(value.type);
+        typeof value !== 'boolean' &&
+        typeof value.type === 'string' &&
+        ['datetime', 'date', 'time'].includes(value.type);
 
       if (isCustomProperty) {
         stack.customSchema[key] = value;
