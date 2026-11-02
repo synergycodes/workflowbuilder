@@ -2,7 +2,7 @@
 
 > **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo). This file documents the worker's internals.
 
-Background process that executes workflow graphs submitted by the backend. Currently backed by Temporal; structured so other engines (in-memory, BullMQ, …) can slot in without touching domain logic.
+Background process that executes workflow graphs submitted by the backend. A Temporal Worker built on `@workflowbuilder/temporal`; the domain logic in `execution-core` has no Temporal dependency.
 
 ## Role
 
@@ -115,12 +115,6 @@ The model is created with `supportsStructuredOutputs: true`. Without that flag t
 
 The worker forwards the schema untouched and does not validate the answer against it: for a plain JSON Schema the SDK only parses the answer as JSON, so an endpoint that ignores the schema hands the node whatever JSON came back. The model still does not see the schema as authored. The backend stores the snapshot as `jsonb`, which does not keep object key order (Postgres puts shorter keys first), and in strict mode OpenAI generates fields in schema order: the Refund Review preset reaches the model as `orderDate`, `replyDraft`, `refundAmount`, `internalReasoning`, so no field can be pinned first. An answer the SDK cannot parse as JSON fails with `NoObjectGeneratedError`, which is not a provider error, so it stays unclassified. An answer that ends on anything but a `stop` finish, whether truncated (`length`), filtered (`content-filter`), or still calling a tool on the loop's last step (`tool-calls`, from an endpoint that ignores `tool_choice: 'none'`), fails the node as a transient `structured_output_incomplete`, whose message names the finish reason the SDK's own `No output generated.` leaves out.
 
-## Adding a new engine
+## Where the engine is wired
 
-1. Create `src/engines/<name>/` with:
-   - a bootstrap (equivalent of `worker.ts`) that wires up `NodeExecutorRegistry` and connects to the queue
-   - an adapter in `apps/backend/src/engine/<name>-engine.ts` implementing `WorkflowEnginePort`
-2. Point `getWorkflowEngine()` in `apps/backend/src/engine/index.ts` at the new adapter (or add config-driven selection).
-3. Reuse `runGraph` from `@workflow-builder/execution-core/workflow` — the graph traversal is engine-agnostic.
-
-The domain layer (`execution-core`) never has to change.
+Temporal is the engine Workflow Builder ships and tests. The seams, should a deployment ever need a different one: `WorkflowEnginePort`, implemented by `TemporalWorkflowEngine` and constructed in `apps/backend/src/engine/index.ts`, and `runGraph` from `@workflow-builder/execution-core/workflow`, which knows nothing about Temporal. The domain layer (`execution-core`) never has to change.

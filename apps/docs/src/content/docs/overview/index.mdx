@@ -1,15 +1,15 @@
 ---
 title: What Is Workflow Builder?
-description: Workflow Builder is a React SDK that gives you a production-ready workflow editor on day one. Embed drag-and-drop workflow UIs into your product. Open-source Community Edition available.
+description: Workflow Builder is an open-source framework for workflow orchestration in your product. A React workflow editor your users draw in, a Temporal plugin that runs what they draw, and an execution backend.
 sidebar:
   label: What is Workflow Builder?
 head:
   - tag: title
-    content: What Is Workflow Builder? — Embeddable React SDK Overview
+    content: What Is Workflow Builder? — Visual Workflow Orchestration on Temporal
   - tag: meta
     attrs:
       property: og:title
-      content: What Is Workflow Builder? — Embeddable React SDK Overview
+      content: What Is Workflow Builder? — Visual Workflow Orchestration on Temporal
 ---
 
 import { Image } from 'astro:assets';
@@ -20,11 +20,15 @@ import { STARTER_FORK_URL } from '@/config';
 
 <Image src={wbOverviewImg} alt="Workflow Builder - canvas, node palette, and properties panel" />
 
-Workflow Builder is a React SDK for building and embedding visual workflow editors into your application. It is available in open-source and enterprise editions.
+Workflow Builder is an open-source framework for workflow orchestration in your product. Your users draw a workflow in a React editor embedded in your application, [Temporal](https://temporal.io) runs it as a durable workflow on your own infrastructure, and they follow every step on the same canvas. It is available in open-source and enterprise editions.
 
-It provides a ready-made workflow editor UI, including canvas, nodes, edges, layout, forms, and configuration panels, so you don't have to build workflow UX from scratch.
+It ships as one stack with three parts, each usable on its own:
 
-The SDK is the **editor**. To run what people draw, use your own engine or the [`@workflowbuilder/temporal`](/guides/use-with-temporal/) plugin, which runs each diagram as a durable Temporal Workflow Execution. Business logic (your node executors) always stays under your control.
+- **Editor SDK** (`@workflowbuilder/sdk`): a ready-made workflow editor UI, including canvas, nodes, edges, layout, forms, and configuration panels, so you don't have to build workflow UX from scratch. It saves the diagram as JSON.
+- **Temporal plugin** (`@workflowbuilder/temporal`): runs each diagram as a durable Temporal Workflow Execution, one Activity per node, on your self-hosted Temporal or Temporal Cloud. See [Run on Temporal](/guides/use-with-temporal/).
+- **Execution backend and AI Studio** (in the repository): the HTTP API for versions, runs, live run events and human decisions, and a demo app that shows each run live on the canvas.
+
+Business logic stays yours: you write one executor function per node type, and the framework calls it.
 
 Ready to try it? Start with the [Quick Start guide](/get-started/quick-start/standalone-app/).
 
@@ -44,7 +48,7 @@ Ready to try it? Start with the [Quick Start guide](/get-started/quick-start/sta
 
 ## Scope
 
-The SDK is the editor. It outputs the diagram as JSON (nodes and edges) that your own backend consumes and executes. For in-editor execution, the optional [Flow Runner](/plugins/flow-runner/) plugin (Enterprise) can traverse the workflow graph and run node functions directly. The [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin runs diagrams as durable Temporal Workflow Executions, see [Run on Temporal](/guides/use-with-temporal/).
+The SDK is the editor: it outputs the diagram as JSON (nodes and edges). Running it is a separate layer. The [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin runs the diagram on your Temporal, with the [execution backend](https://github.com/synergycodes/workflowbuilder/tree/main/apps/backend) in front of it for versions, runs and live run events, see [Run on Temporal](/guides/use-with-temporal/). For in-editor execution, the optional [Flow Runner](/plugins/flow-runner/) plugin (Enterprise) can traverse the workflow graph and run node functions directly.
 
 ## Typical use cases
 
@@ -57,11 +61,12 @@ Workflow Builder is commonly used to:
 
 ## Live demo
 
-[Open the live demo](https://app.workflowbuilder.io) to try Workflow Builder in your browser. To read and edit the code, open the <a href={STARTER_FORK_URL} target="_blank" rel="noopener noreferrer">runnable starter in StackBlitz</a> — a minimal React app that embeds the SDK. For a guided walkthrough, [contact us](https://www.workflowbuilder.io/contact).
+[Open the editor demo](https://app.workflowbuilder.io) to try the editor in your browser, or [run a workflow in AI Studio](https://aistudio.workflowbuilder.io) to see a run end to end, with a human decision, no install and no sign-up. To read and edit the code, open the <a href={STARTER_FORK_URL} target="_blank" rel="noopener noreferrer">runnable starter in StackBlitz</a> — a minimal React app that embeds the SDK. For a guided walkthrough, [contact us](https://www.workflowbuilder.io/contact).
 
 ## See also
 
-- [Architecture](/overview/architecture/) - tech stack, monorepo layout, plugin system, data model
+- [Architecture](/overview/architecture/) - tech stack, monorepo layout, plugin system, data model, execution
+- [Run on Temporal](/guides/use-with-temporal/) - run what people draw as durable Temporal Workflow Executions
 - [Built-in Nodes](/nodes/) - all built-in node types
 - [Plugins](/plugins/) - optional plugins that extend Workflow Builder
 - [Videos](/videos/) - walkthroughs and live coding sessions

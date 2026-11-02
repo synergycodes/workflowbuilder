@@ -11,7 +11,7 @@ Backend execution layer for Workflow Builder AI Studio plugin. Runs AI workflows
 
 ## Architecture
 
-Hexagonal — the backend depends on **ports**, not on Temporal. The Temporal-backed adapter is swappable.
+Hexagonal — the backend reaches the engine through **ports**. Temporal, via `TemporalWorkflowEngine`, is the engine shipped and tested.
 
 ```
 Frontend (React)
@@ -24,7 +24,7 @@ Frontend (React)
 ```
 
 - **Backend** (`apps/backend`) — Hono HTTP server, workflow CRUD, SSE streaming via Postgres LISTEN/NOTIFY. Submits executions through `WorkflowEnginePort`.
-- **Engine adapter** (`apps/backend/src/engine/index.ts`) — wires `TemporalWorkflowEngine` from [`@workflowbuilder/temporal/client`](../../packages/temporal/README.md), which implements `WorkflowEnginePort` against Temporal. Swap what this file constructs to switch engines.
+- **Engine adapter** (`apps/backend/src/engine/index.ts`) — wires `TemporalWorkflowEngine` from [`@workflowbuilder/temporal/client`](../../packages/temporal/README.md), which implements `WorkflowEnginePort` against Temporal. This file is the one place that names the engine.
 - **Worker** (`apps/execution-worker`) — Temporal worker. Activities delegate node execution to `execution-core`. See the [worker README](../execution-worker/README.md).
 - **Domain** (`packages/execution-core`) — pure graph runner + ports + node executors. No Temporal, no HTTP. See the [execution-core README](../../packages/execution-core/README.md).
 - **Frontend** (`apps/ai-studio`) — full AI workflow product. Composes `@workflowbuilder/sdk` directly via JSX, with a slim plugin only for per-node execution markers. Owns Play/Stop controls, log panel, node detail, and execution highlighting.

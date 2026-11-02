@@ -6,10 +6,10 @@ description: Frequently asked questions about Workflow Builder for developers.
 ## General
 
 1. **What is Workflow Builder?**
-   Workflow Builder is a frontend SDK for building visual workflow editors inside your own product. It lets you embed a drag-and-drop workflow designer into your SaaS while keeping execution, pricing, and business logic fully in your backend.
+   Workflow Builder is a React SDK for embedding a visual workflow editor in your own product, shipped with a Temporal plugin that runs the workflows your users draw durably on your own [Temporal](https://temporal.io), and an execution backend with versions, live run events and human decision steps. Pricing, permissions and the business logic of each node stay in your code.
 
 2. **Is Workflow Builder a product or an SDK?**
-   It is a white-label SDK, not a standalone SaaS product. You receive source code that becomes part of your application and can be customized to your domain.
+   It is a white-label SDK, not a standalone SaaS product. The editor SDK and the Temporal plugin install from npm; the execution backend and AI Studio are open code in the repository. All of it becomes part of your application, runs on your infrastructure and can be customized to your domain.
 
 3. **Who is Workflow Builder for?**
    Workflow Builder is built for SaaS companies adding workflow capabilities, AI/automation product teams, and engineering teams building visual configuration tools. It is not for end users looking for a ready-made automation tool.
@@ -28,9 +28,9 @@ description: Frequently asked questions about Workflow Builder for developers.
 5. **How is Workflow Builder different from n8n, Make, or Zapier?**
    n8n, Make, and Zapier are SaaS platforms with hosted execution for running workflows as a service. Their frontends are tightly coupled to their execution engines, databases, and APIs. You cannot extract the visual editor as a standalone component.
 
-   Workflow Builder is a frontend SDK designed for teams that need an embedded workflow editor to build their own automation or AI-powered products. It serializes workflows to JSON that your execution engine consumes however you choose. There is no database and no runtime. The Community Edition is licensed under Apache 2.0. The Enterprise Edition uses a perpetual commercial license. Both editions allow embedding in your own product.
+   Workflow Builder is a frontend SDK for teams building their own automation or AI-powered products. The editor is a React component inside your product, and the workflows it saves as JSON run on your own Temporal and Postgres, through the `@workflowbuilder/temporal` plugin and the execution backend. Nothing is hosted by us. The Community Edition is licensed under Apache 2.0. The Enterprise Edition uses a perpetual commercial license. Both editions allow embedding in your own product.
 
-   If you need an embeddable editor inside your own product with your own execution layer, Workflow Builder gives you that without inheriting another product's architecture.
+   If you need an embeddable editor and durable execution inside your own product, Workflow Builder gives you both without inheriting another product's architecture.
 
 6. **How does Workflow Builder relate to React Flow?**
    Workflow Builder is built on top of [React Flow](https://reactflow.dev/) (@xyflow/react). It extends React Flow with a production-ready workflow editor layer: a node library, schema-driven properties panel, design system, serialization, and plugin architecture.
@@ -72,7 +72,7 @@ description: Frequently asked questions about Workflow Builder for developers.
    }
    ```
 
-   Node and edge types follow React Flow conventions. The `data.properties` object is where your custom per-node configuration lives - it maps directly to whatever your execution engine expects. The optional `data.isStartNode` flag marks the node your run begins at, so your engine can find the entry point without inferring it from the graph shape or matching on a node type.
+   Node and edge types follow React Flow conventions. The `data.properties` object is where your custom per-node configuration lives - it is what the executor for that node type receives at run time. The optional `data.isStartNode` flag marks the node a run begins at, so the runner finds the entry point without inferring it from the graph shape or matching on a node type.
 
 8. **How do I add custom nodes?**
    Custom nodes are React components registered via a JSON Schema definition. The schema drives the properties panel automatically - you define fields, validation rules, and defaults, and Workflow Builder generates the configuration UI. See the [Add Custom Node Type](/guides/add-a-custom-node/) guide for a step-by-step tutorial.
@@ -87,12 +87,12 @@ description: Frequently asked questions about Workflow Builder for developers.
    Once embedded, Workflow Builder can look and feel like your branded product.
 
 10. **Can Workflow Builder support AI agents?**
-    Yes. Workflow Builder is execution-agnostic - each node in the visual diagram maps directly to a step your backend processes. Teams use it to design agent pipelines, prompt chains, decision trees, and tool-calling flows. You define custom node types for your AI operations (LLM calls, retrieval steps, tool use) and Workflow Builder handles the visual modeling and configuration UI. Execution, retries, and orchestration stay in your backend.
+    Yes. Teams use it to design agent pipelines, prompt chains, decision trees, and tool-calling flows. You define custom node types for your AI operations (LLM calls, retrieval steps, tool use) and write one executor per node type, which can call any model or agent framework. Workflow Builder handles the visual modeling and configuration UI and, through the Temporal plugin, runs the flow durably with retries and timeouts per node type. A step can pause the run until a person approves, corrects or rejects the result, for minutes or for weeks, before anything irreversible happens. AI Studio, the demo app in the repository, runs six such templates.
 
 ## Technical
 
 11. **How do I install Workflow Builder?**
-    The SDK is available on npm as `@workflowbuilder/sdk`; the reference apps and backend run from the repository. See the [Quick Start](/get-started/quick-start/standalone-app/) guide.
+    The editor SDK is on npm as `@workflowbuilder/sdk` and the Temporal plugin as `@workflowbuilder/temporal`; the execution backend, its Worker and AI Studio run from the repository. See the [Quick Start](/get-started/quick-start/standalone-app/) guide for the editor and [Run on Temporal](/guides/use-with-temporal/) for execution.
 
 12. **What technologies and libraries are used?**
     Workflow Builder is built on a modern, modular tech stack:
@@ -101,6 +101,7 @@ description: Frequently asked questions about Workflow Builder for developers.
     - **React** - the frontend library for building the editor UI.
     - **Zustand** - lightweight state management, integrated with React Flow.
     - **React Flow (xyflow)** - the diagramming library for the canvas.
+    - **Temporal** - durable execution of the workflows, through the `@workflowbuilder/temporal` plugin. The execution backend is built on Hono and Postgres.
 
 13. **Can workflows be created programmatically?**
     Yes. Because workflows are JSON, you can generate, modify, and version them programmatically via your APIs.
@@ -111,7 +112,7 @@ description: Frequently asked questions about Workflow Builder for developers.
     Performance depends on node complexity, edge count, routing strategy, and browser capability.
 
 15. **Does Workflow Builder send data to external servers?**
-    No. Workflow Builder is a frontend SDK that runs entirely in your application. It does not collect telemetry or send workflow data to any external server. All data stays within your infrastructure.
+    No. The editor SDK runs entirely in your application, and the execution backend, the Temporal Worker and the database run on your infrastructure, with your self-hosted Temporal or your Temporal Cloud account. Workflow Builder does not collect telemetry or send workflow data to any server of ours.
 
     This makes it suitable for environments with strict data residency requirements - healthcare, finance, government - where no third-party data processing is acceptable.
 
@@ -121,7 +122,7 @@ description: Frequently asked questions about Workflow Builder for developers.
     Since you have the source code, you control which parts to use and which to replace. The plugin architecture provides defined extension points without requiring you to modify core components.
 
 17. **What do we need to develop ourselves?**
-    Workflow Builder handles the visual editor. You are responsible for building the execution engine, scheduling and retries, billing and limits, permissions logic, and AI calls and integrations.
+    Workflow Builder handles the visual editor, the durable execution of the graph on Temporal (traversal, parallel branches, retries and timeouts per node type, pauses for human decisions) and an execution backend for versions, runs and live run events. You write one executor function per node type, with your AI calls and integrations, and you own billing and limits, permissions logic and deployment. The backend ships ports for your authentication and tenancy.
 
 ## Updates and Versioning
 
@@ -130,12 +131,12 @@ description: Frequently asked questions about Workflow Builder for developers.
 
 19. **How do I prevent users from breaking production workflows?**
     Workflow Builder gives you the building blocks; safeguards are implemented on your side. Common patterns teams use:
-    - Draft vs production environments
-    - Workflow locking and versioning
+    - Draft vs published versions: the execution backend ships this, and every run is pinned to the version it started with
+    - Workflow locking
     - Role-based permissions controlling who can edit or publish
     - Backend validation before execution
 
-    Because you own the source code and the execution layer, you decide which guardrails fit your product.
+    Because you own the source code and run the execution layer yourself, you decide which guardrails fit your product.
 
 ## Licensing
 
@@ -159,10 +160,11 @@ description: Frequently asked questions about Workflow Builder for developers.
     Yes, under the commercial license.
 
 25. **Is there a free trial or demo?**
-    Yes — [open the live demo](https://app.workflowbuilder.io) to try it in your browser, or [contact us](https://www.workflowbuilder.io/contact) for a guided walkthrough.
+    Yes — [open the editor demo](https://app.workflowbuilder.io) to try the editor in your browser, or [run a workflow in AI Studio](https://aistudio.workflowbuilder.io) to see a run end to end, with a human decision, no install and no sign-up. [Contact us](https://www.workflowbuilder.io/contact) for a guided walkthrough.
 
 ## See also
 
 - [What is Workflow Builder?](/overview/) - what Workflow Builder is and who embeds it
 - [Quick Start: Standalone App](/get-started/quick-start/standalone-app/) - run Workflow Builder as a self-hosted React app
+- [Run on Temporal](/guides/use-with-temporal/) - run what people draw as durable Temporal Workflow Executions
 - [Plugins](/plugins/) - optional plugins that extend Workflow Builder

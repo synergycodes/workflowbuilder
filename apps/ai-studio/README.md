@@ -2,7 +2,7 @@
 
 Reference frontend for the Workflow Builder AI Studio product. Consumes `@workflowbuilder/sdk` like an external user would, composing app-shell UI directly via JSX and using the plugin API only for per-node markers + translations, and to hide the properties panel's Delete button.
 
-> ⚠️ Local development only. Depends on the reference backend, which has no auth/authz. See [apps/backend/README.md](../backend/README.md).
+> ⚠️ Local development only. Depends on the execution backend, which has no auth/authz. See [apps/backend/README.md](../backend/README.md).
 
 > **Note:** setup is in [root README "Path C. Run the full stack demo"](../../README.md#path-c-run-the-full-stack-demo).
 
