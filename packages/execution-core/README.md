@@ -207,7 +207,7 @@ Failure always wins. An unhandled node failure returns before the terminal check
 
 ## Outcomes
 
-A completion may declare the run's business result: `outcome: { value, resolvedBy }`, both open strings. The runner checks its shape only; meaning is the application's. The reference backend writes `{ value: 'rejected', resolvedBy: 'human' }` when a person rejects at a decision node.
+A completion may declare the run's business result: `outcome: { value, resolvedBy }`, both open strings. The runner checks its shape only; meaning is the application's. The execution backend writes `{ value: 'rejected', resolvedBy: 'human' }` when a person rejects at a decision node.
 
 `nextPort` says where the graph goes, `outcome` says what the run means, and the two are independent. A completion with an outcome may leave its port unrouted on purpose: no dead end, the successors are skipped, run `completed`. With the edge drawn the graph continues and the outcome is recorded all the same. A run keeps the first outcome declared, in scheduling order (wave by wave, then the predecessor's edge order); `failed` and `incomplete` still win over `completed` and drop it. Every declaration makes its own unrouted port a deliberate end, but only the first is recorded, so a later one leaves no trace in the result or in `deadEnds`.
 

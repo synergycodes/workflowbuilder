@@ -158,6 +158,6 @@ To see components rendered live, start the documentation site with `pnpm dev:doc
 
 ## Showcase
 
-**[Workflow Builder](https://www.workflowbuilder.io/)** is a frontend-focused starter app for building workflows, offering core features, best practices, and easy backend integration for faster client delivery.
+**[Workflow Builder](https://www.workflowbuilder.io/)** is an open-source framework for workflow orchestration in your product: a React workflow editor built on this library, a Temporal plugin that runs what people draw, and an execution backend.
 
 https://www.workflowbuilder.io/

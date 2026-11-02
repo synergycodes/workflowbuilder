@@ -1,7 +1,7 @@
 {
   "name": "@workflowbuilder/sdk",
   "version": "3.0.0",
-  "description": "React SDK for Workflow Builder — embed a visual, flow-based workflow editor in your app.",
+  "description": "React SDK for Workflow Builder, the open-source framework for workflow orchestration in your product: embed a visual, flow-based workflow editor in your app; @workflowbuilder/temporal runs what people draw.",
   "keywords": [
     "workflow",
     "workflow-editor",

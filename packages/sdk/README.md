@@ -1,6 +1,6 @@
 # @workflowbuilder/sdk
 
-React SDK for [Workflow Builder](https://www.workflowbuilder.io/). Embed a visual, flow-based workflow editor in your app.
+React SDK for [Workflow Builder](https://www.workflowbuilder.io/), the open-source framework for workflow orchestration in your product. Embed a visual, flow-based workflow editor in your app; the [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin runs what people draw on your own Temporal.
 
 [![npm version](https://img.shields.io/npm/v/@workflowbuilder/sdk.svg)](https://www.npmjs.com/package/@workflowbuilder/sdk)
 [![license](https://img.shields.io/npm/l/@workflowbuilder/sdk.svg)](./LICENSE)

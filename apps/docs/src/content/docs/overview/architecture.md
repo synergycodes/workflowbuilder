@@ -1,6 +1,6 @@
 ---
 title: Architecture
-description: How Workflow Builder is structured — the SDK package, surrounding apps, plugin system, and data model.
+description: How Workflow Builder is structured — the editor SDK, the Temporal plugin, the execution backend, the plugin system, and the data model.
 ---
 
 ## Tech stack
@@ -19,25 +19,27 @@ All libraries are open-source with no additional license purchase required.
 
 ## Repository layout
 
-The project is a pnpm workspace. The editor itself lives in a single distributable package (`packages/sdk`, published on npm as `@workflowbuilder/sdk`); everything in `apps/` is either a consumer of that package, an optional execution-side service, or developer tooling.
+The project is a pnpm workspace. Three packages publish to npm: the editor (`packages/sdk`), its component library (`packages/ui`) and the Temporal plugin (`packages/temporal`). Everything in `apps/` is a consumer of the SDK, the execution backend with its Worker, or developer tooling.
 
 ```
 packages/
-├── sdk/               # The editor — distributed as @workflowbuilder/sdk
-├── execution-core/    # Optional workflow execution runtime
+├── sdk/               # The editor — published as @workflowbuilder/sdk
+├── ui/                # Component library — published as @workflowbuilder/ui
+├── temporal/          # Temporal plugin — published as @workflowbuilder/temporal
+├── execution-core/    # Graph runner, bundled into the Temporal plugin
 └── types/             # Shared types for the execution layer
 
 apps/
 ├── demo/              # Reference React host that consumes the SDK
-├── ai-studio/         # Reference AI workflow product built on the SDK (sibling to demo)
+├── ai-studio/         # Reference AI workflow product: editor, live run view, decision panel
+├── backend/           # Execution backend: versions, runs, live run events, human decisions
+├── execution-worker/  # Temporal Worker built on the plugin, with the reference node executors
 ├── docs/              # This documentation site (Astro + Starlight)
 ├── icons/             # Lazy-loadable icon set, bundled into the SDK at build time
-├── backend/           # Optional REST backend used by the demo's `api` strategy
-├── execution-worker/  # Optional async worker for execution jobs
 └── tools/             # Internal scripts and developer utilities
 ```
 
-`@workflowbuilder/sdk` is the only artifact an external app needs. The execution-side packages and apps (`execution-core`, `backend`, `execution-worker`) are independent — the SDK serialises workflows to JSON and emits save events; what runs them is up to you.
+An app that only embeds the editor needs `@workflowbuilder/sdk` alone: the SDK serialises workflows to JSON and emits save events. To run them, add `@workflowbuilder/temporal` to your Temporal Worker and start runs from your backend, or start from the execution backend in this repository. The two sides meet only at the workflow JSON — the execution side never reaches into the editor.
 
 ## SDK structure
 
@@ -110,10 +112,13 @@ Each node carries its type, position, icon, and a `properties` object whose shap
 
 ## Execution
 
-Workflow Builder focuses on the editor layer. The serialised JSON is designed to be consumed by a backend execution engine — yours or the in-repo runtime (`packages/execution-core/` + `apps/execution-worker/` cover the demo's runtime; `apps/backend/` is the REST surface they sit behind). For in-editor execution, the optional [Flow Runner plugin](/plugins/flow-runner/) (Enterprise) traverses the workflow graph and runs node functions directly.
+The serialised JSON is what runs. The [`@workflowbuilder/temporal`](https://www.npmjs.com/package/@workflowbuilder/temporal) plugin runs a diagram as one durable Temporal Workflow Execution, one Activity per node: independent branches run in parallel and join, a decision routes the run down one branch, each node type gets its own timeout and retry cap, and a node can pause the run until a person decides. It bundles `packages/execution-core`, the pure graph runner, and calls one executor function per node type — the part you write. The execution backend (`apps/backend`) is the HTTP API in front of it: drafts and published versions, starting and cancelling runs, live run events over SSE and human decisions, with ports for your auth and tenancy. `apps/execution-worker` is the Temporal Worker that AI Studio runs on. See [Run on Temporal](/guides/use-with-temporal/).
+
+For in-editor execution, the optional [Flow Runner plugin](/plugins/flow-runner/) (Enterprise) traverses the workflow graph and runs node functions directly.
 
 ## See also
 
+- [Run on Temporal](/guides/use-with-temporal/) — run what people draw as durable Temporal Workflow Executions
 - [Plugins](/plugins/) — optional plugins that extend Workflow Builder
 - [Built-in Nodes](/nodes/) — all built-in node types
 - [Diagram state management](/overview/features/diagram-state-management/) — canvas state, undo/redo, and auto-save

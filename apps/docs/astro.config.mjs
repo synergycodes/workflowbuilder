@@ -1,11 +1,10 @@
-import { copyFileSync, mkdirSync } from 'node:fs';
-import path from 'node:path';
-
 import react from '@astrojs/react';
 import starlight from '@astrojs/starlight';
 import umami from '@yeskunall/astro-umami';
-import { defineConfig, passthroughImageService } from 'astro/config';
 import icon from 'astro-icon';
+import { defineConfig, passthroughImageService } from 'astro/config';
+import { copyFileSync, mkdirSync } from 'node:fs';
+import path from 'node:path';
 import rehypeExternalLinks from 'rehype-external-links';
 import starlightImageZoom from 'starlight-image-zoom';
 import starlightTypeDoc, { createStarlightTypeDocPlugin } from 'starlight-typedoc';
@@ -140,7 +139,8 @@ export default defineConfig({
         Sidebar: './src/components/sidebar.astro',
       },
       title: 'Workflow Builder',
-      description: 'Documentation for Workflow Builder — a customizable, plugin-based visual workflow builder.',
+      description:
+        'Documentation for Workflow Builder, the open-source framework for workflow orchestration in your product: a React workflow editor, a Temporal plugin that runs what people draw, and an execution backend.',
       social: [
         { icon: 'github', href: 'https://github.com/synergycodes/workflowbuilder', label: 'GitHub' },
         { icon: 'youtube', href: 'https://www.youtube.com/@workflowbuilder', label: 'YouTube' },

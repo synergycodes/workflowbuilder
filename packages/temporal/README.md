@@ -8,11 +8,11 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Source:** <https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal>
 - **Changelog:** <https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/CHANGELOG.md>
 - **Issues:** <https://github.com/synergycodes/workflowbuilder/issues>
-- **Live demo:** <https://app.workflowbuilder.io/>
+- **Live demo:** <https://aistudio.workflowbuilder.io/>, AI Studio running on this plugin
 - **Requires:** Node.js 20.3 or newer, ESM. Tested on every pull request against the `1.23` line of the Temporal TypeScript SDK, and weekly against its newest release.
 - **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
 
-Workflow Builder is a React SDK for a visual, flow-based workflow editor. What people draw on its canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. Each node activity carries the node's label as its Summary, so Event History reads like the diagram. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
+Workflow Builder is an open-source framework for workflow orchestration in your product: a React workflow editor your users draw in, this plugin, and an execution backend with live run events and human decision steps. What people draw on the editor's canvas is a diagram: a JSON graph of typed nodes and edges. This package runs that graph on Temporal. A diagram becomes one Workflow Execution and each node becomes an Activity, so retries, timeouts, cancellation and full Event History come from Temporal. Each node activity carries the node's label as its Summary, so Event History reads like the diagram. It is a Temporal Plugin: it registers the activities that execute a graph and ships the workflow-side runner you re-export from your own workflows module.
 
 What it owns and what stays yours:
 

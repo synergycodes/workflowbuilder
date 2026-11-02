@@ -19,7 +19,7 @@ To start from working code instead, the [ready example](#try-the-example) runs t
 
 ## How Workflow Builder works with Temporal
 
-Workflow Builder is an open-source framework for workflow orchestration in your product. Besides the editor SDK and the Temporal plugin that this guide uses, it includes a reference execution backend and AI Studio, a demo app that shows each run live on the canvas.
+Workflow Builder is an open-source framework for workflow orchestration in your product. Besides the editor SDK and the Temporal plugin that this guide uses, it includes an execution backend and AI Studio, a demo app that shows each run live on the canvas.
 
 <Image
   src={architectureImg}
@@ -362,7 +362,7 @@ Both methods run in Activities, so a retried write can arrive twice. Make `(exec
 
 Your store receives an event each time a node starts, completes, fails, is skipped or starts waiting for a decision. To show the run on the canvas, stream these events back to the editor and mark each node with a component decorator in the `OptionalNodeContent` slot. The editor SDK has no run view of its own. The example draws one status marker per node: it streams the events in [`bridge.ts`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/worker/src/bridge.ts) and draws the markers in [`node-markers.tsx`](https://github.com/synergycodes/workflowbuilder/blob/main/examples/workflow-builder-temporal/editor/src/execution/node-markers.tsx).
 
-AI Studio has a fuller run view, with an execution log and a Decide button for waiting nodes. Its code is in [`apps/ai-studio/src/components/execution`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/execution) and [`apps/ai-studio/src/components/human-decision`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/human-decision), and the reference backend in [`apps/backend`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/backend) streams the events to it. Both are reference code for local development, and the backend has no authentication.
+AI Studio has a fuller run view, with an execution log and a Decide button for waiting nodes. Its code is in [`apps/ai-studio/src/components/execution`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/execution) and [`apps/ai-studio/src/components/human-decision`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/ai-studio/src/components/human-decision), and the execution backend in [`apps/backend`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/backend) streams the events to it. Both are reference code for local development, and the backend has no authentication.
 
 ## Run it
 
