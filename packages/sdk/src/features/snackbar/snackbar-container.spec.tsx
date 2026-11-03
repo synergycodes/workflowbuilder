@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -29,7 +31,7 @@ afterEach(() => {
 });
 
 describe('SnackbarContainer', () => {
-  it('places the bottom-centre stack with the class that reads the offset variable', () => {
+  it('gives the bottom-centre stack its own class', () => {
     act(() => {
       showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });
@@ -38,5 +40,14 @@ describe('SnackbarContainer', () => {
 
     expect(stack?.textContent).toContain('Waiting for decision');
     expect(stack?.className).toContain('bottom-center');
+  });
+
+  // jsdom applies no CSS and Vitest stubs CSS modules, so the rule is read from disk.
+  it('raises that class by the offset variable, doubled to outrank the one-class notistack rule', () => {
+    const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8');
+
+    expect(css).toMatch(
+      /\.bottom-center\.bottom-center\s*\{[^}]*bottom:\s*calc\(var\(--wb-public-snackbar-offset-bottom\) - 6px\)/,
+    );
   });
 });
