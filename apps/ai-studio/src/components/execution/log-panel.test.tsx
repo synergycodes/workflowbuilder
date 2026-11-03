@@ -53,6 +53,15 @@ function reportResize(target: Element | null) {
   callback();
 }
 
+function sized(element: Element, height: number, rect: Partial<DOMRect>) {
+  Object.defineProperty(element, 'offsetHeight', { configurable: true, value: height });
+  element.getBoundingClientRect = () => rect as DOMRect;
+}
+
+function dockEdge(container: Element, side: 'left' | 'right') {
+  return container.querySelector('section')?.style.getPropertyValue(`--log-dock-${side}`);
+}
+
 describe('ExecutionLogPanel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -217,6 +226,43 @@ describe('ExecutionLogPanel', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('200');
     expect(handle.getAttribute('aria-valuemin')).toBe('120');
     expect(handle.getAttribute('aria-valuemax')).toBe(String(Math.round(window.innerHeight * 0.6)));
+  });
+
+  describe('dock edges', () => {
+    let layout: HTMLDivElement;
+
+    // The SDK's default layout as the anchor hooks read it: palette, #viewport-bounds, right panel.
+    function mountLayout({ isLeftExpanded, isRightExpanded }: { isLeftExpanded: boolean; isRightExpanded: boolean }) {
+      layout = document.createElement('div');
+      layout.innerHTML =
+        '<div><div id="palette"></div></div><div id="viewport-bounds"></div><div><div><div id="properties"></div></div></div>';
+      document.body.prepend(layout);
+
+      sized(layout.children[0], 800, {});
+      sized(layout.children[2], 800, {});
+      sized(layout.querySelector('#palette')!, isLeftExpanded ? 800 : 60, { right: 332 });
+      sized(layout.querySelector('#properties')!, isRightExpanded ? 800 : 60, { left: window.innerWidth - 412 });
+    }
+
+    afterEach(() => {
+      layout.remove();
+    });
+
+    it('passes the expanded panels’ edges to the dock without a gap, which the stylesheet adds', () => {
+      mountLayout({ isLeftExpanded: true, isRightExpanded: true });
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(dockEdge(container, 'left')).toBe('332px');
+      expect(dockEdge(container, 'right')).toBe('412px');
+    });
+
+    it('runs the dock to the canvas edge on each side whose panel is collapsed', () => {
+      mountLayout({ isLeftExpanded: false, isRightExpanded: false });
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(dockEdge(container, 'left')).toBe('0px');
+      expect(dockEdge(container, 'right')).toBe('0px');
+    });
   });
 
   describe('snackbar offset', () => {
