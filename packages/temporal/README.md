@@ -8,6 +8,8 @@ Run [Workflow Builder](https://www.workflowbuilder.io) diagrams as durable [Temp
 - **Source:** <https://github.com/synergycodes/workflowbuilder/tree/main/packages/temporal>
 - **Changelog:** <https://github.com/synergycodes/workflowbuilder/blob/main/packages/temporal/CHANGELOG.md>
 - **Issues:** <https://github.com/synergycodes/workflowbuilder/issues>
+- **Guide:** <https://www.workflowbuilder.io/docs/guides/use-with-temporal/>
+- **Sample:** <https://github.com/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-temporal>
 - **Live demo:** <https://app.workflowbuilder.io/>
 - **Requires:** Node.js 20.3 or newer, ESM. Tested on every pull request against the `1.23` line of the Temporal TypeScript SDK, and weekly against its newest release.
 - **Status:** pre-1.0. The API may still move between minor versions, see [Versioning and replay](#versioning-and-replay).
@@ -130,6 +132,12 @@ throw new TransientNodeExecutionError('rate_limited', 'Rate limited');
 ```
 
 A permanent failure is not retried at all. A transient one retries up to the profile's `maximumAttempts`, and so does anything thrown unclassified. The error code and the attempt it died on land in the `node_failed` event.
+
+### Cancellation and Worker crashes
+
+The plugin does not heartbeat node activities. Cancelling a run therefore does not interrupt an executor that is already running: the run closes `cancelled` without waiting for it, while the executor runs to the end. Its side effects still happen, and its result is dropped.
+
+For the same reason, a Worker that crashes in the middle of a node is noticed only when that node's [`startToCloseTimeout`](https://docs.temporal.io/encyclopedia/detecting-activity-failures#start-to-close-timeout) expires. The node then gets its next attempt, if its profile allows one. A shorter `startToCloseTimeout` for that node type makes Temporal notice sooner. It still has to cover how long the node really runs.
 
 ## Client
 
