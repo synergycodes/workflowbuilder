@@ -4,6 +4,7 @@ import './styles/typography.css';
 
 export * from './components/accordion';
 export * from './components/avatar';
+export * from './components/badge-label';
 export * from './components/button';
 export * from './components/checkbox';
 export * from './components/chip';

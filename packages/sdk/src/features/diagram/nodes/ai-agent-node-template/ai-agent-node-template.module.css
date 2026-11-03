@@ -1,10 +1,8 @@
-.root {
-  --wb-public-node-gap: 0;
-}
-
 .content {
   display: flex;
   flex-direction: column;
+  /* The collapsible and the tools keep their own spacing, so a collapsed panel adds no gap. */
+  gap: 0;
   overflow: hidden;
 
   .collapsible-content {

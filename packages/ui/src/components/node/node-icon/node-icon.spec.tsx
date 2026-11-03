@@ -21,8 +21,8 @@ afterEach(() => {
   container.remove();
 });
 
-// The `violet-gradient` glyph is white in both themes, so only its container has a dark override.
-const HAS_DARK_GLYPH: Record<string, boolean> = {
+// The `violet-gradient` tile reads mode-aware DS tokens, so it has no dark override.
+const HAS_DARK_OVERRIDE: Record<string, boolean> = {
   blue: true,
   green: true,
   orange: true,
@@ -30,7 +30,7 @@ const HAS_DARK_GLYPH: Record<string, boolean> = {
   gray: true,
   'violet-gradient': false,
 };
-const ACCENTS = Object.keys(HAS_DARK_GLYPH);
+const ACCENTS = Object.keys(HAS_DARK_OVERRIDE);
 
 function rendered() {
   return container.firstElementChild as HTMLElement;
@@ -94,8 +94,8 @@ describe('node-icon.module.css', () => {
 
     expect(light.has(glyph)).toBe(true);
     expect(light.has(background)).toBe(true);
-    expect(dark.has(glyph)).toBe(HAS_DARK_GLYPH[accent]);
-    expect(dark.has(background)).toBe(true);
+    expect(dark.has(glyph)).toBe(HAS_DARK_OVERRIDE[accent]);
+    expect(dark.has(background)).toBe(HAS_DARK_OVERRIDE[accent]);
   });
 
   it('colors the icon through the variables an accent replaces', () => {
@@ -106,9 +106,8 @@ describe('node-icon.module.css', () => {
     expect(rule.get('background')).toBe('var(--node-icon-background)');
   });
 
-  it('hides the border of an accented icon unless it is disabled', () => {
-    const rule = declarations('&.accented:not(.disabled)');
-    expect(rule.get('border-color')).toBe('transparent');
-    expect(rule.get('background-origin')).toBe('border-box');
+  it('strokes only the disabled tile, inside its box', () => {
+    expect(declarations('.container').has('border')).toBe(false);
+    expect(declarations('&.disabled').get('box-shadow')).toMatch(/^inset /);
   });
 });

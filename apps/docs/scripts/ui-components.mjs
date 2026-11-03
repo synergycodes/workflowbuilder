@@ -12,6 +12,7 @@
 export const COMPONENTS = [
   { slug: 'accordion', name: 'Accordion', propsType: 'AccordionProps', dir: 'accordion' },
   { slug: 'avatar', name: 'Avatar', propsType: 'AvatarProps', dir: 'avatar' },
+  { slug: 'badge-label', name: 'BadgeLabel', propsType: 'BadgeLabelProps', dir: 'badge-label' },
   { slug: 'button', name: 'Button', propsType: ['LabelButtonProps', 'IconButtonProps'], dir: 'button' },
   { slug: 'checkbox', name: 'Checkbox', propsType: 'CheckboxProps', dir: 'checkbox' },
   { slug: 'chip', name: 'Chip', propsType: 'ChipProps', dir: 'chip' },
