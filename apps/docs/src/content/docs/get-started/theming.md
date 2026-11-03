@@ -26,6 +26,14 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 
 Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or an equivalent local source.
 
+## Snackbar position
+
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` sets the distance from the viewport bottom to the lowest snackbar (default `20px`), and `--wb-public-snackbar-offset-x` shifts the stack horizontally from the centre (default `0px`). Set them from your app to keep snackbars clear of a panel docked at the bottom of the canvas:
+
+```ts
+document.documentElement.style.setProperty('--wb-public-snackbar-offset-bottom', `${panelHeight + 32}px`);
+```
+
 ## Other tokens
 
 The supported customization contract uses `--wb-public-*` for SDK controls and component overrides. Generated design tokens from `@workflowbuilder/ui` use `--wb-ds-*`; `--wb-sdk-*` is reserved for private SDK implementation details. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
