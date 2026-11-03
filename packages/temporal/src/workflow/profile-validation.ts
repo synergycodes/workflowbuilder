@@ -42,11 +42,17 @@ function assertActivityProfile(nodeType: string, profile: ActivityProfile | unde
     );
   }
 
+  if (profile.heartbeatTimeout !== undefined && !isDurationString(profile.heartbeatTimeout)) {
+    throw new TypeError(
+      `${path}.heartbeatTimeout must be a number followed by ms, s, m, h or d, such as '5s', and must fit a protobuf Duration: no shorter than one nanosecond ('0.000001ms') and no longer than '3652500d'. Got ${JSON.stringify(profile.heartbeatTimeout)}.`,
+    );
+  }
+
   assertNoUnknownKeys(path, profile, PROFILE_KEYS);
   assertNoUnknownKeys(`${path}.retry`, profile.retry, RETRY_KEYS);
 }
 
-const PROFILE_KEYS: ReadonlySet<string> = new Set(['startToCloseTimeout', 'retry']);
+const PROFILE_KEYS: ReadonlySet<string> = new Set(['startToCloseTimeout', 'retry', 'heartbeatTimeout']);
 const RETRY_KEYS: ReadonlySet<string> = new Set(['maximumAttempts']);
 
 function assertNoUnknownKeys(path: string, value: object, allowed: ReadonlySet<string>): void {
@@ -54,7 +60,7 @@ function assertNoUnknownKeys(path: string, value: object, allowed: ReadonlySet<s
   if (unknown.length === 0) return;
 
   throw new TypeError(
-    `${path} has unknown ${unknown.length === 1 ? 'key' : 'keys'} ${unknown.map((key) => JSON.stringify(key)).join(', ')}. A profile carries startToCloseTimeout and retry.maximumAttempts, nothing else.`,
+    `${path} has unknown ${unknown.length === 1 ? 'key' : 'keys'} ${unknown.map((key) => JSON.stringify(key)).join(', ')}. A profile carries startToCloseTimeout, retry.maximumAttempts and optional heartbeatTimeout, nothing else.`,
   );
 }
 
