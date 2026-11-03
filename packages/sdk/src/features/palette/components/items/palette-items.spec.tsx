@@ -26,7 +26,7 @@ function paletteGroup(label: string, groupItems: PaletteItemType[], isOpen?: boo
 }
 
 function renderItems(items: (PaletteItemType | PaletteGroup)[], isFiltering = false) {
-  return render(<PaletteItems items={items} onDragStart={vi.fn()} onMouseDown={vi.fn()} isFiltering={isFiltering} />);
+  return render(<PaletteItems items={items} onDragStart={vi.fn()} onPointerDown={vi.fn()} isFiltering={isFiltering} />);
 }
 
 describe('PaletteItems', () => {
