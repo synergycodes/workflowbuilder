@@ -1,0 +1,31 @@
+// Workflow-sandbox-safe exports.
+// This entry point MUST NOT import any module that uses Node I/O or Web APIs
+// missing from Temporal's V8 sandbox (e.g. TransformStream, fetch).
+// Use `@workflow-builder/execution-core` (root) for activities and executors,
+// which must run outside the sandbox.
+
+export type { BaseNode, NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
+
+export { runGraph } from './graph-runner';
+export type { RunGraphOutcome } from './graph-runner';
+
+export { NodeExecutionError } from './errors';
+
+export type { ExecutionContext } from './execution-context';
+
+export type {
+  ResolveNodeInput,
+  ResolveNodeRejection,
+  ResolveNodeResult,
+  VerdictRejection,
+  WorkflowEnginePort,
+  WorkflowExecutionInput,
+} from './ports/workflow-engine.port';
+export type {
+  ActivityRunnerPort,
+  CompletedNodeExecution,
+  NodeExecutionResult,
+  WaitingNodeExecution,
+} from './ports/activity-runner.port';
+export type { EventEmitterPort } from './ports/event-emitter.port';
+export type { PatchId, VersioningPort } from './ports/versioning.port';
