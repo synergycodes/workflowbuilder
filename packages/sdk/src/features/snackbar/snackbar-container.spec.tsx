@@ -29,7 +29,7 @@ afterEach(() => {
 });
 
 describe('SnackbarContainer', () => {
-  it('places the bottom-centre stack with the class that reads the offset variables', () => {
+  it('places the bottom-centre stack with the class that reads the offset variable', () => {
     act(() => {
       showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
     });

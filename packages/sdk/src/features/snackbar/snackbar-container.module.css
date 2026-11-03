@@ -2,5 +2,4 @@
 .bottom-center.bottom-center {
   /* The 6px is notistack's padding around each snackbar, so the variable measures to the snackbar's edge. */
   bottom: calc(var(--wb-public-snackbar-offset-bottom) - 6px);
-  left: calc(50% + var(--wb-public-snackbar-offset-x));
 }
