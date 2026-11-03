@@ -30,6 +30,18 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+let reportResize = () => {};
+
+const rootVariable = (name: string) => document.documentElement.style.getPropertyValue(name);
+
+class ReportingResizeObserver {
+  constructor(private readonly callback: () => void) {}
+  observe() {
+    reportResize = this.callback;
+  }
+  disconnect() {}
+}
+
 describe('ExecutionLogPanel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -48,6 +60,7 @@ describe('ExecutionLogPanel', () => {
     ];
     resetExecution();
     setExecutionStarted('exec-1', '/stream');
+    vi.stubGlobal('ResizeObserver', ReportingResizeObserver);
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -56,6 +69,7 @@ describe('ExecutionLogPanel', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    vi.unstubAllGlobals();
   });
 
   function renderAfter(...events: ExecutionEvent[]) {
@@ -191,5 +205,45 @@ describe('ExecutionLogPanel', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('200');
     expect(handle.getAttribute('aria-valuemin')).toBe('120');
     expect(handle.getAttribute('aria-valuemax')).toBe(String(Math.round(window.innerHeight * 0.6)));
+  });
+
+  describe('snackbar offset', () => {
+    let dockTop = 600;
+
+    beforeEach(() => {
+      dockTop = 600;
+      const measure = HTMLElement.prototype.getBoundingClientRect;
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+        return this.tagName === 'SECTION' ? ({ top: dockTop } as DOMRect) : measure.call(this);
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('lifts the snackbars 12px above the log while it is on screen', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 600 + 12}px`);
+    });
+
+    it('moves the snackbars with the log when it changes size', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      dockTop = 500;
+      act(() => reportResize());
+
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 500 + 12}px`);
+    });
+
+    it('gives the snackbars their own place back when the run is reset', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      act(() => resetExecution());
+
+      expect(container.querySelector('section')).toBeNull();
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe('');
+    });
   });
 });
