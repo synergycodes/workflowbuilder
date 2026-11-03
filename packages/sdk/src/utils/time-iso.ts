@@ -5,6 +5,7 @@ import { getIsValidTime } from './validation/get-is-valid-date';
 /**
  * Zone-less ISO: `YYYY-MM-DD`, `HH:mm`, `YYYY-MM-DDTHH:mm`.
  * Strings are sliced, Dates are read with local getters. Never `toISOString()` - that converts to UTC and can move the day.
+ * Why no zone: time-iso.decision-log.md next to this file.
  */
 
 type DateLike = Date | number | string;

@@ -40,6 +40,8 @@ Known limits:
 
 `time` (02.11.2026) joins the split under the same contract; its value passes when `getTimeHHmm` reads a clock from it (the input saves `HH:mm:00+00:00`, a bare `HH:mm` passes too), since `new Date('09:07')` is invalid.
 
+Why these values carry no zone, and what each stored shape means: `utils/time-iso.decision-log.md`.
+
 Known gap (26.10.2026): the custom check reports nothing. `getValidationForCustomTypes` receives the properties map, iterates `schema.properties` only when it is an array (it never is), and returns a constant `{ valid: false, errors: [] }` that the reference stripping flips back to valid. Probe: `{ when: 'not a date' }` and `{ when: 5 }` pass a required `date` property; only a missing key fails, through the standard `required`. It has been this way since the first commit. Direction: pass the custom properties and the `required` list explicitly, return the errors collected per call, and cover both with a spec next to the canary. (follow-up: custom-date-type-validation)
 
 ## Alternative Options Considered
