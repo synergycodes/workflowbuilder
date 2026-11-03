@@ -3,7 +3,8 @@
   --wb-public-node-height: 100%;
   --wb-public-node-border-size: 0.0625rem;
 
-  --wb-public-node-padding: var(--wb-ds-canvas-node-head-h-pad);
+  /* Figma draws the stroke inside the box and the token includes it; a CSS border adds to the box. */
+  --wb-public-node-padding: calc(var(--wb-ds-canvas-node-head-h-pad) - var(--wb-public-node-border-size));
   --wb-public-node-gap: var(--wb-ds-canvas-node-head-gap);
   --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
 
@@ -60,7 +61,7 @@
 
     .header-container {
       display: flex;
-      gap: 0.5rem;
+      gap: var(--wb-ds-space-125);
       align-items: center;
     }
 
