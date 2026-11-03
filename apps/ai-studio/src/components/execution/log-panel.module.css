@@ -1,10 +1,10 @@
 .dock {
   position: fixed;
-  bottom: var(--wb-ds-space-150);
+  bottom: var(--wb-public-layout-spacing);
   /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
-  left: var(--log-dock-left, var(--wb-ds-space-150));
+  left: calc(var(--log-dock-left, 0px) + var(--wb-public-layout-spacing));
   /* stylelint-disable-next-line csstools/value-no-unknown-custom-properties -- set from log-panel.tsx inline style */
-  right: var(--log-dock-right, var(--wb-ds-space-150));
+  right: calc(var(--log-dock-right, 0px) + var(--wb-public-layout-spacing));
   z-index: 10;
   display: flex;
   flex-direction: column;

@@ -1,14 +1,13 @@
 import { useEffect, useState } from 'react';
 
-const GAP_PX = 12;
 const EXPANDED_HEIGHT_RATIO = 0.9;
 
 type LeftPanelAnchor = {
   isPanelExpanded: boolean;
-  leftOffset: number;
+  leftEdge: number;
 };
 
-const collapsedAnchor: LeftPanelAnchor = { isPanelExpanded: false, leftOffset: GAP_PX };
+const collapsedAnchor: LeftPanelAnchor = { isPanelExpanded: false, leftEdge: 0 };
 
 function findLeftPanel() {
   const panel = document.querySelector('#viewport-bounds')?.previousElementSibling;
@@ -24,11 +23,11 @@ function measureAnchor(panel: HTMLElement): LeftPanelAnchor {
   const isPanelExpanded = sidebar.offsetHeight >= panel.offsetHeight * EXPANDED_HEIGHT_RATIO;
   if (!isPanelExpanded) return collapsedAnchor;
 
-  return { isPanelExpanded: true, leftOffset: Math.round(sidebar.getBoundingClientRect().right) + GAP_PX };
+  return { isPanelExpanded: true, leftEdge: Math.round(sidebar.getBoundingClientRect().right) };
 }
 
 function sameAnchor(current: LeftPanelAnchor, next: LeftPanelAnchor) {
-  return current.isPanelExpanded === next.isPanelExpanded && current.leftOffset === next.leftOffset;
+  return current.isPanelExpanded === next.isPanelExpanded && current.leftEdge === next.leftEdge;
 }
 
 function observeAnchor(panel: HTMLElement, onMeasure: (next: LeftPanelAnchor) => void) {
