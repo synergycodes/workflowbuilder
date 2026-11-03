@@ -30,16 +30,27 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-let reportResize = () => {};
+const observers = new Map<Element, () => void>();
 
 const rootVariable = (name: string) => document.documentElement.style.getPropertyValue(name);
 
 class ReportingResizeObserver {
+  private readonly targets = new Set<Element>();
   constructor(private readonly callback: () => void) {}
-  observe() {
-    reportResize = this.callback;
+  observe(target: Element) {
+    this.targets.add(target);
+    observers.set(target, this.callback);
   }
-  disconnect() {}
+  disconnect() {
+    for (const target of this.targets) observers.delete(target);
+    this.targets.clear();
+  }
+}
+
+function reportResize(target: Element | null) {
+  const callback = target && observers.get(target);
+  if (!callback) throw new Error('No ResizeObserver watches this element');
+  callback();
 }
 
 describe('ExecutionLogPanel', () => {
@@ -69,6 +80,7 @@ describe('ExecutionLogPanel', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    observers.clear();
     vi.unstubAllGlobals();
   });
 
@@ -214,7 +226,7 @@ describe('ExecutionLogPanel', () => {
       dockTop = 600;
       const measure = HTMLElement.prototype.getBoundingClientRect;
       vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
-        return this.tagName === 'SECTION' ? ({ top: dockTop } as DOMRect) : measure.call(this);
+        return this.matches('section[aria-label="Execution log"]') ? ({ top: dockTop } as DOMRect) : measure.call(this);
       });
     });
 
@@ -232,7 +244,7 @@ describe('ExecutionLogPanel', () => {
       renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
 
       dockTop = 500;
-      act(() => reportResize());
+      act(() => reportResize(container.querySelector('section')));
 
       expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 500 + 12}px`);
     });
@@ -243,6 +255,7 @@ describe('ExecutionLogPanel', () => {
       act(() => resetExecution());
 
       expect(container.querySelector('section')).toBeNull();
+      expect(observers.size).toBe(0);
       expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe('');
     });
   });
