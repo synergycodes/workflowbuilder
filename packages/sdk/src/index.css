@@ -22,6 +22,7 @@
     --wb-public-scroll-thumb-color: var(--wb-ds-components-scrollbar-bg-default);
     --wb-public-scroll-track-color: var(--wb-ds-colors-transparent);
     --wb-public-snackbar-offset-bottom: 20px;
+    --wb-public-layout-spacing: var(--wb-ds-space-150);
   }
 }
 
