@@ -28,10 +28,14 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 
 ## Snackbar position
 
-Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` sets the distance from the viewport bottom to the lowest snackbar (default `20px`). Set it from your app to keep snackbars clear of a panel docked at the bottom of the canvas:
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default:
 
 ```ts
-document.documentElement.style.setProperty('--wb-public-snackbar-offset-bottom', `${panelHeight + 32}px`);
+const offset = window.innerHeight - panel.getBoundingClientRect().top + 12;
+document.documentElement.style.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+
+// When the panel goes away:
+document.documentElement.style.removeProperty('--wb-public-snackbar-offset-bottom');
 ```
 
 ## Other tokens
