@@ -13,7 +13,6 @@
     width: 100%;
     padding: var(--wb-public-layout-spacing);
     z-index: 10;
-    gap: 1rem;
     pointer-events: none;
   }
 
