@@ -56,6 +56,28 @@ describe('SnackbarContainer', () => {
     expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*transition:\s*none/);
   });
 
+  it('pins a stack too tall for the space above the offset to the viewport top, unsqueezed', () => {
+    const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8').replaceAll(
+      /\/\*[\s\S]*?\*\//g,
+      '',
+    );
+
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*top:\s*14px/);
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*justify-content:\s*safe flex-start/);
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*>\s*\*\s*\{[^}]*flex-shrink:\s*0/);
+  });
+
+  // `safe flex-start` falls back to the top only because notistack lays the stack out bottom-up.
+  it('keeps notistack stacking the bottom-centre snackbars bottom-up', () => {
+    act(() => {
+      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    });
+
+    const stack = document.querySelector<HTMLElement>('.notistack-SnackbarContainer');
+
+    expect(stack && getComputedStyle(stack).flexDirection).toBe('column-reverse');
+  });
+
   it('subtracts the padding notistack puts around each snackbar', () => {
     act(() => {
       showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });

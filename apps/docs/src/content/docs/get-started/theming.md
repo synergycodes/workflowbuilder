@@ -28,7 +28,7 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 
 ## Snackbar position
 
-Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). A stack too tall for the space above that distance stays on screen, pinned 20px below the viewport top, and overlaps what is beneath it. To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
 
 ```ts
 const GAP = 12; // space between the panel and the lowest snackbar
