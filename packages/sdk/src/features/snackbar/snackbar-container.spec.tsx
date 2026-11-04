@@ -49,5 +49,6 @@ describe('SnackbarContainer', () => {
     expect(css).toMatch(
       /\.bottom-center\.bottom-center\s*\{[^}]*bottom:\s*calc\(var\(--wb-public-snackbar-offset-bottom\) - 6px\)/,
     );
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*transition:\s*none/);
   });
 });

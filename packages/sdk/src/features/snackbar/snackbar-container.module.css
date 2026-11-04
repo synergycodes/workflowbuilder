@@ -2,4 +2,6 @@
 .bottom-center.bottom-center {
   /* The 6px is notistack's padding around each snackbar, so the variable measures to the snackbar's edge. */
   bottom: calc(var(--wb-public-snackbar-offset-bottom) - 6px);
+  /* notistack eases the offsets over 300ms, so a stack following a resized panel would trail it. */
+  transition: none;
 }
