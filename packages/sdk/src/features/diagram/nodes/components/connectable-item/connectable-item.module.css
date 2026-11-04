@@ -14,8 +14,7 @@
   display: flex;
   min-height: var(--wb-ds-canvas-node-row-height);
   max-width: calc(
-    var(--wb-public-node-width) - 2 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)) - 2 *
-      var(--wb-sdk-connectable-item-inset)
+    var(--wb-public-node-width) - 2 * var(--wb-public-node-padding) - 2 * var(--wb-sdk-connectable-item-inset)
   );
   padding: var(--wb-sdk-connectable-item-vertical-padding) var(--wb-sdk-connectable-item-horizontal-padding);
   background-color: var(--wb-sdk-connectable-item-background);

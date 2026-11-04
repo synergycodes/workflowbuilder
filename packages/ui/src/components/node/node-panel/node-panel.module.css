@@ -23,7 +23,10 @@
 @layer ui.component {
   .node-panel-wrapper:hover .container:not(.disabled) {
     background: var(--wb-public-node-hover-background-color);
-    border-color: var(--wb-public-node-border-hover-color);
+  }
+
+  .node-panel-wrapper:hover .container:not(.disabled, .selected) {
+    box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-hover-color);
   }
 
   .container {
@@ -34,12 +37,14 @@
     flex-direction: column;
 
     border-radius: var(--wb-public-node-border-radius);
-    border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
     background: var(--wb-public-node-background-color);
+    /* Inset stroke, not a border: the stroke must not add to the node's measured size. */
+    box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color);
 
     &.selected {
-      border-color: var(--wb-public-node-border-color-selected);
-      box-shadow: var(--wb-public-node-box-shadow-selected);
+      box-shadow:
+        inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color-selected),
+        var(--wb-public-node-box-shadow-selected);
     }
 
     &.disabled {
@@ -47,9 +52,7 @@
     }
 
     &:not(:hover) {
-      transition:
-        border-color var(--wb-public-transition),
-        box-shadow var(--wb-public-transition);
+      transition: box-shadow var(--wb-public-transition);
     }
 
     .header-wrapper {
