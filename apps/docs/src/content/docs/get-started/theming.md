@@ -28,14 +28,23 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 
 ## Snackbar position
 
-Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default:
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
 
 ```ts
-const offset = window.innerHeight - panel.getBoundingClientRect().top + 12;
-document.documentElement.style.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+const GAP = 12; // space between the panel and the lowest snackbar
+const root = document.documentElement.style;
+const update = () => {
+  const offset = window.innerHeight - panel.getBoundingClientRect().top + GAP;
+  root.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+};
+
+update();
+const observer = new ResizeObserver(update);
+observer.observe(panel);
 
 // When the panel goes away:
-document.documentElement.style.removeProperty('--wb-public-snackbar-offset-bottom');
+observer.disconnect();
+root.removeProperty('--wb-public-snackbar-offset-bottom');
 ```
 
 ## Other tokens
