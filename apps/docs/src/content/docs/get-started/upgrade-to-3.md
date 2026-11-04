@@ -356,7 +356,7 @@ runtime.
   top edge. The component reads the node position from the React Flow store, and
   `useSelfLoopApexY` is exported for custom edges that draw their own loop.
 - **Canvas nodes use the design geometry.** The node shell is 258px wide at the default
-  16px root font size (palette entries 241px) and its stroke is drawn inside the node.
+  16px root font size (palette entries 241px).
   `--wb-public-node-padding` and `--wb-public-node-gap` now set the body padding and the gap
   between body children, not the padding and gap of the whole node. Node titles, subtitles and row labels truncate to one line
   and expose the full text through the browser's native tooltip.

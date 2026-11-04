@@ -24,12 +24,12 @@
       }
       :global(.react-flow__handle.react-flow__handle-right) {
         box-sizing: content-box;
-        right: 0;
+        right: calc(-1 * var(--wb-public-node-border-size));
       }
 
       :global(.react-flow__handle.react-flow__handle-left) {
         box-sizing: content-box;
-        left: 0;
+        left: calc(-1 * var(--wb-public-node-border-size));
       }
     }
 
