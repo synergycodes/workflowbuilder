@@ -9,7 +9,7 @@
 
   --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
   --wb-public-node-background-color: var(--wb-ds-canvas-node-bg-primary-default);
-  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-hover);
   --wb-public-node-border-hover-color: var(--wb-ds-canvas-node-stroke-hover);
 
   --wb-public-node-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
@@ -21,11 +21,8 @@
 }
 
 @layer ui.component {
-  .node-panel-wrapper:hover .container:not(.disabled) {
-    background: var(--wb-public-node-hover-background-color);
-  }
-
   .node-panel-wrapper:hover .container:not(.disabled, .selected) {
+    background: var(--wb-public-node-hover-background-color);
     box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-hover-color);
   }
 
@@ -42,6 +39,7 @@
     box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color);
 
     &.selected {
+      background: var(--wb-ds-canvas-node-bg-primary-active);
       box-shadow:
         inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color-selected),
         var(--wb-public-node-box-shadow-selected);
