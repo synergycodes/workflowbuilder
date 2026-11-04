@@ -65,7 +65,7 @@ describe('ProjectSelection builtInControls', () => {
         <OpenSettingsButton />
         <ProjectSelection />
       </>,
-      { builtInControls: { settings: false } },
+      { builtInControls: { export: false, import: false, settings: false } },
     );
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
 
@@ -76,8 +76,8 @@ describe('ProjectSelection builtInControls', () => {
     expect(modal?.title).toBe(i18n.t('workflowsSettings.modalTitle'));
   });
 
-  it('settings:false hides the Settings item and the caret (nothing else in the menu)', () => {
-    renderProjectSelection({ settings: false });
+  it('settings:false with Export and Import hidden hides the caret (nothing else in the menu)', () => {
+    renderProjectSelection({ export: false, import: false, settings: false });
 
     // No WorkflowMenuItem either, so the menu has nothing left to show: the trigger itself is gone.
     expect(screen.queryByRole('button', { name: 'Project actions' })).toBeNull();
@@ -91,7 +91,7 @@ describe('ProjectSelection builtInControls', () => {
   });
 
   it('settings:false with a WorkflowMenuItem keeps the caret, showing only that item', () => {
-    renderProjectSelection({ settings: false }, 'Duplicate');
+    renderProjectSelection({ export: false, import: false, settings: false }, 'Duplicate');
 
     openProjectMenu();
     expect(screen.queryByText('Settings')).toBeNull();

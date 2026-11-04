@@ -1,5 +1,3 @@
-import { useEffect } from 'react';
-
 import styles from './palette-container.module.css';
 
 import { Sidebar } from '../../components/sidebar/sidebar';
@@ -24,7 +22,6 @@ import { NodePreviewContainer } from './node-preview-container';
  */
 export function PaletteContainer() {
   const setPaletteOpen = useStore((state) => state.setPaletteOpen);
-  const fetchData = useStore((state) => state.fetchData);
 
   const isPaletteOpen = useStore((state) => state.isPaletteOpen);
   const paletteItems = useStore((state) => state.data);
@@ -36,10 +33,6 @@ export function PaletteContainer() {
 
   const isFiltering = paletteFilter.trim() !== '';
   const filteredItems = filterPaletteItems(paletteItems, paletteFilter, (label) => translateIfPossible(label) || label);
-
-  useEffect(() => {
-    fetchData();
-  }, [fetchData]);
 
   return (
     <Sidebar

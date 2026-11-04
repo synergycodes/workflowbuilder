@@ -6,52 +6,38 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from './properties-bar-header.module.css';
 
+import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
+import type { WorkflowBuilderNode } from '../../../../node/node-data';
+import { useStore } from '../../../../store/store';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
 import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
+import type { SingleSelectedElement } from '../../use-single-selected-element';
+import { NodeHeading } from './node-heading';
 
 type Props = {
-  header: string;
-  name: string;
-  hasSelection: boolean;
-  isExpendable: boolean;
+  selection: SingleSelectedElement | null;
+  headerLabel: string;
   /** Whether the panel currently shows its content, as opposed to its collapsed rail. */
-  isExpanded: boolean;
+  isOpen: boolean;
   onTogglePropertiesBar: () => void;
 };
 
-export function PropertiesBarHeader({
-  onTogglePropertiesBar,
-  isExpendable: isPropertiesBarOpen,
-  isExpanded,
-  header,
-  hasSelection,
-  name,
-}: Props) {
+export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePropertiesBar }: Props) {
   const { t } = useTranslation();
   const isPropertiesPanelToggleVisible = useIsBuiltInControlVisible('propertiesPanelToggle');
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const registeredItems = useRegisteredMenuItems('propertiesPanel');
   const items = useMemo(() => composeMenuItems([], registeredItems), [registeredItems]);
   const menuLabel = t('tooltips.menu');
+  const toggleLabel = isOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar');
 
   return (
     <div className={styles['header']}>
-      {isPropertiesPanelToggleVisible && (
-        <NavButton
-          aria-label={isPropertiesBarOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar')}
-          size="s"
-          onClick={onTogglePropertiesBar}
-          tooltip={isPropertiesBarOpen ? t('tooltips.closePropertiesBar') : t('tooltips.openPropertiesBar')}
-          disabled={!hasSelection}
-          prefixIcon={<Icon name="SidebarSimple" />}
-        />
-      )}
-      <div className={styles['text-container']}>
-        <span className={name ? 'wb-text-title-s-emphasized' : 'wb-text-title-m-emphasized'}>{header}</span>
-        {name && <p className="wb-text-label-s">{name}</p>}
+      <div className={styles['heading']}>
+        <SelectionHeading selection={selection} headerLabel={headerLabel} />
       </div>
-      {isExpanded && items.length > 0 && (
+      {isOpen && items.length > 0 && (
         <div className={styles['menu-container']}>
           <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <Menu.TriggerButton aria-label={menuLabel} tooltip={menuLabel} size="s">
@@ -60,6 +46,52 @@ export function PropertiesBarHeader({
           </Menu>
         </div>
       )}
+      {isPropertiesPanelToggleVisible && (
+        <NavButton
+          aria-label={toggleLabel}
+          size="s"
+          onClick={onTogglePropertiesBar}
+          tooltip={toggleLabel}
+          disabled={!selection}
+          prefixIcon={<Icon name="SidebarSimple" />}
+        />
+      )}
     </div>
+  );
+}
+
+type SelectionHeadingProps = Pick<Props, 'selection' | 'headerLabel'>;
+
+function SelectionHeading({ selection, headerLabel }: SelectionHeadingProps) {
+  const { t } = useTranslation();
+
+  if (selection?.node) {
+    return <SelectedNodeHeading node={selection.node} />;
+  }
+
+  if (!selection?.edge) {
+    return <span className="wb-text-title-m-emphasized">{headerLabel}</span>;
+  }
+
+  const edgeType = t('propertiesBar.edge');
+  const { label, icon } = selection.edge.data ?? {};
+
+  return <NodeHeading label={label || edgeType} subtitle={edgeType} icon={icon ?? 'CaretRight'} />;
+}
+
+function SelectedNodeHeading({ node }: { node: WorkflowBuilderNode }) {
+  const definition = useStore((store) => store.getNodeDefinition(node.data.type));
+  const translateIfPossible = useTranslateIfPossible();
+
+  const typeLabel = definition && (translateIfPossible(definition.label) || definition.label);
+  const label = node.data.properties.label;
+
+  return (
+    <NodeHeading
+      label={label || typeLabel || node.data.type}
+      subtitle={label ? typeLabel : undefined}
+      icon={node.data.icon ?? definition?.icon}
+      accent={definition?.accent}
+    />
   );
 }

@@ -48,6 +48,11 @@ export function sourceHintOf(
   return rows.some((row) => row.declaration !== undefined) ? undefined : 'noFields';
 }
 
+/** The source declares fields, yet the decider's form shows none: a stored-only row is never Hidden. */
+export function isEveryFieldHidden(rows: readonly FieldRow[], schema: unknown): boolean {
+  return rows.some((row) => row.declaration !== undefined) && shownFields(schema).length === 0;
+}
+
 // The contract's own encoding, so the stored schema is the decider's form: a field it leaves out is Hidden.
 export function fieldModeOf(schema: unknown, key: string): FieldMode {
   const declaration = schemaFields(schema).find(([name]) => name === key)?.[1];

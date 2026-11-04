@@ -12,11 +12,9 @@ import { PropertiesBarHeader } from './properties-bar-header';
 function renderHeader(propertiesPanelToggle?: boolean) {
   return renderInRoot(
     <PropertiesBarHeader
-      header="Properties"
-      name=""
-      hasSelection
-      isExpendable={false}
-      isExpanded={false}
+      selection={{ node, edge: null }}
+      headerLabel="Properties"
+      isOpen={false}
       onTogglePropertiesBar={vi.fn()}
     />,
     { builtInControls: { propertiesPanelToggle } },

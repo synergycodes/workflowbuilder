@@ -9,6 +9,7 @@ export const triggerPaletteItem: PaletteItem<TriggerSchema> = {
   description: 'Start the workflow',
   type: 'ai-studio/trigger',
   icon: 'Lightning',
+  accent: 'orange',
   templateType: NodeType.StartNode,
   isStartNode: true,
   defaultPropertiesData,

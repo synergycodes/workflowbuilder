@@ -51,4 +51,6 @@ type VisualizeNode = ProductNode<'ai-studio/visualize', VisualizeNodeConfig>;
 
 export type HumanDecisionNode = ProductNode<'ai-studio/human-decision', HumanDecisionNodeConfig>;
 
-export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode | HumanDecisionNode;
+export type ReviewNode = ProductNode<'ai-studio/review', HumanDecisionNodeConfig>;
+
+export type AiStudioNode = TriggerNode | AiAgentNode | DecisionNode | VisualizeNode | HumanDecisionNode | ReviewNode;

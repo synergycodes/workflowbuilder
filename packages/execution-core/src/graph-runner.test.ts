@@ -1891,7 +1891,7 @@ describe('runGraph — waiting results', () => {
       config: {},
       decisionRequest: {
         version: 1,
-        actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' }],
+        actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved', reasonRequired: false }],
         schema: { type: 'object', properties: {} },
       },
     };

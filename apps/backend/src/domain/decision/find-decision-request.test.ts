@@ -28,7 +28,10 @@ describe('findDecisionRequest', () => {
     const found = findDecisionRequest(snapshot, 'review-1');
 
     expect(found.error).toBeUndefined();
-    expect(found.request?.actions).toEqual([approve, { ...reject, reasonRequired: false }]);
+    expect(found.request?.actions).toEqual([
+      { ...approve, reasonRequired: false },
+      { ...reject, reasonRequired: false },
+    ]);
   });
 
   it('tells a missing node from a node that carries no request', () => {

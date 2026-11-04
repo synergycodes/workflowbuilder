@@ -63,3 +63,36 @@ it('keeps selection internal while composing the consumer click handler', () => 
   expect(onChange).toHaveBeenCalledOnce();
   expect(onChange.mock.calls[0]?.[1]).toBe('b');
 });
+
+it('marks the container and items with the secondary variant', () => {
+  act(() => {
+    root.render(
+      <SegmentPicker defaultValue="a" size="extra-small" variant="secondary">
+        <SegmentPicker.Item value="a">First</SegmentPicker.Item>
+        <SegmentPicker.Item value="b">Second</SegmentPicker.Item>
+      </SegmentPicker>,
+    );
+  });
+
+  const picker = container.firstElementChild;
+  const buttons = container.querySelectorAll('button');
+
+  expect(picker?.className).toMatch(/secondary/);
+  expect(buttons[0]?.className).toMatch(/secondary/);
+  expect(buttons[1]?.className).toMatch(/secondary/);
+  expect(buttons[0]?.getAttribute('aria-pressed')).toBe('true');
+});
+
+it('renders the primary variant by default', () => {
+  act(() => {
+    root.render(
+      <SegmentPicker defaultValue="a">
+        <SegmentPicker.Item value="a">First</SegmentPicker.Item>
+        <SegmentPicker.Item value="b">Second</SegmentPicker.Item>
+      </SegmentPicker>,
+    );
+  });
+
+  expect(container.firstElementChild?.className).not.toMatch(/secondary/);
+  expect(container.querySelector('button')?.className).not.toMatch(/secondary/);
+});

@@ -19,7 +19,7 @@
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
   getIsValidConnection,
@@ -28,6 +28,7 @@ import {
   setReactFlowProps,
 } from '../data/react-flow-config';
 import { getTheme, setControlledTheme, setTheme, useControlledTheme, usePersistedTheme } from '../hooks/theme';
+import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
@@ -44,7 +45,8 @@ vi.mock('./root-shell', () => ({
   RootShell: ({ children }: { children?: ReactNode }) => <>{children}</>,
 }));
 
-vi.mock('../data/palette', () => ({ setCustomPaletteNodes: vi.fn() }));
+const paletteMock = vi.hoisted(() => ({ getPaletteData: vi.fn((): PaletteItem[] => []) }));
+vi.mock('../data/palette', () => ({ setCustomPaletteNodes: vi.fn(), getPaletteData: paletteMock.getPaletteData }));
 vi.mock('../data/templates', () => ({ setCustomTemplates: vi.fn() }));
 vi.mock('../data/node-templates', () => ({ setCustomNodeTemplates: vi.fn() }));
 vi.mock('../features/json-form/extension-registry', () => ({
@@ -72,11 +74,17 @@ function htmlAttributes(): string[] {
 }
 
 beforeEach(() => {
+  // Each mount schedules a node re-validation timer; fake timers keep it from firing in a later test.
+  vi.useFakeTimers();
   resetWorkflowStore();
   setIsValidConnection(null);
   setReactFlowProps(null);
   setControlledTheme(null, null);
   localStorage.clear();
+});
+
+afterEach(() => {
+  vi.useRealTimers();
 });
 
 describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
@@ -266,5 +274,32 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
 
     expect(getIsValidConnection()).toBeNull();
     expect(getReactFlowProps()).toEqual({});
+  });
+});
+
+describe('WorkflowBuilderRoot — node definitions', () => {
+  it('loads node definitions on mount without a Palette', () => {
+    const definition = { type: 'action', label: 'Action', icon: 'Plus', accent: 'green' } as PaletteItem;
+    paletteMock.getPaletteData.mockClear();
+    paletteMock.getPaletteData.mockImplementation(() => [definition]);
+    function NodeProbe() {
+      const accent = useStore((store) => store.getNodeDefinition('action')?.accent);
+      return <span data-testid="accent">{accent}</span>;
+    }
+
+    const { getByTestId } = render(
+      <WorkflowBuilderRoot>
+        <NodeProbe />
+      </WorkflowBuilderRoot>,
+    );
+    act(() => {
+      for (let update = 0; update < 3; update++) {
+        useStore.setState({ nodes: [makeNode(`node-${update}`)] });
+      }
+    });
+
+    expect(getByTestId('accent').textContent).toBe('green');
+    expect(useStore.getState().fetchDataStatus).toBe(StatusType.Success);
+    expect(paletteMock.getPaletteData).toHaveBeenCalledTimes(1);
   });
 });

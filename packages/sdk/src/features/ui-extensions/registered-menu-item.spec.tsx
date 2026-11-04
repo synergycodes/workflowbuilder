@@ -7,7 +7,7 @@ import { RegisteredMenuItem } from './registered-menu-item';
 import { renderInRoot } from './test-utils';
 
 function NodeWithMenuItem() {
-  return <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Per node" />;
+  return <RegisteredMenuItem menu="propertiesPanel" componentName="PropertiesPanelMenuItem" label="Per node" />;
 }
 
 const nodeTypes = { withMenuItem: NodeWithMenuItem };
@@ -24,19 +24,24 @@ describe('RegisteredMenuItem', () => {
     const onClick = vi.fn();
     function Menu({ withItem }: { withItem: boolean }) {
       return withItem ? (
-        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" onClick={onClick} />
+        <RegisteredMenuItem
+          menu="propertiesPanel"
+          componentName="PropertiesPanelMenuItem"
+          label="Duplicate"
+          onClick={onClick}
+        />
       ) : null;
     }
     const { registry, rerender } = renderInRoot(<Menu withItem />);
 
-    expect(registry.getMenuItems('appBar')).toEqual([expect.objectContaining({ label: 'Duplicate' })]);
+    expect(registry.getMenuItems('propertiesPanel')).toEqual([expect.objectContaining({ label: 'Duplicate' })]);
     expect(registry.getMenuItems('project')).toEqual([]);
-    registry.getMenuItems('appBar')[0].onClick?.();
+    registry.getMenuItems('propertiesPanel')[0].onClick?.();
     expect(onClick).toHaveBeenCalledTimes(1);
 
     rerender(<Menu withItem={false} />);
 
-    expect(registry.getMenuItems('appBar')).toEqual([]);
+    expect(registry.getMenuItems('propertiesPanel')).toEqual([]);
     expect(warn).not.toHaveBeenCalled();
   });
 
@@ -69,22 +74,22 @@ describe('RegisteredMenuItem', () => {
     function Producer({ round }: { round: number }) {
       return (
         <RegisteredMenuItem
-          menu="appBar"
-          componentName="EditorHeaderMenuItem"
+          menu="propertiesPanel"
+          componentName="PropertiesPanelMenuItem"
           label="Item"
           onClick={() => clicks.push(round)}
         />
       );
     }
     const { registry, rerender } = renderInRoot(<Producer round={1} />);
-    const [registered] = registry.getMenuItems('appBar');
+    const [registered] = registry.getMenuItems('propertiesPanel');
     const listener = vi.fn();
     registry.subscribe(listener);
 
     rerender(<Producer round={2} />);
 
     expect(listener).not.toHaveBeenCalled();
-    expect(registry.getMenuItems('appBar')[0]).toBe(registered);
+    expect(registry.getMenuItems('propertiesPanel')[0]).toBe(registered);
     registered.onClick?.();
     expect(clicks).toEqual([2]);
   });
@@ -94,8 +99,8 @@ describe('RegisteredMenuItem', () => {
     function Producer({ withHandler }: { withHandler: boolean }) {
       return (
         <RegisteredMenuItem
-          menu="appBar"
-          componentName="EditorHeaderMenuItem"
+          menu="propertiesPanel"
+          componentName="PropertiesPanelMenuItem"
           label="Item"
           onClick={withHandler ? onClick : undefined}
         />
@@ -103,11 +108,11 @@ describe('RegisteredMenuItem', () => {
     }
     const { registry, rerender } = renderInRoot(<Producer withHandler={false} />);
 
-    expect(registry.getMenuItems('appBar')[0].onClick).toBeUndefined();
+    expect(registry.getMenuItems('propertiesPanel')[0].onClick).toBeUndefined();
 
     rerender(<Producer withHandler />);
 
-    registry.getMenuItems('appBar')[0].onClick?.();
+    registry.getMenuItems('propertiesPanel')[0].onClick?.();
     expect(onClick).toHaveBeenCalledTimes(1);
   });
 
@@ -134,12 +139,12 @@ describe('RegisteredMenuItem', () => {
 
     render(
       <StrictMode>
-        <RegisteredMenuItem menu="appBar" componentName="EditorHeaderMenuItem" label="Duplicate" />
+        <RegisteredMenuItem menu="propertiesPanel" componentName="PropertiesPanelMenuItem" label="Duplicate" />
       </StrictMode>,
     );
 
     expect(warn).toHaveBeenCalledTimes(1);
-    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<EditorHeaderMenuItem>'));
+    expect(warn).toHaveBeenCalledWith(expect.stringContaining('<PropertiesPanelMenuItem>'));
   });
 
   it('warns when rendered inside a canvas node', () => {
@@ -156,8 +161,8 @@ describe('RegisteredMenuItem', () => {
 
     const { registry } = renderInRoot(<ReactFlow nodes={nodes} nodeTypes={nodeTypes} />);
 
-    expect(registry.getMenuItems('appBar').map(({ label }) => label)).toEqual(['Per node']);
-    const itemWarnings = warn.mock.calls.filter(([message]) => String(message).includes('<EditorHeaderMenuItem>'));
+    expect(registry.getMenuItems('propertiesPanel').map(({ label }) => label)).toEqual(['Per node']);
+    const itemWarnings = warn.mock.calls.filter(([message]) => String(message).includes('<PropertiesPanelMenuItem>'));
     expect(itemWarnings).toHaveLength(1);
     expect(String(itemWarnings[0][0])).toContain('canvas node');
   });

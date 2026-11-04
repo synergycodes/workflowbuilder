@@ -11,7 +11,7 @@ export const DECISION_ISSUE_MESSAGES = {
   port_empty: 'port must not be blank',
   port_reserved: "port must not be the reserved 'errorRoute'",
   port_not_allowed: 'a rerun-source action does not route and takes no port',
-  reject_port_equals_resume_port: "reject port '{value}' must differ from the resume port",
+  duplicate_port: "port '{value}' is used by more than one action",
   required_field_undeclared: "required field '{value}' is not declared in properties",
   deadline_format:
     "must be a duration such as '30s' or '3d' (number plus ms, s, m, h or d), above zero and at most '3652500d'",

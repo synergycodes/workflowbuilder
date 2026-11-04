@@ -1,0 +1,14 @@
+.language-selector {
+  padding-inline: var(--wb-ds-space-75) var(--wb-ds-space-25);
+}
+
+.label {
+  display: flex;
+  align-items: center;
+  gap: calc(var(--wb-ds-space-75) + 0.0625rem + var(--wb-ds-space-25));
+}
+
+.caret {
+  width: var(--wb-ds-size-150);
+  height: var(--wb-ds-size-150);
+}

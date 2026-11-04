@@ -33,9 +33,9 @@ Frontend (React)
 
 A node asks a human for a decision by carrying `data.properties.decisionRequest`: the actions offered, the JSON Schema of the form, the node whose output is judged, and an optional deadline. Any node type may carry one: the backend and the decision endpoint find the request by this field, never by `type`. The mapper lifts it to `BaseNode.decisionRequest`, out of `config`.
 
-The runner does not read the field, deliberately: it learns no product's vocabulary, so a run stops where a node's executor returns a waiting result. A request on a node that never parks therefore validates, reaches the worker and asks nobody anything. The node whose executor does nothing but park is `ai-studio/human-decision`: `apps/execution-worker/src/executors/human-decision.ts` returns `{ waiting: true }`, and `apps/ai-studio/src/nodes/human-decision/` renders one output handle per action that carries a port.
+The runner does not read the field, deliberately: it learns no product's vocabulary, so a run stops where a node's executor returns a waiting result. A request on a node that never parks therefore validates, reaches the worker and asks nobody anything. The nodes whose executor does nothing but park are `ai-studio/human-decision` and `ai-studio/review`, which share `apps/execution-worker/src/executors/human-decision.ts` and its `{ waiting: true }`; `apps/ai-studio/src/components/human-decision/node-template/` renders one output handle per action that carries a port.
 
-The request is validated on `POST /:id/publish` and `POST /:id/execute`, never on `PATCH /:id/draft`: a draft is legitimately mid-edit. A broken request answers with the existing `invalid_snapshot` 400, whose `details[].path` points at the node index and field, for example `nodes.1.data.properties.decisionRequest.actions.1.effect`. A `resume` or `reject` action always names its `port`: a port is the id of an output handle on the canvas, and the backend supplies no default for it. A `rerun-source` action takes no port, because it does not route. A node that carries a request may not set `errorPolicy: 'continue'`, since a failure would then light every port at once; `fail` and `errorRoute` are accepted. A `deadline` is part of the request's shape, but publish and execute refuse it with `deadline_not_supported` until a timer enforces it: accepted, it would wait past the deadline without end. Structural issues come first; the graph rules (proposal source, predecessors) run once the structure parses, so a second round of issues can follow a fix. Every domain message the validation can produce is listed in `src/domain/decision/decision-issues.ts`. Each such detail also carries `domainCode`, its key in that dictionary, and `params` with the value the message interpolates, so a client branches and translates on the identifier and never on the wording; `code` stays zod's own.
+The request is validated on `POST /:id/publish` and `POST /:id/execute`, never on `PATCH /:id/draft`: a draft is legitimately mid-edit. A broken request answers with the existing `invalid_snapshot` 400, whose `details[].path` points at the node index and field, for example `nodes.1.data.properties.decisionRequest.actions.1.effect`. A `resume` or `reject` action always names its `port`: a port is the id of an output handle on the canvas, and the backend supplies no default for it. A `rerun-source` action takes no port, because it does not route. A request offers one or more `resume` actions, each its own branch, at most one `reject` and at most one `rerun-source`. Every routed action has its own port: a port two actions share is refused as `duplicate_port` on the later one. A node that carries a request may not set `errorPolicy: 'continue'`, since a failure would then light every port at once; `fail` and `errorRoute` are accepted. A `deadline` is part of the request's shape, but publish and execute refuse it with `deadline_not_supported` until a timer enforces it: accepted, it would wait past the deadline without end. Structural issues come first; the graph rules (proposal source, predecessors) run once the structure parses, so a second round of issues can follow a fix. Every domain message the validation can produce is listed in `src/domain/decision/decision-issues.ts`. Each such detail also carries `domainCode`, its key in that dictionary, and `params` with the value the message interpolates, so a client branches and translates on the identifier and never on the wording; `code` stays zod's own.
 
 One key is refused outright, wherever it sits. An own `__proto__` anywhere in the snapshot answers `invalid_snapshot` 400 naming its path: `JSON.parse` turns it into an ordinary key, and a loose object copies unknown keys by assignment, which for that one swaps the parsed output's prototype and hands the engine a request no schema ever saw. The check does not weigh position, so it also refuses a `__proto__` buried inside an opaque node property, where zod never copies keys one by one and the key is inert. A node type that keeps a raw JSON document in `data.properties` therefore cannot carry one.
 
@@ -45,7 +45,7 @@ A submitted decision is checked against the request by `validateSubmittedDecisio
 
 Body: `{ nodeId, attempt, action, edits?, reason?, comment? }`. `action` is the `name` of one of the node's actions. `attempt` is how many times the node has parked in this run (its `node_waiting` count; today always 1). `edits` are a patch of the proposal for whoever reads the decision to apply; the node's output carries them unapplied. Nothing applies them yet, so a step after the decision that reads the source's output sees the proposal without the corrections (follow-up: decision-settled-values). An object merges field by field and a list element by element, so a field whose schema declares `properties` or `items` must keep that shape; only `null` also passes, where the field's `type` allows it. Checks run in this order, each answering before the next: row, authorization (`executions:decide` with the row's `{ workflowId, tenantId, status }`; a deny wins over 404), status, body, node, decision, `attempt`, effect, engine. The engine is asked once; nothing is retried. Success: `200 { executionId, nodeId, attempt, action, effect }`. Codes and messages live in `src/routes/decision-refusals.ts`.
 
-The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiator is ignored. A `reject` also declares the run's outcome, edge or no edge: the run closes `completed` unless another branch ends it `incomplete` or `failed`, `GET /api/executions/:id` answers `outcome: 'rejected'` and `resolvedBy: 'human'` (`null` otherwise), and `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }`. Publish requires no edge on a reject port.
+The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiator is ignored. A decision on any `resume` action continues the run on that action's port and declares no outcome. A `reason` is accepted with any action and required wherever the chosen routed action sets `reasonRequired`. A `reject` also declares the run's outcome, edge or no edge: the run closes `completed` unless another branch ends it `incomplete` or `failed`, `GET /api/executions/:id` answers `outcome: 'rejected'` and `resolvedBy: 'human'` (`null` otherwise), and `execution_completed` carries `{ outcome: { value, resolvedBy, nodeId } }`. Publish requires no edge on a reject port.
 
 | Status | Code                        | When                                                                                                                                  |
 | ------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
@@ -59,6 +59,130 @@ The route stamps `resolvedBy: 'human'` on the decision; a body naming an initiat
 | 409    | `decision_attempt_mismatch` | Body carries the current `attempt`                                                                                                    |
 | 501    | `effect_not_supported`      | `rerun-source`, until the engine can re-run a source                                                                                  |
 | 503    | `decision_delivery_timeout` | No worker accepted it in time. It may still land: resend (`Retry-After`); `decision_already_made` then names the wait, not the sender |
+
+### Trying several resume actions on the local stack
+
+A review with two normal outcomes and a rejection: `complete` and `incomplete` are both `resume` actions, each on its own port with its own next node; `reject` has no edge, which is a deliberate end. `reasonRequired` may stand on any action with a port and defaults to `false`; here `reject` sets it. The run below never reaches an AI node. Save this as `review.json`:
+
+```json
+{
+  "name": "Review with two outcomes",
+  "draftJson": {
+    "nodes": [
+      {
+        "id": "trigger-1",
+        "type": "start-node",
+        "position": { "x": 0, "y": 200 },
+        "data": {
+          "isStartNode": true,
+          "type": "ai-studio/trigger",
+          "icon": "Lightning",
+          "segments": [],
+          "properties": { "label": "Case received", "description": "", "inputPrompt": "" }
+        }
+      },
+      {
+        "id": "review-1",
+        "type": "ai-studio/human-decision",
+        "position": { "x": 350, "y": 200 },
+        "data": {
+          "type": "ai-studio/human-decision",
+          "icon": "UserCheck",
+          "segments": [],
+          "properties": {
+            "label": "Review",
+            "description": "",
+            "decisionRequest": {
+              "version": 1,
+              "actions": [
+                { "name": "complete", "label": "Complete", "effect": "resume", "port": "source:inner:complete" },
+                { "name": "incomplete", "label": "Incomplete", "effect": "resume", "port": "source:inner:incomplete" },
+                {
+                  "name": "reject",
+                  "label": "Reject",
+                  "effect": "reject",
+                  "port": "source:inner:rejected",
+                  "reasonRequired": true
+                }
+              ],
+              "schema": { "type": "object", "properties": {} }
+            }
+          }
+        }
+      },
+      {
+        "id": "done-1",
+        "type": "node",
+        "position": { "x": 700, "y": 100 },
+        "data": {
+          "type": "ai-studio/visualize",
+          "icon": "Eye",
+          "segments": [],
+          "properties": { "label": "Complete", "description": "", "mode": "json" }
+        }
+      },
+      {
+        "id": "hold-1",
+        "type": "node",
+        "position": { "x": 700, "y": 300 },
+        "data": {
+          "type": "ai-studio/visualize",
+          "icon": "Eye",
+          "segments": [],
+          "properties": { "label": "Incomplete", "description": "", "mode": "json" }
+        }
+      }
+    ],
+    "edges": [
+      {
+        "id": "e-trigger-review",
+        "source": "trigger-1",
+        "sourceHandle": "source",
+        "target": "review-1",
+        "targetHandle": "target",
+        "type": "labelEdge",
+        "data": {}
+      },
+      {
+        "id": "e-review-done",
+        "source": "review-1",
+        "sourceHandle": "source:inner:complete",
+        "target": "done-1",
+        "targetHandle": "target",
+        "type": "labelEdge",
+        "data": {}
+      },
+      {
+        "id": "e-review-hold",
+        "source": "review-1",
+        "sourceHandle": "source:inner:incomplete",
+        "target": "hold-1",
+        "targetHandle": "target",
+        "type": "labelEdge",
+        "data": {}
+      }
+    ]
+  }
+}
+```
+
+With the backend on 3001 and a worker running (`pnpm infra:up`, then `pnpm dev:backend` and `pnpm dev:worker`, or `pnpm dev:ai-studio` for all three):
+
+```bash
+WF=$(curl -s -X POST localhost:3001/api/workflows -H 'content-type: application/json' -d @review.json | jq -r .id)
+curl -s -X POST localhost:3001/api/workflows/$WF/publish > /dev/null
+RUN=$(curl -s -X POST localhost:3001/api/workflows/$WF/execute -H 'content-type: application/json' \
+  -d '{"sourceVersion":"published","triggerPayload":{"input":"Case 48213"}}' | jq -r .executionId)
+curl -s localhost:3001/api/executions/$RUN | jq .status
+# "waiting", once the node has parked; repeat until it is
+curl -s -X POST localhost:3001/api/executions/$RUN/decision -H 'content-type: application/json' \
+  -d '{"nodeId":"review-1","attempt":1,"action":"incomplete"}' | jq .effect
+# "resume"
+curl -s localhost:3001/api/executions/$RUN | jq '{status, outcome}'
+# { "status": "completed", "outcome": null }: the run took the incomplete branch and no outcome was declared; repeat until it is
+```
+
+A second run decided with `"action":"complete"` takes the other branch; one decided with `"action":"reject"` needs a `reason` and ends with `"outcome": "rejected"`. AI Studio opens the workflow at `?workflowId=$WF` and the run at `?executionId=$RUN`: the canvas draws one handle per routed action, and the decision form offers every `resume` action, the first as its primary button, and each action that sets `reasonRequired` through a dialog that asks for a reason.
 
 ## Starting a run: `POST /api/workflows/:id/execute`
 

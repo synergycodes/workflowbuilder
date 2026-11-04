@@ -7,7 +7,7 @@ import { resolveProposalSource } from './proposal-source';
 function request(proposalSourceNodeId?: string): DecisionRequest {
   return {
     version: 1,
-    actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' }],
+    actions: [{ name: 'approve', label: 'Approve', effect: 'resume', port: 'approved', reasonRequired: false }],
     schema: { type: 'object', properties: {} },
     ...(proposalSourceNodeId === undefined ? {} : { proposalSourceNodeId }),
   };

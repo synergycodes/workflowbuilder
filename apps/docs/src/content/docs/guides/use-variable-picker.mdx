@@ -84,7 +84,7 @@ Typing `{{` opens the suggestions panel, which only lists ancestor-node properti
 
 ### `variables.<path>`
 
-Globals and secrets available at the start of each run. **Manual entry only - not surfaced in the picker today.** Type the reference yourself:
+Non-secret server-side run config that your backend sets when it submits the run; the reference backend sends an empty object. Keep secrets out. Every value here is recorded in the run's execution history. **Manual entry only - not surfaced in the picker today.** Type the reference yourself:
 
 ```
 {{variables.apiBaseUrl}}

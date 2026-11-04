@@ -15,7 +15,7 @@ export type AreaPlace = 'before' | 'after';
 type AreaKey = `${AreaId}:${AreaPlace}`;
 
 /** A built-in menu that app items can be registered into. */
-export type MenuId = 'project' | 'appBar' | 'propertiesPanel';
+export type MenuId = 'project' | 'propertiesPanel';
 
 /** The portal target of an area; `element` is `null` while the area's host is unmounted. */
 export type AreaSlot = { element: HTMLElement | null };
@@ -35,7 +35,7 @@ export type WorkflowBuilderAreaContentProps = {
 };
 
 /**
- * Props of {@link WorkflowMenuItem}, {@link EditorHeaderMenuItem} and {@link PropertiesPanelMenuItem}.
+ * Props of {@link WorkflowMenuItem} and {@link PropertiesPanelMenuItem}.
  *
  * @category Components
  */
@@ -75,7 +75,7 @@ export const EMPTY_SLOT: AreaSlot = Object.freeze({ element: null });
 export function createUiExtensionRegistry(): UiExtensionRegistry {
   const listeners = new Set<() => void>();
   let areas: Partial<Record<AreaKey, AreaSlot>> = {};
-  let menus: Record<MenuId, readonly RegisteredMenuItem[]> = { project: [], appBar: [], propertiesPanel: [] };
+  let menus: Record<MenuId, readonly RegisteredMenuItem[]> = { project: [], propertiesPanel: [] };
 
   function notify() {
     for (const listener of listeners) listener();

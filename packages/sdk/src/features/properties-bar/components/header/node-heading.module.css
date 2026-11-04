@@ -1,0 +1,29 @@
+.container {
+  display: flex;
+  align-items: center;
+  gap: var(--wb-ds-space-100);
+
+  .text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--wb-ds-space-25);
+    min-width: 0;
+  }
+
+  .label,
+  .subtitle {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  .label {
+    color: var(--wb-ds-ui-text-default);
+  }
+
+  .subtitle {
+    /* The 100% line height of wb-text-label-s crops descenders once overflow is hidden. */
+    line-height: 1.4;
+    color: var(--wb-ds-ui-text-subtle-default);
+  }
+}

@@ -9,12 +9,14 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
+import { AppBarProvider } from '../features/app-bar/app-bar-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { resetModalStore } from '../features/modals/stores/use-modal-store';
 import { useWarnOnce } from '../features/ui-extensions/use-warn-once';
 import { setControlledTheme } from '../hooks/theme';
+import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
 import { resolveIntegration } from './resolve-integration';
@@ -64,6 +66,7 @@ export function WorkflowBuilderRoot({
   name,
   logo,
   logoHref,
+  editorHeader,
   layoutDirection,
   initialNodes,
   initialEdges,
@@ -109,6 +112,7 @@ export function WorkflowBuilderRoot({
   useLayoutEffect(() => {
     resetWorkflowStore();
     resetIntegrationStore();
+    loadNodeDefinitions();
     return resetModalStore;
   }, []);
 
@@ -169,9 +173,11 @@ export function WorkflowBuilderRoot({
       edges={initialEdges}
     >
       <ReactFlowProvider>
-        <RootShell theme={theme} builtInControls={builtInControls}>
-          {children}
-        </RootShell>
+        <AppBarProvider value={editorHeader}>
+          <RootShell theme={theme} builtInControls={builtInControls}>
+            {children}
+          </RootShell>
+        </AppBarProvider>
       </ReactFlowProvider>
     </RuntimeIntegrationWrapper>
   );

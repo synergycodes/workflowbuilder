@@ -61,6 +61,11 @@ jobs:
       - name: Test
         run: pnpm --filter @workflowbuilder/temporal test
 
+      # execution-core is bundled into this package's dist, so the tag re-runs its suite
+      # like this package's own.
+      - name: Test execution-core
+        run: pnpm --filter @workflow-builder/execution-core test
+
       - name: Build
         run: pnpm --filter @workflowbuilder/temporal build
 

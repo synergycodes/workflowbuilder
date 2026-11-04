@@ -1,0 +1,41 @@
+@layer ui.base, ui.component;
+
+@layer ui.component {
+  .clean-up {
+    display: flex;
+    gap: 0.0625rem;
+
+    .main {
+      border-start-end-radius: var(--wb-ds-radius-0);
+      border-end-end-radius: var(--wb-ds-radius-0);
+    }
+
+    .caret {
+      width: auto;
+      height: var(--wb-ds-size-350);
+      padding: var(--wb-ds-space-50) var(--wb-ds-space-25);
+      border-start-start-radius: var(--wb-ds-radius-0);
+      border-end-start-radius: var(--wb-ds-radius-0);
+
+      &[data-popup-open] svg {
+        transform: rotate(180deg);
+      }
+    }
+  }
+
+  .clean-up:hover :is(.main, .caret) {
+    transition: none;
+  }
+
+  .clean-up:hover :is(.main, .caret):not(:disabled, :active, [aria-busy='true'], [data-popup-open]),
+  .clean-up:has([data-popup-open]) .main:not(:disabled, :active, [aria-busy='true']),
+  .clean-up:has([aria-busy='true']) .caret:disabled {
+    background-color: var(--wb-ds-components-nav-button-bg-primary-hover);
+    color: var(--wb-ds-components-nav-button-icon-primary-default);
+  }
+
+  .clean-up :is(.main, .caret):not(:disabled):active {
+    background-color: var(--wb-ds-components-nav-button-bg-primary-pressed);
+    color: var(--wb-ds-components-nav-button-icon-primary-pressed);
+  }
+}
