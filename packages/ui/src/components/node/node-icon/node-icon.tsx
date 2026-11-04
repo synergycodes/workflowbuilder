@@ -17,8 +17,8 @@ const ACCENT_NAME = /^[a-z0-9-]+$/;
 export type NodeIconProps = {
   icon: ReactNode;
   /**
-   * Tints the container, hides its border and colors the glyph; `disabled` overrides it and
-   * keeps the border. Without it the icon keeps the default color.
+   * Tints the container and colors the glyph; `disabled` overrides it. Without it the icon keeps
+   * the default color.
    */
   accent?: NodeIconAccent;
   /** Muted glyph and container of the Node Disabled variant. */

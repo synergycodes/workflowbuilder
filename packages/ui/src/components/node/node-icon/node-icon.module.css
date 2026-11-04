@@ -1,6 +1,6 @@
 :root {
   --wb-public-node-icon-glyph-size: var(--wb-ds-canvas-node-head-glyph);
-  /* Width of the inset stroke that only a disabled tile shows. */
+  /* The border is transparent except on a disabled tile. */
   --wb-public-node-icon-border-size: 0.0625rem;
   --wb-public-node-icon-border-radius: var(--wb-ds-canvas-node-head-icon-radius);
   --wb-public-node-icon-padding: var(--wb-ds-canvas-node-head-icon);
@@ -48,20 +48,22 @@
     --node-icon-background: var(--wb-public-node-icon-container-background-color);
 
     display: flex;
-    padding: var(--wb-public-node-icon-padding);
+    /* The padding counts the border in, so every state keeps the design size. */
+    padding: calc(var(--wb-public-node-icon-padding) - var(--wb-public-node-icon-border-size));
     justify-content: center;
     align-items: center;
     font-size: var(--wb-public-node-icon-glyph-size);
     color: var(--node-icon-color);
 
     border-radius: var(--wb-public-node-icon-border-radius);
+    border: var(--wb-public-node-icon-border-size) solid transparent;
     background: var(--node-icon-background);
+    background-origin: border-box;
 
     &.disabled {
       color: var(--wb-public-node-icon-color-disabled);
       background: var(--wb-public-node-icon-container-background-color-disabled);
-      /* Inset, so the stroke does not grow the tile. */
-      box-shadow: inset 0 0 0 var(--wb-public-node-icon-border-size) var(--wb-public-node-icon-container-border-color);
+      border-color: var(--wb-public-node-icon-container-border-color);
     }
   }
 }

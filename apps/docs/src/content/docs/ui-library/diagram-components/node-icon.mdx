@@ -66,7 +66,8 @@ html[data-theme='dark'] {
 
 ## Size
 
-The container pads the icon with `--wb-public-node-icon-padding` and sets `font-size` to
+The container keeps `--wb-public-node-icon-padding` between its edge and the icon (its 1px
+border, transparent unless disabled, counts in) and sets `font-size` to
 `--wb-public-node-icon-glyph-size`, so an icon sized in `em` - such as a Phosphor icon, or
 the SDK's `Icon` with `size="inherit"` - follows it. To render a larger icon, set the
 variables on `NodePanel.Root` or an element above it, not on `NodePanel.Header` or the
@@ -74,7 +75,8 @@ icon: the header ports read both to stay centred on the icon.
 
 ## Disabled
 
-`disabled` mutes the glyph and the container with the Node Disabled colors.
+`disabled` mutes the glyph and the container with the Node Disabled colors and shows its
+border.
 
 ## Props
 

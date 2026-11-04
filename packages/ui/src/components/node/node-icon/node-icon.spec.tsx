@@ -106,8 +106,8 @@ describe('node-icon.module.css', () => {
     expect(rule.get('background')).toBe('var(--node-icon-background)');
   });
 
-  it('strokes only the disabled tile, inside its box', () => {
-    expect(declarations('.container').has('border')).toBe(false);
-    expect(declarations('&.disabled').get('box-shadow')).toMatch(/^inset /);
+  it('keeps a transparent border in every state and colors it only when disabled', () => {
+    expect(declarations('.container').get('border')).toMatch(/ solid transparent$/);
+    expect(declarations('&.disabled').get('border-color')).toBe('var(--wb-public-node-icon-container-border-color)');
   });
 });
