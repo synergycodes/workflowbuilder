@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { snackbarOffsetBottom } from '../utils/snackbar-offset';
 
-const OFFSET_BOTTOM = '--wb-public-snackbar-offset-bottom';
+const SNACKBAR_OFFSET_VARIABLE = '--wb-public-snackbar-offset-bottom';
 
 // On the document root: the SDK's snackbar stack is not inside the dock, and AI Studio mounts one editor.
 export function useSnackbarOffset(dock: HTMLElement | null) {
@@ -10,24 +10,24 @@ export function useSnackbarOffset(dock: HTMLElement | null) {
     if (!dock) return;
 
     const rootStyle = document.documentElement.style;
-    const publish = () => {
+    const syncOffset = () => {
       rootStyle.setProperty(
-        OFFSET_BOTTOM,
+        SNACKBAR_OFFSET_VARIABLE,
         `${snackbarOffsetBottom(dock.getBoundingClientRect().top, window.innerHeight)}px`,
       );
     };
 
-    publish();
+    syncOffset();
 
-    const observer = new ResizeObserver(publish);
+    const observer = new ResizeObserver(syncOffset);
     observer.observe(dock);
     // The offset's half-viewport cap moves with the window even when the dock keeps its size.
-    window.addEventListener('resize', publish);
+    window.addEventListener('resize', syncOffset);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', publish);
-      rootStyle.removeProperty(OFFSET_BOTTOM);
+      window.removeEventListener('resize', syncOffset);
+      rootStyle.removeProperty(SNACKBAR_OFFSET_VARIABLE);
     };
   }, [dock]);
 }
