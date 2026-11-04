@@ -42,6 +42,19 @@ describe('SnackbarContainer', () => {
     expect(stack?.className).toContain('bottom-center');
   });
 
+  it('fades each snackbar in where it stands rather than sliding it up from the viewport bottom', () => {
+    act(() => {
+      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    });
+    act(() => vi.advanceTimersByTime(180));
+
+    const transition = document.querySelector<HTMLElement>('.notistack-CollapseWrapper div[style*="opacity"]');
+
+    expect(transition?.style.opacity).toBe('1');
+    expect(transition?.style.transform).toBe('none');
+    expect(transition?.style.transition).toBe('opacity 180ms ease-out, transform 180ms ease-out');
+  });
+
   // Vitest stubs CSS modules, so the rule is read from disk.
   it('raises that class by the offset variable, unlayered and doubled to outrank the notistack rule', () => {
     const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8').replaceAll(
