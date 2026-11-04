@@ -45,7 +45,7 @@ describe('RootShell surfaces', () => {
     render(<RootShell />);
 
     expect(shell().dataset.wbTheme).toBe('dark');
-    expect(shell().getAttribute('lang')).toBe(i18n.language);
+    expect(shell().getAttribute('lang')).toBe(i18n.resolvedLanguage);
     expect(portals()).toHaveLength(1);
     expect(portals()[0].classList.contains('workflow-builder-root')).toBe(true);
     expect(portals()[0].dataset.wbTheme).toBe('dark');
