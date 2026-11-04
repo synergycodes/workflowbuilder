@@ -35,15 +35,22 @@ html[data-theme='dark'] {
   --ai-studio-node-shadow-color--completed: var(--ai-studio-edge-color--active);
   --ai-studio-node-shadow-color--failed: var(--wb-ds-colors-red-400);
 
-  --ai-studio-node-shadow--active: var(--wb-ds-shadow-canvas-focus-ring-node-x)
-    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
-    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--active);
+  /* The run rule replaces the node's box-shadow, so it must repeat the inset stroke. */
+  --ai-studio-node-shadow--active:
+    inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color),
+    var(--wb-ds-shadow-canvas-focus-ring-node-x) var(--wb-ds-shadow-canvas-focus-ring-node-y)
+      var(--wb-ds-shadow-canvas-focus-ring-node-blur) var(--wb-ds-shadow-canvas-focus-ring-node-spread)
+      var(--ai-studio-node-shadow-color--active);
 
-  --ai-studio-node-shadow--completed: var(--wb-ds-shadow-canvas-focus-ring-node-x)
-    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
-    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--completed);
+  --ai-studio-node-shadow--completed:
+    inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color),
+    var(--wb-ds-shadow-canvas-focus-ring-node-x) var(--wb-ds-shadow-canvas-focus-ring-node-y)
+      var(--wb-ds-shadow-canvas-focus-ring-node-blur) var(--wb-ds-shadow-canvas-focus-ring-node-spread)
+      var(--ai-studio-node-shadow-color--completed);
 
-  --ai-studio-node-shadow--failed: var(--wb-ds-shadow-canvas-focus-ring-node-x)
-    var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
-    var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--ai-studio-node-shadow-color--failed);
+  --ai-studio-node-shadow--failed:
+    inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color),
+    var(--wb-ds-shadow-canvas-focus-ring-node-x) var(--wb-ds-shadow-canvas-focus-ring-node-y)
+      var(--wb-ds-shadow-canvas-focus-ring-node-blur) var(--wb-ds-shadow-canvas-focus-ring-node-spread)
+      var(--ai-studio-node-shadow-color--failed);
 }
