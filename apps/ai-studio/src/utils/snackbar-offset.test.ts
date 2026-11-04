@@ -10,4 +10,8 @@ describe('snackbarOffsetBottom', () => {
   it('rounds to whole pixels', () => {
     expect(snackbarOffsetBottom(654.6, 911)).toBe(268);
   });
+
+  it('stops at half the viewport, so a tall dock on a short window keeps the stack on screen', () => {
+    expect(snackbarOffsetBottom(216, 650)).toBe(325);
+  });
 });

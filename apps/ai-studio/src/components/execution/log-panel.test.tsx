@@ -249,6 +249,19 @@ describe('ExecutionLogPanel', () => {
       expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 500 + 12}px`);
     });
 
+    it('keeps the snackbars on screen when the window shrinks under a tall log', () => {
+      const viewportHeight = window.innerHeight;
+      dockTop = viewportHeight - 300;
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      Object.defineProperty(globalThis, 'innerHeight', { configurable: true, value: 500 });
+      dockTop = 200;
+      act(() => globalThis.dispatchEvent(new Event('resize')));
+      Object.defineProperty(globalThis, 'innerHeight', { configurable: true, value: viewportHeight });
+
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe('250px');
+    });
+
     it('gives the snackbars their own place back when the run is reset', () => {
       renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
 

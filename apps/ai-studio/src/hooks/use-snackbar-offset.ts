@@ -21,6 +21,7 @@ export function useSnackbarOffset(dock: HTMLElement | null) {
 
     const observer = new ResizeObserver(publish);
     observer.observe(dock);
+    // The offset's half-viewport cap moves with the window even when the dock keeps its size.
     window.addEventListener('resize', publish);
 
     return () => {
