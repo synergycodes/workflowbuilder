@@ -17,6 +17,7 @@
   :root {
     --wb-public-transition: 0.1s ease-in;
     --wb-public-background-color: var(--wb-ds-ui-bg-canvas);
+    --wb-public-canvas-grid-color: var(--wb-ds-ui-bg-canvas-dots);
     --wb-public-scroll-width: 0.375rem;
     --wb-public-scroll-radius: var(--wb-ds-radius-125);
     --wb-public-scroll-thumb-color: var(--wb-ds-components-scrollbar-bg-default);

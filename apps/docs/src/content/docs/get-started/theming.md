@@ -26,6 +26,16 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 
 Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or an equivalent local source.
 
+## Canvas grid
+
+`--wb-public-canvas-grid-color` sets the colour of the canvas dot grid (default: the design system's canvas dots colour). Set it to `transparent` to hide the grid; the canvas background, `--wb-public-background-color`, stays:
+
+```css
+:root {
+  --wb-public-canvas-grid-color: transparent;
+}
+```
+
 ## Other tokens
 
 The supported customization contract uses `--wb-public-*` for SDK controls and component overrides. Generated design tokens from `@workflowbuilder/ui` use `--wb-ds-*`; `--wb-sdk-*` is reserved for private SDK implementation details. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
