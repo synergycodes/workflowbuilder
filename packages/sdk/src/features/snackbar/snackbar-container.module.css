@@ -1,4 +1,4 @@
-/* Doubled: notistack injects its own rules at runtime, after this stylesheet, with one class each. */
+/* Unlayered and doubled: notistack's runtime rules are unlayered, one class each, and load after this file. */
 .bottom-center.bottom-center {
   /* The 6px is notistack's padding around each snackbar, so the variable measures to the snackbar's edge. */
   bottom: calc(var(--wb-public-snackbar-offset-bottom) - 6px);

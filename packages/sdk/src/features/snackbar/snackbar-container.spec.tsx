@@ -42,13 +42,27 @@ describe('SnackbarContainer', () => {
     expect(stack?.className).toContain('bottom-center');
   });
 
-  // jsdom applies no CSS and Vitest stubs CSS modules, so the rule is read from disk.
-  it('raises that class by the offset variable, doubled to outrank the one-class notistack rule', () => {
-    const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8');
+  // Vitest stubs CSS modules, so the rule is read from disk.
+  it('raises that class by the offset variable, unlayered and doubled to outrank the notistack rule', () => {
+    const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8').replaceAll(
+      /\/\*[\s\S]*?\*\//g,
+      '',
+    );
 
+    expect(css).not.toContain('@layer');
     expect(css).toMatch(
       /\.bottom-center\.bottom-center\s*\{[^}]*bottom:\s*calc\(var\(--wb-public-snackbar-offset-bottom\) - 6px\)/,
     );
     expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*transition:\s*none/);
+  });
+
+  it('subtracts the padding notistack puts around each snackbar', () => {
+    act(() => {
+      showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    });
+
+    const wrapper = document.querySelector<HTMLElement>('.notistack-CollapseWrapper');
+
+    expect(wrapper && getComputedStyle(wrapper).paddingBottom).toBe('6px');
   });
 });
