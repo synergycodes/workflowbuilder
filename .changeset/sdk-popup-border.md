@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': patch
 ---
 
-Popups from `@workflowbuilder/ui` (Menu, Select, Date Picker) and the variable suggestions list get a 1px subtle border, the design-system shadow and an 8px radius.
+Menu and Select popups get a 1px subtle border, and the Date Picker dropdown border switches to the subtle stroke. The variable suggestions list takes its border color, radius and shadow from the `--wb-public-list-box-*` variables, so it matches Menu and Select (8px radius instead of `--wb-public-input-border-radius-m`).
