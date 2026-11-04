@@ -26,6 +26,35 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 
 Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or an equivalent local source.
 
+## Layout spacing
+
+`--wb-public-layout-spacing` sets the default layout's outer spacing: the gap between the canvas edge and the header and side panels, and between the header and the panels (default `12px`). Read it in your own overlays to keep them on the same grid:
+
+```css
+:root {
+  --wb-public-layout-spacing: 16px;
+}
+
+.my-bottom-panel {
+  position: fixed;
+  bottom: var(--wb-public-layout-spacing);
+}
+```
+
+Custom layouts passed as `Root` children do not use it unless they read it themselves.
+
+## Snackbar position
+
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default:
+
+```ts
+const offset = window.innerHeight - panel.getBoundingClientRect().top + 12;
+document.documentElement.style.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+
+// When the panel goes away:
+document.documentElement.style.removeProperty('--wb-public-snackbar-offset-bottom');
+```
+
 ## Other tokens
 
 The supported customization contract uses `--wb-public-*` for SDK controls and component overrides. Generated design tokens from `@workflowbuilder/ui` use `--wb-ds-*`; `--wb-sdk-*` is reserved for private SDK implementation details. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.

@@ -10,6 +10,7 @@ import styles from './log-panel.module.css';
 
 import { useLeftPanelAnchor } from '../../hooks/use-left-panel-anchor';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
+import { useSnackbarOffset } from '../../hooks/use-snackbar-offset';
 import { type RunStatus, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 import { ExecutionStatusIcon, type ExecutionStatusTone } from './execution-status-icon';
@@ -182,8 +183,10 @@ export function ExecutionLogPanel() {
   // Clicking a node (incl. its flag marker) selects it on the canvas; the
   // highlight derives from that selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
-  const { leftOffset } = useLeftPanelAnchor();
-  const { rightOffset } = useRightPanelAnchor();
+  const { leftEdge } = useLeftPanelAnchor();
+  const { rightEdge } = useRightPanelAnchor();
+  const [dock, setDock] = useState<HTMLElement | null>(null);
+  useSnackbarOffset(dock);
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
@@ -276,12 +279,13 @@ export function ExecutionLogPanel() {
 
   return (
     <section
+      ref={setDock}
       aria-label="Execution log"
       className={clsx(styles['dock'], { [styles['dock--collapsed']]: isCollapsed })}
       style={
         {
-          '--log-dock-left': `${leftOffset}px`,
-          '--log-dock-right': `${rightOffset}px`,
+          '--log-dock-left': `${leftEdge}px`,
+          '--log-dock-right': `${rightEdge}px`,
           '--log-body-height': bodyHeight === undefined ? undefined : `${bodyHeight}px`,
         } as React.CSSProperties
       }

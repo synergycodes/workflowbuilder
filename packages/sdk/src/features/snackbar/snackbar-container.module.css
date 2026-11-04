@@ -1,0 +1,5 @@
+/* Doubled: notistack injects its own rules at runtime, after this stylesheet, with one class each. */
+.bottom-center.bottom-center {
+  /* The 6px is notistack's padding around each snackbar, so the variable measures to the snackbar's edge. */
+  bottom: calc(var(--wb-public-snackbar-offset-bottom) - 6px);
+}
