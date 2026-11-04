@@ -1,6 +1,7 @@
 .container {
   position: fixed;
-  top: 94px;
+  /* 2px below the panel tops, as in the design prototype. */
+  top: calc(2 * var(--wb-public-layout-spacing) + var(--wb-sdk-app-bar-height) + 0.125rem);
   left: 50%;
   opacity: 0;
   transform: translateX(-50%) translateY(-200px);
