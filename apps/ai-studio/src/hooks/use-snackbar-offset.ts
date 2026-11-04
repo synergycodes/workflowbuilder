@@ -19,14 +19,12 @@ export function useSnackbarOffset(dock: HTMLElement | null) {
 
     syncOffset();
 
+    // The dock is fixed to the viewport bottom, so its top moves only when its own height changes.
     const observer = new ResizeObserver(syncOffset);
     observer.observe(dock);
-    // The offset's half-viewport cap moves with the window even when the dock keeps its size.
-    window.addEventListener('resize', syncOffset);
 
     return () => {
       observer.disconnect();
-      window.removeEventListener('resize', syncOffset);
       rootStyle.removeProperty(SNACKBAR_OFFSET_VARIABLE);
     };
   }, [dock]);
