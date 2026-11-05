@@ -7,8 +7,7 @@
   .veil {
     position: absolute;
     inset: 0;
-    border-radius: var(--wb-public-node-border-radius);
-    pointer-events: none;
+    border-radius: inherit;
     background: var(--wb-public-node-run-veil-color);
     opacity: var(--wb-public-node-run-veil-opacity);
   }

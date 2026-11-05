@@ -22,7 +22,6 @@
     overflow: hidden;
     border-radius: var(--wb-public-node-run-progress-border-radius);
     background: var(--wb-public-node-run-progress-track-color);
-    pointer-events: none;
   }
 
   .fill {

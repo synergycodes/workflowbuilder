@@ -150,7 +150,7 @@ function validateChildren(
   handles: React.ReactNode,
   overlay: React.ReactNode,
 ) {
-  const totalValidChildren = (header ? 1 : 0) + (content ? 1 : 0) + (handles ? 1 : 0) + (overlay ? 1 : 0);
+  const totalValidChildren = [header, content, handles, overlay].filter(Boolean).length;
   const totalChildren = childrenArray.length;
 
   if (totalChildren > totalValidChildren) {

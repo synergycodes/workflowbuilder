@@ -46,25 +46,6 @@ describe('NodeRunRing', () => {
   });
 });
 
-describe('node-panel.module.css run overlay rule', () => {
-  const file = path.join(import.meta.dirname, '../node-panel/node-panel.module.css');
-  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
-
-  it('swaps the selected focus ring for the run status variable under a [data-node-run-overlay] element', () => {
-    const rules: Rule[] = [];
-    stylesheet.walkRules((rule) => {
-      if (rule.selector.includes(':has(> .overlay [data-node-run-overlay])')) rules.push(rule);
-    });
-
-    expect(rules).toHaveLength(1);
-    let boxShadow = '';
-    rules[0]!.walkDecls('box-shadow', (declaration) => {
-      boxShadow = declaration.value;
-    });
-    expect(boxShadow).toMatch(/var\(--wb-public-node-box-shadow-selected-with-run-status\)$/);
-  });
-});
-
 describe('node-run-ring.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-ring.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });

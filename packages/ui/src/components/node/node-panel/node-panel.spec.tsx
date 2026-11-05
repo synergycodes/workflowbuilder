@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { type ReactNode, act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+
+import postcss, { type Rule } from 'postcss';
 
 import { NodePanel } from './node-panel';
 
@@ -91,5 +95,24 @@ describe('NodePanel.Overlay', () => {
     expect(error).toHaveBeenCalledWith(expect.stringContaining('Unknown children detected'));
     expect(shell.querySelector('[data-testid="first"]')).not.toBeNull();
     expect(shell.querySelector('[data-testid="second"]')).toBeNull();
+  });
+});
+
+describe('node-panel.module.css run overlay rule', () => {
+  const file = path.join(import.meta.dirname, 'node-panel.module.css');
+  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  it('swaps the selected focus ring for the run status variable under a [data-node-run-overlay] element', () => {
+    const rules: Rule[] = [];
+    stylesheet.walkRules((rule) => {
+      if (rule.selector.includes(':has(> .overlay [data-node-run-overlay])')) rules.push(rule);
+    });
+
+    expect(rules).toHaveLength(1);
+    let boxShadow = '';
+    rules[0]!.walkDecls('box-shadow', (declaration) => {
+      boxShadow = declaration.value;
+    });
+    expect(boxShadow).toMatch(/var\(--wb-public-node-box-shadow-selected-with-run-status\)$/);
   });
 });
