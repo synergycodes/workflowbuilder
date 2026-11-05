@@ -64,22 +64,51 @@ type ComponentDecoratorOptions<P = object> =
 - **`place`** — where to render relative to the slot's host:
   - `'before'` (default) — render your content before the host.
   - `'after'` — render after.
-  - `'wrapper'` — wrap the host entirely (your `content` receives the host as children).
-- **`content`** — the React component to render.
+  - `'wrapper'` — wrap the host entirely. Your `content` receives `props` (the host's props after `modifyProps`), `component` (the undecorated host, to render it again with other props) and `children` (the host already rendered). Return `children` to keep the host, or something else to replace it. Type it with `WorkflowBuilderDecoratorWrapperProps<P>`.
+- **`content`** — the React component to render. With `'before'` and `'after'` it receives only `props`.
 - **`modifyProps`** — function receiving the host's props, returning modified props.
 - **`priority`** — higher = rendered first. Default `0`.
 - **`name`** — unique identifier within the slot; prevents duplicate registration across calls.
 
 ### Available slots
 
-| Slot name                | Where it renders                        |
-| ------------------------ | --------------------------------------- |
-| `OptionalAppChildren`    | App-level children (portals, providers) |
-| `OptionalEdgeProperties` | Edge properties panel                   |
-| `OptionalHooks`          | Invisible provider/hook slot            |
-| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)   |
+| Slot name                | Where it renders                                                                            |
+| ------------------------ | ------------------------------------------------------------------------------------------- |
+| `OptionalAppChildren`    | App-level children (portals, providers)                                                     |
+| `OptionalEdgeProperties` | Edge properties panel                                                                       |
+| `OptionalHooks`          | Invisible provider/hook slot                                                                |
+| `OptionalNodeContent`    | Inside nodes (receives `nodeId` prop)                                                       |
+| `OptionalNodeOverlay`    | Layer over the whole canvas node, empty by default, for a ring, veil or progress (`nodeId`) |
+| `OptionalNodeCorner`     | Top-right corner of the canvas node; holds the validation `Status` by default (`nodeId`)    |
+| `OptionalNodeHeaderEnd`  | End of the canvas node's header, empty by default, for a run indicator (`nodeId`)           |
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
+
+The three node slots render on the canvas only, not on palette entries. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render next to it:
+
+```tsx
+import {
+  type OptionalNodeCorner,
+  type WorkflowBuilderDecoratorWrapperProps,
+  registerComponentDecorator,
+} from '@workflowbuilder/sdk';
+import { NodeRunBadge } from '@workflowbuilder/ui';
+
+// Your app's own run state.
+import { useExecutionStore } from './execution-store';
+
+type CornerProps = React.ComponentProps<typeof OptionalNodeCorner>;
+
+registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
+  place: 'wrapper',
+  name: 'run-badge',
+  content: ({ props, children }: WorkflowBuilderDecoratorWrapperProps<CornerProps>) => {
+    const state = useExecutionStore((s) => s.nodeStates[props.nodeId]);
+    // `idle` nodes have an entry too: without this check every node loses its validation badge once a run starts.
+    return state && state.status !== 'idle' ? <NodeRunBadge tone="info" label="Running" /> : children;
+  },
+});
+```
 
 ### Example
 
