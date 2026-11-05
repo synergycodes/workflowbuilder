@@ -1,9 +1,4 @@
-import {
-  type OptionalNodeCorner,
-  type OptionalNodeOverlay,
-  type WorkflowBuilderDecoratorWrapperProps,
-  useStore,
-} from '@workflowbuilder/sdk';
+import { type OptionalNodeOverlay, type WorkflowBuilderDecoratorWrapperProps, useStore } from '@workflowbuilder/sdk';
 import {
   NodeRunBadge,
   NodeRunIndicator,
@@ -18,7 +13,6 @@ import { type NodeExecutionState, useExecutionStore } from '../../stores/use-exe
 import { nodeLabel } from '../../utils/node-label';
 
 type SlotProps = React.ComponentProps<typeof OptionalNodeOverlay>;
-type CornerProps = React.ComponentProps<typeof OptionalNodeCorner>;
 
 const PRESET_BY_STATUS: Record<NodeExecutionState['status'], NodeRunStatusPreset | undefined> = {
   idle: undefined,
@@ -70,7 +64,7 @@ export function NodeRunOverlay({ props }: { props: SlotProps }) {
   );
 }
 
-export function NodeRunCorner({ props, children }: WorkflowBuilderDecoratorWrapperProps<CornerProps>) {
+export function NodeRunCorner({ props, children }: WorkflowBuilderDecoratorWrapperProps<SlotProps>) {
   const preset = useNodeRunPreset(props.nodeId);
   return preset ? <NodeRunBadge {...preset.badge} /> : children;
 }
