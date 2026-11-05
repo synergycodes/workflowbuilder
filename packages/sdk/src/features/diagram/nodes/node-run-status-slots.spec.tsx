@@ -6,7 +6,7 @@ import type { WorkflowBuilderDecoratorWrapperProps } from '../../plugins-core/ad
 
 vi.mock('@workflowbuilder/ui', async (importOriginal) => ({
   ...(await importOriginal<Record<string, unknown>>()),
-  Status: ({ status }: { status?: string }) => (status ? <span data-testid="notify" /> : null),
+  Status: ({ status }: { status?: string }) => (status ? <span data-testid="status" /> : null),
 }));
 
 vi.mock('@xyflow/react', () => ({
@@ -43,7 +43,7 @@ describe('node run status slots', () => {
   // The first import transforms the whole template graph, which can outlast the default test timeout.
   beforeAll(load, 60_000);
 
-  it('a wrapper decorator on OptionalNodeCorner replaces the validation Notify', async () => {
+  it('a wrapper decorator on OptionalNodeCorner replaces the validation Status', async () => {
     const { registerComponentDecorator, WorkflowNodeTemplate } = await load();
     registerComponentDecorator<SlotProps>('OptionalNodeCorner', {
       place: 'wrapper',
@@ -55,11 +55,11 @@ describe('node run status slots', () => {
 
     render(<WorkflowNodeTemplate {...nodeProps} isValid={false} />);
 
-    expect(screen.queryByTestId('notify')).toBeNull();
+    expect(screen.queryByTestId('status')).toBeNull();
     expect(screen.getByTestId('run-badge').dataset.nodeId).toBe('node-1');
   });
 
-  it('before and after decorators on OptionalNodeCorner keep the Notify', async () => {
+  it('before and after decorators on OptionalNodeCorner keep the Status', async () => {
     const { registerComponentDecorator, WorkflowNodeTemplate } = await load();
     registerComponentDecorator('OptionalNodeCorner', {
       place: 'before',
@@ -74,7 +74,7 @@ describe('node run status slots', () => {
 
     render(<WorkflowNodeTemplate {...nodeProps} isValid={false} />);
 
-    expect(screen.getByTestId('notify')).toBeTruthy();
+    expect(screen.getByTestId('status')).toBeTruthy();
     expect(screen.getByTestId('corner-before')).toBeTruthy();
     expect(screen.getByTestId('corner-after')).toBeTruthy();
   });
@@ -98,7 +98,7 @@ describe('node run status slots', () => {
   });
 
   it.each(['WorkflowNodeTemplate', 'StartNodeTemplate', 'DecisionNodeTemplate', 'AiAgentNodeTemplate'])(
-    '%s renders the Notify and run status slots on the canvas only',
+    '%s renders the Status and run status slots on the canvas only',
     async (name) => {
       const { registerComponentDecorator, templates } = await load();
       const slots = ['OptionalNodeOverlay', 'OptionalNodeCorner', 'OptionalNodeHeaderEnd'];
@@ -108,11 +108,15 @@ describe('node run status slots', () => {
       const Template = templates[name]!;
 
       const canvas = render(<Template {...nodeProps} isValid={false} />);
-      for (const testId of ['notify', ...slots]) expect(screen.getByTestId(testId)).toBeTruthy();
+      for (const testId of ['status', ...slots]) expect(screen.getByTestId(testId)).toBeTruthy();
+      for (const testId of ['status', 'OptionalNodeOverlay', 'OptionalNodeCorner']) {
+        expect(screen.getByTestId(testId).closest('[class*="overlay"]')).not.toBeNull();
+      }
+      expect(screen.getByTestId('OptionalNodeHeaderEnd').closest('[class*="overlay"]')).toBeNull();
       canvas.unmount();
 
       render(<Template {...nodeProps} isValid={false} showHandles={false} />);
-      for (const testId of ['notify', ...slots]) expect(screen.queryByTestId(testId)).toBeNull();
+      for (const testId of ['status', ...slots]) expect(screen.queryByTestId(testId)).toBeNull();
     },
   );
 });
