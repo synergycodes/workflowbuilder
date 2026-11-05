@@ -9,8 +9,6 @@ import {
   NodeRunProgress,
   NodeRunRing,
   type NodeRunRingProps,
-  type NodeRunStatus,
-  type NodeRunStatusPreset,
   NodeRunVeil,
   type RunStatusTone,
   runStatusPresets,
@@ -140,38 +138,16 @@ export function NodeRunBadgeExample() {
   );
 }
 
-const STATUS_NAMES: Record<NodeRunStatus, string> = {
-  running: 'Running',
-  noSignal: 'No signal',
-  retrying: 'Retrying',
-  completed: 'Completed',
-  incomplete: 'Incomplete',
-  failed: 'Failed',
-  rejected: 'Rejected',
-  waitingForHuman: 'Waiting for human',
-  waitingExternal: 'Waiting external',
-  waitingUntil: 'Waiting until',
-  partialJoin: 'Partial join',
-  cancelled: 'Cancelled',
-  skipped: 'Skipped',
-};
-
-function PresetNode({ preset, caption: text }: { preset: NodeRunStatusPreset; caption: string }) {
-  return (
-    <DemoNode indicator={preset.indicator} caption={text}>
-      <NodeRunRing {...preset.ring} />
-      {preset.veil && <NodeRunVeil />}
-      <NodeRunBadge {...preset.badge} />
-    </DemoNode>
-  );
-}
-
 export function RunStatusExample() {
   return (
     <ComponentPreview>
       <div style={grid}>
-        {(Object.entries(runStatusPresets) as [NodeRunStatus, NodeRunStatusPreset][]).map(([status, preset]) => (
-          <PresetNode key={status} preset={preset} caption={`${STATUS_NAMES[status]} · ${status}`} />
+        {Object.entries(runStatusPresets).map(([status, preset]) => (
+          <DemoNode key={status} indicator={preset.indicator} caption={status}>
+            <NodeRunRing {...preset.ring} />
+            {preset.veil && <NodeRunVeil />}
+            <NodeRunBadge {...preset.badge} />
+          </DemoNode>
         ))}
         <DemoNode indicator={runStatusPresets.running.indicator} caption="Running with progress">
           <NodeRunRing tone="info" halo="heartbeat" />
