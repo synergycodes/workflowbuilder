@@ -12,6 +12,7 @@ import { useLeftPanelAnchor } from '../../hooks/use-left-panel-anchor';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { type RunStatus, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
+import { nodeLabel } from '../../utils/node-label';
 import { ExecutionStatusIcon, type ExecutionStatusTone } from './execution-status-icon';
 
 const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
@@ -39,11 +40,6 @@ type DiagramState = {
   nodes: { id: string; data: { properties: { label?: unknown } } }[];
   edges: { source: string; target: string }[];
 };
-
-export function nodeLabel(state: DiagramState, nodeId: string) {
-  const label = state.nodes.find((node) => node.id === nodeId)?.data.properties.label;
-  return typeof label === 'string' && label ? label : nodeId;
-}
 
 // Branch names and join counts come from the diagram until the events carry them (follow-up: execution-log-branch-payloads).
 function eventMessage(event: ExecutionEvent, state: DiagramState): string {

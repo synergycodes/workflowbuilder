@@ -4,32 +4,15 @@ import { useEffect, useRef, useState } from 'react';
 import styles from './node-run-a11y.module.css';
 
 import { useExecutionStore } from '../../stores/use-execution-store';
-import { nodeLabel } from './log-panel';
+import { nodeLabel } from '../../utils/node-label';
 import { nodeRunPreset } from './node-run-status';
 
-/** Puts each node's run status into its accessible name and announces status changes. */
+/** Announces node run status changes; `NodeRunOverlay` puts the status into each node's accessible name. */
 export function NodeRunA11y() {
   const executionId = useExecutionStore((state) => state.executionId);
   const nodeStates = useExecutionStore((state) => state.nodeStates);
-  // Also re-applies the names once a renamed or remounted node renders.
-  const nodes = useStore((state) => state.nodes);
-  const [announcement, setAnnouncement] = useState('');
+  const [announcement, setAnnouncement] = useState({ text: '', key: 0 });
   const previous = useRef({ executionId, nodeStates });
-
-  // Set on the DOM: `node.ariaLabel` in the store would be saved with the workflow and enter undo history.
-  useEffect(() => {
-    const named: HTMLElement[] = [];
-    for (const element of document.querySelectorAll<HTMLElement>('.react-flow__node')) {
-      const nodeId = element.dataset['id'] ?? '';
-      const preset = nodeRunPreset(nodeStates[nodeId]);
-      if (!preset) continue;
-      element.setAttribute('aria-label', `${nodeLabel(useStore.getState(), nodeId)}, ${preset.badge.label}`);
-      named.push(element);
-    }
-    return () => {
-      for (const element of named) element.removeAttribute('aria-label');
-    };
-  }, [nodeStates, nodes]);
 
   useEffect(() => {
     const before = previous.current;
@@ -43,12 +26,13 @@ export function NodeRunA11y() {
         ? [`${nodeLabel(useStore.getState(), nodeId)}, ${preset.badge.label}`]
         : [];
     });
-    if (changes.length > 0) setAnnouncement(changes.join('. '));
+    if (changes.length > 0) setAnnouncement(({ key }) => ({ text: changes.join('. '), key: key + 1 }));
   }, [executionId, nodeStates]);
 
   return (
     <div role="status" aria-live="polite" className={styles['live-region']}>
-      {announcement}
+      {/* A new element per announcement, so the same text twice in a row is read again. */}
+      <span key={announcement.key}>{announcement.text}</span>
     </div>
   );
 }

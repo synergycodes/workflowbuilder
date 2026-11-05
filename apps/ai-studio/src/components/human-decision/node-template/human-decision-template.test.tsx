@@ -189,7 +189,7 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(slot?.querySelectorAll('.react-flow__handle.source')).toHaveLength(2);
   });
 
-  it('keeps the validation status in the corner slot and the header-end slot last in the header', () => {
+  it('puts the overlay and corner slots in the node overlay, the validation status in the corner, the header-end slot last', () => {
     render(
       <HumanDecisionNodeTemplate
         id="human-1"
@@ -204,7 +204,9 @@ describe('HumanDecisionNodeTemplate', () => {
     const corner = container.querySelector('[data-slot="corner"][data-node-id="human-1"]');
     expect(corner?.querySelector('[class*="status-container--invalid"]')).not.toBeNull();
     expect(container.querySelector('[data-slot="content"] [class*="status-container"]')).toBeNull();
-    expect(container.querySelector('[data-slot="overlay"][data-node-id="human-1"]')).not.toBeNull();
+    const overlay = container.querySelector('[data-slot="overlay"][data-node-id="human-1"]');
+    expect(overlay?.closest('[class*="overlay"]')).not.toBeNull();
+    expect(corner?.closest('[class*="overlay"]')).not.toBeNull();
     const headerEnd = container.querySelector('[data-slot="header-end"][data-node-id="human-1"]');
     expect(headerEnd?.parentElement?.lastElementChild).toBe(headerEnd);
   });
