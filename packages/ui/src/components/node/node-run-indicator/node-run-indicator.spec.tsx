@@ -42,10 +42,13 @@ describe('NodeRunIndicator', () => {
     expect(indicator().querySelector('[data-spinner="slow"]')).not.toBeNull();
   });
 
-  it('is hidden from assistive technology', () => {
+  it('is hidden from assistive technology unless the caller overrides aria-hidden', () => {
     act(() => root.render(<NodeRunIndicator tone="info" spinner="running" />));
-
     expect(indicator().getAttribute('aria-hidden')).toBe('true');
+
+    act(() => root.render(<NodeRunIndicator tone="info" spinner="running" aria-hidden={false} aria-label="Running" />));
+    expect(indicator().getAttribute('aria-hidden')).toBe('false');
+    expect(indicator().getAttribute('aria-label')).toBe('Running');
   });
 });
 

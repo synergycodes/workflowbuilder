@@ -1,15 +1,15 @@
 import { ArrowClockwise, Check, Clock, LinkBreak, Question, SkipForward, Warning, X } from '@phosphor-icons/react';
 
-import type { NodeRingProps } from './node-ring/node-ring';
-import type { NodeRunBadgeProps } from './node-run-badge/node-run-badge';
-import type { NodeRunIndicatorProps } from './node-run-indicator/node-run-indicator';
+import type { NodeRunBadgeProps } from '../node-run-badge/node-run-badge';
+import type { NodeRunIndicatorProps } from '../node-run-indicator/node-run-indicator';
+import type { NodeRunRingProps } from '../node-run-ring/node-run-ring';
 
 /**
  * The thirteen run statuses of the Workflow Builder design system.
  *
  * @category Node
  */
-export type RunStatus =
+export type NodeRunStatus =
   | 'running'
   | 'noSignal'
   | 'retrying'
@@ -26,22 +26,23 @@ export type RunStatus =
 
 /**
  * The parts one run status is drawn with, each shaped as the props of its component, so a part spreads straight
- * onto it: `<NodeRing {...preset.ring} />`. A status without `indicator` shows none; `veil` adds a `NodeVeil`.
+ * onto it: `<NodeRunRing {...preset.ring} />`. A status without `indicator` shows none; `veil` adds a `NodeRunVeil`.
  *
  * @category Node
  */
-export type RunStatusPreset = {
-  ring: Pick<NodeRingProps, 'tone' | 'halo'>;
-  indicator?: NodeRunIndicatorProps;
-  badge: Pick<NodeRunBadgeProps, 'tone' | 'icon' | 'dimmed'> & { label: string };
+export type NodeRunStatusPreset = Readonly<{
+  ring: Readonly<Pick<NodeRunRingProps, 'tone' | 'halo'>>;
+  indicator?: Readonly<NodeRunIndicatorProps>;
+  badge: Readonly<Pick<NodeRunBadgeProps, 'tone' | 'icon' | 'dimmed'> & { label: string }>;
   veil?: boolean;
-};
+}>;
 
 /**
  * Default parts of each design-system run status. The SDK does not use them: an application maps its own run states
- * to these presets, or composes the parts itself. Replace `badge.label` with the application's copy.
+ * to these presets, or composes the parts itself. The presets are read-only: to use the application's copy, spread a
+ * part into a new object, `{ ...preset.badge, label: t('run.running') }`.
  */
-export const runStatusPresets: Readonly<Record<RunStatus, RunStatusPreset>> = {
+export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPreset>> = {
   running: {
     ring: { tone: 'info', halo: 'static' },
     indicator: { tone: 'info', spinner: 'running' },

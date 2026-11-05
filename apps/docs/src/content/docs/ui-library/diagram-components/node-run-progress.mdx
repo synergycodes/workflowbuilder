@@ -8,19 +8,21 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { NodeRunProgressExample } from '../../../../components/ui-examples/run-status';
 
 `NodeRunProgress` draws a 3px bar 3px above the bottom edge of the node header, inset by the header
-padding. Its position follows the header size variables, so a larger `NodeIcon` moves it too.
+padding. Its default `--wb-public-node-run-progress-top` follows the header's min-height, so a larger
+`NodeIcon` moves it too. A header taller than its min-height, for example with a two-line title, needs
+`--wb-public-node-run-progress-top` set to match.
 `value` is a percentage, clamped to 0-100; width changes animate over 0.4s, without animation under
-reduced motion. Pair it with a `NodeRing` in the `heartbeat` halo.
+reduced motion. Pair it with a `NodeRunRing` in the `heartbeat` halo.
 
 <NodeRunProgressExample client:visible />
 
 ## Usage
 
 ```tsx
-import { NodePanel, NodeRing, NodeRunProgress } from '@workflowbuilder/ui';
+import { NodePanel, NodeRunProgress, NodeRunRing } from '@workflowbuilder/ui';
 
 <NodePanel.Overlay>
-  <NodeRing tone="info" halo="heartbeat" />
+  <NodeRunRing tone="info" halo="heartbeat" />
   <NodeRunProgress value={progress} />
 </NodePanel.Overlay>;
 ```

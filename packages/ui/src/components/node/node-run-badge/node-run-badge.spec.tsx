@@ -7,7 +7,7 @@ import badgeStyles from '../../badge-label/badge-label.module.css';
 import styles from './node-run-badge.module.css';
 import postcss from 'postcss';
 
-import type { RunStatusTone } from '../run-status-tone';
+import type { RunStatusTone } from '../run-status/run-status-tone';
 import { NodeRunBadge } from './node-run-badge';
 
 let container: HTMLDivElement;
@@ -25,8 +25,7 @@ afterEach(() => {
 });
 
 const TONES: RunStatusTone[] = ['info', 'success', 'warning', 'critical', 'human', 'neutral', 'inverse'];
-// `info` and `inverse` read the DS badge roles, which already switch with the theme.
-const THEMED_BY_PRIMITIVES = ['success', 'warning', 'critical', 'human', 'neutral'];
+const RUN_STATUS_TONES = ['success', 'warning', 'critical', 'human', 'neutral'];
 
 describe('NodeRunBadge', () => {
   it('renders a size m BadgeLabel on the default variant, coloured by its tone', () => {
@@ -72,8 +71,22 @@ describe('node-run-badge.module.css', () => {
     }
   });
 
-  it.each(THEMED_BY_PRIMITIVES)('gives the %s text and glyph their own dark values', (tone) => {
+  it.each(['info', 'inverse'])('chains the %s colours through the BadgeLabel public variables', (tone) => {
+    const suffix = tone === 'inverse' ? '-inverse' : '';
+    for (const part of ['background-color', 'color', 'icon-color']) {
+      expect(light.get(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(
+        `var(--wb-public-badge-label-${part}${suffix})`,
+      );
+    }
+  });
+
+  it.each(RUN_STATUS_TONES)('takes the %s background and glyph from the DS run status roles', (tone) => {
+    expect(light.get(`--wb-public-node-run-badge-background-color-${tone}`)).toBe(
+      `var(--wb-ds-canvas-run-status-bg-${tone})`,
+    );
+    expect(light.get(`--wb-public-node-run-badge-icon-color-${tone}`)).toBe(
+      `var(--wb-ds-canvas-run-status-icon-${tone})`,
+    );
     expect(dark.has(`--wb-public-node-run-badge-color-${tone}`)).toBe(true);
-    expect(dark.has(`--wb-public-node-run-badge-icon-color-${tone}`)).toBe(true);
   });
 });

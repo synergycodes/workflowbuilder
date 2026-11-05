@@ -1,16 +1,16 @@
 ---
 title: Run status
-description: The thirteen design-system run statuses, composed from NodeRing, NodeRunIndicator, NodeRunBadge and NodeVeil.
+description: The thirteen design-system run statuses, composed from NodeRunRing, NodeRunIndicator, NodeRunBadge, NodeRunProgress and NodeRunVeil.
 ---
 
 import { RunStatusExample } from '../../../../components/ui-examples/run-status';
 
 A node's run status is drawn with independent parts, each with its own `tone`:
 
-- [`NodeRing`](/ui-library/diagram-components/node-ring/) - line and halo around the node.
+- [`NodeRunRing`](/ui-library/diagram-components/node-run-ring/) - line and halo around the node.
 - [`NodeRunIndicator`](/ui-library/diagram-components/node-run-indicator/) - circle at the end of the header.
 - [`NodeRunBadge`](/ui-library/diagram-components/node-run-badge/) - label above the top-right corner.
-- [`NodeVeil`](/ui-library/diagram-components/node-veil/) and
+- [`NodeRunVeil`](/ui-library/diagram-components/node-run-veil/) and
   [`NodeRunProgress`](/ui-library/diagram-components/node-run-progress/) - for skipped and
   progress-reporting steps.
 
@@ -30,14 +30,18 @@ import {
   NodeDescription,
   NodeIcon,
   NodePanel,
-  NodeRing,
   NodeRunBadge,
   NodeRunIndicator,
-  NodeVeil,
+  NodeRunRing,
+  type NodeRunStatus,
+  NodeRunVeil,
   runStatusPresets,
 } from '@workflowbuilder/ui';
+import type { ReactNode } from 'react';
 
-function RunStatusNode({ icon, label, status }) {
+type RunStatusNodeProps = { icon: ReactNode; label: string; status: NodeRunStatus };
+
+function RunStatusNode({ icon, label, status }: RunStatusNodeProps) {
   const preset = runStatusPresets[status];
 
   return (
@@ -48,8 +52,8 @@ function RunStatusNode({ icon, label, status }) {
         {preset.indicator && <NodeRunIndicator {...preset.indicator} />}
       </NodePanel.Header>
       <NodePanel.Overlay>
-        <NodeRing {...preset.ring} />
-        {preset.veil && <NodeVeil />}
+        <NodeRunRing {...preset.ring} />
+        {preset.veil && <NodeRunVeil />}
         <NodeRunBadge {...preset.badge} />
       </NodePanel.Overlay>
     </NodePanel.Root>
@@ -57,26 +61,28 @@ function RunStatusNode({ icon, label, status }) {
 }
 ```
 
-Each preset part has the shape of its component's props. `badge.label` is a default; replace it with your
-own copy, for example `Waiting · since 10:30`.
+Each preset part has the shape of its component's props. The presets are read-only; to use your own
+copy, spread the part into a new object, for example `{ ...preset.badge, label: t('run.waiting') }`.
+
+The badge sits in its node's stacking context, so a node rendered later that overlaps it can cover it.
 
 ## Statuses
 
-| Status            | Key               | Ring              | Indicator                      | Badge                                    |
-| ----------------- | ----------------- | ----------------- | ------------------------------ | ---------------------------------------- |
-| Running           | `running`         | info, `static`    | info, spinner                  | info                                     |
-| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                        |
-| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                  |
-| Completed         | `completed`       | success           | success, Check                 | success                                  |
-| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                       |
-| Failed            | `failed`          | critical          | critical, Warning              | critical                                 |
-| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                  |
-| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                    |
-| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                     |
-| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                  |
-| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                  |
-| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                  |
-| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeVeil` |
+| Status            | Key               | Ring              | Indicator                      | Badge                                       |
+| ----------------- | ----------------- | ----------------- | ------------------------------ | ------------------------------------------- |
+| Running           | `running`         | info, `static`    | info, spinner                  | info                                        |
+| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                           |
+| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                     |
+| Completed         | `completed`       | success           | success, Check                 | success                                     |
+| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                          |
+| Failed            | `failed`          | critical          | critical, Warning              | critical                                    |
+| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                     |
+| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                       |
+| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                        |
+| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                     |
+| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                     |
+| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                     |
+| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeRunVeil` |
 
 A running step that reports progress adds `NodeRunProgress` and switches the halo to `heartbeat`.
 

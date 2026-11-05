@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import styles from './node-run-badge.module.css';
 
 import { BadgeLabel, BadgeLabelProps } from '../../badge-label/badge-label';
-import type { RunStatusTone } from '../run-status-tone';
+import type { RunStatusTone } from '../run-status/run-status-tone';
 
 export type NodeRunBadgeProps = Omit<BadgeLabelProps, 'variant' | 'size'> & {
   /** Colour pair of the label, read from `--wb-public-node-run-badge-*-<tone>`. */

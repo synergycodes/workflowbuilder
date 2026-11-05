@@ -77,10 +77,15 @@ function WorkflowNode({ id, icon, label, description, selected, isValid, showHan
 variant: muted surface, title, subtitle and icon, and no hover reaction. The palette uses
 it for node types that cannot be added at the moment, for example in read-only mode.
 
-A selected node whose `Overlay` holds an element with the `data-node-run-overlay`
-attribute (a run status) keeps its selected stroke but drops the focus ring, so the run
-status stays readable. Set `--wb-public-node-box-shadow-selected-with-run-status` to
+`data-node-run-overlay` is the public hook for run status overlays: a selected node whose
+`Overlay` holds any element with that attribute keeps its selected stroke but drops the
+focus ring, so the run status stays readable. `NodeRunRing` sets it; put it on your own
+overlay element to get the same behaviour. Set
+`--wb-public-node-box-shadow-selected-with-run-status` to
 `var(--wb-public-node-box-shadow-selected)` to show both.
+
+While an `Overlay` renders, the panel's container is positioned, so it is the containing
+block of absolutely positioned content, and the handles sit above the `Overlay`.
 
 ## Parts
 

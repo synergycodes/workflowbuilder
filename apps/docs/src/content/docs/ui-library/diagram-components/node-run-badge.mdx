@@ -30,7 +30,9 @@ import { NodePanel, NodeRunBadge } from '@workflowbuilder/ui';
 
 Each tone reads `--wb-public-node-run-badge-background-color-<tone>`, `--wb-public-node-run-badge-color-<tone>`
 and `--wb-public-node-run-badge-icon-color-<tone>`. Override them on `:root` (and
-`:root[data-theme='dark']`) or on one instance with a `className`.
+`:root[data-theme='dark']`) or on one instance with a `className`. The `info` and `inverse` tones
+default to the `BadgeLabel` variables (`--wb-public-badge-label-*` and their `-inverse` pairs), so a
+global `BadgeLabel` recolour reaches them too.
 
 ## Props
 

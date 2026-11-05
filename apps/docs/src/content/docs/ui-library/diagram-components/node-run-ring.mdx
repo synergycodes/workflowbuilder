@@ -1,17 +1,17 @@
 ---
-title: NodeRing
+title: NodeRunRing
 description: Run status line and halo around a node.
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
-import { NodeRingExample } from '../../../../components/ui-examples/run-status';
+import { NodeRunRingExample } from '../../../../components/ui-examples/run-status';
 
-`NodeRing` draws a run status over the node: a 1px line in the colour of its `tone` on top of the
+`NodeRunRing` draws a run status over the node: a 1px line in the colour of its `tone` on top of the
 node stroke, and an optional halo outside the node. It is one of the run status parts; the
 [Run status](/ui-library/diagram-components/run-status/) page shows how they combine.
 
-<NodeRingExample client:visible />
+<NodeRunRingExample client:visible />
 
 ## Usage
 
@@ -19,10 +19,10 @@ Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/). T
 shadow on an absolutely positioned layer, so the node keeps its size.
 
 ```tsx
-import { NodePanel, NodeRing } from '@workflowbuilder/ui';
+import { NodePanel, NodeRunRing } from '@workflowbuilder/ui';
 
 <NodePanel.Overlay>
-  <NodeRing tone="info" halo="static" />
+  <NodeRunRing tone="info" halo="static" />
 </NodePanel.Overlay>;
 ```
 
@@ -32,13 +32,15 @@ import { NodePanel, NodeRing } from '@workflowbuilder/ui';
 - `heartbeat` - pulses between 3px and 6px every 1.4s; a running step that reports progress.
 - `waiting` - pulses between 3px and 7px every 1.8s; a step waiting for a person or a service.
 
-Only `info`, `warning` and `human` have a halo colour; with another tone the halo stays transparent.
+Each tone reads `--wb-public-node-run-ring-halo-color-<tone>`. Only `info`, `warning` and `human`
+default to a DS halo colour; the other tones default to `transparent`.
 With reduced motion, `heartbeat` stays a static 3px halo and `waiting` shows no halo.
 
 ## Selected node
 
-`NodeRing` carries the `data-node-run-overlay` attribute, so a selected node under it keeps its
-selected stroke but drops the focus ring. To show both, set:
+`NodeRunRing` carries the `data-node-run-overlay` attribute, so a selected node under it keeps its
+selected stroke but drops the focus ring (see
+[`NodePanel` states](/ui-library/diagram-components/node-panel/#states)). To show both, set:
 
 ```css
 :root {
@@ -52,14 +54,14 @@ Override a tone's variable on one instance with a `className`:
 
 ```css
 .ring-queued {
-  --wb-public-node-ring-color-info: #7c3aed;
+  --wb-public-node-run-ring-color-info: #7c3aed;
 }
 ```
 
 ## Props
 
-<PropsTable slug="node-ring" />
+<PropsTable slug="node-run-ring" />
 
 ## CSS variables
 
-<CssVariablesTable slug="node-ring" />
+<CssVariablesTable slug="node-run-ring" />

@@ -74,8 +74,8 @@ export const COMPONENTS = [
     propsType: 'NodeAsPortWrapperProps',
     dir: 'node/node-as-port-wrapper',
   },
-  { slug: 'node-ring', name: 'NodeRing', propsType: 'NodeRingProps', dir: 'node/node-ring' },
-  { slug: 'node-veil', name: 'NodeVeil', propsType: 'NodeVeilProps', dir: 'node/node-veil' },
+  { slug: 'node-run-ring', name: 'NodeRunRing', propsType: 'NodeRunRingProps', dir: 'node/node-run-ring' },
+  { slug: 'node-run-veil', name: 'NodeRunVeil', propsType: 'NodeRunVeilProps', dir: 'node/node-run-veil' },
   {
     slug: 'node-run-progress',
     name: 'NodeRunProgress',

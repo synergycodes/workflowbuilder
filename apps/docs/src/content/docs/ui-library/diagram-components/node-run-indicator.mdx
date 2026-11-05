@@ -42,10 +42,13 @@ stops with its arc on top.
 `inverse` glyph on a `neutral` circle.
 
 ```tsx
-<NodeRunIndicator tone="neutral" iconTone="inverse" icon={<X />} />
+import { X } from '@phosphor-icons/react';
+
+<NodeRunIndicator tone="neutral" iconTone="inverse" icon={<X />} />;
 ```
 
-The indicator is decorative (`aria-hidden`): the badge text carries the status.
+The indicator is decorative (`aria-hidden`) by default: the badge text carries the status. HTML
+attributes pass through to the circle, so `aria-hidden={false}` with an `aria-label` exposes it.
 
 ## Props
 

@@ -3,17 +3,21 @@
   --wb-public-node-run-progress-border-radius: var(--wb-ds-canvas-run-status-progress-radius);
   --wb-public-node-run-progress-track-color: var(--wb-ds-canvas-run-status-progress-track);
   --wb-public-node-run-progress-fill-color: var(--wb-ds-canvas-run-status-progress-fill);
+  /* NodePanel's header min-height less two bar heights: the bar ends 3px above the header edge. */
+  /* stylelint-disable-next-line wb/no-system-token-fallbacks -- NodeIcon's stylesheet, which defines them, may be absent */
+  --wb-public-node-run-progress-top: calc(
+    2 * var(--wb-ds-canvas-node-head-v-pad) + 2 *
+      var(--wb-public-node-icon-padding, var(--wb-ds-canvas-node-head-icon)) +
+      var(--wb-public-node-icon-glyph-size, var(--wb-ds-canvas-node-head-glyph)) - 2 *
+      var(--wb-public-node-run-progress-height)
+  );
 }
 
 @layer ui.component {
   .progress {
     position: absolute;
     inset-inline: var(--wb-ds-canvas-node-head-h-pad);
-    /* Header height as in NodePanel's header min-height, less two bar heights: the bar ends 3px above the header edge. */
-    top: calc(
-      2 * var(--wb-ds-canvas-node-head-v-pad) + 2 * var(--wb-public-node-icon-padding) +
-        var(--wb-public-node-icon-glyph-size) - 2 * var(--wb-public-node-run-progress-height)
-    );
+    top: var(--wb-public-node-run-progress-top);
     height: var(--wb-public-node-run-progress-height);
     overflow: hidden;
     border-radius: var(--wb-public-node-run-progress-border-radius);

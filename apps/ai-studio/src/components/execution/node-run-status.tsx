@@ -4,11 +4,11 @@ import type {
   WorkflowBuilderDecoratorWrapperProps,
 } from '@workflowbuilder/sdk';
 import {
-  NodeRing,
   NodeRunBadge,
   NodeRunIndicator,
-  NodeVeil,
-  type RunStatusPreset,
+  NodeRunRing,
+  type NodeRunStatusPreset,
+  NodeRunVeil,
   runStatusPresets,
 } from '@workflowbuilder/ui';
 
@@ -17,7 +17,7 @@ import { type NodeExecutionState, useExecutionStore } from '../../stores/use-exe
 type SlotProps = React.ComponentProps<typeof OptionalNodeOverlay>;
 type CornerProps = React.ComponentProps<typeof OptionalNodeCorner>;
 
-const PRESET_BY_STATUS: Record<NodeExecutionState['status'], RunStatusPreset | undefined> = {
+const PRESET_BY_STATUS: Record<NodeExecutionState['status'], NodeRunStatusPreset | undefined> = {
   idle: undefined,
   running: runStatusPresets.running,
   waiting: runStatusPresets.waitingForHuman,
@@ -26,7 +26,7 @@ const PRESET_BY_STATUS: Record<NodeExecutionState['status'], RunStatusPreset | u
   skipped: runStatusPresets.skipped,
 };
 
-export function nodeRunPreset(state: NodeExecutionState | undefined): RunStatusPreset | undefined {
+export function nodeRunPreset(state: NodeExecutionState | undefined): NodeRunStatusPreset | undefined {
   return state && PRESET_BY_STATUS[state.status];
 }
 
@@ -40,8 +40,8 @@ export function NodeRunOverlay({ props }: { props: SlotProps }) {
 
   return (
     <>
-      <NodeRing {...preset.ring} />
-      {preset.veil && <NodeVeil />}
+      <NodeRunRing {...preset.ring} />
+      {preset.veil && <NodeRunVeil />}
     </>
   );
 }

@@ -2,43 +2,38 @@
   --wb-public-node-run-badge-offset: var(--wb-ds-space-62);
   --wb-public-node-run-badge-dimmed-opacity: 0.4;
 
-  --wb-public-node-run-badge-background-color-info: var(--wb-ds-components-badge-bg-default);
-  --wb-public-node-run-badge-color-info: var(--wb-ds-components-badge-text-default);
-  --wb-public-node-run-badge-icon-color-info: var(--wb-ds-components-badge-icon-default);
-  --wb-public-node-run-badge-background-color-inverse: var(--wb-ds-components-badge-bg-inverse);
-  --wb-public-node-run-badge-color-inverse: var(--wb-ds-components-badge-text-inverse);
-  --wb-public-node-run-badge-icon-color-inverse: var(--wb-ds-components-badge-icon-inverse);
+  --wb-public-node-run-badge-background-color-info: var(--wb-public-badge-label-background-color);
+  --wb-public-node-run-badge-color-info: var(--wb-public-badge-label-color);
+  --wb-public-node-run-badge-icon-color-info: var(--wb-public-badge-label-icon-color);
+  --wb-public-node-run-badge-background-color-inverse: var(--wb-public-badge-label-background-color-inverse);
+  --wb-public-node-run-badge-color-inverse: var(--wb-public-badge-label-color-inverse);
+  --wb-public-node-run-badge-icon-color-inverse: var(--wb-public-badge-label-icon-color-inverse);
 
-  /* The DS has no badge roles for these tones; the pairs come from the Run Status card. */
-  --wb-public-node-run-badge-background-color-warning: var(--wb-ds-colors-orange-500-10);
+  --wb-public-node-run-badge-background-color-warning: var(--wb-ds-canvas-run-status-bg-warning);
+  --wb-public-node-run-badge-icon-color-warning: var(--wb-ds-canvas-run-status-icon-warning);
+  --wb-public-node-run-badge-background-color-success: var(--wb-ds-canvas-run-status-bg-success);
+  --wb-public-node-run-badge-icon-color-success: var(--wb-ds-canvas-run-status-icon-success);
+  --wb-public-node-run-badge-background-color-critical: var(--wb-ds-canvas-run-status-bg-critical);
+  --wb-public-node-run-badge-icon-color-critical: var(--wb-ds-canvas-run-status-icon-critical);
+  --wb-public-node-run-badge-background-color-human: var(--wb-ds-canvas-run-status-bg-human);
+  --wb-public-node-run-badge-icon-color-human: var(--wb-ds-canvas-run-status-icon-human);
+  --wb-public-node-run-badge-background-color-neutral: var(--wb-ds-canvas-run-status-bg-neutral);
+  --wb-public-node-run-badge-icon-color-neutral: var(--wb-ds-canvas-run-status-icon-neutral);
+
+  /* The DS has no run status text role; the text colours come from the Run Status card. */
   --wb-public-node-run-badge-color-warning: var(--wb-ds-colors-orange-800);
-  --wb-public-node-run-badge-icon-color-warning: var(--wb-ds-colors-orange-700);
-  --wb-public-node-run-badge-background-color-success: var(--wb-ds-colors-green-400-10);
   --wb-public-node-run-badge-color-success: var(--wb-ds-colors-green-400);
-  --wb-public-node-run-badge-icon-color-success: var(--wb-ds-colors-green-500);
-  --wb-public-node-run-badge-background-color-critical: var(--wb-ds-colors-red-400-10);
   --wb-public-node-run-badge-color-critical: var(--wb-ds-colors-red-400);
-  --wb-public-node-run-badge-icon-color-critical: var(--wb-ds-colors-red-400);
-  --wb-public-node-run-badge-background-color-human: var(--wb-ds-colors-acc4-500-10);
   --wb-public-node-run-badge-color-human: var(--wb-ds-colors-acc4-700);
-  --wb-public-node-run-badge-icon-color-human: var(--wb-ds-colors-acc4-700);
-  --wb-public-node-run-badge-background-color-neutral: var(--wb-ds-colors-gray-300);
   --wb-public-node-run-badge-color-neutral: var(--wb-ds-colors-gray-600);
-  --wb-public-node-run-badge-icon-color-neutral: var(--wb-ds-colors-gray-600);
 }
 
 :root[data-theme='dark'] {
   --wb-public-node-run-badge-color-warning: var(--wb-ds-colors-orange-400);
-  --wb-public-node-run-badge-icon-color-warning: var(--wb-ds-colors-orange-400);
   --wb-public-node-run-badge-color-success: var(--wb-ds-colors-green-300);
-  --wb-public-node-run-badge-icon-color-success: var(--wb-ds-colors-green-300);
   --wb-public-node-run-badge-color-critical: var(--wb-ds-colors-red-300);
-  --wb-public-node-run-badge-icon-color-critical: var(--wb-ds-colors-red-300);
   --wb-public-node-run-badge-color-human: var(--wb-ds-colors-acc4-300);
-  --wb-public-node-run-badge-icon-color-human: var(--wb-ds-colors-acc4-300);
-  --wb-public-node-run-badge-background-color-neutral: var(--wb-ds-colors-gray-650);
   --wb-public-node-run-badge-color-neutral: var(--wb-ds-colors-gray-400);
-  --wb-public-node-run-badge-icon-color-neutral: var(--wb-ds-colors-gray-400);
 }
 
 @layer ui.component {

@@ -3,15 +3,15 @@ import {
   NodeDescription,
   NodeIcon,
   NodePanel,
-  NodeRing,
-  type NodeRingProps,
   NodeRunBadge,
   NodeRunIndicator,
   type NodeRunIndicatorProps,
   NodeRunProgress,
-  NodeVeil,
-  type RunStatus,
-  type RunStatusPreset,
+  NodeRunRing,
+  type NodeRunRingProps,
+  type NodeRunStatus,
+  type NodeRunStatusPreset,
+  NodeRunVeil,
   type RunStatusTone,
   runStatusPresets,
 } from '@workflowbuilder/ui';
@@ -54,8 +54,8 @@ function DemoNode({ title = 'Node title', selected = false, indicator, caption: 
   );
 }
 
-export function NodeRingExample() {
-  const rings: (NodeRingProps & { caption: string; selected?: boolean })[] = [
+export function NodeRunRingExample() {
+  const rings: (NodeRunRingProps & { caption: string; selected?: boolean })[] = [
     ...TONES.map((tone) => ({ tone, caption: tone })),
     { tone: 'info', halo: 'static', caption: "info, halo 'static'" },
     { tone: 'info', halo: 'heartbeat', caption: "info, halo 'heartbeat'" },
@@ -68,7 +68,7 @@ export function NodeRingExample() {
       <div style={grid}>
         {rings.map(({ caption: text, selected, ...ring }) => (
           <DemoNode key={text} caption={text} selected={selected}>
-            <NodeRing {...ring} />
+            <NodeRunRing {...ring} />
           </DemoNode>
         ))}
       </div>
@@ -76,12 +76,12 @@ export function NodeRingExample() {
   );
 }
 
-export function NodeVeilExample() {
+export function NodeRunVeilExample() {
   return (
     <ComponentPreview>
       <DemoNode>
-        <NodeRing tone="neutral" />
-        <NodeVeil />
+        <NodeRunRing tone="neutral" />
+        <NodeRunVeil />
       </DemoNode>
     </ComponentPreview>
   );
@@ -92,11 +92,11 @@ export function NodeRunProgressExample() {
     <ComponentPreview>
       <ComponentPreview.Row>
         <DemoNode indicator={{ tone: 'info', spinner: 'running' }} caption="35%">
-          <NodeRing tone="info" halo="heartbeat" />
+          <NodeRunRing tone="info" halo="heartbeat" />
           <NodeRunProgress value={35} />
         </DemoNode>
         <DemoNode indicator={{ tone: 'info', spinner: 'running' }} caption="80%">
-          <NodeRing tone="info" halo="heartbeat" />
+          <NodeRunRing tone="info" halo="heartbeat" />
           <NodeRunProgress value={80} />
         </DemoNode>
       </ComponentPreview.Row>
@@ -140,7 +140,7 @@ export function NodeRunBadgeExample() {
   );
 }
 
-const STATUS_NAMES: Record<RunStatus, string> = {
+const STATUS_NAMES: Record<NodeRunStatus, string> = {
   running: 'Running',
   noSignal: 'No signal',
   retrying: 'Retrying',
@@ -156,11 +156,11 @@ const STATUS_NAMES: Record<RunStatus, string> = {
   skipped: 'Skipped',
 };
 
-function PresetNode({ preset, caption: text }: { preset: RunStatusPreset; caption: string }) {
+function PresetNode({ preset, caption: text }: { preset: NodeRunStatusPreset; caption: string }) {
   return (
     <DemoNode indicator={preset.indicator} caption={text}>
-      <NodeRing {...preset.ring} />
-      {preset.veil && <NodeVeil />}
+      <NodeRunRing {...preset.ring} />
+      {preset.veil && <NodeRunVeil />}
       <NodeRunBadge {...preset.badge} />
     </DemoNode>
   );
@@ -170,11 +170,11 @@ export function RunStatusExample() {
   return (
     <ComponentPreview>
       <div style={grid}>
-        {(Object.entries(runStatusPresets) as [RunStatus, RunStatusPreset][]).map(([status, preset]) => (
+        {(Object.entries(runStatusPresets) as [NodeRunStatus, NodeRunStatusPreset][]).map(([status, preset]) => (
           <PresetNode key={status} preset={preset} caption={`${STATUS_NAMES[status]} · ${status}`} />
         ))}
         <DemoNode indicator={runStatusPresets.running.indicator} caption="Running with progress">
-          <NodeRing tone="info" halo="heartbeat" />
+          <NodeRunRing tone="info" halo="heartbeat" />
           <NodeRunProgress value={60} />
           <NodeRunBadge {...runStatusPresets.running.badge} />
         </DemoNode>
