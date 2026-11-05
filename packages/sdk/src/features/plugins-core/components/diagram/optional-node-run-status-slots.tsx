@@ -14,7 +14,7 @@ function OptionalWrapper({ children }: PropsWithChildren<Props>) {
  * Plugin slot inside the node's `NodePanel.Overlay`, a layer over the whole
  * canvas node. Empty by default; decorate `'OptionalNodeOverlay'` with
  * {@link registerComponentDecorator} to draw run status layers such as
- * `NodeRing`, `NodeVeil` or `NodeRunProgress`. Receives `nodeId`.
+ * `NodeRunRing`, `NodeRunVeil` or `NodeRunProgress`. Receives `nodeId`.
  *
  * @category Components
  */

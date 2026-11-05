@@ -21,8 +21,9 @@ over the whole node, not in `NodePanel.Content`.
 
 ```tsx
 import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import type { ReactNode } from 'react';
 
-function Example({ isValid }: { isValid: boolean }) {
+function Example({ icon, isValid }: { icon: ReactNode; isValid: boolean }) {
   return (
     <NodePanel.Root selected={false}>
       <NodePanel.Header>

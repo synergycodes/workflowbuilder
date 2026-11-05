@@ -279,6 +279,32 @@ The key must match the palette item's `type`. Keys that collide with built-in te
 
 The same template renders the canvas node, the palette thumbnail and the drag ghost. In the palette `data` and `layoutDirection` are `undefined` — read them with optional chaining and fall back to defaults. The palette passes `selected` for the drag ghost (the Node Active ring) and `disabled` for entries that cannot be added, for example in read-only mode; forward both to `NodePanel.Root`, `NodeIcon` and `NodeDescription`, otherwise your entry looks draggable while the palette is locked.
 
+A custom template gets no validation badge and no [run status slots](/guides/build-a-plugin/#available-slots) unless it renders them. The built-in templates do it like this, on canvas nodes only (the palette passes `showHandles={false}`):
+
+```tsx
+import { OptionalNodeCorner, OptionalNodeHeaderEnd, OptionalNodeOverlay } from '@workflowbuilder/sdk';
+import { Status } from '@workflowbuilder/ui';
+
+// `id` and `isValid` come from WorkflowBuilderNodeTemplateProps too.
+const isCanvasNode = showHandles;
+
+<NodePanel.Root selected={selected} disabled={disabled}>
+  <NodePanel.Header>
+    {/* NodeIcon, NodeDescription */}
+    {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
+  </NodePanel.Header>
+  <NodePanel.Overlay isVisible={isCanvasNode}>
+    <OptionalNodeOverlay nodeId={id} />
+    <OptionalNodeCorner nodeId={id}>
+      <Status status={isValid === false ? 'invalid' : undefined} />
+    </OptionalNodeCorner>
+  </NodePanel.Overlay>
+  {/* NodePanel.Handles */}
+</NodePanel.Root>;
+```
+
+Keep `OptionalNodeHeaderEnd` the last child of the header.
+
 One thing the custom template path does **not** include: `NodeAsPortWrapper` (drag-to-create connections by dropping onto the node body). If you need that, register a custom node container through a plugin instead — see [Build a plugin](/guides/build-a-plugin/).
 
 ## Conditional fields

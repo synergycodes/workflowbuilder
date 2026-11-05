@@ -84,7 +84,7 @@ type ComponentDecoratorOptions<P = object> =
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
 
-The three node slots render on the canvas only, not on palette entries. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render next to it:
+The three node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
 
 ```tsx
 import {
