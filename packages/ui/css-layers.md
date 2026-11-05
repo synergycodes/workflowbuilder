@@ -13,6 +13,49 @@ variables only:
 defaults on `[data-wb-theme]`) and `@font-face`. Every rule that paints is unlayered and scoped
 by a selector prefix.
 
+## The build path
+
+Three builds run in order, each consuming the previous one's `dist`:
+
+| Stage                | Input                                                                           | Steps, in order                                                                                                                                                                                                  | Output                                        |
+| -------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| 1. `packages/tokens` | `tokens.json` (Figma export)                                                    | Style Dictionary: primitives and Canvas to `:root`, themed sets to `[data-wb-theme='light' \| 'dark']`, sizes to rem. No PostCSS                                                                                 | `tokens.css`                                  |
+| 2. `packages/ui`     | `tokens.css`, component `*.module.css`                                          | Token copy: stamp the order and wrap in `@layer ui.base`. Components: CSS modules hashing, then `postcss-box-sizing`, `postcss-layer-root-defaults`, `postcss-scope-prefix` (`ui`), minify, `check-built-css.ts` | `dist/tokens.css`, `dist/index.css`           |
+| 3. `packages/sdk`    | `src/index.css`: UI tokens, `@xyflow/react` CSS, UI dist, SDK and icons modules | CSS modules hashing, then `sdkPostcssPlugins()`: `postcss-layer-root-defaults` and `postcss-scope-prefix` (`sdk`, React Flow as vendored), limited to SDK files by `include`; minify, `check-built-css.ts dist`  | `dist/style.css`, the one file a host imports |
+
+CSS modules runs before the project plugins, which work in `OnceExit`, so the plugins see
+already-hashed selectors; that is why a foreign class has to be in `:global()`. The UI dist passes
+through the SDK build unchanged, because the plugins recognise their own prefix.
+
+The demo and AI Studio skip stage 3 in dev and production builds alike: they alias
+`@workflowbuilder/sdk` to its source and run `sdkPostcssPlugins()` themselves, so the checker
+never sees their output. Run `pnpm build:lib` before pushing an SDK style change; `pr-check.yml`
+runs it on every PR.
+
+## Where a value comes from
+
+No component rule holds a literal value. The browser resolves a chain of variables when it
+renders, and `data-wb-theme` on the editor box decides which themed block applies. A panel
+background in dark mode:
+
+```css
+.panel {
+  background: var(--wb-public-panel-bg);
+} /* component rule, index.css */
+[data-wb-theme] {
+  --wb-public-panel-bg: var(--wb-ds-ui-bg-base);
+} /* public default, ui.base   */
+[data-wb-theme='dark'] {
+  --wb-ds-ui-bg-base: var(--wb-ds-colors-gray-700);
+} /* themed token, tokens.css */
+:root {
+  --wb-ds-colors-gray-700: #27282b;
+} /* primitive, tokens.css     */
+```
+
+A host retheming the editor overrides `--wb-ds-*` or `--wb-public-*` on `.workflow-builder-root`;
+an unlayered declaration there beats every layered default above it.
+
 ## Why the defaults stay layered
 
 A consumer override on `.workflow-builder-root` is unlayered, so it beats the layered default

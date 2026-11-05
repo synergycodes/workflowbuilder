@@ -8,6 +8,12 @@ build runs the same `postcss-scope-prefix` plugin. Only the `[data-wb-theme]`-in
 of public defaults is this package's alone: a consumer bundle may set a public variable on its own
 subtree as a scoped override, which is a legitimate pattern rather than a mis-scoped default.
 
+The demo and AI Studio alias `@workflowbuilder/sdk` to its source, so their dev servers never
+produce a dist for the checker to read; they run the SDK's PostCSS plugins themselves
+(`packages/sdk/postcss-plugins.mts`) and show the change at once. That is deliberate: the
+checker's verdict comes from `pnpm build:lib` instead, run before a push and again by
+`pr-check.yml` on every PR.
+
 ## Malformed `var()` argument
 
 **What breaks** - A declaration such as `color: var(token)` is invalid, so the intended color, size, or other value disappears.
