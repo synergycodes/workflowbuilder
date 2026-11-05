@@ -8,16 +8,25 @@ import { applyEvent, applySnapshot, resetExecution, useExecutionStore } from '..
 import { nodeEvent, snapshotFrame } from '../../../test/execution-history';
 import { HumanDecisionNodeTemplate } from './human-decision-template';
 
-// The slot is observed through a marker element; the real one renders its children unchanged.
+// The slots are observed through marker elements; the real ones render their children unchanged.
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return {
-    ...actual,
-    Icon: () => null,
-    OptionalNodeContent: ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
-      <div data-optional-node-content={nodeId}>{children}</div>
-    ),
-  };
+  const slots = Object.fromEntries(
+    [
+      ['OptionalNodeContent', 'content'],
+      ['OptionalNodeOverlay', 'overlay'],
+      ['OptionalNodeCorner', 'corner'],
+      ['OptionalNodeHeaderEnd', 'header-end'],
+    ].map(([component, name]) => [
+      component,
+      ({ nodeId, children }: { nodeId: string; children?: ReactNode }) => (
+        <div data-slot={name} data-node-id={nodeId}>
+          {children}
+        </div>
+      ),
+    ]),
+  );
+  return { ...actual, ...slots, Icon: () => null };
 });
 
 declare global {
@@ -170,14 +179,34 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(container.querySelector('[style*="--wb-public-node-icon-color-violet"]')).not.toBeNull();
   });
 
-  it('renders the actions inside the OptionalNodeContent slot, where the execution markers mount', () => {
+  it('renders the actions inside the OptionalNodeContent slot', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,
     );
 
-    const slot = container.querySelector('[data-optional-node-content="human-1"]');
+    const slot = container.querySelector('[data-slot="content"][data-node-id="human-1"]');
     expect(slot).not.toBeNull();
     expect(slot?.querySelectorAll('.react-flow__handle.source')).toHaveLength(2);
+  });
+
+  it('keeps the validation status in the corner slot and the header-end slot last in the header', () => {
+    render(
+      <HumanDecisionNodeTemplate
+        id="human-1"
+        icon="UserCheck"
+        label="Human decision"
+        description=""
+        isValid={false}
+        data={data}
+      />,
+    );
+
+    const corner = container.querySelector('[data-slot="corner"][data-node-id="human-1"]');
+    expect(corner?.querySelector('[class*="status-container--invalid"]')).not.toBeNull();
+    expect(container.querySelector('[data-slot="content"] [class*="status-container"]')).toBeNull();
+    expect(container.querySelector('[data-slot="overlay"][data-node-id="human-1"]')).not.toBeNull();
+    const headerEnd = container.querySelector('[data-slot="header-end"][data-node-id="human-1"]');
+    expect(headerEnd?.parentElement?.lastElementChild).toBe(headerEnd);
   });
 
   it('follows the layout direction: handles hang below and above in a top-down diagram', () => {
@@ -196,13 +225,13 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(handles(container, 'target').map((handle) => handle.dataset['handlepos'])).toEqual(['top']);
   });
 
-  it('shows only the header in the palette preview: no handles, no slot', () => {
+  it('shows only the header in the palette preview: no handles, no slots', () => {
     render(
       <HumanDecisionNodeTemplate id="" icon="UserCheck" label="Human decision" description="" showHandles={false} />,
     );
 
     expect(container.querySelectorAll('.react-flow__handle')).toHaveLength(0);
-    expect(container.querySelector('[data-optional-node-content]')).toBeNull();
+    expect(container.querySelector('[data-slot]')).toBeNull();
     expect(container.textContent).toContain('Human decision');
   });
 

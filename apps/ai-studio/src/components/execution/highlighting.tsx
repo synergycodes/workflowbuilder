@@ -1,4 +1,4 @@
-// Node shadow + edge highlighting — mirrors flow runner pattern (appendCSS approach)
+// Edge highlighting — mirrors flow runner pattern (appendCSS approach)
 import { getStoreEdges } from '@workflowbuilder/sdk';
 import { useEffect, useMemo } from 'react';
 
@@ -22,36 +22,17 @@ const appendCSS = (stylesheetId: string, styleContent: string) => {
   document.head.append(styleElement);
 };
 
-const nodeSelector = (nodeId: string) => `[data-id="${nodeId}"]:not(.selected) [class*="node-panel-wrapper"] > div`;
 const edgeSelector = (edgeId: string) => `g:not(.selected) > [data-edge-id="${edgeId}"]`;
 
 export function ExecutionHighlighting() {
   const nodeStates = useExecutionStore((s) => s.nodeStates);
 
   const cssContent = useMemo(() => {
-    const byStatus = { running: [] as string[], completed: [] as string[], failed: [] as string[] };
     const nonIdleNodes = new Set<string>();
 
     for (const [nodeId, state] of Object.entries(nodeStates) as [string, NodeExecutionState][]) {
       if (state.status !== 'idle' && state.status !== 'skipped') {
         nonIdleNodes.add(nodeId);
-      }
-
-      switch (state.status) {
-        case 'running':
-        case 'waiting': {
-          byStatus.running.push(nodeId);
-          break;
-        }
-        case 'completed': {
-          byStatus.completed.push(nodeId);
-          break;
-        }
-        case 'failed': {
-          byStatus.failed.push(nodeId);
-          break;
-        }
-        // No default
       }
     }
 
@@ -68,28 +49,12 @@ export function ExecutionHighlighting() {
       }
     }
 
-    let css = '';
+    if (activeEdgeIds.length === 0) return '';
 
-    if (activeEdgeIds.length > 0) {
-      css += `${activeEdgeIds.map(edgeSelector).join(', ')} {
+    return `${activeEdgeIds.map(edgeSelector).join(', ')} {
         stroke: var(--ai-studio-edge-color--active) !important;
         stroke-width: 5 !important;
       }`;
-    }
-
-    if (byStatus.running.length > 0) {
-      css += `${byStatus.running.map(nodeSelector).join(', ')} { box-shadow: var(--ai-studio-node-shadow--active) !important; }`;
-    }
-
-    if (byStatus.completed.length > 0) {
-      css += `${byStatus.completed.map(nodeSelector).join(', ')} { box-shadow: var(--ai-studio-node-shadow--completed) !important; }`;
-    }
-
-    if (byStatus.failed.length > 0) {
-      css += `${byStatus.failed.map(nodeSelector).join(', ')} { box-shadow: var(--ai-studio-node-shadow--failed) !important; }`;
-    }
-
-    return css;
   }, [nodeStates]);
 
   useEffect(() => {
