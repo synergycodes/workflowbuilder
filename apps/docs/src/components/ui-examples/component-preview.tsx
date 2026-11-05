@@ -8,11 +8,13 @@ import previewCss from '../../../../../packages/ui/tmp/docs-preview.css?raw';
 // Examples render in a shadow root so Starlight's rules cannot reach them and
 // the library's cannot leak out. Inherited and custom properties still cross
 // the boundary - that is how the docs theme reaches the examples. Inside a
-// shadow root `:root` matches nothing, hence the retarget to `:host`; the host
-// mirrors the page's `data-theme` so the dark component defaults apply too.
+// shadow root `:root` and `html` match nothing, hence the retarget to `:host`;
+// the host mirrors the page's `data-theme` so the themed component defaults apply.
 // The boundary also stops the docs' own stylesheets, so example layout lives
 // here as `Stack` and `Row` rather than in per-example CSS modules.
-const shadowCss = `${previewCss.replaceAll(/:root\[data-theme=['"]?dark['"]?\]/g, ':host([data-theme=dark])').replaceAll(':root', ':host')}
+const shadowCss = `${previewCss
+  .replaceAll(/(?::root|html)\[data-theme=["']?([\w-]+)["']?\]/g, ':host([data-theme=$1])')
+  .replaceAll(':root', ':host')}
 :host > :not(style) { max-width: 100%; }
 .stack { display: flex; flex-direction: column; gap: var(--wb-ds-space-150); }
 .row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--wb-ds-space-100); }`;
