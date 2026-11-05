@@ -46,8 +46,6 @@
     }
 
     :global(.react-flow__handle) {
-      /* Above NodePanel.Overlay, which comes later in the DOM and would paint over the ports. */
-      z-index: 1;
       box-sizing: content-box;
       width: var(--wb-public-node-port-size);
       height: var(--wb-public-node-port-size);

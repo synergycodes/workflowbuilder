@@ -4,8 +4,6 @@
 
 .status-bar {
   position: absolute;
-  /* The node panel is positioned and comes later in the DOM, so it would paint over the bar. */
-  z-index: 1;
   top: 1px;
   left: 0;
   right: 0;

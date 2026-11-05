@@ -29,7 +29,6 @@
   }
 
   .container {
-    position: relative;
     display: flex;
     width: var(--wb-public-node-width);
     height: var(--wb-public-node-height);
@@ -46,6 +45,17 @@
       background: var(--wb-ds-canvas-node-bg-primary-active);
       outline-color: var(--wb-public-node-border-color-selected);
       box-shadow: var(--wb-public-node-box-shadow-selected);
+    }
+
+    /* Containing block of NodePanel.Overlay; nodes without one keep their positioning context. */
+    &:has(> .overlay) {
+      position: relative;
+
+      /* Above the Overlay, which comes later in the DOM; content-box overrides the injected border-box. */
+      :global(.react-flow__handle) {
+        z-index: 1;
+        box-sizing: content-box;
+      }
     }
 
     /* Run status replaces the selection focus ring unless the variable brings it back. */
