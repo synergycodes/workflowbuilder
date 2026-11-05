@@ -74,6 +74,21 @@ export const COMPONENTS = [
     propsType: 'NodeAsPortWrapperProps',
     dir: 'node/node-as-port-wrapper',
   },
+  { slug: 'node-ring', name: 'NodeRing', propsType: 'NodeRingProps', dir: 'node/node-ring' },
+  { slug: 'node-veil', name: 'NodeVeil', propsType: 'NodeVeilProps', dir: 'node/node-veil' },
+  {
+    slug: 'node-run-progress',
+    name: 'NodeRunProgress',
+    propsType: 'NodeRunProgressProps',
+    dir: 'node/node-run-progress',
+  },
+  {
+    slug: 'node-run-indicator',
+    name: 'NodeRunIndicator',
+    propsType: ['NodeRunIndicatorIconProps', 'NodeRunIndicatorSpinnerProps'],
+    dir: 'node/node-run-indicator',
+  },
+  { slug: 'node-run-badge', name: 'NodeRunBadge', propsType: 'NodeRunBadgeProps', dir: 'node/node-run-badge' },
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
   // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },

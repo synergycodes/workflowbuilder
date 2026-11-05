@@ -1,0 +1,35 @@
+---
+title: NodeVeil
+description: Dims a node, for example a skipped step.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeVeilExample } from '../../../../components/ui-examples/run-status';
+
+`NodeVeil` lays a translucent layer over the whole node. The Skipped
+[run status](/ui-library/diagram-components/run-status/) uses it.
+
+<NodeVeilExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/), after the parts it
+should dim.
+
+```tsx
+import { NodePanel, NodeRing, NodeVeil } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRing tone="neutral" />
+  <NodeVeil />
+</NodePanel.Overlay>;
+```
+
+## Props
+
+<PropsTable slug="node-veil" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-veil" />

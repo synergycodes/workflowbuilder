@@ -1,0 +1,36 @@
+---
+title: NodeRunProgress
+description: Progress bar under the node header for a running step.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunProgressExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunProgress` draws a 3px bar 3px above the bottom edge of the node header, inset by the header
+padding. Its position follows the header size variables, so a larger `NodeIcon` moves it too.
+`value` is a percentage, clamped to 0-100; width changes animate over 0.4s, without animation under
+reduced motion. Pair it with a `NodeRing` in the `heartbeat` halo.
+
+<NodeRunProgressExample client:visible />
+
+## Usage
+
+```tsx
+import { NodePanel, NodeRing, NodeRunProgress } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRing tone="info" halo="heartbeat" />
+  <NodeRunProgress value={progress} />
+</NodePanel.Overlay>;
+```
+
+The bar is decorative (`aria-hidden`); announce the run status from the application.
+
+## Props
+
+<PropsTable slug="node-run-progress" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-progress" />

@@ -1,0 +1,129 @@
+:root {
+  --wb-public-node-run-indicator-size: var(--wb-ds-canvas-run-status-indicator-size);
+  --wb-public-node-run-indicator-border-radius: var(--wb-ds-canvas-run-status-indicator-radius);
+  --wb-public-node-run-indicator-icon-size: var(--wb-ds-size-150);
+  --wb-public-node-run-indicator-spinner-size: var(--wb-ds-size-175);
+
+  --wb-public-node-run-indicator-background-color-info: var(--wb-ds-canvas-run-status-bg-info);
+  --wb-public-node-run-indicator-background-color-success: var(--wb-ds-canvas-run-status-bg-success);
+  --wb-public-node-run-indicator-background-color-warning: var(--wb-ds-canvas-run-status-bg-warning);
+  --wb-public-node-run-indicator-background-color-critical: var(--wb-ds-canvas-run-status-bg-critical);
+  --wb-public-node-run-indicator-background-color-human: var(--wb-ds-canvas-run-status-bg-human);
+  --wb-public-node-run-indicator-background-color-neutral: var(--wb-ds-canvas-run-status-bg-neutral);
+  --wb-public-node-run-indicator-background-color-inverse: var(--wb-ds-canvas-run-status-bg-inverse);
+
+  --wb-public-node-run-indicator-icon-color-info: var(--wb-ds-canvas-run-status-icon-info);
+  --wb-public-node-run-indicator-icon-color-success: var(--wb-ds-canvas-run-status-icon-success);
+  --wb-public-node-run-indicator-icon-color-warning: var(--wb-ds-canvas-run-status-icon-warning);
+  --wb-public-node-run-indicator-icon-color-critical: var(--wb-ds-canvas-run-status-icon-critical);
+  --wb-public-node-run-indicator-icon-color-human: var(--wb-ds-canvas-run-status-icon-human);
+  --wb-public-node-run-indicator-icon-color-neutral: var(--wb-ds-canvas-run-status-icon-neutral);
+  --wb-public-node-run-indicator-icon-color-inverse: var(--wb-ds-canvas-run-status-icon-inverse);
+}
+
+@layer ui.component {
+  .indicator {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    align-items: center;
+    width: var(--wb-public-node-run-indicator-size);
+    height: var(--wb-public-node-run-indicator-size);
+    border-radius: var(--wb-public-node-run-indicator-border-radius);
+    background: var(--indicator-background-color);
+    color: var(--indicator-icon-color);
+
+    svg {
+      width: var(--wb-public-node-run-indicator-icon-size);
+      height: var(--wb-public-node-run-indicator-icon-size);
+    }
+  }
+
+  .indicator[data-tone='info'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-info);
+  }
+
+  .indicator[data-tone='success'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-success);
+  }
+
+  .indicator[data-tone='warning'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-warning);
+  }
+
+  .indicator[data-tone='critical'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-critical);
+  }
+
+  .indicator[data-tone='human'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-human);
+  }
+
+  .indicator[data-tone='neutral'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-neutral);
+  }
+
+  .indicator[data-tone='inverse'] {
+    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-inverse);
+  }
+
+  .indicator[data-icon-tone='info'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-info);
+  }
+
+  .indicator[data-icon-tone='success'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-success);
+  }
+
+  .indicator[data-icon-tone='warning'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-warning);
+  }
+
+  .indicator[data-icon-tone='critical'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-critical);
+  }
+
+  .indicator[data-icon-tone='human'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-human);
+  }
+
+  .indicator[data-icon-tone='neutral'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-neutral);
+  }
+
+  .indicator[data-icon-tone='inverse'] {
+    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-inverse);
+  }
+
+  .spinner {
+    --spinner-track: 30%;
+
+    width: var(--wb-public-node-run-indicator-spinner-size);
+    height: var(--wb-public-node-run-indicator-spinner-size);
+    border: var(--wb-ds-size-25) solid color-mix(in srgb, currentColor var(--spinner-track), transparent);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spinner-turn 0.7s linear infinite;
+  }
+
+  /* DS: the warning spinners (No signal, Retrying) have a lighter track. */
+  .indicator[data-icon-tone='warning'] .spinner {
+    --spinner-track: 25%;
+  }
+
+  .spinner[data-spinner='slow'] {
+    animation-duration: 2.4s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+    }
+  }
+
+  @keyframes spinner-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

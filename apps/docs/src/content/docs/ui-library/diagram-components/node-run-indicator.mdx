@@ -1,0 +1,56 @@
+---
+title: NodeRunIndicator
+description: Run status circle at the end of the node header.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunIndicatorExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunIndicator` is a 20px circle with either a 12px glyph (`icon`) or a 14px spinner (`spinner`).
+`tone` sets the circle and, unless `iconTone` is set, the glyph colour.
+
+<NodeRunIndicatorExample client:visible />
+
+## Usage
+
+Put it last in [`NodePanel.Header`](/ui-library/diagram-components/node-panel/). It does not shrink,
+so a long title truncates before it.
+
+```tsx
+import { Check } from '@phosphor-icons/react';
+import { NodeDescription, NodeIcon, NodePanel, NodeRunIndicator } from '@workflowbuilder/ui';
+
+<NodePanel.Header>
+  <NodeIcon icon={icon} />
+  <NodeDescription label={label} description={description} />
+  <NodeRunIndicator tone="success" icon={<Check />} />
+</NodePanel.Header>;
+```
+
+## Spinner
+
+- `running` - one turn in 0.7s.
+- `slow` - one turn in 2.4s, for a step that stopped reporting (No signal).
+
+The track shows the glyph colour at 30%, or 25% in the `warning` tone. With reduced motion the spinner
+stops with its arc on top.
+
+## Glyph tone
+
+`iconTone` colours the glyph when it differs from the circle, as in the Rejected status: an
+`inverse` glyph on a `neutral` circle.
+
+```tsx
+<NodeRunIndicator tone="neutral" iconTone="inverse" icon={<X />} />
+```
+
+The indicator is decorative (`aria-hidden`): the badge text carries the status.
+
+## Props
+
+<PropsTable slug="node-run-indicator" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-indicator" />
