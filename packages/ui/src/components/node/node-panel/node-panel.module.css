@@ -18,6 +18,8 @@
   --wb-public-node-box-shadow-selected: var(--wb-ds-shadow-canvas-focus-ring-node-x)
     var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
     var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--wb-ds-canvas-node-focus-ring-active);
+  --wb-public-node-box-shadow-selected-with-run-status: 0 0 0 0 transparent
+    /* focus ring of a selected node while its Overlay shows a run status; set to var(--wb-public-node-box-shadow-selected) to keep it */;
 }
 
 @layer ui.component {
@@ -27,6 +29,7 @@
   }
 
   .container {
+    position: relative;
     display: flex;
     width: var(--wb-public-node-width);
     height: var(--wb-public-node-height);
@@ -43,6 +46,13 @@
       background: var(--wb-ds-canvas-node-bg-primary-active);
       outline-color: var(--wb-public-node-border-color-selected);
       box-shadow: var(--wb-public-node-box-shadow-selected);
+    }
+
+    /* Run status replaces the selection focus ring unless the variable brings it back. */
+    &.selected:has(> .overlay [data-node-run-overlay]) {
+      box-shadow:
+        inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color-selected),
+        var(--wb-public-node-box-shadow-selected-with-run-status);
     }
 
     &.disabled {
@@ -85,6 +95,13 @@
     .header-container,
     .content-container {
       width: 100%;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
     }
 
     .header-container,
