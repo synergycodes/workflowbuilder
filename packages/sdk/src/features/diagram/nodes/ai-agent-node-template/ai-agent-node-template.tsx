@@ -1,4 +1,4 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -12,9 +12,8 @@ import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
 import {
-  OptionalNodeCorner,
+  NodeOverlaySlots,
   OptionalNodeHeaderEnd,
-  OptionalNodeOverlay,
 } from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
@@ -109,10 +108,7 @@ export const AiAgentNodeTemplate = memo(
             </ToolInfo>
           </NodePanel.Content>
           <NodePanel.Overlay isVisible={isCanvasNode}>
-            <OptionalNodeOverlay nodeId={id} />
-            <OptionalNodeCorner nodeId={id}>
-              <Status status={isValid === false ? 'invalid' : undefined} />
-            </OptionalNodeCorner>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />

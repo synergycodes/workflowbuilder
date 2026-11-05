@@ -1,14 +1,7 @@
-import type { PropsWithChildren } from 'react';
+import { Status } from '@workflowbuilder/ui';
 
 import { withOptionalComponentPlugins } from '../../adapters/adapter-components';
-
-type Props = {
-  nodeId: string;
-};
-
-function OptionalWrapper({ children }: PropsWithChildren<Props>) {
-  return children;
-}
+import { OptionalWrapper } from './optional-node-content';
 
 /**
  * Plugin slot inside the node's `NodePanel.Overlay`, a layer over the whole
@@ -38,3 +31,15 @@ export const OptionalNodeCorner = withOptionalComponentPlugins(OptionalWrapper, 
  * @category Components
  */
 export const OptionalNodeHeaderEnd = withOptionalComponentPlugins(OptionalWrapper, 'OptionalNodeHeaderEnd');
+
+// Not a wrapper around `NodePanel.Overlay`: `NodePanel.Root` finds the Overlay by its direct child type.
+export function NodeOverlaySlots({ nodeId, isValid }: { nodeId: string; isValid?: boolean }) {
+  return (
+    <>
+      <OptionalNodeOverlay nodeId={nodeId} />
+      <OptionalNodeCorner nodeId={nodeId}>
+        <Status status={isValid === false ? 'invalid' : undefined} />
+      </OptionalNodeCorner>
+    </>
+  );
+}
