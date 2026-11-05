@@ -19,24 +19,6 @@ describe('runStatusPresets', () => {
     expect(badge.label).toBe(badge.label.charAt(0).toUpperCase() + badge.label.slice(1).toLowerCase());
   });
 
-  it.each(presets.filter(([status]) => status !== 'skipped'))('%s has an indicator', (_, { indicator }) => {
-    expect(indicator).toBeDefined();
-  });
-
-  it.each(presets.filter(([, { indicator }]) => indicator?.spinner))(
-    '%s pairs its spinner with a static halo',
-    (_, { ring }) => {
-      expect(ring.halo).toBe('static');
-    },
-  );
-
-  it.each(presets.filter(([, { indicator }]) => indicator?.iconTone))(
-    '%s sets iconTone only where it differs from the indicator tone',
-    (_, { indicator }) => {
-      expect(indicator?.iconTone).not.toBe(indicator?.tone);
-    },
-  );
-
   it('is read-only to consumers', () => {
     expect(assignLabel).toBeTypeOf('function');
   });

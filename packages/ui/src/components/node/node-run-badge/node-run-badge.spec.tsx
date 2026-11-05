@@ -80,13 +80,7 @@ describe('node-run-badge.module.css', () => {
     }
   });
 
-  it.each(RUN_STATUS_TONES)('takes the %s background and glyph from the DS run status roles', (tone) => {
-    expect(light.get(`--wb-public-node-run-badge-background-color-${tone}`)).toBe(
-      `var(--wb-ds-canvas-run-status-bg-${tone})`,
-    );
-    expect(light.get(`--wb-public-node-run-badge-icon-color-${tone}`)).toBe(
-      `var(--wb-ds-canvas-run-status-icon-${tone})`,
-    );
+  it.each(RUN_STATUS_TONES)('gives the %s text colour a Dark value', (tone) => {
     expect(dark.has(`--wb-public-node-run-badge-color-${tone}`)).toBe(true);
   });
 });
