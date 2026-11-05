@@ -59,6 +59,8 @@ describe('NodeRunA11y', () => {
   });
 
   it('stays silent when a reload replays a whole run', () => {
+    // The app restores the execution id from the address first; the snapshot then arrives with the same id.
+    act(() => setExecutionStarted('exec-1', '/stream', { keepLogChoice: true }));
     act(() => applySnapshot(snapshotFrame('waiting', parkedRunHistory)));
 
     expect(liveRegion()?.textContent).toBe('');

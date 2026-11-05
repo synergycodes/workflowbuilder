@@ -9,16 +9,16 @@ import { nodeRunPreset } from './node-run-status';
 
 /** Announces node run status changes; `NodeRunOverlay` puts the status into each node's accessible name. */
 export function NodeRunA11y() {
-  const executionId = useExecutionStore((state) => state.executionId);
+  const events = useExecutionStore((state) => state.events);
   const nodeStates = useExecutionStore((state) => state.nodeStates);
   const [announcement, setAnnouncement] = useState({ text: '', key: 0 });
-  const previous = useRef({ executionId, nodeStates });
+  const previous = useRef({ events, nodeStates });
 
   useEffect(() => {
     const before = previous.current;
-    previous.current = { executionId, nodeStates };
-    // A run that arrives whole (a reload's snapshot) is not news.
-    if (before.executionId !== executionId) return;
+    previous.current = { events, nodeStates };
+    // Only one appended live event is news; a snapshot (reload, reconnect) or a reset replaces the history whole.
+    if (events.length !== before.events.length + 1) return;
 
     const changes = Object.entries(nodeStates).flatMap(([nodeId, state]) => {
       const preset = nodeRunPreset(state);
@@ -27,7 +27,7 @@ export function NodeRunA11y() {
         : [];
     });
     if (changes.length > 0) setAnnouncement(({ key }) => ({ text: changes.join('. '), key: key + 1 }));
-  }, [executionId, nodeStates]);
+  }, [events, nodeStates]);
 
   return (
     <div role="status" aria-live="polite" className={styles['live-region']}>
