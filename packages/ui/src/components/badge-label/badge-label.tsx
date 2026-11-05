@@ -20,11 +20,11 @@ export type BadgeLabelProps = {
 } & HTMLAttributes<HTMLSpanElement>;
 
 /**
- * @category Badge Label
+ * @category BadgeLabel
  */
 export type BadgeLabelSize = 'm' | 's';
 /**
- * @category Badge Label
+ * @category BadgeLabel
  */
 export type BadgeLabelVariant = 'default' | 'inverse';
 
@@ -32,7 +32,7 @@ export type BadgeLabelVariant = 'default' | 'inverse';
  * Read-only uppercase label. Recolour it by overriding `--wb-public-badge-label-background-color`,
  * `-color` and `-icon-color` (the `-inverse` ones for the Inverse variant) on `:root` or one instance.
  *
- * @category Badge Label
+ * @category BadgeLabel
  */
 export const BadgeLabel = forwardRef<HTMLSpanElement, BadgeLabelProps>(
   ({ label, size = 'm', variant = 'default', icon, className, ...rest }, ref) => {
