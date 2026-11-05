@@ -1,0 +1,87 @@
+---
+title: Run status
+description: The thirteen design-system run statuses, composed from NodeRing, NodeRunIndicator, NodeRunBadge and NodeVeil.
+---
+
+import { RunStatusExample } from '../../../../components/ui-examples/run-status';
+
+A node's run status is drawn with independent parts, each with its own `tone`:
+
+- [`NodeRing`](/ui-library/diagram-components/node-ring/) - line and halo around the node.
+- [`NodeRunIndicator`](/ui-library/diagram-components/node-run-indicator/) - circle at the end of the header.
+- [`NodeRunBadge`](/ui-library/diagram-components/node-run-badge/) - label above the top-right corner.
+- [`NodeVeil`](/ui-library/diagram-components/node-veil/) and
+  [`NodeRunProgress`](/ui-library/diagram-components/node-run-progress/) - for skipped and
+  progress-reporting steps.
+
+The library does not know what a status means: the application decides which parts to draw.
+`runStatusPresets` holds the parts of the thirteen statuses of the design system. An application whose
+statuses match spreads a preset onto the parts; one with its own statuses composes the parts itself.
+
+<RunStatusExample client:visible />
+
+Switch the docs theme to see the Dark values. With reduced motion, spinners stop with the arc on top, the
+`heartbeat` halo stays static and the `waiting` halo is hidden.
+
+## Usage
+
+```tsx
+import {
+  NodeDescription,
+  NodeIcon,
+  NodePanel,
+  NodeRing,
+  NodeRunBadge,
+  NodeRunIndicator,
+  NodeVeil,
+  runStatusPresets,
+} from '@workflowbuilder/ui';
+
+function RunStatusNode({ icon, label, status }) {
+  const preset = runStatusPresets[status];
+
+  return (
+    <NodePanel.Root selected={false}>
+      <NodePanel.Header>
+        <NodeIcon icon={icon} />
+        <NodeDescription label={label} />
+        {preset.indicator && <NodeRunIndicator {...preset.indicator} />}
+      </NodePanel.Header>
+      <NodePanel.Overlay>
+        <NodeRing {...preset.ring} />
+        {preset.veil && <NodeVeil />}
+        <NodeRunBadge {...preset.badge} />
+      </NodePanel.Overlay>
+    </NodePanel.Root>
+  );
+}
+```
+
+Each preset part has the shape of its component's props. `badge.label` is a default; replace it with your
+own copy, for example `Waiting · since 10:30`.
+
+## Statuses
+
+| Status            | Key               | Ring              | Indicator                      | Badge                                    |
+| ----------------- | ----------------- | ----------------- | ------------------------------ | ---------------------------------------- |
+| Running           | `running`         | info, `static`    | info, spinner                  | info                                     |
+| No signal         | `noSignal`        | warning, `static` | warning, `slow` spinner        | warning, Question                        |
+| Retrying          | `retrying`        | warning, `static` | warning, spinner               | warning, ArrowClockwise                  |
+| Completed         | `completed`       | success           | success, Check                 | success                                  |
+| Incomplete        | `incomplete`      | success           | success, Check                 | warning, LinkBreak                       |
+| Failed            | `failed`          | critical          | critical, Warning              | critical                                 |
+| Rejected          | `rejected`        | inverse           | neutral, `iconTone` inverse, X | inverse                                  |
+| Waiting for human | `waitingForHuman` | human, `waiting`  | human, Clock                   | human                                    |
+| Waiting external  | `waitingExternal` | info, `waiting`   | info, Clock                    | info                                     |
+| Waiting until     | `waitingUntil`    | neutral           | neutral, Clock                 | neutral                                  |
+| Partial join      | `partialJoin`     | neutral           | neutral, Clock                 | neutral                                  |
+| Cancelled         | `cancelled`       | neutral           | neutral, X                     | neutral                                  |
+| Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeVeil` |
+
+A running step that reports progress adds `NodeRunProgress` and switches the halo to `heartbeat`.
+
+## Accessibility
+
+The indicator, the progress bar and the badge glyph are hidden from assistive technology; the badge text
+carries the status. Put the status into the node's accessible name (for example `Send email, Failed`) and
+announce changes from one `aria-live="polite"` region, not on every heartbeat.

@@ -10,7 +10,10 @@ import {
   type NodeRunIndicatorProps,
   NodeRunProgress,
   NodeVeil,
+  type RunStatus,
+  type RunStatusPreset,
   type RunStatusTone,
+  runStatusPresets,
 } from '@workflowbuilder/ui';
 import type { CSSProperties, ReactNode } from 'react';
 
@@ -131,6 +134,49 @@ export function NodeRunBadgeExample() {
         ))}
         <DemoNode caption="neutral, dimmed">
           <NodeRunBadge tone="neutral" label="Skipped" dimmed />
+        </DemoNode>
+      </div>
+    </ComponentPreview>
+  );
+}
+
+const STATUS_NAMES: Record<RunStatus, string> = {
+  running: 'Running',
+  noSignal: 'No signal',
+  retrying: 'Retrying',
+  completed: 'Completed',
+  incomplete: 'Incomplete',
+  failed: 'Failed',
+  rejected: 'Rejected',
+  waitingForHuman: 'Waiting for human',
+  waitingExternal: 'Waiting external',
+  waitingUntil: 'Waiting until',
+  partialJoin: 'Partial join',
+  cancelled: 'Cancelled',
+  skipped: 'Skipped',
+};
+
+function PresetNode({ preset, caption: text }: { preset: RunStatusPreset; caption: string }) {
+  return (
+    <DemoNode indicator={preset.indicator} caption={text}>
+      <NodeRing {...preset.ring} />
+      {preset.veil && <NodeVeil />}
+      <NodeRunBadge {...preset.badge} />
+    </DemoNode>
+  );
+}
+
+export function RunStatusExample() {
+  return (
+    <ComponentPreview>
+      <div style={grid}>
+        {(Object.entries(runStatusPresets) as [RunStatus, RunStatusPreset][]).map(([status, preset]) => (
+          <PresetNode key={status} preset={preset} caption={`${STATUS_NAMES[status]} · ${status}`} />
+        ))}
+        <DemoNode indicator={runStatusPresets.running.indicator} caption="Running with progress">
+          <NodeRing tone="info" halo="heartbeat" />
+          <NodeRunProgress value={60} />
+          <NodeRunBadge {...runStatusPresets.running.badge} />
         </DemoNode>
       </div>
     </ComponentPreview>
