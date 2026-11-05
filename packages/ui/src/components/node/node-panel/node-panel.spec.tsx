@@ -114,5 +114,30 @@ describe('node-panel.module.css run overlay rule', () => {
       boxShadow = declaration.value;
     });
     expect(boxShadow).toMatch(/var\(--wb-public-node-box-shadow-selected-with-run-status\)$/);
+    expect(rules[0]!.selector).toContain('.selected');
+
+    let fallback = '';
+    stylesheet.walkDecls('--wb-public-node-box-shadow-selected-with-run-status', (declaration) => {
+      fallback = declaration.value;
+    });
+    expect(fallback).toMatch(/^0 0 0 0 transparent/);
+  });
+
+  it('positions the container and lifts its handles only while an Overlay renders', () => {
+    const declarations = (rule: Rule) =>
+      Object.fromEntries(rule.nodes.flatMap((node) => (node.type === 'decl' ? [[node.prop, node.value]] : [])));
+    let container: Rule | undefined;
+    let overlay: Rule | undefined;
+    stylesheet.walkRules((rule) => {
+      if (rule.selector === '.container') container = rule;
+      if (rule.selector === '&:has(> .overlay)') overlay = rule;
+    });
+    const handle = overlay?.nodes.find(
+      (node): node is Rule => node.type === 'rule' && node.selector === ':global(.react-flow__handle)',
+    );
+
+    expect(declarations(container!)).not.toHaveProperty('position');
+    expect(declarations(overlay!)).toMatchObject({ position: 'relative' });
+    expect(declarations(handle!)).toMatchObject({ 'z-index': '1', 'box-sizing': 'content-box' });
   });
 });
