@@ -13,6 +13,12 @@ const node = (id: string, label: string) => ({
   data: { type: 'ai-studio/ai-agent', icon: 'Robot' as const, properties: { label } },
 });
 
+// Every connection opens with a snapshot; a fresh run's first one holds only `execution_started`.
+function startRun() {
+  act(() => setExecutionStarted('exec-1', '/stream'));
+  act(() => applySnapshot(snapshotFrame('running', parkedRunHistory.slice(0, 1))));
+}
+
 describe('NodeRunA11y', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -35,7 +41,7 @@ describe('NodeRunA11y', () => {
   const liveRegion = () => container.querySelector('[aria-live="polite"]');
 
   it('announces only the nodes whose status changed', () => {
-    act(() => setExecutionStarted('exec-1', '/stream'));
+    startRun();
     act(() => applyEvent(nodeEvent('node_started', 'agent-1')));
     expect(liveRegion()?.textContent).toBe('Draft reply, Running');
 
@@ -45,7 +51,7 @@ describe('NodeRunA11y', () => {
 
   it('announces the same text again in a new element when two same-named nodes change in turn', () => {
     act(() => useStore.setState({ nodes: [node('agent-1', 'AI Agent'), node('agent-2', 'AI Agent')] }));
-    act(() => setExecutionStarted('exec-1', '/stream'));
+    startRun();
     act(() => applyEvent(nodeEvent('node_started', 'agent-1')));
     const first = liveRegion()?.firstElementChild;
 
@@ -63,6 +69,37 @@ describe('NodeRunA11y', () => {
     act(() => setExecutionStarted('exec-1', '/stream', { keepLogChoice: true }));
     act(() => applySnapshot(snapshotFrame('waiting', parkedRunHistory)));
 
+    expect(liveRegion()?.textContent).toBe('');
+  });
+
+  it('announces the changes a reconnect snapshot carries', () => {
+    startRun();
+    act(() => applyEvent(nodeEvent('node_started', 'agent-1')));
+
+    act(() =>
+      applySnapshot(
+        snapshotFrame('running', [
+          parkedRunHistory[0]!,
+          nodeEvent('node_started', 'agent-1'),
+          nodeEvent('node_completed', 'agent-1'),
+          nodeEvent('node_started', 'agent-2'),
+        ]),
+      ),
+    );
+
+    expect(liveRegion()?.textContent).toBe('Draft reply, Completed. Classify, Running');
+  });
+
+  it('clears the announcement when the run is reset or replaced', () => {
+    startRun();
+    act(() => applyEvent(nodeEvent('node_started', 'agent-1')));
+    expect(liveRegion()?.textContent).toBe('Draft reply, Running');
+    act(() => resetExecution());
+    expect(liveRegion()?.textContent).toBe('');
+
+    startRun();
+    act(() => applyEvent(nodeEvent('node_started', 'agent-1')));
+    act(() => setExecutionStarted('exec-2', '/stream'));
     expect(liveRegion()?.textContent).toBe('');
   });
 });
