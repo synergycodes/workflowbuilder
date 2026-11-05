@@ -37,6 +37,20 @@ type DecoratorWithNoContent<Props = object> = SharedDecoratorOptions<Props>;
  */
 export type ComponentDecoratorOptions<Props = object> = DecoratorWithContent<Props> | DecoratorWithNoContent<Props>;
 
+/**
+ * Props a `place: 'wrapper'` decorator's `content` receives. `children` is the
+ * slot's host already rendered with `props` (and any inner wrappers): return it
+ * to keep the host, or return something else to replace it. `component` is the
+ * undecorated host, for rendering it again with other props.
+ *
+ * @category Plugins
+ */
+export type WorkflowBuilderDecoratorWrapperProps<P> = {
+  props: P;
+  component: React.ComponentType<P>;
+  children: ReactNode;
+};
+
 const pluginRegistryComponents = new Map<
   string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -132,11 +146,12 @@ export function withOptionalComponentPlugins<TProps extends object>(
       }
 
       if (place === 'wrapper') {
-        resultWrapper = (
-          <plugin.content key={index} props={modifiedProps} component={Component}>
-            {resultWrapper}
-          </plugin.content>
-        );
+        const wrapperProps: WorkflowBuilderDecoratorWrapperProps<TProps> = {
+          props: modifiedProps,
+          component: Component,
+          children: resultWrapper,
+        };
+        resultWrapper = <plugin.content key={index} {...wrapperProps} />;
       }
 
       if (place === 'after') {

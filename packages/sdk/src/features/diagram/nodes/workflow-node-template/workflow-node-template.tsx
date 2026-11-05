@@ -12,6 +12,11 @@ import type { NodeData } from '../../../../node/node-data';
 import type { BaseNodeProperties } from '../../../../node/node-schema';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
+import {
+  OptionalNodeCorner,
+  OptionalNodeHeaderEnd,
+  OptionalNodeOverlay,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -91,15 +96,21 @@ const WorkflowNodeTemplateComponent = memo(
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {!!children && <Collapsible.Button />}
+            {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode} className={styles['content']}>
             <OptionalNodeContent nodeId={id}>
-              <Status status={isValid === false ? 'invalid' : undefined} />
               <Collapsible.Content>
                 <div className={styles['collapsible']}>{children}</div>
               </Collapsible.Content>
             </OptionalNodeContent>
           </NodePanel.Content>
+          <NodePanel.Overlay isVisible={isCanvasNode}>
+            <OptionalNodeOverlay nodeId={id} />
+            <OptionalNodeCorner nodeId={id}>
+              <Status status={isValid === false ? 'invalid' : undefined} />
+            </OptionalNodeCorner>
+          </NodePanel.Overlay>
           <NodePanel.Handles isVisible={showHandles} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />

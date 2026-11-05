@@ -11,6 +11,11 @@ import type { IconType, NodeIconAccent } from '../../../../node/common';
 import type { LayoutDirection } from '../../../../node/common';
 import type { DecisionBranch } from '../../../json-form/types/controls';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
+import {
+  OptionalNodeCorner,
+  OptionalNodeHeaderEnd,
+  OptionalNodeOverlay,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -40,7 +45,7 @@ export const DecisionNodeTemplate = memo(
     accent,
     label,
     description,
-    showHandles,
+    showHandles = true,
     selected = false,
     disabled = false,
     isValid,
@@ -66,10 +71,10 @@ export const DecisionNodeTemplate = memo(
         <NodePanel.Header>
           <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />
+          {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
         </NodePanel.Header>
         <NodePanel.Content isVisible={isCanvasNode}>
           <OptionalNodeContent nodeId={id}>
-            <Status status={isValid === false ? 'invalid' : undefined} />
             <BranchesContainer
               layoutDirection={layoutDirection}
               decisionBranches={decisionBranches ?? []}
@@ -77,6 +82,12 @@ export const DecisionNodeTemplate = memo(
             />
           </OptionalNodeContent>
         </NodePanel.Content>
+        <NodePanel.Overlay isVisible={isCanvasNode}>
+          <OptionalNodeOverlay nodeId={id} />
+          <OptionalNodeCorner nodeId={id}>
+            <Status status={isValid === false ? 'invalid' : undefined} />
+          </OptionalNodeCorner>
+        </NodePanel.Overlay>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
         </NodePanel.Handles>
