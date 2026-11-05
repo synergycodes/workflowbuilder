@@ -40,7 +40,7 @@ type DiagramState = {
   edges: { source: string; target: string }[];
 };
 
-function nodeLabel(state: DiagramState, nodeId: string) {
+export function nodeLabel(state: DiagramState, nodeId: string) {
   const label = state.nodes.find((node) => node.id === nodeId)?.data.properties.label;
   return typeof label === 'string' && label ? label : nodeId;
 }
@@ -179,8 +179,7 @@ export function ExecutionLogPanel() {
   const status = useExecutionStore((state) => state.status);
   const executionId = useExecutionStore((state) => state.executionId);
   const isCollapsed = useExecutionStore((state) => state.isLogCollapsed);
-  // Clicking a node (incl. its flag marker) selects it on the canvas; the
-  // highlight derives from that selection, so it clears on deselect.
+  // The highlight derives from the canvas selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
   const { leftOffset } = useLeftPanelAnchor();
   const { rightOffset } = useRightPanelAnchor();
