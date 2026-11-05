@@ -84,7 +84,7 @@ type ComponentDecoratorOptions<P = object> =
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
 
-The three node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
+The three node slots render on the canvas only, not on palette entries, and only the built-in node templates render them: a [custom node template](/guides/add-a-custom-node/#7-optional-custom-node-template) has to render them itself. `OptionalNodeOverlay` and `OptionalNodeCorner` sit inside `NodePanel.Overlay`, a layer positioned absolutely over the whole node, so their content positions itself. The layer is `pointer-events: none`, so interactive content in these slots sets `pointer-events: auto`. A `'wrapper'` decorator on `OptionalNodeCorner` that returns its own element instead of `children` replaces the validation `Status`; `'before'` and `'after'` render as siblings of it inside the overlay, not in the corner:
 
 ```tsx
 import {
@@ -92,20 +92,28 @@ import {
   type WorkflowBuilderDecoratorWrapperProps,
   registerComponentDecorator,
 } from '@workflowbuilder/sdk';
-import { NodeRunBadge } from '@workflowbuilder/ui';
+import { NodeRunBadge, type NodeRunStatusPreset, runStatusPresets } from '@workflowbuilder/ui';
 
 // Your app's own run state.
 import { useExecutionStore } from './execution-store';
 
 type CornerProps = React.ComponentProps<typeof OptionalNodeCorner>;
 
+// Your app's run states mapped to presets; `idle` has none.
+const presetByStatus: Partial<Record<string, NodeRunStatusPreset>> = {
+  running: runStatusPresets.running,
+  completed: runStatusPresets.completed,
+  failed: runStatusPresets.failed,
+};
+
 registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
   place: 'wrapper',
   name: 'run-badge',
   content: ({ props, children }: WorkflowBuilderDecoratorWrapperProps<CornerProps>) => {
     const state = useExecutionStore((s) => s.nodeStates[props.nodeId]);
-    // `idle` nodes have an entry too: without this check every node loses its validation badge once a run starts.
-    return state && state.status !== 'idle' ? <NodeRunBadge tone="info" label="Running" /> : children;
+    // `idle` nodes have an entry too: without a preset check every node loses its validation badge once a run starts.
+    const preset = state && presetByStatus[state.status];
+    return preset ? <NodeRunBadge {...preset.badge} /> : children;
   },
 });
 ```
