@@ -10,6 +10,9 @@ import { type NodeExecutionState, resetExecution, useExecutionStore } from '../.
 const setStatus = (status: NodeExecutionState['status']) =>
   act(() => useExecutionStore.setState({ nodeStates: { 'node-1': { status } } }));
 
+const waiting = (sequence: number, timestamp: string) =>
+  ({ type: 'node_waiting', executionId: 'run-1', nodeId: 'node-1', sequence, timestamp }) as const;
+
 describe('node run status decorators', () => {
   let canvasNode: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -84,6 +87,18 @@ describe('node run status decorators', () => {
     setStatus('waiting');
 
     expect(query('[data-node-run-overlay]')?.getAttribute('data-halo')).toBe('waiting');
+  });
+
+  it('adds the time of the latest wait to a waiting badge', () => {
+    act(() =>
+      useExecutionStore.setState({
+        nodeStates: { 'node-1': { status: 'waiting' } },
+        events: [waiting(1, '2026-11-06T08:00:00.000Z'), waiting(2, '2026-11-06T10:30:00.000Z')],
+      }),
+    );
+    const time = new Date('2026-11-06T10:30:00.000Z').toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
+    expect(badge()?.textContent).toBe(`Waiting · since ${time}`);
   });
 
   it('veils a skipped node and gives it no indicator', () => {

@@ -40,9 +40,26 @@ export function NodeRunOverlay({ props }: { props: SlotProps }) {
   );
 }
 
+function useWaitingSince(nodeId: string) {
+  return useExecutionStore((state) => {
+    if (state.nodeStates[nodeId]?.status !== 'waiting') return;
+    for (let index = state.events.length - 1; index >= 0; index--) {
+      const event = state.events[index];
+      if (event?.type === 'node_waiting' && event.nodeId === nodeId) return event.timestamp;
+    }
+  });
+}
+
+const formatTime = (isoTimestamp: string) =>
+  new Date(isoTimestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+
 export function NodeRunCorner({ props, children }: WorkflowBuilderDecoratorWrapperProps<SlotProps>) {
   const preset = useNodeRunPreset(props.nodeId);
-  return preset ? <NodeRunBadge {...preset.badge} /> : children;
+  const waitingSince = useWaitingSince(props.nodeId);
+  if (!preset) return children;
+
+  const label = waitingSince ? `${preset.badge.label} · since ${formatTime(waitingSince)}` : preset.badge.label;
+  return <NodeRunBadge {...preset.badge} label={label} />;
 }
 
 export function NodeRunHeaderEnd({ props }: { props: SlotProps }) {
