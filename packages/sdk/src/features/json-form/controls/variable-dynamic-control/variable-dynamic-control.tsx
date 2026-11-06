@@ -27,7 +27,9 @@ const variableTypesForSuggestions: Record<VariableTypePrimitive, VariableType[]>
 
 function VariableDynamicControl(props: VariableDynamicControlProps) {
   const { data, handleChange, path, errors, enabled, uischema } = props;
-  const { placeholder, variableType } = uischema;
+  const { placeholder, disabled, variableType } = uischema;
+  const isDisabled = !enabled || disabled === true;
+
   const selection = useSingleSelectedElement();
   const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
     excludeTypes: VARIABLES_TYPES_EMPTY,
@@ -90,7 +92,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
         onBlur={onBlur}
         suggestionGroups={suggestionGroups}
         isError={errors.length > 0}
-        isDisabled={!enabled}
+        isDisabled={isDisabled}
         placeholder={placeholder}
       />
     </ControlWrapper>
