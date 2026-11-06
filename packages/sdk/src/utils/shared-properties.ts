@@ -1,4 +1,4 @@
-import { NODE_ERROR_POLICIES, type NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
+import type { NodeErrorPolicy } from '@workflow-builder/types/workflow-execution/execution-model';
 
 import type { BaseNodePropertiesSchema } from '../node/node-schema';
 
@@ -18,10 +18,7 @@ export const sharedProperties: BaseNodePropertiesSchema = {
   },
 };
 
-// User-facing label per policy literal. The values come from
-// `NODE_ERROR_POLICIES` in `@workflow-builder/types`; this map only owns the
-// display strings — adding a new policy is a one-line change in `types`
-// followed by adding its label here.
+// `Record` keeps this exhaustive over `NodeErrorPolicy`; Select options derive from its keys.
 const ERROR_POLICY_LABELS: Record<NodeErrorPolicy, string> = {
   fail: 'Fail workflow',
   continue: 'Continue on error',
@@ -39,7 +36,7 @@ const ERROR_POLICY_LABELS: Record<NodeErrorPolicy, string> = {
 export const errorPolicyProperty = {
   errorPolicy: {
     type: 'string',
-    options: NODE_ERROR_POLICIES.map((value) => ({
+    options: (Object.keys(ERROR_POLICY_LABELS) as NodeErrorPolicy[]).map((value) => ({
       label: ERROR_POLICY_LABELS[value],
       value,
     })),

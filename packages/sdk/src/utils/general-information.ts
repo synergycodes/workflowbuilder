@@ -15,7 +15,7 @@ export const statusOptions = {
 
 /**
  * UISchema fragments rendered on every node's properties tab regardless
- * of the node type. Today contains the missing-previous-variable error
+ * of the node type. Today contains the custom-error error
  * message; compose it into a node's UISchema with spread/merge.
  *
  * @category Utilities
@@ -27,7 +27,7 @@ export const globalControls: UISchemaElement[] = [
 
     data.properties.customErrors = [
       {
-        instancePath: '/missingPreviousVariable',
+        instancePath: '/customError',
         message: i18n.t('your.custom.message'),
         schemaPath: '',
         keyword: '',
@@ -37,8 +37,7 @@ export const globalControls: UISchemaElement[] = [
   */
   {
     type: 'MessageOnError',
-    scope: '#/properties/missingPreviousVariable',
-    text: 'plugins.validation.missingDependency',
+    scope: '#/properties/customError',
   },
 ];
 

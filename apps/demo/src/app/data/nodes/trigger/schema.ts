@@ -107,9 +107,11 @@ export const schema = {
           properties: {
             time: {
               type: 'string',
+              format: 'time',
             },
             date: {
               type: 'string',
+              format: 'date',
             },
           },
         },
@@ -118,9 +120,11 @@ export const schema = {
           properties: {
             time: {
               type: 'string',
+              format: 'time',
             },
             date: {
               type: 'string',
+              format: 'date',
             },
           },
         },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { workflowBuilderValidator } from '../../../../../packages/sdk/src/utils/validation/workflow-builder-validator';
+import { workflowBuilderValidator } from '../../../../../packages/sdk/src/utils/validation/workflow-builder-validator/workflow-builder-validator';
 import { decodePointerSegment, encodePointerSegment, invalidFieldsOf, isFormSchema, schemaFields } from './form-schema';
 
 describe('isFormSchema', () => {
