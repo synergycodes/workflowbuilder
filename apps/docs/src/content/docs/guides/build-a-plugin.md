@@ -64,7 +64,7 @@ type ComponentDecoratorOptions<P = object> =
 - **`place`** — where to render relative to the slot's host:
   - `'before'` (default) — render your content before the host.
   - `'after'` — render after.
-  - `'wrapper'` — wrap the host entirely. Your `content` receives `props` (the host's props after `modifyProps`), `component` (the undecorated host, to render it again with other props) and `children` (the host already rendered). Return `children` to keep the host, or something else to replace it. Type it with `WorkflowBuilderDecoratorWrapperProps<P>`.
+  - `'wrapper'` — wrap the host entirely. Your `content` receives `props` (the host's props after `modifyProps`), `component` (the undecorated host, to render it again with other props) and `children` (the host already rendered). Return `children` to keep the host, or something else to replace it. Type it with `WorkflowBuilderDecoratorWrapperProps<Props>`.
 - **`content`** — the React component to render. With `'before'` and `'after'` it receives only `props`.
 - **`modifyProps`** — function receiving the host's props, returning modified props.
 - **`priority`** — higher = rendered first. Default `0`.

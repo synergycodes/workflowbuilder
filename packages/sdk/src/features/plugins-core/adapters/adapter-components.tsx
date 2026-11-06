@@ -45,9 +45,9 @@ export type ComponentDecoratorOptions<Props = object> = DecoratorWithContent<Pro
  *
  * @category Plugins
  */
-export type WorkflowBuilderDecoratorWrapperProps<P> = {
-  props: P;
-  component: React.ComponentType<P>;
+export type WorkflowBuilderDecoratorWrapperProps<Props> = {
+  props: Props;
+  component: React.ComponentType<Props>;
   children: ReactNode;
 };
 
