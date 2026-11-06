@@ -2,7 +2,7 @@
 '@workflowbuilder/ui': minor
 ---
 
-Design tokens synced with DS WB 2.0 1.1.37: the edge label stroke is 1px, node header, body and row spacing follows Node v2, Dark text colors for critical, success, warning and action and Dark icon colors for critical, success and warning move to stronger steps of their scales, and new `--wb-ds-*` tokens cover text field hover, badge, run status, code and node icon tiles. A selected edge label keeps the 1px stroke.
+Design tokens synced with DS WB 2.0 1.1.37: the edge label stroke is 1px, node header, body and row spacing follows Node v2, Dark text colors for critical, success, warning and action and Dark icon colors for critical, success and warning move to stronger steps of their scales, and new `--wb-ds-*` tokens cover text field hover, badge, run status, code and node icon tiles. A selected edge label keeps the 1px stroke. In Dark, the node outline moves from gray-600 to gray-650.
 
 Breaking changes:
 
