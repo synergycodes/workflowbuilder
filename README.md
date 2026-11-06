@@ -13,8 +13,6 @@ Workflow Builder ships the full stack: a white-label React workflow builder for 
 [![npm downloads](https://img.shields.io/npm/dm/@workflowbuilder/sdk.svg?label=sdk%20downloads)](https://www.npmjs.com/package/@workflowbuilder/sdk)
 [![Discord](https://img.shields.io/badge/chat-Discord-5865F2.svg)](https://discord.com/invite/FDMjRuarFb)
 
-![The Workflow Builder editor](docs/assets/workflow-builder-demo.gif)
-
 **[▶ Run a workflow in your browser](https://aistudio.workflowbuilder.io/)** · no install, no sign-up
 
 [Embed the editor](#path-a-embed-the-sdk) · [Orchestrate on your Temporal](#path-d-add-workflow-orchestration-on-your-temporal) · [Run the full stack](#path-c-run-the-full-stack-demo) · [Documentation](https://www.workflowbuilder.io/docs/overview/)
