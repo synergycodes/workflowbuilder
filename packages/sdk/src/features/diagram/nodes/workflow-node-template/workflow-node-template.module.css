@@ -10,3 +10,12 @@
   gap: var(--wb-public-node-gap);
   padding-bottom: var(--wb-ds-canvas-node-body-v-pad);
 }
+
+/* Plugin content after the collapsible (a `place: 'after'` decorator) takes over the body's bottom padding. */
+.content > :has(.collapsible):not(:last-child) .collapsible {
+  padding-bottom: 0;
+}
+
+.content > :has(.collapsible) ~ :last-child {
+  margin-bottom: var(--wb-ds-canvas-node-body-v-pad);
+}
