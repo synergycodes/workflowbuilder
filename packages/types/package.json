@@ -10,7 +10,7 @@
   "exports": {
     "./*": "./src/*.ts"
   },
-  "dependencies": {
+  "devDependencies": {
     "@jsonforms/core": "^3.4.0"
   }
 }
