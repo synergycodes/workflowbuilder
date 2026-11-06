@@ -38,24 +38,23 @@ will be added to the tokens.
 
 In the vertical list (RIGHT layout) the row fills its container, as in the design: `width: 100%`,
 `min-width: 0`, no cap. The container is the section (or `NodeInfoWrapper` for AI tools), so the row
-measures `241 - 2 x (8 + 1) - 2 x (8 + 1) = 205px`; the design draws 209 because a Figma stroke does
-not take layout space while a CSS border does. 205 is the reference value for QA.
+measures `258 - 2 x 12 - 2 x (12 + 1) = 208px` (Node v2: the node stroke is inset and takes no space,
+the section border still does). 208 is the reference value for QA.
 
 The horizontal branch row of the DOWN layout has no design master and keeps the derived cap, so a
 long label cannot widen the node further than one row:
 
 ```css
 max-width: calc(
-  var(--wb-public-node-width) - 2 * (var(--wb-public-node-padding) + var(--wb-public-node-border-size)) - 2 *
-    var(--wb-sdk-connectable-item-inset)
+  var(--wb-public-node-width) - 2 * var(--wb-public-node-padding) - 2 * var(--wb-sdk-connectable-item-inset)
 );
 ```
 
 `--wb-sdk-connectable-item-inset` is the horizontal inset (one side) added by the container that
 wraps the items. It defaults to `0rem` and each wrapping container declares its own value:
 
-- `NodeSection` sets it to its padding plus border width (`canvas/node/body-h-pad` 8px + 1px), so a
-  capped Decision branch gets 205px, the same as a filled one.
+- `NodeSection` sets it to its padding plus border width (`canvas/node/body-h-pad` 12px + 1px), so a
+  capped Decision branch gets 208px, the same as a filled one.
 - `NodeInfoWrapper` (AI tools) declares the same inset. The default `0rem` applies only to a
   container that adds no horizontal padding.
 
@@ -76,6 +75,7 @@ adds horizontal padding without declaring it lets its rows exceed the visible wi
 ## Status
 
 Accepted. Revised 14.09.2026 (body matrix 8 / 8 / 4 applied, derived width 201 → 205px),
-15.09.2026 (sections and rows bind to the `body-*` and `row-*` roles from the export) and 16.09.2026
-(design confirmed the fill rule; vertical rows fill, the cap remains only for the DOWN row).
+15.09.2026 (sections and rows bind to the `body-*` and `row-*` roles from the export), 16.09.2026
+(design confirmed the fill rule; vertical rows fill, the cap remains only for the DOWN row) and
+03.11.2026 (Node v2: 258px shell, inset node stroke, derived width 208px).
 Closed: the row has no width role by design.

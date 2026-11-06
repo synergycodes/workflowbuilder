@@ -1,15 +1,15 @@
 :root {
-  --wb-public-node-width: 241px;
+  --wb-public-node-width: var(--wb-ds-canvas-node-width);
   --wb-public-node-height: 100%;
   --wb-public-node-border-size: 0.0625rem;
 
-  --wb-public-node-padding: var(--wb-ds-canvas-node-head-h-pad);
-  --wb-public-node-gap: var(--wb-ds-canvas-node-head-gap);
+  --wb-public-node-padding: var(--wb-ds-canvas-node-body-h-pad);
+  --wb-public-node-gap: var(--wb-ds-canvas-node-body-gap);
   --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
 
   --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
   --wb-public-node-background-color: var(--wb-ds-canvas-node-bg-primary-default);
-  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-default);
+  --wb-public-node-hover-background-color: var(--wb-ds-canvas-node-bg-primary-hover);
   --wb-public-node-border-hover-color: var(--wb-ds-canvas-node-stroke-hover);
 
   --wb-public-node-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
@@ -21,26 +21,27 @@
 }
 
 @layer ui.component {
-  .node-panel-wrapper:hover .container:not(.disabled) {
+  .node-panel-wrapper:hover .container:not(.disabled, .selected) {
     background: var(--wb-public-node-hover-background-color);
-    border-color: var(--wb-public-node-border-hover-color);
+    outline-color: var(--wb-public-node-border-hover-color);
   }
 
   .container {
     display: flex;
     width: var(--wb-public-node-width);
     height: var(--wb-public-node-height);
-    padding: var(--wb-public-node-padding);
-    gap: var(--wb-public-node-gap);
     align-items: center;
     flex-direction: column;
 
     border-radius: var(--wb-public-node-border-radius);
-    border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
     background: var(--wb-public-node-background-color);
+    /* Inset outline, not a border or box-shadow: it adds no size and leaves box-shadow to the focus ring. */
+    outline: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+    outline-offset: calc(-1 * var(--wb-public-node-border-size));
 
     &.selected {
-      border-color: var(--wb-public-node-border-color-selected);
+      background: var(--wb-ds-canvas-node-bg-primary-active);
+      outline-color: var(--wb-public-node-border-color-selected);
       box-shadow: var(--wb-public-node-box-shadow-selected);
     }
 
@@ -50,8 +51,8 @@
 
     &:not(:hover) {
       transition:
-        border-color var(--wb-public-transition),
-        box-shadow var(--wb-public-transition);
+        box-shadow var(--wb-public-transition),
+        outline-color var(--wb-public-transition);
     }
 
     .header-wrapper {
@@ -60,8 +61,25 @@
 
     .header-container {
       display: flex;
-      gap: 0.5rem;
+      min-height: calc(
+        2 * var(--wb-ds-canvas-node-head-v-pad) + 2 * var(--wb-public-node-icon-padding) +
+          var(--wb-public-node-icon-glyph-size)
+      );
+      padding: var(--wb-ds-canvas-node-head-v-pad) var(--wb-ds-canvas-node-head-h-pad);
+      gap: var(--wb-ds-canvas-node-head-item-gap);
       align-items: center;
+    }
+
+    .content-container {
+      display: flex;
+      flex-direction: column;
+      padding: 0 var(--wb-public-node-padding) var(--wb-ds-canvas-node-body-v-pad);
+      gap: var(--wb-public-node-gap);
+    }
+
+    /* Without a header nothing above separates the body from the top stroke. */
+    .header-wrapper:not(:has(.header-container)) + .content-container {
+      padding-top: var(--wb-ds-canvas-node-body-v-pad);
     }
 
     .header-container,

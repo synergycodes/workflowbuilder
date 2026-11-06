@@ -27,7 +27,7 @@
   text-overflow: ellipsis;
   white-space: nowrap;
   font-family: 'IBM Plex Mono', ui-monospace, monospace;
-  font-size: 0.64rem;
+  font-size: var(--wb-ds-font-size-125);
   padding: 0.15rem 0.4rem;
   border-radius: 0.3rem;
   background: var(--wb-ds-ui-bg-elevated);
@@ -99,7 +99,7 @@
 
 .empty-text {
   margin: 0;
-  font-size: 0.74rem;
+  font-size: var(--wb-ds-font-size-150);
   line-height: 1.45;
   color: var(--wb-ds-ui-text-muted-default);
 }
