@@ -81,7 +81,7 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
       },
       {
         totalVariables: 0,
-        variablesKey: 'vars',
+        variablesKey: `vars-${nodeId}`,
       },
     );
 
@@ -90,5 +90,5 @@ export function useNodeVariables(nodeId: string | undefined, options?: Options):
       totalVariables,
       variablesKey,
     };
-  }, [globalSuggestionsGroups, nodeSuggestionsGroups]);
+  }, [nodeId, globalSuggestionsGroups, nodeSuggestionsGroups]);
 }
