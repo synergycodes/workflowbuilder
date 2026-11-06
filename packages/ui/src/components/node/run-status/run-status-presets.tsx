@@ -56,7 +56,7 @@ export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPrese
   retrying: {
     ring: { tone: 'warning', halo: 'static' },
     indicator: { tone: 'warning', spinner: 'running' },
-    badge: { tone: 'warning', icon: <ArrowClockwise />, label: 'Retrying' },
+    badge: { tone: 'warning', icon: <ArrowClockwise />, label: 'Retrying in the background' },
   },
   completed: {
     ring: { tone: 'success' },

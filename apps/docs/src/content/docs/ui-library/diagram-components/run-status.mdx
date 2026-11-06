@@ -63,6 +63,8 @@ function RunStatusNode({ icon, label, status }: RunStatusNodeProps) {
 
 Each preset part has the shape of its component's props. The presets are read-only; to use your own
 copy, spread the part into a new object, for example `{ ...preset.badge, label: t('run.waiting') }`.
+A label holds only the status name: text built from run data, such as `Waiting · since 10:30` or
+`Rejected · by Ewa`, is up to the application.
 
 The badge sits in its node's stacking context, so a node rendered later that overlaps it can cover it.
 
