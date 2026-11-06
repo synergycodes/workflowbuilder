@@ -1,4 +1,4 @@
-import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -11,6 +11,10 @@ import type { IconType, NodeIconAccent } from '../../../../node/common';
 import type { LayoutDirection } from '../../../../node/common';
 import type { DecisionBranch } from '../../../json-form/types/controls';
 import { OptionalNodeContent } from '../../../plugins-core/components/diagram/optional-node-content';
+import {
+  NodeOverlaySlots,
+  OptionalNodeHeaderEnd,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -66,10 +70,10 @@ export const DecisionNodeTemplate = memo(
         <NodePanel.Header>
           <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
           <NodeDescription label={label} description={description} disabled={disabled} />
+          {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
         </NodePanel.Header>
         <NodePanel.Content isVisible={isCanvasNode}>
           <OptionalNodeContent nodeId={id}>
-            <Status status={isValid === false ? 'invalid' : undefined} />
             <BranchesContainer
               layoutDirection={layoutDirection}
               decisionBranches={decisionBranches ?? []}
@@ -77,6 +81,9 @@ export const DecisionNodeTemplate = memo(
             />
           </OptionalNodeContent>
         </NodePanel.Content>
+        <NodePanel.Overlay isVisible={isCanvasNode}>
+          <NodeOverlaySlots nodeId={id} isValid={isValid} />
+        </NodePanel.Overlay>
         <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
           <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
         </NodePanel.Handles>

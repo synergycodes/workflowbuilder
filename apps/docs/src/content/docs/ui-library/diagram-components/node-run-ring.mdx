@@ -1,0 +1,67 @@
+---
+title: NodeRunRing
+description: Run status line and halo around a node.
+---
+
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
+import PropsTable from '../../../../components/api/props-table.astro';
+import { NodeRunRingExample } from '../../../../components/ui-examples/run-status';
+
+`NodeRunRing` draws a run status over the node: a 1px line in the colour of its `tone` on top of the
+node stroke, and an optional halo outside the node. It is one of the run status parts; the
+[Run status](/ui-library/diagram-components/run-status/) page shows how they combine.
+
+<NodeRunRingExample client:visible />
+
+## Usage
+
+Place it in [`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/). The line is an inset
+shadow on an absolutely positioned layer, so the node keeps its size.
+
+```tsx
+import { NodePanel, NodeRunRing } from '@workflowbuilder/ui';
+
+<NodePanel.Overlay>
+  <NodeRunRing tone="info" halo="static" />
+</NodePanel.Overlay>;
+```
+
+## Halo
+
+- `static` - a 3px halo.
+- `heartbeat` - pulses between 3px and 6px every 1.4s; a running step that reports progress.
+- `waiting` - pulses between 3px and 7px every 1.8s; a step waiting for a person or a service.
+
+Each tone reads `--wb-public-node-run-ring-halo-color-<tone>`. Only `info`, `warning` and `human`
+default to a DS halo colour; the other tones default to `transparent`.
+With reduced motion, `heartbeat` stays a static 3px halo and `waiting` shows no halo.
+
+## Selected node
+
+`NodeRunRing` carries the `data-node-run-overlay` attribute, so a selected node under it keeps its
+selected stroke but drops the focus ring (see
+[`NodePanel` states](/ui-library/diagram-components/node-panel/#states)). To show both, set:
+
+```css
+:root {
+  --wb-public-node-box-shadow-selected-with-run-status: var(--wb-public-node-box-shadow-selected);
+}
+```
+
+## Custom colour
+
+Override a tone's variable on one instance with a `className`:
+
+```css
+.ring-queued {
+  --wb-public-node-run-ring-color-info: #7c3aed;
+}
+```
+
+## Props
+
+<PropsTable slug="node-run-ring" />
+
+## CSS variables
+
+<CssVariablesTable slug="node-run-ring" />

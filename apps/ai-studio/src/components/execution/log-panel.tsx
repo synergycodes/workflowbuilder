@@ -12,6 +12,7 @@ import { useLeftPanelAnchor } from '../../hooks/use-left-panel-anchor';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
 import { type RunStatus, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
+import { nodeLabel } from '../../utils/node-label';
 import { ExecutionStatusIcon, type ExecutionStatusTone } from './execution-status-icon';
 
 const SKIP_REASON_LABEL: Record<NodeSkipReason, string> = {
@@ -39,11 +40,6 @@ type DiagramState = {
   nodes: { id: string; data: { properties: { label?: unknown } } }[];
   edges: { source: string; target: string }[];
 };
-
-function nodeLabel(state: DiagramState, nodeId: string) {
-  const label = state.nodes.find((node) => node.id === nodeId)?.data.properties.label;
-  return typeof label === 'string' && label ? label : nodeId;
-}
 
 // Branch names and join counts come from the diagram until the events carry them (follow-up: execution-log-branch-payloads).
 function eventMessage(event: ExecutionEvent, state: DiagramState): string {
@@ -179,8 +175,7 @@ export function ExecutionLogPanel() {
   const status = useExecutionStore((state) => state.status);
   const executionId = useExecutionStore((state) => state.executionId);
   const isCollapsed = useExecutionStore((state) => state.isLogCollapsed);
-  // Clicking a node (incl. its flag marker) selects it on the canvas; the
-  // highlight derives from that selection, so it clears on deselect.
+  // The highlight derives from the canvas selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
   const { leftOffset } = useLeftPanelAnchor();
   const { rightOffset } = useRightPanelAnchor();

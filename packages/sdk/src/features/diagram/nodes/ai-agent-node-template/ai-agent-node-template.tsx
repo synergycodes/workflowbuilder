@@ -1,4 +1,4 @@
-import { Collapsible, NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { Collapsible, NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -11,6 +11,10 @@ import styles from './ai-agent-node-template.module.css';
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { ItemOption } from '../../../../node/node-schema';
 import type { AiAgentTool } from '../../../json-form/types/controls';
+import {
+  NodeOverlaySlots,
+  OptionalNodeHeaderEnd,
+} from '../../../plugins-core/components/diagram/optional-node-run-status-slots';
 import { getHandleId } from '../../handles/get-handle-id';
 import { getHandlePosition } from '../../handles/get-handle-position';
 import { getHandlesAlignment } from '../../handles/get-handles-alignment';
@@ -39,6 +43,7 @@ type Props = {
 
 export const AiAgentNodeTemplate = memo(
   ({
+    id,
     icon,
     // The agent had its gradient before accents existed; a definition without one keeps it.
     accent = 'violet-gradient',
@@ -73,9 +78,9 @@ export const AiAgentNodeTemplate = memo(
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
             {isCanvasNode && <Collapsible.Button />}
+            {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
           <NodePanel.Content className={styles['content']} isVisible={isCanvasNode}>
-            <Status status={isValid === false ? 'invalid' : undefined} />
             <Collapsible.Content>
               <div className={styles['collapsible-content']}>
                 <SettingInfo
@@ -102,6 +107,9 @@ export const AiAgentNodeTemplate = memo(
               })}
             </ToolInfo>
           </NodePanel.Content>
+          <NodePanel.Overlay isVisible={isCanvasNode}>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
+          </NodePanel.Overlay>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={handlesAlignment}>
             <Handle id={handleTargetId} position={handleTargetPosition} type="target" />
             <Handle id={handleSourceId} position={handleSourcePosition} type="source" />

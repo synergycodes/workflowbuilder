@@ -6,7 +6,7 @@ type Props = {
   nodeId: string;
 };
 
-function OptionalWrapper({ children }: PropsWithChildren<Props>) {
+export function OptionalWrapper({ children }: PropsWithChildren<Props>) {
   return children;
 }
 

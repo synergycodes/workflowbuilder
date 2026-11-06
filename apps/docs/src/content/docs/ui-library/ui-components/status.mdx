@@ -8,20 +8,40 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { StatusExample } from '../../../../components/ui-examples/status';
 
 A `Status` displays a small visual indicator based on a validation status. When
-the status is `invalid` it renders a circular badge with an exclamation mark;
-otherwise it renders nothing.
+the status is `invalid` it renders a circular badge with an exclamation mark on
+the node's top-right corner; otherwise it renders nothing.
 
 <StatusExample client:visible />
 
 ## Usage
 
-```tsx
-import { Status } from '@workflowbuilder/ui';
+`Status` is positioned absolutely against the node, so it goes in
+[`NodePanel.Overlay`](/ui-library/diagram-components/node-panel/), the layer
+over the whole node, not in `NodePanel.Content`.
 
-function Example() {
-  return <Status status="invalid" />;
+```tsx
+import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import type { ReactNode } from 'react';
+
+function Example({ icon, isValid }: { icon: ReactNode; isValid: boolean }) {
+  return (
+    <NodePanel.Root selected={false}>
+      <NodePanel.Header>
+        <NodeIcon icon={icon} />
+        <NodeDescription label="Send email" description="Missing recipient" />
+      </NodePanel.Header>
+      <NodePanel.Overlay>
+        <Status status={isValid ? undefined : 'invalid'} />
+      </NodePanel.Overlay>
+    </NodePanel.Root>
+  );
 }
 ```
+
+The SDK's built-in node templates render it this way, inside the
+`OptionalNodeCorner` slot on canvas nodes only. A plugin that shows a run status
+in that corner replaces it with a `place: 'wrapper'` decorator; see
+[Build a plugin](/guides/build-a-plugin/#available-slots).
 
 ## Props
 
