@@ -60,9 +60,7 @@
 
     /* Run status replaces the selection focus ring unless the variable brings it back. */
     &.selected:has(> .overlay [data-node-run-overlay]) {
-      box-shadow:
-        inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color-selected),
-        var(--wb-public-node-box-shadow-selected-with-run-status);
+      box-shadow: var(--wb-public-node-box-shadow-selected-with-run-status);
     }
 
     &.disabled {
