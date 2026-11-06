@@ -38,7 +38,7 @@ export type NodeDefinition<T extends NodeSchema> = {
    * The newer version uses a schema similar to the Node schema, but also supports handling responses
    * by source handle (the error port does not receive successful variables).
    *
-   * outputSchema will be removed in the next major release (4.0).
+   * outputSchema will be removed in the next major release.
    */
   outputSchema?: DeprecatedNodeOutputSchema;
   /** icon color on the canvas, palette and Properties header; resolved by node type, never saved into the diagram */

@@ -88,7 +88,7 @@ export const NodeProperties = memo(({ node }: Props) => {
     }
 
     const flattenErrors = flatErrors(errors);
-    trackFutureChange('dataUpdateNode', { id });
+    trackFutureChange('dataUpdate', { id });
     setNodeProperties(id, { ...data, errors: flattenErrors });
     removeEdgesForDeletedHandles(id, properties, data);
   };
