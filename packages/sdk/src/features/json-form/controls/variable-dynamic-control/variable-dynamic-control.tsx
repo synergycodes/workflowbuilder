@@ -45,7 +45,6 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
   }, [data]);
 
   const onChange = useCallback((value: string) => {
-    console.log('NEW VALUE', value);
     setInputValue(value);
   }, []);
 
