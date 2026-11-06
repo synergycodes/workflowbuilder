@@ -1,4 +1,4 @@
-import { OptionalNodeCorner, OptionalNodeHeaderEnd, OptionalNodeOverlay, useStore } from '@workflowbuilder/sdk';
+import { OptionalNodeCorner, OptionalNodeHeaderEnd, OptionalNodeOverlay } from '@workflowbuilder/sdk';
 import { Status } from '@workflowbuilder/ui';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -10,21 +10,7 @@ import { type NodeExecutionState, resetExecution, useExecutionStore } from '../.
 const setStatus = (status: NodeExecutionState['status']) =>
   act(() => useExecutionStore.setState({ nodeStates: { 'node-1': { status } } }));
 
-const setLabel = (label: string) =>
-  act(() =>
-    useStore.setState({
-      nodes: [
-        {
-          id: 'node-1',
-          position: { x: 0, y: 0 },
-          data: { type: 'ai-studio/ai-agent', icon: 'Robot' as const, properties: { label } },
-        },
-      ],
-    }),
-  );
-
 describe('node run status decorators', () => {
-  // Stands in for the `.react-flow__node` element React Flow wraps each node in.
   let canvasNode: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
 
@@ -32,9 +18,7 @@ describe('node run status decorators', () => {
 
   beforeEach(() => {
     resetExecution();
-    setLabel('Draft reply');
     canvasNode = document.createElement('div');
-    canvasNode.className = 'react-flow__node';
     document.body.append(canvasNode);
     root = createRoot(canvasNode);
     act(() =>
@@ -53,7 +37,6 @@ describe('node run status decorators', () => {
   afterEach(() => {
     act(() => root.unmount());
     canvasNode.remove();
-    useStore.setState({ nodes: [] });
   });
 
   const query = (selector: string) => canvasNode.querySelector(selector);
@@ -108,40 +91,5 @@ describe('node run status decorators', () => {
 
     expect(query('[class*="veil"]')).not.toBeNull();
     expect(query('[aria-hidden="true"][data-tone]')).toBeNull();
-  });
-
-  it.each([
-    ['restores the name it had', 'Agent step'],
-    ['drops the name when it had none', null],
-  ])('names the node by its label and status, and on idle %s', (_case, previous) => {
-    if (previous) canvasNode.setAttribute('aria-label', previous);
-
-    setStatus('running');
-    expect(canvasNode.getAttribute('aria-label')).toBe('Draft reply, Running');
-
-    setStatus('completed');
-    expect(canvasNode.getAttribute('aria-label')).toBe('Draft reply, Completed');
-
-    setStatus('idle');
-    expect(canvasNode.getAttribute('aria-label')).toBe(previous);
-  });
-
-  it('renames the node when its label changes mid-run', () => {
-    setStatus('running');
-    setLabel('Summarise');
-
-    expect(canvasNode.getAttribute('aria-label')).toBe('Summarise, Running');
-  });
-
-  it('names only its own node, not other canvas nodes with the same id', () => {
-    const otherCanvasNode = document.createElement('div');
-    otherCanvasNode.className = 'react-flow__node';
-    otherCanvasNode.dataset['id'] = 'node-1';
-    document.body.append(otherCanvasNode);
-
-    setStatus('running');
-
-    expect(otherCanvasNode.hasAttribute('aria-label')).toBe(false);
-    otherCanvasNode.remove();
   });
 });

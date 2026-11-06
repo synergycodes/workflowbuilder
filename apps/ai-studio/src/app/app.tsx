@@ -11,7 +11,6 @@ import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
-import { NodeRunA11y } from '../components/execution/node-run-a11y';
 import { decisionActionsRenderer } from '../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../components/human-decision/decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
@@ -58,7 +57,6 @@ export function App({ opened }: { opened: OpenedSource }) {
       <WorkflowBuilder.DefaultLayout />
       <AiStudioControls workflowId={workflowId} isRunView={isRunView} />
       <ExecutionLogPanel />
-      <NodeRunA11y />
       <DecisionWaitingSnackbar />
       <ExecutionHighlighting />
       <DisclaimerModal />
