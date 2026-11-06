@@ -107,7 +107,7 @@ describe('node run status slots', () => {
       }
       const Template = templates[name]!;
 
-      const canvas = render(<Template {...nodeProps} isValid={false} />);
+      const canvas = render(<Template {...nodeProps} isValid={false} showHandles />);
       for (const testId of ['status', ...slots]) expect(screen.getByTestId(testId)).toBeTruthy();
       for (const testId of ['status', 'OptionalNodeOverlay', 'OptionalNodeCorner']) {
         expect(screen.getByTestId(testId).closest('[class*="overlay"]')).not.toBeNull();

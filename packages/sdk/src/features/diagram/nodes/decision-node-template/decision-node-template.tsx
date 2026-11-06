@@ -44,7 +44,7 @@ export const DecisionNodeTemplate = memo(
     accent,
     label,
     description,
-    showHandles = true,
+    showHandles,
     selected = false,
     disabled = false,
     isValid,
