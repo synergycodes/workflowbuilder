@@ -31,11 +31,7 @@ export function NodeIcon({ icon, accent, disabled = false, className }: NodeIcon
 
   return (
     <div
-      className={clsx(
-        styles['container'],
-        { [styles['accented']]: isAccented, [styles['disabled']]: disabled },
-        className,
-      )}
+      className={clsx(styles['container'], { [styles['disabled']]: disabled }, className)}
       style={isAccented ? accentStyle(accent) : undefined}
     >
       {icon}

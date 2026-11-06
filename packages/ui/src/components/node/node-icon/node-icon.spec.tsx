@@ -40,7 +40,6 @@ describe('NodeIcon', () => {
   it.each([...ACCENTS, 'teal'])('points the %s accent at its public variables', (accent) => {
     act(() => root.render(<NodeIcon icon={<svg />} accent={accent} />));
 
-    expect(rendered().className).toMatch(/accented/);
     expect(rendered().style.getPropertyValue('--node-icon-color')).toBe(
       `var(--wb-public-node-icon-color-${accent}, var(--wb-public-node-icon-color))`,
     );
@@ -52,22 +51,20 @@ describe('NodeIcon', () => {
   it('keeps the default look without an accent', () => {
     act(() => root.render(<NodeIcon icon={<svg />} />));
 
-    expect(rendered().className).not.toMatch(/accented/);
     expect(rendered().getAttribute('style')).toBeNull();
   });
 
   it('ignores an accent that is not a plain name', () => {
     act(() => root.render(<NodeIcon icon={<svg />} accent="red); color: (red" />));
 
-    expect(rendered().className).not.toMatch(/accented/);
     expect(rendered().getAttribute('style')).toBeNull();
   });
 
   it('keeps the accent next to the disabled state', () => {
     act(() => root.render(<NodeIcon icon={<svg />} accent="violet" disabled />));
 
-    expect(rendered().className).toMatch(/accented/);
     expect(rendered().className).toMatch(/disabled/);
+    expect(rendered().style.getPropertyValue('--node-icon-color')).toContain('violet');
   });
 });
 
