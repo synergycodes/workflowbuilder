@@ -23,7 +23,7 @@
 @layer ui.component {
   .node-panel-wrapper:hover .container:not(.disabled, .selected) {
     background: var(--wb-public-node-hover-background-color);
-    box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-hover-color);
+    outline-color: var(--wb-public-node-border-hover-color);
   }
 
   .container {
@@ -35,14 +35,14 @@
 
     border-radius: var(--wb-public-node-border-radius);
     background: var(--wb-public-node-background-color);
-    /* Inset stroke, not a border: the stroke must not add to the node's measured size. */
-    box-shadow: inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color);
+    /* Inset outline, not a border or box-shadow: it adds no size and leaves box-shadow to the focus ring. */
+    outline: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+    outline-offset: calc(-1 * var(--wb-public-node-border-size));
 
     &.selected {
       background: var(--wb-ds-canvas-node-bg-primary-active);
-      box-shadow:
-        inset 0 0 0 var(--wb-public-node-border-size) var(--wb-public-node-border-color-selected),
-        var(--wb-public-node-box-shadow-selected);
+      outline-color: var(--wb-public-node-border-color-selected);
+      box-shadow: var(--wb-public-node-box-shadow-selected);
     }
 
     &.disabled {
@@ -50,7 +50,9 @@
     }
 
     &:not(:hover) {
-      transition: box-shadow var(--wb-public-transition);
+      transition:
+        box-shadow var(--wb-public-transition),
+        outline-color var(--wb-public-transition);
     }
 
     .header-wrapper {
