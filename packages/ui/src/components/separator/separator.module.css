@@ -11,4 +11,10 @@
   border-bottom: none;
   border-left: none;
   border-right: none;
+  /* The hr defaults, restated so a host `hr` rule (Bootstrap's opacity, `all: unset`) cannot change the line. */
+  display: block;
+  height: auto;
+  padding: 0;
+  background: none;
+  opacity: 1;
 }

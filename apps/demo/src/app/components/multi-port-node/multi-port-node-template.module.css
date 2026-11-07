@@ -17,13 +17,13 @@
 }
 
 .status-active {
-  background-color: #2563eb;
+  background-color: var(--wb-ds-canvas-run-status-stroke-success);
 }
 
 .status-draft {
-  background-color: #9ca3af;
+  background-color: var(--wb-ds-canvas-run-status-stroke-warning);
 }
 
 .status-disabled {
-  background-color: #ef4444;
+  background-color: var(--wb-ds-canvas-run-status-stroke-neutral);
 }

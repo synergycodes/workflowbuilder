@@ -1,27 +1,9 @@
 :root {
-  --wb-sdk-syntax-highlighter-color: var(--wb-ds-colors-gray-600);
-  --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-colors-acc5-700);
-  --wb-sdk-syntax-highlighter-color-variable-value: var(--wb-ds-colors-blue-500);
-  --wb-sdk-syntax-highlighter-background-color-highlight: var(--wb-ds-colors-green-400-30);
-  --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-colors-blue-500);
-}
-
-[data-wb-theme='light'] {
-  --wb-sdk-syntax-highlighter-color: var(--wb-ds-colors-gray-600);
-  --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-colors-acc5-700);
-  --wb-sdk-syntax-highlighter-color-variable-value: var(--wb-ds-colors-acc1-600);
-  --wb-sdk-syntax-highlighter-background-color-highlight: var(--wb-ds-colors-green-400-30);
-  --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-ui-text-subtle-default);
-}
-
-[data-wb-theme='dark'] {
-  --wb-sdk-syntax-highlighter-color: var(--wb-ds-colors-gray-200);
-  --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-colors-orange-300);
-  --wb-sdk-syntax-highlighter-color-variable-value: var(
-    --wb-ds-colors-acc1-300
-  ); /* missing token: syntax highlighter literal color */
-  --wb-sdk-syntax-highlighter-background-color-highlight: var(--wb-ds-colors-green-400-30);
-  --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-colors-blue-500);
+  --wb-sdk-syntax-highlighter-color: var(--wb-ds-ui-code-text);
+  --wb-sdk-syntax-highlighter-color-variable-key: var(--wb-ds-ui-code-key);
+  --wb-sdk-syntax-highlighter-color-variable-value: var(--wb-ds-ui-code-literal);
+  --wb-sdk-syntax-highlighter-background-color-highlight: var(--wb-ds-ui-code-match-bg);
+  --wb-sdk-syntax-highlighter-color-cursor: var(--wb-ds-ui-code-cursor);
 }
 
 /* Hides Ace's 'Editing is disabled' tooltip. SyntaxHighlighter mounts it in the SDK portal, so this scoped rule reaches it
