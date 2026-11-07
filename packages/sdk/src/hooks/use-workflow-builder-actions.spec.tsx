@@ -12,6 +12,7 @@ import { openTemplateSelectorModal } from '../features/modals/template-selector/
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { useStore } from '../store/store';
 import { getTheme } from './theme';
+import { resetThemeStore } from './theme.test-utils';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
 
 vi.mock('../features/integration/components/import-export/export-modal/open-export-modal', () => ({
@@ -70,8 +71,8 @@ describe('useWorkflowBuilderActions', () => {
     // does); one test below swaps in the real implementation to exercise its
     // internal read-only guard, so restore the plain stub for every other test.
     vi.mocked(openTemplateSelectorModal).mockReset();
+    resetThemeStore();
     localStorage.clear();
-    delete document.documentElement.dataset.theme;
     useStore.setState({
       isReadOnly: false,
       isPaletteOpen: false,
@@ -89,7 +90,6 @@ describe('useWorkflowBuilderActions', () => {
 
   afterEach(() => {
     localStorage.clear();
-    delete document.documentElement.dataset.theme;
   });
 
   it('renders without a ReactFlowProvider ancestor', () => {
@@ -415,7 +415,6 @@ describe('useWorkflowBuilderActions', () => {
       actions.current!.setTheme('dark');
 
       expect(getTheme()).toBe('dark');
-      expect(document.documentElement.dataset.theme).toBe('dark');
     });
 
     it('toggleTheme flips theme', () => {

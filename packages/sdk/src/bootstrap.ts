@@ -2,6 +2,5 @@
 // runtime dependencies. Imported as a side-effect-only module from `index.ts`
 // so it executes once at SDK first-import time, not on every render.
 // Side-effect import — initializes the global i18next instance with SDK
-// locales (en, pl). Must run before any component calls `useTranslation` or
-// before `useDetectLanguageChange` subscribes via `i18n.on(...)`.
+// locales (en, pl). Must run before any component calls `useTranslation`.
 import './features/i18n/index';

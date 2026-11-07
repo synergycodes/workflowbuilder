@@ -1,9 +1,11 @@
-import { useCallback, useSyncExternalStore } from 'react';
+import { useCallback } from 'react';
 
-import { getTheme, setTheme, subscribeTheme } from './theme';
+import { getTheme, setTheme, useControlledTheme, usePersistedTheme } from './theme';
 
 export function useTheme() {
-  const theme = useSyncExternalStore(subscribeTheme, getTheme, getTheme);
+  const controlledTheme = useControlledTheme((state) => state.controlled?.theme ?? null);
+  const persistedTheme = usePersistedTheme((state) => state.theme);
+  const theme = controlledTheme ?? persistedTheme;
 
   const toggleTheme = useCallback(() => {
     setTheme(getTheme() === 'light' ? 'dark' : 'light');

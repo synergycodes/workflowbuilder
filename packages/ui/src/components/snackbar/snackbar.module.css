@@ -38,41 +38,39 @@
   --wb-public-snackbar-info-icon-color: var(--wb-ds-components-snackbar-stroke-info);
 }
 
-@layer ui.component {
-  .container {
+.container {
+  display: flex;
+  width: var(--wb-public-snackbar-width);
+  border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-default-border);
+  border-radius: var(--wb-public-snackbar-border-radius);
+  background: var(--wb-public-snackbar-default-background);
+  padding: var(--wb-public-snackbar-padding);
+
+  .content {
     display: flex;
-    width: var(--wb-public-snackbar-width);
-    border: var(--wb-public-snackbar-border-size) solid var(--wb-public-snackbar-default-border);
-    border-radius: var(--wb-public-snackbar-border-radius);
-    background: var(--wb-public-snackbar-default-background);
-    padding: var(--wb-public-snackbar-padding);
+    align-items: center;
+    gap: var(--wb-public-snackbar-content-gap);
+    width: 100%;
+    min-width: 0;
+  }
 
-    .content {
-      display: flex;
-      align-items: center;
-      gap: var(--wb-public-snackbar-content-gap);
-      width: 100%;
-      min-width: 0;
-    }
+  &.success {
+    background: var(--wb-public-snackbar-success-background);
+    border-color: var(--wb-public-snackbar-success-border);
+  }
 
-    &.success {
-      background: var(--wb-public-snackbar-success-background);
-      border-color: var(--wb-public-snackbar-success-border);
-    }
+  &.error {
+    background: var(--wb-public-snackbar-error-background);
+    border-color: var(--wb-public-snackbar-error-border);
+  }
 
-    &.error {
-      background: var(--wb-public-snackbar-error-background);
-      border-color: var(--wb-public-snackbar-error-border);
-    }
+  &.warning {
+    background: var(--wb-public-snackbar-warning-background);
+    border-color: var(--wb-public-snackbar-warning-border);
+  }
 
-    &.warning {
-      background: var(--wb-public-snackbar-warning-background);
-      border-color: var(--wb-public-snackbar-warning-border);
-    }
-
-    &.info {
-      background: var(--wb-public-snackbar-info-background);
-      border-color: var(--wb-public-snackbar-info-border);
-    }
+  &.info {
+    background: var(--wb-public-snackbar-info-background);
+    border-color: var(--wb-public-snackbar-info-border);
   }
 }

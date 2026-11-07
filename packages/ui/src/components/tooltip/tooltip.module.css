@@ -7,32 +7,30 @@
   --wb-public-tooltip-blue-text-color: var(--wb-ds-ui-text-tooltip-accent-default);
 }
 
-@layer ui.component {
-  .positioner {
-    z-index: 10000;
-  }
+.positioner {
+  z-index: 10000;
+}
 
-  .container {
-    --tooltip-background: var(--wb-public-tooltip-default-background);
-    --tooltip-text-color: var(--wb-public-tooltip-text-color);
+.container {
+  --tooltip-background: var(--wb-public-tooltip-default-background);
+  --tooltip-text-color: var(--wb-public-tooltip-text-color);
 
-    padding: var(--wb-public-tooltip-padding);
-    border-radius: var(--wb-public-tooltip-radius-size);
-    width: max-content;
-    max-width: 33vw;
-    color: var(--tooltip-text-color);
-    background-color: var(--tooltip-background);
-  }
+  padding: var(--wb-public-tooltip-padding);
+  border-radius: var(--wb-public-tooltip-radius-size);
+  width: max-content;
+  max-width: 33vw;
+  color: var(--tooltip-text-color);
+  background-color: var(--tooltip-background);
+}
 
-  .container[data-tooltip-type='blue'] {
-    --tooltip-background: var(--wb-public-tooltip-blue-background);
-    --tooltip-text-color: var(--wb-public-tooltip-blue-text-color);
-  }
+.container[data-tooltip-type='blue'] {
+  --tooltip-background: var(--wb-public-tooltip-blue-background);
+  --tooltip-text-color: var(--wb-public-tooltip-blue-text-color);
+}
 
-  .arrow {
-    width: 0.625rem;
-    height: var(--wb-ds-size-50);
-    background-color: var(--tooltip-background);
-    clip-path: polygon(0 0, 100% 0, 50% 100%);
-  }
+.arrow {
+  width: 0.625rem;
+  height: var(--wb-ds-size-50);
+  background-color: var(--tooltip-background);
+  clip-path: polygon(0 0, 100% 0, 50% 100%);
 }

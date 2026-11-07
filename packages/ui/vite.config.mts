@@ -8,9 +8,10 @@ import { viteStaticCopy } from 'vite-plugin-static-copy';
 
 import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
-import { combineCssBundle } from './combine-css-bundle.mts';
+import { UI_SCOPE_PREFIX_OPTIONS, combineCssBundle } from './combine-css-bundle.mts';
 import { boxSizingPlugin } from './postcss-box-sizing.mts';
 import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mts';
+import { scopePrefixPlugin } from './postcss-scope-prefix.mts';
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
 
@@ -124,7 +125,7 @@ export default defineConfig({
   css: {
     devSourcemap: true,
     postcss: {
-      plugins: [boxSizingPlugin(), layerRootDefaultsPlugin()],
+      plugins: [boxSizingPlugin(), layerRootDefaultsPlugin(), scopePrefixPlugin(UI_SCOPE_PREFIX_OPTIONS)],
     },
   },
   resolve: {

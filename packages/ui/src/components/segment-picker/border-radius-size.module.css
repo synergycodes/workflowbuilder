@@ -8,32 +8,30 @@
   --wb-public-segment-picker-border-radius-xxx-small: var(--wb-ds-radius-100);
 }
 
-@layer ui.component {
-  .extra-large {
-    border-radius: var(--wb-public-segment-picker-border-radius-extra-large);
-  }
+.extra-large {
+  border-radius: var(--wb-public-segment-picker-border-radius-extra-large);
+}
 
-  .large {
-    border-radius: var(--wb-public-segment-picker-border-radius-large);
-  }
+.large {
+  border-radius: var(--wb-public-segment-picker-border-radius-large);
+}
 
-  .medium {
-    border-radius: var(--wb-public-segment-picker-border-radius-medium);
-  }
+.medium {
+  border-radius: var(--wb-public-segment-picker-border-radius-medium);
+}
 
-  .small {
-    border-radius: var(--wb-public-segment-picker-border-radius-small);
-  }
+.small {
+  border-radius: var(--wb-public-segment-picker-border-radius-small);
+}
 
-  .extra-small {
-    border-radius: var(--wb-public-segment-picker-border-radius-extra-small);
-  }
+.extra-small {
+  border-radius: var(--wb-public-segment-picker-border-radius-extra-small);
+}
 
-  .xx-small {
-    border-radius: var(--wb-public-segment-picker-border-radius-xx-small);
-  }
+.xx-small {
+  border-radius: var(--wb-public-segment-picker-border-radius-xx-small);
+}
 
-  .xxx-small {
-    border-radius: var(--wb-public-segment-picker-border-radius-xxx-small);
-  }
+.xxx-small {
+  border-radius: var(--wb-public-segment-picker-border-radius-xxx-small);
 }

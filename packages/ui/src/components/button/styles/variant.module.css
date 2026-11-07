@@ -74,173 +74,171 @@
   --wb-public-button-ghost-success-color-disabled: var(--wb-ds-ui-text-success-disabled);
 }
 
-@layer ui.component {
-  .primary {
-    --button-background: var(--wb-public-button-primary-background);
-    --button-background-hover: var(--wb-public-button-primary-background-hover);
-    --button-background-active: var(--wb-public-button-primary-background-active);
-    --button-background-focus: var(--wb-public-button-primary-background-focus);
-    --button-background-disabled: var(--wb-public-button-primary-background-disabled);
-    --button-color: var(--wb-public-button-primary-color);
-    --button-color-disabled: var(--wb-public-button-primary-color-disabled);
+.primary {
+  --button-background: var(--wb-public-button-primary-background);
+  --button-background-hover: var(--wb-public-button-primary-background-hover);
+  --button-background-active: var(--wb-public-button-primary-background-active);
+  --button-background-focus: var(--wb-public-button-primary-background-focus);
+  --button-background-disabled: var(--wb-public-button-primary-background-disabled);
+  --button-color: var(--wb-public-button-primary-color);
+  --button-color-disabled: var(--wb-public-button-primary-color-disabled);
+}
+
+.secondary {
+  --button-background: var(--wb-public-button-secondary-background);
+  --button-background-hover: var(--wb-public-button-secondary-background-hover);
+  --button-background-active: var(--wb-public-button-secondary-background-active);
+  --button-background-focus: var(--wb-public-button-secondary-background-focus);
+  --button-background-disabled: var(--wb-public-button-secondary-background-disabled);
+  --button-color: var(--wb-public-button-secondary-color);
+  --button-color-disabled: var(--wb-public-button-secondary-color-disabled);
+}
+
+.critical {
+  --button-background: var(--wb-public-button-critical-background);
+  --button-background-hover: var(--wb-public-button-critical-background-hover);
+  --button-background-active: var(--wb-public-button-critical-background-active);
+  --button-background-focus: var(--wb-public-button-critical-background-focus);
+  --button-background-disabled: var(--wb-public-button-critical-background-disabled);
+  --button-color: var(--wb-public-button-critical-color);
+  --button-color-disabled: var(--wb-public-button-critical-color-disabled);
+}
+
+.success {
+  --button-background: var(--wb-public-button-success-background);
+  --button-background-hover: var(--wb-public-button-success-background-hover);
+  --button-background-active: var(--wb-public-button-success-background-active);
+  --button-background-focus: var(--wb-public-button-success-background-focus);
+  --button-background-disabled: var(--wb-public-button-success-background-disabled);
+  --button-color: var(--wb-public-button-success-color);
+  --button-color-disabled: var(--wb-public-button-success-color-disabled);
+}
+
+.primary,
+.secondary,
+.critical,
+.success {
+  background-color: var(--button-background);
+  color: var(--button-color);
+
+  &:not(:disabled):hover {
+    background-color: var(--button-background-hover);
   }
 
-  .secondary {
-    --button-background: var(--wb-public-button-secondary-background);
-    --button-background-hover: var(--wb-public-button-secondary-background-hover);
-    --button-background-active: var(--wb-public-button-secondary-background-active);
-    --button-background-focus: var(--wb-public-button-secondary-background-focus);
-    --button-background-disabled: var(--wb-public-button-secondary-background-disabled);
-    --button-color: var(--wb-public-button-secondary-color);
-    --button-color-disabled: var(--wb-public-button-secondary-color-disabled);
+  &:not(:disabled):active {
+    background-color: var(--button-background-active);
   }
 
-  .critical {
-    --button-background: var(--wb-public-button-critical-background);
-    --button-background-hover: var(--wb-public-button-critical-background-hover);
-    --button-background-active: var(--wb-public-button-critical-background-active);
-    --button-background-focus: var(--wb-public-button-critical-background-focus);
-    --button-background-disabled: var(--wb-public-button-critical-background-disabled);
-    --button-color: var(--wb-public-button-critical-color);
-    --button-color-disabled: var(--wb-public-button-critical-color-disabled);
+  &:not(:disabled):focus-visible {
+    background-color: var(--button-background-focus);
   }
 
-  .success {
-    --button-background: var(--wb-public-button-success-background);
-    --button-background-hover: var(--wb-public-button-success-background-hover);
-    --button-background-active: var(--wb-public-button-success-background-active);
-    --button-background-focus: var(--wb-public-button-success-background-focus);
-    --button-background-disabled: var(--wb-public-button-success-background-disabled);
-    --button-color: var(--wb-public-button-success-color);
-    --button-color-disabled: var(--wb-public-button-success-color-disabled);
+  &:disabled {
+    background-color: var(--button-background-disabled);
+    color: var(--button-color-disabled);
+  }
+}
+
+.ghost-primary {
+  --button-background: var(--wb-public-button-ghost-primary-background-color);
+  --button-background-hover: var(--wb-public-button-ghost-primary-background-color-hover);
+  --button-background-active: var(--wb-public-button-ghost-primary-background-color-active);
+  --button-background-focus: var(--wb-public-button-ghost-primary-background-color-focus);
+  --button-background-disabled: var(--wb-public-button-ghost-primary-background-color-disabled);
+  --button-border-color: var(--wb-public-button-ghost-primary-border-color);
+  --button-border-color-hover: var(--wb-public-button-ghost-primary-border-color);
+  --button-border-color-active: var(--wb-public-button-ghost-primary-border-color);
+  --button-border-color-focus: var(--wb-public-button-ghost-primary-border-color);
+  --button-border-color-disabled: var(--wb-public-button-ghost-primary-border-color);
+  --button-color: var(--wb-public-button-ghost-primary-color);
+  --button-color-disabled: var(--wb-public-button-ghost-primary-color-disabled);
+}
+
+.ghost-secondary {
+  --button-background: var(--wb-public-button-ghost-secondary-background-color);
+  --button-background-hover: var(--wb-public-button-ghost-secondary-background-color-hover);
+  --button-background-active: var(--wb-public-button-ghost-secondary-background-color-active);
+  --button-background-focus: var(--wb-public-button-ghost-secondary-background-color-focus);
+  --button-background-disabled: var(--wb-public-button-ghost-secondary-background-color-disabled);
+  --button-border-color: var(--wb-public-button-ghost-secondary-border-color);
+  --button-border-color-hover: var(--wb-public-button-ghost-secondary-border-color-hover);
+  --button-border-color-active: var(--wb-public-button-ghost-secondary-border-color-active);
+  --button-border-color-focus: var(--wb-public-button-ghost-secondary-border-color-focus);
+  --button-border-color-disabled: var(--wb-public-button-ghost-secondary-border-color-disabled);
+  --button-color: var(--wb-public-button-ghost-secondary-color);
+  --button-color-disabled: var(--wb-public-button-ghost-secondary-color-disabled);
+}
+
+.ghost-critical {
+  --button-background: var(--wb-public-button-ghost-critical-background-color);
+  --button-background-hover: var(--wb-public-button-ghost-critical-background-color-hover);
+  --button-background-active: var(--wb-public-button-ghost-critical-background-color-active);
+  --button-background-focus: var(--wb-public-button-ghost-critical-background-color-focus);
+  --button-background-disabled: var(--wb-public-button-ghost-critical-background-color-disabled);
+  --button-border-color: var(--wb-public-button-ghost-critical-border-color);
+  --button-border-color-hover: var(--wb-public-button-ghost-critical-border-color);
+  --button-border-color-active: var(--wb-public-button-ghost-critical-border-color);
+  --button-border-color-focus: var(--wb-public-button-ghost-critical-border-color);
+  --button-border-color-disabled: var(--wb-public-button-ghost-critical-border-color);
+  --button-color: var(--wb-public-button-ghost-critical-color);
+  --button-color-disabled: var(--wb-public-button-ghost-critical-color-disabled);
+}
+
+.ghost-success {
+  --button-background: var(--wb-public-button-ghost-success-background-color);
+  --button-background-hover: var(--wb-public-button-ghost-success-background-color-hover);
+  --button-background-active: var(--wb-public-button-ghost-success-background-color-active);
+  --button-background-focus: var(--wb-public-button-ghost-success-background-color-focus);
+  --button-background-disabled: var(--wb-public-button-ghost-success-background-color-disabled);
+  --button-border-color: var(--wb-public-button-ghost-success-border-color);
+  --button-border-color-hover: var(--wb-public-button-ghost-success-border-color);
+  --button-border-color-active: var(--wb-public-button-ghost-success-border-color);
+  --button-border-color-focus: var(--wb-public-button-ghost-success-border-color);
+  --button-border-color-disabled: var(--wb-public-button-ghost-success-border-color);
+  --button-color: var(--wb-public-button-ghost-success-color);
+  --button-color-disabled: var(--wb-public-button-ghost-success-color-disabled);
+}
+
+.ghost-primary,
+.ghost-secondary,
+.ghost-critical,
+.ghost-success {
+  --button-border-color-current: var(--button-border-color);
+
+  background-color: var(--button-background);
+  color: var(--button-color);
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: var(--wb-public-button-border-size) solid var(--button-border-color-current);
+    border-radius: inherit;
+    pointer-events: none;
   }
 
-  .primary,
-  .secondary,
-  .critical,
-  .success {
-    background-color: var(--button-background);
-    color: var(--button-color);
+  &:not(:disabled):hover {
+    --button-border-color-current: var(--button-border-color-hover);
 
-    &:not(:disabled):hover {
-      background-color: var(--button-background-hover);
-    }
-
-    &:not(:disabled):active {
-      background-color: var(--button-background-active);
-    }
-
-    &:not(:disabled):focus-visible {
-      background-color: var(--button-background-focus);
-    }
-
-    &:disabled {
-      background-color: var(--button-background-disabled);
-      color: var(--button-color-disabled);
-    }
+    background-color: var(--button-background-hover);
   }
 
-  .ghost-primary {
-    --button-background: var(--wb-public-button-ghost-primary-background-color);
-    --button-background-hover: var(--wb-public-button-ghost-primary-background-color-hover);
-    --button-background-active: var(--wb-public-button-ghost-primary-background-color-active);
-    --button-background-focus: var(--wb-public-button-ghost-primary-background-color-focus);
-    --button-background-disabled: var(--wb-public-button-ghost-primary-background-color-disabled);
-    --button-border-color: var(--wb-public-button-ghost-primary-border-color);
-    --button-border-color-hover: var(--wb-public-button-ghost-primary-border-color);
-    --button-border-color-active: var(--wb-public-button-ghost-primary-border-color);
-    --button-border-color-focus: var(--wb-public-button-ghost-primary-border-color);
-    --button-border-color-disabled: var(--wb-public-button-ghost-primary-border-color);
-    --button-color: var(--wb-public-button-ghost-primary-color);
-    --button-color-disabled: var(--wb-public-button-ghost-primary-color-disabled);
+  &:not(:disabled):active {
+    --button-border-color-current: var(--button-border-color-active);
+
+    background-color: var(--button-background-active);
   }
 
-  .ghost-secondary {
-    --button-background: var(--wb-public-button-ghost-secondary-background-color);
-    --button-background-hover: var(--wb-public-button-ghost-secondary-background-color-hover);
-    --button-background-active: var(--wb-public-button-ghost-secondary-background-color-active);
-    --button-background-focus: var(--wb-public-button-ghost-secondary-background-color-focus);
-    --button-background-disabled: var(--wb-public-button-ghost-secondary-background-color-disabled);
-    --button-border-color: var(--wb-public-button-ghost-secondary-border-color);
-    --button-border-color-hover: var(--wb-public-button-ghost-secondary-border-color-hover);
-    --button-border-color-active: var(--wb-public-button-ghost-secondary-border-color-active);
-    --button-border-color-focus: var(--wb-public-button-ghost-secondary-border-color-focus);
-    --button-border-color-disabled: var(--wb-public-button-ghost-secondary-border-color-disabled);
-    --button-color: var(--wb-public-button-ghost-secondary-color);
-    --button-color-disabled: var(--wb-public-button-ghost-secondary-color-disabled);
+  &:not(:disabled):focus-visible {
+    --button-border-color-current: var(--button-border-color-focus);
+
+    background-color: var(--button-background-focus);
   }
 
-  .ghost-critical {
-    --button-background: var(--wb-public-button-ghost-critical-background-color);
-    --button-background-hover: var(--wb-public-button-ghost-critical-background-color-hover);
-    --button-background-active: var(--wb-public-button-ghost-critical-background-color-active);
-    --button-background-focus: var(--wb-public-button-ghost-critical-background-color-focus);
-    --button-background-disabled: var(--wb-public-button-ghost-critical-background-color-disabled);
-    --button-border-color: var(--wb-public-button-ghost-critical-border-color);
-    --button-border-color-hover: var(--wb-public-button-ghost-critical-border-color);
-    --button-border-color-active: var(--wb-public-button-ghost-critical-border-color);
-    --button-border-color-focus: var(--wb-public-button-ghost-critical-border-color);
-    --button-border-color-disabled: var(--wb-public-button-ghost-critical-border-color);
-    --button-color: var(--wb-public-button-ghost-critical-color);
-    --button-color-disabled: var(--wb-public-button-ghost-critical-color-disabled);
-  }
+  &:disabled {
+    --button-border-color-current: var(--button-border-color-disabled);
 
-  .ghost-success {
-    --button-background: var(--wb-public-button-ghost-success-background-color);
-    --button-background-hover: var(--wb-public-button-ghost-success-background-color-hover);
-    --button-background-active: var(--wb-public-button-ghost-success-background-color-active);
-    --button-background-focus: var(--wb-public-button-ghost-success-background-color-focus);
-    --button-background-disabled: var(--wb-public-button-ghost-success-background-color-disabled);
-    --button-border-color: var(--wb-public-button-ghost-success-border-color);
-    --button-border-color-hover: var(--wb-public-button-ghost-success-border-color);
-    --button-border-color-active: var(--wb-public-button-ghost-success-border-color);
-    --button-border-color-focus: var(--wb-public-button-ghost-success-border-color);
-    --button-border-color-disabled: var(--wb-public-button-ghost-success-border-color);
-    --button-color: var(--wb-public-button-ghost-success-color);
-    --button-color-disabled: var(--wb-public-button-ghost-success-color-disabled);
-  }
-
-  .ghost-primary,
-  .ghost-secondary,
-  .ghost-critical,
-  .ghost-success {
-    --button-border-color-current: var(--button-border-color);
-
-    background-color: var(--button-background);
-    color: var(--button-color);
-
-    &::after {
-      content: '';
-      position: absolute;
-      inset: 0;
-      border: var(--wb-public-button-border-size) solid var(--button-border-color-current);
-      border-radius: inherit;
-      pointer-events: none;
-    }
-
-    &:not(:disabled):hover {
-      --button-border-color-current: var(--button-border-color-hover);
-
-      background-color: var(--button-background-hover);
-    }
-
-    &:not(:disabled):active {
-      --button-border-color-current: var(--button-border-color-active);
-
-      background-color: var(--button-background-active);
-    }
-
-    &:not(:disabled):focus-visible {
-      --button-border-color-current: var(--button-border-color-focus);
-
-      background-color: var(--button-background-focus);
-    }
-
-    &:disabled {
-      --button-border-color-current: var(--button-border-color-disabled);
-
-      background-color: var(--button-background-disabled);
-      color: var(--button-color-disabled);
-    }
+    background-color: var(--button-background-disabled);
+    color: var(--button-color-disabled);
   }
 }

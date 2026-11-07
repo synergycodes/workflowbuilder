@@ -5,6 +5,7 @@ import { type PluginOption, defineConfig } from 'vite';
 import { analyzer } from 'vite-bundle-analyzer';
 import svgr from 'vite-plugin-svgr';
 
+import { sdkPostcssPlugins } from '../../packages/sdk/postcss-plugins.mjs';
 import { fallbackForMissingPlugin } from './file-fallback-for-missing-plugins';
 import { type FileReplacement, replaceFiles } from './file-replacement-plugin';
 import {
@@ -65,6 +66,12 @@ export default defineConfig(({ mode }) => {
         { find: '@/assets', replacement: path.resolve(sdkDirectory, 'src/assets') },
         { find: '@', replacement: path.resolve(sdkDirectory, 'src') },
       ],
+    },
+    // The alias skips the SDK build, so its CSS is finished here (SDK files only).
+    css: {
+      postcss: {
+        plugins: sdkPostcssPlugins(),
+      },
     },
     server: {
       host: 'localhost',

@@ -8,10 +8,11 @@ stylesheet always wins - import order does not matter.
 
 ## Consuming from npm (SDK or UI package)
 
-Override the variables you care about in any stylesheet of your app:
+Override the variables you care about on `.workflow-builder-root` in any stylesheet
+of your app (primitive tokens such as `--wb-ds-colors-*` also work on `:root`):
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-ds-components-button-solid-primary-default: #0f62fe;
   --wb-ds-ui-bg-inset: #f4f4f4;
   --wb-public-date-picker-dropdown-background: #fff;
@@ -21,8 +22,9 @@ Override the variables you care about in any stylesheet of your app:
 Discover design-token names in `node_modules/@workflowbuilder/ui/dist/tokens.css`
 and UI component overrides in `node_modules/@workflowbuilder/ui/dist/index.css`.
 UI component pages also include generated tables for component-local variables.
-Theme-specific values are keyed on `html[data-theme='light' | 'dark']`, so scope
-your overrides the same way when they should apply to one theme only.
+Theme-specific values are keyed on `[data-wb-theme='light' | 'dark']`, which sits on
+the same element, so write `.workflow-builder-root[data-wb-theme='dark'] { … }` for an
+override that should apply to one theme only.
 
 ## Working in this monorepo
 

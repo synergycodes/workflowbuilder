@@ -80,6 +80,8 @@ The overflow-ui package's `exports` field only maps `./tokens.css`, not `./dist/
 
 **Note on consumer CSS resets:** We considered stripping `@layer` wrappers from the output CSS so consumer `* { padding: 0 }` resets could not override library styles (unlayered CSS always beats layered CSS). We ultimately decided against it — requiring consumers to avoid aggressive global resets is an acceptable trade-off, and stripping layers changes internal cascade behavior in ways that are hard to verify.
 
+**Revisited in 4.0:** the trade-off did not hold for embedded hosts, which cannot drop their own resets. Painting rules are now unlayered and prefixed, and only variable defaults stay in `ui.base`. See `packages/ui/css-layers.md` and the Upgrade to 4.0 guide.
+
 ### 5. `import.meta.env` compatibility
 
 **Problem:** Three files used `import.meta.env` (Vite-specific, statically replaced at build time). In library mode, the consumer's bundler doesn't know about WB's env variables.

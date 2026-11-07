@@ -12,62 +12,60 @@
   --wb-public-radio-border-radius: var(--wb-ds-radius-full);
 }
 
-@layer ui.component {
-  .wrapper {
-    position: relative;
-    display: inline-flex;
-    cursor: pointer;
+.wrapper {
+  position: relative;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+.radio {
+  appearance: none;
+  position: relative;
+  margin: 0;
+  border: var(--wb-ds-size-12) solid var(--wb-public-radio-border-color);
+  border-radius: var(--wb-public-radio-border-radius);
+  background-color: var(--wb-public-radio-bg);
+  cursor: pointer;
+  vertical-align: middle;
+  transition: all var(--wb-public-transition);
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    border-radius: var(--wb-ds-radius-full);
+    background-color: var(--wb-public-radio-dot-color);
+    opacity: 0;
   }
 
-  .radio {
-    appearance: none;
-    position: relative;
-    margin: 0;
-    border: var(--wb-ds-size-12) solid var(--wb-public-radio-border-color);
-    border-radius: var(--wb-public-radio-border-radius);
-    background-color: var(--wb-public-radio-bg);
-    cursor: pointer;
-    vertical-align: middle;
-    transition: all var(--wb-public-transition);
+  &:checked {
+    border-color: var(--wb-public-radio-checked-bg);
+    background-color: var(--wb-public-radio-checked-bg);
 
     &::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      border-radius: var(--wb-ds-radius-full);
-      background-color: var(--wb-public-radio-dot-color);
-      opacity: 0;
+      opacity: 1;
     }
+  }
+
+  &:focus-visible {
+    outline: none;
+    box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
+      var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
+      var(--wb-public-radio-focus-border-color);
+  }
+
+  &:disabled {
+    cursor: not-allowed;
+    background-color: var(--wb-public-radio-disabled-bg);
+    border-color: var(--wb-public-radio-disabled-border-color);
 
     &:checked {
-      border-color: var(--wb-public-radio-checked-bg);
-      background-color: var(--wb-public-radio-checked-bg);
+      background-color: var(--wb-public-radio-disabled-bg);
 
       &::after {
-        opacity: 1;
-      }
-    }
-
-    &:focus-visible {
-      outline: none;
-      box-shadow: var(--wb-ds-shadow-ui-focus-element-x) var(--wb-ds-shadow-ui-focus-element-y)
-        var(--wb-ds-shadow-ui-focus-element-blur) var(--wb-ds-shadow-ui-focus-element-spread)
-        var(--wb-public-radio-focus-border-color);
-    }
-
-    &:disabled {
-      cursor: not-allowed;
-      background-color: var(--wb-public-radio-disabled-bg);
-      border-color: var(--wb-public-radio-disabled-border-color);
-
-      &:checked {
-        background-color: var(--wb-public-radio-disabled-bg);
-
-        &::after {
-          background-color: var(--wb-public-radio-disabled-dot-color);
-        }
+        background-color: var(--wb-public-radio-disabled-dot-color);
       }
     }
   }

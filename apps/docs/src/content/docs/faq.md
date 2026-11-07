@@ -126,7 +126,7 @@ description: Frequently asked questions about Workflow Builder for developers.
 ## Updates and Versioning
 
 18. **What happens when a new major version is released?**
-    Nothing changes until you upgrade. If you install the SDK from npm, you choose when to bump the dependency; follow the [changelog](https://github.com/synergycodes/workflowbuilder/blob/main/packages/sdk/CHANGELOG.md) and the [upgrade guide](/get-started/upgrade-to-3/) for breaking changes. If you maintain a fork of the source, review and merge upstream changes at your own pace.
+    Nothing changes until you upgrade. If you install the SDK from npm, you choose when to bump the dependency; follow the [changelog](https://github.com/synergycodes/workflowbuilder/blob/main/packages/sdk/CHANGELOG.md) and the [upgrade guide](/get-started/upgrade-to-4/) for breaking changes. If you maintain a fork of the source, review and merge upstream changes at your own pace.
 
 19. **How do I prevent users from breaking production workflows?**
     Workflow Builder gives you the building blocks; safeguards are implemented on your side. Common patterns teams use:

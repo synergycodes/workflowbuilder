@@ -1,21 +1,19 @@
-@layer ui.component {
-  .container {
+.container {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+
+  .placeholder {
+    opacity: 0.5;
+  }
+
+  span {
     width: 100%;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
+    text-align: left;
+    white-space: nowrap;
     overflow: hidden;
-
-    .placeholder {
-      opacity: 0.5;
-    }
-
-    span {
-      width: 100%;
-      text-align: left;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
+    text-overflow: ellipsis;
   }
 }

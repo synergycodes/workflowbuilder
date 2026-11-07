@@ -12,50 +12,48 @@
   --wb-public-field-required-color-disabled: var(--wb-ds-ui-text-ghost-default);
 }
 
-@layer ui.component {
-  .field {
-    display: flex;
-    min-width: 0;
-    width: 100%;
-    flex-direction: column;
-    gap: var(--wb-public-field-gap);
-    font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
-  }
+.field {
+  display: flex;
+  min-width: 0;
+  width: 100%;
+  flex-direction: column;
+  gap: var(--wb-public-field-gap);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+}
 
-  .label,
-  .helper {
-    display: flex;
-    min-height: var(--wb-public-field-row-min-height);
-    font-size: var(--wb-public-field-font-size);
-    font-weight: var(--wb-public-field-font-weight);
-    line-height: var(--wb-public-field-line-height);
-  }
+.label,
+.helper {
+  display: flex;
+  min-height: var(--wb-public-field-row-min-height);
+  font-size: var(--wb-public-field-font-size);
+  font-weight: var(--wb-public-field-font-weight);
+  line-height: var(--wb-public-field-line-height);
+}
 
-  .label {
-    color: var(--wb-public-field-label-color);
-  }
+.label {
+  color: var(--wb-public-field-label-color);
+}
 
-  .required {
-    color: var(--wb-public-field-critical-color);
-  }
+.required {
+  color: var(--wb-public-field-critical-color);
+}
 
-  .helper {
-    color: var(--wb-public-field-helper-color);
-  }
+.helper {
+  color: var(--wb-public-field-helper-color);
+}
 
-  .field[data-state='critical']:not([data-disabled]) .helper {
-    color: var(--wb-public-field-critical-color);
-  }
+.field[data-state='critical']:not([data-disabled]) .helper {
+  color: var(--wb-public-field-critical-color);
+}
 
-  .field[data-state='success']:not([data-disabled]) .helper {
-    color: var(--wb-public-field-success-color);
-  }
+.field[data-state='success']:not([data-disabled]) .helper {
+  color: var(--wb-public-field-success-color);
+}
 
-  .field[data-disabled] :is(.label, .helper) {
-    color: var(--wb-public-field-color-disabled);
-  }
+.field[data-disabled] :is(.label, .helper) {
+  color: var(--wb-public-field-color-disabled);
+}
 
-  .field[data-disabled] .required {
-    color: var(--wb-public-field-required-color-disabled);
-  }
+.field[data-disabled] .required {
+  color: var(--wb-public-field-required-color-disabled);
 }

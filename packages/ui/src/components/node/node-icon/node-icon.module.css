@@ -44,7 +44,7 @@
     /* missing token */;
 }
 
-:root[data-theme='dark'] {
+[data-wb-theme='dark'] {
   --wb-public-node-icon-color-blue: #8ca8ff /* missing token */;
   --wb-public-node-icon-container-background-color-blue: var(--wb-ds-colors-acc1-500-20) /* missing token */;
   --wb-public-node-icon-color-green: var(--wb-ds-colors-acc3-400) /* missing token */;
@@ -74,30 +74,28 @@
     /* missing token */;
 }
 
-@layer ui.component {
-  .container {
-    --node-icon-color: var(--wb-public-node-icon-color);
-    --node-icon-background: var(--wb-public-node-icon-container-background-color);
+.container {
+  --node-icon-color: var(--wb-public-node-icon-color);
+  --node-icon-background: var(--wb-public-node-icon-container-background-color);
 
-    display: flex;
-    padding: var(--wb-public-node-icon-padding);
-    justify-content: center;
-    align-items: center;
-    font-size: var(--wb-public-node-icon-glyph-size);
-    color: var(--node-icon-color);
+  display: flex;
+  padding: var(--wb-public-node-icon-padding);
+  justify-content: center;
+  align-items: center;
+  font-size: var(--wb-public-node-icon-glyph-size);
+  color: var(--node-icon-color);
 
-    border-radius: var(--wb-public-node-icon-border-radius);
-    border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
-    background: var(--node-icon-background);
+  border-radius: var(--wb-public-node-icon-border-radius);
+  border: var(--wb-public-node-icon-border-size) solid var(--wb-public-node-icon-container-border-color);
+  background: var(--node-icon-background);
 
-    &.accented:not(.disabled) {
-      border-color: transparent;
-      background-origin: border-box;
-    }
+  &.accented:not(.disabled) {
+    border-color: transparent;
+    background-origin: border-box;
+  }
 
-    &.disabled {
-      color: var(--wb-public-node-icon-color-disabled);
-      background: var(--wb-public-node-icon-container-background-color-disabled);
-    }
+  &.disabled {
+    color: var(--wb-public-node-icon-color-disabled);
+    background: var(--wb-public-node-icon-container-background-color-disabled);
   }
 }

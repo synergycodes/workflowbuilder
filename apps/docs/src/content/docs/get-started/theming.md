@@ -5,9 +5,9 @@ sidebar:
   order: 5
 ---
 
-The aggregated `style.css` ships with the SDK's default visual layer. Override CSS custom properties on `:root` (or a higher-priority selector) to customise.
+The aggregated `style.css` ships with the SDK's default visual layer. Override CSS custom properties on `.workflow-builder-root`, the editor's element. The container the editor's popups (Modal, Menu, Tooltip, Select, DatePicker) render in carries the same class, so one block reaches them too.
 
-CSS variables inherit through the DOM, not the React tree. Modal, Menu, Tooltip, Select, and DatePicker surfaces mount under `document.body`, so app-shell-scoped overrides do not reach them. This applies to all theme tokens, including backgrounds and component overrides; use `:root` or apply the overrides to the portal container too. Custom layouts passed as Root children and SDK-owned body portals join the builder's font scope, but portals created by host or plugin code remain outside it.
+Overrides on `:root` are ignored for public variables and themed tokens; only tokens the design system itself declares on `:root` (primitives such as `--wb-ds-colors-*`, canvas geometry) work there. CSS variables inherit through the DOM, not the React tree: custom layouts passed as Root children inherit the overrides, but portals created by host or plugin code outside the editor do not. To theme the editor from your own variables, see the bridge example in [Upgrade to 4.0](/get-started/upgrade-to-4/#move-variable-overrides-to-workflow-builder-root).
 
 ## Typography
 
@@ -18,7 +18,7 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 `--wb-public-font-family` controls the builder root and every Poppins-backed type role. The proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-font-family: 'Inter', system-ui, -apple-system, sans-serif;
   --wb-public-font-family-mono: 'JetBrains Mono', ui-monospace, monospace;
 }

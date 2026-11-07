@@ -20,61 +20,59 @@
     var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--wb-ds-canvas-node-focus-ring-active);
 }
 
-@layer ui.component {
-  .node-panel-wrapper:hover .container:not(.disabled) {
-    background: var(--wb-public-node-hover-background-color);
-    border-color: var(--wb-public-node-border-hover-color);
+.node-panel-wrapper:hover .container:not(.disabled) {
+  background: var(--wb-public-node-hover-background-color);
+  border-color: var(--wb-public-node-border-hover-color);
+}
+
+.container {
+  display: flex;
+  width: var(--wb-public-node-width);
+  height: var(--wb-public-node-height);
+  padding: var(--wb-public-node-padding);
+  gap: var(--wb-public-node-gap);
+  align-items: center;
+  flex-direction: column;
+
+  border-radius: var(--wb-public-node-border-radius);
+  border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
+  background: var(--wb-public-node-background-color);
+
+  &.selected {
+    border-color: var(--wb-public-node-border-color-selected);
+    box-shadow: var(--wb-public-node-box-shadow-selected);
   }
 
-  .container {
+  &.disabled {
+    background: var(--wb-public-node-background-color-disabled);
+  }
+
+  &:not(:hover) {
+    transition:
+      border-color var(--wb-public-transition),
+      box-shadow var(--wb-public-transition);
+  }
+
+  .header-wrapper {
+    width: 100%;
+  }
+
+  .header-container {
     display: flex;
-    width: var(--wb-public-node-width);
-    height: var(--wb-public-node-height);
-    padding: var(--wb-public-node-padding);
-    gap: var(--wb-public-node-gap);
+    gap: 0.5rem;
     align-items: center;
-    flex-direction: column;
+  }
 
-    border-radius: var(--wb-public-node-border-radius);
-    border: var(--wb-public-node-border-size) solid var(--wb-public-node-border-color);
-    background: var(--wb-public-node-background-color);
+  .header-container,
+  .content-container {
+    width: 100%;
+  }
 
-    &.selected {
-      border-color: var(--wb-public-node-border-color-selected);
-      box-shadow: var(--wb-public-node-box-shadow-selected);
-    }
-
-    &.disabled {
-      background: var(--wb-public-node-background-color-disabled);
-    }
-
-    &:not(:hover) {
-      transition:
-        border-color var(--wb-public-transition),
-        box-shadow var(--wb-public-transition);
-    }
-
-    .header-wrapper {
-      width: 100%;
-    }
-
-    .header-container {
-      display: flex;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .header-container,
-    .content-container {
-      width: 100%;
-    }
-
-    .header-container,
-    .content-container,
-    .handles-container {
-      &:empty {
-        display: none;
-      }
+  .header-container,
+  .content-container,
+  .handles-container {
+    &:empty {
+      display: none;
     }
   }
 }

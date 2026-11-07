@@ -32,6 +32,8 @@ App builds and dev servers consume the prebuilt `packages/ui/dist` (created on i
 
 The same applies to `@workflowbuilder/temporal`: the worker and the backend import its built `dist`, so after editing `packages/temporal/src` run `pnpm build:temporal` (or keep `pnpm --filter @workflowbuilder/temporal dev` watching) before `pnpm dev:worker` picks the change up.
 
+The SDK is the exception: demo and AI Studio alias `@workflowbuilder/sdk` to `packages/sdk/src`, so an SDK edit shows up at once with no build. The price is that nothing checks the shipped CSS until a build runs, so after editing SDK styles run `pnpm build:lib` before pushing - it rebuilds tokens, UI and SDK and runs the built-CSS checker on each. CI runs the same on every PR.
+
 ### Agent signals
 
 Long-running processes already emit stable log lines that scripts and agents can grep for:
