@@ -52,13 +52,12 @@ export type OnSaveParams = { isAutoSave?: boolean };
 /**
  * Resolution of a save attempt — three documented values: `'success'`
  * (committed), `'error'` (failed), `'alreadyStarted'` (a save was
- * already in flight and the new request was coalesced).
+ * already in flight and the new request was not started).
  *
- * Today's runtime treats every non-empty resolution as "the save
- * finished" and surfaces the success-style snackbar — so all three
- * variants currently look identical at the UI layer. Throw from the
- * save callback (rather than resolving to `'error'`) if you need an
- * error snackbar specifically.
+ * The props integration preserves the returned status: `'success'` shows
+ * success feedback, `'error'` shows error feedback, and `'alreadyStarted'`
+ * shows neither. A rejected callback also reports `'error'`. Feedback is
+ * suppressed for autosaves and after the integration has unmounted.
  *
  * @category Integration
  */
