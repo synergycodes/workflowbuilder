@@ -46,9 +46,11 @@ import '@workflowbuilder/ui/tokens.css';
 > **Subpath imports.** You can also import a single component directly, e.g.
 > `import { DatePicker } from '@workflowbuilder/ui/date-picker'`. That
 > injects only the component's own CSS. Every stylesheet carries the cascade
-> layer order, so import order doesn't matter; add
-> `import '@workflowbuilder/ui/styles.css'` once if you also want the
-> typography classes.
+> layer order, so import order doesn't matter. Add
+> `import '@workflowbuilder/ui/styles.css'` once: it is required with subpath
+> imports, because it carries the fonts, the typography classes and the shared
+> variables the components use. Without it, fields fall back to the browser's
+> font and transitions do not run.
 
 ### 🎛️ Apply the Theme
 

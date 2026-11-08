@@ -71,6 +71,8 @@
   margin: 0;
   border: var(--wb-public-checkbox-border-width) solid var(--wb-public-checkbox-border-color);
   background-color: var(--wb-public-checkbox-bg);
+  background-image: none;
+  box-shadow: none;
   cursor: pointer;
   vertical-align: middle;
   transition: all var(--wb-public-transition);

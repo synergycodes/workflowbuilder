@@ -5,6 +5,10 @@
   border: none;
   background: transparent;
   padding: 0;
+  margin: 0;
+  height: auto;
+  min-height: 0;
+  box-shadow: none;
   color: var(--wb-public-input-color);
 
   white-space: nowrap;

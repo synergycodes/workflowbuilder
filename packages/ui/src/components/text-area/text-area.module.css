@@ -73,6 +73,8 @@
   border: none;
   background: transparent;
   padding: 0;
+  margin: 0;
+  box-shadow: none;
   color: var(--wb-public-textarea-color);
   width: 100%;
   resize: none;

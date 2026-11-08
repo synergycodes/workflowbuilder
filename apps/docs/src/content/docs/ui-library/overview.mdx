@@ -30,12 +30,14 @@ The package has six style surfaces:
 - **`@workflowbuilder/ui`** is the root barrel. It provides every component and
   all component and global CSS, but not the design token values.
 - **`@workflowbuilder/ui/<component>`** provides one component and only that
-  component's CSS. Add `styles.css` for the typography classes and fonts,
-  and `tokens.css` for the design tokens.
+  component's CSS. Add `styles.css`, which is required here: without it,
+  fields fall back to the browser's font and transitions do not run. Add
+  `tokens.css` for the design tokens.
 - **`@workflowbuilder/ui/index.css`** provides all component and global CSS,
   including typography and fonts, but not the design token values.
-- **`@workflowbuilder/ui/styles.css`** provides the typography classes and
-  fonts, but no component CSS, design token values or page-level reset.
+- **`@workflowbuilder/ui/styles.css`** provides the typography classes, fonts
+  and the shared variables components use, but no component CSS, design token
+  values or page-level reset.
 - **`@workflowbuilder/ui/fonts.css`** provides the font faces, but no global,
   component or design token rules.
 - **`@workflowbuilder/ui/tokens.css`** provides the design token values, but no

@@ -417,6 +417,10 @@ legitimately writes scoped overrides such as `--wb-public-node-gap: 0` in node t
   prefix, which would make them tie with our overrides and depend on order again.
 - **Cost if wrong:** a scoped host rule such as `.app button` (0,1,1) beats a vendored rule of 0,1,0.
   Where that matters, the UI module restates the property at UI strength (decision 5.11).
+- **Accepted limit:** this includes React Flow's layout, so `.app div { position: static }` misplaces
+  nodes, ports and edges. Raising only the layout declarations was considered and deferred: they would
+  tie at (1,2,0) with the UI handle rules that move ports. A host rule that broad is the host's to
+  scope (follow-up: react-flow-layout-weight).
 
 ### 5.6 Base files are weightless inside the ID prefix
 
@@ -566,6 +570,11 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
 A host rule with an ID selector, or with `!important`, that matches editor elements still wins. This is
 the documented boundary and the documented override path. Host CSS like `#root button { … }` will
 restyle the editor's buttons.
+
+The variable text field is a visible case: its bundled dependency (`react-mentions-ts`) sets Tailwind-style
+class names such as `border` and `p-0`, and Bootstrap's same-named utilities are `!important`. On a
+Bootstrap page the field takes Bootstrap's border colour and loses its focus colour, and the suggestions
+list loses its padding (follow-up: variable-text-utility-classes).
 
 ### 6.2 `rem` follows the host's root font size
 

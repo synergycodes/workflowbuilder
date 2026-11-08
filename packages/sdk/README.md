@@ -372,16 +372,22 @@ element and on the popup container, so dark-mode styles for custom nodes use
 host rules and resets (Bootstrap's reboot, Tailwind's preflight, `button { all: unset }`) do
 not restyle it. These still do:
 
-- host rules with an id or `!important` that match inside the editor;
+- host rules with an id or `!important` that match inside the editor. Bootstrap's utility classes
+  are `!important`, so on a Bootstrap page the variable text field takes Bootstrap's border colour
+  and its suggestions list loses its padding;
 - host rules with a class, such as `.app button { … }`, on the bundled third-party internals (React
-  Flow's canvas, react-day-picker's calendar), which keep their own selectors' weight;
+  Flow's canvas, react-day-picker's calendar), which keep their own selectors' weight. This includes
+  layout: `.app div { position: static }` misplaces the canvas's nodes, ports and edges. Keep such
+  rules out of the editor without adding weight: `.app div:not(:where(.workflow-builder-root *))`;
 - the root font size: sizes are in `rem` and assume the browser default of 16px;
 - `box-sizing`: the editor's `border-box` default has zero weight, so any host rule wins;
 - properties the editor leaves unset: a host `p { line-height: 2 }` still applies to editor text
   that sets no line height, because the editor's rules win only for what they declare.
 
-To override an editor element on purpose, outweigh its rule with your own id plus the class,
-for example `#app .workflow-builder-root .my-node-title { … }`, or use `!important`.
+To override an editor element on purpose, use your own id plus the class, for example
+`#app .workflow-builder-root .my-node-title { … }`, or use `!important`. That selector ties with
+the SDK's own rules, so it wins when your CSS loads after `style.css` (the usual order). To win
+regardless of order, repeat the class: `#app .workflow-builder-root.workflow-builder-root .my-node-title`.
 
 Upgrading from 3.x: see [Upgrade to 4.0](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/).
 

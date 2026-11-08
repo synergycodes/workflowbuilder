@@ -116,14 +116,17 @@ react-day-picker's calendar) keep their own selectors' weight, so a host rule wi
 element, such as `.app button { … }`, can still reach those internals.
 
 Variables remain the supported way to change the look. When you need to override an editor
-element directly, outweigh its rule with an id of your own plus the editor's class, or use
-`!important`:
+element directly, use an id of your own plus the editor's class, or `!important`:
 
 ```css
 #app .workflow-builder-root .my-node-title {
   font-weight: 700;
 }
 ```
+
+That selector ties with the SDK's own rules, so it wins when your CSS loads after the SDK's
+`style.css`, which is the usual order. To win regardless of order, repeat the class:
+`#app .workflow-builder-root.workflow-builder-root .my-node-title`.
 
 Class names inside the editor are generated and can change between releases, so prefer your
 own classes, for example on custom node templates, as the target.
@@ -149,10 +152,14 @@ portal it into `usePortalContainer() ?? document.body` instead.
 ## Known limits
 
 - **Id selectors and `!important` in host CSS still win.** A host rule with an id, such as
-  `#app button { … }`, outweighs the editor's rules if it matches inside the editor.
+  `#app button { … }`, outweighs the editor's rules if it matches inside the editor. On a page
+  that loads Bootstrap's utility classes, which are `!important`, the variable text field takes
+  Bootstrap's border colour and its suggestions list loses its padding.
 - **Third-party internals keep their own weight.** React Flow's canvas and react-day-picker's
   calendar rules are bundled as they are, so a host rule with a class, such as
-  `.app button { … }`, can still reach them.
+  `.app button { … }`, can still reach them. That includes layout: a generic
+  `.app div { position: static }` misplaces the canvas's nodes, ports and edges. Keep such rules
+  out of the editor without adding weight: `.app div:not(:where(.workflow-builder-root *))`.
 - **The editor follows the root font size.** Sizes are in `rem`, so a host that scales
   `html { font-size: 62.5% }` scales the editor with it. The editor is designed for the
   browser default of 16px.

@@ -25,6 +25,8 @@
   border: var(--wb-ds-size-12) solid var(--wb-public-radio-border-color);
   border-radius: var(--wb-public-radio-border-radius);
   background-color: var(--wb-public-radio-bg);
+  background-image: none;
+  box-shadow: none;
   cursor: pointer;
   vertical-align: middle;
   transition: all var(--wb-public-transition);
