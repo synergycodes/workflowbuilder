@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -248,12 +250,28 @@ describe('ExecutionLogPanel', () => {
       layout.remove();
     });
 
-    it('passes the expanded panels’ edges to the dock without a gap, which the stylesheet adds', () => {
+    it('passes the expanded panels’ edges to the dock without a gap', () => {
       mountLayout({ isLeftExpanded: true, isRightExpanded: true });
       renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
 
       expect(dockEdge(container, 'left')).toBe('332px');
       expect(dockEdge(container, 'right')).toBe('412px');
+    });
+
+    // Vitest stubs CSS modules, so the rule is read from disk.
+    it('adds the layout spacing to the dock’s bottom and both side edges in the stylesheet', () => {
+      const css = readFileSync(path.join(import.meta.dirname, 'log-panel.module.css'), 'utf8').replaceAll(
+        /\/\*[\s\S]*?\*\//g,
+        '',
+      );
+
+      expect(css).toMatch(/\.dock\s*\{[^}]*bottom:\s*var\(--wb-public-layout-spacing\)/);
+      expect(css).toMatch(
+        /\.dock\s*\{[^}]*left:\s*calc\(var\(--log-dock-left, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+      );
+      expect(css).toMatch(
+        /\.dock\s*\{[^}]*right:\s*calc\(var\(--log-dock-right, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+      );
     });
 
     it('runs the dock to the canvas edge on each side whose panel is collapsed', () => {
