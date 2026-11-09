@@ -4,7 +4,7 @@ import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { showSnackbar } from './show-snackbar';
+import { closeSnackbar, showSnackbar } from './show-snackbar';
 import { SnackbarContainer } from './snackbar-container';
 
 declare global {
@@ -55,6 +55,20 @@ describe('SnackbarContainer', () => {
     expect(transition?.style.transition).toBe('opacity 180ms ease-out, transform 180ms ease-out');
   });
 
+  // jsdom does no hit-testing, so the style stands in for the ignored second click.
+  it('lets a closing snackbar take no clicks while it fades out in place', () => {
+    act(() => {
+      showSnackbar({ key: 'decision', variant: 'info', title: 'Waiting for decision', autoHideDuration: null });
+    });
+    act(() => vi.advanceTimersByTime(180));
+    act(() => closeSnackbar('decision'));
+
+    const transition = document.querySelector<HTMLElement>('.notistack-CollapseWrapper div[style*="opacity"]');
+
+    expect(transition?.style.opacity).toBe('0');
+    expect(transition?.style.pointerEvents).toBe('none');
+  });
+
   // Vitest stubs CSS modules, so the rule is read from disk.
   it('raises that class by the offset variable, unlayered and doubled to outrank the notistack rule', () => {
     const css = readFileSync(path.join(import.meta.dirname, 'snackbar-container.module.css'), 'utf8').replaceAll(
@@ -76,11 +90,12 @@ describe('SnackbarContainer', () => {
     );
 
     expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*top:\s*14px/);
-    expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*justify-content:\s*safe flex-start/);
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*\{[^}]*justify-content:\s*flex-end/);
     expect(css).toMatch(/\.bottom-center\.bottom-center\s*>\s*\*\s*\{[^}]*flex-shrink:\s*0/);
+    expect(css).toMatch(/\.bottom-center\.bottom-center\s*>\s*:last-child\s*\{[^}]*margin-top:\s*auto/);
   });
 
-  // `safe flex-start` falls back to the top only because notistack lays the stack out bottom-up.
+  // `flex-end` is the top, and `margin-top` the top snackbar's, only because notistack lays the stack out bottom-up.
   it('keeps notistack stacking the bottom-centre snackbars bottom-up', () => {
     act(() => {
       showSnackbar({ variant: 'info', title: 'Waiting for decision', autoHideDuration: null });

@@ -3,7 +3,8 @@ import { type CSSProperties, type RefObject, useRef } from 'react';
 
 type TransitionStatus = 'entering' | 'entered' | 'exiting' | 'exited' | 'unmounted';
 
-const HIDDEN: CSSProperties = { opacity: 0, transform: 'translateY(8px)' };
+// A faded snackbar stays in place until notistack collapses it, so it must not take clicks meanwhile.
+const HIDDEN: CSSProperties = { opacity: 0, transform: 'translateY(8px)', pointerEvents: 'none' };
 const SHOWN: CSSProperties = { opacity: 1, transform: 'none' };
 
 const STATUS_STYLE: Record<TransitionStatus, CSSProperties> = {
@@ -11,7 +12,7 @@ const STATUS_STYLE: Record<TransitionStatus, CSSProperties> = {
   exited: HIDDEN,
   entering: SHOWN,
   entered: SHOWN,
-  exiting: { opacity: 0, transform: 'none' },
+  exiting: { opacity: 0, transform: 'none', pointerEvents: 'none' },
 };
 
 // notistack's default Slide rises from the viewport bottom, so a raised stack would cross what lies below it.
