@@ -8,7 +8,7 @@ const AppBarContainer = React.lazy(() =>
 /*
   It prevents the sidebars from moving if they loaded earlier.
 */
-const expectedAppBarHeight = 'var(--wb-sdk-app-bar-height)';
+const expectedAppBarHeight = '62px';
 
 export function AppBarContainerLazy() {
   return (
