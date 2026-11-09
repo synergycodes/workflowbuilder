@@ -1,7 +1,7 @@
 import { Snackbar, type SnackbarVariant } from '@workflowbuilder/ui';
 import { closeSnackbar as closeNotistackSnackbar, enqueueSnackbar } from 'notistack';
 
-const AUTO_HIDE_DURATION_TIME = 3000;
+const AUTO_HIDE_DURATION_TIME = 60_000; // TEMP: manual test, revert to 3000
 
 let shownCount = 0;
 
