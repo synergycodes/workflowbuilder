@@ -7,9 +7,10 @@ sidebar:
 
 Version 4.0 draws a boundary between the editor's styles and the host page's. In 3.x the SDK
 wrote `data-theme` to `<html>`, reset `<body>`, and kept its component rules in a
-cascade layer that any plain host rule could beat. In 4.0 the SDK changes nothing outside its
-own element, and its rules are scoped to that element with enough weight to survive host
-resets such as Bootstrap's reboot, Tailwind's preflight or `button { all: unset }`.
+cascade layer that any plain host rule could beat. In 4.0 the SDK writes nothing to `<html>` or
+`<body>` apart from one popup container (a `display: contents` element that carries the editor's
+class and theme), and its rules are scoped to the editor's element with enough weight to survive
+host resets such as Bootstrap's reboot, Tailwind's preflight or `button { all: unset }`.
 
 This page covers the style boundary only: the host page, `--wb-*` overrides, custom CSS, code
 that reads the editor's theme, and `@workflowbuilder/ui` used on its own. 4.0 also renames and
@@ -23,8 +24,10 @@ same release.
 
 The SDK no longer sets `margin`, `overflow` or `background-color` on `<body>`, and the canvas no
 longer sizes itself to the window. The editor fills its parent, so the parent needs a height, or
-the editor renders 0px tall. If your page background came from the SDK, set it yourself. For a
-full-window editor:
+the editor renders 0px tall. If your page background came from the SDK, set it yourself. The
+same goes for the other page-wide rules 3.x shipped: themed scrollbars (`::-webkit-scrollbar`),
+`button { cursor: pointer }` and the hidden spinners on number and time inputs now apply inside
+the editor only. For a full-window editor:
 
 ```css
 html,
@@ -72,7 +75,13 @@ and the canvas geometry, still work there, but `.workflow-builder-root` is the o
 works for every `--wb-*` override. The editor's popups (menus, selects, tooltips,
 modals, date pickers) render in a container that carries the same class, so one block reaches
 them too. The override wins whatever the stylesheet order, because the editor's defaults sit
-in a cascade layer and yours do not.
+in a cascade layer and yours do not. Two variables are the exception: the built-in node templates
+set `--wb-public-node-gap` and the properties header sets `--wb-public-node-icon-padding` on their
+own elements, so a value on `.workflow-builder-root` does not reach them.
+
+That layer is now `wb-ui.base` (3.x used `ui.base` and `ui.component`), so it no longer collides
+with a host layer named `ui`. If your CSS names `ui`, `ui.base` or `ui.component` in an `@layer`
+statement, rename it or drop it: plain unlayered CSS beats the editor's defaults.
 
 To follow your own theme, keep it on `:root` and bridge the values you want on the editor's
 element. They flow in by inheritance and update when your theme changes:
@@ -111,9 +120,13 @@ Without `onThemeChange`, the theme is fixed at the value you pass.
 In 3.x any plain host rule beat the editor's layered rules, so `.my-app button { … }` could
 restyle the editor's buttons by accident, and a reset could break them. In 4.0 every rule the
 SDK and the UI library author carries the weight of one id selector, so plain host rules, resets
-included, no longer reach them. The bundled third-party stylesheets (React Flow's canvas,
-react-day-picker's calendar) keep their own selectors' weight, so a host rule with a class and an
-element, such as `.app button { … }`, can still reach those internals.
+included, no longer reach them. If your 3.x CSS restyled editor elements with plain class rules on
+purpose, those rules are now ignored; re-target them as shown below. Inherited text properties set
+on a host ancestor (`text-align`, `font-weight`, `cursor`, `scrollbar-color`, …) also stop at the
+editor's edge, including for your own content rendered inside it. The bundled third-party
+stylesheets (React Flow's canvas, react-day-picker's calendar) keep their own selectors' weight, so
+a host rule with a class and an element, such as `.app button { … }`, can still reach those
+internals.
 
 Variables remain the supported way to change the look. When you need to override an editor
 element directly, use an id of your own plus the editor's class, or `!important`:
@@ -124,9 +137,11 @@ element directly, use an id of your own plus the editor's class, or `!important`
 }
 ```
 
-That selector ties with the SDK's own rules, so it wins when your CSS loads after the SDK's
-`style.css`, which is the usual order. To win regardless of order, repeat the class:
-`#app .workflow-builder-root.workflow-builder-root .my-node-title`.
+That selector ties with the SDK's single-class rules, so it wins when your CSS loads after the
+SDK's `style.css`, which is the usual order, and it loses to SDK rules that carry a state or a
+second class (`:hover`, `.a.b`). Repeating the class
+(`#app .workflow-builder-root.workflow-builder-root .my-node-title`) adds one class of weight; the
+one override that always wins is `!important`.
 
 Class names inside the editor are generated and can change between releases, so prefer your
 own classes, for example on custom node templates, as the target.
@@ -146,13 +161,22 @@ Popups render under `<body>` by default, outside that wrapper. Give them a conta
 same class and theme, and pass that element to `PortalContainerProvider` around your components
 (example in the [UI Library overview](/ui-library/overview/#theming)). Inside
 `<WorkflowBuilder.Root>` the SDK does both for you. An overlay of your own that you portal out of
-the canvas (a `createPortal` to `document.body`) lands outside the editor and loses its tokens;
-portal it into `usePortalContainer() ?? document.body` instead.
+the canvas (a `createPortal` to `document.body`) lands outside the editor and loses its tokens.
+Portal it into the editor's container instead; `usePortalContainer` comes from `@workflowbuilder/ui`
+(add it to your dependencies), and it returns `null` on the first render, so wait for it:
+
+```tsx
+import { usePortalContainer } from '@workflowbuilder/ui';
+
+const container = usePortalContainer();
+return container ? createPortal(overlay, container) : null;
+```
 
 ## Known limits
 
-- **Id selectors and `!important` in host CSS still win.** A host rule with an id, such as
-  `#app button { … }`, outweighs the editor's rules if it matches inside the editor. On a page
+- **Id selectors and `!important` in host CSS still win.** A host rule with an id and a class,
+  such as `#app .cta { … }`, outweighs the editor's rules if it matches inside the editor (an id
+  alone, `#app button`, beats only the editor's base styles). On a page
   that loads Bootstrap's utility classes, which are `!important`, the variable text field takes
   Bootstrap's border colour and its suggestions list loses its padding.
 - **Third-party internals keep their own weight.** React Flow's canvas and react-day-picker's
@@ -163,9 +187,9 @@ portal it into `usePortalContainer() ?? document.body` instead.
 - **The editor follows the root font size.** Sizes are in `rem`, so a host that scales
   `html { font-size: 62.5% }` scales the editor with it. The editor is designed for the
   browser default of 16px.
-- **Box sizing is a weak default.** The editor applies `box-sizing: border-box` to its
-  contents with zero weight. Any host `box-sizing` rule wins, including inside custom nodes
-  and panels.
+- **Box sizing is a weak default in SDK content.** The editor applies `box-sizing: border-box`
+  to its panels, custom nodes and plugin content with zero weight, so any host `box-sizing` rule
+  wins there. The UI library's own components declare it at full weight.
 - **Properties the editor leaves unset still come from the host.** The editor's rules win only
   for what they declare; a host rule such as `p { line-height: 2 }` or `span { font-weight: 300 }`
   still applies to editor text that sets neither.

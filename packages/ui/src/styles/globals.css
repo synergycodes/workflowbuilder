@@ -1,6 +1,6 @@
 /* Wrapped by hand (not by the build plugin): this file is concatenated raw
    into dist/styles.css, bypassing the PostCSS pipeline. */
-@layer ui.base {
+@layer wb-ui.base {
   [data-wb-theme] {
     --wb-public-transition: 0.1s ease-in;
   }

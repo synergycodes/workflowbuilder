@@ -8,7 +8,7 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { type DateRange, DayPicker, type Matcher } from 'react-day-picker';
 
 import styles from './date-picker.module.css';
-// variables.css also pulls react-day-picker's stylesheet into `ui.base`.
+// variables.css also pulls in react-day-picker's stylesheet, unlayered.
 import './variables.css';
 import fieldControlSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';

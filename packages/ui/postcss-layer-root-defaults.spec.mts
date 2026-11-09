@@ -20,7 +20,7 @@ describe('postcss-layer-root-defaults include', () => {
 
   it('layers a file inside include', async () => {
     const result = await postcss([plugin]).process(':root { --wb-public-x: 1px }', { from: '/x/sdk/src/a.css' });
-    expect(result.css.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { [data-wb-theme] { --wb-public-x: 1px }}');
+    expect(result.css.replaceAll(/\s+/g, ' ')).toBe('@layer wb-ui.base { [data-wb-theme] { --wb-public-x: 1px }}');
   });
 
   it('leaves a file outside include untouched', async () => {
@@ -30,24 +30,26 @@ describe('postcss-layer-root-defaults include', () => {
 });
 
 describe('postcss-layer-root-defaults', () => {
-  it('moves a variable-only :root block onto [data-wb-theme] inside ui.base', async () => {
+  it('moves a variable-only :root block onto [data-wb-theme] inside wb-ui.base', async () => {
     const output = await run(':root { --wb-public-x: var(--wb-ds-y) }');
-    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { [data-wb-theme] { --wb-public-x: var(--wb-ds-y) }}');
+    expect(output.replaceAll(/\s+/g, ' ')).toBe(
+      '@layer wb-ui.base { [data-wb-theme] { --wb-public-x: var(--wb-ds-y) }}',
+    );
   });
 
   it('keeps a design-token :root block on :root (still layered)', async () => {
     const output = await run(':root { --wb-ds-space-100: 0.5rem }');
-    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { :root { --wb-ds-space-100: 0.5rem }}');
+    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer wb-ui.base { :root { --wb-ds-space-100: 0.5rem }}');
   });
 
   it('keeps a :root block that sets a non-custom property on :root (still layered)', async () => {
     const output = await run(':root { --a: 1px; color: red }');
-    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer ui.base { :root { --a: 1px; color: red } }');
+    expect(output.replaceAll(/\s+/g, ' ')).toBe('@layer wb-ui.base { :root { --a: 1px; color: red } }');
   });
 
   it('wraps a hand-written [data-wb-theme] variable block without changing its selector', async () => {
     const output = await run("[data-wb-theme='dark'] { --x: 1px }");
-    expect(output.replaceAll(/\s+/g, ' ')).toBe("@layer ui.base { [data-wb-theme='dark'] { --x: 1px }}");
+    expect(output.replaceAll(/\s+/g, ' ')).toBe("@layer wb-ui.base { [data-wb-theme='dark'] { --x: 1px }}");
   });
 
   it('leaves a component rule under [data-wb-theme] unlayered', async () => {
@@ -67,7 +69,7 @@ describe('postcss-layer-root-defaults', () => {
 
   it('wraps grouped and qualified :root selectors and keeps them', async () => {
     const output = await run(":root, .fallback { --x: 1px }\n:root[data-theme='dark'] { --y: 2px }");
-    expect(output.match(/@layer ui\.base/g)).toHaveLength(2);
+    expect(output.match(/@layer wb-ui\.base/g)).toHaveLength(2);
     expect(output).toContain(':root, .fallback');
     expect(output).toContain(":root[data-theme='dark']");
   });
@@ -79,7 +81,7 @@ describe('postcss-layer-root-defaults', () => {
   });
 
   it('leaves :root already inside @layer alone', async () => {
-    const input = '@layer ui.base { :root { --x: 1px } }';
+    const input = '@layer wb-ui.base { :root { --x: 1px } }';
     expect(await run(input)).toBe(input);
   });
 

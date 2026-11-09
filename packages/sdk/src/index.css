@@ -1,8 +1,6 @@
-/* The @layer statement and every @import must precede any rule.
-
-   `ui.base` is the only layer and holds variable defaults only; everything that
-   paints is unlayered and gets its scope prefix from postcss-scope-prefix. */
-@layer ui.base;
+/* The @layer statement and every @import must precede any rule. `wb-ui.base` is the only layer and
+   holds variable defaults only; everything that paints is unlayered and prefixed by postcss-scope-prefix. */
+@layer wb-ui.base;
 
 @import '@workflowbuilder/ui/tokens.css';
 
@@ -13,7 +11,7 @@
 
 /* Layered, so an unlayered consumer override wins whatever the load order.
    On [data-wb-theme], not :root, so var(--wb-ds-…) resolves where the themed tokens live. */
-@layer ui.base {
+@layer wb-ui.base {
   [data-wb-theme] {
     --wb-public-transition: 0.1s ease-in;
     --wb-public-background-color: var(--wb-ds-ui-bg-canvas);
@@ -87,6 +85,12 @@
   /* A host `scrollbar-color` is inherited and makes Chrome drop the ::-webkit-scrollbar theme above. */
   scrollbar-color: auto;
   scrollbar-width: auto;
+}
+
+/* Icons colour themselves with the `fill` attribute, which any host `svg { fill }` rule beats. Restated
+   only for icons that ask for currentColor: a host's outline icons (`fill="none"`) inside the editor stay as they are. */
+:is(#wb, .workflow-builder-root) :where(svg[fill='currentColor']) {
+  fill: currentColor;
 }
 
 /* Glued sdk prefix: the box's geometry must beat a host's generic `.app div { position: static }`. */

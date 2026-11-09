@@ -1,6 +1,6 @@
 import type { Plugin, Rule } from 'postcss';
 
-// Moves variable-only `:root` defaults onto `[data-wb-theme]` inside `@layer ui.base`, so sources keep
+// Moves variable-only `:root` defaults onto `[data-wb-theme]` inside `@layer wb-ui.base`, so sources keep
 // writing `:root { … }`. Why: css-layers.md, "Why the defaults stay layered". The rewrite is to go: sources
 // should name `[data-wb-theme]` themselves and only the layering stay here (follow-up: css-defaults-in-source).
 
@@ -52,7 +52,7 @@ export function layerRootDefaultsPlugin({ include }: LayerRootDefaultsOptions = 
               rule.selector = THEME_SCOPE;
             }
 
-            const layer = atRule({ name: 'layer', params: 'ui.base', source: rule.source });
+            const layer = atRule({ name: 'layer', params: 'wb-ui.base', source: rule.source });
             rule.replaceWith(layer);
             layer.append(rule);
           }

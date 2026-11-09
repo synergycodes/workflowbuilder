@@ -110,7 +110,7 @@ describe('postcss-scope-prefix', () => {
   });
 
   it('leaves rules inside @layer alone', async () => {
-    const input = '@layer ui.base { .x { color: red } }';
+    const input = '@layer wb-ui.base { .x { color: red } }';
     expect(await run(input, 'ui')).toBe(input);
   });
 

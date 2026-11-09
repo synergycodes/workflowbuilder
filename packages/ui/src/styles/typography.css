@@ -3,6 +3,14 @@
   --wb-public-font-family-mono: ui-monospace, 'Cascadia Mono', monospace;
 }
 
+/* The outermost wrapper paints the theme, so standalone components are readable on any host page.
+   Hand-prefixed at base weight: the SDK's shell and modal set their own surface at component weight. */
+:is(#wb, .workflow-builder-root):where(.workflow-builder-root:not(.workflow-builder-root *)) {
+  background-color: var(--wb-ds-ui-bg-base);
+  color: var(--wb-ds-ui-text-default);
+  font-family: var(--wb-public-font-family, 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif);
+}
+
 .wb-text-display-s,
 .wb-text-display-m,
 .wb-text-display-l,

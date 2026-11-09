@@ -380,14 +380,18 @@ not restyle it. These still do:
   layout: `.app div { position: static }` misplaces the canvas's nodes, ports and edges. Keep such
   rules out of the editor without adding weight: `.app div:not(:where(.workflow-builder-root *))`;
 - the root font size: sizes are in `rem` and assume the browser default of 16px;
-- `box-sizing`: the editor's `border-box` default has zero weight, so any host rule wins;
+- `box-sizing` in SDK panels, custom nodes and plugin content: the editor's `border-box` default
+  there has zero weight, so any host rule wins. The UI library's own components declare it at full
+  weight;
 - properties the editor leaves unset: a host `p { line-height: 2 }` still applies to editor text
   that sets no line height, because the editor's rules win only for what they declare.
 
 To override an editor element on purpose, use your own id plus the class, for example
-`#app .workflow-builder-root .my-node-title { … }`, or use `!important`. That selector ties with
-the SDK's own rules, so it wins when your CSS loads after `style.css` (the usual order). To win
-regardless of order, repeat the class: `#app .workflow-builder-root.workflow-builder-root .my-node-title`.
+`#app .workflow-builder-root .my-node-title { … }`. That selector ties with the SDK's single-class
+rules, so it wins when your CSS loads after `style.css` (the usual order), and it loses to SDK rules
+that carry a state or a second class (`:hover`, `.a.b`). Repeating the class
+(`#app .workflow-builder-root.workflow-builder-root .my-node-title`) adds one class of weight; the
+one override that always wins is `!important`.
 
 Upgrading from 3.x: see [Upgrade to 4.0](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/).
 

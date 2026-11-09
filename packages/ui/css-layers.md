@@ -6,10 +6,10 @@ Why it is built this way, with the rejected alternatives: `style-boundary.decisi
 variables only:
 
 ```css
-@layer ui.base;
+@layer wb-ui.base;
 ```
 
-`ui.base` holds variable defaults (primitives on `:root`, themed tokens and `--wb-public-*`
+`wb-ui.base` holds variable defaults (primitives on `:root`, themed tokens and `--wb-public-*`
 defaults on `[data-wb-theme]`) and `@font-face`. Every rule that paints is unlayered and scoped
 by a selector prefix.
 
@@ -17,11 +17,11 @@ by a selector prefix.
 
 Three builds run in order, each consuming the previous one's `dist`:
 
-| Stage                | Input                                                                           | Steps, in order                                                                                                                                                                                                  | Output                                        |
-| -------------------- | ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| 1. `packages/tokens` | `tokens.json` (Figma export)                                                    | Style Dictionary: primitives and Canvas to `:root`, themed sets to `[data-wb-theme='light' \| 'dark']`, sizes to rem. No PostCSS                                                                                 | `tokens.css`                                  |
-| 2. `packages/ui`     | `tokens.css`, component `*.module.css`                                          | Token copy: stamp the order and wrap in `@layer ui.base`. Components: CSS modules hashing, then `postcss-box-sizing`, `postcss-layer-root-defaults`, `postcss-scope-prefix` (`ui`), minify, `check-built-css.ts` | `dist/tokens.css`, `dist/index.css`           |
-| 3. `packages/sdk`    | `src/index.css`: UI tokens, `@xyflow/react` CSS, UI dist, SDK and icons modules | CSS modules hashing, then `sdkPostcssPlugins()`: `postcss-layer-root-defaults` and `postcss-scope-prefix` (`sdk`, React Flow as vendored), limited to SDK files by `include`; minify, `check-built-css.ts dist`  | `dist/style.css`, the one file a host imports |
+| Stage                | Input                                                                           | Steps, in order                                                                                                                                                                                                     | Output                                        |
+| -------------------- | ------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| 1. `packages/tokens` | `tokens.json` (Figma export)                                                    | Style Dictionary: primitives and Canvas to `:root`, themed sets to `[data-wb-theme='light' \| 'dark']`, sizes to rem. No PostCSS                                                                                    | `tokens.css`                                  |
+| 2. `packages/ui`     | `tokens.css`, component `*.module.css`                                          | Token copy: stamp the order and wrap in `@layer wb-ui.base`. Components: CSS modules hashing, then `postcss-box-sizing`, `postcss-layer-root-defaults`, `postcss-scope-prefix` (`ui`), minify, `check-built-css.ts` | `dist/tokens.css`, `dist/index.css`           |
+| 3. `packages/sdk`    | `src/index.css`: UI tokens, `@xyflow/react` CSS, UI dist, SDK and icons modules | CSS modules hashing, then `sdkPostcssPlugins()`: `postcss-layer-root-defaults` and `postcss-scope-prefix` (`sdk`, React Flow as vendored), limited to SDK files by `include`; minify, `check-built-css.ts dist`     | `dist/style.css`, the one file a host imports |
 
 CSS modules runs before the project plugins, which work in `OnceExit`, so the plugins see
 already-hashed selectors; that is why a foreign class has to be in `:global()`. The UI dist passes
@@ -44,7 +44,7 @@ background in dark mode:
 } /* component rule, index.css */
 [data-wb-theme] {
   --wb-public-panel-bg: var(--wb-ds-ui-bg-base);
-} /* public default, ui.base   */
+} /* public default, wb-ui.base   */
 [data-wb-theme='dark'] {
   --wb-ds-ui-bg-base: var(--wb-ds-colors-gray-700);
 } /* themed token, tokens.css */
@@ -103,7 +103,7 @@ foreign class.
 ## Establishing the order
 
 The order is fixed by the **first** `@layer` declaration the browser sees. The build
-(`combine-css-bundle.mts`) stamps `@layer ui.base;` at the top of **every** emitted stylesheet
+(`combine-css-bundle.mts`) stamps `@layer wb-ui.base;` at the top of **every** emitted stylesheet
 (the combined `index.css`, `styles.css`, and each per-component file in `dist/assets/`).
 Duplicate statements are no-ops, so any import order and any bundler is safe, and a single
 built file copied out of the package stays self-contained.

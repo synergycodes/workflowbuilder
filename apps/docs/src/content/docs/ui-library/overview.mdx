@@ -101,8 +101,10 @@ import { DatePicker } from '@workflowbuilder/ui/date-picker';
 ## Theming
 
 Wrap the components in an element with the `workflow-builder-root` class and a `data-wb-theme`
-attribute set to `light` or `dark`. Theme-specific tokens and component defaults are declared on
-that element, which is also how these docs theme the live examples:
+attribute set to `light` or `dark`, both on the same element. Theme-specific tokens and component
+defaults are declared on that element, and it paints the theme's base surface, text colour and
+font so the components read correctly on any host page. This is also how these docs theme the
+live examples:
 
 ```html
 <div class="workflow-builder-root" data-wb-theme="light">…</div>

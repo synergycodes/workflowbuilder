@@ -24,6 +24,7 @@
 .label,
 .helper {
   display: flex;
+  margin: 0;
   min-height: var(--wb-public-field-row-min-height);
   font-size: var(--wb-public-field-font-size);
   font-weight: var(--wb-public-field-font-weight);

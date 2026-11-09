@@ -30,6 +30,7 @@
 .container {
   position: relative;
   display: inline-flex;
+  margin: 0;
   cursor: pointer;
 }
 

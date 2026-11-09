@@ -84,7 +84,7 @@ Calendar picker, bound to a date property. The schema field is declared as `type
 
 ## `DynamicConditions`
 
-Composer for an array of comparison rows — used in nodes that branch on upstream values. Each row is a [`DynamicCondition`](/api/forms/dynamiccondition/) with two operands, a [`ComparisonOperator`](/api/forms/comparisonoperator/), and a logical join (`'AND'` / `'OR'`).
+Composer for an array of comparison rows — used in nodes that branch on upstream values. Each row is a [`DynamicCondition`](/api/forms/dynamiccondition/) with two operands, a `ComparisonOperator`, and a logical join (`'AND'` / `'OR'`).
 
 The `x` and `y` operands accept literal strings or `{{nodes.<id>.<output>}}` placeholders that resolve against upstream node outputs at runtime.
 

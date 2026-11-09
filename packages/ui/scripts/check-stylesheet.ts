@@ -73,7 +73,7 @@ function isPublicDefault(declaration: Declaration): boolean {
 
   let ancestor: Node | undefined = rule.parent;
   while (ancestor && !(ancestor instanceof AtRule && ancestor.name === 'layer')) ancestor = ancestor.parent;
-  return ancestor instanceof AtRule && ancestor.params.trim() === 'ui.base';
+  return ancestor instanceof AtRule && ancestor.params.trim() === 'wb-ui.base';
 }
 
 // Scoped resets name the bare root class; `.workflow-builder-root-shell` is not it and carries the glued prefix.

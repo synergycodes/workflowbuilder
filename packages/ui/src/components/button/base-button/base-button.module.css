@@ -11,6 +11,9 @@
   align-items: center;
   justify-content: center;
   position: relative;
+  margin: 0;
+  min-width: auto;
+  min-height: auto;
   color: var(--wb-public-button-color);
   border: unset;
   cursor: pointer;

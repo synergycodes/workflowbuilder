@@ -22,7 +22,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`            | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
 | `pnpm build`                     | -    | Build the demo app                                                                                       |
 | `pnpm test`                      | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
-| `pnpm check`                     | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
+| `pnpm check`                     | -    | Lint + Stylelint + typecheck + format + deploy Dockerfile air-gap guard                                  |
 | `pnpm release:version <pkg>`     | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
 | `pnpm release:tag <pkg>`         | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
 
@@ -124,6 +124,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
 | Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
+| Stylelint  | `pnpm lint:styles`            | Workspace CSS: every `var(--name)` must exist, see `packages/tokens/README.md`                          |
 | Knip       | `pnpm knip`                   | Detects unused exports/dependencies. Run by hand: not part of `pnpm check` or CI                        |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |

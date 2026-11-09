@@ -46,7 +46,8 @@ the repo root.
 pnpm --filter @workflowbuilder/ui-tokens test
 ```
 
-Vitest unit tests (currently `src/to-file-name.spec.ts` and `src/manifest.spec.ts`).
+Vitest unit tests: `config`, `css-variable-name`, `manifest`, `to-file-name` and
+`validate-collisions` (`src/*.spec.ts`).
 
 ## Token usage lint
 

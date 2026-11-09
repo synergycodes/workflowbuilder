@@ -18,9 +18,9 @@ function fontFaces(css: string): string[] {
 function writeFixture(root: string, typography: string): void {
   mkdirSync(path.join(root, 'dist/assets'), { recursive: true });
   mkdirSync(path.join(root, 'src/styles'), { recursive: true });
-  writeFileSync(path.join(root, 'dist/assets/index.css'), '@layer ui.base; .entry { color: black }');
-  writeFileSync(path.join(root, 'src/styles/layers.css'), '@layer ui.base;');
-  writeFileSync(path.join(root, 'src/styles/globals.css'), '@layer ui.base { :root { --x: 1 } }');
+  writeFileSync(path.join(root, 'dist/assets/index.css'), '@layer wb-ui.base; .entry { color: black }');
+  writeFileSync(path.join(root, 'src/styles/layers.css'), '@layer wb-ui.base;');
+  writeFileSync(path.join(root, 'src/styles/globals.css'), '@layer wb-ui.base { :root { --x: 1 } }');
   writeFileSync(path.join(root, 'src/styles/typography.css'), typography);
 }
 
@@ -52,7 +52,7 @@ describe('combine CSS bundle', () => {
 
       const stylesCss = readFileSync(path.join(root, 'dist/styles.css'), 'utf8');
       expect(stylesCss).toContain(':is(#wb, .workflow-builder-root) :where(.wb-text-body-m)');
-      expect(stylesCss).toMatch(/@layer ui\.base\s*\{\s*\[data-wb-theme\]/);
+      expect(stylesCss).toMatch(/@layer wb-ui\.base\s*\{\s*\[data-wb-theme\]/);
       expect(stylesCss).not.toContain('ui.component');
     } finally {
       rmSync(root, { recursive: true, force: true });

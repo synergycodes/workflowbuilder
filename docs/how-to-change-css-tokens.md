@@ -3,7 +3,7 @@
 `@workflowbuilder/ui` resolves colors, spacing, and radii through generated
 `--wb-ds-*` design tokens defined in `@workflowbuilder/ui/tokens.css` and
 hand-authored `--wb-public-*` component overrides. Its shipped defaults live
-inside the `ui.base` cascade layer, so a plain unlayered override in your own
+inside the `wb-ui.base` cascade layer, so a plain unlayered override in your own
 stylesheet always wins - import order does not matter.
 
 ## Consuming from npm (SDK or UI package)

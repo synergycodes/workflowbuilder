@@ -181,7 +181,7 @@ export function emitFontAssets(distributionDirectory: string): string {
     ].join('\n');
   });
 
-  return `@layer ui.base {\n${rules.join('\n\n')}\n}`;
+  return `@layer wb-ui.base {\n${rules.join('\n\n')}\n}`;
 }
 
 function readLayerOrder(stylesDirectory: string): string {

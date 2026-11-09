@@ -55,8 +55,10 @@ import '@workflowbuilder/ui/tokens.css';
 ### 🎛️ Apply the Theme
 
 Wrap the components in an element that carries the `workflow-builder-root` class and the
-`data-wb-theme` attribute (`light` or `dark`). The theme tokens and component defaults are
-declared on that element, so nothing is written to your `<html>`:
+`data-wb-theme` attribute (`light` or `dark`), both on the same element. The theme tokens and
+component defaults are declared there, so nothing is written to your `<html>`, and the wrapper
+paints the theme's base surface, text colour and font so the components read correctly on any
+host page:
 
 ```html
 <div class="workflow-builder-root" data-wb-theme="light">…</div>
@@ -139,7 +141,7 @@ the wrapper and carries the weight of one id selector. Page-wide resets such as
 react-day-picker stylesheet keeps its own selectors' weight, so a host rule with a class, such as
 `.app button { … }`, can still reach the calendar's internals.
 
-Variable defaults and `@font-face` sit in one cascade layer, `@layer ui.base;`, so your
+Variable defaults and `@font-face` sit in one cascade layer, `@layer wb-ui.base;`, so your
 unlayered overrides on `.workflow-builder-root` win whatever the load order.
 
 Variables are the supported way to customize. To override a component rule directly, outweigh

@@ -75,7 +75,7 @@ function copyTokenStyles() {
     targets: files.map((file) => ({
       src: `../tokens/dist/${file}`,
       dest: '.',
-      transform: (content: string) => `${layerOrder}\n@layer ui.base {\n${content}\n}`,
+      transform: (content: string) => `${layerOrder}\n@layer wb-ui.base {\n${content}\n}`,
     })),
   });
 }

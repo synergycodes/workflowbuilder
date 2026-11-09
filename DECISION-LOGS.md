@@ -30,3 +30,4 @@
 - _17.09.2026_: [AI agent tool loop runs inside one Temporal Activity](./apps/execution-worker/src/activities/ai-agent-tool-loop-activity.decision-log.md)
 - _01.10.2026_: [One model for the built-in interface: state, actions, builtInControls, …Content, …MenuItem](./packages/sdk/src/features/ui-extensions/ui-extensions.decision-log.md)
 - _21.10.2026_: [One vocabulary for the public API of `@workflowbuilder/sdk` 4.0](./packages/sdk/public-api-naming.decision-log.md)
+- _08.11.2026_: [Style boundary between the editor and the host page](./packages/ui/style-boundary.decision-log.md)

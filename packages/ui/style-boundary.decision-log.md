@@ -168,14 +168,14 @@ and every new reset needs a new entry. Rejected as whack-a-mole.
 
 ### 4.1 Variables stay layered, on the theme attribute
 
-`@layer ui.base` now contains **only** custom-property declarations and `@font-face`. The order
-statement `@layer ui.base;` is still stamped first in every built file.
+`@layer wb-ui.base` now contains **only** custom-property declarations and `@font-face`. The order
+statement `@layer wb-ui.base;` is still stamped first in every built file.
 
 | What                                      | Selector                                            | Layer                |
 | ----------------------------------------- | --------------------------------------------------- | -------------------- |
-| Primitive tokens (raw scales)             | `:root`                                             | `ui.base`            |
-| Semantic and effect tokens                | `[data-wb-theme='light']`, `[data-wb-theme='dark']` | `ui.base`            |
-| `--wb-public-*` and `--wb-sdk-*` defaults | `[data-wb-theme]`                                   | `ui.base`            |
+| Primitive tokens (raw scales)             | `:root`                                             | `wb-ui.base`         |
+| Semantic and effect tokens                | `[data-wb-theme='light']`, `[data-wb-theme='dark']` | `wb-ui.base`         |
+| `--wb-public-*` and `--wb-sdk-*` defaults | `[data-wb-theme]`                                   | `wb-ui.base`         |
 | Host overrides                            | `.workflow-builder-root { --wb-…: … }`              | unlayered (host CSS) |
 
 The selector is attribute-only, so `packages/tokens` does not need to know SDK class names, and a
@@ -213,13 +213,13 @@ the same element.
 
 ### 4.3 The ladder
 
-| Rung          | Prefix (exact)                                            | Weight the prefix adds                 | Typical total                           | Applied to                                                                  |
-| ------------- | --------------------------------------------------------- | -------------------------------------- | --------------------------------------- | --------------------------------------------------------------------------- |
-| Vendored      | `:where(.workflow-builder-root) `                         | 0,0,0                                  | the vendored selector's own, e.g. 0,1,0 | React Flow and react-day-picker stylesheets                                 |
-| Base files    | `:is(#wb, .workflow-builder-root) :where(…)`              | 1,0,0, and the wrapped selector adds 0 | exactly 1,0,0                           | `typography.css` (`.wb-text-*` roles), `base-button.module.css`             |
-| UI components | `:is(#wb, .workflow-builder-root) `                       | 1,0,0                                  | 1,1,0 and up                            | every `@workflowbuilder/ui` module                                          |
-| SDK modules   | `:is(#wb, .workflow-builder-root).workflow-builder-root ` | 1,1,0                                  | 1,2,0 and up                            | every `@workflowbuilder/sdk` module                                         |
-| Host, no ID   | n/a                                                       | n/a                                    | at most 0,n,m                           | always below the base files and above vendored rules only by its own weight |
+| Rung          | Prefix (exact)                                            | Weight the prefix adds                 | Typical total                           | Applied to                                                                                                              |
+| ------------- | --------------------------------------------------------- | -------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Vendored      | `:where(.workflow-builder-root) `                         | 0,0,0                                  | the vendored selector's own, e.g. 0,1,0 | React Flow and react-day-picker stylesheets                                                                             |
+| Base files    | `:is(#wb, .workflow-builder-root) :where(…)`              | 1,0,0, and the wrapped selector adds 0 | exactly 1,0,0                           | `typography.css` (`.wb-text-*` roles), `base-button.module.css`, the SDK's hand-written `svg[fill='currentColor']` rule |
+| UI components | `:is(#wb, .workflow-builder-root) `                       | 1,0,0                                  | 1,1,0 and up                            | every `@workflowbuilder/ui` module                                                                                      |
+| SDK modules   | `:is(#wb, .workflow-builder-root).workflow-builder-root ` | 1,1,0                                  | 1,2,0 and up                            | every `@workflowbuilder/sdk` module                                                                                     |
+| Host, no ID   | n/a                                                       | n/a                                    | at most 0,n,m                           | always below the base files and above vendored rules only by its own weight                                             |
 
 How to read it:
 
@@ -238,8 +238,8 @@ collide. The ID exists only inside the stylesheet, as weight.
 ### 4.4 The root box
 
 `.workflow-builder-root-shell` was `display: contents`. It is now a real box:
-`position: relative; width: 100%; height: 100%; overflow: hidden`, with the editor's background, text
-colour, font family, `font-size: 1rem` and `line-height: normal`. The host sizes it. The canvas is
+`position: relative; width: 100%; height: 100%; overflow: hidden`, with the editor's background. The
+text defaults sit on the `.workflow-builder-root` rule (5.9). The host sizes it. The canvas is
 `100% × 100%` of its parent instead of `100vw × 100vh`. The `body` rule is gone: `overflow` moved onto
 the box, and `margin` and `background-color` had no job left once the canvas stopped being
 viewport-sized.
@@ -317,10 +317,10 @@ dist as part of `build:lib`. It fails the build on:
 
 - **Unprefixed built CSS:** any unlayered rule that is not prefixed, not a variable-only `:root` or
   `[data-wb-theme]` block, and does not start with `.workflow-builder-root`. Unknown at-rules are flagged.
-- **Painting rule inside `@layer`:** `ui.base` may hold only custom properties and `@font-face`,
+- **Painting rule inside `@layer`:** `wb-ui.base` may hold only custom properties and `@font-face`,
   checked recursively through `@media` and `@supports`.
 - **Unknown layer name:** `ui.component` no longer exists.
-- **Missing leading `@layer ui.base;`.**
+- **Missing leading `@layer wb-ui.base;`.**
 
 The earlier checks are kept: malformed `var()` arguments, unsanctioned variable namespaces, `@import` in
 built CSS, missing `url()` targets, design tokens moved off `:root`, `--wb-public-*` / `--wb-sdk-*`
@@ -413,7 +413,7 @@ legitimately writes scoped overrides such as `--wb-public-node-gap: 0` in node t
   are out of the layer). They must lose to every UI and SDK rule that customises them, without depending
   on which chunk loads first. A weightless prefix keeps their original specificity, and the ID rung puts
   all our rules above them.
-- **Rejected:** keeping them in `ui.base`, where any unlayered host reset beats them; giving them the UI
+- **Rejected:** keeping them in `wb-ui.base`, where any unlayered host reset beats them; giving them the UI
   prefix, which would make them tie with our overrides and depend on order again.
 - **Cost if wrong:** a scoped host rule such as `.app button` (0,1,1) beats a vendored rule of 0,1,0.
   Where that matters, the UI module restates the property at UI strength (decision 5.11).
@@ -460,14 +460,19 @@ legitimately writes scoped overrides such as `--wb-public-node-gap: 0` in node t
 - **Cost if wrong:** none known. Host overrides on `.workflow-builder-root` are inherited values for
   these elements and never competed with modifier rules.
 
-### 5.9 Root text is prefixed: `font-size: 1rem; line-height: normal`
+### 5.9 Root text is prefixed: every inherited text property stops at the editor
 
-- **What:** The shell sets the editor's font family, colour, `font-size: 1rem` and `line-height:
-normal`, prefixed at SDK strength.
+- **What:** The `.workflow-builder-root` rule sets the editor's colour, font family, `font-size: 1rem`,
+  `line-height: normal` and every other inherited text property (weight, style, alignment, indent,
+  transform, letter and word spacing, wrapping, shadow, cursor), plus `scrollbar-color` and
+  `scrollbar-width`, prefixed at SDK strength.
 - **Why:** In 3.x the root's layered `font-family` lost to Meyer's unlayered `div { font: inherit }` on
   the root element itself, so the whole editor rendered in serif. Inherited text values must be set by a
   rule that beats host element rules on the root, and the root must not inherit the host body's
-  line-height or font size. `1rem` keeps the editor in step with the token scale (also `rem`).
+  line-height or font size. `1rem` keeps the editor in step with the token scale (also `rem`). The
+  remaining properties were added after the bed showed Vite's template `#root { text-align: center }`
+  centring node titles and field labels, and a host `scrollbar-color` on `html` making Chrome drop the
+  editor's `::-webkit-scrollbar` theme (Chrome ignores it on any element that has the standard property).
 - **Rejected:** inheriting from the host body (the 3.x behaviour); layered root typography.
 - **Cost if wrong:** see 6.2 (`rem` follows the host's root font size).
 
@@ -475,9 +480,11 @@ normal`, prefixed at SDK strength.
 
 - **What:** `text-transform: none`, `letter-spacing: normal`, `word-spacing: normal`,
   `text-shadow: none` and `text-decoration: none` are set on every `.wb-text-*` role (one
-  `[class*='wb-text-']` rule in `typography.css`) and on the base button. The root sets the four inherited
-  ones, so a host parent's values stop at the editor's edge. Nothing is set on bare `button`, `input`,
-  `textarea`, `select` or `a` elements.
+  `[class*='wb-text-']` rule in `typography.css`) and on the base button. The root sets the inherited
+  ones (5.9), so a host parent's values stop at the editor's edge. Nothing is set on bare `button`, `input`,
+  `textarea`, `select` or `a` elements. Field labels and helpers are the exception: they set size, weight
+  and line height in `field.module.css` and carry no role, so a host `label { text-transform }` still
+  reaches them.
 - **Why:** No component declared these properties, so a scoped host rule (`.app button {
 text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothing to beat. The first
   fix reset them with `revert` on bare elements in `typography.css`, which as a base file carries 1,0,0.
@@ -563,6 +570,38 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
 
 ---
 
+### 5.16 Form controls, labels and buttons declare what resets touch
+
+- **What:** The checkbox and radio set `background-image: none; box-shadow: none`; the input and text
+  area set `margin: 0; box-shadow: none` (the input also `height: auto; min-height: 0`); the field
+  label and helper and the checkbox and radio `<label>` set `margin: 0`; the base button sets
+  `margin: 0; min-width: auto; min-height: auto`; the separator restates the `hr` defaults. Every value
+  is the browser default, so nothing changes visually.
+- **Why:** A component rule wins only for the properties it declares (G2 covers declared properties, not
+  gaps). `@tailwindcss/forms` paints its own tick with `background-image` and a `box-shadow` ring on
+  `:focus`, Bootstrap 4 gives `label` a bottom margin, classless CSS gives inputs and buttons margins and
+  heights, touch-target CSS gives every `button` a `min-height`. The bed showed a second tick, a second
+  focus rectangle inside the field and taller inputs.
+- **Rejected:** a bare-element reset (`button, input, label { … }`), for the reason in 5.10: it reaches
+  host markup inside the editor.
+- **Cost if wrong:** a host that styled these properties on purpose through a tag rule now needs a rule
+  with more weight, which is the documented override path.
+
+### 5.17 Icon fill restated only for icons that ask for `currentColor`
+
+- **What:** `:is(#wb, .workflow-builder-root) :where(svg[fill='currentColor']) { fill: currentColor }`
+  in the SDK's `index.css`, at base weight (1,0,0).
+- **Why:** Phosphor and the svgr icons colour themselves with the `fill="currentColor"` attribute, and a
+  presentation attribute loses to any CSS rule, so a host `svg { fill: #555 }` recoloured 37 of 39
+  gallery icons. Restating the value in CSS at base weight beats host rules and still loses to the three
+  components that set their own fill.
+- **Rejected:** a bare `svg { fill: currentColor }` for every `<svg>` in the editor. It also matched host
+  icons rendered inside the editor; outline sets (Lucide, Heroicons outline, Feather) rely on
+  `fill="none"`, and the bed showed an outline smiley turning into a solid disc. The attribute selector
+  only restates what an icon already says about itself.
+- **Cost if wrong:** none known; a host `svg { width; height }` still resizes icons whose wrapper sets no
+  size (6.7).
+
 ## 6. Known limits and follow-ups
 
 ### 6.1 Host IDs and `!important`
@@ -622,6 +661,20 @@ Prefixed rules need a `.workflow-builder-root` ancestor. Standalone users wrap t
 `<div class="workflow-builder-root" data-wb-theme="light|dark">`, and if they use popups, they give
 `PortalContainerProvider` an element with the same class and attribute. There is one contract and no
 second CSS artifact. The docs site does the same inside each example's shadow root.
+
+The outermost `.workflow-builder-root` paints the theme's base surface, text colour and font family
+at base weight (`typography.css`), so a standalone dark wrapper is readable on a light host page. The
+bed had shown the opposite: transparent, black, Times New Roman. Descendants that carry the class
+(the SDK's layout box, the drag preview) are excluded, and the SDK's shell and modal set their own
+surface at component weight.
+
+### 6.7 Icon sizes come from SVG attributes
+
+Phosphor icons size themselves with `width="1em" height="1em"`, which any host `svg { width; height }`
+rule beats. Icons inside sized wrappers (buttons, inputs, chips, list items) keep their size; the
+header logo, node icons, switch icons and the status badge icon do not, and the logo collapses to a
+24px square under `svg { width: 24px }`. The fill is restated (5.17); the sizes are not, since a host
+rule sizing every `<svg>` is rare (follow-up: icon-wrapper-sizes).
 
 ---
 

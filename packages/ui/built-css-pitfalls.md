@@ -4,7 +4,7 @@ This catalogue records CSS failure classes that have affected Workflow Builder b
 
 The checker runs over this package's `dist` and over any extra dist directory passed as an
 argument (the SDK passes its own). The prefix and layer contract applies to both, because the SDK
-build runs the same `postcss-scope-prefix` plugin. Only the `[data-wb-theme]`-in-`ui.base` placement
+build runs the same `postcss-scope-prefix` plugin. Only the `[data-wb-theme]`-in-`wb-ui.base` placement
 of public defaults is this package's alone: a consumer bundle may set a public variable on its own
 subtree as a scoped override, which is a legitimate pattern rather than a mis-scoped default.
 
@@ -46,17 +46,17 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 ## Painting rule inside `@layer`
 
-**What breaks** - A styling rule inside `@layer ui.base` loses to every unlayered host rule regardless of specificity, so a host reset restyles the editor again.
+**What breaks** - A styling rule inside `@layer wb-ui.base` loses to every unlayered host rule regardless of specificity, so a host reset restyles the editor again.
 
 **Why it is silent** - Layer precedence picks the winner without any error.
 
-**How to spot it** - `@layer ui.base` should hold only variable-only rules and `@font-face`. The layer exists so a consumer's `.workflow-builder-root { --wb-public-… }` override beats the shipped defaults; anything that paints belongs outside it, prefixed.
+**How to spot it** - `@layer wb-ui.base` should hold only variable-only rules and `@font-face`. The layer exists so a consumer's `.workflow-builder-root { --wb-public-… }` override beats the shipped defaults; anything that paints belongs outside it, prefixed.
 
 **Automated?** - Yes, in every checked dist. `Painting rule inside @layer` checks every rule inside a layer block, also inside `@media` / `@supports`.
 
 ## Missing leading layer order
 
-**What breaks** - Layers registered later outrank earlier ones. If `ui.base` is first named after a consumer's own layers, the shipped variable defaults beat the consumer's layered overrides.
+**What breaks** - Layers registered later outrank earlier ones. If `wb-ui.base` is first named after a consumer's own layers, the shipped variable defaults beat the consumer's layered overrides.
 
 **Why it is silent** - Later order statements remain valid but cannot change the order fixed by the first layer name the browser encountered.
 
@@ -66,7 +66,7 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 ## Unknown layer name
 
-**What breaks** - A typo such as `ui.bases`, or a leftover `ui.component`, creates a new layer after `ui.base`, so its rules silently outrank the shipped defaults while still losing, being layered, to every unlayered host reset.
+**What breaks** - A typo such as `wb-ui.bases`, or a leftover `ui.component`, creates a new layer after `wb-ui.base`, so its rules silently outrank the shipped defaults while still losing, being layered, to every unlayered host reset.
 
 **Why it is silent** - CSS permits new layer names at any time and appends them to the existing order.
 
@@ -110,7 +110,7 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 **Why it is silent** - Both declarations and values are valid; selector and layer precedence choose the package default.
 
-**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must be the theme attribute itself, `[data-wb-theme]` or `[data-wb-theme='light' | 'dark']`, optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer ui.base`. That is the element carrying the themed tokens the default reads, and the element a consumer override on `.workflow-builder-root` targets. Component rules should consume public variables rather than redefine them.
+**How to spot it** - Inspect every `--wb-public-*` declaration in dist. Every selector in the rule must be the theme attribute itself, `[data-wb-theme]` or `[data-wb-theme='light' | 'dark']`, optionally qualified by an attribute, class, or ID, and the rule must sit inside `@layer wb-ui.base`. That is the element carrying the themed tokens the default reads, and the element a consumer override on `.workflow-builder-root` targets. Component rules should consume public variables rather than redefine them.
 
 **Automated?** - Yes, for this package's dist only. `Mis-scoped public variable default` validates the selector and nearest layer for every public-property declaration. A consumer bundle setting a public variable on a component subtree is not flagged, so that case still needs a human: ask whether the variable is meant to stay consumer-controllable at that level. The SDK's node templates set `--wb-public-node-gap: 0` this way. Per the maintainer, those templates are starting examples rather than a supported surface, so the scoped override is intended there; the same shape elsewhere would be worth questioning.
 

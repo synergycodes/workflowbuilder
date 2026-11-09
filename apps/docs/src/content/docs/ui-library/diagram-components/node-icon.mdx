@@ -49,12 +49,12 @@ glyph and `--wb-public-node-icon-container-background-color-<name>` for the cont
 both for each theme; a name without them falls back to the default color.
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-node-icon-color-teal: #0f766e;
   --wb-public-node-icon-container-background-color-teal: #ccfbf1;
 }
 
-[data-wb-theme='dark'] {
+.workflow-builder-root[data-wb-theme='dark'] {
   --wb-public-node-icon-color-teal: #5eead4;
   --wb-public-node-icon-container-background-color-teal: #134e4a;
 }

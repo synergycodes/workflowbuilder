@@ -1,4 +1,4 @@
-@layer ui.base {
+@layer wb-ui.base {
   [data-wb-theme] {
     --wb-public-form-rich-text-color: var(--wb-ds-ui-text-subtle-default);
   }

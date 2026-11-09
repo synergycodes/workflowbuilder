@@ -1,6 +1,3 @@
-// Module-level side effects that must run before any SDK code touches its
-// runtime dependencies. Imported as a side-effect-only module from `index.ts`
-// so it executes once at SDK first-import time, not on every render.
-// Side-effect import — initializes the global i18next instance with SDK
-// locales (en, pl). Must run before any component calls `useTranslation`.
+// Initialises the global i18next instance with the SDK locales before any component calls
+// `useTranslation`. Imported once from `index.ts`, so it runs at first import, not per render.
 import './features/i18n/index';
