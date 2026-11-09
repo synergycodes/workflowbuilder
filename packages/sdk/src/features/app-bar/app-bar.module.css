@@ -8,7 +8,7 @@
   border-radius: var(--wb-sdk-app-bar-border-radius);
   border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
-  height: var(--wb-sdk-app-bar-height);
+  height: 3.625rem;
   padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
   pointer-events: all;
   width: 100%;
