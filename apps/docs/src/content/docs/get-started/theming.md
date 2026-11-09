@@ -28,11 +28,11 @@ Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or
 
 ## Layout spacing
 
-`--wb-public-layout-spacing` sets the default layout's outer spacing: the gap between the canvas edge and the header and side panels, and between the header and the panels (default `12px`). Read it in your own overlays to keep them on the same grid:
+`--wb-public-layout-spacing` sets the default layout's outer spacing: the gap between the canvas edge and the header and side panels, and between the header and the panels (default `0.75rem`). It takes a CSS length with a unit: write `0px`, not `0`, since a unitless `0` breaks `calc()`. Read it in your own overlays to keep them on the same grid:
 
 ```css
 :root {
-  --wb-public-layout-spacing: 16px;
+  --wb-public-layout-spacing: 1rem;
 }
 
 .my-bottom-panel {

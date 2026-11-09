@@ -35,7 +35,6 @@
     .right-panel {
       display: flex;
       flex-direction: column;
-      gap: var(--wb-public-layout-spacing);
       align-items: end;
       justify-content: space-between;
     }
