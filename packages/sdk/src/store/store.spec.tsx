@@ -73,7 +73,7 @@ describe('resetWorkflowStore', () => {
 });
 
 // Regression pin for c1e0dba8: the SDK i18n instance must be initialized
-// (i18n.on a function) before any consumer calls useDetectLanguageChange.
+// (i18n.on a function) before any consumer subscribes to it.
 describe('regression: c1e0dba8 i18n init', () => {
   it('i18n.on is a function after the SDK i18n module loads', () => {
     expect(typeof i18n.on).toBe('function');

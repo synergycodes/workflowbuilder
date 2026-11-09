@@ -1,5 +1,6 @@
-import postcss from 'postcss';
 import { describe, expect, it } from 'vitest';
+
+import postcss from 'postcss';
 
 import { boxSizingPlugin } from './postcss-box-sizing.mts';
 
@@ -20,9 +21,7 @@ describe('postcss-box-sizing', () => {
   });
 
   it('injects inside known styling at-rules, however nested', async () => {
-    const output = await run(
-      '@layer ui.component { @media (min-width: 1px) { .button { color: red } } }',
-    );
+    const output = await run('@layer ui.component { @media (min-width: 1px) { .button { color: red } } }');
     expect(output).toContain('box-sizing: border-box');
   });
 
@@ -58,6 +57,21 @@ describe('postcss-box-sizing', () => {
     expect(output).not.toContain('box-sizing');
   });
 
+  it('does not inject box-sizing into [data-wb-theme] variable blocks', async () => {
+    const output = await run("[data-wb-theme='dark'] { --x: 1px }");
+    expect(output).not.toContain('box-sizing');
+  });
+
+  it('injects into a component rule scoped under [data-wb-theme]', async () => {
+    const output = await run("[data-wb-theme='dark'] .button { color: red }");
+    expect(output).toContain('box-sizing: border-box');
+  });
+
+  it('injects into a component rule that only sets variables', async () => {
+    const output = await run('.primary { --x: 1px }');
+    expect(output).toContain('box-sizing: border-box');
+  });
+
   it('leaves non-module stylesheets alone', async () => {
     const output = await run('.button { color: red }', '/fake/global.css');
     expect(output).toBe('.button { color: red }');
@@ -69,8 +83,6 @@ describe('postcss-box-sizing', () => {
   // that element, or the state rule silently becomes border-box.
   it('injects into a state rule even when the base rule opts out', async () => {
     const output = await run('.handle { box-sizing: content-box }\n.handle:hover { width: 1rem }');
-    expect(output).toBe(
-      '.handle { box-sizing: content-box }\n.handle:hover { box-sizing: border-box; width: 1rem }',
-    );
+    expect(output).toBe('.handle { box-sizing: content-box }\n.handle:hover { box-sizing: border-box; width: 1rem }');
   });
 });

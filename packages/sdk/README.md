@@ -34,6 +34,8 @@ Requires React 18 or 19. Everything else the SDK needs (JsonForms, i18next, imme
 
 ## Upgrading
 
+Moving from 3.x to 4.0? See the [4.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/) for the style changes (the editor now needs a sized parent, and `--wb-*` overrides move to `.workflow-builder-root`) and the [changelog](./CHANGELOG.md) for the renamed and removed API.
+
 Moving from 2.3.0 to 3.0? See the [3.0 upgrade guide](https://www.workflowbuilder.io/docs/get-started/upgrade-to-3/).
 
 ## Quick start
@@ -48,29 +50,70 @@ export function App() {
 }
 ```
 
+The editor fills its parent, so the parent needs a height. For a full-window editor, add to your global stylesheet:
+
+```css
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+```
+
 The editor renders with the default layout (editor header, palette, canvas, properties panel) and persists state to `localStorage` automatically (the default `integration` strategy). The palette is empty until you pass `nodeTypes` — see [`<Root>` props](#workflowbuilderroot-props), the [Add a custom node type guide](https://www.workflowbuilder.io/docs/guides/add-a-custom-node/), and the [node schemas reference](https://www.workflowbuilder.io/docs/node-schemas/) for how to design the data and UI schemas.
 
 Copy-paste-ready node implementations live in the source repo at [`apps/demo/src/app/data/nodes/`](https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes). Each folder is a self-contained node type with 4 files (`<name>.ts`, `default-properties-data.ts`, `schema.ts`, `uischema.ts`). Available examples: `trigger`, `action`, `decision`, `conditional`, `delay`, `notification`, `multi-port`, `ai-agent` — each documented on the [built-in nodes reference](https://www.workflowbuilder.io/docs/nodes/). Drop the folder into your app, import the node definition, and pass it to `nodeTypes`.
 
 ## Compose a custom layout
 
-Pass subcomponents as children to skip the default layout and place each part where you want it:
+Pass subcomponents as children to skip the default layout and place each part where you want it. The canvas fills the element around it, so the layout has to give that element a height:
 
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <header>
-    <WorkflowBuilder.EditorHeader />
-  </header>
-  <aside>
-    <WorkflowBuilder.Palette />
-  </aside>
-  <main>
-    <WorkflowBuilder.Canvas />
-  </main>
-  <aside>
-    <WorkflowBuilder.PropertiesPanel />
-  </aside>
+  <div className="editor-layout">
+    <header>
+      <WorkflowBuilder.EditorHeader />
+    </header>
+    <aside>
+      <WorkflowBuilder.Palette />
+    </aside>
+    <main>
+      <WorkflowBuilder.Canvas />
+    </main>
+    <aside>
+      <WorkflowBuilder.PropertiesPanel />
+    </aside>
+  </div>
 </WorkflowBuilder.Root>
+```
+
+```css
+.editor-layout {
+  display: grid;
+  grid-template:
+    'header header header' auto
+    'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+  height: 100%;
+}
+.editor-layout > * {
+  min-height: 0;
+}
+.editor-layout > header {
+  grid-area: header;
+}
+.editor-layout > aside:first-of-type {
+  grid-area: palette;
+}
+.editor-layout > main {
+  grid-area: canvas;
+}
+.editor-layout > aside:last-of-type {
+  grid-area: properties;
+}
 ```
 
 To add custom overlays alongside the default layout, mount it explicitly:
@@ -116,6 +159,8 @@ If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBui
 | `initialEdges`      | `WorkflowBuilderEdge[]`              | Starting diagram edges.                                                                                                                                                                                                                                                                                         |
 | `isValidConnection` | `WorkflowBuilderIsValidConnection`   | Validate connections as the user draws them. See [Connection validation](#connection-validation). **Stable reference required.**                                                                                                                                                                                |
 | `reactFlowProps`    | `WorkflowBuilderReactFlowProps`      | Advanced escape hatch for the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props). Treat as static config (runtime value changes may not apply immediately).                                                                                                                |
+| `theme`             | `'light' \| 'dark'`                  | Controlled theme: the editor shows this value and never saves its own. Without `onThemeChange` the theme is pinned.                                                                                                                                                                                             |
+| `onThemeChange`     | `(theme: Theme) => void`             | Called with the requested theme when the user toggles it while `theme` is controlled.                                                                                                                                                                                                                           |
 | `builtInControls`   | `BuiltInControls`                    | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
 | `children`          | `ReactNode`                          | Custom layout. Omit for the default floating-overlay layout (editor header, palette, canvas, properties panel). See [Compose a custom layout](#compose-a-custom-layout).                                                                                                                                        |
 
@@ -264,10 +309,10 @@ Props the SDK owns (graph data, the connection / selection / change handlers, ty
 
 ## Theming
 
-The editor exposes a small set of CSS custom properties for top-level styling. Override them on `:root` to reach the whole editor, including portalled surfaces:
+The editor exposes a small set of CSS custom properties for top-level styling. Override them on `.workflow-builder-root`. The class sits on the editor's element and on the container its popups render in, so one block reaches the whole editor:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-background-color: #fafafa;
   --wb-public-transition: 0.15s ease-in;
   --wb-public-font-family: 'Inter', system-ui, sans-serif;
@@ -277,51 +322,78 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 
 Available tokens: `--wb-public-background-color`, `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
 
-Custom layouts passed as Root children and SDK-owned body portals join the builder's font scope. Content that a host or plugin portals elsewhere does not: CSS variables and font inheritance follow DOM ancestry, not the React tree. The same boundary applies to every token above. Modal, Menu, Tooltip, Select, and DatePicker surfaces mount under `document.body`, so an override scoped only to an app shell will not reach them; use `:root` or apply the overrides to the portal container too.
+Overrides on `:root` are ignored, except for primitive design tokens such as `--wb-ds-colors-*`. Custom layouts passed as Root children and the editor's own popups inherit the overrides; content that a host or plugin portals elsewhere does not, because CSS variables follow DOM ancestry, not the React tree.
+
+To theme the editor from your own variables, keep them on `:root` and bridge them on the editor's element. They flow in by inheritance and follow your theme switches:
+
+```css
+:root {
+  --acme-font: 'Inter', sans-serif;
+}
+
+.workflow-builder-root {
+  --wb-public-font-family: var(--acme-font);
+}
+```
 
 Deeper color and spacing customization goes through the generated `--wb-ds-*` design-token layer from `@workflowbuilder/ui`. Hand-authored overrides use `--wb-public-*`. The UI Library's component pages include generated CSS-variable tables for component-local UI overrides. Full guide: [Design system and customization](https://www.workflowbuilder.io/docs/overview/features/design-system-and-customization/).
 
 **Prefix ownership.** The Workflow Builder namespace has three families. `--wb-ds-*` variables come from the Figma design-token export, `--wb-sdk-*` variables are private SDK implementation details, and `--wb-public-*` variables are the supported customization contract shared by `@workflowbuilder/ui` and `@workflowbuilder/sdk`. Every `var(--…)` in workspace CSS is validated in continuous integration (CI) against the set of names that actually exist (stylelint, see `packages/tokens/README.md`).
 
-## CSS — global resets
+## CSS boundary
 
-`@workflowbuilder/sdk/style.css` contains a small set of global resets, including:
+`@workflowbuilder/sdk/style.css` styles only the editor. It sets nothing on `<html>` or
+`<body>`, and every rule is scoped to `.workflow-builder-root`.
 
-```css
-body {
-  margin: 0;
-  background-color: var(--wb-public-background-color);
-  overflow: hidden;
-}
-```
-
-The stylesheet does **not** size your document — the editor fills whatever container
-you give it, so give it one. A typical full-viewport host adds in its own CSS:
+**Give the editor a sized parent.** The editor fills its container, so the container needs a
+height or the editor renders 0px tall. A full-window host adds:
 
 ```css
 html,
 body,
 #root {
-  height: 100vh;
+  height: 100%;
+}
+
+body {
+  margin: 0;
 }
 ```
 
-The shipped resets live inside `@layer ui.base` (the lowest layer in the cascade
-order), so any consumer-level rule on `body` / `html` wins automatically — no
-specificity hacks or `!important` needed. Two things to be aware of:
+For an editor inside a panel, size the panel instead. In a custom layout, size the element
+around `<WorkflowBuilder.Canvas />`.
 
-- **`overflow: hidden` on `<body>`** — the editor expects a full-viewport canvas with no
-  page-level scrollbar. If you embed the editor inside a scrolling page, override
-  `body { overflow: auto; }` (or scope the SDK to a sized container with its own
-  `overflow: hidden`) and let the editor's own viewport handle pan/zoom.
-- **`background-color: var(--wb-public-background-color)`** — the body picks up the SDK's
-  background token. If you don't ship the SDK style sheet but render
-  `<WorkflowBuilder.Root />`, the token is undefined and the body falls back to
-  transparent. Either ship the CSS or set `--wb-public-background-color` yourself.
+**Theme and state attributes.** The editor sets `data-wb-theme="light"` or `"dark"` on its
+element and on the popup container, so dark-mode styles for custom nodes use
+`[data-wb-theme='dark'] …`. While the variable picker is open, the element also carries
+`data-wb-overlay="variable-picker"` for hosts that want to dim more than the editor.
 
-If you don't want the body resets at all, just override them in your own global
-stylesheet — unlayered consumer CSS beats `@layer ui.base` regardless of import
-order.
+**What still reaches the editor.** Editor rules carry the weight of one id selector, so plain
+host rules and resets (Bootstrap's reboot, Tailwind's preflight, `button { all: unset }`) do
+not restyle it. These still do:
+
+- host rules with an id or `!important` that match inside the editor. Bootstrap's utility classes
+  are `!important`, so on a Bootstrap page the variable text field takes Bootstrap's border colour
+  and its suggestions list loses its padding;
+- host rules with a class, such as `.app button { … }`, on the bundled third-party internals (React
+  Flow's canvas, react-day-picker's calendar), which keep their own selectors' weight. This includes
+  layout: `.app div { position: static }` misplaces the canvas's nodes, ports and edges. Keep such
+  rules out of the editor without adding weight: `.app div:not(:where(.workflow-builder-root *))`;
+- the root font size: sizes are in `rem` and assume the browser default of 16px;
+- `box-sizing` in SDK panels, custom nodes and plugin content: the editor's `border-box` default
+  there has zero weight, so any host rule wins. The UI library's own components declare it at full
+  weight;
+- properties the editor leaves unset: a host `p { line-height: 2 }` still applies to editor text
+  that sets no line height, because the editor's rules win only for what they declare.
+
+To override an editor element on purpose, use your own id plus the class, for example
+`#app .workflow-builder-root .my-node-title { … }`. That selector ties with the SDK's single-class
+rules, so it wins when your CSS loads after `style.css` (the usual order), and it loses to SDK rules
+that carry a state or a second class (`:hover`, `.a.b`). Repeating the class
+(`#app .workflow-builder-root.workflow-builder-root .my-node-title`) adds one class of weight; the
+one override that always wins is `!important`.
+
+Upgrading from 3.x: see [Upgrade to 4.0](https://www.workflowbuilder.io/docs/get-started/upgrade-to-4/).
 
 ## Single-instance constraint
 

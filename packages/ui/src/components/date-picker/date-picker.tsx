@@ -1,5 +1,6 @@
 import { Popover } from '@base-ui/react/popover';
 import { CaretLeft, CaretRight } from '@phosphor-icons/react';
+import { usePortalContainer } from '@ui/shared/portal-container/portal-container';
 import { FIELD_CONTROL_SIZE_BY_ITEM_SIZE } from '@ui/shared/styles/field-control-size';
 import clsx from 'clsx';
 import { format } from 'date-fns';
@@ -7,7 +8,7 @@ import { forwardRef, useCallback, useMemo, useState } from 'react';
 import { type DateRange, DayPicker, type Matcher } from 'react-day-picker';
 
 import styles from './date-picker.module.css';
-// variables.css also pulls react-day-picker's stylesheet into `ui.base`.
+// variables.css also pulls in react-day-picker's stylesheet, unlayered.
 import './variables.css';
 import fieldControlSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
@@ -54,6 +55,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     normalizeInitialValue(defaultValue, type),
   );
   const [open, setOpen] = useState(false);
+  const portalContainer = usePortalContainer();
   // The public value type can't represent a partial range, hence a separate draft.
   const [rangeDraft, setRangeDraft] = useState<DateRange | undefined>();
 
@@ -199,7 +201,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
           >
             <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>
           </Popover.Trigger>
-          <Popover.Portal>
+          <Popover.Portal container={portalContainer}>
             <Popover.Positioner className={listBoxStyles['popup']} align="start">
               <Popover.Popup className={styles['calendar']}>{calendar}</Popover.Popup>
             </Popover.Positioner>

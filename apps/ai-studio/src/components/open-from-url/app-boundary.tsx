@@ -61,29 +61,31 @@ export class AppBoundary extends Component<{ children: ReactNode }, State> {
     const mayDiscard = isLocalDraftCrash();
 
     return (
-      <div className={styles['screen']}>
-        <div className={styles['card']} role="alert">
-          <p>{error instanceof OpenError ? error.message : 'The diagram could not be drawn.'}</p>
-          {error instanceof OpenError && <p>Reload the page to try the link again.</p>}
-          {mayDiscard && (
-            <p>
-              If the local draft is what failed, opening it again fails the same way. Discarding it starts from the
-              template.
-            </p>
-          )}
-          <div className={styles['actions']}>
-            <button className={styles['button']} type="button" onClick={() => globalThis.location.assign(exit.href)}>
-              {exit.label}
-            </button>
+      <div className="workflow-builder-root" data-wb-theme="light">
+        <div className={styles['screen']}>
+          <div className={styles['card']} role="alert">
+            <p>{error instanceof OpenError ? error.message : 'The diagram could not be drawn.'}</p>
+            {error instanceof OpenError && <p>Reload the page to try the link again.</p>}
             {mayDiscard && (
-              <button
-                className={clsx(styles['button'], styles['button--secondary'])}
-                type="button"
-                onClick={discardLocalDraft}
-              >
-                Discard local draft
-              </button>
+              <p>
+                If the local draft is what failed, opening it again fails the same way. Discarding it starts from the
+                template.
+              </p>
             )}
+            <div className={styles['actions']}>
+              <button className={styles['button']} type="button" onClick={() => globalThis.location.assign(exit.href)}>
+                {exit.label}
+              </button>
+              {mayDiscard && (
+                <button
+                  className={clsx(styles['button'], styles['button--secondary'])}
+                  type="button"
+                  onClick={discardLocalDraft}
+                >
+                  Discard local draft
+                </button>
+              )}
+            </div>
           </div>
         </div>
       </div>

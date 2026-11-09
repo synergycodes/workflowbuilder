@@ -1,6 +1,8 @@
 import { fireEvent, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { getTheme } from '../../../../hooks/theme';
+import { resetThemeStore } from '../../../../hooks/theme.test-utils';
 import { resetWorkflowStore, useStore } from '../../../../store/store';
 import '../../../i18n/index';
 import { EditorHeaderControlsContent } from '../../../ui-extensions/components/app-bar-controls-content';
@@ -18,7 +20,7 @@ beforeEach(() => {
 
 afterEach(() => {
   localStorage.clear();
-  delete document.documentElement.dataset.theme;
+  resetThemeStore();
 });
 
 describe('Controls layout', () => {
@@ -72,6 +74,7 @@ describe('Controls builtInControls', () => {
     renderInRoot(<Controls />, { builtInControls: { readOnlyToggle: true } });
     fireEvent.click(screen.getByRole('button', { name: 'Read-only mode' }));
     expect(useStore.getState().isReadOnly).toBe(true);
+    expect(getTheme()).toBe('light');
   });
 
   it('themeToggle:false hides the Light / Dark picker; true (the default) shows it', () => {
@@ -81,6 +84,6 @@ describe('Controls builtInControls', () => {
 
     renderInRoot(<Controls />, { builtInControls: { themeToggle: true } });
     fireEvent.click(screen.getByRole('button', { name: 'Dark theme' }));
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(getTheme()).toBe('dark');
   });
 });

@@ -32,8 +32,8 @@ yarn add @workflowbuilder/ui
 ### 🎨 Import styles
 
 Import components from the package root (the recommended default). Their styles,
-including the global layer order, reset, and typography, are injected
-automatically, so you only need to add the design tokens:
+including the layer order and typography, are injected automatically, so you only
+need to add the design tokens:
 
 ```css
 @import '@workflowbuilder/ui/tokens.css';
@@ -46,17 +46,47 @@ import '@workflowbuilder/ui/tokens.css';
 > **Subpath imports.** You can also import a single component directly, e.g.
 > `import { DatePicker } from '@workflowbuilder/ui/date-picker'`. That
 > injects only the component's own CSS. Every stylesheet carries the cascade
-> layer order, so import order doesn't matter; add
-> `import '@workflowbuilder/ui/styles.css'` once if you also want the global
-> reset and typography.
+> layer order, so import order doesn't matter. Add
+> `import '@workflowbuilder/ui/styles.css'` once: it is required with subpath
+> imports, because it carries the fonts, the typography classes and the shared
+> variables the components use. Without it, fields fall back to the browser's
+> font and transitions do not run.
 
 ### 🎛️ Apply the Theme
 
-To make the styles use proper variables, include data-theme (light or dark) attribute in <html>:
+Wrap the components in an element that carries the `workflow-builder-root` class and the
+`data-wb-theme` attribute (`light` or `dark`), both on the same element. The theme tokens and
+component defaults are declared there, so nothing is written to your `<html>`, and the wrapper
+paints the theme's base surface, text colour and font so the components read correctly on any
+host page:
 
 ```html
-<html data-theme="light"></html>
+<div class="workflow-builder-root" data-wb-theme="light">…</div>
 ```
+
+Popups (Select, Menu, Tooltip, DatePicker, Modal) render into `document.body` unless you wrap the
+components in `PortalContainerProvider`. Its `container` prop is an element that carries the same
+class and attribute; while it is `null` the popups wait for it instead of using `document.body`:
+
+```tsx
+import { PortalContainerProvider } from '@workflowbuilder/ui';
+import { useState } from 'react';
+
+export function Panel() {
+  const [popups, setPopups] = useState<HTMLDivElement | null>(null);
+
+  return (
+    <>
+      <div ref={setPopups} className="workflow-builder-root" data-wb-theme="light" />
+      <div className="workflow-builder-root" data-wb-theme="light">
+        <PortalContainerProvider container={popups}>{/* components */}</PortalContainerProvider>
+      </div>
+    </>
+  );
+}
+```
+
+Your own `createPortal` calls inside the provider can read the same element with `usePortalContainer()`.
 
 ### 🧱 Use components
 
@@ -84,10 +114,13 @@ Forget cobbling together UI kits with diagram libraries. `@workflowbuilder/ui` p
 
 `@workflowbuilder/ui` styles components with generated `--wb-ds-*` design tokens and exposes hand-authored `--wb-public-*` CSS variables for component-level customization.
 
+Override on `.workflow-builder-root`, the element that carries `data-wb-theme`. An override on `:root`
+does not apply, because the defaults are declared on that element itself.
+
 Override a generated design token:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-ds-ui-bg-base: #40ba12;
 }
 ```
@@ -95,28 +128,26 @@ Override a generated design token:
 Or scope a public override to one component:
 
 ```css
-:root {
+.workflow-builder-root {
   --wb-public-date-picker-dropdown-background: #40ba12;
 }
 ```
 
-### `@workflowbuilder/ui` css layers
+### How the styles are scoped
 
-`@workflowbuilder/ui` uses [CSS layers](https://developer.mozilla.org/en-US/docs/Web/CSS/@layer) to separate its styles from yours. By default, CSS styles outside of any layer take precedence over what `@workflowbuilder/ui` defines, so your styles will always win the specificity war. You can customize `@workflowbuilder/ui` components with simple `input {}`.
+Every component rule starts with `:is(#wb, .workflow-builder-root)`, so it applies only inside
+the wrapper and carries the weight of one id selector. Page-wide resets such as
+`button { all: unset }` or Bootstrap's reboot do not reach the components. The bundled
+react-day-picker stylesheet keeps its own selectors' weight, so a host rule with a class, such as
+`.app button { … }`, can still reach the calendar's internals.
 
-```css
-@layer ui.component {
-  .separator {
-    /* … */
-  }
-}
-```
+Variable defaults and `@font-face` sit in one cascade layer, `@layer wb-ui.base;`, so your
+unlayered overrides on `.workflow-builder-root` win whatever the load order.
 
-Default `@workflowbuilder/ui` order:
-
-```css
-@layer ui.base, ui.component;
-```
+Variables are the supported way to customize. To override a component rule directly, outweigh
+it with an id of your own plus the class, for example
+`#app .workflow-builder-root .my-input { … }`, or use `!important`. Component class names are
+generated and can change between releases.
 
 # 🛠️ Development
 

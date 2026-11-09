@@ -7,6 +7,7 @@ import '../features/i18n/index';
 import { getStoreSavingStatus, loadData } from '../features/integration/stores/use-integration-store';
 import type * as integrationStore from '../features/integration/stores/use-integration-store';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
+import { resetThemeStore } from '../hooks/theme.test-utils';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -47,7 +48,7 @@ afterEach(() => {
   unsubscribeModalStore();
   vi.clearAllMocks();
   vi.unstubAllGlobals();
-  delete document.documentElement.dataset.theme;
+  resetThemeStore();
 });
 
 const apiIntegration = { strategy: 'api', endpoints: { load: '/load', save: '/save' } } as const;

@@ -38,7 +38,7 @@ injected declarations are not a surprise when reading `dist`.
   (e.g. the date-picker calendar mounts under `body`), so descendant
   selectors miss exactly the elements most likely to regress. Per-rule
   injection is portal-proof because it rides on the class rules themselves.
-- **Global reset in the base layer (`@layer ui.base { * { box-sizing:
+- **Global reset in the base layer (`@layer wb-ui.base { * { box-sizing:
 border-box } }`).** Rejected: a cascade layer lowers priority in
   conflicts but does not limit reach - consumer elements with no competing
   declaration would receive the library's value. A library must not style

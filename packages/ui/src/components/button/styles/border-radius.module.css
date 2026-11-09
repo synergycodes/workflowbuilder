@@ -7,28 +7,26 @@
   --wb-public-button-border-radius-round: var(--wb-ds-radius-full);
 }
 
-@layer ui.component {
-  .xl {
-    border-radius: var(--wb-public-button-border-radius-xl);
-  }
+.xl {
+  border-radius: var(--wb-public-button-border-radius-xl);
+}
 
-  .l {
-    border-radius: var(--wb-public-button-border-radius-l);
-  }
+.l {
+  border-radius: var(--wb-public-button-border-radius-l);
+}
 
-  .m {
-    border-radius: var(--wb-public-button-border-radius-m);
-  }
+.m {
+  border-radius: var(--wb-public-button-border-radius-m);
+}
 
-  .s {
-    border-radius: var(--wb-public-button-border-radius-s);
-  }
+.s {
+  border-radius: var(--wb-public-button-border-radius-s);
+}
 
-  .xs {
-    border-radius: var(--wb-public-button-border-radius-xs);
-  }
+.xs {
+  border-radius: var(--wb-public-button-border-radius-xs);
+}
 
-  .round {
-    border-radius: var(--wb-public-button-border-radius-round);
-  }
+.round {
+  border-radius: var(--wb-public-button-border-radius-round);
 }

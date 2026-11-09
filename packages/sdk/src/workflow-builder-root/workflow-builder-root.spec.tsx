@@ -27,6 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
+import { getTheme, setControlledTheme, setTheme, useControlledTheme, usePersistedTheme } from '../hooks/theme';
 import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -68,14 +69,18 @@ function makeNode(id: string): WorkflowBuilderNode {
 // Reset before each test (not after): at this point the previous test's
 // renders are already unmounted, so the reset's store update never reaches a
 // still-mounted subscriber outside `act(...)`.
+function htmlAttributes(): string[] {
+  return Array.from(document.documentElement.attributes, ({ name, value }) => `${name}=${value}`);
+}
+
 beforeEach(() => {
   // Each mount schedules a node re-validation timer; fake timers keep it from firing in a later test.
   vi.useFakeTimers();
   resetWorkflowStore();
   setIsValidConnection(null);
   setReactFlowProps(null);
+  setControlledTheme(null, null);
   localStorage.clear();
-  delete document.documentElement.dataset.theme;
 });
 
 afterEach(() => {
@@ -147,11 +152,11 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     second.unmount();
   });
 
-  it('paints the persisted theme on the DOM at mount, even without an app bar', () => {
-    // The theme paint moved off `theme.ts` module level (which crashed SSR
-    // imports) into a Root mount effect. A saved non-default theme must still
-    // reach `document` on first render, with no app-bar toggle mounted.
+  it('never writes to <html> at mount', async () => {
+    // The host owns <html>; the SDK keeps its theme and language on its own elements.
     localStorage.setItem('wb-theme', 'dark');
+    await usePersistedTheme.persist.rehydrate();
+    const htmlAttributesBefore = htmlAttributes();
 
     render(
       <StrictMode>
@@ -159,7 +164,52 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
       </StrictMode>,
     );
 
-    expect(document.documentElement.dataset.theme).toBe('dark');
+    expect(htmlAttributes()).toEqual(htmlAttributesBefore);
+  });
+
+  it('controlled theme: forwards `theme` to the theme module and routes toggles to onThemeChange', () => {
+    const onThemeChange = vi.fn();
+
+    render(
+      <StrictMode>
+        <WorkflowBuilderRoot theme="dark" onThemeChange={onThemeChange} />
+      </StrictMode>,
+    );
+    expect(getTheme()).toBe('dark');
+
+    act(() => setTheme('light'));
+
+    expect(onThemeChange).toHaveBeenCalledWith('light');
+    expect(localStorage.getItem('wb-theme')).not.toBe('light');
+  });
+
+  it('releases theme control on unmount', () => {
+    const { unmount } = render(<WorkflowBuilderRoot theme="dark" />);
+
+    unmount();
+
+    expect(useControlledTheme.getState().controlled).toBeNull();
+  });
+
+  it('warns once when `theme` is set without `onThemeChange`', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { rerender } = render(<WorkflowBuilderRoot theme="dark" />);
+    rerender(<WorkflowBuilderRoot theme="light" />);
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0][0]).toMatch(/onThemeChange/);
+
+    warn.mockRestore();
+  });
+
+  it('does not warn when `onThemeChange` is passed', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<WorkflowBuilderRoot theme="dark" onThemeChange={() => {}} />);
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {

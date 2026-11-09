@@ -36,6 +36,8 @@ Every prop is optional. The **Type** column links to the auto-generated [SDK API
 | `initialEdges`      | [`WorkflowBuilderEdge[]`](/api/types/workflowbuilderedge/)                               | Initial edges for the `props` integration strategy. Defaults to `[]`. See [`props`](#props).                                                                                                                                                                                                                    |
 | `isValidConnection` | [`WorkflowBuilderIsValidConnection`](/api/core/workflowbuilderisvalidconnection/)        | Validate connections as the user draws them. See [Connection validation](#connection-validation).                                                                                                                                                                                                               |
 | `reactFlowProps`    | [`WorkflowBuilderReactFlowProps`](/api/core/workflowbuilderreactflowprops/)              | Escape hatch forwarding extra props to the underlying ReactFlow canvas. See [Advanced: ReactFlow props](#advanced-reactflow-props).                                                                                                                                                                             |
+| `theme`             | `'light' \| 'dark'`                                                                      | Controlled theme: the editor shows the host's value and never saves its own. Pass `onThemeChange` to follow the editor's toggle; without it the theme is pinned.                                                                                                                                                |
+| `onThemeChange`     | `(theme: Theme) => void`                                                                 | Called with the requested theme when the user toggles it while `theme` is controlled.                                                                                                                                                                                                                           |
 | `builtInControls`   | [`BuiltInControls`](/api/core/builtincontrols/)                                          | Hides built-in controls by key (`save`, `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`, `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`); every key defaults to `true`. Hiding a control does not block its action or keyboard shortcut. |
 | `children`          | `ReactNode`                                                                              | Custom layout. Omit for the default floating-overlay layout. See [Compound subcomponents](#compound-subcomponents).                                                                                                                                                                                             |
 
@@ -51,23 +53,50 @@ Build your own layout by composing the namespaced subcomponents:
 | `WorkflowBuilder.PropertiesPanel` | Properties sidebar driven by JsonForms.                     |
 | `WorkflowBuilder.DefaultLayout`   | The default floating-overlay arrangement of the four above. |
 
-Pass children to skip the default layout and compose your own:
+Pass children to skip the default layout and compose your own. The canvas fills the element around it, so the layout has to give that element a height:
 
 ```tsx
 <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
-  <header>
-    <WorkflowBuilder.EditorHeader />
-  </header>
-  <aside>
-    <WorkflowBuilder.Palette />
-  </aside>
-  <main>
-    <WorkflowBuilder.Canvas />
-  </main>
-  <aside>
-    <WorkflowBuilder.PropertiesPanel />
-  </aside>
+  <div className="editor-layout">
+    <header>
+      <WorkflowBuilder.EditorHeader />
+    </header>
+    <aside>
+      <WorkflowBuilder.Palette />
+    </aside>
+    <main>
+      <WorkflowBuilder.Canvas />
+    </main>
+    <aside>
+      <WorkflowBuilder.PropertiesPanel />
+    </aside>
+  </div>
 </WorkflowBuilder.Root>
+```
+
+```css
+.editor-layout {
+  display: grid;
+  grid-template:
+    'header header header' auto
+    'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+  height: 100%;
+}
+.editor-layout > * {
+  min-height: 0;
+}
+.editor-layout > header {
+  grid-area: header;
+}
+.editor-layout > aside:first-of-type {
+  grid-area: palette;
+}
+.editor-layout > main {
+  grid-area: canvas;
+}
+.editor-layout > aside:last-of-type {
+  grid-area: properties;
+}
 ```
 
 To extend the default layout instead of replacing it (e.g. add a banner alongside), mount `DefaultLayout` explicitly:

@@ -1,3 +1,4 @@
-[class^='_json-form-container_'] textarea {
+/* The app's id outweighs the prefixed editor rules, which carry one id's weight. */
+#root .workflow-builder-root [class^='_json-form-container_'] textarea {
   font-family: ui-monospace, monospace;
 }

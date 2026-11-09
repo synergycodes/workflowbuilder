@@ -32,3 +32,6 @@ export * from './shared/types/popup-placement';
 export * from './shared/types/selector-size';
 export * from './shared/types/with-icon';
 export * from './shared/types/field';
+
+// Shared
+export * from './shared/portal-container/portal-container';

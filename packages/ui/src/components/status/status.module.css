@@ -6,28 +6,26 @@
   --wb-public-status-invalid-background-color: var(--wb-ds-canvas-badge-notify-warning-bg-default);
 }
 
-@layer ui.component {
-  .status-container {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    position: absolute;
-    right: var(--wb-public-status-right);
-    top: 0;
-    transform: translateY(-50%);
-    height: var(--wb-public-status-size);
+.status-container {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  right: var(--wb-public-status-right);
+  top: 0;
+  transform: translateY(-50%);
+  height: var(--wb-public-status-size);
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
+
+  svg {
+    height: var(--wb-public-status-icon-size);
     aspect-ratio: 1 / 1;
-    border-radius: 50%;
+    fill: currentColor;
+  }
 
-    svg {
-      height: var(--wb-public-status-icon-size);
-      aspect-ratio: 1 / 1;
-      fill: currentColor;
-    }
-
-    &.status-container--invalid {
-      color: var(--wb-public-status-invalid-color);
-      background: var(--wb-public-status-invalid-background-color);
-    }
+  &.status-container--invalid {
+    color: var(--wb-public-status-invalid-color);
+    background: var(--wb-public-status-invalid-background-color);
   }
 }

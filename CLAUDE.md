@@ -22,7 +22,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`            | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
 | `pnpm build`                     | -    | Build the demo app                                                                                       |
 | `pnpm test`                      | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
-| `pnpm check`                     | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
+| `pnpm check`                     | -    | Lint + Stylelint + typecheck + format + deploy Dockerfile air-gap guard                                  |
 | `pnpm release:version <pkg>`     | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
 | `pnpm release:tag <pkg>`         | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
 
@@ -31,6 +31,8 @@ Path B is UI-only and does not need Docker. Path C requires `pnpm infra:up` befo
 App builds and dev servers consume the prebuilt `packages/ui/dist` (created on install). After editing `packages/ui/src`, run `pnpm build:ui` (or keep `pnpm --filter @workflowbuilder/ui dev` watching) - app commands do not rebuild it.
 
 The same applies to `@workflowbuilder/temporal`: the worker and the backend import its built `dist`, so after editing `packages/temporal/src` run `pnpm build:temporal` (or keep `pnpm --filter @workflowbuilder/temporal dev` watching) before `pnpm dev:worker` picks the change up.
+
+The SDK is the exception: demo and AI Studio alias `@workflowbuilder/sdk` to `packages/sdk/src`, so an SDK edit shows up at once with no build. The price is that nothing checks the shipped CSS until a build runs, so after editing SDK styles run `pnpm build:lib` before pushing - it rebuilds tokens, UI and SDK and runs the built-CSS checker on each. CI runs the same on every PR.
 
 ### Agent signals
 
@@ -122,6 +124,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | ESLint     | `pnpm lint` / `pnpm lint:fix` | Per-workspace configs                                                                                   |
 | Prettier   | `pnpm format`                 | Sorts imports via `@trivago/prettier-plugin-sort-imports`                                               |
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
+| Stylelint  | `pnpm lint:styles`            | Workspace CSS: every `var(--name)` must exist, see `packages/tokens/README.md`                          |
 | Knip       | `pnpm knip`                   | Detects unused exports/dependencies. Run by hand: not part of `pnpm check` or CI                        |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |

@@ -7,6 +7,7 @@ import dts from 'vite-plugin-dts';
 import svgr from 'vite-plugin-svgr';
 
 import { copyUiFontAssets } from './font-assets.mjs';
+import { sdkPostcssPlugins } from './postcss-plugins.mjs';
 
 // Packages that must NOT be bundled into the SDK build. Two reasons:
 // 1. Singleton hazards — i18next translation registry, zustand store
@@ -85,7 +86,10 @@ function emitUiFontAssets(): Plugin {
         );
       }
 
-      const fontStyles = fs.readFileSync(fontStylesPath, 'utf8').replace(/^@layer ui\.base, ui\.component;\s*/, '');
+      const layerOrder = fs
+        .readFileSync(path.resolve(import.meta.dirname, '../ui/src/styles/layers.css'), 'utf8')
+        .trim();
+      const fontStyles = fs.readFileSync(fontStylesPath, 'utf8').replace(layerOrder, '').trimStart();
       const stylesheet = fs
         .readFileSync(stylesheetPath, 'utf8')
         .replaceAll(/@font-face\s*{(?=[^{}]*font-family:\s*["']?(?:Poppins|Inter)["']?\s*;)[^{}]*}/g, '');
@@ -126,6 +130,11 @@ export default defineConfig(({ command }) => ({
     alias: {
       '@/assets': path.resolve(import.meta.dirname, 'src/assets'),
       '@': path.resolve(import.meta.dirname, 'src'),
+    },
+  },
+  css: {
+    postcss: {
+      plugins: sdkPostcssPlugins(),
     },
   },
   // Inline `process.env.NODE_ENV` at SDK build time. The SDK bundles deps
