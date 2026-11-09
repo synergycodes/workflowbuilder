@@ -231,7 +231,7 @@ describe('ExecutionLogPanel', () => {
   });
 
   describe('dock edges', () => {
-    let layout: HTMLDivElement;
+    let layout: HTMLDivElement | undefined;
 
     // The SDK's default layout as the anchor hooks read it: palette, #viewport-bounds, right panel.
     function mountLayout({ isLeftExpanded, isRightExpanded }: { isLeftExpanded: boolean; isRightExpanded: boolean }) {
@@ -247,7 +247,8 @@ describe('ExecutionLogPanel', () => {
     }
 
     afterEach(() => {
-      layout.remove();
+      layout?.remove();
+      layout = undefined;
     });
 
     it('passes the expanded panels’ edges to the dock without a gap', () => {
