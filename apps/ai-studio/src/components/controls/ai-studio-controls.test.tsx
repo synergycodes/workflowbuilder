@@ -94,6 +94,8 @@ describe('AiStudioControls', () => {
 
   const isVisible = () => container.firstElementChild?.classList.contains(styles['container--visible']!);
 
+  const panelTop = () => (container.firstElementChild as HTMLElement | null)?.style.top;
+
   const deleteStartNode = () => {
     startNode.exists = false;
     render();
@@ -326,6 +328,48 @@ describe('AiStudioControls', () => {
 
     act(() => resetExecution());
     expect(useStore.getState().isReadOnly).toBe(false);
+  });
+
+  describe('position', () => {
+    let bounds: HTMLDivElement;
+    let boundsTop: number;
+    let resizeBounds: () => void;
+
+    beforeEach(() => {
+      boundsTop = 82;
+      bounds = document.createElement('div');
+      bounds.id = 'viewport-bounds';
+      bounds.getBoundingClientRect = () => ({ top: boundsTop }) as DOMRect;
+      document.body.prepend(bounds);
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          constructor(callback: () => void) {
+            resizeBounds = callback;
+          }
+          observe() {}
+          disconnect() {}
+        },
+      );
+      act(() => root.unmount());
+      root = createRoot(container);
+      render();
+    });
+
+    afterEach(() => {
+      bounds.remove();
+    });
+
+    it('starts at the top of the viewport bounds, where the side panels start', () => {
+      expect(panelTop()).toBe('82px');
+    });
+
+    it('follows the panels down when the header wraps onto a second row', () => {
+      boundsTop = 118;
+      act(() => resizeBounds());
+
+      expect(panelTop()).toBe('118px');
+    });
   });
 
   describe('without a start node', () => {
