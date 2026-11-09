@@ -4,8 +4,8 @@
   bottom: calc(var(--wb-public-snackbar-offset-bottom) - 6px);
   /* With the 6px padding, the top snackbar keeps 20px from the viewport top, as the default bottom does. */
   top: 14px;
-  /* A stack taller than the space above the offset pins to the top and overlaps the content below. */
-  justify-content: safe flex-start;
+  /* In column-reverse that is the top: a stack taller than the space above the offset pins there and overlaps the content below. */
+  justify-content: flex-end;
   /* notistack eases the offsets over 300ms, so a stack following a resized panel would trail it. */
   transition: none;
 }
@@ -13,4 +13,9 @@
 /* Without it, an overflowing stack squeezes its snackbars instead of overlapping. */
 .bottom-center.bottom-center > * {
   flex-shrink: 0;
+}
+
+/* Takes the free space above a stack that fits, keeping it at the bottom; collapses to 0 when it does not. */
+.bottom-center.bottom-center > :last-child {
+  margin-top: auto;
 }
