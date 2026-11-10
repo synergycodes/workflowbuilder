@@ -5,13 +5,15 @@ import { useTranslation } from 'react-i18next';
 import styles from '../../app-bar.module.css';
 
 import { useTheme } from '../../../../hooks/use-theme';
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { useCleanUp } from '../clean-up-button/use-clean-up';
 import { ToggleDarkMode } from '../toggle-dark-mode/toggle-dark-mode';
 
 export function MoreMenu() {
   const { t } = useTranslation();
-  const { theme, toggleTheme } = useTheme();
+  const { theme } = useTheme();
+  const { setTheme } = useWorkflowBuilderActions();
   const isThemeToggleVisible = useIsBuiltInControlVisible('themeToggle');
   const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
   const disabled = isDisabled || isPending;
@@ -47,13 +49,13 @@ export function MoreMenu() {
             label: t('header.theme.light'),
             icon: <SunDim />,
             selected: theme === 'light',
-            onClick: () => theme !== 'light' && toggleTheme(),
+            onClick: () => setTheme('light'),
           },
           {
             label: t('header.theme.dark'),
             icon: <Moon />,
             selected: theme === 'dark',
-            onClick: () => theme !== 'dark' && toggleTheme(),
+            onClick: () => setTheme('dark'),
           },
         ]
       : [];

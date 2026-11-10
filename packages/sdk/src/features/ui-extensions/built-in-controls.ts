@@ -5,6 +5,9 @@
  * @category Core
  */
 export type BuiltInControl =
+  | 'logo'
+  | 'folderName'
+  | 'workflowName'
   | 'save'
   | 'readOnlyToggle'
   | 'themeToggle'

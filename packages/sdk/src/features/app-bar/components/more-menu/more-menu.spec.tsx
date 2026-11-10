@@ -50,9 +50,14 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-const themeState = { theme: 'light' as 'light' | 'dark', toggleTheme: vi.fn() };
+const themeState = { theme: 'light' as 'light' | 'dark' };
 vi.mock('../../../../hooks/use-theme', () => ({
   useTheme: () => themeState,
+}));
+
+const actions = { setTheme: vi.fn() };
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => actions,
 }));
 
 const state = {
@@ -89,7 +94,7 @@ describe('MoreMenu', () => {
   beforeEach(() => {
     appBar = {};
     themeState.theme = 'light';
-    themeState.toggleTheme = vi.fn();
+    actions.setTheme = vi.fn();
     state.layoutDirection = 'RIGHT';
     state.setLayoutDirection = vi.fn();
     state.nodes = [{ id: 'a' }];
@@ -113,12 +118,12 @@ describe('MoreMenu', () => {
     expect(screen.queryByRole('group')).toBeNull();
   });
 
-  it('switches the theme from a menu item only when it changes', () => {
+  it('sets the picked theme through the action', () => {
     render(<MoreMenu />);
     fireEvent.click(item('header.theme.light'));
     fireEvent.click(item('header.theme.dark'));
 
-    expect(themeState.toggleTheme).toHaveBeenCalledTimes(1);
+    expect(actions.setTheme.mock.calls).toEqual([['light'], ['dark']]);
   });
 
   it('lists Clean up diagram and the arrange items when onCleanUp is set', () => {
@@ -188,12 +193,12 @@ describe('MoreMenu', () => {
     expect(onCleanUp).toHaveBeenCalledTimes(1);
   });
 
-  it('toggles the theme from the footer picker when onCleanUp is set', () => {
+  it('sets the theme from the footer picker through the action when onCleanUp is set', () => {
     appBar = { onCleanUp: vi.fn() };
     render(<MoreMenu />);
     fireEvent.click(screen.getByRole('group'));
 
-    expect(themeState.toggleTheme).toHaveBeenCalledTimes(1);
+    expect(actions.setTheme).toHaveBeenCalledOnce();
   });
 
   it('renders nothing when themeToggle is hidden and onCleanUp is not set', () => {
