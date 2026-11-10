@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react';
 
+import type { LayoutDirection } from '../../node/common';
+import type { WorkflowBuilderVersion } from '../../workflow-builder-root/workflow-builder-root.types';
+
 /** An area of the built-in interface that app content can be portalled into. */
 export type AreaId =
   | 'appBarTools'
@@ -54,6 +57,20 @@ export type WorkflowBuilderMenuItemProps = {
 
 export type RegisteredMenuItem = WorkflowBuilderMenuItemProps & { id: string };
 
+/** What the host supplies to the editor header's built-in controls, by kind. */
+export type HeaderSupplies = {
+  cleanUp: (direction: LayoutDirection) => void | Promise<void>;
+  saveAsPdf: () => void;
+  publish: () => void;
+  version: WorkflowBuilderVersion;
+};
+
+export type HeaderSupplyKind = keyof HeaderSupplies;
+
+type HeaderSupplyEntry<K extends HeaderSupplyKind> = { id: string; value: HeaderSupplies[K] };
+
+type HeaderSupplyStacks = { [K in HeaderSupplyKind]: readonly HeaderSupplyEntry<K>[] };
+
 /**
  * External store for one mounted Root, read through `useSyncExternalStore`. Every change replaces
  * the record it touches, so a snapshot changes identity whenever its content changes.
@@ -68,6 +85,14 @@ export type UiExtensionRegistry = {
   /** Adds the item at the end, or replaces the item with the same `id` where it stands. */
   upsertMenuItem(menu: MenuId, item: RegisteredMenuItem): void;
   removeMenuItem(menu: MenuId, id: string): void;
+  /** The supply of that kind mounted last, or `undefined` while none is mounted. */
+  getHeaderSupply<K extends HeaderSupplyKind>(kind: K): HeaderSupplies[K] | undefined;
+  /** Replaces the supply with the same `id` where it stands, or adds it as the one in use. */
+  upsertHeaderSupply<K extends HeaderSupplyKind>(kind: K, id: string, value: HeaderSupplies[K]): void;
+  /** Removes the supply; the one mounted before it is in use again. */
+  removeHeaderSupply(kind: HeaderSupplyKind, id: string): void;
+  isCleanUpPending(): boolean;
+  setCleanUpPending(isPending: boolean): void;
 };
 
 export const EMPTY_SLOT: AreaSlot = Object.freeze({ element: null });
@@ -76,6 +101,8 @@ export function createUiExtensionRegistry(): UiExtensionRegistry {
   const listeners = new Set<() => void>();
   let areas: Partial<Record<AreaKey, AreaSlot>> = {};
   let menus: Record<MenuId, readonly RegisteredMenuItem[]> = { project: [], propertiesPanel: [] };
+  let supplies: HeaderSupplyStacks = { cleanUp: [], saveAsPdf: [], publish: [], version: [] };
+  let isCleanUpPending = false;
 
   function notify() {
     for (const listener of listeners) listener();
@@ -121,6 +148,33 @@ export function createUiExtensionRegistry(): UiExtensionRegistry {
         menu,
         items.filter((existing) => existing.id !== id),
       );
+    },
+    getHeaderSupply(kind) {
+      return supplies[kind].at(-1)?.value;
+    },
+    upsertHeaderSupply(kind, id, value) {
+      const stack = supplies[kind];
+      const entry = { id, value };
+      const isRegistered = stack.some((existing) => existing.id === id);
+      supplies = {
+        ...supplies,
+        [kind]: isRegistered ? stack.map((existing) => (existing.id === id ? entry : existing)) : [...stack, entry],
+      };
+      notify();
+    },
+    removeHeaderSupply(kind, id) {
+      const stack = supplies[kind];
+      if (!stack.some((existing) => existing.id === id)) return;
+      supplies = { ...supplies, [kind]: stack.filter((existing) => existing.id !== id) };
+      notify();
+    },
+    isCleanUpPending() {
+      return isCleanUpPending;
+    },
+    setCleanUpPending(isPending) {
+      if (isCleanUpPending === isPending) return;
+      isCleanUpPending = isPending;
+      notify();
     },
   };
 }

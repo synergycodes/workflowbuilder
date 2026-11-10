@@ -13,6 +13,7 @@ import { AppBarProvider } from '../features/app-bar/app-bar-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { initTheme } from '../hooks/theme';
 import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
@@ -148,23 +149,25 @@ export function WorkflowBuilderRoot({
   const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
   return (
-    <RuntimeIntegrationWrapper
-      strategy={strategy}
-      endpoints={endpoints}
-      onDataSave={onDataSave}
-      autoSave={autoSave}
-      onLoad={onLoad ?? defaultOnLoad}
-      name={name}
-      layoutDirection={layoutDirection}
-      nodes={initialNodes}
-      edges={initialEdges}
-    >
-      <ReactFlowProvider>
-        <AppBarProvider value={editorHeader}>
-          <RootShell builtInControls={builtInControls}>{children}</RootShell>
-        </AppBarProvider>
-      </ReactFlowProvider>
-    </RuntimeIntegrationWrapper>
+    <UiExtensionProvider>
+      <RuntimeIntegrationWrapper
+        strategy={strategy}
+        endpoints={endpoints}
+        onDataSave={onDataSave}
+        autoSave={autoSave}
+        onLoad={onLoad ?? defaultOnLoad}
+        name={name}
+        layoutDirection={layoutDirection}
+        nodes={initialNodes}
+        edges={initialEdges}
+      >
+        <ReactFlowProvider>
+          <AppBarProvider value={editorHeader}>
+            <RootShell builtInControls={builtInControls}>{children}</RootShell>
+          </AppBarProvider>
+        </ReactFlowProvider>
+      </RuntimeIntegrationWrapper>
+    </UiExtensionProvider>
   );
 }
 

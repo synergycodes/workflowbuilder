@@ -1,9 +1,12 @@
 import i18n from 'i18next';
 
+import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
+import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import type { LayoutDirection } from '../node/common';
 import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';
@@ -17,11 +20,13 @@ const MAX_WORKFLOW_NAME_LENGTH = 128;
 type ActionsSession = {
   save: () => Promise<DidSaveStatus>;
   isActive: () => boolean;
+  /** Where the editor header's host supplies are registered; `null` outside a Root. */
+  registry: UiExtensionRegistry | null;
 };
 
 const store = () => useStore.getState();
 
-export function createWorkflowBuilderActions({ save, isActive }: ActionsSession): WorkflowBuilderActions {
+export function createWorkflowBuilderActions({ save, isActive, registry }: ActionsSession): WorkflowBuilderActions {
   const whileActive =
     <A extends unknown[]>(action: (...parameters: A) => void) =>
     (...parameters: A) => {
@@ -93,6 +98,37 @@ export function createWorkflowBuilderActions({ save, isActive }: ActionsSession)
       }
 
       store().setWorkflowName(name);
+    }),
+
+    cleanUp: async (direction?: LayoutDirection) => {
+      if (!isActive() || store().isReadOnly || !registry) return;
+      const onCleanUp = registry.getHeaderSupply('cleanUp');
+      if (!onCleanUp || registry.isCleanUpPending()) return;
+
+      const current = store().layoutDirection;
+      const next = direction ?? current;
+      if (next !== current) {
+        trackFutureChange('layoutDirection', { direction: next });
+        store().setLayoutDirection(next);
+      }
+
+      const result = onCleanUp(next);
+      if (!(result instanceof Promise)) return;
+
+      registry.setCleanUpPending(true);
+      try {
+        await result;
+      } catch {
+        // A rejected clean-up only ends the busy state; reporting it is the host's job.
+      } finally {
+        registry.setCleanUpPending(false);
+      }
+    },
+
+    saveAsPdf: whileActive(() => registry?.getHeaderSupply('saveAsPdf')?.()),
+
+    publish: whileActive(() => {
+      if (registry?.getHeaderSupply('version')?.isDraft) registry.getHeaderSupply('publish')?.();
     }),
   };
 }

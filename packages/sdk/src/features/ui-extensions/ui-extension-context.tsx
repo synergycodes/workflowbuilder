@@ -5,6 +5,8 @@ import {
   type AreaPlace,
   type AreaSlot,
   EMPTY_SLOT,
+  type HeaderSupplies,
+  type HeaderSupplyKind,
   type MenuId,
   type RegisteredMenuItem,
   type UiExtensionRegistry,
@@ -48,6 +50,20 @@ export function useAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot
 export function useRegisteredMenuItems(menu: MenuId): readonly RegisteredMenuItem[] {
   const registry = useUiExtensionRegistry();
   const getSnapshot = () => (registry ? registry.getMenuItems(menu) : NO_MENU_ITEMS);
+
+  return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
+}
+
+export function useHeaderSupply<K extends HeaderSupplyKind>(kind: K): HeaderSupplies[K] | undefined {
+  const registry = useUiExtensionRegistry();
+  const getSnapshot = () => registry?.getHeaderSupply(kind);
+
+  return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
+}
+
+export function useIsCleanUpPending(): boolean {
+  const registry = useUiExtensionRegistry();
+  const getSnapshot = () => registry?.isCleanUpPending() ?? false;
 
   return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
 }
