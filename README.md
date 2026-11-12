@@ -80,7 +80,7 @@ flowchart LR
 
 **…use Temporal alone?** Temporal runs workflows your developers write in code, and its Web UI is made for debugging. Workflow Builder adds visual workflow orchestration on top: your users draw the workflow, one generic workflow runs every drawing on your Temporal, and AI Studio shows the run on the same canvas, in open code you can carry into your own frontend. It is the DSL-interpreter pattern from Temporal's own samples, with an editor, versions, human steps and run history around it.
 
-**…use an agent framework?** LangGraph, Mastra and CrewAI are for developers writing agents in code, and that is where they fit here too: an executor can run an agent built with any of them inside a node. Workflow Builder adds what sits around the agent: a canvas where your users compose the steps, rules and approvals; durable execution on Temporal across those steps; a person deciding before anything irreversible happens; and a run view on the canvas. The two combine rather than compete.
+**…use an agent framework?** LangGraph, Mastra and CrewAI are for developers writing agents in code, and that is where they fit here too: an executor can run a LangGraph.js or Mastra agent inside the Worker, or call a CrewAI or Python LangGraph agent over its API. Workflow Builder adds what sits around the agent: a canvas where your users compose the steps, rules and approvals; durable execution on Temporal across those steps; a person deciding before anything irreversible happens; and a run view on the canvas. The two combine rather than compete.
 
 ## Built for teams shipping
 
