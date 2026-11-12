@@ -11,14 +11,10 @@ vi.mock('@xyflow/react', () => ({
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
 }));
 
-vi.mock('@workflowbuilder/ui', () => ({
-  useEdgeStyle: () => ({}),
-}));
-
-vi.mock('../enhanced-base-edge/enhanced-base-edge', () => ({
-  EnhancedBaseEdge: ({ id, path }: { id: string; path: string }) => (
+vi.mock('../../../plugins-core/components/diagram/optional-edge-path', () => ({
+  OptionalEdgePath: ({ edgeId, path }: { edgeId: string; path: string }) => (
     <svg>
-      <path data-edge-id={id} d={path} />
+      <path data-edge-id={edgeId} d={path} />
     </svg>
   ),
 }));

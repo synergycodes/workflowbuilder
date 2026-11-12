@@ -7,4 +7,10 @@
   :global(.react-flow__edgelabel-renderer) {
     z-index: 1001;
   }
+
+  /* Redirects the edit colours useEdgeStyle reads, so run-state and disabled colours stay. */
+  :global(.react-flow__edge:focus-visible) {
+    --wb-public-edge-color: var(--wb-public-edge-color-select);
+    --wb-public-edge-color-hover: var(--wb-public-edge-color-select);
+  }
 }
