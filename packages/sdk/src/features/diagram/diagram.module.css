@@ -8,8 +8,8 @@
     z-index: 1001;
   }
 
-  /* !important beats the inline stroke from useEdgeStyle; run states and the hit-area path keep theirs. */
-  :global(.react-flow__edge:focus-visible .react-flow__edge-path:not([data-run-state], [data-path-border-for])) {
+  /* !important beats the inline stroke from useEdgeStyle; only SDK-drawn paths, run states keep theirs. */
+  :global(.react-flow__edge:focus-visible [data-edge-id]:not([data-run-state])) {
     stroke: var(--wb-public-edge-color-select) !important;
   }
 }

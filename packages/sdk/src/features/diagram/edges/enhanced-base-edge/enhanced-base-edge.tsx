@@ -18,8 +18,14 @@ type EnhancedBaseEdgeProps = BaseEdgeProps;
 export function EnhancedBaseEdge({ id, path, ...rest }: EnhancedBaseEdgeProps) {
   return (
     <>
-      <BaseEdge data-path-border-for={id} className={styles['clickable-transparent-border']} path={path} />
-      <BaseEdge id={id} data-edge-id={id} path={path} {...rest} />
+      {/* interactionWidth 0: xyflow's own 20 px path would catch the pointer through `visibleStroke`. */}
+      <BaseEdge
+        data-path-border-for={id}
+        className={styles['clickable-transparent-border']}
+        path={path}
+        interactionWidth={0}
+      />
+      <BaseEdge id={id} data-edge-id={id} path={path} interactionWidth={0} {...rest} />
     </>
   );
 }

@@ -1,7 +1,3 @@
-:root {
-  --wb-public-edge-hit-width: 12;
-}
-
 .clickable-transparent-border {
   stroke-width: var(--wb-public-edge-hit-width);
   stroke: transparent;

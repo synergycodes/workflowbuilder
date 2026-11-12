@@ -2,4 +2,4 @@
 '@workflowbuilder/sdk': major
 ---
 
-**Breaking.** Built-in edges follow the design-system Edge link: 1 px in every state, colour carries the state, selection and keyboard focus use the select colour. New `EdgePath` and the `'OptionalEdgePath'` slot: a `place: 'wrapper'` decorator reads its own run state and renders `<component {...props} runState lineType />`, so an app shows a run on any edge without touching edge data or CSS. `--wb-public-edge-hit-width` (12) sizes the invisible hit area. A custom edge template renders `OptionalEdgePath` to get the same states.
+**Breaking.** Built-in edges are 1 px in every state (`--wb-public-edge-stroke-width-select` is gone, set `--wb-public-edge-stroke-width` for a thicker line), keyboard focus paints `EnhancedBaseEdge` paths in the select colour, and the hit area is 12 px from `--wb-public-edge-hit-width` instead of xyflow's 20 px interaction path (`--wb-sdk-edge-clickable-border-width` is gone). New `EdgePath` and the `'OptionalEdgePath'` slot let a `place: 'wrapper'` decorator set `runState` and `lineType` on built-in and custom edges without touching edge data.

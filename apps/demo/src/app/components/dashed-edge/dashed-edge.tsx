@@ -22,6 +22,7 @@ export function DashedEdge({
   id,
   source,
   target,
+  sourceHandleId,
   sourceX,
   sourceY,
   targetX,
@@ -38,6 +39,7 @@ export function DashedEdge({
       edgeId={id}
       source={source}
       target={target}
+      sourceHandle={sourceHandleId}
       path={path}
       state={selected ? 'selected' : 'default'}
       hovered={hovered}
