@@ -161,6 +161,9 @@ export { FormControlWithLabel } from './components/form/form-control-with-label/
 // `registerComponentDecorator<WorkflowBuilderCanvasProps>('Canvas', …)`.
 export type { WorkflowBuilderCanvasProps } from './features/diagram/diagram';
 export { EnhancedBaseEdge } from './features/diagram/edges/enhanced-base-edge/enhanced-base-edge';
+export { EdgePath } from './features/diagram/edges/edge-path/edge-path';
+export type { EdgePathProps } from './features/diagram/edges/edge-path/edge-path';
+export { OptionalEdgePath } from './features/plugins-core/components/diagram/optional-edge-path';
 export { EdgeLabel } from './features/diagram/edges/edge-label-renderer/edge-label-renderer';
 export { LabelEdge } from './features/diagram/edges/label-edge/label-edge';
 export {

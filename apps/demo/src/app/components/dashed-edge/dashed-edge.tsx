@@ -1,4 +1,4 @@
-import { EnhancedBaseEdge, useLabelEdgeHover } from '@workflowbuilder/sdk';
+import { OptionalEdgePath, useLabelEdgeHover } from '@workflowbuilder/sdk';
 import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
 
 /**
@@ -7,25 +7,21 @@ import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
  * of the built-in `labelEdge`.
  *
  * Mirrors the `multi-port` node-template example: a consumer component that
- * takes ReactFlow's `EdgeProps` directly (no SDK adapter) and reuses the
- * exported `EnhancedBaseEdge` for a wide hit target. Selection and hover are
- * delegated to the SDK's `useLabelEdgeHover` so this edge highlights exactly
- * like the built-in one — it just keeps a dashed stroke on top.
+ * takes ReactFlow's `EdgeProps` directly (no SDK adapter). It draws through
+ * the SDK's `OptionalEdgePath`, so it gets the built-in hit area, selection,
+ * hover and focus colours, and any run state a plugin sets on that slot.
  *
  * This is a minimal styling example, not a full `labelEdge` replacement. It
  * deliberately skips two things the built-in does: the self-connecting loop
  * when `source === target` (a self-loop drawn with this type collapses to a
  * degenerate path), and rendering `data.label` / `data.icon`. If you need
  * either, branch on `source === target` and delegate to the exported
- * `SelfConnectingEdge`, and render your own label. See the SDK README,
- * "Custom edges and selection".
- *
- * To diverge from the built-in selection look, add a `selected` branch to the
- * `style` below, or restyle every edge globally via the `--wb-public-edge-color-select`
- * CSS variable. See the SDK README, "Custom edges and selection".
+ * `SelfConnectingEdge`, and render your own label.
  */
 export function DashedEdge({
   id,
+  source,
+  target,
   sourceX,
   sourceY,
   targetX,
@@ -34,8 +30,18 @@ export function DashedEdge({
   targetPosition,
   selected,
 }: EdgeProps) {
-  const { style } = useLabelEdgeHover({ id, isSelected: selected });
+  const { hovered } = useLabelEdgeHover({ id, isSelected: selected });
   const [path] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
 
-  return <EnhancedBaseEdge id={id} path={path} style={{ ...style, strokeDasharray: '6 4' }} />;
+  return (
+    <OptionalEdgePath
+      edgeId={id}
+      source={source}
+      target={target}
+      path={path}
+      state={selected ? 'selected' : 'default'}
+      hovered={hovered}
+      lineType="dashed"
+    />
+  );
 }

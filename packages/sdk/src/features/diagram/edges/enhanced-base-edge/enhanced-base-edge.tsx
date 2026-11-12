@@ -9,6 +9,7 @@ type EnhancedBaseEdgeProps = BaseEdgeProps;
  * thicker stroke underneath the visible path. The transparent overlay
  * widens the edge's hover / click target without altering its visual
  * appearance — useful for thin edges that would otherwise be hard to grab.
+ * `--wb-public-edge-hit-width` (default `12`) sets its width.
  *
  * Use it inside a custom edge component the same way you'd use `BaseEdge`.
  *
@@ -18,7 +19,7 @@ export function EnhancedBaseEdge({ id, path, ...rest }: EnhancedBaseEdgeProps) {
   return (
     <>
       <BaseEdge data-path-border-for={id} className={styles['clickable-transparent-border']} path={path} />
-      <BaseEdge id={id} data-edge-id={id} path={path} {...rest} />;
+      <BaseEdge id={id} data-edge-id={id} path={path} {...rest} />
     </>
   );
 }

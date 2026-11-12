@@ -1,9 +1,8 @@
-import { type EdgeState, useEdgeStyle } from '@workflowbuilder/ui';
 import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
+import { OptionalEdgePath } from '../../../plugins-core/components/diagram/optional-edge-path';
 import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.consts';
-import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
   hovered: boolean;
@@ -77,10 +76,9 @@ export function SelfConnectingEdge({
   hovered,
   source,
   target,
+  sourceHandleId,
 }: SelfConnectingEdgeProps) {
   const apexY = useSelfLoopApexY(source, target, sourceY);
-  const edgeState: EdgeState = selected ? 'selected' : 'default';
-  const style = useEdgeStyle({ state: edgeState, isHovered: hovered });
 
   const path = createSelfConnectingPath(
     { x: sourceX, y: sourceY },
@@ -89,5 +87,15 @@ export function SelfConnectingEdge({
     EDGE_CURVE_RADIUS,
   );
 
-  return <EnhancedBaseEdge id={id} path={path} style={style} />;
+  return (
+    <OptionalEdgePath
+      edgeId={id}
+      source={source}
+      target={target}
+      sourceHandle={sourceHandleId}
+      path={path}
+      state={selected ? 'selected' : 'default'}
+      hovered={hovered}
+    />
+  );
 }

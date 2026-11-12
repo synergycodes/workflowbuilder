@@ -7,4 +7,9 @@
   :global(.react-flow__edgelabel-renderer) {
     z-index: 1001;
   }
+
+  /* !important beats the inline stroke from useEdgeStyle; run states and the hit-area path keep theirs. */
+  :global(.react-flow__edge:focus-visible .react-flow__edge-path:not([data-run-state], [data-path-border-for])) {
+    stroke: var(--wb-public-edge-color-select) !important;
+  }
 }
