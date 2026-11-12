@@ -13,7 +13,7 @@ import { useStore } from '../../../../store/store';
 import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
-import { useHeaderSupply, useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
+import { useIsHeaderControlShown, useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
 import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
 import { getExportImportItems } from '../../functions/get-export-import-items';
 import { VersionChip } from '../version-chip/version-chip';
@@ -45,9 +45,7 @@ export function ProjectSelection(props: object) {
   const isWorkflowRenameVisible = useIsBuiltInControlVisible('workflowRename');
   const isFolderNameVisible = useIsBuiltInControlVisible('folderName');
   const isWorkflowNameVisible = useIsBuiltInControlVisible('workflowName');
-  const isSaveAsPdfVisible = useIsBuiltInControlVisible('saveAsPdf');
-  const isSaveAsPdfSupplied = useHeaderSupply('saveAsPdf') !== undefined;
-  const isSaveAsPdfAvailable = isSaveAsPdfVisible && isSaveAsPdfSupplied;
+  const isSaveAsPdfAvailable = useIsHeaderControlShown('saveAsPdf');
   const registeredItems = useRegisteredMenuItems('project');
   const isEditable = isWorkflowRenameVisible && !isReadOnly;
 

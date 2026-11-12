@@ -1,5 +1,6 @@
 import { type PropsWithChildren, createContext, useContext, useRef, useSyncExternalStore } from 'react';
 
+import { useIsBuiltInControlVisible } from './built-in-controls-context';
 import {
   type AreaId,
   type AreaPlace,
@@ -59,6 +60,14 @@ export function useHeaderSupply<K extends HeaderSupplyKind>(kind: K): HeaderSupp
   const getSnapshot = () => registry?.getHeaderSupply(kind);
 
   return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
+}
+
+/** Whether the built-in control of that kind shows: not hidden by `builtInControls`, and supplied. */
+export function useIsHeaderControlShown(kind: HeaderSupplyKind): boolean {
+  const isVisible = useIsBuiltInControlVisible(kind);
+  const isSupplied = useHeaderSupply(kind) !== undefined;
+
+  return isVisible && isSupplied;
 }
 
 export function useIsCleanUpPending(): boolean {

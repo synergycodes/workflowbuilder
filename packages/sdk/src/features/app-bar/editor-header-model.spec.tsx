@@ -7,9 +7,6 @@ import { useWorkflowBuilderActions } from '../../hooks/use-workflow-builder-acti
 import { useWorkflowBuilderState } from '../../hooks/use-workflow-builder-state';
 import { resetWorkflowStore, useStore } from '../../store/store';
 import '../i18n/index';
-import { IntegrationContextWrapper } from '../integration/components/integration-variants/context/integration-context-wrapper';
-import { registerComponentDecorator } from '../plugins-core/adapters/adapter-components';
-import { OptionalAppChildren } from '../plugins-core/components/app/optional-app-children';
 import type { BuiltInControls } from '../ui-extensions/built-in-controls';
 import { EditorHeaderControlsContent } from '../ui-extensions/components/app-bar-controls-content';
 import { EditorHeaderCleanUp } from '../ui-extensions/components/editor-header-clean-up';
@@ -17,7 +14,12 @@ import { EditorHeaderPublish } from '../ui-extensions/components/editor-header-p
 import { EditorHeaderSaveAsPdf } from '../ui-extensions/components/editor-header-save-as-pdf';
 import { EditorHeaderVersion } from '../ui-extensions/components/editor-header-version';
 import { WorkflowMenuItem } from '../ui-extensions/components/project-menu-item';
-import { renderInRoot } from '../ui-extensions/test-utils';
+import {
+  SUPPLY_ROUTES,
+  type SupplyRoute,
+  removeSuppliesPlugin,
+  renderWithSupplies,
+} from '../ui-extensions/supplies-test-utils';
 import { Controls } from './components/controls/controls';
 import { ProjectSelection } from './components/project-selection/project-selection';
 import { Toolbar } from './components/toolbar/toolbar';
@@ -25,10 +27,6 @@ import { Toolbar } from './components/toolbar/toolbar';
 vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
   trackFutureChange: vi.fn(),
 }));
-
-const PLUGIN = 'editor-header-model-spec-plugin';
-
-type Via = 'app tree' | 'plugin';
 
 const CLEAN_UP = 'Clean up (horizontal)';
 const SAVE_AS_PDF = 'Save as PDF';
@@ -56,34 +54,30 @@ function Supplies({ onCleanUp, onSaveAsPdf, onPublish, isDraft = true }: Handler
 
 function renderHeader({
   supplies,
-  via = 'app tree',
+  via,
   builtInControls,
   extra,
 }: {
   supplies?: ReactNode;
-  via?: Via;
+  via?: SupplyRoute;
   builtInControls?: BuiltInControls;
   extra?: ReactNode;
 }) {
-  if (via === 'plugin' && supplies) {
-    registerComponentDecorator('OptionalAppChildren', { name: PLUGIN, content: () => supplies });
-  }
   const captured: { actions: ReturnType<typeof useWorkflowBuilderActions> | null } = { actions: null };
   function ActionsProbe() {
     captured.actions = useWorkflowBuilderActions();
     return null;
   }
 
-  const view = renderInRoot(
-    <IntegrationContextWrapper onSave={vi.fn()} autoSave={false}>
+  const view = renderWithSupplies(
+    <>
       <ActionsProbe />
       <Toolbar />
       <ProjectSelection />
       <Controls />
-      {via === 'app tree' ? supplies : <OptionalAppChildren />}
-      {extra}
-    </IntegrationContextWrapper>,
-    { builtInControls },
+    </>,
+    supplies,
+    { via, builtInControls, after: extra },
   );
 
   return { ...view, actions: () => captured.actions! };
@@ -116,12 +110,11 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  // Registering a name again replaces the entry, and an entry without content renders nothing.
-  registerComponentDecorator('OptionalAppChildren', { name: PLUGIN });
+  removeSuppliesPlugin();
   vi.restoreAllMocks();
 });
 
-describe.each<Via>(['app tree', 'plugin'])('editor header with supplies from the %s', (via) => {
+describe.each(SUPPLY_ROUTES)('editor header with supplies from the %s', (via) => {
   it('shows no Clean up, Save as PDF, version or Publish before anything is supplied', () => {
     renderHeader({ via });
 

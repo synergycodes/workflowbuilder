@@ -1,4 +1,5 @@
-import { HeaderSupply, useLatestCallback } from '../header-supply';
+import { HeaderSupply } from '../header-supply';
+import { useLatestCallback } from '../use-latest-callback';
 
 /**
  * Props of {@link EditorHeaderSaveAsPdf}.

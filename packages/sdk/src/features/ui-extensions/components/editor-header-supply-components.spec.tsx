@@ -6,8 +6,7 @@ import { type WorkflowBuilderActions, useWorkflowBuilderActions } from '../../..
 import { type WorkflowBuilderState, useWorkflowBuilderState } from '../../../hooks/use-workflow-builder-state';
 import { resetWorkflowStore, useStore } from '../../../store/store';
 import { IntegrationContextWrapper } from '../../integration/components/integration-variants/context/integration-context-wrapper';
-import { registerComponentDecorator } from '../../plugins-core/adapters/adapter-components';
-import { OptionalAppChildren } from '../../plugins-core/components/app/optional-app-children';
+import { SUPPLY_ROUTES, type SupplyRoute, removeSuppliesPlugin, renderWithSupplies } from '../supplies-test-utils';
 import { renderInRoot } from '../test-utils';
 import { EditorHeaderCleanUp } from './editor-header-clean-up';
 import { EditorHeaderPublish } from './editor-header-publish';
@@ -18,12 +17,7 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
   trackFutureChange: vi.fn(),
 }));
 
-const PLUGIN = 'editor-header-supply-components-spec-plugin';
-
-type Via = 'app tree' | 'plugin';
-const VIAS: Via[] = ['app tree', 'plugin'];
-
-function renderWithSupplies(supplies: ReactNode, via: Via) {
+function renderAndProbe(supplies: ReactNode, via: SupplyRoute) {
   const seen: { state: WorkflowBuilderState | null; actions: WorkflowBuilderActions | null } = {
     state: null,
     actions: null,
@@ -35,16 +29,7 @@ function renderWithSupplies(supplies: ReactNode, via: Via) {
     return null;
   }
 
-  if (via === 'plugin') {
-    registerComponentDecorator('OptionalAppChildren', { name: PLUGIN, content: () => supplies });
-  }
-
-  const view = renderInRoot(
-    <IntegrationContextWrapper onSave={vi.fn()} autoSave={false}>
-      <Probe />
-      {via === 'app tree' ? supplies : <OptionalAppChildren />}
-    </IntegrationContextWrapper>,
-  );
+  const view = renderWithSupplies(<Probe />, supplies, { via });
 
   return { ...view, state: () => seen.state!, actions: () => seen.actions! };
 }
@@ -55,14 +40,13 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  // Registering a name again replaces the entry, and an entry without content renders nothing.
-  registerComponentDecorator('OptionalAppChildren', { name: PLUGIN });
+  removeSuppliesPlugin();
   vi.restoreAllMocks();
 });
 
-describe.each(VIAS)('editor header supplies from the %s', (via) => {
+describe.each(SUPPLY_ROUTES)('editor header supplies from the %s', (via) => {
   it('nothing is available before anything is supplied', () => {
-    const view = renderWithSupplies(null, via);
+    const view = renderAndProbe(null, via);
 
     expect(view.state().availableActions).toEqual({ cleanUp: false, saveAsPdf: false, publish: false });
     expect(view.state().version).toBeNull();
@@ -70,7 +54,7 @@ describe.each(VIAS)('editor header supplies from the %s', (via) => {
 
   it('EditorHeaderCleanUp makes cleanUp available and runs onCleanUp', async () => {
     const onCleanUp = vi.fn();
-    const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />, via);
+    const view = renderAndProbe(<EditorHeaderCleanUp onCleanUp={onCleanUp} />, via);
 
     expect(view.state().availableActions.cleanUp).toBe(true);
     await act(() => view.actions().cleanUp());
@@ -80,7 +64,7 @@ describe.each(VIAS)('editor header supplies from the %s', (via) => {
 
   it('EditorHeaderSaveAsPdf makes saveAsPdf available and runs onSaveAsPdf', () => {
     const onSaveAsPdf = vi.fn();
-    const view = renderWithSupplies(<EditorHeaderSaveAsPdf onSaveAsPdf={onSaveAsPdf} />, via);
+    const view = renderAndProbe(<EditorHeaderSaveAsPdf onSaveAsPdf={onSaveAsPdf} />, via);
 
     expect(view.state().availableActions.saveAsPdf).toBe(true);
     view.actions().saveAsPdf();
@@ -90,7 +74,7 @@ describe.each(VIAS)('editor header supplies from the %s', (via) => {
 
   it('EditorHeaderVersion and EditorHeaderPublish make the version readable and publish available', () => {
     const onPublish = vi.fn();
-    const view = renderWithSupplies(
+    const view = renderAndProbe(
       <>
         <EditorHeaderVersion number={7} isDraft />
         <EditorHeaderPublish onPublish={onPublish} />
@@ -116,7 +100,7 @@ describe('editor header supply components', () => {
         <EditorHeaderPublish onPublish={vi.fn()} />
       </>
     );
-    const view = renderWithSupplies(supplies, 'app tree');
+    const view = renderAndProbe(supplies, 'app tree');
 
     view.rerender(
       <IntegrationContextWrapper onSave={vi.fn()} autoSave={false}>

@@ -1,5 +1,5 @@
 import { useNodeId } from '@xyflow/react';
-import { useCallback, useId, useLayoutEffect, useRef } from 'react';
+import { useId, useLayoutEffect, useRef } from 'react';
 
 import { useUiExtensionRegistry } from './ui-extension-context';
 import type { HeaderSupplies, HeaderSupplyKind } from './ui-extension-registry';
@@ -48,14 +48,4 @@ export function HeaderSupply<K extends HeaderSupplyKind>({ kind, value, componen
   }, [registry, kind, id, value]);
 
   return null;
-}
-
-/** A function that keeps its identity for the component's lifetime and always calls the latest `callback`. */
-export function useLatestCallback<A extends unknown[], R>(callback: (...parameters: A) => R): (...parameters: A) => R {
-  const latest = useRef(callback);
-  useLayoutEffect(() => {
-    latest.current = callback;
-  });
-
-  return useCallback((...parameters: A) => latest.current(...parameters), []);
 }

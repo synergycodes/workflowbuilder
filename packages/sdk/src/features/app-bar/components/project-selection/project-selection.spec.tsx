@@ -3,7 +3,8 @@ import type { MenuItemProps } from '@workflowbuilder/ui';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { BuiltInControlsProvider } from '../../../ui-extensions/built-in-controls-context';
+import type { BuiltInControl } from '../../../ui-extensions/built-in-controls';
+import { BuiltInControlsProvider, useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import type * as UiExtensionContext from '../../../ui-extensions/ui-extension-context';
 
 // Render the menu's `items` inline so we can assert on them without driving the
@@ -68,7 +69,8 @@ vi.mock('../version-chip/version-chip', () => ({
 let suppliedSaveAsPdf: (() => void) | undefined;
 vi.mock('../../../ui-extensions/ui-extension-context', async (importOriginal) => ({
   ...(await importOriginal<typeof UiExtensionContext>()),
-  useHeaderSupply: () => suppliedSaveAsPdf,
+  useIsHeaderControlShown: (kind: BuiltInControl) =>
+    useIsBuiltInControlVisible(kind) && suppliedSaveAsPdf !== undefined,
 }));
 
 const { ProjectSelection } = await import('./project-selection');

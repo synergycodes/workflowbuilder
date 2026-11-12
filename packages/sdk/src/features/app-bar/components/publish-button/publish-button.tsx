@@ -2,17 +2,15 @@ import { Button } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
-import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
-import { useHeaderSupply } from '../../../ui-extensions/ui-extension-context';
+import { useHeaderSupply, useIsHeaderControlShown } from '../../../ui-extensions/ui-extension-context';
 
 export function PublishButton() {
   const { t } = useTranslation();
   const { publish } = useWorkflowBuilderActions();
-  const isVisible = useIsBuiltInControlVisible('publish');
-  const isSupplied = useHeaderSupply('publish') !== undefined;
+  const isShown = useIsHeaderControlShown('publish');
   const version = useHeaderSupply('version');
 
-  if (!isVisible || !isSupplied) {
+  if (!isShown) {
     return null;
   }
 

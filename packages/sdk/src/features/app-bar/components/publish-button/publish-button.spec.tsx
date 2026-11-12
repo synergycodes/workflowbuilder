@@ -14,13 +14,10 @@ vi.mock('react-i18next', () => ({
 }));
 
 let supplies: { version?: { number: number; isDraft: boolean }; publish?: () => void } = {};
+let isVisible = true;
 vi.mock('../../../ui-extensions/ui-extension-context', () => ({
   useHeaderSupply: (kind: keyof typeof supplies) => supplies[kind],
-}));
-
-let isVisible = true;
-vi.mock('../../../ui-extensions/built-in-controls-context', () => ({
-  useIsBuiltInControlVisible: () => isVisible,
+  useIsHeaderControlShown: (kind: keyof typeof supplies) => isVisible && supplies[kind] !== undefined,
 }));
 
 const actions = { publish: vi.fn() };

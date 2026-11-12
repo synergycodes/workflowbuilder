@@ -32,10 +32,12 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     (...parameters: A) => {
       if (isActive()) action(...parameters);
     };
-  const whileEditable = <A extends unknown[]>(action: (...parameters: A) => void) =>
-    whileActive((...parameters: A) => {
-      if (!store().isReadOnly) action(...parameters);
-    });
+  const canEdit = () => isActive() && !store().isReadOnly;
+  const whileEditable =
+    <A extends unknown[]>(action: (...parameters: A) => void) =>
+    (...parameters: A) => {
+      if (canEdit()) action(...parameters);
+    };
 
   return {
     save,
@@ -101,7 +103,7 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     }),
 
     cleanUp: async (direction?: LayoutDirection) => {
-      if (!isActive() || store().isReadOnly || !registry) return;
+      if (!canEdit() || !registry) return;
       const onCleanUp = registry.getHeaderSupply('cleanUp');
       if (!onCleanUp || registry.isCleanUpPending()) return;
 

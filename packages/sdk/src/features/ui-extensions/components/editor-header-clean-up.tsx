@@ -1,5 +1,6 @@
 import type { LayoutDirection } from '../../../node/common';
-import { HeaderSupply, useLatestCallback } from '../header-supply';
+import { HeaderSupply } from '../header-supply';
+import { useLatestCallback } from '../use-latest-callback';
 
 /**
  * Props of {@link EditorHeaderCleanUp}.
