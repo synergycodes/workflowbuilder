@@ -1,5 +1,6 @@
 import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
 
+import '../components/execution/highlighting.css';
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
 import '@workflowbuilder/ui/fonts.css';
@@ -9,7 +10,6 @@ import logoLight from '../assets/workflow-builder-logo.svg';
 import { responseControlRenderer } from '../components/ai-agent/response-control';
 import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
-import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
 import { decisionActionsRenderer } from '../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../components/human-decision/decision-fields/decision-fields-control';
@@ -58,7 +58,6 @@ export function App({ opened }: { opened: OpenedSource }) {
       <AiStudioControls workflowId={workflowId} isRunView={isRunView} />
       <ExecutionLogPanel />
       <DecisionWaitingSnackbar />
-      <ExecutionHighlighting />
       <DisclaimerModal />
       <OpenNotices />
     </WorkflowBuilder.Root>
