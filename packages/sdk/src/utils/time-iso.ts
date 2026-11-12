@@ -24,6 +24,7 @@ const DATE_TIME_LENGTH = 'YYYY-MM-DDTHH:mm'.length;
 const datePrefixPattern = /^\d{4}-\d{2}-\d{2}(?!\d)/;
 const dateTimePrefixPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?!\d)/;
 const timePattern = /^\d{2}:\d{2}$/;
+const legacyInstantPattern = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}(?::\d{2}(?:\.\d{1,9})?)?(?:Z|[+-]\d{2}:\d{2})$/;
 
 const getIsValidDateObject = (date: Date): boolean => !Number.isNaN(date.getTime());
 
@@ -124,3 +125,9 @@ export const getDateTimeISO = (
 
   return `${dateYYYYMMDD}T${getTimeHHmm(time) ?? fallbackTime}`;
 };
+
+/**
+ * `YYYY-MM-DDTHH:mm[:ss[.sss]]` with `Z` or `±HH:mm`: the instant SDK 3.0 saved through `toISOString()`.
+ * The readers above show it with the offset dropped, so it is off by its author's UTC offset. (migration: zone-less-date-time)
+ */
+export const getIsLegacyInstantString = (value?: string | null): boolean => !!value && legacyInstantPattern.test(value);

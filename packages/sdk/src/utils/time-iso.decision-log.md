@@ -44,6 +44,7 @@ The `DatePicker` in `@workflowbuilder/ui` holds the same line on its side: `date
 - Any code that touches these values goes through `time-iso.ts`. Never `toISOString()`, `new Date('YYYY-MM-DD')` or `Date.parse` on them. The file header states the rule.
 - The `+00:00` on `time` misleads any reader that treats it as RFC 3339. Nothing in the repo does; an export that converts it to an instant would be off by the viewer's offset.
 - Known gap: `compareInstants` in `decision.ts` orders bare `HH:mm` by seconds of the day (against another clock or the clock inside a datetime), but `date` and `datetime` still go through `new Date(value).getTime()`. Same-shape comparisons agree, but a bare date parses as UTC midnight and a `YYYY-MM-DDTHH:mm` as local, so `date` against `datetime` is off by the worker's offset unless the worker runs in UTC, and nothing pins its zone (no `TZ` in `deploy/`). Direction: parse both sides from their parts, as `getDateIfValid` does. (follow-up: zone-less-date-compare-in-worker)
+- 3.0.0 instants (`toISOString()` output in condition values and `date` / `datetime` global defaults) are not converted: the author's zone is unknown. The store warns once per load (`store/slices/diagram-slice/utils/legacy-date-time-values.ts`) and the 4.0 upgrade guide § Date and time values holds the consumer steps. (migration: zone-less-date-time)
 - Validation of these types is a separate decision: `validation/workflow-builder-validator/variable-references-and-date-types.decision-log.md` § 2.
 
 ## When a zone is needed

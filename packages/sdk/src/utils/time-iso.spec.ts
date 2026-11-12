@@ -1,6 +1,13 @@
 import { afterEach, describe, expect, it } from 'vitest';
 
-import { getDateIfValid, getDateTimeISO, getDateYYYYMMDD, getTimeHHmm, getTimeHHmmISO } from './time-iso';
+import {
+  getDateIfValid,
+  getDateTimeISO,
+  getDateYYYYMMDD,
+  getIsLegacyInstantString,
+  getTimeHHmm,
+  getTimeHHmmISO,
+} from './time-iso';
 
 // Both sides of the date line: UTC+14 and UTC-11. Node re-reads process.env.TZ at runtime.
 const zones = ['UTC', 'Pacific/Kiritimati', 'Pacific/Pago_Pago', 'Europe/Warsaw', 'America/Los_Angeles'];
@@ -185,5 +192,40 @@ describe('getDateIfValid', () => {
     expect(getDateIfValid('')).toBeUndefined();
     expect(getDateIfValid('nope')).toBeUndefined();
     expect(getDateIfValid('2024-02-30')).toBeUndefined();
+  });
+});
+
+describe('getIsLegacyInstantString', () => {
+  it('should match the instant SDK 3.0 saved through toISOString', () => {
+    expect(getIsLegacyInstantString(new Date(Date.UTC(2024, 0, 14, 23)).toISOString())).toBe(true);
+    expect(getIsLegacyInstantString('2024-01-14T23:00:00.000Z')).toBe(true);
+  });
+
+  it('should match any datetime that carries an offset', () => {
+    expect(getIsLegacyInstantString('2024-01-15T09:07:30Z')).toBe(true);
+    expect(getIsLegacyInstantString('2024-01-15T09:07:30+02:00')).toBe(true);
+    expect(getIsLegacyInstantString('2024-01-15T09:07-05:00')).toBe(true);
+    expect(getIsLegacyInstantString('2024-01-15T09:07:30.5Z')).toBe(true);
+  });
+
+  it('should reject the zone-less shapes, references and empty values', () => {
+    expect(getIsLegacyInstantString('2024-01-15')).toBe(false);
+    expect(getIsLegacyInstantString('2024-01-15T09:07')).toBe(false);
+    expect(getIsLegacyInstantString('2024-01-15T09:07:30')).toBe(false);
+    expect(getIsLegacyInstantString('09:07:00+00:00')).toBe(false);
+    expect(getIsLegacyInstantString('09:07')).toBe(false);
+    expect(getIsLegacyInstantString('{{global.deadline}}')).toBe(false);
+    expect(getIsLegacyInstantString('')).toBe(false);
+    expect(getIsLegacyInstantString()).toBe(false);
+    expect(getIsLegacyInstantString(null)).toBe(false);
+  });
+
+  it.each(zones)('should never match what the writers produce in %s', (zone) => {
+    process.env.TZ = zone;
+    const date = new Date(2024, 0, 15, 9, 7);
+
+    expect(getIsLegacyInstantString(getDateYYYYMMDD(date))).toBe(false);
+    expect(getIsLegacyInstantString(getDateTimeISO(date, date))).toBe(false);
+    expect(getIsLegacyInstantString(getTimeHHmmISO(date))).toBe(false);
   });
 });
