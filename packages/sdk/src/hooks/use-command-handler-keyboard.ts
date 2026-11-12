@@ -9,6 +9,7 @@ export function useCommandHandlerKeyboard(commandHandler: CommandHandler) {
   const plus = useKeyPress('+', { withControlOrMeta: true });
   const equal = useKeyPress('=', { withControlOrMeta: true });
   const minus = useKeyPress('-', { withControlOrMeta: true });
+  const one = useKeyPress('Digit1', { withShift: true });
 
   useEffect(() => {
     if (a) {
@@ -27,4 +28,10 @@ export function useCommandHandlerKeyboard(commandHandler: CommandHandler) {
       commandHandler.zoomOut();
     }
   }, [minus]);
+
+  useEffect(() => {
+    if (one) {
+      commandHandler.fitView();
+    }
+  }, [one]);
 }
