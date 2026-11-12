@@ -8,8 +8,9 @@
     z-index: 1001;
   }
 
-  /* !important beats the inline stroke from useEdgeStyle; only SDK-drawn paths, run states keep theirs. */
-  :global(.react-flow__edge:focus-visible [data-edge-id]:not([data-run-state])) {
-    stroke: var(--wb-public-edge-color-select) !important;
+  /* Redirects the edit colours useEdgeStyle reads, so run-state and disabled colours stay. */
+  :global(.react-flow__edge:focus-visible) {
+    --wb-public-edge-color: var(--wb-public-edge-color-select);
+    --wb-public-edge-color-hover: var(--wb-public-edge-color-select);
   }
 }

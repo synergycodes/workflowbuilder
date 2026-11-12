@@ -271,9 +271,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * `EdgeProps` directly). The only SDK-specific step is registering it here
    * instead of via ReactFlow's `edgeTypes`. See ReactFlow's "Custom Edges"
    * guide: https://reactflow.dev/learn/customization/custom-edges. To match the
-   * built-in selection and hover look, reuse the exported `useLabelEdgeHover`
-   * and `EnhancedBaseEdge`, or restyle selection globally via the
-   * `--wb-public-edge-color-select` CSS variable. A custom edge does not inherit
+   * built-in look and get run states set by plugins, draw the path with the
+   * exported `OptionalEdgePath` (`hovered` from `useLabelEdgeHover`), or
+   * `EdgePath` without the slot. A custom edge does not inherit
    * the built-in self-connecting loop or label rendering.
    *
    * **Must be a stable reference** (same rationale as `nodeTemplates`).

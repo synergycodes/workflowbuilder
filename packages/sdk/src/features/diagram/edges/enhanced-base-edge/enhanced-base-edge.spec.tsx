@@ -34,7 +34,6 @@ describe('EnhancedBaseEdge', () => {
     expect(container.querySelector('svg')!.textContent).toBe('');
   });
 
-  // xyflow's interaction path would otherwise catch the pointer 20 px wide whatever the hit width says.
   it('turns off the xyflow interaction path on both paths', () => {
     const { container } = render(
       <svg>
@@ -53,11 +52,13 @@ describe('EnhancedBaseEdge', () => {
     expect(hitArea).toMatch(/stroke:\s*transparent;/);
   });
 
-  it('paints keyboard focus in the select colour on SDK-drawn paths without a run state only', () => {
-    const focus = readFileSync(path.join(import.meta.dirname, '../../diagram.module.css'), 'utf8').match(
-      /:global\(\.react-flow__edge:focus-visible \[data-edge-id\]:not\(\[data-run-state\]\)\)\s*{([^}]*)}/,
-    );
+  it('turns only the edit colours to the select colour on keyboard focus', () => {
+    const focus = cssRule('../../diagram.module.css', String.raw`:global\(\.react-flow__edge:focus-visible\)`);
 
-    expect(focus?.[1]).toMatch(/stroke:\s*var\(--wb-public-edge-color-select\)\s*!important;/);
+    expect(focus.match(/--wb-public-edge-color[\w-]*(?=:)/g)).toEqual([
+      '--wb-public-edge-color',
+      '--wb-public-edge-color-hover',
+    ]);
+    expect(focus.match(/var\(--wb-public-edge-color-select\)/g)).toHaveLength(2);
   });
 });

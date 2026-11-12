@@ -15,7 +15,9 @@ type UseLabelEdgeHoverParams = {
  *
  * Suppresses hover while another edge is mid-segment-drag so the visual
  * doesn't flicker. Reach for it when authoring a custom edge type that
- * wants the same hover feel as the built-in {@link LabelEdge}.
+ * wants the same hover feel as the built-in {@link LabelEdge}: pass `hovered`
+ * to {@link OptionalEdgePath}. The returned `style` is the edit look only, with
+ * no run state.
  *
  * @category Hooks
  */
