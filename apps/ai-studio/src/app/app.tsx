@@ -16,6 +16,7 @@ import { decisionFieldsRenderer } from '../components/human-decision/decision-fi
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
 import { DecisionWaitingSnackbar } from '../components/human-decision/waiting-snackbar/decision-waiting-snackbar';
 import { OpenNotices } from '../components/open-from-url/open-notices';
+import { TemplatePicker } from '../components/welcome/template-picker';
 import { aiStudioTemplates } from '../data/ai-studio-templates';
 import { nodeTemplates } from '../data/node-templates';
 import { aiStudioNodeTypes } from '../data/node-types';
@@ -33,7 +34,7 @@ const jsonForm = {
 const isValidConnection: WorkflowBuilderIsValidConnection = ({ targetNode }) => !targetNode.data.isStartNode;
 
 export function App({ opened }: { opened: OpenedSource }) {
-  const { name, initialNodes, initialEdges, integration, builtInControls, plugins } = rootPropsFor(opened);
+  const { name, initialNodes, initialEdges, integration, builtInControls, plugins, onLoad } = rootPropsFor(opened);
   const workflowId = opened.kind === 'workflow' ? opened.workflowId : undefined;
   const isRunView = opened.kind === 'execution';
 
@@ -53,13 +54,16 @@ export function App({ opened }: { opened: OpenedSource }) {
       isValidConnection={isValidConnection}
       builtInControls={builtInControls}
       plugins={plugins}
+      onLoad={onLoad}
     >
       <WorkflowBuilder.DefaultLayout />
       <AiStudioControls workflowId={workflowId} isRunView={isRunView} />
       <ExecutionLogPanel />
       <DecisionWaitingSnackbar />
       <ExecutionHighlighting />
-      <DisclaimerModal />
+      <TemplatePicker />
+      {/* Links keep the old notice: Welcome greets the first open of the editor, not a shared run or workflow. */}
+      {opened.kind !== 'local' && <DisclaimerModal />}
       <OpenNotices />
     </WorkflowBuilder.Root>
   );

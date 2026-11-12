@@ -1,0 +1,21 @@
+.button {
+  position: fixed;
+  right: 1.5rem;
+  bottom: 2.5rem;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.5rem;
+  height: 2.5rem;
+  border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
+  border-radius: 50%;
+  background: var(--wb-sdk-app-bar-background);
+  color: var(--wb-ds-ui-text-subtle-default);
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+.button:hover {
+  color: var(--wb-ds-colors-acc1-500);
+}

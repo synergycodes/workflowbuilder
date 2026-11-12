@@ -3,8 +3,7 @@ import { useState } from 'react';
 
 import styles from './disclaimer-modal.module.css';
 
-import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
-import { useExecutionStore } from '../../stores/use-execution-store';
+import { AboutButton } from '../about-button/about-button';
 
 // Versioned: a new key shows changed text once to visitors who dismissed the old one.
 const STORAGE_KEY = 'ai-studio:disclaimer-acknowledged-v2';
@@ -19,8 +18,6 @@ function hasAcknowledged(): boolean {
 
 export function DisclaimerModal() {
   const [isOpen, setIsOpen] = useState(() => !hasAcknowledged());
-  const isLogVisible = useExecutionStore((state) => state.events.length > 0 || state.status !== 'idle');
-  const { isPanelExpanded } = useRightPanelAnchor();
 
   function dismiss() {
     try {
@@ -31,15 +28,7 @@ export function DisclaimerModal() {
     setIsOpen(false);
   }
 
-  if (!isOpen) {
-    if (isLogVisible || isPanelExpanded) return null;
-
-    return (
-      <button className={styles['reopen']} onClick={() => setIsOpen(true)} aria-label="About this demo">
-        <Info size={20} weight="bold" />
-      </button>
-    );
-  }
+  if (!isOpen) return <AboutButton onClick={() => setIsOpen(true)} />;
 
   return (
     <div className={styles['overlay']} role="presentation" onClick={dismiss}>

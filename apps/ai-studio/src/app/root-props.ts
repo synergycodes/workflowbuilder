@@ -3,11 +3,13 @@ import type {
   OnSaveExternal,
   WorkflowBuilderEdge,
   WorkflowBuilderIntegration,
+  WorkflowBuilderLoadContext,
   WorkflowBuilderNode,
   WorkflowBuilderPlugin,
 } from '@workflowbuilder/sdk';
 
 import { saveDraftOf } from '../adapters/save-workflow-draft';
+import { onLinkLoad, onLocalLoad } from '../components/welcome/open-on-load';
 import { supportTriageFlow } from '../data/support-triage-flow';
 import { plugin as aiStudioFeaturesPlugin } from '../plugin';
 import { plugin as undoRedoPlugin } from '../plugins/undo-redo/plugin-exports';
@@ -23,7 +25,8 @@ export const neverSaves: OnSaveExternal = () =>
 const RUN_VIEW_INTEGRATION: WorkflowBuilderIntegration = { strategy: 'props', onDataSave: neverSaves, autoSave: false };
 const PLUGINS: WorkflowBuilderPlugin[] = [aiStudioFeaturesPlugin, undoRedoPlugin];
 // Deliberately, for now: no Delete button in the properties panel for any selection; deleting stays on the keys.
-const EDITOR_CONTROLS: BuiltInControls = { delete: false };
+// The palette's Templates button is AI Studio's own (TemplatePicker), so the SDK's goes.
+const EDITOR_CONTROLS: BuiltInControls = { delete: false, templates: false };
 // A run is never saved (`neverSaves` refuses the editor's save), so the Save button goes too.
 const RUN_VIEW_CONTROLS: BuiltInControls = { ...EDITOR_CONTROLS, save: false };
 
@@ -34,6 +37,7 @@ type RootProps = {
   integration?: WorkflowBuilderIntegration;
   builtInControls: BuiltInControls;
   plugins: WorkflowBuilderPlugin[];
+  onLoad: (context: WorkflowBuilderLoadContext) => void;
 };
 
 const propsBySource = new WeakMap<OpenedSource, RootProps>();
@@ -56,6 +60,7 @@ function buildRootProps(opened: OpenedSource): RootProps {
         initialEdges: flagship.diagram.edges,
         builtInControls: EDITOR_CONTROLS,
         plugins: PLUGINS,
+        onLoad: onLocalLoad,
       };
     }
     case 'workflow': {
@@ -66,6 +71,7 @@ function buildRootProps(opened: OpenedSource): RootProps {
         integration: { strategy: 'props', onDataSave: saveDraftOf(opened.workflowId) },
         builtInControls: EDITOR_CONTROLS,
         plugins: PLUGINS,
+        onLoad: onLinkLoad,
       };
     }
     case 'execution': {
@@ -76,6 +82,7 @@ function buildRootProps(opened: OpenedSource): RootProps {
         integration: RUN_VIEW_INTEGRATION,
         builtInControls: RUN_VIEW_CONTROLS,
         plugins: PLUGINS,
+        onLoad: onLinkLoad,
       };
     }
   }
