@@ -1,0 +1,70 @@
+/* Welcome is wider than Modal Large and stops at 80 % of the viewport, set through the library's public variable. */
+.modal {
+  --wb-public-modal-large-width: min(49.75rem, 100vw - 2.5rem);
+
+  max-height: 80dvh;
+}
+
+/* The library centres the Modal content, and a centred box that overflows loses its top to the scroll. */
+.modal :has(> .body) {
+  justify-content: flex-start;
+}
+
+.header-icon {
+  width: var(--wb-ds-size-250);
+  height: var(--wb-ds-size-250);
+}
+
+.body {
+  display: flex;
+  flex-direction: column;
+  flex-shrink: 0;
+  gap: var(--wb-ds-space-250);
+  align-self: stretch;
+}
+
+.intro,
+.start {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wb-ds-space-150);
+}
+
+.lead {
+  margin: 0;
+  color: var(--wb-ds-ui-text-subtle-default);
+
+  strong {
+    color: var(--wb-ds-ui-text-default);
+  }
+}
+
+.subheading {
+  margin: 0;
+  color: var(--wb-ds-ui-text-default);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--wb-ds-space-175);
+}
+
+@media (width < 760px) {
+  .grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (width < 480px) {
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Touch tiles wrap their text in full; equal rows keep the grid even when one title wraps. */
+@media (hover: none) and (pointer: coarse) {
+  .grid {
+    grid-auto-rows: 1fr;
+  }
+}

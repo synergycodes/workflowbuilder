@@ -25,6 +25,7 @@ A complete, runnable AI workflow product built on top of the Workflow Builder SD
 - Decide selects the waiting node through the SDK's `useSetSelection`, replacing the selection, and moves the focus to its decision form. Neither the footer nor the snackbar shows while the run is `cancelling`, since the backend refuses a decision then, and the snackbar offers no Decide for a node the canvas lacks. A closed snackbar stays closed for that wait until the page reloads.
 - A run survives a reload. Run writes the run's id into the URL, so a reload opens that run: its executed graph, read-only, with the stream reopened and the snapshot rebuilding markers and log. A closed tab comes back only through the browser's history, which restores the URL. [Stopping and resetting a run](#stopping-and-resetting-a-run) covers Stop, Reset and the limits.
 - A URL opens a stored workflow or a run: `?workflowId=` to edit a workflow, `?executionId=` to watch or replay a run. See [Opening a workflow or a run from the URL](#opening-a-workflow-or-a-run-from-the-url).
+- A template picker in two forms: Welcome on the first open of AI Studio, and Select a template from the Templates button in the left panel, the only way back to the templates. It replaces the SDK's own template selector. Rules: [src/components/welcome/README.md](src/components/welcome/README.md).
 
 This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothing else.
 
@@ -79,7 +80,7 @@ So after every action the canvas shows what a reload of the current URL would sh
 
 Known limits:
 
-- Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it. The welcome disclaimer tells visitors so and asks them not to enter personal or confidential data.
+- Whoever has a run's URL can do what its owner can: read it, including the inputs, prompts and answers; stop it; decide for it. The Welcome modal on the first open, and the notice card in run and workflow links, tell visitors so and ask them not to enter personal data.
 - A reload after the run finished still shows it, read-only, until Reset, because the URL still names it.
 - The run view is read-only through the run lock only. The editor header's read-only switch lifts it, and edits made then are saved nowhere.
 - Autosave and the save on close keep a workflow's edits, so a reload no longer discards them; undo is the only way back.

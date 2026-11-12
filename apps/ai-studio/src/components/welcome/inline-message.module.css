@@ -1,0 +1,39 @@
+.message {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--wb-ds-space-100);
+  padding: var(--wb-ds-space-125) var(--wb-ds-space-150);
+  border-radius: var(--wb-ds-radius-100);
+  background: var(--inline-message-background);
+}
+
+.info {
+  --inline-message-background: var(--wb-ds-ui-bg-inset-subtle);
+  --inline-message-icon: var(--wb-ds-ui-icon-subtle-default);
+  --inline-message-text: var(--wb-ds-ui-text-subtle-default);
+}
+
+.warning {
+  /* Provisional until the token export carries wb/ui/bg/warning-subtle (DS 1.1.34): remove then. */
+  --inline-message-background: var(--wb-ds-colors-orange-500-10);
+  --inline-message-icon: var(--wb-ds-ui-icon-warning-default);
+  --inline-message-text: var(--wb-ds-ui-text-warning-default);
+}
+
+.icon {
+  flex-shrink: 0;
+  width: var(--wb-ds-size-200);
+  height: var(--wb-ds-size-200);
+  color: var(--inline-message-icon);
+}
+
+.text {
+  flex: 1;
+  min-width: 0;
+  margin: 0;
+  color: var(--inline-message-text);
+
+  strong {
+    color: var(--wb-ds-ui-text-default);
+  }
+}

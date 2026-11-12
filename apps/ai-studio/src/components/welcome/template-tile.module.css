@@ -1,0 +1,188 @@
+.tile {
+  --template-tile-stroke: var(--wb-ds-ui-stroke-subtle);
+  --template-tile-ring: transparent;
+
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--wb-ds-space-175);
+  min-width: 0;
+  margin: 0;
+  padding: var(--wb-ds-space-175);
+  border: var(--wb-ds-size-12) solid var(--template-tile-stroke);
+  border-radius: var(--wb-ds-radius-150);
+  background: var(--wb-ds-ui-bg-base);
+  box-shadow: 0 0 0 var(--wb-ds-space-37) var(--template-tile-ring);
+  color: var(--wb-ds-ui-text-default);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  outline: none;
+
+  &,
+  * {
+    box-sizing: border-box;
+  }
+}
+
+.recommended,
+.tile:active {
+  --template-tile-stroke: var(--wb-ds-ui-stroke-highlight);
+  --template-tile-ring: var(--wb-ds-ui-brand-fill-subtle);
+}
+
+/* Touch screens keep the last tap as :hover, so hover styles only apply to a real pointer. */
+@media (hover: hover) {
+  .tile:hover {
+    --template-tile-stroke: var(--wb-ds-ui-stroke-highlight);
+    --template-tile-ring: var(--wb-ds-ui-brand-fill-subtle);
+  }
+}
+
+.tile:focus-visible {
+  --template-tile-stroke: var(--wb-ds-ui-stroke-highlight);
+  --template-tile-ring: var(--wb-ds-canvas-node-focus-ring-active);
+}
+
+.empty {
+  --template-tile-empty-icon-stroke: var(--wb-ds-ui-stroke-subtle);
+
+  border-style: dashed;
+}
+
+.top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: var(--wb-ds-space-100);
+}
+
+.icon-tile {
+  display: flex;
+  flex-shrink: 0;
+  padding: var(--wb-ds-canvas-node-head-icon);
+  border-radius: var(--wb-ds-canvas-node-head-icon-radius);
+  background: var(--template-tile-icon-background);
+  color: var(--template-tile-icon-color);
+
+  svg {
+    width: var(--wb-ds-size-225);
+    height: var(--wb-ds-size-225);
+  }
+}
+
+.action {
+  --template-tile-icon-background: var(--wb-ds-colors-acc1-500-10);
+  --template-tile-icon-color: var(--wb-ds-colors-acc1-700);
+}
+
+.logic {
+  --template-tile-icon-background: var(--wb-ds-colors-acc3-500-10);
+  --template-tile-icon-color: var(--wb-ds-colors-acc3-700);
+}
+
+.human {
+  --template-tile-icon-background: var(--wb-ds-colors-acc4-500-10);
+  --template-tile-icon-color: var(--wb-ds-colors-acc4-700);
+}
+
+.trigger {
+  --template-tile-icon-background: var(--wb-ds-colors-acc5-500-10);
+  --template-tile-icon-color: var(--wb-ds-colors-acc5-700);
+}
+
+html[data-theme='dark'] {
+  .action {
+    --template-tile-icon-background: var(--wb-ds-colors-acc1-500-20);
+    --template-tile-icon-color: var(--wb-ds-colors-acc1-400);
+  }
+
+  .logic {
+    --template-tile-icon-background: var(--wb-ds-colors-acc3-500-20);
+    --template-tile-icon-color: var(--wb-ds-colors-acc3-400);
+  }
+
+  .human {
+    --template-tile-icon-background: var(--wb-ds-colors-acc4-500-20);
+    --template-tile-icon-color: var(--wb-ds-colors-acc4-400);
+  }
+
+  .trigger {
+    --template-tile-icon-background: var(--wb-ds-colors-acc5-500-20);
+    --template-tile-icon-color: var(--wb-ds-colors-acc5-400);
+  }
+}
+
+.empty-icon {
+  --template-tile-icon-background: var(--wb-ds-ui-bg-base);
+  --template-tile-icon-color: var(--wb-ds-ui-icon-subtle-default);
+
+  box-shadow: inset 0 0 0 var(--wb-ds-size-12) var(--template-tile-empty-icon-stroke);
+  border-radius: var(--wb-ds-radius-100);
+}
+
+@media (hover: hover) {
+  .empty:hover .empty-icon {
+    --template-tile-empty-icon-stroke: var(--wb-ds-ui-stroke-highlight);
+    --template-tile-icon-color: var(--wb-ds-ui-icon-action-default);
+  }
+}
+
+.badge {
+  /* Provisional until the token export carries wb/components/badge/* (DS 1.1.35): remove then. */
+  --template-tile-badge-background: var(--wb-ds-colors-acc1-500-10);
+  --template-tile-badge-text: var(--wb-ds-colors-acc1-500);
+
+  display: inline-flex;
+  flex-shrink: 0;
+  align-items: center;
+  min-height: var(--wb-ds-size-200);
+  padding: var(--wb-ds-space-25) var(--wb-ds-space-75);
+  border-radius: var(--wb-ds-radius-50);
+  background: var(--template-tile-badge-background);
+  color: var(--template-tile-badge-text);
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+html[data-theme='dark'] .badge {
+  --template-tile-badge-text: var(--wb-ds-colors-acc1-200);
+}
+
+.text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--wb-ds-space-75);
+  min-width: 0;
+}
+
+.title {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* The description box is always two lines high, so a short one keeps the grid even. */
+.description {
+  display: -webkit-box;
+  min-height: 2lh;
+  overflow: hidden;
+  color: var(--wb-ds-ui-text-subtle-default);
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+}
+
+/* Touch has no hover to reveal cut text, so it wraps in full (the grid evens the heights out). */
+@media (hover: none) and (pointer: coarse) {
+  .title {
+    white-space: normal;
+  }
+
+  .description {
+    display: block;
+    -webkit-line-clamp: unset;
+    line-clamp: unset;
+  }
+}
