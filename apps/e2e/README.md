@@ -94,8 +94,8 @@ Fixtures (`src/fixtures.ts`):
 | `backend` | `execution(id)`: the stored run, `GET /api/executions/:id`                                           |
 
 Helpers (`src/studio.ts`) are plain functions over the page, named after what the user does or sees: `pickTemplate`,
-`setTriggerInput`, `startRun`, `runStatus`, `logRow`, `openDecision`, `decisionField`, `decide`, `canvasNode`,
-`propertiesPanel`, `executionLog`. Add one when a second test needs the same step.
+`setTriggerInput`, `runButton`, `startRun`, `runStatus`, `logRow`, `openDecision`, `decisionField`, `decide`,
+`reasonDialog`, `canvasNode`, `propertiesPanel`, `executionLog`. Add one when a second test needs the same step.
 
 Rules:
 
@@ -105,12 +105,16 @@ Rules:
 - Assert a node's state in its Execution log row: the marker on the canvas node is an icon without text.
 - Expected values come from the documented behaviour (`apps/ai-studio/README.md`, `apps/backend/README.md`).
 - See the test red once before trusting it: weaken the behaviour it protects, watch it fail on its assertion, restore.
+- Read the stored run with `expect.poll(() => backend.execution(id))`. The status chip follows the run's last event,
+  and the worker stores that event before it writes the row's status, so the row can lag the UI for a moment.
 
-Three places where the app gives no role or name to hold on to, and what the helpers do instead:
+Four places where the app gives no role or name to hold on to, and what the helpers do instead:
 
 - The run's status chip is the element after the "Execution log" toggle (`runStatus`).
 - The decision form's field titles are not labels of their controls; `decisionField` matches the two through the
   wrapper they share.
+- The reason dialog's textarea is not labelled by its "Rejection reason" title. It is the dialog's only textbox, so a
+  test takes it by role inside `reasonDialog` and asserts the title beside it.
 - A text field of the properties panel writes to the diagram when it loses focus, a few milliseconds later, and Run
   reads the diagram at the click. `setTriggerInput` blurs the field, and a test then asserts that the trigger's
   log row shows its marker.

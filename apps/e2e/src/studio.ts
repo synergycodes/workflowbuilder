@@ -40,9 +40,13 @@ export async function setTriggerInput(page: Page, nodeId: string, input: string)
   await field.blur();
 }
 
+export function runButton(page: Page): Locator {
+  return page.getByRole('button', { name: 'Run', exact: true });
+}
+
 /** Clicks Run and returns the id of the run the backend started. */
 export async function startRun(page: Page): Promise<string> {
-  await page.getByRole('button', { name: 'Run', exact: true }).click();
+  await runButton(page).click();
   await page.waitForURL(/[?&]executionId=/);
   return new URL(page.url()).searchParams.get('executionId')!;
 }
@@ -66,4 +70,9 @@ export function decisionField(form: Locator, title: string): Locator {
 /** Clicks one of the decision's action buttons: 'Approve', 'Escalate…', 'Reject…'. */
 export async function decide(page: Page, action: string) {
   await propertiesPanel(page).getByRole('button', { name: action, exact: true }).click();
+}
+
+/** The dialog an action with a required reason opens, titled with the action's label: 'Reject', 'Escalate'. */
+export function reasonDialog(page: Page, actionLabel: string): Locator {
+  return page.getByRole('dialog', { name: actionLabel, exact: true });
 }
