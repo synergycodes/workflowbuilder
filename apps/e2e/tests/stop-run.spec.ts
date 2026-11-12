@@ -4,6 +4,7 @@ import { logRow, pickTemplate, runButton, runStatus, setTriggerInput, startRun }
 test('Stop cancels a running run before it reaches the decision, and Reset gives the canvas back', async ({
   studio: page,
   marker,
+  llm,
   backend,
 }) => {
   await pickTemplate(page, 'Refund Review');
@@ -12,6 +13,8 @@ test('Stop cancels a running run before it reaches the decision, and Reset gives
   const executionId = await startRun(page);
   await expect(runStatus(page)).toHaveText('Running');
   await expect(logRow(page, 'draft-1', 'Started')).toBeVisible();
+  // Without the held model call the draft finishes at once and Stop only wins by luck.
+  await expect.poll(() => llm.requests()).toHaveLength(1);
 
   await page.getByRole('button', { name: 'Stop', exact: true }).click();
 
