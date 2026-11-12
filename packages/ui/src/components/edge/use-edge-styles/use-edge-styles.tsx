@@ -1,4 +1,4 @@
-import { type CSSProperties, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import './use-edge-styles.css';
 
@@ -6,14 +6,14 @@ import { EdgeLineType, EdgeRunState, EdgeState } from '../types';
 
 export type UseEdgeStyleParams = {
   /**
-   * The visual state of the edge. `disabled` wins over every other input.
+   * The visual state of the edge. `disabled` wins the colour over every other input.
    * @default 'default'
    */
   state?: EdgeState;
 
   /**
    * Whether the edge is currently hovered.
-   * When true, applies hover color on top of the state styles.
+   * When true, applies the hover color unless the edge is selected, temporary, disabled or has a `runState`.
    * @default false
    */
   isHovered?: boolean;
@@ -29,6 +29,19 @@ export type UseEdgeStyleParams = {
    * @default 'solid'
    */
   lineType?: EdgeLineType;
+};
+
+/**
+ * Style returned by {@link useEdgeStyle}, ready to spread on an SVG path's `style`.
+ *
+ * @category Edge
+ */
+export type EdgeStyle = {
+  stroke: string;
+  strokeWidth: string;
+  transition: string;
+  strokeDasharray?: string;
+  animation?: string;
 };
 
 const RUN_STATE_COLOR: Record<EdgeRunState, string> = {
@@ -51,7 +64,7 @@ export function useEdgeStyle({
   isHovered = false,
   runState,
   lineType = 'solid',
-}: UseEdgeStyleParams): CSSProperties {
+}: UseEdgeStyleParams): EdgeStyle {
   return useMemo(() => {
     const strokeCssVariable =
       state === 'disabled'
@@ -64,7 +77,7 @@ export function useEdgeStyle({
               ? '--wb-public-edge-color-hover'
               : '--wb-public-edge-color';
 
-    const style: CSSProperties = {
+    const style: EdgeStyle = {
       stroke: `var(${strokeCssVariable})`,
       strokeWidth: 'var(--wb-public-edge-stroke-width)',
       transition: isHovered && !runState ? 'none' : 'stroke var(--wb-public-transition)',
