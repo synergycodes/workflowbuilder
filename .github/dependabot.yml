@@ -1,0 +1,153 @@
+# Version updates run every Monday. Security updates reuse these entries, but only once Dependabot
+# alerts and security updates are switched on in the repository settings; this file cannot do that.
+version: 2
+updates:
+  # The pnpm workspace: root, apps/*, packages/*, the catalog in pnpm-workspace.yaml and the lockfile.
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Warsaw
+    cooldown:
+      default-days: 7
+    # Raise the floor, not only the lockfile, so a security fix also reaches the published
+    # ranges of @workflowbuilder/sdk, ui and temporal.
+    versioning-strategy: increase
+    open-pull-requests-limit: 10
+    commit-message:
+      prefix: chore
+      include: scope
+    # A full first run exceeded Dependabot's 55-minute job limit, so skip non-coupled majors
+    # and take only patches of development dependencies. allow update-types limits version
+    # updates only; security updates still cover every dependency.
+    allow:
+      - dependency-type: production
+        update-types: ['version-update:semver-minor', 'version-update:semver-patch']
+      - dependency-type: development
+        update-types: ['version-update:semver-patch']
+      - dependency-name: 'react'
+        dependency-type: direct
+      - dependency-name: 'react-dom'
+        dependency-type: direct
+      - dependency-name: 'react-is'
+        dependency-type: direct
+      - dependency-name: '@types/react*'
+        dependency-type: direct
+      - dependency-name: '@temporalio/*'
+        dependency-type: direct
+      - dependency-name: 'ai'
+        dependency-type: direct
+      - dependency-name: '@ai-sdk/*'
+        dependency-type: direct
+      # These ship in @workflowbuilder/ui even though listed as devDependencies.
+      - dependency-name: 'react-day-picker'
+        update-types: ['version-update:semver-minor', 'version-update:semver-patch']
+      - dependency-name: '@fontsource/*'
+        update-types: ['version-update:semver-minor', 'version-update:semver-patch']
+    ignore:
+      # Follows the Node line pinned in engines.node, which is bumped by hand.
+      - dependency-name: '@types/node'
+        update-types: ['version-update:semver-major', 'version-update:semver-minor']
+    groups:
+      # react, react-dom and react-is must share one version (React error #527); the types follow that line.
+      react:
+        patterns: ['react', 'react-dom', 'react-is', '@types/react', '@types/react-dom']
+      # One version across @workflowbuilder/temporal and both reference apps.
+      temporal:
+        patterns: ['@temporalio/*']
+      # The @ai-sdk/openai-compatible major is tied to the ai major.
+      ai-sdk:
+        patterns: ['ai', '@ai-sdk/*']
+      # Shipped inside @workflowbuilder/ui (and so the SDK) even where listed as devDependencies.
+      ui-bundled:
+        update-types: ['minor', 'patch']
+        patterns: ['date-fns', 'react-day-picker', 'clsx', '@fontsource/*']
+      development-dependencies:
+        dependency-type: development
+        update-types: ['patch']
+        patterns: ['*']
+        # Own PRs: a Base UI bump needs a pass over overlay transitions, React Flow drives the canvas.
+        exclude-patterns: ['@base-ui/react', '@xyflow/react']
+      production-dependencies:
+        dependency-type: production
+        update-types: ['minor', 'patch']
+        patterns: ['*']
+        exclude-patterns: ['@base-ui/react', '@xyflow/react']
+
+  # Standalone examples with their own package-lock.json, outside the pnpm workspace.
+  - package-ecosystem: npm
+    directories:
+      - '/examples/**/*'
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Warsaw
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    groups:
+      react:
+        patterns: ['react', 'react-dom', '@types/react', '@types/react-dom']
+      # One version for every @temporalio/* package, inside the peer range of @workflowbuilder/temporal.
+      temporal:
+        patterns: ['@temporalio/*']
+      minor-and-patch:
+        update-types: ['minor', 'patch']
+        patterns: ['*']
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Warsaw
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      github-actions:
+        patterns: ['*']
+
+  # apps/demo/Dockerfile is left out: it tracks the rolling nginx:mainline-alpine tag.
+  - package-ecosystem: docker
+    directory: /deploy/ai-studio
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Warsaw
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      # engineStrict ties this FROM to engines.node and useNodeVersion, so Node moves by hand in one commit.
+      - dependency-name: node
+
+  - package-ecosystem: docker-compose
+    directories:
+      - /apps/backend
+      - /deploy/ai-studio
+    schedule:
+      interval: weekly
+      day: monday
+      time: '06:00'
+      timezone: Europe/Warsaw
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: chore
+      include: scope
+    ignore:
+      # A new Postgres major cannot open the existing data volume without a dump and restore.
+      - dependency-name: postgres
+        update-types: ['version-update:semver-major']

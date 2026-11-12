@@ -124,6 +124,8 @@ This part Claude (or any contributor) handles per change — not the maintainer.
 
 The changeset accumulates in `.changeset/` on `main` until that package's next release.
 
+Dependabot pull requests need the same changeset, and Dependabot cannot write it. Judge by the published `dist/`, not by the manifest section. A bump changes what consumers get when it moves a published package's `dependencies` or `peerDependencies` (directly or through a `catalog:` entry in `pnpm-workspace.yaml`), or a package its build bundles. `packages/ui` bundles `date-fns`, `react-day-picker` and `clsx` and ships the `@fontsource/*` fonts, all listed in its `devDependencies`, and the SDK bundles `@workflowbuilder/ui`, so a bump there needs changesets for both. The reviewer adds the changeset as the last commit before merging: once anyone else pushes to a Dependabot branch, Dependabot stops rebasing it. A bump that reaches no published `dist/` needs none.
+
 ## Release procedure (maintainer)
 
 Steps 1–6 are the human-driven path; step 7 is fully automated.
