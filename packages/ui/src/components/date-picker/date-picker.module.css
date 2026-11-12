@@ -10,6 +10,10 @@
       border-color: var(--wb-public-input-root-border-color-focus);
     }
 
+    &[data-state='default']:not(:disabled):not([data-disabled]):not([aria-expanded='true']):hover {
+      border-color: var(--wb-public-input-root-border-color-hover);
+    }
+
     &.container--error {
       background-color: var(--wb-public-input-root-background-color-critical);
       border-color: var(--wb-public-input-root-border-color-critical);

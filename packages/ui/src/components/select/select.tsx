@@ -113,7 +113,7 @@ export function Select({
   const triggerClassName = clsx(
     selectButtonStyles['container'],
     {
-      [selectButtonStyles['container--error']]: error,
+      [selectButtonStyles['container--error']]: fieldState === 'critical',
     },
     inputFontStyles[size],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
