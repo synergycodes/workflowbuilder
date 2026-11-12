@@ -40,7 +40,7 @@ export function EdgeRunPath({ props, component: Path, children }: WorkflowBuilde
     edgeRunState(state.nodeStates[props.source], state.nodeStates[props.target], state.status),
   );
   const sourceLineType = useEdgeLineType(props.source);
-  const lineType = props.lineType === 'dashed' ? 'dashed' : sourceLineType;
+  const lineType = props.lineType ?? sourceLineType;
   if (!runState && lineType === (props.lineType ?? 'solid')) return children;
 
   return <Path {...props} runState={runState} lineType={lineType} />;

@@ -3,10 +3,12 @@ import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
+import { decisionPaletteItem } from '../../nodes/decision';
+import { triggerPaletteItem } from '../../nodes/trigger';
 import { resetExecution, setExecutionStarted, useExecutionStore } from '../../stores/use-execution-store';
 import { EdgeRunPath } from './edge-run-state';
 
-const nodeTypes: Record<string, string> = { trigger: 'ai-studio/trigger', branch: 'ai-studio/decision' };
+const nodeTypes: Record<string, string> = { trigger: triggerPaletteItem.type, branch: decisionPaletteItem.type };
 
 vi.mock('@xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@xyflow/react')>()),
