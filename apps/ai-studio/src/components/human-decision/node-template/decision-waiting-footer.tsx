@@ -1,4 +1,4 @@
-import { Icon, useSetSelection } from '@workflowbuilder/sdk';
+import { Icon, useSetSelection, useWorkflowBuilderActions } from '@workflowbuilder/sdk';
 import { Button } from '@workflowbuilder/ui';
 
 import styles from './human-decision-template.module.css';
@@ -17,13 +17,16 @@ export function DecisionWaitingFooter({ nodeId, nodeLabel }: Props) {
     (state) => state.nodeStates[nodeId]?.status === 'waiting' && isDecidable(state.status),
   );
   const setSelection = useSetSelection();
+  const { setPropertiesPanelOpen } = useWorkflowBuilderActions();
 
   if (!isAwaitingDecision) {
     return null;
   }
 
+  // The form lives in the properties panel, which the run start or the header toggle may have collapsed.
   const decide = () => {
     if (setSelection({ nodeIds: [nodeId] })) {
+      setPropertiesPanelOpen(true);
       requestDecisionFocus(nodeId);
     }
   };

@@ -1,5 +1,4 @@
 import { useStore } from '@workflowbuilder/sdk';
-import { type Node, ReactFlowProvider, type ReactFlowState, useStoreApi } from '@xyflow/react';
 import { StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
@@ -15,39 +14,30 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
-const isLibraryOpen = () => useStore.getState().isPaletteOpen;
+const panels = () => {
+  const { isPaletteOpen, isPropertiesPanelOpen } = useStore.getState();
+  return { library: isPaletteOpen, properties: isPropertiesPanelOpen };
+};
+const openLibrary = (open: boolean) => act(() => useStore.getState().setPaletteOpen(open));
+const openProperties = (open: boolean) => act(() => useStore.getState().setPropertiesPanelOpen(open));
+const selectedInSdk = () => useStore.getState().selectedNodesIds;
 const startRun = (id = 'exec-1') => act(() => setExecutionStarted(id, `/api/executions/${id}/stream`));
+const reset = () => act(() => resetExecution());
+
+function Probe() {
+  useRunCollapsesSidePanels();
+  return null;
+}
 
 describe('useRunCollapsesSidePanels', () => {
   let root: ReturnType<typeof createRoot>;
-  let reactFlowStore: { getState: () => ReactFlowState } | undefined;
-  let flowNodes: Node[];
-
-  const selectedOnCanvas = () =>
-    reactFlowStore
-      ?.getState()
-      .nodes.filter((node) => node.selected)
-      .map((node) => node.id);
-  const clickNode = (id: string) =>
-    act(() => {
-      reactFlowStore?.getState().unselectNodesAndEdges();
-      reactFlowStore?.getState().triggerNodeChanges([{ id, type: 'select', selected: true }]);
-    });
-
-  function Probe() {
-    reactFlowStore = useStoreApi();
-    useRunCollapsesSidePanels();
-    return null;
-  }
 
   function mount() {
     root = createRoot(document.createElement('div'));
     act(() =>
       root.render(
         <StrictMode>
-          <ReactFlowProvider defaultNodes={flowNodes}>
-            <Probe />
-          </ReactFlowProvider>
+          <Probe />
         </StrictMode>,
       ),
     );
@@ -55,125 +45,96 @@ describe('useRunCollapsesSidePanels', () => {
 
   beforeEach(() => {
     resetExecution();
-    flowNodes = [
-      { id: 'ai', position: { x: 0, y: 0 }, data: {}, selected: true },
-      { id: 'email', position: { x: 300, y: 0 }, data: {} },
-    ];
-    useStore.getState().setPaletteOpen(true);
+    useStore.setState({ isPaletteOpen: true, isPropertiesPanelOpen: true, selectedNodesIds: ['ai'] });
   });
 
   afterEach(() => {
     act(() => root.unmount());
-    useStore.getState().setPaletteOpen(false);
+    useStore.setState({ isPaletteOpen: false, isPropertiesPanelOpen: true, selectedNodesIds: [] });
   });
 
   it('changes nothing while no run is shown', () => {
     mount();
 
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual(['ai']);
+    expect(panels()).toEqual({ library: true, properties: true });
+    expect(selectedInSdk()).toEqual(['ai']);
   });
 
-  it('collapses the library and clears the selection when a run starts', () => {
+  it('collapses both panels and keeps the selection when a run starts', () => {
     mount();
     startRun();
 
-    expect(isLibraryOpen()).toBe(false);
-    expect(selectedOnCanvas()).toEqual([]);
+    expect(panels()).toEqual({ library: false, properties: false });
+    expect(selectedInSdk()).toEqual(['ai']);
   });
 
   it('leaves panels the person reopened during the run open through later run events', () => {
     mount();
     startRun();
 
-    act(() => useStore.getState().setPaletteOpen(true));
-    clickNode('email');
+    openLibrary(true);
+    openProperties(true);
     act(() => applyEvent(nodeEvent('node_started', 'ai')));
     act(() => applyEvent(nodeEvent('node_waiting', 'ai')));
     act(() => applyEvent(event({ type: 'execution_completed', payload: undefined })));
 
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual(['email']);
+    expect(panels()).toEqual({ library: true, properties: true });
   });
 
-  it('brings the library and the selection back on Reset', () => {
+  it('brings both panels back on Reset', () => {
     mount();
     startRun();
-    act(() => resetExecution());
+    reset();
 
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual(['ai']);
+    expect(panels()).toEqual({ library: true, properties: true });
   });
 
   it('a second run before Reset keeps the panels from before the first run', () => {
     mount();
     startRun('exec-1');
     startRun('exec-2');
-    act(() => resetExecution());
+    reset();
 
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual(['ai']);
+    expect(panels()).toEqual({ library: true, properties: true });
   });
 
   it('collapses for a run already in the store when the hook mounts', () => {
     startRun();
     mount();
 
-    expect(isLibraryOpen()).toBe(false);
-    expect(selectedOnCanvas()).toEqual([]);
-  });
-
-  it('restores the library on Reset even when the node selected before the run is gone', () => {
-    mount();
-    startRun();
-    act(() => reactFlowStore?.getState().setNodes([{ id: 'email', position: { x: 300, y: 0 }, data: {} }]));
-    act(() => resetExecution());
-
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual([]);
+    expect(panels()).toEqual({ library: false, properties: false });
   });
 
   it('keeps what the person opened during the run open on Reset', () => {
-    act(() => useStore.getState().setPaletteOpen(false));
+    openLibrary(false);
+    openProperties(false);
     mount();
     startRun();
-    act(() => useStore.getState().setPaletteOpen(true));
-    clickNode('email');
-    act(() => resetExecution());
+    openLibrary(true);
+    openProperties(true);
+    reset();
 
-    expect(isLibraryOpen()).toBe(true);
-    expect(selectedOnCanvas()).toEqual(['email']);
+    expect(panels()).toEqual({ library: true, properties: true });
   });
 
-  it('keeps a library that was closed before the run closed on Reset', () => {
-    act(() => useStore.getState().setPaletteOpen(false));
+  it('keeps a panel that was closed before the run closed on Reset', () => {
+    openLibrary(false);
+    openProperties(false);
     mount();
     startRun();
-    act(() => resetExecution());
+    reset();
 
-    expect(isLibraryOpen()).toBe(false);
+    expect(panels()).toEqual({ library: false, properties: false });
   });
 
   it('a second Run and Reset bring back the panels from between the runs', () => {
     mount();
     startRun('exec-1');
-    act(() => resetExecution());
-    act(() => useStore.getState().setPaletteOpen(false));
-    clickNode('email');
+    reset();
+    openLibrary(false);
     startRun('exec-2');
-    act(() => resetExecution());
+    reset();
 
-    expect(isLibraryOpen()).toBe(false);
-    expect(selectedOnCanvas()).toEqual(['email']);
-  });
-
-  it('restores the selected nodes still on the canvas on Reset', () => {
-    flowNodes = flowNodes.map((node) => ({ ...node, selected: true }));
-    mount();
-    startRun();
-    act(() => reactFlowStore?.getState().setNodes([{ id: 'email', position: { x: 300, y: 0 }, data: {} }]));
-    act(() => resetExecution());
-
-    expect(selectedOnCanvas()).toEqual(['email']);
+    expect(panels()).toEqual({ library: false, properties: true });
   });
 });

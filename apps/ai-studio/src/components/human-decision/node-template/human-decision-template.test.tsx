@@ -1,3 +1,4 @@
+import { useStore } from '@workflowbuilder/sdk';
 import { type Node, ReactFlowProvider, type ReactFlowState, useStoreApi } from '@xyflow/react';
 import { type ReactNode, act } from 'react';
 import { createRoot } from 'react-dom/client';
@@ -281,7 +282,7 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(decideButton()).toBeUndefined();
   });
 
-  it('selects the node through React Flow on Decide, replacing the selection, and asks its form for the focus', () => {
+  it('on Decide selects the node through React Flow, replacing the selection, opens the properties panel and asks its form for the focus', () => {
     const nodes: Node[] = [
       { id: 'human-1', position: { x: 0, y: 0 }, data: {} },
       { id: 'other', position: { x: 300, y: 0 }, data: {}, selected: true },
@@ -300,6 +301,7 @@ describe('HumanDecisionNodeTemplate', () => {
       ),
     );
     parkOnHuman1();
+    useStore.getState().setPropertiesPanelOpen(false);
 
     act(() => decideButton()?.click());
 
@@ -309,6 +311,7 @@ describe('HumanDecisionNodeTemplate', () => {
         .nodes.filter((node) => node.selected)
         .map((node) => node.id),
     ).toEqual(['human-1']);
+    expect(useStore.getState().isPropertiesPanelOpen).toBe(true);
     expect(useExecutionStore.getState().decisionFocusRequest).toBe('human-1');
   });
 });

@@ -11,7 +11,6 @@ import { AiStudioControls } from '../components/controls/ai-studio-controls';
 import { DisclaimerModal } from '../components/disclaimer/disclaimer-modal';
 import { ExecutionHighlighting } from '../components/execution/highlighting';
 import { ExecutionLogPanel } from '../components/execution/log-panel';
-import { RunSidePanels } from '../components/execution/run-side-panels';
 import { decisionActionsRenderer } from '../components/human-decision/decision-actions/decision-actions-control';
 import { decisionFieldsRenderer } from '../components/human-decision/decision-fields/decision-fields-control';
 import { decisionFormRenderer } from '../components/human-decision/decision-form/decision-form-control';
@@ -60,7 +59,6 @@ export function App({ opened }: { opened: OpenedSource }) {
       <ExecutionLogPanel />
       <DecisionWaitingSnackbar />
       <ExecutionHighlighting />
-      <RunSidePanels />
       <DisclaimerModal />
       <OpenNotices />
     </WorkflowBuilder.Root>

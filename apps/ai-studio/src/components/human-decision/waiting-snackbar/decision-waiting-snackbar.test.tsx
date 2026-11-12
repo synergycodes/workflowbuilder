@@ -97,8 +97,9 @@ describe('DecisionWaitingSnackbar', () => {
     expect(open()).toHaveLength(0);
   });
 
-  it('names the waiting node, stays until it is closed, and on Decide selects the node and asks its form for the focus', () => {
+  it('names the waiting node, stays until it is closed, and on Decide selects the node, opens the properties panel and asks its form for the focus', () => {
     apply('node_waiting', 'human-1');
+    useStore.getState().setPropertiesPanelOpen(false);
 
     const snackbar = onlyOpen();
     expect(snackbar).toMatchObject({
@@ -116,6 +117,7 @@ describe('DecisionWaitingSnackbar', () => {
       .nodes.filter((node) => node.selected)
       .map((node) => node.id);
     expect(selected).toEqual(['human-1']);
+    expect(useStore.getState().isPropertiesPanelOpen).toBe(true);
     expect(useExecutionStore.getState().decisionFocusRequest).toBe('human-1');
   });
 
