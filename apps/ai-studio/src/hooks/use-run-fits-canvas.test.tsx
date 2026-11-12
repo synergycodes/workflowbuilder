@@ -1,12 +1,12 @@
 import { useStore } from '@workflowbuilder/sdk';
 import { StrictMode, act } from 'react';
 import { createRoot } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { executionEvent as event } from '../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../stores/use-execution-store';
 import { nodeEvent } from '../test/execution-history';
-import { useRunCollapsesSidePanels } from './use-run-collapses-side-panels';
+import { useRunFitsCanvas } from './use-run-fits-canvas';
 
 declare global {
   // eslint-disable-next-line no-var
@@ -24,12 +24,18 @@ const selectedInSdk = () => useStore.getState().selectedNodesIds;
 const startRun = (id = 'exec-1') => act(() => setExecutionStarted(id, `/api/executions/${id}/stream`));
 const reset = () => act(() => resetExecution());
 
+type ReactFlowInstance = NonNullable<ReturnType<typeof useStore.getState>['reactFlowInstance']>;
+const fitView = vi.fn();
+const reactFlowInstance = { fitView, getZoom: () => 1 } as unknown as ReactFlowInstance;
+const setReactFlowInstance = (instance: ReactFlowInstance | null) =>
+  act(() => useStore.setState({ reactFlowInstance: instance }));
+
 function Probe() {
-  useRunCollapsesSidePanels();
+  useRunFitsCanvas();
   return null;
 }
 
-describe('useRunCollapsesSidePanels', () => {
+describe('useRunFitsCanvas', () => {
   let root: ReturnType<typeof createRoot>;
 
   function mount() {
@@ -44,13 +50,30 @@ describe('useRunCollapsesSidePanels', () => {
   }
 
   beforeEach(() => {
+    // The SDK fits in the next frame; here the frame is now.
+    vi.stubGlobal('requestAnimationFrame', (callback: FrameRequestCallback) => {
+      callback(0);
+      return 0;
+    });
+    fitView.mockClear();
     resetExecution();
-    useStore.setState({ isPaletteOpen: true, isPropertiesPanelOpen: true, selectedNodesIds: ['ai'] });
+    useStore.setState({
+      isPaletteOpen: true,
+      isPropertiesPanelOpen: true,
+      selectedNodesIds: ['ai'],
+      reactFlowInstance,
+    });
   });
 
   afterEach(() => {
     act(() => root.unmount());
-    useStore.setState({ isPaletteOpen: false, isPropertiesPanelOpen: true, selectedNodesIds: [] });
+    useStore.setState({
+      isPaletteOpen: false,
+      isPropertiesPanelOpen: true,
+      selectedNodesIds: [],
+      reactFlowInstance: null,
+    });
+    vi.unstubAllGlobals();
   });
 
   it('changes nothing while no run is shown', () => {
@@ -58,14 +81,36 @@ describe('useRunCollapsesSidePanels', () => {
 
     expect(panels()).toEqual({ library: true, properties: true });
     expect(selectedInSdk()).toEqual(['ai']);
+    expect(fitView).not.toHaveBeenCalled();
   });
 
-  it('collapses both panels and keeps the selection when a run starts', () => {
+  it('collapses both panels, keeps the selection and fits the diagram when a run starts', () => {
     mount();
     startRun();
 
     expect(panels()).toEqual({ library: false, properties: false });
     expect(selectedInSdk()).toEqual(['ai']);
+    expect(fitView).toHaveBeenCalledTimes(1);
+  });
+
+  it('fits the diagram once the canvas is ready for a run opened before it', () => {
+    setReactFlowInstance(null);
+    startRun();
+    mount();
+    expect(fitView).not.toHaveBeenCalled();
+
+    setReactFlowInstance(reactFlowInstance);
+
+    expect(fitView).toHaveBeenCalledTimes(1);
+  });
+
+  it('fits the diagram for a second run, and not on Reset', () => {
+    mount();
+    startRun('exec-1');
+    startRun('exec-2');
+    reset();
+
+    expect(fitView).toHaveBeenCalledTimes(2);
   });
 
   it('leaves panels the person reopened during the run open through later run events', () => {
