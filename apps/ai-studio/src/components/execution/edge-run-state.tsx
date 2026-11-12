@@ -22,8 +22,8 @@ export function edgeRunState(
   run: RunStatus,
 ): EdgeRunState | undefined {
   if (run === 'idle') return undefined;
-  if (target?.status === 'running') return 'running';
   if (source?.status === 'skipped' || target?.status === 'skipped') return 'outOfRun';
+  if (target?.status === 'running') return 'running';
   if (source?.status === 'completed' && target && REACHED_TARGET_STATUSES.has(target.status)) return 'completed';
   if (!isRunAlive(run)) return 'outOfRun';
   return 'pending';

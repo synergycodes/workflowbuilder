@@ -11,7 +11,7 @@ describe('edgeRunState', () => {
   it.each<[string, Status, Status, RunStatus, string | undefined]>([
     ['no run draws the editing look', 'completed', 'running', 'idle', undefined],
     ['a running target', 'completed', 'running', 'running', 'running'],
-    ['a running target wins over a skipped source', 'skipped', 'running', 'running', 'running'],
+    ['a skipped source wins over a running target', 'skipped', 'running', 'running', 'outOfRun'],
     ['a skipped source', 'skipped', undefined, 'running', 'outOfRun'],
     ['a skipped target', 'completed', 'skipped', 'running', 'outOfRun'],
     ['a completed target', 'completed', 'completed', 'running', 'completed'],
@@ -43,5 +43,14 @@ describe('edgeRunState', () => {
     ['ErrorBranch to Cleanup', 'skipped', 'skipped', 'outOfRun'],
   ])('leaves the unused error branch of a healthy run out of the run: %s', (_, source, target, expected) => {
     expect(edgeRunState(node(source), node(target), 'running')).toBe(expected);
+  });
+
+  it.each<[string, Status, Status, RunStatus, string]>([
+    ['Review to running Send', 'completed', 'running', 'running', 'running'],
+    ['skipped Senior Review to running Send', 'skipped', 'running', 'running', 'outOfRun'],
+    ['Review to completed Send', 'completed', 'completed', 'completed', 'completed'],
+    ['skipped Senior Review to completed Send', 'skipped', 'completed', 'completed', 'outOfRun'],
+  ])('moves only along the taken input of a join: %s', (_, source, target, run, expected) => {
+    expect(edgeRunState(node(source), node(target), run)).toBe(expected);
   });
 });
