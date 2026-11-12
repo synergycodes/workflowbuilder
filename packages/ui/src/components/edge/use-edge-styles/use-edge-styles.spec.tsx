@@ -135,23 +135,19 @@ describe('use-edge-styles.css', () => {
 
   const defaults = rootDeclarations(false);
 
-  it.each([
-    ['--wb-public-edge-color', 'var(--wb-ds-canvas-edge-stroke-default)'],
-    ['--wb-public-edge-color-hover', 'var(--wb-ds-canvas-edge-stroke-hover)'],
-    ['--wb-public-edge-color-select', 'var(--wb-ds-canvas-edge-stroke-active)'],
-    ['--wb-public-edge-color-disabled', 'var(--wb-ds-canvas-edge-stroke-disabled)'],
-    ['--wb-public-edge-color-pending', 'var(--wb-ds-canvas-edge-stroke-default)'],
-    ['--wb-public-edge-color-running', 'var(--wb-ds-canvas-edge-stroke-active)'],
-    ['--wb-public-edge-color-completed', 'var(--wb-ds-canvas-edge-stroke-success)'],
-    ['--wb-public-edge-color-out-of-run', 'var(--wb-ds-canvas-edge-stroke-disabled)'],
-  ])('maps %s to a DS edge stroke token', (variable, value) => {
-    expect(defaults.get(variable)).toBe(value);
-  });
-
-  it('defines no edge colour variable outside the DS edge stroke tokens', () => {
+  it('maps every edge colour variable to a DS edge stroke token', () => {
     const colours = [...defaults].filter(([name]) => name.startsWith('--wb-public-edge-color'));
-    expect(colours).toHaveLength(8);
-    for (const [, value] of colours) expect(value).toMatch(/^var\(--wb-ds-canvas-edge-stroke-[a-z]+\)$/);
+
+    expect(Object.fromEntries(colours)).toEqual({
+      '--wb-public-edge-color': 'var(--wb-ds-canvas-edge-stroke-default)',
+      '--wb-public-edge-color-hover': 'var(--wb-ds-canvas-edge-stroke-hover)',
+      '--wb-public-edge-color-select': 'var(--wb-ds-canvas-edge-stroke-active)',
+      '--wb-public-edge-color-disabled': 'var(--wb-ds-canvas-edge-stroke-disabled)',
+      '--wb-public-edge-color-pending': 'var(--wb-ds-canvas-edge-stroke-default)',
+      '--wb-public-edge-color-running': 'var(--wb-ds-canvas-edge-stroke-active)',
+      '--wb-public-edge-color-completed': 'var(--wb-ds-canvas-edge-stroke-success)',
+      '--wb-public-edge-color-out-of-run': 'var(--wb-ds-canvas-edge-stroke-disabled)',
+    });
   });
 
   it('draws every edge 1 px through the DS regular stroke', () => {
