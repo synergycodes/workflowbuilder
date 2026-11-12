@@ -3,6 +3,28 @@
   --wb-public-edge-color-select: var(--wb-ds-canvas-edge-stroke-active);
   --wb-public-edge-color-hover: var(--wb-ds-canvas-edge-stroke-hover);
   --wb-public-edge-color: var(--wb-ds-canvas-edge-stroke-default);
-  --wb-public-edge-stroke-width-select: 3;
-  --wb-public-edge-stroke-width: 2;
+  --wb-public-edge-color-pending: var(--wb-ds-canvas-edge-stroke-default);
+  --wb-public-edge-color-running: var(--wb-ds-canvas-edge-stroke-active);
+  --wb-public-edge-color-completed: var(--wb-ds-canvas-edge-stroke-success);
+  --wb-public-edge-color-out-of-run: var(--wb-ds-canvas-edge-stroke-disabled);
+  --wb-public-edge-stroke-width: var(--wb-ds-canvas-edge-stroke-regular);
+  --wb-public-edge-dash-running: 6 5;
+  --wb-public-edge-dash-dashed: 5 4;
+  --wb-public-edge-animation-running: wb-edge-dash-flow 0.5s linear infinite;
+}
+
+/* The build layers only top-level :root rules; these need ui.base explicitly. */
+@layer ui.base {
+  /* -11 = one 6 5 period, so the dash travels toward the target (DS Links card). */
+  @keyframes wb-edge-dash-flow {
+    to {
+      stroke-dashoffset: -11;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --wb-public-edge-animation-running: none;
+    }
+  }
 }

@@ -23,9 +23,17 @@ wrapper elements or layout adjustments because absolute positioning removes it
 from normal document flow.
 
 `useEdgeStyle` returns an object of CSS properties (`stroke`, `strokeWidth`,
-`transition`) that you apply directly to the SVG path element representing an
-edge. The package also exports the `EdgeState` and `EdgeLabelSize` types and the
-`EDGE_LABEL_SIZES` constant.
+`transition`, plus `strokeDasharray` and `animation` when the line is dashed or
+running) that you apply directly to the SVG path element representing an edge.
+Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
+`completed`, `outOfRun`) to show where the edge stands in an execution run, and
+`lineType` (`solid`, `dashed`). The colour follows the first match of:
+`disabled`, then `runState`, then `selected` / `temporary`, then hover, then the
+default. Once `runState` is set, hover and selection no longer change the
+colour. `running` always draws an animated `6 5` dash, even on a `dashed` edge;
+otherwise `dashed` draws a static `5 4` dash. Every edge is 1 px wide. The
+package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType` and
+`EdgeLabelSize` types and the `EDGE_LABEL_SIZES` constant.
 
 ## Usage
 
@@ -84,6 +92,36 @@ function LabeledEdge({
 }
 ```
 
+To show an execution run, pass the edge's run state. A running edge gets the
+running colour and a dash that flows toward the target; under
+`prefers-reduced-motion: reduce` the dash stays still.
+
+```tsx
+import { type EdgeRunState, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, type Edge, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+
+type RunStateEdge = Edge<{ runState?: EdgeRunState }>;
+
+function RunEdge({
+  id,
+  data,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  sourcePosition,
+  targetPosition,
+}: EdgeProps<RunStateEdge>) {
+  const pathStyle = useEdgeStyle({ runState: data?.runState });
+
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+
+  return <BaseEdge id={id} path={edgePath} style={pathStyle} />;
+}
+
+// Rendered for an edge with data: { runState: 'running' }
+```
+
 ## EdgeLabel props
 
 `EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
@@ -93,13 +131,13 @@ function LabeledEdge({
 
 ## useEdgeStyle
 
-A hook that maps an edge's `state` and hover flag to the CSS properties for its
-SVG path.
+A hook that maps an edge's `state`, hover flag, `runState` and `lineType` to
+the CSS properties for its SVG path.
 
 <PropsTable slug="use-edge-style" />
 
-Returns `{ stroke, strokeWidth, transition }` ready to spread onto a path's
-`style`.
+Returns `{ stroke, strokeWidth, transition }`, plus `strokeDasharray` and
+`animation` when they apply, ready to spread onto a path's `style`.
 
 ## CSS variables
 
