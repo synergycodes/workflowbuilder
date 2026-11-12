@@ -22,6 +22,7 @@ Three onboarding paths (A installs from npm; B, C run the repo locally). README 
 | `pnpm build:temporal`            | -    | Build `@workflowbuilder/temporal` (also built on install via its `prepare`)                              |
 | `pnpm build`                     | -    | Build the demo app                                                                                       |
 | `pnpm test`                      | -    | Run tests in every workspace that defines a `test` script (`pnpm -r test`)                               |
+| `pnpm e2e`                       | -    | AI Studio browser tests on the full stack with a fake LLM. Needs `pnpm e2e:db:up` once (Postgres, 5442)  |
 | `pnpm check`                     | -    | Lint + typecheck + format + deploy Dockerfile air-gap guard                                              |
 | `pnpm release:version <pkg>`     | -    | Maintainer: consume one published package's changesets (computes `changeset version --ignore …`)         |
 | `pnpm release:tag <pkg>`         | -    | Maintainer: create and push `@workflowbuilder/<pkg>@X.Y.Z` from the tip of `release`. The push publishes |
@@ -60,6 +61,7 @@ apps/
   backend/          - Hono REST + SSE server, Drizzle/Postgres, Temporal client (port 3001)
   execution-worker/ - Temporal worker built on @workflowbuilder/temporal: node executors + DB store (task queue: workflow-execution)
   docs/             - Astro + Starlight documentation site
+  e2e/              - Playwright tests for AI Studio on the full stack, with a fake LLM (own ports and database; not in `pnpm test`)
   icons/            - Icon generation pipeline
   tools/            - @workflow-builder/tools workspace (decision-log collector, lint-staged config)
 packages/
@@ -94,6 +96,7 @@ Each workspace has its own context. Read the relevant file before extending a wo
 | `apps/ai-studio`               | `apps/ai-studio/README.md`                                                                                              |
 | `apps/backend`                 | `apps/backend/README.md`                                                                                                |
 | `apps/execution-worker`        | `apps/execution-worker/README.md`                                                                                       |
+| `apps/e2e`                     | `apps/e2e/README.md`                                                                                                    |
 
 ## Types & Aliases
 
@@ -124,6 +127,7 @@ Backend reads `DATABASE_URL` and `TEMPORAL_ADDRESS`; defaults work out of the bo
 | TypeScript | `pnpm typecheck`              | Per-workspace `tsconfig.json`                                                                           |
 | Knip       | `pnpm knip`                   | Detects unused exports/dependencies. Run by hand: not part of `pnpm check` or CI                        |
 | Vitest     | `pnpm test`                   | Runs in every workspace with a `test` script — recursive, so a new workspace is picked up automatically |
+| Playwright | `pnpm e2e`                    | AI Studio end to end; starts and stops its own stack. Not part of `pnpm test` or `pnpm check`           |
 | Full check | `pnpm check`                  | Run before PR                                                                                           |
 
 ### Code comments
