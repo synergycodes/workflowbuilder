@@ -12,13 +12,15 @@
     var(--wb-ds-space-200);
 
   --wb-public-modal-background: var(--wb-ds-ui-bg-base);
+  --wb-public-modal-border-color: var(--wb-ds-ui-stroke-default);
   --wb-public-modal-backdrop-background: var(--wb-ds-colors-gray-900);
   --wb-public-modal-header-background: var(--wb-ds-ui-bg-elevated);
   --wb-public-modal-header-border-color: var(--wb-ds-ui-stroke-default);
   --wb-public-modal-title-color: var(--wb-ds-ui-text-default);
   --wb-public-modal-description-color: var(--wb-ds-ui-text-subtle-default);
-  --wb-public-modal-icon-background: var(--wb-ds-ui-brand-fill);
-  --wb-public-modal-icon-color: var(--wb-ds-ui-text-onaccent-default);
+  --wb-public-modal-icon-background: transparent;
+  --wb-public-modal-icon-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-modal-icon-color: var(--wb-ds-ui-icon-default);
   --wb-public-modal-content-background: var(--wb-ds-ui-bg-base);
   --wb-public-modal-footer-border-color: var(--wb-ds-ui-stroke-default);
 
@@ -70,8 +72,10 @@
     z-index: 1001;
     display: flex;
     flex-direction: column;
+    box-sizing: border-box;
     max-height: calc(100dvh - var(--wb-ds-space-600));
     background-color: var(--wb-public-modal-background);
+    border: var(--wb-ds-size-12) solid var(--wb-public-modal-border-color);
     border-radius: var(--wb-public-modal-border-radius);
     width: var(--wb-public-modal-width);
     outline: none;
@@ -94,7 +98,9 @@
     padding: var(--wb-public-modal-padding);
     justify-content: space-between;
     align-items: center;
-    border-radius: var(--wb-public-modal-border-radius) var(--wb-public-modal-border-radius) 0 0;
+    /* Nested inside the dialog's border, so its corners follow the inner edge. */
+    border-radius: calc(var(--wb-public-modal-border-radius) - var(--wb-ds-size-12))
+      calc(var(--wb-public-modal-border-radius) - var(--wb-ds-size-12)) 0 0;
     border-bottom: var(--wb-ds-size-12) solid var(--wb-public-modal-header-border-color);
     background: var(--wb-public-modal-header-background);
   }
@@ -108,7 +114,6 @@
   .title-container {
     display: flex;
     flex-direction: column;
-    gap: var(--wb-ds-space-150);
   }
 
   .icon {
@@ -118,6 +123,7 @@
     align-items: center;
     border-radius: var(--wb-public-modal-icon-border-radius);
     background: var(--wb-public-modal-icon-background);
+    box-shadow: inset 0 0 0 var(--wb-ds-size-12) var(--wb-public-modal-icon-border-color);
     color: var(--wb-public-modal-icon-color);
   }
 

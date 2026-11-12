@@ -53,6 +53,11 @@ export type ModalProps = React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivEle
      * @default 'Close'
      */
     closeLabel?: string;
+    /**
+     * Element focused when the modal opens. By default the first focusable control gets focus, usually the close
+     * button; pass a ref to the modal itself for a dialog that opens without a click, so no focus ring shows.
+     */
+    initialFocus?: React.RefObject<HTMLElement | null>;
   };
 
 /**
@@ -71,6 +76,7 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
       open,
       onClose,
       closeLabel = 'Close',
+      initialFocus,
       className,
       ...rest
     },
@@ -90,12 +96,23 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
           {/* The popup is the dialog window itself, not a full-screen wrapper:
               Base UI closes on a press outside the popup, and a wrapper
               covering the viewport would swallow every backdrop click. */}
-          <Dialog.Popup className={clsx(styles['modal'], styles[size], className)} ref={ref} {...rest}>
+          <Dialog.Popup
+            className={clsx(styles['modal'], styles[size], className)}
+            ref={ref}
+            initialFocus={initialFocus}
+            {...rest}
+          >
             <div className={styles['header']}>
               <div className={styles['title-wrapper']}>
                 {icon && <div className={styles['icon']}>{icon}</div>}
                 <div className={styles['title-container']}>
-                  <Dialog.Title className={clsx(styles['title'], 'wb-text-title-l-emphasized')} render={<span />}>
+                  <Dialog.Title
+                    className={clsx(
+                      styles['title'],
+                      size === 'large' ? 'wb-text-title-l-emphasized' : 'wb-text-title-m-emphasized',
+                    )}
+                    render={<span />}
+                  >
                     {title}
                   </Dialog.Title>
                   {subtitle && (
@@ -105,7 +122,14 @@ export const Modal = forwardRef<HTMLDivElement, ModalProps>(
                   )}
                 </div>
               </div>
-              {onClose && <NavButton aria-label={closeLabel} onClick={onClose} prefixIcon={<X />} />}
+              {onClose && (
+                <NavButton
+                  aria-label={closeLabel}
+                  onClick={onClose}
+                  prefixIcon={<X />}
+                  size={size === 'large' ? 'l' : 'm'}
+                />
+              )}
             </div>
 
             {children && <div className={styles['content']}>{children}</div>}
