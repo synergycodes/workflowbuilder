@@ -207,6 +207,32 @@ Design decisions a reader of the code should know:
   items registered into one would have had nowhere to appear. `WorkflowMenuItem` adds items next
   to Export and Import instead. The component never shipped, so it gets no warning. The bullets
   above that mention the app bar's kebab menu describe the model before V3.
+- **The `editorHeader` Root prop is gone before 4.0; what only the host can do reaches the header
+  through supply components (Dominika Pacholec, 12.11.2026).** The V3 header added Clean up, Save
+  as PDF, a version chip and Publish through one Root prop of four callbacks and values. That was
+  a second way into the header beside this model: none of the four had a key, an action or state,
+  so a host could neither hide one nor rebuild it, and a plugin, which cannot set Root props,
+  could not supply any. The prop never shipped, so it gets no alias or warning.
+  - `EditorHeaderCleanUp`, `EditorHeaderSaveAsPdf`, `EditorHeaderVersion` and
+    `EditorHeaderPublish` render nothing and put their callback or value into the per-Root
+    registry (`header-supply.tsx`). Components and not a Root prop, so they work from the app tree
+    and from a plugin alike and leave with the Root; one per control, so a layout plugin and a PDF
+    plugin each supply only their own. Two of one kind: the one mounted last is in use, with a
+    warning, and the earlier one returns when it unmounts.
+  - The actions `cleanUp`, `saveAsPdf` and `publish` run the supply, and the built-in controls call
+    them. So `UiExtensionProvider` moved from `RootShell` up to `WorkflowBuilderRoot`, above
+    `RuntimeIntegrationWrapper`, where the actions are created; it is still one registry per
+    mount. `cleanUp` tracks and sets a changed direction before the host runs, and is read-only
+    guarded; `publish` runs only for a draft, so a rebuilt button cannot publish what the built-in
+    would refuse. The pending clean-up lives in the registry, so the split button, the ⋮ and a
+    host's own control see one busy state (`isCleanUpPending`).
+  - Every header part now has a key, `logo`, `folderName`, `workflowName`, `version`, `cleanUp`,
+    `saveAsPdf` and `publish` included, so the cost named in the 4.0 bullet above, that the title
+    cannot be hidden, no longer holds. The version chip lost its empty-canvas rule, the one header
+    control that hid for a reason other than its key or a missing supply.
+  - What the app tree supplies leaves with its Root. What a plugin supplies does not yet: plugin
+    decorators live in a module-level map that outlives the Root that ran the plugin
+    (follow-up: plugin-registry-per-root).
 
 ## Alternatives
 
@@ -250,3 +276,6 @@ than folded into this release:
 - `openImportModal` and the Settings modal do not check read-only mode, unlike every other path
   that changes the persisted model; closing that gap is the design document's decision 24, tracked
   as its own task (follow-up: read-only-import-settings).
+- Component decorators a plugin registers stay registered after its Root unmounts, so a later
+  Root without that plugin still renders them; clearing them on boot would drop decorators
+  registered at module level, which the plugin guide shows (follow-up: plugin-registry-per-root).

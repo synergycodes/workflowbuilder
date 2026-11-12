@@ -12,7 +12,9 @@ import EnterpriseNote from '@/components/enterprise-note.astro';
 
 import OverflowCard from '@/components/overflow-card.astro';
 
-Adds a **Save as PDF** option to the menu next to the workflow name. The item appears while `<EditorHeaderSaveAsPdf>` is mounted under `WorkflowBuilder.Root`. One click opens an export dialog where users can download the current workflow as a PDF file. No configuration needed.
+Exports the current workflow as a PDF file. One click opens an export dialog where users can download it.
+
+The editor header's **Save as PDF** item, in the menu next to the workflow name, appears while something supplies it through `<EditorHeaderSaveAsPdf onSaveAsPdf={…} />` under `WorkflowBuilder.Root`, and runs what was supplied. An app without this plugin can supply its own export the same way. See [What only your app can provide](/guides/build-a-plugin/#what-only-your-app-can-provide-clean-up-save-as-pdf-version-publish).
 
 ## Use cases
 
