@@ -9,7 +9,7 @@ import { useCleanUp } from './use-clean-up';
 
 export function CleanUpButton() {
   const { t } = useTranslation();
-  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
+  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp } = useCleanUp();
 
   if (!isAvailable) {
     return null;
@@ -19,12 +19,12 @@ export function CleanUpButton() {
     {
       label: t('header.cleanUp.arrangeHorizontally'),
       selected: layoutDirection === 'RIGHT',
-      onClick: () => arrange('RIGHT'),
+      onClick: () => cleanUp('RIGHT'),
     },
     {
       label: t('header.cleanUp.arrangeVertically'),
       selected: layoutDirection === 'DOWN',
-      onClick: () => arrange('DOWN'),
+      onClick: () => cleanUp('DOWN'),
     },
   ];
 
@@ -41,7 +41,7 @@ export function CleanUpButton() {
         aria-label={label}
         tooltip={label}
         prefixIcon={layoutDirection === 'DOWN' ? <Network /> : <TreeStructure />}
-        onClick={() => cleanUp(layoutDirection)}
+        onClick={() => cleanUp()}
       />
       <Menu items={items}>
         <Menu.TriggerButton

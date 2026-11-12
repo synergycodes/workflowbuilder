@@ -9,7 +9,6 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
-import { AppBarProvider } from '../features/app-bar/app-bar-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
@@ -65,7 +64,6 @@ export function WorkflowBuilderRoot({
   name,
   logo,
   logoHref,
-  editorHeader,
   layoutDirection,
   initialNodes,
   initialEdges,
@@ -162,9 +160,7 @@ export function WorkflowBuilderRoot({
         edges={initialEdges}
       >
         <ReactFlowProvider>
-          <AppBarProvider value={editorHeader}>
-            <RootShell builtInControls={builtInControls}>{children}</RootShell>
-          </AppBarProvider>
+          <RootShell builtInControls={builtInControls}>{children}</RootShell>
         </ReactFlowProvider>
       </RuntimeIntegrationWrapper>
     </UiExtensionProvider>

@@ -13,52 +13,65 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-let appBar: { version?: { number: number; isDraft: boolean }; onPublish?: () => void } = {};
-vi.mock('../../app-bar-context', () => ({
-  useAppBar: () => appBar,
+let supplies: { version?: { number: number; isDraft: boolean }; publish?: () => void } = {};
+vi.mock('../../../ui-extensions/ui-extension-context', () => ({
+  useHeaderSupply: (kind: keyof typeof supplies) => supplies[kind],
+}));
+
+let isVisible = true;
+vi.mock('../../../ui-extensions/built-in-controls-context', () => ({
+  useIsBuiltInControlVisible: () => isVisible,
+}));
+
+const actions = { publish: vi.fn() };
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => actions,
 }));
 
 const { PublishButton } = await import('./publish-button');
 
 describe('PublishButton', () => {
   beforeEach(() => {
-    appBar = { version: { number: 7, isDraft: true }, onPublish: vi.fn() };
+    supplies = { version: { number: 7, isDraft: true }, publish: vi.fn() };
+    isVisible = true;
+    actions.publish = vi.fn();
   });
 
-  it('renders nothing without onPublish', () => {
-    appBar = { version: { number: 7, isDraft: true } };
+  it('renders nothing while Publish is not supplied', () => {
+    supplies = { version: { number: 7, isDraft: true } };
     const { container } = render(<PublishButton />);
 
     expect(container.firstChild).toBeNull();
   });
 
-  it('is enabled for a draft and calls onPublish', () => {
+  it('renders nothing when the publish key is false', () => {
+    isVisible = false;
+    const { container } = render(<PublishButton />);
+
+    expect(container.firstChild).toBeNull();
+  });
+
+  it('is enabled for a draft and runs the publish action', () => {
     render(<PublishButton />);
     const button = screen.getByRole('button', { name: 'header.version.publish:7' }) as HTMLButtonElement;
 
     expect(button.disabled).toBe(false);
     fireEvent.click(button);
-    expect(appBar.onPublish).toHaveBeenCalledOnce();
+    expect(actions.publish).toHaveBeenCalledOnce();
   });
 
   it('is disabled when the version is published', () => {
-    appBar = { version: { number: 7, isDraft: false }, onPublish: vi.fn() };
+    supplies = { version: { number: 7, isDraft: false }, publish: vi.fn() };
     render(<PublishButton />);
 
     expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(true);
   });
 
   it('is disabled without version', () => {
-    appBar = { onPublish: vi.fn() };
+    supplies = { publish: vi.fn() };
     render(<PublishButton />);
     const button = screen.getByRole('button', { name: 'header.version.publishNoVersion:' }) as HTMLButtonElement;
 
     expect(button.disabled).toBe(true);
-  });
-
-  it('stays enabled in read-only mode', () => {
-    render(<PublishButton />);
-
-    expect((screen.getByRole('button') as HTMLButtonElement).disabled).toBe(false);
   });
 });

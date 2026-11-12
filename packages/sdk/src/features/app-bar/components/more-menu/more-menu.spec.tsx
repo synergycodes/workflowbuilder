@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { MenuItemProps } from '@workflowbuilder/ui';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -60,24 +60,15 @@ vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
   useWorkflowBuilderActions: () => actions,
 }));
 
-const state = {
+const cleanUpState = {
+  isAvailable: false,
   layoutDirection: 'RIGHT' as 'RIGHT' | 'DOWN',
-  setLayoutDirection: vi.fn(),
-  nodes: [{ id: 'a' }],
-  isReadOnly: false,
+  isPending: false,
+  isDisabled: false,
+  cleanUp: vi.fn(),
 };
-vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
-}));
-
-const trackFutureChange = vi.fn();
-vi.mock('../../../changes-tracker/stores/use-changes-tracker-store', () => ({
-  trackFutureChange,
-}));
-
-let appBar: { onCleanUp?: (direction: 'RIGHT' | 'DOWN') => void | Promise<void> } = {};
-vi.mock('../../app-bar-context', () => ({
-  useAppBar: () => appBar,
+vi.mock('../clean-up-button/use-clean-up', () => ({
+  useCleanUp: () => cleanUpState,
 }));
 
 const { MoreMenu } = await import('./more-menu');
@@ -92,14 +83,15 @@ const VERTICAL = 'header.cleanUp.arrangeVertically';
 
 describe('MoreMenu', () => {
   beforeEach(() => {
-    appBar = {};
     themeState.theme = 'light';
     actions.setTheme = vi.fn();
-    state.layoutDirection = 'RIGHT';
-    state.setLayoutDirection = vi.fn();
-    state.nodes = [{ id: 'a' }];
-    state.isReadOnly = false;
-    trackFutureChange.mockClear();
+    Object.assign(cleanUpState, {
+      isAvailable: false,
+      layoutDirection: 'RIGHT',
+      isPending: false,
+      isDisabled: false,
+      cleanUp: vi.fn(),
+    });
   });
 
   it('uses the shared ⋮ trigger labelled with tooltips.menu', () => {
@@ -108,7 +100,7 @@ describe('MoreMenu', () => {
     expect(screen.getByRole('button', { name: 'tooltips.menu' }).dataset.tooltip).toBe('tooltips.menu');
   });
 
-  it('lists the theme as menu items with the current one checked when onCleanUp is not set', () => {
+  it('lists the theme as menu items with the current one checked when Clean up is not available', () => {
     themeState.theme = 'dark';
     render(<MoreMenu />);
 
@@ -126,8 +118,8 @@ describe('MoreMenu', () => {
     expect(actions.setTheme.mock.calls).toEqual([['light'], ['dark']]);
   });
 
-  it('lists Clean up diagram and the arrange items when onCleanUp is set', () => {
-    appBar = { onCleanUp: vi.fn() };
+  it('lists Clean up diagram and the arrange items when Clean up is available', () => {
+    cleanUpState.isAvailable = true;
     render(<MoreMenu />);
 
     expect(itemLabels()).toEqual([CLEAN_UP, HORIZONTAL, VERTICAL]);
@@ -135,8 +127,8 @@ describe('MoreMenu', () => {
   });
 
   it('renders Clean up diagram as a plain item and checks the current direction', () => {
-    appBar = { onCleanUp: vi.fn() };
-    state.layoutDirection = 'DOWN';
+    cleanUpState.isAvailable = true;
+    cleanUpState.layoutDirection = 'DOWN';
     render(<MoreMenu />);
 
     expect(item(CLEAN_UP).getAttribute('role')).toBe('menuitem');
@@ -144,64 +136,41 @@ describe('MoreMenu', () => {
     expect(item(VERTICAL).getAttribute('aria-checked')).toBe('true');
   });
 
-  it('runs clean-up in the current direction', () => {
-    const onCleanUp = vi.fn();
-    appBar = { onCleanUp };
+  it('Clean up diagram cleans up in the current direction', () => {
+    cleanUpState.isAvailable = true;
     render(<MoreMenu />);
     fireEvent.click(item(CLEAN_UP));
 
-    expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
-    expect(state.setLayoutDirection).not.toHaveBeenCalled();
+    expect(cleanUpState.cleanUp).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it('arranges in the chosen direction like the split button', () => {
-    const onCleanUp = vi.fn();
-    appBar = { onCleanUp };
+  it('an arrange item cleans up in its direction', () => {
+    cleanUpState.isAvailable = true;
     render(<MoreMenu />);
     fireEvent.click(item(VERTICAL));
 
-    expect(trackFutureChange).toHaveBeenCalledWith('layoutDirection', { direction: 'DOWN' });
-    expect(state.setLayoutDirection).toHaveBeenCalledWith('DOWN');
-    expect(onCleanUp).toHaveBeenCalledWith('DOWN');
+    expect(cleanUpState.cleanUp).toHaveBeenCalledExactlyOnceWith('DOWN');
   });
 
-  it('disables the clean-up items on an empty canvas or in read-only mode', () => {
-    appBar = { onCleanUp: vi.fn() };
-    state.isReadOnly = true;
+  it.each([
+    ['disabled', { isDisabled: true }],
+    ['pending', { isPending: true }],
+  ])('disables the clean-up items while Clean up is %s', (_, change) => {
+    Object.assign(cleanUpState, { isAvailable: true, ...change });
     render(<MoreMenu />);
 
     expect([item(CLEAN_UP), item(HORIZONTAL), item(VERTICAL)].every((button) => button.disabled)).toBe(true);
   });
 
-  it('disables the clean-up items while an async clean-up is pending and re-enables them after it settles', async () => {
-    let settle: (() => void) | undefined;
-    const onCleanUp = vi.fn(
-      () =>
-        new Promise<void>((resolve) => {
-          settle = resolve;
-        }),
-    );
-    appBar = { onCleanUp };
-    render(<MoreMenu />);
-    const cleanUpItems = () => [item(CLEAN_UP), item(HORIZONTAL), item(VERTICAL)];
-
-    fireEvent.click(item(CLEAN_UP));
-    expect(cleanUpItems().every((button) => button.disabled)).toBe(true);
-
-    await act(async () => settle?.());
-    expect(cleanUpItems().some((button) => button.disabled)).toBe(false);
-    expect(onCleanUp).toHaveBeenCalledTimes(1);
-  });
-
-  it('sets the theme from the footer picker through the action when onCleanUp is set', () => {
-    appBar = { onCleanUp: vi.fn() };
+  it('sets the theme from the footer picker through the action when Clean up is available', () => {
+    cleanUpState.isAvailable = true;
     render(<MoreMenu />);
     fireEvent.click(screen.getByRole('group'));
 
     expect(actions.setTheme).toHaveBeenCalledOnce();
   });
 
-  it('renders nothing when themeToggle is hidden and onCleanUp is not set', () => {
+  it('renders nothing when themeToggle is hidden and Clean up is not available', () => {
     const { container } = render(
       <BuiltInControlsProvider value={{ themeToggle: false }}>
         <MoreMenu />
@@ -212,7 +181,7 @@ describe('MoreMenu', () => {
   });
 
   it('drops the separator and the footer picker when themeToggle is hidden', () => {
-    appBar = { onCleanUp: vi.fn() };
+    cleanUpState.isAvailable = true;
     render(
       <BuiltInControlsProvider value={{ themeToggle: false }}>
         <MoreMenu />

@@ -55,7 +55,6 @@ export type {
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderLogo,
-  WorkflowBuilderEditorHeaderOptions,
   WorkflowBuilderVersion,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderEdgeTemplates,

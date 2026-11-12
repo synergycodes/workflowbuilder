@@ -13,18 +13,17 @@ import { useStore } from '../../../../store/store';
 import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
-import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
+import { useHeaderSupply, useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
 import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
-import { useAppBar } from '../../app-bar-context';
 import { getExportImportItems } from '../../functions/get-export-import-items';
 import { VersionChip } from '../version-chip/version-chip';
 
 /**
  * App-bar component that shows the current workflow's folder name + title
- * and lets the user rename the workflow inline. Its menu holds Export, Import
- * and Settings; own menu items come through {@link WorkflowMenuItem}, and
- * `builtInControls` hides `folderName`, `workflowName`, `export`, `import`, `settings`
- * and `workflowRename`.
+ * and lets the user rename the workflow inline. Its menu holds Export, Import,
+ * Save as PDF (while supplied) and Settings; own menu items come through
+ * {@link WorkflowMenuItem}, and `builtInControls` hides `folderName`, `workflowName`,
+ * `export`, `import`, `saveAsPdf`, `settings` and `workflowRename`.
  *
  * @internal — not part of the public API.
  */
@@ -36,7 +35,7 @@ export function ProjectSelection(props: object) {
   );
   const workflowName = useStore((state) => state.workflowName || '');
   const isReadOnly = useStore((store) => store.isReadOnly);
-  const { setWorkflowName, openExport, openImport, openSettings } = useWorkflowBuilderActions();
+  const { setWorkflowName, openExport, openImport, openSettings, saveAsPdf } = useWorkflowBuilderActions();
   const [editName, setEditName] = useState<boolean>(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isNameTruncated, setIsNameTruncated] = useState(false);
@@ -46,17 +45,19 @@ export function ProjectSelection(props: object) {
   const isWorkflowRenameVisible = useIsBuiltInControlVisible('workflowRename');
   const isFolderNameVisible = useIsBuiltInControlVisible('folderName');
   const isWorkflowNameVisible = useIsBuiltInControlVisible('workflowName');
+  const isSaveAsPdfVisible = useIsBuiltInControlVisible('saveAsPdf');
+  const isSaveAsPdfSupplied = useHeaderSupply('saveAsPdf') !== undefined;
+  const isSaveAsPdfAvailable = isSaveAsPdfVisible && isSaveAsPdfSupplied;
   const registeredItems = useRegisteredMenuItems('project');
   const isEditable = isWorkflowRenameVisible && !isReadOnly;
 
   const { t } = useTranslation();
-  const { onSaveAsPdf } = useAppBar();
 
   const items = useMemo(() => {
     const leadingItems: MenuItemProps[] = [
       ...getExportImportItems({ export: isExportVisible, import: isImportVisible }, { openExport, openImport }),
-      ...(onSaveAsPdf
-        ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: onSaveAsPdf }]
+      ...(isSaveAsPdfAvailable
+        ? [{ label: t('header.projectSelection.saveAsPdf'), icon: <Icon name="FilePdf" />, onClick: saveAsPdf }]
         : []),
     ];
     const settingsItems: MenuItemProps[] = isSettingsVisible
@@ -75,12 +76,13 @@ export function ProjectSelection(props: object) {
     isExportVisible,
     isImportVisible,
     isSettingsVisible,
-    onSaveAsPdf,
+    isSaveAsPdfAvailable,
     registeredItems,
     t,
     openExport,
     openImport,
     openSettings,
+    saveAsPdf,
   ]);
 
   return (

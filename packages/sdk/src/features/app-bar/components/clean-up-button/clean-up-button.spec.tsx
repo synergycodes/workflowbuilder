@@ -1,4 +1,4 @@
-import { act, fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen } from '@testing-library/react';
 import type { MenuItemProps } from '@workflowbuilder/ui';
 import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -45,24 +45,15 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-const state = {
+const cleanUpState = {
+  isAvailable: true,
   layoutDirection: 'RIGHT' as 'RIGHT' | 'DOWN',
-  setLayoutDirection: vi.fn(),
-  nodes: [{ id: 'a' }],
-  isReadOnly: false,
+  isPending: false,
+  isDisabled: false,
+  cleanUp: vi.fn(),
 };
-vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
-}));
-
-const trackFutureChange = vi.fn();
-vi.mock('../../../changes-tracker/stores/use-changes-tracker-store', () => ({
-  trackFutureChange,
-}));
-
-let appBar: { onCleanUp?: (direction: 'RIGHT' | 'DOWN') => void | Promise<void> } = {};
-vi.mock('../../app-bar-context', () => ({
-  useAppBar: () => appBar,
+vi.mock('./use-clean-up', () => ({
+  useCleanUp: () => cleanUpState,
 }));
 
 const { CleanUpButton } = await import('./clean-up-button');
@@ -74,42 +65,36 @@ const caret = () => screen.getByRole('button', { name: CARET }) as HTMLButtonEle
 
 describe('CleanUpButton', () => {
   beforeEach(() => {
-    state.layoutDirection = 'RIGHT';
-    state.setLayoutDirection = vi.fn();
-    state.nodes = [{ id: 'a' }];
-    state.isReadOnly = false;
-    trackFutureChange.mockClear();
-    appBar = { onCleanUp: vi.fn() };
+    Object.assign(cleanUpState, {
+      isAvailable: true,
+      layoutDirection: 'RIGHT',
+      isPending: false,
+      isDisabled: false,
+      cleanUp: vi.fn(),
+    });
   });
 
-  it('renders nothing without onCleanUp', () => {
-    appBar = {};
+  it('renders nothing while Clean up is not available', () => {
+    cleanUpState.isAvailable = false;
     const { container } = render(<CleanUpButton />);
 
     expect(container.firstChild).toBeNull();
   });
 
-  it('calls onCleanUp with the current direction on main click', () => {
+  it('cleans up in the current direction on main click', () => {
     render(<CleanUpButton />);
 
     expect(main().dataset['tooltip']).toBe(MAIN);
     fireEvent.click(main());
-    expect(appBar.onCleanUp).toHaveBeenCalledExactlyOnceWith('RIGHT');
+    expect(cleanUpState.cleanUp).toHaveBeenCalledExactlyOnceWith();
   });
 
-  it('switches direction from the menu, tracks it, then cleans up', () => {
+  it('cleans up in the direction picked from the menu', () => {
     render(<CleanUpButton />);
 
     fireEvent.click(screen.getByText('header.cleanUp.arrangeVertically'));
 
-    const onCleanUp = vi.mocked(appBar.onCleanUp!);
-    expect(trackFutureChange).toHaveBeenCalledExactlyOnceWith('layoutDirection', { direction: 'DOWN' });
-    expect(state.setLayoutDirection).toHaveBeenCalledExactlyOnceWith('DOWN');
-    expect(onCleanUp).toHaveBeenCalledExactlyOnceWith('DOWN');
-    expect(trackFutureChange.mock.invocationCallOrder[0]).toBeLessThan(
-      state.setLayoutDirection.mock.invocationCallOrder[0],
-    );
-    expect(state.setLayoutDirection.mock.invocationCallOrder[0]).toBeLessThan(onCleanUp.mock.invocationCallOrder[0]);
+    expect(cleanUpState.cleanUp).toHaveBeenCalledExactlyOnceWith('DOWN');
   });
 
   it('marks the current direction as selected', () => {
@@ -119,47 +104,19 @@ describe('CleanUpButton', () => {
     expect(menuItems.find((item) => item.label === 'header.cleanUp.arrangeVertically')?.selected).toBe(false);
   });
 
-  it('is disabled on an empty canvas', () => {
-    state.nodes = [];
+  it('is disabled while Clean up is disabled', () => {
+    cleanUpState.isDisabled = true;
     render(<CleanUpButton />);
 
     expect(main().disabled).toBe(true);
     expect(caret().disabled).toBe(true);
   });
 
-  it('is disabled in read-only mode', () => {
-    state.isReadOnly = true;
+  it('shows as busy and locks the menu while a clean-up is pending', () => {
+    cleanUpState.isPending = true;
     render(<CleanUpButton />);
 
-    expect(main().disabled).toBe(true);
-    expect(caret().disabled).toBe(true);
-  });
-
-  it('ignores clicks while a clean-up is pending', () => {
-    appBar = { onCleanUp: vi.fn(() => new Promise<void>(() => {})) };
-    render(<CleanUpButton />);
-
-    fireEvent.click(main());
-    fireEvent.click(main());
-
-    expect(appBar.onCleanUp).toHaveBeenCalledOnce();
     expect(main().getAttribute('aria-busy')).toBe('true');
     expect(caret().disabled).toBe(true);
-  });
-
-  it('becomes clickable again after the clean-up rejects', async () => {
-    appBar = { onCleanUp: vi.fn(() => Promise.reject(new Error('x'))) };
-    render(<CleanUpButton />);
-
-    await act(async () => {
-      fireEvent.click(main());
-    });
-
-    expect(main().getAttribute('aria-busy')).toBe('false');
-    expect(caret().disabled).toBe(false);
-    await act(async () => {
-      fireEvent.click(main());
-    });
-    expect(appBar.onCleanUp).toHaveBeenCalledTimes(2);
   });
 });

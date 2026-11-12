@@ -15,7 +15,7 @@ export function MoreMenu() {
   const { theme } = useTheme();
   const { setTheme } = useWorkflowBuilderActions();
   const isThemeToggleVisible = useIsBuiltInControlVisible('themeToggle');
-  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp, arrange } = useCleanUp();
+  const { isAvailable, layoutDirection, isPending, isDisabled, cleanUp } = useCleanUp();
   const disabled = isDisabled || isPending;
   const alignedIcon = <Check aria-hidden visibility="hidden" />;
 
@@ -25,21 +25,21 @@ export function MoreMenu() {
           label: t('header.cleanUp.diagram'),
           icon: layoutDirection === 'DOWN' ? <Network /> : <TreeStructure />,
           disabled,
-          onClick: () => cleanUp(layoutDirection),
+          onClick: () => cleanUp(),
         },
         {
           label: t('header.cleanUp.arrangeHorizontally'),
           icon: alignedIcon,
           selected: layoutDirection === 'RIGHT',
           disabled,
-          onClick: () => arrange('RIGHT'),
+          onClick: () => cleanUp('RIGHT'),
         },
         {
           label: t('header.cleanUp.arrangeVertically'),
           icon: alignedIcon,
           selected: layoutDirection === 'DOWN',
           disabled,
-          onClick: () => arrange('DOWN'),
+          onClick: () => cleanUp('DOWN'),
         },
         ...(isThemeToggleVisible ? [{ type: 'separator' as const }] : []),
       ]

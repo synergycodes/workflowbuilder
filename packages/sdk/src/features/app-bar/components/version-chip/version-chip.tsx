@@ -3,15 +3,15 @@ import { useTranslation } from 'react-i18next';
 
 import styles from '../../app-bar.module.css';
 
-import { useStore } from '../../../../store/store';
-import { useAppBar } from '../../app-bar-context';
+import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
+import { useHeaderSupply } from '../../../ui-extensions/ui-extension-context';
 
 export function VersionChip() {
   const { t } = useTranslation();
-  const { version } = useAppBar();
-  const isEmptyCanvas = useStore((state) => state.nodes.length === 0);
+  const isVisible = useIsBuiltInControlVisible('version');
+  const version = useHeaderSupply('version');
 
-  if (!version || isEmptyCanvas) {
+  if (!isVisible || !version) {
     return null;
   }
 

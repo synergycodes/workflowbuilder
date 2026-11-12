@@ -4,6 +4,7 @@ import type { ReactNode } from 'react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { BuiltInControlsProvider } from '../../../ui-extensions/built-in-controls-context';
+import type * as UiExtensionContext from '../../../ui-extensions/ui-extension-context';
 
 // Render the menu's `items` inline so we can assert on them without driving the
 // real menu popover. The component also renders Input and Menu.TriggerButton, so
@@ -42,18 +43,15 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-vi.mock('../../../../features/variables/modals/modal-settings', () => ({
-  openModalWorkflowSettings: vi.fn(),
-}));
-
 vi.mock('../../../../store/store', () => ({
   useStore: <T,>(selector: (state: { workflowName: string; isReadOnly: boolean }) => T) =>
     selector({ workflowName: 'Doc', isReadOnly: false }),
 }));
 
 const setWorkflowName = vi.fn();
+const saveAsPdf = vi.fn();
 vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
-  useWorkflowBuilderActions: () => ({ setWorkflowName }),
+  useWorkflowBuilderActions: () => ({ setWorkflowName, saveAsPdf }),
 }));
 
 vi.mock('../../functions/get-export-import-items', () => ({
@@ -67,9 +65,10 @@ vi.mock('../version-chip/version-chip', () => ({
   VersionChip: () => null,
 }));
 
-let appBar: { onSaveAsPdf?: () => void } = {};
-vi.mock('../../app-bar-context', () => ({
-  useAppBar: () => appBar,
+let suppliedSaveAsPdf: (() => void) | undefined;
+vi.mock('../../../ui-extensions/ui-extension-context', async (importOriginal) => ({
+  ...(await importOriginal<typeof UiExtensionContext>()),
+  useHeaderSupply: () => suppliedSaveAsPdf,
 }));
 
 const { ProjectSelection } = await import('./project-selection');
@@ -80,7 +79,8 @@ const PDF_LABEL = 'header.projectSelection.saveAsPdf';
 const labels = () => screen.getAllByRole('listitem').map((li) => li.textContent);
 
 beforeEach(() => {
-  appBar = {};
+  suppliedSaveAsPdf = undefined;
+  saveAsPdf.mockClear();
 });
 
 describe('ProjectSelection: menu', () => {
@@ -122,25 +122,35 @@ describe('ProjectSelection: menu', () => {
 });
 
 describe('ProjectSelection: Save as PDF', () => {
-  it('adds Save as PDF after Import when onSaveAsPdf is set', () => {
-    const onSaveAsPdf = vi.fn();
-    appBar = { onSaveAsPdf };
+  it('adds Save as PDF after Import while it is supplied, and the item runs the saveAsPdf action', () => {
+    suppliedSaveAsPdf = vi.fn();
     render(<ProjectSelection />);
 
     expect(labels()).toEqual(['importExport.export', 'importExport.import', PDF_LABEL, '---', SETTINGS_LABEL]);
 
     fireEvent.click(screen.getByText(PDF_LABEL));
-    expect(onSaveAsPdf).toHaveBeenCalledTimes(1);
+    expect(saveAsPdf).toHaveBeenCalledTimes(1);
   });
 
-  it('omits Save as PDF without a handler', () => {
+  it('omits Save as PDF when the saveAsPdf key is false', () => {
+    suppliedSaveAsPdf = vi.fn();
+    render(
+      <BuiltInControlsProvider value={{ saveAsPdf: false }}>
+        <ProjectSelection />
+      </BuiltInControlsProvider>,
+    );
+
+    expect(screen.queryByText(PDF_LABEL)).toBeNull();
+  });
+
+  it('omits Save as PDF while nothing supplies it', () => {
     render(<ProjectSelection />);
 
     expect(screen.queryByText(PDF_LABEL)).toBeNull();
   });
 
   it('keeps the separator when only Save as PDF precedes it', () => {
-    appBar = { onSaveAsPdf: vi.fn() };
+    suppliedSaveAsPdf = vi.fn();
     render(
       <BuiltInControlsProvider value={{ export: false, import: false }}>
         <ProjectSelection />
