@@ -1,6 +1,7 @@
 import { type ChildProcess, spawn } from 'node:child_process';
 import { createWriteStream } from 'node:fs';
 import path from 'node:path';
+import { stripVTControlCharacters } from 'node:util';
 
 type Options = {
   name: string;
@@ -95,7 +96,8 @@ export function startProcess(options: Options): Promise<StackProcess> {
       if (isSettled || readyText === undefined) {
         return;
       }
-      output += chunk.toString();
+      // CI forces colour, which puts escape codes inside the text being waited for.
+      output += stripVTControlCharacters(chunk.toString());
       if (output.includes(readyText)) {
         succeed();
       }
