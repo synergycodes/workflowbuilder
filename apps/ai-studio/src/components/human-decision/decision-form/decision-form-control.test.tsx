@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 // The editor's real form, so the decision form runs with the controls and validator the panel gives it.
 import { registerCustomRenderers } from '../../../../../../packages/sdk/src/features/json-form/extension-registry';
 import { JSONForm } from '../../../../../../packages/sdk/src/features/json-form/json-form';
-import { workflowBuilderValidator } from '../../../../../../packages/sdk/src/utils/validation/workflow-builder-validator';
+import { workflowBuilderValidator } from '../../../../../../packages/sdk/src/utils/validation/workflow-builder-validator/workflow-builder-validator';
 import { type SubmitDecisionResult, submitDecision } from '../../../adapters/submit-decision';
 import { schema as nodeSchema } from '../../../nodes/human-decision/schema';
 import { uischema as nodeUischema } from '../../../nodes/human-decision/uischema';

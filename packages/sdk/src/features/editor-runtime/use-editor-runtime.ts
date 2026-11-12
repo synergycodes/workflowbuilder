@@ -1,6 +1,7 @@
 import { useDetectLanguageChange } from '../i18n/use-detect-language-change';
 import { useAutoSave } from '../integration/hooks/use-auto-save';
 import { useAutoSaveOnClose } from '../integration/hooks/use-auto-save-on-close';
+import { useVariablesSync } from '../variables/hooks/use-variables-sync';
 
 /**
  * Runs what the editor needs while it lives (auto-save, auto-save on tab close, language-change
@@ -11,4 +12,5 @@ export function useEditorRuntime() {
   useAutoSave();
   useAutoSaveOnClose();
   useDetectLanguageChange();
+  useVariablesSync();
 }

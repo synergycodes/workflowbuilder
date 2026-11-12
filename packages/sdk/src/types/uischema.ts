@@ -1,3 +1,4 @@
+import type { VariableDynamicControlElement } from '../features/json-form/controls/variable-dynamic-control/type';
 import {
   type AiToolsControlElement,
   type DatePickerControlElement,
@@ -28,6 +29,7 @@ export type UISchemaControlElement<T extends string = string> = (
   | DynamicConditionsControlElement
   | AiToolsControlElement
   | DecisionBranchesControlElement
+  | VariableDynamicControlElement
   | VariableTextControlElement
   | VariableTextAreaControlElement
   | MessageOnErrorControlElement

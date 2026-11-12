@@ -1,5 +1,6 @@
-import type { VariableType } from '../../../node/node-output-schema';
-import { typesForDate } from '../components/dynamic-typed-input/constants';
+import type { VariableType } from '@workflow-builder/types/variables/variables';
+
+import { typesForDate, typesForTime } from '../components/dynamic-typed-input/constants';
 import type { VariableSuggestionGroup } from '../components/variable-text/variable-text.types';
 import { getIsDateType } from './get-is-date-type';
 
@@ -15,6 +16,10 @@ export function filterSuggestionGroupsByType(
   const hasDateType = typesToMatch.some(getIsDateType);
   if (hasDateType) {
     typesToMatch = [...typesForDate, ...typesToMatch.filter((type) => !getIsDateType(type))];
+  }
+
+  if (typesToMatch.includes('time')) {
+    typesToMatch = [...typesForTime, ...typesToMatch.filter((type) => type !== 'time')];
   }
 
   return suggestionGroups

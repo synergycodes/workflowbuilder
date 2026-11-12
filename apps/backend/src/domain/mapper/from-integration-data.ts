@@ -2,7 +2,6 @@ import { isDefined, pickBy } from 'remeda';
 
 import {
   type BaseNode,
-  NODE_ERROR_POLICIES,
   type NodeErrorPolicy,
   type NodeRole,
   type WorkflowDefinition,
@@ -14,10 +13,8 @@ import type { WorkflowSnapshot } from './snapshot-schema';
 type FrontendNode = WorkflowSnapshot['nodes'][number];
 type FrontendEdge = WorkflowSnapshot['edges'][number];
 
-// Reuses `NODE_ERROR_POLICIES` from `@workflow-builder/types` so adding a new
-// policy is a one-line change there — no risk of this validation Set drifting
-// out of sync with the runner's union.
-const ERROR_POLICIES: ReadonlySet<NodeErrorPolicy> = new Set(NODE_ERROR_POLICIES);
+// `Record` keeps this exhaustive, so a new `NodeErrorPolicy` fails to compile until added here.
+const ERROR_POLICIES: Record<NodeErrorPolicy, true> = { fail: true, continue: true, errorRoute: true };
 
 // Structural pass-through. The backend treats nodes as opaque `{ id, type, config }`;
 // the worker narrows `config` against its own concrete node union when it dispatches
@@ -52,7 +49,7 @@ function isNonEmptyString(value: unknown): value is string {
 }
 
 function isErrorPolicy(value: unknown): value is NodeErrorPolicy {
-  return typeof value === 'string' && ERROR_POLICIES.has(value as NodeErrorPolicy);
+  return typeof value === 'string' && Object.hasOwn(ERROR_POLICIES, value);
 }
 
 function mapEdge(edge: FrontendEdge): WorkflowEdgeDefinition {

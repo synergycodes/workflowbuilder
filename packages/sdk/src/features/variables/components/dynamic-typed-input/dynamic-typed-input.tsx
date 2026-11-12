@@ -1,24 +1,33 @@
 import { DatePicker, Input, Select } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { useMemo, useState } from 'react';
+import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
+
+import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-input.module.css';
 
-import type { VariableTypePrimitive } from '../../../../node/node-output-schema';
-import { getDateIfValid, getTimeFromDateIfValid, setDateWithTimeFromTime } from '../../../../utils/time';
+import {
+  getDateIfValid,
+  getDateTimeISO,
+  getDateYYYYMMDD,
+  getTimeHHmm,
+  getTimeHHmmISO,
+} from '../../../../utils/time-iso';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
-import { getIsValidDate, getIsValidTime } from '../../../../utils/validation/get-is-valid-date';
-import { VARIABLE_BRACKETS_START, variableTypeInfoByType } from '../../constants';
+import { variableTypeInfoByType } from '../../constants';
 import { filterSuggestionGroupsByType } from '../../utils/filter-suggestion-groups-by-type';
-import { getIsDateType } from '../../utils/get-is-date-type';
+import { getBooleanStringIfPossible } from '../../utils/get-boolean-if-possible';
+import { getIsStringVariableReferenceStart } from '../../utils/keys/get-is-string-variable-reference';
 import { VariableText } from '../variable-text/variable-text';
 import type { VariableSuggestionGroup } from '../variable-text/variable-text.types';
 import { itemsForBoolean, typesForInput } from './constants';
+import { TimeInput } from './core/time-input';
 
 type DynamicTypedInputProps = {
   className?: string;
   onChange: (value: string) => void;
+  onBlur?: (value: string) => void;
   value?: string;
   type?: VariableTypePrimitive;
   placeholder?: string;
@@ -32,6 +41,7 @@ type DynamicTypedInputProps = {
 export function DynamicTypedInput({
   className,
   onChange,
+  onBlur,
   value,
   type,
   placeholder,
@@ -41,7 +51,6 @@ export function DynamicTypedInput({
   endAdornment,
   suggestionGroups = [],
 }: DynamicTypedInputProps) {
-  const [time, setTime] = useState(getIsDateType(type) ? getTimeFromDateIfValid(value) : undefined);
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
 
@@ -61,21 +70,23 @@ export function DynamicTypedInput({
     return null;
   }
 
-  if (typesForInput.includes(variableTypeInfo.type)) {
-    const { baseType } = variableTypeInfo;
-    const isInvalidNumberValue =
-      baseType === 'number' &&
-      !!value &&
-      !getIsStringNumber(value) &&
-      !value.startsWith(VARIABLE_BRACKETS_START.slice(0, 1));
+  const commit = (newValue: string) => {
+    onChange(newValue);
 
+    if (onBlur) {
+      onBlur(newValue);
+    }
+  };
+
+  if (variableTypeInfo.type === 'string') {
     if (suggestionGroupsForString.length > 0) {
       return (
         <VariableText
           className={className}
           value={String(value) || ''}
           onChange={onChange}
-          hasError={isError || isInvalidNumberValue}
+          onBlur={onBlur}
+          hasError={isError}
           mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled }}
           mentionProps={{ appendSpaceOnAdd: false }}
           suggestionGroups={suggestionGroupsForString}
@@ -88,29 +99,54 @@ export function DynamicTypedInput({
         className={className}
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
+        onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
+        state={isError ? 'critical' : 'default'}
+        placeholder={placeholder ?? t('variables.placeholderTypeString')}
+        disabled={disabled}
+      />
+    );
+  }
+
+  if (variableTypeInfo.type === 'number') {
+    const isValidRegularNumber = getIsStringNumber(value);
+    const isValidVariableNumber = getIsStringVariableReferenceStart(value);
+    const isInvalidNumberValue = value !== '' && !(isValidRegularNumber || isValidVariableNumber);
+
+    return (
+      <Input
+        className={className}
+        value={value}
+        onChange={(event) => onChange(event.target.value as string)}
+        suffixIcon={endAdornment}
+        onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
         state={isError || isInvalidNumberValue ? 'critical' : 'default'}
-        placeholder={
-          placeholder ??
-          t(baseType === 'number' ? 'variables.placeholderTypeNumber' : 'variables.placeholderTypeString')
-        }
+        placeholder={placeholder ?? t('variables.placeholderTypeNumber')}
         disabled={disabled}
       />
     );
   }
 
   if (type === 'boolean') {
+    const booleanValue = getBooleanStringIfPossible(value);
+
     return (
       <div className={styles['container--select']}>
         <Select
           error={isError}
-          className={className}
-          value={value}
+          className={clsx(styles['select'], className)}
+          value={booleanValue}
           items={itemsForBoolean}
-          onChange={(_event, value) => onChange(value as string)}
+          onChange={(_event, value) => {
+            onChange(value as string);
+
+            if (onBlur) {
+              onBlur(value as string);
+            }
+          }}
           placeholder={placeholder}
           disabled={disabled}
         />
-        {endAdornment && <span className={styles['adornment--select']}>{endAdornment}</span>}
+        {endAdornment && <span className={clsx(styles['adornment--select'], 'right-adornment')}>{endAdornment}</span>}
       </div>
     );
   }
@@ -121,75 +157,82 @@ export function DynamicTypedInput({
         <DatePicker
           error={isError}
           key={value}
-          className={clsx(styles['date-picker'], className)}
+          className={clsx(
+            styles['date-picker'],
+            styles['date-picker--date'],
+            styles['date-picker--date-alone'],
+            className,
+          )}
           value={getDateIfValid(value)}
-          onChange={(value) => {
-            const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
+          onChange={(pickedDate) => {
+            const newValue = getDateYYYYMMDD(pickedDate as Date | null) ?? '';
 
-            onChange(date.toISOString());
+            onChange(newValue);
+
+            if (onBlur) {
+              onBlur(newValue);
+            }
           }}
           valueFormat={'dd-MM-yyyy'}
           placeholder={placeholder || 'DD-MM-YYYY'}
           disabled={disabled}
         />
-        {endAdornment && <span className={styles['adornment--date']}>{endAdornment}</span>}
+        {endAdornment && <span className={clsx(styles['adornment--date'], 'right-adornment')}>{endAdornment}</span>}
       </div>
+    );
+  }
+
+  if (type === 'time') {
+    return (
+      <TimeInput
+        className={clsx(styles['date-picker'], className)}
+        value={getTimeHHmm(value)}
+        onCommit={(time) => commit(getTimeHHmmISO(time) ?? '')}
+        placeholder={placeholder || 'HH:mm'}
+        suffixIcon={endAdornment}
+        disabled={disabled}
+        isError={isError}
+      />
     );
   }
 
   if (type === 'datetime') {
     const date = getDateIfValid(value);
+    const time = getTimeHHmm(value);
 
     return (
       <div className={styles['row']}>
         <DatePicker
           error={isError}
           key={value}
-          className={clsx(styles['date-picker'], className)}
+          className={clsx(styles['date-picker'], styles['date-picker--date'], className)}
           value={date}
-          onChange={(value) => {
-            const date = setDateWithTimeFromTime(value as Date, timeForRawDates);
-            onChange(date.toISOString());
-            setTime(getTimeFromDateIfValid(date.toISOString()));
+          onChange={(pickedDate) => {
+            const newValue = getDateTimeISO(pickedDate as Date | null, time, timeForRawDates) ?? '';
+
+            onChange(newValue);
+
+            if (onBlur) {
+              onBlur(newValue);
+            }
           }}
           valueFormat="dd-MM-yyyy"
           placeholder="DD-MM-YYYY"
-          // Uncomment to see times in value
-          // valueFormat="DD-MM-YYYY HH:mm"
-          // placeholder="DD-MM-YYYY HH:mm"
           disabled={disabled}
         />
-        <Input
-          className={className}
+        <TimeInput
+          className={clsx(styles['date-picker'], styles['date-picker--time'], className)}
           value={time}
-          placeholder="HH:mm"
-          suffixIcon={endAdornment}
-          onChange={(event) => {
-            const value = (event.target.value as string).slice(0, 5);
-            if (value.length < 5) {
-              setTime(value);
-
-              return;
-            }
-
-            if (value.length === 5) {
-              if (getIsValidTime(value)) {
-                setTime(value);
-
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, value)?.toISOString());
-                }
-              } else {
-                setTime(timeForRawDates);
-
-                if (date && getIsValidDate(date)) {
-                  onChange(setDateWithTimeFromTime(date, timeForRawDates)?.toISOString());
-                }
-              }
+          fallback={timeForRawDates}
+          onCommit={(timeHHmm) => {
+            if (date) {
+              commit(getDateTimeISO(date, timeHHmm, timeForRawDates) ?? '');
             }
           }}
+          placeholder="HH:mm"
+          suffixIcon={endAdornment}
           disabled={disabled || !date}
-          state={isError ? 'critical' : 'default'}
+          isError={isError}
         />
       </div>
     );

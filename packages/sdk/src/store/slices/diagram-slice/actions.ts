@@ -13,6 +13,7 @@ import type { IntegrationDataFormat } from '../../../types/integration';
 import { getNodeWithErrors, getNodesWithErrors } from '../../../utils/validation/get-node-errors';
 import { useStore } from '../../store';
 import { skipDynamicValuesInEdges, skipDynamicValuesInNodes } from './utils/dynamic-values';
+import { warnIfLegacyDateTimeValues } from './utils/legacy-date-time-values';
 
 /**
  * One-shot read of the current nodes from the store (outside React).
@@ -109,6 +110,8 @@ export function getStoreDataForIntegration(params: GetStoreDataParams = {}): Int
 }
 
 export function setStoreDataFromIntegration(loadData: Partial<IntegrationDataFormat>) {
+  warnIfLegacyDateTimeValues(loadData.nodes ?? [], loadData.globalVariables);
+
   useStore.setState((state) => ({
     workflowName: loadData.name ?? state.workflowName,
     globalVariables: loadData.globalVariables || state.globalVariables,
@@ -143,6 +146,10 @@ export function refreshNodesErrorsIfNeeded() {
   useStore.setState({
     nodes: stateNodesWithRefreshedErrors,
   });
+}
+
+export function getStoreVariables() {
+  return useStore.getState().globalVariables;
 }
 
 export function saveVariableDefinition(definition: VariableDefinition) {
