@@ -97,6 +97,28 @@ Helpers (`src/studio.ts`) are plain functions over the page, named after what th
 `setTriggerInput`, `runButton`, `startRun`, `runStatus`, `logRow`, `openDecision`, `decisionField`, `decide`,
 `reasonDialog`, `canvasNode`, `propertiesPanel`, `executionLog`. Add one when a second test needs the same step.
 
+Canvas gestures, for a test that edits the diagram (`tests/add-gate.spec.ts`):
+
+| Helper               | What the user does                         | How it is driven                                                                                                                                 |
+| -------------------- | ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `addNodeFromPalette` | Drags a palette item onto the empty canvas | A real mouse drag (`dragTo`) from the item to a point of the canvas pane; Chromium turns it into the HTML5 drag and drop the palette listens for |
+| `connectNodes`       | Draws an edge from a port to another node  | A mouse drag from the output handle (`data-handleid`) to the other node's `target` handle                                                        |
+| `removeConnection`   | Deletes an edge                            | A click on the middle of the edge's path, Delete, then Delete in the confirmation dialog                                                         |
+| `setNodeTitle`       | Renames a node in the properties panel     | Click the node, fill "Node Title...", blur, wait for the node to show the title                                                                  |
+| `spotAbove`          | Picks where to drop                        | A point above a node, from its bounding box, read once the canvas has stopped moving                                                             |
+| `connection`         | Sees an edge                               | React Flow names an edge "Edge from `<id>` to `<id>`"                                                                                            |
+
+What the editor does that a gesture has to respect:
+
+- Picking a template animates the view into place for about a second. Positions are read after the node is stable.
+- Dropping a node onto an edge does not splice it in: delete the old edge and draw two new ones.
+- Remove an edge before drawing one that starts at the same port: both run over the same stretch, and the newer one
+  takes the click. `removeConnection` asserts that the edge it clicked is the one selected.
+- During a run the waiting notice and the Execution log cover the lower half of the canvas, and an edge that passes
+  under a node covers the node's Decide button. `openDecisionFromNotice` uses the notice's Decide button, which is
+  always reachable; `openDecision` uses the node's own.
+- A gate without fields has an empty decision form: the `Decision` group is attached but has no size.
+
 Rules:
 
 - Wait for a state (`toBeVisible`, `toHaveText`, a response), never for time. No `waitForTimeout`, no retries.
