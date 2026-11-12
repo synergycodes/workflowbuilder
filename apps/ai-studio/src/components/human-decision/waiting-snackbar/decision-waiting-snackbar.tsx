@@ -1,4 +1,10 @@
-import { closeSnackbar, showSnackbar, useSetSelection, useStore } from '@workflowbuilder/sdk';
+import {
+  closeSnackbar,
+  showSnackbar,
+  useSetSelection,
+  useStore,
+  useWorkflowBuilderActions,
+} from '@workflowbuilder/sdk';
 import { useEffect, useState } from 'react';
 
 import { attemptOf } from '../../../hooks/use-node-decision';
@@ -22,6 +28,7 @@ export function DecisionWaitingSnackbar() {
     state.selectedNodesIds.length === 1 && state.selectedEdgesIds.length === 0 ? state.selectedNodesIds[0] : undefined,
   );
   const setSelection = useSetSelection();
+  const { setPropertiesPanelOpen } = useWorkflowBuilderActions();
   // Closing hides the waits it showed: another node parking, or one parking again, shows it anew, and so does a reload.
   const [dismissedWaits, setDismissedWaits] = useState<ReadonlySet<string>>(() => new Set());
 
@@ -45,8 +52,10 @@ export function DecisionWaitingSnackbar() {
       autoHideDuration: null,
       onClose: () => setDismissedWaits((dismissed) => new Set([...dismissed, ...shownWaits])),
     } as const;
+    // The form lives in the properties panel, which the run start or the header toggle may have collapsed.
     const decide = (nodeId: string) => {
       if (setSelection({ nodeIds: [nodeId] })) {
+        setPropertiesPanelOpen(true);
         requestDecisionFocus(nodeId);
       }
     };
@@ -67,7 +76,16 @@ export function DecisionWaitingSnackbar() {
           },
     );
     return () => closeSnackbar(key);
-  }, [isShown, waitKeysJson, onlyWaitingId, waitingCount, label, isOnlyWaitingNodeOnCanvas, setSelection]);
+  }, [
+    isShown,
+    waitKeysJson,
+    onlyWaitingId,
+    waitingCount,
+    label,
+    isOnlyWaitingNodeOnCanvas,
+    setSelection,
+    setPropertiesPanelOpen,
+  ]);
 
   return null;
 }
