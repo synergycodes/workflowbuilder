@@ -1,4 +1,4 @@
-import { type PropsWithChildren, useCallback, useEffect, useState } from 'react';
+import { type PropsWithChildren, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 
 import { getStoreDataForIntegration } from '../../../store/slices/diagram-slice/actions';
 import type {
@@ -36,6 +36,15 @@ export function RuntimeIntegrationWrapper({
   edges: edgesProperty,
   children,
 }: Props) {
+  const lifetimeRef = useRef({ active: false });
+  useLayoutEffect(() => {
+    const lifetime = { active: true };
+    lifetimeRef.current = lifetime;
+    return () => {
+      lifetime.active = false;
+    };
+  }, []);
+
   const [{ name, globalVariables, layoutDirection, nodes, edges }, setData] = useState<IntegrationDataFormatOptional>(
     () => ({
       name: nameProperty,
@@ -72,6 +81,8 @@ export function RuntimeIntegrationWrapper({
 
   const handleSave: OnSave = useCallback(
     async (savingParams) => {
+      const lifetime = lifetimeRef.current;
+      if (!lifetime.active) return 'error';
       const data = getStoreDataForIntegration();
 
       if (strategy === 'localStorage') {
@@ -79,7 +90,7 @@ export function RuntimeIntegrationWrapper({
           localStorage.setItem(localStorageDiagramKey, JSON.stringify(data));
           return new Promise((resolve) => {
             setTimeout(() => {
-              showSnackbarSaveSuccessIfNeeded(savingParams);
+              if (lifetime.active) showSnackbarSaveSuccessIfNeeded(savingParams);
               resolve('success');
             }, 800);
           });
@@ -94,7 +105,7 @@ export function RuntimeIntegrationWrapper({
             headers: { 'Content-Type': 'application/json' },
           });
           if (response.ok) {
-            showSnackbarSaveSuccessIfNeeded(savingParams);
+            if (lifetime.active) showSnackbarSaveSuccessIfNeeded(savingParams);
             return 'success';
           }
         } catch {
@@ -103,8 +114,9 @@ export function RuntimeIntegrationWrapper({
       } else if (strategy === 'props' && onDataSave) {
         try {
           const didSave = await onDataSave(data, savingParams);
-          if (didSave) {
-            showSnackbarSaveSuccessIfNeeded(savingParams);
+          if (didSave === 'alreadyStarted') return didSave;
+          if (didSave === 'success') {
+            if (lifetime.active) showSnackbarSaveSuccessIfNeeded(savingParams);
             return 'success';
           }
         } catch {
@@ -112,7 +124,7 @@ export function RuntimeIntegrationWrapper({
         }
       }
 
-      showSnackbarSaveErrorIfNeeded(savingParams);
+      if (lifetime.active) showSnackbarSaveErrorIfNeeded(savingParams);
       return 'error';
     },
     [strategy, endpoints?.save, onDataSave],
