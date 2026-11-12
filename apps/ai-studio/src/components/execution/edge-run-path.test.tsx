@@ -23,6 +23,14 @@ const edge = (source: string, target: string): EdgePathProps => ({
   path: 'M0 0',
 });
 
+function startRunWithRunningAgent(source: string) {
+  setExecutionStarted('run-1', '/stream');
+  useExecutionStore.setState({
+    status: 'running',
+    nodeStates: { [source]: { status: 'completed' }, agent: { status: 'running' } },
+  });
+}
+
 describe('EdgeRunPath', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -50,15 +58,38 @@ describe('EdgeRunPath', () => {
     container.remove();
   });
 
-  it('keeps the host after Reset', () => {
-    setExecutionStarted('run-1', '/stream');
-    useExecutionStore.setState({ nodeStates: { trigger: { status: 'completed' }, agent: { status: 'running' } } });
-    resetExecution();
-
+  it('goes back to the host of a solid edge on Reset', () => {
+    startRunWithRunningAgent('trigger');
     render(edge('trigger', 'agent'));
+    expect(Path.mock.lastCall?.[0].runState).toBe('running');
+    Path.mockClear();
+
+    act(() => resetExecution());
 
     expect(container.querySelector('[data-host]')).not.toBeNull();
     expect(Path).not.toHaveBeenCalled();
+  });
+
+  it('drops the run state of a dashed edge on Reset and keeps its dash', () => {
+    startRunWithRunningAgent('branch');
+    render(edge('branch', 'agent'));
+    expect(Path.mock.lastCall?.[0].runState).toBe('running');
+
+    act(() => resetExecution());
+
+    expect(Path.mock.lastCall?.[0]).toMatchObject({ runState: undefined, lineType: 'dashed' });
+  });
+
+  it('keeps the dashed line of a custom host while a run state is set', () => {
+    setExecutionStarted('run-1', '/stream');
+    useExecutionStore.setState({
+      status: 'running',
+      nodeStates: { trigger: { status: 'completed' }, agent: { status: 'completed' } },
+    });
+
+    render({ ...edge('trigger', 'agent'), lineType: 'dashed' });
+
+    expect(Path.mock.lastCall?.[0]).toMatchObject({ runState: 'completed', lineType: 'dashed' });
   });
 
   it('passes the run state of a running target', () => {

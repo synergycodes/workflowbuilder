@@ -1,6 +1,6 @@
 import { WorkflowBuilder, type WorkflowBuilderIsValidConnection } from '@workflowbuilder/sdk';
 
-import '../components/execution/highlighting.css';
+import '../components/execution/execution-status.css';
 import './node-overrides.css';
 import '@workflowbuilder/sdk/style.css';
 import '@workflowbuilder/ui/fonts.css';
