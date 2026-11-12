@@ -8,7 +8,7 @@
   --wb-public-input-root-background-color-critical: var(--wb-ds-components-text-field-bg-primary-critical);
   --wb-public-input-root-background-color-success: var(--wb-ds-components-text-field-bg-primary-success);
   --wb-public-input-root-border-color: var(--wb-ds-components-text-field-stroke-default);
-  --wb-public-input-root-border-color-hover: var(--wb-ds-ui-stroke-default);
+  --wb-public-input-root-border-color-hover: var(--wb-ds-components-text-field-stroke-hover);
   --wb-public-input-root-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
   --wb-public-input-root-border-color-critical: var(--wb-ds-components-text-field-stroke-critical);
   --wb-public-input-root-border-color-success: var(--wb-ds-components-text-field-stroke-success);
