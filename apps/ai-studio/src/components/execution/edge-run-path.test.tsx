@@ -4,11 +4,18 @@ import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { decisionPaletteItem } from '../../nodes/decision';
+import { humanDecisionNodeType } from '../../nodes/human-decision';
+import { reviewNodeType } from '../../nodes/review';
 import { triggerPaletteItem } from '../../nodes/trigger';
 import { resetExecution, setExecutionStarted, useExecutionStore } from '../../stores/use-execution-store';
 import { EdgeRunPath } from './edge-run-state';
 
-const nodeTypes: Record<string, string> = { trigger: triggerPaletteItem.type, branch: decisionPaletteItem.type };
+const nodeTypes: Record<string, string> = {
+  trigger: triggerPaletteItem.type,
+  branch: decisionPaletteItem.type,
+  review: reviewNodeType,
+  human: humanDecisionNodeType,
+};
 
 vi.mock('@xyflow/react', async (importOriginal) => ({
   ...(await importOriginal<typeof import('@xyflow/react')>()),
@@ -111,5 +118,12 @@ describe('EdgeRunPath', () => {
 
     expect(Path.mock.lastCall?.[0]).toMatchObject({ edgeId: 'branch-agent', lineType: 'dashed' });
     expect(Path.mock.lastCall?.[0].runState).toBeUndefined();
+  });
+
+  it.each(['review', 'human'])('renders the host for an edge out of a %s node without a run', (source) => {
+    render(edge(source, 'agent'));
+
+    expect(container.querySelector('[data-host]')).not.toBeNull();
+    expect(Path).not.toHaveBeenCalled();
   });
 });

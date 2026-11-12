@@ -3,7 +3,6 @@ import type { EdgeLineType, EdgeRunState } from '@workflowbuilder/ui';
 import { useStore } from '@xyflow/react';
 
 import { decisionPaletteItem } from '../../nodes/decision';
-import { reviewNodeType } from '../../nodes/review';
 import {
   type NodeExecutionState,
   type RunStatus,
@@ -13,8 +12,8 @@ import {
 
 const REACHED_TARGET_STATUSES: ReadonlySet<NodeExecutionState['status']> = new Set(['completed', 'waiting', 'failed']);
 
-// Human decision stays solid: only the branching nodes draw dashed edges.
-const DASHED_SOURCE_TYPES: ReadonlySet<unknown> = new Set([decisionPaletteItem.type, reviewNodeType]);
+// Human tasks (human decision, review) stay solid: only branching nodes draw dashed edges.
+const DASHED_SOURCE_TYPES: ReadonlySet<unknown> = new Set([decisionPaletteItem.type]);
 
 // Every skip means "not executed", whatever its reason, so a skipped end never reads as travelled.
 export function edgeRunState(
