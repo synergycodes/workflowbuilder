@@ -60,7 +60,7 @@ Workflow Builder automatically persists workflow changes in the background witho
 | Select all  | `Ctrl+A`        | `Cmd+A`       |
 | Zoom in     | `Ctrl++`        | `Cmd++`       |
 | Zoom out    | `Ctrl+-`        | `Cmd+-`       |
-| Zoom to fit | `Ctrl+0`        | `Cmd+0`       |
+| Zoom to fit | `Shift+1`       | `Shift+1`     |
 | Undo        | `Ctrl+Z`        | `Cmd+Z`       |
 | Redo        | `Ctrl+Shift+Z`  | `Cmd+Shift+Z` |
 
