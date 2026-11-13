@@ -114,14 +114,19 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
         store().setLayoutDirection(next);
       }
 
-      const result = onCleanUp(next);
+      let result: void | Promise<void>;
+      try {
+        result = onCleanUp(next);
+      } catch {
+        return;
+      }
       if (!(result instanceof Promise)) return;
 
       registry.setCleanUpPending(true);
       try {
         await result;
       } catch {
-        // A rejected clean-up only ends the busy state; reporting it is the host's job.
+        // A throw or rejection only ends the busy state; reporting it is the host's job.
       } finally {
         registry.setCleanUpPending(false);
       }

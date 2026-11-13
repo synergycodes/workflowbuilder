@@ -731,6 +731,20 @@ describe('useWorkflowBuilderActions', () => {
       expect(onCleanUp).toHaveBeenCalledTimes(2);
     });
 
+    it('resolves when the supply throws, without entering the pending state', async () => {
+      const onCleanUp = vi.fn(() => {
+        throw new Error('layout failed');
+      });
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(async () => {
+        await expect(view.actions().cleanUp()).resolves.toBeUndefined();
+      });
+
+      expect(onCleanUp).toHaveBeenCalledOnce();
+      expect(view.registry.isCleanUpPending()).toBe(false);
+    });
+
     it('does nothing once the Root has unmounted', async () => {
       const onCleanUp = vi.fn();
       const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
