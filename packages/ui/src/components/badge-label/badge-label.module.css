@@ -1,0 +1,53 @@
+:root {
+  --wb-public-badge-label-background-color: var(--wb-ds-components-badge-bg-default);
+  --wb-public-badge-label-color: var(--wb-ds-components-badge-text-default);
+  --wb-public-badge-label-icon-color: var(--wb-ds-components-badge-icon-default);
+  --wb-public-badge-label-background-color-inverse: var(--wb-ds-components-badge-bg-inverse);
+  --wb-public-badge-label-color-inverse: var(--wb-ds-components-badge-text-inverse);
+  --wb-public-badge-label-icon-color-inverse: var(--wb-ds-components-badge-icon-inverse);
+}
+
+@layer ui.component {
+  .badge-label {
+    --badge-label-background-color: var(--wb-public-badge-label-background-color);
+    --badge-label-color: var(--wb-public-badge-label-color);
+    --badge-label-icon-color: var(--wb-public-badge-label-icon-color);
+
+    display: inline-flex;
+    align-items: center;
+    gap: var(--wb-ds-space-50);
+    border-radius: var(--wb-ds-radius-50);
+    background-color: var(--badge-label-background-color);
+    color: var(--badge-label-color);
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .inverse {
+    --badge-label-background-color: var(--wb-public-badge-label-background-color-inverse);
+    --badge-label-color: var(--wb-public-badge-label-color-inverse);
+    --badge-label-icon-color: var(--wb-public-badge-label-icon-color-inverse);
+  }
+
+  .m {
+    min-height: var(--wb-ds-size-250);
+    padding: var(--wb-ds-space-50) var(--wb-ds-space-100);
+  }
+
+  .s {
+    min-height: var(--wb-ds-size-200);
+    padding: var(--wb-ds-space-25) var(--wb-ds-space-75);
+  }
+
+  .icon {
+    display: inline-flex;
+    flex: none;
+    color: var(--badge-label-icon-color);
+
+    svg {
+      width: var(--wb-ds-size-137);
+      height: var(--wb-ds-size-137);
+    }
+  }
+}

@@ -1,7 +1,22 @@
+/* The body is always mounted for the collapsible, so its bottom padding moves inside it:
+   a collapsed node then measures as header-only. */
 .content {
-  --wb-public-node-gap: 0;
+  padding-bottom: 0;
 }
 
 .collapsible {
-  padding-top: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--wb-public-node-gap);
+  padding-bottom: var(--wb-ds-canvas-node-body-v-pad);
+}
+
+/* Plugin content after the collapsible (a `place: 'after'` decorator) takes over the body's bottom padding.
+   A collapsed panel stays in flow, so in-flow `place: 'before'` content ends one body gap above the stroke. */
+.content > :has(.collapsible):not(:last-child) .collapsible {
+  padding-bottom: 0;
+}
+
+.content > :has(.collapsible) ~ :last-child {
+  margin-bottom: var(--wb-ds-canvas-node-body-v-pad);
 }

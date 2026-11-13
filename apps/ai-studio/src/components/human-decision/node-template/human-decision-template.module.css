@@ -1,6 +1,6 @@
 .actions {
   display: flex;
-  gap: var(--wb-ds-space-100);
+  gap: var(--wb-ds-canvas-node-body-gap);
 }
 
 .actions--vertical {
@@ -14,11 +14,13 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--wb-ds-space-150);
-  padding: var(--wb-ds-space-125) var(--wb-ds-space-150);
+  box-sizing: border-box;
+  min-height: var(--wb-ds-canvas-node-row-height);
+  gap: var(--wb-ds-canvas-node-row-gap);
+  padding: var(--wb-ds-canvas-node-row-v-pad) var(--wb-ds-canvas-node-row-h-pad);
   color: var(--wb-ds-ui-text-default);
   background-color: var(--wb-ds-canvas-node-bg-content-default);
-  border-radius: var(--wb-ds-radius-75);
+  border-radius: var(--wb-ds-canvas-node-row-radius);
 }
 
 .action-label {

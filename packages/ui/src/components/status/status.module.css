@@ -1,7 +1,7 @@
 :root {
   --wb-public-status-right: var(--wb-ds-space-150) /* missing token */;
-  --wb-public-status-size: var(--wb-ds-space-250) /* missing token */;
-  --wb-public-status-icon-size: var(--wb-ds-space-150) /* missing token */;
+  --wb-public-status-size: calc(2 * var(--wb-ds-canvas-node-badge-v-pad) + var(--wb-ds-canvas-node-badge-glyph));
+  --wb-public-status-icon-size: var(--wb-ds-canvas-node-badge-glyph);
   --wb-public-status-invalid-color: var(--wb-ds-canvas-badge-notify-warning-icon);
   --wb-public-status-invalid-background-color: var(--wb-ds-canvas-badge-notify-warning-bg-default);
 }
@@ -17,7 +17,7 @@
     transform: translateY(-50%);
     height: var(--wb-public-status-size);
     aspect-ratio: 1 / 1;
-    border-radius: 50%;
+    border-radius: var(--wb-ds-canvas-node-badge-radius);
 
     svg {
       height: var(--wb-public-status-icon-size);
