@@ -85,6 +85,32 @@ describe('OptionalEdgePath', () => {
     expect(visible.getAttribute('d')).toBe('M 0 0 L 100 0');
   });
 
+  it('a run-state wrapper with the highest priority keeps the other wrappers around it', async () => {
+    const { registerComponentDecorator, OptionalEdgePath } = await load();
+    registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+      place: 'wrapper',
+      name: 'outline',
+      content: ({ children }: WorkflowBuilderDecoratorWrapperProps<EdgePathProps>) => (
+        <g data-testid="outline">{children}</g>
+      ),
+    });
+    registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+      place: 'wrapper',
+      name: 'run-path',
+      priority: 100,
+      content: runPath,
+    });
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} />
+      </svg>,
+    );
+
+    expect(screen.getByTestId('outline').contains(visiblePath(container))).toBe(true);
+    expect(visiblePath(container).dataset.runState).toBe('completed');
+  });
+
   it('a wrapper decorator that returns children keeps the edit look', async () => {
     const { registerComponentDecorator, OptionalEdgePath } = await load();
     registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {

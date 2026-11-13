@@ -10,7 +10,8 @@ export function plugin(): void {
   registerComponentDecorator('OptionalNodeOverlay', { content: NodeRunOverlay });
   registerComponentDecorator('OptionalNodeCorner', { content: NodeRunCorner, place: 'wrapper' });
   registerComponentDecorator('OptionalNodeHeaderEnd', { content: NodeRunHeaderEnd });
-  registerComponentDecorator('OptionalEdgePath', { content: EdgeRunPath, place: 'wrapper' });
+  // Highest priority wraps innermost, so re-rendering `component` keeps other wrappers around it.
+  registerComponentDecorator('OptionalEdgePath', { content: EdgeRunPath, place: 'wrapper', priority: 100 });
   registerComponentDecorator<OptionalNodeContentProps>('OptionalNodeContent', {
     content: VisualizeCard,
     place: 'after',

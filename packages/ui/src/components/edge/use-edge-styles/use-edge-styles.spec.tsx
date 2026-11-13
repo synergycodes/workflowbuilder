@@ -169,4 +169,17 @@ describe('use-edge-styles.css', () => {
     });
     expect(keyframes).toEqual(['wb-edge-dash-flow']);
   });
+
+  it('moves the running dash by one period that matches the default dash', () => {
+    const offsets: string[] = [];
+    stylesheet.walkAtRules('keyframes', (rule) => {
+      rule.walkDecls('stroke-dashoffset', (declaration) => {
+        offsets.push(declaration.value);
+      });
+    });
+    expect(offsets).toEqual(['calc(-1 * var(--wb-public-edge-dash-running-period))']);
+
+    const dash = defaults.get('--wb-public-edge-dash-running')!.split(/\s+/).map(Number);
+    expect(Number(defaults.get('--wb-public-edge-dash-running-period'))).toBe(dash[0]! + dash[1]!);
+  });
 });
