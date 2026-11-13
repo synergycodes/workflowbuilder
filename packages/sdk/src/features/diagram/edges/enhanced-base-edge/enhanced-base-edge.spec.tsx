@@ -45,6 +45,44 @@ describe('EnhancedBaseEdge', () => {
     expect(widths).toEqual(['0', '0']);
   });
 
+  it('draws no terminator unless asked, so it stays a drop-in BaseEdge', () => {
+    const { container } = render(
+      <svg>
+        <EnhancedBaseEdge id="edge-1" path="M 0 0 L 10 0" markerEnd="url(#host-marker)" />
+      </svg>,
+    );
+
+    expect(container.querySelector('marker')).toBeNull();
+    expect(container.querySelector('[data-edge-id="edge-1"]')!.getAttribute('marker-end')).toBe('url(#host-marker)');
+  });
+
+  it('ends only the visible path with its own marker, in the colour of the path', () => {
+    const style = { stroke: 'var(--wb-public-edge-color-select)', strokeDasharray: '5 4' };
+    const { container } = render(
+      <svg>
+        <EnhancedBaseEdge
+          id="edge-1"
+          path="M 0 0 L 10 0"
+          style={style}
+          endpoint="arrow"
+          markerEnd="url(#host-marker)"
+        />
+        <EnhancedBaseEdge id="edge-2" path="M 0 0 L 10 0" style={style} endpoint="circle" />
+      </svg>,
+    );
+
+    const markers = container.querySelectorAll('marker');
+    const arrow = markers[0];
+    const circle = markers[1];
+    expect(arrow!.id).not.toBe(circle!.id);
+    expect(container.querySelector('[data-edge-id="edge-1"]')!.getAttribute('marker-end')).toBe(`url(#${arrow!.id})`);
+    expect(container.querySelector('[data-edge-id="edge-2"]')!.getAttribute('marker-end')).toBe(`url(#${circle!.id})`);
+    expect(container.querySelector('[data-path-border-for="edge-1"]')!.hasAttribute('marker-end')).toBe(false);
+    expect(arrow!.querySelector('polyline')!.style.stroke).toBe(style.stroke);
+    expect(arrow!.querySelector('polyline')!.style.strokeDasharray).toBe('');
+    expect(circle!.querySelector('circle')!.style.stroke).toBe(style.stroke);
+  });
+
   it('sizes the transparent hit area with the public hit width, 12 by default', () => {
     expect(cssRule('../../../../index.css', ':root')).toMatch(/--wb-public-edge-hit-width:\s*12;/);
     const hitArea = cssRule('enhanced-base-edge.module.css', String.raw`\.clickable-transparent-border`);

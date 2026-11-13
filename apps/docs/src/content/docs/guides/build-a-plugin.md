@@ -119,7 +119,7 @@ registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
 });
 ```
 
-`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Nothing is written to the edge data, the store or undo history:
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Nothing is written to the edge data, the store or undo history. Every built-in edge ends in an arrow at its target, in the colour of the line; the same decorator passes `endpoint` (`arrow`, `circle`, `none`) to change or remove it. The built-in edges do not draw `edge.markerEnd`, because a React Flow marker keeps one colour in every state:
 
 ```tsx
 import {

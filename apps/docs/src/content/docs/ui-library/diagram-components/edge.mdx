@@ -32,8 +32,15 @@ Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
 default. Once `runState` is set, hover and selection no longer change the
 colour. `running` always draws an animated `6 5` dash, even on a `dashed` edge;
 otherwise `dashed` draws a static `5 4` dash. Every edge is 1 px wide. The
-package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType` and
-`EdgeLabelSize` types and the `EDGE_LABEL_SIZES` constant.
+package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType`,
+`EdgeEndpoint` and `EdgeLabelSize` types and the `EDGE_LABEL_SIZES` constant.
+
+`EdgeEndpointMarker` draws the terminator where an edge reaches its target: an
+`arrow` that shows the flow direction, or a `circle` for a neutral attachment
+point. It is an SVG `<marker>` that you render next to the path, one per edge,
+with the same `style` as the path. It then has the colour of the line in every
+state, turns with the end of the path and is never dashed. The SDK's `EdgePath`
+and `EnhancedBaseEdge` render it for you through their `endpoint` prop.
 
 ## Usage
 
@@ -120,6 +127,29 @@ function RunEdge({
 }
 
 // Rendered for an edge with data: { runState: 'running' }
+```
+
+To end the path with a terminator, render the marker next to it and point the
+path at the marker. The id has to be unique per edge, so `useId` fits.
+
+```tsx
+import { EdgeEndpointMarker, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import { useId } from 'react';
+
+function ArrowEdge({ id, selected, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition }: EdgeProps) {
+  const markerId = useId();
+  const pathStyle = useEdgeStyle({ state: selected ? 'selected' : 'default' });
+
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+
+  return (
+    <>
+      <EdgeEndpointMarker id={markerId} type="arrow" style={pathStyle} />
+      <BaseEdge id={id} path={edgePath} style={pathStyle} markerEnd={`url(#${markerId})`} />
+    </>
+  );
+}
 ```
 
 ## EdgeLabel props
