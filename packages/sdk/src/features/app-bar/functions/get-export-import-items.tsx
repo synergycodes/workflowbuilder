@@ -3,17 +3,19 @@ import i18n from 'i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-import { openExportModal } from '../../integration/components/import-export/export-modal/open-export-modal';
-import { openImportModal } from '../../integration/components/import-export/import-modal/open-import-modal';
+import type { WorkflowBuilderActions } from '../../../hooks/use-workflow-builder-actions';
 
-export function getExportImportItems(visible: { export: boolean; import: boolean }): MenuItemProps[] {
+export function getExportImportItems(
+  visible: { export: boolean; import: boolean },
+  { openExport, openImport }: Pick<WorkflowBuilderActions, 'openExport' | 'openImport'>,
+): MenuItemProps[] {
   return [
     ...(visible.export
       ? [
           {
             label: i18n.t('importExport.export'),
             icon: <Icon name="Export" />,
-            onClick: openExportModal,
+            onClick: openExport,
           },
         ]
       : []),
@@ -22,7 +24,7 @@ export function getExportImportItems(visible: { export: boolean; import: boolean
           {
             label: i18n.t('importExport.import'),
             icon: <Icon name="DownloadSimple" />,
-            onClick: openImportModal,
+            onClick: openImport,
           },
         ]
       : []),

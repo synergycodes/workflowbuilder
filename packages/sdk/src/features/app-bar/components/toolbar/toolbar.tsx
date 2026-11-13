@@ -32,16 +32,18 @@ export function Toolbar() {
   const { logo: customLogo, logoHref } = getAppBarBranding();
   const logo = renderLogo(customLogo);
   const isSaveVisible = useIsBuiltInControlVisible('save');
+  const isLogoVisible = useIsBuiltInControlVisible('logo');
 
   return (
     <div className={styles['toolbar']}>
-      {logoHref ? (
-        <a className={styles['logo-link']} href={logoHref} target="_blank" rel="noreferrer noopener">
-          {logo}
-        </a>
-      ) : (
-        logo
-      )}
+      {isLogoVisible &&
+        (logoHref ? (
+          <a className={styles['logo-link']} href={logoHref} target="_blank" rel="noreferrer noopener">
+            {logo}
+          </a>
+        ) : (
+          logo
+        ))}
       <div className={styles['nav-segment']}>
         <AreaTarget area="appBarTools" />
         {isSaveVisible && <SaveButton />}

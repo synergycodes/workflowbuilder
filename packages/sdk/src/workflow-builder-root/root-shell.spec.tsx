@@ -1,15 +1,22 @@
-import { fireEvent, render, screen } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+
+import { registerComponentDecorator } from '../features/plugins-core/adapters/adapter-components';
 
 import '../features/i18n/index';
 import { AreaTarget } from '../features/ui-extensions/area-target';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import { useIsBuiltInControlVisible } from '../features/ui-extensions/built-in-controls-context';
+import { EditorHeaderCleanUp } from '../features/ui-extensions/components/editor-header-clean-up';
+import { EditorHeaderPublish } from '../features/ui-extensions/components/editor-header-publish';
+import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/editor-header-save-as-pdf';
+import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
 import { useUiExtensionRegistry } from '../features/ui-extensions/ui-extension-context';
 import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
 import { useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
+import { type WorkflowBuilderState, useWorkflowBuilderState } from '../hooks/use-workflow-builder-state';
 import { WorkflowBuilderRoot } from './workflow-builder-root';
 
 // Loading the diagram is not what these tests are about, and it would open the template selector.
@@ -70,6 +77,87 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
 
     expect(renders[0].registry).not.toBe(firstRegistry);
     expect(renders[0].element).toBeNull();
+  });
+
+  it('a second Root mount starts without the editor header supplies of the first', () => {
+    const seen: WorkflowBuilderState[] = [];
+    function StateProbe() {
+      seen.push(useWorkflowBuilderState());
+      return null;
+    }
+    let firstRegistry: UiExtensionRegistry | null = null;
+    function RegistryProbe() {
+      const registry = useUiExtensionRegistry();
+      firstRegistry ??= registry;
+      return null;
+    }
+    const first = renderRoot(
+      <>
+        <StateProbe />
+        <RegistryProbe />
+        <EditorHeaderCleanUp onCleanUp={() => new Promise<void>(() => {})} />
+        <EditorHeaderSaveAsPdf onSaveAsPdf={vi.fn()} />
+        <EditorHeaderVersion number={2} isDraft />
+        <EditorHeaderPublish onPublish={vi.fn()} />
+      </>,
+    );
+    act(() => firstRegistry!.setCleanUpPending(true));
+    expect(seen.at(-1)).toMatchObject({
+      version: { number: 2, isDraft: true },
+      isCleanUpPending: true,
+      availableActions: { cleanUp: true, saveAsPdf: true, publish: true },
+    });
+    first.unmount();
+    seen.length = 0;
+
+    renderRoot(<StateProbe />);
+
+    expect(seen.at(-1)).toMatchObject({
+      version: null,
+      isCleanUpPending: false,
+      availableActions: { cleanUp: false, saveAsPdf: false, publish: false },
+    });
+  });
+
+  it("the app's own supply is in use over a plugin's, without a warning, and the plugin's returns when it unmounts", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fromApp = vi.fn();
+    const fromPlugin = vi.fn();
+    registerComponentDecorator('OptionalAppChildren', {
+      name: 'pdf-test-plugin',
+      content: () => <EditorHeaderSaveAsPdf onSaveAsPdf={fromPlugin} />,
+    });
+    let registry: UiExtensionRegistry | null = null;
+    function RegistryProbe() {
+      registry = useUiExtensionRegistry();
+      return null;
+    }
+
+    try {
+      const view = render(
+        <WorkflowBuilderRoot>
+          <RegistryProbe />
+          <EditorHeaderSaveAsPdf onSaveAsPdf={fromApp} />
+        </WorkflowBuilderRoot>,
+      );
+      registry!.getHeaderSupply('saveAsPdf')!();
+
+      expect(fromApp).toHaveBeenCalledOnce();
+      expect(fromPlugin).not.toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('is mounted more than once'));
+
+      view.rerender(
+        <WorkflowBuilderRoot>
+          <RegistryProbe />
+        </WorkflowBuilderRoot>,
+      );
+      registry!.getHeaderSupply('saveAsPdf')!();
+
+      expect(fromPlugin).toHaveBeenCalledOnce();
+    } finally {
+      registerComponentDecorator('OptionalAppChildren', { name: 'pdf-test-plugin' });
+      warn.mockRestore();
+    }
   });
 
   it('openSettings shows the modal in a Root with only a custom header and no canvas', () => {

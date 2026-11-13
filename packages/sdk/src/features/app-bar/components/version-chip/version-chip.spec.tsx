@@ -11,22 +11,22 @@ vi.mock('react-i18next', () => ({
   }),
 }));
 
-let isEmpty = false;
-vi.mock('../../../../store/store', () => ({
-  useStore: <T,>(selector: (state: { nodes: unknown[] }) => T) => selector({ nodes: isEmpty ? [] : [{}] }),
+let version: { number: number; isDraft: boolean } | undefined;
+vi.mock('../../../ui-extensions/ui-extension-context', () => ({
+  useHeaderSupply: () => version,
 }));
 
-let appBar: { version?: { number: number; isDraft: boolean } } = {};
-vi.mock('../../app-bar-context', () => ({
-  useAppBar: () => appBar,
+let isVisible = true;
+vi.mock('../../../ui-extensions/built-in-controls-context', () => ({
+  useIsBuiltInControlVisible: () => isVisible,
 }));
 
 const { VersionChip } = await import('./version-chip');
 
 describe('VersionChip', () => {
   beforeEach(() => {
-    isEmpty = false;
-    appBar = { version: { number: 7, isDraft: true } };
+    version = { number: 7, isDraft: true };
+    isVisible = true;
   });
 
   it('shows the draft label when isDraft', () => {
@@ -36,21 +36,21 @@ describe('VersionChip', () => {
   });
 
   it('shows the published label otherwise', () => {
-    appBar = { version: { number: 7, isDraft: false } };
+    version = { number: 7, isDraft: false };
     render(<VersionChip />);
 
     expect(screen.getByText('header.version.published:7')).toBeTruthy();
   });
 
-  it('renders nothing without version', () => {
-    appBar = {};
+  it('renders nothing while no version is supplied', () => {
+    version = undefined;
     const { container } = render(<VersionChip />);
 
     expect(container.firstChild).toBeNull();
   });
 
-  it('renders nothing on an empty canvas', () => {
-    isEmpty = true;
+  it('renders nothing when the version key is false', () => {
+    isVisible = false;
     const { container } = render(<VersionChip />);
 
     expect(container.firstChild).toBeNull();

@@ -37,6 +37,7 @@ type DecoratorWithNoContent<Props = object> = SharedDecoratorOptions<Props>;
  */
 export type ComponentDecoratorOptions<Props = object> = DecoratorWithContent<Props> | DecoratorWithNoContent<Props>;
 
+// Module-level, so a decorator outlives the Root whose plugin registered it (follow-up: plugin-registry-per-root).
 const pluginRegistryComponents = new Map<
   string,
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

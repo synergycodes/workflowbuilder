@@ -5,12 +5,14 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-const themeState = {
-  theme: 'light' as 'light' | 'dark',
-  toggleTheme: vi.fn(),
-};
+const themeState = { theme: 'light' as 'light' | 'dark' };
 vi.mock('../../../../hooks/use-theme', () => ({
   useTheme: () => themeState,
+}));
+
+const actions = { setTheme: vi.fn() };
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => actions,
 }));
 
 const { ToggleDarkMode } = await import('./toggle-dark-mode');
@@ -21,7 +23,7 @@ const dark = () => screen.getByRole('button', { name: 'header.theme.dark' });
 describe('ToggleDarkMode', () => {
   beforeEach(() => {
     themeState.theme = 'light';
-    themeState.toggleTheme = vi.fn();
+    actions.setTheme = vi.fn();
   });
 
   it('renders the light and dark segments', () => {
@@ -40,12 +42,12 @@ describe('ToggleDarkMode', () => {
     expect(light().getAttribute('aria-pressed')).toBe('false');
   });
 
-  it('toggles the theme when the other segment is clicked', () => {
+  it('sets the theme through the action when the other segment is clicked', () => {
     render(<ToggleDarkMode />);
 
     fireEvent.click(dark());
 
-    expect(themeState.toggleTheme).toHaveBeenCalledOnce();
+    expect(actions.setTheme).toHaveBeenCalledExactlyOnceWith('dark');
   });
 
   it('ignores a click on the active segment', () => {
@@ -53,6 +55,6 @@ describe('ToggleDarkMode', () => {
 
     fireEvent.click(light());
 
-    expect(themeState.toggleTheme).not.toHaveBeenCalled();
+    expect(actions.setTheme).not.toHaveBeenCalled();
   });
 });

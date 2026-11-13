@@ -2,12 +2,13 @@ import { PencilSimpleLine, PencilSimpleSlash } from '@phosphor-icons/react';
 import { SegmentPicker } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
+import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { useStore } from '../../../../store/store';
 
 export function ToggleReadyOnlyMode() {
   const { t } = useTranslation();
   const isReadOnly = useStore((store) => store.isReadOnly);
-  const setReadOnly = useStore((store) => store.setReadOnly);
+  const { setReadOnly } = useWorkflowBuilderActions();
 
   return (
     <SegmentPicker

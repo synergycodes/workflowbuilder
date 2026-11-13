@@ -55,7 +55,6 @@ export type {
   WorkflowBuilderIntegration,
   WorkflowBuilderJsonFormConfig,
   WorkflowBuilderLogo,
-  WorkflowBuilderEditorHeaderOptions,
   WorkflowBuilderVersion,
   WorkflowBuilderNodeTemplates,
   WorkflowBuilderEdgeTemplates,
@@ -85,6 +84,18 @@ export type { WorkflowBuilderAreaContentProps } from './features/ui-extensions/u
 export { WorkflowMenuItem } from './features/ui-extensions/components/project-menu-item';
 export { PropertiesPanelMenuItem } from './features/ui-extensions/components/properties-panel-menu-item';
 export type { WorkflowBuilderMenuItemProps } from './features/ui-extensions/ui-extension-registry';
+
+// =============================================================================
+// Editor header: what the host supplies to Clean up, Save as PDF, version and Publish
+// =============================================================================
+
+export { EditorHeaderCleanUp } from './features/ui-extensions/components/editor-header-clean-up';
+export type { WorkflowBuilderCleanUpProps } from './features/ui-extensions/components/editor-header-clean-up';
+export { EditorHeaderSaveAsPdf } from './features/ui-extensions/components/editor-header-save-as-pdf';
+export type { WorkflowBuilderSaveAsPdfProps } from './features/ui-extensions/components/editor-header-save-as-pdf';
+export { EditorHeaderVersion } from './features/ui-extensions/components/editor-header-version';
+export { EditorHeaderPublish } from './features/ui-extensions/components/editor-header-publish';
+export type { WorkflowBuilderPublishProps } from './features/ui-extensions/components/editor-header-publish';
 
 // =============================================================================
 // Plugin API — decorators, function hooks, translations

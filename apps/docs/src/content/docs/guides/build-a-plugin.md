@@ -136,6 +136,7 @@ Your own UI in the editor header, the palette and the properties panel does **no
 | run a command from your own control | an action from `useWorkflowBuilderActions()`, e.g. `openTemplates()`         |
 | hide a built-in control             | a key in `builtInControls` on `<WorkflowBuilder.Root>`                       |
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem` |
+| supply what only your app can do    | an `EditorHeader…` supply component: Clean up, Save as PDF, version, Publish |
 
 Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
 
@@ -209,6 +210,34 @@ function ShareControls() {
 }
 ```
 
+### What only your app can provide: Clean up, Save as PDF, version, Publish
+
+Four editor header controls run something the SDK cannot do on its own: moving the nodes, producing a PDF, knowing the version, publishing it. Your app supplies each one with a component that renders nothing; while it is mounted, the built-in control shows and its action runs what you supplied:
+
+| Component                              | Shows                                           | Action                         | Key in `builtInControls` |
+| -------------------------------------- | ----------------------------------------------- | ------------------------------ | ------------------------ |
+| `<EditorHeaderCleanUp onCleanUp>`      | Clean up (and its items in a narrow header's ⋮) | `cleanUp(direction?)`          | `cleanUp`                |
+| `<EditorHeaderSaveAsPdf onSaveAsPdf>`  | Save as PDF in the workflow menu                | `saveAsPdf()`                  | `saveAsPdf`              |
+| `<EditorHeaderVersion number isDraft>` | the version chip                                | none; `state.version` holds it | `version`                |
+| `<EditorHeaderPublish onPublish>`      | Publish, enabled for a draft version            | `publish()`                    | `publish`                |
+
+```tsx
+import { EditorHeaderCleanUp, EditorHeaderPublish, EditorHeaderVersion, WorkflowBuilder } from '@workflowbuilder/sdk';
+
+<WorkflowBuilder.Root>
+  <WorkflowBuilder.DefaultLayout />
+  <EditorHeaderCleanUp onCleanUp={(direction) => runLayout(direction)} />
+  <EditorHeaderVersion number={version.number} isDraft={version.isDraft} />
+  <EditorHeaderPublish onPublish={publishDraft} />
+</WorkflowBuilder.Root>;
+```
+
+A plugin supplies them the same way as any other UI, through a component it mounts in `OptionalAppChildren`, so a layout plugin can supply only Clean up and a PDF plugin only Save as PDF.
+
+- **Clean up**: a direction different from the current one is set and tracked for undo before `onCleanUp` runs; moving (and tracking) the nodes is your job. While a promise `onCleanUp` returns is pending, Clean up shows as busy and ignores further calls; `state.isCleanUpPending` tells a custom control the same. It is disabled on an empty canvas (`state.isCanvasEmpty`) and does nothing in read-only mode.
+- **Publish** runs only while the supplied version is a draft, also when you call `publish()` yourself.
+- **`state.availableActions`** says which of `cleanUp`, `saveAsPdf` and `publish` is supplied, so a control you build yourself can show exactly when the built-in one would. Hide the built-in with its key and the supply keeps working: `builtInControls={{ cleanUp: false }}` plus your own button calling `cleanUp()`.
+
 ### Boundaries
 
 These are deliberate limits of the model, not bugs:
@@ -219,10 +248,12 @@ These are deliberate limits of the model, not bugs:
 - **Hiding is not blocking.** `builtInControls={{ delete: false }}` removes the button; the Delete key and `deleteSelection()` keep working. Only read-only mode blocks deletion as a whole. `reactFlowProps={{ deleteKeyCode: null }}` disables the key alone: `deleteSelection()` and a decorator's `onDeleteClick` still delete through the same confirmation.
 - **Hiding is app-wide, not per-node.** `builtInControls` hides a control for the whole app; it cannot protect one specific node from deletion. For that, set `deletable: false` on the node itself (a React Flow property), which also blocks the Delete key for that node.
 - **Hiding `paletteToggle` or `propertiesPanelToggle` leaves no way back for the user.** The palette starts collapsed, so hiding `paletteToggle` means it never opens at all unless the app calls `setPaletteOpen(true)` itself. To start with the palette open, call `actions.setPaletteOpen(true)` from [`onLoad`](/guides/configuring-the-editor/#load-behavior). Either sidebar, once collapsed, has only its own expand button (also hidden) to reopen it; an app that hides either toggle must give the user another way in, e.g. a button calling `setPaletteOpen(true)` or `setPropertiesPanelOpen(true)`.
-- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. Two exceptions are not guarded today: `openImport` replaces the whole diagram and `openSettings` lets you edit the persisted global variables, and neither checks `isReadOnly`. Hide them explicitly where that matters: `builtInControls={{ import: canEdit, settings: canEdit }}`. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
+- **Read-only mode blocks the actions that change the persisted model**: `openTemplates`, `setWorkflowName`, `deleteSelection`, `setLayoutDirection`, `toggleLayoutDirection`, `cleanUp`. Every other action, including `save`, `openExport`, the theme and palette/panel toggles, the palette filter and the language switch, always runs. Two exceptions are not guarded today: `openImport` replaces the whole diagram and `openSettings` lets you edit the persisted global variables, and neither checks `isReadOnly`. Hide them explicitly where that matters: `builtInControls={{ import: canEdit, settings: canEdit }}`. A custom button that changes the diagram checks `isReadOnly` itself; the SDK only guards its own actions.
 - **Content from a node's properties form lives with the form.** It mounts only while the panel is expanded and that tab is active, and unmounts with the form; content meant to be always present belongs in the app tree instead.
 - **An empty area, or a menu with no items, disappears**, and a collapsed sidebar shows only its title and the expand button; its own header content and menu disappear with the rest.
 - **Two `…Content` components in the same area both render; nothing merges them.** Two buttons added from two different places both show up, in mount order.
+- **One supply of each kind is in use, and your app's wins over a plugin's.** Render `<EditorHeaderSaveAsPdf>` in your app to override the one a plugin supplies; when yours unmounts, the plugin's is in use again. Two from the same side (two in your app, or two plugins) log a warning, and the one mounted last runs.
+- **A plugin's decorators outlive its Root.** What a plugin registers stays registered after the Root that ran it unmounts, so a later Root without that plugin still renders it. Pass the same `plugins` to Roots that follow each other, or render the supply components in the app tree, which belongs to one Root.
 - **A `…MenuItem` may repeat a built-in label.** Every registered row is keyed by its own identity, so a second "Export" next to the built-in one shows as a separate row rather than colliding with it. Whether two rows with the same text make sense is the app's call.
 - **A canvas node template is the wrong place** for any of these components: it renders once per node on the canvas, not once for the app.
 

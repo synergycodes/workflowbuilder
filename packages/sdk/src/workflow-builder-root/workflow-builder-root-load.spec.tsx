@@ -7,6 +7,7 @@ import '../features/i18n/index';
 import { getStoreSavingStatus, loadData } from '../features/integration/stores/use-integration-store';
 import type * as integrationStore from '../features/integration/stores/use-integration-store';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
+import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/editor-header-save-as-pdf';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from '../hooks/use-workflow-builder-actions';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -128,6 +129,17 @@ describe('WorkflowBuilderRoot onLoad', () => {
 
     expect(onLoad).toHaveBeenCalledOnce();
     expect(templateSelectorOpenings).toBe(0);
+  });
+
+  it('the actions from the load context run what the Root children supply to the editor header', async () => {
+    const onSaveAsPdf = vi.fn();
+
+    await renderRoot({
+      onLoad: ({ actions }) => actions.saveAsPdf(),
+      children: <EditorHeaderSaveAsPdf onSaveAsPdf={onSaveAsPdf} />,
+    });
+
+    expect(onSaveAsPdf).toHaveBeenCalledOnce();
   });
 
   it('actions.openTemplates from the load context opens the template selector', async () => {

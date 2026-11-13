@@ -190,7 +190,7 @@ export type WorkflowBuilderReactFlowProps = Omit<
 export type WorkflowBuilderLogo = string | { light: string; dark: string } | ReactElement;
 
 /**
- * Version shown in the editor header version chip.
+ * Version shown in the editor header version chip, supplied through `<EditorHeaderVersion>`.
  *
  * @category Core
  */
@@ -199,25 +199,6 @@ export type WorkflowBuilderVersion = {
   number: number;
   /** Marks the version as an unpublished draft. */
   isDraft: boolean;
-};
-
-/**
- * Host-wired editor header controls. Each renders only when its field is set.
- *
- * @category Core
- */
-export type WorkflowBuilderEditorHeaderOptions = {
-  /**
-   * Called with the chosen direction when the user picks Clean up. The SDK has already set and tracked the new
-   * direction before calling it; moving (and tracking) the nodes is the host's job.
-   */
-  onCleanUp?: (direction: LayoutDirection) => void | Promise<void>;
-  /** Called when the user picks Save as PDF in the workflow name menu. */
-  onSaveAsPdf?: () => void;
-  /** Version shown in the chip next to the workflow name. */
-  version?: WorkflowBuilderVersion;
-  /** Called when the user clicks Publish. */
-  onPublish?: () => void;
 };
 
 /**
@@ -307,8 +288,6 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   logo?: WorkflowBuilderLogo;
   /** Wraps the editor header logo (built-in or custom) in a link opened in a new tab. */
   logoHref?: string;
-  /** Host-wired editor header controls: Clean up, Save as PDF, version chip and Publish. Each renders only when its field is set. */
-  editorHeader?: WorkflowBuilderEditorHeaderOptions;
   /** Initial layout direction (`'RIGHT'` or `'DOWN'`). */
   layoutDirection?: LayoutDirection;
   /** Initial nodes rendered on first mount. */
@@ -333,10 +312,9 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    */
   reactFlowProps?: WorkflowBuilderReactFlowProps;
   /**
-   * Hides built-in controls of the editor header, the palette and the properties panel. Keys: `save`,
-   * `readOnlyToggle`, `themeToggle`, `languageSelector`, `settings`, `workflowRename`, `export`,
-   * `import`, `templates`, `paletteToggle`, `delete`, `propertiesPanelToggle`. Every key defaults to
-   * `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
+   * Hides built-in controls of the editor header, the palette and the properties panel; the keys are
+   * listed in {@link BuiltInControls}. Hiding `workflowName` (the title) also hides renaming. Every key defaults
+   * to `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
    * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
    * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding
    * `paletteToggle` means it never opens unless the app calls `setPaletteOpen(true)` itself, e.g.

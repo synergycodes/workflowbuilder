@@ -1,10 +1,14 @@
 import { type PropsWithChildren, createContext, useContext, useRef, useSyncExternalStore } from 'react';
 
+import { useIsBuiltInControlVisible } from './built-in-controls-context';
 import {
   type AreaId,
   type AreaPlace,
   type AreaSlot,
   EMPTY_SLOT,
+  type HeaderSupplies,
+  type HeaderSupplyKind,
+  type HeaderSupplySource,
   type MenuId,
   type RegisteredMenuItem,
   type UiExtensionRegistry,
@@ -12,6 +16,8 @@ import {
 } from './ui-extension-registry';
 
 const UiExtensionContext = createContext<UiExtensionRegistry | null>(null);
+
+const HeaderSupplySourceContext = createContext<HeaderSupplySource>('app');
 
 const NO_MENU_ITEMS: readonly RegisteredMenuItem[] = Object.freeze([]);
 
@@ -34,6 +40,15 @@ export function useUiExtensionRegistry(): UiExtensionRegistry | null {
   return useContext(UiExtensionContext);
 }
 
+/** Marks the header supplies rendered below it as a plugin's, so the app's own take precedence. */
+export function PluginSupplySource({ children }: PropsWithChildren) {
+  return <HeaderSupplySourceContext.Provider value="plugin">{children}</HeaderSupplySourceContext.Provider>;
+}
+
+export function useHeaderSupplySource(): HeaderSupplySource {
+  return useContext(HeaderSupplySourceContext);
+}
+
 export function useAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot {
   const registry = useUiExtensionRegistry();
   const getSnapshot = () => (registry ? registry.getAreaSlot(area, place) : EMPTY_SLOT);
@@ -48,6 +63,28 @@ export function useAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot
 export function useRegisteredMenuItems(menu: MenuId): readonly RegisteredMenuItem[] {
   const registry = useUiExtensionRegistry();
   const getSnapshot = () => (registry ? registry.getMenuItems(menu) : NO_MENU_ITEMS);
+
+  return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
+}
+
+export function useHeaderSupply<K extends HeaderSupplyKind>(kind: K): HeaderSupplies[K] | undefined {
+  const registry = useUiExtensionRegistry();
+  const getSnapshot = () => registry?.getHeaderSupply(kind);
+
+  return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
+}
+
+/** Whether the built-in control of that kind shows: not hidden by `builtInControls`, and supplied. */
+export function useIsHeaderControlShown(kind: HeaderSupplyKind): boolean {
+  const isVisible = useIsBuiltInControlVisible(kind);
+  const isSupplied = useHeaderSupply(kind) !== undefined;
+
+  return isVisible && isSupplied;
+}
+
+export function useIsCleanUpPending(): boolean {
+  const registry = useUiExtensionRegistry();
+  const getSnapshot = () => registry?.isCleanUpPending() ?? false;
 
   return useSyncExternalStore(registry?.subscribe ?? subscribeToNothing, getSnapshot, getSnapshot);
 }
