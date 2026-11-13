@@ -1,5 +1,5 @@
 ---
-'@workflowbuilder/sdk': major
+'@workflowbuilder/sdk': minor
 ---
 
-**Breaking.** Built-in edges and the edge drawn while connecting end in an arrow at the target, in the colour of the line. `EdgePath` and the `'OptionalEdgePath'` slot take `endpoint` (`arrow`, `circle`, `none`), so a `place: 'wrapper'` decorator can change or remove it; `EnhancedBaseEdge` takes it too and draws none by default.
+`EdgePath`, the `'OptionalEdgePath'` slot and `EnhancedBaseEdge` take `endpoint` (`arrow`, `circle`, `none`): a terminator at the target end, in the colour of the line. The default is `none`, so edges look as before until an app sets it, for example from a `place: 'wrapper'` decorator.

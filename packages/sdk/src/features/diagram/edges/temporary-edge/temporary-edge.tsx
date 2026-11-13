@@ -31,5 +31,5 @@ export function TemporaryEdge({ fromX, fromY, fromPosition, toX, toY, toPosition
     offset,
   });
 
-  return <EnhancedBaseEdge path={edgePath} style={style} endpoint="arrow" />;
+  return <EnhancedBaseEdge path={edgePath} style={style} />;
 }

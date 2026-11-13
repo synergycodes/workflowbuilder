@@ -26,19 +26,18 @@ export type EdgePathProps = {
   hovered?: boolean;
   runState?: EdgeRunState;
   lineType?: EdgeLineType;
-  /** Terminator at the target end, `arrow` by default. */
+  /** Terminator at the target end, `none` by default. */
   endpoint?: EdgeEndpoint;
 };
 
 /**
  * Draws one edge path with the design-system look, through `useEdgeStyle` and
- * {@link EnhancedBaseEdge}, ending in an arrow at the target. `runState`,
- * `lineType` and `endpoint` come from the app: render {@link OptionalEdgePath}
- * instead to let a plugin set them.
+ * {@link EnhancedBaseEdge}. `runState`, `lineType` and `endpoint` come from the
+ * app: render {@link OptionalEdgePath} instead to let a plugin set them.
  *
  * @category Components
  */
-export function EdgePath({ edgeId, path, state, hovered, runState, lineType, endpoint = 'arrow' }: EdgePathProps) {
+export function EdgePath({ edgeId, path, state, hovered, runState, lineType, endpoint }: EdgePathProps) {
   const style = useEdgeStyle({ state, isHovered: hovered, runState, lineType });
 
   return <EnhancedBaseEdge id={edgeId} path={path} style={style} endpoint={endpoint} data-run-state={runState} />;
