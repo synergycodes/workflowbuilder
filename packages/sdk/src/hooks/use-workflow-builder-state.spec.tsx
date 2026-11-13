@@ -10,6 +10,8 @@ import { resetWorkflowStore, useStore } from '../store/store';
 import { setTheme } from './theme';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from './use-workflow-builder-state';
 
+function noop() {}
+
 function renderState() {
   const seen: WorkflowBuilderState[] = [];
 
@@ -168,18 +170,21 @@ describe('useWorkflowBuilderState', () => {
       seen.push(useWorkflowBuilderState());
       return null;
     }
-    const tree = (
+    // Fresh elements each call: rerendering the same element object would skip Consumer entirely.
+    const tree = () => (
       <>
         <Consumer />
         <EditorHeaderVersion number={1} isDraft />
-        <EditorHeaderSaveAsPdf onSaveAsPdf={() => {}} />
+        <EditorHeaderSaveAsPdf onSaveAsPdf={noop} />
       </>
     );
-    const { rerender } = renderInRoot(tree);
+    const { rerender } = renderInRoot(tree());
     const settled = seen.at(-1)!;
+    const rendersBefore = seen.length;
 
-    rerender(tree);
+    rerender(tree());
 
+    expect(seen.length).toBeGreaterThan(rendersBefore);
     expect(seen.at(-1)).toBe(settled);
     expect(settled.availableActions.saveAsPdf).toBe(true);
   });
