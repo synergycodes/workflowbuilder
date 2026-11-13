@@ -119,7 +119,7 @@ registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
 });
 ```
 
-`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Nothing is written to the edge data, the store or undo history:
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
 
 ```tsx
 import {
@@ -134,8 +134,11 @@ import { edgeRunState, useExecutionStore } from './execution-store';
 registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
   place: 'wrapper',
   name: 'edge-run-path',
+  priority: 100,
   content: ({ props, component: Path, children }: WorkflowBuilderDecoratorWrapperProps<EdgePathProps>) => {
-    const runState = useExecutionStore((s) => edgeRunState(s.nodeStates[props.source], s.nodeStates[props.target]));
+    const runState = useExecutionStore((s) =>
+      edgeRunState(s.nodeStates[props.source], s.nodeStates[props.target], props.sourceHandle),
+    );
     return runState ? <Path {...props} runState={runState} /> : children;
   },
 });

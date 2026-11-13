@@ -113,6 +113,20 @@ describe('EdgeRunPath', () => {
     expect(Path.mock.lastCall?.[0]).toMatchObject({ runState: 'running', lineType: 'solid' });
   });
 
+  it('reads the source handle, so the branch a decision did not take stays out of the run', () => {
+    setExecutionStarted('run-1', '/stream');
+    useExecutionStore.setState({
+      status: 'running',
+      nodeStates: { branch: { status: 'completed', nextPort: 'yes' }, agent: { status: 'running' } },
+    });
+
+    render({ ...edge('branch', 'agent'), sourceHandle: 'no' });
+    expect(Path.mock.lastCall?.[0].runState).toBe('outOfRun');
+
+    render({ ...edge('branch', 'agent'), sourceHandle: 'yes' });
+    expect(Path.mock.lastCall?.[0].runState).toBe('running');
+  });
+
   it('draws an edge out of a decision dashed without a run', () => {
     render(edge('branch', 'agent'));
 
