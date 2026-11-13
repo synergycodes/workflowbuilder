@@ -5,7 +5,9 @@ import {
   type EdgeState,
   useEdgeStyle,
 } from '@workflowbuilder/ui';
+import { useContext } from 'react';
 
+import { EdgeEndpointContext } from '../edge-endpoint-context';
 import { EnhancedBaseEdge } from '../enhanced-base-edge/enhanced-base-edge';
 
 /**
@@ -26,7 +28,7 @@ export type EdgePathProps = {
   hovered?: boolean;
   runState?: EdgeRunState;
   lineType?: EdgeLineType;
-  /** Terminator at the target end, `none` by default. */
+  /** Terminator at the target end. Defaults to `edgeEndpoint` of `<WorkflowBuilder.Root>`. */
   endpoint?: EdgeEndpoint;
 };
 
@@ -39,6 +41,15 @@ export type EdgePathProps = {
  */
 export function EdgePath({ edgeId, path, state, hovered, runState, lineType, endpoint }: EdgePathProps) {
   const style = useEdgeStyle({ state, isHovered: hovered, runState, lineType });
+  const rootEndpoint = useContext(EdgeEndpointContext);
 
-  return <EnhancedBaseEdge id={edgeId} path={path} style={style} endpoint={endpoint} data-run-state={runState} />;
+  return (
+    <EnhancedBaseEdge
+      id={edgeId}
+      path={path}
+      style={style}
+      endpoint={endpoint ?? rootEndpoint}
+      data-run-state={runState}
+    />
+  );
 }

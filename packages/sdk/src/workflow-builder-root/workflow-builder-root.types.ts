@@ -1,3 +1,4 @@
+import type { EdgeEndpoint } from '@workflowbuilder/ui';
 import type { Connection, EdgeProps, ReactFlowProps } from '@xyflow/react';
 import type { ComponentType, PropsWithChildren, ReactElement } from 'react';
 
@@ -352,4 +353,10 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
    * ```
    */
   builtInControls?: BuiltInControls;
+  /**
+   * Terminator every edge ends with at its target: `'arrow'`, `'circle'` or `'none'` (the default). It has
+   * the colour of the line in every state. Applies to the built-in edges, the edge drawn while connecting and any
+   * custom edge drawn with `OptionalEdgePath` or `EdgePath`; an `endpoint` passed to those wins for that edge.
+   */
+  edgeEndpoint?: EdgeEndpoint;
 }>;

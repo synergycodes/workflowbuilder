@@ -18,7 +18,7 @@
 // which vitest's node-side transformer can't process.
 import { act, render } from '@testing-library/react';
 import type { ReactNode } from 'react';
-import { StrictMode } from 'react';
+import { StrictMode, useContext } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import {
@@ -27,6 +27,7 @@ import {
   setIsValidConnection,
   setReactFlowProps,
 } from '../data/react-flow-config';
+import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
 import { type PaletteItem, StatusType } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from '../store/store';
@@ -224,6 +225,25 @@ describe('WorkflowBuilderRoot — react-flow config wiring', () => {
 
     expect(getIsValidConnection()).toBeNull();
     expect(getReactFlowProps()).toEqual({});
+  });
+});
+
+describe('WorkflowBuilderRoot — edge endpoint', () => {
+  function Probe() {
+    return <span data-testid="endpoint">{useContext(EdgeEndpointContext)}</span>;
+  }
+
+  it.each([
+    [undefined, 'none'],
+    ['arrow', 'arrow'],
+  ] as const)('edgeEndpoint %s reaches the edges as %s', (edgeEndpoint, expected) => {
+    const { getByTestId } = render(
+      <WorkflowBuilderRoot edgeEndpoint={edgeEndpoint}>
+        <Probe />
+      </WorkflowBuilderRoot>,
+    );
+
+    expect(getByTestId('endpoint').textContent).toBe(expected);
   });
 });
 

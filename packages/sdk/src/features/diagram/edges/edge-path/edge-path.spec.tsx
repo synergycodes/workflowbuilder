@@ -98,6 +98,25 @@ describe('OptionalEdgePath', () => {
     expect(visiblePath(container).hasAttribute('marker-end')).toBe(false);
   });
 
+  it('takes the terminator of the Root, unless the edge sets its own', async () => {
+    const { OptionalEdgePath } = await load();
+    const { EdgeEndpointContext } = await import('../edge-endpoint-context');
+
+    const { container } = render(
+      <EdgeEndpointContext.Provider value="arrow">
+        <svg>
+          <OptionalEdgePath {...pathProps} />
+          <OptionalEdgePath {...pathProps} edgeId="edge-2" endpoint="none" />
+        </svg>
+      </EdgeEndpointContext.Provider>,
+    );
+
+    const marker = container.querySelector('marker polyline')!.parentElement!;
+    expect(container.querySelectorAll('marker')).toHaveLength(1);
+    expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${marker.id})`);
+    expect(container.querySelector('[data-edge-id="edge-2"]')!.hasAttribute('marker-end')).toBe(false);
+  });
+
   it('a wrapper decorator ends the path in a terminator of the state colour', async () => {
     const { registerComponentDecorator, OptionalEdgePath } = await load();
     registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
