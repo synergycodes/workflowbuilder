@@ -7,6 +7,7 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
+import { usePanelTop } from '../../hooks/use-panel-top';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 import { addNotice } from '../../stores/use-notices-store';
@@ -29,6 +30,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
   // A start waits for the backend; a second one meanwhile would leave two runs streaming into one view.
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
+  const panelTop = usePanelTop();
   const canRun = hasStartNode && !isRunView;
 
   const handleExecute = useCallback(async () => {
@@ -63,6 +65,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
       className={clsx(styles['container'], {
         [styles['container--visible']]: shouldShowControls,
       })}
+      style={{ top: panelTop }}
     >
       <div className={styles['panel']}>
         {isRunning || isStarting ? (

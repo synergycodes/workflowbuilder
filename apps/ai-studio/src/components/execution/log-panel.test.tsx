@@ -1,3 +1,5 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act } from 'react';
 import { createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -51,6 +53,15 @@ function reportResize(target: Element | null) {
   const callback = target && observers.get(target);
   if (!callback) throw new Error('No ResizeObserver watches this element');
   callback();
+}
+
+function sized(element: Element, height: number, rect: Partial<DOMRect>) {
+  Object.defineProperty(element, 'offsetHeight', { configurable: true, value: height });
+  element.getBoundingClientRect = () => rect as DOMRect;
+}
+
+function dockEdge(container: Element, side: 'left' | 'right') {
+  return container.querySelector('section')?.style.getPropertyValue(`--log-dock-${side}`);
 }
 
 describe('ExecutionLogPanel', () => {
@@ -217,6 +228,60 @@ describe('ExecutionLogPanel', () => {
     expect(handle.getAttribute('aria-valuenow')).toBe('200');
     expect(handle.getAttribute('aria-valuemin')).toBe('120');
     expect(handle.getAttribute('aria-valuemax')).toBe(String(Math.round(window.innerHeight * 0.6)));
+  });
+
+  describe('dock edges', () => {
+    let layout: HTMLDivElement | undefined;
+
+    // The SDK's default layout as the anchor hooks read it: palette, #viewport-bounds, right panel.
+    function mountLayout({ isLeftExpanded, isRightExpanded }: { isLeftExpanded: boolean; isRightExpanded: boolean }) {
+      layout = document.createElement('div');
+      layout.innerHTML =
+        '<div><div id="palette"></div></div><div id="viewport-bounds"></div><div><div><div id="properties"></div></div></div>';
+      document.body.prepend(layout);
+
+      sized(layout.children[0], 800, {});
+      sized(layout.children[2], 800, {});
+      sized(layout.querySelector('#palette')!, isLeftExpanded ? 800 : 60, { right: 332 });
+      sized(layout.querySelector('#properties')!, isRightExpanded ? 800 : 60, { left: window.innerWidth - 412 });
+    }
+
+    afterEach(() => {
+      layout?.remove();
+      layout = undefined;
+    });
+
+    it('passes the expanded panels’ edges to the dock without a gap', () => {
+      mountLayout({ isLeftExpanded: true, isRightExpanded: true });
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(dockEdge(container, 'left')).toBe('332px');
+      expect(dockEdge(container, 'right')).toBe('412px');
+    });
+
+    // Vitest stubs CSS modules, so the rule is read from disk.
+    it('adds the layout spacing to the dock’s bottom and both side edges in the stylesheet', () => {
+      const css = readFileSync(path.join(import.meta.dirname, 'log-panel.module.css'), 'utf8').replaceAll(
+        /\/\*[\s\S]*?\*\//g,
+        '',
+      );
+
+      expect(css).toMatch(/\.dock\s*\{[^}]*bottom:\s*var\(--wb-public-layout-spacing\)/);
+      expect(css).toMatch(
+        /\.dock\s*\{[^}]*left:\s*calc\(var\(--log-dock-left, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+      );
+      expect(css).toMatch(
+        /\.dock\s*\{[^}]*right:\s*calc\(var\(--log-dock-right, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+      );
+    });
+
+    it('runs the dock to the canvas edge on each side whose panel is collapsed', () => {
+      mountLayout({ isLeftExpanded: false, isRightExpanded: false });
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(dockEdge(container, 'left')).toBe('0px');
+      expect(dockEdge(container, 'right')).toBe('0px');
+    });
   });
 
   describe('snackbar offset', () => {
