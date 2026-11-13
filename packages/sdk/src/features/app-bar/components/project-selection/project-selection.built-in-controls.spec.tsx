@@ -119,6 +119,8 @@ describe('ProjectSelection builtInControls', () => {
 
     expect(screen.queryByText('My Diagram')).toBeNull();
     expect(screen.queryByRole('textbox')).toBeNull();
+    expect(screen.getByText('Folder Name')).not.toBeNull();
+    expect(screen.queryByText('Folder Name /')).toBeNull();
     expect(screen.getByRole('button', { name: 'Project actions' })).not.toBeNull();
 
     fireEvent.click(screen.getByText('Rename'));

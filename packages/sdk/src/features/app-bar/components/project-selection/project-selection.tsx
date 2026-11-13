@@ -85,7 +85,12 @@ export function ProjectSelection(props: object) {
 
   return (
     <div className={styles['project-selection']}>
-      {isFolderNameVisible && <span className={styles['folder-name']}>{t('header.folderName')} /</span>}
+      {isFolderNameVisible && (
+        <span className={styles['folder-name']}>
+          {t('header.folderName')}
+          {isWorkflowNameVisible && ' /'}
+        </span>
+      )}
       {isWorkflowNameVisible &&
         (editName && isEditable ? (
           <Input
