@@ -29,3 +29,10 @@ export type EdgeRunState = 'pending' | 'running' | 'completed' | 'outOfRun';
  * @category Edge
  */
 export type EdgeLineType = 'solid' | 'dashed';
+
+/**
+ * Terminator drawn where an edge reaches its target.
+ *
+ * @category Edge
+ */
+export type EdgeEndpoint = 'arrow' | 'circle' | 'none';

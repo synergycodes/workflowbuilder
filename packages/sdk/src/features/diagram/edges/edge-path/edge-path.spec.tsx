@@ -85,6 +85,62 @@ describe('OptionalEdgePath', () => {
     expect(visible.getAttribute('d')).toBe('M 0 0 L 100 0');
   });
 
+  it('draws no terminator unless the app asks for one', async () => {
+    const { OptionalEdgePath } = await load();
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} />
+      </svg>,
+    );
+
+    expect(container.querySelector('marker')).toBeNull();
+    expect(visiblePath(container).hasAttribute('marker-end')).toBe(false);
+  });
+
+  it('takes the terminator of the Root, unless the edge sets its own', async () => {
+    const { OptionalEdgePath } = await load();
+    const { EdgeEndpointContext } = await import('../edge-endpoint-context');
+
+    const { container } = render(
+      <EdgeEndpointContext.Provider value="arrow">
+        <svg>
+          <OptionalEdgePath {...pathProps} />
+          <OptionalEdgePath {...pathProps} edgeId="edge-2" endpoint="none" />
+        </svg>
+      </EdgeEndpointContext.Provider>,
+    );
+
+    const marker = container.querySelector('marker polyline')!.parentElement!;
+    expect(container.querySelectorAll('marker')).toHaveLength(1);
+    expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${marker.id})`);
+    expect(container.querySelector('[data-edge-id="edge-2"]')!.hasAttribute('marker-end')).toBe(false);
+  });
+
+  it('a wrapper decorator ends the path in a terminator of the state colour', async () => {
+    const { registerComponentDecorator, OptionalEdgePath } = await load();
+    registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+      place: 'wrapper',
+      name: 'endpoint-path',
+      content: ({ props, component: Path }: WorkflowBuilderDecoratorWrapperProps<EdgePathProps>) => (
+        <Path {...props} endpoint={props.edgeId === 'edge-1' ? 'arrow' : 'circle'} />
+      ),
+    });
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} />
+        <OptionalEdgePath {...pathProps} edgeId="edge-2" />
+      </svg>,
+    );
+
+    const arrow = container.querySelector('marker polyline')!.parentElement!;
+    const circle = container.querySelector('marker circle')!.parentElement!;
+    expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${arrow.id})`);
+    expect(container.querySelector('[data-edge-id="edge-2"]')!.getAttribute('marker-end')).toBe(`url(#${circle.id})`);
+    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-color-select)');
+  });
+
   it('a wrapper decorator that returns children keeps the edit look', async () => {
     const { registerComponentDecorator, OptionalEdgePath } = await load();
     registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
