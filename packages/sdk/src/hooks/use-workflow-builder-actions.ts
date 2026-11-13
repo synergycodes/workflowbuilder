@@ -104,8 +104,9 @@ export type WorkflowBuilderActions = {
   setWorkflowName: (name: string) => void;
   /**
    * Run the supplied Clean up. A `direction` different from the current one is set and tracked
-   * for undo first. Does nothing while a previous clean-up is pending; the promise settles when
-   * the host's does and never rejects: a host throw or rejection only ends the busy state.
+   * for undo first. Does nothing on an empty canvas or while a previous clean-up is pending; the
+   * promise settles when the host's does and never rejects: a host throw or rejection only ends
+   * the busy state.
    */
   cleanUp: (direction?: LayoutDirection) => Promise<void>;
   /** Run the supplied Save as PDF. */

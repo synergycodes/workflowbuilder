@@ -103,7 +103,7 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     }),
 
     cleanUp: async (direction?: LayoutDirection) => {
-      if (!canEdit() || !registry) return;
+      if (!canEdit() || !registry || store().nodes.length === 0) return;
       const onCleanUp = registry.getHeaderSupply('cleanUp');
       if (!onCleanUp || registry.isCleanUpPending()) return;
 

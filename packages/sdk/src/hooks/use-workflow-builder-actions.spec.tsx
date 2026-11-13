@@ -633,6 +633,22 @@ describe('useWorkflowBuilderActions', () => {
   });
 
   describe('cleanUp', () => {
+    beforeEach(() => {
+      useStore.setState({ nodes: [{ id: 'n1', position: { x: 0, y: 0 } }] as never });
+    });
+
+    it('does nothing on an empty canvas, not even change the direction', async () => {
+      useStore.setState({ nodes: [] });
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+
+      expect(onCleanUp).not.toHaveBeenCalled();
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
     it('does nothing without a supplied Clean up, not even change the direction', async () => {
       const view = renderWithSupplies(null);
 

@@ -225,9 +225,9 @@ Design decisions a reader of the code should know:
   - The actions `cleanUp`, `saveAsPdf` and `publish` run the supply, and the built-in controls call
     them. So `UiExtensionProvider` moved from `RootShell` up to `WorkflowBuilderRoot`, above
     `RuntimeIntegrationWrapper`, where the actions are created; it is still one registry per
-    mount. `cleanUp` tracks and sets a changed direction before the host runs, and is read-only
-    guarded; `publish` runs only for a draft, so a rebuilt button cannot publish what the built-in
-    would refuse. The pending clean-up lives in the registry, so the split button, the ⋮ and a
+    mount. `cleanUp` tracks and sets a changed direction before the host runs, and does nothing in
+    read-only mode or on an empty canvas, where the built-in is disabled; `publish` runs only for a
+    draft. So a rebuilt control cannot run what the built-in would refuse. The pending clean-up lives in the registry, so the split button, the ⋮ and a
     host's own control see one busy state (`isCleanUpPending`).
   - Every header part now has a key, `logo`, `folderName`, `workflowName`, `version`, `cleanUp`,
     `saveAsPdf` and `publish` included, so the cost named in the 4.0 bullet above, that the title
