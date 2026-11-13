@@ -67,7 +67,14 @@ export type HeaderSupplies = {
 
 export type HeaderSupplyKind = keyof HeaderSupplies;
 
-type HeaderSupplyEntry<K extends HeaderSupplyKind> = { id: string; value: HeaderSupplies[K] };
+/** Who rendered a supply: the app's own tree, or a plugin through `OptionalAppChildren`. */
+export type HeaderSupplySource = 'app' | 'plugin';
+
+type HeaderSupplyEntry<K extends HeaderSupplyKind> = {
+  id: string;
+  value: HeaderSupplies[K];
+  source: HeaderSupplySource;
+};
 
 type HeaderSupplyStacks = { [K in HeaderSupplyKind]: readonly HeaderSupplyEntry<K>[] };
 
@@ -85,17 +92,31 @@ export type UiExtensionRegistry = {
   /** Adds the item at the end, or replaces the item with the same `id` where it stands. */
   upsertMenuItem(menu: MenuId, item: RegisteredMenuItem): void;
   removeMenuItem(menu: MenuId, id: string): void;
-  /** The supply of that kind mounted last, or `undefined` while none is mounted. */
-  getHeaderSupply<K extends HeaderSupplyKind>(kind: K): HeaderSupplies[K] | undefined;
-  /** Replaces the supply with the same `id` where it stands, or adds it as the one in use. */
-  upsertHeaderSupply<K extends HeaderSupplyKind>(kind: K, id: string, value: HeaderSupplies[K]): void;
-  /** Removes the supply; the one mounted before it is in use again. */
+  /**
+   * The supply in use: the app's mounted last, else a plugin's mounted last; `undefined` while none
+   * is mounted. With `source`, the one of that source mounted last.
+   */
+  getHeaderSupply<K extends HeaderSupplyKind>(kind: K, source?: HeaderSupplySource): HeaderSupplies[K] | undefined;
+  /** Replaces the supply with the same `id` where it stands, or adds it as the last of its source. */
+  upsertHeaderSupply<K extends HeaderSupplyKind>(
+    kind: K,
+    id: string,
+    value: HeaderSupplies[K],
+    source: HeaderSupplySource,
+  ): void;
+  /** Removes the supply; the one that would be in use without it is in use again. */
   removeHeaderSupply(kind: HeaderSupplyKind, id: string): void;
   isCleanUpPending(): boolean;
   setCleanUpPending(isPending: boolean): void;
 };
 
 export const EMPTY_SLOT: AreaSlot = Object.freeze({ element: null });
+
+function lastOfSource<E extends { source: HeaderSupplySource }>(stack: readonly E[], source: HeaderSupplySource) {
+  for (let index = stack.length - 1; index >= 0; index--) {
+    if (stack[index].source === source) return stack[index];
+  }
+}
 
 export function createUiExtensionRegistry(): UiExtensionRegistry {
   const listeners = new Set<() => void>();
@@ -149,12 +170,14 @@ export function createUiExtensionRegistry(): UiExtensionRegistry {
         items.filter((existing) => existing.id !== id),
       );
     },
-    getHeaderSupply(kind) {
-      return supplies[kind].at(-1)?.value;
-    },
-    upsertHeaderSupply(kind, id, value) {
+    getHeaderSupply(kind, source) {
       const stack = supplies[kind];
-      const entry = { id, value };
+      if (source) return lastOfSource(stack, source)?.value;
+      return (lastOfSource(stack, 'app') ?? stack.at(-1))?.value;
+    },
+    upsertHeaderSupply(kind, id, value, source) {
+      const stack = supplies[kind];
+      const entry = { id, value, source };
       const isRegistered = stack.some((existing) => existing.id === id);
       supplies = {
         ...supplies,

@@ -131,26 +131,26 @@ describe('editor header supply components', () => {
 
   it('the one mounted last is used, with a warning, and the earlier one returns when it unmounts', () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
-    const fromPlugin = vi.fn();
-    const fromApp = vi.fn();
-    const view = renderInRoot(<EditorHeaderSaveAsPdf onSaveAsPdf={fromPlugin} />);
+    const first = vi.fn();
+    const second = vi.fn();
+    const view = renderInRoot(<EditorHeaderSaveAsPdf onSaveAsPdf={first} />);
 
     view.rerender(
       <>
-        <EditorHeaderSaveAsPdf onSaveAsPdf={fromPlugin} />
-        <EditorHeaderSaveAsPdf onSaveAsPdf={fromApp} />
+        <EditorHeaderSaveAsPdf onSaveAsPdf={first} />
+        <EditorHeaderSaveAsPdf onSaveAsPdf={second} />
       </>,
     );
     view.registry.getHeaderSupply('saveAsPdf')!();
 
-    expect(fromApp).toHaveBeenCalledTimes(1);
+    expect(second).toHaveBeenCalledTimes(1);
     expect(warn).toHaveBeenCalledTimes(1);
     expect(warn.mock.calls[0][0]).toContain('<EditorHeaderSaveAsPdf> is mounted more than once');
 
-    view.rerender(<EditorHeaderSaveAsPdf onSaveAsPdf={fromPlugin} />);
+    view.rerender(<EditorHeaderSaveAsPdf onSaveAsPdf={first} />);
     view.registry.getHeaderSupply('saveAsPdf')!();
 
-    expect(fromPlugin).toHaveBeenCalledTimes(1);
+    expect(first).toHaveBeenCalledTimes(1);
   });
 
   it('a changed version replaces the supplied one', () => {

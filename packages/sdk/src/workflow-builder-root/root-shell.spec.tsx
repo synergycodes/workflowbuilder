@@ -3,6 +3,8 @@ import type { ReactNode } from 'react';
 import { StrictMode } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
+import { registerComponentDecorator } from '../features/plugins-core/adapters/adapter-components';
+
 import '../features/i18n/index';
 import { AreaTarget } from '../features/ui-extensions/area-target';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
@@ -115,6 +117,47 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
       isCleanUpPending: false,
       availableActions: { cleanUp: false, saveAsPdf: false, publish: false },
     });
+  });
+
+  it("the app's own supply is in use over a plugin's, without a warning, and the plugin's returns when it unmounts", () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const fromApp = vi.fn();
+    const fromPlugin = vi.fn();
+    registerComponentDecorator('OptionalAppChildren', {
+      name: 'pdf-test-plugin',
+      content: () => <EditorHeaderSaveAsPdf onSaveAsPdf={fromPlugin} />,
+    });
+    let registry: UiExtensionRegistry | null = null;
+    function RegistryProbe() {
+      registry = useUiExtensionRegistry();
+      return null;
+    }
+
+    try {
+      const view = render(
+        <WorkflowBuilderRoot>
+          <RegistryProbe />
+          <EditorHeaderSaveAsPdf onSaveAsPdf={fromApp} />
+        </WorkflowBuilderRoot>,
+      );
+      registry!.getHeaderSupply('saveAsPdf')!();
+
+      expect(fromApp).toHaveBeenCalledOnce();
+      expect(fromPlugin).not.toHaveBeenCalled();
+      expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('is mounted more than once'));
+
+      view.rerender(
+        <WorkflowBuilderRoot>
+          <RegistryProbe />
+        </WorkflowBuilderRoot>,
+      );
+      registry!.getHeaderSupply('saveAsPdf')!();
+
+      expect(fromPlugin).toHaveBeenCalledOnce();
+    } finally {
+      registerComponentDecorator('OptionalAppChildren', { name: 'pdf-test-plugin' });
+      warn.mockRestore();
+    }
   });
 
   it('openSettings shows the modal in a Root with only a custom header and no canvas', () => {

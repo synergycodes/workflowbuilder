@@ -87,7 +87,7 @@ describe('createUiExtensionRegistry', () => {
 
     expect(registry.getHeaderSupply('cleanUp')).toBeUndefined();
 
-    registry.upsertHeaderSupply('cleanUp', 'a', onCleanUp);
+    registry.upsertHeaderSupply('cleanUp', 'a', onCleanUp, 'app');
 
     expect(registry.getHeaderSupply('cleanUp')).toBe(onCleanUp);
     expect(registry.getHeaderSupply('publish')).toBeUndefined();
@@ -97,8 +97,8 @@ describe('createUiExtensionRegistry', () => {
     const registry = createUiExtensionRegistry();
     const first = vi.fn();
     const second = vi.fn();
-    registry.upsertHeaderSupply('saveAsPdf', 'a', first);
-    registry.upsertHeaderSupply('saveAsPdf', 'b', second);
+    registry.upsertHeaderSupply('saveAsPdf', 'a', first, 'app');
+    registry.upsertHeaderSupply('saveAsPdf', 'b', second, 'app');
 
     expect(registry.getHeaderSupply('saveAsPdf')).toBe(second);
 
@@ -107,12 +107,28 @@ describe('createUiExtensionRegistry', () => {
     expect(registry.getHeaderSupply('saveAsPdf')).toBe(first);
   });
 
+  it("the app's supply is in use over a plugin's added later, and the plugin's returns once it is removed", () => {
+    const registry = createUiExtensionRegistry();
+    const fromApp = vi.fn();
+    const fromPlugin = vi.fn();
+    registry.upsertHeaderSupply('saveAsPdf', 'app', fromApp, 'app');
+    registry.upsertHeaderSupply('saveAsPdf', 'plugin', fromPlugin, 'plugin');
+
+    expect(registry.getHeaderSupply('saveAsPdf')).toBe(fromApp);
+    expect(registry.getHeaderSupply('saveAsPdf', 'plugin')).toBe(fromPlugin);
+
+    registry.removeHeaderSupply('saveAsPdf', 'app');
+
+    expect(registry.getHeaderSupply('saveAsPdf')).toBe(fromPlugin);
+    expect(registry.getHeaderSupply('saveAsPdf', 'app')).toBeUndefined();
+  });
+
   it('upsertHeaderSupply with a known id replaces it where it stands', () => {
     const registry = createUiExtensionRegistry();
-    registry.upsertHeaderSupply('version', 'a', { number: 1, isDraft: true });
-    registry.upsertHeaderSupply('version', 'b', { number: 2, isDraft: true });
+    registry.upsertHeaderSupply('version', 'a', { number: 1, isDraft: true }, 'app');
+    registry.upsertHeaderSupply('version', 'b', { number: 2, isDraft: true }, 'app');
 
-    registry.upsertHeaderSupply('version', 'a', { number: 3, isDraft: false });
+    registry.upsertHeaderSupply('version', 'a', { number: 3, isDraft: false }, 'app');
 
     expect(registry.getHeaderSupply('version')).toEqual({ number: 2, isDraft: true });
     registry.removeHeaderSupply('version', 'b');
@@ -124,7 +140,7 @@ describe('createUiExtensionRegistry', () => {
     const listener = vi.fn();
     registry.subscribe(listener);
 
-    registry.upsertHeaderSupply('publish', 'a', vi.fn());
+    registry.upsertHeaderSupply('publish', 'a', vi.fn(), 'app');
     registry.removeHeaderSupply('publish', 'a');
     registry.removeHeaderSupply('publish', 'a');
     registry.setCleanUpPending(true);

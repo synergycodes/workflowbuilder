@@ -8,6 +8,7 @@ import {
   EMPTY_SLOT,
   type HeaderSupplies,
   type HeaderSupplyKind,
+  type HeaderSupplySource,
   type MenuId,
   type RegisteredMenuItem,
   type UiExtensionRegistry,
@@ -15,6 +16,8 @@ import {
 } from './ui-extension-registry';
 
 const UiExtensionContext = createContext<UiExtensionRegistry | null>(null);
+
+const HeaderSupplySourceContext = createContext<HeaderSupplySource>('app');
 
 const NO_MENU_ITEMS: readonly RegisteredMenuItem[] = Object.freeze([]);
 
@@ -35,6 +38,15 @@ export function UiExtensionProvider({ children }: PropsWithChildren) {
 /** The registry of the enclosing Root, or `null` outside one. */
 export function useUiExtensionRegistry(): UiExtensionRegistry | null {
   return useContext(UiExtensionContext);
+}
+
+/** Marks the header supplies rendered below it as a plugin's, so the app's own take precedence. */
+export function PluginSupplySource({ children }: PropsWithChildren) {
+  return <HeaderSupplySourceContext.Provider value="plugin">{children}</HeaderSupplySourceContext.Provider>;
+}
+
+export function useHeaderSupplySource(): HeaderSupplySource {
+  return useContext(HeaderSupplySourceContext);
 }
 
 export function useAreaSlot(area: AreaId, place: AreaPlace = 'before'): AreaSlot {
