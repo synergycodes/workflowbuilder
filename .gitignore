@@ -67,6 +67,10 @@ CLAUDE.local.md
 
 .playwright-mcp/
 
+# Playwright output of apps/e2e: traces, screenshots, stack logs, the HTML report
+apps/e2e/test-results/
+apps/e2e/playwright-report/
+
 # TypeDoc-generated API reference under apps/docs (built from packages/sdk's
 # barrel by `starlight-typedoc` at `astro build` / `astro dev`). Output is
 # regenerated on every build, never hand-edited — keep it out of git.

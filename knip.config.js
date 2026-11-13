@@ -31,6 +31,11 @@ export default {
       // over the network on every run.
       ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
     },
+    'apps/e2e': {
+      // Playwright loads global-setup.ts by the path in its config, so nothing imports it.
+      entry: ['playwright.config.ts', 'src/stack/global-setup.ts', 'tests/**/*.spec.ts'],
+      project: ['src/**/*.ts', 'tests/**/*.ts', 'playwright.config.ts'],
+    },
     'apps/tools': {
       entry: ['src/scripts/*.ts'],
       project: 'src/**/*.ts',

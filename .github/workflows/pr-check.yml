@@ -10,9 +10,10 @@ name: PR Check
 # every deploy, the deploy Dockerfile's air-gap boundary (every RUN after
 # `pnpm fetch` must be --network=none), and global format consistency.
 # apps/docs has its own path-filtered workflow (pr-check-docs.yml); demo and
-# ai-studio are not built or type-checked here — they're internal and have their
+# ai-studio are not linted or type-checked here — they're internal and have their
 # own broken-state tolerances — but their CSS goes through the style lint below
-# like every other workspace's.
+# like every other workspace's. ai-studio is built and driven in a browser by the
+# e2e job, on the full stack (backend, Temporal, worker) with a fake LLM.
 
 # PRs into main and release get checks. Add an integration branch here for
 # the time it is the base of stacked PRs.
@@ -383,3 +384,64 @@ jobs:
 
       - name: Test
         run: pnpm --filter @workflow-builder/execution-core --filter @workflow-builder/ai-config --filter @workflow-builder/temporal-connection --filter @workflow-builder/backend --filter @workflow-builder/execution-worker test
+
+  e2e:
+    name: AI Studio end-to-end
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    # The one job with infra it cannot start itself: Postgres. The suite starts the rest
+    # (Temporal's dev server, a fake LLM, backend, worker, the built AI Studio): apps/e2e/README.md.
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: wb
+          POSTGRES_PASSWORD: wb
+        ports:
+          - 5442:5432
+        options: >-
+          --health-cmd "pg_isready -U wb -d postgres"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter @workflow-builder/e2e exec playwright install --with-deps chromium
+
+      - name: Lint
+        run: pnpm --filter @workflow-builder/e2e lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflow-builder/e2e typecheck
+
+      - name: End-to-end tests
+        run: pnpm e2e
+
+      - name: Upload the Playwright report and stack logs
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report
+          path: |
+            apps/e2e/playwright-report/
+            apps/e2e/test-results/
+          retention-days: 7
