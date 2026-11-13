@@ -18,6 +18,9 @@ Arguments after `pnpm e2e` go to Playwright: `pnpm e2e approve-refund`, `pnpm e2
 The suite uses its own ports and its own database, so it runs next to `pnpm dev:ai-studio`. It is not part of
 `pnpm test`.
 
+macOS and Linux only. The stack runner starts and stops each process as a POSIX process group, which native Windows
+does not have: there `pnpm e2e` stops with a message before anything starts. Use WSL2.
+
 ## What a run starts
 
 Playwright's global setup (`src/stack/global-setup.ts`) starts each piece in this order, waits for its ready signal,

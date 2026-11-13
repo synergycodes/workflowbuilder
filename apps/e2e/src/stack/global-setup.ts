@@ -34,6 +34,9 @@ async function assertHealthy(url: string) {
 }
 
 async function startStack(cleanups: Cleanup[]) {
+  if (process.platform === 'win32') {
+    throw new Error('pnpm e2e runs on macOS and Linux only. On Windows, run it inside WSL2.');
+  }
   assertBuilt('packages/temporal', 'pnpm build:temporal');
   assertBuilt('packages/ui', 'pnpm build:ui');
   await assertPortFree(settings.backendPort, 'e2e backend', 'E2E_BACKEND_PORT');
