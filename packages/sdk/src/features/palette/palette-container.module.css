@@ -1,5 +1,5 @@
 .sidebar {
   /* The DS palette item is 241px wide, independent of the canvas node width. */
-  --wb-public-node-width: 15.0625rem;
+  --wb-public-node-width: 15.0625rem; /* missing token */
   width: auto;
 }

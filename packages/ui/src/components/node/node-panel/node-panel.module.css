@@ -14,6 +14,7 @@
 
   --wb-public-node-background-color-disabled: var(--wb-ds-canvas-node-bg-primary-disabled);
 
+  --wb-public-node-background-color-selected: var(--wb-ds-canvas-node-bg-primary-active);
   --wb-public-node-border-color-selected: var(--wb-ds-canvas-node-stroke-hover);
   --wb-public-node-box-shadow-selected: var(--wb-ds-shadow-canvas-focus-ring-node-x)
     var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
@@ -40,7 +41,7 @@
     outline-offset: calc(-1 * var(--wb-public-node-border-size));
 
     &.selected {
-      background: var(--wb-ds-canvas-node-bg-primary-active);
+      background: var(--wb-public-node-background-color-selected);
       outline-color: var(--wb-public-node-border-color-selected);
       box-shadow: var(--wb-public-node-box-shadow-selected);
     }

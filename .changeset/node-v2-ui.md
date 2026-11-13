@@ -1,8 +1,8 @@
 ---
-'@workflowbuilder/ui': minor
+'@workflowbuilder/ui': major
 ---
 
-Canvas nodes follow DS Node v2 (258px wide, inset stroke, borderless icon tile) and a new `BadgeLabel` component is exported. The node width is `16.125rem`, so it now scales with the root font size.
+Canvas nodes follow DS Node v2 (258px wide, inset stroke, borderless icon tile) and a new `BadgeLabel` component is exported. The node width is `16.125rem`, so it now scales with the root font size. The new `--wb-public-node-background-color-selected` sets the selected node background.
 
 Breaking changes:
 
