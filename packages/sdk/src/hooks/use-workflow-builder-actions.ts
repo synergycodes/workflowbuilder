@@ -29,8 +29,8 @@ export type LayoutChangeOptions = {
  * Imperative action surface for a custom layout that omits
  * `<WorkflowBuilder.EditorHeader />`. Mirrors every command the built-in editor header
  * exposes (`save`, modal openers, read-only and theme toggles, Clean up, Save as PDF,
- * Publish) and adds programmatic layout-direction control, which the header itself does
- * not offer.
+ * Publish), and also sets the layout direction on its own, which the header does only as
+ * part of Clean up.
  *
  * The same object for the whole Root mount: every action reads the current canvas,
  * integration and read-only mode when it is called, so it is safe to keep, e.g. from
@@ -117,8 +117,8 @@ export type WorkflowBuilderActions = {
 
 /**
  * Returns the Root's action object, the same one `onLoad` receives: every command the built-in
- * `<WorkflowBuilder.EditorHeader />` offers, plus programmatic layout-direction
- * control. Use it from a custom header or toolbar when omitting the editor header.
+ * `<WorkflowBuilder.EditorHeader />` offers, plus setting the layout direction without a
+ * clean-up. Use it from a custom header or toolbar when omitting the editor header.
  *
  * Must be called from a descendant of `<WorkflowBuilder.Root>`: `save` reads the active
  * integration through React context, so outside Root `save()` logs an error and resolves

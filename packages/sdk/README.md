@@ -84,7 +84,7 @@ To add custom overlays alongside the default layout, mount it explicitly:
 
 Each subcomponent is also exported under a named alias (`WorkflowBuilderEditorHeader`, `WorkflowBuilderPalette`, `WorkflowBuilderCanvas`, `WorkflowBuilderPropertiesPanel`, `WorkflowBuilderDefaultLayout`) for consumers who prefer the classic style.
 
-If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / read-only / theme / layout-direction from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-editor-header).
+If you omit `<WorkflowBuilder.EditorHeader />`, read state with [`useWorkflowBuilderState()`](https://www.workflowbuilder.io/docs/api/hooks/useworkflowbuilderstate/) and trigger save / import / export / settings / templates / read-only / theme / layout-direction / Clean up / Save as PDF / Publish from your own controls with [`useWorkflowBuilderActions()`](https://www.workflowbuilder.io/docs/guides/configuring-the-editor/#custom-toolbar-without-the-editor-header).
 
 ## `<WorkflowBuilder.Root>` props
 
