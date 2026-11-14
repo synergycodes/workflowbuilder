@@ -106,7 +106,7 @@ export function startProcess(options: Options): Promise<StackProcess> {
     child.stderr.on('data', onData);
 
     child.once('error', (error) => fail(`could not start (${error.message})`));
-    child.once('exit', (code, signal) => {
+    child.once('close', (code, signal) => {
       log.end();
       if (readyText === undefined && code === 0) {
         succeed();
