@@ -1,0 +1,14 @@
+.node {
+  min-width: 16rem;
+}
+
+.ports {
+  font-size: 0.75rem;
+  line-height: 1.5;
+  color: var(--ax-public-node-title-subtitle);
+}
+
+.invalid {
+  color: var(--ax-txt-error-default);
+  font-size: 0.7rem;
+}
