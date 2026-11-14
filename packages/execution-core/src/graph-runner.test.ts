@@ -636,6 +636,54 @@ describe('runGraph — topological scheduling', () => {
     expect(['Activity task failed', 'inner cause']).toContain(message);
   }, 2000);
 
+  it('Temporal ApplicationFailure details preserve a structured node error code', async () => {
+    const applicationFailure = Object.assign(new Error('OpenRouter rejected the configured API key'), {
+      type: 'NodeExecutionError',
+      details: [{ code: 'openrouter_authentication_failed' }],
+    });
+    const wrapped = new Error('Activity task failed', { cause: applicationFailure });
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode() {
+        throw wrapped;
+      },
+    };
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('A')], []), runner, events.port);
+
+    expect(outcome).toEqual({
+      status: 'failed',
+      error: {
+        message: 'OpenRouter rejected the configured API key',
+        code: 'openrouter_authentication_failed',
+      },
+    });
+    const nodeFailed = events.events.find((event) => event.type === 'node_failed');
+    expect(nodeFailed?.payload).toEqual({
+      error: {
+        message: 'OpenRouter rejected the configured API key',
+        code: 'openrouter_authentication_failed',
+      },
+    });
+  });
+
+  it('unrelated Temporal application failures do not masquerade as node error codes', async () => {
+    const applicationFailure = Object.assign(new Error('upstream failed'), {
+      type: 'HttpError',
+      details: [{ code: 'should_not_leak' }],
+    });
+    const runner: ActivityRunnerPort<TestNode> = {
+      async executeNode() {
+        throw new Error('Activity task failed', { cause: applicationFailure });
+      },
+    };
+    const events = makeEvents();
+
+    const outcome = await runGraph(makeInput([start('A')], []), runner, events.port);
+
+    expect(outcome).toEqual({ status: 'failed', error: { message: 'upstream failed' } });
+  });
+
   it('NodeExecutionError code survives wrapping in a generic Error', async () => {
     // If the original throw was a structured NodeExecutionError but a wrapper
     // re-throws as plain Error with `cause`, the code should still surface so
