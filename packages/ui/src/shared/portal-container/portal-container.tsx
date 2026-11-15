@@ -1,6 +1,8 @@
 import { type Context, type ReactNode, createContext, useContext } from 'react';
 
-// One context per page, also when the SDK bundle and the host each load a copy of this module.
+// One context per page, also when the SDK bundle and the host each load a copy of this module. `@2` versions the
+// value's shape (`HTMLElement | null | undefined`): bump it only with that shape, since copies on different
+// versions stop sharing and the host's popups fall back to <body>.
 const CONTEXT_KEY = Symbol.for('@workflowbuilder/ui/portal-container@2');
 const shared = globalThis as Record<symbol, unknown>;
 const PortalContainerContext = (shared[CONTEXT_KEY] ??= createContext<HTMLElement | null | undefined>(

@@ -1,6 +1,6 @@
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { Menu } from '../../components/menu/menu';
 import { PortalContainerProvider } from './portal-container';
@@ -65,5 +65,28 @@ describe('PortalContainerProvider', () => {
     const menu = document.querySelector('[role="menu"]');
     expect(menu).not.toBeNull();
     expect(portal.contains(menu)).toBe(false);
+  });
+
+  // The SDK bundles its own copy of this module; a host's copy must still see the SDK's provider.
+  it("a second copy of the module reads the first copy's provider", async () => {
+    vi.resetModules();
+    const second = await import('./portal-container');
+    expect(second.PortalContainerProvider).not.toBe(PortalContainerProvider);
+
+    let seen: HTMLElement | null | undefined;
+    function Reader() {
+      seen = second.usePortalContainer();
+      return null;
+    }
+
+    act(() => {
+      root.render(
+        <PortalContainerProvider container={portal}>
+          <Reader />
+        </PortalContainerProvider>,
+      );
+    });
+
+    expect(seen).toBe(portal);
   });
 });

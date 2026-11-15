@@ -1,5 +1,11 @@
 # Style boundary between the editor and its host page (4.0)
 
+### Title: Style boundary between the editor and the host page
+
+### Proposed by: Michał Miszczuk
+
+### Date: 08.11.2026
+
 Status: accepted, ships in 4.0 (breaking).
 Scope: `@workflowbuilder/ui`, `@workflowbuilder/sdk`, `packages/tokens`.
 Supersedes: the "Note on consumer CSS resets" in `packages/sdk/DECISION-LOG.md` §4, and the layer
@@ -204,7 +210,10 @@ The step skips the following:
 - `@keyframes` steps and `@font-face`;
 - `:root` and `[data-wb-theme]` default blocks;
 - selectors that are already prefixed (the SDK build re-reads the minified UI dist);
-- selectors that already start with `.workflow-builder-root`.
+- selectors that start with the bare root class and a descendant or child combinator (`.workflow-builder-root
+button`, the scoped resets in 4.4). A selector that starts with `.workflow-builder-root-shell`, `.wb-portal`,
+  or the bare root with a state or a sibling combinator fails the build: a descendant prefix never matches
+  the box, so the rule would be dead or reach the host's elements next to it.
 
 It descends into `@media`, `@supports` and `@container`. It prefixes top-level `:global(…)` outside the
 wrapper. A selector that starts with a theme attribute gets a **compound** prefix,
@@ -249,11 +258,12 @@ container, the modal popup and the drag preview, and geometry there would paint 
 `<body>`.
 
 The shell rule and the picker backdrop carry the glued sdk prefix,
-`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`, at (1,2,0). At one class of weight a host's
+`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`, at (1,1,0). At one class of weight a host's
 `.app div { position: static; overflow: visible; height: auto }` collapsed the box, let the canvas spill over
-host content and let the backdrop escape to dim the host page. The prefixer and the checker match the bare
-root class at a class boundary, so a `.workflow-builder-root-shell` rule no longer passes as scoped; only
-the cosmetic resets (`.workflow-builder-root button`, scrollbars, inputs) keep one class of weight on purpose.
+host content and let the backdrop escape to dim the host page. The prefixer fails the build on a bare
+`.workflow-builder-root-shell` or `.wb-portal` selector, and the checker reports either class behind a
+combinator in the built CSS; only the cosmetic resets (`.workflow-builder-root button`, scrollbars, inputs)
+keep one class of weight on purpose.
 
 The remaining global rules (scrollbars, number and time inputs, button cursor) are scoped under the
 root. `wb-modal-open` is toggled on the shell, never on `<body>`.
@@ -272,7 +282,10 @@ The SDK creates one `<div class="workflow-builder-root wb-portal" data-wb-theme=
 `@workflowbuilder/ui` exposes this through `PortalContainerProvider` / `usePortalContainer`: the provider
 takes the element itself, `null` while it does not exist yet. Without a provider, components fall back
 to `document.body`, so standalone use and existing tests keep working. The SDK's own portals read the
-same hook, so the element lives in one context.
+same hook, so the element lives in one context. That context is keyed on
+`Symbol.for('@workflowbuilder/ui/portal-container@2')` on `globalThis`, because the SDK bundles the UI
+library and a host that imports `@workflowbuilder/ui` itself loads a second copy of the module; the `@2`
+is the version of the value's shape and changes only with it.
 
 Because the container carries the root class and the theme attribute, prefixed rules, `.wb-text-*`
 roles, tokens and host overrides on `.workflow-builder-root` all reach popups with no extra work. The
@@ -464,8 +477,8 @@ legitimately writes scoped overrides such as `--wb-public-node-gap: 0` in node t
 
 - **What:** The `.workflow-builder-root` rule sets the editor's colour, font family, `font-size: 1rem`,
   `line-height: normal` and every other inherited text property (weight, style, alignment, indent,
-  transform, letter and word spacing, wrapping, shadow, cursor), plus `scrollbar-color` and
-  `scrollbar-width`, prefixed at SDK strength.
+  transform, letter and word spacing, wrapping, shadow, cursor), plus `scrollbar-color`, prefixed at SDK
+  strength. `scrollbar-width` is not restated: it does not inherit, and no element with the root class scrolls.
 - **Why:** In 3.x the root's layered `font-family` lost to Meyer's unlayered `div { font: inherit }` on
   the root element itself, so the whole editor rendered in serif. Inherited text values must be set by a
   rule that beats host element rules on the root, and the root must not inherit the host body's
@@ -574,18 +587,28 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
 
 - **What:** The checkbox and radio set `background-image: none; box-shadow: none`; the input and text
   area set `margin: 0; box-shadow: none` (the input also `height: auto; min-height: 0`); the field
-  label and helper and the checkbox and radio `<label>` set `margin: 0`; the base button sets
-  `margin: 0; min-width: auto; min-height: auto`; the separator restates the `hr` defaults. Every value
-  is the browser default, so nothing changes visually.
+  label and helper and the checkbox and radio `<label>` set `margin: 0`; the base button, the chip close
+  button, the input and text area clear buttons and the calendar's day and arrow buttons set
+  `margin: 0; min-width: auto; min-height: auto`; the Select and DatePicker triggers take the input
+  height classes, so a host `button { min-height }` cannot grow them past the inputs beside them; the
+  separator restates the `hr` defaults. Every value is the browser default or the height the control
+  already has, so nothing changes visually.
 - **Why:** A component rule wins only for the properties it declares (G2 covers declared properties, not
   gaps). `@tailwindcss/forms` paints its own tick with `background-image` and a `box-shadow` ring on
   `:focus`, Bootstrap 4 gives `label` a bottom margin, classless CSS gives inputs and buttons margins and
   heights, touch-target CSS gives every `button` a `min-height`. The bed showed a second tick, a second
   focus rectangle inside the field and taller inputs.
 - **Rejected:** a bare-element reset (`button, input, label { … }`), for the reason in 5.10: it reaches
-  host markup inside the editor.
+  host markup inside the editor. Also rejected: the button, checkbox and radio declarations at class
+  weight (`:where(.workflow-builder-root) .button`, 0,1,0) so a consumer class could set them. That only
+  ties with the consumer's class, and component CSS is injected after the host sheet, so the consumer
+  still lost in the bed; a weight between tag and class (`button:is(button)`, 0,0,2) works but adds a
+  second override story for three properties.
 - **Cost if wrong:** a host that styled these properties on purpose through a tag rule now needs a rule
-  with more weight, which is the documented override path.
+  with more weight, which is the documented override path. The same holds for a consumer class passed
+  through `className` to Button, Checkbox or Radio: `margin`, `min-width` and `min-height` there need
+  the id form (`#app .workflow-builder-root .x`), where 3.x honoured the plain class because it declared
+  none of them. AI Studio's Run/Stop button was the first case (section 8).
 
 ### 5.17 Icon fill restated only for icons that ask for `currentColor`
 
@@ -666,7 +689,10 @@ The outermost `.workflow-builder-root` paints the theme's base surface, text col
 at base weight (`typography.css`), so a standalone dark wrapper is readable on a light host page. The
 bed had shown the opposite: transparent, black, Times New Roman. Descendants that carry the class
 (the SDK's layout box, the drag preview) are excluded, and the SDK's shell and modal set their own
-surface at component weight.
+surface at component weight. The surface and text colour go through `--wb-public-root-background-color`
+and `--wb-public-root-color`, so a wrapper with a look of its own (a sidebar) sets the variables
+instead of fighting the rule's weight with a class; the SDK's shell has the same in
+`--wb-public-background-color`.
 
 ### 6.7 Icon sizes come from SVG attributes
 
@@ -729,9 +755,11 @@ is part of reviewing this change.
 ### 7.2 The build
 
 `build:lib` runs the checker (4.8) on both dists and fails on any unprefixed unlayered rule, any
-painting rule in a layer, or any `ui.component` layer. On the final build, the SDK `style.css` had:
+painting rule in a layer, any defaults block outside the layer, any box class behind a combinator, or
+any `ui.component` layer. `restated-defaults.spec.mts` fails when one of the restated browser defaults
+(5.16) is removed from a component source. On the final build, the SDK `style.css` had:
 
-- 817 rules prefixed with `:is(#wb, …)`;
+- 883 rules prefixed with `:is(#wb, …)`;
 - 0 `html[data-theme]` selectors;
 - 0 `ui.component` blocks;
 - 0 double prefixes.

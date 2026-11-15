@@ -52,10 +52,31 @@ describe('checkStylesheet', () => {
     expect(problems('@layer wb-ui.base;\n@layer ui.component { .a { color: red } }')).toMatch(/Unknown layer name/);
   });
 
-  it('allows root-scoped resets and variable blocks unprefixed', () => {
-    expect(problems('@layer wb-ui.base;\n.workflow-builder-root button { cursor: pointer }\n:root { --p: 1px }')).toBe(
-      '',
+  it('allows root-scoped resets unprefixed, but not a sibling of the root', () => {
+    expect(problems('@layer wb-ui.base;\n.workflow-builder-root button { cursor: pointer }')).toBe('');
+    expect(problems('@layer wb-ui.base;\n.workflow-builder-root ~ div { color: red }')).toMatch(/Unprefixed built CSS/);
+  });
+
+  it('reports a defaults block that stayed outside the layer, also inside @media', () => {
+    expect(problems('@layer wb-ui.base;\n:root { --p: 1px }')).toMatch(/Defaults block outside @layer/);
+    expect(problems('@layer wb-ui.base;\n@media (min-width: 1px) { [data-wb-theme] { --p: 1px } }')).toMatch(
+      /Defaults block outside @layer/,
     );
+    expect(
+      problems('@layer wb-ui.base;\n@media (min-width: 1px) { @layer wb-ui.base { [data-wb-theme] { --p: 1px } } }'),
+    ).toBe('');
+  });
+
+  it('reports a box class behind a combinator: the built rule would match nothing', () => {
+    expect(
+      problems(
+        '@layer wb-ui.base;\n:is(#wb,.workflow-builder-root).workflow-builder-root .workflow-builder-root-shell{position:relative}',
+      ),
+    ).toMatch(/Box class behind a combinator/);
+    expect(problems('@layer wb-ui.base;\n:is(#wb,.workflow-builder-root) .wb-portal{display:contents}')).toMatch(
+      /Box class behind a combinator/,
+    );
+    expect(problems('@layer wb-ui.base;\n:is(#wb,.workflow-builder-root).wb-portal{display:contents}')).toBe('');
   });
 
   it('rejects a foreign class hashed by CSS modules, even behind a prefix', () => {

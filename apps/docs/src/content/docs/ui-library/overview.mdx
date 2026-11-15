@@ -110,6 +110,10 @@ live examples:
 <div class="workflow-builder-root" data-wb-theme="light">…</div>
 ```
 
+When the wrapper is an element with a look of its own (a sidebar, a card), keep that look by
+setting `--wb-public-root-background-color` and `--wb-public-root-color` on it, for example
+`transparent` and `inherit`; the components inside keep their own tokens.
+
 Popups render under `<body>`. To give them the theme too, wrap the components in
 `PortalContainerProvider`; its `container` prop is an element with the same class and attribute.
 While it is `null` the popups wait for it instead of using `<body>`:

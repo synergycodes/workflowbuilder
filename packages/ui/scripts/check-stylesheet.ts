@@ -3,7 +3,12 @@ import path from 'node:path';
 
 import postcss, { AtRule, type ChildNode, type Declaration, type Node, type Root, type Rule } from 'postcss';
 
-import { isThemeScopedDefaults, isVariableOnlyRule, targetsRoot } from '../postcss-layer-root-defaults.mjs';
+import {
+  DEFAULTS_LAYER,
+  isThemeScopedDefaults,
+  isVariableOnlyRule,
+  targetsRoot,
+} from '../postcss-layer-root-defaults.mjs';
 import { PREFIX, startsWithBareRoot } from '../postcss-scope-prefix.mjs';
 
 const packageDirectory = path.resolve(import.meta.dirname, '..');
@@ -17,6 +22,10 @@ if (!order) throw new Error('src/styles/layers.css must contain a layer-order st
 
 const layerNames = order.params.split(',').map((name) => name.trim());
 const knownLayers = new Set(layerNames);
+
+if (!knownLayers.has(DEFAULTS_LAYER)) {
+  throw new Error(`src/styles/layers.css must name ${DEFAULTS_LAYER}, the layer the build plugins write`);
+}
 const urlPattern = /url\(\s*(?:"([^"]*)"|'([^']*)'|([^)]*))\s*\)/gi;
 const sanctionedPrefixes = ['--wb-ds-', '--wb-sdk-', '--wb-public-'];
 // Whitespace-free: built CSS is minified.
@@ -29,7 +38,8 @@ export type CheckOptions = {
   from: string;
   // The dist directory every url() target must stay inside.
   directory: string;
-  // Only the UI package declares the public defaults consumers override.
+  // Public default placement is checked in the UI dist only: the SDK also sets public variables on its own
+  // subtrees as scoped overrides, which that check would report.
   ownsPublicDefaults: boolean;
 };
 
@@ -73,13 +83,18 @@ function isPublicDefault(declaration: Declaration): boolean {
 
   let ancestor: Node | undefined = rule.parent;
   while (ancestor && !(ancestor instanceof AtRule && ancestor.name === 'layer')) ancestor = ancestor.parent;
-  return ancestor instanceof AtRule && ancestor.params.trim() === 'wb-ui.base';
+  return ancestor instanceof AtRule && ancestor.params.trim() === DEFAULTS_LAYER;
 }
 
 // Scoped resets name the bare root class; `.workflow-builder-root-shell` is not it and carries the glued prefix.
 function isScoped(selector: string): boolean {
   const compact = selector.replaceAll(/\s/g, '');
   return scopePrefixes.some((prefix) => compact.startsWith(prefix)) || startsWithBareRoot(selector);
+}
+
+// The box and the popup container have no ancestor with the root class, so behind a combinator they match nothing.
+function hasBoxClassBehindCombinator(selector: string): boolean {
+  return /[\s>+~]\.(?:workflow-builder-root-shell|wb-portal)(?![\w-])/.test(selector);
 }
 
 function isDefaultsBlock(rule: Rule): boolean {
@@ -96,7 +111,9 @@ function checkUnlayered(container: Root | AtRule, report: Report): void {
   for (const node of container.nodes ?? []) {
     if (node.type === 'rule') {
       if (node.selectors.some(hasHashedForeignClass)) report(node, 'Hashed foreign class');
-      if (!isDefaultsBlock(node) && !node.selectors.every(isScoped)) report(node, 'Unprefixed built CSS');
+      if (node.selectors.some(hasBoxClassBehindCombinator)) report(node, 'Box class behind a combinator');
+      if (isDefaultsBlock(node)) report(node, 'Defaults block outside @layer');
+      else if (!node.selectors.every(isScoped)) report(node, 'Unprefixed built CSS');
     } else if (node.type === 'atrule') {
       if (node.name === 'layer') {
         if (node.nodes) checkLayerContents(node, report);

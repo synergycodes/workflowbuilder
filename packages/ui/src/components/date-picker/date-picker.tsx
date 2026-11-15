@@ -10,6 +10,7 @@ import { type DateRange, DayPicker, type Matcher } from 'react-day-picker';
 import styles from './date-picker.module.css';
 // variables.css also pulls in react-day-picker's stylesheet, unlayered.
 import './variables.css';
+import inputHeightStyles from '@ui/shared/styles/field-control-height.module.css';
 import fieldControlSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
@@ -96,6 +97,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
 
   const triggerClassName = clsx(
     inputFontStyles[inputSize],
+    inputHeightStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
     styles['container'],
     {

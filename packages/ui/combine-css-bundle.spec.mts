@@ -43,6 +43,25 @@ describe('combine CSS bundle', () => {
     }
   });
 
+  it('stamps the layer order into an asset that lacks it and leaves a stamped one alone', () => {
+    const root = mkdtempSync(path.join(tmpdir(), 'wb-ui-css-'));
+
+    try {
+      writeFixture(root, '');
+      writeFileSync(path.join(root, 'dist/assets/button.css'), '.button { color: red }');
+      finalizeCssBundle(root);
+
+      expect(readFileSync(path.join(root, 'dist/assets/button.css'), 'utf8')).toBe(
+        '@layer wb-ui.base;\n.button { color: red }',
+      );
+      expect(readFileSync(path.join(root, 'dist/assets/index.css'), 'utf8')).not.toMatch(
+        /@layer wb-ui\.base;[\s\S]*@layer wb-ui\.base;/,
+      );
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
+
   it('layers the typography defaults and prefixes the roles in styles.css', () => {
     const root = mkdtempSync(path.join(tmpdir(), 'wb-ui-css-'));
 

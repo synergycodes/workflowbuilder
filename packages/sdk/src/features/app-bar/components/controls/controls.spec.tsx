@@ -19,7 +19,6 @@ beforeEach(() => {
 });
 
 afterEach(() => {
-  localStorage.clear();
   resetThemeStore();
 });
 

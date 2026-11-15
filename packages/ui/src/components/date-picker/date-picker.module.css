@@ -4,6 +4,7 @@
   color: var(--wb-public-input-root-color);
   cursor: pointer;
   width: 100%;
+  margin: 0;
 
   &[aria-expanded='true'] {
     border-color: var(--wb-public-input-root-border-color-focus);
@@ -69,6 +70,8 @@
   justify-content: center;
   margin: 0;
   padding: 0;
+  min-width: auto;
+  min-height: auto;
 }
 
 .calendar :global(.rdp-day_button) {

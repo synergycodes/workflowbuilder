@@ -43,13 +43,30 @@ import type {
  * ```
  *
  * @example Custom layout
+ * The canvas fills the element around it, so the layout has to give that element a height.
  * ```tsx
  * <WorkflowBuilder.Root nodeTypes={myNodeTypes}>
- *   <header><WorkflowBuilder.EditorHeader /></header>
- *   <aside><WorkflowBuilder.Palette /></aside>
- *   <main><WorkflowBuilder.Canvas /></main>
- *   <aside><WorkflowBuilder.PropertiesPanel /></aside>
+ *   <div className="editor-layout">
+ *     <header><WorkflowBuilder.EditorHeader /></header>
+ *     <aside><WorkflowBuilder.Palette /></aside>
+ *     <main><WorkflowBuilder.Canvas /></main>
+ *     <aside><WorkflowBuilder.PropertiesPanel /></aside>
+ *   </div>
  * </WorkflowBuilder.Root>
+ * ```
+ * ```css
+ * .editor-layout {
+ *   display: grid;
+ *   grid-template:
+ *     'header header header' auto
+ *     'palette canvas properties' minmax(0, 1fr) / auto 1fr auto;
+ *   height: 100%;
+ * }
+ * .editor-layout > * { min-height: 0; }
+ * .editor-layout > header { grid-area: header; }
+ * .editor-layout > aside:first-of-type { grid-area: palette; }
+ * .editor-layout > main { grid-area: canvas; }
+ * .editor-layout > aside:last-of-type { grid-area: properties; }
  * ```
  *
  * @category Core

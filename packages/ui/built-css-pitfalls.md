@@ -30,9 +30,29 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 **Why it is silent** - The stylesheet is valid; the host rule simply wins on specificity.
 
-**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), be a variable-only `:root` / `[data-wb-theme…]` block, or be a scoped reset under the bare root class (`.workflow-builder-root button`, matched at a class boundary). The editor box's own rules carry the glued SDK prefix (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from `postcss-scope-prefix.mts`, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
+**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), or be a scoped reset under the bare root class followed by a descendant or child combinator (`.workflow-builder-root button`). A sibling combinator (`.workflow-builder-root ~ div`) would reach the host's elements next to the editor and is reported. The editor box's own rules carry the glued SDK prefix (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported here, and `postcss-scope-prefix.mts` fails the build on it before that. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from the plugin, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
 
 **Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
+
+## Box class behind a combinator
+
+**What breaks** - `.workflow-builder-root-shell` (the editor box) and `.wb-portal` (the popup container under `<body>`) have no ancestor that carries the root class, so a selector that reaches them through a combinator (`:is(#wb, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell`) matches nothing. The box loses its geometry or the container its `display: contents`, and the rule looks correctly prefixed.
+
+**Why it is silent** - The selector is valid and carries the prefix; it is only never satisfied.
+
+**How to spot it** - Search built selectors for a space or combinator followed by `.workflow-builder-root-shell` or `.wb-portal`. In source, rules on the box are written with the glued prefix by hand; the plugin fails the build when it meets a bare box class at the start of a selector.
+
+**Automated?** - Yes, in every checked dist. `Box class behind a combinator` checks every rule outside `@layer`, also inside the conditional at-rules.
+
+## Defaults block outside `@layer`
+
+**What breaks** - A variable-only `:root` or `[data-wb-theme…]` block that is not inside `@layer wb-ui.base` ties with a consumer's `.workflow-builder-root { --wb-public-… }` override, so stylesheet order decides whether the documented customization works.
+
+**Why it is silent** - Both declarations are valid; without the layer the shipped default is an ordinary rule.
+
+**How to spot it** - Search dist for `:root` and `[data-wb-theme` rules that hold only custom properties and sit outside the layer, including inside `@media`, `@supports` and `@container`. `postcss-layer-root-defaults.mts` wraps those blocks in place, so one outside the layer means the file bypassed the plugin or the block mixes in a painting declaration.
+
+**Automated?** - Yes, in every checked dist. `Defaults block outside @layer` checks every rule outside `@layer`, also inside the conditional at-rules.
 
 ## Hashed foreign class
 
@@ -120,7 +140,7 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 **Why it is silent** - A custom property is resolved on the element that declares it; an unresolvable reference makes it invalid at computed-value time without any error.
 
-**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. The defaults plugin moves top-level variable-only `:root` blocks to `[data-wb-theme]`, but it skips blocks already wrapped in `@layer` and files concatenated without PostCSS (`globals.css`), so those must be written on `[data-wb-theme]` by hand.
+**How to spot it** - Search dist for `--wb-public-` and `--wb-sdk-` declarations under a `:root` selector. The defaults plugin moves variable-only `:root` blocks (top-level or inside `@media`, `@supports`, `@container`) to `[data-wb-theme]`, but it skips blocks already wrapped in `@layer` and files concatenated without PostCSS (`globals.css`), so those must be written on `[data-wb-theme]` by hand.
 
 **Automated?** - Yes, in every checked dist. `Default on :root cannot resolve themed tokens` flags any such declaration.
 

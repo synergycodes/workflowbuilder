@@ -30,7 +30,8 @@
     opacity 0.3s ease-in-out;
 }
 
-/* Run and Stop replace each other, so a shared width keeps the swap from resizing the button. */
-.run-stop-button {
+/* Run and Stop replace each other, so a shared width keeps the swap from resizing the button.
+   The page id outweighs the SDK button's `min-width: auto`; a plain class loses to it in 4.0. */
+:global(#root) .run-stop-button {
   min-width: var(--wb-ds-size-1200);
 }

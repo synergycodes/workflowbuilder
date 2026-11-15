@@ -72,7 +72,6 @@ describe('useWorkflowBuilderActions', () => {
     // internal read-only guard, so restore the plain stub for every other test.
     vi.mocked(openTemplateSelectorModal).mockReset();
     resetThemeStore();
-    localStorage.clear();
     useStore.setState({
       isReadOnly: false,
       isPaletteOpen: false,

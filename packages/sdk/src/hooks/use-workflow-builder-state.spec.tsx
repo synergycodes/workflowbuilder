@@ -32,7 +32,6 @@ beforeEach(async () => {
 });
 
 afterEach(() => {
-  localStorage.clear();
   resetThemeStore();
 });
 

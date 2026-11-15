@@ -1,5 +1,5 @@
 import { PortalContainerProvider } from '@workflowbuilder/ui';
-import { type ReactNode, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { OptionalAppChildren } from '../features/plugins-core/components/app/optional-app-children';
@@ -14,7 +14,7 @@ import type { BuiltInControls } from '../features/ui-extensions/built-in-control
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../features/ui-extensions/built-in-controls-context';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { type Theme, useTheme } from '../hooks/use-theme';
-import { type SdkSurfaces, SdkSurfacesProvider } from './sdk-surfaces';
+import { SdkRootProvider } from './sdk-root';
 
 type RootShellProps = {
   theme?: Theme;
@@ -79,8 +79,6 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
     portal.lang = language;
   }, [portal, activeTheme, language]);
 
-  const surfaces = useMemo<SdkSurfaces>(() => ({ root: rootRef }), []);
-
   return (
     <div
       ref={rootRef}
@@ -88,9 +86,9 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
       data-wb-theme={activeTheme}
       lang={language}
     >
-      <SdkSurfacesProvider value={surfaces}>
+      <SdkRootProvider value={rootRef}>
         <PortalContainerProvider container={portal}>{children}</PortalContainerProvider>
-      </SdkSurfacesProvider>
+      </SdkRootProvider>
     </div>
   );
 }

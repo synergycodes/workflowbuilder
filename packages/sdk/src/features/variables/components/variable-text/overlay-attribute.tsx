@@ -1,21 +1,21 @@
 import { useLayoutEffect } from 'react';
 
-import { useOptionalSdkSurfaces } from '../../../../workflow-builder-root/sdk-surfaces';
+import { useOptionalSdkRoot } from '../../../../workflow-builder-root/sdk-root';
 
 type OverlayKind = 'variable-picker';
 
 export function OverlayAttribute({ kind }: { kind: OverlayKind }): null {
-  const surfaces = useOptionalSdkSurfaces();
+  const rootRef = useOptionalSdkRoot();
 
   useLayoutEffect(() => {
-    const root = surfaces?.root.current;
+    const root = rootRef?.current;
     if (!root) return;
 
     root.dataset.wbOverlay = kind;
     return () => {
       delete root.dataset.wbOverlay;
     };
-  }, [surfaces, kind]);
+  }, [rootRef, kind]);
 
   return null;
 }

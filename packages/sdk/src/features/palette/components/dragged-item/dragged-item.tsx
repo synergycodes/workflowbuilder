@@ -13,6 +13,8 @@ type DraggedItemProps = {
 export const DraggedItem = forwardRef<HTMLDivElement, PropsWithChildren<DraggedItemProps>>(
   ({ children, zoom }: PropsWithChildren<DraggedItemProps>, ref) => {
     const portal = usePortalContainer();
+    // `null` is the Root's container before its first layout effect: wait for it rather than paint into <body>.
+    if (portal === null) return null;
 
     function getStyles() {
       if (isSafari && !isOpera && !isChrome) {

@@ -26,6 +26,9 @@ export function VisualizeModal({ renderer, text, data, badge, isVector, onClose 
   const portalContainer = usePortalContainer();
   const Renderer = getRenderer(renderer);
 
+  // `null` is the Root's container before its first layout effect: wait for it.
+  if (portalContainer === null) return null;
+
   return createPortal(
     <div className={styles['overlay']} role="presentation" onClick={onClose}>
       <div className={styles['modal']} role="dialog" aria-modal="true" onClick={(event) => event.stopPropagation()}>

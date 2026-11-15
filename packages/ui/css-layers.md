@@ -91,10 +91,12 @@ vendored rules.
 The plugin leaves alone: rules inside `@layer`, `@keyframes` and `@font-face`; `:root…` and bare
 `[data-wb-theme…]` variable blocks; selectors that already carry a prefix (compared without
 whitespace, since the UI dist the SDK re-reads is minified); and the scoped resets that start
-with the bare root class (`.workflow-builder-root button`), matched at a class boundary so
-`.workflow-builder-root-shell` does not count. Rules on the editor box itself are written with
-the glued prefix by hand (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`), since
-a descendant prefix would never match the box. A `[data-wb-theme…] .x` selector gets the
+with the bare root class followed by a descendant or child combinator (`.workflow-builder-root
+button`). Rules on the editor box itself are written with the glued prefix by hand
+(`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`), since a descendant prefix would
+never match the box: the plugin fails the build on a selector that starts with
+`.workflow-builder-root-shell`, `.wb-portal`, or the bare root with a state or a sibling
+combinator. A `[data-wb-theme…] .x` selector gets the
 prefix glued on, because the attribute sits on the box. In a `*.module.css` file any hand-written
 root class (or other foreign class: `.wb-portal`, React Flow, Ace, react-day-picker) goes inside
 `:global(…)`, or CSS modules hashes it and the rule matches nothing; the checker reports a hashed

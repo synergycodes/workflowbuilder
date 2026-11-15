@@ -115,6 +115,16 @@ the theme controlled: the editor shows that value and does not store its own. Ad
 
 Without `onThemeChange`, the theme is fixed at the value you pass.
 
+## Removed edge tokens and `<html lang>`
+
+Two canvas tokens are gone with the design system update: `--wb-ds-canvas-edge-stroke-bold` and
+`--wb-ds-canvas-edge-stroke-critical`. A `var()` of either now resolves to nothing, so replace it
+with `--wb-ds-canvas-edge-stroke-regular` (now 1px, was 2px) or `--wb-ds-canvas-edge-stroke-warning`.
+
+The SDK also stops writing `lang` to `<html>`. It sets `lang` on its own element and on the popup
+container, from the language the editor resolved. If your page relied on the SDK for the document
+language, set `<html lang="…">` yourself.
+
 ## Overriding editor internals
 
 In 3.x any plain host rule beat the editor's layered rules, so `.my-app button { … }` could
@@ -142,6 +152,13 @@ SDK's `style.css`, which is the usual order, and it loses to SDK rules that carr
 second class (`:hover`, `.a.b`). Repeating the class
 (`#app .workflow-builder-root.workflow-builder-root .my-node-title`) adds one class of weight; the
 one override that always wins is `!important`.
+
+The same rule applies to a class you pass through `className` to the UI library's Button, Checkbox
+or Radio. 4.0 restates their `margin`, `min-width` and `min-height` to block host resets, so a plain
+`.save-button { margin-top: 1rem }` no longer reaches them; write it as
+`#app .workflow-builder-root .save-button { … }`. Icons that use `fill="currentColor"` are
+restated the same way, so tint them through `color`; a direct `fill` on such an icon needs the id
+form too.
 
 Class names inside the editor are generated and can change between releases, so prefer your
 own classes, for example on custom node templates, as the target.

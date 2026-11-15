@@ -110,7 +110,10 @@
 }
 
 .clear {
+  margin: 0;
   padding: 0;
+  min-width: auto;
+  min-height: auto;
   border: none;
   background: transparent;
   color: inherit;

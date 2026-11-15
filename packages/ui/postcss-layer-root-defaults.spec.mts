@@ -80,6 +80,13 @@ describe('postcss-layer-root-defaults', () => {
     expect(output.indexOf('.button')).toBeLessThan(output.indexOf('--b'));
   });
 
+  it('layers a defaults block inside @media in place', async () => {
+    const output = await run('@media (prefers-reduced-motion: reduce) { :root { --wb-public-transition: none } }');
+    expect(output.replaceAll(/\s/g, '')).toBe(
+      '@media(prefers-reduced-motion:reduce){@layerwb-ui.base{[data-wb-theme]{--wb-public-transition:none}}}',
+    );
+  });
+
   it('leaves :root already inside @layer alone', async () => {
     const input = '@layer wb-ui.base { :root { --x: 1px } }';
     expect(await run(input)).toBe(input);

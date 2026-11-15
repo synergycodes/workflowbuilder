@@ -2,7 +2,7 @@ import { Modal } from '@workflowbuilder/ui';
 import { useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { useOptionalSdkSurfaces } from '../../../workflow-builder-root/sdk-surfaces';
+import { useOptionalSdkRoot } from '../../../workflow-builder-root/sdk-root';
 import { closeModal, useModalStore } from '../stores/use-modal-store';
 
 // Set on the SDK root; read by variable-text.module.css to suppress its own backdrop.
@@ -12,7 +12,7 @@ export function ModalProvider() {
   const { t } = useTranslation();
   const isOpen = useModalStore((state) => state.isOpen);
   const modal = useModalStore((state) => state.modal);
-  const surfaces = useOptionalSdkSurfaces();
+  const rootRef = useOptionalSdkRoot();
 
   // The store clears `modal` on close - keep it for the exit transition.
   const lastModalRef = useRef(modal);
@@ -24,11 +24,11 @@ export function ModalProvider() {
   }, [modal]);
 
   useEffect(() => {
-    const root = surfaces?.root.current;
+    const root = rootRef?.current;
     if (!root) return;
     root.classList.toggle(MODAL_OPEN_CLASS, isOpen);
     return () => root.classList.remove(MODAL_OPEN_CLASS);
-  }, [surfaces, isOpen]);
+  }, [rootRef, isOpen]);
 
   const activeModal = modal ?? lastModalRef.current;
 

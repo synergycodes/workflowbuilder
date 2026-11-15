@@ -57,8 +57,17 @@
   height: 0.625rem;
 }
 
+.xl .icon svg,
+.xl .close svg {
+  width: 0.75rem;
+  height: 0.75rem;
+}
+
 .close {
+  margin: 0;
   padding: 0;
+  min-width: auto;
+  min-height: auto;
   border: none;
   background: none;
   color: inherit;

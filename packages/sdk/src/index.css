@@ -84,7 +84,6 @@
   cursor: auto;
   /* A host `scrollbar-color` is inherited and makes Chrome drop the ::-webkit-scrollbar theme above. */
   scrollbar-color: auto;
-  scrollbar-width: auto;
 }
 
 /* Icons colour themselves with the `fill` attribute, which any host `svg { fill }` rule beats. Restated

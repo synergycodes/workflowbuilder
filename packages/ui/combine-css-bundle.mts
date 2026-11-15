@@ -5,7 +5,7 @@ import type { Plugin } from 'vite';
 
 import postcss from 'postcss';
 
-import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mjs';
+import { DEFAULTS_LAYER, layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mjs';
 import { type ScopePrefixOptions, scopePrefixPlugin } from './postcss-scope-prefix.mjs';
 
 // Shared by the Vite pipeline and the raw styles.css step, so both outputs prefix the same way.
@@ -181,7 +181,7 @@ export function emitFontAssets(distributionDirectory: string): string {
     ].join('\n');
   });
 
-  return `@layer wb-ui.base {\n${rules.join('\n\n')}\n}`;
+  return `@layer ${DEFAULTS_LAYER} {\n${rules.join('\n\n')}\n}`;
 }
 
 function readLayerOrder(stylesDirectory: string): string {

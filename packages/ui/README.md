@@ -64,6 +64,10 @@ host page:
 <div class="workflow-builder-root" data-wb-theme="light">…</div>
 ```
 
+When the wrapper is an element with a look of its own (a sidebar, a card), keep that look by
+setting `--wb-public-root-background-color` and `--wb-public-root-color` on it, for example
+`transparent` and `inherit`; the components inside keep their own tokens.
+
 Popups (Select, Menu, Tooltip, DatePicker, Modal) render into `document.body` unless you wrap the
 components in `PortalContainerProvider`. Its `container` prop is an element that carries the same
 class and attribute; while it is `null` the popups wait for it instead of using `document.body`:

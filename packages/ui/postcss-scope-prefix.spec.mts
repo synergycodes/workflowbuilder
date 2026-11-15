@@ -2,7 +2,12 @@ import { describe, expect, it } from 'vitest';
 
 import postcss from 'postcss';
 
-import { type PrefixStrength, scopePrefixPlugin, startsWithBareRoot } from './postcss-scope-prefix.mts';
+import {
+  type PrefixStrength,
+  scopePrefixPlugin,
+  startsWithBareRoot,
+  startsWithBoxClass,
+} from './postcss-scope-prefix.mts';
 
 const VENDORED = /node_modules[\\/](react-day-picker|@xyflow)[\\/]/;
 const BASE = /[\\/]base\.css$/;
@@ -36,12 +41,37 @@ describe('postcss-scope-prefix baseFiles', () => {
 });
 
 describe('startsWithBareRoot', () => {
-  it('matches only the bare root class at a class boundary', () => {
+  it('matches the bare root class followed by a descendant or child combinator', () => {
     expect(startsWithBareRoot('.workflow-builder-root button')).toBe(true);
-    expect(startsWithBareRoot('  .workflow-builder-root')).toBe(true);
+    expect(startsWithBareRoot('  .workflow-builder-root ::-webkit-scrollbar')).toBe(true);
+    expect(startsWithBareRoot('.workflow-builder-root > button')).toBe(true);
+    expect(startsWithBareRoot('.workflow-builder-root>button')).toBe(true);
+  });
+
+  it('rejects the box itself, a state on it, a sibling, and a longer class', () => {
+    expect(startsWithBareRoot('.workflow-builder-root')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root:hover')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root ~ div')).toBe(false);
+    expect(startsWithBareRoot('.workflow-builder-root+div')).toBe(false);
     expect(startsWithBareRoot('.workflow-builder-root-shell')).toBe(false);
     expect(startsWithBareRoot('.workflow-builder-root-x .a')).toBe(false);
     expect(startsWithBareRoot('.workflow-builder-rootx')).toBe(false);
+  });
+});
+
+describe('startsWithBoxClass', () => {
+  it('names the box, the container, and the bare root with a state or sibling', () => {
+    expect(startsWithBoxClass('.workflow-builder-root-shell')).toBe(true);
+    expect(startsWithBoxClass('.wb-portal .x')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root:hover')).toBe(true);
+    expect(startsWithBoxClass('.workflow-builder-root ~ div')).toBe(true);
+  });
+
+  it('leaves scoped resets and other classes alone', () => {
+    expect(startsWithBoxClass('.workflow-builder-root button')).toBe(false);
+    expect(startsWithBoxClass('.wb-portal-x')).toBe(false);
+    expect(startsWithBoxClass('.button')).toBe(false);
   });
 });
 
@@ -131,13 +161,18 @@ describe('postcss-scope-prefix', () => {
     expect(await run(minified, 'sdk')).toBe(minified);
   });
 
-  it('skips the bare root class only: scoped resets stay, a shell rule must carry the glued prefix by hand', async () => {
+  it('skips the scoped resets and keeps a hand-glued box rule', async () => {
     const reset = '.workflow-builder-root button { cursor: pointer }';
     expect(await run(reset, 'sdk')).toBe(reset);
-    expect(await run('.workflow-builder-root-shell { position: relative }', 'sdk')).toBe(
-      ':is(#wb, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell { position: relative }',
-    );
     const glued = ':is(#wb, .workflow-builder-root).workflow-builder-root-shell { position: relative }';
     expect(await run(glued, 'sdk')).toBe(glued);
+  });
+
+  it('fails the build on a box class a descendant prefix could never match', async () => {
+    await expect(run('.workflow-builder-root-shell { position: relative }', 'sdk')).rejects.toThrow(
+      /names the editor box/,
+    );
+    await expect(run('.wb-portal { display: contents }', 'sdk')).rejects.toThrow(/names the editor box/);
+    await expect(run('.workflow-builder-root ~ div { color: red }', 'sdk')).rejects.toThrow(/names the editor box/);
   });
 });

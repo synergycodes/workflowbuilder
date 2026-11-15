@@ -1,16 +1,16 @@
 import { render } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
 
-import { SdkSurfacesProvider } from '../../../../workflow-builder-root/sdk-surfaces';
+import { SdkRootProvider } from '../../../../workflow-builder-root/sdk-root';
 import { OverlayAttribute } from './overlay-attribute';
 
 describe('OverlayAttribute', () => {
   it('sets data-wb-overlay on the root while mounted and clears it on unmount', () => {
     const root = document.createElement('div');
     const { unmount } = render(
-      <SdkSurfacesProvider value={{ root: { current: root } }}>
+      <SdkRootProvider value={{ current: root }}>
         <OverlayAttribute kind="variable-picker" />
-      </SdkSurfacesProvider>,
+      </SdkRootProvider>,
     );
 
     expect(root.dataset.wbOverlay).toBe('variable-picker');

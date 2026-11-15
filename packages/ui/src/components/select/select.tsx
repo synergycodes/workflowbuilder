@@ -6,6 +6,7 @@ import type { ReactNode, SyntheticEvent } from 'react';
 
 import selectButtonStyles from './select-button/select-button.module.css';
 import style from './select.module.css';
+import inputHeightStyles from '@ui/shared/styles/field-control-height.module.css';
 import fieldControlSizeStyles from '@ui/shared/styles/field-control-size.module.css';
 import inputFontStyles from '@ui/shared/styles/input-font-size.module.css';
 import listBoxStyles from '@ui/shared/styles/list-box.module.css';
@@ -117,6 +118,7 @@ export function Select({
       [selectButtonStyles['container--error']]: error,
     },
     inputFontStyles[size],
+    inputHeightStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[size]],
     className,
   );

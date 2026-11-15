@@ -16,10 +16,19 @@ export const PREFIX: Record<PrefixStrength, string> = {
 // Whitespace-free: the UI dist the SDK build re-reads is minified.
 const ALREADY_PREFIXED = Object.values(PREFIX).map((prefix) => prefix.replaceAll(/\s/g, ''));
 
-// The bare root class at a class boundary: `.workflow-builder-root button` yes, `.workflow-builder-root-shell` no.
+// The bare root class followed by a descendant or child combinator: the scoped resets (`.workflow-builder-root
+// button`). A sibling combinator would reach the host's elements next to the editor, so it does not count.
 // Shared with the built-CSS checker so the plugin's exception and the checker's never drift apart.
 export function startsWithBareRoot(selector: string): boolean {
-  return /^\.workflow-builder-root(?![\w-])/.test(selector.trim());
+  return /^\.workflow-builder-root(?:\s+(?![+~])|\s*>\s*)\S/.test(selector.trim());
+}
+
+// The editor box or the popup container at the start of a selector, including the bare root with a state or a
+// sibling: a descendant prefix never matches them, so the rule would be dead or reach the box's siblings.
+export function startsWithBoxClass(selector: string): boolean {
+  return (
+    /^\.(?:workflow-builder-root(?:-shell)?|wb-portal)(?![\w-])/.test(selector.trim()) && !startsWithBareRoot(selector)
+  );
 }
 
 // A pseudo-element and any state after it (`::after:hover`) are invalid inside :where(), which would drop
@@ -43,9 +52,8 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
   const compact = trimmed.replaceAll(/\s/g, '');
 
   if (ALREADY_PREFIXED.some((done) => compact.startsWith(done))) return selector;
-  // Scoped resets under the bare root class keep one class of weight on purpose; the box's own rules
-  // (`.workflow-builder-root-shell`) are written with the glued prefix by hand.
-  if (startsWithBareRoot(trimmed) || trimmed.startsWith(':root')) return selector;
+  // Scoped resets under the bare root class keep one class of weight on purpose.
+  if (startsWithBareRoot(trimmed)) return selector;
 
   // The theme attribute sits on the box, so the scope class is glued on, not a descendant.
   // Bare variable-only blocks never get here: prefixRule leaves them as defaults.
@@ -58,6 +66,13 @@ function prefixSelector(selector: string, prefix: string, isBase: boolean): stri
 
 function prefixRule(rule: Rule, { strength, vendoredFiles, baseFiles }: ScopePrefixOptions): void {
   if (targetsRoot(rule) || isThemeScopedDefaults(rule)) return;
+
+  const boxSelector = rule.selectors.find(startsWithBoxClass);
+  if (boxSelector) {
+    throw rule.error(
+      `\`${boxSelector.trim()}\` names the editor box, which a descendant prefix never matches. Write the rule with the glued prefix (\`:is(#wb, .workflow-builder-root).<class>\`) or as a scoped reset (\`.workflow-builder-root button\`).`,
+    );
+  }
 
   const file = rule.source?.input.file ?? '';
   const isVendored = vendoredFiles?.test(file) ?? false;

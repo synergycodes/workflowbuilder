@@ -10,7 +10,7 @@ import { libInjectCss } from 'vite-plugin-lib-inject-css';
 
 import { UI_SCOPE_PREFIX_OPTIONS, combineCssBundle } from './combine-css-bundle.mts';
 import { boxSizingPlugin } from './postcss-box-sizing.mts';
-import { layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mts';
+import { DEFAULTS_LAYER, layerRootDefaultsPlugin } from './postcss-layer-root-defaults.mts';
 import { scopePrefixPlugin } from './postcss-scope-prefix.mts';
 
 const rootDirectory = path.dirname(fileURLToPath(import.meta.url));
@@ -75,7 +75,7 @@ function copyTokenStyles() {
     targets: files.map((file) => ({
       src: `../tokens/dist/${file}`,
       dest: '.',
-      transform: (content: string) => `${layerOrder}\n@layer wb-ui.base {\n${content}\n}`,
+      transform: (content: string) => `${layerOrder}\n@layer ${DEFAULTS_LAYER} {\n${content}\n}`,
     })),
   });
 }
