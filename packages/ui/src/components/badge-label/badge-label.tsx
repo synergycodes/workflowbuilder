@@ -29,8 +29,8 @@ export type BadgeLabelSize = 'm' | 's';
 export type BadgeLabelVariant = 'default' | 'inverse';
 
 /**
- * Read-only uppercase label. Recolour it by overriding `--wb-public-badge-label-background-color`,
- * `-color` and `-icon-color` (the `-inverse` ones for the Inverse variant) on `:root` or one instance.
+ * Read-only uppercase label. Recolour it by overriding `--wb-public-badge-label-background-color` and
+ * `-color`, which also colours the glyph (the `-inverse` ones for the Inverse variant), on `:root` or one instance.
  *
  * @category BadgeLabel
  */

@@ -1,17 +1,14 @@
 :root {
   --wb-public-badge-label-background-color: var(--wb-ds-components-badge-bg-default);
-  --wb-public-badge-label-color: var(--wb-ds-components-badge-text-default);
-  --wb-public-badge-label-icon-color: var(--wb-ds-components-badge-icon-default);
+  --wb-public-badge-label-color: var(--wb-ds-components-badge-fg-default);
   --wb-public-badge-label-background-color-inverse: var(--wb-ds-components-badge-bg-inverse);
-  --wb-public-badge-label-color-inverse: var(--wb-ds-components-badge-text-inverse);
-  --wb-public-badge-label-icon-color-inverse: var(--wb-ds-components-badge-icon-inverse);
+  --wb-public-badge-label-color-inverse: var(--wb-ds-components-badge-fg-inverse);
 }
 
 @layer ui.component {
   .badge-label {
     --badge-label-background-color: var(--wb-public-badge-label-background-color);
     --badge-label-color: var(--wb-public-badge-label-color);
-    --badge-label-icon-color: var(--wb-public-badge-label-icon-color);
 
     display: inline-flex;
     align-items: center;
@@ -27,7 +24,6 @@
   .inverse {
     --badge-label-background-color: var(--wb-public-badge-label-background-color-inverse);
     --badge-label-color: var(--wb-public-badge-label-color-inverse);
-    --badge-label-icon-color: var(--wb-public-badge-label-icon-color-inverse);
   }
 
   .m {
@@ -43,7 +39,6 @@
   .icon {
     display: inline-flex;
     flex: none;
-    color: var(--badge-label-icon-color);
 
     svg {
       width: var(--wb-ds-size-137);
