@@ -95,13 +95,15 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
     return matchers.length === 0 ? undefined : matchers;
   }, [minDate, maxDate]);
 
+  const fieldState = error ? 'critical' : state;
+
   const triggerClassName = clsx(
     inputFontStyles[inputSize],
     inputHeightStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
     fieldControlSizeStyles[FIELD_CONTROL_SIZE_BY_ITEM_SIZE[inputSize]],
     styles['container'],
     {
-      [styles['container--error']]: error,
+      [styles['container--error']]: fieldState === 'critical',
       [styles['container--placeholder']]: triggerLabel === null,
     },
     className,
@@ -177,7 +179,7 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
   );
 
   return (
-    <Field id={id} label={label} helperText={helperText} isRequired={isRequired} state={state} disabled={disabled}>
+    <Field id={id} label={label} helperText={helperText} isRequired={isRequired} state={fieldState} disabled={disabled}>
       {({ controlId, describedBy, required }) => (
         <Popover.Root
           open={disabled || readOnly ? false : open}
@@ -199,6 +201,8 @@ export const DatePicker = forwardRef<HTMLButtonElement, DatePickerProps>(functio
             aria-label={ariaLabel}
             aria-labelledby={ariaLabelledby}
             aria-readonly={readOnly || undefined}
+            aria-invalid={fieldState === 'critical' || undefined}
+            data-state={readOnly ? 'read-only' : fieldState}
             className={triggerClassName}
           >
             <span className={styles['trigger-label']}>{triggerLabel ?? placeholder}</span>

@@ -320,7 +320,7 @@ The editor exposes a small set of CSS custom properties for top-level styling. O
 }
 ```
 
-Available tokens: `--wb-public-background-color`, `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
+Available tokens: `--wb-public-background-color`, `--wb-public-transition`, `--wb-public-font-family`, `--wb-public-font-family-mono`, plus scrollbar styling (`--wb-public-scroll-width`, `--wb-public-scroll-radius`, `--wb-public-scroll-thumb-color`, `--wb-public-scroll-track-color`) and the snackbar stack's position (`--wb-public-snackbar-offset-bottom`, a CSS length from the viewport bottom to the lowest snackbar, default `20px`). `--wb-public-font-family` controls the builder root and the Poppins-backed type roles; the proportional `wb-text-code` role remains Inter. `--wb-public-font-family-mono` controls `wb-text-code-mono` and the syntax editor.
 
 Overrides on `:root` are ignored, except for primitive design tokens such as `--wb-ds-colors-*`. Custom layouts passed as Root children and the editor's own popups inherit the overrides; content that a host or plugin portals elsewhere does not, because CSS variables follow DOM ancestry, not the React tree.
 

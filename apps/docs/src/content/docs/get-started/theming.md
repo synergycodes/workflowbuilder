@@ -26,6 +26,27 @@ Other weights, Inter, and non-ASCII glyphs use `font-display: swap` assets. They
 
 Provide any replacement font yourself via `@font-face`, `@fontsource/<font>`, or an equivalent local source.
 
+## Snackbar position
+
+Snackbars stack at the bottom centre of the viewport. `--wb-public-snackbar-offset-bottom` takes a CSS length, such as `120px`: the distance from the viewport bottom to the lowest snackbar (default `20px`). A stack too tall for the space above that distance stays on screen, pinned 20px below the viewport top, and overlaps what is beneath it. To keep snackbars clear of a docked panel, measure the panel against the viewport, update the value when the panel resizes, and remove it to restore the default. The example assumes a panel pinned to the viewport bottom; one that moves without resizing needs its own trigger:
+
+```ts
+const GAP = 12; // space between the panel and the lowest snackbar
+const root = document.documentElement.style;
+const update = () => {
+  const offset = window.innerHeight - panel.getBoundingClientRect().top + GAP;
+  root.setProperty('--wb-public-snackbar-offset-bottom', `${offset}px`);
+};
+
+update();
+const observer = new ResizeObserver(update);
+observer.observe(panel);
+
+// When the panel goes away:
+observer.disconnect();
+root.removeProperty('--wb-public-snackbar-offset-bottom');
+```
+
 ## Other tokens
 
 The supported customization contract uses `--wb-public-*` for SDK controls and component overrides. Generated design tokens from `@workflowbuilder/ui` use `--wb-ds-*`; `--wb-sdk-*` is reserved for private SDK implementation details. See [Design System & Customization](/overview/features/design-system-and-customization/) for the full token map.
