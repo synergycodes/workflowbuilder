@@ -49,7 +49,7 @@ Each version holds the docs and the API as they were on the commit it was publis
 ## Developing in this repo
 
 ```sh
-pnpm --filter @workflowbuilder/mcp build           # tsc, docs snapshot, TypeDoc for the three packages, about 30 s
+pnpm --filter @workflowbuilder/mcp build           # tsc, docs snapshot, build:ui, TypeDoc for the three packages, about 30 s
 pnpm --filter @workflowbuilder/mcp test            # unit tests, fixtures only, no build needed
 pnpm --filter @workflowbuilder/mcp smoke           # real corpus, needs a build
 pnpm --filter @workflowbuilder/mcp smoke:package   # packs the tarball, installs it outside the repo, talks to it over stdio
@@ -61,7 +61,7 @@ The repo-root `.mcp.json` registers the server as `wb-docs` (`node packages/mcp-
 The build reads the repo and writes everything the server needs to `dist/data`; the server never reads the repo:
 
 - `docs.json`: the docs pages (`apps/docs/src/content/docs`) and the package READMEs, cleaned and chunked, with GitHub links pinned to the commit it was built from. Cleaning and chunking happen here, so after editing docs or `src/config/chunking.ts`, `src/config/mdx-components.ts` or the loaders in `src/docs/` (`chunk.ts`, `clean-mdx.ts`, `load-*.ts`), run `docs-data` and restart the session.
-- `typedoc/*.json` and `manifest.json`: the public API, the declaration counts and the documented package versions.
+- `typedoc/*.json` and `manifest.json`: the public API, the declaration counts and the documented package versions. The SDK's API reads the UI types from `packages/ui/dist`, so `typedoc` runs `pnpm build:ui` first: a missing or stale UI build would silently drop every UI type from the SDK snapshot.
 - `build.json`: the commit `tsc` compiled `dist/*.js` from.
 
 The search index is built from that data at startup, in 100-200 ms, so ranking and synonym changes apply on the next start. `docs.json` carries a format number: when the shape of pages, sections or chunks changes, bump `DOCS_FORMAT` in `src/corpus/build-corpus.ts`, and a server that meets an older snapshot refuses it instead of serving broken results. `prepack` (`scripts/check-packed-build.ts`) refuses to pack or publish a `dist/` that is missing, incomplete or built from another commit, and a working tree with uncommitted or untracked files, since the build would have snapshotted them. `smoke:package` skips the clean-tree check (`WB_MCP_PACK_ALLOW_DIRTY=1`), so it runs on work in progress; CI packs once more without it after every build, so the full check is proven before a tag.
