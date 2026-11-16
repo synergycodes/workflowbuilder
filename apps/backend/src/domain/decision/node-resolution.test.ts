@@ -4,7 +4,13 @@ import type { Decision } from '@workflow-builder/types/workflow-execution/decisi
 
 import { type RoutedDecision, type RoutedDecisionAction, hasNodeResolution, toNodeResolution } from './node-resolution';
 
-const approve = { name: 'approve', label: 'Approve', effect: 'resume', port: 'approved' } as const;
+const approve = {
+  name: 'approve',
+  label: 'Approve',
+  effect: 'resume',
+  port: 'approved',
+  reasonRequired: false,
+} as const;
 const reject = { name: 'reject', label: 'Reject', effect: 'reject', port: 'rejected', reasonRequired: false } as const;
 
 describe('toNodeResolution', () => {

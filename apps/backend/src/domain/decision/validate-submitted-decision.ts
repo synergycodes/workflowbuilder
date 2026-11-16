@@ -128,7 +128,7 @@ export function validateSubmittedDecision(
   const action = request.actions.find((candidate) => candidate.name === submitted.action);
   if (action === undefined) return refuse('unknown_action', submitted.action, ['action']);
 
-  if (action.effect === 'reject' && action.reasonRequired && isBlank(submitted.reason)) {
+  if (action.effect !== 'rerun-source' && action.reasonRequired && isBlank(submitted.reason)) {
     return refuse('reason_required', action.name, ['reason']);
   }
   if (action.effect === 'rerun-source' && isBlank(submitted.comment)) {

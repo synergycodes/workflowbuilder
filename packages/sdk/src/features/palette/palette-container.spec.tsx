@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { setCustomPaletteNodes } from '../../data/palette';
 import { useWorkflowBuilderActions } from '../../hooks/use-workflow-builder-actions';
 import type { PaletteGroup, PaletteItem } from '../../node/common';
+import { loadNodeDefinitions } from '../../store/slices/palette/actions';
 import { resetWorkflowStore, useStore } from '../../store/store';
 import '../i18n/index';
 import { renderInRoot } from '../ui-extensions/test-utils';
@@ -43,6 +44,7 @@ beforeEach(() => {
     paletteGroup('Triggers', [paletteItem('trigger', 'Webhook')], true),
   ]);
   resetWorkflowStore();
+  loadNodeDefinitions();
   useStore.setState({ isPaletteOpen: true });
 });
 

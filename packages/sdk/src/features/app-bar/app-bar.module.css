@@ -1,22 +1,28 @@
+.app-bar {
+  container: wb-app-bar / inline-size;
+  width: 100%;
+}
+
 .container {
   background: var(--wb-sdk-app-bar-background);
   border-radius: var(--wb-sdk-app-bar-border-radius);
   border: 0.0625rem solid var(--wb-sdk-app-bar-border-color);
   display: flex;
-  height: auto;
-  padding: 0.75rem 1rem;
+  height: 3.625rem;
+  padding: var(--wb-ds-space-100) var(--wb-ds-space-150);
   pointer-events: all;
   width: 100%;
   align-items: center;
-  justify-content: space-between;
 
   .toolbar {
     display: flex;
+    flex: 1 1 0;
     align-items: center;
-    gap: 2rem;
+    gap: var(--wb-ds-space-150);
 
     .logo {
       color: var(--wb-sdk-app-bar-logo-color);
+      margin-inline: var(--wb-ds-space-75);
     }
 
     .logo-link {
@@ -28,18 +34,19 @@
     .nav-segment {
       display: flex;
       align-items: center;
-      gap: 0.5rem;
+      gap: var(--wb-ds-space-100);
     }
   }
 
   .project-selection {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    position: absolute;
-    left: 50%;
-    transform: translateX(-50%);
+    justify-content: center;
+    gap: var(--wb-ds-space-100);
+    min-width: 0;
+    padding-inline: var(--wb-ds-space-200);
     .title {
+      max-width: 20rem;
       white-space: nowrap;
       overflow: hidden;
       text-overflow: ellipsis;
@@ -48,9 +55,30 @@
 
   .controls {
     display: flex;
+    flex: 1 1 0;
     justify-content: flex-end;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--wb-ds-space-100);
+  }
+
+  .controls-segment {
+    display: flex;
+    align-items: center;
+    gap: var(--wb-ds-space-100);
+  }
+
+  .more-menu {
+    display: none;
+  }
+}
+
+.full-width-picker {
+  width: 100%;
+
+  > *,
+  button {
+    display: flex;
+    flex: 1;
   }
 }
 
@@ -69,6 +97,8 @@
   composes: wb-text-body-m from global;
   min-height: 1em;
   min-width: 1em;
+  padding: var(--wb-ds-space-137) var(--wb-ds-space-150);
+  border-radius: var(--wb-ds-radius-100);
 }
 
 /* Only applied while `workflowRename` is visible and the editor isn't read-only: a plain
@@ -77,26 +107,25 @@
 .title-editable {
   cursor: pointer;
 
+  &:hover {
+    background: var(--wb-ds-components-nav-button-bg-primary-hover);
+  }
+
   &:empty {
     border-bottom: 1px dotted currentColor;
   }
 }
 
-@media screen and (max-width: 800px) {
-  .container {
-    .project-selection {
-      display: none;
-    }
-  }
-  .title {
-    margin-left: 0.5rem;
-  }
+.version-chip {
+  background-color: var(--wb-ds-ui-bg-inset);
+  color: var(--wb-ds-ui-text-default);
 }
 
 .logo-image {
   display: block;
   max-height: 1.5rem;
   width: auto;
+  margin-inline: var(--wb-ds-space-75);
 }
 
 .logo-image--dark {
@@ -109,4 +138,174 @@ html[data-theme='dark'] .logo-image--light {
 
 html[data-theme='dark'] .logo-image--dark {
   display: block;
+}
+
+@container wb-app-bar (width < 1280px) {
+  .container :is(.toolbar, .controls) {
+    flex: none;
+  }
+
+  .container .project-selection {
+    flex: 1 1 auto;
+  }
+
+  .container .folder-name {
+    display: none;
+  }
+
+  .container .title {
+    min-width: 6rem;
+  }
+}
+
+@container wb-app-bar (width < 1024px) {
+  .container :is(.version-chip, .overflow-control) {
+    display: none;
+  }
+
+  .container .more-menu {
+    display: block;
+  }
+
+  .container .toolbar .logo {
+    width: 3.125rem;
+  }
+
+  .container button {
+    position: relative;
+  }
+
+  .container button::before {
+    content: '';
+    position: absolute;
+    inset-block: min(0rem, calc((100% - var(--wb-ds-size-500)) / 2));
+    inset-inline: max(-1 * var(--wb-ds-space-50), min(0rem, calc((100% - var(--wb-ds-size-500)) / 2)));
+  }
+}
+
+@container wb-app-bar (width < 768px) {
+  .container {
+    display: grid;
+    height: auto;
+    padding-block: calc(var(--wb-ds-space-100) - 0.0625rem);
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    grid-template-rows: var(--wb-ds-size-525) var(--wb-ds-size-400);
+    grid-template-areas:
+      'logo name publish'
+      'tools tools controls';
+    gap: var(--wb-ds-space-50) var(--wb-ds-space-150);
+  }
+
+  .container :is(.toolbar, .controls) {
+    display: contents;
+  }
+
+  .container .toolbar > :not(.nav-segment) {
+    grid-area: logo;
+  }
+
+  .container .nav-segment {
+    grid-area: tools;
+  }
+
+  .container .project-selection {
+    grid-area: name;
+    padding-inline: 0;
+  }
+
+  .container .controls-segment {
+    grid-area: controls;
+    justify-self: end;
+  }
+
+  .container .controls > :not(.controls-segment) {
+    grid-area: publish;
+    justify-self: end;
+  }
+}
+
+@supports not (container-type: inline-size) {
+  @media screen and (max-width: 1279.98px) {
+    .container :is(.toolbar, .controls) {
+      flex: none;
+    }
+
+    .container .project-selection {
+      flex: 1 1 auto;
+    }
+
+    .container .folder-name {
+      display: none;
+    }
+
+    .container .title {
+      min-width: 6rem;
+    }
+  }
+
+  @media screen and (max-width: 1023.98px) {
+    .container :is(.version-chip, .overflow-control) {
+      display: none;
+    }
+
+    .container .more-menu {
+      display: block;
+    }
+
+    .container .toolbar .logo {
+      width: 3.125rem;
+    }
+
+    .container button {
+      position: relative;
+    }
+
+    .container button::before {
+      content: '';
+      position: absolute;
+      inset-block: min(0rem, calc((100% - var(--wb-ds-size-500)) / 2));
+      inset-inline: max(-1 * var(--wb-ds-space-50), min(0rem, calc((100% - var(--wb-ds-size-500)) / 2)));
+    }
+  }
+
+  @media screen and (max-width: 767.98px) {
+    .container {
+      display: grid;
+      height: auto;
+      padding-block: calc(var(--wb-ds-space-100) - 0.0625rem);
+      grid-template-columns: auto minmax(0, 1fr) auto;
+      grid-template-rows: var(--wb-ds-size-525) var(--wb-ds-size-400);
+      grid-template-areas:
+        'logo name publish'
+        'tools tools controls';
+      gap: var(--wb-ds-space-50) var(--wb-ds-space-150);
+    }
+
+    .container :is(.toolbar, .controls) {
+      display: contents;
+    }
+
+    .container .toolbar > :not(.nav-segment) {
+      grid-area: logo;
+    }
+
+    .container .nav-segment {
+      grid-area: tools;
+    }
+
+    .container .project-selection {
+      grid-area: name;
+      padding-inline: 0;
+    }
+
+    .container .controls-segment {
+      grid-area: controls;
+      justify-self: end;
+    }
+
+    .container .controls > :not(.controls-segment) {
+      grid-area: publish;
+      justify-self: end;
+    }
+  }
 }

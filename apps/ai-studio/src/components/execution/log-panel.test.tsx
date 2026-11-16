@@ -8,9 +8,20 @@ import { executionEvent as event } from '../../stores/execution-event.fixture';
 import { applyEvent, resetExecution, setExecutionStarted } from '../../stores/use-execution-store';
 import { ExecutionLogPanel } from './log-panel';
 
+const sdk = vi.hoisted(() => ({
+  selectedNodeId: null as string | null,
+  nodes: [] as { id: string; data: { properties: { label?: string } } }[],
+  edges: [] as { source: string; target: string }[],
+}));
+
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return { ...actual, useSingleSelectedElement: () => null };
+  return {
+    ...actual,
+    useSingleSelectedElement: () => (sdk.selectedNodeId ? { node: { id: sdk.selectedNodeId } } : null),
+    useStore: (selector: (state: Pick<typeof sdk, 'nodes' | 'edges'>) => unknown) =>
+      selector({ nodes: sdk.nodes, edges: sdk.edges }),
+  };
 });
 
 declare global {
@@ -19,13 +30,48 @@ declare global {
 }
 globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
+const observers = new Map<Element, () => void>();
+
+const rootVariable = (name: string) => document.documentElement.style.getPropertyValue(name);
+
+class ReportingResizeObserver {
+  private readonly targets = new Set<Element>();
+  constructor(private readonly callback: () => void) {}
+  observe(target: Element) {
+    this.targets.add(target);
+    observers.set(target, this.callback);
+  }
+  disconnect() {
+    for (const target of this.targets) observers.delete(target);
+    this.targets.clear();
+  }
+}
+
+function reportResize(target: Element | null) {
+  const callback = target && observers.get(target);
+  if (!callback) throw new Error('No ResizeObserver watches this element');
+  callback();
+}
+
 describe('ExecutionLogPanel', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
 
   beforeEach(() => {
+    sdk.selectedNodeId = null;
+    sdk.nodes = [
+      { id: 'classify-1', data: { properties: { label: 'Classify ticket' } } },
+      { id: 'region-1', data: { properties: { label: 'Shipping region' } } },
+      { id: 'card-1', data: { properties: { label: 'Charge card' } } },
+      { id: 'stock-1', data: { properties: { label: 'Reserve stock' } } },
+    ];
+    sdk.edges = [
+      { source: 'classify-1', target: 'card-1' },
+      { source: 'classify-1', target: 'stock-1' },
+    ];
     resetExecution();
     setExecutionStarted('exec-1', '/stream');
+    vi.stubGlobal('ResizeObserver', ReportingResizeObserver);
     container = document.createElement('div');
     document.body.append(container);
     root = createRoot(container);
@@ -34,6 +80,8 @@ describe('ExecutionLogPanel', () => {
   afterEach(() => {
     act(() => root.unmount());
     container.remove();
+    observers.clear();
+    vi.unstubAllGlobals();
   });
 
   function renderAfter(...events: ExecutionEvent[]) {
@@ -42,6 +90,8 @@ describe('ExecutionLogPanel', () => {
       root.render(<ExecutionLogPanel />);
     });
   }
+
+  const nodeRow = (nodeId: string) => container.querySelector(`[data-node-id="${nodeId}"]`);
 
   it('names the outcome, who settled it and where, on the execution completed row', () => {
     renderAfter(
@@ -61,7 +111,152 @@ describe('ExecutionLogPanel', () => {
       event({ type: 'execution_completed' }),
     );
 
-    expect(container.textContent).toContain('execution completed');
+    expect(container.textContent).toContain('Execution completed');
     expect(container.textContent).not.toContain('resolved by');
+  });
+
+  it('names a node row by the label from the diagram, not by its id', () => {
+    renderAfter(event({ type: 'node_started', nodeId: 'classify-1' }));
+
+    expect(nodeRow('classify-1')?.textContent).toContain('Classify ticket');
+    expect(nodeRow('classify-1')?.textContent).not.toContain('classify-1');
+  });
+
+  it('falls back to the node id when the diagram no longer has the node', () => {
+    renderAfter(event({ type: 'node_started', nodeId: 'gone-1' }));
+
+    expect(nodeRow('gone-1')?.textContent).toContain('gone-1');
+  });
+
+  it('shows the run status in the header chip', () => {
+    renderAfter(
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'execution_failed', payload: { error: { message: 'boom' } } }),
+    );
+
+    expect(container.querySelector('[class*="header"]')?.textContent).toContain('Failed');
+  });
+
+  it('marks a failed node row as an error', () => {
+    renderAfter(event({ type: 'node_failed', nodeId: 'classify-1', payload: { error: { message: 'boom' } } }));
+
+    expect(nodeRow('classify-1')?.className).toMatch(/row--failed/);
+  });
+
+  it('highlights the rows of the node selected on the canvas', () => {
+    sdk.selectedNodeId = 'classify-1';
+    renderAfter(event({ type: 'node_started', nodeId: 'classify-1' }));
+
+    expect(nodeRow('classify-1')?.className).toMatch(/row--highlighted/);
+  });
+
+  it('names the parallel branches a node started, from the diagram', () => {
+    renderAfter(event({ type: 'branch_spawned', nodeId: 'classify-1', payload: { childPathIds: ['p1', 'p2'] } }));
+
+    expect(nodeRow('classify-1')?.textContent).toContain('Started 2 parallel branches → Charge card · Reserve stock');
+  });
+
+  it('says how many inputs a join received', () => {
+    renderAfter(event({ type: 'branches_joined', nodeId: 'stock-1', payload: { mergedPathIds: ['p1', 'p2'] } }));
+
+    expect(nodeRow('stock-1')?.textContent).toContain('Branches joined — 2 inputs arrived · continuing');
+  });
+
+  it('tells a skipped row why the node did not run', () => {
+    renderAfter(event({ type: 'node_skipped', nodeId: 'card-1', payload: { reason: 'branch_not_taken' } }));
+
+    expect(nodeRow('card-1')?.textContent).toContain('Skipped — branch not taken');
+  });
+
+  it('names the step and the output with no connection on an incomplete run', () => {
+    renderAfter(
+      event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }),
+      event({ type: 'execution_incomplete', payload: { deadEnds: [{ nodeId: 'region-1', port: 'Outside EU' }] } }),
+    );
+
+    expect(container.textContent).toContain(
+      'Shipping region took “Outside EU”, an output with no connection. Draw the missing connection to finish this path.',
+    );
+    expect(container.querySelector('[class*="header"]')?.textContent).toContain('Incomplete');
+  });
+
+  it('clamps the detail box under the message until the row is expanded', () => {
+    renderAfter(event({ type: 'node_failed', nodeId: 'classify-1', payload: { error: { message: 'boom' } } }));
+    const row = nodeRow('classify-1') as HTMLElement;
+    const detail = () => row.querySelector('[class*="detail"]');
+
+    expect(row.textContent).not.toContain('Failed — boom');
+    expect(detail()?.textContent).toBe('boom');
+    expect(detail()?.className).toContain('detail--clamped');
+
+    act(() => row.click());
+
+    expect(detail()?.className).not.toContain('detail--clamped');
+  });
+
+  it('resizes the log from the keyboard and goes back to the default height on Home', () => {
+    renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    const handle = container.querySelector('[role="separator"]') as HTMLElement;
+    const dock = container.querySelector('section') as HTMLElement;
+    const press = (key: string) =>
+      act(() => {
+        handle.dispatchEvent(new KeyboardEvent('keydown', { key, bubbles: true }));
+      });
+
+    press('ArrowUp');
+    expect(dock.style.getPropertyValue('--log-body-height')).toBe('120px');
+
+    press('Home');
+    expect(dock.style.getPropertyValue('--log-body-height')).toBe('');
+  });
+
+  it('reports the default height and both bounds on the resize handle before any resize', () => {
+    renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+    const handle = container.querySelector('[role="separator"]') as HTMLElement;
+
+    expect(handle.getAttribute('aria-valuenow')).toBe('200');
+    expect(handle.getAttribute('aria-valuemin')).toBe('120');
+    expect(handle.getAttribute('aria-valuemax')).toBe(String(Math.round(window.innerHeight * 0.6)));
+  });
+
+  describe('snackbar offset', () => {
+    let dockTop = 600;
+
+    beforeEach(() => {
+      dockTop = 600;
+      const measure = HTMLElement.prototype.getBoundingClientRect;
+      vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (this: HTMLElement) {
+        return this.matches('section[aria-label="Execution log"]') ? ({ top: dockTop } as DOMRect) : measure.call(this);
+      });
+    });
+
+    afterEach(() => {
+      vi.restoreAllMocks();
+    });
+
+    it('lifts the snackbars 12px above the log while it is on screen', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 600 + 12}px`);
+    });
+
+    it('moves the snackbars with the log when it changes size', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      dockTop = 500;
+      act(() => reportResize(container.querySelector('section')));
+
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 500 + 12}px`);
+    });
+
+    it('gives the snackbars their own place back when the run is reset', () => {
+      renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
+
+      act(() => resetExecution());
+
+      expect(container.querySelector('section')).toBeNull();
+      expect(observers.size).toBe(0);
+      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe('');
+    });
   });
 });

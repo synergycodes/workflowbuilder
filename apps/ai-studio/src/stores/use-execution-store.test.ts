@@ -209,19 +209,19 @@ describe('use-execution-store: decision drafts', () => {
 
   it('merges what is saved for one wait and keeps the waits apart', () => {
     saveDecisionDraft(wait, { values: { refundAmount: 120 } });
-    saveDecisionDraft(wait, { reason: 'Checked' });
-    saveDecisionDraft({ ...wait, attempt: 2 }, { reason: 'Second wait' });
+    saveDecisionDraft(wait, { reasons: { reject: 'Checked' } });
+    saveDecisionDraft({ ...wait, attempt: 2 }, { reasons: { reject: 'Second wait' } });
 
-    expect(drafts()[waitKey(wait)]).toEqual({ values: { refundAmount: 120 }, reason: 'Checked' });
-    expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reason: 'Second wait' });
+    expect(drafts()[waitKey(wait)]).toEqual({ values: { refundAmount: 120 }, reasons: { reject: 'Checked' } });
+    expect(drafts()[waitKey({ ...wait, attempt: 2 })]).toEqual({ reasons: { reject: 'Second wait' } });
   });
 
   it('keeps the drafts when a snapshot replays the same run', () => {
-    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft(wait, { reasons: { reject: 'Checked' } });
 
     applySnapshot({ executionId: 'exec-1', status: 'waiting', lastSequence: 0, events: [] });
 
-    expect(drafts()[waitKey(wait)]).toEqual({ reason: 'Checked' });
+    expect(drafts()[waitKey(wait)]).toEqual({ reasons: { reject: 'Checked' } });
   });
 
   it('drops a draft saved for a run that is no longer the current one', () => {
@@ -232,11 +232,11 @@ describe('use-execution-store: decision drafts', () => {
   });
 
   it('starts a new run and a reset without drafts', () => {
-    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft(wait, { reasons: { reject: 'Checked' } });
     setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
     expect(drafts()).toEqual({});
 
-    saveDecisionDraft(wait, { reason: 'Checked' });
+    saveDecisionDraft(wait, { reasons: { reject: 'Checked' } });
     resetExecution();
     expect(drafts()).toEqual({});
   });

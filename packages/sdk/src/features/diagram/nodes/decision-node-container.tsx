@@ -7,6 +7,7 @@ import { useStore } from '../../../store/store';
 import { getIsValidFromProperties } from '../../../utils/validation/get-is-valid-from-properties';
 import type { DecisionBranch } from '../../json-form/types/controls';
 import { getHandlePosition } from '../handles/get-handle-position';
+import { useNodeAccent } from '../hooks/use-node-accent';
 import { addBranchToNode } from './decision-node-template/add-branch-action';
 import { DecisionNodeTemplate } from './decision-node-template/decision-node-template';
 
@@ -20,9 +21,10 @@ type DecisionNodeProperties = {
 type Props = NodeProps<Node<NodeData<DecisionNodeProperties>>>;
 
 export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
-  const { icon, properties } = data;
+  const { icon, properties, type } = data;
   const { label = '', description = '', decisionBranches } = properties;
   const isValid = getIsValidFromProperties(properties);
+  const accent = useNodeAccent(type);
 
   const layoutDirection = useStore((store) => store.layoutDirection);
   const handleTargetPosition = getHandlePosition({ direction: layoutDirection, handleType: 'target' });
@@ -38,6 +40,7 @@ export const DecisionNodeContainer = memo(({ id, data, selected }: Props) => {
         description={description}
         showHandles={true}
         icon={icon}
+        accent={accent}
         decisionBranches={decisionBranches}
         isValid={isValid}
         onAddBranch={() => addBranchToNode(id)}

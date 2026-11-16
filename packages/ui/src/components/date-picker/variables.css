@@ -5,8 +5,9 @@
 
 :root {
   --wb-public-date-picker-dropdown-background: var(--wb-ds-ui-bg-base);
-  --wb-public-date-picker-dropdown-border-color: var(--wb-ds-ui-stroke-default);
-  --wb-public-date-picker-dropdown-box-shadow: 0px 4px 20px var(--wb-ds-shadow-ui-color);
+  --wb-public-date-picker-dropdown-border-color: var(--wb-ds-ui-stroke-subtle);
+  --wb-public-date-picker-dropdown-box-shadow: var(--wb-ds-shadow-ui-m-x) var(--wb-ds-shadow-ui-m-y)
+    var(--wb-ds-shadow-ui-m-blur) var(--wb-ds-shadow-ui-m-spread) var(--wb-ds-shadow-ui-color);
 
   --wb-public-date-picker-color: var(--wb-ds-ui-text-subtle-default);
   --wb-public-date-picker-header-background: var(--wb-ds-ui-bg-elevated);

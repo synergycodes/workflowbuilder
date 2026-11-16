@@ -5,7 +5,7 @@ description: A segmented control for selecting a single option from a small set.
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import PropsTable from '../../../../components/api/props-table.astro';
-import { SegmentPickerExample } from '../../../../components/ui-examples/segment-picker';
+import { SegmentPickerExample, SegmentPickerSecondaryExample } from '../../../../components/ui-examples/segment-picker';
 
 A `SegmentPicker` is a segmented control that lets users select a single option
 from a small, fixed set. Each option is declared with a `SegmentPicker.Item`,
@@ -29,6 +29,25 @@ function Example() {
     </SegmentPicker>
   );
 }
+```
+
+## Secondary variant
+
+`variant="secondary"` renders a compact picker that fits its content: the
+segments sit on a padded inset track and the selected one is raised with the
+secondary nav-button colours. Use it for small toolbar toggles, such as an
+editing mode or a theme switch.
+
+<SegmentPickerSecondaryExample client:visible />
+
+```tsx
+import { Moon, SunDim } from '@phosphor-icons/react';
+import { SegmentPicker } from '@workflowbuilder/ui';
+
+<SegmentPicker size="extra-small" variant="secondary" value={theme} onChange={(_event, next) => setTheme(next)}>
+  <SegmentPicker.Item value="light" aria-label="Light" prefixIcon={<SunDim />} />
+  <SegmentPicker.Item value="dark" aria-label="Dark" prefixIcon={<Moon />} />
+</SegmentPicker>;
 ```
 
 ## Props

@@ -43,6 +43,7 @@ const plugin = new WorkflowBuilderPlugin<AiStudioNode>({
     'ai-studio/ai-agent': executeAIAgent,
     'ai-studio/visualize': executeVisualize,
     'ai-studio/human-decision': executeHumanDecision,
+    'ai-studio/review': executeHumanDecision,
   },
   store: withPayloadSizeWarning(database, logger),
 });

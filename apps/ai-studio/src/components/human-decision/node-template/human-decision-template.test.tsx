@@ -155,6 +155,21 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(handles(container, 'target').map((handle) => handle.dataset['handleid'])).toEqual(['target']);
   });
 
+  it("tints its icon with the node type's accent", () => {
+    render(
+      <HumanDecisionNodeTemplate
+        id="human-1"
+        icon="UserCheck"
+        accent="violet"
+        label="Human decision"
+        description=""
+        data={data}
+      />,
+    );
+
+    expect(container.querySelector('[style*="--wb-public-node-icon-color-violet"]')).not.toBeNull();
+  });
+
   it('renders the actions inside the OptionalNodeContent slot, where the execution markers mount', () => {
     render(
       <HumanDecisionNodeTemplate id="human-1" icon="UserCheck" label="Human decision" description="" data={data} />,

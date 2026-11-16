@@ -2,6 +2,8 @@
   --wb-public-segment-picker-gap: var(--wb-ds-space-50);
   --wb-public-segment-picker-background-color: var(--wb-ds-ui-bg-inset);
   --wb-public-segment-picker-circle-border-radius: var(--wb-ds-radius-full);
+  --wb-public-segment-picker-secondary-padding: var(--wb-ds-space-25);
+  --wb-public-segment-picker-secondary-border-radius: var(--wb-ds-radius-50);
 }
 
 @layer ui.component {
@@ -16,8 +18,17 @@
       width: fit-content;
     }
 
-    &:not(.circle) {
+    &:not(.circle, .secondary) {
       width: 100%;
+    }
+
+    &.secondary {
+      padding: var(--wb-public-segment-picker-secondary-padding);
+      width: fit-content;
+    }
+
+    &.secondary:not(.circle) {
+      border-radius: var(--wb-public-segment-picker-secondary-border-radius);
     }
   }
 }

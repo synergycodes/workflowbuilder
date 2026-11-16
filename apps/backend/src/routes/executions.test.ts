@@ -455,6 +455,26 @@ describe('createExecutionsRoutes - GET /:id body', () => {
     const plain = await app.request('/api/executions/e-1');
     expect(await plain.json()).toMatchObject({ status: 'completed', outcome: null, resolvedBy: null });
   });
+
+  // The execute route stores the engine's own error there, and it can name internal hosts.
+  it('never returns the error message of a run that did not start', async () => {
+    const app = buildApp(allowAll(vi.fn(async () => true)));
+    databaseMock.select.mockReturnValueOnce(
+      chainResolving([
+        {
+          ...terminalExecution,
+          status: 'failed',
+          errorMessage: 'Failed to start Workflow: 14 UNAVAILABLE: connect ECONNREFUSED 10.0.0.5:7233',
+        },
+      ]),
+    );
+
+    const response = await app.request('/api/executions/e-1');
+    const body = await response.json();
+
+    expect(body).not.toHaveProperty('errorMessage');
+    expect(JSON.stringify(body)).not.toContain('10.0.0.5');
+  });
 });
 
 // ---- list -------------------------------------------------------------------

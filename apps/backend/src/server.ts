@@ -6,6 +6,7 @@ import { bodyLimit } from 'hono/body-limit';
 import { AllowAllAuthPort, AuthDeniedError, type AuthPort, createAuthMiddleware, makeAssertAuthorized } from './auth';
 import { runMigrations } from './db/migrate';
 import { env } from './env';
+import { formatErrorChain } from './format-error-chain';
 import { logger } from './logger';
 import { createCorsMiddleware } from './middleware/cors';
 import { isListingRefused, refuseListing } from './middleware/listing-guard';
@@ -53,7 +54,7 @@ app.onError((error, c) => {
     }
     return c.json({ code: 'forbidden', message: error.message }, 403);
   }
-  logger.error('unhandled request error', { error: error instanceof Error ? error.message : String(error) });
+  logger.error('unhandled request error', { error: formatErrorChain(error) });
   return c.json({ code: 'internal_error', message: 'Internal server error' }, 500);
 });
 

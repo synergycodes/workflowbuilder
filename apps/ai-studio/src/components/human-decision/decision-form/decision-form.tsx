@@ -11,8 +11,8 @@ import {
   useExecutionStore,
 } from '../../../stores/use-execution-store';
 import { schemaFields } from '../../../utils/editor-form/form-schema';
-import type { OfferedActions } from '../../../utils/human-decision/decision-actions';
-import { blocksApproval, editsOf, startingValues } from '../../../utils/human-decision/decision-values';
+import type { ActionOffer, OfferedActions } from '../../../utils/human-decision/decision-actions';
+import { blocksResume, editsOf, startingValues } from '../../../utils/human-decision/decision-values';
 import { EditorForm, type EditorFormHandle } from '../../editor-form/editor-form';
 import { DecisionVerdict } from './decision-verdict';
 
@@ -33,9 +33,10 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
   const fields = useRef<EditorFormHandle>(null);
   const formElement = useRef<HTMLDivElement>(null);
   const isFocusRequested = useExecutionStore((state) => state.decisionFocusRequest === wait.nodeId);
-  const [isApproveBlocked, setIsApproveBlocked] = useState(false);
+  const [isResumeBlocked, setIsResumeBlocked] = useState(false);
   const { isBusy, isAccepted, message, submit } = useDecisionSubmit(wait);
-  const reason = draft?.reason ?? '';
+  const reasons = draft?.reasons ?? {};
+  const reasonOf = (name: string) => (Object.hasOwn(reasons, name) ? reasons[name] : '');
 
   // Decide asks for it, whether this form is about to mount or already shows.
   useEffect(() => {
@@ -45,14 +46,14 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
     }
   }, [isFocusRequested]);
 
-  const approve = () => {
+  const resume = ({ name, reasonRequired }: ActionOffer) => {
     const snapshot = fields.current?.snapshot();
     if (!snapshot) {
       return;
     }
     const edits = editsOf(proposal, snapshot.data, schema);
-    if (!blocksApproval(snapshot.invalidFields, schema, edits)) {
-      void submit({ action: actions.resume.name, edits });
+    if (!blocksResume(snapshot.invalidFields, schema, edits)) {
+      void submit({ action: name, edits, ...(reasonRequired ? { reason: reasonOf(name) } : {}) });
     }
   };
 
@@ -71,21 +72,21 @@ export function DecisionForm({ actions, draft, saveDraft, wait, ...opened }: Pro
         initialData={startingValues(proposal, draft?.values, schema, draft?.fields)}
         readOnly={isBusy}
         onChange={({ data, invalidFields }) =>
-          setIsApproveBlocked(blocksApproval(invalidFields, schema, editsOf(proposal, data, schema)))
+          setIsResumeBlocked(blocksResume(invalidFields, schema, editsOf(proposal, data, schema)))
         }
-        onFail={() => setIsApproveBlocked(true)}
+        onFail={() => setIsResumeBlocked(true)}
         onUnmount={(values) => saveDraft({ values, fields: schemaFields(schema).map(([key]) => key) })}
       />
       <DecisionVerdict
         actions={actions}
-        reason={reason}
-        isApproveBlocked={isApproveBlocked}
+        reasonOf={reasonOf}
+        isResumeBlocked={isResumeBlocked}
         isBusy={isBusy}
         isAccepted={isAccepted}
         message={message}
-        onReasonChange={(next) => saveDraft({ reason: next })}
-        onApprove={approve}
-        onReject={(reject) => void submit({ action: reject.name, reason })}
+        onReasonChange={(name, next) => saveDraft({ reasons: { ...reasons, [name]: next } })}
+        onResume={resume}
+        onReject={({ name }) => void submit({ action: name, reason: reasonOf(name) })}
       />
     </div>
   );

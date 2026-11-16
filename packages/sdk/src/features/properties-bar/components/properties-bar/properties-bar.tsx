@@ -44,7 +44,6 @@ function PropertiesBarComponent(props: WorkflowBuilderPropertiesPanelProps) {
   const setIsPropertiesBarOpen = useStore((state) => state.setPropertiesPanelOpen);
   const isDeleteVisible = useIsBuiltInControlVisible('delete');
 
-  const name = selection?.node?.data?.properties?.label ?? selection?.edge?.data?.label;
   const isExpanded = !!selection && isPropertiesBarOpen;
   const hasCustomItems = tabs.length > 0;
 
@@ -84,17 +83,17 @@ function PropertiesBarComponent(props: WorkflowBuilderPropertiesPanelProps) {
 
   return (
     <Sidebar
+      role="region"
+      aria-label={headerLabel}
       isExpanded={isExpanded}
       contentClassName={styles['extend-bounds']}
       header={
         <>
           <PropertiesBarHeader
-            hasSelection={!!selection}
-            isExpendable={isPropertiesBarOpen}
-            isExpanded={isExpanded}
+            selection={selection}
+            headerLabel={headerLabel}
+            isOpen={isExpanded}
             onTogglePropertiesBar={onToggleExpand}
-            header={headerLabel}
-            name={name ?? ''}
           />
           {isExpanded && <AreaTarget area="propertiesPanelHeader" />}
           {isExpanded && renderComponent([segmentPicker], selection, selectedTab)}

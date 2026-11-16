@@ -5,7 +5,7 @@ import type { DecisionRequest } from '@workflow-builder/types/workflow-execution
 // The real receiver, not a copy, as in ../../nodes/human-decision/decision-request-contract.test.ts
 // (follow-up: decision-request-contract-test-home).
 import { validateSubmittedDecision } from '../../../../backend/src/domain/decision/validate-submitted-decision';
-import { blocksApproval, editsOf, proposedValues, withEdits } from './decision-values';
+import { blocksResume, editsOf, proposedValues, withEdits } from './decision-values';
 import { reviewRequest } from './review-request.fixture';
 
 const { schema } = reviewRequest;
@@ -112,9 +112,9 @@ describe('withEdits', () => {
   });
 });
 
-describe('blocksApproval', () => {
+describe('blocksResume', () => {
   it('holds the decision back for a fault in a field the person can edit', () => {
-    expect(blocksApproval(new Set(['refundAmount']), schema, {})).toBe(true);
+    expect(blocksResume(new Set(['refundAmount']), schema, {})).toBe(true);
   });
 
   it.each([
@@ -122,15 +122,15 @@ describe('blocksApproval', () => {
     ['a field of a type the form leaves out', 'itemCount'],
     ['a field the form does not declare', 'internalReasoning'],
   ])('lets it through for a fault in %s', (_name, field) => {
-    expect(blocksApproval(new Set([field]), schema, {})).toBe(false);
+    expect(blocksResume(new Set([field]), schema, {})).toBe(false);
   });
 
   it('lets it through when nothing is at fault', () => {
-    expect(blocksApproval(new Set(), schema, { refundAmount: 120 })).toBe(false);
+    expect(blocksResume(new Set(), schema, { refundAmount: 120 })).toBe(false);
   });
 });
 
-describe('blocksApproval against the backend validator', () => {
+describe('blocksResume against the backend validator', () => {
   const noteRequest: DecisionRequest = {
     ...reviewRequest,
     schema: {
@@ -170,12 +170,12 @@ describe('blocksApproval against the backend validator', () => {
     ['a required note the model left null, typed and cleared', noteRequest, { note: null }, { note: '' }, false],
     ['an emptied optional remark', noteRequest, { note: 'a', remark: 'b' }, { note: 'a', remark: '' }, false],
   ])(
-    'blocks Approve for the edits the backend refuses, and only those: %s',
+    'blocks a resume for the edits the backend refuses, and only those: %s',
     (_name, request, before, after, blocked) => {
       const edits = editsOf(before, after, request.schema);
       const refusal = validateSubmittedDecision(request, { action: 'approve', edits });
 
-      expect(blocksApproval(new Set(), request.schema, edits)).toBe(blocked);
+      expect(blocksResume(new Set(), request.schema, edits)).toBe(blocked);
       expect(refusal.error?.code).toBe(blocked ? 'required_field_missing' : undefined);
     },
   );

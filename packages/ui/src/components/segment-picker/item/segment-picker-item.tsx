@@ -35,13 +35,13 @@ export function Item({
     return null;
   }
 
-  const { selectedValue, onSelect, shape, size, navVariant } = context;
+  const { selectedValue, onSelect, shape, variant, size, navVariant } = context;
   const isSelected = selectedValue === value;
 
   return (
     <NavButton
       aria-pressed={isSelected}
-      className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], className)}
+      className={clsx(itemShapeStyles['item'], itemShapeStyles[shape], itemShapeStyles[variant], className)}
       isSelected={isSelected}
       onClick={(event: MouseEvent<HTMLButtonElement>) => {
         onSelect(event, value);

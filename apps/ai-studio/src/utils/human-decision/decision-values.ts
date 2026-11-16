@@ -72,7 +72,7 @@ function isEmptied(value: unknown): boolean {
 
 // Only a fault the person can correct holds the decision back: an editable field the schema faults, which the backend
 // does not check yet, or a required field the edits empty, which it refuses even where the type accepts the value.
-export function blocksApproval(
+export function blocksResume(
   invalidFields: ReadonlySet<string>,
   schema: unknown,
   edits: Record<string, unknown>,

@@ -1,6 +1,6 @@
 :root {
   --wb-sdk-app-bar-background: var(--wb-ds-ui-bg-base);
-  --wb-sdk-app-bar-border-radius: var(--wb-ds-canvas-node-shell-radius);
+  --wb-sdk-app-bar-border-radius: var(--wb-ds-radius-150);
   --wb-sdk-app-bar-border-color: var(--wb-ds-ui-stroke-default);
   --wb-sdk-app-bar-folder-name-color: var(--wb-ds-ui-text-muted-default);
   --wb-sdk-app-bar-diagram-title-color: var(--wb-ds-ui-text-default);

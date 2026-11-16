@@ -18,7 +18,7 @@ const RENAMED_SLOTS = new Map<string, { slot: string; propsType: string }>([
 ]);
 
 const REMOVED_FUNCTIONS = new Map<string, string>([
-  ['getControlsDotsItems', 'Add items with <EditorHeaderMenuItem> and hide Export and Import with builtInControls.'],
+  ['getControlsDotsItems', 'Add items with <WorkflowMenuItem> and hide Export and Import with builtInControls.'],
 ]);
 
 /** Warns, naming the replacement, and returns `true` when 4.0 removed or renamed the slot. */

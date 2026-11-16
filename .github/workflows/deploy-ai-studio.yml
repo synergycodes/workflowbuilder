@@ -12,7 +12,7 @@ permissions:
   contents: read
 
 env:
-  REGISTRY: synergycodes.azurecr.io
+  REGISTRY: ${{ vars.AZURE_REGISTRY_NAME }}.azurecr.io
   APP: wb-ai-studio
 
 jobs:
@@ -39,7 +39,7 @@ jobs:
           subscription-id: ${{ vars.AZURE_SUBSCRIPTION_ID }}
 
       - name: Log in to ACR
-        run: az acr login --name synergycodes
+        run: az acr login --name ${{ vars.AZURE_REGISTRY_NAME }}
 
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
@@ -127,7 +127,7 @@ jobs:
           echo "$COMPOSE_B64" | base64 -d > docker-compose.yml
           echo "$OVERRIDE_B64" | base64 -d > docker-compose.override.yml
           (umask 077; echo "$ENV_B64" | base64 -d > .env)
-          az acr login --name synergycodes
+          az acr login --name ${{ vars.AZURE_REGISTRY_NAME }}
           docker compose pull
           docker compose up -d --no-build --force-recreate --remove-orphans
           echo DEPLOY_SCRIPT_SUCCEEDED

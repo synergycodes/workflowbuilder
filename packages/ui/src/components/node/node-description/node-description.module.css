@@ -29,6 +29,8 @@
     }
 
     .subtitle {
+      /* The 100% line height of wb-text-label-s crops descenders once overflow is hidden. */
+      line-height: 1.4;
       color: var(--wb-public-node-title-subtitle);
     }
 

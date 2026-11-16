@@ -9,7 +9,7 @@ import { executeHumanDecision } from './human-decision';
 const request: DecisionRequest = {
   version: 1,
   actions: [
-    { name: 'approve', label: 'Approve', effect: 'resume', port: 'source:inner:approved' },
+    { name: 'approve', label: 'Approve', effect: 'resume', port: 'source:inner:approved', reasonRequired: false },
     { name: 'reject', label: 'Reject', effect: 'reject', port: 'source:inner:rejected', reasonRequired: false },
   ],
   schema: { type: 'object', properties: {} },

@@ -17,7 +17,10 @@
       position: relative;
 
       :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
-        top: calc(var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-border-size) + 0.75rem);
+        top: calc(
+          var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-border-size) +
+            var(--wb-public-node-icon-glyph-size) / 2
+        );
       }
       :global(.react-flow__handle.react-flow__handle-right) {
         box-sizing: content-box;

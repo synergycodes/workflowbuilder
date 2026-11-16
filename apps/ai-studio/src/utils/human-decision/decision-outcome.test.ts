@@ -16,7 +16,10 @@ describe('readDecisionOutcome', () => {
   });
 
   it('treats a blank reason as none and missing edits as empty', () => {
-    expect(readDecisionOutcome({ action: 'approve', reason: '  ' })).toEqual({ edits: {}, reason: undefined });
+    expect(readDecisionOutcome({ action: 'approve', reason: '  ' })).toEqual({
+      edits: {},
+      reason: undefined,
+    });
   });
 
   it.each([
