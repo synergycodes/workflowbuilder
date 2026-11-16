@@ -86,8 +86,8 @@ describe('EnhancedBaseEdge', () => {
   it('sizes the transparent hit area with the public hit width, 12 by default', () => {
     expect(cssRule('../../../../index.css', ':root')).toMatch(/--wb-public-edge-hit-width:\s*12;/);
     const hitArea = cssRule('enhanced-base-edge.module.css', String.raw`\.clickable-transparent-border`);
-    expect(hitArea).toMatch(/stroke-width:\s*var\(--wb-public-edge-hit-width\);/);
-    expect(hitArea).toMatch(/stroke:\s*transparent;/);
+    expect(hitArea).toMatch(/stroke-width:\s*var\(--wb-public-edge-hit-width\) !important;/);
+    expect(hitArea).toMatch(/stroke:\s*transparent !important;/);
   });
 
   it('turns only the edit colours to the select colour on keyboard focus', () => {

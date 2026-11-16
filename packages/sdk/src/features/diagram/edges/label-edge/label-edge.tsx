@@ -36,10 +36,7 @@ export function LabelEdge({
   sourceHandleId,
 }: EdgeProps<WorkflowBuilderEdge>) {
   const selfLoopApexY = useSelfLoopApexY(source, target, sourceY);
-  const { hovered, onMouseEnter, onMouseLeave } = useLabelEdgeHover({
-    id,
-    isSelected: selected,
-  });
+  const { hovered, onMouseEnter, onMouseLeave } = useLabelEdgeHover({ id });
 
   const [edgePath, labelX, labelY] = getSmoothStepPath({
     sourceX,

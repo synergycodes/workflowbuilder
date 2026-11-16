@@ -6,8 +6,9 @@ import { withOptionalComponentPlugins } from '../../adapters/adapter-components'
  * a `place: 'wrapper'` decorator on `'OptionalEdgePath'` reads its own run state
  * by `props.source` / `props.target` and returns
  * `<component {...props} runState={…} lineType={…} />`, or `children` to keep
- * the edit look. A custom edge renders it to get the same states. Receives
- * {@link EdgePathProps}.
+ * the edit look. Rendering `component` drops the wrappers inside it, so give
+ * that decorator a high `priority`: the highest one wraps innermost. A custom
+ * edge renders it to get the same states. Receives {@link EdgePathProps}.
  *
  * @category Components
  */

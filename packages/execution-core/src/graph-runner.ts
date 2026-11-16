@@ -3,6 +3,8 @@ import type {
   ExecutionErrorPayload,
   ExecutionOutcome,
   ExecutionOutcomeRecord,
+  NodeCompletedPayload,
+  NodeFailedPayload,
   NodeSkipReason,
 } from '@workflow-builder/types/workflow-execution/execution-events';
 import type {
@@ -359,14 +361,22 @@ async function runNode<TNode extends BaseNode>(
     } else {
       result = executed;
     }
-    await events.emitEvent(executionId, 'node_completed', { output: result.output }, node.id);
+    // nextPort tells a client which outgoing edges the run took; falsy reads as none, as in isEdgeLive.
+    const completed: NodeCompletedPayload = result.nextPort
+      ? { output: result.output, nextPort: result.nextPort }
+      : { output: result.output };
+    await events.emitEvent(executionId, 'node_completed', completed, node.id);
     return { node, output: result.output, nextPort: result.nextPort, outcome: result.outcome, failed: false };
   } catch (error) {
     const { message, code, attempt } = extractDeepestError(error);
     const errorPayload: ExecutionErrorPayload['error'] = { message };
     if (code !== undefined) errorPayload.code = code;
     if (attempt !== undefined) errorPayload.attempt = attempt;
-    await events.emitEvent(executionId, 'node_failed', { error: errorPayload }, node.id);
+    const failed: NodeFailedPayload =
+      resolveErrorPolicy(node) === 'errorRoute'
+        ? { error: errorPayload, nextPort: RESERVED_ERROR_HANDLE }
+        : { error: errorPayload };
+    await events.emitEvent(executionId, 'node_failed', failed, node.id);
     return { node, message, code, failed: true };
   }
 }

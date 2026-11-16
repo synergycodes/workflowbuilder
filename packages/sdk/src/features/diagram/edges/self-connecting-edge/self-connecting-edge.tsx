@@ -1,3 +1,4 @@
+import type { EdgeLineType } from '@workflowbuilder/ui';
 import { type EdgeProps, useStore as useReactFlowStore } from '@xyflow/react';
 
 import type { WorkflowBuilderEdge } from '../../../../node/node-data';
@@ -6,6 +7,7 @@ import { EDGE_CURVE_RADIUS, SELF_CONNECTING_EDGE_LABEL_OFFSET } from '../edge.co
 
 type SelfConnectingEdgeProps = EdgeProps<WorkflowBuilderEdge> & {
   hovered: boolean;
+  lineType?: EdgeLineType;
 };
 
 /**
@@ -62,7 +64,8 @@ function createSelfConnectingPath(source: Point, target: Point, loopHeight: numb
  * regardless of the node's size.
  *
  * Used internally by {@link LabelEdge}; expose only when you author a
- * custom edge type and want to reuse the same loop geometry.
+ * custom edge type and want to reuse the same loop geometry. Pass the custom
+ * edge's `lineType` so its self-loops match its other edges.
  *
  * @category Components
  */
@@ -77,6 +80,7 @@ export function SelfConnectingEdge({
   source,
   target,
   sourceHandleId,
+  lineType,
 }: SelfConnectingEdgeProps) {
   const apexY = useSelfLoopApexY(source, target, sourceY);
 
@@ -96,6 +100,7 @@ export function SelfConnectingEdge({
       path={path}
       state={selected ? 'selected' : 'default'}
       hovered={hovered}
+      lineType={lineType}
     />
   );
 }

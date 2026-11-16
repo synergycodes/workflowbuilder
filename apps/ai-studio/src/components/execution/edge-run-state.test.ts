@@ -53,4 +53,52 @@ describe('edgeRunState', () => {
   ])('moves only along the taken input of a join: %s', (_, source, target, run, expected) => {
     expect(edgeRunState(node(source), node(target), run)).toBe(expected);
   });
+
+  it.each<[string, Status, Status, RunStatus, string]>([
+    ['while the run is live', undefined, 'running', 'running', 'pending'],
+    ['once the run ended', undefined, 'completed', 'completed', 'outOfRun'],
+  ])('does not move into a running target before its source finished, %s', (_, source, target, run, expected) => {
+    expect(edgeRunState(node(source), node(target), run)).toBe(expected);
+  });
+
+  describe('a decision that took "yes", with "no" wired straight into the join', () => {
+    const decision: NodeExecutionState = { status: 'completed', nextPort: 'yes' };
+
+    it.each<[string, Status, RunStatus, string]>([
+      ['the join is idle', 'idle', 'running', 'outOfRun'],
+      ['the join runs through the other input', 'running', 'running', 'outOfRun'],
+      ['the run completed', 'completed', 'completed', 'outOfRun'],
+    ])('leaves the "no" edge out of the run when %s', (_, target, run, expected) => {
+      expect(edgeRunState(decision, node(target), run, 'no')).toBe(expected);
+    });
+
+    it('moves along the "yes" edge', () => {
+      expect(edgeRunState(decision, node('running'), 'running', 'yes')).toBe('running');
+    });
+  });
+
+  it.each<[string, NodeExecutionState, string | undefined, Status, string]>([
+    [
+      'the error edge of a routed failure',
+      { status: 'failed', nextPort: 'errorRoute' },
+      'errorRoute',
+      'running',
+      'running',
+    ],
+    [
+      'the success edge of a routed failure',
+      { status: 'failed', nextPort: 'errorRoute' },
+      undefined,
+      'completed',
+      'outOfRun',
+    ],
+    ['the error edge of a healthy node', { status: 'completed' }, 'errorRoute', 'running', 'outOfRun'],
+    ['the edge out of a failure absorbed by continue', { status: 'failed' }, undefined, 'completed', 'completed'],
+  ])('follows the error policy: %s', (_, source, sourceHandle, target, expected) => {
+    expect(edgeRunState(source, node(target), 'running', sourceHandle)).toBe(expected);
+  });
+
+  it('treats a source without a recorded port, as in runs before it was emitted, as leaving through every edge', () => {
+    expect(edgeRunState({ status: 'completed' }, node('completed'), 'completed', 'no')).toBe('completed');
+  });
 });

@@ -1,4 +1,5 @@
+/* !important: host rules such as `svg:hover path { stroke: … }` outrank one class. */
 .clickable-transparent-border {
-  stroke-width: var(--wb-public-edge-hit-width);
-  stroke: transparent;
+  stroke-width: var(--wb-public-edge-hit-width) !important;
+  stroke: transparent !important;
 }

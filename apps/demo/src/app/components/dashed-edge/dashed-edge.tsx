@@ -16,7 +16,7 @@ import { type EdgeProps, getSmoothStepPath } from '@xyflow/react';
  * when `source === target` (a self-loop drawn with this type collapses to a
  * degenerate path), and rendering `data.label` / `data.icon`. If you need
  * either, branch on `source === target` and delegate to the exported
- * `SelfConnectingEdge`, and render your own label.
+ * `SelfConnectingEdge` with `lineType="dashed"`, and render your own label.
  */
 export function DashedEdge({
   id,
@@ -31,7 +31,7 @@ export function DashedEdge({
   targetPosition,
   selected,
 }: EdgeProps) {
-  const { hovered } = useLabelEdgeHover({ id, isSelected: selected });
+  const { hovered } = useLabelEdgeHover({ id });
   const [path] = getSmoothStepPath({ sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition });
 
   return (
