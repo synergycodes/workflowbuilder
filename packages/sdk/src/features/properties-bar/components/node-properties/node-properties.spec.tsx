@@ -1,4 +1,4 @@
-import { act, fireEvent, render } from '@testing-library/react';
+import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { PaletteItem } from '../../../../node/common';
@@ -66,6 +66,16 @@ function renderPanel(nodeId: string) {
   };
 }
 
+// Base UI opens its list and picks an option on the pointer sequence, not on `click` alone.
+function press(element: HTMLElement) {
+  act(() => {
+    for (const type of ['pointerdown', 'mousedown', 'pointerup', 'mouseup']) {
+      element.dispatchEvent(new MouseEvent(type, { bubbles: true, cancelable: true }));
+    }
+    element.click();
+  });
+}
+
 beforeEach(() => {
   vi.useFakeTimers();
   resetWorkflowStore();
@@ -104,6 +114,23 @@ describe('NodeProperties keeps each node its own form', () => {
 
     expect(setNodeProperties).not.toHaveBeenCalled();
     expect(panel.select().textContent).toBe(storedProperties(first).mode);
+  });
+
+  it('a value picked in a Select stays on its node after the selection moves and comes back', async () => {
+    const panel = renderPanel('three');
+    await settle();
+    press(panel.select());
+    await settle();
+    press(screen.getByRole('option', { name: 'a1' }));
+
+    panel.showNode('one');
+    await settle();
+    panel.showNode('three');
+    await settle();
+
+    expect(storedProperties('three').mode).toBe('a1');
+    expect(storedProperties('one').mode).toBe('b1');
+    expect(panel.select().textContent).toBe('a1');
   });
 
   it('text typed but not committed does not follow the selection to another node', async () => {
