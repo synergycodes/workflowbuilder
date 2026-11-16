@@ -25,7 +25,7 @@ afterEach(() => {
 });
 
 const TONES: RunStatusTone[] = ['info', 'success', 'warning', 'critical', 'human', 'neutral', 'inverse'];
-const RUN_STATUS_TONES = ['success', 'warning', 'critical', 'human', 'neutral'];
+const RUN_STATUS_TONES = ['info', 'success', 'warning', 'critical', 'human', 'neutral'];
 
 describe('NodeRunBadge', () => {
   it('renders a size m BadgeLabel on the default variant, coloured by its tone', () => {
@@ -60,27 +60,27 @@ describe('node-run-badge.module.css', () => {
     return found;
   }
 
-  const light = declarations(':root');
-  const dark = declarations(":root[data-theme='dark']");
+  const root = declarations(':root');
 
   it.each(TONES)('feeds the %s colour pair into the BadgeLabel', (tone) => {
     const rule = declarations(`.badge[data-tone='${tone}']`);
-    for (const part of ['background-color', 'color', 'icon-color']) {
-      expect(light.has(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(true);
+    for (const part of ['background-color', 'color']) {
+      expect(root.has(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(true);
       expect(rule.get(`--badge-label-${part}`)).toBe(`var(--wb-public-node-run-badge-${part}-${tone})`);
     }
   });
 
-  it.each(['info', 'inverse'])('chains the %s colours through the BadgeLabel public variables', (tone) => {
-    const suffix = tone === 'inverse' ? '-inverse' : '';
-    for (const part of ['background-color', 'color', 'icon-color']) {
-      expect(light.get(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(
-        `var(--wb-public-badge-label-${part}${suffix})`,
-      );
-    }
+  it.each(RUN_STATUS_TONES)('reads the %s colour pair from the run status tokens', (tone) => {
+    expect(root.get(`--wb-public-node-run-badge-background-color-${tone}`)).toBe(
+      `var(--wb-ds-canvas-run-status-bg-${tone})`,
+    );
+    expect(root.get(`--wb-public-node-run-badge-color-${tone}`)).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
   });
 
-  it.each(RUN_STATUS_TONES)('gives the %s text colour a Dark value', (tone) => {
-    expect(dark.has(`--wb-public-node-run-badge-color-${tone}`)).toBe(true);
+  it('chains the inverse colours through the BadgeLabel Inverse variables', () => {
+    expect(root.get('--wb-public-node-run-badge-background-color-inverse')).toBe(
+      'var(--wb-public-badge-label-background-color-inverse)',
+    );
+    expect(root.get('--wb-public-node-run-badge-color-inverse')).toBe('var(--wb-public-badge-label-color-inverse)');
   });
 });
