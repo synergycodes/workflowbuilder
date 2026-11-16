@@ -1,5 +1,10 @@
+import { readFile } from 'node:fs/promises';
+import path from 'node:path';
+
 import { buildCorpus } from '../src/corpus/build-corpus.js';
+import { TYPEDOC_DIR } from '../src/paths.js';
 import { callTool, createToolRegistry } from '../src/server.js';
+import { referenceTypesIn } from '../src/symbols/referenced-types.js';
 import { TYPEDOC_RUNS } from '../src/typedoc-runs.js';
 
 // A floor, not the exact count: a new docs page must pass here, a snapshot that lost pages must not.
@@ -39,6 +44,15 @@ check(stats.buildMs < MAX_CORPUS_BUILD_MS, `corpus build took ${stats.buildMs} m
 check(
   DOCUMENTED_PACKAGES.every((name) => /^\d+\.\d+\.\d+/.test(stats.versions[name] ?? '')),
   `the manifest lacks a documented version: ${JSON.stringify(stats.versions)}`,
+);
+
+// Without a current packages/ui/dist, TypeDoc still succeeds but resolves every UI type the SDK uses to "unknown".
+const sdkProject: unknown = JSON.parse(await readFile(path.join(TYPEDOC_DIR, 'sdk.json'), 'utf8'));
+check(
+  referenceTypesIn(sdkProject).some(
+    (reference) => typeof reference.target === 'object' && reference.target.packageName === '@workflowbuilder/ui',
+  ),
+  'the sdk snapshot resolves no type to @workflowbuilder/ui; was packages/ui/dist built?',
 );
 
 const symbolSearch = (await call(registry, 'search_symbols', { query: 'WorkflowBuilderRootProps' })) as {
