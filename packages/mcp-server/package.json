@@ -1,6 +1,7 @@
 {
   "name": "@workflowbuilder/mcp",
   "version": "0.0.0",
+  "mcpName": "io.github.synergycodes/workflowbuilder-mcp",
   "description": "MCP server that gives AI coding assistants the Workflow Builder docs and the public API of @workflowbuilder/sdk, @workflowbuilder/ui and @workflowbuilder/temporal, bundled for offline search.",
   "keywords": [
     "mcp",
