@@ -4,7 +4,7 @@ import {
   FIXTURE_DUPLICATE_ROOT,
   FIXTURE_MALFORMED_ROOT,
 } from '../__fixtures__/fixtures.js';
-import { loadPages } from './load-pages.js';
+import { loadPages, resolveRelativeLinks } from './load-pages.js';
 
 const propsTypes = (slug: string) => {
   const component = FIXTURE_COMPONENTS.find((candidate) => candidate.slug === slug);
@@ -14,7 +14,7 @@ const propsTypes = (slug: string) => {
 };
 
 describe('loadPages', () => {
-  const loaded = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes });
+  const loaded = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes, revision: 'main' });
 
   it('lists pages in sorted path order and skips api, ui-api and underscore files', () => {
     expect(loaded.pages.map((page) => page.id)).toEqual([
@@ -62,12 +62,14 @@ describe('loadPages', () => {
   it('inlines the partial and the node documentation line', () => {
     const props = loaded.pages.find((page) => page.id === 'guides/props');
     expect(props?.content).toContain('Partial **note** about paths.');
-    expect(props?.content).toContain('Node definition source: apps/demo/src/app/data/nodes/action/');
+    expect(props?.content).toContain(
+      'Node definition source: https://github.com/synergycodes/workflowbuilder/tree/main/apps/demo/src/app/data/nodes/action/',
+    );
     expect(props?.content).toContain('Props: see get_symbol ui:LabelButtonProps, ui:IconButtonProps');
   });
 
   it('is deterministic', () => {
-    const again = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes });
+    const again = loadPages({ root: FIXTURE_DOCS_ROOT, propsTypes, revision: 'main' });
     expect(again.chunks.map((item) => item.chunkId)).toEqual(loaded.chunks.map((item) => item.chunkId));
   });
 
@@ -76,6 +78,7 @@ describe('loadPages', () => {
     const result = loadPages({
       root: FIXTURE_MALFORMED_ROOT,
       propsTypes,
+      revision: 'main',
       onWarning: (message) => warnings.push(message),
     });
     expect(result.pages.map((page) => page.id)).toEqual(['good']);
@@ -99,6 +102,7 @@ describe('loadPages', () => {
     const result = loadPages({
       root: FIXTURE_DUPLICATE_ROOT,
       propsTypes,
+      revision: 'main',
       onWarning: (message) => warnings.push(message),
     });
     expect(result.pages.map((page) => page.id)).toEqual(['foo']);
@@ -108,7 +112,7 @@ describe('loadPages', () => {
 
   it('writes skipped pages to stderr by default', () => {
     const spy = vi.spyOn(console, 'error').mockImplementation(() => {});
-    loadPages({ root: FIXTURE_DUPLICATE_ROOT, propsTypes });
+    loadPages({ root: FIXTURE_DUPLICATE_ROOT, propsTypes, revision: 'main' });
     expect(spy).toHaveBeenCalledWith(expect.stringMatching(/^wb-docs: skipped foo\/index\.md/));
     spy.mockRestore();
   });
@@ -117,11 +121,27 @@ describe('loadPages', () => {
     const loaded = loadPages({
       root: FIXTURE_DOCS_ROOT,
       propsTypes,
+      revision: 'main',
       cssVariables: (slug) =>
         slug === 'button' ? ['--wb-public-button-color', '--wb-public-button-gap (spacing)'] : undefined,
     });
     expect(loaded.pages.find((page) => page.id === 'guides/basic')?.content).toContain(
       'CSS variables you can override (each name starts with --wb-public-): button-color, button-gap (spacing)',
     );
+  });
+});
+
+describe('resolveRelativeLinks', () => {
+  it('turns links relative to the page into site paths', () => {
+    expect(resolveRelativeLinks('| [Trigger](./trigger/) | x |', 'nodes')).toBe('| [Trigger](/nodes/trigger/) | x |');
+    expect(resolveRelativeLinks('[Up](../theming/#tokens)', 'get-started/persistence')).toBe(
+      '[Up](/get-started/theming/#tokens)',
+    );
+    expect(resolveRelativeLinks('[Home](./guides/)', 'index')).toBe('[Home](/guides/)');
+  });
+
+  it('leaves absolute links, images and fenced code alone', () => {
+    const markdown = '[a](/guides/a/) [b](https://x.dev) ![i](./i.png)\n```\n[c](./c/)\n```';
+    expect(resolveRelativeLinks(markdown, 'nodes')).toBe(markdown);
   });
 });

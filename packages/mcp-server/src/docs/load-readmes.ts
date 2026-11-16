@@ -3,7 +3,8 @@ import path from 'node:path';
 
 import { type ChunkingConfig, chunking as defaultChunking } from '../config/chunking.js';
 import { chunkPage } from './chunk.js';
-import { INTRO_ANCHOR, readmeId, readmeUrl } from './doc-ids.js';
+import { INTRO_ANCHOR, githubUrl, readmeId, readmeUrl } from './doc-ids.js';
+import { FENCE, mapOutsideFences } from './fences.js';
 import type { DocChunk, DocPage, DocSection } from './types.js';
 
 export interface PackageDocsSource {
@@ -18,6 +19,7 @@ export interface PackageDocsSource {
 interface LoadReadmesOptions {
   sources: readonly PackageDocsSource[];
   chunking?: ChunkingConfig;
+  revision: string;
   onWarning?: (message: string) => void;
 }
 
@@ -28,7 +30,6 @@ interface LoadedReadmes {
 }
 
 const TITLE = /^# +(.+?)(?:\s+#+)?\s*$/;
-const FENCE = /^\s*(```|~~~)/;
 const MARKDOWN_LINK = /(!?\[[^\]]*\]\()([^)\s]+)((?:\s+"[^"]*")?\))/g;
 const ABSOLUTE = /^([a-z][a-z0-9+.-]*:|#|\/\/)/i;
 
@@ -54,31 +55,26 @@ function firstHeading(markdown: string) {
   }
 }
 
-export function rewriteRelativeLinks(markdown: string, packageName: string, fileName: string) {
+export function rewriteRelativeLinks(markdown: string, packageName: string, fileName: string, revision: string) {
   const fileDirectory = path.posix.dirname(`packages/${packageName}/${fileName}`);
-  let inFence = false;
-  return markdown
-    .split('\n')
-    .map((line) => {
-      if (FENCE.test(line)) inFence = !inFence;
-      if (inFence) return line;
-      return line.replaceAll(MARKDOWN_LINK, (match, open: string, target: string, close: string) => {
-        if (ABSOLUTE.test(target)) return match;
-        const hashIndex = target.indexOf('#');
-        const file = hashIndex === -1 ? target : target.slice(0, hashIndex);
-        const hash = hashIndex === -1 ? '' : target.slice(hashIndex);
-        if (file === '') return match;
-        const resolved = path.posix.normalize(path.posix.join(fileDirectory, file));
-        if (resolved.startsWith('..')) return match;
-        const kind = path.posix.extname(resolved) === '' ? 'tree' : 'blob';
-        return `${open}https://github.com/synergycodes/workflowbuilder/${kind}/main/${resolved}${hash}${close}`;
-      });
-    })
-    .join('\n');
+  return mapOutsideFences(markdown, (line) =>
+    line.replaceAll(MARKDOWN_LINK, (match, open: string, target: string, close: string) => {
+      if (ABSOLUTE.test(target)) return match;
+      const hashIndex = target.indexOf('#');
+      const file = hashIndex === -1 ? target : target.slice(0, hashIndex);
+      const hash = hashIndex === -1 ? '' : target.slice(hashIndex);
+      if (file === '') return match;
+      const resolved = path.posix.normalize(path.posix.join(fileDirectory, file));
+      if (resolved.startsWith('..')) return match;
+      const kind = path.posix.extname(resolved) === '' ? 'tree' : 'blob';
+      return `${open}${githubUrl(kind, revision, resolved)}${hash}${close}`;
+    }),
+  );
 }
 
 export function loadReadmes(options: LoadReadmesOptions): LoadedReadmes {
   const warn = options.onWarning ?? ((message: string) => console.error(`wb-docs: ${message}`));
+  const { revision } = options;
   const pages: DocPage[] = [];
   const sections: DocSection[] = [];
   const chunks: DocChunk[] = [];
@@ -103,9 +99,9 @@ export function loadReadmes(options: LoadReadmesOptions): LoadedReadmes {
         warn(`skipped ${fileName} of ${source.name}: ${error instanceof Error ? error.message.split('\n')[0] : error}`);
         continue;
       }
-      const markdown = rewriteRelativeLinks(raw.replaceAll('\r\n', '\n'), source.name, fileName).trim();
+      const markdown = rewriteRelativeLinks(raw.replaceAll('\r\n', '\n'), source.name, fileName, revision).trim();
       const title = firstHeading(markdown) ?? source.title;
-      const urlFor = (id: string, anchor: string) => readmeUrl(source.name, fileName, anchor);
+      const urlFor = (id: string, anchor: string) => readmeUrl(source.name, fileName, anchor, revision);
       const chunked = chunkPage(
         { pageId, title, description: '', markdown, urlFor },
         options.chunking ?? defaultChunking,
@@ -114,7 +110,7 @@ export function loadReadmes(options: LoadReadmesOptions): LoadedReadmes {
         id: pageId,
         title,
         description: '',
-        url: readmeUrl(source.name, fileName, INTRO_ANCHOR),
+        url: readmeUrl(source.name, fileName, INTRO_ANCHOR, revision),
         content: markdown,
         sectionIds: chunked.sections.map((section) => section.id),
       });
