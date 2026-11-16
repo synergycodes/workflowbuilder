@@ -21,15 +21,17 @@ function Probe() {
 
 describe('useRunHidesCanvasGrid', () => {
   let root: ReturnType<typeof createRoot>;
+  let isMounted: boolean;
 
   beforeEach(() => {
     resetExecution();
     root = createRoot(document.createElement('div'));
     act(() => root.render(<Probe />));
+    isMounted = true;
   });
 
   afterEach(() => {
-    act(() => root.unmount());
+    if (isMounted) act(() => root.unmount());
   });
 
   it('hides the grid when a run starts and keeps it hidden after the run ends, until Reset', () => {
@@ -61,9 +63,8 @@ describe('useRunHidesCanvasGrid', () => {
   it('brings the grid back when the editor unmounts during a run', () => {
     act(() => setExecutionStarted('exec-1', '/api/executions/exec-1/stream'));
     act(() => root.unmount());
+    isMounted = false;
 
     expect(gridColor()).toBe('');
-
-    root = createRoot(document.createElement('div'));
   });
 });

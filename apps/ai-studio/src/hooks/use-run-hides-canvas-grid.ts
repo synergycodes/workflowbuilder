@@ -4,7 +4,6 @@ import { useExecutionStore } from '../stores/use-execution-store';
 
 const GRID_COLOR = '--wb-public-canvas-grid-color';
 
-/** From the moment the backend starts a run until Reset the canvas shows no grid. */
 export function useRunHidesCanvasGrid() {
   const executionId = useExecutionStore((state) => state.executionId);
 
