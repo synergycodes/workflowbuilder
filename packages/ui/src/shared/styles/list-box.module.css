@@ -1,5 +1,6 @@
 :root {
   --wb-public-list-box-background-color: var(--wb-ds-ui-bg-base);
+  --wb-public-list-box-border-color: var(--wb-ds-ui-stroke-subtle);
   --wb-public-list-box-border-radius: var(--wb-ds-radius-100);
   --wb-public-list-box-box-shadow: var(--wb-ds-shadow-ui-s-x) var(--wb-ds-shadow-ui-s-y) var(--wb-ds-shadow-ui-s-blur)
     var(--wb-ds-shadow-ui-s-spread) var(--wb-ds-shadow-ui-color);
@@ -31,6 +32,7 @@
 
     margin: 0;
 
+    border: var(--wb-ds-size-12) solid var(--wb-public-list-box-border-color);
     border-radius: var(--wb-public-list-box-border-radius);
     background: var(--wb-public-list-box-background-color);
     box-shadow: var(--wb-public-list-box-box-shadow);

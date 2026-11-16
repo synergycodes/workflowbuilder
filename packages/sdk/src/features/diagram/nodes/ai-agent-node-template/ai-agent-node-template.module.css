@@ -6,10 +6,10 @@
   overflow: hidden;
 
   .collapsible-content {
-    padding-bottom: 0.5rem;
+    padding-bottom: var(--wb-ds-canvas-node-body-v-pad);
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--wb-public-node-gap);
   }
 
   .selected-model-icon {

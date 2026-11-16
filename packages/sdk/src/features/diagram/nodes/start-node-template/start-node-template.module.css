@@ -11,7 +11,8 @@
   padding-bottom: var(--wb-ds-canvas-node-body-v-pad);
 }
 
-/* Plugin content after the collapsible (a `place: 'after'` decorator) takes over the body's bottom padding. */
+/* Plugin content after the collapsible (a `place: 'after'` decorator) takes over the body's bottom padding.
+   A collapsed panel stays in flow, so in-flow `place: 'before'` content ends one body gap above the stroke. */
 .content > :has(.collapsible):not(:last-child) .collapsible {
   padding-bottom: 0;
 }
