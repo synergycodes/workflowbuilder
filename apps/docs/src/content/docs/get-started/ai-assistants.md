@@ -37,19 +37,22 @@ Add to `.cursor/mcp.json` in your project, or to `~/.cursor/mcp.json` for every 
 
 ### VS Code with GitHub Copilot
 
-Add to `.vscode/mcp.json` in your project. VS Code names the top-level key `servers`:
+Add to `.mcp.json` at the root of your project, or to `~/.copilot/mcp-config.json` for every project. Claude Code reads the same `.mcp.json`, so one entry serves both:
 
 ```json
 {
-  "servers": {
+  "mcpServers": {
     "workflowbuilder-docs": {
       "type": "stdio",
       "command": "npx",
-      "args": ["-y", "@workflowbuilder/mcp"]
+      "args": ["-y", "@workflowbuilder/mcp"],
+      "tools": ["*"]
     }
   }
 }
 ```
+
+VS Code still reads an existing `.vscode/mcp.json`, which names the top-level key `servers`, but deprecates it for new setups.
 
 ### OpenAI Codex
 

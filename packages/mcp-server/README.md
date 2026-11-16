@@ -25,7 +25,7 @@ Claude Desktop (`claude_desktop_config.json`) and other clients that use the `mc
 }
 ```
 
-Cursor (`.cursor/mcp.json`) takes the same entry with `"type": "stdio"` added. VS Code (`.vscode/mcp.json`) names the key `servers` and needs `"type": "stdio"` in the entry. OpenAI Codex: `codex mcp add workflowbuilder-docs -- npx -y @workflowbuilder/mcp`. On Windows, if your client cannot start `npx`, use `cmd` as the command and `/c npx -y @workflowbuilder/mcp` as the arguments.
+Cursor (`.cursor/mcp.json`) takes the same entry with `"type": "stdio"` added. VS Code reads `.mcp.json` at the project root, or `~/.copilot/mcp-config.json`, and takes the entry with `"type": "stdio"` and `"tools": ["*"]` added. OpenAI Codex: `codex mcp add workflowbuilder-docs -- npx -y @workflowbuilder/mcp`. On Windows, if your client cannot start `npx`, use `cmd` as the command and `/c npx -y @workflowbuilder/mcp` as the arguments.
 
 Restart the assistant, then ask something like _"Search the Workflow Builder docs for how to persist workflows with a REST API"_. Setup for each client: [Use with AI assistants](https://www.workflowbuilder.io/docs/get-started/ai-assistants/).
 
