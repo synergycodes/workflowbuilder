@@ -3,7 +3,7 @@
 // Renders with a `ReactFlow` capture stub and inspects the props it receives.
 // The rendering-stack deps below are stubbed (CSS side effects, irrelevant here).
 import { render } from '@testing-library/react';
-import { ReactFlow } from '@xyflow/react';
+import { Background, ReactFlow } from '@xyflow/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setIsValidConnection, setReactFlowProps } from '../../data/react-flow-config';
@@ -140,5 +140,19 @@ describe('DiagramContainer — reactFlowProps precedence', () => {
     for (const key of Object.keys(sentinels)) {
       expect(props[key], `${key} must be set by the SDK, not by reactFlowProps`).not.toBe(OWNED_SENTINEL);
     }
+  });
+});
+
+describe('DiagramContainer — canvas background', () => {
+  it('paints the dot grid with the public grid colour variable', () => {
+    render(<DiagramContainer />);
+
+    const background = capturedFlowProps().children;
+
+    expect(background.type).toBe(Background);
+    expect(background.props).toMatchObject({
+      color: 'var(--wb-public-canvas-grid-color)',
+      bgColor: 'var(--wb-public-background-color)',
+    });
   });
 });
