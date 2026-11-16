@@ -44,7 +44,7 @@ Responses are compact JSON in a single text item. Errors use `isError: true` wit
 
 ## Versions
 
-Each version holds the docs and the API as they were on the commit it was published from. The server logs one line to stderr when it is ready, with the versions it documents: `wb-docs 0.1.0 ready: ... documents sdk 3.0.0, ui 1.0.0, temporal 0.2.0 ...`.
+Each version holds the docs and the API as they were on the commit it was published from. The server logs one line to stderr when it is ready, with the versions it documents: `wb-docs 0.1.0 ready: ... documents sdk 3.0.0, ui 1.0.0, temporal 0.3.1 ...`.
 
 ## Developing in this repo
 
