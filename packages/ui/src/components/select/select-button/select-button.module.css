@@ -2,6 +2,7 @@
   --wb-public-select-border-size: var(--wb-ds-size-12);
   --wb-public-select-button-color: var(--wb-ds-ui-text-default);
   --wb-public-select-button-border-color: var(--wb-ds-components-text-field-stroke-default);
+  --wb-public-select-button-border-color-hover: var(--wb-ds-components-text-field-stroke-hover);
   --wb-public-select-button-border-color-focus: var(--wb-ds-components-text-field-stroke-focus);
   --wb-public-select-button-focus-ring-color: var(--wb-ds-shadow-ui-focus);
   --wb-public-select-button-color-disabled: var(--wb-ds-ui-text-disabled);
@@ -31,6 +32,10 @@
 
     &:not(:hover) {
       transition: all var(--wb-public-transition);
+    }
+
+    &:not(:disabled):not([data-popup-open]):not(:focus-visible):not(.container--error):hover {
+      border-color: var(--wb-public-select-button-border-color-hover);
     }
 
     &[data-popup-open] {
