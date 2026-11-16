@@ -11,9 +11,9 @@
 /* Here, not on :root: these resolve themed tokens, which exist only on the editor box. */
 [data-wb-theme] {
   --ai-studio-edge-color--active: var(--wb-ds-canvas-run-status-stroke-success);
-  --ai-studio-status-color--completed: var(--wb-ds-canvas-run-status-icon-success);
-  --ai-studio-status-color--running: var(--wb-ds-canvas-run-status-icon-info);
-  --ai-studio-status-color--human: var(--wb-ds-canvas-run-status-icon-human);
+  --ai-studio-status-color--completed: var(--wb-ds-canvas-run-status-fg-success);
+  --ai-studio-status-color--running: var(--wb-ds-canvas-run-status-fg-info);
+  --ai-studio-status-color--human: var(--wb-ds-canvas-run-status-fg-human);
   --ai-studio-status-color--waiting: var(--wb-ds-ui-text-info-default);
   --ai-studio-status-color--incomplete: var(--wb-ds-ui-text-warning-default);
   --ai-studio-status-color--failed: var(--wb-ds-ui-text-critical-default);

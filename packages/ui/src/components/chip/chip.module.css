@@ -11,18 +11,18 @@
 }
 
 .solid {
-  background-color: var(--wb-ds-components-chips-solid);
-  color: var(--wb-ds-components-chips-solid-text);
+  background-color: var(--wb-ds-components-chips-bg-solid);
+  color: var(--wb-ds-components-chips-fg-solid);
 }
 
 .outline {
-  background-color: var(--wb-ds-components-chips-inset-outline);
+  background-color: var(--wb-ds-components-chips-fg-outline);
   background-image: linear-gradient(
     var(--wb-ds-components-chips-overlay-outline),
     var(--wb-ds-components-chips-overlay-outline)
   );
-  box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-inset-outline);
-  color: var(--wb-ds-components-chips-inset-outline);
+  box-shadow: 0 0 0 var(--wb-ds-size-12) var(--wb-ds-components-chips-fg-outline);
+  color: var(--wb-ds-components-chips-fg-outline);
 }
 
 .s {
