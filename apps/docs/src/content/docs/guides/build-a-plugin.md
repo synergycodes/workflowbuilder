@@ -119,7 +119,7 @@ registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
 });
 ```
 
-`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history. `edgeEndpoint` on `<WorkflowBuilder.Root>` sets the terminator of every edge at its target (`arrow`, `circle`, or `none` by default), in the colour of the line; the same decorator passes `endpoint` to override it for one edge. The built-in edges do not draw `edge.markerEnd`, because a React Flow marker keeps one colour in every state:
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
 
 ```tsx
 import {
@@ -141,6 +141,15 @@ registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
     );
     return runState ? <Path {...props} runState={runState} /> : children;
   },
+});
+```
+
+`edgeEndpoint` on `<WorkflowBuilder.Root>` sets the terminator at the target end (`arrow`, `circle`, or `none` by default), in the colour of the line, for the built-in edges, the edge drawn while connecting and custom edges drawn with `OptionalEdgePath` / `EdgePath`. A custom edge on `EnhancedBaseEdge` passes `endpoint` together with the path `style` from `useEdgeStyle`. The built-in edges do not draw `edge.markerEnd`, because a React Flow marker keeps one colour in every state. To override the terminator for one edge, set `endpoint` through `modifyProps`, so it composes with the run wrapper above (see [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot)):
+
+```tsx
+registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+  name: 'loop-back-endpoint',
+  modifyProps: (props) => (props.edgeId === 'loop-back' ? { ...props, endpoint: 'circle' } : props),
 });
 ```
 

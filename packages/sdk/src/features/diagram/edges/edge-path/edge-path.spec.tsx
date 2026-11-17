@@ -167,6 +167,31 @@ describe('OptionalEdgePath', () => {
     expect(visiblePath(container).dataset.runState).toBe('completed');
   });
 
+  it('an endpoint set through modifyProps keeps the run state of a priority-100 wrapper', async () => {
+    const { registerComponentDecorator, OptionalEdgePath } = await load();
+    registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+      place: 'wrapper',
+      name: 'run-path',
+      priority: 100,
+      content: runPath,
+    });
+    registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+      name: 'arrow-endpoint',
+      modifyProps: (props) => ({ ...props, endpoint: 'arrow' }),
+    });
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} />
+      </svg>,
+    );
+
+    const arrow = container.querySelector('marker polyline')!.parentElement!;
+    expect(visiblePath(container).dataset.runState).toBe('completed');
+    expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${arrow.id})`);
+    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-color-completed)');
+  });
+
   it('a wrapper decorator that returns children keeps the edit look', async () => {
     const { registerComponentDecorator, OptionalEdgePath } = await load();
     registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
