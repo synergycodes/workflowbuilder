@@ -2,7 +2,7 @@
 
 ### Proposed by: Jan Librowski
 
-### Date: 07.09.2026 (revised 14.09.2026, 15.09.2026 and 16.09.2026)
+### Date: 07.09.2026 (revised 14.09.2026, 15.09.2026, 16.09.2026 and 03.11.2026)
 
 ## Context
 

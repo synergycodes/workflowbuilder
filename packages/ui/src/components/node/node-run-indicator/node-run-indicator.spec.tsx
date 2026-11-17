@@ -25,6 +25,12 @@ function indicator() {
   return container.firstElementChild as HTMLElement;
 }
 
+// Never called: `pnpm typecheck` fails if the circle accepts `inverse`, whose glyph would match it.
+function _inverseCircle() {
+  // @ts-expect-error inverse is a glyph tone only
+  return <NodeRunIndicator tone="inverse" icon={<svg />} />;
+}
+
 describe('NodeRunIndicator', () => {
   it('colours the glyph with the circle tone unless iconTone is set', () => {
     act(() => root.render(<NodeRunIndicator tone="success" icon={<svg />} />));

@@ -24,6 +24,7 @@ const PRESET_BY_STATUS: Record<NodeExecutionState['status'], NodeRunStatusPreset
 function useNodeRunPreset(nodeId: string) {
   return useExecutionStore((state) => {
     const nodeState = state.nodeStates[nodeId];
+    if (state.status === 'disconnected' && nodeState?.status === 'running') return runStatusPresets.noSignal;
     return nodeState && PRESET_BY_STATUS[nodeState.status];
   });
 }

@@ -107,3 +107,6 @@ export const COMPONENTS = [
   // Compound component - parts described in prose, variables generated.
   { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];
+
+// Exports no documented prop links to, given a UI API Reference page anyway; the types they use come along.
+export const REFERENCE_EXPORTS = ['runStatusPresets'];

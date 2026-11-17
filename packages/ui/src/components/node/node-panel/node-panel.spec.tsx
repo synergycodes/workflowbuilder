@@ -102,7 +102,7 @@ describe('node-panel.module.css run overlay rule', () => {
   const file = path.join(import.meta.dirname, 'node-panel.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
 
-  it('swaps the selected focus ring for the run status variable under a [data-node-run-overlay] element', () => {
+  it('reads the run status variable on a selected node under a [data-node-run-overlay] element', () => {
     const rules: Rule[] = [];
     stylesheet.walkRules((rule) => {
       if (rule.selector.includes(':has(> .overlay [data-node-run-overlay])')) rules.push(rule);
@@ -115,12 +115,14 @@ describe('node-panel.module.css run overlay rule', () => {
     });
     expect(boxShadow).toMatch(/var\(--wb-public-node-box-shadow-selected-with-run-status\)$/);
     expect(rules[0]!.selector).toContain('.selected');
+  });
 
+  it('keeps the selected focus ring under a run status by default', () => {
     let fallback = '';
     stylesheet.walkDecls('--wb-public-node-box-shadow-selected-with-run-status', (declaration) => {
       fallback = declaration.value;
     });
-    expect(fallback).toMatch(/^0 0 0 0 transparent/);
+    expect(fallback).toBe('var(--wb-public-node-box-shadow-selected)');
   });
 
   it('positions the container and lifts its handles only while an Overlay renders', () => {
@@ -139,5 +141,47 @@ describe('node-panel.module.css run overlay rule', () => {
     expect(declarations(container!)).not.toHaveProperty('position');
     expect(declarations(overlay!)).toMatchObject({ position: 'relative' });
     expect(declarations(handle!)).toMatchObject({ 'z-index': '1', 'box-sizing': 'content-box' });
+  });
+
+  it('lets clicks through the Overlay to the node and its handles', () => {
+    let pointerEvents: string | undefined;
+    stylesheet.walkRules('.overlay', (rule) => {
+      rule.walkDecls('pointer-events', (declaration) => {
+        pointerEvents = declaration.value;
+      });
+    });
+
+    expect(pointerEvents).toBe('none');
+  });
+});
+
+describe('node-panel.module.css', () => {
+  const file = path.join(import.meta.dirname, 'node-panel.module.css');
+  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  function declarations(selector: string) {
+    const found = new Map<string, string>();
+    stylesheet.walkRules(selector, (rule) => {
+      for (const node of rule.nodes) {
+        if (node.type === 'decl') found.set(node.prop, node.value);
+      }
+    });
+    return found;
+  }
+
+  // AI Studio's run highlight sets box-shadow, so the stroke must not live there.
+  it('draws the stroke as an inset outline', () => {
+    const rule = declarations('.container');
+    expect(rule.get('outline')).toBe('var(--wb-public-node-border-size) solid var(--wb-public-node-border-color)');
+    expect(rule.get('outline-offset')).toBe('calc(-1 * var(--wb-public-node-border-size))');
+    expect(rule.has('border')).toBe(false);
+  });
+
+  it('spaces the header through public variables', () => {
+    const rule = declarations('.header-container');
+    expect(rule.get('padding')).toBe(
+      'var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline)',
+    );
+    expect(rule.get('gap')).toBe('var(--wb-public-node-header-gap)');
   });
 });

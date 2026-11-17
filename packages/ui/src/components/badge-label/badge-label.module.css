@@ -16,7 +16,7 @@
     border-radius: var(--wb-ds-radius-50);
     background-color: var(--badge-label-background-color);
     color: var(--badge-label-color);
-    letter-spacing: 0.05em;
+    letter-spacing: 0.05em; /* missing token */
     text-transform: uppercase;
     white-space: nowrap;
   }

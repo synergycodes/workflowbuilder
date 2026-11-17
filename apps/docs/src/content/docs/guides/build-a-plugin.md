@@ -67,8 +67,12 @@ type ComponentDecoratorOptions<P = object> =
   - `'wrapper'` — wrap the host entirely. Your `content` receives `props` (the host's props after `modifyProps`), `component` (the undecorated host, to render it again with other props) and `children` (the host already rendered). Return `children` to keep the host, or something else to replace it. Type it with `WorkflowBuilderDecoratorWrapperProps<Props>`.
 - **`content`** — the React component to render. With `'before'` and `'after'` it receives only `props`.
 - **`modifyProps`** — function receiving the host's props, returning modified props.
-- **`priority`** — higher = rendered first. Default `0`.
+- **`priority`** — higher = rendered first. Default `0`. For wrappers, see [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot).
 - **`name`** — unique identifier within the slot; prevents duplicate registration across calls.
+
+### Setting props or wrapping a slot
+
+Set props through `modifyProps`: it runs before every wrapper, so it composes with any of them. Keep `place: 'wrapper'` for logic that needs hooks, and let only one wrapper per slot render `component`, because `component` is always the bare host without the other decorators. With several wrappers the highest `priority` wraps deepest, so a wrapper that replaces content should have the lowest `priority`.
 
 ### Available slots
 

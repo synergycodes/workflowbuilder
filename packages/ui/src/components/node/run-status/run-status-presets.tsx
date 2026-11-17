@@ -41,6 +41,8 @@ export type NodeRunStatusPreset = Readonly<{
  * Default parts of each design-system run status. The SDK does not use them: an application maps its own run states
  * to these presets, or composes the parts itself. The presets are read-only: to use the application's copy, spread a
  * part into a new object, `{ ...preset.badge, label: t('run.running') }`.
+ *
+ * @category Node
  */
 export const runStatusPresets: Readonly<Record<NodeRunStatus, NodeRunStatusPreset>> = {
   running: {

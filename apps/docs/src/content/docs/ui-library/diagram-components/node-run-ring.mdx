@@ -38,13 +38,13 @@ With reduced motion, `heartbeat` stays a static 3px halo and `waiting` shows no 
 
 ## Selected node
 
-`NodeRunRing` carries the `data-node-run-overlay` attribute, so a selected node under it keeps its
-selected stroke but drops the focus ring (see
-[`NodePanel` states](/ui-library/diagram-components/node-panel/#states)). To show both, set:
+`NodeRunRing` carries the `data-node-run-overlay` attribute. The ring covers the selected stroke, so a
+selected node under it keeps only its focus ring as the sign of selection (see
+[`NodePanel` states](/ui-library/diagram-components/node-panel/#states)). To hide it anyway, set:
 
 ```css
 :root {
-  --wb-public-node-box-shadow-selected-with-run-status: var(--wb-public-node-box-shadow-selected);
+  --wb-public-node-box-shadow-selected-with-run-status: none;
 }
 ```
 
