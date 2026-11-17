@@ -1,6 +1,10 @@
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { act } from 'react';
 import { type Root, createRoot } from 'react-dom/client';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+
+import postcss from 'postcss';
 
 import { NodePanel } from './node-panel';
 
@@ -40,5 +44,28 @@ describe('NodePanel.Root states', () => {
     const shell = renderRoot({ selected: false, disabled: true });
     expect(shell.className).toMatch(/disabled/);
     expect(shell.className).not.toMatch(/selected/);
+  });
+});
+
+describe('node-panel.module.css', () => {
+  const file = path.join(import.meta.dirname, 'node-panel.module.css');
+  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  function declarations(selector: string) {
+    const found = new Map<string, string>();
+    stylesheet.walkRules(selector, (rule) => {
+      for (const node of rule.nodes) {
+        if (node.type === 'decl') found.set(node.prop, node.value);
+      }
+    });
+    return found;
+  }
+
+  // AI Studio's run highlight sets box-shadow, so the stroke must not live there.
+  it('draws the stroke as an inset outline', () => {
+    const rule = declarations('.container');
+    expect(rule.get('outline')).toBe('var(--wb-public-node-border-size) solid var(--wb-public-node-border-color)');
+    expect(rule.get('outline-offset')).toBe('calc(-1 * var(--wb-public-node-border-size))');
+    expect(rule.has('border')).toBe(false);
   });
 });
