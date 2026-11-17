@@ -68,4 +68,12 @@ describe('node-panel.module.css', () => {
     expect(rule.get('outline-offset')).toBe('calc(-1 * var(--wb-public-node-border-size))');
     expect(rule.has('border')).toBe(false);
   });
+
+  it('spaces the header through public variables', () => {
+    const rule = declarations('.header-container');
+    expect(rule.get('padding')).toBe(
+      'var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline)',
+    );
+    expect(rule.get('gap')).toBe('var(--wb-public-node-header-gap)');
+  });
 });

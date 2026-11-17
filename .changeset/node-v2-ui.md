@@ -6,5 +6,5 @@ Canvas nodes follow DS Node v2 (258px wide, inset stroke, borderless icon tile) 
 
 Breaking changes:
 
-- `--wb-public-node-padding` and `--wb-public-node-gap` now set only the node body padding and the gap between body children. The header no longer follows them: set its padding with `--wb-ds-canvas-node-head-v-pad` and `--wb-ds-canvas-node-head-h-pad`, and its gap with `--wb-ds-canvas-node-head-item-gap`.
+- `--wb-public-node-padding` and `--wb-public-node-gap` now set only the node body padding and the gap between body children. The header no longer follows them: set its padding and gap with the new `--wb-public-node-header-padding-block`, `--wb-public-node-header-padding-inline` and `--wb-public-node-header-gap`, which also keep the header ports centred.
 - The node stroke is an inset `outline` instead of a `border`, so the node keeps its size. A rule that set `border` or `border-color` on the node no longer changes the stroke; set `outline-color` instead. `--wb-public-node-box-shadow-selected` holds only the focus ring and accepts `none`.

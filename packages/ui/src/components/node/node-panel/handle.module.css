@@ -18,7 +18,7 @@
 
       :global(:is(.react-flow__handle.react-flow__handle-right, .react-flow__handle.react-flow__handle-left)) {
         top: calc(
-          var(--wb-ds-canvas-node-head-v-pad) + var(--wb-public-node-icon-padding) +
+          var(--wb-public-node-header-padding-block) + var(--wb-public-node-icon-padding) +
             var(--wb-public-node-icon-glyph-size) / 2
         );
       }
