@@ -25,13 +25,13 @@ Scope, by the shape of the top-level property value:
 
 - string: errors naming the property (by `instanceLocation`, `keywordLocation` or the message text) are dropped.
 - array of strings: dropped only when every failing item is a reference; one plain invalid item keeps all of the array's errors. Arrays of objects are left untouched, the control cannot yet map an error to its item.
-- object: only `type` errors (plus the `properties` wrapper error) are dropped, and only when every failing nested value is a reference. `format` and other keyword errors inside objects are kept.
+- object: every error about a nested value (`type`, `format`, `pattern`, `enum`, ...) plus the `properties` wrapper errors are dropped, and only when every failing nested value is a reference. A missing nested property (`required`) is kept: a reference elsewhere says nothing about it.
 - once the detailed errors are gone, `allOf` / `if` wrapper errors are dropped too; a result with no errors left becomes valid.
 
 Known limits:
 
 - Removal is keyed by the top-level property name (`removeErrorFromErrorsList` has no path support), so for arrays and objects it is all or nothing.
-- Matching by message text (`"<name>"`) can drop an unrelated error whose message quotes the same name.
+- Matching by message text (`"<name>"`) is limited to the `properties` and `required` keywords, whose messages are the only place the property name appears; a `format` message quotes the format name (`"email"`), which must not be read as a property.
 - jsonforms' rule engine passes a single field value, not the form object; non-object data is returned untouched.
 
 ### 2. `date` and `datetime` are not JSON Schema types; they are checked separately
@@ -42,7 +42,7 @@ Known limits:
 
 Why these values carry no zone, and what each stored shape means: `utils/time-iso.decision-log.md`.
 
-Known gap (26.10.2026): the custom check reports nothing. `getValidationForCustomTypes` receives the properties map, iterates `schema.properties` only when it is an array (it never is), and returns a constant `{ valid: false, errors: [] }` that the reference stripping flips back to valid. Probe: `{ when: 'not a date' }` and `{ when: 5 }` pass a required `date` property; only a missing key fails, through the standard `required`. It has been this way since the first commit. Direction: pass the custom properties and the `required` list explicitly, return the errors collected per call, and cover both with a spec next to the canary. (follow-up: custom-date-type-validation)
+Closed 17.11.2026: until then the custom check reported nothing (it iterated `schema.properties` of a properties map, never an array, and returned a constant `{ valid: false, errors: [] }` that the reference stripping flipped back to valid). It now takes the split-out properties map, checks every present value per call and reports `type` errors at `#/<name>`; a missing key stays the standard schema's `required` to report. Covered by `workflow-builder-validator.spec.ts`.
 
 ## Alternative Options Considered
 
@@ -53,8 +53,8 @@ Known gap (26.10.2026): the custom check reports nothing. `getValidationForCusto
 
 - The form's verdict is looser than a standard JSON Schema validator's on exactly these cases; `form-validation.decision-log.md` carries a superseded-in-part note for its "standard AJV" claim.
 - `VARIABLE_REFERENCE_KEYS` in `features/variables/constants.ts` and the `VariableReference` union in `@workflow-builder/types/variables` must stay in sync, or a new namespace is validated as plain text.
-- No schema may rely on the date check until the § 2 gap is closed.
+- The blank-text rule walks nested objects too, so a nested `''` never reaches a `format` check; arrays are left to their controls.
 
 ## Status
 
-Accepted, with the § 2 gap open.
+Accepted.

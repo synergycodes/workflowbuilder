@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useState } from 'react';
 
-import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
-
 import type { WBControlProps } from '../../../../types/controls';
 import { getIsStringNumber } from '../../../../utils/validation/get-is-string-number';
 import { useSingleSelectedElement } from '../../../properties-bar/use-single-selected-element';
 import { DynamicTypedVariableOrInput } from '../../../variables/components/dynamic-typed-variable-or-input/dynamic-typed-variable-or-input';
-import { VARIABLES_TYPES_EMPTY } from '../../../variables/constants';
+import { COMPATIBLE_VARIABLE_TYPES_BY_PRIMITIVE, VARIABLES_TYPES_EMPTY } from '../../../variables/constants';
 import { useNodeVariables } from '../../../variables/hooks/use-node-variables';
 import { getBooleanIfPossible } from '../../../variables/utils/get-boolean-if-possible';
 import { getIsStringVariableReference } from '../../../variables/utils/keys/get-is-string-variable-reference';
@@ -16,35 +14,30 @@ import type { VariableDynamicControlElement } from './type';
 
 type VariableDynamicControlProps = WBControlProps<string, VariableDynamicControlElement>;
 
-const variableTypesForSuggestions: Record<VariableTypePrimitive, VariableType[]> = {
-  boolean: ['boolean'],
-  date: ['date', 'datetime'],
-  time: ['time', 'datetime'],
-  datetime: ['date', 'datetime'],
-  number: ['number'],
-  string: ['string', 'number', 'date', 'datetime'],
-};
-
 function VariableDynamicControl(props: VariableDynamicControlProps) {
   const { data, handleChange, path, errors, enabled, uischema } = props;
   const { placeholder, disabled, variableType } = uischema;
   const isDisabled = !enabled || disabled === true;
+  const compatibleTypes = COMPATIBLE_VARIABLE_TYPES_BY_PRIMITIVE[variableType];
 
   const selection = useSingleSelectedElement();
   const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
     excludeTypes: VARIABLES_TYPES_EMPTY,
-    includeTypes: variableTypesForSuggestions[variableType],
+    includeTypes: compatibleTypes,
   });
 
-  const [inputValue, setInputValue] = useState<string>(data);
+  const [inputValue, setInputValue] = useState<string>(data == null ? '' : String(data));
 
   useEffect(() => {
-    if (data == null) {
-      setInputValue('');
-    } else {
-      setInputValue(String(data));
-    }
-  }, [data]);
+    setInputValue((current) => {
+      if (data != null) {
+        return String(data);
+      }
+
+      // Text that did not parse stays in the field with its error state, so the user sees why nothing was saved.
+      return variableType === 'number' && (current ?? '').trim() !== '' ? current : '';
+    });
+  }, [data, variableType]);
 
   const onChange = useCallback((value: string) => {
     setInputValue(value);
@@ -87,6 +80,7 @@ function VariableDynamicControl(props: VariableDynamicControlProps) {
       <DynamicTypedVariableOrInput
         key={variablesKey}
         type={variableType}
+        compatibleTypes={compatibleTypes}
         value={inputValue}
         onChange={onChange}
         onBlur={onBlur}

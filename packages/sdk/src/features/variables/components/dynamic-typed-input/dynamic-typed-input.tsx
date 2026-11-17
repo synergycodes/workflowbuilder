@@ -3,7 +3,7 @@ import clsx from 'clsx';
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-input.module.css';
 
@@ -36,6 +36,8 @@ type DynamicTypedInputProps = {
   timeForRawDates?: '00:00' | '23:59';
   endAdornment?: React.ReactNode;
   suggestionGroups: VariableSuggestionGroup[];
+  /** Variable types the inline `{{` picker of a text field offers; defaults to `type` alone. */
+  compatibleTypes?: VariableType[];
 };
 
 export function DynamicTypedInput({
@@ -50,6 +52,7 @@ export function DynamicTypedInput({
   timeForRawDates = '00:00',
   endAdornment,
   suggestionGroups = [],
+  compatibleTypes,
 }: DynamicTypedInputProps) {
   const variableTypeInfo = type ? variableTypeInfoByType[type] : undefined;
   const { t } = useTranslation();
@@ -63,8 +66,8 @@ export function DynamicTypedInput({
       return [];
     }
 
-    return filterSuggestionGroupsByType(suggestionGroups, [type]);
-  }, [suggestionGroups, type, variableTypeInfo]);
+    return filterSuggestionGroupsByType(suggestionGroups, compatibleTypes ?? [type]);
+  }, [compatibleTypes, suggestionGroups, type, variableTypeInfo]);
 
   if (!variableTypeInfo) {
     return null;
@@ -81,16 +84,19 @@ export function DynamicTypedInput({
   if (variableTypeInfo.type === 'string') {
     if (suggestionGroupsForString.length > 0) {
       return (
-        <VariableText
-          className={className}
-          value={String(value) || ''}
-          onChange={onChange}
-          onBlur={onBlur}
-          hasError={isError}
-          mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled }}
-          mentionProps={{ appendSpaceOnAdd: false }}
-          suggestionGroups={suggestionGroupsForString}
-        />
+        <div className={styles['date-with-reset-container']}>
+          <VariableText
+            className={className}
+            value={String(value) || ''}
+            onChange={onChange}
+            onBlur={onBlur}
+            hasError={isError}
+            mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled }}
+            mentionProps={{ appendSpaceOnAdd: false }}
+            suggestionGroups={suggestionGroupsForString}
+          />
+          {endAdornment && <span className={clsx(styles['adornment--date'], 'right-adornment')}>{endAdornment}</span>}
+        </div>
       );
     }
 
@@ -100,6 +106,7 @@ export function DynamicTypedInput({
         value={value}
         onChange={(event) => onChange(event.target.value as string)}
         onBlur={onBlur ? (event) => onBlur(event.target.value) : undefined}
+        suffixIcon={endAdornment}
         state={isError ? 'critical' : 'default'}
         placeholder={placeholder ?? t('variables.placeholderTypeString')}
         disabled={disabled}

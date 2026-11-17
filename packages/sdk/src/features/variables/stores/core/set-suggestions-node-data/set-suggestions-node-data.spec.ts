@@ -64,6 +64,20 @@ describe('setVariablesSuggestionsNodeData', () => {
     });
   });
 
+  it.each(['node', 's', 'des'])('replaces only the id segment when the node id %j is part of the prefix', (nodeId) => {
+    setVariablesSuggestionsNodeData({
+      ...update,
+      nodeId,
+      type: SUGGESTION_NODE_TYPE.COMMON,
+      bySourceHandle: {},
+      bySourceHandleType: { settled: [{ ...suggestion('result'), id: `nodes.${nodeId}.result` }] },
+    });
+
+    expect(useVariablesSuggestionsStore.getState().commonByType[NODE_TYPE]?.bySourceHandleType.settled?.[0]?.id).toBe(
+      `nodes.${NODE_ID_FOR_COMMON_NODE_DATA}.result`,
+    );
+  });
+
   it('stores a custom node under byNodeId as-is and leaves commonByType untouched', () => {
     const bySourceHandle = { left: [suggestion('result')] };
 

@@ -1,5 +1,5 @@
 import { Input } from '@workflowbuilder/ui';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import styles from './edge-properties.module.css';
 
@@ -21,6 +21,8 @@ export function EdgeProperties({ edge }: Props) {
   const isReadOnly = useStore((state) => state.isReadOnly);
 
   const [input, setInput] = useState(label);
+  // One tracked change per focus session, so undo takes the whole edit back, not one character.
+  const isChangeTrackedRef = useRef(false);
 
   useEffect(() => {
     setInput(label);
@@ -29,15 +31,24 @@ export function EdgeProperties({ edge }: Props) {
   const onChange: React.ChangeEventHandler<HTMLInputElement> = (event) => {
     const { value } = event.target;
     setInput(value);
-    trackFutureChange('dataUpdateEdge', { id });
+
+    if (!isChangeTrackedRef.current) {
+      trackFutureChange('dataUpdateEdge', { id });
+      isChangeTrackedRef.current = true;
+    }
+
     setEdgeData(id, { label: value });
+  };
+
+  const onBlur = () => {
+    isChangeTrackedRef.current = false;
   };
 
   return (
     <div className={styles['container']}>
       <OptionalEdgeProperties>
         <FormControlWithLabel label="Label">
-          <Input value={input || ''} onChange={onChange} disabled={isReadOnly} />
+          <Input value={input || ''} onChange={onChange} onBlur={onBlur} disabled={isReadOnly} />
         </FormControlWithLabel>
       </OptionalEdgeProperties>
     </div>

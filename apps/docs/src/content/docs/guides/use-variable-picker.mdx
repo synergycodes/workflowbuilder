@@ -11,10 +11,17 @@ The variable picker is a properties-panel control that lets you insert reference
 
 The picker is wired up on these built-in fields:
 
-| Node                         | Field                 | Picker |
-| ---------------------------- | --------------------- | ------ |
-| [AI Agent](/nodes/ai-agent/) | System prompt         | Yes    |
-| [Decision](/nodes/decision/) | Condition `X` and `Y` | Yes    |
+| Node                                 | Field                                            | Control                            |
+| ------------------------------------ | ------------------------------------------------ | ---------------------------------- |
+| [AI Agent](/nodes/ai-agent/)         | System prompt                                    | `VariableTextArea`                 |
+| [Decision](/nodes/decision/)         | Condition `X` and `Y`                            | inline picker, typed `Y`           |
+| [Conditional](/nodes/conditional/)   | Condition `X` and `Y`                            | inline picker, typed `Y`           |
+| [Action](/nodes/action/)             | Subject, Email body; Number of retries           | `VariableText`; `VariableDynamic`  |
+| [Notification](/nodes/notification/) | Number of retries                                | `VariableDynamic` (`number`)       |
+| [Delay](/nodes/delay/)               | Wait until (Until Specific Date/Time)            | `VariableDynamic` (`datetime`)     |
+| [Trigger](/nodes/trigger/)           | Starts / Ends date and time (Time-based Trigger) | `VariableDynamic` (`date`, `time`) |
+
+Global variables (Settings → Global variables) appear in every picker as the first group; see [`global.<id>`](#globalid).
 
 ## Using the picker
 
@@ -68,6 +75,16 @@ For example, an AI Agent node emits `response`, `tokensUsed`, and `model`, so a 
 {{nodes.<ai-agent-id>.tokensUsed}}
 {{nodes.<ai-agent-id>.model}}
 ```
+
+### `global.<id>`
+
+A global variable defined in the editor's Settings modal, keyed by the variable's `id` (a UUID the editor assigns; renaming the variable keeps it). **Surfaced in the picker** as the "Global variables" group, filtered by type like node outputs.
+
+```
+{{global.3f2a9c1e-...}}
+```
+
+The editor only stores the reference and the variable's definition (`globalVariables` in the saved diagram). It is your backend's job to hand the values to the run as `global` when it submits it; the reference backend in this repo submits `global: {}` today, so a `global.*` reference fails such a run with `Unresolved template reference`. The variable's `defaultValue` is a hint for that mapping, nothing reads it at run time.
 
 ### `trigger.<path>`
 

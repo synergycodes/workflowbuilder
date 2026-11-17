@@ -7,14 +7,15 @@ type Params = {
   mode: 'exact' | 'all';
 };
 
+// Only these keywords name the property in the message and nowhere else
+// (`Property "to" does not match schema.`, `Instance does not have required property "body".`).
+// A `format` message quotes the format name, so matching it would drop `format "email"` errors of every field.
+const KEYWORDS_NAMING_PROPERTY_IN_MESSAGE = new Set(['properties', 'required']);
+
 export function removeErrorFromErrorsList({ errors, propertyName, mode }: Params): OutputUnit[] {
   return errors.filter((error) => {
-    /*
-        Sometimes the only information about the error is in the error message:
-        - Property "to" does not match schema
-        - Instance does not have required property "body".
-    */
-    const isMentionInError = error.error.includes(`"${propertyName}"`);
+    const isMentionInError =
+      KEYWORDS_NAMING_PROPERTY_IN_MESSAGE.has(error.keyword) && error.error.includes(`"${propertyName}"`);
 
     if (mode === 'exact') {
       const isMentionedInInstanceLocation = error.instanceLocation === `#/${propertyName}`;

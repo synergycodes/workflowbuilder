@@ -66,7 +66,12 @@ export function BranchCard({ branch, index, onUpdate, onRemove, enabled = true }
             onClick={onClickEdit}
             prefixIcon={<SlidersHorizontal weight="bold" />}
           />
-          <NavButton aria-label={t('common.remove')} onClick={onClickRemove} prefixIcon={<Trash weight="bold" />} />
+          <NavButton
+            aria-label={t('common.remove')}
+            onClick={onClickRemove}
+            prefixIcon={<Trash weight="bold" />}
+            disabled={!enabled}
+          />
         </div>
       </div>
       <div>

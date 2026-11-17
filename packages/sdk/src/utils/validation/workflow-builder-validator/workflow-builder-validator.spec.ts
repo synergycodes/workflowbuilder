@@ -49,4 +49,54 @@ describe('workflowBuilderValidator blank text', () => {
   it('should keep checking text with content in a nullable string', () => {
     expect(check(noteSchema({ type: ['string', 'null'], format: 'email' }), { note: 'bad' }).valid).toBe(false);
   });
+
+  it('should read blank text inside a nested object as missing, so its format does not apply', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        schedule: { type: 'object', properties: { time: { type: 'string', format: 'time' } } },
+      },
+    };
+
+    expect(check(schema, { schedule: { time: '' } }).valid).toBe(true);
+    expect(check(schema, { schedule: { time: 'bad' } }).valid).toBe(false);
+  });
+
+  it('should accept a variable reference in a nested property with a format', () => {
+    const schema = {
+      type: 'object',
+      properties: {
+        schedule: { type: 'object', properties: { date: { type: 'string', format: 'date' } } },
+      },
+    };
+
+    expect(check(schema, { schedule: { date: '{{global.deadline}}' } }).valid).toBe(true);
+  });
+});
+
+const whenSchema = (type: string, required = true) => noteSchema({ type }, required);
+
+describe('workflowBuilderValidator date, datetime and time types', () => {
+  it('should accept a date string, a clock for time, and a variable reference', () => {
+    expect(check(whenSchema('date'), { note: '2024-01-15' }).valid).toBe(true);
+    expect(check(whenSchema('datetime'), { note: '2024-01-15T09:07' }).valid).toBe(true);
+    expect(check(whenSchema('time'), { note: '09:07:00+00:00' }).valid).toBe(true);
+    expect(check(whenSchema('time'), { note: '{{global.deadline}}' }).valid).toBe(true);
+  });
+
+  it('should report a value that is not a date and name the property', () => {
+    const validate = workflowBuilderValidator.compile(whenSchema('date'));
+
+    expect(validate({ note: 'not a date' })).toBe(false);
+    expect(validate.errors?.[0]).toMatchObject({ instancePath: '/note', keyword: 'type' });
+    expect(check(whenSchema('date'), { note: 5 }).valid).toBe(false);
+    expect(check(whenSchema('date'), { note: '5' }).valid).toBe(false);
+    expect(check(whenSchema('date'), { note: '2024-02-30' }).valid).toBe(false);
+    expect(check(whenSchema('time'), { note: '25:99' }).valid).toBe(false);
+  });
+
+  it('should report a missing required date through the standard required keyword', () => {
+    expect(check(whenSchema('date'), {})).toEqual({ valid: false, keywords: ['required'] });
+    expect(check(whenSchema('date', false), {}).valid).toBe(true);
+  });
 });

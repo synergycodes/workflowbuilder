@@ -1,10 +1,10 @@
 import { NavButton, Tooltip } from '@workflowbuilder/ui';
 import clsx from 'clsx';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
-import type { VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
+import type { VariableType, VariableTypePrimitive } from '@workflow-builder/types/variables/variables';
 
 import styles from './dynamic-typed-variable-or-input.module.css';
 
@@ -21,6 +21,8 @@ type Props = {
   onBlur?: (value: string) => void;
   value?: string;
   type?: VariableTypePrimitive;
+  /** Variable types the picker offers; defaults to `type` alone (plus the date/time widening of the filter). */
+  compatibleTypes?: VariableType[];
   placeholder?: string;
   isError?: boolean;
   isDisabled?: boolean;
@@ -37,31 +39,47 @@ export function DynamicTypedVariableOrInput({
   placeholder,
   isError,
   type,
+  compatibleTypes,
   isDisabled,
   suggestionGroups = [],
 }: Props) {
   const { t } = useTranslation();
   const translateIfPossible = useTranslateIfPossible();
   const [mode, setMode] = useState<DynamicControlType>(getIsStringVariableReference(value) ? 'variable' : 'manual');
+  // Typed value kept while the user looks at the variables, restored when they come back to typing.
+  const lastManualValueRef = useRef('');
+
+  const commit = useCallback(
+    (newValue: string) => {
+      onChange(newValue);
+
+      if (onBlur) {
+        onBlur(newValue);
+      }
+    },
+    [onBlur, onChange],
+  );
 
   const handleToggleMode = useCallback(() => {
-    const newMode = mode === 'variable' ? 'manual' : 'variable';
-    setMode(newMode);
+    if (mode === 'manual') {
+      lastManualValueRef.current = value;
+      setMode('variable');
+      commit('');
 
-    onChange('');
-
-    if (onBlur) {
-      onBlur('');
+      return;
     }
-  }, [mode, onBlur, onChange]);
+
+    setMode('manual');
+    commit(lastManualValueRef.current);
+  }, [commit, mode, value]);
 
   const suggestionGroupsForType = useMemo(() => {
     if (!type) {
       return [];
     }
 
-    return filterSuggestionGroupsByType(suggestionGroups, [type]);
-  }, [suggestionGroups, type]);
+    return filterSuggestionGroupsByType(suggestionGroups, compatibleTypes ?? [type]);
+  }, [compatibleTypes, suggestionGroups, type]);
 
   if (mode === 'variable' && suggestionGroupsForType.length > 0) {
     return (
@@ -98,6 +116,7 @@ export function DynamicTypedVariableOrInput({
       placeholder={translateIfPossible(placeholder) || placeholder}
       isError={isError}
       type={type}
+      compatibleTypes={compatibleTypes}
       disabled={isDisabled}
       suggestionGroups={suggestionGroupsForType}
       endAdornment={

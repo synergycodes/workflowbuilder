@@ -35,7 +35,7 @@ export const schemaOutput: NodeSchemaOutput = {
             allDay: {
               type: 'boolean',
               title: 'All day event',
-              description: 'The type of event that started the workflow',
+              description: 'Whether the schedule covers whole days instead of a clock',
             },
             startDate: {
               type: 'string',

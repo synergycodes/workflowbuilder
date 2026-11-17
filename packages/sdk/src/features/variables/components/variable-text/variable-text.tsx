@@ -96,7 +96,8 @@ export function VariableText({
   mentionProps,
 }: VariableTextProps) {
   const { t } = useTranslation();
-  const [key, setKey] = useState(crypto.randomUUID());
+  // A counter, not `crypto.randomUUID()`: that API exists only in secure contexts (https, localhost).
+  const [key, setKey] = useState(0);
   const singleLine = variant === 'text';
 
   const mentionData = useMemo(() => buildMentionData(suggestionGroups), [suggestionGroups]);
@@ -106,7 +107,7 @@ export function VariableText({
       document.activeElement.blur();
     }
 
-    setKey(crypto.randomUUID());
+    setKey((current) => current + 1);
   }, []);
 
   const SuggestionsContainer = useCallback(

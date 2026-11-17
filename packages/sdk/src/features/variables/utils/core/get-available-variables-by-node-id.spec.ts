@@ -70,6 +70,7 @@ function available(
 }
 
 const idsOf = (group: VariableSuggestionGroup | undefined) => group?.suggestions.map(({ id }) => id);
+const displayed = (id: string): VariableSuggestion => ({ ...suggestion(id), display: `Fetch · ${id}` });
 const labelsOf = (groups: VariableSuggestionGroup[]) => groups.map(({ label }) => label);
 
 beforeAll(() => {
@@ -199,6 +200,21 @@ describe('getAvailableVariablesByNodeId', () => {
 
     expect(labelsOf(groups)).toEqual(['Fetch', 'Fetch (2)', 'Fetch (3)']);
     expect(groups.map(idsOf)).toEqual([['nodes.p1.a'], ['nodes.p2.a'], []]);
+  });
+
+  it('carries the numbered label into the chip display of the suggestions', () => {
+    index({ p1: settled(displayed('a')), p2: settled(displayed('b')) });
+
+    const groups = available(
+      'target',
+      [node('p1'), node('p2'), node('target')],
+      [edge('p1', 'target'), edge('p2', 'target')],
+    );
+
+    expect(groups.map((group) => group.suggestions.map(({ display }) => display))).toEqual([
+      ['Fetch · a'],
+      ['Fetch (2) · b'],
+    ]);
   });
 
   it('skips a numbered label another ancestor already carries', () => {

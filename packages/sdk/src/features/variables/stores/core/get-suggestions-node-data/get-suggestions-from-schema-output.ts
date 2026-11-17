@@ -27,7 +27,7 @@ export function getSuggestionsFromSchemaOutput({ nodeId, nodeLabel, properties }
             display: [truncate(nodeLabel, 15), truncate(property.label || pathToLabel(propertyKey), 15)]
               .filter(Boolean)
               .join(VARIABLE_DELIMITER),
-            label: property.label || truncate(property.label || keyToLabel(propertyKey), 25),
+            label: property.label || truncate(keyToLabel(propertyKey), 25),
             description: property.description || keyToLabel(propertyKey),
             type: property.type,
           }

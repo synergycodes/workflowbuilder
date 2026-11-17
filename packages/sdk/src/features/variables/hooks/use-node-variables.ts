@@ -22,6 +22,16 @@ type Response = {
   variablesKey: string;
 };
 
+/**
+ * Variables a node's controls can reference: the global ones and every ancestor's outputs, grouped by node
+ * and filtered by type. Recomputed when the suggestions store refreshes (500 ms after a node edit) or the
+ * graph changes. `variablesKey` identifies the current set, for remounting a picker when it changes.
+ *
+ * @param nodeId - The node whose ancestors are collected; `undefined` yields the global variables only.
+ * @param options - `includeTypes` keeps only those types (empty keeps all), `excludeTypes` drops them.
+ *
+ * @category Variables
+ */
 export function useNodeVariables(nodeId: string | undefined, options?: Options): Response {
   const { excludeTypes = VARIABLES_TYPES_EMPTY, includeTypes = VARIABLES_TYPES_EMPTY } = options || {};
   const globalVariables = useStore((store) => store.globalVariables);

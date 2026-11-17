@@ -1,4 +1,4 @@
-import type { ValidationResult } from '@cfworker/json-schema';
+import type { OutputUnit, ValidationResult } from '@cfworker/json-schema';
 
 import { getIsStringVariableReference } from '../../../../features/variables/utils/keys/get-is-string-variable-reference';
 import { getByPath } from '../../../object';
@@ -8,6 +8,23 @@ type Params = {
   result: ValidationResult;
   // From form;
   data: unknown;
+};
+
+/** `#/to` and `#/to/...`, never `#/total`. */
+const getIsLocatedUnder = (error: OutputUnit, propertyName: string): boolean =>
+  error.instanceLocation === `#/${propertyName}` || error.instanceLocation.startsWith(`#/${propertyName}/`);
+
+/** Index of the failing item for `#/<property>/<index>...`; the name is matched as text, so no regex escaping is needed. */
+const getArrayItemIndex = (error: OutputUnit, propertyName: string): number | undefined => {
+  const prefix = `#/${propertyName}/`;
+
+  if (!error.instanceLocation.startsWith(prefix)) {
+    return undefined;
+  }
+
+  const index = Number(error.instanceLocation.slice(prefix.length).split('/')[0]);
+
+  return Number.isInteger(index) ? index : undefined;
 };
 
 /**
@@ -30,22 +47,19 @@ export function removeReferenceIsStringErrors({ result, data }: Params): Validat
     }
 
     if (Array.isArray(value) && value.length > 0) {
-      const allArrayErrors = result.errors.filter((error) => error.instanceLocation.startsWith(`#/${propertyName}`));
+      const allArrayErrors = result.errors.filter((error) => getIsLocatedUnder(error, propertyName));
 
       if (allArrayErrors.length > 0) {
         const isArrayOfStrings = value.every((item) => typeof item === 'string');
 
         // Arrays of objects stay untouched: the control cannot yet map an error to its item.
         if (isArrayOfStrings) {
-          const allValuesArrayErrors = allArrayErrors
-            .map((error) => {
-              const match = error.instanceLocation.match(new RegExp(`^#/${propertyName}/(\\d+)`));
-              return match ? { error, index: Number(match[1]) } : null;
-            })
-            .filter((item): item is { error: (typeof allArrayErrors)[number]; index: number } => item !== null);
+          const failingIndexes = allArrayErrors
+            .map((error) => getArrayItemIndex(error, propertyName))
+            .filter((index): index is number => index !== undefined);
 
-          if (allValuesArrayErrors.length > 0) {
-            const areAllErrorValuesSingleVariable = allValuesArrayErrors.every(({ index }) =>
+          if (failingIndexes.length > 0) {
+            const areAllErrorValuesSingleVariable = failingIndexes.every((index) =>
               getIsStringVariableReference(value[index]),
             );
             if (areAllErrorValuesSingleVariable) {
@@ -57,28 +71,25 @@ export function removeReferenceIsStringErrors({ result, data }: Params): Validat
     }
 
     if (Array.isArray(value) === false && typeof value === 'object' && value !== null) {
-      const allObjectErrors = result.errors.filter((error) => error.instanceLocation.startsWith(`#/${propertyName}`));
+      const allObjectErrors = result.errors.filter((error) => getIsLocatedUnder(error, propertyName));
 
       if (allObjectErrors.length > 0) {
+        // Every keyword judging the value itself (type, format, pattern, enum...) is the engine's to judge
+        // once the value is a reference; a missing nested property (`required`) is not.
         const areAllErrorValuesSingleVariable = allObjectErrors.every((error) => {
           const isErrorAboutPropertiesInNestedObject = error.keyword === 'properties';
           if (isErrorAboutPropertiesInNestedObject) {
             return true;
           }
 
-          const isTypeError = error.keyword === 'type';
-          if (isTypeError) {
-            const objectPath = error.instanceLocation.split(`${propertyName}/`).at(-1)?.replaceAll('/', '.');
+          const objectPath = error.instanceLocation.slice(`#/${propertyName}/`.length).replaceAll('/', '.');
 
-            if (!objectPath) {
-              return false;
-            }
-            const propertyValue = getByPath(value, objectPath);
-
-            return typeof propertyValue === 'string' && getIsStringVariableReference(propertyValue);
+          if (!objectPath || error.instanceLocation === `#/${propertyName}`) {
+            return false;
           }
+          const propertyValue = getByPath(value, objectPath);
 
-          return false;
+          return typeof propertyValue === 'string' && getIsStringVariableReference(propertyValue);
         });
 
         if (areAllErrorValuesSingleVariable) {

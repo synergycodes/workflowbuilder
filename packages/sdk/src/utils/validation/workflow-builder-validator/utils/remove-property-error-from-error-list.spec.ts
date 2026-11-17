@@ -113,6 +113,22 @@ describe('removeErrorFromErrorsList', () => {
     expect(removeErrorFromErrorsList({ errors: totalErrors, propertyName: 'to', mode: 'all' })).toEqual(totalErrors);
   });
 
+  it('should not read a format name quoted in a message as the property name', () => {
+    const emailBackupFormat: OutputUnit = {
+      instanceLocation: '#/emailBackup',
+      keyword: 'format',
+      keywordLocation: '#/properties/emailBackup/format',
+      error: 'String does not match format "email".',
+    };
+
+    expect(removeErrorFromErrorsList({ errors: [emailBackupFormat], propertyName: 'email', mode: 'exact' })).toEqual([
+      emailBackupFormat,
+    ]);
+    expect(removeErrorFromErrorsList({ errors: [emailBackupFormat], propertyName: 'email', mode: 'all' })).toEqual([
+      emailBackupFormat,
+    ]);
+  });
+
   it('should return an empty list for an empty list of errors', () => {
     expect(removeErrorFromErrorsList({ errors: [], propertyName: 'to', mode: 'exact' })).toEqual([]);
     expect(removeErrorFromErrorsList({ errors: [], propertyName: 'to', mode: 'all' })).toEqual([]);

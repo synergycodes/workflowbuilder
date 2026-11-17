@@ -108,7 +108,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             variant="text"
             suggestionGroups={suggestionGroups}
             hasError={shouldShowValidation && errors.x}
-            mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable') }}
+            mentionsInputProps={{ placeholder: t('variables.placeholderForStringOrVariable'), disabled: isReadOnly }}
             mentionProps={{ appendSpaceOnAdd: false }}
           />
           <Select
@@ -120,6 +120,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             }))}
             onChange={(_, value) => handleChange('comparisonOperator', value)}
             error={shouldShowValidation && errors.comparisonOperator}
+            disabled={isReadOnly}
           />
           <DynamicTypedVariableOrInput
             className={styles['input']}
@@ -136,6 +137,7 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
           onClick={onRemove}
           tooltip={t('common.remove')}
           prefixIcon={<Icon name="X" />}
+          disabled={isReadOnly}
         />
       </div>
     </>

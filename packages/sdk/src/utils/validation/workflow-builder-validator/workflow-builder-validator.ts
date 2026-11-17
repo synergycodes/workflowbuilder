@@ -18,7 +18,7 @@ import type Ajv from 'ajv';
 import type { ErrorObject } from 'ajv';
 
 import { combineValidators } from './utils/combine-validators';
-import { getValidationForCustomTypes } from './workflow-builder-validator-for-custom-types';
+import { getIsCustomType, getValidationForCustomTypes } from './workflow-builder-validator-for-custom-types';
 
 /**
  * Matches Ajv's ValidateFunction interface:
@@ -101,10 +101,7 @@ const getValidator = (object: object): Validator => {
       },
       [key, value],
     ) => {
-      const isCustomProperty =
-        typeof value !== 'boolean' &&
-        typeof value.type === 'string' &&
-        ['datetime', 'date', 'time'].includes(value.type);
+      const isCustomProperty = typeof value !== 'boolean' && getIsCustomType(value.type);
 
       if (isCustomProperty) {
         stack.customSchema[key] = value;

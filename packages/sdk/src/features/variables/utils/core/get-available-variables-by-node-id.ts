@@ -1,8 +1,10 @@
 import type { VariableType } from '@workflow-builder/types/variables/variables';
 
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../../../node/node-data';
+import { truncate } from '../../../../utils/text';
 import { getNodeDefinition } from '../../../../utils/validation/get-node-definition';
 import type { VariableSuggestionGroup } from '../../components/variable-text/variable-text.types';
+import { VARIABLE_DELIMITER } from '../../constants';
 import { getNodeVariablesSuggestions } from '../../stores/core/get-node-variables-suggestions';
 import { useVariablesSuggestionsStore } from '../../stores/use-variable-suggestions-store';
 import { getNodeAncestors } from '../diagram/get-node-ancestors';
@@ -53,15 +55,19 @@ export function getAvailableVariablesByNodeId({
       continue;
     }
 
-    const nodeLabel =
-      groupsByNodeId[nodeId]?.label ?? uniqueLabel(getNodeLabelForVariable({ node, definition }), usedLabels);
+    const baseLabel = getNodeLabelForVariable({ node, definition });
+    const nodeLabel = groupsByNodeId[nodeId]?.label ?? uniqueLabel(baseLabel, usedLabels);
 
-    const suggestions =
+    const suggestions = (
       getNodeVariablesSuggestions({
         nodeId,
         sourceHandle,
         cachedStore: variableSuggestionsStore,
-      }) || [];
+      }) || []
+    ).map((suggestion) =>
+      // The chip in the text carries the label too, so a "(2)" group needs it on every suggestion
+      nodeLabel === baseLabel ? suggestion : { ...suggestion, display: withLabel(suggestion.display, nodeLabel) },
+    );
 
     const filteredSuggestions = filterSuggestionsByTypes({
       suggestions,
@@ -81,6 +87,12 @@ export function getAvailableVariablesByNodeId({
   }
 
   return Object.values(groupsByNodeId);
+}
+
+function withLabel(display: string, label: string): string {
+  const [, ...rest] = display.split(VARIABLE_DELIMITER);
+
+  return [truncate(label, 15), ...rest].join(VARIABLE_DELIMITER);
 }
 
 // Two ancestors with the same label become "Fetch", "Fetch (2)", "Fetch (3)"

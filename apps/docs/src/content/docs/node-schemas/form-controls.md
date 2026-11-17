@@ -131,22 +131,25 @@ Repeater control for the `tools` array on AI-agent nodes — each row is `{ id, 
 
 Single-line text input that **also accepts `{{nodes.<id>.<output>}}` placeholders**. Renders an inline picker that suggests upstream node outputs as the user types `{{`. Bound to a `string` property.
 
-| Prop          | Type   | Required | Notes             |
-| ------------- | ------ | -------- | ----------------- |
-| `placeholder` | string | no       | Empty-state hint. |
+| Prop             | Type             | Required | Notes                                                                                                                                                                   |
+| ---------------- | ---------------- | -------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `placeholder`    | string           | no       | Empty-state hint.                                                                                                                                                       |
+| `variablesTypes` | `VariableType[]` | no       | Variable types the picker offers. Default: every type except `object`, `array` and `boolean`; a property with `type: 'number'` in the schema defaults to `number` only. |
 
 ```ts
 { type: 'VariableText', scope: '#/properties/url', placeholder: 'https://...' }
+{ type: 'VariableText', scope: '#/properties/deadline', variablesTypes: ['date', 'datetime'] }
 ```
 
 ## `VariableTextArea`
 
 Multi-line variant of `VariableText`. Same `{{...}}` placeholder behaviour.
 
-| Prop          | Type   | Required | Notes                                       |
-| ------------- | ------ | -------- | ------------------------------------------- |
-| `placeholder` | string | no       | Empty-state hint.                           |
-| `minRows`     | number | no       | Minimum visible rows before scroll appears. |
+| Prop             | Type             | Required | Notes                                                   |
+| ---------------- | ---------------- | -------- | ------------------------------------------------------- |
+| `placeholder`    | string           | no       | Empty-state hint.                                       |
+| `minRows`        | number           | no       | Minimum visible rows before scroll appears.             |
+| `variablesTypes` | `VariableType[]` | no       | Variable types the picker offers, as in `VariableText`. |
 
 ```ts
 { type: 'VariableTextArea', scope: '#/properties/messageBody', minRows: 4 }
@@ -156,13 +159,13 @@ Multi-line variant of `VariableText`. Same `{{...}}` placeholder behaviour.
 
 Typed input that lets the user **either type a literal value or pick a single upstream variable**. A toggle button in the field switches between the two modes: the variable mode shows a select listing only upstream outputs compatible with `variableType`, the manual mode shows a widget picked from `variableType`:
 
-| `variableType`         | Manual widget                       | Compatible upstream types              | Saved value                                          |
-| ---------------------- | ----------------------------------- | -------------------------------------- | ---------------------------------------------------- |
-| `'string'`             | Text input with inline `{{` picker  | `string`, `number`, `date`, `datetime` | trimmed `string`, or `undefined` when empty          |
-| `'number'`             | Text input with numeric validation  | `number`                               | `number`, or `undefined` when not a valid number     |
-| `'boolean'`            | True / False select                 | `boolean`                              | `boolean`, or `undefined` when unset                 |
-| `'date'`, `'datetime'` | Date picker (+ time for `datetime`) | `date`, `datetime`                     | `YYYY-MM-DD` / `YYYY-MM-DDTHH:mm` `string`           |
-| `'time'`               | `HH:mm` input                       | `time`, `datetime`                     | `HH:mm:00+00:00` `string`, or `undefined` when empty |
+| `variableType`         | Manual widget                       | Compatible upstream types                      | Saved value                                          |
+| ---------------------- | ----------------------------------- | ---------------------------------------------- | ---------------------------------------------------- |
+| `'string'`             | Text input with inline `{{` picker  | `string`, `number`, `date`, `datetime`, `time` | trimmed `string`, or `undefined` when empty          |
+| `'number'`             | Text input with numeric validation  | `number`                                       | `number`, or `undefined` when not a valid number     |
+| `'boolean'`            | True / False select                 | `boolean`                                      | `boolean`, or `undefined` when unset                 |
+| `'date'`, `'datetime'` | Date picker (+ time for `datetime`) | `date`, `datetime`                             | `YYYY-MM-DD` / `YYYY-MM-DDTHH:mm` `string`           |
+| `'time'`               | `HH:mm` input                       | `time`, `datetime`                             | `HH:mm:00+00:00` `string`, or `undefined` when empty |
 
 Compatibility is deliberately wider than an exact type match. A `'string'` field accepts any primitive that can be rendered as text, so a number or a date output can be picked where text is expected; the reference is still stored as a `string` and the value resolves to its text form at execution. `'date'` and `'datetime'` accept each other, and `'time'` also accepts a `datetime` output. `'number'` and `'boolean'` accept only their own type.
 

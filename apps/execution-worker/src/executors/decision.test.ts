@@ -78,6 +78,21 @@ describe('executeDecision', () => {
     expect(executeDecision(node, context()).nextPort).toBe('before');
   });
 
+  it('reads the same clock as equal whether or not it carries the stored seconds and offset', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '09:07', y: '09:07:00+00:00', comparisonOperator: 'isNotEqual' }],
+      },
+      {
+        sourceHandle: 'same',
+        conditions: [{ x: '09:07', y: '09:07:00+00:00', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('same');
+  });
+
   it('orders a bare time against the clock of a datetime, never against a bare date', () => {
     const node = decisionNode([
       {

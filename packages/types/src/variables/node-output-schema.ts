@@ -32,14 +32,14 @@ export type OutputVariant =
       variantRule:
         | undefined
         | {
-            onlyIfPropertyNameEquals: { path: string; value: string | number };
+            onlyIfPropertyNameEquals: { path: string; value: string | number | boolean };
           };
       bySourceHandle?: PropertiesBySourceHandle;
       bySourceHandleType?: PropertiesBySourceHandleType;
     }
   | {
       variantRule: {
-        onlyIfPropertyNameEquals: { path: string; value: string | number };
+        onlyIfPropertyNameEquals: { path: string; value: string | number | boolean };
         fromValueOfPropertyPath: string;
         /** Handle ids that receive the user-defined variables. */
         toSourceHandles: string[] | undefined;

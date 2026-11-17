@@ -10,6 +10,7 @@ import type { DynamicCondition } from '../../../../../features/json-form/types/c
 import { closeModal } from '../../../../../features/modals/stores/use-modal-store';
 import { useSingleSelectedElement } from '../../../../../features/properties-bar/use-single-selected-element';
 import { VARIABLES_TYPES_NOT_PRIMITIVE } from '../../../../../features/variables/constants';
+import { useStore } from '../../../../../store/store';
 import { useNodeVariables } from '../../../../variables/hooks/use-node-variables';
 import { getConditionErrors } from '../../../../variables/utils/form-validation/conditions';
 import { ConditionsFormField } from '../dynamic-conditions-form-field/conditions-form-field';
@@ -39,6 +40,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     );
 
     const selection = useSingleSelectedElement();
+    const isReadOnly = useStore((store) => store.isReadOnly);
     const { suggestionGroups, variablesKey } = useNodeVariables(selection?.node?.id, {
       excludeTypes: VARIABLES_TYPES_NOT_PRIMITIVE,
     });
@@ -64,6 +66,12 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
     }
 
     const handleConfirm = useCallback(() => {
+      // The modal opens in read-only mode for inspection; nothing in it may reach the diagram then.
+      if (isReadOnly) {
+        closeModal();
+        return;
+      }
+
       const hasAllVariablesEmpty = conditions.every(({ x, y }) => !x && !y);
       if (hasAllVariablesEmpty) {
         // Everything is empty, so it resets the value
@@ -80,7 +88,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
 
       onChange(conditions as DynamicCondition[]);
       closeModal();
-    }, [conditions, onChange]);
+    }, [conditions, isReadOnly, onChange]);
 
     const lastIndex = conditions.length - 1;
 
@@ -111,6 +119,7 @@ export const ConditionsForm = forwardRef<ConditionsFormHandle, ConditionsFormPro
           prefixIcon={<Icon name="PlusCircle" />}
           aria-label={t('conditions.add')}
           onClick={addCondition}
+          disabled={isReadOnly}
         />
       </form>
     );

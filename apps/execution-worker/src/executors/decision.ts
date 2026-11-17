@@ -48,19 +48,26 @@ function getSecondsOfDay(value: string): number | undefined {
   return match ? Number(match[1]) * 3600 + Number(match[2]) * 60 + Number(match[3] ?? 0) : undefined;
 }
 
-/** A bare `HH:mm[:ss]` has no day, so it orders by clock: against another clock or the one inside a datetime. */
-function compareInstants(left: string, right: string, compare: (a: number, b: number) => boolean): boolean {
+/**
+ * A bare `HH:mm[:ss]` has no day, so it compares by clock: against another clock or the one inside a datetime.
+ * `09:07` and `09:07:00+00:00` (the editor's stored shape) are the same clock. Undefined when neither side is a clock.
+ */
+function compareClocks(left: string, right: string, compare: (a: number, b: number) => boolean): boolean | undefined {
   const leftTrimmed = left.trim();
   const rightTrimmed = right.trim();
 
-  if (bareTimePattern.test(leftTrimmed) || bareTimePattern.test(rightTrimmed)) {
-    const leftSeconds = getSecondsOfDay(leftTrimmed);
-    const rightSeconds = getSecondsOfDay(rightTrimmed);
-
-    return leftSeconds !== undefined && rightSeconds !== undefined && compare(leftSeconds, rightSeconds);
+  if (!bareTimePattern.test(leftTrimmed) && !bareTimePattern.test(rightTrimmed)) {
+    return undefined;
   }
 
-  return compare(new Date(left).getTime(), new Date(right).getTime());
+  const leftSeconds = getSecondsOfDay(leftTrimmed);
+  const rightSeconds = getSecondsOfDay(rightTrimmed);
+
+  return leftSeconds !== undefined && rightSeconds !== undefined && compare(leftSeconds, rightSeconds);
+}
+
+function compareInstants(left: string, right: string, compare: (a: number, b: number) => boolean): boolean {
+  return compareClocks(left, right, compare) ?? compare(new Date(left).getTime(), new Date(right).getTime());
 }
 
 function evaluateCondition(condition: DecisionBranchCondition, context: ExecutionContext): boolean {
@@ -69,10 +76,10 @@ function evaluateCondition(condition: DecisionBranchCondition, context: Executio
 
   switch (condition.comparisonOperator) {
     case 'isEqual': {
-      return left === right;
+      return compareClocks(left, right, (a, b) => a === b) ?? left === right;
     }
     case 'isNotEqual': {
-      return left !== right;
+      return compareClocks(left, right, (a, b) => a !== b) ?? left !== right;
     }
     case 'isContaining': {
       return left.toLowerCase().includes(right.toLowerCase());

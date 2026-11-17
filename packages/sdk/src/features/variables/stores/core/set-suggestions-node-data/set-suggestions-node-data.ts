@@ -1,5 +1,10 @@
 import type { VariableSuggestion } from '../../../components/variable-text/variable-text.types';
-import { NODE_ID_FOR_COMMON_NODE_DATA, NODE_LABEL_FOR_COMMON_NODE_DATA, VARIABLE_DELIMITER } from '../../../constants';
+import {
+  NODE_ID_FOR_COMMON_NODE_DATA,
+  NODE_LABEL_FOR_COMMON_NODE_DATA,
+  VARIABLE_DELIMITER,
+  VARIABLE_NODES_KEY,
+} from '../../../constants';
 import type { SuggestionNodeType, SuggestionsBySourceHandle, SuggestionsBySourceHandleType } from '../../types';
 import { SUGGESTION_NODE_TYPE } from '../../types';
 import type { VariablesSuggestionsStore } from '../../use-variable-suggestions-store';
@@ -41,7 +46,11 @@ function withCommonPlaceholders<T extends { [key: string]: VariableSuggestion[] 
           .split(VARIABLE_DELIMITER)
           .map((chunk, index) => (index === 0 ? NODE_LABEL_FOR_COMMON_NODE_DATA : chunk))
           .join(VARIABLE_DELIMITER),
-        id: suggestion.id.replace(nodeId, NODE_ID_FOR_COMMON_NODE_DATA),
+        // Anchored on the `nodes.<id>.` prefix: a bare `replace(nodeId, …)` would hit the prefix for ids like `node` or `s`
+        id: suggestion.id.replace(
+          `${VARIABLE_NODES_KEY}.${nodeId}.`,
+          `${VARIABLE_NODES_KEY}.${NODE_ID_FOR_COMMON_NODE_DATA}.`,
+        ),
       })),
     ]),
   ) as T;

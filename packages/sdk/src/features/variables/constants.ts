@@ -160,3 +160,17 @@ export const VARIABLES_TYPES_TO_EXCLUDE_IN_TEXT: VariableType[] = [...VARIABLES_
 export const VARIABLES_TYPES_NUMERIC: VariableType[] = ['number'];
 
 export const VARIABLES_TYPES_EMPTY: VariableType[] = []; // module scope
+
+/**
+ * Variable types a `VariableDynamic` control of a given `variableType` offers in its picker.
+ * Wider than an exact match on purpose: text can hold any primitive's text form, a date picker reads
+ * the day of a datetime, a time field reads the clock of a datetime. Mirrored by the docs table in form-controls.md.
+ */
+export const COMPATIBLE_VARIABLE_TYPES_BY_PRIMITIVE: Record<VariableTypePrimitive, VariableType[]> = {
+  string: ['string', 'number', 'date', 'datetime', 'time'],
+  number: ['number'],
+  boolean: ['boolean'],
+  date: ['date', 'datetime'],
+  datetime: ['date', 'datetime'],
+  time: ['time', 'datetime'],
+};

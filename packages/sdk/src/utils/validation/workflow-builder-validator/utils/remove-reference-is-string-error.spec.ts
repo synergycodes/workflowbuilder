@@ -114,6 +114,16 @@ describe('removeReferenceIsStringErrors', () => {
       expect(result.errors.map((error) => error.instanceLocation)).toEqual(['#', '#/to', '#/to/1', '#/to', '#/to/2']);
     });
 
+    it('should accept a property name with regex characters', () => {
+      const schema: Schema = {
+        type: 'object',
+        properties: { 'to)': { type: 'array', items: { type: 'string', format: 'email' } } },
+      };
+
+      expect(run(schema, { 'to)': ['{{global.email}}'] })).toEqual({ valid: true, errors: [] });
+      expect(run(schema, { 'to)': ['bad'] }).valid).toBe(false);
+    });
+
     it('should leave arrays of objects untouched', () => {
       const schema: Schema = {
         type: 'object',
@@ -172,11 +182,37 @@ describe('removeReferenceIsStringErrors', () => {
       ]);
     });
 
-    it('should keep format errors in a nested object (only type errors are handled)', () => {
+    it('should remove format errors for variable references in a nested object', () => {
       const result = run(nestedObjectSchema, { config: { email: '{{global.email}}' }, body: 'hi' });
 
+      expect(result).toEqual({ valid: true, errors: [] });
+    });
+
+    it('should keep a missing required nested property next to a variable reference', () => {
+      const schema: Schema = {
+        type: 'object',
+        properties: {
+          config: { type: 'object', properties: { email: { type: 'string', format: 'email' } }, required: ['name'] },
+        },
+      };
+      const result = run(schema, { config: { email: '{{global.email}}' } });
+
       expect(result.valid).toBe(false);
-      expect(result.errors.map((error) => error.keyword)).toEqual(['properties', 'properties', 'format']);
+      expect(result.errors.map((error) => error.keyword)).toContain('required');
+    });
+
+    it('should not read errors of a property whose name starts with the same text', () => {
+      const schema: Schema = {
+        type: 'object',
+        properties: {
+          config: { type: 'object', properties: { count: { type: 'number' } } },
+          configuration: { type: 'object', properties: { count: { type: 'number' } } },
+        },
+      };
+      const result = run(schema, { config: { count: '{{global.count}}' }, configuration: { count: 'abc' } });
+
+      expect(result.valid).toBe(false);
+      expect(result.errors.map((error) => error.instanceLocation)).toContain('#/configuration/count');
     });
 
     it('should keep type error when the object property is null', () => {
