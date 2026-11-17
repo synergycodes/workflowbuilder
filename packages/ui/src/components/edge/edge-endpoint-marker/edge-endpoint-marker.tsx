@@ -10,7 +10,7 @@ export type EdgeEndpointMarkerProps = {
   type: Exclude<EdgeEndpoint, 'none'>;
   /**
    * Style of the path this marker ends, as returned by `useEdgeStyle`. Only its colour, width and transition
-   * are used, so the terminator is never dashed or animated.
+   * are used, so the terminator is never dashed or animated. Without it, the default edge colour and width.
    */
   style?: Pick<CSSProperties, 'stroke' | 'strokeWidth' | 'transition'>;
 };
@@ -28,7 +28,12 @@ const MARKER_BOX = {
  * @category Edge
  */
 export function EdgeEndpointMarker({ id, type, style }: EdgeEndpointMarkerProps) {
-  const shapeStyle = { stroke: style?.stroke, strokeWidth: style?.strokeWidth, transition: style?.transition };
+  // A marker does not inherit the path's CSS, and an SVG stroke defaults to none.
+  const shapeStyle = {
+    stroke: style?.stroke ?? 'var(--wb-public-edge-color)',
+    strokeWidth: style?.strokeWidth ?? 'var(--wb-public-edge-stroke-width)',
+    transition: style?.transition,
+  };
 
   return (
     <marker id={id} markerUnits="userSpaceOnUse" orient="auto" {...MARKER_BOX[type]}>

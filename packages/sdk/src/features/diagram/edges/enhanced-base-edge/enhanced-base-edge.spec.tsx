@@ -83,6 +83,18 @@ describe('EnhancedBaseEdge', () => {
     expect(circle!.querySelector('circle')!.style.stroke).toBe(style.stroke);
   });
 
+  it('draws the terminator in the default edge colour when given no style, like BaseEdge', () => {
+    const { container } = render(
+      <svg>
+        <EnhancedBaseEdge id="edge-1" path="M 0 0 L 10 0" endpoint="arrow" />
+      </svg>,
+    );
+
+    const arrow = container.querySelector<SVGPolylineElement>('marker polyline')!;
+    expect(arrow.style.stroke).toBe('var(--wb-public-edge-color)');
+    expect(arrow.style.strokeWidth).toBe('var(--wb-public-edge-stroke-width)');
+  });
+
   it('sizes the transparent hit area with the public hit width, 12 by default', () => {
     expect(cssRule('../../../../index.css', ':root')).toMatch(/--wb-public-edge-hit-width:\s*12;/);
     const hitArea = cssRule('enhanced-base-edge.module.css', String.raw`\.clickable-transparent-border`);
