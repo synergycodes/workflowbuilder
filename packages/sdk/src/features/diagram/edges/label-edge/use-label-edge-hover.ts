@@ -4,8 +4,6 @@ import { useStore } from '../../../../store/store';
 
 type UseLabelEdgeHoverParams = {
   id: string;
-  /** @deprecated Unused since the hook stopped returning `style`; pass `state` to {@link OptionalEdgePath}. */
-  isSelected?: boolean;
 };
 
 /**
