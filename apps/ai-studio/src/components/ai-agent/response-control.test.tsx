@@ -284,7 +284,7 @@ describe('the Response format in the properties panel', () => {
     const preset = aiAgentNode('preset-1', { outputSchema: refundReviewOutputSchema });
     const text = aiAgentNode('text-1', {});
 
-    // The properties bar renders NodeProperties without a key, so selecting another node reuses the control.
+    // NodeProperties keys its form by node id, so selecting another node mounts a fresh control.
     const select = (node: typeof custom) => act(() => root.render(<NodeProperties node={node} />));
 
     beforeEach(() => {
