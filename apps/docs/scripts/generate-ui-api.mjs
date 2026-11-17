@@ -19,7 +19,7 @@ import { promisify } from 'node:util';
 import { ReflectionKind } from 'typedoc';
 
 import { formatTypeLink, stripTypeLinks } from '../src/ui-api-reference.mjs';
-import { COMPONENTS } from './ui-components.mjs';
+import { COMPONENTS, REFERENCE_EXPORTS } from './ui-components.mjs';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const documentsRoot = path.resolve(here, '..');
@@ -485,6 +485,14 @@ async function main() {
       nativeElement: context.nativeElement ?? null,
       cssVariables: extractCssVariables(component.dir, component.cssSources, warnings, component.slug),
     };
+  }
+
+  for (const name of REFERENCE_EXPORTS) {
+    const node = flattenReflections(project).find(
+      (reflection) => reflection.name === name && reflection.kind === ReflectionKind.Variable,
+    );
+    if (node) linkedTypes.add(node);
+    else warnings.push(`reference export "${name}" not found`);
   }
 
   const linked = collectLinkedTypes(byId, warnings);
