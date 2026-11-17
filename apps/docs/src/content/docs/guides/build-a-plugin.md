@@ -146,6 +146,8 @@ registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
 
 A custom edge template renders `<OptionalEdgePath edgeId={id} source={source} target={target} sourceHandle={sourceHandleId} path={path} state={selected ? 'selected' : 'default'} hovered={hovered} />` to get the same states, or `EdgePath` when it wants no slot.
 
+A second plugin that changes the path shares this slot with the run-state wrapper; [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot) says how the two compose.
+
 ### Example
 
 ```tsx
