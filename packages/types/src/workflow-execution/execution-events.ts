@@ -61,13 +61,18 @@ export type NodeStartedPayload = {
 
 export type NodeCompletedPayload = {
   output: unknown;
-  // The handle the run left the node through; absent means every non-error edge. Runs
-  // recorded before it was emitted carry none.
+  /**
+   * The handle the run left the node through, present when the executor returned a non-empty one.
+   * Missing means every non-error edge, or a run recorded before this field existed.
+   */
   nextPort?: string;
 };
 
 export type NodeFailedPayload = ExecutionErrorPayload & {
-  // 'errorRoute' when the node's errorPolicy routed the failure; absent otherwise.
+  /**
+   * `'errorRoute'` when the node's `errorPolicy` routed the failure. Missing means no error edge
+   * was taken, or a run recorded before this field existed, where a routed failure carries none.
+   */
   nextPort?: string;
 };
 
