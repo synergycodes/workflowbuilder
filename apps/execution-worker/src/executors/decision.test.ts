@@ -93,6 +93,24 @@ describe('executeDecision', () => {
     expect(executeDecision(node, context()).nextPort).toBe('same');
   });
 
+  it('compares text that only starts like a clock as plain text', () => {
+    const node = decisionNode([
+      {
+        sourceHandle: 'equal',
+        conditions: [{ x: '10:30 standup', y: '10:30 standup', comparisonOperator: 'isEqual' }],
+      },
+    ]);
+    const other = decisionNode([
+      {
+        sourceHandle: 'different',
+        conditions: [{ x: '10:30 standup', y: '10:30 retro', comparisonOperator: 'isNotEqual' }],
+      },
+    ]);
+
+    expect(executeDecision(node, context()).nextPort).toBe('equal');
+    expect(executeDecision(other, context()).nextPort).toBe('different');
+  });
+
   it('orders a bare time against the clock of a datetime, never against a bare date', () => {
     const node = decisionNode([
       {

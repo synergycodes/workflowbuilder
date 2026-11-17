@@ -220,6 +220,7 @@ export default defineConfig({
             { label: 'Plugins', collapsed: true, autogenerate: { directory: 'api/Plugins' } },
             { label: 'Components', collapsed: true, autogenerate: { directory: 'api/Components' } },
             { label: 'Hooks', collapsed: true, autogenerate: { directory: 'api/Hooks' } },
+            { label: 'Variables', collapsed: true, autogenerate: { directory: 'api/Variables' } },
             { label: 'Store', collapsed: true, autogenerate: { directory: 'api/Store' } },
             { label: 'Listeners', collapsed: true, autogenerate: { directory: 'api/Listeners' } },
             { label: 'Forms', collapsed: true, autogenerate: { directory: 'api/Forms' } },

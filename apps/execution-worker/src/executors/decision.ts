@@ -50,7 +50,8 @@ function getSecondsOfDay(value: string): number | undefined {
 
 /**
  * A bare `HH:mm[:ss]` has no day, so it compares by clock: against another clock or the one inside a datetime.
- * `09:07` and `09:07:00+00:00` (the editor's stored shape) are the same clock. Undefined when neither side is a clock.
+ * `09:07` and `09:07:00+00:00` (the editor's stored shape) are the same clock. Undefined when neither side is a
+ * clock, or when a side only starts like one (`10:30 standup`), so the caller compares it as it would any text.
  */
 function compareClocks(left: string, right: string, compare: (a: number, b: number) => boolean): boolean | undefined {
   const leftTrimmed = left.trim();
@@ -63,7 +64,11 @@ function compareClocks(left: string, right: string, compare: (a: number, b: numb
   const leftSeconds = getSecondsOfDay(leftTrimmed);
   const rightSeconds = getSecondsOfDay(rightTrimmed);
 
-  return leftSeconds !== undefined && rightSeconds !== undefined && compare(leftSeconds, rightSeconds);
+  if (leftSeconds === undefined || rightSeconds === undefined) {
+    return undefined;
+  }
+
+  return compare(leftSeconds, rightSeconds);
 }
 
 function compareInstants(left: string, right: string, compare: (a: number, b: number) => boolean): boolean {
