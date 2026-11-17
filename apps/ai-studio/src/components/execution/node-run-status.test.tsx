@@ -83,6 +83,14 @@ describe('node run status decorators', () => {
     expect(query('[aria-hidden="true"][data-tone="info"] [data-spinner="running"]')).not.toBeNull();
   });
 
+  it('shows "No signal" with a slow spinner on a running node once the stream is lost', () => {
+    act(() => useExecutionStore.setState({ status: 'disconnected', nodeStates: { 'node-1': { status: 'running' } } }));
+
+    expect(badge()?.textContent).toBe('No signal');
+    expect(query('[data-node-run-overlay]')?.getAttribute('data-tone')).toBe('warning');
+    expect(query('[data-spinner="slow"]')).not.toBeNull();
+  });
+
   it('pulses the halo of a node waiting for a human', () => {
     setStatus('waiting');
 
