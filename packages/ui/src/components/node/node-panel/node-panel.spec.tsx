@@ -142,4 +142,15 @@ describe('node-panel.module.css run overlay rule', () => {
     expect(declarations(overlay!)).toMatchObject({ position: 'relative' });
     expect(declarations(handle!)).toMatchObject({ 'z-index': '1', 'box-sizing': 'content-box' });
   });
+
+  it('lets clicks through the Overlay to the node and its handles', () => {
+    let pointerEvents: string | undefined;
+    stylesheet.walkRules('.overlay', (rule) => {
+      rule.walkDecls('pointer-events', (declaration) => {
+        pointerEvents = declaration.value;
+      });
+    });
+
+    expect(pointerEvents).toBe('none');
+  });
 });
