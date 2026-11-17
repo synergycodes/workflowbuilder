@@ -1,6 +1,7 @@
 import { act, render } from '@testing-library/react';
+import { type Node, ReactFlow } from '@xyflow/react';
 import type { ReactNode } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from '../../../hooks/use-workflow-builder-actions';
 import { type WorkflowBuilderState, useWorkflowBuilderState } from '../../../hooks/use-workflow-builder-state';
@@ -16,6 +17,15 @@ import { EditorHeaderVersion } from './editor-header-version';
 vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
   trackFutureChange: vi.fn(),
 }));
+
+function saveAsPdf() {}
+
+function NodeWithSupply() {
+  return <EditorHeaderSaveAsPdf onSaveAsPdf={saveAsPdf} />;
+}
+
+const NODE_TYPES_WITH_SUPPLY = { withSupply: NodeWithSupply };
+const NODES_WITH_SUPPLY: Node[] = [{ id: 'n1', type: 'withSupply', position: { x: 0, y: 0 }, data: {} }];
 
 function renderAndProbe(supplies: ReactNode, via: SupplyRoute) {
   const seen: { state: WorkflowBuilderState | null; actions: WorkflowBuilderActions | null } = {
@@ -159,6 +169,28 @@ describe('editor header supply components', () => {
     view.rerender(<EditorHeaderVersion number={2} isDraft={false} />);
 
     expect(view.registry.getHeaderSupply('version')).toEqual({ number: 2, isDraft: false });
+  });
+
+  it('warns when rendered inside a canvas node', () => {
+    // React Flow observes the size of its pane as it mounts; jsdom has no ResizeObserver.
+    vi.stubGlobal(
+      'ResizeObserver',
+      class {
+        observe() {}
+        unobserve() {}
+        disconnect() {}
+      },
+    );
+    onTestFinished(() => {
+      vi.unstubAllGlobals();
+    });
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    renderInRoot(<ReactFlow nodes={NODES_WITH_SUPPLY} nodeTypes={NODE_TYPES_WITH_SUPPLY} />);
+
+    const supplyWarnings = warn.mock.calls.filter(([message]) => String(message).includes('<EditorHeaderSaveAsPdf>'));
+    expect(supplyWarnings).toHaveLength(1);
+    expect(String(supplyWarnings[0][0])).toContain('canvas node');
   });
 
   it('warns outside <WorkflowBuilder.Root>', () => {

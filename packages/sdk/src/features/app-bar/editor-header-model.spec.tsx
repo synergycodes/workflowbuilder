@@ -1,6 +1,6 @@
 import { act, fireEvent, screen } from '@testing-library/react';
 import { Button } from '@workflowbuilder/ui';
-import type { ReactNode } from 'react';
+import { type ReactNode, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { useWorkflowBuilderActions } from '../../hooks/use-workflow-builder-actions';
@@ -139,15 +139,38 @@ describe.each(SUPPLY_ROUTES)('editor header with supplies from the %s', (via) =>
     expect(supplied.onSaveAsPdf).toHaveBeenCalledOnce();
   });
 
-  it.each([
-    ['cleanUp', () => screen.queryByRole('button', { name: CLEAN_UP })],
-    ['version', () => screen.queryByText('Draft v7')],
-    ['publish', () => screen.queryByRole('button', { name: 'Publish v7' })],
-  ] as const)('%s:false hides only that control', (key, control) => {
+  it.each(['cleanUp', 'version', 'publish', 'saveAsPdf'] as const)('%s:false hides only that control', (key) => {
     renderHeader({ via, supplies: <Supplies {...handlers()} />, builtInControls: { [key]: false } });
 
-    expect(control()).toBeNull();
-    expect(screen.getByRole('button', { name: 'Project actions' })).toBeTruthy();
+    const shown = {
+      cleanUp: screen.queryByRole('button', { name: CLEAN_UP }) !== null,
+      version: screen.queryByText('Draft v7') !== null,
+      publish: screen.queryByRole('button', { name: 'Publish v7' }) !== null,
+      saveAsPdf: workflowMenuLabels().includes(SAVE_AS_PDF),
+    };
+
+    expect(shown).toEqual({ cleanUp: true, version: true, publish: true, saveAsPdf: true, [key]: false });
+  });
+
+  it('follows a supply that changes after mount, while nothing above it renders again', () => {
+    function VersionWithPublishLink() {
+      const [isDraft, setIsDraft] = useState(true);
+      return (
+        <>
+          <EditorHeaderVersion number={7} isDraft={isDraft} />
+          <button type="button" onClick={() => setIsDraft(false)}>
+            Mark published
+          </button>
+        </>
+      );
+    }
+    renderHeader({ via, supplies: <VersionWithPublishLink /> });
+    expect(screen.getByText('Draft v7')).toBeTruthy();
+
+    fireEvent.click(screen.getByRole('button', { name: 'Mark published' }));
+
+    expect(screen.queryByText('Draft v7')).toBeNull();
+    expect(screen.getByText('v7')).toBeTruthy();
   });
 
   it('hidden controls keep their actions working', async () => {
@@ -243,17 +266,48 @@ function RebuiltControls() {
   );
 }
 
-type Scenario = { name: string; isDraft?: boolean; setUp?: () => void; pendingCleanUp?: boolean };
+type Observed = {
+  cleanUpDisabled: boolean;
+  cleanUpBusy: string | null;
+  publishDisabled: boolean;
+  cleanUpCalls: unknown[][];
+  publishCalls: number;
+};
 
+type Scenario = {
+  name: string;
+  isDraft?: boolean;
+  setUp?: () => void;
+  pendingCleanUp?: boolean;
+  expected: Observed;
+};
+
+const RUNS_BOTH: Observed = {
+  cleanUpDisabled: false,
+  cleanUpBusy: 'false',
+  publishDisabled: false,
+  cleanUpCalls: [['RIGHT']],
+  publishCalls: 1,
+};
+
+// Publish is not guarded by read-only mode: it does not change the diagram.
 const SCENARIOS: Scenario[] = [
-  { name: 'an editable draft' },
-  { name: 'a published version', isDraft: false },
-  { name: 'an empty canvas', setUp: () => useStore.setState({ nodes: [] }) },
-  { name: 'read-only mode', setUp: () => useStore.setState({ isReadOnly: true }) },
-  { name: 'a pending clean-up', pendingCleanUp: true },
+  { name: 'an editable draft', expected: RUNS_BOTH },
+  { name: 'a published version', isDraft: false, expected: { ...RUNS_BOTH, publishDisabled: true, publishCalls: 0 } },
+  {
+    name: 'an empty canvas',
+    setUp: () => useStore.setState({ nodes: [] }),
+    expected: { ...RUNS_BOTH, cleanUpDisabled: true, cleanUpCalls: [] },
+  },
+  {
+    name: 'read-only mode',
+    setUp: () => useStore.setState({ isReadOnly: true }),
+    expected: { ...RUNS_BOTH, cleanUpDisabled: true, cleanUpCalls: [] },
+  },
+  { name: 'a pending clean-up', pendingCleanUp: true, expected: { ...RUNS_BOTH, cleanUpBusy: 'true' } },
 ];
 
-async function observe(scenario: Scenario, rebuilt: boolean) {
+async function observe(scenario: Scenario, rebuilt: boolean): Promise<Observed> {
   resetWorkflowStore();
   useStore.setState({ nodes: [{ id: 'a', position: { x: 0, y: 0 }, data: {} }] as never });
   scenario.setUp?.();
@@ -289,10 +343,11 @@ async function observe(scenario: Scenario, rebuilt: boolean) {
 }
 
 describe('a host rebuilds Clean up and Publish from actions and state', () => {
-  it.each(SCENARIOS)('with $name, the rebuilt controls behave like the built-in ones', async (scenario) => {
+  it.each(SCENARIOS)('with $name, the rebuilt and the built-in controls both behave as expected', async (scenario) => {
     const builtIn = await observe(scenario, false);
     const rebuilt = await observe(scenario, true);
 
-    expect(rebuilt).toEqual(builtIn);
+    expect(builtIn).toEqual(scenario.expected);
+    expect(rebuilt).toEqual(scenario.expected);
   });
 });
