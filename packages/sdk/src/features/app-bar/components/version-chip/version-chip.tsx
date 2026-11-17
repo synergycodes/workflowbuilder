@@ -3,15 +3,14 @@ import { useTranslation } from 'react-i18next';
 
 import styles from '../../app-bar.module.css';
 
-import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
-import { useHeaderSupply } from '../../../ui-extensions/ui-extension-context';
+import { useHeaderSupply, useIsHeaderControlShown } from '../../../ui-extensions/ui-extension-context';
 
 export function VersionChip() {
   const { t } = useTranslation();
-  const isVisible = useIsBuiltInControlVisible('version');
+  const isShown = useIsHeaderControlShown('version');
   const version = useHeaderSupply('version');
 
-  if (!isVisible || !version) {
+  if (!isShown || !version) {
     return null;
   }
 

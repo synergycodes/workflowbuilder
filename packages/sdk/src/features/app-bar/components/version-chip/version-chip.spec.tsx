@@ -12,13 +12,10 @@ vi.mock('react-i18next', () => ({
 }));
 
 let version: { number: number; isDraft: boolean } | undefined;
+let isVisible = true;
 vi.mock('../../../ui-extensions/ui-extension-context', () => ({
   useHeaderSupply: () => version,
-}));
-
-let isVisible = true;
-vi.mock('../../../ui-extensions/built-in-controls-context', () => ({
-  useIsBuiltInControlVisible: () => isVisible,
+  useIsHeaderControlShown: () => isVisible && version !== undefined,
 }));
 
 const { VersionChip } = await import('./version-chip');
