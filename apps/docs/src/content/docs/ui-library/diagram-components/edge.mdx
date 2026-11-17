@@ -1,6 +1,6 @@
 ---
 title: Edge
-description: Edge label rendering and edge styling for the diagram canvas.
+description: Edge label rendering, edge styling and edge terminators for the diagram canvas.
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
@@ -8,9 +8,10 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { EdgeExample } from '../../../../components/ui-examples/edge';
 
 The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
-label primitive designed to sit on an edge, while the `useEdgeStyle` hook
-computes the stroke styles for the edge path itself. Both follow the styling
-conventions prepared for edges, so a custom edge type matches the built-in ones.
+label primitive designed to sit on an edge, the `useEdgeStyle` hook computes
+the stroke styles for the edge path itself, and `EdgeEndpointMarker` draws the
+terminator at its target. All three follow the styling conventions prepared for
+edges, so a custom edge type matches the built-in ones.
 
 <EdgeExample client:visible />
 
@@ -41,7 +42,8 @@ package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType`,
 `arrow` that shows the flow direction, or a `circle` for a neutral attachment
 point. It is an SVG `<marker>` that you render next to the path, one per edge,
 with the same `style` as the path. It then has the colour of the line in every
-state, turns with the end of the path and is never dashed. The SDK's `EdgePath`
+state, turns with the end of the path and is never dashed, so on a dashed line
+it can sit up to 5 px from the last dash. The SDK's `EdgePath`
 and `EnhancedBaseEdge` render it for you through their `endpoint` prop.
 
 ## Usage
@@ -154,6 +156,9 @@ function ArrowEdge({ id, selected, sourceX, sourceY, targetX, targetY, sourcePos
 }
 ```
 
+Two React roots hydrated from server HTML on one page need different
+`identifierPrefix` values, or their `useId` marker ids can collide.
+
 ## EdgeLabel props
 
 `EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
@@ -170,6 +175,10 @@ the CSS properties for its SVG path.
 
 Returns `{ stroke, strokeWidth, transition }`, plus `strokeDasharray` and
 `animation` when they apply, ready to spread onto a path's `style`.
+
+## EdgeEndpointMarker props
+
+<PropsTable slug="edge-endpoint-marker" />
 
 ## CSS variables
 
