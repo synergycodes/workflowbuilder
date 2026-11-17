@@ -62,6 +62,17 @@ describe('get_doc', () => {
     expect(output.sections).toEqual([{ id: 'readme/sdk#worker-zebrafruit-setup', title: 'Worker zebrafruit setup' }]);
   });
 
+  it('links a README section to the README on GitHub', async () => {
+    const readmes = await buildFixtureCorpus({
+      packageDocs: [{ name: 'sdk', root: path.join(FIXTURE_PACKAGES_ROOT, 'sdk'), title: '@workflowbuilder/sdk' }],
+    });
+    const readmeHandler = createGetDocHandler(readmes.docs);
+    const page = (await readmeHandler({ id: 'readme/sdk' })) as Output;
+    const section = (await readmeHandler({ id: 'readme/sdk#install' })) as Output;
+    expect(page.url).toMatch(/^https:\/\/github\.com\//);
+    expect(section.url).toBe(`${page.url}#install`);
+  });
+
   it('accepts links, urls, extensions and chunk ids', async () => {
     for (const id of [
       '/guides/basic/',
