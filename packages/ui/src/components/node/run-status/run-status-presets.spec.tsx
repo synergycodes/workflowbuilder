@@ -15,7 +15,9 @@ describe('runStatusPresets', () => {
     }
   });
 
-  it.each(presets)('%s has a sentence-case label', (_, { badge }) => {
-    expect(badge.label).toBe(badge.label.charAt(0).toUpperCase() + badge.label.slice(1).toLowerCase());
+  it('writes every label in sentence case', () => {
+    const labels = presets.map(([, { badge }]) => badge.label);
+
+    expect(labels).toEqual(labels.map((label) => label.charAt(0).toUpperCase() + label.slice(1).toLowerCase()));
   });
 });
