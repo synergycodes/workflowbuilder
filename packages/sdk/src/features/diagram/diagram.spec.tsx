@@ -1,9 +1,11 @@
 // Pins the `reactFlowProps` precedence contract: a consumer can override SDK
-// *defaults* but never the props the SDK *owns* (spread order in `diagram.tsx`).
-// Renders with a `ReactFlow` capture stub and inspects the props it receives.
+// *defaults* but never the props the SDK *owns* (spread order in `diagram.tsx`),
+// and the canvas `Background` colours. Renders with a `ReactFlow` capture stub.
 // The rendering-stack deps below are stubbed (CSS side effects, irrelevant here).
 import { render } from '@testing-library/react';
 import { Background, ReactFlow } from '@xyflow/react';
+import { readFileSync } from 'node:fs';
+import path from 'node:path';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setIsValidConnection, setReactFlowProps } from '../../data/react-flow-config';
@@ -154,5 +156,12 @@ describe('DiagramContainer — canvas background', () => {
       color: 'var(--wb-public-canvas-grid-color)',
       bgColor: 'var(--wb-public-background-color)',
     });
+  });
+
+  // Vitest stubs CSS, so the default is read from disk.
+  it('defaults the grid colour to the design system canvas dots', () => {
+    const css = readFileSync(path.join(import.meta.dirname, '../../index.css'), 'utf8');
+
+    expect(css).toMatch(/:root\s*\{[^}]*--wb-public-canvas-grid-color:\s*var\(--wb-ds-ui-bg-canvas-dots\);/);
   });
 });
