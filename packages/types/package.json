@@ -5,13 +5,9 @@
   "type": "module",
   "scripts": {
     "typecheck": "tsc --noEmit",
-    "lint": "eslint",
-    "test": "vitest run"
+    "lint": "eslint"
   },
   "exports": {
     "./*": "./src/*.ts"
-  },
-  "devDependencies": {
-    "vitest": "^3.0.4"
   }
 }

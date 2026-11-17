@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { RESERVED_ERROR_HANDLE, isPortRouted } from './edge-routing';
+import { RESERVED_ERROR_HANDLE, isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
 
 describe('isPortRouted', () => {
   it.each<[string, string | undefined, string | null | undefined, boolean]>([
