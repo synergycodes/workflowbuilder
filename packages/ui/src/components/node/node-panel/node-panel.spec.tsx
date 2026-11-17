@@ -102,7 +102,7 @@ describe('node-panel.module.css run overlay rule', () => {
   const file = path.join(import.meta.dirname, 'node-panel.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
 
-  it('swaps the selected focus ring for the run status variable under a [data-node-run-overlay] element', () => {
+  it('reads the run status variable on a selected node under a [data-node-run-overlay] element', () => {
     const rules: Rule[] = [];
     stylesheet.walkRules((rule) => {
       if (rule.selector.includes(':has(> .overlay [data-node-run-overlay])')) rules.push(rule);
@@ -115,12 +115,14 @@ describe('node-panel.module.css run overlay rule', () => {
     });
     expect(boxShadow).toMatch(/var\(--wb-public-node-box-shadow-selected-with-run-status\)$/);
     expect(rules[0]!.selector).toContain('.selected');
+  });
 
+  it('keeps the selected focus ring under a run status by default', () => {
     let fallback = '';
     stylesheet.walkDecls('--wb-public-node-box-shadow-selected-with-run-status', (declaration) => {
       fallback = declaration.value;
     });
-    expect(fallback).toMatch(/^0 0 0 0 transparent/);
+    expect(fallback).toBe('var(--wb-public-node-box-shadow-selected)');
   });
 
   it('positions the container and lifts its handles only while an Overlay renders', () => {

@@ -58,7 +58,7 @@ export function NodeRunRingExample() {
     { tone: 'info', halo: 'static', caption: "info, halo 'static'" },
     { tone: 'info', halo: 'heartbeat', caption: "info, halo 'heartbeat'" },
     { tone: 'human', halo: 'waiting', caption: "human, halo 'waiting'" },
-    { tone: 'info', halo: 'static', selected: true, caption: 'selected, focus ring hidden' },
+    { tone: 'info', halo: 'static', selected: true, caption: 'selected' },
   ];
 
   return (
