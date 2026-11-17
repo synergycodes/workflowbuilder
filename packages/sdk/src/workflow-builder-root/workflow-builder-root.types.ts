@@ -313,7 +313,7 @@ export type WorkflowBuilderRootProps = PropsWithChildren<{
   reactFlowProps?: WorkflowBuilderReactFlowProps;
   /**
    * Hides built-in controls of the editor header, the palette and the properties panel; the keys are
-   * listed in {@link BuiltInControls}. Hiding `workflowName` (the title) also hides renaming. Every key defaults
+   * listed in {@link BuiltInControl}. Hiding `workflowName` (the title) also hides renaming. Every key defaults
    * to `true` (shown); `false` hides the control. Hiding a control never blocks what it does: the
    * action stays reachable programmatically (e.g. `useWorkflowBuilderActions`), and its keyboard
    * shortcut (if any - e.g. the Delete key) keeps working. The palette starts collapsed, so hiding

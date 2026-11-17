@@ -171,7 +171,7 @@ Full guide: [Build a plugin](https://www.workflowbuilder.io/docs/guides/build-a-
 
 ## The built-in interface: state, actions, and your own UI
 
-Your own UI in the editor header, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with four tools that work the same way everywhere. (The `PropertiesPanel` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`.)
+Your own UI in the editor header, the palette and the properties panel does not go through `registerComponentDecorator`; it uses a separate, simpler model, with five tools that work the same way everywhere. (The `PropertiesPanel` slot still takes a props decorator, for the panel's `tabs`, labels and `onDeleteClick`.)
 
 | You want to…                        | Use                                                                                                                                                |
 | ----------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -179,6 +179,7 @@ Your own UI in the editor header, the palette and the properties panel does not 
 | run a command from your own control | an action from `useWorkflowBuilderActions()`, e.g. `openTemplates()`                                                                               |
 | hide a built-in control             | a key in `builtInControls` on `<WorkflowBuilder.Root>`                                                                                             |
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem`                                                                       |
+| supply what only your app can do    | an `EditorHeader…` supply component: Clean up, Save as PDF, version, Publish                                                                       |
 
 A plugin has no JSX of its own, so it still reaches this model indirectly: it mounts one component through the `OptionalAppChildren` slot shown above, and that component uses these components inside it. Six `…Content` components cover the editor header, palette and properties-panel areas (`EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`); two `…MenuItem` components add an item to a built-in menu (`WorkflowMenuItem`, `PropertiesPanelMenuItem`).
 

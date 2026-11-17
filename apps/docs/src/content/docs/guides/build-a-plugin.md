@@ -138,7 +138,7 @@ Your own UI in the editor header, the palette and the properties panel does **no
 | add your own UI                     | a component rendered under `<WorkflowBuilder.Root>`: `…Content`, `…MenuItem` |
 | supply what only your app can do    | an `EditorHeader…` supply component: Clean up, Save as PDF, version, Publish |
 
-Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
+Six `…Content` components cover the editor header, palette and properties-panel areas: `EditorHeaderToolsContent`, `EditorHeaderControlsContent`, `PaletteHeaderContent`, `PaletteFooterContent`, `PropertiesPanelHeaderContent`, `PropertiesPanelFooterContent`. Two `…MenuItem` components add an item to a built-in menu behind a separator: `WorkflowMenuItem` (the menu next to the workflow name, after Export, Import, Save as PDF and Settings) and `PropertiesPanelMenuItem`. Render any of them anywhere under `<WorkflowBuilder.Root>`: in the app tree, in a plugin component, or inside a node's properties form.
 
 ### Hide a control and rebuild it in your own order
 
