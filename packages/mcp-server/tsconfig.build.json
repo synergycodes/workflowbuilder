@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "src",
+    "outDir": "dist",
+    "noEmit": false,
+    "sourceMap": false
+  },
+  // Only what the server imports is emitted. The MDX loaders run at build time through tsx and stay out of dist.
+  "include": ["src/index.ts"]
+}

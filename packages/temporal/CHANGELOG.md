@@ -1,5 +1,13 @@
 # Changelog
 
+## [0.3.1] - 2026-11-16
+
+The package ships the two guides its README links to. Event Histories recorded by 0.1.0, 0.2.0 and 0.3.0 still replay.
+
+### Added
+
+- `activity-profiles.md` and `event-history-labels.md` in the package: the guides the README links to for activity timeouts, retries and node labels in Event History.
+
 ## [0.3.0] - 2026-10-30
 
 A run's status turns `running` the moment it starts, and `TemporalWorkflowEngine` recovers from a failed connection. Event Histories recorded by 0.1.0 and 0.2.0 still replay.
@@ -47,6 +55,7 @@ First release. Run Workflow Builder diagrams as durable Temporal Workflow Execut
 - `PermanentNodeExecutionError` and `TransientNodeExecutionError`: thrown from a node executor, they decide whether a failed node is retried or fails the run at once.
 - Node labels appear as activity summaries in Event History, so a run reads in the Temporal UI the way the diagram reads in the editor.
 
+[0.3.1]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.3.1
 [0.3.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.3.0
 [0.2.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.2.0
 [0.1.0]: https://www.npmjs.com/package/@workflowbuilder/temporal/v/0.1.0

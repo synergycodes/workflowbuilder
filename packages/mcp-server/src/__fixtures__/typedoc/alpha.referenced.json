@@ -1,0 +1,728 @@
+{
+  "schemaVersion": "2.0",
+  "id": 0,
+  "name": "@workflow-builder/mcp-server",
+  "variant": "project",
+  "kind": 1,
+  "flags": {},
+  "children": [
+    {
+      "id": 1,
+      "name": "HiddenOptions",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Options the package declares without exporting them from the entry point."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 2,
+          "name": "name",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Option name."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/hidden.ts",
+              "line": 4,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/hidden.ts#L4"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        },
+        {
+          "id": 3,
+          "name": "size",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "sources": [
+            {
+              "fileName": "alpha/hidden.ts",
+              "line": 5,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/hidden.ts#L5"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [2, 3]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/hidden.ts",
+          "line": 2,
+          "character": 17,
+          "url": "https://example.test/blob/fixture/src/alpha/hidden.ts#L2"
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "title": "Interfaces",
+      "children": [1]
+    }
+  ],
+  "packageName": "@workflow-builder/mcp-server",
+  "readme": [
+    {
+      "kind": "text",
+      "text": "# @workflow-builder/mcp-server\n\n"
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs`"
+    },
+    {
+      "kind": "text",
+      "text": ": a stdio MCP server that serves the hand-written Workflow Builder docs ("
+    },
+    {
+      "kind": "code",
+      "text": "`apps/docs/src/content/docs`"
+    },
+    {
+      "kind": "text",
+      "text": "), the READMEs of the published packages and the public TypeScript API of "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/ui`"
+    },
+    {
+      "kind": "text",
+      "text": " and "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ". Private, not published.\n\n## Tools\n\n| Tool             | Use                                                                                                 |\n| ---------------- | --------------------------------------------------------------------------------------------------- |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`search_docs`"
+    },
+    {
+      "kind": "text",
+      "text": "    | Keyword search over documentation sections. Results carry an id, section title, URL and markdown.   |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`get_doc`"
+    },
+    {
+      "kind": "text",
+      "text": "        | Read a page or one section by id, or by an internal doc link such as "
+    },
+    {
+      "kind": "code",
+      "text": "`/get-started/theming/`"
+    },
+    {
+      "kind": "text",
+      "text": ".       |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`search_symbols`"
+    },
+    {
+      "kind": "text",
+      "text": " | Search exports and their members. Filters: "
+    },
+    {
+      "kind": "code",
+      "text": "`package`"
+    },
+    {
+      "kind": "text",
+      "text": " ("
+    },
+    {
+      "kind": "code",
+      "text": "`sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`ui`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ") and "
+    },
+    {
+      "kind": "code",
+      "text": "`kind`"
+    },
+    {
+      "kind": "text",
+      "text": ".          |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`get_symbol`"
+    },
+    {
+      "kind": "text",
+      "text": "     | Signature, JSDoc, members and a ready import statement for "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:Name`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:Name.member`"
+    },
+    {
+      "kind": "text",
+      "text": " or a name. |\n\nResponses are compact JSON in a single text item. Errors use "
+    },
+    {
+      "kind": "code",
+      "text": "`isError: true`"
+    },
+    {
+      "kind": "text",
+      "text": " with "
+    },
+    {
+      "kind": "code",
+      "text": "`{\"error\": \"...\"}`"
+    },
+    {
+      "kind": "text",
+      "text": ".\n\n## Build and run\n\n"
+    },
+    {
+      "kind": "code",
+      "text": "```sh\npnpm --filter mcp-server build   # tsc + TypeDoc for the three packages, about 30 s\npnpm --filter mcp-server test    # unit tests, fixtures only, no build needed\npnpm --filter mcp-server smoke   # real corpus, needs a build\n```"
+    },
+    {
+      "kind": "text",
+      "text": "\n\nThe repo-root "
+    },
+    {
+      "kind": "code",
+      "text": "`.mcp.json`"
+    },
+    {
+      "kind": "text",
+      "text": " registers the server as "
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs`"
+    },
+    {
+      "kind": "text",
+      "text": " ("
+    },
+    {
+      "kind": "code",
+      "text": "`node packages/mcp-server/dist/index.js`"
+    },
+    {
+      "kind": "text",
+      "text": "). Claude Code loads MCP servers at session start, so build first and restart the session after rebuilding.\n\nDocs are read from "
+    },
+    {
+      "kind": "code",
+      "text": "`apps/docs/src/content/docs`"
+    },
+    {
+      "kind": "text",
+      "text": " and indexed in memory every time the server starts, so they are always current. Symbols come from "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data/typedoc/*.json`"
+    },
+    {
+      "kind": "text",
+      "text": ", so they are as fresh as the last "
+    },
+    {
+      "kind": "code",
+      "text": "`build`"
+    },
+    {
+      "kind": "text",
+      "text": " (or "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server typedoc`"
+    },
+    {
+      "kind": "text",
+      "text": "). The server logs one line to stderr when it is ready.\n\n## Layout\n\n| Path                | Contents                                                                                                                   |\n| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/`"
+    },
+    {
+      "kind": "text",
+      "text": "       | The tunable surface: ranking, synonyms, chunking, response budgets. Plain data, no logic.                                  |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/docs/`"
+    },
+    {
+      "kind": "text",
+      "text": "         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                           |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/symbols/`"
+    },
+    {
+      "kind": "text",
+      "text": "      | TypeDoc extraction, the type printer and the symbol search engine.                                                         |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/corpus/`"
+    },
+    {
+      "kind": "text",
+      "text": "       | "
+    },
+    {
+      "kind": "code",
+      "text": "`buildCorpus()`"
+    },
+    {
+      "kind": "text",
+      "text": ": the one entry point shared by the server and the smoke test.                                    |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/tools/`"
+    },
+    {
+      "kind": "text",
+      "text": "        | One folder per tool: "
+    },
+    {
+      "kind": "code",
+      "text": "`tool.config.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " (schema and description), validator, handler.                                        |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/__fixtures__/`"
+    },
+    {
+      "kind": "text",
+      "text": " | Small checked-in docs and TypeDoc JSON used by the tests. "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server fixtures:update`"
+    },
+    {
+      "kind": "text",
+      "text": " regenerates the JSON. |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`scripts/`"
+    },
+    {
+      "kind": "text",
+      "text": "          | "
+    },
+    {
+      "kind": "code",
+      "text": "`generate-typedoc.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " (build step), "
+    },
+    {
+      "kind": "code",
+      "text": "`smoke.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`update-fixtures.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ".                                                      |\n\n## Notes\n\n- Ids: pages are "
+    },
+    {
+      "kind": "code",
+      "text": "`guides/configuring-the-editor`"
+    },
+    {
+      "kind": "text",
+      "text": ", sections "
+    },
+    {
+      "kind": "code",
+      "text": "`guides/configuring-the-editor#props-reference`"
+    },
+    {
+      "kind": "text",
+      "text": ", symbols "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:WorkflowBuilderRootProps`"
+    },
+    {
+      "kind": "text",
+      "text": " and members "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:WorkflowBuilderRootProps.nodeTypes`"
+    },
+    {
+      "kind": "text",
+      "text": ".\n- Package READMEs are docs pages too: "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/ui`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ", and any other "
+    },
+    {
+      "kind": "code",
+      "text": "`.md`"
+    },
+    {
+      "kind": "text",
+      "text": " a package lists in "
+    },
+    {
+      "kind": "code",
+      "text": "`package.json`"
+    },
+    {
+      "kind": "text",
+      "text": " "
+    },
+    {
+      "kind": "code",
+      "text": "`files`"
+    },
+    {
+      "kind": "text",
+      "text": " as "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/<pkg>/<name>`"
+    },
+    {
+      "kind": "text",
+      "text": " (today "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/ui/css-layers`"
+    },
+    {
+      "kind": "text",
+      "text": "; CHANGELOGs are left out). Sections use the same anchors as site pages, urls point at the file on GitHub and relative links are made absolute. They sit in a separate search index, and "
+    },
+    {
+      "kind": "code",
+      "text": "`readmeWeights`"
+    },
+    {
+      "kind": "text",
+      "text": " in "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/ranking.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " scales their hits: the sdk and ui READMEs restate site pages, so they rank far below them, while the temporal README is the only place that documents installing the plugin and wiring a worker.\n- Components in "
+    },
+    {
+      "kind": "code",
+      "text": "`.mdx`"
+    },
+    {
+      "kind": "text",
+      "text": " are reduced to text by the rules in "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/mdx-components.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ". Demo node schemas are not inlined; the page gets a pointer to the demo folder instead.\n- Temporal exports have no JSDoc, so they rank on name and signature.\n- A docs page that cannot be loaded (bad frontmatter, unclosed JSX, unknown "
+    },
+    {
+      "kind": "code",
+      "text": "`PropsTable`"
+    },
+    {
+      "kind": "text",
+      "text": " slug, missing partial, two files with one id) is skipped with one "
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs: skipped <file>: <reason>`"
+    },
+    {
+      "kind": "text",
+      "text": " line on stderr; the server keeps serving everything else. TypeDoc files that are empty or disagree with "
+    },
+    {
+      "kind": "code",
+      "text": "`manifest.json`"
+    },
+    {
+      "kind": "text",
+      "text": " also warn.\n- "
+    },
+    {
+      "kind": "code",
+      "text": "`build`"
+    },
+    {
+      "kind": "text",
+      "text": " runs TypeDoc twice per package: once for the entry points, and once over the files that declare types the package references without exporting ("
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data/typedoc/<package>.referenced.json`"
+    },
+    {
+      "kind": "text",
+      "text": "). "
+    },
+    {
+      "kind": "code",
+      "text": "`get_symbol`"
+    },
+    {
+      "kind": "text",
+      "text": " expands aliases of those types and serves them by name with "
+    },
+    {
+      "kind": "code",
+      "text": "`exported: false`"
+    },
+    {
+      "kind": "text",
+      "text": "; they are not searchable.\n- "
+    },
+    {
+      "kind": "code",
+      "text": "`<CssVariablesTable>`"
+    },
+    {
+      "kind": "text",
+      "text": " is rendered as one line of "
+    },
+    {
+      "kind": "code",
+      "text": "`--wb-public-*`"
+    },
+    {
+      "kind": "text",
+      "text": " names read from "
+    },
+    {
+      "kind": "code",
+      "text": "`packages/ui/src/components/<dir>/**/*.css`"
+    },
+    {
+      "kind": "text",
+      "text": ". That line, link targets added after link text, the OverflowCard note, and list items that open with a link to another docs page ("
+    },
+    {
+      "kind": "code",
+      "text": "`- [Next steps](/...)`"
+    },
+    {
+      "kind": "text",
+      "text": ", also "
+    },
+    {
+      "kind": "code",
+      "text": "`*`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`+`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`1.`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`1)`"
+    },
+    {
+      "kind": "text",
+      "text": ") are returned in content but left out of the search index.\n- Generated "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data`"
+    },
+    {
+      "kind": "text",
+      "text": " is rebuilt by "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server typedoc`"
+    },
+    {
+      "kind": "text",
+      "text": " without touching "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/*.js`"
+    },
+    {
+      "kind": "text",
+      "text": "."
+    }
+  ],
+  "symbolIdMap": {
+    "0": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/hidden.ts",
+      "qualifiedName": ""
+    },
+    "1": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/hidden.ts",
+      "qualifiedName": "HiddenOptions"
+    },
+    "2": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/hidden.ts",
+      "qualifiedName": "HiddenOptions.name"
+    },
+    "3": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/hidden.ts",
+      "qualifiedName": "HiddenOptions.size"
+    }
+  },
+  "files": {
+    "entries": {
+      "1": "alpha/hidden.ts",
+      "2": "../../../README.md",
+      "3": "../../.."
+    },
+    "reflections": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    }
+  }
+}

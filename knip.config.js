@@ -83,6 +83,11 @@ export default {
       entry: ['src/index.ts'],
       project: ['src/**/*.ts', 'config.ts'],
     },
+    'packages/mcp-server': {
+      entry: ['src/index.ts', 'scripts/*.ts'],
+      // The fixture sources are TypeDoc input, read through the generated JSON next to them.
+      project: ['src/**/*.ts', 'scripts/**/*.ts', '!src/__fixtures__/typedoc-src/**'],
+    },
     'packages/temporal': {
       // test/fixtures/workflows.ts is an entry in its own right: the bundling test
       // hands it to Temporal's workflow bundler by path, so nothing imports it.

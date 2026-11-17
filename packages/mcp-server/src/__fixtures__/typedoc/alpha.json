@@ -1,0 +1,3066 @@
+{
+  "schemaVersion": "2.0",
+  "id": 0,
+  "name": "@workflow-builder/mcp-server",
+  "variant": "project",
+  "kind": 1,
+  "flags": {},
+  "children": [
+    {
+      "id": 40,
+      "name": "Color",
+      "variant": "declaration",
+      "kind": 8,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Colors of the palette."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 42,
+          "name": "Blue",
+          "variant": "declaration",
+          "kind": 16,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 83,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L83"
+            }
+          ],
+          "type": {
+            "type": "literal",
+            "value": "blue"
+          }
+        },
+        {
+          "id": 41,
+          "name": "Red",
+          "variant": "declaration",
+          "kind": 16,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 82,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L82"
+            }
+          ],
+          "type": {
+            "type": "literal",
+            "value": "red"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Enumeration Members",
+          "children": [42, 41]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 81,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L81"
+        }
+      ]
+    },
+    {
+      "id": 30,
+      "name": "Engine",
+      "variant": "declaration",
+      "kind": 128,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "A class with a constructor."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 31,
+          "name": "constructor",
+          "variant": "declaration",
+          "kind": 512,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 70,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L70"
+            }
+          ],
+          "signatures": [
+            {
+              "id": 32,
+              "name": "Engine",
+              "variant": "signature",
+              "kind": 16384,
+              "flags": {},
+              "sources": [
+                {
+                  "fileName": "alpha/index.ts",
+                  "line": 70,
+                  "character": 2,
+                  "url": "https://example.test/blob/fixture/src/alpha/index.ts#L70"
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 33,
+                  "name": "options",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {},
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "id": 34,
+                      "name": "__type",
+                      "variant": "declaration",
+                      "kind": 65536,
+                      "flags": {},
+                      "children": [
+                        {
+                          "id": 35,
+                          "name": "speed",
+                          "variant": "declaration",
+                          "kind": 1024,
+                          "flags": {},
+                          "sources": [
+                            {
+                              "fileName": "alpha/index.ts",
+                              "line": 70,
+                              "character": 25,
+                              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L70"
+                            }
+                          ],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "number"
+                          }
+                        }
+                      ],
+                      "groups": [
+                        {
+                          "title": "Properties",
+                          "children": [35]
+                        }
+                      ]
+                    }
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "target": 30,
+                "name": "Engine",
+                "package": "@workflow-builder/mcp-server"
+              }
+            }
+          ]
+        },
+        {
+          "id": 36,
+          "name": "name",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Engine name."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 68,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L68"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          },
+          "defaultValue": "'engine'"
+        },
+        {
+          "id": 37,
+          "name": "start",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 75,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L75"
+            }
+          ],
+          "signatures": [
+            {
+              "id": 38,
+              "name": "start",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {},
+              "comment": {
+                "summary": [
+                  {
+                    "kind": "text",
+                    "text": "Starts the engine."
+                  }
+                ]
+              },
+              "sources": [
+                {
+                  "fileName": "alpha/index.ts",
+                  "line": 75,
+                  "character": 2,
+                  "url": "https://example.test/blob/fixture/src/alpha/index.ts#L75"
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 39,
+                  "name": "times",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {},
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "type": {
+                "type": "reference",
+                "target": {
+                  "packageName": "typescript",
+                  "packagePath": "lib/lib.es5.d.ts",
+                  "qualifiedName": "Promise"
+                },
+                "typeArguments": [
+                  {
+                    "type": "intrinsic",
+                    "name": "void"
+                  }
+                ],
+                "name": "Promise",
+                "package": "typescript"
+              }
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "title": "Constructors",
+          "children": [31]
+        },
+        {
+          "title": "Properties",
+          "children": [36]
+        },
+        {
+          "title": "Methods",
+          "children": [37]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 66,
+          "character": 13,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L66"
+        }
+      ]
+    },
+    {
+      "id": 56,
+      "name": "FirstShape",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "First shape."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 58,
+          "name": "first",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Only the first shape."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 113,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L113"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        },
+        {
+          "id": 57,
+          "name": "id",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Common to both shapes."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 111,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L111"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [58, 57]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 109,
+          "character": 17,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L109"
+        }
+      ]
+    },
+    {
+      "id": 77,
+      "name": "LooseOptions",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Base with optional members."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 79,
+          "name": "count",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Count."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 136,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L136"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        },
+        {
+          "id": 78,
+          "name": "label",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Label."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 134,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L134"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [79, 78]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 132,
+          "character": 17,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L132"
+        }
+      ]
+    },
+    {
+      "id": 59,
+      "name": "SecondShape",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Second shape."
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 60,
+          "name": "id",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 118,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L118"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        },
+        {
+          "id": 61,
+          "name": "second",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 119,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L119"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "boolean"
+          }
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [60, 61]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 117,
+          "character": 17,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L117"
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "name": "WidgetProps",
+      "variant": "declaration",
+      "kind": 256,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Props accepted by the widget. It renders a title."
+          }
+        ],
+        "blockTags": [
+          {
+            "tag": "@remarks",
+            "content": [
+              {
+                "kind": "text",
+                "text": "Extra remarks text."
+              }
+            ]
+          },
+          {
+            "tag": "@category",
+            "content": [
+              {
+                "kind": "text",
+                "text": "Core"
+              }
+            ]
+          },
+          {
+            "tag": "@since",
+            "content": [
+              {
+                "kind": "text",
+                "text": "1.2.0"
+              }
+            ]
+          }
+        ]
+      },
+      "children": [
+        {
+          "id": 14,
+          "name": "title",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Widget title. Shown in the header."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 12,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L12"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        },
+        {
+          "id": 15,
+          "name": "width",
+          "variant": "declaration",
+          "kind": 1024,
+          "flags": {
+            "isOptional": true
+          },
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Maximum width in pixels."
+              }
+            ],
+            "blockTags": [
+              {
+                "tag": "@default",
+                "content": [
+                  {
+                    "kind": "code",
+                    "text": "```ts\n100\n```"
+                  }
+                ]
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 18,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L18"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        },
+        {
+          "id": 16,
+          "name": "onClick",
+          "variant": "declaration",
+          "kind": 2048,
+          "flags": {},
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 20,
+              "character": 2,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L20"
+            }
+          ],
+          "signatures": [
+            {
+              "id": 17,
+              "name": "onClick",
+              "variant": "signature",
+              "kind": 4096,
+              "flags": {},
+              "comment": {
+                "summary": [
+                  {
+                    "kind": "text",
+                    "text": "Fires when the widget is clicked."
+                  }
+                ]
+              },
+              "sources": [
+                {
+                  "fileName": "alpha/index.ts",
+                  "line": 20,
+                  "character": 2,
+                  "url": "https://example.test/blob/fixture/src/alpha/index.ts#L20"
+                }
+              ],
+              "parameters": [
+                {
+                  "id": 18,
+                  "name": "event",
+                  "variant": "param",
+                  "kind": 32768,
+                  "flags": {},
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "type": {
+                "type": "intrinsic",
+                "name": "void"
+              }
+            }
+          ]
+        }
+      ],
+      "groups": [
+        {
+          "title": "Properties",
+          "children": [14, 15]
+        },
+        {
+          "title": "Methods",
+          "children": [16]
+        }
+      ],
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 10,
+          "character": 17,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L10"
+        }
+      ]
+    },
+    {
+      "id": 45,
+      "name": "Aliased",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Alias of a type the package declares but does not export."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 96,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L96"
+        }
+      ],
+      "type": {
+        "type": "reference",
+        "target": {
+          "packageName": "@workflow-builder/mcp-server",
+          "packagePath": "src/__fixtures__/typedoc-src/alpha/hidden.ts",
+          "qualifiedName": "HiddenOptions"
+        },
+        "name": "HiddenOptions",
+        "package": "@workflow-builder/mcp-server"
+      }
+    },
+    {
+      "id": 46,
+      "name": "Either",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Settings with two shapes."
+          }
+        ],
+        "blockTags": [
+          {
+            "tag": "@category",
+            "content": [
+              {
+                "kind": "text",
+                "text": "Core"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 103,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+        }
+      ],
+      "type": {
+        "type": "union",
+        "types": [
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 47,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 48,
+                  "name": "kind",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 23,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "literal",
+                    "value": "a"
+                  }
+                },
+                {
+                  "id": 50,
+                  "name": "onlyA",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 50,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                },
+                {
+                  "id": 49,
+                  "name": "shared",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 34,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [48, 50, 49]
+                }
+              ]
+            }
+          },
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 51,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 52,
+                  "name": "kind",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 70,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "literal",
+                    "value": "b"
+                  }
+                },
+                {
+                  "id": 54,
+                  "name": "onlyB",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 97,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "boolean"
+                  }
+                },
+                {
+                  "id": 53,
+                  "name": "shared",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 103,
+                      "character": 81,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L103"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [52, 54, 53]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 81,
+      "name": "FrozenOptions",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Every member readonly."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 143,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L143"
+        }
+      ],
+      "type": {
+        "type": "reference",
+        "target": {
+          "packageName": "typescript",
+          "packagePath": "lib/lib.es5.d.ts",
+          "qualifiedName": "Readonly"
+        },
+        "typeArguments": [
+          {
+            "type": "reference",
+            "target": 77,
+            "name": "LooseOptions",
+            "package": "@workflow-builder/mcp-server"
+          }
+        ],
+        "name": "Readonly",
+        "package": "typescript"
+      }
+    },
+    {
+      "id": 62,
+      "name": "Letters",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Many literal names."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 123,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L123"
+        }
+      ],
+      "type": {
+        "type": "union",
+        "types": [
+          {
+            "type": "literal",
+            "value": "a"
+          },
+          {
+            "type": "literal",
+            "value": "b"
+          },
+          {
+            "type": "literal",
+            "value": "c"
+          },
+          {
+            "type": "literal",
+            "value": "d"
+          },
+          {
+            "type": "literal",
+            "value": "e"
+          },
+          {
+            "type": "literal",
+            "value": "f"
+          },
+          {
+            "type": "literal",
+            "value": "g"
+          },
+          {
+            "type": "literal",
+            "value": "h"
+          }
+        ]
+      }
+    },
+    {
+      "id": 29,
+      "name": "Mode",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Type twin of the mode value."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 42,
+          "character": 13,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L42"
+        },
+        {
+          "fileName": "alpha/index.ts",
+          "line": 45,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L45"
+        }
+      ],
+      "type": {
+        "type": "indexedAccess",
+        "indexType": {
+          "type": "typeOperator",
+          "operator": "keyof",
+          "target": {
+            "type": "query",
+            "queryType": {
+              "type": "reference",
+              "target": 25,
+              "name": "Mode",
+              "package": "@workflow-builder/mcp-server"
+            }
+          }
+        },
+        "objectType": {
+          "type": "query",
+          "queryType": {
+            "type": "reference",
+            "target": 25,
+            "name": "Mode",
+            "package": "@workflow-builder/mcp-server"
+          }
+        }
+      }
+    },
+    {
+      "id": 55,
+      "name": "Named",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "A union of named object types."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 106,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L106"
+        }
+      ],
+      "type": {
+        "type": "union",
+        "types": [
+          {
+            "type": "reference",
+            "target": 56,
+            "name": "FirstShape",
+            "package": "@workflow-builder/mcp-server"
+          },
+          {
+            "type": "reference",
+            "target": 59,
+            "name": "SecondShape",
+            "package": "@workflow-builder/mcp-server"
+          }
+        ]
+      }
+    },
+    {
+      "id": 24,
+      "name": "SlimProps",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Keys omitted from the base props."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 39,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L39"
+        }
+      ],
+      "type": {
+        "type": "reference",
+        "target": {
+          "packageName": "typescript",
+          "packagePath": "lib/lib.es5.d.ts",
+          "qualifiedName": "Omit"
+        },
+        "typeArguments": [
+          {
+            "type": "reference",
+            "target": 13,
+            "name": "WidgetProps",
+            "package": "@workflow-builder/mcp-server"
+          },
+          {
+            "type": "union",
+            "types": [
+              {
+                "type": "literal",
+                "value": "onClick"
+              },
+              {
+                "type": "literal",
+                "value": "secret"
+              }
+            ]
+          }
+        ],
+        "name": "Omit",
+        "package": "typescript"
+      }
+    },
+    {
+      "id": 63,
+      "name": "Strategy",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "A discriminated union whose variants share member names."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 126,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L126"
+        }
+      ],
+      "type": {
+        "type": "union",
+        "types": [
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 64,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 66,
+                  "name": "error",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 127,
+                      "character": 25,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L127"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                },
+                {
+                  "id": 67,
+                  "name": "label",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 127,
+                      "character": 44,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L127"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "id": 65,
+                  "name": "strategy",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 127,
+                      "character": 6,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L127"
+                    }
+                  ],
+                  "type": {
+                    "type": "literal",
+                    "value": "local"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [66, 67, 65]
+                }
+              ]
+            }
+          },
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 68,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 70,
+                  "name": "error",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 128,
+                      "character": 23,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L128"
+                    }
+                  ],
+                  "type": {
+                    "type": "reflection",
+                    "declaration": {
+                      "id": 71,
+                      "name": "__type",
+                      "variant": "declaration",
+                      "kind": 65536,
+                      "flags": {},
+                      "children": [
+                        {
+                          "id": 72,
+                          "name": "code",
+                          "variant": "declaration",
+                          "kind": 1024,
+                          "flags": {},
+                          "sources": [
+                            {
+                              "fileName": "alpha/index.ts",
+                              "line": 128,
+                              "character": 32,
+                              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L128"
+                            }
+                          ],
+                          "type": {
+                            "type": "intrinsic",
+                            "name": "number"
+                          }
+                        }
+                      ],
+                      "groups": [
+                        {
+                          "title": "Properties",
+                          "children": [72]
+                        }
+                      ]
+                    }
+                  }
+                },
+                {
+                  "id": 73,
+                  "name": "label",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 128,
+                      "character": 48,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L128"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "id": 69,
+                  "name": "strategy",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 128,
+                      "character": 6,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L128"
+                    }
+                  ],
+                  "type": {
+                    "type": "literal",
+                    "value": "api"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [70, 73, 69]
+                }
+              ]
+            }
+          },
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 74,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 76,
+                  "name": "error",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 129,
+                      "character": 25,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L129"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "undefined"
+                  }
+                },
+                {
+                  "id": 75,
+                  "name": "strategy",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 129,
+                      "character": 6,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L129"
+                    }
+                  ],
+                  "type": {
+                    "type": "literal",
+                    "value": "props"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [76, 75]
+                }
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "id": 80,
+      "name": "StrictOptions",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Every member required."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 140,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L140"
+        }
+      ],
+      "type": {
+        "type": "reference",
+        "target": {
+          "packageName": "typescript",
+          "packagePath": "lib/lib.es5.d.ts",
+          "qualifiedName": "Required"
+        },
+        "typeArguments": [
+          {
+            "type": "reference",
+            "target": 77,
+            "name": "LooseOptions",
+            "package": "@workflow-builder/mcp-server"
+          }
+        ],
+        "name": "Required",
+        "package": "typescript"
+      }
+    },
+    {
+      "id": 20,
+      "name": "WrappedProps",
+      "variant": "declaration",
+      "kind": 2097152,
+      "flags": {},
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Props wrapped in a generic."
+          }
+        ],
+        "blockTags": [
+          {
+            "tag": "@category",
+            "content": [
+              {
+                "kind": "text",
+                "text": "Core"
+              }
+            ]
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 32,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L32"
+        }
+      ],
+      "type": {
+        "type": "reference",
+        "target": {
+          "packageName": "@workflow-builder/mcp-server",
+          "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+          "qualifiedName": "Wrap"
+        },
+        "typeArguments": [
+          {
+            "type": "reflection",
+            "declaration": {
+              "id": 21,
+              "name": "__type",
+              "variant": "declaration",
+              "kind": 65536,
+              "flags": {},
+              "children": [
+                {
+                  "id": 22,
+                  "name": "a",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {
+                    "isOptional": true
+                  },
+                  "comment": {
+                    "summary": [
+                      {
+                        "kind": "text",
+                        "text": "Optional label."
+                      }
+                    ]
+                  },
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 34,
+                      "character": 2,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L34"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "string"
+                  }
+                },
+                {
+                  "id": 23,
+                  "name": "b",
+                  "variant": "declaration",
+                  "kind": 1024,
+                  "flags": {},
+                  "sources": [
+                    {
+                      "fileName": "alpha/index.ts",
+                      "line": 35,
+                      "character": 2,
+                      "url": "https://example.test/blob/fixture/src/alpha/index.ts#L35"
+                    }
+                  ],
+                  "type": {
+                    "type": "intrinsic",
+                    "name": "number"
+                  }
+                }
+              ],
+              "groups": [
+                {
+                  "title": "Properties",
+                  "children": [22, 23]
+                }
+              ]
+            }
+          }
+        ],
+        "name": "Wrap",
+        "package": "@workflow-builder/mcp-server"
+      }
+    },
+    {
+      "id": 44,
+      "name": "documented",
+      "variant": "declaration",
+      "kind": 32,
+      "flags": {
+        "isConst": true
+      },
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Documented only in this package."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 93,
+          "character": 13,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L93"
+        }
+      ],
+      "type": {
+        "type": "literal",
+        "value": "x"
+      },
+      "defaultValue": "'x'"
+    },
+    {
+      "id": 25,
+      "name": "Mode",
+      "variant": "declaration",
+      "kind": 32,
+      "flags": {
+        "isConst": true
+      },
+      "comment": {
+        "summary": [
+          {
+            "kind": "text",
+            "text": "Runtime value of the mode."
+          }
+        ]
+      },
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 42,
+          "character": 13,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L42"
+        },
+        {
+          "fileName": "alpha/index.ts",
+          "line": 45,
+          "character": 12,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L45"
+        }
+      ],
+      "type": {
+        "type": "reflection",
+        "declaration": {
+          "id": 26,
+          "name": "__type",
+          "variant": "declaration",
+          "kind": 65536,
+          "flags": {},
+          "children": [
+            {
+              "id": 27,
+              "name": "A",
+              "variant": "declaration",
+              "kind": 1024,
+              "flags": {
+                "isReadonly": true
+              },
+              "sources": [
+                {
+                  "fileName": "alpha/index.ts",
+                  "line": 42,
+                  "character": 22,
+                  "url": "https://example.test/blob/fixture/src/alpha/index.ts#L42"
+                }
+              ],
+              "type": {
+                "type": "literal",
+                "value": "a"
+              },
+              "defaultValue": "'a'"
+            },
+            {
+              "id": 28,
+              "name": "B",
+              "variant": "declaration",
+              "kind": 1024,
+              "flags": {
+                "isReadonly": true
+              },
+              "sources": [
+                {
+                  "fileName": "alpha/index.ts",
+                  "line": 42,
+                  "character": 30,
+                  "url": "https://example.test/blob/fixture/src/alpha/index.ts#L42"
+                }
+              ],
+              "type": {
+                "type": "literal",
+                "value": "b"
+              },
+              "defaultValue": "'b'"
+            }
+          ],
+          "groups": [
+            {
+              "title": "Properties",
+              "children": [27, 28]
+            }
+          ]
+        }
+      },
+      "defaultValue": "..."
+    },
+    {
+      "id": 6,
+      "name": "createWidget",
+      "variant": "declaration",
+      "kind": 64,
+      "flags": {},
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 60,
+          "character": 16,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L60"
+        }
+      ],
+      "signatures": [
+        {
+          "id": 7,
+          "name": "createWidget",
+          "variant": "signature",
+          "kind": 4096,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Creates a widget."
+              }
+            ],
+            "blockTags": [
+              {
+                "tag": "@category",
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "Core"
+                  }
+                ]
+              },
+              {
+                "tag": "@deprecated",
+                "content": [
+                  {
+                    "kind": "text",
+                    "text": "Use createWidget2."
+                  }
+                ]
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 60,
+              "character": 16,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L60"
+            }
+          ],
+          "typeParameters": [
+            {
+              "id": 8,
+              "name": "T",
+              "variant": "typeParam",
+              "kind": 131072,
+              "flags": {},
+              "type": {
+                "type": "reference",
+                "target": 13,
+                "name": "WidgetProps",
+                "package": "@workflow-builder/mcp-server"
+              }
+            }
+          ],
+          "parameters": [
+            {
+              "id": 9,
+              "name": "props",
+              "variant": "param",
+              "kind": 32768,
+              "flags": {},
+              "type": {
+                "type": "reference",
+                "target": 8,
+                "name": "T",
+                "package": "@workflow-builder/mcp-server",
+                "refersToTypeParameter": true
+              }
+            },
+            {
+              "id": 10,
+              "name": "flag",
+              "variant": "param",
+              "kind": 32768,
+              "flags": {
+                "isOptional": true
+              },
+              "type": {
+                "type": "intrinsic",
+                "name": "boolean"
+              }
+            }
+          ],
+          "type": {
+            "type": "reference",
+            "target": 8,
+            "name": "T",
+            "package": "@workflow-builder/mcp-server",
+            "refersToTypeParameter": true
+          }
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "name": "overloaded",
+      "variant": "declaration",
+      "kind": 64,
+      "flags": {},
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 48,
+          "character": 16,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L48"
+        },
+        {
+          "fileName": "alpha/index.ts",
+          "line": 49,
+          "character": 16,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L49"
+        },
+        {
+          "fileName": "alpha/index.ts",
+          "line": 50,
+          "character": 16,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L50"
+        }
+      ],
+      "signatures": [
+        {
+          "id": 2,
+          "name": "overloaded",
+          "variant": "signature",
+          "kind": 4096,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Doubles a string or a number."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 48,
+              "character": 16,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L48"
+            }
+          ],
+          "parameters": [
+            {
+              "id": 3,
+              "name": "a",
+              "variant": "param",
+              "kind": 32768,
+              "flags": {},
+              "type": {
+                "type": "intrinsic",
+                "name": "string"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "string"
+          }
+        },
+        {
+          "id": 4,
+          "name": "overloaded",
+          "variant": "signature",
+          "kind": 4096,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Doubles a string or a number."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 49,
+              "character": 16,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L49"
+            }
+          ],
+          "parameters": [
+            {
+              "id": 5,
+              "name": "a",
+              "variant": "param",
+              "kind": 32768,
+              "flags": {},
+              "type": {
+                "type": "intrinsic",
+                "name": "number"
+              }
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "number"
+          }
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "name": "Shared",
+      "variant": "declaration",
+      "kind": 64,
+      "flags": {},
+      "sources": [
+        {
+          "fileName": "alpha/index.ts",
+          "line": 90,
+          "character": 16,
+          "url": "https://example.test/blob/fixture/src/alpha/index.ts#L90"
+        }
+      ],
+      "signatures": [
+        {
+          "id": 12,
+          "name": "Shared",
+          "variant": "signature",
+          "kind": 4096,
+          "flags": {},
+          "comment": {
+            "summary": [
+              {
+                "kind": "text",
+                "text": "Same name in two packages, function here."
+              }
+            ]
+          },
+          "sources": [
+            {
+              "fileName": "alpha/index.ts",
+              "line": 90,
+              "character": 16,
+              "url": "https://example.test/blob/fixture/src/alpha/index.ts#L90"
+            }
+          ],
+          "type": {
+            "type": "intrinsic",
+            "name": "void"
+          }
+        }
+      ]
+    }
+  ],
+  "groups": [
+    {
+      "title": "Enumerations",
+      "children": [40]
+    },
+    {
+      "title": "Classes",
+      "children": [30]
+    },
+    {
+      "title": "Interfaces",
+      "children": [56, 77, 59, 13]
+    },
+    {
+      "title": "Type Aliases",
+      "children": [45, 46, 81, 62, 29, 55, 24, 63, 80, 20]
+    },
+    {
+      "title": "Variables",
+      "children": [44, 25]
+    },
+    {
+      "title": "Functions",
+      "children": [6, 1, 11]
+    }
+  ],
+  "categories": [
+    {
+      "title": "Core",
+      "children": [13, 46, 20, 6]
+    },
+    {
+      "title": "Other",
+      "children": [40, 30, 56, 77, 59, 45, 81, 62, 29, 55, 24, 63, 80, 44, 25, 1, 11]
+    }
+  ],
+  "packageName": "@workflow-builder/mcp-server",
+  "readme": [
+    {
+      "kind": "text",
+      "text": "# @workflow-builder/mcp-server\n\n"
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs`"
+    },
+    {
+      "kind": "text",
+      "text": ": a stdio MCP server that serves the hand-written Workflow Builder docs ("
+    },
+    {
+      "kind": "code",
+      "text": "`apps/docs/src/content/docs`"
+    },
+    {
+      "kind": "text",
+      "text": "), the READMEs of the published packages and the public TypeScript API of "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/ui`"
+    },
+    {
+      "kind": "text",
+      "text": " and "
+    },
+    {
+      "kind": "code",
+      "text": "`@workflowbuilder/temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ". Private, not published.\n\n## Tools\n\n| Tool             | Use                                                                                                 |\n| ---------------- | --------------------------------------------------------------------------------------------------- |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`search_docs`"
+    },
+    {
+      "kind": "text",
+      "text": "    | Keyword search over documentation sections. Results carry an id, section title, URL and markdown.   |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`get_doc`"
+    },
+    {
+      "kind": "text",
+      "text": "        | Read a page or one section by id, or by an internal doc link such as "
+    },
+    {
+      "kind": "code",
+      "text": "`/get-started/theming/`"
+    },
+    {
+      "kind": "text",
+      "text": ".       |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`search_symbols`"
+    },
+    {
+      "kind": "text",
+      "text": " | Search exports and their members. Filters: "
+    },
+    {
+      "kind": "code",
+      "text": "`package`"
+    },
+    {
+      "kind": "text",
+      "text": " ("
+    },
+    {
+      "kind": "code",
+      "text": "`sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`ui`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ") and "
+    },
+    {
+      "kind": "code",
+      "text": "`kind`"
+    },
+    {
+      "kind": "text",
+      "text": ".          |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`get_symbol`"
+    },
+    {
+      "kind": "text",
+      "text": "     | Signature, JSDoc, members and a ready import statement for "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:Name`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:Name.member`"
+    },
+    {
+      "kind": "text",
+      "text": " or a name. |\n\nResponses are compact JSON in a single text item. Errors use "
+    },
+    {
+      "kind": "code",
+      "text": "`isError: true`"
+    },
+    {
+      "kind": "text",
+      "text": " with "
+    },
+    {
+      "kind": "code",
+      "text": "`{\"error\": \"...\"}`"
+    },
+    {
+      "kind": "text",
+      "text": ".\n\n## Build and run\n\n"
+    },
+    {
+      "kind": "code",
+      "text": "```sh\npnpm --filter mcp-server build   # tsc + TypeDoc for the three packages, about 30 s\npnpm --filter mcp-server test    # unit tests, fixtures only, no build needed\npnpm --filter mcp-server smoke   # real corpus, needs a build\n```"
+    },
+    {
+      "kind": "text",
+      "text": "\n\nThe repo-root "
+    },
+    {
+      "kind": "code",
+      "text": "`.mcp.json`"
+    },
+    {
+      "kind": "text",
+      "text": " registers the server as "
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs`"
+    },
+    {
+      "kind": "text",
+      "text": " ("
+    },
+    {
+      "kind": "code",
+      "text": "`node packages/mcp-server/dist/index.js`"
+    },
+    {
+      "kind": "text",
+      "text": "). Claude Code loads MCP servers at session start, so build first and restart the session after rebuilding.\n\nDocs are read from "
+    },
+    {
+      "kind": "code",
+      "text": "`apps/docs/src/content/docs`"
+    },
+    {
+      "kind": "text",
+      "text": " and indexed in memory every time the server starts, so they are always current. Symbols come from "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data/typedoc/*.json`"
+    },
+    {
+      "kind": "text",
+      "text": ", so they are as fresh as the last "
+    },
+    {
+      "kind": "code",
+      "text": "`build`"
+    },
+    {
+      "kind": "text",
+      "text": " (or "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server typedoc`"
+    },
+    {
+      "kind": "text",
+      "text": "). The server logs one line to stderr when it is ready.\n\n## Layout\n\n| Path                | Contents                                                                                                                   |\n| ------------------- | -------------------------------------------------------------------------------------------------------------------------- |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/`"
+    },
+    {
+      "kind": "text",
+      "text": "       | The tunable surface: ranking, synonyms, chunking, response budgets. Plain data, no logic.                                  |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/docs/`"
+    },
+    {
+      "kind": "text",
+      "text": "         | Page and README loading, MDX cleaning, chunking, ids and the docs search engine.                                           |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/symbols/`"
+    },
+    {
+      "kind": "text",
+      "text": "      | TypeDoc extraction, the type printer and the symbol search engine.                                                         |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/corpus/`"
+    },
+    {
+      "kind": "text",
+      "text": "       | "
+    },
+    {
+      "kind": "code",
+      "text": "`buildCorpus()`"
+    },
+    {
+      "kind": "text",
+      "text": ": the one entry point shared by the server and the smoke test.                                    |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/tools/`"
+    },
+    {
+      "kind": "text",
+      "text": "        | One folder per tool: "
+    },
+    {
+      "kind": "code",
+      "text": "`tool.config.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " (schema and description), validator, handler.                                        |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`src/__fixtures__/`"
+    },
+    {
+      "kind": "text",
+      "text": " | Small checked-in docs and TypeDoc JSON used by the tests. "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server fixtures:update`"
+    },
+    {
+      "kind": "text",
+      "text": " regenerates the JSON. |\n| "
+    },
+    {
+      "kind": "code",
+      "text": "`scripts/`"
+    },
+    {
+      "kind": "text",
+      "text": "          | "
+    },
+    {
+      "kind": "code",
+      "text": "`generate-typedoc.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " (build step), "
+    },
+    {
+      "kind": "code",
+      "text": "`smoke.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`update-fixtures.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ".                                                      |\n\n## Notes\n\n- Ids: pages are "
+    },
+    {
+      "kind": "code",
+      "text": "`guides/configuring-the-editor`"
+    },
+    {
+      "kind": "text",
+      "text": ", sections "
+    },
+    {
+      "kind": "code",
+      "text": "`guides/configuring-the-editor#props-reference`"
+    },
+    {
+      "kind": "text",
+      "text": ", symbols "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:WorkflowBuilderRootProps`"
+    },
+    {
+      "kind": "text",
+      "text": " and members "
+    },
+    {
+      "kind": "code",
+      "text": "`sdk:WorkflowBuilderRootProps.nodeTypes`"
+    },
+    {
+      "kind": "text",
+      "text": ".\n- Package READMEs are docs pages too: "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/sdk`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/ui`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/temporal`"
+    },
+    {
+      "kind": "text",
+      "text": ", and any other "
+    },
+    {
+      "kind": "code",
+      "text": "`.md`"
+    },
+    {
+      "kind": "text",
+      "text": " a package lists in "
+    },
+    {
+      "kind": "code",
+      "text": "`package.json`"
+    },
+    {
+      "kind": "text",
+      "text": " "
+    },
+    {
+      "kind": "code",
+      "text": "`files`"
+    },
+    {
+      "kind": "text",
+      "text": " as "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/<pkg>/<name>`"
+    },
+    {
+      "kind": "text",
+      "text": " (today "
+    },
+    {
+      "kind": "code",
+      "text": "`readme/ui/css-layers`"
+    },
+    {
+      "kind": "text",
+      "text": "; CHANGELOGs are left out). Sections use the same anchors as site pages, urls point at the file on GitHub and relative links are made absolute. They sit in a separate search index, and "
+    },
+    {
+      "kind": "code",
+      "text": "`readmeWeights`"
+    },
+    {
+      "kind": "text",
+      "text": " in "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/ranking.ts`"
+    },
+    {
+      "kind": "text",
+      "text": " scales their hits: the sdk and ui READMEs restate site pages, so they rank far below them, while the temporal README is the only place that documents installing the plugin and wiring a worker.\n- Components in "
+    },
+    {
+      "kind": "code",
+      "text": "`.mdx`"
+    },
+    {
+      "kind": "text",
+      "text": " are reduced to text by the rules in "
+    },
+    {
+      "kind": "code",
+      "text": "`src/config/mdx-components.ts`"
+    },
+    {
+      "kind": "text",
+      "text": ". Demo node schemas are not inlined; the page gets a pointer to the demo folder instead.\n- Temporal exports have no JSDoc, so they rank on name and signature.\n- A docs page that cannot be loaded (bad frontmatter, unclosed JSX, unknown "
+    },
+    {
+      "kind": "code",
+      "text": "`PropsTable`"
+    },
+    {
+      "kind": "text",
+      "text": " slug, missing partial, two files with one id) is skipped with one "
+    },
+    {
+      "kind": "code",
+      "text": "`wb-docs: skipped <file>: <reason>`"
+    },
+    {
+      "kind": "text",
+      "text": " line on stderr; the server keeps serving everything else. TypeDoc files that are empty or disagree with "
+    },
+    {
+      "kind": "code",
+      "text": "`manifest.json`"
+    },
+    {
+      "kind": "text",
+      "text": " also warn.\n- "
+    },
+    {
+      "kind": "code",
+      "text": "`build`"
+    },
+    {
+      "kind": "text",
+      "text": " runs TypeDoc twice per package: once for the entry points, and once over the files that declare types the package references without exporting ("
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data/typedoc/<package>.referenced.json`"
+    },
+    {
+      "kind": "text",
+      "text": "). "
+    },
+    {
+      "kind": "code",
+      "text": "`get_symbol`"
+    },
+    {
+      "kind": "text",
+      "text": " expands aliases of those types and serves them by name with "
+    },
+    {
+      "kind": "code",
+      "text": "`exported: false`"
+    },
+    {
+      "kind": "text",
+      "text": "; they are not searchable.\n- "
+    },
+    {
+      "kind": "code",
+      "text": "`<CssVariablesTable>`"
+    },
+    {
+      "kind": "text",
+      "text": " is rendered as one line of "
+    },
+    {
+      "kind": "code",
+      "text": "`--wb-public-*`"
+    },
+    {
+      "kind": "text",
+      "text": " names read from "
+    },
+    {
+      "kind": "code",
+      "text": "`packages/ui/src/components/<dir>/**/*.css`"
+    },
+    {
+      "kind": "text",
+      "text": ". That line, link targets added after link text, the OverflowCard note, and list items that open with a link to another docs page ("
+    },
+    {
+      "kind": "code",
+      "text": "`- [Next steps](/...)`"
+    },
+    {
+      "kind": "text",
+      "text": ", also "
+    },
+    {
+      "kind": "code",
+      "text": "`*`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`+`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`1.`"
+    },
+    {
+      "kind": "text",
+      "text": ", "
+    },
+    {
+      "kind": "code",
+      "text": "`1)`"
+    },
+    {
+      "kind": "text",
+      "text": ") are returned in content but left out of the search index.\n- Generated "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/data`"
+    },
+    {
+      "kind": "text",
+      "text": " is rebuilt by "
+    },
+    {
+      "kind": "code",
+      "text": "`pnpm --filter mcp-server typedoc`"
+    },
+    {
+      "kind": "text",
+      "text": " without touching "
+    },
+    {
+      "kind": "code",
+      "text": "`dist/*.js`"
+    },
+    {
+      "kind": "text",
+      "text": "."
+    }
+  ],
+  "symbolIdMap": {
+    "0": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": ""
+    },
+    "1": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "overloaded"
+    },
+    "2": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "overloaded"
+    },
+    "3": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "a"
+    },
+    "4": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "overloaded"
+    },
+    "5": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "a"
+    },
+    "6": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "createWidget"
+    },
+    "7": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "createWidget"
+    },
+    "8": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "T"
+    },
+    "9": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "props"
+    },
+    "10": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "flag"
+    },
+    "11": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Shared"
+    },
+    "12": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Shared"
+    },
+    "13": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WidgetProps"
+    },
+    "14": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WidgetProps.title"
+    },
+    "15": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WidgetProps.width"
+    },
+    "16": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WidgetProps.onClick"
+    },
+    "17": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WidgetProps.onClick"
+    },
+    "18": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "event"
+    },
+    "20": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "WrappedProps"
+    },
+    "21": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "22": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.a"
+    },
+    "23": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.b"
+    },
+    "24": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "SlimProps"
+    },
+    "25": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Mode"
+    },
+    "26": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__object"
+    },
+    "27": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__object.A"
+    },
+    "28": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__object.B"
+    },
+    "29": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Mode"
+    },
+    "30": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine"
+    },
+    "31": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine.__constructor"
+    },
+    "32": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine"
+    },
+    "33": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "options"
+    },
+    "34": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "35": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.speed"
+    },
+    "36": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine.name"
+    },
+    "37": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine.start"
+    },
+    "38": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Engine.start"
+    },
+    "39": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "times"
+    },
+    "40": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Color"
+    },
+    "41": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Color.Red"
+    },
+    "42": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Color.Blue"
+    },
+    "44": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "documented"
+    },
+    "45": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Aliased"
+    },
+    "46": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Either"
+    },
+    "47": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "48": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.kind"
+    },
+    "49": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.shared"
+    },
+    "50": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.onlyA"
+    },
+    "51": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "52": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.kind"
+    },
+    "53": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.shared"
+    },
+    "54": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.onlyB"
+    },
+    "55": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Named"
+    },
+    "56": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "FirstShape"
+    },
+    "57": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "FirstShape.id"
+    },
+    "58": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "FirstShape.first"
+    },
+    "59": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "SecondShape"
+    },
+    "60": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "SecondShape.id"
+    },
+    "61": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "SecondShape.second"
+    },
+    "62": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Letters"
+    },
+    "63": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "Strategy"
+    },
+    "64": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "65": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.strategy"
+    },
+    "66": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.error"
+    },
+    "67": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.label"
+    },
+    "68": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "69": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.strategy"
+    },
+    "70": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.error"
+    },
+    "71": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "72": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.code"
+    },
+    "73": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.label"
+    },
+    "74": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type"
+    },
+    "75": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.strategy"
+    },
+    "76": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "__type.error"
+    },
+    "77": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "LooseOptions"
+    },
+    "78": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "LooseOptions.label"
+    },
+    "79": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "LooseOptions.count"
+    },
+    "80": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "StrictOptions"
+    },
+    "81": {
+      "packageName": "@workflow-builder/mcp-server",
+      "packagePath": "src/__fixtures__/typedoc-src/alpha/index.ts",
+      "qualifiedName": "FrozenOptions"
+    }
+  },
+  "files": {
+    "entries": {
+      "1": "alpha/index.ts",
+      "2": "../../../README.md",
+      "3": "../../.."
+    },
+    "reflections": {
+      "1": 0,
+      "2": 0,
+      "3": 0
+    }
+  }
+}

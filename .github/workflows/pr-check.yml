@@ -3,8 +3,8 @@ name: PR Check
 # Runs on every PR to give reviewers fast feedback on whether the change
 # is safe to merge. Two things are gated here: the published packages
 # @workflowbuilder/sdk, @workflowbuilder/ui (plus its private
-# @workflowbuilder/ui-tokens build) and @workflowbuilder/temporal, and the
-# execution pipeline (execution-core, backend, execution-worker) — whose
+# @workflowbuilder/ui-tokens build), @workflowbuilder/temporal and
+# @workflowbuilder/mcp, and the execution pipeline (execution-core, backend, execution-worker) — whose
 # determinism tests guard Temporal replay safety and so must not be able to
 # regress silently. Plus the deploy compose files, which ship to the demo VM on
 # every deploy, and global format consistency. apps/docs has its own path-filtered workflow
@@ -226,6 +226,62 @@ jobs:
           if echo "$CHANGED" | grep -qE '^packages/ui/' && ! added_changeset_for '@workflowbuilder/sdk'; then
             echo "::warning title=Missing changeset::packages/ui changed with no new changeset for @workflowbuilder/sdk. The SDK build inlines @workflowbuilder/ui, so anything SDK consumers can see needs a changeset for the SDK as well."
           fi
+
+  mcp-server:
+    name: MCP docs server lint + typecheck + test + build + smoke
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          # smoke:package starts code installed from the registry outside the lockfile; it must not find the token.
+          persist-credentials: false
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/mcp lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/mcp typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/mcp test
+
+      - name: Build
+        run: pnpm --filter @workflowbuilder/mcp build
+
+      - name: Pack with the publish-time checks
+        # `prepack` for real: dist/ stamped with HEAD and a tree that install and build left clean.
+        # smoke:package packs with the clean-tree check off, so this is its only run before a tag.
+        working-directory: packages/mcp-server
+        run: pnpm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Smoke test against the real docs and API
+        run: pnpm --filter @workflowbuilder/mcp smoke
+
+      - name: Smoke test the packed package outside the repo
+        # Installs the tarball with production dependencies only and starts it through npx, the way
+        # consumers do. Fails when the server imports a build-time module or dist/data is missing.
+        run: pnpm --filter @workflowbuilder/mcp smoke:package
+
+      - name: Verify the published shape
+        # Version pinned so a tool release cannot redden PRs on its own.
+        working-directory: packages/mcp-server
+        run: pnpm dlx publint@0.3.24
 
   deploy-compose:
     name: Deploy compose files parse
