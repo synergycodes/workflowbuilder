@@ -2,6 +2,7 @@ import { Button } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { isVersionPublishable } from '../../../ui-extensions/header-action-rules';
 import { useHeaderSupply, useIsHeaderControlShown } from '../../../ui-extensions/ui-extension-context';
 
 export function PublishButton() {
@@ -15,7 +16,7 @@ export function PublishButton() {
   }
 
   return (
-    <Button size="s" disabled={!version?.isDraft} onClick={publish}>
+    <Button size="s" disabled={!isVersionPublishable(version)} onClick={publish}>
       {version ? t('header.version.publish', { number: version.number }) : t('header.version.publishNoVersion')}
     </Button>
   );

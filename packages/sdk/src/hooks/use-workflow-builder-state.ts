@@ -45,7 +45,11 @@ export type WorkflowBuilderState = {
   isCleanUpPending: boolean;
   /** `true` while the diagram has no nodes; the built-in Clean up is disabled then. */
   isCanvasEmpty: boolean;
-  /** Which supplied header actions are mounted, so `cleanUp`, `saveAsPdf` and `publish` can run. */
+  /**
+   * Which of `cleanUp`, `saveAsPdf` and `publish` has a supply mounted, so a custom control shows when
+   * the built-in would. A supplied action may still do nothing: `cleanUp` in read-only mode, on an
+   * empty canvas or while pending, `publish` unless `version` is a draft.
+   */
   availableActions: { cleanUp: boolean; saveAsPdf: boolean; publish: boolean };
 };
 

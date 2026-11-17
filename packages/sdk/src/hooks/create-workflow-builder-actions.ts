@@ -4,6 +4,7 @@ import { trackFutureChange } from '../features/changes-tracker/stores/use-change
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
+import { isCleanUpBlocked, isVersionPublishable } from '../features/ui-extensions/header-action-rules';
 import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { type LayoutDirection, layoutDirections } from '../node/common';
@@ -109,7 +110,9 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     }),
 
     cleanUp: async (direction?: LayoutDirection) => {
-      if (!canEdit() || !registry || store().nodes.length === 0 || isCleanUpHostRunning) return;
+      const { isReadOnly, nodes } = store();
+      const isBlocked = isCleanUpBlocked({ isReadOnly, isCanvasEmpty: nodes.length === 0 });
+      if (!isActive() || !registry || isBlocked || isCleanUpHostRunning) return;
       const onCleanUp = registry.getHeaderSupply('cleanUp');
       if (!onCleanUp || registry.isCleanUpPending()) return;
 
@@ -145,7 +148,8 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     saveAsPdf: whileActive(() => registry?.getHeaderSupply('saveAsPdf')?.()),
 
     publish: whileActive(() => {
-      if (registry?.getHeaderSupply('version')?.isDraft) registry.getHeaderSupply('publish')?.();
+      if (registry && isVersionPublishable(registry.getHeaderSupply('version')))
+        registry.getHeaderSupply('publish')?.();
     }),
   };
 }
