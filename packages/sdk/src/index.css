@@ -21,6 +21,7 @@
     --wb-public-scroll-radius: var(--wb-ds-radius-125);
     --wb-public-scroll-thumb-color: var(--wb-ds-components-scrollbar-bg-default);
     --wb-public-scroll-track-color: var(--wb-ds-colors-transparent);
+    --wb-public-snackbar-offset-bottom: 20px;
   }
 }
 

@@ -10,6 +10,7 @@ import styles from './log-panel.module.css';
 
 import { useLeftPanelAnchor } from '../../hooks/use-left-panel-anchor';
 import { useRightPanelAnchor } from '../../hooks/use-right-panel-anchor';
+import { useSnackbarOffset } from '../../hooks/use-snackbar-offset';
 import { type RunStatus, toggleLog, useExecutionStore } from '../../stores/use-execution-store';
 import { extractOutputText } from '../../utils/extract-output-text';
 import { ExecutionStatusIcon, type ExecutionStatusTone } from './execution-status-icon';
@@ -184,6 +185,8 @@ export function ExecutionLogPanel() {
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
   const { leftOffset } = useLeftPanelAnchor();
   const { rightOffset } = useRightPanelAnchor();
+  const [dock, setDock] = useState<HTMLElement | null>(null);
+  useSnackbarOffset(dock);
 
   const bodyRef = useRef<HTMLDivElement>(null);
   const stickToBottomRef = useRef(true);
@@ -276,6 +279,7 @@ export function ExecutionLogPanel() {
 
   return (
     <section
+      ref={setDock}
       aria-label="Execution log"
       className={clsx(styles['dock'], { [styles['dock--collapsed']]: isCollapsed })}
       style={

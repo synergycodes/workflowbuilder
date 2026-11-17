@@ -33,3 +33,4 @@
 - _02.10.2026 (recorded 26.10.2026)_: [Variable references and date types in form validation](./packages/sdk/src/utils/validation/workflow-builder-validator/variable-references-and-date-types.decision-log.md)
 - _21.10.2026_: [One vocabulary for the public API of `@workflowbuilder/sdk` 4.0](./packages/sdk/public-api-naming.decision-log.md)
 - _02.11.2026 (recorded 03.11.2026)_: [Date and time values are zone-less wall time](./packages/sdk/src/utils/time-iso.decision-log.md)
+- _16.11.2026_: [One properties form per node](./packages/sdk/src/features/json-form/form-per-node.decision-log.md)

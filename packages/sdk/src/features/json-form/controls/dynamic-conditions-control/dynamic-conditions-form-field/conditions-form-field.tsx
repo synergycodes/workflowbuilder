@@ -112,6 +112,9 @@ export function ConditionsFormField(props: ConditionsFormFieldProps) {
             mentionProps={{ appendSpaceOnAdd: false }}
           />
           <Select
+            // Base UI resets a value it held before its options changed, so each operand type
+            // gets its own Select. See json-form/form-per-node.decision-log.md.
+            key={xType}
             className={styles['input']}
             value={condition.comparisonOperator}
             items={comparisonsOperators.map((operator) => ({
