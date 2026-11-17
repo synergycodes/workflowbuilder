@@ -6,7 +6,7 @@ import { openImportModal } from '../features/integration/components/import-expor
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
 import type { UiExtensionRegistry } from '../features/ui-extensions/ui-extension-registry';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
-import type { LayoutDirection } from '../node/common';
+import { type LayoutDirection, layoutDirections } from '../node/common';
 import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';
@@ -26,6 +26,10 @@ type ActionsSession = {
 
 const store = () => useStore.getState();
 
+function isLayoutDirection(value: unknown): value is LayoutDirection {
+  return (layoutDirections as readonly unknown[]).includes(value);
+}
+
 export function createWorkflowBuilderActions({ save, isActive, registry }: ActionsSession): WorkflowBuilderActions {
   const whileActive =
     <A extends unknown[]>(action: (...parameters: A) => void) =>
@@ -38,6 +42,8 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     (...parameters: A) => {
       if (canEdit()) action(...parameters);
     };
+  // Busy starts only after the host returns, so without this a `cleanUp()` inside `onCleanUp` recurses.
+  let isCleanUpHostRunning = false;
 
   return {
     save,
@@ -103,22 +109,26 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
     }),
 
     cleanUp: async (direction?: LayoutDirection) => {
-      if (!canEdit() || !registry || store().nodes.length === 0) return;
+      if (!canEdit() || !registry || store().nodes.length === 0 || isCleanUpHostRunning) return;
       const onCleanUp = registry.getHeaderSupply('cleanUp');
       if (!onCleanUp || registry.isCleanUpPending()) return;
 
       const current = store().layoutDirection;
-      const next = direction ?? current;
+      // `cleanUp` passed straight as an `onClick` receives the click event here.
+      const next = isLayoutDirection(direction) ? direction : current;
       if (next !== current) {
         trackFutureChange('layoutDirection', { direction: next });
         store().setLayoutDirection(next);
       }
 
       let result: void | Promise<void>;
+      isCleanUpHostRunning = true;
       try {
         result = onCleanUp(next);
       } catch {
         return;
+      } finally {
+        isCleanUpHostRunning = false;
       }
       if (!(result instanceof Promise)) return;
 

@@ -695,6 +695,30 @@ describe('useWorkflowBuilderActions', () => {
       expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
     });
 
+    it('wired straight to an onClick, keeps the current direction instead of storing the event', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp(new MouseEvent('click') as never));
+
+      expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
+    it('called from inside the supplied Clean up, does not run it again', async () => {
+      const onCleanUp = vi.fn(() => {
+        void view.actions().cleanUp();
+      });
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp());
+      expect(onCleanUp).toHaveBeenCalledOnce();
+
+      await act(() => view.actions().cleanUp());
+      expect(onCleanUp).toHaveBeenCalledTimes(2);
+    });
+
     it('does nothing in read-only mode', async () => {
       useStore.setState({ isReadOnly: true });
       const onCleanUp = vi.fn();
