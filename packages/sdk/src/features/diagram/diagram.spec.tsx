@@ -159,9 +159,14 @@ describe('DiagramContainer — canvas background', () => {
   });
 
   // Vitest stubs CSS, so the default is read from disk.
-  it('defaults the grid colour to the design system canvas dots', () => {
-    const css = readFileSync(path.join(import.meta.dirname, '../../index.css'), 'utf8');
+  it('defaults the grid colour to the design system canvas dots, inside the ui.base layer', () => {
+    const css = readFileSync(path.join(import.meta.dirname, '../../index.css'), 'utf8').replaceAll(
+      /\/\*[\s\S]*?\*\//g,
+      '',
+    );
 
-    expect(css).toMatch(/:root\s*\{[^}]*--wb-public-canvas-grid-color:\s*var\(--wb-ds-ui-bg-canvas-dots\);/);
+    expect(css).toMatch(
+      /@layer ui\.base\s*\{\s*:root\s*\{[^}]*--wb-public-canvas-grid-color:\s*var\(--wb-ds-ui-bg-canvas-dots\);/,
+    );
   });
 });

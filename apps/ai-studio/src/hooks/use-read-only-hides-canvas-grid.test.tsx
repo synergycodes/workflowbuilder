@@ -48,6 +48,7 @@ describe('useReadOnlyHidesCanvasGrid', () => {
 
   it('brings the grid back when the editor unmounts while read-only', () => {
     setReadOnly(true);
+    expect(gridColor()).toBe('transparent');
     act(() => root.unmount());
     isMounted = false;
 
