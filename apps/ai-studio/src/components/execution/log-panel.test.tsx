@@ -266,12 +266,12 @@ describe('ExecutionLogPanel', () => {
         '',
       );
 
-      expect(css).toMatch(/\.dock\s*\{[^}]*bottom:\s*var\(--wb-public-layout-spacing\)/);
+      expect(css).toMatch(/\.dock\s*\{[^}]*(?<![\w-])bottom:\s*var\(--wb-public-layout-spacing\)/);
       expect(css).toMatch(
-        /\.dock\s*\{[^}]*left:\s*calc\(var\(--log-dock-left, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+        /\.dock\s*\{[^}]*(?<![\w-])left:\s*calc\(var\(--log-dock-left, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
       );
       expect(css).toMatch(
-        /\.dock\s*\{[^}]*right:\s*calc\(var\(--log-dock-right, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
+        /\.dock\s*\{[^}]*(?<![\w-])right:\s*calc\(var\(--log-dock-right, 0px\) \+ var\(--wb-public-layout-spacing\)\)/,
       );
     });
 
