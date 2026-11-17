@@ -1,3 +1,4 @@
+import GithubSlugger from 'github-slugger';
 import type { Heading, Root, RootContent } from 'mdast';
 import { toString } from 'mdast-util-to-string';
 import remarkParse from 'remark-parse';
@@ -5,7 +6,7 @@ import { unified } from 'unified';
 
 import { type ChunkingConfig, chunking as defaultChunking } from '../config/chunking.js';
 import { estimateTokens } from '../search/tokens.js';
-import { INTRO_ANCHOR, chunkId, createAnchorSlugger, pageUrl, sectionId } from './doc-ids.js';
+import { INTRO_ANCHOR, chunkId, pageUrl, sectionId } from './doc-ids.js';
 import { rankableText } from './generated-content.js';
 import type { DocChunk, DocSection } from './types.js';
 
@@ -45,6 +46,11 @@ function offsetOf(node: RootContent | Root, which: 'start' | 'end') {
   const offset = node.position?.[which].offset;
   if (offset === undefined) throw new Error('Markdown node without a source position');
   return offset;
+}
+
+export function createAnchorSlugger() {
+  const slugger = new GithubSlugger();
+  return (headingText: string) => slugger.slug(headingText);
 }
 
 function collectHeadings(tree: Root) {
