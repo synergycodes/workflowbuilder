@@ -32,7 +32,10 @@ globalThis.IS_REACT_ACT_ENVIRONMENT = true;
 
 const observers = new Map<Element, () => void>();
 
-const rootVariable = (name: string) => document.documentElement.style.getPropertyValue(name);
+const snackbarOffset = () =>
+  document.head
+    .querySelector('style[data-ai-studio-snackbar-offset]')
+    ?.textContent?.match(/\.workflow-builder-root \{ --wb-public-snackbar-offset-bottom: (\S+); \}/)?.[1] ?? '';
 
 class ReportingResizeObserver {
   private readonly targets = new Set<Element>();
@@ -237,7 +240,7 @@ describe('ExecutionLogPanel', () => {
     it('lifts the snackbars 12px above the log while it is on screen', () => {
       renderAfter(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
 
-      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 600 + 12}px`);
+      expect(snackbarOffset()).toBe(`${window.innerHeight - 600 + 12}px`);
     });
 
     it('moves the snackbars with the log when it changes size', () => {
@@ -246,7 +249,7 @@ describe('ExecutionLogPanel', () => {
       dockTop = 500;
       act(() => reportResize(container.querySelector('section')));
 
-      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe(`${window.innerHeight - 500 + 12}px`);
+      expect(snackbarOffset()).toBe(`${window.innerHeight - 500 + 12}px`);
     });
 
     it('gives the snackbars their own place back when the run is reset', () => {
@@ -256,7 +259,7 @@ describe('ExecutionLogPanel', () => {
 
       expect(container.querySelector('section')).toBeNull();
       expect(observers.size).toBe(0);
-      expect(rootVariable('--wb-public-snackbar-offset-bottom')).toBe('');
+      expect(document.head.querySelector('style[data-ai-studio-snackbar-offset]')).toBeNull();
     });
   });
 });

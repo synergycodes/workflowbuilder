@@ -8,6 +8,8 @@
   --wb-public-date-picker-dropdown-box-shadow: var(--wb-ds-shadow-ui-m-x) var(--wb-ds-shadow-ui-m-y)
     var(--wb-ds-shadow-ui-m-blur) var(--wb-ds-shadow-ui-m-spread) var(--wb-ds-shadow-ui-color);
 
+  --wb-public-date-picker-focus-ring-color: var(--wb-ds-shadow-ui-focus);
+
   --wb-public-date-picker-color: var(--wb-ds-ui-text-subtle-default);
   --wb-public-date-picker-header-background: var(--wb-ds-ui-bg-elevated);
   --wb-public-date-picker-date-header-color: var(--wb-ds-ui-text-muted-default);
