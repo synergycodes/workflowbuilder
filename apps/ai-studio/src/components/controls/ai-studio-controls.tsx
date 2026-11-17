@@ -7,7 +7,7 @@ import styles from './ai-studio-controls.module.css';
 
 import { useBackendExecution } from '../../hooks/use-backend-execution';
 import { useHasStartNode } from '../../hooks/use-has-start-node';
-import { useRunHidesCanvasGrid } from '../../hooks/use-run-hides-canvas-grid';
+import { useReadOnlyHidesCanvasGrid } from '../../hooks/use-read-only-hides-canvas-grid';
 import { useRunLocksCanvas } from '../../hooks/use-run-locks-canvas';
 import { isRunAlive, useExecutionStore } from '../../stores/use-execution-store';
 import { addNotice } from '../../stores/use-notices-store';
@@ -30,7 +30,7 @@ export function AiStudioControls({ workflowId, isRunView }: Props) {
   // A start waits for the backend; a second one meanwhile would leave two runs streaming into one view.
   const [isStarting, setIsStarting] = useState(false);
   useRunLocksCanvas();
-  useRunHidesCanvasGrid();
+  useReadOnlyHidesCanvasGrid();
   const canRun = hasStartNode && !isRunView;
 
   const handleExecute = useCallback(async () => {

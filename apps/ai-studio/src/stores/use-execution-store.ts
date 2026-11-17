@@ -47,8 +47,6 @@ type ExecutionStore = {
   decisionSends: Record<string, DecisionSend>;
   /** The waiting node whose decision form takes the focus when it next renders; Decide asks for it. */
   decisionFocusRequest: string | undefined;
-  /** The canvas was edited after the shown run ended; a new run clears it. */
-  isCanvasEditedAfterRun: boolean;
 };
 
 const emptyStore: ExecutionStore = {
@@ -62,7 +60,6 @@ const emptyStore: ExecutionStore = {
   decisionDrafts: {},
   decisionSends: {},
   decisionFocusRequest: undefined,
-  isCanvasEditedAfterRun: false,
 };
 
 const TERMINAL_STATUSES: ReadonlySet<string> = new Set(TERMINAL_EXECUTION_STATUSES);
@@ -115,17 +112,7 @@ export function setExecutionStarted(executionId: string, streamUrl: string, { ke
     decisionDrafts: {},
     decisionSends: {},
     decisionFocusRequest: undefined,
-    isCanvasEditedAfterRun: false,
   }));
-}
-
-/** An edit while the run is alive does not count, nor one with no run shown. */
-export function markCanvasEditedAfterRun() {
-  useExecutionStore.setState((state) =>
-    state.executionId !== undefined && !isRunAlive(state.status) && !state.isCanvasEditedAfterRun
-      ? { isCanvasEditedAfterRun: true }
-      : state,
-  );
 }
 
 // The backend refuses a decision while the run is cancelling, though the replay still shows the node waiting.

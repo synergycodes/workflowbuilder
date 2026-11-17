@@ -16,7 +16,6 @@ import {
   applySnapshot,
   applyStopRequested,
   isRunAlive,
-  markCanvasEditedAfterRun,
   requestDecisionFocus,
   resetExecution,
   saveDecisionDraft,
@@ -420,50 +419,6 @@ describe('use-execution-store: a stop the user asked for', () => {
     moveOn();
 
     expect(useExecutionStore.getState().isStopRequested).toBe(true);
-  });
-});
-
-const isEdited = () => useExecutionStore.getState().isCanvasEditedAfterRun;
-
-describe('use-execution-store: an edit of the canvas after the run ended', () => {
-  it('is not recorded with no run shown', () => {
-    markCanvasEditedAfterRun();
-
-    expect(isEdited()).toBe(false);
-  });
-
-  it.each(['pending', 'running', 'waiting', 'cancelling', 'disconnected'] as RunStatus[])(
-    'is not recorded while the run is %s',
-    (status) => {
-      setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-      useExecutionStore.setState({ status });
-
-      markCanvasEditedAfterRun();
-
-      expect(isEdited()).toBe(false);
-    },
-  );
-
-  it.each([...TERMINAL_EXECUTION_STATUSES] as RunStatus[])('is recorded once the run is %s', (status) => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    useExecutionStore.setState({ status });
-
-    markCanvasEditedAfterRun();
-
-    expect(isEdited()).toBe(true);
-  });
-
-  it.each([
-    ['a new run', () => setExecutionStarted('exec-2', '/api/executions/exec-2/stream')],
-    ['a reset', () => resetExecution()],
-  ])('%s forgets it', (_, moveOn) => {
-    setExecutionStarted('exec-1', '/api/executions/exec-1/stream');
-    useExecutionStore.setState({ status: 'completed' });
-    markCanvasEditedAfterRun();
-
-    moveOn();
-
-    expect(isEdited()).toBe(false);
   });
 });
 
