@@ -14,8 +14,6 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const slots = Object.fromEntries(
     [
       ['OptionalNodeContent', 'content'],
-      ['OptionalNodeOverlay', 'overlay'],
-      ['OptionalNodeCorner', 'corner'],
       ['OptionalNodeHeaderEnd', 'header-end'],
     ].map(([component, name]) => [
       component,
@@ -26,7 +24,12 @@ vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
       ),
     ]),
   );
-  return { ...actual, ...slots, Icon: () => null };
+  const NodeOverlaySlots = (props: { nodeId: string; isValid?: boolean }) => (
+    <div data-slot="overlay-slots" data-node-id={props.nodeId}>
+      <actual.NodeOverlaySlots {...props} />
+    </div>
+  );
+  return { ...actual, ...slots, NodeOverlaySlots, Icon: () => null };
 });
 
 declare global {
@@ -189,7 +192,7 @@ describe('HumanDecisionNodeTemplate', () => {
     expect(slot?.querySelectorAll('.react-flow__handle.source')).toHaveLength(2);
   });
 
-  it('puts the overlay and corner slots in the node overlay, the validation status in the corner, the header-end slot last', () => {
+  it('puts the overlay slots in the node overlay with the validation status, the header-end slot last', () => {
     render(
       <HumanDecisionNodeTemplate
         id="human-1"
@@ -201,12 +204,10 @@ describe('HumanDecisionNodeTemplate', () => {
       />,
     );
 
-    const corner = container.querySelector('[data-slot="corner"][data-node-id="human-1"]');
-    expect(corner?.querySelector('[class*="status-container--invalid"]')).not.toBeNull();
+    const overlaySlots = container.querySelector('[data-slot="overlay-slots"][data-node-id="human-1"]');
+    expect(overlaySlots?.parentElement?.className).toMatch(/overlay/);
+    expect(overlaySlots?.querySelector('[class*="status-container--invalid"]')).toBeInstanceOf(HTMLElement);
     expect(container.querySelector('[data-slot="content"] [class*="status-container"]')).toBeNull();
-    const overlay = container.querySelector('[data-slot="overlay"][data-node-id="human-1"]');
-    expect(overlay?.closest('[class*="overlay"]')).not.toBeNull();
-    expect(corner?.closest('[class*="overlay"]')).not.toBeNull();
     const headerEnd = container.querySelector('[data-slot="header-end"][data-node-id="human-1"]');
     expect(headerEnd?.parentElement?.lastElementChild).toBe(headerEnd);
   });

@@ -170,6 +170,7 @@ export {
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
 export {
+  NodeOverlaySlots,
   OptionalNodeCorner,
   OptionalNodeHeaderEnd,
   OptionalNodeOverlay,

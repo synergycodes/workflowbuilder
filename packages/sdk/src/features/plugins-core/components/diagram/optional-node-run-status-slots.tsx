@@ -32,7 +32,14 @@ export const OptionalNodeCorner = withOptionalComponentPlugins(OptionalWrapper, 
  */
 export const OptionalNodeHeaderEnd = withOptionalComponentPlugins(OptionalWrapper, 'OptionalNodeHeaderEnd');
 
-// Not a wrapper around `NodePanel.Overlay`: `NodePanel.Root` finds the Overlay by its direct child type.
+/**
+ * `OptionalNodeOverlay` and `OptionalNodeCorner` with the validation `Status`,
+ * as the built-in templates render them. Place it inside `NodePanel.Overlay`;
+ * it does not render the Overlay itself, because `NodePanel.Root` finds the
+ * Overlay by its direct child type.
+ *
+ * @category Components
+ */
 export function NodeOverlaySlots({ nodeId, isValid }: { nodeId: string; isValid?: boolean }) {
   return (
     <>
