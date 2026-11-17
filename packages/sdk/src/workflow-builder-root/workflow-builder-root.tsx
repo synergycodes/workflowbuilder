@@ -134,7 +134,7 @@ export function WorkflowBuilderRoot({
   }, []);
 
   useWarnOnce(
-    !!theme && !onThemeChange,
+    !!theme && !onThemeChange && builtInControls?.themeToggle !== false,
     '[workflow-builder] `theme` is set without `onThemeChange`, so the theme toggle does nothing. Pass `onThemeChange` to follow it, or hide the toggle with `builtInControls={{ themeToggle: false }}`.',
   );
 

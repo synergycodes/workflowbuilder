@@ -139,7 +139,7 @@ Or scope a public override to one component:
 
 ### How the styles are scoped
 
-Every component rule starts with `:is(#wb, .workflow-builder-root)`, so it applies only inside
+Every component rule starts with `:is(#\#, .workflow-builder-root)`, so it applies only inside
 the wrapper and carries the weight of one id selector. Page-wide resets such as
 `button { all: unset }` or Bootstrap's reboot do not reach the components. The bundled
 react-day-picker stylesheet keeps its own selectors' weight, so a host rule with a class, such as

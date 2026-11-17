@@ -30,13 +30,23 @@ checker's verdict comes from `pnpm build:lib` instead, run before a push and aga
 
 **Why it is silent** - The stylesheet is valid; the host rule simply wins on specificity.
 
-**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#wb, .workflow-builder-root)` (UI), `:is(#wb, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), or be a scoped reset under the bare root class followed by a descendant or child combinator (`.workflow-builder-root button`). A sibling combinator (`.workflow-builder-root ~ div`) would reach the host's elements next to the editor and is reported. The editor box's own rules carry the glued SDK prefix (`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported here, and `postcss-scope-prefix.mts` fails the build on it before that. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from the plugin, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
+**How to spot it** - Parse dist CSS. Outside `@layer`, every rule must start with `:is(#\#, .workflow-builder-root)` (UI), `:is(#\#, .workflow-builder-root).workflow-builder-root` (SDK) or `:where(.workflow-builder-root)` (third-party files), or be a scoped reset under the bare root class followed by a descendant or child combinator (`.workflow-builder-root button`). A sibling combinator (`.workflow-builder-root ~ div`) would reach the host's elements next to the editor and is reported. The editor box's own rules carry the glued SDK prefix (`:is(#\#, .workflow-builder-root).workflow-builder-root-shell`); a bare `.workflow-builder-root-shell` rule is reported here, and `postcss-scope-prefix.mts` fails the build on it before that. `@keyframes` and `@font-face` stand alone; `@media`, `@supports` and `@container` are checked inside. The prefix comes from the plugin, so a rule without one usually means a stylesheet bypassed the PostCSS pipeline.
 
 **Automated?** - Yes, in every checked dist. `Unprefixed built CSS` checks root-level rules and recurses into the conditional at-rules; any other at-rule is flagged for a human look.
 
+## Wrong prefix strength
+
+**What breaks** - The prefix weight comes from filename lists (`baseFiles`, `vendoredFiles` in `combine-css-bundle.mts`; `SDK_FILES`, `VENDORED_FILES` in the SDK's `postcss-plugins.mts`). A renamed base file gets full component weight and beats the variants that should override it; vendored CSS at component weight beats our theming.
+
+**Why it is silent** - Every weight is a valid prefix, so `Unprefixed built CSS` accepts any of them on any rule.
+
+**How to spot it** - Check a known selector per class in the output: the base button behind `:where()`, react-day-picker and `@xyflow` behind `:where(.workflow-builder-root)`, a component module at full weight.
+
+**Automated?** - Yes, as tests rather than a dist check. `prefix-strength.spec.mts` (UI) runs real source files through the UI options and pins the base-file list by name; `packages/sdk/postcss-plugins.spec.mts` does the same for the SDK paths.
+
 ## Box class behind a combinator
 
-**What breaks** - `.workflow-builder-root-shell` (the editor box) and `.wb-portal` (the popup container under `<body>`) have no ancestor that carries the root class, so a selector that reaches them through a combinator (`:is(#wb, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell`) matches nothing. The box loses its geometry or the container its `display: contents`, and the rule looks correctly prefixed.
+**What breaks** - `.workflow-builder-root-shell` (the editor box) and `.wb-portal` (the popup container under `<body>`) have no ancestor that carries the root class, so a selector that reaches them through a combinator (`:is(#\#, .workflow-builder-root).workflow-builder-root .workflow-builder-root-shell`) matches nothing. The box loses its geometry or the container its `display: contents`, and the rule looks correctly prefixed.
 
 **Why it is silent** - The selector is valid and carries the prefix; it is only never satisfied.
 

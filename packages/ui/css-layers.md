@@ -78,12 +78,13 @@ rules win by specificity instead.
 | Source                                                  | Prefix                                                    | Added weight                     |
 | ------------------------------------------------------- | --------------------------------------------------------- | -------------------------------- |
 | Vendored CSS (react-day-picker, `@xyflow`)              | `:where(.workflow-builder-root) `                         | (0,0,0)                          |
-| Base files (`typography.css`, `base-button.module.css`) | `:is(#wb, .workflow-builder-root) :where(…)`              | (1,0,0), own selector weightless |
-| UI components                                           | `:is(#wb, .workflow-builder-root) `                       | (1,0,0)                          |
-| SDK modules                                             | `:is(#wb, .workflow-builder-root).workflow-builder-root ` | (1,1,0)                          |
+| Base files (`typography.css`, `base-button.module.css`) | `:is(#\#, .workflow-builder-root) :where(…)`              | (1,0,0), own selector weightless |
+| UI components                                           | `:is(#\#, .workflow-builder-root) `                       | (1,0,0)                          |
+| SDK modules                                             | `:is(#\#, .workflow-builder-root).workflow-builder-root ` | (1,1,0)                          |
 
-`#wb` is a made-up id: `:is()` takes the weight of its heaviest argument, so the rule gets an
-id's weight while only the class has to match. The ladder makes vendored CSS lose to our
+`#\#` (the id `#`) is a made-up id: `:is()` takes the weight of its heaviest argument, so the rule
+gets an id's weight while only the class has to match. It is chosen so no page carries it; a word
+such as `wb` (the 4.0 previews used `#wb`) could be a host's real id and pull host markup in. The ladder makes vendored CSS lose to our
 theming, base styles lose to every component rule, and UI rules lose to SDK overrides, without
 depending on stylesheet order. Host rules without an id or `!important` lose to all but the
 vendored rules.
@@ -93,7 +94,7 @@ The plugin leaves alone: rules inside `@layer`, `@keyframes` and `@font-face`; `
 whitespace, since the UI dist the SDK re-reads is minified); and the scoped resets that start
 with the bare root class followed by a descendant or child combinator (`.workflow-builder-root
 button`). Rules on the editor box itself are written with the glued prefix by hand
-(`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`), since a descendant prefix would
+(`:is(#\#, .workflow-builder-root).workflow-builder-root-shell`), since a descendant prefix would
 never match the box: the plugin fails the build on a selector that starts with
 `.workflow-builder-root-shell`, `.wb-portal`, or the bare root with a state or a sibling
 combinator. A `[data-wb-theme…] .x` selector gets the

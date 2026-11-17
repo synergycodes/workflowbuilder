@@ -126,6 +126,20 @@ export function App() {
 }
 ```
 
+The editor fills its parent, so the parent needs a height. For a full-window editor, add to your global stylesheet:
+
+```css
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+}
+```
+
 It mounts the default layout (editor header, palette, canvas, properties panel) and persists to `localStorage` out of the box. The palette is empty until you pass `nodeTypes`. Full guide (props, persistence, theming, plugins, API reference): [React Component on the docs site](https://www.workflowbuilder.io/docs/get-started/quick-start/wb-as-react-component/). Or try it without installing:
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/fork/github/synergycodes/workflowbuilder/tree/main/examples/workflow-builder-starter?title=Workflow%20Builder%20Starter%20Example&file=src%2Fapp.tsx)

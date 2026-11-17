@@ -42,7 +42,8 @@
     "dist",
     "README.md",
     "LICENSE",
-    "CHANGELOG.md"
+    "CHANGELOG.md",
+    "css-layers.md"
   ],
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -13,6 +13,7 @@ import { SnackbarContainer } from '../features/snackbar/snackbar-container';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../features/ui-extensions/built-in-controls-context';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
+import { HostThemeContext } from '../hooks/host-theme-context';
 import { type Theme, useTheme } from '../hooks/use-theme';
 import { SdkRootProvider } from './sdk-root';
 
@@ -47,6 +48,14 @@ export function RootShell({ theme, builtInControls, children }: RootShellProps) 
   );
 }
 
+// `null` without a DOM (server rendering); popups then wait for the client.
+function createPortalContainer(): HTMLDivElement | null {
+  if (typeof document === 'undefined') return null;
+  const container = document.createElement('div');
+  container.className = 'workflow-builder-root wb-portal';
+  return container;
+}
+
 // Owns everything that changes (theme, language, the portal container) and gets the editor as
 // `children`, so those changes re-render the root box and context consumers, not the canvas.
 // The popup container reaches SDK code through the UI library's `usePortalContainer()`.
@@ -58,20 +67,15 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
   const language = i18n.resolvedLanguage ?? i18n.language;
 
   const rootRef = useRef<HTMLDivElement>(null);
-  // `null` until the layout effect below creates it; popups wait for it instead of using document.body.
-  const [portal, setPortal] = useState<HTMLDivElement | null>(null);
+  // Exists from the first render, so a snackbar a child shows from its mount effect has somewhere to go;
+  // attached to <body> before any such effect runs.
+  const [portal] = useState(createPortalContainer);
 
   useLayoutEffect(() => {
-    const container = document.createElement('div');
-    container.className = 'workflow-builder-root wb-portal';
-    document.body.append(container);
-    setPortal(container);
-
-    return () => {
-      container.remove();
-      setPortal(null);
-    };
-  }, []);
+    if (!portal) return;
+    document.body.append(portal);
+    return () => portal.remove();
+  }, [portal]);
 
   useLayoutEffect(() => {
     if (!portal) return;
@@ -87,7 +91,9 @@ function SurfacesRoot({ theme, children }: { theme?: Theme; children: ReactNode 
       lang={language}
     >
       <SdkRootProvider value={rootRef}>
-        <PortalContainerProvider container={portal}>{children}</PortalContainerProvider>
+        <HostThemeContext.Provider value={theme ?? null}>
+          <PortalContainerProvider container={portal}>{children}</PortalContainerProvider>
+        </HostThemeContext.Provider>
       </SdkRootProvider>
     </div>
   );

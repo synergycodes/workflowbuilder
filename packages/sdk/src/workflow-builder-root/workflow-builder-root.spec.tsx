@@ -212,6 +212,15 @@ describe('WorkflowBuilderRoot — StrictMode lifecycle contract', () => {
     warn.mockRestore();
   });
 
+  it('does not warn when the theme toggle is hidden', () => {
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(<WorkflowBuilderRoot theme="dark" builtInControls={{ themeToggle: false }} />);
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
+  });
+
   it('useStore hook subscription is stable across the StrictMode mount cycle', () => {
     let renderCount = 0;
     function Probe() {

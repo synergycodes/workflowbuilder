@@ -2,15 +2,16 @@ import type { AtRule, Plugin, Root, Rule } from 'postcss';
 
 import { isThemeScopedDefaults, targetsRoot } from './postcss-layer-root-defaults.mjs';
 
-// Scopes every selector to the editor with enough weight to beat host resets; the made-up `#wb` only adds
-// weight, `.workflow-builder-root` is what matches. Ladder and skips: css-layers.md, "The prefix ladder".
+// Scopes every selector to the editor with enough weight to beat host resets; the id `#\#` (id "#") only adds
+// weight, `.workflow-builder-root` is what matches. No page uses that id, unlike a word such as `wb`.
+// Ladder and skips: css-layers.md, "The prefix ladder".
 
 export type PrefixStrength = 'vendored' | 'ui' | 'sdk';
 
 export const PREFIX: Record<PrefixStrength, string> = {
   vendored: ':where(.workflow-builder-root) ',
-  ui: ':is(#wb, .workflow-builder-root) ',
-  sdk: ':is(#wb, .workflow-builder-root).workflow-builder-root ',
+  ui: ':is(#\\#, .workflow-builder-root) ',
+  sdk: ':is(#\\#, .workflow-builder-root).workflow-builder-root ',
 };
 
 // Whitespace-free: the UI dist the SDK build re-reads is minified.
@@ -70,7 +71,7 @@ function prefixRule(rule: Rule, { strength, vendoredFiles, baseFiles }: ScopePre
   const boxSelector = rule.selectors.find(startsWithBoxClass);
   if (boxSelector) {
     throw rule.error(
-      `\`${boxSelector.trim()}\` names the editor box, which a descendant prefix never matches. Write the rule with the glued prefix (\`:is(#wb, .workflow-builder-root).<class>\`) or as a scoped reset (\`.workflow-builder-root button\`).`,
+      `\`${boxSelector.trim()}\` names the editor box, which a descendant prefix never matches. Write the rule with the glued prefix (\`:is(#\\#, .workflow-builder-root).<class>\`) or as a scoped reset (\`.workflow-builder-root button\`).`,
     );
   }
 

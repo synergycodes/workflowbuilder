@@ -10,7 +10,7 @@ const classes = { containerAnchorOriginBottomCenter: styles['bottom-center'] };
 // No variant components: showSnackbar renders each snackbar through its own `content`.
 export function SnackbarContainer() {
   const portal = usePortalContainer();
-  // `null` is the Root's container before its first layout effect; `undefined` (no provider) means <body>.
+  // `null` is the Root without a DOM (server rendering); `undefined` (no provider) means <body>.
   if (portal === null) return null;
 
   return (

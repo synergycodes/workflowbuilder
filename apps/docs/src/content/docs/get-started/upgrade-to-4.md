@@ -9,7 +9,7 @@ Version 4.0 draws a boundary between the editor's styles and the host page's. In
 wrote `data-theme` to `<html>`, reset `<body>`, and kept its component rules in a
 cascade layer that any plain host rule could beat. In 4.0 the SDK writes nothing to `<html>` or
 `<body>` apart from one popup container (a `display: contents` element that carries the editor's
-class and theme), and its rules are scoped to the editor's element with enough weight to survive
+class and theme) and, while a modal is open, Base UI's scroll lock; its rules are scoped to the editor's element with enough weight to survive
 host resets such as Bootstrap's reboot, Tailwind's preflight or `button { all: unset }`.
 
 This page covers the style boundary only: the host page, `--wb-*` overrides, custom CSS, code
@@ -115,11 +115,25 @@ the theme controlled: the editor shows that value and does not store its own. Ad
 
 Without `onThemeChange`, the theme is fixed at the value you pass.
 
-## Removed edge tokens and `<html lang>`
+## Removed and renamed tokens, and `<html lang>`
+
+Chip, run-status and badge color tokens now come in `bg` / `fg` pairs. A `var()` of an old name
+resolves to nothing, so rename your overrides:
+
+| Old                                                                                            | New                                   |
+| ---------------------------------------------------------------------------------------------- | ------------------------------------- |
+| `--wb-ds-components-chips-solid`                                                               | `--wb-ds-components-chips-bg-solid`   |
+| `--wb-ds-components-chips-solid-text`                                                          | `--wb-ds-components-chips-fg-solid`   |
+| `--wb-ds-components-chips-inset-outline`                                                       | `--wb-ds-components-chips-fg-outline` |
+| `--wb-ds-canvas-run-status-icon-*` (critical, human, info, inverse, neutral, success, warning) | `--wb-ds-canvas-run-status-fg-*`      |
+| `--wb-ds-components-badge-text-default`, `--wb-ds-components-badge-icon-default`               | `--wb-ds-components-badge-fg-default` |
+| `--wb-ds-components-badge-text-inverse`, `--wb-ds-components-badge-icon-inverse`               | `--wb-ds-components-badge-fg-inverse` |
 
 Two canvas tokens are gone with the design system update: `--wb-ds-canvas-edge-stroke-bold` and
-`--wb-ds-canvas-edge-stroke-critical`. A `var()` of either now resolves to nothing, so replace it
-with `--wb-ds-canvas-edge-stroke-regular` (now 1px, was 2px) or `--wb-ds-canvas-edge-stroke-warning`.
+`--wb-ds-canvas-edge-stroke-critical`. A `var()` of either now resolves to nothing. To keep the
+previous look, use `var(--wb-ds-size-37)` (3px) for the bold stroke, and `var(--wb-ds-colors-red-500)`
+in Light or `var(--wb-ds-colors-red-400)` in Dark for the critical one. `--wb-ds-canvas-edge-stroke-regular`
+is now 1px: use `var(--wb-ds-size-25)` to keep 2px.
 
 The SDK also stops writing `lang` to `<html>`. It sets `lang` on its own element and on the popup
 container, from the language the editor resolved. If your page relied on the SDK for the document

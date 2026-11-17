@@ -1,11 +1,12 @@
 import { act, render } from '@testing-library/react';
 import i18n from 'i18next';
-import type { ReactNode } from 'react';
+import { type ReactNode, useEffect } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import '../features/i18n/index';
 import { setTheme, usePersistedTheme } from '../hooks/theme';
 import { resetThemeStore } from '../hooks/theme.test-utils';
+import { type Theme, useTheme } from '../hooks/use-theme';
 import { RootShell } from './root-shell';
 
 vi.mock('@workflowbuilder/ui', () => ({
@@ -56,6 +57,28 @@ describe('RootShell surfaces', () => {
     render(<RootShell theme="dark" />);
 
     expect(shell().dataset.wbTheme).toBe('dark');
+  });
+
+  // Root hands the prop to the theme store only in its layout effect, after children have rendered.
+  it('gives children the theme prop on their first render and first effect', () => {
+    const seen: Theme[] = [];
+    function ReadsTheme() {
+      const { theme } = useTheme();
+      seen.push(theme);
+      useEffect(() => {
+        seen.push(theme);
+      }, [theme]);
+      return null;
+    }
+
+    render(
+      <RootShell theme="dark">
+        <ReadsTheme />
+      </RootShell>,
+    );
+
+    expect(seen.length).toBeGreaterThan(0);
+    expect(seen.every((theme) => theme === 'dark')).toBe(true);
   });
 
   it('removes the portal container on unmount', () => {

@@ -217,7 +217,7 @@ button`, the scoped resets in 4.4). A selector that starts with `.workflow-build
 
 It descends into `@media`, `@supports` and `@container`. It prefixes top-level `:global(…)` outside the
 wrapper. A selector that starts with a theme attribute gets a **compound** prefix,
-`:is(#wb, .workflow-builder-root)[data-wb-theme='dark'] .x`, because the attribute and the class sit on
+`:is(#\#, .workflow-builder-root)[data-wb-theme='dark'] .x`, because the attribute and the class sit on
 the same element.
 
 ### 4.3 The ladder
@@ -225,9 +225,9 @@ the same element.
 | Rung          | Prefix (exact)                                            | Weight the prefix adds                 | Typical total                           | Applied to                                                                                                              |
 | ------------- | --------------------------------------------------------- | -------------------------------------- | --------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
 | Vendored      | `:where(.workflow-builder-root) `                         | 0,0,0                                  | the vendored selector's own, e.g. 0,1,0 | React Flow and react-day-picker stylesheets                                                                             |
-| Base files    | `:is(#wb, .workflow-builder-root) :where(…)`              | 1,0,0, and the wrapped selector adds 0 | exactly 1,0,0                           | `typography.css` (`.wb-text-*` roles), `base-button.module.css`, the SDK's hand-written `svg[fill='currentColor']` rule |
-| UI components | `:is(#wb, .workflow-builder-root) `                       | 1,0,0                                  | 1,1,0 and up                            | every `@workflowbuilder/ui` module                                                                                      |
-| SDK modules   | `:is(#wb, .workflow-builder-root).workflow-builder-root ` | 1,1,0                                  | 1,2,0 and up                            | every `@workflowbuilder/sdk` module                                                                                     |
+| Base files    | `:is(#\#, .workflow-builder-root) :where(…)`              | 1,0,0, and the wrapped selector adds 0 | exactly 1,0,0                           | `typography.css` (`.wb-text-*` roles), `base-button.module.css`, the SDK's hand-written `svg[fill='currentColor']` rule |
+| UI components | `:is(#\#, .workflow-builder-root) `                       | 1,0,0                                  | 1,1,0 and up                            | every `@workflowbuilder/ui` module                                                                                      |
+| SDK modules   | `:is(#\#, .workflow-builder-root).workflow-builder-root ` | 1,1,0                                  | 1,2,0 and up                            | every `@workflowbuilder/sdk` module                                                                                     |
 | Host, no ID   | n/a                                                       | n/a                                    | at most 0,n,m                           | always below the base files and above vendored rules only by its own weight                                             |
 
 How to read it:
@@ -239,10 +239,12 @@ How to read it:
 - Vendored rules are weightless on purpose. They beat host tag resets only by their own class selectors
   and lose to anything we write (decision 5.5).
 
-**Why a made-up `#wb`.** `:is()` takes the specificity of its most specific argument. `:is(#wb,
-.workflow-builder-root)` therefore weighs 1,0,0 but still matches through the class. No element in the
-DOM has `id="wb"`, and the SDK never adds an ID: hosts may already use IDs, and two editors' IDs would
-collide. The ID exists only inside the stylesheet, as weight.
+**Why a made-up `#\#`.** `:is()` takes the specificity of its most specific argument. `:is(#\#,
+.workflow-builder-root)` therefore weighs 1,0,0 but still matches through the class. The SDK never adds
+an ID: hosts may already use IDs, and two editors' IDs would collide. The ID exists only inside the
+stylesheet, as weight. It was `#wb` until a review showed that a host's real `id="wb"` matched it, so
+editor rules (the `svg[fill]` reset) restyled host markup with ID weight; the id `#` is valid HTML but
+nobody writes it.
 
 ### 4.4 The root box
 
@@ -258,7 +260,7 @@ container, the modal popup and the drag preview, and geometry there would paint 
 `<body>`.
 
 The shell rule and the picker backdrop carry the glued sdk prefix,
-`:is(#wb, .workflow-builder-root).workflow-builder-root-shell`, at (1,1,0). At one class of weight a host's
+`:is(#\#, .workflow-builder-root).workflow-builder-root-shell`, at (1,1,0). At one class of weight a host's
 `.app div { position: static; overflow: visible; height: auto }` collapsed the box, let the canvas spill over
 host content and let the backdrop escape to dim the host page. The prefixer fails the build on a bare
 `.workflow-builder-root-shell` or `.wb-portal` selector, and the checker reports either class behind a
@@ -300,7 +302,8 @@ properties still reach the popups, which are positioned fixed or by floating-ui 
 ### 4.6 Theme and language
 
 - `data-wb-theme` and `lang` are written on the shell and on the popup container, and nowhere else. The
-  SDK no longer reads or writes anything on `<html>`.
+  SDK no longer reads or writes anything on `<html>`, apart from Base UI's scroll lock while a modal is
+  open (6.4).
 - The theme lives in two small zustand stores: the user's persisted choice and the host's controlled
   value. Only the first is wired to storage, so a controlled value can never reach `localStorage` and no
   guard is needed. Components read both through `useTheme()`, so a theme change re-renders only those
@@ -438,7 +441,7 @@ legitimately writes scoped overrides such as `--wb-public-node-gap: 0` in node t
 ### 5.6 Base files are weightless inside the ID prefix
 
 - **What:** `typography.css` (the `.wb-text-*` roles) and `base-button.module.css` are emitted as
-  `:is(#wb, .workflow-builder-root) :where(…)`, which is exactly 1,0,0.
+  `:is(#\#, .workflow-builder-root) :where(…)`, which is exactly 1,0,0.
 - **Why:** These were `ui.base` element styling that components refined. With layers gone, a component
   rule (1,1,0) must still beat them regardless of order, while they still beat every host rule without
   an ID. A flat 1,0,0 does both. Nested states are written as `&:where(:disabled)`, so they add nothing
@@ -568,13 +571,13 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
 
 ### 5.15 The SDK prefix is one class above UI, not two IDs
 
-- **What:** SDK modules use `:is(#wb, .workflow-builder-root).workflow-builder-root` (1,1,0 prefix), not a
+- **What:** SDK modules use `:is(#\#, .workflow-builder-root).workflow-builder-root` (1,1,0 prefix), not a
   second ID.
 - **Why:** The documented way for a host to override an editor internal on purpose is one ID of its own
   plus our class, for example `#app .workflow-builder-root ._x` (1,2,0 or more). A two-ID SDK prefix
   (2,x,y) would put every SDK rule above that, and hosts would need two IDs or `!important` for a
   routine override. One extra class is enough to keep SDK above UI, which is all the ladder needs.
-- **Rejected:** `:is(#wb, …):is(#wb, …)` or a second made-up ID.
+- **Rejected:** `:is(#\#, …):is(#\#, …)` or a second made-up ID.
 - **Cost if wrong:** an SDK rule with a short selector ties with a host override that has the same
   weight, and order decides. Host CSS normally loads after `style.css`, so the host wins, which is the
   intended direction. Inside the editor, a UI rule with two classes of its own (a state such as
@@ -612,7 +615,7 @@ text-transform: uppercase }`) or a parent's inherited `letter-spacing` had nothi
 
 ### 5.17 Icon fill restated only for icons that ask for `currentColor`
 
-- **What:** `:is(#wb, .workflow-builder-root) :where(svg[fill='currentColor']) { fill: currentColor }`
+- **What:** `:is(#\#, .workflow-builder-root) :where(svg[fill='currentColor']) { fill: currentColor }`
   in the SDK's `index.css`, at base weight (1,0,0).
 - **Why:** Phosphor and the svgr icons colour themselves with the `fill="currentColor"` attribute, and a
   presentation attribute loses to any CSS rule, so a host `svg { fill: #555 }` recoloured 37 of 39
@@ -759,7 +762,7 @@ painting rule in a layer, any defaults block outside the layer, any box class be
 any `ui.component` layer. `restated-defaults.spec.mts` fails when one of the restated browser defaults
 (5.16) is removed from a component source. On the final build, the SDK `style.css` had:
 
-- 883 rules prefixed with `:is(#wb, …)`;
+- 883 rules prefixed with `:is(#\#, …)`;
 - 0 `html[data-theme]` selectors;
 - 0 `ui.component` blocks;
 - 0 double prefixes.

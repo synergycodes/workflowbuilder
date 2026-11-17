@@ -23,19 +23,19 @@ async function run(css: string, strength: PrefixStrength, from = '/fake/componen
 describe('postcss-scope-prefix baseFiles', () => {
   it('wraps a base file selector in :where() behind the prefix', async () => {
     expect(await run('.button { color: red }', 'ui', '/x/src/base.css')).toBe(
-      ':is(#wb, .workflow-builder-root) :where(.button) { color: red }',
+      ':is(#\\#, .workflow-builder-root) :where(.button) { color: red }',
     );
   });
 
   it('keeps a pseudo-element followed by a state outside :where()', async () => {
     expect(await run('.button::after:hover { color: red }', 'ui', '/x/src/base.css')).toBe(
-      ':is(#wb, .workflow-builder-root) :where(.button)::after:hover { color: red }',
+      ':is(#\\#, .workflow-builder-root) :where(.button)::after:hover { color: red }',
     );
   });
 
   it('keeps a pseudo-element outside :where(), where browsers accept it', async () => {
     expect(await run('.button::after, .link:hover:before { color: red }', 'ui', '/x/src/base.css')).toBe(
-      ':is(#wb, .workflow-builder-root) :where(.button)::after, :is(#wb, .workflow-builder-root) :where(.link:hover):before { color: red }',
+      ':is(#\\#, .workflow-builder-root) :where(.button)::after, :is(#\\#, .workflow-builder-root) :where(.link:hover):before { color: red }',
     );
   });
 });
@@ -80,7 +80,7 @@ describe('postcss-scope-prefix include', () => {
 
   it('prefixes a file inside include', async () => {
     const result = await postcss([plugin]).process('.panel { color: red }', { from: '/x/sdk/src/panel.module.css' });
-    expect(result.css).toBe(':is(#wb, .workflow-builder-root).workflow-builder-root .panel { color: red }');
+    expect(result.css).toBe(':is(#\\#, .workflow-builder-root).workflow-builder-root .panel { color: red }');
   });
 
   it('leaves a file outside include untouched', async () => {
@@ -91,12 +91,12 @@ describe('postcss-scope-prefix include', () => {
 
 describe('postcss-scope-prefix', () => {
   it('prefixes a component rule with the UI strength', async () => {
-    expect(await run('.button { color: red }', 'ui')).toBe(':is(#wb, .workflow-builder-root) .button { color: red }');
+    expect(await run('.button { color: red }', 'ui')).toBe(':is(#\\#, .workflow-builder-root) .button { color: red }');
   });
 
   it('uses the SDK strength', async () => {
     expect(await run('.panel { color: red }', 'sdk')).toBe(
-      ':is(#wb, .workflow-builder-root).workflow-builder-root .panel { color: red }',
+      ':is(#\\#, .workflow-builder-root).workflow-builder-root .panel { color: red }',
     );
   });
 
@@ -113,19 +113,19 @@ describe('postcss-scope-prefix', () => {
 
   it('prefixes a variable-only component rule so it keeps pace with its base rule', async () => {
     expect(await run("[data-wb-theme='dark'] .warning { --c: red }", 'sdk')).toBe(
-      ":is(#wb, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] .warning { --c: red }",
+      ":is(#\\#, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] .warning { --c: red }",
     );
   });
 
   it('compounds a painting rule on the bare themed box', async () => {
     expect(await run("[data-wb-theme='dark'] { color-scheme: dark }", 'sdk')).toBe(
-      ":is(#wb, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] { color-scheme: dark }",
+      ":is(#\\#, .workflow-builder-root).workflow-builder-root[data-wb-theme='dark'] { color-scheme: dark }",
     );
   });
 
   it('compounds a [data-wb-theme] descendant selector', async () => {
     expect(await run("[data-wb-theme='dark'] .logo { opacity: 1 }", 'ui')).toBe(
-      ":is(#wb, .workflow-builder-root)[data-wb-theme='dark'] .logo { opacity: 1 }",
+      ":is(#\\#, .workflow-builder-root)[data-wb-theme='dark'] .logo { opacity: 1 }",
     );
   });
 
@@ -135,8 +135,8 @@ describe('postcss-scope-prefix', () => {
       'ui',
     );
     expect(output).toContain('from { opacity: 0 }');
-    expect(output).not.toContain(':is(#wb, .workflow-builder-root) from');
-    expect(output).toContain('@media (min-width: 1px) { :is(#wb, .workflow-builder-root) .a');
+    expect(output).not.toContain(':is(#\\#, .workflow-builder-root) from');
+    expect(output).toContain('@media (min-width: 1px) { :is(#\\#, .workflow-builder-root) .a');
   });
 
   it('leaves rules inside @layer alone', async () => {
@@ -146,7 +146,7 @@ describe('postcss-scope-prefix', () => {
 
   it('handles top-level :global() and selector lists', async () => {
     expect(await run(':global(.ace_tooltip), .b { display: none }', 'sdk')).toBe(
-      ':is(#wb, .workflow-builder-root).workflow-builder-root :global(.ace_tooltip), :is(#wb, .workflow-builder-root).workflow-builder-root .b { display: none }',
+      ':is(#\\#, .workflow-builder-root).workflow-builder-root :global(.ace_tooltip), :is(#\\#, .workflow-builder-root).workflow-builder-root .b { display: none }',
     );
   });
 
@@ -157,14 +157,14 @@ describe('postcss-scope-prefix', () => {
   });
 
   it('recognises its own prefix in minified UI dist CSS', async () => {
-    const minified = ':is(#wb,.workflow-builder-root) ._button_1dpso_9{color:red}';
+    const minified = ':is(#\\#,.workflow-builder-root) ._button_1dpso_9{color:red}';
     expect(await run(minified, 'sdk')).toBe(minified);
   });
 
   it('skips the scoped resets and keeps a hand-glued box rule', async () => {
     const reset = '.workflow-builder-root button { cursor: pointer }';
     expect(await run(reset, 'sdk')).toBe(reset);
-    const glued = ':is(#wb, .workflow-builder-root).workflow-builder-root-shell { position: relative }';
+    const glued = ':is(#\\#, .workflow-builder-root).workflow-builder-root-shell { position: relative }';
     expect(await run(glued, 'sdk')).toBe(glued);
   });
 

@@ -70,7 +70,7 @@ describe('combine CSS bundle', () => {
       finalizeCssBundle(root);
 
       const stylesCss = readFileSync(path.join(root, 'dist/styles.css'), 'utf8');
-      expect(stylesCss).toContain(':is(#wb, .workflow-builder-root) :where(.wb-text-body-m)');
+      expect(stylesCss).toContain(':is(#\\#, .workflow-builder-root) :where(.wb-text-body-m)');
       expect(stylesCss).toMatch(/@layer wb-ui\.base\s*\{\s*\[data-wb-theme\]/);
       expect(stylesCss).not.toContain('ui.component');
     } finally {
