@@ -1,7 +1,7 @@
 import { act, render } from '@testing-library/react';
 import i18n from 'i18next';
 import { type ReactNode, StrictMode, useRef } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
 import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
@@ -51,6 +51,12 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
 }));
 
 const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue((() => '') as never);
+
+function silenceConsoleError() {
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  onTestFinished(() => consoleError.mockRestore());
+  return consoleError;
+}
 
 function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('success' as const)) {
   const captured: { current: T | null } = { current: null };
@@ -752,7 +758,9 @@ describe('useWorkflowBuilderActions', () => {
       expect(view.registry.isCleanUpPending()).toBe(false);
     });
 
-    it('a rejected clean-up ends the pending state and runs again on the next call', async () => {
+    it('a rejected clean-up is logged, ends the pending state and runs again on the next call', async () => {
+      const consoleError = silenceConsoleError();
+      const failure = new Error('layout failed');
       const pending = deferred();
       const onCleanUp = vi.fn().mockReturnValueOnce(pending.promise);
       const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
@@ -762,18 +770,21 @@ describe('useWorkflowBuilderActions', () => {
         first = view.actions().cleanUp();
       });
       await act(async () => {
-        pending.reject(new Error('layout failed'));
+        pending.reject(failure);
         await expect(first).resolves.toBeUndefined();
       });
       await act(() => view.actions().cleanUp());
 
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Clean up failed'), failure);
       expect(view.registry.isCleanUpPending()).toBe(false);
       expect(onCleanUp).toHaveBeenCalledTimes(2);
     });
 
-    it('resolves when the supply throws, without entering the pending state', async () => {
+    it('resolves when the supply throws, logs the error, and never enters the pending state', async () => {
+      const consoleError = silenceConsoleError();
+      const failure = new Error('layout failed');
       const onCleanUp = vi.fn(() => {
-        throw new Error('layout failed');
+        throw failure;
       });
       const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
 
@@ -782,7 +793,21 @@ describe('useWorkflowBuilderActions', () => {
       });
 
       expect(onCleanUp).toHaveBeenCalledOnce();
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Clean up failed'), failure);
       expect(view.registry.isCleanUpPending()).toBe(false);
+    });
+
+    it('a synchronous supply never enters the pending state, not even for a moment', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+      const pendingSeen: boolean[] = [];
+      const unsubscribe = view.registry.subscribe(() => pendingSeen.push(view.registry.isCleanUpPending()));
+
+      await act(() => view.actions().cleanUp('DOWN'));
+      unsubscribe();
+
+      expect(onCleanUp).toHaveBeenCalledOnce();
+      expect(pendingSeen).not.toContain(true);
     });
 
     it('does nothing once the Root has unmounted', async () => {

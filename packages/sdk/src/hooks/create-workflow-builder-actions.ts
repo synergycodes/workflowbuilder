@@ -31,6 +31,11 @@ function isLayoutDirection(value: unknown): value is LayoutDirection {
   return (layoutDirections as readonly unknown[]).includes(value);
 }
 
+// `cleanUp` never rejects, and the built-in discards its promise, so a host bug would otherwise leave no trace.
+function reportCleanUpFailure(error: unknown) {
+  console.error('[@workflowbuilder/sdk] The supplied Clean up failed:', error);
+}
+
 export function createWorkflowBuilderActions({ save, isActive, registry }: ActionsSession): WorkflowBuilderActions {
   const whileActive =
     <A extends unknown[]>(action: (...parameters: A) => void) =>
@@ -128,7 +133,8 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
       isCleanUpHostRunning = true;
       try {
         result = onCleanUp(next);
-      } catch {
+      } catch (error) {
+        reportCleanUpFailure(error);
         return;
       } finally {
         isCleanUpHostRunning = false;
@@ -138,8 +144,8 @@ export function createWorkflowBuilderActions({ save, isActive, registry }: Actio
       registry.setCleanUpPending(true);
       try {
         await result;
-      } catch {
-        // A throw or rejection only ends the busy state; reporting it is the host's job.
+      } catch (error) {
+        reportCleanUpFailure(error);
       } finally {
         registry.setCleanUpPending(false);
       }
