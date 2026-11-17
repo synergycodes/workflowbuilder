@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import { Icon } from '@workflow-builder/icons';
 
-import styles from './workflow-node-template.module.css';
+import styles from '../components/collapsible-body/collapsible-body.module.css';
 
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';

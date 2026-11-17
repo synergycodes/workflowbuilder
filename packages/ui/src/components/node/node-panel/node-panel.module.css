@@ -5,6 +5,9 @@
 
   --wb-public-node-padding: var(--wb-ds-canvas-node-body-h-pad);
   --wb-public-node-gap: var(--wb-ds-canvas-node-body-gap);
+  --wb-public-node-header-padding-block: var(--wb-ds-canvas-node-head-v-pad);
+  --wb-public-node-header-padding-inline: var(--wb-ds-canvas-node-head-h-pad);
+  --wb-public-node-header-gap: var(--wb-ds-canvas-node-head-item-gap);
   --wb-public-node-border-radius: var(--wb-ds-canvas-node-head-radius);
 
   --wb-public-node-border-color: var(--wb-ds-canvas-node-stroke-default);
@@ -80,11 +83,11 @@
     .header-container {
       display: flex;
       min-height: calc(
-        2 * var(--wb-ds-canvas-node-head-v-pad) + 2 * var(--wb-public-node-icon-padding) +
+        2 * var(--wb-public-node-header-padding-block) + 2 * var(--wb-public-node-icon-padding) +
           var(--wb-public-node-icon-glyph-size)
       );
-      padding: var(--wb-ds-canvas-node-head-v-pad) var(--wb-ds-canvas-node-head-h-pad);
-      gap: var(--wb-ds-canvas-node-head-item-gap);
+      padding: var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline);
+      gap: var(--wb-public-node-header-gap);
       align-items: center;
     }
 

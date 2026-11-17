@@ -154,3 +154,34 @@ describe('node-panel.module.css run overlay rule', () => {
     expect(pointerEvents).toBe('none');
   });
 });
+
+describe('node-panel.module.css', () => {
+  const file = path.join(import.meta.dirname, 'node-panel.module.css');
+  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  function declarations(selector: string) {
+    const found = new Map<string, string>();
+    stylesheet.walkRules(selector, (rule) => {
+      for (const node of rule.nodes) {
+        if (node.type === 'decl') found.set(node.prop, node.value);
+      }
+    });
+    return found;
+  }
+
+  // AI Studio's run highlight sets box-shadow, so the stroke must not live there.
+  it('draws the stroke as an inset outline', () => {
+    const rule = declarations('.container');
+    expect(rule.get('outline')).toBe('var(--wb-public-node-border-size) solid var(--wb-public-node-border-color)');
+    expect(rule.get('outline-offset')).toBe('calc(-1 * var(--wb-public-node-border-size))');
+    expect(rule.has('border')).toBe(false);
+  });
+
+  it('spaces the header through public variables', () => {
+    const rule = declarations('.header-container');
+    expect(rule.get('padding')).toBe(
+      'var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline)',
+    );
+    expect(rule.get('gap')).toBe('var(--wb-public-node-header-gap)');
+  });
+});

@@ -103,6 +103,12 @@ describe('node-icon.module.css', () => {
     expect(rule.get('background')).toBe('var(--node-icon-background)');
   });
 
+  it('subtracts the tile border from the padding, so the tile keeps its design size', () => {
+    expect(declarations('.container').get('padding')).toBe(
+      'calc(var(--wb-public-node-icon-padding) - var(--wb-public-node-icon-border-size))',
+    );
+  });
+
   it('keeps a transparent border in every state and colors it only when disabled', () => {
     expect(declarations('.container').get('border')).toMatch(/ solid transparent$/);
     expect(declarations('&.disabled').get('border-color')).toBe('var(--wb-public-node-icon-container-border-color)');
