@@ -20,6 +20,7 @@ import {
   removeSuppliesPlugin,
   renderWithSupplies,
 } from '../ui-extensions/supplies-test-utils';
+import { AppBarContainer } from './app-bar-container';
 import { Controls } from './components/controls/controls';
 import { ProjectSelection } from './components/project-selection/project-selection';
 import { Toolbar } from './components/toolbar/toolbar';
@@ -229,6 +230,18 @@ describe('editor header ⋮', () => {
     closeMenus();
     expect(screen.getByRole('button', { name: 'Share' })).toBeTruthy();
     expect(workflowMenuLabels()).toContain('Duplicate');
+  });
+});
+
+describe('editor header container', () => {
+  it.each([
+    [{ logo: false }, true],
+    [undefined, false],
+  ] as const)('with builtInControls %o, is marked without-logo: %s', (builtInControls, isMarked) => {
+    const { container } = renderWithSupplies(<AppBarContainer />, null, { builtInControls });
+
+    const header = container.querySelector('[class*="container"]')!;
+    expect(header.className.includes('without-logo')).toBe(isMarked);
   });
 });
 

@@ -222,6 +222,14 @@ html[data-theme='dark'] .logo-image--dark {
     grid-area: publish;
     justify-self: end;
   }
+
+  /* An empty logo column would still take a column gap and push the name in. */
+  .container.without-logo {
+    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-areas:
+      'name publish'
+      'tools controls';
+  }
 }
 
 @supports not (container-type: inline-size) {
@@ -306,6 +314,13 @@ html[data-theme='dark'] .logo-image--dark {
     .container .controls > :not(.controls-segment) {
       grid-area: publish;
       justify-self: end;
+    }
+
+    .container.without-logo {
+      grid-template-columns: minmax(0, 1fr) auto;
+      grid-template-areas:
+        'name publish'
+        'tools controls';
     }
   }
 }
