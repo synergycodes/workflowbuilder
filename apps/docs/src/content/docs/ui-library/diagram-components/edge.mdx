@@ -29,8 +29,9 @@ Besides `state` and `isHovered` it takes `runState` (`pending`, `running`,
 `completed`, `outOfRun`) to show where the edge stands in an execution run, and
 `lineType` (`solid`, `dashed`). The colour follows the first match of:
 `disabled`, then `runState`, then `selected` / `temporary`, then hover, then the
-default. Once `runState` is set, hover and selection no longer change the
-colour. `running` always draws an animated `6 5` dash, even on a `dashed` edge;
+default. Once `runState` is set, hover, selection and the SDK's keyboard focus
+no longer change the colour, so during and after a run a focused edge shows no
+focus indicator. `running` always draws an animated `6 5` dash, even on a `dashed` edge;
 otherwise `dashed` draws a static `5 4` dash. A custom
 `--wb-public-edge-dash-running` needs `--wb-public-edge-dash-running-period` set
 to the sum of its pattern, or the dash jumps once per loop. Every edge is 1 px wide. The
