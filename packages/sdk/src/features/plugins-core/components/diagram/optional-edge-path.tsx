@@ -10,7 +10,7 @@ import { withOptionalComponentPlugins } from '../../adapters/adapter-components'
  * that decorator a high `priority`: the highest one wraps innermost. A custom
  * edge renders it to get the same states. Receives {@link EdgePathProps}.
  * Props that need no hooks go through `modifyProps`, see
- * [Setting props or wrapping a slot](https://www.workflowbuilder.io/docs/guides/build-a-plugin/#setting-props-or-wrapping-a-slot).
+ * [Setting props or wrapping a slot](/docs/guides/build-a-plugin/#setting-props-or-wrapping-a-slot).
  *
  * @category Components
  */
