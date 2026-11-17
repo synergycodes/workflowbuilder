@@ -2,7 +2,7 @@ import type { EdgePathProps, WorkflowBuilderDecoratorWrapperProps } from '@workf
 import type { EdgeLineType, EdgeRunState } from '@workflowbuilder/ui';
 import { useStore } from '@xyflow/react';
 
-import { isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
+import { RESERVED_ERROR_HANDLE, isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
 
 import { decisionPaletteItem } from '../../nodes/decision';
 import {
@@ -23,6 +23,8 @@ function isEdgeTaken(
   sourceHandle: string | null | undefined,
 ): boolean | undefined {
   if (source?.status !== 'completed' && source?.status !== 'failed') return;
+  // Runs recorded before `nextPort` was emitted carry none, even for a routed failure.
+  if (source.status === 'failed' && !source.nextPort && sourceHandle === RESERVED_ERROR_HANDLE) return true;
   return isPortRouted(source.nextPort, sourceHandle);
 }
 

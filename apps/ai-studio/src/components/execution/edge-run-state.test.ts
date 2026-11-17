@@ -101,4 +101,8 @@ describe('edgeRunState', () => {
   it('treats a source without a recorded port, as in runs before it was emitted, as leaving through every edge', () => {
     expect(edgeRunState({ status: 'completed' }, node('completed'), 'completed', 'no')).toBe('completed');
   });
+
+  it('treats the error edge of a failure without a recorded port, as in runs before it was emitted, as taken', () => {
+    expect(edgeRunState({ status: 'failed' }, node('completed'), 'completed', 'errorRoute')).toBe('completed');
+  });
 });
