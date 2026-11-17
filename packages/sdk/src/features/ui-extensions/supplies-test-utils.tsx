@@ -6,7 +6,6 @@ import { registerComponentDecorator } from '../plugins-core/adapters/adapter-com
 import { OptionalAppChildren } from '../plugins-core/components/app/optional-app-children';
 import type { BuiltInControls } from './built-in-controls';
 import { renderInRoot } from './test-utils';
-import { PluginSupplySource } from './ui-extension-context';
 
 /** Where the supplies mount: in the app's own tree, or through a plugin's `OptionalAppChildren`. */
 export type SupplyRoute = 'app tree' | 'plugin';
@@ -30,13 +29,7 @@ export function renderWithSupplies(
   return renderInRoot(
     <IntegrationContextWrapper onSave={vi.fn()} autoSave={false}>
       {ui}
-      {via === 'app tree' ? (
-        supplies
-      ) : (
-        <PluginSupplySource>
-          <OptionalAppChildren />
-        </PluginSupplySource>
-      )}
+      {via === 'app tree' ? supplies : <OptionalAppChildren />}
       {after}
     </IntegrationContextWrapper>,
     { builtInControls },

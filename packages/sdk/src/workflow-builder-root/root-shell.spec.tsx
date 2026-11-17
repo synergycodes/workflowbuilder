@@ -119,7 +119,7 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
     });
   });
 
-  it("the app's own supply is in use over a plugin's, without a warning, and the plugin's returns when it unmounts", () => {
+  it("a plugin's supply mounts after the app's children, so it is in use, with a warning", () => {
     const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
     const fromApp = vi.fn();
     const fromPlugin = vi.fn();
@@ -134,7 +134,7 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
     }
 
     try {
-      const view = render(
+      render(
         <WorkflowBuilderRoot>
           <RegistryProbe />
           <EditorHeaderSaveAsPdf onSaveAsPdf={fromApp} />
@@ -142,18 +142,9 @@ describe('WorkflowBuilderRoot UI extension providers', () => {
       );
       registry!.getHeaderSupply('saveAsPdf')!();
 
-      expect(fromApp).toHaveBeenCalledOnce();
-      expect(fromPlugin).not.toHaveBeenCalled();
-      expect(warn).not.toHaveBeenCalledWith(expect.stringContaining('is mounted more than once'));
-
-      view.rerender(
-        <WorkflowBuilderRoot>
-          <RegistryProbe />
-        </WorkflowBuilderRoot>,
-      );
-      registry!.getHeaderSupply('saveAsPdf')!();
-
       expect(fromPlugin).toHaveBeenCalledOnce();
+      expect(fromApp).not.toHaveBeenCalled();
+      expect(warn).toHaveBeenCalledWith(expect.stringContaining('is mounted more than once'));
     } finally {
       registerComponentDecorator('OptionalAppChildren', { name: 'pdf-test-plugin' });
       warn.mockRestore();

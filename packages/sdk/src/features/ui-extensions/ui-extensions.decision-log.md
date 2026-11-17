@@ -217,11 +217,15 @@ Design decisions a reader of the code should know:
     `EditorHeaderPublish` render nothing and put their callback or value into the per-Root
     registry (`header-supply.tsx`). Components and not a Root prop, so they work from the app tree
     and from a plugin alike and leave with the Root; one per control, so a layout plugin and a PDF
-    plugin each supply only their own. The app's supply wins over a plugin's, whatever the mount
-    order: a plugin offers a default and the app that installs it decides, and `RootShell` mounts
-    `OptionalAppChildren` after the app's children, so "mounted last" alone made the plugin win.
-    `RootShell` marks what `OptionalAppChildren` renders as a plugin's. Two from one side: the one mounted
-    last is in use, with a warning, and the earlier one returns when it unmounts.
+    plugin each supply only their own. Of two of one kind, the one mounted last is in use, with a
+    warning, and the earlier one returns when it unmounts. `RootShell` mounts the plugin slots
+    after the app's children, so a plugin's supply wins at mount; an app that wants its own leaves
+    out the plugin that supplies that kind.
+  - A draft let the app's supply win over a plugin's whatever the mount order; it was dropped
+    before shipping (Dominika Pacholec, 17.11.2026). No plugin supplies anything yet, an app
+    already chooses its plugins, and the rule needed a source context through every decorator slot
+    (a supply from `OptionalHooks` counted as the app's and won). Adding it later only changes
+    setups that already log the duplicate warning; removing it after 4.0 would break them.
   - The actions `cleanUp`, `saveAsPdf` and `publish` run the supply, and the built-in controls call
     them. So `UiExtensionProvider` moved from `RootShell` up to `WorkflowBuilderRoot`, above
     `RuntimeIntegrationWrapper`, where the actions are created; it is still one registry per

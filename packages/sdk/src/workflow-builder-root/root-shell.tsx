@@ -10,7 +10,6 @@ import { ModalProvider } from '../features/modals/providers/modal-provider';
 import { SnackbarContainer } from '../features/snackbar/snackbar-container';
 import type { BuiltInControls } from '../features/ui-extensions/built-in-controls';
 import { BuiltInControlsProvider, EMPTY_CONTROLS } from '../features/ui-extensions/built-in-controls-context';
-import { PluginSupplySource } from '../features/ui-extensions/ui-extension-context';
 
 /**
  * Internal subtree rendered inside the Root's UI extension registry and its
@@ -29,9 +28,7 @@ export function RootShell({ builtInControls, children }: { builtInControls?: Bui
         <ModalProvider />
         <AppLoaderContainer />
         <OptionalHooks />
-        <PluginSupplySource>
-          <OptionalAppChildren />
-        </PluginSupplySource>
+        <OptionalAppChildren />
       </div>
     </BuiltInControlsProvider>
   );
