@@ -1,0 +1,20 @@
+{
+  "name": "@workflow-builder/e2e",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "e2e": "playwright test",
+    "db:up": "docker compose up -d --wait",
+    "db:down": "docker compose down",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint",
+    "lint:fix": "eslint --fix"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.65.0",
+    "@temporalio/testing": "catalog:",
+    "@types/node": "^22.12.0",
+    "postgres": "^3.4.5"
+  }
+}

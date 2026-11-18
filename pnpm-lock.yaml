@@ -451,6 +451,21 @@ importers:
         specifier: ~5.6.3
         version: 5.6.3
 
+  apps/e2e:
+    devDependencies:
+      '@playwright/test':
+        specifier: ^1.65.0
+        version: 1.65.0
+      '@temporalio/testing':
+        specifier: 'catalog:'
+        version: 1.23.0(postcss@8.5.6)
+      '@types/node':
+        specifier: ^22.12.0
+        version: 22.12.0
+      postgres:
+        specifier: ^3.4.5
+        version: 3.4.9
+
   apps/execution-worker:
     dependencies:
       '@ai-sdk/openai-compatible':
@@ -2634,6 +2649,11 @@ packages:
   '@pkgr/core@0.2.9':
     resolution: {integrity: sha512-QNqXyfVS2wm9hweSYD2O7F0G06uurj9kZ96TRQE5Y9hU7+tgdZwIkbAKc5Ocy1HxEY2kuDQa6cQ1WRs/O5LFKA==}
     engines: {node: ^12.20.0 || ^14.18.0 || >=16.0.0}
+
+  '@playwright/test@1.65.0':
+    resolution: {integrity: sha512-iGURLGuKDLakSEl7Pgfv8h7f+XLT+V861Wfhz0zlEl5nyFuKUopdkFBPKqTllTUp06aOwPuH8iuUEb3yp3MpbQ==}
+    engines: {node: '>=20'}
+    hasBin: true
 
   '@protobufjs/aspromise@1.1.2':
     resolution: {integrity: sha512-j+gKExEuLmKwvz3OgROXtrJ2UG2x8Ch2YZUxahh+s1F2HZ+wAceUNLkvy6zKCPVRkU++ZWQrdxsUeQXmcg4uoQ==}
@@ -6978,6 +6998,16 @@ packages:
   pkg-types@2.3.0:
     resolution: {integrity: sha512-SIqCzDRg0s9npO5XQ3tNZioRY1uK06lA41ynBC1YmFTmnY6FjUjVt6s4LoADmwoig1qqD0oK8h1p/8mlMx8Oig==}
 
+  playwright-core@1.65.0:
+    resolution: {integrity: sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==}
+    engines: {node: '>=20'}
+    hasBin: true
+
+  playwright@1.65.0:
+    resolution: {integrity: sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA==}
+    engines: {node: '>=20'}
+    hasBin: true
+
   pluralize@8.0.0:
     resolution: {integrity: sha512-Nc3IT5yHzflTfbjgqWcCPpo7DaKy4FnpB0l/zCAW0Tc7jxAiuqSxHasntB3D7887LSrA93kDJ9IXovxJYxyLCA==}
     engines: {node: '>=4'}
@@ -10717,6 +10747,10 @@ snapshots:
 
   '@pkgr/core@0.2.9': {}
 
+  '@playwright/test@1.65.0':
+    dependencies:
+      playwright: 1.65.0
+
   '@protobufjs/aspromise@1.1.2': {}
 
   '@protobufjs/base64@1.1.2': {}
@@ -11174,6 +11208,31 @@ snapshots:
       - uglify-js
       - webpack-cli
 
+  '@temporalio/testing@1.23.0(postcss@8.5.6)':
+    dependencies:
+      '@temporalio/activity': 1.23.0
+      '@temporalio/client': 1.23.0
+      '@temporalio/common': 1.23.0
+      '@temporalio/core-bridge': 1.23.0
+      '@temporalio/proto': 1.23.0
+      '@temporalio/worker': 1.23.0(postcss@8.5.6)
+      '@temporalio/workflow': 1.23.0
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@swc/css'
+      - '@swc/helpers'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - lightningcss
+      - postcss
+      - tslib
+      - uglify-js
+      - webpack-cli
+
   '@temporalio/testing@1.23.0(postcss@8.5.6)(tslib@2.8.1)':
     dependencies:
       '@temporalio/activity': 1.23.0
@@ -11221,6 +11280,44 @@ snapshots:
       swc-loader: 0.2.7(@swc/core@1.15.26)(webpack@5.110.1(@swc/core@1.15.26)(esbuild@0.27.3)(postcss@8.5.28))
       unionfs: 4.6.0
       webpack: 5.110.1(@swc/core@1.15.26)(esbuild@0.27.3)(postcss@8.5.28)
+    transitivePeerDependencies:
+      - '@minify-html/node'
+      - '@swc/css'
+      - '@swc/helpers'
+      - '@swc/html'
+      - clean-css
+      - cssnano
+      - csso
+      - esbuild
+      - html-minifier-terser
+      - lightningcss
+      - postcss
+      - tslib
+      - uglify-js
+      - webpack-cli
+
+  '@temporalio/worker@1.23.0(postcss@8.5.6)':
+    dependencies:
+      '@grpc/grpc-js': 1.14.3
+      '@swc/core': 1.15.26
+      '@temporalio/activity': 1.23.0
+      '@temporalio/client': 1.23.0
+      '@temporalio/common': 1.23.0
+      '@temporalio/core-bridge': 1.23.0
+      '@temporalio/nexus': 1.23.0
+      '@temporalio/proto': 1.23.0
+      '@temporalio/workflow': 1.23.0
+      heap-js: 2.7.1
+      memfs: 4.57.2(tslib@2.8.1)
+      nexus-rpc: 0.0.3
+      protobufjs: 8.8.0
+      rxjs: 7.8.1
+      source-map: 0.7.6
+      source-map-loader: 5.0.0(webpack@5.110.1(@swc/core@1.15.26)(postcss@8.5.6))
+      supports-color: 8.1.1
+      swc-loader: 0.2.7(@swc/core@1.15.26)(webpack@5.110.1(@swc/core@1.15.26)(postcss@8.5.6))
+      unionfs: 4.6.0
+      webpack: 5.110.1(@swc/core@1.15.26)(postcss@8.5.6)
     transitivePeerDependencies:
       - '@minify-html/node'
       - '@swc/css'
@@ -16078,6 +16175,12 @@ snapshots:
       confbox: 0.2.4
       exsolve: 1.0.8
       pathe: 2.0.3
+
+  playwright-core@1.65.0: {}
+
+  playwright@1.65.0:
+    dependencies:
+      playwright-core: 1.65.0
 
   pluralize@8.0.0: {}
 
