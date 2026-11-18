@@ -44,5 +44,7 @@ test('a run waiting for a decision survives a page reload and completes once app
   const requests = await llm.requests();
   expect(requests.filter(({ system }) => system.includes('Decide the refund amount under the policy'))).toHaveLength(1);
 
-  await expect.poll(() => backend.execution(executionId)).toMatchObject({ id: executionId, status: 'completed' });
+  await expect
+    .poll(() => backend.execution(executionId))
+    .toMatchObject({ id: executionId, status: 'completed', outcome: null });
 });

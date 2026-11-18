@@ -47,5 +47,7 @@ test('a refund approved with a corrected amount completes the run and sends that
   const confirmation = requests.find(({ system }) => system.includes('Send replyDraft to the customer'));
   expect(confirmation?.user).toContain(`"refundAmount":${correctedAmount}`);
 
-  await expect.poll(() => backend.execution(executionId)).toMatchObject({ id: executionId, status: 'completed' });
+  await expect
+    .poll(() => backend.execution(executionId))
+    .toMatchObject({ id: executionId, status: 'completed', outcome: null });
 });
