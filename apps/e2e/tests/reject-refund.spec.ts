@@ -43,8 +43,11 @@ test('a refund rejected with a reason completes the run as rejected and sends no
   await expect(form).toBeHidden();
   await expect(propertiesPanel(page).getByText(reason, { exact: true })).toBeVisible();
 
+  // Every agent step in the template opens with this preamble; a sent confirmation would be a second agent call.
   const requests = await llm.requests();
-  expect(requests.filter(({ system }) => system.includes('Send replyDraft to the customer'))).toEqual([]);
+  const agentCalls = requests.filter(({ system }) => system.includes('customer support for Lumen'));
+  expect(agentCalls).toHaveLength(1);
+  expect(agentCalls[0]!.system).toContain('Decide the refund amount under the policy');
 
   await expect
     .poll(() => backend.execution(executionId))
