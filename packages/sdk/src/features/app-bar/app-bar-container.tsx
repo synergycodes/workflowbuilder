@@ -1,6 +1,7 @@
 import styles from './app-bar.module.css';
 import './variables.css';
 
+import { useIsBuiltInControlVisible } from '../ui-extensions/built-in-controls-context';
 import { Controls } from './components/controls/controls';
 import { ProjectSelection } from './components/project-selection/project-selection';
 import { Toolbar } from './components/toolbar/toolbar';
@@ -13,9 +14,11 @@ import { Toolbar } from './components/toolbar/toolbar';
  * @category Components
  */
 export function AppBarContainer() {
+  const isLogoVisible = useIsBuiltInControlVisible('logo');
+
   return (
     <div className={styles['app-bar']}>
-      <div className={styles['container']}>
+      <div className={isLogoVisible ? styles['container'] : `${styles['container']} ${styles['without-logo']}`}>
         <Toolbar />
         <ProjectSelection />
         <Controls />

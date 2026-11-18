@@ -9,11 +9,11 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
-import { AppBarProvider } from '../features/app-bar/app-bar-context';
 import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
+import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { initTheme } from '../hooks/theme';
 import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
@@ -65,7 +65,6 @@ export function WorkflowBuilderRoot({
   name,
   logo,
   logoHref,
-  editorHeader,
   layoutDirection,
   initialNodes,
   initialEdges,
@@ -150,25 +149,25 @@ export function WorkflowBuilderRoot({
   const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 
   return (
-    <RuntimeIntegrationWrapper
-      strategy={strategy}
-      endpoints={endpoints}
-      onDataSave={onDataSave}
-      autoSave={autoSave}
-      onLoad={onLoad ?? defaultOnLoad}
-      name={name}
-      layoutDirection={layoutDirection}
-      nodes={initialNodes}
-      edges={initialEdges}
-    >
-      <ReactFlowProvider>
-        <AppBarProvider value={editorHeader}>
+    <UiExtensionProvider>
+      <RuntimeIntegrationWrapper
+        strategy={strategy}
+        endpoints={endpoints}
+        onDataSave={onDataSave}
+        autoSave={autoSave}
+        onLoad={onLoad ?? defaultOnLoad}
+        name={name}
+        layoutDirection={layoutDirection}
+        nodes={initialNodes}
+        edges={initialEdges}
+      >
+        <ReactFlowProvider>
           <EdgeEndpointContext.Provider value={edgeEndpoint}>
             <RootShell builtInControls={builtInControls}>{children}</RootShell>
           </EdgeEndpointContext.Provider>
-        </AppBarProvider>
-      </ReactFlowProvider>
-    </RuntimeIntegrationWrapper>
+        </ReactFlowProvider>
+      </RuntimeIntegrationWrapper>
+    </UiExtensionProvider>
   );
 }
 
