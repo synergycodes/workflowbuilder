@@ -1,3 +1,4 @@
+import { RESERVED_ERROR_HANDLE, isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
 import type {
   DeadEnd,
   ExecutionErrorPayload,
@@ -21,15 +22,6 @@ import type { VersioningPort } from './ports/versioning.port';
 import type { WorkflowExecutionInput } from './ports/workflow-engine.port';
 import { withRedactedPayloads } from './redact';
 import { resolveStartNode } from './resolve-start-node';
-
-// `sourceHandle` reserved for the 'errorRoute' error policy. Edges tagged
-// with this value fire ONLY when the upstream node failed with policy
-// 'errorRoute' (which sets the propagation nextPort to this value). Every other
-// propagation path — success, 'continue' on error, decision branching,
-// skip — prunes them, so a dangling error branch never fires unless
-// someone explicitly opted into error routing. The handle name matches the
-// policy literal so the wiring reads consistently from schema to runner.
-const RESERVED_ERROR_HANDLE = 'errorRoute';
 
 // How the run ended. Returned rather than thrown so `runGraph` stays engine-agnostic:
 // each engine adapter decides how an outcome maps onto its own vocabulary (the
@@ -442,20 +434,8 @@ function isFilled(text: unknown): text is string {
   return typeof text === 'string' && text.trim().length > 0;
 }
 
-// Edge liveness rules:
-// - Dead upstream prunes everything (skip propagation).
-// - Error routing (`nextPort === RESERVED_ERROR_HANDLE`) fires only the
-//   matching error edges; every other outgoing edge is pruned.
-// - Otherwise (success, `continue`, decision branches): error edges are
-//   pruned, and a non-error edge fires when it has no `sourceHandle` set
-//   or when its handle matches `nextPort` (decision-style routing).
 function isEdgeLive(sourceLive: boolean, nextPort: string | undefined, sourceHandle: string | undefined): boolean {
-  if (!sourceLive) return false;
-  const isErrorEdge = sourceHandle === RESERVED_ERROR_HANDLE;
-  const isErrorRouting = nextPort === RESERVED_ERROR_HANDLE;
-  if (isErrorRouting) return isErrorEdge;
-  if (isErrorEdge) return false;
-  return !nextPort || sourceHandle === nextPort;
+  return sourceLive && isPortRouted(nextPort, sourceHandle);
 }
 
 type AdjacencyEntry<TNode extends BaseNode> = {

@@ -282,8 +282,7 @@ The same template renders the canvas node, the palette thumbnail and the drag gh
 A custom template gets no validation badge and no [run status slots](/guides/build-a-plugin/#available-slots) unless it renders them. The built-in templates do it like this, on canvas nodes only (the palette passes `showHandles={false}`):
 
 ```tsx
-import { OptionalNodeCorner, OptionalNodeHeaderEnd, OptionalNodeOverlay } from '@workflowbuilder/sdk';
-import { Status } from '@workflowbuilder/ui';
+import { NodeOverlaySlots, OptionalNodeHeaderEnd } from '@workflowbuilder/sdk';
 
 // `id` and `isValid` come from WorkflowBuilderNodeTemplateProps too.
 const isCanvasNode = showHandles;
@@ -294,16 +293,13 @@ const isCanvasNode = showHandles;
     {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
   </NodePanel.Header>
   <NodePanel.Overlay isVisible={isCanvasNode}>
-    <OptionalNodeOverlay nodeId={id} />
-    <OptionalNodeCorner nodeId={id}>
-      <Status status={isValid === false ? 'invalid' : undefined} />
-    </OptionalNodeCorner>
+    <NodeOverlaySlots nodeId={id} isValid={isValid} />
   </NodePanel.Overlay>
   {/* NodePanel.Handles */}
 </NodePanel.Root>;
 ```
 
-Keep `OptionalNodeHeaderEnd` the last child of the header.
+Keep `OptionalNodeHeaderEnd` the last child of the header. `NodeOverlaySlots` renders `OptionalNodeOverlay` and `OptionalNodeCorner` with the validation `Status`; put it inside `NodePanel.Overlay`, which it does not render itself.
 
 One thing the custom template path does **not** include: `NodeAsPortWrapper` (drag-to-create connections by dropping onto the node body). If you need that, register a custom node container through a plugin instead — see [Build a plugin](/guides/build-a-plugin/).
 

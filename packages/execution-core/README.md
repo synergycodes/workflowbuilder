@@ -141,6 +141,8 @@ Each node can declare an `errorPolicy` on its `BaseNode` (sibling to `config`, a
 
 `'errorRoute'` piggybacks on the same `nextPort` mechanism decision nodes use — non-`'errorRoute'` edges are pruned through the standard skip-propagation path, so deep dead branches stay dormant.
 
+The events say which edges the run took. `node_completed` carries `nextPort` when the executor returned a non-empty one, and `node_failed` carries `nextPort: 'errorRoute'` under that policy. A missing `nextPort` means every non-error edge, or a run recorded before this field existed, where a routed failure carries none either. The rule the runner routes by is `isPortRouted` in `@workflow-builder/types/workflow-execution/edge-routing`.
+
 Only `'fail'` ends the run as failed. A node that fails under `'continue'` is absorbed by the graph: `node_failed` is still emitted, so the failure stays visible to anyone tailing events, but the run itself completes — `runGraph` returns `{ status: 'completed' }` and the engine reports a successful run. `'errorRoute'` absorbs the failure the same way only when the error port is actually routed; the same failure with no live `'errorRoute'` edge ends the run as `{ status: 'incomplete' }` — see [Incomplete runs](#incomplete-runs).
 
 ### `'errorRoute'` is a reserved `sourceHandle`

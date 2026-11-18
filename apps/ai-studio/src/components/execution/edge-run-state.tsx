@@ -2,6 +2,8 @@ import type { EdgePathProps, WorkflowBuilderDecoratorWrapperProps } from '@workf
 import type { EdgeLineType, EdgeRunState } from '@workflowbuilder/ui';
 import { useStore } from '@xyflow/react';
 
+import { RESERVED_ERROR_HANDLE, isPortRouted } from '@workflow-builder/types/workflow-execution/edge-routing';
+
 import { decisionPaletteItem } from '../../nodes/decision';
 import {
   type NodeExecutionState,
@@ -15,18 +17,15 @@ const REACHED_TARGET_STATUSES: ReadonlySet<NodeExecutionState['status']> = new S
 // Human tasks (human decision, review) stay solid: only branching nodes draw dashed edges.
 const DASHED_SOURCE_TYPES: ReadonlySet<unknown> = new Set([decisionPaletteItem.type]);
 
-const ERROR_ROUTE_HANDLE = 'errorRoute';
-
-// Mirrors isEdgeLive in execution-core's graph runner. undefined until the source has finished.
+// undefined until the source has finished.
 function isEdgeTaken(
   source: NodeExecutionState | undefined,
   sourceHandle: string | null | undefined,
 ): boolean | undefined {
   if (source?.status !== 'completed' && source?.status !== 'failed') return;
-  const isErrorEdge = sourceHandle === ERROR_ROUTE_HANDLE;
-  if (source.nextPort === ERROR_ROUTE_HANDLE) return isErrorEdge;
-  if (isErrorEdge) return false;
-  return !source.nextPort || sourceHandle === source.nextPort;
+  // Runs recorded before `nextPort` was emitted carry none, even for a routed failure.
+  if (source.status === 'failed' && !source.nextPort && sourceHandle === RESERVED_ERROR_HANDLE) return true;
+  return isPortRouted(source.nextPort, sourceHandle);
 }
 
 // Every skip means "not executed", whatever its reason, so a skipped end never reads as travelled.

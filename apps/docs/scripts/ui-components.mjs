@@ -86,6 +86,8 @@ export const COMPONENTS = [
     propsType: 'NodeAsPortWrapperProps',
     dir: 'node/node-as-port-wrapper',
   },
+  // The colour palette every run status part reads; the Run status page renders it.
+  { slug: 'run-status', name: 'Run status', propsType: null, dir: 'node/run-status' },
   { slug: 'node-run-ring', name: 'NodeRunRing', propsType: 'NodeRunRingProps', dir: 'node/node-run-ring' },
   { slug: 'node-run-veil', name: 'NodeRunVeil', propsType: 'NodeRunVeilProps', dir: 'node/node-run-veil' },
   {
@@ -108,3 +110,6 @@ export const COMPONENTS = [
   // Compound component - parts described in prose, variables generated.
   { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];
+
+// Exports no documented prop links to, given a UI API Reference page anyway; the types they use come along.
+export const REFERENCE_EXPORTS = ['runStatusPresets', 'RUN_STATUS_TONES'];

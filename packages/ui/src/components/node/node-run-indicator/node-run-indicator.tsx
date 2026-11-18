@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import type { HTMLAttributes, ReactNode } from 'react';
 
+import '../run-status/variables.css';
 import styles from './node-run-indicator.module.css';
 
 import type { RunStatusTone } from '../run-status/run-status-tone';
@@ -13,8 +14,8 @@ import type { RunStatusTone } from '../run-status/run-status-tone';
 export type NodeRunSpinner = 'running' | 'slow';
 
 export type NodeRunIndicatorBaseProps = {
-  /** Background of the circle, and the glyph colour unless `iconTone` is set. */
-  tone: RunStatusTone;
+  /** Background of the circle, and the glyph colour unless `iconTone` is set. `inverse` is a glyph tone only. */
+  tone: Exclude<RunStatusTone, 'inverse'>;
   /** Glyph colour when it differs from `tone`, for example `inverse` on a `neutral` circle (Rejected). */
   iconTone?: RunStatusTone;
 } & Omit<HTMLAttributes<HTMLSpanElement>, 'children'>;

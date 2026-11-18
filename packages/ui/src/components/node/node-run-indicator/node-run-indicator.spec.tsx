@@ -5,7 +5,11 @@ import { type Root, createRoot } from 'react-dom/client';
 
 import postcss from 'postcss';
 
+import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { throughPalette } from '../run-status/test-utils';
 import { NodeRunIndicator } from './node-run-indicator';
+
+const CIRCLE_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
 
 let container: HTMLDivElement;
 let root: Root;
@@ -23,6 +27,12 @@ afterEach(() => {
 
 function indicator() {
   return container.firstElementChild as HTMLElement;
+}
+
+// Never called: `pnpm typecheck` fails if the circle accepts `inverse`, whose glyph would match it.
+function _inverseCircle() {
+  // @ts-expect-error inverse is a glyph tone only
+  return <NodeRunIndicator tone="inverse" icon={<svg />} />;
 }
 
 describe('NodeRunIndicator', () => {
@@ -55,6 +65,28 @@ describe('NodeRunIndicator', () => {
 describe('node-run-indicator.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-indicator.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  function declaration(selector: string, property: string) {
+    let value: string | undefined;
+    stylesheet.walkRules(selector, (rule) => {
+      rule.walkDecls(property, (found) => {
+        value = found.value;
+      });
+    });
+    return value;
+  }
+
+  it.each(CIRCLE_TONES)('colours the %s circle with the DS run status bg token', (tone) => {
+    expect(throughPalette(declaration(`.indicator[data-tone='${tone}']`, '--indicator-background-color'))).toBe(
+      `var(--wb-ds-canvas-run-status-bg-${tone})`,
+    );
+  });
+
+  it.each(RUN_STATUS_TONES)('colours the %s glyph with the DS run status fg token', (tone) => {
+    expect(throughPalette(declaration(`.indicator[data-icon-tone='${tone}']`, '--indicator-icon-color'))).toBe(
+      `var(--wb-ds-canvas-run-status-fg-${tone})`,
+    );
+  });
 
   it('stops the spinner under reduced motion, which leaves the arc on top', () => {
     let stopped = false;

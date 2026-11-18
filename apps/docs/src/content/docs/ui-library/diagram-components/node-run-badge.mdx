@@ -26,15 +26,13 @@ import { NodePanel, NodeRunBadge } from '@workflowbuilder/ui';
 </NodePanel.Overlay>;
 ```
 
-## Custom colours
+## Colours
 
-Each tone reads `--wb-public-node-run-badge-background-color-<tone>` and
-`--wb-public-node-run-badge-color-<tone>`, which colours the text and the glyph. Override them on
-`:root` (and `:root[data-theme='dark']`) or on one instance with a `className`. The tones default to
-the run status tokens `--wb-ds-canvas-run-status-bg-<tone>` and `-fg-<tone>`, which switch with the
-theme. The `inverse` tone defaults to the `BadgeLabel` Inverse variables
-(`--wb-public-badge-label-background-color-inverse` and `--wb-public-badge-label-color-inverse`), so a
-global `BadgeLabel` recolour reaches it too.
+Each tone reads `--wb-public-node-run-status-bg-<tone>` and `--wb-public-node-run-status-fg-<tone>`,
+which colours the text and the glyph, from the palette shared by all run status parts (see
+[Run status colours](/ui-library/diagram-components/run-status/#colours)). The `inverse` tone reads the
+`BadgeLabel` Inverse variables (`--wb-public-badge-label-background-color-inverse` and
+`--wb-public-badge-label-color-inverse`), so a global `BadgeLabel` recolour reaches it too.
 
 ## Props
 

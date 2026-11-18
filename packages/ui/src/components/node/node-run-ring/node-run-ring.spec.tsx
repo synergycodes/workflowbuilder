@@ -5,7 +5,8 @@ import { type Root, createRoot } from 'react-dom/client';
 
 import postcss, { type Rule } from 'postcss';
 
-import type { RunStatusTone } from '../run-status/run-status-tone';
+import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { throughPalette } from '../run-status/test-utils';
 import { NodeRunRing } from './node-run-ring';
 
 let container: HTMLDivElement;
@@ -21,8 +22,6 @@ afterEach(() => {
   act(() => root.unmount());
   container.remove();
 });
-
-const TONES: RunStatusTone[] = ['info', 'success', 'warning', 'critical', 'human', 'neutral', 'inverse'];
 
 function ring() {
   return container.firstElementChild as HTMLElement;
@@ -62,20 +61,13 @@ describe('node-run-ring.module.css', () => {
     return found;
   }
 
-  const defaults = declarations(':root');
-
-  it.each(TONES)('colours the %s line and halo through their public variables', (tone) => {
+  it.each(RUN_STATUS_TONES)('colours the %s line and halo with the DS run status tokens', (tone) => {
     const rule = declarations(`.ring[data-tone='${tone}']`);
-    expect(defaults.has(`--wb-public-node-run-ring-color-${tone}`)).toBe(true);
-    expect(rule.get('--ring-color')).toBe(`var(--wb-public-node-run-ring-color-${tone})`);
-    expect(rule.get('--ring-halo-color')).toBe(`var(--wb-public-node-run-ring-halo-color-${tone})`);
-  });
-
-  it('defaults the halo to the DS halo on info, warning and human, and to transparent elsewhere', () => {
-    const transparent = TONES.filter(
-      (tone) => defaults.get(`--wb-public-node-run-ring-halo-color-${tone}`) === 'transparent',
+    const halo = rule.get('--ring-halo-color') ?? declarations('.ring').get('--ring-halo-color');
+    expect(throughPalette(rule.get('--ring-color'))).toBe(`var(--wb-ds-canvas-run-status-stroke-${tone})`);
+    expect(throughPalette(halo)).toBe(
+      ['info', 'warning', 'human'].includes(tone) ? `var(--wb-ds-canvas-run-status-halo-${tone})` : 'transparent',
     );
-    expect(transparent).toEqual(['success', 'critical', 'neutral', 'inverse']);
   });
 
   it('draws the line as an inset box-shadow on an absolutely positioned layer', () => {

@@ -17,7 +17,8 @@ export const OptionalNodeOverlay = withOptionalComponentPlugins(OptionalWrapper,
  * Plugin slot on the node's top-right corner. Renders the validation `Status`
  * by default; a `place: 'wrapper'` decorator on `'OptionalNodeCorner'` can
  * return its own element (e.g. `NodeRunBadge`) instead of `children` to
- * replace it. Receives `nodeId`.
+ * replace it. Receives `nodeId`. With several wrappers, see
+ * [Setting props or wrapping a slot](/docs/guides/build-a-plugin/#setting-props-or-wrapping-a-slot).
  *
  * @category Components
  */
@@ -32,7 +33,14 @@ export const OptionalNodeCorner = withOptionalComponentPlugins(OptionalWrapper, 
  */
 export const OptionalNodeHeaderEnd = withOptionalComponentPlugins(OptionalWrapper, 'OptionalNodeHeaderEnd');
 
-// Not a wrapper around `NodePanel.Overlay`: `NodePanel.Root` finds the Overlay by its direct child type.
+/**
+ * `OptionalNodeOverlay` and `OptionalNodeCorner` with the validation `Status`,
+ * as the built-in templates render them. Place it inside `NodePanel.Overlay`;
+ * it does not render the Overlay itself, because `NodePanel.Root` finds the
+ * Overlay by its direct child type.
+ *
+ * @category Components
+ */
 export function NodeOverlaySlots({ nodeId, isValid }: { nodeId: string; isValid?: boolean }) {
   return (
     <>

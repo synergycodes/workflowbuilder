@@ -1,23 +1,6 @@
 :root {
   --wb-public-node-run-badge-offset: var(--wb-ds-space-62);
   --wb-public-node-run-badge-dimmed-opacity: 0.4;
-
-  --wb-public-node-run-badge-background-color-info: var(--wb-ds-canvas-run-status-bg-info);
-  --wb-public-node-run-badge-color-info: var(--wb-ds-canvas-run-status-fg-info);
-  --wb-public-node-run-badge-background-color-success: var(--wb-ds-canvas-run-status-bg-success);
-  --wb-public-node-run-badge-color-success: var(--wb-ds-canvas-run-status-fg-success);
-  --wb-public-node-run-badge-background-color-warning: var(--wb-ds-canvas-run-status-bg-warning);
-  --wb-public-node-run-badge-color-warning: var(--wb-ds-canvas-run-status-fg-warning);
-  --wb-public-node-run-badge-background-color-critical: var(--wb-ds-canvas-run-status-bg-critical);
-  --wb-public-node-run-badge-color-critical: var(--wb-ds-canvas-run-status-fg-critical);
-  --wb-public-node-run-badge-background-color-human: var(--wb-ds-canvas-run-status-bg-human);
-  --wb-public-node-run-badge-color-human: var(--wb-ds-canvas-run-status-fg-human);
-  --wb-public-node-run-badge-background-color-neutral: var(--wb-ds-canvas-run-status-bg-neutral);
-  --wb-public-node-run-badge-color-neutral: var(--wb-ds-canvas-run-status-fg-neutral);
-
-  /* DS: Rejected is the Badge Inverse variant with no run status override. */
-  --wb-public-node-run-badge-background-color-inverse: var(--wb-public-badge-label-background-color-inverse);
-  --wb-public-node-run-badge-color-inverse: var(--wb-public-badge-label-color-inverse);
 }
 
 @layer ui.component {
@@ -32,37 +15,38 @@
   }
 
   .badge[data-tone='info'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-info);
-    --badge-label-color: var(--wb-public-node-run-badge-color-info);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-info);
+    --badge-label-color: var(--wb-public-node-run-status-fg-info);
   }
 
+  /* DS: Rejected is the Badge Inverse variant with no run status override. */
   .badge[data-tone='inverse'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-inverse);
-    --badge-label-color: var(--wb-public-node-run-badge-color-inverse);
+    --badge-label-background-color: var(--wb-public-badge-label-background-color-inverse);
+    --badge-label-color: var(--wb-public-badge-label-color-inverse);
   }
 
   .badge[data-tone='warning'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-warning);
-    --badge-label-color: var(--wb-public-node-run-badge-color-warning);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-warning);
+    --badge-label-color: var(--wb-public-node-run-status-fg-warning);
   }
 
   .badge[data-tone='success'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-success);
-    --badge-label-color: var(--wb-public-node-run-badge-color-success);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-success);
+    --badge-label-color: var(--wb-public-node-run-status-fg-success);
   }
 
   .badge[data-tone='critical'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-critical);
-    --badge-label-color: var(--wb-public-node-run-badge-color-critical);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-critical);
+    --badge-label-color: var(--wb-public-node-run-status-fg-critical);
   }
 
   .badge[data-tone='human'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-human);
-    --badge-label-color: var(--wb-public-node-run-badge-color-human);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-human);
+    --badge-label-color: var(--wb-public-node-run-status-fg-human);
   }
 
   .badge[data-tone='neutral'] {
-    --badge-label-background-color: var(--wb-public-node-run-badge-background-color-neutral);
-    --badge-label-color: var(--wb-public-node-run-badge-color-neutral);
+    --badge-label-background-color: var(--wb-public-node-run-status-bg-neutral);
+    --badge-label-color: var(--wb-public-node-run-status-fg-neutral);
   }
 }

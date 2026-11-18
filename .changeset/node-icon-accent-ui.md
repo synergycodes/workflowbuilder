@@ -7,3 +7,4 @@
 Breaking changes:
 
 - Render the icon inside `NodeIcon` sized in `em`, for example a Phosphor icon, otherwise it keeps its own size and the header ports are not centred on it.
+- `--wb-public-node-icon-padding` now includes the 1px tile border; add 1px to a custom value to keep the old size.

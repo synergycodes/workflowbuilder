@@ -1,14 +1,13 @@
 import {
   Icon,
+  NodeOverlaySlots,
   OptionalNodeContent,
-  OptionalNodeCorner,
   OptionalNodeHeaderEnd,
-  OptionalNodeOverlay,
   defineNodeTemplate,
   getHandleId,
 } from '@workflowbuilder/sdk';
 import type { NodeDataProperties, WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
-import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -82,10 +81,7 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
             <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
           </NodePanel.Content>
           <NodePanel.Overlay isVisible={isCanvasNode}>
-            <OptionalNodeOverlay nodeId={id} />
-            <OptionalNodeCorner nodeId={id}>
-              <Status status={isValid === false ? 'invalid' : undefined} />
-            </OptionalNodeCorner>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
           </NodePanel.Overlay>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
             <Handle

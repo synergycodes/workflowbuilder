@@ -8,7 +8,10 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { NodeRunIndicatorExample } from '../../../../components/ui-examples/run-status';
 
 `NodeRunIndicator` is a 20px circle with either a 12px glyph (`icon`) or a 14px spinner (`spinner`).
-`tone` sets the circle and, unless `iconTone` is set, the glyph colour.
+`tone` sets the circle and, unless `iconTone` is set, the glyph colour. The circle reads
+`--wb-public-node-run-status-bg-<tone>` and the glyph `--wb-public-node-run-status-fg-<tone>`, from the
+palette shared by all run status parts (see
+[Run status colours](/ui-library/diagram-components/run-status/#colours)).
 
 <NodeRunIndicatorExample client:visible />
 
@@ -39,7 +42,8 @@ stops with its arc on top.
 ## Glyph tone
 
 `iconTone` colours the glyph when it differs from the circle, as in the Rejected status: an
-`inverse` glyph on a `neutral` circle.
+`inverse` glyph on a `neutral` circle. `inverse` is a glyph tone only: `tone` does not accept it, because
+the glyph would take the colour of the circle.
 
 ```tsx
 import { X } from '@phosphor-icons/react';
