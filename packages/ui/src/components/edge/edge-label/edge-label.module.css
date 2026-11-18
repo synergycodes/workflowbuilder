@@ -4,7 +4,7 @@
   --wb-public-edge-label-color: var(--wb-ds-ui-text-default);
 
   --wb-public-edge-label-border-size: var(--wb-ds-canvas-edge-stroke-regular);
-  --wb-public-edge-label-border-size-selected: var(--wb-ds-canvas-edge-stroke-bold);
+  --wb-public-edge-label-border-size-selected: var(--wb-ds-canvas-edge-stroke-regular);
 
   --wb-public-edge-label-border-style: solid;
   --wb-public-edge-label-border-color: var(--wb-ds-canvas-edge-stroke-default);

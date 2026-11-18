@@ -1,0 +1,160 @@
+name: Release MCP
+
+# Publishes on the tag `@workflowbuilder/mcp@X.Y.Z`; flow and the npm trusted publisher: packages/RELEASE.md.
+# smoke:package installs from the registry without the lockfile, so it runs in `verify`,
+# which cannot mint the OIDC token that `publish` uses.
+
+on:
+  push:
+    tags:
+      - '@workflowbuilder/mcp@*'
+  workflow_dispatch: # manual fire from GitHub UI — for testing or rerunning a failed publish
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    name: Check, build and smoke test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          persist-credentials: false
+
+      - name: Set up Node.js
+        # Same version as the mcp-server job in pr-check.yml, so smoke:package meets the same npm.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      # Defensive layer — fail before npm, not on consumers.
+      - name: Lint
+        run: pnpm --filter @workflowbuilder/mcp lint
+
+      - name: Typecheck
+        run: pnpm --filter @workflowbuilder/mcp typecheck
+
+      - name: Test
+        run: pnpm --filter @workflowbuilder/mcp test
+
+      - name: Build
+        # Snapshots the docs and the API of the tagged commit into dist/data.
+        run: pnpm --filter @workflowbuilder/mcp build
+
+      - name: Pack with the publish-time checks
+        # What `publish` meets in prepack, proven before the OIDC job: dist/ stamped with this commit, tree clean.
+        working-directory: packages/mcp-server
+        run: pnpm pack --pack-destination "$RUNNER_TEMP"
+
+      - name: Smoke test against the real docs and API
+        run: pnpm --filter @workflowbuilder/mcp smoke
+
+      - name: Smoke test the packed package outside the repo
+        run: pnpm --filter @workflowbuilder/mcp smoke:package
+
+      - name: Verify the published shape
+        # Version pinned so a tool release cannot block a publish.
+        working-directory: packages/mcp-server
+        run: pnpm dlx publint@0.3.24
+
+  publish:
+    name: Publish to npm
+    needs: verify
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create GitHub Release
+      id-token: write # OIDC for npm Trusted Publisher (and provenance attestation)
+    steps:
+      - name: Checkout code (at tag)
+        uses: actions/checkout@v4
+        with:
+          submodules: true
+          fetch-depth: 0 # full history so changesets can read CHANGELOG context
+
+      - name: Set up Node.js
+        # No `registry-url`: it injects a sentinel token that breaks OIDC. Node 24, not 22: only its
+        # npm 11 does the Trusted Publisher OIDC exchange when no token is configured.
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Enable Corepack
+        run: npm i -g corepack@latest
+
+      - name: Install pnpm
+        run: corepack prepare
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        # The same commit `verify` built and tested; only lockfile code runs in this job.
+        run: pnpm --filter @workflowbuilder/mcp build
+
+      - name: Verify version matches tag
+        # Tag `@workflowbuilder/mcp@X.Y.Z` must match packages/mcp-server/package.json
+        # version. ${GITHUB_REF_NAME##*@} strips everything up to the last `@`.
+        run: |
+          TAG_VERSION="${GITHUB_REF_NAME##*@}"
+          PKG_VERSION=$(node -p "require('./packages/mcp-server/package.json').version")
+          if [ "$TAG_VERSION" != "$PKG_VERSION" ]; then
+            echo "::error::Tag version ($TAG_VERSION) does not match package.json version ($PKG_VERSION)."
+            echo "Did you forget to merge the version-bump PR before pushing the tag?"
+            exit 1
+          fi
+          echo "Publishing @workflowbuilder/mcp@$PKG_VERSION"
+
+      - name: Check if version already published
+        # Idempotency — re-pushing a tag should not re-publish.
+        id: check-version
+        run: |
+          PKG_VERSION=$(node -p "require('./packages/mcp-server/package.json').version")
+          # E404 is npm's only answer that means "not there". Any other failure means npm could not be
+          # asked, and guessing "not published" would send the job into a doomed publish.
+          if OUT=$(npm view "@workflowbuilder/mcp@$PKG_VERSION" version 2>&1); then
+            echo "already_published=true" >> "$GITHUB_OUTPUT"
+            echo "::notice::@workflowbuilder/mcp@$PKG_VERSION already on npm — skipping publish step."
+          elif printf '%s' "$OUT" | grep -q 'E404'; then
+            echo "already_published=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "::error::npm could not be queried for @workflowbuilder/mcp@$PKG_VERSION: $OUT"
+            exit 1
+          fi
+
+      - name: Extract release notes from CHANGELOG
+        id: notes
+        # Before the publish on purpose: a missing or empty section fails here, while nothing has
+        # reached npm yet. release:tag applies the same rule (tools/release-shared.mjs).
+        run: |
+          NOTES=$(pnpm -s release:notes mcp)
+          {
+            echo "notes<<EOF"
+            echo "$NOTES"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Publish to npm
+        # Authenticates via npm Trusted Publisher (OIDC). No NPM_TOKEN.
+        if: steps.check-version.outputs.already_published == 'false'
+        run: pnpm --filter @workflowbuilder/mcp publish --no-git-checks --access public --provenance
+
+      - name: Create GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          name: ${{ github.ref_name }}
+          body: ${{ steps.notes.outputs.notes }}
+          draft: false
+          prerelease: false

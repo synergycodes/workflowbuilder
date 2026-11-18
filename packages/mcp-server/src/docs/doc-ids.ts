@@ -1,5 +1,3 @@
-import GithubSlugger from 'github-slugger';
-
 import { BASE, SITE } from '../config/site.js';
 
 export const INTRO_ANCHOR = '_intro';
@@ -17,7 +15,9 @@ export function pageUrl(pageId: string, anchor?: string) {
   return `${SITE}${BASE}/${path}${hash}`;
 }
 
-const GITHUB_BLOB = 'https://github.com/synergycodes/workflowbuilder/blob/main';
+const GITHUB_REPO = 'https://github.com/synergycodes/workflowbuilder';
+// A file link at any branch or commit: the build pins README urls to the commit it snapshots.
+const GITHUB_BLOB = /^https:\/\/github\.com\/synergycodes\/workflowbuilder\/blob\/[^/]+\//;
 const README_FILE = /^packages\/([^/]+)\/([^/]+)\.md$/i;
 
 export function readmeId(packageName: string, fileName: string) {
@@ -25,9 +25,13 @@ export function readmeId(packageName: string, fileName: string) {
   return name === 'readme' ? `readme/${packageName}` : `readme/${packageName}/${name}`;
 }
 
-export function readmeUrl(packageName: string, fileName: string, anchor?: string) {
+export function githubUrl(kind: 'blob' | 'tree', revision: string, repoPath: string) {
+  return `${GITHUB_REPO}/${kind}/${revision}/${repoPath}`;
+}
+
+export function readmeUrl(packageName: string, fileName: string, anchor: string | undefined, revision: string) {
   const hash = anchor && anchor !== INTRO_ANCHOR ? `#${anchor}` : '';
-  return `${GITHUB_BLOB}/packages/${packageName}/${fileName}${hash}`;
+  return `${githubUrl('blob', revision, `packages/${packageName}/${fileName}`)}${hash}`;
 }
 
 export function sectionId(pageId: string, anchor: string) {
@@ -38,11 +42,6 @@ export function chunkId(section: string, index: number) {
   return index === 0 ? section : `${section}~${index + 1}`;
 }
 
-export function createAnchorSlugger() {
-  const slugger = new GithubSlugger();
-  return (headingText: string) => slugger.slug(headingText);
-}
-
 const SITE_ORIGIN = /^https?:\/\/(www\.)?workflowbuilder\.io/i;
 
 export class InvalidDocRefError extends Error {}
@@ -50,8 +49,9 @@ export class InvalidDocRefError extends Error {}
 export function normalizeDocRef(input: string) {
   let ref = input.trim().replaceAll('\\', '/');
   if (ref.includes('\0')) throw new InvalidDocRefError('Invalid document id: contains NUL');
-  if (ref.startsWith(`${GITHUB_BLOB}/`)) {
-    const [target, ...hash] = ref.slice(GITHUB_BLOB.length + 1).split('#');
+  const blob = GITHUB_BLOB.exec(ref);
+  if (blob) {
+    const [target, ...hash] = ref.slice(blob[0].length).split('#');
     const file = target.replace(/\?.*$/, '');
     const match = README_FILE.exec(file);
     if (match) ref = `${readmeId(match[1], `${match[2]}.md`)}${hash.length > 0 ? `#${hash.join('#')}` : ''}`;

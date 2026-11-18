@@ -1,5 +1,5 @@
 import { type BudgetConfig, budget as defaultBudget } from '../../config/budget.js';
-import { INTRO_ANCHOR, normalizeDocRef, pageUrl, splitSectionId } from '../../docs/doc-ids.js';
+import { INTRO_ANCHOR, normalizeDocRef, splitSectionId } from '../../docs/doc-ids.js';
 import type { DocsEngine } from '../../docs/docs-search.js';
 import { estimateTokens } from '../../search/tokens.js';
 import { truncateToTokens } from '../../search/truncate.js';
@@ -73,7 +73,7 @@ export function createGetDocHandler(
       title: page.title,
       ...(section ? { section: section.title } : {}),
       description: page.description,
-      url: section ? pageUrl(pageId, section.anchor) : page.url,
+      url: section && section.anchor !== INTRO_ANCHOR ? `${page.url}#${section.anchor}` : page.url,
       content: section ? section.content : page.content,
       truncated: false,
     };
