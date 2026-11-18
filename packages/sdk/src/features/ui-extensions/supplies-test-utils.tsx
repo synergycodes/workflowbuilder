@@ -21,7 +21,7 @@ export function renderWithSupplies(
   ui: ReactNode,
   supplies: ReactNode,
   { via = 'app tree', builtInControls, after }: Options = {},
-) {
+): ReturnType<typeof renderInRoot> {
   if (via === 'plugin') {
     registerComponentDecorator('OptionalAppChildren', { name: PLUGIN, content: () => supplies });
   }
