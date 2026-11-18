@@ -134,8 +134,6 @@ export default async function globalSetup(): Promise<Cleanup> {
 
   const stopStack = () => (stopping ??= stopAll());
 
-  // Playwright handles only SIGINT, and the Temporal runtime swallows SIGTERM without exiting:
-  // without these, SIGHUP leaves the stack running and SIGTERM does not stop the run at all.
   for (const signal of ['SIGTERM', 'SIGHUP'] as const) {
     process.once(signal, () => {
       void stopStack()

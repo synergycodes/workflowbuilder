@@ -61,6 +61,5 @@ test('a gate drawn in front of the AI step stops the next run there, before any 
   const requests = await llm.requests();
   const drafts = requests.filter(({ system }) => system.includes('Decide the refund amount under the policy'));
   expect(drafts).toHaveLength(1);
-  // The worker hands the model the output of every step finished so far, so the gate's entry proves it ran first.
   expect(drafts[0]!.user).toContain(`[${gateId}]:`);
 });

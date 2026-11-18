@@ -41,7 +41,6 @@ process.on('exit', () => {
 
 function stop(child: ChildProcess): Promise<void> {
   return new Promise((resolve) => {
-    // The leader can exit before its children do, so the group is killed even when it is gone.
     if (child.exitCode !== null || child.signalCode !== null) {
       signalGroup(child, 'SIGKILL');
       resolve();
@@ -50,6 +49,7 @@ function stop(child: ChildProcess): Promise<void> {
     const forceKill = setTimeout(() => signalGroup(child, 'SIGKILL'), STOP_GRACE_MS);
     child.once('exit', () => {
       clearTimeout(forceKill);
+      // The leader can exit before its children do.
       signalGroup(child, 'SIGKILL');
       resolve();
     });
