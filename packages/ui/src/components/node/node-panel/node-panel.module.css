@@ -4,6 +4,7 @@
   --wb-public-node-border-size: 0.0625rem;
 
   --wb-public-node-padding: var(--wb-ds-canvas-node-body-h-pad);
+  --wb-public-node-body-padding-block: var(--wb-ds-canvas-node-body-v-pad);
   --wb-public-node-gap: var(--wb-ds-canvas-node-body-gap);
   --wb-public-node-header-padding-block: var(--wb-ds-canvas-node-head-v-pad);
   --wb-public-node-header-padding-inline: var(--wb-ds-canvas-node-head-h-pad);
@@ -88,13 +89,13 @@
     .content-container {
       display: flex;
       flex-direction: column;
-      padding: 0 var(--wb-public-node-padding) var(--wb-ds-canvas-node-body-v-pad);
+      padding: 0 var(--wb-public-node-padding) var(--wb-public-node-body-padding-block);
       gap: var(--wb-public-node-gap);
     }
 
     /* Without a header nothing above separates the body from the top stroke. */
     .header-wrapper:not(:has(.header-container)) + .content-container {
-      padding-top: var(--wb-ds-canvas-node-body-v-pad);
+      padding-top: var(--wb-public-node-body-padding-block);
     }
 
     .header-container,
