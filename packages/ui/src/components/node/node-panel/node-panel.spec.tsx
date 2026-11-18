@@ -47,15 +47,20 @@ describe('NodePanel.Root states', () => {
   });
 });
 
-describe('node-panel.module.css', () => {
-  const file = path.join(import.meta.dirname, 'node-panel.module.css');
-  const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+function parse(name: string) {
+  const file = path.join(import.meta.dirname, name);
+  return postcss.parse(readFileSync(file, 'utf8'), { from: file });
+}
 
-  function declarations(selector: string) {
+describe('node-panel.module.css', () => {
+  const stylesheet = parse('node-panel.module.css');
+  const handleStylesheet = parse('handle.module.css');
+
+  function declarations(selector: string | RegExp, sheet = stylesheet) {
     const found = new Map<string, string>();
-    stylesheet.walkRules(selector, (rule) => {
+    sheet.walkRules(selector, (rule) => {
       for (const node of rule.nodes) {
-        if (node.type === 'decl') found.set(node.prop, node.value);
+        if (node.type === 'decl') found.set(node.prop, node.value.replaceAll(/\s+/g, ' '));
       }
     });
     return found;
@@ -75,5 +80,19 @@ describe('node-panel.module.css', () => {
       'var(--wb-public-node-header-padding-block) var(--wb-public-node-header-padding-inline)',
     );
     expect(rule.get('gap')).toBe('var(--wb-public-node-header-gap)');
+  });
+
+  it('sizes the header row from its block padding', () => {
+    expect(declarations('.header-container').get('min-height')).toBe(
+      'calc( 2 * var(--wb-public-node-header-padding-block) + 2 * var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-glyph-size) )',
+    );
+  });
+
+  // The ports are siblings of the header, so they repeat its spacing to sit on the row's centre line.
+  it('centres the header ports on the header row', () => {
+    const rule = declarations(/react-flow__handle-right, .*react-flow__handle-left/, handleStylesheet);
+    expect(rule.get('top')).toBe(
+      'calc( var(--wb-public-node-header-padding-block) + var(--wb-public-node-icon-padding) + var(--wb-public-node-icon-glyph-size) / 2 )',
+    );
   });
 });

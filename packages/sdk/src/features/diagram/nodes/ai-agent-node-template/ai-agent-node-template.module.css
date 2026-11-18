@@ -6,7 +6,7 @@
   overflow: hidden;
 
   .collapsible-content {
-    padding-bottom: var(--wb-ds-canvas-node-body-v-pad);
+    padding-bottom: var(--wb-public-node-body-padding-block);
     display: flex;
     flex-direction: column;
     gap: var(--wb-public-node-gap);
