@@ -116,8 +116,9 @@ async function startStack(cleanups: Cleanup[]) {
 
 export default async function globalSetup(): Promise<Cleanup> {
   const cleanups: Cleanup[] = [];
+  let stopping: Promise<void> | undefined;
 
-  async function stopStack() {
+  async function stopAll() {
     const failures: unknown[] = [];
     for (const cleanup of cleanups.reverse()) {
       try {
@@ -129,6 +130,18 @@ export default async function globalSetup(): Promise<Cleanup> {
     if (failures.length > 0) {
       throw new AggregateError(failures, 'The e2e stack did not stop cleanly');
     }
+  }
+
+  const stopStack = () => (stopping ??= stopAll());
+
+  // Playwright handles only SIGINT, and the Temporal runtime swallows SIGTERM without exiting:
+  // without these, SIGHUP leaves the stack running and SIGTERM does not stop the run at all.
+  for (const signal of ['SIGTERM', 'SIGHUP'] as const) {
+    process.once(signal, () => {
+      void stopStack()
+        .catch((error: unknown) => console.error(error))
+        .finally(() => process.exit(128 + os.constants.signals[signal]));
+    });
   }
 
   try {

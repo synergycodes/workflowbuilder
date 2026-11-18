@@ -24,7 +24,8 @@ does not have: there `pnpm e2e` stops with a message before anything starts. Use
 ## What a run starts
 
 Playwright's global setup (`src/stack/global-setup.ts`) starts each piece in this order, waits for its ready signal,
-and stops all of it afterwards, also when a step fails.
+and stops all of it afterwards, also when a step fails or the run gets SIGINT (Ctrl-C), SIGTERM or SIGHUP (a closed
+terminal).
 
 | #   | Piece     | How                                                                             | Ready when                         |
 | --- | --------- | ------------------------------------------------------------------------------- | ---------------------------------- |
