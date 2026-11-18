@@ -5,7 +5,14 @@
  * @category Core
  */
 export type BuiltInControl =
+  | 'logo'
+  | 'folderName'
+  | 'workflowName'
+  | 'version'
   | 'save'
+  | 'cleanUp'
+  | 'saveAsPdf'
+  | 'publish'
   | 'readOnlyToggle'
   | 'themeToggle'
   | 'languageSelector'

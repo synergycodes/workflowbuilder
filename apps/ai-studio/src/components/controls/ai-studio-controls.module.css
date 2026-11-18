@@ -1,6 +1,8 @@
 .container {
   position: fixed;
-  top: 94px;
+  top: 0;
+  /* 2px below the panel tops, as in the design prototype. */
+  margin-top: 0.125rem;
   left: 50%;
   opacity: 0;
   transform: translateX(-50%) translateY(-200px);
