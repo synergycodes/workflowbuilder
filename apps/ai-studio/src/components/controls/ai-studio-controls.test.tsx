@@ -96,6 +96,8 @@ describe('AiStudioControls', () => {
 
   const isVisible = () => container.firstElementChild?.classList.contains(styles['container--visible']!);
 
+  const panelTop = () => (container.firstElementChild as HTMLElement | null)?.style.top;
+
   const deleteStartNode = () => {
     startNode.exists = false;
     render();
@@ -331,6 +333,60 @@ describe('AiStudioControls', () => {
     act(() => resetExecution());
     expect(useStore.getState().isReadOnly).toBe(false);
     expect(gridColor()).toBe('');
+  });
+
+  describe('position', () => {
+    let bounds: HTMLDivElement;
+    let boundsTop: number;
+    const observers = new Map<Element, () => void>();
+
+    function reportResize(target: Element) {
+      const callback = observers.get(target);
+      if (!callback) throw new Error('No ResizeObserver watches this element');
+      callback();
+    }
+
+    beforeEach(() => {
+      boundsTop = 82;
+      bounds = document.createElement('div');
+      bounds.id = 'viewport-bounds';
+      bounds.getBoundingClientRect = () => ({ top: boundsTop }) as DOMRect;
+      document.body.prepend(bounds);
+      observers.clear();
+      vi.stubGlobal(
+        'ResizeObserver',
+        class {
+          private readonly targets = new Set<Element>();
+          constructor(private readonly callback: () => void) {}
+          observe(target: Element) {
+            this.targets.add(target);
+            observers.set(target, this.callback);
+          }
+          disconnect() {
+            for (const target of this.targets) observers.delete(target);
+            this.targets.clear();
+          }
+        },
+      );
+      act(() => root.unmount());
+      root = createRoot(container);
+      render();
+    });
+
+    afterEach(() => {
+      bounds.remove();
+    });
+
+    it('starts at the top of the viewport bounds, where the side panels start', () => {
+      expect(panelTop()).toBe('82px');
+    });
+
+    it('follows the panels down when the header wraps onto a second row', () => {
+      boundsTop = 118;
+      act(() => reportResize(bounds));
+
+      expect(panelTop()).toBe('118px');
+    });
   });
 
   describe('without a start node', () => {
