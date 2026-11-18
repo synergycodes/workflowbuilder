@@ -452,6 +452,8 @@ jobs:
         run: pnpm --filter @workflow-builder/e2e typecheck
 
       - name: End-to-end tests
+        # Under the job's limit: a step timeout fails the step, so failure() below still uploads the logs.
+        timeout-minutes: 15
         run: pnpm e2e
 
       - name: Upload the Playwright report and stack logs
