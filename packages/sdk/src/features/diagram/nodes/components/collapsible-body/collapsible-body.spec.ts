@@ -10,7 +10,7 @@ const css = readFileSync(path.join(import.meta.dirname, 'collapsible-body.module
 describe('collapsible-body.module.css', () => {
   it('moves the body bottom padding inside the collapsible, so a collapsed node is header-only', () => {
     expect(css).toMatch(/(^|\n)\.content\s*\{[^}]*padding-bottom:\s*0/);
-    expect(css).toMatch(/(^|\n)\.collapsible\s*\{[^}]*padding-bottom:\s*var\(--wb-ds-canvas-node-body-v-pad\)/);
+    expect(css).toMatch(/(^|\n)\.collapsible\s*\{[^}]*padding-bottom:\s*var\(--wb-public-node-body-padding-block\)/);
   });
 
   it('hands the bottom padding to plugin content placed after the collapsible', () => {
@@ -18,7 +18,7 @@ describe('collapsible-body.module.css', () => {
       /\.content > :has\(\.collapsible\):not\(:last-child\) \.collapsible\s*\{[^}]*padding-bottom:\s*0/,
     );
     expect(css).toMatch(
-      /\.content > :has\(\.collapsible\) ~ :last-child\s*\{[^}]*margin-bottom:\s*var\(--wb-ds-canvas-node-body-v-pad\)/,
+      /\.content > :has\(\.collapsible\) ~ :last-child\s*\{[^}]*margin-bottom:\s*var\(--wb-public-node-body-padding-block\)/,
     );
   });
 });
