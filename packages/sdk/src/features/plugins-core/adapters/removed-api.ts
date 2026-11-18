@@ -8,7 +8,7 @@ const REMOVED_SLOTS = new Map<string, string>([
   ['OptionalFooterContent', 'Render <PaletteFooterContent> instead.'],
   [
     'ProjectSelection',
-    'Add menu items with <WorkflowMenuItem>, hide Settings and renaming with builtInControls, and build an own title from useWorkflowBuilderState().workflowName with setWorkflowName and openSettings from useWorkflowBuilderActions().',
+    'Add menu items with <WorkflowMenuItem>, and hide Settings, renaming or the title with the builtInControls keys settings, workflowRename, workflowName and folderName. An own title reads useWorkflowBuilderState().workflowName and uses setWorkflowName and openSettings from useWorkflowBuilderActions().',
   ],
 ]);
 

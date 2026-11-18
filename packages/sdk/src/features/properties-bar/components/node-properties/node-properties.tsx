@@ -95,6 +95,9 @@ export const NodeProperties = memo(({ node }: Props) => {
 
   return (
     <JSONForm
+      // One form instance per node, so nothing inside the form reaches another node.
+      // See json-form/form-per-node.decision-log.md.
+      key={id}
       data={properties}
       schema={schema}
       uischema={uischema as JsonFormsProps['uischema']}

@@ -1,14 +1,20 @@
 import { act, render } from '@testing-library/react';
 import i18n from 'i18next';
-import { StrictMode, useRef } from 'react';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { type ReactNode, StrictMode, useRef } from 'react';
+import { afterEach, beforeEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 
+import { trackFutureChange } from '../features/changes-tracker/stores/use-changes-tracker-store';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { IntegrationContextWrapper } from '../features/integration/components/integration-variants/context/integration-context-wrapper';
 import { useModalStore } from '../features/modals/stores/use-modal-store';
 import type * as OpenTemplateSelectorModalModule from '../features/modals/template-selector/open-template-selector-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
+import { EditorHeaderCleanUp } from '../features/ui-extensions/components/editor-header-clean-up';
+import { EditorHeaderPublish } from '../features/ui-extensions/components/editor-header-publish';
+import { EditorHeaderSaveAsPdf } from '../features/ui-extensions/components/editor-header-save-as-pdf';
+import { EditorHeaderVersion } from '../features/ui-extensions/components/editor-header-version';
+import { renderInRoot } from '../features/ui-extensions/test-utils';
 import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
 import { useStore } from '../store/store';
 import { getTheme } from './theme';
@@ -46,6 +52,12 @@ vi.mock('@/features/changes-tracker/stores/use-changes-tracker-store', () => ({
 
 const changeLanguage = vi.spyOn(i18n, 'changeLanguage').mockResolvedValue((() => '') as never);
 
+function silenceConsoleError() {
+  const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+  onTestFinished(() => consoleError.mockRestore());
+  return consoleError;
+}
+
 function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('success' as const)) {
   const captured: { current: T | null } = { current: null };
 
@@ -63,6 +75,34 @@ function renderHook<T>(useHookFn: () => T, onSave = vi.fn().mockResolvedValue('s
   return { actions: captured, onSave, unmount: view.unmount };
 }
 
+function renderWithSupplies(supplies: ReactNode) {
+  const captured: { current: WorkflowBuilderActions | null } = { current: null };
+
+  function Consumer() {
+    captured.current = useWorkflowBuilderActions();
+    return null;
+  }
+
+  const view = renderInRoot(
+    <IntegrationContextWrapper onSave={vi.fn()} autoSave={false}>
+      <Consumer />
+      {supplies}
+    </IntegrationContextWrapper>,
+  );
+
+  return { ...view, actions: () => captured.current! };
+}
+
+function deferred() {
+  let resolve!: () => void;
+  let reject!: (reason: unknown) => void;
+  const promise = new Promise<void>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
 describe('useWorkflowBuilderActions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
@@ -70,6 +110,7 @@ describe('useWorkflowBuilderActions', () => {
     // does); one test below swaps in the real implementation to exercise its
     // internal read-only guard, so restore the plain stub for every other test.
     vi.mocked(openTemplateSelectorModal).mockReset();
+    vi.mocked(trackFutureChange).mockReset();
     localStorage.clear();
     delete document.documentElement.dataset.theme;
     useStore.setState({
@@ -594,6 +635,237 @@ describe('useWorkflowBuilderActions', () => {
 
       expect(firstOnSave).not.toHaveBeenCalled();
       expect(secondOnSave).toHaveBeenCalledWith({ isAutoSave: false });
+    });
+  });
+
+  describe('cleanUp', () => {
+    beforeEach(() => {
+      useStore.setState({ nodes: [{ id: 'n1', position: { x: 0, y: 0 } }] as never });
+    });
+
+    it('does nothing on an empty canvas, not even change the direction', async () => {
+      useStore.setState({ nodes: [] });
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+
+      expect(onCleanUp).not.toHaveBeenCalled();
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
+    it('does nothing without a supplied Clean up, not even change the direction', async () => {
+      const view = renderWithSupplies(null);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
+    it('without a direction runs the supply with the current one and tracks nothing', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp());
+
+      expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
+    it('tracks a new direction, then sets it, then runs the supply with it', async () => {
+      const directionWhenTracked: string[] = [];
+      vi.mocked(trackFutureChange).mockImplementation(() => {
+        directionWhenTracked.push(useStore.getState().layoutDirection);
+      });
+      const onCleanUp = vi.fn(() => {
+        expect(useStore.getState().layoutDirection).toBe('DOWN');
+      });
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+
+      expect(trackFutureChange).toHaveBeenCalledWith('layoutDirection', { direction: 'DOWN' });
+      expect(directionWhenTracked).toEqual(['RIGHT']);
+      expect(onCleanUp).toHaveBeenCalledWith('DOWN');
+    });
+
+    it('a direction equal to the current one tracks nothing', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp('RIGHT'));
+
+      expect(trackFutureChange).not.toHaveBeenCalled();
+      expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
+    });
+
+    it('wired straight to an onClick, keeps the current direction instead of storing the event', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp(new MouseEvent('click') as never));
+
+      expect(onCleanUp).toHaveBeenCalledWith('RIGHT');
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+      expect(trackFutureChange).not.toHaveBeenCalled();
+    });
+
+    it('called from inside the supplied Clean up, does not run it again', async () => {
+      const onCleanUp = vi.fn(() => {
+        void view.actions().cleanUp();
+      });
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp());
+      expect(onCleanUp).toHaveBeenCalledOnce();
+
+      await act(() => view.actions().cleanUp());
+      expect(onCleanUp).toHaveBeenCalledTimes(2);
+    });
+
+    it('does nothing in read-only mode', async () => {
+      useStore.setState({ isReadOnly: true });
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+
+      expect(onCleanUp).not.toHaveBeenCalled();
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+    });
+
+    it('is pending while the supplied promise is, and ignores calls meanwhile', async () => {
+      const pending = deferred();
+      const onCleanUp = vi.fn(() => pending.promise);
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      let first!: Promise<void>;
+      act(() => {
+        first = view.actions().cleanUp();
+      });
+      expect(view.registry.isCleanUpPending()).toBe(true);
+
+      await act(() => view.actions().cleanUp('DOWN'));
+      expect(onCleanUp).toHaveBeenCalledTimes(1);
+      expect(useStore.getState().layoutDirection).toBe('RIGHT');
+
+      await act(async () => {
+        pending.resolve();
+        await first;
+      });
+      expect(view.registry.isCleanUpPending()).toBe(false);
+    });
+
+    it('a rejected clean-up is logged, ends the pending state and runs again on the next call', async () => {
+      const consoleError = silenceConsoleError();
+      const failure = new Error('layout failed');
+      const pending = deferred();
+      const onCleanUp = vi.fn().mockReturnValueOnce(pending.promise);
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      let first!: Promise<void>;
+      act(() => {
+        first = view.actions().cleanUp();
+      });
+      await act(async () => {
+        pending.reject(failure);
+        await expect(first).resolves.toBeUndefined();
+      });
+      await act(() => view.actions().cleanUp());
+
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Clean up failed'), failure);
+      expect(view.registry.isCleanUpPending()).toBe(false);
+      expect(onCleanUp).toHaveBeenCalledTimes(2);
+    });
+
+    it('resolves when the supply throws, logs the error, and never enters the pending state', async () => {
+      const consoleError = silenceConsoleError();
+      const failure = new Error('layout failed');
+      const onCleanUp = vi.fn(() => {
+        throw failure;
+      });
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+
+      await act(async () => {
+        await expect(view.actions().cleanUp()).resolves.toBeUndefined();
+      });
+
+      expect(onCleanUp).toHaveBeenCalledOnce();
+      expect(consoleError).toHaveBeenCalledWith(expect.stringContaining('Clean up failed'), failure);
+      expect(view.registry.isCleanUpPending()).toBe(false);
+    });
+
+    it('a synchronous supply never enters the pending state, not even for a moment', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+      const pendingSeen: boolean[] = [];
+      const unsubscribe = view.registry.subscribe(() => pendingSeen.push(view.registry.isCleanUpPending()));
+
+      await act(() => view.actions().cleanUp('DOWN'));
+      unsubscribe();
+
+      expect(onCleanUp).toHaveBeenCalledOnce();
+      expect(pendingSeen).not.toContain(true);
+    });
+
+    it('does nothing once the Root has unmounted', async () => {
+      const onCleanUp = vi.fn();
+      const view = renderWithSupplies(<EditorHeaderCleanUp onCleanUp={onCleanUp} />);
+      const kept = view.actions();
+
+      view.unmount();
+      await kept.cleanUp();
+
+      expect(onCleanUp).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('saveAsPdf and publish', () => {
+    it('do nothing without a supply', () => {
+      const view = renderWithSupplies(<EditorHeaderVersion number={1} isDraft />);
+
+      expect(() => {
+        view.actions().saveAsPdf();
+        view.actions().publish();
+      }).not.toThrow();
+    });
+
+    it('both run in read-only mode', () => {
+      useStore.setState({ isReadOnly: true });
+      const onSaveAsPdf = vi.fn();
+      const onPublish = vi.fn();
+      const view = renderWithSupplies(
+        <>
+          <EditorHeaderSaveAsPdf onSaveAsPdf={onSaveAsPdf} />
+          <EditorHeaderVersion number={1} isDraft />
+          <EditorHeaderPublish onPublish={onPublish} />
+        </>,
+      );
+
+      view.actions().saveAsPdf();
+      view.actions().publish();
+
+      expect(onSaveAsPdf).toHaveBeenCalledTimes(1);
+      expect(onPublish).toHaveBeenCalledTimes(1);
+    });
+
+    it.each([
+      ['a published version', <EditorHeaderVersion key="v" number={3} isDraft={false} />],
+      ['no version', null],
+    ])('publish does nothing with %s', (_, version) => {
+      const onPublish = vi.fn();
+      const view = renderWithSupplies(
+        <>
+          {version}
+          <EditorHeaderPublish onPublish={onPublish} />
+        </>,
+      );
+
+      view.actions().publish();
+
+      expect(onPublish).not.toHaveBeenCalled();
     });
   });
 
