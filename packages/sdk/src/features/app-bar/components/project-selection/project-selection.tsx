@@ -8,7 +8,6 @@ import { Icon } from '@workflow-builder/icons';
 
 import styles from '../../app-bar.module.css';
 
-import { openModalWorkflowSettings } from '../../../../features/variables/modals/modal-settings';
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
 import { useStore } from '../../../../store/store';
 import { removedPropertyWarning } from '../../../plugins-core/adapters/removed-api';
@@ -16,6 +15,7 @@ import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-cont
 import { composeMenuItems } from '../../../ui-extensions/compose-menu-items';
 import { useRegisteredMenuItems } from '../../../ui-extensions/ui-extension-context';
 import { useWarnOnce } from '../../../ui-extensions/use-warn-once';
+import { openModalWorkflowSettings } from '../../../variables/modals/global/modal-settings';
 import { useAppBar } from '../../app-bar-context';
 import { getExportImportItems } from '../../functions/get-export-import-items';
 import { VersionChip } from '../version-chip/version-chip';

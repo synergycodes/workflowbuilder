@@ -1,8 +1,9 @@
 import { renderHook } from '@testing-library/react';
 import i18n from 'i18next';
-import { beforeEach, describe, expect, it } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import '../features/i18n/index';
+import type { DiagramModel } from '../node/common';
 import type { WorkflowBuilderNode } from '../node/node-data';
 import { resetWorkflowStore, useStore } from './store';
 
@@ -77,5 +78,49 @@ describe('resetWorkflowStore', () => {
 describe('regression: c1e0dba8 i18n init', () => {
   it('i18n.on is a function after the SDK i18n module loads', () => {
     expect(typeof i18n.on).toBe('function');
+  });
+});
+
+function makeModel(y: string): DiagramModel {
+  const node = makeNode('decision-1');
+
+  return {
+    name: 'Template',
+    layoutDirection: 'RIGHT',
+    diagram: {
+      nodes: [
+        {
+          ...node,
+          data: {
+            ...node.data,
+            properties: { conditions: [{ x: '', comparisonOperator: '==', y, logicalOperator: 'and' }] },
+          },
+        },
+      ],
+      edges: [],
+      viewport: { x: 0, y: 0, zoom: 1 },
+    },
+  };
+}
+
+describe('setDiagramModel', () => {
+  it('warns once when a template carries an SDK 3.0 instant', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    useStore.getState().setDiagramModel(makeModel('2024-01-14T23:00:00.000Z'));
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toMatch(/\(migration: zone-less-date-time\)$/);
+    warnSpy.mockRestore();
+  });
+
+  it('stays silent for a 4.0 template and when skipIfNotEmpty keeps the current diagram', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    useStore.getState().setDiagramModel(makeModel('2024-01-15'));
+    useStore.getState().setDiagramModel(makeModel('2024-01-14T23:00:00.000Z'), { skipIfNotEmpty: true });
+
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });

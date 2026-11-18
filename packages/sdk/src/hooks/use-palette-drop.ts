@@ -49,8 +49,8 @@ export function usePaletteDrop() {
       const reactFlowNodeType = resolveReactFlowNodeType(type, templateType, getCustomNodeTemplates());
 
       const newNodeId = crypto.randomUUID();
-      trackFutureChange('addNode', { nodeType: type });
       resetSelectedElements();
+      trackFutureChange('addNode', { id: newNodeId, nodeType: type });
       onNodesChange(getNodeAddChange(reactFlowNodeType, position, data, newNodeId));
     },
     [getNodeDefinition, translateIfPossible, resetSelectedElements, onNodesChange],

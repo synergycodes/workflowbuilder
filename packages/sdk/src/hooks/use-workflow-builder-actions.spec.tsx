@@ -9,7 +9,7 @@ import { IntegrationContextWrapper } from '../features/integration/components/in
 import { useModalStore } from '../features/modals/stores/use-modal-store';
 import type * as OpenTemplateSelectorModalModule from '../features/modals/template-selector/open-template-selector-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
 import { useStore } from '../store/store';
 import { getTheme } from './theme';
 import { type WorkflowBuilderActions, useWorkflowBuilderActions } from './use-workflow-builder-actions';
@@ -26,7 +26,7 @@ vi.mock('../features/modals/template-selector/open-template-selector-modal', () 
   openTemplateSelectorModal: vi.fn(),
 }));
 
-vi.mock('../features/variables/modals/modal-settings', () => ({
+vi.mock('../features/variables/modals/global/modal-settings', () => ({
   openModalWorkflowSettings: vi.fn(),
 }));
 

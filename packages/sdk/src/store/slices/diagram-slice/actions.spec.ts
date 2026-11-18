@@ -2,13 +2,13 @@
 // against an empty definition set and their errors are dropped. Once the palette
 // arrives, `refreshNodesErrorsIfNeeded` must re-run validation and repair the
 // stored nodes, while staying a no-op when nothing actually changed.
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest';
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { setCustomPaletteNodes } from '../../../data/palette';
 import type { WorkflowBuilderNode } from '../../../node/node-data';
 import { mockNodeDelay } from '../../../utils/validation/get-node-errors.mock';
 import { resetWorkflowStore, useStore } from '../../store';
-import { getStoreDataForIntegration, refreshNodesErrorsIfNeeded } from './actions';
+import { getStoreDataForIntegration, refreshNodesErrorsIfNeeded, setStoreDataFromIntegration } from './actions';
 
 // Mirrors the definition the consumer's palette would supply for `delay` nodes;
 // `description` is required, so a node missing it must surface a validation error.
@@ -128,5 +128,78 @@ describe('getStoreDataForIntegration', () => {
     expect(nodes).toBe(state.nodes);
     expect(edges).toBe(state.edges);
     expect(nodes[0]).toHaveProperty('measured');
+  });
+});
+
+describe('setStoreDataFromIntegration', () => {
+  const LEGACY_INSTANT = '2024-01-14T23:00:00.000Z';
+  const legacyNode: WorkflowBuilderNode = {
+    id: 'decision-1',
+    position: { x: 0, y: 0 },
+    type: 'decision',
+    data: {
+      type: 'decision',
+      icon: 'Plus',
+      properties: {
+        conditions: [{ x: '{{nodes.a.when}}', comparisonOperator: '==', y: LEGACY_INSTANT, logicalOperator: 'and' }],
+      },
+    },
+  };
+  const legacyVariables = {
+    deadline: {
+      id: 'deadline',
+      name: 'deadline',
+      type: 'date' as const,
+      defaultValue: LEGACY_INSTANT,
+      description: '',
+    },
+  };
+
+  beforeEach(() => {
+    resetWorkflowStore();
+  });
+
+  it('warns once about SDK 3.0 instants in node conditions and still loads them', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setStoreDataFromIntegration({ nodes: [legacyNode], edges: [] });
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toMatch(
+      /node decision-1 · conditions\[0\]\.y.*\(migration: zone-less-date-time\)$/,
+    );
+    expect(useStore.getState().nodes.map((node) => node.id)).toEqual(['decision-1']);
+    warnSpy.mockRestore();
+  });
+
+  it('warns once about an SDK 3.0 instant in a global variable default', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    setStoreDataFromIntegration({ globalVariables: legacyVariables });
+
+    expect(warnSpy).toHaveBeenCalledTimes(1);
+    expect(warnSpy.mock.calls[0][0]).toContain("global variable 'deadline'");
+    expect(useStore.getState().globalVariables).toEqual(legacyVariables);
+    warnSpy.mockRestore();
+  });
+
+  it('stays silent for 4.0 shapes and for a load without nodes or variables', () => {
+    const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    const cleanNode: WorkflowBuilderNode = {
+      ...legacyNode,
+      data: {
+        ...legacyNode.data,
+        properties: { conditions: [{ x: '', comparisonOperator: '==', y: '2024-01-15', logicalOperator: 'and' }] },
+      },
+    };
+
+    setStoreDataFromIntegration({
+      nodes: [cleanNode],
+      globalVariables: { deadline: { ...legacyVariables.deadline, defaultValue: '2024-01-15' } },
+    });
+    setStoreDataFromIntegration({ name: 'Only a name' });
+
+    expect(warnSpy).not.toHaveBeenCalled();
+    warnSpy.mockRestore();
   });
 });

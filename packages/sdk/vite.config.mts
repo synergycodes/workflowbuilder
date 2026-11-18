@@ -116,7 +116,7 @@ export default defineConfig(({ command }) => ({
       // runtime (not externalized in Vite's build), so their types must be
       // inlined too - otherwise dist/index.d.ts would reference
       // @workflowbuilder/ui, which the SDK does not declare as a dependency.
-      bundledPackages: ['@workflow-builder/icons', '@workflowbuilder/ui'],
+      bundledPackages: ['@workflow-builder/icons', '@workflowbuilder/ui', '@workflow-builder/types'],
       // The one type we can't reach from source alone — the ai-tools-control
       // depends on a few @jsonforms types we export for consumer convenience.
       insertTypesEntry: true,

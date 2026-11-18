@@ -14,4 +14,5 @@ export const defaultPropertiesData: Required<NodeDataProperties<DelayNodeSchema>
     expression: 'order.processing_time * 2',
   },
   type: delayTypeOptions.fixed.value,
+  untilDate: '',
 };

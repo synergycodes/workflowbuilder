@@ -3,7 +3,7 @@ import i18n from 'i18next';
 import { openExportModal } from '../features/integration/components/import-export/export-modal/open-export-modal';
 import { openImportModal } from '../features/integration/components/import-export/import-modal/open-import-modal';
 import { openTemplateSelectorModal } from '../features/modals/template-selector/open-template-selector-modal';
-import { openModalWorkflowSettings } from '../features/variables/modals/modal-settings';
+import { openModalWorkflowSettings } from '../features/variables/modals/global/modal-settings';
 import { getStoreSelection } from '../store/slices/diagram-selection/actions';
 import { getStoreNodes, setStoreNodes } from '../store/slices/diagram-slice/actions';
 import { useStore } from '../store/store';

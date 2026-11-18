@@ -16,6 +16,7 @@ import {
 import type { WorkflowBuilderEdge, WorkflowBuilderNode } from '../../node/node-data';
 import { getNodeWithErrors } from '../../utils/validation/get-node-errors';
 import type { GetDiagramState, SetDiagramState } from '../store';
+import { warnIfLegacyDateTimeValues } from './diagram-slice/utils/legacy-date-time-values';
 
 export type DiagramState = {
   nodes: WorkflowBuilderNode[];
@@ -75,6 +76,8 @@ export function useDiagramSlice(set: SetDiagramState, get: GetDiagramState) {
           return;
         }
       }
+
+      warnIfLegacyDateTimeValues(model?.diagram.nodes ?? []);
 
       const nodes = migrateLegacyHandleIdsOnNodes(model?.diagram.nodes.map(getNodeWithErrors) || []);
       const edges = migrateLegacyHandleIdsOnEdges(model?.diagram.edges || []);
