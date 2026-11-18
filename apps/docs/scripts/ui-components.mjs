@@ -111,4 +111,4 @@ export const COMPONENTS = [
 ];
 
 // Exports no documented prop links to, given a UI API Reference page anyway; the types they use come along.
-export const REFERENCE_EXPORTS = ['runStatusPresets'];
+export const REFERENCE_EXPORTS = ['runStatusPresets', 'RUN_STATUS_TONES'];
