@@ -28,10 +28,9 @@ function ring() {
 }
 
 describe('NodeRunRing', () => {
-  it('carries the run overlay marker and passes tone and halo to the stylesheet', () => {
+  it('passes tone and halo to the stylesheet', () => {
     act(() => root.render(<NodeRunRing tone="human" halo="waiting" />));
 
-    expect(ring().dataset['nodeRunOverlay']).toBeDefined();
     expect(ring().dataset['tone']).toBe('human');
     expect(ring().dataset['halo']).toBe('waiting');
   });

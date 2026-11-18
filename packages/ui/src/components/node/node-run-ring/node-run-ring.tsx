@@ -28,13 +28,5 @@ export type NodeRunRingProps = {
  * Reduced motion keeps the `heartbeat` halo static and hides the `waiting` one.
  */
 export function NodeRunRing({ tone, halo, className, ...rest }: NodeRunRingProps) {
-  return (
-    <span
-      {...rest}
-      className={clsx(styles['ring'], className)}
-      data-tone={tone}
-      data-halo={halo}
-      data-node-run-overlay
-    />
-  );
+  return <span {...rest} className={clsx(styles['ring'], className)} data-tone={tone} data-halo={halo} />;
 }
