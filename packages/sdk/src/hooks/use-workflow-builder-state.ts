@@ -1,8 +1,10 @@
 import { useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
+import { useHeaderSupply, useIsCleanUpPending } from '../features/ui-extensions/ui-extension-context';
 import type { LayoutDirection } from '../node/common';
 import { useStore } from '../store/store';
+import type { WorkflowBuilderVersion } from '../workflow-builder-root/workflow-builder-root.types';
 import type { Theme } from './theme';
 import { useTheme } from './use-theme';
 
@@ -37,6 +39,18 @@ export type WorkflowBuilderState = {
   layoutDirection: LayoutDirection;
   /** `''` until a diagram is loaded or named. */
   workflowName: string;
+  /** The version supplied through `<EditorHeaderVersion>`, or `null` while none is mounted. */
+  version: WorkflowBuilderVersion | null;
+  /** `true` while a promise returned by the supplied Clean up is pending. */
+  isCleanUpPending: boolean;
+  /** `true` while the diagram has no nodes; the built-in Clean up is disabled then. */
+  isCanvasEmpty: boolean;
+  /**
+   * Which of `cleanUp`, `saveAsPdf` and `publish` has a supply mounted, so a custom control shows when
+   * the built-in would. A supplied action may still do nothing: `cleanUp` in read-only mode, on an
+   * empty canvas or while pending, `publish` unless `version` is a draft.
+   */
+  availableActions: { cleanUp: boolean; saveAsPdf: boolean; publish: boolean };
 };
 
 /**
@@ -63,6 +77,14 @@ export function useWorkflowBuilderState(): WorkflowBuilderState {
   const paletteFilter = useStore((state) => state.paletteFilter);
   const layoutDirection = useStore((state) => state.layoutDirection);
   const workflowName = useStore((state) => state.workflowName) ?? '';
+
+  const version = useHeaderSupply('version') ?? null;
+  const isCleanUpPending = useIsCleanUpPending();
+  const isCanvasEmpty = useStore((state) => state.nodes.length === 0);
+  const canCleanUp = useHeaderSupply('cleanUp') !== undefined;
+  const canSaveAsPdf = useHeaderSupply('saveAsPdf') !== undefined;
+  const canPublish = useHeaderSupply('publish') !== undefined;
+
   const { theme } = useTheme();
   const { i18n } = useTranslation();
   const language = toWorkflowBuilderLanguage(i18n.resolvedLanguage ?? i18n.language?.split('-')[0]);
@@ -77,8 +99,27 @@ export function useWorkflowBuilderState(): WorkflowBuilderState {
       paletteFilter,
       layoutDirection,
       workflowName,
+      version,
+      isCleanUpPending,
+      isCanvasEmpty,
+      availableActions: { cleanUp: canCleanUp, saveAsPdf: canSaveAsPdf, publish: canPublish },
     }),
-    [isReadOnly, theme, language, isPaletteOpen, isPropertiesPanelOpen, paletteFilter, layoutDirection, workflowName],
+    [
+      isReadOnly,
+      theme,
+      language,
+      isPaletteOpen,
+      isPropertiesPanelOpen,
+      paletteFilter,
+      layoutDirection,
+      workflowName,
+      version,
+      isCleanUpPending,
+      isCanvasEmpty,
+      canCleanUp,
+      canSaveAsPdf,
+      canPublish,
+    ],
   );
 }
 

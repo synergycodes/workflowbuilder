@@ -5,12 +5,14 @@ vi.mock('react-i18next', () => ({
   useTranslation: () => ({ t: (key: string) => key }),
 }));
 
-const state = {
-  isReadOnly: false,
-  setReadOnly: vi.fn(),
-};
+const state = { isReadOnly: false };
 vi.mock('../../../../store/store', () => ({
   useStore: <T,>(selector: (s: typeof state) => T) => selector(state),
+}));
+
+const actions = { setReadOnly: vi.fn() };
+vi.mock('../../../../hooks/use-workflow-builder-actions', () => ({
+  useWorkflowBuilderActions: () => actions,
 }));
 
 const { ToggleReadyOnlyMode } = await import('./toggle-read-only-mode');
@@ -21,7 +23,7 @@ const readOnly = () => screen.getByRole('button', { name: 'header.mode.readOnly'
 describe('ToggleReadyOnlyMode', () => {
   beforeEach(() => {
     state.isReadOnly = false;
-    state.setReadOnly = vi.fn();
+    actions.setReadOnly = vi.fn();
   });
 
   it('renders the edit and read-only segments', () => {
@@ -45,7 +47,7 @@ describe('ToggleReadyOnlyMode', () => {
 
     fireEvent.click(readOnly());
 
-    expect(state.setReadOnly).toHaveBeenCalledExactlyOnceWith(true);
+    expect(actions.setReadOnly).toHaveBeenCalledExactlyOnceWith(true);
   });
 
   it('switches back to edit mode from read-only', () => {
@@ -54,7 +56,7 @@ describe('ToggleReadyOnlyMode', () => {
 
     fireEvent.click(edit());
 
-    expect(state.setReadOnly).toHaveBeenCalledExactlyOnceWith(false);
+    expect(actions.setReadOnly).toHaveBeenCalledExactlyOnceWith(false);
   });
 
   it('ignores a click on the active segment', () => {
@@ -62,6 +64,6 @@ describe('ToggleReadyOnlyMode', () => {
 
     fireEvent.click(edit());
 
-    expect(state.setReadOnly).not.toHaveBeenCalled();
+    expect(actions.setReadOnly).not.toHaveBeenCalled();
   });
 });

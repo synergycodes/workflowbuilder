@@ -4,6 +4,7 @@ import { createWorkflowBuilderActions } from '../../../../../hooks/create-workfl
 import type { WorkflowBuilderActions } from '../../../../../hooks/use-workflow-builder-actions';
 import type { OnSave } from '../../../../../types/integration';
 import { trackFutureChange } from '../../../../changes-tracker/stores/use-changes-tracker-store';
+import { useUiExtensionRegistry } from '../../../../ui-extensions/ui-extension-context';
 import {
   getStoreDataSnapshot,
   getStoreSavingStatus,
@@ -32,7 +33,11 @@ const missingOnSave: OnSave = async () => {
 export const IntegrationContext = createContext<IntegrationContextType>({
   // Default value
   onSave: missingOnSave,
-  actions: createWorkflowBuilderActions({ save: () => missingOnSave({ isAutoSave: false }), isActive: () => true }),
+  actions: createWorkflowBuilderActions({
+    save: () => missingOnSave({ isAutoSave: false }),
+    isActive: () => true,
+    registry: null,
+  }),
 });
 
 type Props = PropsWithChildren<{ onSave: OnSave; autoSave: boolean }>;
@@ -41,6 +46,7 @@ type Session = { onSave: OnSave; autoSave: boolean; isMounted: boolean };
 
 export function IntegrationContextWrapper({ onSave, autoSave, children }: Props) {
   const sessionRef = useRef<Session>({ onSave, autoSave, isMounted: false });
+  const registry = useUiExtensionRegistry();
 
   useLayoutEffect(() => {
     sessionRef.current.onSave = onSave;
@@ -59,7 +65,7 @@ export function IntegrationContextWrapper({ onSave, autoSave, children }: Props)
 
     return {
       onSave: save,
-      actions: createWorkflowBuilderActions({ save: () => save({ isAutoSave: false }), isActive }),
+      actions: createWorkflowBuilderActions({ save: () => save({ isAutoSave: false }), isActive, registry }),
     };
   });
 
