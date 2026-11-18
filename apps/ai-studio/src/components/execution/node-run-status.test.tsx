@@ -43,12 +43,13 @@ describe('node run status decorators', () => {
   });
 
   const query = (selector: string) => canvasNode.querySelector(selector);
+  // The ring is the only run part with neither text nor children.
+  const ring = () => query('[data-tone]:empty');
   const badge = () =>
     [...canvasNode.querySelectorAll<HTMLElement>('[data-tone]')].find((element) => element.textContent);
 
   it('keeps the validation badge and draws nothing while the node has no run status', () => {
     expect(query('[class*="status-container--invalid"]')).not.toBeNull();
-    expect(query('[data-node-run-overlay]')).toBeNull();
     expect(query('[data-tone]')).toBeNull();
   });
 
@@ -70,7 +71,7 @@ describe('node run status decorators', () => {
     (status, tone, label) => {
       setStatus(status);
 
-      expect(query('[data-node-run-overlay]')?.getAttribute('data-tone')).toBe(tone);
+      expect(ring()?.getAttribute('data-tone')).toBe(tone);
       expect(badge()?.textContent).toBe(label);
       expect(badge()?.dataset['tone']).toBe(tone);
       expect(query('[class*="status-container"]')).toBeNull();
@@ -87,14 +88,14 @@ describe('node run status decorators', () => {
     act(() => useExecutionStore.setState({ status: 'disconnected', nodeStates: { 'node-1': { status: 'running' } } }));
 
     expect(badge()?.textContent).toBe('No signal');
-    expect(query('[data-node-run-overlay]')?.getAttribute('data-tone')).toBe('warning');
+    expect(ring()?.getAttribute('data-tone')).toBe('warning');
     expect(query('[data-spinner="slow"]')).not.toBeNull();
   });
 
   it('pulses the halo of a node waiting for a human', () => {
     setStatus('waiting');
 
-    expect(query('[data-node-run-overlay]')?.getAttribute('data-halo')).toBe('waiting');
+    expect(ring()?.getAttribute('data-halo')).toBe('waiting');
   });
 
   it('adds the time of the latest wait to a waiting badge', () => {
