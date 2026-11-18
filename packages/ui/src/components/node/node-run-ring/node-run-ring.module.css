@@ -1,27 +1,12 @@
 :root {
   --wb-public-node-run-ring-width: var(--wb-ds-canvas-run-status-stroke-width);
   --wb-public-node-run-ring-halo-width: var(--wb-ds-canvas-run-status-halo-width);
-
-  --wb-public-node-run-ring-color-info: var(--wb-ds-canvas-run-status-stroke-info);
-  --wb-public-node-run-ring-color-success: var(--wb-ds-canvas-run-status-stroke-success);
-  --wb-public-node-run-ring-color-warning: var(--wb-ds-canvas-run-status-stroke-warning);
-  --wb-public-node-run-ring-color-critical: var(--wb-ds-canvas-run-status-stroke-critical);
-  --wb-public-node-run-ring-color-human: var(--wb-ds-canvas-run-status-stroke-human);
-  --wb-public-node-run-ring-color-neutral: var(--wb-ds-canvas-run-status-stroke-neutral);
-  --wb-public-node-run-ring-color-inverse: var(--wb-ds-canvas-run-status-stroke-inverse);
-
-  --wb-public-node-run-ring-halo-color-info: var(--wb-ds-canvas-run-status-halo-info);
-  --wb-public-node-run-ring-halo-color-warning: var(--wb-ds-canvas-run-status-halo-warning);
-  --wb-public-node-run-ring-halo-color-human: var(--wb-ds-canvas-run-status-halo-human);
-  --wb-public-node-run-ring-halo-color-success: transparent;
-  --wb-public-node-run-ring-halo-color-critical: transparent;
-  --wb-public-node-run-ring-halo-color-neutral: transparent;
-  --wb-public-node-run-ring-halo-color-inverse: transparent;
 }
 
 @layer ui.component {
   .ring {
     --ring-halo-size: 0;
+    --ring-halo-color: transparent;
 
     position: absolute;
     inset: 0;
@@ -33,38 +18,34 @@
   }
 
   .ring[data-tone='info'] {
-    --ring-color: var(--wb-public-node-run-ring-color-info);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-info);
+    --ring-color: var(--wb-public-node-run-status-stroke-info);
+    --ring-halo-color: var(--wb-public-node-run-status-halo-info);
   }
 
   .ring[data-tone='success'] {
-    --ring-color: var(--wb-public-node-run-ring-color-success);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-success);
+    --ring-color: var(--wb-public-node-run-status-stroke-success);
   }
 
   .ring[data-tone='warning'] {
-    --ring-color: var(--wb-public-node-run-ring-color-warning);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-warning);
+    --ring-color: var(--wb-public-node-run-status-stroke-warning);
+    --ring-halo-color: var(--wb-public-node-run-status-halo-warning);
   }
 
   .ring[data-tone='critical'] {
-    --ring-color: var(--wb-public-node-run-ring-color-critical);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-critical);
+    --ring-color: var(--wb-public-node-run-status-stroke-critical);
   }
 
   .ring[data-tone='human'] {
-    --ring-color: var(--wb-public-node-run-ring-color-human);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-human);
+    --ring-color: var(--wb-public-node-run-status-stroke-human);
+    --ring-halo-color: var(--wb-public-node-run-status-halo-human);
   }
 
   .ring[data-tone='neutral'] {
-    --ring-color: var(--wb-public-node-run-ring-color-neutral);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-neutral);
+    --ring-color: var(--wb-public-node-run-status-stroke-neutral);
   }
 
   .ring[data-tone='inverse'] {
-    --ring-color: var(--wb-public-node-run-ring-color-inverse);
-    --ring-halo-color: var(--wb-public-node-run-ring-halo-color-inverse);
+    --ring-color: var(--wb-public-node-run-status-stroke-inverse);
   }
 
   .ring[data-halo] {

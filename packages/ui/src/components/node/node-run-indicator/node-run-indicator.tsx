@@ -1,6 +1,7 @@
 import clsx from 'clsx';
 import type { HTMLAttributes, ReactNode } from 'react';
 
+import '../run-status/variables.css';
 import styles from './node-run-indicator.module.css';
 
 import type { RunStatusTone } from '../run-status/run-status-tone';

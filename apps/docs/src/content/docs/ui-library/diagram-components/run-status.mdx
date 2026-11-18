@@ -3,6 +3,7 @@ title: Run status
 description: The thirteen design-system run statuses, composed from NodeRunRing, NodeRunIndicator, NodeRunBadge, NodeRunProgress and NodeRunVeil.
 ---
 
+import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
 import { RunStatusExample } from '../../../../components/ui-examples/run-status';
 
 A node's run status is drawn with independent parts, each with its own `tone`:
@@ -87,6 +88,25 @@ The badge sits in its node's stacking context, so a node rendered later that ove
 | Skipped           | `skipped`         | neutral           | none                           | neutral, SkipForward, dimmed; `NodeRunVeil` |
 
 A running step that reports progress adds `NodeRunProgress` and switches the halo to `heartbeat`.
+
+## Colours
+
+Each tone has one palette that every part reads: `--wb-public-node-run-status-stroke-<tone>` for the
+ring line, `-halo-<tone>` for the ring halo (`info`, `warning` and `human` only; the other tones have
+none), and `-bg-<tone>` and `-fg-<tone>` for the indicator circle and glyph and for the badge. They
+default to the run status tokens `--wb-ds-canvas-run-status-*`, which switch with the theme. The
+`inverse` badge reads the `BadgeLabel` Inverse variables instead.
+
+Override a palette variable on `:root` (and `:root[data-theme='dark']`) to recolour a tone in every
+part, or on one part with a `className`:
+
+```css
+.ring-queued {
+  --wb-public-node-run-status-stroke-info: #7c3aed;
+}
+```
+
+<CssVariablesTable slug="run-status" />
 
 ## Accessibility
 
