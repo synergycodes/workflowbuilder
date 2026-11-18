@@ -117,8 +117,11 @@ describe('EnhancedBaseEdge', () => {
     expect(hitArea).toMatch(/stroke:\s*transparent !important;/);
   });
 
-  it('turns only the edit colours to the select colour on keyboard focus', () => {
-    const focus = cssRule('../../diagram.module.css', String.raw`:global\(\.react-flow__edge:focus-visible\)`);
+  it('turns only the edit colours to the select colour on keyboard focus and selection', () => {
+    const focus = cssRule(
+      '../../diagram.module.css',
+      String.raw`:global\(\.react-flow__edge:focus-visible\),\s*:global\(\.react-flow__edge\.selected\)`,
+    );
 
     expect(focus.match(/--wb-public-edge-color[\w-]*(?=:)/g)).toEqual([
       '--wb-public-edge-color',
