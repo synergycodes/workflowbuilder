@@ -7,6 +7,7 @@ export type EdgeEndpointMarkerProps = {
    * Id the path points at: `markerEnd={`url(#${id})`}`. Unique per edge.
    */
   id: string;
+  /** Terminator to draw: `arrow` or `circle`. */
   type: Exclude<EdgeEndpoint, 'none'>;
   /**
    * Style of the path this marker ends, as returned by `useEdgeStyle`. Only its colour, width and transition

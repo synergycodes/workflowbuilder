@@ -157,8 +157,9 @@ function ArrowEdge({ id, selected, sourceX, sourceY, targetX, targetY, sourcePos
 }
 ```
 
-Two React roots hydrated from server HTML on one page need different
-`identifierPrefix` values, or their `useId` marker ids can collide.
+Roots hydrated from server HTML and apps with separate React copies on one page
+(micro-frontends, embedded bundles) all start `useId` from the same id: give each a
+different `identifierPrefix`, or their marker ids can collide.
 
 ## EdgeLabel props
 

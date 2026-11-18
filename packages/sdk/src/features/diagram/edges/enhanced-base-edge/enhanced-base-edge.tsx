@@ -27,6 +27,11 @@ type EnhancedBaseEdgeProps = BaseEdgeProps & {
 export function EnhancedBaseEdge({ id, path, endpoint = 'none', ...rest }: EnhancedBaseEdgeProps) {
   const markerId = useId();
   const hasEndpoint = endpoint !== 'none';
+  // Without a stroke the line takes xyflow's grey, which the marker cannot read.
+  const style =
+    hasEndpoint && rest.style?.stroke === undefined
+      ? { stroke: 'var(--wb-public-edge-color)', strokeWidth: 'var(--wb-public-edge-stroke-width)', ...rest.style }
+      : rest.style;
 
   return (
     <>
@@ -38,13 +43,14 @@ export function EnhancedBaseEdge({ id, path, endpoint = 'none', ...rest }: Enhan
         interactionWidth={0}
       />
       {/* One marker per edge: an xyflow `markerEnd` is shared and keeps one colour, so it cannot follow the state. */}
-      {hasEndpoint && <EdgeEndpointMarker id={markerId} type={endpoint} style={rest.style} />}
+      {hasEndpoint && <EdgeEndpointMarker id={markerId} type={endpoint} style={style} />}
       <BaseEdge
         id={id}
         data-edge-id={id}
         path={path}
         interactionWidth={0}
         {...rest}
+        style={style}
         markerEnd={hasEndpoint ? `url(#${markerId})` : rest.markerEnd}
       />
     </>

@@ -83,16 +83,31 @@ describe('EnhancedBaseEdge', () => {
     expect(circle!.querySelector('circle')!.style.stroke).toBe(style.stroke);
   });
 
-  it('draws the terminator in the default edge colour when given no style, like BaseEdge', () => {
+  it('draws the line and the terminator in the same default colour and width when given no style', () => {
     const { container } = render(
       <svg>
         <EnhancedBaseEdge id="edge-1" path="M 0 0 L 10 0" endpoint="arrow" />
       </svg>,
     );
 
+    const line = container.querySelector<SVGPathElement>('[data-edge-id="edge-1"]')!;
     const arrow = container.querySelector<SVGPolylineElement>('marker polyline')!;
-    expect(arrow.style.stroke).toBe('var(--wb-public-edge-color)');
-    expect(arrow.style.strokeWidth).toBe('var(--wb-public-edge-stroke-width)');
+    expect(line.style.stroke).toBe('var(--wb-public-edge-color)');
+    expect(arrow.style.stroke).toBe(line.style.stroke);
+    expect(arrow.style.strokeWidth).toBe(line.style.strokeWidth);
+  });
+
+  it('lets a given width win over the default and leaves edges without an endpoint unstyled', () => {
+    const { container } = render(
+      <svg>
+        <EnhancedBaseEdge id="edge-1" path="M 0 0 L 10 0" endpoint="arrow" style={{ strokeWidth: 3 }} />
+        <EnhancedBaseEdge id="edge-2" path="M 0 0 L 10 0" />
+      </svg>,
+    );
+
+    expect(container.querySelector<SVGPathElement>('[data-edge-id="edge-1"]')!.style.strokeWidth).toBe('3');
+    expect(container.querySelector<SVGPolylineElement>('marker polyline')!.style.strokeWidth).toBe('3');
+    expect(container.querySelector<SVGPathElement>('[data-edge-id="edge-2"]')!.style.stroke).toBe('');
   });
 
   it('sizes the transparent hit area with the public hit width, 12 by default', () => {
