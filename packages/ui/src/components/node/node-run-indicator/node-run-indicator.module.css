@@ -3,22 +3,6 @@
   --wb-public-node-run-indicator-border-radius: var(--wb-ds-canvas-run-status-indicator-radius);
   --wb-public-node-run-indicator-icon-size: var(--wb-ds-size-150);
   --wb-public-node-run-indicator-spinner-size: var(--wb-ds-size-175);
-
-  --wb-public-node-run-indicator-background-color-info: var(--wb-ds-canvas-run-status-bg-info);
-  --wb-public-node-run-indicator-background-color-success: var(--wb-ds-canvas-run-status-bg-success);
-  --wb-public-node-run-indicator-background-color-warning: var(--wb-ds-canvas-run-status-bg-warning);
-  --wb-public-node-run-indicator-background-color-critical: var(--wb-ds-canvas-run-status-bg-critical);
-  --wb-public-node-run-indicator-background-color-human: var(--wb-ds-canvas-run-status-bg-human);
-  --wb-public-node-run-indicator-background-color-neutral: var(--wb-ds-canvas-run-status-bg-neutral);
-  --wb-public-node-run-indicator-background-color-inverse: var(--wb-ds-canvas-run-status-bg-inverse);
-
-  --wb-public-node-run-indicator-icon-color-info: var(--wb-ds-canvas-run-status-fg-info);
-  --wb-public-node-run-indicator-icon-color-success: var(--wb-ds-canvas-run-status-fg-success);
-  --wb-public-node-run-indicator-icon-color-warning: var(--wb-ds-canvas-run-status-fg-warning);
-  --wb-public-node-run-indicator-icon-color-critical: var(--wb-ds-canvas-run-status-fg-critical);
-  --wb-public-node-run-indicator-icon-color-human: var(--wb-ds-canvas-run-status-fg-human);
-  --wb-public-node-run-indicator-icon-color-neutral: var(--wb-ds-canvas-run-status-fg-neutral);
-  --wb-public-node-run-indicator-icon-color-inverse: var(--wb-ds-canvas-run-status-fg-inverse);
 }
 
 @layer ui.component {
@@ -40,59 +24,55 @@
   }
 
   .indicator[data-tone='info'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-info);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-info);
   }
 
   .indicator[data-tone='success'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-success);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-success);
   }
 
   .indicator[data-tone='warning'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-warning);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-warning);
   }
 
   .indicator[data-tone='critical'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-critical);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-critical);
   }
 
   .indicator[data-tone='human'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-human);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-human);
   }
 
   .indicator[data-tone='neutral'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-neutral);
-  }
-
-  .indicator[data-tone='inverse'] {
-    --indicator-background-color: var(--wb-public-node-run-indicator-background-color-inverse);
+    --indicator-background-color: var(--wb-public-node-run-status-bg-neutral);
   }
 
   .indicator[data-icon-tone='info'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-info);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-info);
   }
 
   .indicator[data-icon-tone='success'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-success);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-success);
   }
 
   .indicator[data-icon-tone='warning'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-warning);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-warning);
   }
 
   .indicator[data-icon-tone='critical'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-critical);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-critical);
   }
 
   .indicator[data-icon-tone='human'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-human);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-human);
   }
 
   .indicator[data-icon-tone='neutral'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-neutral);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-neutral);
   }
 
   .indicator[data-icon-tone='inverse'] {
-    --indicator-icon-color: var(--wb-public-node-run-indicator-icon-color-inverse);
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-inverse);
   }
 
   .spinner {

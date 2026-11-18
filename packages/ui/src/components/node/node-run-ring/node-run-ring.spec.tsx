@@ -44,6 +44,17 @@ describe('NodeRunRing', () => {
   });
 });
 
+const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
+const palette = new Map<string, string>();
+postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
+  palette.set(declaration.prop, declaration.value);
+});
+
+function throughPalette(value = '') {
+  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
+  return (name && palette.get(name)) ?? value;
+}
+
 describe('node-run-ring.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-ring.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
@@ -60,20 +71,13 @@ describe('node-run-ring.module.css', () => {
     return found;
   }
 
-  const defaults = declarations(':root');
-
-  it.each(RUN_STATUS_TONES)('colours the %s line and halo through their public variables', (tone) => {
+  it.each(RUN_STATUS_TONES)('colours the %s line and halo with the DS run status tokens', (tone) => {
     const rule = declarations(`.ring[data-tone='${tone}']`);
-    expect(defaults.has(`--wb-public-node-run-ring-color-${tone}`)).toBe(true);
-    expect(rule.get('--ring-color')).toBe(`var(--wb-public-node-run-ring-color-${tone})`);
-    expect(rule.get('--ring-halo-color')).toBe(`var(--wb-public-node-run-ring-halo-color-${tone})`);
-  });
-
-  it('defaults the halo to the DS halo on info, warning and human, and to transparent elsewhere', () => {
-    const transparent = RUN_STATUS_TONES.filter(
-      (tone) => defaults.get(`--wb-public-node-run-ring-halo-color-${tone}`) === 'transparent',
+    const halo = rule.get('--ring-halo-color') ?? declarations('.ring').get('--ring-halo-color');
+    expect(throughPalette(rule.get('--ring-color'))).toBe(`var(--wb-ds-canvas-run-status-stroke-${tone})`);
+    expect(throughPalette(halo)).toBe(
+      ['info', 'warning', 'human'].includes(tone) ? `var(--wb-ds-canvas-run-status-halo-${tone})` : 'transparent',
     );
-    expect(transparent).toEqual(['success', 'critical', 'neutral', 'inverse']);
   });
 
   it('draws the line as an inset box-shadow on an absolutely positioned layer', () => {

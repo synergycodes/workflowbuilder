@@ -32,8 +32,7 @@ import { NodePanel, NodeRunRing } from '@workflowbuilder/ui';
 - `heartbeat` - pulses between 3px and 6px every 1.4s; a running step that reports progress.
 - `waiting` - pulses between 3px and 7px every 1.8s; a step waiting for a person or a service.
 
-Each tone reads `--wb-public-node-run-ring-halo-color-<tone>`. Only `info`, `warning` and `human`
-default to a DS halo colour; the other tones default to `transparent`.
+Only `info`, `warning` and `human` have a halo colour; on the other tones the halo is transparent.
 With reduced motion, `heartbeat` stays a static 3px halo and `waiting` shows no halo.
 
 ## Selected node
@@ -48,15 +47,11 @@ selected node under it keeps only its focus ring as the sign of selection (see
 }
 ```
 
-## Custom colour
+## Colours
 
-Override a tone's variable on one instance with a `className`:
-
-```css
-.ring-queued {
-  --wb-public-node-run-ring-color-info: #7c3aed;
-}
-```
+The line reads `--wb-public-node-run-status-stroke-<tone>` and the halo
+`--wb-public-node-run-status-halo-<tone>`, from the palette shared by all run status parts (see
+[Run status colours](/ui-library/diagram-components/run-status/#colours)).
 
 ## Props
 

@@ -7,7 +7,8 @@ export const RUN_STATUS_TONES = ['info', 'success', 'warning', 'critical', 'huma
 
 /**
  * Colour role of a node run status part. Each part (`NodeRunRing`, `NodeRunIndicator`, `NodeRunBadge`) takes its own
- * tone, so one status can mix them, for example a success ring with a warning badge.
+ * tone, so one status can mix them, for example a success ring with a warning badge. Every part reads the palette of
+ * its tone, `--wb-public-node-run-status-{stroke,halo,bg,fg}-<tone>`.
  *
  * @category Node
  */

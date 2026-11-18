@@ -45,6 +45,17 @@ describe('NodeRunBadge', () => {
   });
 });
 
+const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
+const palette = new Map<string, string>();
+postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
+  palette.set(declaration.prop, declaration.value);
+});
+
+function throughPalette(value = '') {
+  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
+  return (name && palette.get(name)) ?? value;
+}
+
 describe('node-run-badge.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-badge.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
@@ -59,27 +70,17 @@ describe('node-run-badge.module.css', () => {
     return found;
   }
 
-  const root = declarations(':root');
-
-  it.each(RUN_STATUS_TONES)('feeds the %s colour pair into the BadgeLabel', (tone) => {
+  it.each(DS_TONES)('colours the %s label with the DS run status tokens', (tone) => {
     const rule = declarations(`.badge[data-tone='${tone}']`);
-    for (const part of ['background-color', 'color']) {
-      expect(root.has(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(true);
-      expect(rule.get(`--badge-label-${part}`)).toBe(`var(--wb-public-node-run-badge-${part}-${tone})`);
-    }
-  });
-
-  it.each(DS_TONES)('reads the %s colour pair from the run status tokens', (tone) => {
-    expect(root.get(`--wb-public-node-run-badge-background-color-${tone}`)).toBe(
+    expect(throughPalette(rule.get('--badge-label-background-color'))).toBe(
       `var(--wb-ds-canvas-run-status-bg-${tone})`,
     );
-    expect(root.get(`--wb-public-node-run-badge-color-${tone}`)).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
+    expect(throughPalette(rule.get('--badge-label-color'))).toBe(`var(--wb-ds-canvas-run-status-fg-${tone})`);
   });
 
-  it('chains the inverse colours through the BadgeLabel Inverse variables', () => {
-    expect(root.get('--wb-public-node-run-badge-background-color-inverse')).toBe(
-      'var(--wb-public-badge-label-background-color-inverse)',
-    );
-    expect(root.get('--wb-public-node-run-badge-color-inverse')).toBe('var(--wb-public-badge-label-color-inverse)');
+  it('colours the inverse label with the BadgeLabel Inverse variables', () => {
+    const rule = declarations(".badge[data-tone='inverse']");
+    expect(rule.get('--badge-label-background-color')).toBe('var(--wb-public-badge-label-background-color-inverse)');
+    expect(rule.get('--badge-label-color')).toBe('var(--wb-public-badge-label-color-inverse)');
   });
 });

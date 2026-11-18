@@ -61,6 +61,17 @@ describe('NodeRunIndicator', () => {
   });
 });
 
+const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
+const palette = new Map<string, string>();
+postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
+  palette.set(declaration.prop, declaration.value);
+});
+
+function throughPalette(value = '') {
+  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
+  return (name && palette.get(name)) ?? value;
+}
+
 describe('node-run-indicator.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-indicator.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
@@ -75,15 +86,15 @@ describe('node-run-indicator.module.css', () => {
     return value;
   }
 
-  it.each(CIRCLE_TONES)('colours the %s circle through its public variable', (tone) => {
-    expect(declaration(`.indicator[data-tone='${tone}']`, '--indicator-background-color')).toBe(
-      `var(--wb-public-node-run-indicator-background-color-${tone})`,
+  it.each(CIRCLE_TONES)('colours the %s circle with the DS run status bg token', (tone) => {
+    expect(throughPalette(declaration(`.indicator[data-tone='${tone}']`, '--indicator-background-color'))).toBe(
+      `var(--wb-ds-canvas-run-status-bg-${tone})`,
     );
   });
 
-  it.each(RUN_STATUS_TONES)('colours the %s glyph through its public variable', (tone) => {
-    expect(declaration(`.indicator[data-icon-tone='${tone}']`, '--indicator-icon-color')).toBe(
-      `var(--wb-public-node-run-indicator-icon-color-${tone})`,
+  it.each(RUN_STATUS_TONES)('colours the %s glyph with the DS run status fg token', (tone) => {
+    expect(throughPalette(declaration(`.indicator[data-icon-tone='${tone}']`, '--indicator-icon-color'))).toBe(
+      `var(--wb-ds-canvas-run-status-fg-${tone})`,
     );
   });
 

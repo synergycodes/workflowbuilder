@@ -1,12 +1,16 @@
 import clsx from 'clsx';
 
+import '../run-status/variables.css';
 import styles from './node-run-badge.module.css';
 
 import { BadgeLabel, BadgeLabelProps } from '../../badge-label/badge-label';
 import type { RunStatusTone } from '../run-status/run-status-tone';
 
 export type NodeRunBadgeProps = Omit<BadgeLabelProps, 'variant' | 'size'> & {
-  /** Colour pair of the label, read from `--wb-public-node-run-badge-*-<tone>`. */
+  /**
+   * Colour pair of the label, read from `--wb-public-node-run-status-{bg,fg}-<tone>`. `inverse` reads the
+   * `BadgeLabel` Inverse pair.
+   */
   tone: RunStatusTone;
   /** Lowers the label's opacity, for example on a skipped step. */
   dimmed?: boolean;
