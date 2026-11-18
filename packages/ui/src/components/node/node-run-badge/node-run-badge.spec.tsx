@@ -8,6 +8,7 @@ import styles from './node-run-badge.module.css';
 import postcss from 'postcss';
 
 import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { throughPalette } from '../run-status/test-utils';
 import { NodeRunBadge } from './node-run-badge';
 
 let container: HTMLDivElement;
@@ -44,17 +45,6 @@ describe('NodeRunBadge', () => {
     expect(container.firstElementChild?.classList).toContain(styles['dimmed']);
   });
 });
-
-const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
-const palette = new Map<string, string>();
-postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
-  palette.set(declaration.prop, declaration.value);
-});
-
-function throughPalette(value = '') {
-  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
-  return (name && palette.get(name)) ?? value;
-}
 
 describe('node-run-badge.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-badge.module.css');

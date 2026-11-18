@@ -6,6 +6,7 @@ import { type Root, createRoot } from 'react-dom/client';
 import postcss from 'postcss';
 
 import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { throughPalette } from '../run-status/test-utils';
 import { NodeRunIndicator } from './node-run-indicator';
 
 const CIRCLE_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
@@ -60,17 +61,6 @@ describe('NodeRunIndicator', () => {
     expect(indicator().getAttribute('aria-label')).toBe('Running');
   });
 });
-
-const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
-const palette = new Map<string, string>();
-postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
-  palette.set(declaration.prop, declaration.value);
-});
-
-function throughPalette(value = '') {
-  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
-  return (name && palette.get(name)) ?? value;
-}
 
 describe('node-run-indicator.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-indicator.module.css');

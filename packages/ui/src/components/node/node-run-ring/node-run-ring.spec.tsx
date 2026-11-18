@@ -6,6 +6,7 @@ import { type Root, createRoot } from 'react-dom/client';
 import postcss, { type Rule } from 'postcss';
 
 import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
+import { throughPalette } from '../run-status/test-utils';
 import { NodeRunRing } from './node-run-ring';
 
 let container: HTMLDivElement;
@@ -43,17 +44,6 @@ describe('NodeRunRing', () => {
     expect(ring().classList.length).toBe(2);
   });
 });
-
-const paletteFile = path.join(import.meta.dirname, '../run-status/variables.css');
-const palette = new Map<string, string>();
-postcss.parse(readFileSync(paletteFile, 'utf8'), { from: paletteFile }).walkDecls((declaration) => {
-  palette.set(declaration.prop, declaration.value);
-});
-
-function throughPalette(value = '') {
-  const name = /^var\((--[\w-]+)\)$/.exec(value)?.[1];
-  return (name && palette.get(name)) ?? value;
-}
 
 describe('node-run-ring.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-ring.module.css');
