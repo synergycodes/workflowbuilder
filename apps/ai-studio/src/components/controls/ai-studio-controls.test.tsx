@@ -47,6 +47,8 @@ function setRunStatus(status: ExecutionStatus) {
   act(() => applySnapshot(snapshotFrame(status, [])));
 }
 
+const gridColor = () => document.documentElement.style.getPropertyValue('--wb-public-canvas-grid-color');
+
 describe('AiStudioControls', () => {
   let container: HTMLDivElement;
   let root: ReturnType<typeof createRoot>;
@@ -319,15 +321,18 @@ describe('AiStudioControls', () => {
     expect(labelOf('ArrowCounterClockwise')).toBe('Reset');
   });
 
-  it('keeps the canvas read-only while it shows a run, ended or not, and gives it back on reset', () => {
+  it('keeps the canvas read-only and its grid hidden while it shows a run, ended or not, and gives both back on reset', () => {
     setRunStatus('waiting');
     expect(useStore.getState().isReadOnly).toBe(true);
+    expect(gridColor()).toBe('transparent');
 
     setRunStatus('completed');
     expect(useStore.getState().isReadOnly).toBe(true);
+    expect(gridColor()).toBe('transparent');
 
     act(() => resetExecution());
     expect(useStore.getState().isReadOnly).toBe(false);
+    expect(gridColor()).toBe('');
   });
 
   describe('position', () => {
