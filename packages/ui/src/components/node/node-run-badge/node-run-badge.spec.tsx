@@ -7,7 +7,7 @@ import badgeStyles from '../../badge-label/badge-label.module.css';
 import styles from './node-run-badge.module.css';
 import postcss from 'postcss';
 
-import type { RunStatusTone } from '../run-status/run-status-tone';
+import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
 import { NodeRunBadge } from './node-run-badge';
 
 let container: HTMLDivElement;
@@ -24,8 +24,7 @@ afterEach(() => {
   container.remove();
 });
 
-const TONES: RunStatusTone[] = ['info', 'success', 'warning', 'critical', 'human', 'neutral', 'inverse'];
-const RUN_STATUS_TONES = ['info', 'success', 'warning', 'critical', 'human', 'neutral'];
+const DS_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
 
 describe('NodeRunBadge', () => {
   it('renders a size m BadgeLabel on the default variant, coloured by its tone', () => {
@@ -62,7 +61,7 @@ describe('node-run-badge.module.css', () => {
 
   const root = declarations(':root');
 
-  it.each(TONES)('feeds the %s colour pair into the BadgeLabel', (tone) => {
+  it.each(RUN_STATUS_TONES)('feeds the %s colour pair into the BadgeLabel', (tone) => {
     const rule = declarations(`.badge[data-tone='${tone}']`);
     for (const part of ['background-color', 'color']) {
       expect(root.has(`--wb-public-node-run-badge-${part}-${tone}`)).toBe(true);
@@ -70,7 +69,7 @@ describe('node-run-badge.module.css', () => {
     }
   });
 
-  it.each(RUN_STATUS_TONES)('reads the %s colour pair from the run status tokens', (tone) => {
+  it.each(DS_TONES)('reads the %s colour pair from the run status tokens', (tone) => {
     expect(root.get(`--wb-public-node-run-badge-background-color-${tone}`)).toBe(
       `var(--wb-ds-canvas-run-status-bg-${tone})`,
     );

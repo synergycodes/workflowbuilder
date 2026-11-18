@@ -5,7 +5,10 @@ import { type Root, createRoot } from 'react-dom/client';
 
 import postcss from 'postcss';
 
+import { RUN_STATUS_TONES } from '../run-status/run-status-tone';
 import { NodeRunIndicator } from './node-run-indicator';
+
+const CIRCLE_TONES = RUN_STATUS_TONES.filter((tone) => tone !== 'inverse');
 
 let container: HTMLDivElement;
 let root: Root;
@@ -61,6 +64,28 @@ describe('NodeRunIndicator', () => {
 describe('node-run-indicator.module.css', () => {
   const file = path.join(import.meta.dirname, 'node-run-indicator.module.css');
   const stylesheet = postcss.parse(readFileSync(file, 'utf8'), { from: file });
+
+  function declaration(selector: string, property: string) {
+    let value: string | undefined;
+    stylesheet.walkRules(selector, (rule) => {
+      rule.walkDecls(property, (found) => {
+        value = found.value;
+      });
+    });
+    return value;
+  }
+
+  it.each(CIRCLE_TONES)('colours the %s circle through its public variable', (tone) => {
+    expect(declaration(`.indicator[data-tone='${tone}']`, '--indicator-background-color')).toBe(
+      `var(--wb-public-node-run-indicator-background-color-${tone})`,
+    );
+  });
+
+  it.each(RUN_STATUS_TONES)('colours the %s glyph through its public variable', (tone) => {
+    expect(declaration(`.indicator[data-icon-tone='${tone}']`, '--indicator-icon-color')).toBe(
+      `var(--wb-public-node-run-indicator-icon-color-${tone})`,
+    );
+  });
 
   it('stops the spinner under reduced motion, which leaves the arc on top', () => {
     let stopped = false;

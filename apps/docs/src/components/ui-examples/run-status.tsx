@@ -10,14 +10,12 @@ import {
   NodeRunRing,
   type NodeRunRingProps,
   NodeRunVeil,
-  type RunStatusTone,
+  RUN_STATUS_TONES,
   runStatusPresets,
 } from '@workflowbuilder/ui';
 import type { CSSProperties, ReactNode } from 'react';
 
 import { ComponentPreview } from './component-preview';
-
-const TONES: RunStatusTone[] = ['info', 'success', 'warning', 'critical', 'human', 'neutral', 'inverse'];
 
 // Room above each node for its badge.
 const grid: CSSProperties = {
@@ -54,7 +52,7 @@ function DemoNode({ title = 'Node title', selected = false, indicator, caption: 
 
 export function NodeRunRingExample() {
   const rings: (NodeRunRingProps & { caption: string; selected?: boolean })[] = [
-    ...TONES.map((tone) => ({ tone, caption: tone })),
+    ...RUN_STATUS_TONES.map((tone) => ({ tone, caption: tone })),
     { tone: 'info', halo: 'static', caption: "info, halo 'static'" },
     { tone: 'info', halo: 'heartbeat', caption: "info, halo 'heartbeat'" },
     { tone: 'human', halo: 'waiting', caption: "human, halo 'waiting'" },
@@ -125,7 +123,7 @@ export function NodeRunBadgeExample() {
   return (
     <ComponentPreview>
       <div style={grid}>
-        {TONES.map((tone) => (
+        {RUN_STATUS_TONES.map((tone) => (
           <DemoNode key={tone} caption={tone}>
             <NodeRunBadge tone={tone} label={tone} />
           </DemoNode>
