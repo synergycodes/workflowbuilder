@@ -23,7 +23,9 @@ function isEdgeTaken(
   sourceHandle: string | null | undefined,
 ): boolean | undefined {
   if (source?.status !== 'completed' && source?.status !== 'failed') return;
-  // Runs recorded before `nextPort` was emitted carry none, even for a routed failure.
+  // A failure without `nextPort` comes from a run recorded before the field, even a routed one, or from a
+  // policy that does not route it; the event cannot tell which, so read it as routed. Under `continue` the
+  // error target is usually skipped: `outOfRun`.
   if (source.status === 'failed' && !source.nextPort && sourceHandle === RESERVED_ERROR_HANDLE) return true;
   return isPortRouted(source.nextPort, sourceHandle);
 }

@@ -105,4 +105,8 @@ describe('edgeRunState', () => {
   it('treats the error edge of a failure without a recorded port, as in runs before it was emitted, as taken', () => {
     expect(edgeRunState({ status: 'failed' }, node('completed'), 'completed', 'errorRoute')).toBe('completed');
   });
+
+  it('leaves that error edge out of the run when its target was skipped, as under continue', () => {
+    expect(edgeRunState({ status: 'failed' }, node('skipped'), 'running', 'errorRoute')).toBe('outOfRun');
+  });
 });

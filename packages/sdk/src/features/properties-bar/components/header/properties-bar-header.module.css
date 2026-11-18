@@ -1,5 +1,5 @@
 .header {
-  --wb-public-node-icon-padding: var(--wb-ds-space-125);
+  --wb-public-node-icon-padding: calc(var(--wb-ds-space-125) + var(--wb-public-node-icon-border-size));
 
   display: flex;
   align-items: center;

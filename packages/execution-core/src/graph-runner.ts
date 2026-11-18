@@ -246,9 +246,8 @@ type LivePruneKind = 'branch' | 'error';
 type SkippedNode = { id: string; reason: NodeSkipReason };
 
 // Resolves all outgoing edges from `rootId`. For each successor, decrements its
-// pending counter, increments live counter if the edge is alive (no decision
-// pruning, or sourceHandle matches the decision's nextPort). When pending hits
-// 0, the successor either becomes ready or is marked skipped — and skip walks
+// pending counter, increments live counter if `isPortRouted` takes the edge. When
+// pending hits 0, the successor either becomes ready or is marked skipped — and skip walks
 // through its own outgoing edges via the same queue, so unreachable subtrees
 // don't stall downstream join points and deep dead-branch chains can't blow the
 // call stack.
@@ -302,7 +301,7 @@ function propagate<TNode extends BaseNode>(
   }
 
   // A node that named a port but reached nothing through it. Only a non-empty port
-  // counts — truthiness, to mirror `isEdgeLive`'s `!nextPort`: config arrives
+  // counts — truthiness, to mirror `isPortRouted`'s `!nextPort`: config arrives
   // unvalidated, and a falsy port ('' or a smuggled null) routes as "no port" there,
   // so it must not read as a promised route here.
   if (rootNextPort && !rootRoutedSomewhere) {
@@ -353,7 +352,7 @@ async function runNode<TNode extends BaseNode>(
     } else {
       result = executed;
     }
-    // nextPort tells a client which outgoing edges the run took; falsy reads as none, as in isEdgeLive.
+    // nextPort tells a client which outgoing edges the run took; falsy reads as none, as in isPortRouted.
     const completed: NodeCompletedPayload = result.nextPort
       ? { output: result.output, nextPort: result.nextPort }
       : { output: result.output };
