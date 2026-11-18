@@ -1,8 +1,9 @@
 import { useNodeId } from '@xyflow/react';
-import { useCallback, useId, useLayoutEffect, useRef } from 'react';
+import { useId, useLayoutEffect } from 'react';
 
 import { useUiExtensionRegistry } from './ui-extension-context';
 import type { MenuId, WorkflowBuilderMenuItemProps } from './ui-extension-registry';
+import { useLatestCallback } from './use-latest-callback';
 import { useWarnOnce } from './use-warn-once';
 
 type RegisteredMenuItemProps = WorkflowBuilderMenuItemProps & {
@@ -37,12 +38,8 @@ export function RegisteredMenuItem({
   );
 
   // An inline `onClick` is a new function on every producer render; registering a stable wrapper
-  // keeps those renders from notifying the menu's host.
-  const latestOnClick = useRef(onClick);
-  useLayoutEffect(() => {
-    latestOnClick.current = onClick;
-  });
-  const callLatestOnClick = useCallback(() => latestOnClick.current?.(), []);
+  // keeps those renders from notifying the menu's host. The wrapper drops the menu's click event.
+  const callLatestOnClick = useLatestCallback(() => onClick?.());
   const hasOnClick = onClick !== undefined;
 
   useLayoutEffect(() => {

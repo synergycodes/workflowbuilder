@@ -94,6 +94,16 @@ describe('Toolbar builtInControls', () => {
     expect(screen.getByRole('button', { name: 'Save' })).not.toBeNull();
   });
 
+  it('logo:false hides the logo and its link and leaves Save in place', () => {
+    setAppBarBranding({ logoHref: 'https://acme.test' });
+
+    renderInRoot(<Toolbar />, { builtInControls: { logo: false } });
+
+    expect(screen.queryByTestId('built-in-logo')).toBeNull();
+    expect(screen.queryByRole('link')).toBeNull();
+    expect(screen.getByRole('button', { name: 'Save' })).not.toBeNull();
+  });
+
   it('save:false keeps the save action working', () => {
     const onSave = vi.fn<OnSave>(async () => 'success');
     renderToolbar(onSave, false);

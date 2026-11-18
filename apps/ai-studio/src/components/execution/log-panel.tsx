@@ -182,8 +182,8 @@ export function ExecutionLogPanel() {
   const isCollapsed = useExecutionStore((state) => state.isLogCollapsed);
   // The highlight derives from the canvas selection, so it clears on deselect.
   const selectedNodeId = useSingleSelectedElement()?.node?.id ?? null;
-  const { leftOffset } = useLeftPanelAnchor();
-  const { rightOffset } = useRightPanelAnchor();
+  const { leftEdge } = useLeftPanelAnchor();
+  const { rightEdge } = useRightPanelAnchor();
   const [dock, setDock] = useState<HTMLElement | null>(null);
   useSnackbarOffset(dock);
 
@@ -283,8 +283,8 @@ export function ExecutionLogPanel() {
       className={clsx(styles['dock'], { [styles['dock--collapsed']]: isCollapsed })}
       style={
         {
-          '--log-dock-left': `${leftOffset}px`,
-          '--log-dock-right': `${rightOffset}px`,
+          '--log-dock-left': `${leftEdge}px`,
+          '--log-dock-right': `${rightEdge}px`,
           '--log-body-height': bodyHeight === undefined ? undefined : `${bodyHeight}px`,
         } as React.CSSProperties
       }
