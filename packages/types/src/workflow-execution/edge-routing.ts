@@ -7,6 +7,7 @@ export const RESERVED_ERROR_HANDLE = 'errorRoute';
  * `sourceHandle`. Error routing takes only the error edges; otherwise error edges are
  * pruned and an edge is taken when there is no `nextPort` or its handle matches it.
  * The graph runner routes by it, and a client reads travelled edges from it.
+ * Runs in Temporal workflow code: changing it changes replay (packages/temporal/README.md § Versioning and replay).
  */
 export function isPortRouted(nextPort: string | undefined, sourceHandle: string | null | undefined): boolean {
   const isErrorEdge = sourceHandle === RESERVED_ERROR_HANDLE;
