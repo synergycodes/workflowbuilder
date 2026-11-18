@@ -22,7 +22,6 @@
   --wb-public-node-box-shadow-selected: var(--wb-ds-shadow-canvas-focus-ring-node-x)
     var(--wb-ds-shadow-canvas-focus-ring-node-y) var(--wb-ds-shadow-canvas-focus-ring-node-blur)
     var(--wb-ds-shadow-canvas-focus-ring-node-spread) var(--wb-ds-canvas-node-focus-ring-active);
-  --wb-public-node-box-shadow-selected-with-run-status: var(--wb-public-node-box-shadow-selected);
 }
 
 @layer ui.component {
@@ -59,11 +58,6 @@
         z-index: 1;
         box-sizing: content-box;
       }
-    }
-
-    /* The run ring covers the selected outline, so the focus ring is what still shows selection. */
-    &.selected:has(> .overlay [data-node-run-overlay]) {
-      box-shadow: var(--wb-public-node-box-shadow-selected-with-run-status);
     }
 
     &.disabled {

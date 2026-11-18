@@ -24,8 +24,7 @@ export type NodeRunRingProps = {
 
 /**
  * Run status line and halo around a node. Place it in `NodePanel.Overlay`: it covers the node without changing its
- * size. A selected node under it draws `--wb-public-node-box-shadow-selected-with-run-status` as its focus ring
- * (the selected focus ring by default).
+ * size.
  * Reduced motion keeps the `heartbeat` halo static and hides the `waiting` one.
  */
 export function NodeRunRing({ tone, halo, className, ...rest }: NodeRunRingProps) {

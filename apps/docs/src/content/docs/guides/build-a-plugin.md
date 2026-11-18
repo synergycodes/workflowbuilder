@@ -72,7 +72,7 @@ type ComponentDecoratorOptions<P = object> =
 
 ### Setting props or wrapping a slot
 
-Set props through `modifyProps`: it runs before every wrapper, so it composes with any of them. Keep `place: 'wrapper'` for logic that needs hooks, and let only one wrapper per slot render `component`, because `component` is always the bare host without the other decorators. With several wrappers the highest `priority` wraps deepest, so a wrapper that replaces content should have the lowest `priority`.
+Set props through `modifyProps`: it runs before every wrapper, so it composes with any of them. Keep `place: 'wrapper'` for logic that needs hooks, and let only one wrapper per slot render `component`, because `component` is always the bare host without the other decorators. With several wrappers the highest `priority` wraps deepest. A wrapper that replaces content with the lowest `priority` discards the output of every other wrapper on that slot while it replaces; give it the highest `priority` to keep the other wrappers around what it renders.
 
 ### Available slots
 
