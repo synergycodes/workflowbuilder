@@ -13,40 +13,4 @@
   .dimmed {
     opacity: var(--wb-public-node-run-badge-dimmed-opacity);
   }
-
-  .badge[data-tone='info'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-info);
-    --badge-label-color: var(--wb-public-node-run-status-fg-info);
-  }
-
-  /* DS: Rejected is the Badge Inverse variant with no run status override. */
-  .badge[data-tone='inverse'] {
-    --badge-label-background-color: var(--wb-public-badge-label-background-color-inverse);
-    --badge-label-color: var(--wb-public-badge-label-color-inverse);
-  }
-
-  .badge[data-tone='warning'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-warning);
-    --badge-label-color: var(--wb-public-node-run-status-fg-warning);
-  }
-
-  .badge[data-tone='success'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-success);
-    --badge-label-color: var(--wb-public-node-run-status-fg-success);
-  }
-
-  .badge[data-tone='critical'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-critical);
-    --badge-label-color: var(--wb-public-node-run-status-fg-critical);
-  }
-
-  .badge[data-tone='human'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-human);
-    --badge-label-color: var(--wb-public-node-run-status-fg-human);
-  }
-
-  .badge[data-tone='neutral'] {
-    --badge-label-background-color: var(--wb-public-node-run-status-bg-neutral);
-    --badge-label-color: var(--wb-public-node-run-status-fg-neutral);
-  }
 }

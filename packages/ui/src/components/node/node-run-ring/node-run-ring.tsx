@@ -1,10 +1,11 @@
 import clsx from 'clsx';
-import type { HTMLAttributes } from 'react';
+import type { CSSProperties, HTMLAttributes } from 'react';
 
 import '../run-status/variables.css';
 import styles from './node-run-ring.module.css';
 
-import type { RunStatusTone } from '../run-status/run-status-tone';
+import type { NodeRunToneName } from '../run-status/run-status-tone';
+import { runStatusVariable } from '../run-status/run-status-variable';
 
 /**
  * `static` keeps the halo at its width, `heartbeat` pulses it (a running node with progress), `waiting` pulses it
@@ -17,7 +18,7 @@ export type NodeRunRingHalo = 'static' | 'heartbeat' | 'waiting';
 
 export type NodeRunRingProps = {
   /** Colour of the 1px line drawn over the node stroke, and of the halo. */
-  tone: RunStatusTone;
+  tone: NodeRunToneName;
   /** Glow outside the node. Without it the ring draws only the line. */
   halo?: NodeRunRingHalo;
 } & HTMLAttributes<HTMLSpanElement>;
@@ -27,6 +28,19 @@ export type NodeRunRingProps = {
  * size.
  * Reduced motion keeps the `heartbeat` halo static and hides the `waiting` one.
  */
-export function NodeRunRing({ tone, halo, className, ...rest }: NodeRunRingProps) {
-  return <span {...rest} className={clsx(styles['ring'], className)} data-tone={tone} data-halo={halo} />;
+export function NodeRunRing({ tone, halo, className, style, ...rest }: NodeRunRingProps) {
+  const toneStyle = {
+    '--ring-color': runStatusVariable('stroke', tone),
+    '--ring-halo-color': runStatusVariable('halo', tone),
+  } as CSSProperties;
+
+  return (
+    <span
+      {...rest}
+      className={clsx(styles['ring'], className)}
+      style={{ ...toneStyle, ...style }}
+      data-tone={tone}
+      data-halo={halo}
+    />
+  );
 }
