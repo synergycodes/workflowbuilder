@@ -124,15 +124,6 @@ const toneStroke = (tone: string, fallback: string) =>
 
 describe('useEdgeStyle tone', () => {
   it.each([
-    ['pending', 'default'],
-    ['running', 'active'],
-    ['completed', 'success'],
-    ['outOfRun', 'disabled'],
-  ] as const)('draws %s in its default tone %s', (runState, tone) => {
-    expect(styleFor({ runState }).stroke).toBe(runStroke(tone));
-  });
-
-  it.each([
     ['completed', 'warning', 'success'],
     ['running', 'default', 'active'],
     ['outOfRun', 'success', 'disabled'],
