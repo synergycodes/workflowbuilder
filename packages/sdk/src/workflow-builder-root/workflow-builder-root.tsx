@@ -9,6 +9,7 @@ import { setCustomNodeTemplates } from '../data/node-templates';
 import { setCustomPaletteNodes } from '../data/palette';
 import { setIsValidConnection, setReactFlowProps } from '../data/react-flow-config';
 import { setCustomTemplates } from '../data/templates';
+import { EdgeEndpointContext } from '../features/diagram/edges/edge-endpoint-context';
 import { RuntimeIntegrationWrapper } from '../features/integration/components/runtime-integration-wrapper';
 import { resetIntegrationStore } from '../features/integration/stores/use-integration-store';
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
@@ -70,6 +71,7 @@ export function WorkflowBuilderRoot({
   isValidConnection,
   reactFlowProps,
   builtInControls,
+  edgeEndpoint = 'none',
   children,
 }: WorkflowBuilderRootProps) {
   // Plugin / JsonForms boot — run once per Root lifetime on the first render
@@ -160,7 +162,9 @@ export function WorkflowBuilderRoot({
         edges={initialEdges}
       >
         <ReactFlowProvider>
-          <RootShell builtInControls={builtInControls}>{children}</RootShell>
+          <EdgeEndpointContext.Provider value={edgeEndpoint}>
+            <RootShell builtInControls={builtInControls}>{children}</RootShell>
+          </EdgeEndpointContext.Provider>
         </ReactFlowProvider>
       </RuntimeIntegrationWrapper>
     </UiExtensionProvider>

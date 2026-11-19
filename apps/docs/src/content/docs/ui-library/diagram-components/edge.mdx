@@ -1,6 +1,6 @@
 ---
 title: Edge
-description: Edge label rendering and edge styling for the diagram canvas.
+description: Edge label rendering, edge styling and edge terminators for the diagram canvas.
 ---
 
 import CssVariablesTable from '../../../../components/api/css-variables-table.astro';
@@ -8,9 +8,10 @@ import PropsTable from '../../../../components/api/props-table.astro';
 import { EdgeExample } from '../../../../components/ui-examples/edge';
 
 The edge building blocks give diagram edges a consistent look. `EdgeLabel` is a
-label primitive designed to sit on an edge, while the `useEdgeStyle` hook
-computes the stroke styles for the edge path itself. Both follow the styling
-conventions prepared for edges, so a custom edge type matches the built-in ones.
+label primitive designed to sit on an edge, the `useEdgeStyle` hook computes
+the stroke styles for the edge path itself, and `EdgeEndpointMarker` draws the
+terminator at its target. All three follow the styling conventions prepared for
+edges, so a custom edge type matches the built-in ones.
 
 <EdgeExample client:visible />
 
@@ -35,8 +36,16 @@ focus indicator. `running` always draws an animated `6 5` dash, even on a `dashe
 otherwise `dashed` draws a static `5 4` dash. A custom
 `--wb-public-edge-dash-running` needs `--wb-public-edge-dash-running-period` set
 to the sum of its pattern, or the dash jumps once per loop. Every edge is 1 px wide. The
-package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType` and
-`EdgeLabelSize` types and the `EDGE_LABEL_SIZES` constant.
+package also exports the `EdgeState`, `EdgeRunState`, `EdgeLineType`,
+`EdgeEndpoint` and `EdgeLabelSize` types and the `EDGE_LABEL_SIZES` constant.
+
+`EdgeEndpointMarker` draws the terminator where an edge reaches its target: an
+`arrow` that shows the flow direction, or a `circle` for a neutral attachment
+point. It is an SVG `<marker>` that you render next to the path, one per edge,
+with the same `style` as the path. It then has the colour of the line in every
+state, turns with the end of the path and is never dashed, so on a dashed line
+it can sit up to 5 px from the last dash. The SDK's `EdgePath`
+and `EnhancedBaseEdge` render it for you through their `endpoint` prop.
 
 ## Usage
 
@@ -125,6 +134,33 @@ function RunEdge({
 // Rendered for an edge with data: { runState: 'running' }
 ```
 
+To end the path with a terminator, render the marker next to it and point the
+path at the marker. The id has to be unique per edge, so `useId` fits.
+
+```tsx
+import { EdgeEndpointMarker, useEdgeStyle } from '@workflowbuilder/ui';
+import { BaseEdge, type EdgeProps, getSmoothStepPath } from '@xyflow/react';
+import { useId } from 'react';
+
+function ArrowEdge({ id, selected, sourceX, sourceY, targetX, targetY, sourcePosition, targetPosition }: EdgeProps) {
+  const markerId = useId();
+  const pathStyle = useEdgeStyle({ state: selected ? 'selected' : 'default' });
+
+  const [edgePath] = getSmoothStepPath({ sourceX, sourceY, sourcePosition, targetX, targetY, targetPosition });
+
+  return (
+    <>
+      <EdgeEndpointMarker id={markerId} type="arrow" style={pathStyle} />
+      <BaseEdge id={id} path={edgePath} style={pathStyle} markerEnd={`url(#${markerId})`} />
+    </>
+  );
+}
+```
+
+Roots hydrated from server HTML and apps with separate React copies on one page
+(micro-frontends, embedded bundles) all start `useId` from the same id: give each a
+different `identifierPrefix`, or their marker ids can collide.
+
 ## EdgeLabel props
 
 `EdgeLabel` also forwards any remaining `HTMLDivElement` attributes (e.g.
@@ -141,6 +177,10 @@ the CSS properties for its SVG path.
 
 Returns `{ stroke, strokeWidth, transition }`, plus `strokeDasharray` and
 `animation` when they apply, ready to spread onto a path's `style`.
+
+## EdgeEndpointMarker props
+
+<PropsTable slug="edge-endpoint-marker" />
 
 ## CSS variables
 

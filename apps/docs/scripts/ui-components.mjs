@@ -106,6 +106,7 @@ export const COMPONENTS = [
   { slug: 'edge', name: 'EdgeLabel', propsType: 'EdgeLabelProps', dir: 'edge' },
   // Documented on the Edge page, which already renders the edge variables.
   { slug: 'use-edge-style', name: 'useEdgeStyle', propsType: 'UseEdgeStyleParams', dir: null },
+  { slug: 'edge-endpoint-marker', name: 'EdgeEndpointMarker', propsType: 'EdgeEndpointMarkerProps', dir: null },
   // Compound component - parts described in prose, variables generated.
   { slug: 'node-panel', name: 'NodePanel', propsType: null, dir: 'node/node-panel' },
 ];

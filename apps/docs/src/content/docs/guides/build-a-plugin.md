@@ -148,6 +148,15 @@ registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
 });
 ```
 
+`edgeEndpoint` on `<WorkflowBuilder.Root>` sets the terminator at the target end (`arrow`, `circle`, or `none` by default), in the colour of the line, for the built-in edges, the edge drawn while connecting and custom edges drawn with `OptionalEdgePath` / `EdgePath`. A custom edge on `EnhancedBaseEdge` passes `endpoint` together with the path `style` from `useEdgeStyle`. The built-in edges do not draw `edge.markerEnd`, because a React Flow marker keeps one colour in every state. To override the terminator for one edge, set `endpoint` through `modifyProps`, so it composes with the run wrapper above (see [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot)):
+
+```tsx
+registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+  name: 'loop-back-endpoint',
+  modifyProps: (props) => (props.edgeId === 'loop-back' ? { ...props, endpoint: 'circle' } : props),
+});
+```
+
 A custom edge template renders `<OptionalEdgePath edgeId={id} source={source} target={target} sourceHandle={sourceHandleId} path={path} state={selected ? 'selected' : 'default'} hovered={hovered} />` to get the same states, or `EdgePath` when it wants no slot.
 
 A second plugin that changes the path shares this slot with the run-state wrapper; [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot) says how the two compose.
