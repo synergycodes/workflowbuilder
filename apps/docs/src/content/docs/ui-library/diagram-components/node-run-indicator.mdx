@@ -42,8 +42,9 @@ stops with its arc on top.
 ## Glyph tone
 
 `iconTone` colours the glyph when it differs from the circle, as in the Rejected status: an
-`inverse` glyph on a `neutral` circle. `inverse` is a glyph tone only: `tone` does not accept it, because
-the glyph would take the colour of the circle.
+`inverse` glyph on a `neutral` circle. `inverse` is a glyph tone only: the `tone` type leaves it out, and
+`tone="inverse"` draws the `neutral` circle, because there is no readable inverse circle and glyph pair.
+Both props also take a [custom tone](/ui-library/diagram-components/run-status/#custom-tone).
 
 ```tsx
 import { X } from '@phosphor-icons/react';
