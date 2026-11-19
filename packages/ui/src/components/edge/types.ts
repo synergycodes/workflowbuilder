@@ -17,11 +17,34 @@ export type EdgeLabelSize = Extract<Size, 'extra-small' | 'small' | 'medium'>;
 export type EdgeState = 'default' | 'selected' | 'disabled' | 'temporary';
 
 /**
- * Where an edge stands in an execution run. A run state overrides hover and selection colours.
+ * Where an edge stands in an execution run. A run state overrides hover and selection colours with a tone
+ * ({@link EdgeRunTone}); `running` also animates the dash.
  *
  * @category Edge
  */
 export type EdgeRunState = 'pending' | 'running' | 'completed' | 'outOfRun';
+
+/**
+ * Built-in edge run tones, one per DS `edge.stroke-*` status token. The list may grow in a minor release.
+ *
+ * @category Edge
+ */
+export const EDGE_RUN_TONES = ['default', 'active', 'success', 'warning', 'disabled'] as const;
+
+/**
+ * Colour of an edge under a run state, read from `--wb-public-edge-run-status-stroke-<tone>`.
+ *
+ * @category Edge
+ */
+export type EdgeRunTone = (typeof EDGE_RUN_TONES)[number];
+
+/**
+ * A built-in {@link EdgeRunTone} or a custom tone name; a custom tone needs
+ * `--wb-public-edge-run-status-stroke-<name>`.
+ *
+ * @category Edge
+ */
+export type EdgeRunToneName = EdgeRunTone | (string & {});
 
 /**
  * Line pattern of an edge outside a running state.

@@ -79,10 +79,64 @@ describe('OptionalEdgePath', () => {
     );
 
     const visible = visiblePath(container);
-    expect(visible.dataset.stroke).toBe('var(--wb-public-edge-color-completed)');
+    expect(visible.dataset.stroke).toBe('var(--wb-public-edge-run-status-stroke-success)');
     expect(visible.dataset.strokeDasharray).toBe('var(--wb-public-edge-dash-dashed)');
     expect(visible.dataset.runState).toBe('completed');
     expect(visible.getAttribute('d')).toBe('M 0 0 L 100 0');
+  });
+
+  it('marks the visible path with the tone in use: the run state default or an explicit one', async () => {
+    const { OptionalEdgePath } = await load();
+
+    const { container } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} runState="running" />
+        <OptionalEdgePath {...pathProps} edgeId="edge-2" runState="completed" tone="warning" />
+        <OptionalEdgePath {...pathProps} edgeId="edge-3" />
+      </svg>,
+    );
+
+    expect(visiblePath(container).dataset.tone).toBe('active');
+    expect(container.querySelector<SVGPathElement>('[data-edge-id="edge-2"]')!.dataset.tone).toBe('warning');
+    expect(Object.hasOwn(container.querySelector<SVGPathElement>('[data-edge-id="edge-3"]')!.dataset, 'tone')).toBe(
+      false,
+    );
+  });
+
+  it('warns once that a tone without a run state is ignored, also across re-renders', async () => {
+    const { OptionalEdgePath } = await load();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    const { container, rerender } = render(
+      <svg>
+        <OptionalEdgePath {...pathProps} tone="warning" />
+      </svg>,
+    );
+    rerender(
+      <svg>
+        <OptionalEdgePath {...pathProps} tone="warning" hovered />
+      </svg>,
+    );
+
+    expect(warn).toHaveBeenCalledTimes(1);
+    expect(warn.mock.calls[0]![0]).toContain('runState');
+    expect(visiblePath(container).dataset.stroke).toBe('var(--wb-public-edge-color-select)');
+    expect(Object.hasOwn(visiblePath(container).dataset, 'tone')).toBe(false);
+    warn.mockRestore();
+  });
+
+  it('does not warn about a tone set together with a run state', async () => {
+    const { OptionalEdgePath } = await load();
+    const warn = vi.spyOn(console, 'warn').mockImplementation(() => {});
+
+    render(
+      <svg>
+        <OptionalEdgePath {...pathProps} runState="completed" tone="warning" />
+      </svg>,
+    );
+
+    expect(warn).not.toHaveBeenCalled();
+    warn.mockRestore();
   });
 
   it('draws no terminator unless the app asks for one', async () => {
@@ -189,7 +243,7 @@ describe('OptionalEdgePath', () => {
     const arrow = container.querySelector('marker polyline')!.parentElement!;
     expect(visiblePath(container).dataset.runState).toBe('completed');
     expect(visiblePath(container).getAttribute('marker-end')).toBe(`url(#${arrow.id})`);
-    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-color-completed)');
+    expect(arrow.querySelector('polyline')!.style.stroke).toBe('var(--wb-public-edge-run-status-stroke-success)');
   });
 
   it('a wrapper decorator that returns children keeps the edit look', async () => {
