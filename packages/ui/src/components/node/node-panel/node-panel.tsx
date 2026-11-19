@@ -26,6 +26,7 @@ type Props = {
  * - `NodePanel.Header`: A container for the node's header (at most 1).
  * - `NodePanel.Content`: A container for the node's main content (at most 1).
  * - `NodePanel.Handles`: A container for action handles (at most 1).
+ * - `NodePanel.Overlay`: A layer over the whole node for status visuals (at most 1).
  *
  * **Usage Example**
  * ```tsx
@@ -39,12 +40,12 @@ type Props = {
  * **Allowed Combinations:**
  * - No children (empty node)
  * - Header only, Content only, Handles only
- * - Any combination of Header, Content, and Handles (but max 1 each)
+ * - Any combination of Header, Content, Handles, and Overlay (but max 1 each)
  *
  * **Invalid Cases (logged via `console.error`, not thrown):**
  * Validation is count-based: it compares the number of children against the
  * recognized slots, so any extra child - whether an unknown element or a
- * duplicate Header / Content / Handles - trips the same "Unknown children
+ * duplicate Header / Content / Handles / Overlay - trips the same "Unknown children
  * detected" error. The panel still renders the slots it found.
  */
 
@@ -70,27 +71,39 @@ const Handles = memo(function Handles({
   return <>{isVisible && children}</>;
 });
 
+/** Covers the whole node and lets pointer events through; a child that needs them sets `pointer-events: auto`. */
+const Overlay = memo(function Overlay({
+  children,
+  className,
+  isVisible = true,
+}: PropsWithChildren<{ className?: string; isVisible?: boolean }>) {
+  return isVisible && <div className={clsx(nodeStyles['overlay'], className)}>{children}</div>;
+});
+
 const Root = memo(function Root({ selected, disabled = false, children, className }: Props) {
-  const { headerComponent, contentComponent, handlesComponent, handlesAlignment, hasHandles } = useMemo(() => {
-    const childrenArray = Children.toArray(children);
+  const { headerComponent, contentComponent, handlesComponent, overlayComponent, handlesAlignment, hasHandles } =
+    useMemo(() => {
+      const childrenArray = Children.toArray(children);
 
-    const headerComponent = findChild(childrenArray, NodePanel.Header);
-    const contentComponent = findChild(childrenArray, NodePanel.Content);
-    const handlesComponent = findChild(childrenArray, NodePanel.Handles);
+      const headerComponent = findChild(childrenArray, NodePanel.Header);
+      const contentComponent = findChild(childrenArray, NodePanel.Content);
+      const handlesComponent = findChild(childrenArray, NodePanel.Handles);
+      const overlayComponent = findChild(childrenArray, NodePanel.Overlay);
 
-    validateChildren(childrenArray, headerComponent, contentComponent, handlesComponent);
+      validateChildren(childrenArray, headerComponent, contentComponent, handlesComponent, overlayComponent);
 
-    const hasHandles = !!handlesComponent;
-    const handlesAlignment = handlesComponent?.props.alignment || 'center';
+      const hasHandles = !!handlesComponent;
+      const handlesAlignment = handlesComponent?.props.alignment || 'center';
 
-    return {
-      headerComponent,
-      contentComponent,
-      handlesComponent,
-      handlesAlignment,
-      hasHandles,
-    };
-  }, [children]);
+      return {
+        headerComponent,
+        contentComponent,
+        handlesComponent,
+        overlayComponent,
+        handlesAlignment,
+        hasHandles,
+      };
+    }, [children]);
 
   return (
     <div className={clsx(nodeStyles['node-panel-wrapper'], handleStyles['handle-wrapper'], className)}>
@@ -109,6 +122,7 @@ const Root = memo(function Root({ selected, disabled = false, children, classNam
           {handlesComponent}
         </div>
         {contentComponent}
+        {overlayComponent}
       </div>
     </div>
   );
@@ -119,6 +133,7 @@ export const NodePanel = {
   Header,
   Content,
   Handles,
+  Overlay,
 };
 
 function findChild<T>(
@@ -133,13 +148,14 @@ function validateChildren(
   header: React.ReactNode,
   content: React.ReactNode,
   handles: React.ReactNode,
+  overlay: React.ReactNode,
 ) {
-  const totalValidChildren = (header ? 1 : 0) + (content ? 1 : 0) + (handles ? 1 : 0);
+  const totalValidChildren = [header, content, handles, overlay].filter(Boolean).length;
   const totalChildren = childrenArray.length;
 
   if (totalChildren > totalValidChildren) {
     console.error(
-      `NodePanel.Root: Unknown children detected. Only NodePanel.Header, NodePanel.Content, and NodePanel.Handles are allowed. ` +
+      `NodePanel.Root: Unknown children detected. Only NodePanel.Header, NodePanel.Content, NodePanel.Handles, and NodePanel.Overlay are allowed. ` +
         `Each of these components can be used 0 or 1 time only.`,
     );
   }

@@ -1,0 +1,109 @@
+:root {
+  --wb-public-node-run-indicator-size: var(--wb-ds-canvas-run-status-indicator-size);
+  --wb-public-node-run-indicator-border-radius: var(--wb-ds-canvas-run-status-indicator-radius);
+  --wb-public-node-run-indicator-icon-size: var(--wb-ds-size-150);
+  --wb-public-node-run-indicator-spinner-size: var(--wb-ds-size-175);
+}
+
+@layer ui.component {
+  .indicator {
+    display: inline-flex;
+    flex: none;
+    justify-content: center;
+    align-items: center;
+    width: var(--wb-public-node-run-indicator-size);
+    height: var(--wb-public-node-run-indicator-size);
+    border-radius: var(--wb-public-node-run-indicator-border-radius);
+    background: var(--indicator-background-color);
+    color: var(--indicator-icon-color);
+
+    svg {
+      width: var(--wb-public-node-run-indicator-icon-size);
+      height: var(--wb-public-node-run-indicator-icon-size);
+    }
+  }
+
+  .indicator[data-tone='info'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-info);
+  }
+
+  .indicator[data-tone='success'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-success);
+  }
+
+  .indicator[data-tone='warning'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-warning);
+  }
+
+  .indicator[data-tone='critical'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-critical);
+  }
+
+  .indicator[data-tone='human'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-human);
+  }
+
+  .indicator[data-tone='neutral'] {
+    --indicator-background-color: var(--wb-public-node-run-status-bg-neutral);
+  }
+
+  .indicator[data-icon-tone='info'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-info);
+  }
+
+  .indicator[data-icon-tone='success'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-success);
+  }
+
+  .indicator[data-icon-tone='warning'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-warning);
+  }
+
+  .indicator[data-icon-tone='critical'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-critical);
+  }
+
+  .indicator[data-icon-tone='human'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-human);
+  }
+
+  .indicator[data-icon-tone='neutral'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-neutral);
+  }
+
+  .indicator[data-icon-tone='inverse'] {
+    --indicator-icon-color: var(--wb-public-node-run-status-fg-inverse);
+  }
+
+  .spinner {
+    --spinner-track: 30%;
+
+    width: var(--wb-public-node-run-indicator-spinner-size);
+    height: var(--wb-public-node-run-indicator-spinner-size);
+    border: var(--wb-ds-size-25) solid color-mix(in srgb, currentColor var(--spinner-track), transparent);
+    border-top-color: currentColor;
+    border-radius: 50%;
+    animation: spinner-turn 0.7s linear infinite;
+  }
+
+  /* DS: the warning spinners (No signal, Retrying) have a lighter track. */
+  .indicator[data-icon-tone='warning'] .spinner {
+    --spinner-track: 25%;
+  }
+
+  .spinner[data-spinner='slow'] {
+    animation-duration: 2.4s;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .spinner {
+      animation: none;
+    }
+  }
+
+  @keyframes spinner-turn {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+}

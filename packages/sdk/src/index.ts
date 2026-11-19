@@ -105,7 +105,10 @@ export {
   registerComponentDecorator,
   hasRegisteredComponentDecorator,
 } from './features/plugins-core/adapters/adapter-components';
-export type { ComponentDecoratorOptions } from './features/plugins-core/adapters/adapter-components';
+export type {
+  ComponentDecoratorOptions,
+  WorkflowBuilderDecoratorWrapperProps,
+} from './features/plugins-core/adapters/adapter-components';
 
 export { registerFunctionDecorator } from './features/plugins-core/adapters/adapter-functions';
 export type { FunctionDecoratorOptions, CallbackAfter } from './features/plugins-core/adapters/adapter-functions';
@@ -177,6 +180,12 @@ export {
 } from './features/diagram/edges/self-connecting-edge/self-connecting-edge';
 export { NodeSection } from './features/diagram/nodes/components/node-section/node-section';
 export { OptionalNodeContent } from './features/plugins-core/components/diagram/optional-node-content';
+export {
+  NodeOverlaySlots,
+  OptionalNodeCorner,
+  OptionalNodeHeaderEnd,
+  OptionalNodeOverlay,
+} from './features/plugins-core/components/diagram/optional-node-run-status-slots';
 export type { WorkflowBuilderPropertiesPanelProps } from './features/properties-bar/components/properties-bar/properties-bar.types';
 export { SyntaxHighlighterLazy } from './features/syntax-highlighter/components/syntax-highlighter-lazy';
 export type { WorkflowBuilderNodeTemplateProps } from './features/diagram/nodes/workflow-node-template/workflow-node-template';

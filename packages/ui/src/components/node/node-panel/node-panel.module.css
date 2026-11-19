@@ -50,6 +50,17 @@
       box-shadow: var(--wb-public-node-box-shadow-selected);
     }
 
+    /* Containing block of NodePanel.Overlay; nodes without one keep their positioning context. */
+    &:has(> .overlay) {
+      position: relative;
+
+      /* Above the Overlay, which comes later in the DOM; content-box overrides the injected border-box. */
+      :global(.react-flow__handle) {
+        z-index: 1;
+        box-sizing: content-box;
+      }
+    }
+
     &.disabled {
       background: var(--wb-public-node-background-color-disabled);
     }
@@ -90,6 +101,13 @@
     .header-container,
     .content-container {
       width: 100%;
+    }
+
+    .overlay {
+      position: absolute;
+      inset: 0;
+      border-radius: inherit;
+      pointer-events: none;
     }
 
     .header-container,

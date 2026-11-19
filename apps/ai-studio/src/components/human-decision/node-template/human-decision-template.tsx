@@ -1,6 +1,13 @@
-import { Icon, OptionalNodeContent, defineNodeTemplate, getHandleId } from '@workflowbuilder/sdk';
+import {
+  Icon,
+  NodeOverlaySlots,
+  OptionalNodeContent,
+  OptionalNodeHeaderEnd,
+  defineNodeTemplate,
+  getHandleId,
+} from '@workflowbuilder/sdk';
 import type { NodeDataProperties, WorkflowBuilderNodeTemplateProps } from '@workflowbuilder/sdk';
-import { NodeDescription, NodeIcon, NodePanel, Status } from '@workflowbuilder/ui';
+import { NodeDescription, NodeIcon, NodePanel } from '@workflowbuilder/ui';
 import { Handle, Position } from '@xyflow/react';
 import clsx from 'clsx';
 import { memo, useMemo } from 'react';
@@ -56,10 +63,10 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
           <NodePanel.Header>
             <NodeIcon icon={iconElement} accent={accent} disabled={disabled} />
             <NodeDescription label={label} description={description} disabled={disabled} />
+            {isCanvasNode && <OptionalNodeHeaderEnd nodeId={id} />}
           </NodePanel.Header>
           <NodePanel.Content isVisible={isCanvasNode}>
             <OptionalNodeContent nodeId={id}>
-              <Status status={isValid === false ? 'invalid' : undefined} />
               {actions.length > 0 && (
                 <div className={clsx(styles['actions'], { [styles['actions--vertical']]: isHorizontal })}>
                   {actions.map(({ label: actionLabel, port }) => (
@@ -73,6 +80,9 @@ export const HumanDecisionNodeTemplate = defineNodeTemplate<HumanDecisionPropert
             </OptionalNodeContent>
             <DecisionWaitingFooter nodeId={id} nodeLabel={label} />
           </NodePanel.Content>
+          <NodePanel.Overlay isVisible={isCanvasNode}>
+            <NodeOverlaySlots nodeId={id} isValid={isValid} />
+          </NodePanel.Overlay>
           <NodePanel.Handles isVisible={isCanvasNode} alignment={isHorizontal ? 'header' : 'center'}>
             <Handle
               id={getHandleId({ handleType: 'target' })}
