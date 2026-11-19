@@ -1,8 +1,10 @@
-import { Spinner } from '@phosphor-icons/react';
+import spinnerIcon from '@iconify-icons/ph/spinner';
 import { Button, type LabelButtonProps } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 
 import styles from './button-submit.module.css';
+
+import { Icon } from '../../icon/icon';
 
 type Props = Omit<LabelButtonProps, 'children'> & {
   classNameWrapper?: string;
@@ -23,7 +25,7 @@ export function ButtonSubmit({ classNameWrapper = '', isPending = false, childre
       )}
     >
       <Button {...buttonProps}>{children}</Button>
-      {isPending && <Spinner className={styles['icon--spinner']} />}
+      {isPending && <Icon icon={spinnerIcon} size="inherit" className={styles['icon--spinner']} />}
     </span>
   );
 }

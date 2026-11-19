@@ -17,6 +17,7 @@
   },
   "dependencies": {
     "@base-ui/react": "catalog:",
+    "@iconify-icons/ph": "catalog:",
     "@jsonforms/core": "^3.4.1",
     "@jsonforms/react": "^3.4.1",
     "@microsoft/clarity": "^1.0.0",

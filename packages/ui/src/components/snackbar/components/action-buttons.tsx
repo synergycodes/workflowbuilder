@@ -1,6 +1,7 @@
-import { X } from '@phosphor-icons/react';
+import xIcon from '@iconify-icons/ph/x';
 import { NavButton } from '@ui/components/button/nav-button/nav-button';
 import { ButtonVariant } from '@ui/components/button/regular-button/types';
+import { Icon } from '@ui/components/icon';
 
 import styles from './action-buttons.module.css';
 
@@ -34,7 +35,7 @@ export function ActionButtons({ variant, buttonLabel, onButtonClick, close, onCl
         </Button>
       )}
       {close && onClose && (
-        <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<X />} />
+        <NavButton aria-label="Close" size="s" variant="plain" onClick={onClose} prefixIcon={<Icon icon={xIcon} />} />
       )}
     </div>
   );

@@ -1,0 +1,37 @@
+---
+title: Icon
+description: Renders icon data in the Iconify format as an inline SVG.
+---
+
+import PropsTable from '../../../../components/api/props-table.astro';
+import { IconExample } from '../../../../components/ui-examples/icon';
+
+An `Icon` renders icon data in the Iconify format, `{ body, width, height }`, as an inline SVG. It renders
+synchronously, sizes itself to the surrounding font (`1em`) and paints with the text color, so a parent
+sets both through `font-size` and `color`. Any `@iconify-icons/*` package exports data in this format,
+one file per icon, so only the icons you import are bundled.
+
+<IconExample client:visible />
+
+## Usage
+
+```bash
+pnpm add @iconify-icons/ph
+```
+
+```tsx
+import gearIcon from '@iconify-icons/ph/gear';
+import { Icon } from '@workflowbuilder/ui';
+
+function Example() {
+  return <Icon icon={gearIcon} aria-label="Settings" />;
+}
+```
+
+Any other SVG attribute passes through, so `width`, `className` or `style` override the defaults.
+In the Workflow Builder SDK, use the SDK's `Icon`, which also renders icons by name: see
+[Icons](/guides/configuring-the-editor/#icons).
+
+## Props
+
+<PropsTable slug="icon" />

@@ -3,10 +3,9 @@ import { Handle } from '@xyflow/react';
 import { memo, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from '../components/collapsible-body/collapsible-body.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import type { IconType, LayoutDirection, NodeIconAccent } from '../../../../node/common';
 import type { NodeData } from '../../../../node/node-data';
 import { withOptionalComponentPlugins } from '../../../plugins-core/adapters/adapter-components';

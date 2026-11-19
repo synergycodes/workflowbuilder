@@ -17,6 +17,7 @@
     "@astrojs/react": "^4.4.0",
     "@astrojs/starlight": "^0.37.6",
     "@base-ui/react": "catalog:",
+    "@iconify-icons/ph": "catalog:",
     "@iconify-json/ph": "^1.2.2",
     "@phosphor-icons/react": "catalog:",
     "@workflowbuilder/sdk": "workspace:*",

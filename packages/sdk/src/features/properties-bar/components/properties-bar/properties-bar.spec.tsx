@@ -15,7 +15,14 @@ import { renderInRoot } from '../../../ui-extensions/test-utils';
 import { PropertiesBar } from './properties-bar';
 import type { WorkflowBuilderPropertiesPanelProps } from './properties-bar.types';
 
-vi.mock('@workflow-builder/icons', () => ({ Icon: ({ name }: { name: string }) => <i data-icon={name} /> }));
+vi.mock('../../../../icon/icon', async () => {
+  const { default: caretRightIcon } = await import('@iconify-icons/ph/caret-right');
+  return {
+    Icon: ({ name, icon }: { name?: string; icon?: unknown }) => (
+      <i data-icon={name ?? (icon === caretRightIcon ? 'CaretRight' : undefined)} />
+    ),
+  };
+});
 
 const node = {
   id: 'node-1',

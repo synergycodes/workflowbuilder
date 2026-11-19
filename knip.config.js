@@ -23,14 +23,6 @@ export default {
       project: ['src/**/*.{ts,tsx}', '!src/app/plugins/**/libs/**/*.{ts,tsx}'],
       ignoreDependencies: ['anymatch', 'javascript-obfuscator', 'html-to-image', 'jspdf', 'libavoid-js', 'web-worker'],
     },
-    'apps/icons': {
-      entry: ['index.ts', 'src/generate-icons.ts'],
-      project: '**/*.{ts,tsx}',
-      // svgr is run as a binary from generate-icons.ts, never imported, so knip
-      // cannot see it. Removing it sends the icons build back to fetching svgr
-      // over the network on every run.
-      ignoreDependencies: ['@phosphor-icons/core', '@svgr/cli'],
-    },
     'apps/e2e': {
       // Playwright loads global-setup.ts by the path in its config, so nothing imports it.
       entry: ['playwright.config.ts', 'src/stack/global-setup.ts', 'tests/**/*.spec.ts'],

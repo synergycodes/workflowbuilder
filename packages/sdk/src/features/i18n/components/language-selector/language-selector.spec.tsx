@@ -28,7 +28,7 @@ vi.mock('@workflowbuilder/ui', () => ({
   ),
 }));
 
-vi.mock('@workflow-builder/icons', () => ({
+vi.mock('../../../../icon/icon', () => ({
   Icon: () => null,
 }));
 

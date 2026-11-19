@@ -7,6 +7,7 @@ catalog:
   # lifecycle, and this range ships to consumers. Bump = visual pass over
   # overlay transitions.
   '@base-ui/react': 1.7.0
+  '@iconify-icons/ph': ^2.0.0
   '@phosphor-icons/core': ^2.1.1
   '@phosphor-icons/react': ^2.1.7
   '@xyflow/react': 12.10.0

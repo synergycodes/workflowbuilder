@@ -1,8 +1,10 @@
-import { PencilSimpleLine, PencilSimpleSlash } from '@phosphor-icons/react';
+import pencilSimpleLineIcon from '@iconify-icons/ph/pencil-simple-line';
+import pencilSimpleSlashIcon from '@iconify-icons/ph/pencil-simple-slash';
 import { SegmentPicker } from '@workflowbuilder/ui';
 import { useTranslation } from 'react-i18next';
 
 import { useWorkflowBuilderActions } from '../../../../hooks/use-workflow-builder-actions';
+import { Icon } from '../../../../icon/icon';
 import { useStore } from '../../../../store/store';
 
 export function ToggleReadyOnlyMode() {
@@ -21,13 +23,13 @@ export function ToggleReadyOnlyMode() {
         value="edit"
         aria-label={t('header.mode.edit')}
         tooltip={t('header.mode.edit')}
-        prefixIcon={<PencilSimpleLine />}
+        prefixIcon={<Icon icon={pencilSimpleLineIcon} size="inherit" />}
       />
       <SegmentPicker.Item
         value="read-only"
         aria-label={t('header.mode.readOnly')}
         tooltip={t('header.mode.readOnly')}
-        prefixIcon={<PencilSimpleSlash />}
+        prefixIcon={<Icon icon={pencilSimpleSlashIcon} size="inherit" />}
       />
     </SegmentPicker>
   );

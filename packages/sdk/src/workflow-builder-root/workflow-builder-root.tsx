@@ -15,6 +15,7 @@ import { resetIntegrationStore } from '../features/integration/stores/use-integr
 import { registerCustomCells, registerCustomRenderers } from '../features/json-form/extension-registry';
 import { UiExtensionProvider } from '../features/ui-extensions/ui-extension-context';
 import { initTheme } from '../hooks/theme';
+import { setRegisteredIcons } from '../icon/icon-registry';
 import { loadNodeDefinitions } from '../store/slices/palette/actions';
 import { resetWorkflowStore } from '../store/store';
 import { defaultOnLoad } from './default-on-load';
@@ -66,6 +67,7 @@ export function WorkflowBuilderRoot({
   logo,
   logoHref,
   layoutDirection,
+  icons,
   initialNodes,
   initialEdges,
   isValidConnection,
@@ -145,6 +147,7 @@ export function WorkflowBuilderRoot({
   setIsValidConnection(isValidConnection ?? null);
   setReactFlowProps(reactFlowProps ?? null);
   setAppBarBranding({ logo, logoHref });
+  setRegisteredIcons(icons ?? null);
 
   const { strategy, endpoints, onDataSave, autoSave } = resolveIntegration(integration);
 

@@ -1,4 +1,12 @@
-import { ArrowClockwise, Check, Clock, LinkBreak, Question, SkipForward, Warning, X } from '@phosphor-icons/react';
+import arrowClockwiseIcon from '@iconify-icons/ph/arrow-clockwise';
+import checkIcon from '@iconify-icons/ph/check';
+import clockIcon from '@iconify-icons/ph/clock';
+import linkBreakIcon from '@iconify-icons/ph/link-break';
+import questionIcon from '@iconify-icons/ph/question';
+import skipForwardIcon from '@iconify-icons/ph/skip-forward';
+import warningIcon from '@iconify-icons/ph/warning';
+import xIcon from '@iconify-icons/ph/x';
+import { Icon } from '@ui/components/icon';
 
 import type { NodeFooterProps } from '../node-footer/node-footer';
 import type { NodeRunBadgeProps } from '../node-run-badge/node-run-badge';
@@ -60,67 +68,67 @@ export const runStatusPresets: Readonly<
   noSignal: {
     ring: { tone: 'warning', halo: 'static' },
     indicator: { tone: 'warning', spinner: 'slow' },
-    badge: { tone: 'warning', icon: <Question />, label: 'No signal' },
+    badge: { tone: 'warning', icon: <Icon icon={questionIcon} />, label: 'No signal' },
   },
   retrying: {
     ring: { tone: 'warning', halo: 'static' },
     indicator: { tone: 'warning', spinner: 'running' },
-    badge: { tone: 'warning', icon: <ArrowClockwise />, label: 'Retrying in the background' },
+    badge: { tone: 'warning', icon: <Icon icon={arrowClockwiseIcon} />, label: 'Retrying in the background' },
   },
   completed: {
     ring: { tone: 'success' },
-    indicator: { tone: 'success', icon: <Check /> },
+    indicator: { tone: 'success', icon: <Icon icon={checkIcon} /> },
     badge: { tone: 'success', label: 'Completed' },
   },
   incomplete: {
     ring: { tone: 'success' },
-    indicator: { tone: 'success', icon: <Check /> },
-    badge: { tone: 'warning', icon: <LinkBreak />, label: 'Incomplete' },
+    indicator: { tone: 'success', icon: <Icon icon={checkIcon} /> },
+    badge: { tone: 'warning', icon: <Icon icon={linkBreakIcon} />, label: 'Incomplete' },
   },
   failed: {
     ring: { tone: 'critical' },
-    indicator: { tone: 'critical', icon: <Warning /> },
+    indicator: { tone: 'critical', icon: <Icon icon={warningIcon} /> },
     badge: { tone: 'critical', label: 'Failed' },
     footer: { tone: 'critical', message: 'Step failed' },
   },
   rejected: {
     ring: { tone: 'inverse' },
-    indicator: { tone: 'neutral', iconTone: 'inverse', icon: <X /> },
+    indicator: { tone: 'neutral', iconTone: 'inverse', icon: <Icon icon={xIcon} /> },
     badge: { tone: 'inverse', label: 'Rejected' },
   },
   waitingForHuman: {
     ring: { tone: 'human', halo: 'waiting' },
-    indicator: { tone: 'human', icon: <Clock /> },
+    indicator: { tone: 'human', icon: <Icon icon={clockIcon} /> },
     badge: { tone: 'human', label: 'Waiting' },
     footer: { tone: 'human', message: 'Decision needed' },
   },
   waitingExternal: {
     ring: { tone: 'info', halo: 'waiting' },
-    indicator: { tone: 'info', icon: <Clock /> },
+    indicator: { tone: 'info', icon: <Icon icon={clockIcon} /> },
     badge: { tone: 'info', label: 'Waiting' },
     footer: { tone: 'info', message: 'Waiting for external system' },
   },
   waitingUntil: {
     ring: { tone: 'neutral' },
-    indicator: { tone: 'neutral', icon: <Clock /> },
+    indicator: { tone: 'neutral', icon: <Icon icon={clockIcon} /> },
     badge: { tone: 'neutral', label: 'Waiting until' },
     footer: { tone: 'neutral', message: 'Waiting for timer' },
   },
   partialJoin: {
     ring: { tone: 'neutral' },
-    indicator: { tone: 'neutral', icon: <Clock /> },
+    indicator: { tone: 'neutral', icon: <Icon icon={clockIcon} /> },
     badge: { tone: 'neutral', label: 'Waiting for input' },
     footer: { tone: 'neutral', message: 'Waiting for inputs' },
   },
   cancelled: {
     ring: { tone: 'neutral' },
-    indicator: { tone: 'neutral', icon: <X /> },
+    indicator: { tone: 'neutral', icon: <Icon icon={xIcon} /> },
     badge: { tone: 'neutral', label: 'Cancelled' },
     footer: { tone: 'neutral', message: 'Run cancelled' },
   },
   skipped: {
     ring: { tone: 'neutral' },
-    badge: { tone: 'neutral', icon: <SkipForward />, label: 'Skipped', dimmed: true },
+    badge: { tone: 'neutral', icon: <Icon icon={skipForwardIcon} />, label: 'Skipped', dimmed: true },
     veil: true,
   },
 };

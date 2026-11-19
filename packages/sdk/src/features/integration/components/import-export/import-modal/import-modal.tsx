@@ -1,12 +1,12 @@
+import downloadSimpleIcon from '@iconify-icons/ph/download-simple';
 import { Button, SnackbarType } from '@workflowbuilder/ui';
 import clsx from 'clsx';
 import { useCallback, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from '../import-export-modal.module.css';
 
+import { Icon } from '../../../../../icon/icon';
 import { setStoreDataFromIntegration } from '../../../../../store/slices/diagram-slice/actions';
 import { useStore } from '../../../../../store/store';
 import { showTranslatedSnackbar } from '../../../../../utils/show-translated-snackbar';
@@ -78,7 +78,7 @@ export function ImportModal() {
         {warnings.length > 0 && errors.length === 0 && (
           <Button
             variant="secondary"
-            prefixIcon={<Icon name="DownloadSimple" />}
+            prefixIcon={<Icon icon={downloadSimpleIcon} />}
             onClick={() => handleImport({ shouldIgnoreWarnings: true })}
           >
             {t('importExport.ignoreAndImport')}
@@ -86,7 +86,7 @@ export function ImportModal() {
         )}
         <Button
           variant="primary"
-          prefixIcon={<Icon name="DownloadSimple" />}
+          prefixIcon={<Icon icon={downloadSimpleIcon} />}
           onClick={() => handleImport({ shouldIgnoreWarnings: false })}
         >
           {t('importExport.import')}

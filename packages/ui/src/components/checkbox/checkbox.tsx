@@ -1,4 +1,6 @@
-import { Check, Minus } from '@phosphor-icons/react';
+import checkBoldIcon from '@iconify-icons/ph/check-bold';
+import minusBoldIcon from '@iconify-icons/ph/minus-bold';
+import { Icon } from '@ui/components/icon';
 import type { SelectorSize } from '@ui/shared/types/selector-size';
 import clsx from 'clsx';
 import type { InputHTMLAttributes } from 'react';
@@ -44,7 +46,7 @@ export function Checkbox({ size = 'medium', className, indeterminate, checked, o
         {...props}
       />
       <span className={clsx(styles['icon'], styles[size])}>
-        {indeterminate ? <Minus weight="bold" /> : <Check weight="bold" />}
+        {indeterminate ? <Icon icon={minusBoldIcon} /> : <Icon icon={checkBoldIcon} />}
       </span>
     </label>
   );

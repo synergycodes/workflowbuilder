@@ -1,12 +1,14 @@
+import caretRightIcon from '@iconify-icons/ph/caret-right';
+import dotsThreeVerticalIcon from '@iconify-icons/ph/dots-three-vertical';
+import sidebarSimpleIcon from '@iconify-icons/ph/sidebar-simple';
 import { Menu, NavButton } from '@workflowbuilder/ui';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 
-import { Icon } from '@workflow-builder/icons';
-
 import styles from './properties-bar-header.module.css';
 
 import { useTranslateIfPossible } from '../../../../hooks/use-translate-if-possible';
+import { Icon } from '../../../../icon/icon';
 import type { WorkflowBuilderNode } from '../../../../node/node-data';
 import { useStore } from '../../../../store/store';
 import { useIsBuiltInControlVisible } from '../../../ui-extensions/built-in-controls-context';
@@ -41,7 +43,7 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
         <div className={styles['menu-container']}>
           <Menu items={items} open={isMenuOpen} onOpenChange={setIsMenuOpen}>
             <Menu.TriggerButton aria-label={menuLabel} tooltip={menuLabel} size="s">
-              <Icon name="DotsThreeVertical" />
+              <Icon icon={dotsThreeVerticalIcon} />
             </Menu.TriggerButton>
           </Menu>
         </div>
@@ -53,7 +55,7 @@ export function PropertiesBarHeader({ selection, headerLabel, isOpen, onTogglePr
           onClick={onTogglePropertiesBar}
           tooltip={toggleLabel}
           disabled={!selection}
-          prefixIcon={<Icon name="SidebarSimple" />}
+          prefixIcon={<Icon icon={sidebarSimpleIcon} />}
         />
       )}
     </div>
@@ -76,7 +78,13 @@ function SelectionHeading({ selection, headerLabel }: SelectionHeadingProps) {
   const edgeType = t('propertiesBar.edge');
   const { label, icon } = selection.edge.data ?? {};
 
-  return <NodeHeading label={label || edgeType} subtitle={edgeType} icon={icon ?? 'CaretRight'} />;
+  return (
+    <NodeHeading
+      label={label || edgeType}
+      subtitle={edgeType}
+      icon={icon ? <Icon name={icon} size="inherit" /> : <Icon icon={caretRightIcon} size="inherit" />}
+    />
+  );
 }
 
 function SelectedNodeHeading({ node }: { node: WorkflowBuilderNode }) {
@@ -85,12 +93,13 @@ function SelectedNodeHeading({ node }: { node: WorkflowBuilderNode }) {
 
   const typeLabel = definition && (translateIfPossible(definition.label) || definition.label);
   const label = node.data.properties.label;
+  const iconName = node.data.icon ?? definition?.icon;
 
   return (
     <NodeHeading
       label={label || typeLabel || node.data.type}
       subtitle={label ? typeLabel : undefined}
-      icon={node.data.icon ?? definition?.icon}
+      icon={iconName && <Icon name={iconName} size="inherit" />}
       accent={definition?.accent}
     />
   );

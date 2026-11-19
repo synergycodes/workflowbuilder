@@ -1,5 +1,4 @@
-import type { WBIcon } from '@workflow-builder/icons';
-
+import type { WBIcon } from '../../../icon/icon-registry';
 import { getStoreNodes } from '../../../store/slices/diagram-slice/actions';
 import { VARIABLE_BRACKETS_START, VARIABLE_GLOBAL_KEY, VARIABLE_NODES_KEY } from '../constants';
 

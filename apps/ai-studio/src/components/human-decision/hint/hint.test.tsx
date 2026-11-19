@@ -6,7 +6,14 @@ import { Hint, type HintVariant } from './hint';
 
 vi.mock('@workflowbuilder/sdk', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@workflowbuilder/sdk')>();
-  return { ...actual, Icon: ({ name }: { name: string }) => <i data-icon={name} /> };
+  const { namedIcon } = await import('../../../test/named-icon');
+  const { default: infoIcon } = await import('@iconify-icons/ph/info');
+  const { default: warningIcon } = await import('@iconify-icons/ph/warning');
+  const namesByIcon = new Map([
+    [infoIcon, 'Info'],
+    [warningIcon, 'Warning'],
+  ]);
+  return { ...actual, Icon: namedIcon(namesByIcon) };
 });
 
 describe('Hint', () => {

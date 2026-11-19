@@ -1,10 +1,11 @@
-import { Spinner } from '@phosphor-icons/react';
+import checkCircleIcon from '@iconify-icons/ph/check-circle';
+import spinnerIcon from '@iconify-icons/ph/spinner';
+import xCircleIcon from '@iconify-icons/ph/x-circle';
 import clsx from 'clsx';
-
-import { Icon } from '@workflow-builder/icons';
 
 import styles from './saving-status.module.css';
 
+import { Icon } from '../../../../icon/icon';
 import { useIntegrationStore } from '../../stores/use-integration-store';
 
 export function SavingStatus() {
@@ -15,7 +16,7 @@ export function SavingStatus() {
   if (savingStatus === 'saving') {
     return (
       <span className={clsx(styles['status'], styles['status--saving'])}>
-        <Spinner />
+        <Icon icon={spinnerIcon} size="inherit" />
       </span>
     );
   }
@@ -23,7 +24,7 @@ export function SavingStatus() {
   if (savingStatus === 'saved') {
     return (
       <span key={lastSaveAttemptTimestamp} className={clsx(styles['status'], styles['status--saved'])}>
-        <Icon name="CheckCircle" />
+        <Icon icon={checkCircleIcon} />
       </span>
     );
   }
@@ -31,7 +32,7 @@ export function SavingStatus() {
   if (savingStatus === 'notSaved') {
     return (
       <span key={lastSaveAttemptTimestamp} className={clsx(styles['status'], styles['status--not-saved'])}>
-        <Icon name="XCircle" />
+        <Icon icon={xCircleIcon} />
       </span>
     );
   }
