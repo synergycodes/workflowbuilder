@@ -11,14 +11,10 @@ vi.mock('@xyflow/react', () => ({
   useStore: (selector: (state: { nodeLookup: Map<string, unknown> }) => unknown) => selector({ nodeLookup }),
 }));
 
-vi.mock('@workflowbuilder/ui', () => ({
-  useEdgeStyle: () => ({}),
-}));
-
-vi.mock('../enhanced-base-edge/enhanced-base-edge', () => ({
-  EnhancedBaseEdge: ({ id, path }: { id: string; path: string }) => (
+vi.mock('../../../plugins-core/components/diagram/optional-edge-path', () => ({
+  OptionalEdgePath: ({ edgeId, path, lineType }: { edgeId: string; path: string; lineType?: string }) => (
     <svg>
-      <path data-edge-id={id} d={path} />
+      <path data-edge-id={edgeId} data-line-type={lineType} d={path} />
     </svg>
   ),
 }));
@@ -76,5 +72,11 @@ describe('SelfConnectingEdge', () => {
     render(<SelfConnectingEdge {...loopProps} target="node-2" />);
 
     expect(get).not.toHaveBeenCalled();
+  });
+
+  it('draws the loop with the line type of the custom edge that delegates to it', () => {
+    const { container } = render(<SelfConnectingEdge {...loopProps} lineType="dashed" />);
+
+    expect(container.querySelector('[data-edge-id="self-loop"]')?.getAttribute('data-line-type')).toBe('dashed');
   });
 });

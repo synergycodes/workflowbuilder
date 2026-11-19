@@ -77,6 +77,20 @@ describe('use-execution-store: a node waiting for a person', () => {
     expect(nodeState('human-1')).toEqual({ status: 'failed', error: { message: 'boom' } });
   });
 
+  it('keeps the port a node left through, so edges can tell the branch it took', () => {
+    applyEvent(event({ type: 'node_completed', nodeId: 'decision-1', payload: { output: {}, nextPort: 'yes' } }));
+    applyEvent(
+      event({
+        type: 'node_failed',
+        nodeId: 'agent-1',
+        payload: { error: { message: 'boom' }, nextPort: 'errorRoute' },
+      }),
+    );
+
+    expect(nodeState('decision-1')).toEqual({ status: 'completed', output: {}, nextPort: 'yes' });
+    expect(nodeState('agent-1')).toEqual({ status: 'failed', error: { message: 'boom' }, nextPort: 'errorRoute' });
+  });
+
   it('the run is waiting while a node waits, and running again once the node resolves', () => {
     applyEvent(event({ type: 'execution_started', payload: { workflowId: 'wf-1' } }));
     expect(useExecutionStore.getState().status).toBe('running');

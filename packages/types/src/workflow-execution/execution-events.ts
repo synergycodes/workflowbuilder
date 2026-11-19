@@ -61,6 +61,19 @@ export type NodeStartedPayload = {
 
 export type NodeCompletedPayload = {
   output: unknown;
+  /**
+   * The handle the run left the node through, present when the executor returned a non-empty one.
+   * Missing means every non-error edge, or a run recorded before this field existed.
+   */
+  nextPort?: string;
+};
+
+export type NodeFailedPayload = ExecutionErrorPayload & {
+  /**
+   * `'errorRoute'` when the node's `errorPolicy` routed the failure. Missing means no error edge
+   * was taken, or a run recorded before this field existed, where a routed failure carries none.
+   */
+  nextPort?: string;
 };
 
 export type NodeSkipReason = 'branch_not_taken' | 'upstream_skipped' | 'error_route_not_taken';
@@ -140,7 +153,7 @@ export type NodeCompletedEvent = NodeEvent & {
 
 export type NodeFailedEvent = NodeEvent & {
   type: 'node_failed';
-  payload: ExecutionErrorPayload;
+  payload: NodeFailedPayload;
 };
 
 export type NodeSkippedEvent = NodeEvent & {

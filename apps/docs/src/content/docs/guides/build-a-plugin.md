@@ -85,6 +85,7 @@ Set props through `modifyProps`: it runs before every wrapper, so it composes wi
 | `OptionalNodeOverlay`    | Layer over the whole canvas node, empty by default, for a ring, veil or progress (`nodeId`) |
 | `OptionalNodeCorner`     | Top-right corner of the canvas node; holds the validation `Status` by default (`nodeId`)    |
 | `OptionalNodeHeaderEnd`  | End of the canvas node's header, empty by default, for a run indicator (`nodeId`)           |
+| `OptionalEdgePath`       | Path of every built-in edge; draws `EdgePath` by default (`EdgePathProps`)                  |
 
 The editor header, the palette and the properties panel have no slots: see [Built-in interface: hide, move, add](#built-in-interface-hide-move-add). A decorator registered on one of the slots that 4.0 removed logs a warning naming its replacement and renders nothing; the 4.0 changelog lists them.
 
@@ -121,6 +122,35 @@ registerComponentDecorator<CornerProps>('OptionalNodeCorner', {
   },
 });
 ```
+
+`OptionalEdgePath` wraps the path of `LabelEdge` and its self-loop; the temporary edge drawn while connecting has no slot. It receives `EdgePathProps`: `edgeId`, `source`, `target`, `sourceHandle`, `path`, `state` and `hovered`. A `'wrapper'` decorator reads its own run state by `source` / `target` (and `sourceHandle`, to tell a branch the run took from one it pruned) and renders `component` with `runState` (`pending`, `running`, `completed`, `outOfRun`) and `lineType` (`solid`, `dashed`), or returns `children` to keep the edit look. Rendering `component` drops any wrapper inside it, so give this decorator a high `priority`: the highest one wraps innermost. Nothing is written to the edge data, the store or undo history:
+
+```tsx
+import {
+  type EdgePathProps,
+  type WorkflowBuilderDecoratorWrapperProps,
+  registerComponentDecorator,
+} from '@workflowbuilder/sdk';
+
+// Your app's own run state, mapped to an EdgeRunState or undefined.
+import { edgeRunState, useExecutionStore } from './execution-store';
+
+registerComponentDecorator<EdgePathProps>('OptionalEdgePath', {
+  place: 'wrapper',
+  name: 'edge-run-path',
+  priority: 100,
+  content: ({ props, component: Path, children }: WorkflowBuilderDecoratorWrapperProps<EdgePathProps>) => {
+    const runState = useExecutionStore((s) =>
+      edgeRunState(s.nodeStates[props.source], s.nodeStates[props.target], props.sourceHandle),
+    );
+    return runState ? <Path {...props} runState={runState} /> : children;
+  },
+});
+```
+
+A custom edge template renders `<OptionalEdgePath edgeId={id} source={source} target={target} sourceHandle={sourceHandleId} path={path} state={selected ? 'selected' : 'default'} hovered={hovered} />` to get the same states, or `EdgePath` when it wants no slot.
+
+A second plugin that changes the path shares this slot with the run-state wrapper; [Setting props or wrapping a slot](#setting-props-or-wrapping-a-slot) says how the two compose.
 
 ### Example
 

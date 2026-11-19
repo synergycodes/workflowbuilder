@@ -1,6 +1,6 @@
 # AI Studio
 
-Reference frontend for the Workflow Builder AI Studio product. Consumes `@workflowbuilder/sdk` like an external user would, composing app-shell UI directly via JSX and using the plugin API only for per-node run status + translations, and to hide the properties panel's Delete button.
+Reference frontend for the Workflow Builder AI Studio product. Consumes `@workflowbuilder/sdk` like an external user would, composing app-shell UI directly via JSX and using the plugin API only for per-node run status, edge run states (an `OptionalEdgePath` wrapper) + translations, and to hide the properties panel's Delete button.
 
 > ⚠️ Local development only. Depends on the reference backend, which has no auth/authz. See [apps/backend/README.md](../backend/README.md).
 
@@ -30,12 +30,12 @@ This is a sibling to `apps/demo`, not a layer over it. They share the SDK; nothi
 
 ## Compared to apps/demo
 
-|              | `apps/demo`                 | `apps/ai-studio`                                                                                                          |
-| ------------ | --------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
-| Purpose      | Minimal embed showcase      | Full AI workflow product                                                                                                  |
-| Backend      | None (pure SPA)             | Required (Hono + Temporal)                                                                                                |
-| Plugin model | Plugins decorate the editor | Direct JSX composition; slim plugins for node run status, the panel's Delete button and the run view's hidden Save button |
-| Dev port     | 4200                        | 4201                                                                                                                      |
+|              | `apps/demo`                 | `apps/ai-studio`                                                                                                                                                           |
+| ------------ | --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Purpose      | Minimal embed showcase      | Full AI workflow product                                                                                                                                                   |
+| Backend      | None (pure SPA)             | Required (Hono + Temporal)                                                                                                                                                 |
+| Plugin model | Plugins decorate the editor | Direct JSX composition; slim plugins for node run status, edge run states (an `OptionalEdgePath` wrapper), the panel's Delete button and the run view's hidden Save button |
+| Dev port     | 4200                        | 4201                                                                                                                                                                       |
 
 ## Stopping and resetting a run
 

@@ -15,3 +15,17 @@ export type EdgeLabelSize = Extract<Size, 'extra-small' | 'small' | 'medium'>;
  * @category Edge
  */
 export type EdgeState = 'default' | 'selected' | 'disabled' | 'temporary';
+
+/**
+ * Where an edge stands in an execution run. A run state overrides hover and selection colours.
+ *
+ * @category Edge
+ */
+export type EdgeRunState = 'pending' | 'running' | 'completed' | 'outOfRun';
+
+/**
+ * Line pattern of an edge outside a running state.
+ *
+ * @category Edge
+ */
+export type EdgeLineType = 'solid' | 'dashed';

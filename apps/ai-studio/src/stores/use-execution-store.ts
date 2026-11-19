@@ -14,6 +14,8 @@ export type NodeExecutionState = {
   status: NodeExecutionStatus;
   output?: unknown;
   error?: { message: string; code?: string };
+  /** The handle the run left the node through, from `node_completed` / `node_failed`. */
+  nextPort?: string;
 };
 
 export type RunStatus = ExecutionStatus | 'idle' | 'disconnected';
@@ -241,11 +243,13 @@ function applyEventToNodeStates(event: ExecutionEvent, states: Record<string, No
       break;
     }
     case 'node_completed': {
-      states[event.nodeId] = { status: 'completed', output: event.payload.output };
+      const { output, nextPort } = event.payload;
+      states[event.nodeId] = { status: 'completed', output, nextPort };
       break;
     }
     case 'node_failed': {
-      states[event.nodeId] = { status: 'failed', error: event.payload.error };
+      const { error, nextPort } = event.payload;
+      states[event.nodeId] = { status: 'failed', error, nextPort };
       break;
     }
     case 'node_skipped': {
